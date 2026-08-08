@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ara::* API संदर्भ — R25-11</title><link rel="stylesheet" href="../style.css"><script src="../fold.js" defer></script></head>
+<body><header><a class="home" href="../index.html">ara::* API संदर्भ</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span><div class="langs"><a href="../index.html" title="Deutsch" hreflang="de"><img src="../flags/de.svg" alt="DE"></a><a href="../en/index.html" title="English" hreflang="en"><img src="../flags/gb.svg" alt="EN"></a><a href="../es/index.html" title="Español" hreflang="es"><img src="../flags/es.svg" alt="ES"></a><a href="../pt/index.html" title="Português" hreflang="pt"><img src="../flags/pt.svg" alt="PT"></a><a href="../fr/index.html" title="Français" hreflang="fr"><img src="../flags/fr.svg" alt="FR"></a><a href="../ru/index.html" title="Русский" hreflang="ru"><img src="../flags/ru.svg" alt="RU"></a><a href="../ar/index.html" title="العربية" hreflang="ar"><img src="../flags/sa.svg" alt="AR"></a><a class="cur" href="../hi/index.html" title="हिन्दी" hreflang="hi"><img src="../flags/in.svg" alt="HI"></a><a href="../ko/index.html" title="한국어" hreflang="ko"><img src="../flags/kr.svg" alt="KO"></a><a href="../zh/index.html" title="中文" hreflang="zh"><img src="../flags/cn.svg" alt="ZH"></a></div></header>
+<nav class="crumbs">मुखपृष्ठ</nav>
+<main><h1>ara::* API संदर्भ — AUTOSAR Adaptive Platform R25-11</h1>
+<p class="desc">सभी <code>ara::*</code> कार्यात्मक क्लस्टर एपीआई का संदर्भ, स्वचालित रूप से
+आधिकारिक R25-11 विनिर्देश पीडीएफ (अध्याय 8 "एपीआई विनिर्देश" या) से निकाला गया
+अध्याय 9 "सेवा इंटरफ़ेस")। प्रत्येक प्रविष्टि ऑटोसार आवश्यकता आईडी बताती है
+([एसडब्ल्यूएस_…], संबंधित विनिर्देश पीडीएफ से जुड़ा हुआ) साथ ही अपस्ट्रीम आवश्यकताएं
+(RS_...). आइडेंटिटी एंड एक्सेस मैनेजमेंट (IAM) के पास R25-11 तक का अपना कोई विकल्प नहीं है
+C++ API और इसलिए शामिल नहीं है।</p>
+<details class="fold"><summary><h2 class="sect">प्लेटफ़ॉर्म अवलोकन <span class="ai-badge" title="AI generated">AI-जनित / AI generated</span></h2></summary>
+<div class="ai"><p class="ai-note">स्वचालित रूप से उत्पन्न विवरण, संदर्भित AUTOSAR-R25-11 दस्तावेजों (SWS विनिर्देश और मानक दस्तावेजों के साथ) से प्राप्त सामग्री - आधिकारिक AUTOSAR पाठ नहीं। व्याख्या के रूप में चिह्नित कथन स्रोतों से निकाले गए निष्कर्ष हैं।</p>
+<h4>एक वाक्य में Adaptive Platform</h4>
+<p>AUTOSAR एडेप्टिव प्लेटफ़ॉर्म शक्तिशाली वाहन कंप्यूटरों के लिए एक सेवा-उन्मुख रनटाइम वातावरण है: एडाप्टिव एप्लिकेशन स्वतंत्र POSIX प्रक्रियाओं के रूप में चलते हैं, गतिशील रूप से शुरू और मॉनिटर किए जाते हैं और स्थिर रूप से वायर्ड सिग्नल (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.3.3">EXP PlatformDesign §3.3 “Adaptive Platform – Characteristics”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.8.2">§8.2 “Service Oriented Communication”</a>) के बजाय अनुबंधित परिभाषित सेवाओं के माध्यम से संचार करते हैं।</p>
+<h4>ARA - इस संदर्भ का प्रोग्रामिंग इंटरफ़ेस</h4>
+<p>यहां प्रलेखित सभी <code>ara::*</code> नामस्थान एक साथ <strong>ARA</strong> इंटरफ़ेस (अनुकूली अनुप्रयोगों के लिए AUTOSAR रनटाइम) बनाते हैं। प्लेटफ़ॉर्म का प्रत्येक कार्यात्मक क्लस्टर अपने C++ API को अपने नामस्थान में निर्यात करता है - <a class="vis-app" href="modules/core.html"><code>ara::core</code></a> में आधार प्रकारों से लेकर <a class="vis-app" href="modules/com.html"><code>ara::com</code></a> में सेवा संचार तक प्लेटफ़ॉर्म सेवाओं जैसे <a class="vis-app" href="modules/exec.html"><code>ara::exec</code></a>, <a class="vis-app" href="modules/per.html"><code>ara::per</code></a> या <a class="vis-app" href="modules/crypto.html"><code>ara::crypto</code></a> (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.4.1">EXP PlatformDesign §4.1 “Logical view”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.9.1">EXP SWArchitecture §9.1 “Building Block View – Overview”</a>) तक।</p>
+<div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 763.00 596.00" style="max-width:1017px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 592.24)">
+<title>G</title>
+<!-- app -->
+<g id="node1" class="node">
+<title>app</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="497.75,-313.75 443.75,-313.75 443.75,-272.75 497.75,-272.75 497.75,-313.75"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="470.75" y="-299.3" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">अनुकूली</text>
+<text xml:space="preserve" text-anchor="middle" x="470.75" y="-282.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">आवेदन</text>
+</g>
+<!-- core -->
+<g id="node2" class="node vis-app">
+<title>core</title>
+<g id="a_node2"><a xlink:href="modules/core.html" xlink:title="ara::core कोर प्रकार" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="732.38,-586.5 673.62,-586.5 673.62,-550 732.38,-550 732.38,-586.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-572.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::core</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-560.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">कोर प्रकार</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;core -->
+<g id="edge1" class="edge">
+<title>app-&gt;core</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M472.58,-314.17C475.13,-367.1 484.65,-504.29 515.75,-535.25 553.85,-573.18 619.4,-576.09 661.7,-573.26"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="661.9,-576.76 671.58,-572.45 661.32,-569.78 661.9,-576.76"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-578.74" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: Initialize()/प्रकार</text>
+</g>
+<!-- com -->
+<g id="node3" class="node vis-app">
+<title>com</title>
+<g id="a_node3"><a xlink:href="modules/com.html" xlink:title="ara::com संचार" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="732,-531.5 674,-531.5 674,-495 732,-495 732,-531.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-517.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::com</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-505.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">संचार</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;com -->
+<g id="edge2" class="edge">
+<title>app-&gt;com</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M473.95,-314.05C478.93,-357.11 492.48,-453.89 515.75,-476.25 554.67,-513.65 619.99,-518.34 662.02,-516.87"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="662,-520.38 671.81,-516.38 661.65,-513.38 662,-520.38"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-521.43" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: सेवाओं का उपयोग/प्रस्ताव करें</text>
+</g>
+<!-- phm -->
+<g id="node4" class="node vis-app">
+<title>phm</title>
+<g id="a_node4"><a xlink:href="modules/phm.html" xlink:title="ara::phm स्वास्थ्य निगरानी" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="750,-476.5 656,-476.5 656,-440 750,-440 750,-476.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-462.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::phm</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-450.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">स्वास्थ्य की निगरानी</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;phm -->
+<g id="edge3" class="edge">
+<title>app-&gt;phm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M473.33,-314.31C476.54,-341.69 486.28,-389.1 515.75,-415.25 550.65,-446.22 603.41,-456.14 643.87,-458.79"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="643.64,-462.29 653.8,-459.3 643.99,-455.3 643.64,-462.29"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-462.64" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">5: चौकियों की रिपोर्ट करें</text>
+</g>
+<!-- per -->
+<g id="node5" class="node vis-app">
+<title>per</title>
+<g id="a_node5"><a xlink:href="modules/per.html" xlink:title="ara::per दृढ़ता" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="730,-421.5 676,-421.5 676,-385 730,-385 730,-421.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-407.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::per</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-395.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">अटलता</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;per -->
+<g id="edge4" class="edge">
+<title>app-&gt;per</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M481.78,-314.34C489.3,-327.96 500.86,-345 515.75,-355.25 560.71,-386.2 624.2,-397.2 664.22,-401.1"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="663.67,-404.57 673.93,-401.94 664.27,-397.59 663.67,-404.57"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-401.43" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">6: डेटा जारी रखें</text>
+</g>
+<!-- diag -->
+<g id="node6" class="node vis-app">
+<title>diag</title>
+<g id="a_node6"><a xlink:href="modules/diag.html" xlink:title="ara::diag डायग्नोस्टिक्स" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="732,-366.5 674,-366.5 674,-330 732,-330 732,-366.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-352.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::diag</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-340.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">निदान</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;diag -->
+<g id="edge5" class="edge">
+<title>app-&gt;diag</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M497.98,-304.94C503.76,-307.24 509.9,-309.49 515.75,-311.25 565.39,-326.18 624.31,-336.73 662.39,-342.65"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="661.45,-346.04 671.86,-344.08 662.5,-339.12 661.45,-346.04"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-342.07" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">7: UDS सेवाएं संचालित करें</text>
+</g>
+<!-- crypto -->
+<g id="node7" class="node vis-app">
+<title>crypto</title>
+<g id="a_node7"><a xlink:href="modules/crypto.html" xlink:title="ara::crypto क्रिप्टोग्राफी" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="736.5,-311.5 669.5,-311.5 669.5,-275 736.5,-275 736.5,-311.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-297.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::crypto</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-285.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">क्रिप्टोग्राफी</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;crypto -->
+<g id="edge6" class="edge">
+<title>app-&gt;crypto</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M498.16,-293.25C537.15,-293.25 610.57,-293.25 657.83,-293.25"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="657.58,-296.75 667.58,-293.25 657.58,-289.75 657.58,-296.75"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-298" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">8: क्रिप्टो संचालन</text>
+</g>
+<!-- log -->
+<g id="node8" class="node vis-app">
+<title>log</title>
+<g id="a_node8"><a xlink:href="modules/log.html" xlink:title="ara::log लॉग और ट्रेस" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="752.25,-256.5 653.75,-256.5 653.75,-220 752.25,-220 752.25,-256.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-242.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::log</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-230.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">लॉग करें और ट्रेस करें</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;log -->
+<g id="edge7" class="edge">
+<title>app-&gt;log</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M497.96,-281.38C503.75,-279.05 509.89,-276.77 515.75,-275 557.34,-262.41 605.5,-253.04 642.43,-246.91"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="642.55,-250.44 651.86,-245.38 641.43,-243.53 642.55,-250.44"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-279.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">9: लॉगिंग</text>
+</g>
+<!-- tsync -->
+<g id="node9" class="node vis-app">
+<title>tsync</title>
+<g id="a_node9"><a xlink:href="modules/tsync.html" xlink:title="ara::tsync समय सिंक" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="740.25,-201.5 665.75,-201.5 665.75,-165 740.25,-165 740.25,-201.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-187.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::tsync</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-175.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">समय समन्वयन</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;tsync -->
+<g id="edge8" class="edge">
+<title>app-&gt;tsync</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M481.59,-272.37C489.1,-258.64 500.71,-241.36 515.75,-231 556.94,-202.62 613.73,-191.11 653.74,-186.43"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="654.09,-189.92 663.67,-185.39 653.36,-182.95 654.09,-189.92"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-235.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">10: समय आधार पढ़ें</text>
+</g>
+<!-- idsm -->
+<g id="node10" class="node vis-app">
+<title>idsm</title>
+<g id="a_node10"><a xlink:href="modules/idsm.html" xlink:title="ara::idsm घुसपैठ का पता लगाना" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="754.5,-146.5 651.5,-146.5 651.5,-110 754.5,-110 754.5,-146.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-132.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::idsm</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-120.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">घुसपैठ का पता लगाना</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;idsm -->
+<g id="edge9" class="edge">
+<title>app-&gt;idsm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M473.25,-272.61C476.39,-245.24 486.05,-197.34 515.75,-171 549.41,-141.15 599.68,-130.93 639.51,-127.92"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="639.54,-131.42 649.31,-127.32 639.12,-124.43 639.54,-131.42"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-175.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">13: सुरक्षा घटनाएँ</text>
+</g>
+<!-- rds -->
+<g id="node11" class="node vis-app">
+<title>rds</title>
+<g id="a_node11"><a xlink:href="modules/rds.html" xlink:title="ara::rds कच्चा डेटा स्ट्रीम" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="741.75,-91.5 664.25,-91.5 664.25,-55 741.75,-55 741.75,-91.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-77.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::rds</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-65.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">कच्चा डेटा स्ट्रीम</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;rds -->
+<g id="edge10" class="edge">
+<title>app-&gt;rds</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M473.94,-272.42C478.91,-229.29 492.44,-132.38 515.75,-110 551.75,-75.44 610.32,-68.91 652.16,-69.34"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="652.01,-72.83 662.1,-69.59 652.19,-65.83 652.01,-72.83"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-114.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">15: कच्चा डेटा स्ट्रीम</text>
+</g>
+<!-- shwa -->
+<g id="node12" class="node vis-app">
+<title>shwa</title>
+<g id="a_node12"><a xlink:href="modules/shwa.html" xlink:title="ara::shwa सुरक्षित HW एक्सेल।" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="754.12,-36.5 651.88,-36.5 651.88,0 754.12,0 754.12,-36.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-22.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::shwa</text>
+<text xml:space="preserve" text-anchor="middle" x="703" y="-10.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">सुरक्षित HW एक्सेल।</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;shwa -->
+<g id="edge11" class="edge">
+<title>app-&gt;shwa</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M472.58,-272.3C475.11,-219.32 484.61,-81.97 515.75,-51 547.81,-19.12 599.29,-12.06 640,-12.35"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="639.7,-15.84 649.78,-12.58 639.87,-8.84 639.7,-15.84"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="574.62" y="-55.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">16: HW त्वरण</text>
+</g>
+<!-- exec -->
+<g id="node13" class="node vis-app">
+<title>exec</title>
+<g id="a_node13"><a xlink:href="modules/exec.html" xlink:title="ara::exec निष्पादन प्रबंधन" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="295.25,-311.5 217,-311.5 217,-275 295.25,-275 295.25,-311.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-297.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::exec</text>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-285.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">निष्पादन प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- exec&#45;&gt;app -->
+<g id="edge12" class="edge">
+<title>exec-&gt;app</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M295.63,-293.25C334.26,-293.25 393.4,-293.25 431.83,-293.25"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="431.62,-296.75 441.62,-293.25 431.62,-289.75 431.62,-296.75"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="378.5" y="-298" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">3: प्रक्रियाएँ प्रारंभ करता है</text>
+</g>
+<!-- sm -->
+<g id="node14" class="node vis-priv">
+<title>sm</title>
+<g id="a_node14"><a xlink:href="modules/sm.html" xlink:title="ara::sm राज्य प्रबंधन" target="_top" class="vis-priv">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="64,-228.5 0,-228.5 0,-192 64,-192 64,-228.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="32" y="-214.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::sm</text>
+<text xml:space="preserve" text-anchor="middle" x="32" y="-202.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">राज्य प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- sm&#45;&gt;exec -->
+<g id="edge13" class="edge">
+<title>sm-&gt;exec</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M54.82,-228.95C62.94,-235.17 72.49,-241.66 82,-246.25 121.49,-265.29 169.89,-277.61 205.47,-284.83"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="204.43,-288.19 214.91,-286.68 205.77,-281.32 204.43,-288.19"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="131.5" y="-283.59" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">4: Function-Group राज्य</text>
+</g>
+<!-- ucm -->
+<g id="node15" class="node vis-priv">
+<title>ucm</title>
+<g id="a_node15"><a xlink:href="modules/ucm.html" xlink:title="ara::ucm अद्यतन और कॉन्फ़िग" target="_top" class="vis-priv">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="313.25,-256.5 199,-256.5 199,-220 313.25,-220 313.25,-256.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-242.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::ucm</text>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-230.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">अद्यतन एवं कॉन्फ़िगर करें</text>
+</a>
+</g>
+</g>
+<!-- sm&#45;&gt;ucm -->
+<g id="edge14" class="edge">
+<title>sm-&gt;ucm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M64.35,-214.2C96.1,-218.2 146.2,-224.52 187.09,-229.67"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="186.62,-233.14 196.98,-230.92 187.49,-226.2 186.62,-233.14"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="131.5" y="-233.14" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">11: अद्यतन रिलीज़</text>
+</g>
+<!-- nm -->
+<g id="node16" class="node vis-internal">
+<title>nm</title>
+<g id="a_node16"><a xlink:href="modules/nm.html" xlink:title="ara::nm नेटवर्क प्रबंधन" target="_top" class="vis-internal">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="291.12,-201.5 221.12,-201.5 221.12,-165 291.12,-165 291.12,-201.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-187.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::nm</text>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-175.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">नेटवर्क प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- sm&#45;&gt;nm -->
+<g id="edge15" class="edge">
+<title>sm-&gt;nm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M64.59,-204.65C70.37,-203.71 76.36,-202.78 82,-202 125.05,-196.05 174.34,-190.87 209.29,-187.47"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="209.28,-190.99 218.9,-186.55 208.62,-184.02 209.28,-190.99"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="131.5" y="-206.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">12: नेटवर्क स्थिति</text>
+</g>
+<!-- fw -->
+<g id="node17" class="node vis-priv">
+<title>fw</title>
+<g id="a_node17"><a xlink:href="modules/fw.html" xlink:title="ara::fw फ़ायरवॉल" target="_top" class="vis-priv">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="284,-146.5 228.25,-146.5 228.25,-110 284,-110 284,-146.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-132.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::fw</text>
+<text xml:space="preserve" text-anchor="middle" x="256.12" y="-120.05" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">फ़ायरवॉल</text>
+</a>
+</g>
+</g>
+<!-- sm&#45;&gt;fw -->
+<g id="edge16" class="edge">
+<title>sm-&gt;fw</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M53.17,-191.42C61.56,-184.45 71.73,-177.03 82,-172 125.4,-150.76 180.14,-139.16 216.31,-133.34"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="216.82,-136.81 226.18,-131.84 215.77,-129.89 216.82,-136.81"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="131.5" y="-176.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">14: फ़ायरवॉल स्थिति</text>
+</g>
+</g>
+</svg>
+</div>
+<p class="diagram-note">Functional Cluster Adaptive Platform और एक अनुकूली अनुप्रयोग (नोड क्लिक करने योग्य) के विशिष्ट इंटरैक्शन। स्रोत: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.4.1">EXP PlatformDesign §4.1</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.9.1">EXP SWArchitecture §9.1</a>। <em>आंशिक व्याख्या: इंटरैक्शन का चयन और लेबलिंग उल्लिखित स्रोतों के अध्यायों को संक्षेप में प्रस्तुत करता है।</em></p>
+<h4>व्यापक अवधारणाएँ</h4>
+<ul>
+<li><strong>मशीन और सॉफ्टवेयर क्लस्टर:</strong> एक <em>मशीन</em> (संभवतः वर्चुअलाइज्ड) निष्पादन वातावरण है; सॉफ़्टवेयर को इंस्टॉल करने योग्य <em>सॉफ़्टवेयर क्लस्टर</em> के रूप में पैक किया गया है और <a class="vis-priv" href="modules/ucm.html"><code>ara::ucm</code></a> (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.4">EXP SWArchitecture §13.4 “Software Cluster”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.5">§13.5 “Machine”</a>) के माध्यम से अपडेट किया गया है।</li>
+<li><strong>फ़ंक्शन समूह और राज्य:</strong> प्रक्रियाओं को फ़ंक्शन समूहों को सौंपा गया है; <a class="vis-priv" href="modules/sm.html"><code>ara::sm</code></a> निष्पादन प्रबंधन को फ़ंक्शन समूह राज्यों (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.2">EXP SWArchitecture §13.2 “Function Group”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=chapter.7">EXP PlatformDesign अध्याय 7 “State Management”</a>) के माध्यम से प्रक्रियाओं को शुरू/बंद करने का निर्देश देता है।</li>
+<li><strong>घोषणापत्र:</strong> निष्पादन, सेवा उदाहरण और मशीन Manifest, Deployment को कॉन्फ़िगर करें, व्यवहार और सेवा को घोषणात्मक रूप से बाइंडिंग शुरू करें (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.4.4">EXP PlatformDesign §4.4 “Manifest”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.6">EXP SWArchitecture §13.6 “Manifest”</a>)।</li>
+<li><strong>Exceptions के बिना त्रुटि प्रबंधन:</strong> पूरे प्लेटफ़ॉर्म में त्रुटियाँ <code>ara::core::Result</code>/<code>ErrorCode</code> के रूप में लौटाई जाती हैं (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.1">EXP PlatformDesign §18.1 “Error Handling”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.12">EXP SWArchitecture §13.12 “Error Handling”</a>)।</li>
+<li><strong>अनुप्रस्थ पहलू के रूप में Safety &amp; Security:</strong> E2E protection, Health Monitoring (<a class="vis-app" href="modules/phm.html"><code>ara::phm</code></a>), crypto stack, Identity &amp; Access Management, Intrusion Detection (<a class="vis-app" href="modules/idsm.html"><code>ara::idsm</code></a>) और firewall (<a class="vis-priv" href="modules/fw.html"><code>ara::fw</code></a>) platform तथा communication की सुरक्षा करते हैं (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=chapter.17">EXP PlatformDesign अध्याय 17 “Safety”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.13">EXP SWArchitecture §13.13 “Trusted Platform”</a>)।</li>
+</ul>
+</div>
+</details>
+<h2 class="sect">मॉड्यूल</h2><div class="cards"><a class="card vis-app" href="modules/core.html"><h3>ara::core</h3><p>Adaptive Platform Core</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">1060 फ़ंक्शंस · 60 कक्षाएं/संरचनाएं · 3 एनम · 1237 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/com.html"><h3>ara::com</h3><p>Communication Management</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">181 फ़ंक्शंस · 24 वर्ग/संरचनाएँ · 10 एनम · 250 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/exec.html"><h3>ara::exec</h3><p>Execution Management</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">42 फ़ंक्शन · 7 वर्ग/संरचनाएं · 2 एनम · 54 रिकॉर्ड</p></a><a class="card vis-priv vis-mixed" href="modules/sm.html"><h3>ara::sm</h3><p>State Management</p><p class="card-badges"><span class="mini-badge vis-priv">PRIVILEGED INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">38 फ़ंक्शन · 5 वर्ग/संरचनाएं · 2 एनम · 51 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/phm.html"><h3>ara::phm</h3><p>Platform Health Management</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">27 फ़ंक्शन · 5 कक्षाएं/संरचनाएं · 5 एनम · 41 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/diag.html"><h3>ara::diag</h3><p>Diagnostics</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">755 फ़ंक्शन · 118 कक्षाएं/संरचनाएं · 35 एनम · 1055 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/log.html"><h3>ara::log</h3><p>Log and Trace</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">65 फ़ंक्शन · 4 वर्ग/संरचनाएं · 3 एनम · 75 रिकॉर्ड</p></a><a class="card vis-app" href="modules/per.html"><h3>ara::per</h3><p>Persistency</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">116 फ़ंक्शन · 11 कक्षाएं/संरचनाएं · 6 एनम · 140 रिकॉर्ड</p></a><a class="card vis-app" href="modules/crypto.html"><h3>ara::crypto</h3><p>Cryptography</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">261 फ़ंक्शन · 35 वर्ग/संरचनाएं · 5 एनम · 387 रिकॉर्ड</p></a><a class="card vis-app vis-mixed" href="modules/tsync.html"><h3>ara::tsync</h3><p>Time Synchronization</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">70 फ़ंक्शन · 18 कक्षाएं/संरचनाएं · 4 एनम · 141 रिकॉर्ड</p></a><a class="card vis-priv" href="modules/ucm.html"><h3>ara::ucm</h3><p>Update and Configuration Management</p><p class="card-badges"><span class="mini-badge vis-priv">PRIVILEGED INTERFACE</span></p><p class="dim">20 functions · 0 classes/structs · 0 enums · 21 records · PRIVILEGED</p></a><a class="card vis-internal" href="modules/nm.html"><h3>ara::nm</h3><p>Network Management</p><p class="card-badges"><span class="mini-badge vis-internal">INTERNAL INTERFACE</span></p><p class="dim">17 फ़ंक्शन · 3 कक्षाएं · 2 एनम · एआई-जनरेटेड पेज · आंतरिक</p></a><a class="card vis-app" href="modules/idsm.html"><h3>ara::idsm</h3><p>Intrusion Detection System Manager</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">43 फ़ंक्शन · 7 कक्षाएं · 2 एनम · एआई-जनरेटेड पेज</p></a><a class="card vis-priv" href="modules/fw.html"><h3>ara::fw</h3><p>Firewall</p><p class="card-badges"><span class="mini-badge vis-priv">PRIVILEGED INTERFACE</span></p><p class="dim">2 निःशुल्क फ़ंक्शन · 3 कक्षाएं · 1 एनम · एआई-जनरेटेड पेज · विशेषाधिकार प्राप्त</p></a><a class="card vis-app" href="modules/rds.html"><h3>ara::rds</h3><p>Raw Data Streams</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">2 निःशुल्क फ़ंक्शन · 16 कक्षाएं/संरचनाएं · 1 एनम · एआई-जनरेटेड पेज</p></a><a class="card vis-app" href="modules/shwa.html"><h3>ara::shwa</h3><p>Safe Hardware Acceleration</p><p class="card-badges"><span class="mini-badge vis-app">APPLICATION INTERFACE</span></p><p class="dim">120 फ़ंक्शन · 18 क्लास · 4 Enums · AI-जनित पृष्ठ</p></a></div>
+<h2 class="sect">मॉड्यूलों के बीच पारस्परिक संबंध</h2>
+<p class="dim">गोल फ्रेम = मॉड्यूल; नोड्स = एक मॉड्यूल के उपक्षेत्र (नामस्थान या फ़ंक्शन समूह)। एरो ए → बी: उपक्षेत्र ए के एपीआई स्थान (हस्ताक्षर, फ़ील्ड, पैरामीटर) उपक्षेत्र बी के संदर्भ प्रकार - इस संदर्भ की लिंक की गई घोषणाओं से निर्धारित होते हैं; लाइन की चौड़ाई संदर्भ बिंदुओं की संख्या (तीर पर टूलटिप के रूप में सटीक संख्या) से मेल खाती है। किनारे का लेबल = लक्ष्य के साथ इंटरैक्शन का प्रकार: रिटर्न मान, असिंक्रोनस परिणाम, त्रुटि प्रबंधन, डेटा प्रकार, इंस्टेंस एड्रेसिंग, सहायक फ़ंक्शन; “उपयोग करता है” अन्य प्रकार संदर्भों के लिए है। हल्के भूरे तीर: ara::com के माध्यम से सेवा मॉडलिंग। सभी नोड्स उनके संबंधित नेमस्पेस/क्लास पेजों से जुड़े हुए हैं।</p>
+<div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="937pt" height="1786pt" viewbox="0.00 0.00 937.00 1786.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1782)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M429.75,-1451C429.75,-1451 523.25,-1451 523.25,-1451 529.25,-1451 535.25,-1457 535.25,-1463 535.25,-1463 535.25,-1758 535.25,-1758 535.25,-1764 529.25,-1770 523.25,-1770 523.25,-1770 429.75,-1770 429.75,-1770 423.75,-1770 417.75,-1764 417.75,-1758 417.75,-1758 417.75,-1463 417.75,-1463 417.75,-1457 423.75,-1451 429.75,-1451"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1456.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::com</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_2</title>
+<path fill="none" stroke="#d4d1ca" d="M416.25,-1211C416.25,-1211 536.75,-1211 536.75,-1211 542.75,-1211 548.75,-1217 548.75,-1223 548.75,-1223 548.75,-1431 548.75,-1431 548.75,-1437 542.75,-1443 536.75,-1443 536.75,-1443 416.25,-1443 416.25,-1443 410.25,-1443 404.25,-1437 404.25,-1431 404.25,-1431 404.25,-1223 404.25,-1223 404.25,-1217 410.25,-1211 416.25,-1211"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1216.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::crypto</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_3</title>
+<path fill="none" stroke="#d4d1ca" d="M408,-888C408,-888 545,-888 545,-888 551,-888 557,-894 557,-900 557,-900 557,-1191 557,-1191 557,-1197 551,-1203 545,-1203 545,-1203 408,-1203 408,-1203 402,-1203 396,-1197 396,-1191 396,-1191 396,-900 396,-900 396,-894 402,-888 408,-888"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-893.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::diag</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_4</title>
+<path fill="none" stroke="#d4d1ca" d="M452.25,-804C452.25,-804 500.75,-804 500.75,-804 506.75,-804 512.75,-810 512.75,-816 512.75,-816 512.75,-868 512.75,-868 512.75,-874 506.75,-880 500.75,-880 500.75,-880 452.25,-880 452.25,-880 446.25,-880 440.25,-874 440.25,-868 440.25,-868 440.25,-816 440.25,-816 440.25,-810 446.25,-804 452.25,-804"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-809.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::per</text>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_5</title>
+<path fill="none" stroke="#d4d1ca" d="M417.38,-324C417.38,-324 535.62,-324 535.62,-324 541.62,-324 547.62,-330 547.62,-336 547.62,-336 547.62,-462 547.62,-462 547.62,-468 541.62,-474 535.62,-474 535.62,-474 417.38,-474 417.38,-474 411.38,-474 405.38,-468 405.38,-462 405.38,-462 405.38,-336 405.38,-336 405.38,-330 411.38,-324 417.38,-324"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-329.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::exec</text>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_6</title>
+<path fill="none" stroke="#d4d1ca" d="M59,-1127C59,-1127 106,-1127 106,-1127 112,-1127 118,-1133 118,-1139 118,-1139 118,-1189 118,-1189 118,-1195 112,-1201 106,-1201 106,-1201 59,-1201 59,-1201 53,-1201 47,-1195 47,-1189 47,-1189 47,-1139 47,-1139 47,-1133 53,-1127 59,-1127"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-1132.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::sm</text>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_7</title>
+<path fill="none" stroke="#d4d1ca" d="M55.25,-479C55.25,-479 109.75,-479 109.75,-479 115.75,-479 121.75,-485 121.75,-491 121.75,-491 121.75,-541 121.75,-541 121.75,-547 115.75,-553 109.75,-553 109.75,-553 55.25,-553 55.25,-553 49.25,-553 43.25,-547 43.25,-541 43.25,-541 43.25,-491 43.25,-491 43.25,-485 49.25,-479 55.25,-479"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-484.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::phm</text>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_8</title>
+<path fill="none" stroke="#d4d1ca" d="M409.12,-166C409.12,-166 543.88,-166 543.88,-166 549.88,-166 555.88,-172 555.88,-178 555.88,-178 555.88,-228 555.88,-228 555.88,-234 549.88,-240 543.88,-240 543.88,-240 409.12,-240 409.12,-240 403.12,-240 397.12,-234 397.12,-228 397.12,-228 397.12,-178 397.12,-178 397.12,-172 403.12,-166 409.12,-166"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-171.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::tsync</text>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_9</title>
+<path fill="none" stroke="#d4d1ca" d="M452.62,-8C452.62,-8 500.38,-8 500.38,-8 506.38,-8 512.38,-14 512.38,-20 512.38,-20 512.38,-146 512.38,-146 512.38,-152 506.38,-158 500.38,-158 500.38,-158 452.62,-158 452.62,-158 446.62,-158 440.62,-152 440.62,-146 440.62,-146 440.62,-20 440.62,-20 440.62,-14 446.62,-8 452.62,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::log</text>
+</g>
+<g id="clust10" class="cluster">
+<title>cluster_10</title>
+<path fill="none" stroke="#d4d1ca" d="M20,-1610C20,-1610 145,-1610 145,-1610 151,-1610 157,-1616 157,-1622 157,-1622 157,-1672 157,-1672 157,-1678 151,-1684 145,-1684 145,-1684 20,-1684 20,-1684 14,-1684 8,-1678 8,-1672 8,-1672 8,-1622 8,-1622 8,-1616 14,-1610 20,-1610"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-1615.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::ucm</text>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_0</title>
+<path fill="none" stroke="#d4d1ca" d="M728,-694C728,-694 909.25,-694 909.25,-694 915.25,-694 921.25,-700 921.25,-706 921.25,-706 921.25,-1154 921.25,-1154 921.25,-1160 915.25,-1166 909.25,-1166 909.25,-1166 728,-1166 728,-1166 722,-1166 716,-1160 716,-1154 716,-1154 716,-706 716,-706 716,-700 722,-694 728,-694"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-699.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::core</text>
+</g>
+<!-- com_basis -->
+<g id="node1" class="node">
+<title>com_basis</title>
+<g id="a_node1"><a xlink:href="namespaces/ns_com_ara_com_4a3210.html" xlink:title="रनटाइम और त्रुटियाँ ara::com">
+<path fill="#f9f8f5" stroke="#01696f" d="M513.75,-1519C513.75,-1519 439.25,-1519 439.25,-1519 433.25,-1519 427.25,-1513 427.25,-1507 427.25,-1507 427.25,-1493 427.25,-1493 427.25,-1487 433.25,-1481 439.25,-1481 439.25,-1481 513.75,-1481 513.75,-1481 519.75,-1481 525.75,-1487 525.75,-1493 525.75,-1493 525.75,-1507 525.75,-1507 525.75,-1513 519.75,-1519 513.75,-1519"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1503.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">रनटाइम और त्रुटियाँ</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1486.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::com</text>
+</a>
+</g>
+</g>
+<!-- log_format -->
+<g id="node19" class="node">
+<title>log_format</title>
+<g id="a_node19"><a xlink:href="classes/cl_ara_log_Format_2a1754.html" xlink:title="प्रारूप">
+<path fill="#f9f8f5" stroke="#01696f" d="M491.5,-150C491.5,-150 461.5,-150 461.5,-150 455.5,-150 449.5,-144 449.5,-138 449.5,-138 449.5,-126 449.5,-126 449.5,-120 455.5,-114 461.5,-114 461.5,-114 491.5,-114 491.5,-114 497.5,-114 503.5,-120 503.5,-126 503.5,-126 503.5,-138 503.5,-138 503.5,-144 497.5,-150 491.5,-150"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-129.22" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">प्रारूप</text>
+</a>
+</g>
+</g>
+<!-- com_basis&#45;&gt;log_format -->
+<g id="edge66" class="edge">
+<title>com_basis-&gt;log_format</title>
+<g id="a_edge66"><a xlink:title="रनटाइम और त्रुटियाँ → प्रारूप: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M426.77,-1498.79C379.42,-1494.66 310.51,-1480.26 276.5,-1433 194.92,-1319.64 188.99,-284.85 276.5,-176 315.5,-127.48 394.72,-124.75 440.89,-127.87"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="440.58,-130.3 447.75,-128.4 440.96,-125.42 440.58,-130.3"></polygon>
+</a>
+</g>
+<g id="a_edge66-label"><a xlink:title="रनटाइम और त्रुटियाँ → प्रारूप: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="191.38" y="-806.96" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- core_result -->
+<g id="node21" class="node">
+<title>core_result</title>
+<g id="a_node21"><a xlink:href="classes/cl_ara_core_Result_d51722.html" xlink:title="ara::core::Result">
+<path fill="#e7f0ef" stroke="#01696f" d="M858.12,-1158C858.12,-1158 779.12,-1158 779.12,-1158 773.12,-1158 767.12,-1152 767.12,-1146 767.12,-1146 767.12,-1134 767.12,-1134 767.12,-1128 773.12,-1122 779.12,-1122 779.12,-1122 858.12,-1122 858.12,-1122 864.12,-1122 870.12,-1128 870.12,-1134 870.12,-1134 870.12,-1146 870.12,-1146 870.12,-1152 864.12,-1158 858.12,-1158"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-1134.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::core::Result</text>
+</a>
+</g>
+</g>
+<!-- com_basis&#45;&gt;core_result -->
+<g id="edge61" class="edge">
+<title>com_basis-&gt;core_result</title>
+<g id="a_edge61"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core::Result: 2 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M524.53,-1480.57C536.69,-1473.51 548.68,-1464.4 557,-1453 650.23,-1325.23 484.58,-1060.28 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge61-label"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core::Result: 2 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="597.71" y="-1285.18" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- core_err -->
+<g id="node23" class="node">
+<title>core_err</title>
+<g id="a_node23"><a xlink:href="classes/cl_ara_core_ErrorCode_538b08.html" xlink:title="ara::core - त्रुटि प्रबंधन ErrorDomain · ErrorCode · अपवाद">
+<path fill="#e7f0ef" stroke="#01696f" d="M901.25,-766.25C901.25,-766.25 736,-766.25 736,-766.25 730,-766.25 724,-760.25 724,-754.25 724,-754.25 724,-735.75 724,-735.75 724,-729.75 730,-723.75 736,-723.75 736,-723.75 901.25,-723.75 901.25,-723.75 907.25,-723.75 913.25,-729.75 913.25,-735.75 913.25,-735.75 913.25,-754.25 913.25,-754.25 913.25,-760.25 907.25,-766.25 901.25,-766.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-750.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::core - त्रुटि प्रबंधन</text>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-733.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ErrorDomain · ErrorCode · अपवाद</text>
+</a>
+</g>
+</g>
+<!-- com_basis&#45;&gt;core_err -->
+<g id="edge16" class="edge">
+<title>com_basis-&gt;core_err</title>
+<g id="a_edge16"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core - त्रुटि प्रबंधन: 30 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.22" d="M525.97,-1481.02C537.99,-1474.01 549.56,-1464.8 557,-1453 610.02,-1368.93 536.79,-567.9 636,-562"></path>
+</a>
+</g>
+<g id="a_edge16-label"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core - त्रुटि प्रबंधन: 30 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="563.72" y="-1014.04" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- core_cont -->
+<g id="node24" class="node">
+<title>core_cont</title>
+<g id="a_node24"><a xlink:href="namespaces/ns_core_ara_core_e30e31.html" xlink:title="ara::core - कंटेनर और दृश्य वेक्टर, स्पैन, StringView, वैकल्पिक, ...">
+<path fill="#e7f0ef" stroke="#01696f" d="M900.5,-924.25C900.5,-924.25 736.75,-924.25 736.75,-924.25 730.75,-924.25 724.75,-918.25 724.75,-912.25 724.75,-912.25 724.75,-893.75 724.75,-893.75 724.75,-887.75 730.75,-881.75 736.75,-881.75 736.75,-881.75 900.5,-881.75 900.5,-881.75 906.5,-881.75 912.5,-887.75 912.5,-893.75 912.5,-893.75 912.5,-912.25 912.5,-912.25 912.5,-918.25 906.5,-924.25 900.5,-924.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-908.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::core - कंटेनर और दृश्य</text>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-891.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">वेक्टर, स्पैन, StringView, वैकल्पिक, ...</text>
+</a>
+</g>
+</g>
+<!-- com_basis&#45;&gt;core_cont -->
+<g id="edge35" class="edge">
+<title>com_basis-&gt;core_cont</title>
+<g id="a_edge35"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core — कंटेनर और दृश्य: 10 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.47" d="M526.03,-1480.55C537.9,-1473.56 549.38,-1464.49 557,-1453 629.17,-1344.25 507.93,-896.18 636,-871"></path>
+</a>
+</g>
+<g id="a_edge35-label"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core — कंटेनर और दृश्य: 10 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="563.33" y="-1168.23" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- core_is -->
+<g id="node25" class="node">
+<title>core_is</title>
+<g id="a_node25"><a xlink:href="classes/cl_ara_core_InstanceSpecifier_4f5967.html" xlink:title="ara::core::InstanceSpecifier">
+<path fill="#e7f0ef" stroke="#01696f" d="M887,-1000C887,-1000 750.25,-1000 750.25,-1000 744.25,-1000 738.25,-994 738.25,-988 738.25,-988 738.25,-976 738.25,-976 738.25,-970 744.25,-964 750.25,-964 750.25,-964 887,-964 887,-964 893,-964 899,-970 899,-976 899,-976 899,-988 899,-988 899,-994 893,-1000 887,-1000"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-976.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::core::InstanceSpecifier</text>
+</a>
+</g>
+</g>
+<!-- com_basis&#45;&gt;core_is -->
+<g id="edge51" class="edge">
+<title>com_basis-&gt;core_is</title>
+<g id="a_edge51"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core::InstanceSpecifier: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M525.52,-1480.73C537.54,-1473.71 549.22,-1464.58 557,-1453 624.04,-1353.26 515.91,-922.47 636,-918"></path>
+</a>
+</g>
+<g id="a_edge51-label"><a xlink:title="रनटाइम और त्रुटियाँ → ara::core::InstanceSpecifier: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="558.08" y="-1191.76" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- com_proxy -->
+<g id="node2" class="node">
+<title>com_proxy</title>
+<g id="a_node2"><a xlink:href="namespaces/ns_com__SI_Namespace_proxy_250bf1.html" xlink:title="उत्पन्न प्रॉक्सी &lt;SI&gt;::प्रॉक्सी">
+<path fill="#f9f8f5" stroke="#01696f" d="M501.75,-1679.25C501.75,-1679.25 451.25,-1679.25 451.25,-1679.25 445.25,-1679.25 439.25,-1673.25 439.25,-1667.25 439.25,-1667.25 439.25,-1648.75 439.25,-1648.75 439.25,-1642.75 445.25,-1636.75 451.25,-1636.75 451.25,-1636.75 501.75,-1636.75 501.75,-1636.75 507.75,-1636.75 513.75,-1642.75 513.75,-1648.75 513.75,-1648.75 513.75,-1667.25 513.75,-1667.25 513.75,-1673.25 507.75,-1679.25 501.75,-1679.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1663.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">उत्पन्न प्रॉक्सी</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1646.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;SI&gt;::प्रॉक्सी</text>
+</a>
+</g>
+</g>
+<!-- com_proxy&#45;&gt;core_result -->
+<g id="edge15" class="edge">
+<title>com_proxy-&gt;core_result</title>
+<g id="a_edge15"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::Result: 32 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.27" d="M514.2,-1647.41C529.76,-1641.07 546.66,-1631.37 557,-1617 624.14,-1523.75 526,-1072.79 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge15-label"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::Result: 32 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="569.13" y="-1368.63" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- core_future -->
+<g id="node22" class="node">
+<title>core_future</title>
+<g id="a_node22"><a xlink:href="classes/cl_ara_core_Future_420ba8.html" xlink:title="ara::core::Future / Promise">
+<path fill="#e7f0ef" stroke="#01696f" d="M884.75,-842C884.75,-842 752.5,-842 752.5,-842 746.5,-842 740.5,-836 740.5,-830 740.5,-830 740.5,-818 740.5,-818 740.5,-812 746.5,-806 752.5,-806 752.5,-806 884.75,-806 884.75,-806 890.75,-806 896.75,-812 896.75,-818 896.75,-818 896.75,-830 896.75,-830 896.75,-836 890.75,-842 884.75,-842"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-818.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::core::Future / Promise</text>
+</a>
+</g>
+</g>
+<!-- com_proxy&#45;&gt;core_future -->
+<g id="edge34" class="edge">
+<title>com_proxy-&gt;core_future</title>
+<g id="a_edge34"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::Future / Promise: 12 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.6" d="M514.13,-1647.81C529.87,-1641.53 546.94,-1631.75 557,-1617 653.67,-1475.26 516.78,-972.38 636,-849 659.85,-824.32 695.83,-815.99 729.49,-814.63"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.6" points="729.44,-817.08 736.39,-814.49 729.34,-812.18 729.44,-817.08"></polygon>
+</a>
+</g>
+<g id="a_edge34-label"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::Future / Promise: 12 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="615.79" y="-1218.49" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- com_proxy&#45;&gt;core_is -->
+<g id="edge46" class="edge">
+<title>com_proxy-&gt;core_is</title>
+<g id="a_edge46"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::InstanceSpecifier: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M514.06,-1647.77C529.79,-1641.47 546.86,-1631.7 557,-1617 645.73,-1488.3 479.79,-923.82 636,-918"></path>
+</a>
+</g>
+<g id="a_edge46-label"><a xlink:title="उत्पन्न प्रॉक्सी → ara::core::InstanceSpecifier: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="555.38" y="-1274.93" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- core_free -->
+<g id="node26" class="node">
+<title>core_free</title>
+<g id="a_node26"><a xlink:href="namespaces/ns_core_ara_core_e30e31.html" xlink:title="नेमस्पेस ara::core निःशुल्क कार्य">
+<path fill="#e7f0ef" stroke="#01696f" d="M856.25,-1082.25C856.25,-1082.25 781,-1082.25 781,-1082.25 775,-1082.25 769,-1076.25 769,-1070.25 769,-1070.25 769,-1051.75 769,-1051.75 769,-1045.75 775,-1039.75 781,-1039.75 781,-1039.75 856.25,-1039.75 856.25,-1039.75 862.25,-1039.75 868.25,-1045.75 868.25,-1051.75 868.25,-1051.75 868.25,-1070.25 868.25,-1070.25 868.25,-1076.25 862.25,-1082.25 856.25,-1082.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-1066.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">नेमस्पेस ara::core</text>
+<text xml:space="preserve" text-anchor="middle" x="818.62" y="-1049.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">निःशुल्क कार्य</text>
+</a>
+</g>
+</g>
+<!-- com_proxy&#45;&gt;core_free -->
+<g id="edge54" class="edge">
+<title>com_proxy-&gt;core_free</title>
+<g id="a_edge54"><a xlink:title="उत्पन्न प्रॉक्सी → नेमस्पेस ara::core: 3 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.65" d="M513.94,-1647.69C529.65,-1641.37 546.74,-1631.61 557,-1617 634.92,-1506.04 504.92,-977.34 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge54-label"><a xlink:title="उत्पन्न प्रॉक्सी → नेमस्पेस ara::core: 3 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="557.81" y="-1322.13" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- com_skel -->
+<g id="node3" class="node">
+<title>com_skel</title>
+<g id="a_node3"><a xlink:href="namespaces/ns_com__SI_Namespace_skeleton_3e0cf2.html" xlink:title="उत्पन्न कंकाल &lt;SI&gt;::कंकाल">
+<path fill="#f9f8f5" stroke="#01696f" d="M502.5,-1762.25C502.5,-1762.25 450.5,-1762.25 450.5,-1762.25 444.5,-1762.25 438.5,-1756.25 438.5,-1750.25 438.5,-1750.25 438.5,-1731.75 438.5,-1731.75 438.5,-1725.75 444.5,-1719.75 450.5,-1719.75 450.5,-1719.75 502.5,-1719.75 502.5,-1719.75 508.5,-1719.75 514.5,-1725.75 514.5,-1731.75 514.5,-1731.75 514.5,-1750.25 514.5,-1750.25 514.5,-1756.25 508.5,-1762.25 502.5,-1762.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1746.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">उत्पन्न कंकाल</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1729.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;SI&gt;::कंकाल</text>
+</a>
+</g>
+</g>
+<!-- com_skel&#45;&gt;core_result -->
+<g id="edge23" class="edge">
+<title>com_skel-&gt;core_result</title>
+<g id="a_edge23"><a xlink:title="उत्पन्न कंकाल → ara::core::Result: 20 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.95" d="M637,-1153C667.09,-1122.46 716.37,-1120.77 755.86,-1125.85"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.95" points="755.28,-1128.24 762.56,-1126.84 755.99,-1123.4 755.28,-1128.24"></polygon>
+</a>
+</g>
+<g id="a_edge23-label"><a xlink:title="उत्पन्न कंकाल → ara::core::Result: 20 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="687.09" y="-1117.44" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- com_skel&#45;&gt;core_future -->
+<g id="edge39" class="edge">
+<title>com_skel-&gt;core_future</title>
+<g id="a_edge39"><a xlink:title="उत्पन्न कंकाल → ara::core::Future / Promise: 8 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.32" d="M514.91,-1729.97C530.42,-1723.47 547.07,-1713.58 557,-1699 735.47,-1436.94 531.83,-1289.46 636,-990 658.04,-926.64 664.05,-904.44 716,-862 723.18,-856.14 731.35,-851.12 739.87,-846.85"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.32" points="740.72,-849.15 746.04,-843.98 738.66,-844.71 740.72,-849.15"></polygon>
+</a>
+</g>
+<g id="a_edge39-label"><a xlink:title="उत्पन्न कंकाल → ara::core::Future / Promise: 8 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="641.68" y="-1281.27" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- com_skel&#45;&gt;core_is -->
+<g id="edge64" class="edge">
+<title>com_skel-&gt;core_is</title>
+<g id="a_edge64"><a xlink:title="उत्पन्न कंकाल → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M514.8,-1729.89C530.28,-1723.38 546.95,-1713.5 557,-1699 714.02,-1472.53 501.01,-1324.25 636,-1084 658.34,-1044.24 702.73,-1018.91 742.04,-1003.43"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="742.88,-1005.73 748.55,-1000.95 741.14,-1001.15 742.88,-1005.73"></polygon>
+</a>
+</g>
+<g id="a_edge64-label"><a xlink:title="उत्पन्न कंकाल → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="580" y="-1363.3" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- com_skel&#45;&gt;core_free -->
+<g id="edge65" class="edge">
+<title>com_skel-&gt;core_free</title>
+<g id="a_edge65"><a xlink:title="उत्पन्न कंकाल → नामस्थान ara::core: 1 संदर्भ स्थान">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M637,-1153C671.5,-1117.98 722.13,-1093.79 761.01,-1079.03"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="761.64,-1081.41 767.35,-1076.68 759.93,-1076.82 761.64,-1081.41"></polygon>
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M514.69,-1729.82C530.15,-1723.29 546.83,-1713.41 557,-1699 698.31,-1498.62 463.93,-1327.67 636,-1153"></path>
+</a>
+</g>
+<g id="a_edge65-label"><a xlink:title="उत्पन्न कंकाल → नामस्थान ara::core: 1 संदर्भ स्थान">
+<text xml:space="preserve" text-anchor="middle" x="615.08" y="-1145.19" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- com_apext -->
+<g id="node4" class="node">
+<title>com_apext</title>
+<g id="a_node4"><a xlink:href="namespaces/ns_com_apext_com_secoc_eb0f3c.html" xlink:title="E2E और SecOC apext::com">
+<path fill="#f9f8f5" stroke="#01696f" d="M515.25,-1597C515.25,-1597 437.75,-1597 437.75,-1597 431.75,-1597 425.75,-1591 425.75,-1585 425.75,-1585 425.75,-1571 425.75,-1571 425.75,-1565 431.75,-1559 437.75,-1559 437.75,-1559 515.25,-1559 515.25,-1559 521.25,-1559 527.25,-1565 527.25,-1571 527.25,-1571 527.25,-1585 527.25,-1585 527.25,-1591 521.25,-1597 515.25,-1597"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1581.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">E2E और SecOC</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1564.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">apext::com</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste -->
+<g id="node8" class="node">
+<title>diag_dienste</title>
+<g id="a_node8"><a xlink:href="namespaces/ns_diag_ara_diag_fbd60d.html" xlink:title="निदान सेवाएँ (UDS, DoIP, घटना, मॉनिटर)">
+<path fill="#f9f8f5" stroke="#01696f" d="M537,-1112.25C537,-1112.25 416,-1112.25 416,-1112.25 410,-1112.25 404,-1106.25 404,-1100.25 404,-1100.25 404,-1081.75 404,-1081.75 404,-1075.75 410,-1069.75 416,-1069.75 416,-1069.75 537,-1069.75 537,-1069.75 543,-1069.75 549,-1075.75 549,-1081.75 549,-1081.75 549,-1100.25 549,-1100.25 549,-1106.25 543,-1112.25 537,-1112.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1096.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">निदान सेवाएँ</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1079.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">(UDS, DoIP, घटना, मॉनिटर)</text>
+</a>
+</g>
+</g>
+<!-- com_apext&#45;&gt;diag_dienste -->
+<g id="edge75" class="edge">
+<title>com_apext-&gt;diag_dienste</title>
+<g id="a_edge75"><a xlink:title="E2E और SecOC → नैदानिक ​​सेवाएं: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M425.62,-1578.8C378.47,-1576.47 310.64,-1564.67 276.5,-1519 179.1,-1388.72 180,-1283.95 276.5,-1153 303.75,-1116.02 352.82,-1100.44 395.54,-1094.15"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="395.75,-1096.59 402.36,-1093.22 395.1,-1091.74 395.75,-1096.59"></polygon>
+</a>
+</g>
+<g id="a_edge75-label"><a xlink:title="E2E और SecOC → नैदानिक ​​सेवाएं: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="254.75" y="-1145.4" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- com_apext&#45;&gt;core_result -->
+<g id="edge26" class="edge">
+<title>com_apext-&gt;core_result</title>
+<g id="a_edge26"><a xlink:title="E2E और SecOC → ara::core::Result: 16 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.79" d="M527.63,-1562.17C538.77,-1556.48 549.49,-1548.93 557,-1539 675.01,-1382.98 448.73,-1049.46 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge26-label"><a xlink:title="E2E और SecOC → ara::core::Result: 16 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="599.53" y="-1326" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- com_apext&#45;&gt;core_err -->
+<g id="edge27" class="edge">
+<title>com_apext-&gt;core_err</title>
+<g id="a_edge27"><a xlink:title="E2E और SecOC → ara::core - त्रुटि प्रबंधन: 15 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.75" d="M527.74,-1562.76C539.02,-1557.05 549.78,-1549.33 557,-1539 748.03,-1265.74 418.93,-1046.07 636,-793 655.38,-770.4 684.04,-757.82 712.89,-750.98"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.75" points="713.1,-753.43 719.44,-749.58 712.08,-748.64 713.1,-753.43"></polygon>
+</a>
+</g>
+<g id="a_edge27-label"><a xlink:title="E2E और SecOC → ara::core - त्रुटि प्रबंधन: 15 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="571.36" y="-1150.81" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- com_apext&#45;&gt;core_cont -->
+<g id="edge57" class="edge">
+<title>com_apext-&gt;core_cont</title>
+<g id="a_edge57"><a xlink:title="E2E और SecOC → ara::core — कंटेनर और दृश्य: 2 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M527.66,-1562.7C538.94,-1556.99 549.71,-1549.29 557,-1539 643.39,-1417.01 489.33,-899.84 636,-871"></path>
+</a>
+</g>
+<g id="a_edge57-label"><a xlink:title="E2E और SecOC → ara::core — कंटेनर और दृश्य: 2 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="562.79" y="-1209.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis -->
+<g id="node5" class="node">
+<title>crypto_basis</title>
+<g id="a_node5"><a xlink:href="namespaces/ns_crypto_ara_crypto_aacf86.html" xlink:title="बुनियादी प्रकार और त्रुटियाँ ara::crypto">
+<path fill="#f9f8f5" stroke="#01696f" d="M528.75,-1279C528.75,-1279 424.25,-1279 424.25,-1279 418.25,-1279 412.25,-1273 412.25,-1267 412.25,-1267 412.25,-1253 412.25,-1253 412.25,-1247 418.25,-1241 424.25,-1241 424.25,-1241 528.75,-1241 528.75,-1241 534.75,-1241 540.75,-1247 540.75,-1253 540.75,-1253 540.75,-1267 540.75,-1267 540.75,-1273 534.75,-1279 528.75,-1279"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1263.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">बुनियादी प्रकार और त्रुटियाँ</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1246.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::crypto</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis&#45;&gt;core_result -->
+<g id="edge24" class="edge">
+<title>crypto_basis-&gt;core_result</title>
+<g id="a_edge24"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core::Result: 20 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.95" d="M517.23,-1240.65C530.66,-1233.08 545.22,-1223.64 557,-1213 600.88,-1173.39 579.41,-1088.91 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge24-label"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core::Result: 20 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.96" y="-1167.39" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis&#45;&gt;core_err -->
+<g id="edge28" class="edge">
+<title>crypto_basis-&gt;core_err</title>
+<g id="a_edge28"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core - त्रुटि प्रबंधन: 15 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.75" d="M526.13,-1240.62C538.01,-1233.63 549.46,-1224.54 557,-1213 636.72,-1091.01 490.53,-570.65 636,-562"></path>
+</a>
+</g>
+<g id="a_edge28-label"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core - त्रुटि प्रबंधन: 15 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="559.96" y="-894.05" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis&#45;&gt;core_cont -->
+<g id="edge52" class="edge">
+<title>crypto_basis-&gt;core_cont</title>
+<g id="a_edge52"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core — कंटेनर और दृश्य: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M524.51,-1240.55C536.67,-1233.5 548.67,-1224.38 557,-1213 649.15,-1087.12 482.93,-901.1 636,-871"></path>
+</a>
+</g>
+<g id="a_edge52-label"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core — कंटेनर और दृश्य: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.58" y="-1047.75" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis&#45;&gt;core_is -->
+<g id="edge55" class="edge">
+<title>crypto_basis-&gt;core_is</title>
+<g id="a_edge55"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core::InstanceSpecifier: 3 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.65" d="M523.84,-1240.6C536.13,-1233.51 548.37,-1224.37 557,-1213 639.06,-1104.89 500.36,-923.05 636,-918"></path>
+</a>
+</g>
+<g id="a_edge55-label"><a xlink:title="मूल प्रकार और त्रुटियाँ → ara::core::InstanceSpecifier: 3 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="562.59" y="-1071.15" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- crypto_basis&#45;&gt;core_free -->
+<g id="edge72" class="edge">
+<title>crypto_basis-&gt;core_free</title>
+<g id="a_edge72"><a xlink:title="मूल प्रकार और त्रुटियाँ → नामस्थान ara::core: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M521.8,-1240.67C534.48,-1233.46 547.43,-1224.23 557,-1213 619.25,-1139.94 543.2,-987.47 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge72-label"><a xlink:title="मूल प्रकार और त्रुटियाँ → नामस्थान ara::core: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="562.25" y="-1118.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- crypto_cryp -->
+<g id="node6" class="node">
+<title>crypto_cryp</title>
+<g id="a_node6"><a xlink:href="namespaces/ns_crypto_ara_crypto_cryp_39bdc3.html" xlink:title="क्रिप्टो आदिम ara::crypto::cryp">
+<path fill="#f9f8f5" stroke="#01696f" d="M514.5,-1357C514.5,-1357 438.5,-1357 438.5,-1357 432.5,-1357 426.5,-1351 426.5,-1345 426.5,-1345 426.5,-1331 426.5,-1331 426.5,-1325 432.5,-1319 438.5,-1319 438.5,-1319 514.5,-1319 514.5,-1319 520.5,-1319 526.5,-1325 526.5,-1331 526.5,-1331 526.5,-1345 526.5,-1345 526.5,-1351 520.5,-1357 514.5,-1357"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1341.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">क्रिप्टो आदिम</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1324.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::crypto::cryp</text>
+</a>
+</g>
+</g>
+<!-- crypto_cryp&#45;&gt;log_format -->
+<g id="edge67" class="edge">
+<title>crypto_cryp-&gt;log_format</title>
+<g id="a_edge67"><a xlink:title="क्रिप्टो आदिम → प्रारूप: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M426.07,-1338.82C378.91,-1336.55 310.75,-1324.81 276.5,-1279 129.73,-1082.69 122.92,-367.03 276.5,-176 315.5,-127.48 394.72,-124.75 440.89,-127.87"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="440.58,-130.3 447.75,-128.4 440.96,-125.42 440.58,-130.3"></polygon>
+</a>
+</g>
+<g id="a_edge67-label"><a xlink:title="क्रिप्टो आदिम → प्रारूप: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="142.19" y="-728.24" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- crypto_cryp&#45;&gt;core_result -->
+<g id="edge1" class="edge">
+<title>crypto_cryp-&gt;core_result</title>
+<g id="a_edge1"><a xlink:title="क्रिप्टो आदिम → ara::core::Result: 374 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.94" d="M526.65,-1320.79C537.69,-1315.16 548.6,-1307.99 557,-1299 620.29,-1231.29 547.27,-1079.21 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge1-label"><a xlink:title="क्रिप्टो आदिम → ara::core::Result: 374 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="573.09" y="-1206.24" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- crypto_cryp&#45;&gt;core_cont -->
+<g id="edge22" class="edge">
+<title>crypto_cryp-&gt;core_cont</title>
+<g id="a_edge22"><a xlink:title="क्रिप्टो प्रिमिटिव्स → ara::core — कंटेनर और दृश्य: 24 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.07" d="M526.79,-1322.57C538.23,-1316.84 549.29,-1309.17 557,-1299 673.85,-1144.85 446.2,-908.32 636,-871"></path>
+</a>
+</g>
+<g id="a_edge22-label"><a xlink:title="क्रिप्टो प्रिमिटिव्स → ara::core — कंटेनर और दृश्य: 24 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.3" y="-1089.32" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- crypto_x509 -->
+<g id="node7" class="node">
+<title>crypto_x509</title>
+<g id="a_node7"><a xlink:href="namespaces/ns_crypto_ara_crypto_x509_6a3cad.html" xlink:title="प्रमाण पत्र ara::crypto::x509">
+<path fill="#f9f8f5" stroke="#01696f" d="M516.38,-1435C516.38,-1435 436.62,-1435 436.62,-1435 430.62,-1435 424.62,-1429 424.62,-1423 424.62,-1423 424.62,-1409 424.62,-1409 424.62,-1403 430.62,-1397 436.62,-1397 436.62,-1397 516.38,-1397 516.38,-1397 522.38,-1397 528.38,-1403 528.38,-1409 528.38,-1409 528.38,-1423 528.38,-1423 528.38,-1429 522.38,-1435 516.38,-1435"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1419.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">प्रमाण पत्र</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1402.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::crypto::x509</text>
+</a>
+</g>
+</g>
+<!-- crypto_x509&#45;&gt;core_result -->
+<g id="edge9" class="edge">
+<title>crypto_x509-&gt;core_result</title>
+<g id="a_edge9"><a xlink:title="प्रमाणपत्र → ara::core::Result: 62 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.72" d="M528.58,-1398.75C539.15,-1393.2 549.38,-1386.06 557,-1377 637.74,-1280.98 515.9,-1069.74 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge9-label"><a xlink:title="प्रमाणपत्र → ara::core::Result: 62 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="573.77" y="-1244.66" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- crypto_x509&#45;&gt;core_cont -->
+<g id="edge25" class="edge">
+<title>crypto_x509-&gt;core_cont</title>
+<g id="a_edge25"><a xlink:title="प्रमाणपत्र → ara::core — कंटेनर और दृश्य: 20 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.95" d="M528.63,-1399.87C539.47,-1394.24 549.8,-1386.78 557,-1377 624.49,-1285.36 524.33,-892.96 636,-871"></path>
+</a>
+</g>
+<g id="a_edge25-label"><a xlink:title="प्रमाणपत्र → ara::core — कंटेनर और दृश्य: 20 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="566.71" y="-1127.99" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- crypto_x509&#45;&gt;core_is -->
+<g id="edge37" class="edge">
+<title>crypto_x509-&gt;core_is</title>
+<g id="a_edge37"><a xlink:title="प्रमाणपत्र → ara::core::InstanceSpecifier: 9 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.4" d="M528.52,-1399.79C539.36,-1394.16 549.72,-1386.72 557,-1377 619.02,-1294.14 532.57,-921.85 636,-918"></path>
+</a>
+</g>
+<g id="a_edge37-label"><a xlink:title="प्रमाणपत्र → ara::core::InstanceSpecifier: 9 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="561.26" y="-1151.39" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- crypto_x509&#45;&gt;core_free -->
+<g id="edge47" class="edge">
+<title>crypto_x509-&gt;core_free</title>
+<g id="a_edge47"><a xlink:title="प्रमाणपत्र → नामस्थान ara::core: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M528.64,-1399.35C539.34,-1393.75 549.61,-1386.44 557,-1377 659.28,-1246.28 475.53,-969.58 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge47-label"><a xlink:title="प्रमाणपत्र → नामस्थान ara::core: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="608.33" y="-1197.61" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;log_format -->
+<g id="edge68" class="edge">
+<title>diag_dienste-&gt;log_format</title>
+<g id="a_edge68"><a xlink:title="नैदानिक ​​सेवाएँ → प्रारूप: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M403.75,-1089.34C359.29,-1084.08 305.56,-1069.24 276.5,-1030 163.56,-877.48 157.59,-323.91 276.5,-176 315.5,-127.48 394.72,-124.75 440.89,-127.87"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="440.58,-130.3 447.75,-128.4 440.96,-125.42 440.58,-130.3"></polygon>
+</a>
+</g>
+<g id="a_edge68-label"><a xlink:title="नैदानिक ​​सेवाएँ → प्रारूप: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="167.88" y="-603.47" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_result -->
+<g id="edge3" class="edge">
+<title>diag_dienste-&gt;core_result</title>
+<g id="a_edge3"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::Result: 122 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.18" d="M549.28,-1091.77C576.86,-1093.62 608.35,-1097.65 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge3-label"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::Result: 122 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="579.86" y="-1088.85" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_future -->
+<g id="edge4" class="edge">
+<title>diag_dienste-&gt;core_future</title>
+<g id="a_edge4"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::Future / Promise: 114 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.13" d="M535.42,-1069.39C543.67,-1064.14 551.28,-1057.75 557,-1050 616.13,-969.9 536.61,-603.2 636,-609"></path>
+</a>
+</g>
+<g id="a_edge4-label"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::Future / Promise: 114 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="553.86" y="-831.49" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_err -->
+<g id="edge14" class="edge">
+<title>diag_dienste-&gt;core_err</title>
+<g id="a_edge14"><a xlink:title="डायग्नोस्टिक सेवाएँ → ara::core - त्रुटि प्रबंधन: 35 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.33" d="M535.53,-1069.48C543.77,-1064.22 551.35,-1057.79 557,-1050 621.51,-961.08 526.34,-568.52 636,-562"></path>
+</a>
+</g>
+<g id="a_edge14-label"><a xlink:title="डायग्नोस्टिक सेवाएँ → ara::core - त्रुटि प्रबंधन: 35 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="565.11" y="-808.44" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_cont -->
+<g id="edge6" class="edge">
+<title>diag_dienste-&gt;core_cont</title>
+<g id="a_edge6"><a xlink:title="डायग्नोस्टिक सेवाएँ → ara::core — कंटेनर और दृश्य: 101 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.05" d="M531.85,-1069.34C541.02,-1064 549.87,-1057.58 557,-1050 616.6,-986.68 550.68,-887.78 636,-871"></path>
+</a>
+</g>
+<g id="a_edge6-label"><a xlink:title="डायग्नोस्टिक सेवाएँ → ara::core — कंटेनर और दृश्य: 101 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="571.45" y="-962.15" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_is -->
+<g id="edge18" class="edge">
+<title>diag_dienste-&gt;core_is</title>
+<g id="a_edge18"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::InstanceSpecifier: 29 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.2" d="M529.87,-1069.3C539.54,-1063.88 549.07,-1057.44 557,-1050 606.85,-1003.21 567.68,-920.55 636,-918"></path>
+</a>
+</g>
+<g id="a_edge18-label"><a xlink:title="नैदानिक ​​सेवाएँ → ara::core::InstanceSpecifier: 29 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="564.51" y="-986.48" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- diag_dienste&#45;&gt;core_free -->
+<g id="edge10" class="edge">
+<title>diag_dienste-&gt;core_free</title>
+<g id="a_edge10"><a xlink:title="डायग्नोस्टिक सेवाएं → नेमस्पेस ara::core: 57 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.66" d="M519.3,-1069.33C565.19,-1045.66 632.87,-1011.17 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge10-label"><a xlink:title="डायग्नोस्टिक सेवाएं → नेमस्पेस ara::core: 57 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="615.81" y="-1023.88" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd -->
+<g id="node9" class="node">
+<title>diag_sovd</title>
+<g id="a_node9"><a xlink:href="namespaces/ns_diag_ara_diag_fbd60d.html" xlink:title="SOVD इंटरफ़ेस">
+<path fill="#f9f8f5" stroke="#01696f" d="M508.5,-1030C508.5,-1030 444.5,-1030 444.5,-1030 438.5,-1030 432.5,-1024 432.5,-1018 432.5,-1018 432.5,-1006 432.5,-1006 432.5,-1000 438.5,-994 444.5,-994 444.5,-994 508.5,-994 508.5,-994 514.5,-994 520.5,-1000 520.5,-1006 520.5,-1006 520.5,-1018 520.5,-1018 520.5,-1024 514.5,-1030 508.5,-1030"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1009.23" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SOVD इंटरफ़ेस</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_result -->
+<g id="edge2" class="edge">
+<title>diag_sovd-&gt;core_result</title>
+<g id="a_edge2"><a xlink:title="SOVD इंटरफेस → ara::core::Result: 182 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.45" d="M519.46,-1030.41C531.78,-1036.26 545.13,-1043.02 557,-1050 594.11,-1071.8 594.8,-1093.56 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge2-label"><a xlink:title="SOVD इंटरफेस → ara::core::Result: 182 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="566.73" y="-1058.85" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_future -->
+<g id="edge11" class="edge">
+<title>diag_sovd-&gt;core_future</title>
+<g id="a_edge11"><a xlink:title="SOVD इंटरफेस → ara::core::Future / Promise: 54 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.62" d="M520.76,-999.7C534.15,-993.91 547.8,-985.64 557,-974 659.94,-843.8 470.3,-599.34 636,-609"></path>
+</a>
+</g>
+<g id="a_edge11-label"><a xlink:title="SOVD इंटरफेस → ara::core::Future / Promise: 54 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="556.52" y="-795.96" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_err -->
+<g id="edge43" class="edge">
+<title>diag_sovd-&gt;core_err</title>
+<g id="a_edge43"><a xlink:title="SOVD इंटरफेस → ara::core - त्रुटि प्रबंधन: 7 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.23" d="M520.92,-999.83C534.33,-994.05 547.94,-985.75 557,-974 670.9,-826.39 449.88,-573.07 636,-562"></path>
+</a>
+</g>
+<g id="a_edge43-label"><a xlink:title="SOVD इंटरफेस → ara::core - त्रुटि प्रबंधन: 7 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.31" y="-772.53" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_cont -->
+<g id="edge7" class="edge">
+<title>diag_sovd-&gt;core_cont</title>
+<g id="a_edge7"><a xlink:title="SOVD इंटरफेस → ara::core — कंटेनर और दृश्य: 95 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="4.01" d="M520.94,-995.72C533.3,-989.94 546.3,-982.67 557,-974 601.82,-937.67 579.39,-882.13 636,-871"></path>
+</a>
+</g>
+<g id="a_edge7-label"><a xlink:title="SOVD इंटरफेस → ara::core — कंटेनर और दृश्य: 95 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="569.73" y="-928.16" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_is -->
+<g id="edge40" class="edge">
+<title>diag_sovd-&gt;core_is</title>
+<g id="a_edge40"><a xlink:title="SOVD इंटरफेस → ara::core::InstanceSpecifier: 8 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.32" d="M519.46,-993.59C531.78,-987.74 545.13,-980.98 557,-974 594.11,-952.2 592.99,-919.6 636,-918"></path>
+</a>
+</g>
+<g id="a_edge40-label"><a xlink:title="SOVD इंटरफेस → ara::core::InstanceSpecifier: 8 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="558.84" y="-948.53" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- diag_sovd&#45;&gt;core_free -->
+<g id="edge8" class="edge">
+<title>diag_sovd-&gt;core_free</title>
+<g id="a_edge8"><a xlink:title="SOVD इंटरफेस → नेमस्पेस ara::core: 85 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.93" d="M520.99,-1006.09C553.27,-1003.11 598.09,-1001.98 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge8-label"><a xlink:title="SOVD इंटरफेस → नेमस्पेस ara::core: 85 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="554.26" y="-996.57" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- diag_err -->
+<g id="node10" class="node">
+<title>diag_err</title>
+<g id="a_node10"><a xlink:href="namespaces/ns_diag_ara_diag_fbd60d.html" xlink:title="दोष डोमेन">
+<path fill="#f9f8f5" stroke="#01696f" d="M493.5,-954C493.5,-954 459.5,-954 459.5,-954 453.5,-954 447.5,-948 447.5,-942 447.5,-942 447.5,-930 447.5,-930 447.5,-924 453.5,-918 459.5,-918 459.5,-918 493.5,-918 493.5,-918 499.5,-918 505.5,-924 505.5,-930 505.5,-930 505.5,-942 505.5,-942 505.5,-948 499.5,-954 493.5,-954"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-933.23" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">दोष डोमेन</text>
+</a>
+</g>
+</g>
+<!-- diag_err&#45;&gt;core_err -->
+<g id="edge13" class="edge">
+<title>diag_err-&gt;core_err</title>
+<g id="a_edge13"><a xlink:title="त्रुटि डोमेन → ara::core - त्रुटि प्रबंधन: 40 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.42" d="M505.75,-926.28C523.03,-918.92 544.22,-907.12 557,-890 646.7,-769.85 486.32,-570.9 636,-562"></path>
+</a>
+</g>
+<g id="a_edge13-label"><a xlink:title="त्रुटि डोमेन → ara::core - त्रुटि प्रबंधन: 40 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.49" y="-735.22" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- diag_gen -->
+<g id="node11" class="node">
+<title>diag_gen</title>
+<g id="a_node11"><a xlink:href="namespaces/ns_diag_ara_diag_fbd60d.html" xlink:title="उत्पन्न DID/दिनचर्या इंटरफेस">
+<path fill="#f9f8f5" stroke="#01696f" d="M516,-1195.25C516,-1195.25 437,-1195.25 437,-1195.25 431,-1195.25 425,-1189.25 425,-1183.25 425,-1183.25 425,-1164.75 425,-1164.75 425,-1158.75 431,-1152.75 437,-1152.75 437,-1152.75 516,-1152.75 516,-1152.75 522,-1152.75 528,-1158.75 528,-1164.75 528,-1164.75 528,-1183.25 528,-1183.25 528,-1189.25 522,-1195.25 516,-1195.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1179.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">उत्पन्न DID/दिनचर्या</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-1162.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">इंटरफेस</text>
+</a>
+</g>
+</g>
+<!-- diag_gen&#45;&gt;com_proxy -->
+<g id="edge63" class="edge">
+<title>diag_gen-&gt;com_proxy</title>
+<g id="a_edge63"><a xlink:title="उत्पन्न DID/दिनचर्या → उत्पन्न प्रॉक्सी: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M424.61,-1169.95C377.76,-1169.47 311.05,-1177.39 276.5,-1221 172.73,-1351.99 177.05,-1462.7 276.5,-1597 311.76,-1644.61 383.34,-1656.31 430.61,-1658.53"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="430.4,-1660.98 437.49,-1658.79 430.58,-1656.08 430.4,-1660.98"></polygon>
+</a>
+</g>
+<g id="a_edge63-label"><a xlink:title="उत्पन्न DID/दिनचर्या → उत्पन्न प्रॉक्सी: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="254.75" y="-1589.4" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- diag_gen&#45;&gt;core_result -->
+<g id="edge29" class="edge">
+<title>diag_gen-&gt;core_result</title>
+<g id="a_edge29"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::Result: 14 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M520.04,-1152.4C562.88,-1131.18 624.28,-1102.46 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge29-label"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::Result: 14 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="576.94" y="-1112.32" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- diag_gen&#45;&gt;core_future -->
+<g id="edge19" class="edge">
+<title>diag_gen-&gt;core_future</title>
+<g id="a_edge19"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::Future / Promise: 28 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.17" d="M528.31,-1156.18C539.3,-1150.1 549.77,-1142.18 557,-1132 625.04,-1036.15 518.66,-602.16 636,-609"></path>
+</a>
+</g>
+<g id="a_edge19-label"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::Future / Promise: 28 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="607.42" y="-874.99" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- diag_gen&#45;&gt;core_is -->
+<g id="edge53" class="edge">
+<title>diag_gen-&gt;core_is</title>
+<g id="a_edge53"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::InstanceSpecifier: 3 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.65" d="M528.14,-1154.38C538.73,-1148.45 549.08,-1141.04 557,-1132 623.79,-1055.72 534.69,-921.77 636,-918"></path>
+</a>
+</g>
+<g id="a_edge53-label"><a xlink:title="उत्पन्न DID/दिनचर्या → ara::core::InstanceSpecifier: 3 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="564.43" y="-1028.54" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- diag_gen&#45;&gt;core_free -->
+<g id="edge62" class="edge">
+<title>diag_gen-&gt;core_free</title>
+<g id="a_edge62"><a xlink:title="उत्पन्न DID/रूटीन → नेमस्पेस ara::core: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M527.95,-1152.27C538.2,-1146.55 548.45,-1139.77 557,-1132 604.27,-1089.07 574.27,-995.68 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge62-label"><a xlink:title="उत्पन्न DID/रूटीन → नेमस्पेस ara::core: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="605.78" y="-1074.95" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- per_all -->
+<g id="node12" class="node">
+<title>per_all</title>
+<g id="a_node12"><a xlink:href="namespaces/ns_per_ara_per_d9a3e9.html" xlink:title="हठ-API ara::per">
+<path fill="#f9f8f5" stroke="#01696f" d="M492.75,-872C492.75,-872 460.25,-872 460.25,-872 454.25,-872 448.25,-866 448.25,-860 448.25,-860 448.25,-846 448.25,-846 448.25,-840 454.25,-834 460.25,-834 460.25,-834 492.75,-834 492.75,-834 498.75,-834 504.75,-840 504.75,-846 504.75,-846 504.75,-860 504.75,-860 504.75,-866 498.75,-872 492.75,-872"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-856.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">हठ-API</text>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-839.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::per</text>
+</a>
+</g>
+</g>
+<!-- per_all&#45;&gt;core_result -->
+<g id="edge5" class="edge">
+<title>per_all-&gt;core_result</title>
+<g id="a_edge5"><a xlink:title="दृढ़ता-API → ara::core::Result: 112 संदर्भ स्थान">
+<path fill="none" stroke="#7a7974" stroke-width="4.12" d="M504.98,-855.42C521.96,-858.27 543.09,-864.49 557,-878 633.92,-952.73 533.33,-1075 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge5-label"><a xlink:title="दृढ़ता-API → ara::core::Result: 112 संदर्भ स्थान">
+<text xml:space="preserve" text-anchor="middle" x="601.21" y="-974.12" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- per_all&#45;&gt;core_err -->
+<g id="edge30" class="edge">
+<title>per_all-&gt;core_err</title>
+<g id="a_edge30"><a xlink:title="दृढ़ता-API → ara::core - त्रुटि प्रबंधन: 14 संदर्भ स्थान">
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M504.92,-842.03C522.09,-833.88 543.46,-821.2 557,-804 626.99,-715.11 523.06,-568.71 636,-562"></path>
+</a>
+</g>
+<g id="a_edge30-label"><a xlink:title="दृढ़ता-API → ara::core - त्रुटि प्रबंधन: 14 संदर्भ स्थान">
+<text xml:space="preserve" text-anchor="middle" x="598.83" y="-694.2" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- per_all&#45;&gt;core_cont -->
+<g id="edge12" class="edge">
+<title>per_all-&gt;core_cont</title>
+<g id="a_edge12"><a xlink:title="दृढ़ता-API → ara::core — कंटेनर और दृश्य: 41 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.44" d="M505.2,-861.25C537,-869.54 590.62,-879.92 636,-871"></path>
+</a>
+</g>
+<g id="a_edge12-label"><a xlink:title="दृढ़ता-API → ara::core — कंटेनर और दृश्य: 41 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="551.26" y="-864.98" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- per_all&#45;&gt;core_is -->
+<g id="edge36" class="edge">
+<title>per_all-&gt;core_is</title>
+<g id="a_edge36"><a xlink:title="दृढ़ता-API → ara::core::InstanceSpecifier: 10 संदर्भ स्थान">
+<path fill="none" stroke="#7a7974" stroke-width="2.47" d="M505.12,-860.47C520.59,-864.96 540.12,-871.12 557,-878 593.45,-892.84 596.67,-919.47 636,-918"></path>
+</a>
+</g>
+<g id="a_edge36-label"><a xlink:title="दृढ़ता-API → ara::core::InstanceSpecifier: 10 संदर्भ स्थान">
+<text xml:space="preserve" text-anchor="middle" x="552.31" y="-878.48" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- per_all&#45;&gt;core_free -->
+<g id="edge20" class="edge">
+<title>per_all-&gt;core_free</title>
+<g id="a_edge20"><a xlink:title="दृढ़ता-API → नामस्थान ara::core: 27 संदर्भ स्थान">
+<path fill="none" stroke="#7a7974" stroke-width="3.15" d="M505.24,-856.63C521.69,-859.94 542.16,-866.21 557,-878 611.13,-921.01 569.16,-994.33 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge20-label"><a xlink:title="दृढ़ता-API → नामस्थान ara::core: 27 संदर्भ स्थान">
+<text xml:space="preserve" text-anchor="middle" x="565.1" y="-922.63" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- exec_all -->
+<g id="node13" class="node">
+<title>exec_all</title>
+<g id="a_node13"><a xlink:href="namespaces/ns_exec_ara_exec_a73810.html" xlink:title="ara::exec">
+<path fill="#f9f8f5" stroke="#01696f" d="M496.88,-390C496.88,-390 456.12,-390 456.12,-390 450.12,-390 444.12,-384 444.12,-378 444.12,-378 444.12,-366 444.12,-366 444.12,-360 450.12,-354 456.12,-354 456.12,-354 496.88,-354 496.88,-354 502.88,-354 508.88,-360 508.88,-366 508.88,-366 508.88,-378 508.88,-378 508.88,-384 502.88,-390 496.88,-390"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-366.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::exec</text>
+</a>
+</g>
+</g>
+<!-- exec_all&#45;&gt;core_result -->
+<g id="edge38" class="edge">
+<title>exec_all-&gt;core_result</title>
+<g id="a_edge38"><a xlink:title="ara::exec → ara::core::Result: 9 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.4" d="M509.13,-379.17C526.07,-384.7 545.73,-394.18 557,-410 647.31,-536.78 486.98,-1061.01 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge38-label"><a xlink:title="ara::exec → ara::core::Result: 9 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="564.92" y="-735.3" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- exec_all&#45;&gt;core_future -->
+<g id="edge48" class="edge">
+<title>exec_all-&gt;core_future</title>
+<g id="a_edge48"><a xlink:title="ara::exec → ara::core::Future / Promise: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M509.18,-380.98C525.3,-386.94 544.15,-396.25 557,-410 621.96,-479.54 541,-603.46 636,-609"></path>
+</a>
+</g>
+<g id="a_edge48-label"><a xlink:title="ara::exec → ara::core::Future / Promise: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="557.6" y="-486.88" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- exec_all&#45;&gt;core_err -->
+<g id="edge33" class="edge">
+<title>exec_all-&gt;core_err</title>
+<g id="a_edge33"><a xlink:title="ara::exec → ara::core - त्रुटि प्रबंधन: 13 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.65" d="M509.02,-381.67C524.9,-387.79 543.58,-397.03 557,-410 611.73,-462.93 560,-566.52 636,-562"></path>
+</a>
+</g>
+<g id="a_edge33-label"><a xlink:title="ara::exec → ara::core - त्रुटि प्रबंधन: 13 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="599.71" y="-462.42" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- exec_all&#45;&gt;core_cont -->
+<g id="edge69" class="edge">
+<title>exec_all-&gt;core_cont</title>
+<g id="a_edge69"><a xlink:title="ara::exec → ara::core — कंटेनर और दृश्य: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M509.19,-379.55C525.94,-385.18 545.38,-394.62 557,-410 619.68,-492.91 534.02,-891.06 636,-871"></path>
+</a>
+</g>
+<g id="a_edge69-label"><a xlink:title="ara::exec → ara::core — कंटेनर और दृश्य: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="596.64" y="-617.7" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- exec_all&#45;&gt;core_is -->
+<g id="edge70" class="edge">
+<title>exec_all-&gt;core_is</title>
+<g id="a_edge70"><a xlink:title="ara::exec → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M509.28,-379.48C526.06,-385.09 545.5,-394.53 557,-410 625.19,-501.66 521.83,-922.25 636,-918"></path>
+</a>
+</g>
+<g id="a_edge70-label"><a xlink:title="ara::exec → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="560.54" y="-641.57" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- exec_eee -->
+<g id="node14" class="node">
+<title>exec_eee</title>
+<g id="a_node14"><a xlink:href="classes/cl_ara_exec_ExecutionErrorEvent_7aa757.html" xlink:title="ExecutionErrorEvent">
+<path fill="#f9f8f5" stroke="#01696f" d="M527.62,-466C527.62,-466 425.38,-466 425.38,-466 419.38,-466 413.38,-460 413.38,-454 413.38,-454 413.38,-442 413.38,-442 413.38,-436 419.38,-430 425.38,-430 425.38,-430 527.62,-430 527.62,-430 533.62,-430 539.62,-436 539.62,-442 539.62,-442 539.62,-454 539.62,-454 539.62,-460 533.62,-466 527.62,-466"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-442.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ExecutionErrorEvent</text>
+</a>
+</g>
+</g>
+<!-- sm_all -->
+<g id="node15" class="node">
+<title>sm_all</title>
+<g id="a_node15"><a xlink:href="namespaces/ns_sm_ara_sm_0efb8d.html" xlink:title="ara::sm">
+<path fill="#f9f8f5" stroke="#01696f" d="M98,-1193C98,-1193 67,-1193 67,-1193 61,-1193 55,-1187 55,-1181 55,-1181 55,-1169 55,-1169 55,-1163 61,-1157 67,-1157 67,-1157 98,-1157 98,-1157 104,-1157 110,-1163 110,-1169 110,-1169 110,-1181 110,-1181 110,-1187 104,-1193 98,-1193"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-1169.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::sm</text>
+</a>
+</g>
+</g>
+<!-- sm_all&#45;&gt;com_proxy -->
+<g id="edge76" class="edge">
+<title>sm_all-&gt;com_proxy</title>
+<path fill="none" stroke="#a89f91" d="M92.33,-1193.33C124.58,-1258.64 242.11,-1483.18 396,-1617 399.79,-1620.3 403.9,-1623.42 408.17,-1626.35"></path>
+<polygon fill="#a89f91" stroke="#a89f91" points="406.17,-1629.22 416.48,-1631.65 409.93,-1623.32 406.17,-1629.22"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="276.5" y="-1551.66" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#7a7974">ara::com सेवा के रूप में</text>
+<text xml:space="preserve" text-anchor="middle" x="276.5" y="-1538.16" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#7a7974">मॉडलिंग</text>
+</g>
+<!-- sm_all&#45;&gt;core_result -->
+<g id="edge49" class="edge">
+<title>sm_all-&gt;core_result</title>
+<g id="a_edge49"><a xlink:title="ara::sm → ara::core::Result: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M477.5,-773C510.17,-790.45 531.52,-771.12 557,-798 654.22,-900.57 500.71,-1065.15 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge49-label"><a xlink:title="ara::sm → ara::core::Result: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="599.91" y="-936.16" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- sm_all&#45;&gt;core_future -->
+<g id="edge41" class="edge">
+<title>sm_all-&gt;core_future</title>
+<g id="a_edge41"><a xlink:title="ara::sm → ara::core::Future / Promise: 8 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.32" d="M477.5,-609C541.93,-580.51 565.68,-604.9 636,-609"></path>
+</a>
+</g>
+<g id="a_edge41-label"><a xlink:title="ara::sm → ara::core::Future / Promise: 8 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="526.79" y="-589.18" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- sm_all&#45;&gt;core_err -->
+<g id="edge32" class="edge">
+<title>sm_all-&gt;core_err</title>
+<g id="a_edge32"><a xlink:title="ara::sm → ara::core - त्रुटि प्रबंधन: 14 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M277.5,-773C360.71,-694.68 370.99,-655.21 475.5,-609"></path>
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M87.28,-1156.58C101.04,-1094.01 154.13,-887.24 275.5,-773"></path>
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M477.5,-609C511.1,-594.14 599.33,-564.25 636,-562"></path>
+</a>
+</g>
+<g id="a_edge32-label"><a xlink:title="ara::sm → ara::core - त्रुटि प्रबंधन: 14 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="419.74" y="-621.42" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- sm_all&#45;&gt;core_is -->
+<g id="edge60" class="edge">
+<title>sm_all-&gt;core_is</title>
+<g id="a_edge60"><a xlink:title="ara::sm → ara::core::InstanceSpecifier: 2 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M277.5,-773C341.58,-712.69 397.87,-731.55 475.5,-773"></path>
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M477.5,-773C510.17,-790.45 527.44,-775.68 557,-798 607.96,-836.47 572.19,-920.38 636,-918"></path>
+</a>
+</g>
+<g id="a_edge60-label"><a xlink:title="ara::sm → ara::core::InstanceSpecifier: 2 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="455.24" y="-765.4" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- phm_all -->
+<g id="node16" class="node">
+<title>phm_all</title>
+<g id="a_node16"><a xlink:href="namespaces/ns_phm_ara_phm_9fbd40.html" xlink:title="ara::phm">
+<path fill="#f9f8f5" stroke="#01696f" d="M101.75,-545C101.75,-545 63.25,-545 63.25,-545 57.25,-545 51.25,-539 51.25,-533 51.25,-533 51.25,-521 51.25,-521 51.25,-515 57.25,-509 63.25,-509 63.25,-509 101.75,-509 101.75,-509 107.75,-509 113.75,-515 113.75,-521 113.75,-521 113.75,-533 113.75,-533 113.75,-539 107.75,-545 101.75,-545"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-521.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::phm</text>
+</a>
+</g>
+</g>
+<!-- phm_all&#45;&gt;exec_eee -->
+<g id="edge71" class="edge">
+<title>phm_all-&gt;exec_eee</title>
+<g id="a_edge71"><a xlink:title="ara::phm → ExecutionErrorEvent: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M277.5,-527C336.83,-521.52 399.84,-491.69 438.44,-470.31"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="439.26,-472.65 444.17,-467.09 436.86,-468.38 439.26,-472.65"></polygon>
+</a>
+</g>
+<g id="a_edge71-label"><a xlink:title="ara::phm → ExecutionErrorEvent: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="344.15" y="-496.96" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">उपयोग करता है</text>
+</a>
+</g>
+</g>
+<!-- phm_all&#45;&gt;core_result -->
+<g id="edge58" class="edge">
+<title>phm_all-&gt;core_result</title>
+<g id="a_edge58"><a xlink:title="ara::phm → ara::core::Result: 2 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M477.5,-293C513.68,-300.92 533.62,-289.27 557,-318 668.07,-454.51 467.52,-1055.13 636,-1106"></path>
+</a>
+</g>
+<g id="a_edge58-label"><a xlink:title="ara::phm → ara::core::Result: 2 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="566.01" y="-694.16" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- phm_all&#45;&gt;core_future -->
+<g id="edge45" class="edge">
+<title>phm_all-&gt;core_future</title>
+<g id="a_edge45"><a xlink:title="ara::phm → ara::core::Future / Promise: 6 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M114.15,-528.52C152.1,-530.05 218.69,-531.59 275.5,-527"></path>
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M277.5,-527C383.93,-518.39 312.96,-385.13 396,-318 424.8,-294.71 439.32,-285.08 475.5,-293"></path>
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M637,-609C723,-614.02 653.23,-727 716,-786 722.17,-791.8 729.3,-796.73 736.86,-800.92"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.12" points="735.7,-803.08 743.06,-804.06 737.92,-798.71 735.7,-803.08"></polygon>
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M477.5,-293C513.68,-300.92 531.33,-291.3 557,-318 649.87,-414.62 502.21,-601.2 636,-609"></path>
+</a>
+</g>
+<g id="a_edge45-label"><a xlink:title="ara::phm → ara::core::Future / Promise: 6 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-502.6" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">असिंक्रोनस परिणाम</text>
+</a>
+</g>
+</g>
+<!-- phm_all&#45;&gt;core_err -->
+<g id="edge31" class="edge">
+<title>phm_all-&gt;core_err</title>
+<g id="a_edge31"><a xlink:title="ara::phm → ara::core - त्रुटि प्रबंधन: 14 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.7" d="M277.5,-527C436.91,-512.28 476.19,-571.5 636,-562"></path>
+</a>
+</g>
+<g id="a_edge31-label"><a xlink:title="ara::phm → ara::core - त्रुटि प्रबंधन: 14 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="441.23" y="-534.94" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- phm_all&#45;&gt;core_is -->
+<g id="edge59" class="edge">
+<title>phm_all-&gt;core_is</title>
+<g id="a_edge59"><a xlink:title="ara::phm → ara::core::InstanceSpecifier: 2 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.37" d="M277.5,-527C355.61,-520.68 508.43,-680.51 557,-742 610.14,-809.29 550.32,-921.19 636,-918"></path>
+</a>
+</g>
+<g id="a_edge59-label"><a xlink:title="ara::phm → ara::core::InstanceSpecifier: 2 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="483.6" y="-674.01" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- tsync_all -->
+<g id="node17" class="node">
+<title>tsync_all</title>
+<g id="a_node17"><a xlink:href="namespaces/ns_tsync_ara_tsync_6055e5.html" xlink:title="ara::tsync + apext::tsync">
+<path fill="#f9f8f5" stroke="#01696f" d="M535.88,-232C535.88,-232 417.12,-232 417.12,-232 411.12,-232 405.12,-226 405.12,-220 405.12,-220 405.12,-208 405.12,-208 405.12,-202 411.12,-196 417.12,-196 417.12,-196 535.88,-196 535.88,-196 541.88,-196 547.88,-202 547.88,-208 547.88,-208 547.88,-220 547.88,-220 547.88,-226 541.88,-232 535.88,-232"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-208.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::tsync + apext::tsync</text>
+</a>
+</g>
+</g>
+<!-- tsync_all&#45;&gt;core_result -->
+<g id="edge21" class="edge">
+<title>tsync_all-&gt;core_result</title>
+<g id="a_edge21"><a xlink:title="ara::tsync + apext::tsync → ara::core::Result: 24 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.07" d="M523.87,-232.39C536.63,-239.7 549.12,-249.44 557,-262 657.14,-421.56 455.66,-1051.55 636,-1106"></path>
+<path fill="none" stroke="#7a7974" stroke-width="3.07" d="M637,-1106C675.73,-1117.69 720.4,-1126.14 755.62,-1131.69"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="3.07" points="754.83,-1134.05 762.12,-1132.69 755.57,-1129.21 754.83,-1134.05"></polygon>
+</a>
+</g>
+<g id="a_edge21-label"><a xlink:title="ara::tsync + apext::tsync → ara::core::Result: 24 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="553.68" y="-715.82" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">रिटर्न मान</text>
+</a>
+</g>
+</g>
+<!-- tsync_all&#45;&gt;core_err -->
+<g id="edge17" class="edge">
+<title>tsync_all-&gt;core_err</title>
+<g id="a_edge17"><a xlink:title="ara::tsync + apext::tsync → ara::core - त्रुटि प्रबंधन: 29 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="3.2" d="M520.98,-232.29C534.23,-239.76 547.73,-249.61 557,-262 639.62,-372.38 498.36,-570.18 636,-562"></path>
+</a>
+</g>
+<g id="a_edge17-label"><a xlink:title="ara::tsync + apext::tsync → ara::core - त्रुटि प्रबंधन: 29 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="567.67" y="-389.69" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- tsync_all&#45;&gt;core_cont -->
+<g id="edge42" class="edge">
+<title>tsync_all-&gt;core_cont</title>
+<g id="a_edge42"><a xlink:title="ara::tsync + apext::tsync → ara::core — कंटेनर और दृश्य: 7 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.23" d="M523.18,-232.33C536.07,-239.68 548.8,-249.44 557,-262 631.59,-376.28 502.1,-897.33 636,-871"></path>
+</a>
+</g>
+<g id="a_edge42-label"><a xlink:title="ara::tsync + apext::tsync → ara::core — कंटेनर और दृश्य: 7 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="563.33" y="-543.74" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- tsync_all&#45;&gt;core_free -->
+<g id="edge50" class="edge">
+<title>tsync_all-&gt;core_free</title>
+<g id="a_edge50"><a xlink:title="ara::tsync + apext::tsync → नेमस्पेस ara::core: 4 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.85" d="M523.78,-232.45C536.54,-239.76 549.04,-249.48 557,-262 646.91,-403.43 473.98,-969.16 636,-1012"></path>
+</a>
+</g>
+<g id="a_edge50-label"><a xlink:title="ara::tsync + apext::tsync → नेमस्पेस ara::core: 4 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="551.26" y="-614.06" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- log_all -->
+<g id="node18" class="node">
+<title>log_all</title>
+<g id="a_node18"><a xlink:href="namespaces/ns_log_ara_log_10815c.html" xlink:title="ara::log">
+<path fill="#f9f8f5" stroke="#01696f" d="M492.38,-74C492.38,-74 460.62,-74 460.62,-74 454.62,-74 448.62,-68 448.62,-62 448.62,-62 448.62,-50 448.62,-50 448.62,-44 454.62,-38 460.62,-38 460.62,-38 492.38,-38 492.38,-38 498.38,-38 504.38,-44 504.38,-50 504.38,-50 504.38,-62 504.38,-62 504.38,-68 498.38,-74 492.38,-74"></path>
+<text xml:space="preserve" text-anchor="middle" x="476.5" y="-50.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ara::log</text>
+</a>
+</g>
+</g>
+<!-- log_all&#45;&gt;core_err -->
+<g id="edge74" class="edge">
+<title>log_all-&gt;core_err</title>
+<g id="a_edge74"><a xlink:title="ara::log → ara::core - त्रुटि प्रबंधन: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M504.5,-62.03C522.18,-67.42 544.29,-77.14 557,-94 620.5,-178.21 530.71,-568.26 636,-562"></path>
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M637,-562C722.79,-556.9 781.71,-662.98 805.64,-715.89"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="803.29,-716.64 808.37,-722.05 807.78,-714.66 803.29,-716.64"></polygon>
+</a>
+</g>
+<g id="a_edge74-label"><a xlink:title="ara::log → ara::core - त्रुटि प्रबंधन: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="632.78" y="-554.36" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">त्रुटि प्रबंधन</text>
+</a>
+</g>
+</g>
+<!-- log_all&#45;&gt;core_cont -->
+<g id="edge44" class="edge">
+<title>log_all-&gt;core_cont</title>
+<g id="a_edge44"><a xlink:title="ara::log → ara::core — कंटेनर और दृश्य: 6 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M504.86,-61.77C522.7,-67.04 544.85,-76.73 557,-94 656.87,-235.94 465.7,-904.49 636,-871"></path>
+<path fill="none" stroke="#7a7974" stroke-width="2.12" d="M637,-871C673.69,-863.79 714.72,-869.92 748.39,-878.68"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="2.12" points="747.64,-881.01 755.04,-880.49 748.93,-876.28 747.64,-881.01"></polygon>
+</a>
+</g>
+<g id="a_edge44-label"><a xlink:title="ara::log → ara::core — कंटेनर और दृश्य: 6 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="562.36" y="-459.81" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">डेटा प्रकार</text>
+</a>
+</g>
+</g>
+<!-- log_all&#45;&gt;core_is -->
+<g id="edge73" class="edge">
+<title>log_all-&gt;core_is</title>
+<g id="a_edge73"><a xlink:title="ara::log → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M504.5,-61.64C522.42,-66.87 544.81,-76.57 557,-94 662.42,-244.75 452.18,-924.85 636,-918"></path>
+<path fill="none" stroke="#7a7974" stroke-width="0.9" d="M637,-918C643.54,-917.76 710.34,-942.01 760.81,-960.73"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="0.9" points="759.75,-962.95 767.17,-963.09 761.46,-958.36 759.75,-962.95"></polygon>
+</a>
+</g>
+<g id="a_edge73-label"><a xlink:title="ara::log → ara::core::InstanceSpecifier: 1 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="546.85" y="-557.5" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">इंस्टेंस एड्रेसिंग</text>
+</a>
+</g>
+</g>
+<!-- log_all&#45;&gt;core_free -->
+<g id="edge56" class="edge">
+<title>log_all-&gt;core_free</title>
+<g id="a_edge56"><a xlink:title="ara::log → नेमस्पेस ara::core: 3 संदर्भ बिंदु">
+<path fill="none" stroke="#7a7974" stroke-width="1.65" d="M504.56,-61.6C522.5,-66.81 544.9,-76.52 557,-94 615.26,-178.18 537.02,-985.83 636,-1012"></path>
+<path fill="none" stroke="#7a7974" stroke-width="1.65" d="M637,-1012C678.12,-1022.87 724.42,-1035.44 759.84,-1045.12"></path>
+<polygon fill="#7a7974" stroke="#7a7974" stroke-width="1.65" points="758.8,-1047.38 766.2,-1046.86 760.09,-1042.65 758.8,-1047.38"></polygon>
+</a>
+</g>
+<g id="a_edge56-label"><a xlink:title="ara::log → नेमस्पेस ara::core: 3 संदर्भ बिंदु">
+<text xml:space="preserve" text-anchor="middle" x="603.36" y="-567.17" font-family="Helvetica,sans-Serif" font-size="8.00" fill="#7a7974">सहायक फ़ंक्शन</text>
+</a>
+</g>
+</g>
+<!-- ucm_pkg -->
+<g id="node20" class="node">
+<title>ucm_pkg</title>
+<g id="a_node20"><a xlink:href="services/sv_ucm_PackageManagement_3e8fec.html" xlink:title="PackageManagement">
+<path fill="#f9f8f5" stroke="#01696f" d="M137,-1676C137,-1676 28,-1676 28,-1676 22,-1676 16,-1670 16,-1664 16,-1664 16,-1652 16,-1652 16,-1646 22,-1640 28,-1640 28,-1640 137,-1640 137,-1640 143,-1640 149,-1646 149,-1652 149,-1652 149,-1664 149,-1664 149,-1670 143,-1676 137,-1676"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.5" y="-1652.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PackageManagement</text>
+</a>
+</g>
+</g>
+<!-- ucm_pkg&#45;&gt;com_proxy -->
+<g id="edge77" class="edge">
+<title>ucm_pkg-&gt;com_proxy</title>
+<path fill="none" stroke="#a89f91" d="M149.11,-1658C220.41,-1658 333.84,-1658 406.46,-1658"></path>
+<polygon fill="#a89f91" stroke="#a89f91" points="406.24,-1661.5 416.24,-1658 406.24,-1654.5 406.24,-1661.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="276.5" y="-1676.45" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#7a7974">ara::com सेवा के रूप में</text>
+<text xml:space="preserve" text-anchor="middle" x="276.5" y="-1662.95" font-family="Helvetica,sans-Serif" font-size="9.00" fill="#7a7974">मॉडलिंग</text>
+</g>
+</g>
+</svg>
+</div>
+<h2 class="sect">टिप्पणियाँ</h2>
+<ul class="mlist">
+<li>विवरण पाठ विशिष्टताओं (अंग्रेजी) से अपरिवर्तित लिया जाता है।</li>
+<li>स्वचालित PDF extraction में कभी-कभी line-break artifacts हो सकते हैं।</li>
+<li>ara::ucm और ara::sm/ara::com के कुछ हिस्सों को ara::com सेवाओं (सेवा इंटरफेस) के रूप में तैयार किया गया है
+प्रत्यक्ष C++ API के बजाय IN/OUT पैरामीटर के साथ)।</li>
+<li>बैंगनी badge <span class="ai-badge">AI-जनित / AI generated</span> वाले sections
+स्वचालित रूप से लिखे गए वर्णन हैं। वे संदर्भित specification elements
+से व्युत्पन्न हैं ([SWS_…] संदर्भ से प्रमाणित), पर आधिकारिक AUTOSAR पाठ नहीं हैं।</li>
+<li>UML वर्ग आरेख (विरासत, सदस्य) निकाले गए API रिकॉर्ड से उत्पन्न होते हैं; 
+ एक बॉक्स पर क्लिक करने से संबंधित पृष्ठ खुल जाता है।</li>
+<li>प्रत्येक वर्ग के लिए SWS आवश्यकताएँ “Anforderungen (Volltext)” के अंतर्गत प्रदर्शित की जाती हैं,
+कक्षा किसका पाठ नाम से उल्लेख करती है (स्वचालित असाइनमेंट, अंग्रेजी में मूल पाठ)।</li>
+</ul><div><h4>API-अनुप्रयोगों के लिए दृश्यता</h4>
+<p>यहां प्रलेखित प्रत्येक विनिर्देश तत्व सार्वजनिक एआरए एपीआई का हिस्सा नहीं है: एसडब्ल्यूएस दस्तावेज़ अपने अध्याय 5 ("अन्य कार्यात्मक समूहों पर निर्भरता", प्रत्येक मामले में तालिका 5.1) में इंगित करते हैं कि कौन से इंटरफेस विशेष रूप से अन्य कार्यात्मक समूहों को प्रदान किए जाते हैं। यह संदर्भ इसे संबंधित मॉड्यूल, नेमस्पेस और क्लास नाम के <strong>पृष्ठभूमि रंग</strong> में लगातार दृश्यमान बनाता है - प्रत्येक तत्व के पृष्ठ पर (नेविगेशन बार में दाईं ओर पेज हेडर और लेबल), मूल पृष्ठों में तत्व के सभी संदर्भों में और आरेखों के लिंक किए गए नोड्स पर। डिफ़ॉल्ट रूप से, अच्छी पठनीयता सुनिश्चित करने के लिए पृष्ठभूमि बहुत पीली होती है और माउसओवर करने पर थोड़ी अधिक तीव्र हो जाती है:</p>
+<ul class="vis-legend">
+<li><span class="vis-chip vis-app">APPLICATION</span> <strong>नीला:</strong> का उपयोग सीधे अनुकूली अनुप्रयोगों द्वारा किया जा सकता है - जैसे। जैसे <a class="vis-app" href="modules/core.html"><code>ara::core</code></a>, <a class="vis-app" href="modules/com.html"><code>ara::com</code></a>, <a class="vis-app" href="modules/log.html"><code>ara::log</code></a>, <a class="vis-app" href="modules/per.html"><code>ara::per</code></a>, <a class="vis-app" href="modules/crypto.html"><code>ara::crypto</code></a>, <a class="vis-app" href="modules/diag.html"><code>ara::diag</code></a>, <a class="vis-app" href="modules/rds.html"><code>ara::rds</code></a>, <a class="vis-app" href="modules/shwa.html"><code>ara::shwa</code></a> (आवेदन की प्रक्रिया में एक पुस्तकालय के रूप में चलता है, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_SafeHardwareAcceleration.pdf#nameddest=chapter.1">SWS SHWA अध्याय 1</a>), <a class="vis-app" href="modules/tsync.html"><code>ara::tsync</code></a> (सक्रिय और निष्क्रिय समय आधार उपयोग, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_TimeSynchronization.pdf#nameddest=section.2.2">SWS TSync §2.2</a>) और <a class="vis-app" href="modules/idsm.html"><code>ara::idsm</code></a> (सुरक्षा सेंसर के रूप में अनुप्रयोग, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_IntrusionDetectionSystemManager.pdf#nameddest=section.7.2">SWS IdsM §7.2</a>)। <code>ara::exec::ExecutionClient</code> भी यहीं से संबंधित है, लेकिन केवल अपनी प्रक्रिया स्थिति की रिपोर्ट कर सकता है <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=SWS_EM_01401">[SWS_EM_01401]</a>।</li>
+<li><span class="vis-chip vis-priv">PRIVILEGED</span> <strong>Red:</strong> केवल IAM या Manifest मैपिंग के माध्यम से अधिकृत समर्पित अनुप्रयोगों के लिए; अधिकृत उपयोगकर्ता नेविगेशन लाइन में कोष्ठक में है। उदाहरण: <a class="vis-priv" href="modules/ucm.html"><code>ara::ucm</code></a> से <a class="vis-priv" href="services/sv_ucm_PackageManagement_3e8fec.html">PackageManagement-Service</a> ("UCM क्लाइंट" = उदाहरण के लिए OTA क्लाइंट या डायग्नोस्टिक एप्लिकेशन, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=section.7.1">SWS UCM §7.1</a>), एक के लिए <a class="vis-priv" href="modules/sm.html"><code>ara::sm</code></a> से <a class="vis-priv" href="services/sv_sm_StateMachineService_b68b0b.html">StateMachine-Services</a> SM नियंत्रण एप्लिकेशन <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00600">[SWS_SM_00600]</a> जो RAM-API <code>ara::sm::s2r</code> (<code>SuspendToRamSatelliteMapping</code>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00715">[SWS_SM_00715]</a> के साथ केवल IAM प्रमाणित उपग्रह) को निलंबित करता है और <a class="vis-priv" href="modules/fw.html"><code>ara::fw</code></a> (केवल <code>AdaptiveFirewallToPortPrototypeMapping</code>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Firewall.pdf#nameddest=AP_SWS_Fw_40013">[AP_SWS_Fw_40013]</a> के साथ राज्य परिवर्तन)।</li>
+<li><span class="vis-chip vis-internal">INTERNAL</span> <strong>गहरा धूसर:</strong> केवल cluster-internal interfaces, निश्चित रूप से applications के लिए नहीं; उपयोग करने वाला Functional Cluster navigation line में कोष्ठक में दिया है। उदाहरण: <a class="vis-internal" href="classes/cl_ara_exec_StateClient_276b21.html"><code>ara::exec::StateClient</code></a> सहित <code>FunctionGroup</code>/<code>FunctionGroupState</code> (केवल State Management के लिए, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=table.5.1">SWS EM Tab. 5.1</a>), संपूर्ण module <a class="vis-internal" href="modules/nm.html"><code>ara::nm</code></a> (applications के लिए Service Interface हटाया गया है, network requests State Management, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_NetworkManagement.pdf#nameddest=section.4.1">SWS NM §4.1</a> और <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_NetworkManagement.pdf#nameddest=table.5.1">Tab. 5.1</a> के माध्यम से चलती हैं), <a class="vis-internal" href="classes/cl_ara_phm_RecoveryAction_8b27fd.html"><code>ara::phm::RecoveryAction</code></a> (<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_PlatformHealthManagement.pdf#nameddest=table.5.1">SWS PHM Tab. 5.1</a>), तथा normative appendices "Platform Extension Interfaces" के सभी <code>apext::*</code> interfaces (base software की दिशा में platform integration: Watchdog, Power, UDS transport, Freshness-Value-Manager, Trace/ARTI)।</li>
+</ul>
+<p>मिश्रित सामग्री वाले समग्र पृष्ठ (मॉड्यूल, नामस्थान) अपने अधिकांश उप-तत्वों के कीवर्ड रखते हैं और अपवादों को कोष्ठक में सूचीबद्ध करते हैं, उदाहरण के लिए। बी. <em>आवेदन (आंतरिक स्टेटक्लाइंट को छोड़कर, ...)</em>। रंग योजना को <code>style.css</code> से दृश्यता ब्लॉक में केंद्रीय रूप से बदला जा सकता है: रंग मान <code>--vis-app-rgb</code> (नीला), <code>--vis-priv-rgb</code> (लाल) और <code>--vis-internal-rgb</code> (गहरा ग्रे) के माध्यम से, पृष्ठभूमि का पीलापन <code>--vis-bg-alpha</code> (मानक) और <code>--vis-bg-alpha-hover</code> (माउसओवर) के माध्यम से।</p>
+<p class="interp"><strong>व्याख्या:</strong> रंग वर्गीकरण तालिका 5.1, उपयोग अध्याय (अध्याय 7) और संबंधित एसडब्ल्यूएस के परिशिष्टों के आधार पर एआई का वर्गीकरण है; मानक स्वयं ऐसे तत्व-दर-तत्व वर्गीकरण प्रदान नहीं करते हैं। सहयोगी प्रकार (त्रुटि डोमेन, अपवाद, हैंडल) को उनके मुख्य इंटरफ़ेस की दृश्यता में मैप किया गया है।</p>
+<p class="interp"><strong>व्याख्या:</strong> इस अवलोकन में मॉड्यूल का समूहन (आधार, रनटाइम, संचार, भंडारण, सुरक्षा, निदान) आर्किटेक्चर दस्तावेज़ीकरण की बिल्डिंग ब्लॉक संरचना का पालन करता है और मानकों का मानक वर्गीकरण नहीं है।</p>
+</div>
+<h2 class="sect">संदर्भित R25-11 AP स्रोत आधार</h2><p class="dim">यह निर्देशिका फ़िल्टर किए गए AUTOSAR R25-11 खोज से कैप्चर किए गए संपूर्ण स्रोत आधार को पारदर्शी बनाती है। मॉड्यूल से संबंधित एआई दिशानिर्देश सीधे उनके बयानों के लिए उपयोग किए जाने वाले विनिर्देश दस्तावेजों को जोड़ते हैं।</p><ul class="mlist"><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf">Explanation of ara::com API</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARARustApplications.pdf">Explanation of ARA Applications in Rust</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_AutomotiveAPI.pdf">Explanation of Automotive API</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_IPsecImplementationGuidelines.pdf">Explanation of IPsec Implementation Guidelines</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_IdentityAndAccessManagement.pdf">Explanation of Identity and Access Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf">Guidelines for using Adaptive Platform interfaces</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_MACsec.pdf">Explanation of MACsec and MKA Protocols implementation and configuration guidelines</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ParallelProcessingGuidelines.pdf">Design guidelines for using parallel processing technologies on Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf">Explanation of Adaptive Platform Design</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf">Explanation of Service-Oriented Vehicle Diagnostics</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf">Explanation of Adaptive Platform Software Architecture</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SafeHardwareAccelerationAPI.pdf">Explanation of Safe API for hardware accelerators</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SensorInterfaces.pdf">Explanation of Sensor Interfaces</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_MOD_GeneralBlueprints.zip">Collection of blueprints for AUTOSAR Adaptive Platform M1 models</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_MOD_MachineConfigurationParameters.zip">Specification of Machine Configuration Parameters</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_AutomatedDrivingInterfaces.pdf">Requirements on Automated Driving Interfaces</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_AutomotiveAPIGateway.pdf">Requirements on Automotive API Gateway</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf">Requirements on Communication Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf">Requirements on Cryptography</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_ExecutionManagement.pdf">Requirements on Execution Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf">General Requirements specific to Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_HWTestManager.pdf">Requirements on HWTestManager</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_OperatingSystemInterface.pdf">Requirements on Operating System Interface</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf">Requirements on Persistency</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_PlatformHealthManagement.pdf">Requirements on Platform Health Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_SafeHardwareAcceleration.pdf">Requirements on Safe Hardware Acceleration</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_StateManagement.pdf">Requirements of State Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf">Requirements on Update and Configuration Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_VehicleUpdateAndConfigurationManagement.pdf">Requirements on Vehicle Update and Configuration Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_AutomotiveAPIGateway.pdf">Specification of Automotive API Gateway</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf">Specification of Communication Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf">Specification of Adaptive Platform Core</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf">Specification of Cryptography</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf">Specification of Diagnostics</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf">Specification of Execution Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Firewall.pdf">Specification of Firewall for Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_IntrusionDetectionSystemManager.pdf">Specification of Intrusion Detection System Manager for Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf">Specification of Language Binding for modeled AP data types</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LogAndTrace.pdf">Specification of Log and Trace</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_NetworkManagement.pdf">Specification of Network Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_OperatingSystemInterface.pdf">Specification of Operating System Interface</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf">Specification of Persistency</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_PlatformHealthManagement.pdf">Specification of Platform Health Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_PlatformTypes.pdf">Specification of Platform Types for Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_RawDataStream.pdf">Specification of Raw Data Stream</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_RemotePersistency.pdf">Specification of Remote Persistency</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_SafeHardwareAcceleration.pdf">Specification of Safe Hardware Acceleration</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_SensorInterfaces.pdf">Specification of Sensor Interfaces</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf">Specification of State Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_TimeSynchronization.pdf">Specification of Time Synchronization</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf">Specification of Update and Configuration Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_VehicleUpdateAndConfigurationManagement.pdf">Specification of Vehicle Update and Configuration Management</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_MachineConfiguration.pdf">Adaptive Platform Machine Configuration</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf">Specification of Manifest</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_TimingExtensions.pdf">Specification of Timing Extensions for Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_DDSSecurityIntegration.pdf">Integration of DDS Security</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_DemandsConstraintsBaseSW.pdf">Technical Report on Demands and Constraints on Base Software</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_Methodology.pdf">Methodology for Adaptive Platform</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_OperatingSystemTracingInterface.pdf">Technical Report on Operating System Tracing Interface</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_ReleaseOverview.pdf">Adaptive Platform Release Overview</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_SpecificationHashes.sha256">AUTOSAR Adaptive Platform Specification Hashes</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_SystemTests.pdf">System Tests for Adaptive Platform Demonstrator</a></li><li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_VSSRepresentation.pdf">Technical Report on VSS Representation</a></li></ul>
+</main>
+<footer>आधिकारिक AUTOSAR R25-11 विनिर्देश PDF से स्वचालित रूप से निकाला गया
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>)।
+यह AUTOSAR का आधिकारिक प्रकाशन नहीं है; वर्णनात्मक पाठ मूल (अंग्रेज़ी) में हैं।</footer></body></html>

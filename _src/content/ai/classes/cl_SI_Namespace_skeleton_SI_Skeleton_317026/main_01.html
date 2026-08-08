@@ -1,0 +1,104 @@
+<div class="ai"><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><h4>Verwendungszweck</h4><p><code>&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton</code> ist die von der Generierungs-Toolchain aus dem Service-Interface-Modell im ARXML-Manifest erzeugte Skeleton-Basisklasse. Der hierarchische SI-Namespace und der Klassenname leiten sich aus dem Manifest ab; der generierte Header folgt dem im Modell abgeleiteten <code>&lt;SiShortname&gt;_skeleton.h</code>-Pfad <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00002" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00002]</a>. Eine eigene Service-Implementierung erbt von dieser Klasse und überschreibt die reinen virtuellen Service-Methoden beziehungsweise Fire-and-Forget-Methoden <a class="swsref vis-app" href="cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_00191">[SWS_CM_00191]</a> <a class="swsref vis-app" href="cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_90434">[SWS_CM_90434]</a>.</p><h4>Erzeugung &amp; Zerstörung</h4><p>Die abgeleitete Implementierung kann das Skeleton mit <code>ara::core::InstanceSpecifier</code>, einem einzelnen <code>InstanceIdentifier</code> oder einem Identifier-Container erzeugen; standardmäßig ist der Verarbeitungsmodus <code>kEvent</code> <a class="swsref" href="#SWS_CM_00152">[SWS_CM_00152]</a> <a class="swsref" href="#SWS_CM_00130">[SWS_CM_00130]</a> <a class="swsref" href="#SWS_CM_00153">[SWS_CM_00153]</a>. Der virtuelle Destruktor ermöglicht die Zerstörung über die Basisklasse <a class="swsref" href="#SWS_CM_11370">[SWS_CM_11370]</a>.</p><h4>Lebenszyklus &amp; Ownership</h4><p>Kopieren ist unterbunden <a class="swsref" href="#SWS_CM_00134">[SWS_CM_00134]</a> <a class="swsref" href="#SWS_CM_11548">[SWS_CM_11548]</a>. Move-Konstruktion und Move-Zuweisung sind vorhanden; die Konstruktion ist nicht exception-safe, die Zuweisung dagegen exception-safe <a class="swsref" href="#SWS_CM_00135">[SWS_CM_00135]</a> <a class="swsref" href="#SWS_CM_11549">[SWS_CM_11549]</a>.</p><h4>Zusammenspiel mit anderen Klassen</h4><ul><li>Nach der Instanziierung bietet <code>OfferService()</code> den Dienst an; <code>StopOfferService()</code> beendet das Angebot <a class="swsref" href="#SWS_CM_00101">[SWS_CM_00101]</a> <a class="swsref" href="#SWS_CM_00111">[SWS_CM_00111]</a>.</li><li>Für jedes Modell-Event gibt es ein Member <code>events::&lt;Event&gt;</code>; die Implementierung versendet Werte über <code>skeleton::events::&lt;Event&gt;::Send</code> <a class="swsref" href="#SWS_CM_99557">[SWS_CM_99557]</a> <a class="swsref vis-app" href="cl_SI_Namespace_skeleton_events_Event_99cf79.html#SWS_CM_00162">[SWS_CM_00162]</a>.</li><li>Für jedes Feld gibt es ein Member <code>fields::&lt;Field&gt;</code>; Feldwerte werden über <code>skeleton::fields::&lt;Field&gt;::Update</code> aktualisiert <a class="swsref" href="#SWS_CM_99558">[SWS_CM_99558]</a> <a class="swsref vis-app" href="cl_SI_Namespace_skeleton_fields_Field_f27d36.html#SWS_CM_00119">[SWS_CM_00119]</a>.</li><li>Die Modi <code>kEvent</code>, <code>kEventSingleThread</code> und <code>kPoll</code> steuern die Bearbeitung eingehender Methodenaufrufe <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00301">[SWS_CM_00301]</a>. Bei <code>kPoll</code> führt <code>ProcessNextMethodCall()</code> den nächsten wartenden Aufruf im Kontext dieser Funktion aus <a class="swsref" href="#SWS_CM_00199">[SWS_CM_00199]</a>.</li></ul><h4>Einschränkungen &amp; Fehlerbehandlung</h4><p><code>OfferService()</code> kann wegen nicht initialisierter Feldwerte, fehlendem Field-Set-Handler oder Kommunikationsfehler fehlschlagen <a class="swsref" href="#SWS_CM_00101">[SWS_CM_00101]</a>. Ein E2E-Fehlerhandler kann überschrieben werden, ist jedoch nicht reentrant; bei CRC-Fehlern ist die übergebene DataID nicht verlässlich <a class="swsref" href="#SWS_CM_10470">[SWS_CM_10470]</a>. Transportfehlerbehandler können für alle Methoden registriert und wieder entfernt werden <a class="swsref" href="#SWS_CM_00093">[SWS_CM_00093]</a> <a class="swsref" href="#SWS_CM_00094">[SWS_CM_00094]</a> <a class="swsref" href="#SWS_CM_00095">[SWS_CM_00095]</a>.</p><h4>Architektureinbettung</h4><p>Der Skeleton ist der generierte Adapter auf Provider-Seite: Die Service-Implementierung leitet sich typischerweise davon ab und stellt damit ihre Methoden, Events und Fields über Communication Management bereit. Die Schnittstelle wird aus der Service-Interface-Beschreibung generiert; die zugrundeliegende Modellierung erlaubt Events, Fields, Methods und Triggers in einem Service Interface. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 „Proxy/Skeleton Architecture"</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=section.4.2">TPS Manifest §4.2 „Service Interface"</a></p><h4>Anbieten und Methodenverarbeitung</h4><p>Vor <code>OfferService()</code> ist die Instanz für Consumer nicht sichtbar. Nach dem Aufruf dürfen Methoden bereits zugestellt werden, selbst wenn der Aufruf noch nicht zurückgekehrt ist; nach <code>StopOfferService()</code> werden keine weiteren Calls zugestellt. Der beim Erzeugen gewählte Verarbeitungsmodus gilt über die gesamte Lebensdauer der Skeleton-Instanz. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.4">EXP ARAComAPI §5.4.4 „Offering Service instance"</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.5">§5.4.5 „Polling and event-driven processing modes"</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 995.00 120.00" style="max-width:1327px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="493.74" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Dienst anbieten und Method Calls verarbeiten</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- o -->
+<g id="node2" class="node vis-app">
+<title>o</title>
+<g id="a_node2"><a xlink:href="cl_SI_Namespace_skeleton_SI_Skeleton_317026.html" xlink:title="OfferService()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M120.02,-63C120.02,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 120.02,-27 120.02,-27 126.02,-27 132.02,-33 132.02,-39 132.02,-39 132.02,-51 132.02,-51 132.02,-57 126.02,-63 120.02,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="90.27" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">OfferService()</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;o -->
+<g id="edge1" class="edge">
+<title>a-&gt;o</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.67,-45C17.08,-45 26.37,-45 36.68,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.48,-48.5 46.48,-45 36.48,-41.5 36.48,-48.5"></polygon>
+</g>
+<!-- m -->
+<g id="node3" class="node">
+<title>m</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="266.82,-63 169.02,-45 266.82,-27 364.62,-45 266.82,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="266.82" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Verarbeitungsmodus</text>
+</g>
+<!-- o&#45;&gt;m -->
+<g id="edge2" class="edge">
+<title>o-&gt;m</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M132.19,-45C139.1,-45 146.55,-45 154.28,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="154.1,-48.5 164.1,-45 154.1,-41.5 154.1,-48.5"></polygon>
+</g>
+<!-- p -->
+<g id="node4" class="node vis-app">
+<title>p</title>
+<g id="a_node4"><a xlink:href="cl_SI_Namespace_skeleton_SI_Skeleton_317026.html" xlink:title="kPoll: ProcessNextMethodCall()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M731.62,-90C731.62,-90 586.62,-90 586.62,-90 580.62,-90 574.62,-84 574.62,-78 574.62,-78 574.62,-66 574.62,-66 574.62,-60 580.62,-54 586.62,-54 586.62,-54 731.62,-54 731.62,-54 737.62,-54 743.62,-60 743.62,-66 743.62,-66 743.62,-78 743.62,-78 743.62,-84 737.62,-90 731.62,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="659.12" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kPoll: ProcessNextMethodCall()</text>
+</a>
+</g>
+</g>
+<!-- m&#45;&gt;p -->
+<g id="edge3" class="edge">
+<title>m-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M340.32,-50.02C403.07,-54.36 494.28,-60.67 562.9,-65.41"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="562.26,-68.88 572.48,-66.08 562.75,-61.89 562.26,-68.88"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="446.37" y="-63.46" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">kPoll</text>
+</g>
+<!-- e -->
+<g id="node5" class="node vis-app">
+<title>e</title>
+<g id="a_node5"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kEvent / kEventSingleThread: asynchrone Dispatch" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M778.12,-36C778.12,-36 540.12,-36 540.12,-36 534.12,-36 528.12,-30 528.12,-24 528.12,-24 528.12,-12 528.12,-12 528.12,-6 534.12,0 540.12,0 540.12,0 778.12,0 778.12,0 784.12,0 790.12,-6 790.12,-12 790.12,-12 790.12,-24 790.12,-24 790.12,-30 784.12,-36 778.12,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="659.12" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kEvent / kEventSingleThread: asynchrone Dispatch</text>
+</a>
+</g>
+</g>
+<!-- m&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>m-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M340.32,-39.98C389.61,-36.57 456.45,-31.95 516.12,-27.82"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="516.17,-31.33 525.9,-27.15 515.68,-24.34 516.17,-31.33"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="446.37" y="-38.77" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">kEvent / kEventSingleThread</text>
+</g>
+<!-- z -->
+<g id="node6" class="node vis-app">
+<title>z</title>
+<g id="a_node6"><a xlink:href="cl_SI_Namespace_skeleton_SI_Skeleton_317026.html" xlink:title="StopOfferService()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M921.12,-62C921.12,-62 839.12,-62 839.12,-62 833.12,-62 827.12,-56 827.12,-50 827.12,-50 827.12,-38 827.12,-38 827.12,-32 833.12,-26 839.12,-26 839.12,-26 921.12,-26 921.12,-26 927.12,-26 933.12,-32 933.12,-38 933.12,-38 933.12,-50 933.12,-50 933.12,-56 927.12,-62 921.12,-62"></path>
+<text xml:space="preserve" text-anchor="middle" x="880.12" y="-39.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">StopOfferService()</text>
+</a>
+</g>
+</g>
+<!-- p&#45;&gt;z -->
+<g id="edge5" class="edge">
+<title>p-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M744.16,-61.25C767.79,-58.23 793.09,-55 815.32,-52.16"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="815.52,-55.66 824.99,-50.92 814.63,-48.72 815.52,-55.66"></polygon>
+</g>
+<!-- e&#45;&gt;z -->
+<g id="edge6" class="edge">
+<title>e-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M790.67,-33.5C799.17,-34.51 807.48,-35.5 815.41,-36.44"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="814.72,-39.88 825.07,-37.58 815.55,-32.93 814.72,-39.88"></polygon>
+</g>
+<!-- f -->
+<g id="node7" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="978.8" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="978.8" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- z&#45;&gt;f -->
+<g id="edge7" class="edge">
+<title>z-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M933.7,-44C942.45,-44 951.01,-44 958.22,-44"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="958.16,-47.5 968.16,-44 958.16,-40.5 958.16,-47.5"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Aktivitätsdiagramm: Sichtbar wird eine Service-Instanz erst nach <code>OfferService()</code>; der beim Konstruktor gewählte Modus bestimmt die Verarbeitung. Quelle: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.4">EXP ARAComAPI §5.4.4 „Offering Service instance"</a> und <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.5">§5.4.5 „Polling and event-driven processing modes"</a>.</p></div>

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ara::com — Communication Management</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script></head>
+<body class="vis-app"><header><a class="home" href="../../index.html">ara::* API Reference</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span><div class="langs"><a href="../../modules/com.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a class="cur" href="../../en/modules/com.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/modules/com.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/modules/com.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/modules/com.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/modules/com.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/modules/com.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/modules/com.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/modules/com.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/modules/com.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE (Except INTERNAL apext::com::secoc::*)</span><a href="../index.html">Home</a> › ara::com</nav>
+<main><h1><span class="kind">module</span> ara::com — Communication Management</h1>
+<p class="meta">Specification: <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf">AUTOSAR_AP_SWS_CommunicationManagement.pdf (R25-11)</a> · 250 API records</p>
+<p><span class="chip">function: 179</span> <span class="chip">class: 20</span> <span class="chip">type alias: 20</span> <span class="chip">variable: 13</span> <span class="chip">enumeration: 10</span> <span class="chip">struct: 4</span> <span class="chip">service method: 2</span> <span class="chip">header file: 1</span> <span class="chip">service event: 1</span></p>
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">AI generated</span></h2></summary><div class="ai module-guide"><p class="ai-note">Automatically generated description, content derived from the referenced AUTOSAR R25-11 documents (SWS specification and accompanying standard documents) — not an official AUTOSAR text. Statements marked as interpretation are conclusions drawn from the sources.</p><h4>Communication model</h4>
+<p><code>ara::com</code> is the standardized application interface of the Communication Management Functional Cluster. The cluster establishes and monitors communication paths between applications on the same or different machines; the specific internal middleware architecture remains an implementation matter. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.1.1">SWS CM §7.1.1 “Architectural concepts”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.1.2">SWS CM §7.1.2 “Design decisions”</a> classify the API as a protocol-abstracted, service-oriented interface.</p>
+<p>Two roles arise from a modeled service interface: The proxy is the local representation for the consumer, the skeleton connects the provider implementation with the transport infrastructure. Methods, events, fields and triggers are the four intended forms of communication. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 “Proxy/Skeleton Architecture”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.2">EXP ARAComAPI §4.2 “Means of Communication”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.1.3">SWS CM §7.1.3 “Communication paradigms and Definitions”</a> describe this division of labor.</p>
+<h4>From service offering to use</h4>
+<p>On the provider side, a skeleton is created and offered. On the consumer side, a one-off <code>FindService</code> provides the currently known instances; <code>StartFindService</code> monitors availability changes. A handle identifies a found instance and is used for proxy creation. In the event of temporary unavailability, the communication path should be re-established in a later offer. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.1">SWS CM §7.5.1 “Offer service”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.10">SWS CM §7.5.10 “Find service”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.11">SWS CM §7.5.11 “Service proxy creation”</a> provide the function semantics.</p>
+<h4>Data and interaction forms</h4>
+<p>Events transport data to registered consumers; Triggers use the same subscription mechanism without payload. Methods model request/response and can provide a <code>Future</code>. A field combines reading and writing method character with notification of value changes. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.3">EXP ARAComAPI §4.3 “Event and Trigger based communication”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.4">EXP ARAComAPI §4.4 “Method based communication”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.5">EXP ARAComAPI §4.5 “Field based communication”</a> explain the application view.</p>
+<h4>Operating rules and security context</h4>
+<p><code>Subscribe()</code> is asynchronous: Only <code>kSubscribed</code> in the status or in the status handler occupies an actually established subscription. Received samples have a controlled transfer of ownership and must be returned before deregistration or proxy destruction. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12006">[SWS_CM_12006]</a> and <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00085">[SWS_CM_00085]</a> are the relevant rules for this. E2E protection supplements data transmission with status information that can be evaluated per sample; SecOC can use freshness value management via the platform extension. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=section.7.4">SWS CM §7.4 “Safety”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.3.2">SWS CM §7.3.2 “Secure Communication”</a> provide the overarching framework.</p>
+<h4>Instance reference and binding abstraction</h4>
+<p>Application code typically uses a logical <code>InstanceSpecifier</code>; the manifest resolves it to one or more binding-specific <code>InstanceIdentifier</code>. This allows the same application code to work with a different binding on the deployment side without interpreting its representation. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.4.8.1">EXP ARAComAPI §4.8.1 “Instance Identifiers and Instance Specifiers”</a> and <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.21">SWS CM §7.5.21 “Instance Specifier Translation”</a> describe the translation.</p><div class="diagram" id="diag-service-rollen"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 581.00 96.00" style="max-width:775px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 91.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="286.62" y="-71.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Generated roles and communication path</text>
+<!-- model -->
+<g id="node1" class="node">
+<title>model</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="97,-36 0,-36 0,0 97,0 97,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="48.5" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Service Interface</text>
+</g>
+<!-- proxy -->
+<g id="node2" class="node vis-app">
+<title>proxy</title>
+<g id="a_node2"><a xlink:href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html" xlink:title="Proxy Consumer" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="253.25,-66 187,-66 187,-30 253.25,-30 253.25,-66"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="220.12" y="-49.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Proxy</text>
+<text xml:space="preserve" text-anchor="middle" x="220.12" y="-37.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Consumer</text>
+</a>
+</g>
+</g>
+<!-- model&#45;&gt;proxy -->
+<g id="edge1" class="edge">
+<title>model-&gt;proxy</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M97.2,-26.44C121.71,-30.77 151.36,-36.02 175.29,-40.25"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="174.43,-43.65 184.89,-41.94 175.65,-36.76 174.43,-43.65"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="142" y="-40.05" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: generates</text>
+</g>
+<!-- skel -->
+<g id="node3" class="node vis-app">
+<title>skel</title>
+<g id="a_node3"><a xlink:href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html" xlink:title="Skeleton Provider" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="573.25,-36 515.25,-36 515.25,0 573.25,0 573.25,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="544.25" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Skeleton</text>
+<text xml:space="preserve" text-anchor="middle" x="544.25" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Provider</text>
+</a>
+</g>
+</g>
+<!-- model&#45;&gt;skel -->
+<g id="edge2" class="edge">
+<title>model-&gt;skel</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M97.29,-18C194.36,-18 413,-18 503.18,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="503.12,-21.5 513.12,-18 503.12,-14.5 503.12,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="311.75" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: generates</text>
+</g>
+<!-- cm -->
+<g id="node4" class="node vis-app">
+<title>cm</title>
+<g id="a_node4"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="ara::com Binding" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="428.25,-66 370.25,-66 370.25,-30 428.25,-30 428.25,-66"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="399.25" y="-49.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::com</text>
+<text xml:space="preserve" text-anchor="middle" x="399.25" y="-37.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Binding</text>
+</a>
+</g>
+</g>
+<!-- proxy&#45;&gt;cm -->
+<g id="edge3" class="edge">
+<title>proxy-&gt;cm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M253.61,-48C283.1,-48 326.68,-48 358.3,-48"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="358.11,-51.5 368.11,-48 358.11,-44.5 358.11,-51.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="311.75" y="-49.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">3: Call / Subscribe</text>
+</g>
+<!-- cm&#45;&gt;skel -->
+<g id="edge4" class="edge">
+<title>cm-&gt;skel</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M428.84,-42C450.28,-37.5 479.87,-31.3 503.59,-26.32"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="504.01,-29.81 513.08,-24.33 502.57,-22.96 504.01,-29.81"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="471.75" y="-40.05" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">4: mediates</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Collaboration: A modeled Service Interface creates the application-facing roles; the binding mediates communication. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.1.1">SWS CM §7.1.1 “Architectural concepts”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 “Proxy/Skeleton Architecture”</a>.</p><div class="diagram" id="diag-discovery-proxy"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 374" font-family="Helvetica,sans-Serif" style="max-width:900px"><text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Find service, create, and use proxy</text><line x1="135" y1="102" x2="135" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Consumer</text><a class="vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Proxy class</text></a><a class="vis-app" href="../namespaces/ns_com_ara_com_4a3210.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="72.5" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Communication</text><text x="555" y="85.5" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Management</text></a><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Skeleton</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">StartFindService(handler,</text><text x="240.0" y="139" text-anchor="middle" font-size="11" fill="#28251d">criteria)</text><line x1="135" y1="145" x2="345" y2="145" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="173" text-anchor="middle" font-size="11" fill="#28251d">Start Discovery</text><line x1="345" y1="179" x2="555" y2="179" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="345.0" y="207" text-anchor="middle" font-size="11" fill="#28251d">Handler(handles) on availability</text><line x1="555" y1="213" x2="135" y2="213" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="240.0" y="241" text-anchor="middle" font-size="11" fill="#28251d">Create(handle)</text><line x1="135" y1="247" x2="345" y2="247" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="555.0" y="275" text-anchor="middle" font-size="11" fill="#28251d">Method / Get / Set</text><line x1="345" y1="281" x2="765" y2="281" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 326.0 298 h 238 l 10 10 v 32 h -248 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 564.0 298 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="334.0" y="312" font-size="11" fill="#28251d">An existing proxy can after a renewed Offer</text><text x="334.0" y="325" font-size="11" fill="#28251d">become reusable.</text></svg></div><p class="diagram-note">Sequence: Discovery delivers handles; This creates a usable proxy. The automatic reconnection of an existing proxy is a specified runtime behavior. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.10">SWS CM §7.5.10 “Find service”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.11">SWS CM §7.5.11 “Service proxy creation”</a>.</p><div class="diagram" id="diag-subscribe-sequenz"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 356" font-family="Helvetica,sans-Serif" style="max-width:900px"><text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Event: subscribe, notify, retrieve samples</text><line x1="135" y1="102" x2="135" y2="342" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="342" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="342" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="342" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Client</text><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Proxy Event</text><a class="vis-app" href="../namespaces/ns_com_ara_com_4a3210.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::com</text></a><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Skeleton Event</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Subscribe(maxSampleCount)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">Request subscription</text><line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">kSubscribed via handler</text><line x1="555" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="660.0" y="228" text-anchor="middle" font-size="11" fill="#28251d">Send / Update</text><line x1="765" y1="234" x2="555" y2="234" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="345.0" y="262" text-anchor="middle" font-size="11" fill="#28251d">Notify ReceiveHandler</text><line x1="555" y1="268" x2="135" y2="268" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><path d="M 135 282 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></path><text x="189" y="297" text-anchor="start" font-size="11" fill="#28251d">GetNewSamples; SamplePtr</text><text x="189" y="310" text-anchor="start" font-size="11" fill="#28251d">release promptly</text></svg></div><p class="diagram-note">Sequence: The subscribe result is asynchronous; the application only takes samples after notification and releases them before logging out. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.13">SWS CM §7.5.13 “Service event subscription”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.14">SWS CM §7.5.14 “Receive event”</a>.</p><div class="diagram" id="diag-subscription-zustaende"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 584.00 91.00" style="max-width:779px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 86.73)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="287.88" y="-66.38" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Subscription state on Proxy side</text>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-19.23" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- n -->
+<g id="node2" class="node vis-app">
+<title>n</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kNotSubscribed" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M129.02,-37.23C129.02,-37.23 60.52,-37.23 60.52,-37.23 54.52,-37.23 48.52,-31.23 48.52,-25.23 48.52,-25.23 48.52,-13.23 48.52,-13.23 48.52,-7.23 54.52,-1.23 60.52,-1.23 60.52,-1.23 129.02,-1.23 129.02,-1.23 135.02,-1.23 141.02,-7.23 141.02,-13.23 141.02,-13.23 141.02,-25.23 141.02,-25.23 141.02,-31.23 135.02,-37.23 129.02,-37.23"></path>
+<text xml:space="preserve" text-anchor="middle" x="94.77" y="-14.78" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kNotSubscribed</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;n -->
+<g id="edge1" class="edge">
+<title>i-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.94,-19.23C17.37,-19.23 26.52,-19.23 36.78,-19.23"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.57,-22.73 46.57,-19.23 36.57,-15.73 36.57,-22.73"></polygon>
+</g>
+<!-- p -->
+<g id="node3" class="node vis-app">
+<title>p</title>
+<g id="a_node3"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kSubscriptionPending" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.02,-61.23C346.02,-61.23 249.77,-61.23 249.77,-61.23 243.77,-61.23 237.77,-55.23 237.77,-49.23 237.77,-49.23 237.77,-37.23 237.77,-37.23 237.77,-31.23 243.77,-25.23 249.77,-25.23 249.77,-25.23 346.02,-25.23 346.02,-25.23 352.02,-25.23 358.02,-31.23 358.02,-37.23 358.02,-37.23 358.02,-49.23 358.02,-49.23 358.02,-55.23 352.02,-61.23 346.02,-61.23"></path>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-38.78" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscriptionPending</text>
+</a>
+</g>
+</g>
+<!-- n&#45;&gt;p -->
+<g id="edge2" class="edge">
+<title>n-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M141.28,-28.43C147.23,-29.47 153.26,-30.44 159.02,-31.23 180.71,-34.22 204.43,-36.61 225.98,-38.43"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="225.46,-41.9 235.71,-39.23 226.03,-34.93 225.46,-41.9"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-39.61" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Subscribe()</text>
+</g>
+<!-- p&#45;&gt;n -->
+<g id="edge3" class="edge">
+<title>p-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M248.1,-24.7C238.82,-21.91 229.09,-19.47 219.77,-17.98 193.11,-13.73 186.02,-17.71 159.02,-17.98 156.97,-18 154.88,-18.03 152.77,-18.05"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.98,-14.55 143.04,-18.2 153.09,-21.55 152.98,-14.55"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-19.73" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- s -->
+<g id="node4" class="node vis-app">
+<title>s</title>
+<g id="a_node4"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kSubscribed" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M563.77,-37.23C563.77,-37.23 512.52,-37.23 512.52,-37.23 506.52,-37.23 500.52,-31.23 500.52,-25.23 500.52,-25.23 500.52,-13.23 500.52,-13.23 500.52,-7.23 506.52,-1.23 512.52,-1.23 512.52,-1.23 563.77,-1.23 563.77,-1.23 569.77,-1.23 575.77,-7.23 575.77,-13.23 575.77,-13.23 575.77,-25.23 575.77,-25.23 575.77,-31.23 569.77,-37.23 563.77,-37.23"></path>
+<text xml:space="preserve" text-anchor="middle" x="538.14" y="-14.78" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscribed</text>
+</a>
+</g>
+</g>
+<!-- p&#45;&gt;s -->
+<g id="edge4" class="edge">
+<title>p-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M358.26,-41.62C394.33,-40.08 441.24,-37.08 482.52,-31.23 484.56,-30.94 486.63,-30.62 488.73,-30.27"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="489.13,-33.75 498.33,-28.49 487.86,-26.87 489.13,-33.75"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="429.27" y="-42.42" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Subscription established</text>
+</g>
+<!-- s&#45;&gt;n -->
+<g id="edge5" class="edge">
+<title>s-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M500.2,-12.52C494.3,-11.63 488.26,-10.82 482.52,-10.23 339.5,4.51 302.07,2.27 159.02,-12.23 156.97,-12.44 154.87,-12.65 152.76,-12.87"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.59,-9.37 143.02,-13.91 153.33,-16.33 152.59,-9.37"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-6.18" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- s&#45;&gt;p -->
+<g id="edge6" class="edge">
+<title>s-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M500.12,-18.27C494.24,-18.15 488.21,-18.05 482.52,-17.98 435.19,-17.44 422.76,-10.52 376.02,-17.98 370.34,-18.89 364.51,-20.15 358.72,-21.62"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="357.99,-18.19 349.3,-24.25 359.87,-24.94 357.99,-18.19"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="429.27" y="-19.73" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Service unavailable</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">State diagram: on the proxy side, <code>kSubscriptionPending</code> signals a subscription that has not yet been established or was interrupted due to unavailability. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.13">SWS CM §7.5.13 “Service event subscription”</a>.</p><div class="diagram" id="diag-field-sequenz"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 319" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Field: GET, SET, and notification</text><line x1="135" y1="102" x2="135" y2="305" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="305" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="305" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Proxy Field</text><a class="vis-app" href="../namespaces/ns_com_ara_com_4a3210.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::com</text></a><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Skeleton Field</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Get() / Set(value)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">GetHandler / SetHandler</text><line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">Future with effective value</text><line x1="555" y1="200" x2="345" y2="200" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="240.0" y="228" text-anchor="middle" font-size="11" fill="#28251d">Result / Future ready</text><line x1="345" y1="234" x2="135" y2="234" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="240.0" y="262" text-anchor="middle" font-size="11" fill="#28251d">update notification to</text><text x="240.0" y="275" text-anchor="middle" font-size="11" fill="#28251d">subscribers</text><line x1="345" y1="281" x2="135" y2="281" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line></svg></div><p class="diagram-note">Sequence: A Field combines method-like read/write and event-like updates; the set handler returns the effective value. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.8">SWS CM §7.5.8 “Registering get handlers for fields”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.9">SWS CM §7.5.9 “Registering set handlers for fields”</a>.</p><div class="diagram" id="diag-skeleton-modi"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 362.00 197.00" style="max-width:483px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 193.27)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="177.18" y="-172.92" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Processing selection for Skeleton methods</text>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="184.88" cy="-162.01" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- m -->
+<g id="node2" class="node vis-app">
+<title>m</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="Select MethodCallProcessingMode" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M264.88,-119.25C264.88,-119.25 104.87,-119.25 104.87,-119.25 98.88,-119.25 92.88,-113.25 92.88,-107.25 92.88,-107.25 92.88,-95.25 92.88,-95.25 92.88,-89.25 98.88,-83.25 104.88,-83.25 104.88,-83.25 264.88,-83.25 264.88,-83.25 270.88,-83.25 276.88,-89.25 276.88,-95.25 276.88,-95.25 276.88,-107.25 276.88,-107.25 276.88,-113.25 270.88,-119.25 264.88,-119.25"></path>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-96.8" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Select MethodCallProcessingMode</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;m -->
+<g id="edge1" class="edge">
+<title>i-&gt;m</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M184.88,-156C184.88,-150.36 184.88,-140.72 184.88,-131.15"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="188.38,-131.45 184.88,-121.45 181.38,-131.45 188.38,-131.45"></polygon>
+</g>
+<!-- p -->
+<g id="node3" class="node">
+<title>p</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M127.75,-36C127.75,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 127.75,0 127.75,0 133.75,0 139.75,-6 139.75,-12 139.75,-12 139.75,-24 139.75,-24 139.75,-30 133.75,-36 127.75,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="69.88" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kPoll</text>
+<text xml:space="preserve" text-anchor="middle" x="69.88" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ProcessNextMethodCall()</text>
+</g>
+<!-- m&#45;&gt;p -->
+<g id="edge2" class="edge">
+<title>m-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M160.2,-82.82C143.68,-71.15 121.72,-55.63 103.59,-42.82"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="106.05,-40.27 95.86,-37.36 102.01,-45.99 106.05,-40.27"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="148.89" y="-55.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Polling</text>
+</g>
+<!-- e -->
+<g id="node4" class="node">
+<title>e</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M199.88,-36C199.88,-36 169.88,-36 169.88,-36 163.88,-36 157.88,-30 157.88,-24 157.88,-24 157.88,-12 157.88,-12 157.88,-6 163.88,0 169.88,0 169.88,0 199.88,0 199.88,0 205.88,0 211.88,-6 211.88,-12 211.88,-12 211.88,-24 211.88,-24 211.88,-30 205.88,-36 199.88,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kEvent</text>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">parallel</text>
+</g>
+<!-- m&#45;&gt;e -->
+<g id="edge3" class="edge">
+<title>m-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M184.88,-83.02C184.88,-72.85 184.88,-59.73 184.88,-48.01"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="188.38,-48.15 184.88,-38.15 181.38,-48.15 188.38,-48.15"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="211.5" y="-55.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">event-driven</text>
+</g>
+<!-- s -->
+<g id="node5" class="node">
+<title>s</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M331.62,-36C331.62,-36 242.12,-36 242.12,-36 236.12,-36 230.12,-30 230.12,-24 230.12,-24 230.12,-12 230.12,-12 230.12,-6 236.12,0 242.12,0 242.12,0 331.62,0 331.62,0 337.62,0 343.62,-6 343.62,-12 343.62,-12 343.62,-24 343.62,-24 343.62,-30 337.62,-36 331.62,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="286.88" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kEventSingleThread</text>
+<text xml:space="preserve" text-anchor="middle" x="286.88" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">sequential</text>
+</g>
+<!-- m&#45;&gt;s -->
+<g id="edge4" class="edge">
+<title>m-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M216.58,-82.7C225.09,-77.49 234.08,-71.49 241.88,-65.25 249.67,-59.01 257.49,-51.51 264.38,-44.38"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="266.55,-47.19 270.83,-37.5 261.44,-42.4 266.55,-47.19"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="304.1" y="-55.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">event-driven, serialized</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">State diagram: the mode selected for the skeleton determines whether the application retrieves methods or Communication Management activates them in parallel or sequentially. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.6">SWS CM §7.5.6 “Processing of service methods”</a>.</p><div class="diagram" id="diag-e2e-check"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 865.00 120.00" style="max-width:1153px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="428.52" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">E2E-protected event at receiver</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- r -->
+<g id="node2" class="node">
+<title>r</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M120.77,-63C120.77,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 120.77,-27 120.77,-27 126.77,-27 132.77,-33 132.77,-39 132.77,-39 132.77,-51 132.77,-51 132.77,-57 126.77,-63 120.77,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="90.64" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Receive event</text>
+</g>
+<!-- a&#45;&gt;r -->
+<g id="edge1" class="edge">
+<title>a-&gt;r</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.7,-45C17.12,-45 26.46,-45 36.82,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.67,-48.5 46.67,-45 36.67,-41.5 36.67,-48.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node vis-app">
+<title>c</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_com_SamplePtr_f95130.html" xlink:title="Map E2E check and status" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M302.02,-63C302.02,-63 181.77,-63 181.77,-63 175.77,-63 169.77,-57 169.77,-51 169.77,-51 169.77,-39 169.77,-39 169.77,-33 175.77,-27 181.77,-27 181.77,-27 302.02,-27 302.02,-27 308.02,-27 314.02,-33 314.02,-39 314.02,-39 314.02,-51 314.02,-51 314.02,-57 308.02,-63 302.02,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="241.89" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Map E2E check and status</text>
+</a>
+</g>
+</g>
+<!-- r&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>r-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M133.22,-45C140.93,-45 149.23,-45 157.67,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="157.58,-48.5 167.58,-45 157.58,-41.5 157.58,-48.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="431.6,-63 351.02,-45 431.6,-27 512.17,-45 431.6,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="431.6" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Accept Sample?</text>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M314.39,-45C321.75,-45 329.31,-45 336.87,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="336.64,-48.5 346.64,-45 336.64,-41.5 336.64,-48.5"></polygon>
+</g>
+<!-- g -->
+<g id="node5" class="node">
+<title>g</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M790.67,-90C790.67,-90 629.92,-90 629.92,-90 623.92,-90 617.92,-84 617.92,-78 617.92,-78 617.92,-66 617.92,-66 617.92,-60 623.92,-54 629.92,-54 629.92,-54 790.67,-54 790.67,-54 796.67,-54 802.67,-60 802.67,-66 802.67,-66 802.67,-78 802.67,-78 802.67,-84 796.67,-90 790.67,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="710.3" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SamplePtr with ProfileCheckStatus</text>
+</g>
+<!-- d&#45;&gt;g -->
+<g id="edge4" class="edge">
+<title>d-&gt;g</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M489.59,-50.56C523.14,-53.84 566.59,-58.08 605.99,-61.92"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="605.57,-65.39 615.86,-62.88 606.25,-58.43 605.57,-65.39"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="565.05" y="-62.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">yes / configured</text>
+</g>
+<!-- h -->
+<g id="node6" class="node vis-app">
+<title>h</title>
+<g id="a_node6"><a xlink:href="../namespaces/ns_com_ara_com_e2e_f19464.html" xlink:title="Handle transport/profile errors" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M778.3,-36C778.3,-36 642.3,-36 642.3,-36 636.3,-36 630.3,-30 630.3,-24 630.3,-24 630.3,-12 630.3,-12 630.3,-6 636.3,0 642.3,0 642.3,0 778.3,0 778.3,0 784.3,0 790.3,-6 790.3,-12 790.3,-12 790.3,-24 790.3,-24 790.3,-30 784.3,-36 778.3,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="710.3" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Handle transport/profile errors</text>
+</a>
+</g>
+</g>
+<!-- d&#45;&gt;h -->
+<g id="edge5" class="edge">
+<title>d-&gt;h</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M489.59,-39.44C526.69,-35.82 575.9,-31.02 618.34,-26.88"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="618.55,-30.37 628.17,-25.92 617.87,-23.4 618.55,-30.37"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="565.05" y="-36.46" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">no / error path</text>
+</g>
+<!-- z -->
+<g id="node7" class="node">
+<title>z</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="848.35" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="848.35" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- g&#45;&gt;z -->
+<g id="edge6" class="edge">
+<title>g-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M803.19,-53.92C809.45,-52.62 815.66,-51.3 821.67,-50 823.86,-49.53 826.15,-49.02 828.42,-48.5"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="829.17,-51.92 838.11,-46.23 827.57,-45.1 829.17,-51.92"></polygon>
+</g>
+<!-- h&#45;&gt;z -->
+<g id="edge7" class="edge">
+<title>h-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M790.84,-33.2C804.75,-35.86 817.99,-38.39 828.16,-40.33"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="827.44,-43.76 837.92,-42.2 828.75,-36.88 827.44,-43.76"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Activity Diagram: The E2E check is mapped to the sample status; Applications evaluate the individual <code>ProfileCheckStatus</code>. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.4.1">SWS CM §7.4.1 “End-to-end communication protection for SOMEIP”</a>.</p><div class="diagram" id="diag-secoc-fvm"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 595.00 66.00" style="max-width:793px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 61.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="293.5" y="-41.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Freshness Value Management with SecOC</text>
+<!-- bind -->
+<g id="node1" class="node">
+<title>bind</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="91,-36 0,-36 0,0 91,0 91,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="45.5" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SecOC-Binding</text>
+</g>
+<!-- fvm -->
+<g id="node2" class="node vis-internal">
+<title>fvm</title>
+<g id="a_node2"><a xlink:href="../classes/cl_apext_com_secoc_FVM_8d368e.html" xlink:title="FVM" target="_top" class="vis-internal">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="348.25,-36 294.25,-36 294.25,0 348.25,0 348.25,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="321.25" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">FVM</text>
+</a>
+</g>
+</g>
+<!-- bind&#45;&gt;fvm -->
+<g id="edge1" class="edge">
+<title>bind-&gt;fvm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M91.4,-18C144.65,-18 232.46,-18 282.41,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="282.29,-21.5 292.29,-18 282.29,-14.5 282.29,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="192.62" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: GetRxFreshness / GetTxFreshness</text>
+</g>
+<!-- cfg -->
+<g id="node3" class="node vis-app">
+<title>cfg</title>
+<g id="a_node3"><a xlink:href="../services/sv_com_VerificationStatus_8570a9.html" xlink:title="VerificationStatus Service" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="587,-36 487.75,-36 487.75,0 587,0 587,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="537.38" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">VerificationStatus</text>
+<text xml:space="preserve" text-anchor="middle" x="537.38" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Service</text>
+</a>
+</g>
+</g>
+<!-- fvm&#45;&gt;cfg -->
+<g id="edge2" class="edge">
+<title>fvm-&gt;cfg</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M348.51,-18C380.05,-18 433.96,-18 475.97,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="475.8,-21.5 485.8,-18 475.8,-14.5 475.8,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="418" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: SetVerificationStatus</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Collaboration: The FVM platform extension provides or checks Freshness Values for SecOC; the verification status is passed to the configured status interface. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.3.2">SWS CM §7.3.2 “Secure Communication”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.3.1.1.3">EXP SW Architecture §9.3.1.1.3 “Interfaces for freshness value management”</a>.</p><div class="diagram" id="diag-instanzaufloesung"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 891.00 120.00" style="max-width:1188px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="441.27" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">From model name to technical service reference</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- sp -->
+<g id="node2" class="node">
+<title>sp</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M219.02,-63C219.02,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 219.02,-27 219.02,-27 225.02,-27 231.02,-33 231.02,-39 231.02,-39 231.02,-51 231.02,-51 231.02,-57 225.02,-63 219.02,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="139.77" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">InstanceSpecifier from port context</text>
+</g>
+<!-- a&#45;&gt;sp -->
+<g id="edge1" class="edge">
+<title>a-&gt;sp</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.1,-45C17.33,-45 26.01,-45 36.46,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.26,-48.5 46.26,-45 36.26,-41.5 36.26,-48.5"></polygon>
+</g>
+<!-- r -->
+<g id="node3" class="node vis-app">
+<title>r</title>
+<g id="a_node3"><a xlink:href="../namespaces/ns_com_ara_com_runtime_ac29a8.html" xlink:title="ResolveInstanceIDs()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M375.52,-63C375.52,-63 280.02,-63 280.02,-63 274.02,-63 268.02,-57 268.02,-51 268.02,-51 268.02,-39 268.02,-39 268.02,-33 274.02,-27 280.02,-27 280.02,-27 375.52,-27 375.52,-27 381.52,-27 387.52,-33 387.52,-39 387.52,-39 387.52,-51 387.52,-51 387.52,-57 381.52,-63 375.52,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="327.77" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ResolveInstanceIDs()</text>
+</a>
+</g>
+</g>
+<!-- sp&#45;&gt;r -->
+<g id="edge2" class="edge">
+<title>sp-&gt;r</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M231.59,-45C239.77,-45 247.97,-45 255.94,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="255.76,-48.5 265.76,-45 255.76,-41.5 255.76,-48.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="511.48,-63 424.52,-45 511.48,-27 598.43,-45 511.48,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="511.48" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Mapping present?</text>
+</g>
+<!-- r&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>r-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M388.02,-45C395.17,-45 402.62,-45 410.16,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="409.97,-48.5 419.97,-45 409.97,-41.5 409.97,-48.5"></polygon>
+</g>
+<!-- one -->
+<g id="node5" class="node vis-app">
+<title>one</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_com_InstanceIdentifier_662eea.html" xlink:title="one or more InstanceIdentifier" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M806.81,-90C806.81,-90 671.56,-90 671.56,-90 665.56,-90 659.56,-84 659.56,-78 659.56,-78 659.56,-66 659.56,-66 659.56,-60 665.56,-54 671.56,-54 671.56,-54 806.81,-54 806.81,-54 812.81,-54 818.81,-60 818.81,-66 818.81,-66 818.81,-78 818.81,-78 818.81,-84 812.81,-90 806.81,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="739.18" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">one or more InstanceIdentifier</text>
+</a>
+</g>
+</g>
+<!-- d&#45;&gt;one -->
+<g id="edge4" class="edge">
+<title>d-&gt;one</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M568.56,-51.71C592.55,-54.58 621.17,-58 648,-61.21"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="647.37,-64.66 657.72,-62.37 648.21,-57.71 647.37,-64.66"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="624.31" y="-61.06" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">yes</text>
+</g>
+<!-- err -->
+<g id="node6" class="node">
+<title>err</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M816.18,-36C816.18,-36 662.18,-36 662.18,-36 656.18,-36 650.18,-30 650.18,-24 650.18,-24 650.18,-12 650.18,-12 650.18,-6 656.18,0 662.18,0 662.18,0 816.18,0 816.18,0 822.18,0 828.18,-6 828.18,-12 828.18,-12 828.18,-24 828.18,-24 828.18,-30 822.18,-36 816.18,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="739.18" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Result with error / empty mapping</text>
+</g>
+<!-- d&#45;&gt;err -->
+<g id="edge5" class="edge">
+<title>d-&gt;err</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M568.56,-38.29C589.75,-35.76 614.55,-32.79 638.54,-29.92"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="638.69,-33.43 648.21,-28.76 637.86,-26.48 638.69,-33.43"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="624.31" y="-34.06" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">no</text>
+</g>
+<!-- z -->
+<g id="node7" class="node">
+<title>z</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="873.86" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="873.86" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- one&#45;&gt;z -->
+<g id="edge6" class="edge">
+<title>one-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M819.12,-56.02C828.58,-54.03 838.1,-51.99 847.18,-50 849.37,-49.52 851.65,-49 853.92,-48.48"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="854.67,-51.9 863.61,-46.22 853.08,-45.09 854.67,-51.9"></polygon>
+</g>
+<!-- err&#45;&gt;z -->
+<g id="edge7" class="edge">
+<title>err-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M828.68,-35.34C837.95,-37.16 846.57,-38.85 853.69,-40.24"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="852.88,-43.65 863.36,-42.14 854.22,-36.78 852.88,-43.65"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Activity diagram: Logical <code>InstanceSpecifier</code> is mapped against the Manifest to one or more binding-specific IDs. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.4.8.1">EXP ARAComAPI §4.8.1 “Instance Identifiers and Instance Specifiers”</a>.</p><h4>Behavior in the event of an error</h4>
+<p>The one-time service search <code>FindService()</code> returns the service handles that are appropriate at that time; the result list can be empty if no suitable service instance currently exists. A technical search error, on the other hand, is reported as a <code>ara::core::Result</code> error, for which the API sets, among other things, <code>ComErrc::kCommunicationFailure</code>. The continuous search with <code>StartFindService()</code> reports availability changes via its handler, which receives the container of all matching instances. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.3.2">EXP ARAComAPI §5.3.2 “RadarService Proxy Class Example”</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00122">[SWS_CM_00122]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00383">[SWS_CM_00383]</a></p>
+<p>An event subscription has the states <code>kNotSubscribed</code>, <code>kSubscriptionPending</code> and <code>kSubscribed</code>. Since <code>Subscribe()</code> initially only accepts the subscription order, the status when queried can still be <code>kSubscriptionPending</code>; <code>GetSubscriptionState()</code> and <code>SetSubscriptionStateChangeHandler()</code> make the effective state accessible. If the service becomes temporarily unavailable, the handler reports <code>kSubscriptionPending</code>; after successful re-subscription it reports <code>kSubscribed</code>. The communication management implementation must restore an active subscription after temporary unavailability. If the application holds more <code>SamplePtr</code> objects than promised for <code>Subscribe()</code>, <code>GetNewSamples()</code> returns the error <code>ComErrc::kMaxSamplesExceeded</code>; Samples may have been skipped. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00310">[SWS_CM_00310]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00333">[SWS_CM_00333]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00315">[SWS_CM_00315]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00701">[SWS_CM_00701]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsubsection.5.3.5.2">EXP ARAComAPI §5.3.5.2 “Monitoring Event Subscription”</a></p>
+<div class="diagram" id="diag-01">
+<!-- Generated by graphviz version 14.1.2 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 561.00 141.00" style="max-width:748px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 137.17)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="276.63" y="-116.82" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Event subscription: states during failure and recovery</text>
+<!-- start -->
+<g id="node1" class="node">
+<title>start</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-29.78" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- notsub -->
+<g id="node2" class="node">
+<title>notsub</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M129.02,-47.78C129.02,-47.78 60.52,-47.78 60.52,-47.78 54.52,-47.78 48.52,-41.78 48.52,-35.78 48.52,-35.78 48.52,-23.78 48.52,-23.78 48.52,-17.78 54.52,-11.78 60.52,-11.78 60.52,-11.78 129.02,-11.78 129.02,-11.78 135.02,-11.78 141.02,-17.78 141.02,-23.78 141.02,-23.78 141.02,-35.78 141.02,-35.78 141.02,-41.78 135.02,-47.78 129.02,-47.78"></path>
+<text xml:space="preserve" text-anchor="middle" x="94.77" y="-25.33" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kNotSubscribed</text>
+</g>
+<!-- start&#45;&gt;notsub -->
+<g id="edge1" class="edge">
+<title>start-&gt;notsub</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.94,-29.78C17.37,-29.78 26.52,-29.78 36.78,-29.78"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.57,-33.28 46.57,-29.78 36.57,-26.28 36.57,-33.28"></polygon>
+</g>
+<!-- pending -->
+<g id="node3" class="node">
+<title>pending</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.02,-81.78C346.02,-81.78 249.77,-81.78 249.77,-81.78 243.77,-81.78 237.77,-75.78 237.77,-69.78 237.77,-69.78 237.77,-57.78 237.77,-57.78 237.77,-51.78 243.77,-45.78 249.77,-45.78 249.77,-45.78 346.02,-45.78 346.02,-45.78 352.02,-45.78 358.02,-51.78 358.02,-57.78 358.02,-57.78 358.02,-69.78 358.02,-69.78 358.02,-75.78 352.02,-81.78 346.02,-81.78"></path>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-59.33" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscriptionPending</text>
+</g>
+<!-- notsub&#45;&gt;pending -->
+<g id="edge2" class="edge">
+<title>notsub-&gt;pending</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M141.34,-38.59C147.29,-39.69 153.29,-40.78 159.02,-41.78 180.78,-45.58 204.52,-49.46 226.07,-52.89"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="225.38,-56.32 235.81,-54.43 226.47,-49.41 225.38,-56.32"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-53.59" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Subscribe()</text>
+</g>
+<!-- pending&#45;&gt;notsub -->
+<g id="edge3" class="edge">
+<title>pending-&gt;notsub</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M264.57,-45.26C251.16,-38.59 235.16,-31.88 219.77,-28.53 198.29,-23.86 174.23,-23.11 153.05,-23.9"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="153.09,-20.39 143.28,-24.4 153.44,-27.39 153.09,-20.39"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-30.28" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- sub -->
+<g id="node4" class="node">
+<title>sub</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M541.27,-64.78C541.27,-64.78 490.02,-64.78 490.02,-64.78 484.02,-64.78 478.02,-58.78 478.02,-52.78 478.02,-52.78 478.02,-40.78 478.02,-40.78 478.02,-34.78 484.02,-28.78 490.02,-28.78 490.02,-28.78 541.27,-28.78 541.27,-28.78 547.27,-28.78 553.27,-34.78 553.27,-40.78 553.27,-40.78 553.27,-52.78 553.27,-52.78 553.27,-58.78 547.27,-64.78 541.27,-64.78"></path>
+<text xml:space="preserve" text-anchor="middle" x="515.64" y="-42.33" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscribed</text>
+</g>
+<!-- pending&#45;&gt;sub -->
+<g id="edge4" class="edge">
+<title>pending-&gt;sub</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M337.65,-82.33C370.92,-95.6 419.74,-108.73 460.02,-93.78 471.63,-89.47 482.43,-81.47 491.31,-73.27"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="493.69,-75.84 498.33,-66.31 488.76,-70.87 493.69,-75.84"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="418.02" y="-102.17" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Subscription active</text>
+</g>
+<!-- pending&#45;&gt;sub -->
+<g id="edge5" class="edge">
+<title>pending-&gt;sub</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M358.42,-59.09C392.41,-56.41 434.48,-53.1 466.4,-50.58"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="466.31,-54.1 476,-49.83 465.76,-47.12 466.31,-54.1"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="418.02" y="-70.31" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">CM restores</text>
+<text xml:space="preserve" text-anchor="middle" x="418.02" y="-59.06" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">subscription</text>
+</g>
+<!-- sub&#45;&gt;notsub -->
+<g id="edge6" class="edge">
+<title>sub-&gt;notsub</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M488.33,-28.23C479.72,-23.17 469.83,-18.37 460.02,-15.78 354.31,12.12 225.39,-4.01 152.73,-17.45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.37,-13.96 143.2,-19.27 153.68,-20.84 152.37,-13.96"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-6.85" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- sub&#45;&gt;pending -->
+<g id="edge7" class="edge">
+<title>sub-&gt;pending</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M477.58,-30.07C471.81,-28.09 465.83,-26.38 460.02,-25.28 423.34,-18.32 412.36,-16.72 376.02,-25.28 363.06,-28.34 349.8,-33.92 338.01,-39.9"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="336.71,-36.62 329.54,-44.42 340.01,-42.8 336.71,-36.62"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="418.02" y="-38.28" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Service temporarily</text>
+<text xml:space="preserve" text-anchor="middle" x="418.02" y="-27.03" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">unavailable</text>
+</g>
+</g>
+</svg>
+</div>
+<p class="diagram-note">Statechart: Event subscription transitions upon loss of service and automatic recovery. Sources: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00310">[SWS_CM_00310]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00315">[SWS_CM_00315]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsubsection.5.3.5.2">EXP ARAComAPI §5.3.5.2 “Monitoring Event Subscription”</a>.</p>
+<p>A Request/Response method call immediately returns a <code>ara::core::Future&lt;Output&gt;</code>. In addition, the result and possible errors are queried: For a configured application error response, the result contains a <code>ara::core::ErrorCode</code> from the domain of <code>ApApplicationError</code>; for a service that is no longer available, <code>ComErrc::kServiceNotAvailable</code> is set. If the platform detects an error locally that causes the remote call that has already been triggered to fail, it must provide the associated future with <code>ComErrc::kCommunicationFailure</code>. <code>ara::com</code> does not offer its own timeout monitoring for method calls; blocking future operations can therefore wait indefinitely if an answer is lost. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00196">[SWS_CM_00196]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10440">[SWS_CM_10440]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subparagraph.7.4.1.2.5.3">SWS Communication Management §7.4.1.2.5.3 “E2E error notification”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=paragraph.7.4.1.2.6">SWS Communication Management §7.4.1.2.6 “Timeout supervision”</a></p>
+<div class="diagram" id="diag-02">
+<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 459" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Method call: error transport via Future</text><line x1="135" y1="102" x2="135" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="445" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Application</text><a class="vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Service proxy</text></a><a class="vis-app" href="../classes/cl_ara_core_Future_420ba8.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::core::Future</text></a><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker></defs><rect x="40" y="218" width="610" height="207" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Method::operator()(…)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">Return Future&lt;Output&gt;</text><line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">GetResult()</text><line x1="135" y1="200" x2="555" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 40 218 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="233" font-size="11" font-weight="bold" fill="#28251d">alt</text><text x="96" y="233" font-size="11" font-style="italic" fill="#28251d">[ApApplicationError]</text><text x="450.0" y="258" text-anchor="middle" font-size="11" fill="#28251d">SetError(ApApplicationError)</text><line x1="345" y1="264" x2="555" y2="264" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="292" text-anchor="middle" font-size="11" fill="#28251d">Result with ErrorCode</text><line x1="555" y1="298" x2="135" y2="298" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrF)"></line><line x1="40" y1="320" x2="650" y2="320" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="335" font-size="11" font-style="italic" fill="#28251d">[Service unavailable]</text><text x="450.0" y="363" text-anchor="middle" font-size="11" fill="#28251d">SetError(kServiceNotAvailable)</text><line x1="345" y1="369" x2="555" y2="369" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="397" text-anchor="middle" font-size="11" fill="#28251d">Result with ErrorCode</text><line x1="555" y1="403" x2="135" y2="403" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrF)"></line></svg>
+</div>
+<p class="diagram-note">Sequence Diagram: A Request/Response method call provides application and availability errors via the returned Future. The linked participants are APPLICATION INTERFACE. Sources: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00196">[SWS_CM_00196]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10440">[SWS_CM_10440]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subparagraph.7.4.1.2.5.3">SWS Communication Management §7.4.1.2.5.3 “E2E error notification”</a>.</p>
+<p>For E2E-protected events, the application can inspect the E2E check result for each <code>SamplePtr</code> using <code>GetProfileCheckStatus()</code>, for example <code>kOk</code>, <code>kRepeated</code>, <code>kWrongSequence</code>, or <code>kError</code>. The <code>SMState</code> consolidates the check history for current E2E monitoring; the most recently checked sample may be used only with <code>kValid</code> and a non-erroneous profile status. If the E2E check of a method response fails, the implementation sets an error from <code>ara::com::e2e::ComE2EErrorDomain</code> in the associated Promise and thus in the Future result. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_90420">[SWS_CM_90420]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_90421">[SWS_CM_90421]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12021">[SWS_CM_12021]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_90422">[SWS_CM_90422]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_90477">[SWS_CM_90477]</a></p>
+<h4>Further detailed evidence</h4><p>The following specification references used in the previous description are retained for further examination: <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html"><si>Proxy</si></a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10438">[SWS_CM_10438]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00122">[SWS_CM_00122]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00622">[SWS_CM_00622]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00209">[SWS_CM_00209]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00123">[SWS_CM_00123]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00623">[SWS_CM_00623]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html"><si>Skeleton</si></a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00101">[SWS_CM_00101]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00201">[SWS_CM_00201]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00203">[SWS_CM_00203]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12002">[SWS_CM_12002]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html"><field></field></a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00112">[SWS_CM_00112]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00113">[SWS_CM_00113]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_11601">[SWS_CM_11601]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_11602">[SWS_CM_11602]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_11610">[SWS_CM_11610]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_triggers_Trigger_d98590.html"><trigger></trigger></a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_triggers_Trigger_d98590.html#SWS_CM_00723">[SWS_CM_00723]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_triggers_Trigger_d98590.html#SWS_CM_00810">[SWS_CM_00810]</a>, <a class="swsref vis-app" href="../classes/cl_ara_com_SamplePtr_f95130.html">SamplePtr</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_events_Event_ed6992.html#SWS_CM_00701">[SWS_CM_00701]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10441">[SWS_CM_10441]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10308">[SWS_CM_10308]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html">HandleType</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html#SWS_CM_00349">[SWS_CM_00349]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html#SWS_CM_00317">[SWS_CM_00317]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html#SWS_CM_00318">[SWS_CM_00318]</a>, <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html#SWS_CM_11371">[SWS_CM_11371]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00090">[SWS_CORE_00090]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00085">[SWS_CM_00085]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00087">[SWS_CM_00087]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00707">[SWS_CM_00707]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15002">[SWS_CORE_15002]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00155">[RS_AP_00155]</a>, <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_11334">[SWS_CM_11334]</a>, <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_11335">[SWS_CM_11335]</a>, <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_12510">[SWS_CM_12510]</a>, <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_e2e_f19464.html#SWS_CM_12511">[SWS_CM_12511]</a>, <a class="swsref vis-internal" href="../namespaces/ns_com_apext_com_secoc_eb0f3c.html#SWS_CM_12521">[SWS_CM_12521]</a>, <a class="swsref vis-internal" href="../namespaces/ns_com_apext_com_secoc_eb0f3c.html#SWS_CM_12522">[SWS_CM_12522]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00142">[RS_AP_00142]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119">[RS_AP_00119]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_90413">[SWS_CM_90413]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00042">[SWS_CM_00042]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00164">[RS_AP_00164]</a>, <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_runtime_ac29a8.html#SWS_CM_00118">[SWS_CM_00118]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=TPS_MANI_01017">[TPS_MANI_01017]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_Methodology.pdf#nameddest=TR_AMETH_00251">[TR_AMETH_00251]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_Methodology.pdf#nameddest=TR_AMETH_00008">[TR_AMETH_00008]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TR_Methodology.pdf#nameddest=TR_AMETH_00012">[TR_AMETH_00012]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf#nameddest=SWS_LBAP_00037">[SWS_LBAP_00037]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf#nameddest=SWS_LBAP_00003">[SWS_LBAP_00003]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf#nameddest=SWS_LBAP_00050">[SWS_LBAP_00050]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf#nameddest=SWS_LBAP_00051">[SWS_LBAP_00051]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00055">[SWS_CORE_00055]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90024">[SWS_CORE_90024]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.9.3">EXP SWArchitecture §9.3 “Communication”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=section.4.2">TPS ManifestSpecification §4.2 “Service Interface”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.15">EXP SWArchitecture §13.15 “Service-Oriented Communication”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=chapter.3">EXP ARAComAPI §3 “Introduction”</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 “Proxy/Skeleton Architecture”</a>.</p></div>
+<h2 class="sect">From the manifest to the generated class <span class="ai-badge" title="AI generated">AI generated</span></h2>
+<div class="ai"><p class="ai-note">Automatically generated instructions, content derived from the referenced AUTOSAR R25-11 specification elements — not an official AUTOSAR text. Evidence: [SWS_…] references.</p>
+<h3>1. Modeling in the manifesto</h3>
+<p>The starting point is a <code>ServiceInterface</code> in the ARXML manifest (service interface description).
+The elements of the service are modeled there: <b>Events</b>, <b>Methods</b> (incl. Fire&amp;Forget),
+<b>Fields</b> (with Get/Set/Notifier) as well as the namespace hierarchy of the interface.</p>
+<h3>2. What the generator produces</h3>
+<p>From the manifest, the tooling of the AP stack generates C++ bindings for each service interface
+(<code>&lt;SI&gt;</code>) two central classes:</p>
+<ul>
+<li>The <b>Skeleton class</b> <code>&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html">[SWS_CM_00002]</a>
+in the header <code>&lt;si&gt;_skeleton.h</code> — the server-side base class of the service provider.</li>
+<li>The <b>Proxy class</b> <code>&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html">[SWS_CM_00004]</a>
+in the header <code>&lt;si&gt;_proxy.h</code> — the client-side delegate.</li>
+</ul>
+<p>For each event, field and method, additional inner classes are created in the namespaces
+<code>events</code>, <code>fields</code> and <code>methods</code> (e.g.
+<code>&lt;SI-Namespace&gt;::proxy::events::&lt;Event&gt;</code>). The placeholder class pages
+of this module (names with <code>&lt;…&gt;</code>) document exactly these generated types.</p>
+<h3>3. Offer Service (Skeleton Page)</h3>
+<ul>
+<li>Derive your own implementation class from <code>&lt;SI&gt;Skeleton</code> and the purely virtual ones
+Override service methods: regular methods return <code>ara::core::Future&lt;…Output&gt;</code>
+<a class="swsref vis-app" href="../classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_00191">[SWS_CM_00191]</a>, Fire&amp;Forget methods <code>void</code> <a class="swsref vis-app" href="../classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_90434">[SWS_CM_90434]</a>.</li>
+<li>Construct instance with a <code>ara::core::InstanceSpecifier</code>; the processing mode
+(<code>MethodCallProcessingMode</code>: kEvent, kEventSingleThread, kPoll) controls processing
+incoming calls <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00301">[SWS_CM_00301]</a>.</li>
+<li>Offer service with <code>OfferService()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00101">[SWS_CM_00101]</a> and with
+<code>StopOfferService()</code> take back <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00111">[SWS_CM_00111]</a>.</li>
+<li>Events about <code>events::&lt;Event&gt;::Send()</code> publish <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_events_Event_99cf79.html#SWS_CM_00162">[SWS_CM_00162]</a>, fields about
+<code>fields::&lt;Field&gt;::Update()</code> update <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_fields_Field_f27d36.html#SWS_CM_00119">[SWS_CM_00119]</a>.</li>
+</ul>
+<h3>4. Use the service (proxy site)</h3>
+<ul>
+<li>Search available instances: synchronously via <code>&lt;SI&gt;Proxy::FindService()</code>
+<a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00122">[SWS_CM_00122]</a> (with InstanceSpecifier <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00622">[SWS_CM_00622]</a>) or continuously via
+<code>StartFindService()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11352">[SWS_CM_11352]</a> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11365">[SWS_CM_11365]</a>.</li>
+<li>The result is a <code>&lt;SI&gt;Proxy::HandleType</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html">[SWS_CM_00312]</a>; this becomes the proxy
+via the static factory <code>&lt;SI&gt;Proxy::Create()</code> generated <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10438">[SWS_CM_10438]</a>
+(Handle available later via <code>GetHandle()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10383">[SWS_CM_10383]</a>).</li>
+<li>Events: <code>events::&lt;Event&gt;::Subscribe()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_events_Event_ed6992.html#SWS_CM_00141">[SWS_CM_00141]</a>, received via
+<code>GetNewSamples()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_events_Event_ed6992.html#SWS_CM_00701">[SWS_CM_00701]</a>.</li>
+<li>Fields: <code>fields::&lt;Field&gt;::Get()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00112">[SWS_CM_00112]</a> /
+<code>Set()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00113">[SWS_CM_00113]</a>; Method calls run asynchronously and deliver
+<code>ara::core::Future</code>.</li>
+</ul></div>
+</details>
+<h2 class="sect">Namespaces</h2><ul class="mlist boxes"><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_proxy_250bf1.html">&lt;SI-Namespace&gt;::proxy</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_proxy_fields_7fa3bd.html">&lt;SI-Namespace&gt;::proxy::fields</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_proxy_methods_abbc87.html">&lt;SI-Namespace&gt;::proxy::methods</a> <span class="dim">2 classes, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_proxy_triggers_58ebca.html">&lt;SI-Namespace&gt;::proxy::triggers</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_skeleton_3e0cf2.html">&lt;SI-Namespace&gt;::skeleton</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_skeleton_fields_6fe063.html">&lt;SI-Namespace&gt;::skeleton::fields</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com__SI_Namespace_skeleton_triggers_9545e4.html">&lt;SI-Namespace&gt;::skeleton::triggers</a> <span class="dim">1 class, 0 free functions</span></li><li><a class="dbox vis-internal" href="../namespaces/ns_com_apext_com_secoc_eb0f3c.html">apext::com::secoc</a> <span class="dim">4 classes, 2 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com_ara_com_4a3210.html">ara::com</a> <span class="dim">7 classes, 2 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com_ara_com_e2e_f19464.html">ara::com::e2e</a> <span class="dim">2 classes, 2 free functions</span></li><li><a class="dbox vis-app" href="../namespaces/ns_com_ara_com_runtime_ac29a8.html">ara::com::runtime</a> <span class="dim">0 classes, 1 free function</span></li></ul>
+<h2 class="sect">Service interfaces (modelled via ara::com)</h2><ul class="mlist boxes"><li><a class="dbox vis-app" href="../services/sv_com_VerificationStatus_8570a9.html">VerificationStatus</a> <span class="dim">1 member</span></li><li><a class="dbox vis-app" href="../services/sv_com_VerificationStatusConfigurationByDataId_bae065.html">VerificationStatusConfigurationByDataId</a> <span class="dim">1 member</span></li><li><a class="dbox vis-app" href="../services/sv_com_VerificationStatusConfigurationByFreshnessId_f27706.html">VerificationStatusConfigurationByFreshnessId</a> <span class="dim">1 member</span></li></ul>
+<h2 class="sect">UML class diagram of the module</h2><p class="dim">Rounded Frames = Namespaces; hollow triangle arrows = inheritance (pointing to base class); gray boxes = non-module or external base classes. Clicking opens the class page.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="458pt" height="1676pt" viewbox="0.00 0.00 458.00 1676.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1672)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M74.62,-8C74.62,-8 210.62,-8 210.62,-8 216.62,-8 222.62,-14 222.62,-20 222.62,-20 222.62,-70 222.62,-70 222.62,-76 216.62,-82 210.62,-82 210.62,-82 74.62,-82 74.62,-82 68.62,-82 62.62,-76 62.62,-70 62.62,-70 62.62,-20 62.62,-20 62.62,-14 68.62,-8 74.62,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_2</title>
+<path fill="none" stroke="#d4d1ca" d="M39.75,-90C39.75,-90 245.5,-90 245.5,-90 251.5,-90 257.5,-96 257.5,-102 257.5,-102 257.5,-152 257.5,-152 257.5,-158 251.5,-164 245.5,-164 245.5,-164 39.75,-164 39.75,-164 33.75,-164 27.75,-158 27.75,-152 27.75,-152 27.75,-102 27.75,-102 27.75,-96 33.75,-90 39.75,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_3</title>
+<path fill="none" stroke="#d4d1ca" d="M55.12,-172C55.12,-172 230.12,-172 230.12,-172 236.12,-172 242.12,-178 242.12,-184 242.12,-184 242.12,-234 242.12,-234 242.12,-240 236.12,-246 230.12,-246 230.12,-246 55.13,-246 55.13,-246 49.13,-246 43.12,-240 43.12,-234 43.12,-234 43.12,-184 43.12,-184 43.12,-178 49.12,-172 55.12,-172"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-177.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy::fields</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_4</title>
+<path fill="none" stroke="#d4d1ca" d="M45.38,-254C45.38,-254 239.88,-254 239.88,-254 245.88,-254 251.88,-260 251.88,-266 251.88,-266 251.88,-370 251.88,-370 251.88,-376 245.88,-382 239.88,-382 239.88,-382 45.38,-382 45.38,-382 39.38,-382 33.38,-376 33.38,-370 33.38,-370 33.38,-266 33.38,-266 33.38,-260 39.38,-254 45.38,-254"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-259.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy::methods</text>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_5</title>
+<path fill="none" stroke="#d4d1ca" d="M12,-390C12,-390 273.25,-390 273.25,-390 279.25,-390 285.25,-396 285.25,-402 285.25,-402 285.25,-452 285.25,-452 285.25,-458 279.25,-464 273.25,-464 273.25,-464 12,-464 12,-464 6,-464 0,-458 0,-452 0,-452 0,-402 0,-402 0,-396 6,-390 12,-390"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-395.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy::methods::&lt;Method&gt;</text>
+</g>
+<g id="clust6" class="cluster">
+<title>cluster_6</title>
+<path fill="none" stroke="#d4d1ca" d="M48.38,-472C48.38,-472 236.88,-472 236.88,-472 242.88,-472 248.88,-478 248.88,-484 248.88,-484 248.88,-534 248.88,-534 248.88,-540 242.88,-546 236.88,-546 236.88,-546 48.38,-546 48.38,-546 42.37,-546 36.38,-540 36.38,-534 36.38,-534 36.38,-484 36.38,-484 36.38,-478 42.38,-472 48.38,-472"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-477.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::proxy::triggers</text>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_7</title>
+<path fill="none" stroke="#d4d1ca" d="M66,-554C66,-554 219.25,-554 219.25,-554 225.25,-554 231.25,-560 231.25,-566 231.25,-566 231.25,-616 231.25,-616 231.25,-622 225.25,-628 219.25,-628 219.25,-628 66,-628 66,-628 60,-628 54,-622 54,-616 54,-616 54,-566 54,-566 54,-560 60,-554 66,-554"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-559.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::skeleton</text>
+</g>
+<g id="clust8" class="cluster">
+<title>cluster_8</title>
+<path fill="none" stroke="#d4d1ca" d="M22.12,-636C22.12,-636 263.12,-636 263.12,-636 269.12,-636 275.12,-642 275.12,-648 275.12,-648 275.12,-698 275.12,-698 275.12,-704 269.12,-710 263.12,-710 263.12,-710 22.12,-710 22.12,-710 16.12,-710 10.12,-704 10.12,-698 10.12,-698 10.12,-648 10.12,-648 10.12,-642 16.12,-636 22.12,-636"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-641.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton</text>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_9</title>
+<path fill="none" stroke="#d4d1ca" d="M46.5,-718C46.5,-718 238.75,-718 238.75,-718 244.75,-718 250.75,-724 250.75,-730 250.75,-730 250.75,-780 250.75,-780 250.75,-786 244.75,-792 238.75,-792 238.75,-792 46.5,-792 46.5,-792 40.5,-792 34.5,-786 34.5,-780 34.5,-780 34.5,-730 34.5,-730 34.5,-724 40.5,-718 46.5,-718"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-723.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::skeleton::fields</text>
+</g>
+<g id="clust10" class="cluster">
+<title>cluster_10</title>
+<path fill="none" stroke="#d4d1ca" d="M39.75,-800C39.75,-800 245.5,-800 245.5,-800 251.5,-800 257.5,-806 257.5,-812 257.5,-812 257.5,-862 257.5,-862 257.5,-868 251.5,-874 245.5,-874 245.5,-874 39.75,-874 39.75,-874 33.75,-874 27.75,-868 27.75,-862 27.75,-862 27.75,-812 27.75,-812 27.75,-806 33.75,-800 39.75,-800"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.62" y="-805.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">&lt;SI-Namespace&gt;::skeleton::triggers</text>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_11</title>
+<path fill="none" stroke="#d4d1ca" d="M61.62,-1424C61.62,-1424 222.62,-1424 222.62,-1424 228.62,-1424 234.62,-1430 234.62,-1436 234.62,-1436 234.62,-1648 234.62,-1648 234.62,-1654 228.62,-1660 222.62,-1660 222.62,-1660 61.62,-1660 61.62,-1660 55.62,-1660 49.62,-1654 49.62,-1648 49.62,-1648 49.62,-1436 49.62,-1436 49.62,-1430 55.62,-1424 61.62,-1424"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1429.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">apext::com::secoc</text>
+</g>
+<g id="clust12" class="cluster">
+<title>cluster_12</title>
+<path fill="none" stroke="#d4d1ca" d="M81.88,-1018C81.88,-1018 202.38,-1018 202.38,-1018 208.38,-1018 214.38,-1024 214.38,-1030 214.38,-1030 214.38,-1404 214.38,-1404 214.38,-1410 208.38,-1416 202.38,-1416 202.38,-1416 81.87,-1416 81.87,-1416 75.88,-1416 69.88,-1410 69.88,-1404 69.88,-1404 69.88,-1030 69.88,-1030 69.88,-1024 75.88,-1018 81.88,-1018"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1023.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::com</text>
+</g>
+<g id="clust13" class="cluster">
+<title>cluster_13</title>
+<path fill="none" stroke="#d4d1ca" d="M79.62,-882C79.62,-882 204.62,-882 204.62,-882 210.62,-882 216.62,-888 216.62,-894 216.62,-894 216.62,-998 216.62,-998 216.62,-1004 210.62,-1010 204.62,-1010 204.62,-1010 79.62,-1010 79.62,-1010 73.62,-1010 67.62,-1004 67.62,-998 67.62,-998 67.62,-894 67.62,-894 67.62,-888 73.62,-882 79.62,-882"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-887.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::com::e2e</text>
+</g>
+<!-- n_SI_Namespace___proxy___SI_Proxy329 -->
+<g id="node1" class="node vis-app">
+<title>n_SI_Namespace___proxy___SI_Proxy329</title>
+<g id="a_node1"><a xlink:href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html" xlink:title="&lt;SI&gt;Proxy" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M165.88,-74C165.88,-74 118.38,-74 118.38,-74 112.38,-74 106.38,-68 106.38,-62 106.38,-62 106.38,-50 106.38,-50 106.38,-44 112.38,-38 118.38,-38 118.38,-38 165.88,-38 165.88,-38 171.88,-38 177.88,-44 177.88,-50 177.88,-50 177.88,-62 177.88,-62 177.88,-68 171.88,-74 165.88,-74"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-50.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;SI&gt;Proxy</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy___SI_Proxy__HandleType349 -->
+<g id="node2" class="node vis-app">
+<title>n_SI_Namespace___proxy___SI_Proxy__HandleType349</title>
+<g id="a_node2"><a xlink:href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html" xlink:title="HandleType" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M170.75,-156C170.75,-156 113.5,-156 113.5,-156 107.5,-156 101.5,-150 101.5,-144 101.5,-144 101.5,-132 101.5,-132 101.5,-126 107.5,-120 113.5,-120 113.5,-120 170.75,-120 170.75,-120 176.75,-120 182.75,-126 182.75,-132 182.75,-132 182.75,-144 182.75,-144 182.75,-150 176.75,-156 170.75,-156"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-132.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">HandleType</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy__fields___Field_138 -->
+<g id="node3" class="node vis-app">
+<title>n_SI_Namespace___proxy__fields___Field_138</title>
+<g id="a_node3"><a xlink:href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html" xlink:title="&lt;Field&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M158.38,-238C158.38,-238 125.88,-238 125.88,-238 119.88,-238 113.88,-232 113.88,-226 113.88,-226 113.88,-214 113.88,-214 113.88,-208 119.88,-202 125.88,-202 125.88,-202 158.38,-202 158.38,-202 164.38,-202 170.38,-208 170.38,-214 170.38,-214 170.38,-226 170.38,-226 170.38,-232 164.38,-238 158.38,-238"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-214.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Field&gt;</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy__methods___FnFMethod_122 -->
+<g id="node4" class="node vis-app">
+<title>n_SI_Namespace___proxy__methods___FnFMethod_122</title>
+<g id="a_node4"><a xlink:href="../classes/cl_SI_Namespace_proxy_methods_FnFMethod_74874c.html" xlink:title="&lt;FnFMethod&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M175.62,-320C175.62,-320 108.62,-320 108.62,-320 102.62,-320 96.62,-314 96.62,-308 96.62,-308 96.62,-296 96.62,-296 96.62,-290 102.62,-284 108.62,-284 108.62,-284 175.62,-284 175.62,-284 181.62,-284 187.62,-290 187.62,-296 187.62,-296 187.62,-308 187.62,-308 187.62,-314 181.62,-320 175.62,-320"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-296.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;FnFMethod&gt;</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy__methods___Method_320 -->
+<g id="node5" class="node vis-app">
+<title>n_SI_Namespace___proxy__methods___Method_320</title>
+<g id="a_node5"><a xlink:href="../classes/cl_SI_Namespace_proxy_methods_Method_e89335.html" xlink:title="&lt;Method&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M164.75,-374C164.75,-374 119.5,-374 119.5,-374 113.5,-374 107.5,-368 107.5,-362 107.5,-362 107.5,-350 107.5,-350 107.5,-344 113.5,-338 119.5,-338 119.5,-338 164.75,-338 164.75,-338 170.75,-338 176.75,-344 176.75,-350 176.75,-350 176.75,-362 176.75,-362 176.75,-368 170.75,-374 164.75,-374"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-350.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Method&gt;</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy__methods___Method___Output157 -->
+<g id="node6" class="node vis-app">
+<title>n_SI_Namespace___proxy__methods___Method___Output157</title>
+<g id="a_node6"><a xlink:href="../classes/cl_SI_Namespace_proxy_methods_Method_Output_56338f.html" xlink:title="Output" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M159.12,-456C159.12,-456 125.12,-456 125.12,-456 119.12,-456 113.12,-450 113.12,-444 113.12,-444 113.12,-432 113.12,-432 113.12,-426 119.12,-420 125.12,-420 125.12,-420 159.12,-420 159.12,-420 165.12,-420 171.12,-426 171.12,-432 171.12,-432 171.12,-444 171.12,-444 171.12,-450 165.12,-456 159.12,-456"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-439.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-426.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Output</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___proxy__triggers___Trigger_725 -->
+<g id="node7" class="node vis-app">
+<title>n_SI_Namespace___proxy__triggers___Trigger_725</title>
+<g id="a_node7"><a xlink:href="../classes/cl_SI_Namespace_proxy_triggers_Trigger_d98590.html" xlink:title="&lt;Trigger&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M163.62,-538C163.62,-538 120.62,-538 120.62,-538 114.62,-538 108.62,-532 108.62,-526 108.62,-526 108.62,-514 108.62,-514 108.62,-508 114.62,-502 120.62,-502 120.62,-502 163.62,-502 163.62,-502 169.62,-502 175.62,-508 175.62,-514 175.62,-514 175.62,-526 175.62,-526 175.62,-532 169.62,-538 163.62,-538"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-514.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Trigger&gt;</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___skeleton___SI_Skeleton453 -->
+<g id="node8" class="node vis-app">
+<title>n_SI_Namespace___skeleton___SI_Skeleton453</title>
+<g id="a_node8"><a xlink:href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html" xlink:title="&lt;SI&gt;Skeleton" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M174.12,-620C174.12,-620 110.12,-620 110.12,-620 104.12,-620 98.12,-614 98.12,-608 98.12,-608 98.12,-596 98.12,-596 98.12,-590 104.12,-584 110.12,-584 110.12,-584 174.12,-584 174.12,-584 180.12,-584 186.12,-590 186.12,-596 186.12,-596 186.12,-608 186.12,-608 186.12,-614 180.12,-620 174.12,-620"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-596.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;SI&gt;Skeleton</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___skeleton___SI_Skeleton___Method_Output373 -->
+<g id="node9" class="node vis-app">
+<title>n_SI_Namespace___skeleton___SI_Skeleton___Method_Output373</title>
+<g id="a_node9"><a xlink:href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_Method_Output_ac8615.html" xlink:title="&lt;Method&gt;Output" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M182.38,-702C182.38,-702 101.88,-702 101.88,-702 95.88,-702 89.88,-696 89.88,-690 89.88,-690 89.88,-678 89.88,-678 89.88,-672 95.88,-666 101.88,-666 101.88,-666 182.38,-666 182.38,-666 188.38,-666 194.38,-672 194.38,-678 194.38,-678 194.38,-690 194.38,-690 194.38,-696 188.38,-702 182.38,-702"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-685.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-672.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Method&gt;Output</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___skeleton__fields___Field_667 -->
+<g id="node10" class="node vis-app">
+<title>n_SI_Namespace___skeleton__fields___Field_667</title>
+<g id="a_node10"><a xlink:href="../classes/cl_SI_Namespace_skeleton_fields_Field_f27d36.html" xlink:title="&lt;Field&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M158.38,-784C158.38,-784 125.88,-784 125.88,-784 119.88,-784 113.88,-778 113.88,-772 113.88,-772 113.88,-760 113.88,-760 113.88,-754 119.88,-748 125.88,-748 125.88,-748 158.38,-748 158.38,-748 164.38,-748 170.38,-754 170.38,-760 170.38,-760 170.38,-772 170.38,-772 170.38,-778 164.38,-784 158.38,-784"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-760.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Field&gt;</text>
+</a>
+</g>
+</g>
+<!-- n_SI_Namespace___skeleton__triggers___Trigger_907 -->
+<g id="node11" class="node vis-app">
+<title>n_SI_Namespace___skeleton__triggers___Trigger_907</title>
+<g id="a_node11"><a xlink:href="../classes/cl_SI_Namespace_skeleton_triggers_Trigger_7c7d63.html" xlink:title="&lt;Trigger&gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M163.62,-866C163.62,-866 120.62,-866 120.62,-866 114.62,-866 108.62,-860 108.62,-854 108.62,-854 108.62,-842 108.62,-842 108.62,-836 114.62,-830 120.62,-830 120.62,-830 163.62,-830 163.62,-830 169.62,-830 175.62,-836 175.62,-842 175.62,-842 175.62,-854 175.62,-854 175.62,-860 169.62,-866 163.62,-866"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-842.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">&lt;Trigger&gt;</text>
+</a>
+</g>
+</g>
+<!-- napext__com__secoc__ComSecOcFvmErrorDomain756 -->
+<g id="node12" class="node vis-internal">
+<title>napext__com__secoc__ComSecOcFvmErrorDomain756</title>
+<g id="a_node12"><a xlink:href="../classes/cl_apext_com_secoc_ComSecOcFvmErrorDomain_3955cb.html" xlink:title="ComSecOcFvmErrorDomain" class="vis-internal">
+<path fill="#f9f8f5" stroke="#01696f" d="M214.62,-1544C214.62,-1544 69.62,-1544 69.62,-1544 63.62,-1544 57.62,-1538 57.62,-1532 57.62,-1532 57.62,-1520 57.62,-1520 57.62,-1514 63.62,-1508 69.62,-1508 69.62,-1508 214.62,-1508 214.62,-1508 220.62,-1508 226.62,-1514 226.62,-1520 226.62,-1520 226.62,-1532 226.62,-1532 226.62,-1538 220.62,-1544 214.62,-1544"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1520.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComSecOcFvmErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorDomain335 -->
+<g id="node25" class="node vis-app">
+<title>nara__core__ErrorDomain335</title>
+<g id="a_node25"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M438,-1138C438,-1138 325.25,-1138 325.25,-1138 319.25,-1138 313.25,-1132 313.25,-1126 313.25,-1126 313.25,-1114 313.25,-1114 313.25,-1108 319.25,-1102 325.25,-1102 325.25,-1102 438,-1102 438,-1102 444,-1102 450,-1108 450,-1114 450,-1114 450,-1126 450,-1126 450,-1132 444,-1138 438,-1138"></path>
+<text xml:space="preserve" text-anchor="middle" x="381.62" y="-1114.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- napext__com__secoc__ComSecOcFvmErrorDomain756&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge1" class="edge">
+<title>napext__com__secoc__ComSecOcFvmErrorDomain756-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M227.12,-1525.7C248.34,-1521.73 269.53,-1513.82 285.25,-1499 336.67,-1450.52 367.56,-1230 377.28,-1149.51"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="380.7,-1150.41 378.4,-1140.07 373.75,-1149.59 380.7,-1150.41"></polygon>
+</g>
+<!-- napext__com__secoc__ComSecOcFvmException158 -->
+<g id="node13" class="node vis-internal">
+<title>napext__com__secoc__ComSecOcFvmException158</title>
+<g id="a_node13"><a xlink:href="../classes/cl_apext_com_secoc_ComSecOcFvmException_4a3922.html" xlink:title="ComSecOcFvmException" class="vis-internal">
+<path fill="#f9f8f5" stroke="#01696f" d="M207.12,-1490C207.12,-1490 77.12,-1490 77.12,-1490 71.12,-1490 65.12,-1484 65.12,-1478 65.12,-1478 65.12,-1466 65.12,-1466 65.12,-1460 71.12,-1454 77.12,-1454 77.12,-1454 207.12,-1454 207.12,-1454 213.12,-1454 219.12,-1460 219.12,-1466 219.12,-1466 219.12,-1478 219.12,-1478 219.12,-1484 213.12,-1490 207.12,-1490"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1466.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComSecOcFvmException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Exception792 -->
+<g id="node26" class="node vis-app">
+<title>nara__core__Exception792</title>
+<g id="a_node26"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M430.5,-1084C430.5,-1084 332.75,-1084 332.75,-1084 326.75,-1084 320.75,-1078 320.75,-1072 320.75,-1072 320.75,-1060 320.75,-1060 320.75,-1054 326.75,-1048 332.75,-1048 332.75,-1048 430.5,-1048 430.5,-1048 436.5,-1048 442.5,-1054 442.5,-1060 442.5,-1060 442.5,-1072 442.5,-1072 442.5,-1078 436.5,-1084 430.5,-1084"></path>
+<text xml:space="preserve" text-anchor="middle" x="381.62" y="-1060.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- napext__com__secoc__ComSecOcFvmException158&#45;&gt;nara__core__Exception792 -->
+<g id="edge2" class="edge">
+<title>napext__com__secoc__ComSecOcFvmException158-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M219.36,-1460.86C244.11,-1453.37 269.29,-1440.87 285.25,-1420 329.55,-1362.06 269.84,-1151.61 313.25,-1093 313.33,-1092.9 313.4,-1092.8 313.48,-1092.7"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="315.86,-1095.27 320.38,-1085.69 310.87,-1090.36 315.86,-1095.27"></polygon>
+</g>
+<!-- napext__com__secoc__FVContainer961 -->
+<g id="node14" class="node vis-internal">
+<title>napext__com__secoc__FVContainer961</title>
+<g id="a_node14"><a xlink:href="../classes/cl_apext_com_secoc_FVContainer_6daeaa.html" xlink:title="FVContainer" class="vis-internal">
+<path fill="#f9f8f5" stroke="#01696f" d="M172.25,-1598C172.25,-1598 112,-1598 112,-1598 106,-1598 100,-1592 100,-1586 100,-1586 100,-1574 100,-1574 100,-1568 106,-1562 112,-1562 112,-1562 172.25,-1562 172.25,-1562 178.25,-1562 184.25,-1568 184.25,-1574 184.25,-1574 184.25,-1586 184.25,-1586 184.25,-1592 178.25,-1598 172.25,-1598"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1581.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1568.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FVContainer</text>
+</a>
+</g>
+</g>
+<!-- napext__com__secoc__FVM451 -->
+<g id="node15" class="node vis-internal">
+<title>napext__com__secoc__FVM451</title>
+<g id="a_node15"><a xlink:href="../classes/cl_apext_com_secoc_FVM_8d368e.html" xlink:title="FVM" class="vis-internal">
+<path fill="#f9f8f5" stroke="#01696f" d="M157.12,-1652C157.12,-1652 127.12,-1652 127.12,-1652 121.12,-1652 115.12,-1646 115.12,-1640 115.12,-1640 115.12,-1628 115.12,-1628 115.12,-1622 121.12,-1616 127.12,-1616 127.12,-1616 157.12,-1616 157.12,-1616 163.12,-1616 169.12,-1622 169.12,-1628 169.12,-1628 169.12,-1640 169.12,-1640 169.12,-1646 163.12,-1652 157.12,-1652"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1628.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FVM</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ComErrorDomain658 -->
+<g id="node16" class="node vis-app">
+<title>nara__com__ComErrorDomain658</title>
+<g id="a_node16"><a xlink:href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html" xlink:title="ComErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M185,-1138C185,-1138 99.25,-1138 99.25,-1138 93.25,-1138 87.25,-1132 87.25,-1126 87.25,-1126 87.25,-1114 87.25,-1114 87.25,-1108 93.25,-1102 99.25,-1102 99.25,-1102 185,-1102 185,-1102 191,-1102 197,-1108 197,-1114 197,-1114 197,-1126 197,-1126 197,-1132 191,-1138 185,-1138"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1114.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ComErrorDomain658&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge3" class="edge">
+<title>nara__com__ComErrorDomain658-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M197.31,-1120C228.19,-1120 267.43,-1120 301.67,-1120"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="301.26,-1123.5 311.26,-1120 301.26,-1116.5 301.26,-1123.5"></polygon>
+</g>
+<!-- nara__com__ComException152 -->
+<g id="node17" class="node vis-app">
+<title>nara__com__ComException152</title>
+<g id="a_node17"><a xlink:href="../classes/cl_ara_com_ComException_85bfb4.html" xlink:title="ComException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M177.5,-1084C177.5,-1084 106.75,-1084 106.75,-1084 100.75,-1084 94.75,-1078 94.75,-1072 94.75,-1072 94.75,-1060 94.75,-1060 94.75,-1054 100.75,-1048 106.75,-1048 106.75,-1048 177.5,-1048 177.5,-1048 183.5,-1048 189.5,-1054 189.5,-1060 189.5,-1060 189.5,-1072 189.5,-1072 189.5,-1078 183.5,-1084 177.5,-1084"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1060.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComException</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ComException152&#45;&gt;nara__core__Exception792 -->
+<g id="edge4" class="edge">
+<title>nara__com__ComException152-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M189.76,-1066C223.68,-1066 270.22,-1066 308.85,-1066"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="308.74,-1069.5 318.74,-1066 308.74,-1062.5 308.74,-1069.5"></polygon>
+</g>
+<!-- nara__com__FindServiceHandle138 -->
+<g id="node18" class="node vis-app">
+<title>nara__com__FindServiceHandle138</title>
+<g id="a_node18"><a xlink:href="../classes/cl_ara_com_FindServiceHandle_c56b5d.html" xlink:title="FindServiceHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M189.88,-1192C189.88,-1192 94.38,-1192 94.38,-1192 88.38,-1192 82.38,-1186 82.38,-1180 82.38,-1180 82.38,-1168 82.38,-1168 82.38,-1162 88.38,-1156 94.38,-1156 94.38,-1156 189.88,-1156 189.88,-1156 195.88,-1156 201.88,-1162 201.88,-1168 201.88,-1168 201.88,-1180 201.88,-1180 201.88,-1186 195.88,-1192 189.88,-1192"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1175.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1162.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FindServiceHandle</text>
+</a>
+</g>
+</g>
+<!-- nara__com__InstanceIdentifier581 -->
+<g id="node19" class="node vis-app">
+<title>nara__com__InstanceIdentifier581</title>
+<g id="a_node19"><a xlink:href="../classes/cl_ara_com_InstanceIdentifier_662eea.html" xlink:title="InstanceIdentifier" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M183.5,-1246C183.5,-1246 100.75,-1246 100.75,-1246 94.75,-1246 88.75,-1240 88.75,-1234 88.75,-1234 88.75,-1222 88.75,-1222 88.75,-1216 94.75,-1210 100.75,-1210 100.75,-1210 183.5,-1210 183.5,-1210 189.5,-1210 195.5,-1216 195.5,-1222 195.5,-1222 195.5,-1234 195.5,-1234 195.5,-1240 189.5,-1246 183.5,-1246"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1222.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">InstanceIdentifier</text>
+</a>
+</g>
+</g>
+<!-- nara__com__SamplePtr589 -->
+<g id="node20" class="node vis-app">
+<title>nara__com__SamplePtr589</title>
+<g id="a_node20"><a xlink:href="../classes/cl_ara_com_SamplePtr_f95130.html" xlink:title="SamplePtr" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M166.25,-1300C166.25,-1300 118,-1300 118,-1300 112,-1300 106,-1294 106,-1288 106,-1288 106,-1276 106,-1276 106,-1270 112,-1264 118,-1264 118,-1264 166.25,-1264 166.25,-1264 172.25,-1264 178.25,-1270 178.25,-1276 178.25,-1276 178.25,-1288 178.25,-1288 178.25,-1294 172.25,-1300 166.25,-1300"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1276.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SamplePtr</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ServiceIdentifierType24 -->
+<g id="node21" class="node vis-app">
+<title>nara__com__ServiceIdentifierType24</title>
+<g id="a_node21"><a xlink:href="../classes/cl_ara_com_ServiceIdentifierType_7d13a0.html" xlink:title="ServiceIdentifierType" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M194.38,-1354C194.38,-1354 89.88,-1354 89.88,-1354 83.88,-1354 77.88,-1348 77.88,-1342 77.88,-1342 77.88,-1330 77.88,-1330 77.88,-1324 83.88,-1318 89.88,-1318 89.88,-1318 194.38,-1318 194.38,-1318 200.38,-1318 206.38,-1324 206.38,-1330 206.38,-1330 206.38,-1342 206.38,-1342 206.38,-1348 200.38,-1354 194.38,-1354"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1330.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ServiceIdentifierType</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ServiceVersionType743 -->
+<g id="node22" class="node vis-app">
+<title>nara__com__ServiceVersionType743</title>
+<g id="a_node22"><a xlink:href="../classes/cl_ara_com_ServiceVersionType_c1349a.html" xlink:title="ServiceVersionType" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M191.38,-1408C191.38,-1408 92.88,-1408 92.88,-1408 86.88,-1408 80.88,-1402 80.88,-1396 80.88,-1396 80.88,-1384 80.88,-1384 80.88,-1378 86.88,-1372 92.88,-1372 92.88,-1372 191.38,-1372 191.38,-1372 197.38,-1372 203.38,-1378 203.38,-1384 203.38,-1384 203.38,-1396 203.38,-1396 203.38,-1402 197.38,-1408 191.38,-1408"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-1384.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ServiceVersionType</text>
+</a>
+</g>
+</g>
+<!-- nara__com__e2e__ComE2EErrorDomain501 -->
+<g id="node23" class="node vis-app">
+<title>nara__com__e2e__ComE2EErrorDomain501</title>
+<g id="a_node23"><a xlink:href="../classes/cl_ara_com_e2e_ComE2EErrorDomain_fb2892.html" xlink:title="ComE2EErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M196.62,-1002C196.62,-1002 87.62,-1002 87.62,-1002 81.62,-1002 75.62,-996 75.62,-990 75.62,-990 75.62,-978 75.62,-978 75.62,-972 81.62,-966 87.62,-966 87.62,-966 196.62,-966 196.62,-966 202.62,-966 208.62,-972 208.62,-978 208.62,-978 208.62,-990 208.62,-990 208.62,-996 202.62,-1002 196.62,-1002"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-978.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComE2EErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__com__e2e__ComE2EErrorDomain501&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge5" class="edge">
+<title>nara__com__e2e__ComE2EErrorDomain501-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M209.07,-984.36C235.47,-987.69 264.47,-995.81 285.25,-1014 313.28,-1038.54 287.45,-1066.13 313.25,-1093 313.74,-1093.51 314.24,-1094.01 314.76,-1094.51"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="312.4,-1097.1 322.41,-1100.57 316.75,-1091.62 312.4,-1097.1"></polygon>
+</g>
+<!-- nara__com__e2e__ComE2EException703 -->
+<g id="node24" class="node vis-app">
+<title>nara__com__e2e__ComE2EException703</title>
+<g id="a_node24"><a xlink:href="../classes/cl_ara_com_e2e_ComE2EException_720917.html" xlink:title="ComE2EException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M189.12,-948C189.12,-948 95.12,-948 95.12,-948 89.12,-948 83.12,-942 83.12,-936 83.12,-936 83.12,-924 83.12,-924 83.12,-918 89.12,-912 95.12,-912 95.12,-912 189.12,-912 189.12,-912 195.12,-912 201.12,-918 201.12,-924 201.12,-924 201.12,-936 201.12,-936 201.12,-942 195.12,-948 189.12,-948"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.12" y="-924.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComE2EException</text>
+</a>
+</g>
+</g>
+<!-- nara__com__e2e__ComE2EException703&#45;&gt;nara__core__Exception792 -->
+<g id="edge6" class="edge">
+<title>nara__com__e2e__ComE2EException703-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M201.46,-932.41C228.41,-935.63 259.96,-942.53 285.25,-957 319.2,-976.43 347.11,-1012.5 363.78,-1037.81"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="360.71,-1039.5 369.04,-1046.05 366.61,-1035.74 360.71,-1039.5"></polygon>
+</g>
+</g>
+</svg>
+</div></main>
+<footer>Automatically extracted from the official AUTOSAR R25-11 specification PDFs
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Not an official AUTOSAR publication; description texts in the original (English).</footer></body></html>

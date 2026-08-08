@@ -1,0 +1,46 @@
+<div class="ai"><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><h4>Freshness-Value-Management als Plattform-Erweiterung</h4><p><code>apext::com::secoc::FVM</code> versorgt die SecOC-Verarbeitung mit Empfangs- und Sende-Freshness-Werten. Es ist eine native Schnittstelle für die Plattformintegration; die Communication-Management-Spezifikation verknüpft ihre Aufrufe mit der Verarbeitung gesicherter Nachrichten. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.3.2">SWS CM §7.3.2 „Secure Communication“</a> und <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.3.1.1.3">EXP SW Architecture §9.3.1.1.3 „Interfaces for freshness value management“</a> beschreiben Rolle und Einbettung.</p><h4>Aufrufreihenfolge</h4><p>Vor der operativen Nutzung initialisiert die Plattform den FVM. Beim Senden wird ein Freshness-Wert angefordert; beim Empfangen wird ein übertragener, gegebenenfalls verkürzter Freshness-Wert zur Prüfung bzw. Rekonstruktion verwendet. Die Verifikation mündet in einen gesetzten Status. Die konkrete Verwaltung der Zähler und IDs bleibt Implementierungs-/Konfigurationssache.</p><h4>Fehlerbehandlung</h4><p>Die vier Operationen geben ihren Erfolg über die Extension-Semantik zurück. Fehler gehören zur speziellen FVM-Fehlerdomäne; eine Anwendung sollte sie nicht mit E2E-Profile- oder allgemeinen <code>ComErrc</code>-Fehlern gleichsetzen. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.7">EXP ARAComAPI §4.7 „Error Handling“</a> erklärt die übergeordnete Trennung von Fehlerdomänen.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 595.00 66.00" style="max-width:793px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 61.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="293.5" y="-41.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Freshness-Value-Management bei SecOC</text>
+<!-- bind -->
+<g id="node1" class="node">
+<title>bind</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="91,-36 0,-36 0,0 91,0 91,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="45.5" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SecOC-Binding</text>
+</g>
+<!-- fvm -->
+<g id="node2" class="node vis-internal">
+<title>fvm</title>
+<g id="a_node2"><a xlink:href="../classes/cl_apext_com_secoc_FVM_8d368e.html" xlink:title="FVM" target="_top" class="vis-internal">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="348.25,-36 294.25,-36 294.25,0 348.25,0 348.25,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="321.25" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">FVM</text>
+</a>
+</g>
+</g>
+<!-- bind&#45;&gt;fvm -->
+<g id="edge1" class="edge">
+<title>bind-&gt;fvm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M91.4,-18C144.65,-18 232.46,-18 282.41,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="282.29,-21.5 292.29,-18 282.29,-14.5 282.29,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="192.62" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: GetRxFreshness / GetTxFreshness</text>
+</g>
+<!-- cfg -->
+<g id="node3" class="node vis-app">
+<title>cfg</title>
+<g id="a_node3"><a xlink:href="../services/sv_com_VerificationStatus_8570a9.html" xlink:title="VerificationStatus Service" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="587,-36 487.75,-36 487.75,0 587,0 587,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="537.38" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">VerificationStatus</text>
+<text xml:space="preserve" text-anchor="middle" x="537.38" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Service</text>
+</a>
+</g>
+</g>
+<!-- fvm&#45;&gt;cfg -->
+<g id="edge2" class="edge">
+<title>fvm-&gt;cfg</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M348.51,-18C380.05,-18 433.96,-18 475.97,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="475.8,-21.5 485.8,-18 475.8,-14.5 475.8,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="418" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: SetVerificationStatus</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Kollaboration: Die Plattform-Erweiterung FVM liefert bzw. prüft Freshness-Werte für SecOC; der Verifikationsstatus wird an die konfigurierte Statusschnittstelle gegeben. Quellen: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.3.2">SWS CM §7.3.2 „Secure Communication“</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.3.1.1.3">EXP SW Architecture §9.3.1.1.3 „Interfaces for freshness value management“</a>.</p><h4>Weiterführende Detailbelege</h4><p>Die folgenden in der vorherigen Beschreibung verwendeten Spezifikationsverweise bleiben zur vertiefenden Prüfung erhalten: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11272">[SWS_CM_11272]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11273">[SWS_CM_11273]</a>, <a class="swsref" href="#SWS_CM_11289">[SWS_CM_11289]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11274">[SWS_CM_11274]</a>, <a class="swsref" href="#SWS_CM_11288">[SWS_CM_11288]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11276">[SWS_CM_11276]</a>, <a class="swsref" href="#SWS_CM_19999">[SWS_CM_19999]</a>, <a class="swsref" href="#SWS_CM_11378">[SWS_CM_11378]</a>, <a class="swsref" href="#SWS_CM_11290">[SWS_CM_11290]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11275">[SWS_CM_11275]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11277">[SWS_CM_11277]</a>.</p></div>

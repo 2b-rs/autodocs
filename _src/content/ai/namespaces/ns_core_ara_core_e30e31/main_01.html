@@ -1,0 +1,99 @@
+<div class="ai"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><p>Die freie Funktion <code>ara::core::Abort</code> <a class="swsref" href="#SWS_CORE_00052">[SWS_CORE_00052]</a> terminiert die aktuelle Operation und kehrt nicht zum Aufrufer zurück. Über die variadischen Parameter <code>args</code> können benutzerdefinierte Texte in die ausgegebene Log-Nachricht eingefügt werden; die Argumente müssen nach <code>ara::core::StringView</code> konvertierbar sein, sonst ist der Aufruf ill-formed. Die Funktion ist thread-sicher und exception safe.</p>
+<h4>Nebenläufigkeit &amp; Einschränkungen</h4>
+<p>Da der Stack nicht abgewickelt wird, werden Destruktoren von Variablen mit automatischer Speicherdauer nicht aufgerufen.</p><h4>Globaler ARA-Lebenszyklus</h4><p><code>Initialize()</code> initialisiert Laufzeitressourcen wie Datenstrukturen und Threads und soll am Einstieg der Adaptive Application ausgeführt werden, nachdem die statische Initialisierung abgeschlossen ist. Vorher sind nur ausdrücklich zugelassene ARA-APIs verwendbar. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.4">EXP PlatformDesign §18.4 „Global initialization and shutdown functions“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=section.3.2">EXP InterfacesGuidelines §3.2 „Startup and Shutdown“</a></p><p>Vor <code>Deinitialize()</code> müssen alle von der Anwendung gehaltenen ARA-Ressourcen – auch aus anderen Threads – freigegeben sein. Beide Funktionen liefern <code>Result&lt;void&gt;</code>; bei Fehler ist kein Retry vorgesehen, sondern die Anwendung beendet sich mit Fehlerstatus. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=section.3.2">EXP InterfacesGuidelines §3.2 „Startup and Shutdown“</a></p><p>APIs vor der vollständigen Initialisierung können implementationsdefiniertes Verhalten oder eine Violation auslösen; nach <code>Deinitialize()</code> ist die ARA-Interaktion ebenfalls nur noch in eng definierten Ausnahmen zulässig. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.4">EXP PlatformDesign §18.4 „Global initialization and shutdown functions“</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 688.00 86.00" style="max-width:917px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 82)">
+<title>G</title>
+<!-- s -->
+<g id="node1" class="node">
+<title>s</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-32" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- i -->
+<g id="node2" class="node vis-app">
+<title>i</title>
+<g id="a_node2"><a xlink:href="ns_core_ara_core_e30e31.html" xlink:title="Initialize()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M98.27,-50C98.27,-50 60.52,-50 60.52,-50 54.52,-50 48.52,-44 48.52,-38 48.52,-38 48.52,-26 48.52,-26 48.52,-20 54.52,-14 60.52,-14 60.52,-14 98.27,-14 98.27,-14 104.27,-14 110.27,-20 110.27,-26 110.27,-26 110.27,-38 110.27,-38 110.27,-44 104.27,-50 98.27,-50"></path>
+<text xml:space="preserve" text-anchor="middle" x="79.39" y="-27.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Initialize()</text>
+</a>
+</g>
+</g>
+<!-- s&#45;&gt;i -->
+<g id="edge1" class="edge">
+<title>s-&gt;i</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.91,-32C17.46,-32 26.84,-32 36.84,-32"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.55,-35.5 46.55,-32 36.55,-28.5 36.55,-35.5"></polygon>
+</g>
+<!-- ok -->
+<g id="node3" class="node vis-app">
+<title>ok</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_core_Result_d51722.html" xlink:title="Result&lt;void&gt; erfolgreich?" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="227.02,-64 147.27,-32 227.02,0 306.77,-32 227.02,-64"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="227.02" y="-33.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Result&lt;void&gt;</text>
+<text xml:space="preserve" text-anchor="middle" x="227.02" y="-21.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">erfolgreich?</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;ok -->
+<g id="edge2" class="edge">
+<title>i-&gt;ok</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M110.57,-32C117.73,-32 125.74,-32 134.11,-32"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="134.04,-35.5 144.04,-32 134.04,-28.5 134.04,-35.5"></polygon>
+</g>
+<!-- ara -->
+<g id="node4" class="node">
+<title>ara</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M454.77,-78C454.77,-78 372.77,-78 372.77,-78 366.77,-78 360.77,-72 360.77,-66 360.77,-66 360.77,-54 360.77,-54 360.77,-48 366.77,-42 372.77,-42 372.77,-42 454.77,-42 454.77,-42 460.77,-42 466.77,-48 466.77,-54 466.77,-54 466.77,-66 466.77,-66 466.77,-72 460.77,-78 454.77,-78"></path>
+<text xml:space="preserve" text-anchor="middle" x="413.77" y="-61.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ARA-APIs und</text>
+<text xml:space="preserve" text-anchor="middle" x="413.77" y="-49.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Anwendungsarbeit</text>
+</g>
+<!-- ok&#45;&gt;ara -->
+<g id="edge3" class="edge">
+<title>ok-&gt;ara</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M286.22,-40.82C306.12,-43.84 328.48,-47.23 348.81,-50.31"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="348.13,-53.74 358.54,-51.78 349.17,-46.82 348.13,-53.74"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="333.77" y="-51.08" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">ja</text>
+</g>
+<!-- fail -->
+<g id="node5" class="node">
+<title>fail</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="413.77" cy="-15" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="413.77" cy="-15" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- ok&#45;&gt;fail -->
+<g id="edge4" class="edge">
+<title>ok-&gt;fail</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M289.39,-24.39C301.12,-23.07 313.32,-21.79 324.77,-20.75 348.34,-18.61 375.54,-16.96 393.38,-15.98"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="393.52,-19.48 403.33,-15.46 393.16,-12.49 393.52,-19.48"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="333.77" y="-22.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">nein</text>
+</g>
+<!-- d -->
+<g id="node6" class="node vis-app">
+<title>d</title>
+<g id="a_node6"><a xlink:href="ns_core_ara_core_e30e31.html" xlink:title="Ressourcen freigeben Deinitialize()" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M613.52,-78C613.52,-78 515.77,-78 515.77,-78 509.77,-78 503.77,-72 503.77,-66 503.77,-66 503.77,-54 503.77,-54 503.77,-48 509.77,-42 515.77,-42 515.77,-42 613.52,-42 613.52,-42 619.52,-42 625.52,-48 625.52,-54 625.52,-54 625.52,-66 625.52,-66 625.52,-72 619.52,-78 613.52,-78"></path>
+<text xml:space="preserve" text-anchor="middle" x="564.64" y="-61.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Ressourcen freigeben</text>
+<text xml:space="preserve" text-anchor="middle" x="564.64" y="-49.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Deinitialize()</text>
+</a>
+</g>
+</g>
+<!-- ara&#45;&gt;d -->
+<g id="edge5" class="edge">
+<title>ara-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M467.26,-60C475.17,-60 483.44,-60 491.67,-60"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="491.58,-63.5 501.58,-60 491.58,-56.5 491.58,-63.5"></polygon>
+</g>
+<!-- end -->
+<g id="node7" class="node">
+<title>end</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="671.2" cy="-60" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="671.2" cy="-60" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- d&#45;&gt;end -->
+<g id="edge6" class="edge">
+<title>d-&gt;end</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M625.86,-60C634.82,-60 643.47,-60 650.71,-60"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="650.63,-63.5 660.63,-60 650.63,-56.5 650.63,-63.5"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Aktivitätsdiagramm: Empfohlener Lebenszyklus von der Initialisierung über die Arbeit mit ARA-APIs bis zur Deinitialisierung. Quellen: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.4">EXP PlatformDesign §18.4 „Global initialization and shutdown functions“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=section.3.2">EXP InterfacesGuidelines §3.2 „Startup and Shutdown“</a>.</p><h4>Rahmen der Initialisierungsphase</h4><p>Vor der Initialisierung und nach der Deinitialisierung ist nicht die gesamte ARA-Funktionalität verfügbar. Die SWS erlaubt deshalb nur eine ausdrücklich genannte kleine Teilmenge – darunter <code>ErrorCode</code>, <code>StringView</code>, <code>Result</code> mit Ausnahme von <code>ValueOrThrow()</code> sowie <code>ErrorDomain</code> mit Ausnahme von <code>ThrowAsException()</code> – unabhängig vom Lebenszyklus. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsection.7.1.7">SWS Core §7.1.7 „Initialization/De-initialization“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsubsection.7.1.7.2">SWS Core §7.1.7.2 „Initialization“</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15002">[SWS_CORE_15002]</a></p><p>Ein zweiter Initialisierungsversuch ist nicht als Rekonfiguration gedacht; die Sequenzvorgaben verlangen nach der Initialisierung die Bearbeitung der Fehlerursache und anschließend einen erneuten Versuch. Nach <code>Deinitialize()</code> ist ein weiterer ARA-Aufruf außerhalb der Ausnahmen implementationsdefiniert. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsubsection.7.1.7.4">SWS Core §7.1.7.4 „Sequence of Initialization and De-initialization“</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90022">[SWS_CORE_90022]</a></p></div>

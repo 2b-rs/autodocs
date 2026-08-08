@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ara::per — Persistency</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script></head>
+<body class="vis-app"><header><a class="home" href="../../index.html">ara::* API 레퍼런스</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span><div class="langs"><a href="../../modules/per.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/modules/per.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/modules/per.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/modules/per.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/modules/per.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/modules/per.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/modules/per.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/modules/per.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a class="cur" href="../../ko/modules/per.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/modules/per.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">홈</a> › ara::per</nav>
+<main><h1><span class="kind">모듈</span> ara::per — Persistency</h1>
+<p class="meta">사양: <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf">AUTOSAR_AP_SWS_Persistency.pdf (R25-11)</a> · 140개의 API 레코드</p>
+<p><span class="chip">function: 116</span> <span class="chip">class: 10</span> <span class="chip">enumeration: 6</span> <span class="chip">variable: 5</span> <span class="chip">type alias: 2</span> <span class="chip">struct: 1</span></p>
+<details class="fold"><summary><h2 class="sect">사용자 가이드 <span class="ai-badge" title="AI generated">AI 생성 / AI generated</span></h2></summary><div class="ai module-guide"><p class="ai-note">자동으로 생성된 설명, 참조된 AUTOSAR R25-11 문서(SWS 사양 및 관련 표준 문서)에서 파생된 콘텐츠 — 공식 AUTOSAR 텍스트가 아닙니다. 해석으로 표시된 진술은 출처에서 도출된 결론이다.</p><h4>목적 및 시스템 경계</h4><p><code>ara::per</code>는 적응형 애플리케이션에 액세스할 수 있도록 구성된 영구 데이터를 만듭니다. 모델은 키-값 저장소를 입력된 키-값 쌍의 집합으로, 파일 저장소를 명명된 파일 집합으로 구분한다. 둘 다 애플리케이션별로 결합할 수 있다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.1">SWS Persistency §7.1 “The Architecture of Persistency”</a></p><p>스토리지 인스턴스는 자유롭게 선택할 수 없지만 <code>ara::core::InstanceSpecifier</code>에 의해 명시된 지속성 인터페이스를 참조합니다. 액세스 권한은 읽기 전용, 읽기/쓰기, 쓰기 전용 또는 애플리케이션의 경우 한 번 쓰기 전용일 수 있습니다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.1">SWS Persistency §7.1.1 “Configuration of Persistency”</a></p><h4>결정: 키 또는 파일</h4><p>명시적인 동기화 경계를 가진 주소 지정 가능하고 유형화된 상태에는 <code>KeyValueStorage</code>을 선택하고, 파일형 내용과 Accessor 기반 읽기 또는 쓰기에는 <code>FileStorage</code>을 선택한다. 초기 값과 초기 파일은 Installation 또는 Update와 함께 제공할 수 있다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.2">SWS Persistency §7.1.2 “Configuration of Key-Value Storages”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.3">SWS Persistency §7.1.3 “Configuration of File Storages”</a></p><p class="interp"><strong>해석:</strong> 선택은 데이터 모델 결정이다. 작고 논리적으로 분리된 상태는 키의 이점을 얻는다. 연속적이거나 스트림과 유사한 콘텐츠가 파일 인터페이스에 더 적합하다. 이는 사양에 설명된 다양한 액세스 모델을 따른다.</p><h4>운영 모델 및 데이터 내구성</h4><p>열린 Key-Value Storage는 처음에는 임시 데이터에서 작동합니다. <code>SyncToStorage</code>는 열기 또는 마지막 동기화 이후의 모든 변경 사항을 영구적으로 기록하고 구성된 중복성을 업데이트합니다. 동기화하지 않으면 닫거나 다시 시작할 때 변경 사항이 삭제됩니다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a></p><p>파일의 경우 접근자를 통해 특정 파일이 열립니다. 쓰기 액세스는 <code>SyncToFile</code>를 통해 물리적 메모리로 구체적으로 전송될 수 있다. 접속자의 소유권은 독점적이다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.4">SWS Persistency §7.4 “File Storage specific Features”</a></p><h4>보호, 복구 및 자원</h4><p>중복성은 체크섬이나 여러 복사본을 통해 무결성을 보장할 수 있다. 복구할 수 없는 결과가 있는 경우 복구 보고서 콜백을 통해 애플리케이션에 알릴 수 있다. 복원하면 초기 데이터나 오래된 데이터가 발생할 수 있으므로 전문적으로 확인해야 한다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.4">SWS Persistency §7.2.4 “Redundancy Concepts”</a></p><p>구성된 최대 제한은 실제 사용된 메모리를 제한합니다. 크기 쿼리에는 메타데이터는 물론 중복성 및 백업 요구 사항도 포함되며 개방형 스토리지 또는 병렬 작업에서는 정확하지 않을 수 있습니다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.6">SWS Persistency §7.2.6 “Resource Management Concepts”</a></p><h4>설치, 업데이트 및 롤백</h4><p>Target Configuration는 미리 정의된 값과 파일을 가져올 수 있습니다. 확인 단계에서 <code>UpdatePersistency</code>는 새로운 구성 데이터에 따라 변경 사항을 실행할 수 있습니다. 성공적인 마무리 후 <code>CleanUpPersistency</code> 백업 데이터가 제거되었습니다. 이전 구성이 활성화되면 저장된 백업 버전에 따라 복원 또는 새 설치가 수행됩니다. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.5">SWS Persistency §7.2.5 “Installation and Update of Persistent Data”</a></p><div class="diagram" id="diag-oeffnen-vor-nutzung"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 293" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Storage 열기 및 사용</text><line x1="135" y1="102" x2="135" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Adaptive Application</text><a class="vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::per</text></a><a class="vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Storage</text></a><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Open…Storage(InstanceSpecifier)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">액세스 구조 생성</text><line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">SharedHandle 을 포함한 Result</text><line x1="555" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 290.5 217 h 99 l 10 10 v 32 h -109 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 389.5 217 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="298.5" y="231" font-size="11" fill="#28251d">변경 및 릴리스는</text><text x="298.5" y="244" font-size="11" fill="#28251d">선택된 Storage 유형.</text></svg></div><p class="diagram-note">열려면 구성되고 초기화된 지속성이 필요합니다. 출처: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.1">SWS Persistency §7.1 “The Architecture of Persistency”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a>.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 766.00 69.00" style="max-width:1021px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 64.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="378.81" y="-44.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Key-Value Storage의 트랜잭션 경계</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node vis-app">
+<title>b</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00052" xlink:title="오픈 스토리지" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M114.02,-36C114.02,-36 60.52,-36 60.52,-36 54.52,-36 48.52,-30 48.52,-24 48.52,-24 48.52,-12 48.52,-12 48.52,-6 54.52,0 60.52,0 60.52,0 114.02,0 114.02,0 120.02,0 126.02,-6 126.02,-12 126.02,-12 126.02,-24 126.02,-24 126.02,-30 120.02,-36 114.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="87.27" y="-14.68" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">오픈 스토리지</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.98,-18C17.4,-18 26.48,-18 36.46,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.31,-21.5 46.31,-18 36.31,-14.5 36.31,-21.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node vis-app">
+<title>c</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00046" xlink:title="SetValue / RemoveKey" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M278.77,-36C278.77,-36 175.02,-36 175.02,-36 169.02,-36 163.02,-30 163.02,-24 163.02,-24 163.02,-12 163.02,-12 163.02,-6 169.02,0 175.02,0 175.02,0 278.77,0 278.77,0 284.77,0 290.77,-6 290.77,-12 290.77,-12 290.77,-24 290.77,-24 290.77,-30 284.77,-36 278.77,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="226.89" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SetValue / RemoveKey</text>
+</a>
+</g>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M126.61,-18C134.26,-18 142.55,-18 150.96,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="150.79,-21.5 160.79,-18 150.79,-14.5 150.79,-21.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node vis-app">
+<title>d</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00049" xlink:title="SyncToStorage" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M488.27,-36C488.27,-36 422.77,-36 422.77,-36 416.77,-36 410.77,-30 410.77,-24 410.77,-24 410.77,-12 410.77,-12 410.77,-6 416.77,0 422.77,0 422.77,0 488.27,0 488.27,0 494.27,0 500.27,-6 500.27,-12 500.27,-12 500.27,-24 500.27,-24 500.27,-30 494.27,-36 488.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="455.52" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SyncToStorage</text>
+</a>
+</g>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M291.32,-18C325.14,-18 366.37,-18 398.93,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="398.84,-21.5 408.84,-18 398.84,-14.5 398.84,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="350.77" y="-20.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">의식적으로 지속하다</text>
+</g>
+<!-- e -->
+<g id="node5" class="node">
+<title>e</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M691.27,-36C691.27,-36 549.27,-36 549.27,-36 543.27,-36 537.27,-30 537.27,-24 537.27,-24 537.27,-12 537.27,-12 537.27,-6 543.27,0 549.27,0 549.27,0 691.27,0 691.27,0 697.27,0 703.27,-6 703.27,-12 703.27,-12 703.27,-24 703.27,-24 703.27,-30 697.27,-36 691.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="620.27" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">redundante Daten aktualisieren</text>
+</g>
+<!-- d&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>d-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M500.56,-18C508.42,-18 516.86,-18 525.5,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="525.27,-21.5 535.27,-18 525.27,-14.5 525.27,-21.5"></polygon>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="748.95" cy="-18" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="748.95" cy="-18" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- e&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>e-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M703.64,-18C712.74,-18 721.27,-18 728.36,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="728.34,-21.5 738.34,-18 728.34,-14.5 728.34,-21.5"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">영속화 경계는 열기 또는 마지막 동기화 이후 변경된 모든 키에 적용되며, 구성된 중복성의 갱신도 이에 포함된다. 출처: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a>.</p><div class="diagram" id="diag-02"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 627.00 123.00" style="max-width:836px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 118.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="309.26" y="-98.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">중복성 검사 및 복구</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-44" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node">
+<title>b</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M136.52,-62C136.52,-62 60.52,-62 60.52,-62 54.52,-62 48.52,-56 48.52,-50 48.52,-50 48.52,-38 48.52,-38 48.52,-32 54.52,-26 60.52,-26 60.52,-26 136.52,-26 136.52,-26 142.52,-26 148.52,-32 148.52,-38 148.52,-38 148.52,-50 148.52,-50 148.52,-56 142.52,-62 136.52,-62"></path>
+<text xml:space="preserve" text-anchor="middle" x="98.52" y="-40.67" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">무결성/중복성 확인</text>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.9,-44C17.3,-44 26.43,-44 36.76,-44"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.67,-47.5 46.67,-44 36.67,-40.5 36.67,-47.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node">
+<title>c</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="243.09,-62 185.52,-44 243.09,-26 300.65,-44 243.09,-62"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="243.09" y="-40.67" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">복구 가능?</text>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M148.98,-44C156.55,-44 164.48,-44 172.38,-44"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="172.23,-47.5 182.23,-44 172.23,-40.5 172.23,-47.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M525.9,-90C525.9,-90 401.9,-90 401.9,-90 395.9,-90 389.9,-84 389.9,-78 389.9,-78 389.9,-66 389.9,-66 389.9,-60 395.9,-54 401.9,-54 401.9,-54 525.9,-54 525.9,-54 531.9,-54 537.9,-60 537.9,-66 537.9,-66 537.9,-78 537.9,-78 537.9,-84 531.9,-90 525.9,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="463.9" y="-68.67" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">정상 사본 또는 초기 상태 사용</text>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M285.5,-49.3C311.54,-52.63 346.1,-57.05 377.79,-61.11"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="377.3,-64.58 387.67,-62.37 378.19,-57.63 377.3,-64.58"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="332.15" y="-58.82" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">예</text>
+</g>
+<!-- e -->
+<g id="node5" class="node vis-app">
+<title>e</title>
+<g id="a_node5"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00433" xlink:title="Recovery-Report-Callback informieren" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M552.15,-36C552.15,-36 375.65,-36 375.65,-36 369.65,-36 363.65,-30 363.65,-24 363.65,-24 363.65,-12 363.65,-12 363.65,-6 369.65,0 375.65,0 375.65,0 552.15,0 552.15,0 558.15,0 564.15,-6 564.15,-12 564.15,-12 564.15,-24 564.15,-24 564.15,-30 558.15,-36 552.15,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="463.9" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Recovery-Report-Callback informieren</text>
+</a>
+</g>
+</g>
+<!-- c&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>c-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M283.13,-37.92C294.56,-36.22 307.1,-34.45 318.65,-33 329.31,-31.66 340.43,-30.35 351.55,-29.1"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="351.92,-32.58 361.47,-28 351.14,-25.62 351.92,-32.58"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="332.15" y="-35.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">아니요</text>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="609.83" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="609.83" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- d&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>d-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M538.49,-58.85C553.3,-56.05 568.74,-53.02 583.15,-50 585.34,-49.54 587.63,-49.04 589.9,-48.53"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="590.65,-51.94 599.59,-46.26 589.06,-45.13 590.65,-51.94"></polygon>
+</g>
+<!-- e&#45;&gt;f -->
+<g id="edge6" class="edge">
+<title>e-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M564.47,-35.99C573.9,-37.69 582.58,-39.26 589.72,-40.55"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="588.92,-43.96 599.38,-42.29 590.17,-37.07 588.92,-43.96"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">복구는 최선의 노력입니다. 오류가 발생한 경우 보고서에는 영향을 받은 저장소 또는 요소의 이름이 지정될 수 있습니다. 출처: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.4">SWS Persistency §7.2.4 “Redundancy Concepts”</a>. <em>부분 해석: 활동 순서는 허용되는 여러 중복 절차를 요약합니다.</em></p><div class="diagram" id="diag-update-rollback"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 1009.00 123.00" style="max-width:1345px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 118.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="500.46" y="-98.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">영속 데이터 업데이트</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node vis-app">
+<title>b</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00576" xlink:title="neue Target Configuration erkennen" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M225.02,-63C225.02,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 225.02,-27 225.02,-27 231.02,-27 237.02,-33 237.02,-39 237.02,-39 237.02,-51 237.02,-51 237.02,-57 231.02,-63 225.02,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="142.77" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">neue Target Configuration erkennen</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.89,-45C17.07,-45 25.81,-45 36.39,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.34,-48.5 46.34,-45 36.34,-41.5 36.34,-48.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node vis-app">
+<title>c</title>
+<g id="a_node3"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00357" xlink:title="UpdatePersistency" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M368.77,-63C368.77,-63 286.02,-63 286.02,-63 280.02,-63 274.02,-57 274.02,-51 274.02,-51 274.02,-39 274.02,-39 274.02,-33 280.02,-27 286.02,-27 286.02,-27 368.77,-27 368.77,-27 374.77,-27 380.77,-33 380.77,-39 380.77,-39 380.77,-51 380.77,-51 380.77,-57 374.77,-63 368.77,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="327.39" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">UpdatePersistency</text>
+</a>
+</g>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M237.49,-45C245.85,-45 254.17,-45 262.2,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="262.03,-48.5 272.03,-45 262.03,-41.5 262.03,-48.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="526.41,-63 417.77,-45 526.41,-27 635.05,-45 526.41,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="526.41" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Verifikation erfolgreich?</text>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M381.19,-45C388.08,-45 395.35,-45 402.82,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="402.61,-48.5 412.61,-45 402.61,-41.5 402.61,-48.5"></polygon>
+</g>
+<!-- e -->
+<g id="node5" class="node vis-app">
+<title>e</title>
+<g id="a_node5"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00567" xlink:title="CleanUpPersistency: Backups entfernen" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M934.55,-90C934.55,-90 748.3,-90 748.3,-90 742.3,-90 736.3,-84 736.3,-78 736.3,-78 736.3,-66 736.3,-66 736.3,-60 742.3,-54 748.3,-54 748.3,-54 934.55,-54 934.55,-54 940.55,-54 946.55,-60 946.55,-66 946.55,-66 946.55,-78 946.55,-78 946.55,-84 940.55,-90 934.55,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="841.43" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">CleanUpPersistency: Backups entfernen</text>
+</a>
+</g>
+</g>
+<!-- d&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>d-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M600.4,-51.3C637.23,-54.47 682.77,-58.4 724.26,-61.98"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="723.92,-65.46 734.19,-62.84 724.52,-58.49 723.92,-65.46"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="685.68" y="-63.42" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">예</text>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M894.05,-36C894.05,-36 788.8,-36 788.8,-36 782.8,-36 776.8,-30 776.8,-24 776.8,-24 776.8,-12 776.8,-12 776.8,-6 782.8,0 788.8,0 788.8,0 894.05,0 894.05,0 900.05,0 906.05,-6 906.05,-12 906.05,-12 906.05,-24 906.05,-24 906.05,-30 900.05,-36 894.05,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="841.43" y="-14.68" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Backup 복원 또는 재설치</text>
+</g>
+<!-- d&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>d-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M600.4,-38.7C649.85,-34.44 715.01,-28.82 764.97,-24.51"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="765.03,-28.02 774.69,-23.67 764.42,-21.04 765.03,-28.02"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="685.68" y="-35.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">nein / Rollback</text>
+</g>
+<!-- g -->
+<g id="node7" class="node">
+<title>g</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="992.23" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="992.23" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- e&#45;&gt;g -->
+<g id="edge6" class="edge">
+<title>e-&gt;g</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M946.95,-53.72C953.25,-52.49 959.49,-51.25 965.55,-50 967.74,-49.55 970.03,-49.05 972.31,-48.54"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="973.06,-51.96 981.99,-46.27 971.46,-45.14 973.06,-51.96"></polygon>
+</g>
+<!-- f&#45;&gt;g -->
+<g id="edge7" class="edge">
+<title>f-&gt;g</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M906.4,-29.18C930.02,-33.3 955.07,-37.68 971.77,-40.6"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="971.1,-44.04 981.55,-42.31 972.3,-37.14 971.1,-44.04"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">업데이트, 마무리 및 롤백은 대상 구성 버전 관리에 고정되어 있다. 출처: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.5">SWS Persistency §7.2.5 “Installation and Update of Persistent Data”</a>. <em>부분 해석: 배열은 단일 API 호출의 신호가 아닌 의도된 작업 흐름을 보여줍니다.</em></p><h4>증거 자료 및 API 참조</h4><p>이미 링크된 다음 사양 및 API 위치는 언급된 작업에 대한 자세한 증거로 남아 있다. <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html">FileStorage</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html">KeyValueStorage</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00408">[SWS_PER_00408]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00116">[SWS_PER_00116]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00052">[SWS_PER_00052]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00506">[SWS_PER_00506]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00430">[SWS_PER_00430]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00431">[SWS_PER_00431]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00429">[SWS_PER_00429]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00113">[SWS_PER_00113]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00512">[SWS_PER_00512]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00599">[SWS_PER_00599]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00438">[SWS_PER_00438]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html">ReadAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00119">[SWS_PER_00119]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00165">[SWS_PER_00165]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00422">[SWS_PER_00422]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html">WriteAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00166">[SWS_PER_00166]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00423">[SWS_PER_00423]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00122">[SWS_PER_00122]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html">FileAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00162">[SWS_PER_00162]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00163">[SWS_PER_00163]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00424">[SWS_PER_00424]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00046">[SWS_PER_00046]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00044">[SWS_PER_00044]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00047">[SWS_PER_00047]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00554">[SWS_PER_00554]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00574">[SWS_PER_00574]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_20029">[SWS_PER_20029]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_20035">[SWS_PER_20035]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html">SharedHandle</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html#SWS_PER_00367">[SWS_PER_00367]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html#SWS_PER_00369">[SWS_PER_00369]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00582">[SWS_PER_00582]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_UniqueHandle_94e9f0.html">UniqueHandle</a> <a class="swsref vis-app" href="../classes/cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00373">[SWS_PER_00373]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00470">[SWS_PER_00470]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00338">[SWS_PER_00338]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00426">[SWS_PER_00426]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00336">[SWS_PER_00336]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00334">[SWS_PER_00334]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00452">[SWS_PER_00452]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00547">[SWS_PER_00547]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00317">[SWS_PER_00317]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00481">[SWS_PER_00481]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html">PerErrorDomain</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00314">[SWS_PER_00314]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00315">[SWS_PER_00315]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00350">[SWS_PER_00350]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00427">[SWS_PER_00427]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00406">[SWS_PER_00406]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00405">[SWS_PER_00405]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00576">[SWS_PER_00576]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00577">[SWS_PER_00577]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.10.1">EXP PlatformDesign §10.1 “Overview”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=subsubsection.4.6.1.1">TPS ManifestSpecification §4.6.1.1 “The big Picture”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00010">[RS_PER_00010]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00013">[RS_PER_00013]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00009">[RS_PER_00009]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00008">[RS_PER_00008]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00005">[RS_PER_00005]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00011">[RS_PER_00011]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.11.3.1.4.1">EXP SWArchitecture §11.3.1.4.1 “Scenario: Store Persistent Data with Unique ID”</a>.</p></div>
+</details>
+<h2 class="sect">네임스페이스</h2><ul class="mlist boxes"><li><a class="dbox vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html">ara::per</a> <span class="dim">클래스 11개, 자유 함수 20개</span></li></ul>
+<h2 class="sect">모듈의 UML 클래스 다이어그램</h2><p class="dim">둥근 프레임 = 네임스페이스; 속이 빈 삼각형 화살표 = 상속(기본 클래스를 가리킴); 회색 상자 = 모듈이 아니거나 외부 기본 클래스이다. 클릭하시면 수업 페이지가 열립니다.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="457pt" height="566pt" viewbox="0.00 0.00 457.00 566.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 562)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M20,-98C20,-98 429,-98 429,-98 435,-98 441,-104 441,-110 441,-110 441,-538 441,-538 441,-544 435,-550 429,-550 429,-550 20,-550 20,-550 14,-550 8,-544 8,-538 8,-538 8,-110 8,-110 8,-104 14,-98 20,-98"></path>
+<text xml:space="preserve" text-anchor="middle" x="224.5" y="-103.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::per</text>
+</g>
+<!-- nara__per__FileAccessor932 -->
+<g id="node1" class="node vis-app">
+<title>nara__per__FileAccessor932</title>
+<g id="a_node1"><a xlink:href="../classes/cl_ara_per_FileAccessor_efe7d0.html" xlink:title="FileAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M421,-434C421,-434 359.25,-434 359.25,-434 353.25,-434 347.25,-428 347.25,-422 347.25,-422 347.25,-410 347.25,-410 347.25,-404 353.25,-398 359.25,-398 359.25,-398 421,-398 421,-398 427,-398 433,-404 433,-410 433,-410 433,-422 433,-422 433,-428 427,-434 421,-434"></path>
+<text xml:space="preserve" text-anchor="middle" x="390.12" y="-410.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadAccessor956 -->
+<g id="node2" class="node vis-app">
+<title>nara__per__ReadAccessor956</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html" xlink:title="ReadAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M278.25,-407C278.25,-407 207.5,-407 207.5,-407 201.5,-407 195.5,-401 195.5,-395 195.5,-395 195.5,-383 195.5,-383 195.5,-377 201.5,-371 207.5,-371 207.5,-371 278.25,-371 278.25,-371 284.25,-371 290.25,-377 290.25,-383 290.25,-383 290.25,-395 290.25,-395 290.25,-401 284.25,-407 278.25,-407"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-383.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ReadAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadAccessor956&#45;&gt;nara__per__FileAccessor932 -->
+<g id="edge1" class="edge">
+<title>nara__per__ReadAccessor956-&gt;nara__per__FileAccessor932</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M290.63,-397.69C304.9,-400.34 320.7,-403.28 335.39,-406.01"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="334.62,-409.43 345.09,-407.81 335.9,-402.55 334.62,-409.43"></polygon>
+</g>
+<!-- nara__per__ReadWriteAccessor483 -->
+<g id="node3" class="node vis-app">
+<title>nara__per__ReadWriteAccessor483</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_per_ReadWriteAccessor_30aeb5.html" xlink:title="ReadWriteAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M126.5,-434C126.5,-434 28,-434 28,-434 22,-434 16,-428 16,-422 16,-422 16,-410 16,-410 16,-404 22,-398 28,-398 28,-398 126.5,-398 126.5,-398 132.5,-398 138.5,-404 138.5,-410 138.5,-410 138.5,-422 138.5,-422 138.5,-428 132.5,-434 126.5,-434"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-410.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ReadWriteAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadWriteAccessor483&#45;&gt;nara__per__ReadAccessor956 -->
+<g id="edge2" class="edge">
+<title>nara__per__ReadWriteAccessor483-&gt;nara__per__ReadAccessor956</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M138.71,-406.02C153.44,-403.59 169.16,-401 183.77,-398.59"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="184.12,-402.08 193.42,-397 182.98,-395.17 184.12,-402.08"></polygon>
+</g>
+<!-- nara__per__WriteAccessor940 -->
+<g id="node4" class="node vis-app">
+<title>nara__per__WriteAccessor940</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_per_WriteAccessor_a926f9.html" xlink:title="WriteAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M277.5,-461C277.5,-461 208.25,-461 208.25,-461 202.25,-461 196.25,-455 196.25,-449 196.25,-449 196.25,-437 196.25,-437 196.25,-431 202.25,-425 208.25,-425 208.25,-425 277.5,-425 277.5,-425 283.5,-425 289.5,-431 289.5,-437 289.5,-437 289.5,-449 289.5,-449 289.5,-455 283.5,-461 277.5,-461"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-437.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">WriteAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadWriteAccessor483&#45;&gt;nara__per__WriteAccessor940 -->
+<g id="edge3" class="edge">
+<title>nara__per__ReadWriteAccessor483-&gt;nara__per__WriteAccessor940</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M138.71,-425.98C153.65,-428.44 169.62,-431.08 184.41,-433.52"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="183.76,-436.96 194.19,-435.13 184.89,-430.05 183.76,-436.96"></polygon>
+</g>
+<!-- nara__per__WriteAccessor940&#45;&gt;nara__per__FileAccessor932 -->
+<g id="edge4" class="edge">
+<title>nara__per__WriteAccessor940-&gt;nara__per__FileAccessor932</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M289.83,-434.46C304.4,-431.75 320.64,-428.73 335.69,-425.93"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="335.94,-429.45 345.13,-424.18 334.66,-422.56 335.94,-429.45"></polygon>
+</g>
+<!-- nara__per__FileInfo503 -->
+<g id="node5" class="node vis-app">
+<title>nara__per__FileInfo503</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_per_FileInfo_15b6f6.html" xlink:title="FileInfo" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M94.25,-218C94.25,-218 60.25,-218 60.25,-218 54.25,-218 48.25,-212 48.25,-206 48.25,-206 48.25,-194 48.25,-194 48.25,-188 54.25,-182 60.25,-182 60.25,-182 94.25,-182 94.25,-182 100.25,-182 106.25,-188 106.25,-194 106.25,-194 106.25,-206 106.25,-206 106.25,-212 100.25,-218 94.25,-218"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-201.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-188.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileInfo</text>
+</a>
+</g>
+</g>
+<!-- nara__per__FileStorage945 -->
+<g id="node6" class="node vis-app">
+<title>nara__per__FileStorage945</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_per_FileStorage_29266b.html" xlink:title="FileStorage" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M104.38,-272C104.38,-272 50.12,-272 50.12,-272 44.12,-272 38.12,-266 38.12,-260 38.12,-260 38.12,-248 38.12,-248 38.12,-242 44.12,-236 50.12,-236 50.12,-236 104.38,-236 104.38,-236 110.38,-236 116.38,-242 116.38,-248 116.38,-248 116.38,-260 116.38,-260 116.38,-266 110.38,-272 104.38,-272"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-248.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileStorage</text>
+</a>
+</g>
+</g>
+<!-- nara__per__KeyValueStorage981 -->
+<g id="node7" class="node vis-app">
+<title>nara__per__KeyValueStorage981</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html" xlink:title="KeyValueStorage" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M119.75,-326C119.75,-326 34.75,-326 34.75,-326 28.75,-326 22.75,-320 22.75,-314 22.75,-314 22.75,-302 22.75,-302 22.75,-296 28.75,-290 34.75,-290 34.75,-290 119.75,-290 119.75,-290 125.75,-290 131.75,-296 131.75,-302 131.75,-302 131.75,-314 131.75,-314 131.75,-320 125.75,-326 119.75,-326"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-302.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">KeyValueStorage</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerErrorDomain979 -->
+<g id="node8" class="node vis-app">
+<title>nara__per__PerErrorDomain979</title>
+<g id="a_node8"><a xlink:href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html" xlink:title="PerErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M116.75,-380C116.75,-380 37.75,-380 37.75,-380 31.75,-380 25.75,-374 25.75,-368 25.75,-368 25.75,-356 25.75,-356 25.75,-350 31.75,-344 37.75,-344 37.75,-344 116.75,-344 116.75,-344 122.75,-344 128.75,-350 128.75,-356 128.75,-356 128.75,-368 128.75,-368 128.75,-374 122.75,-380 116.75,-380"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-356.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PerErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorDomain335 -->
+<g id="node12" class="node vis-app">
+<title>nara__core__ErrorDomain335</title>
+<g id="a_node12"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M299.25,-90C299.25,-90 186.5,-90 186.5,-90 180.5,-90 174.5,-84 174.5,-78 174.5,-78 174.5,-66 174.5,-66 174.5,-60 180.5,-54 186.5,-54 186.5,-54 299.25,-54 299.25,-54 305.25,-54 311.25,-60 311.25,-66 311.25,-66 311.25,-78 311.25,-78 311.25,-84 305.25,-90 299.25,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-66.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerErrorDomain979&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge5" class="edge">
+<title>nara__per__PerErrorDomain979-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M129.19,-344.16C132.69,-341.51 135.87,-338.47 138.5,-335 201.64,-251.75 111.37,-181.79 170.94,-99.35"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="173.51,-101.74 176.94,-91.71 168.01,-97.41 173.51,-101.74"></polygon>
+</g>
+<!-- nara__per__PerException768 -->
+<g id="node9" class="node vis-app">
+<title>nara__per__PerException768</title>
+<g id="a_node9"><a xlink:href="../classes/cl_ara_per_PerException_03e937.html" xlink:title="PerException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M109.25,-164C109.25,-164 45.25,-164 45.25,-164 39.25,-164 33.25,-158 33.25,-152 33.25,-152 33.25,-140 33.25,-140 33.25,-134 39.25,-128 45.25,-128 45.25,-128 109.25,-128 109.25,-128 115.25,-128 121.25,-134 121.25,-140 121.25,-140 121.25,-152 121.25,-152 121.25,-158 115.25,-164 109.25,-164"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-140.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PerException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Exception792 -->
+<g id="node13" class="node vis-app">
+<title>nara__core__Exception792</title>
+<g id="a_node13"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M291.75,-36C291.75,-36 194,-36 194,-36 188,-36 182,-30 182,-24 182,-24 182,-12 182,-12 182,-6 188,0 194,0 194,0 291.75,0 291.75,0 297.75,0 303.75,-6 303.75,-12 303.75,-12 303.75,-24 303.75,-24 303.75,-30 297.75,-36 291.75,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-12.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerException768&#45;&gt;nara__core__Exception792 -->
+<g id="edge6" class="edge">
+<title>nara__per__PerException768-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M91.69,-127.67C108.78,-105.49 140.21,-68.23 174.5,-45 175.93,-44.03 177.41,-43.08 178.92,-42.16"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="180.57,-45.25 187.64,-37.36 177.19,-39.12 180.57,-45.25"></polygon>
+</g>
+<!-- nara__per__SharedHandle980 -->
+<g id="node10" class="node vis-app">
+<title>nara__per__SharedHandle980</title>
+<g id="a_node10"><a xlink:href="../classes/cl_ara_per_SharedHandle_a773d0.html" xlink:title="SharedHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M112.25,-488C112.25,-488 42.25,-488 42.25,-488 36.25,-488 30.25,-482 30.25,-476 30.25,-476 30.25,-464 30.25,-464 30.25,-458 36.25,-452 42.25,-452 42.25,-452 112.25,-452 112.25,-452 118.25,-452 124.25,-458 124.25,-464 124.25,-464 124.25,-476 124.25,-476 124.25,-482 118.25,-488 112.25,-488"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-464.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SharedHandle</text>
+</a>
+</g>
+</g>
+<!-- nara__per__UniqueHandle733 -->
+<g id="node11" class="node vis-app">
+<title>nara__per__UniqueHandle733</title>
+<g id="a_node11"><a xlink:href="../classes/cl_ara_per_UniqueHandle_94e9f0.html" xlink:title="UniqueHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M112.25,-542C112.25,-542 42.25,-542 42.25,-542 36.25,-542 30.25,-536 30.25,-530 30.25,-530 30.25,-518 30.25,-518 30.25,-512 36.25,-506 42.25,-506 42.25,-506 112.25,-506 112.25,-506 118.25,-506 124.25,-512 124.25,-518 124.25,-518 124.25,-530 124.25,-530 124.25,-536 118.25,-542 112.25,-542"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-518.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">UniqueHandle</text>
+</a>
+</g>
+</g>
+</g>
+</svg>
+</div></main>
+<footer>공식 AUTOSAR R25-11 사양 PDF에서 자동 추출
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+AUTOSAR 공식 간행물이 아니며, 설명 텍스트는 원문(영어) 그대로입니다.</footer></body></html>

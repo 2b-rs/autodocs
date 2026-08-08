@@ -1,0 +1,28 @@
+{
+  "titel": "Function-Group-Transition mit Erfolgs- und Fehlerpfaden",
+  "teilnehmer": [
+    {"name": "State Management"},
+    {"name": "StateClient", "href": "../classes/cl_ara_exec_StateClient_276b21.html", "klasse": "vis-internal"},
+    {"name": "Execution Management", "href": "../modules/exec.html"},
+    {"name": "Konfigurierte Prozesse"}
+  ],
+  "schritte": [
+    {"art": "nachricht", "von": 0, "nach": 1, "text": ["SetState(requested state)"]},
+    {"art": "nachricht", "von": 1, "nach": 2, "text": ["Function-Group-Transition anfordern"]},
+    {"art": "rahmen", "typ": "alt", "guard": "[Transition erfolgreich]"},
+    {"art": "nachricht", "von": 2, "nach": 3, "text": ["nicht mehr benötigte Prozesse", "terminieren"]},
+    {"art": "nachricht", "von": 2, "nach": 3, "text": ["benötigte Prozesse in", "Abhängigkeitsreihenfolge starten"]},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["SetState()-Future erfolgreich abschließen"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "trenner", "guard": "[Start eines Process schlägt fehl]"},
+    {"art": "nachricht", "von": 2, "nach": 3, "text": ["Transition beenden; weitere", "Starts unterlassen"]},
+    {"art": "selbst", "teilnehmer": 2, "text": ["Current State auf Undefined setzen"]},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["Future: ExecErrc::kOperationFailed", "[SWS_EM_02259]"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "selbst", "teilnehmer": 1, "text": ["GetExecutionError():", "konfigurierten ExecutionError lesen"]},
+    {"art": "trenner", "guard": "[Abnormal oder Unexpected Termination]"},
+    {"art": "nachricht", "von": 3, "nach": 2, "text": ["Termination eines für den Requested", "State konfigurierten Process"]},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["Future: ExecErrc::kUnexpectedTermination", "[SWS_EM_02315]"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "trenner", "guard": "[weitere SetState()-Ergebnisse]"},
+    {"art": "notiz", "ueber": [0, 2], "text": ["kOperationCanceled: neuer gültiger Request ersetzt laufende Transition", "kNoCommunication: Kommunikation mit Execution Management nicht verfügbar", "kInvalidTransition: verbotener oder ungültiger Zielzustand", "[SWS_EM_02278]"]},
+    {"art": "rahmen-ende"}
+  ]
+}

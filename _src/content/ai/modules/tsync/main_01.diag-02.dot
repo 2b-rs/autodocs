@@ -1,0 +1,23 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="transparent", fontname="Helvetica,sans-Serif", label="Synchronisations- und Leap-Status", labelloc=t, fontsize=13, fontcolor="#28251d"]
+  node [fontname="Helvetica,sans-Serif", fontsize=12, color="#01696f", fontcolor="#28251d"]
+  edge [fontname="Helvetica,sans-Serif", fontsize=11, color="#28251d", fontcolor="#28251d", penwidth=1.1]
+
+  "start" [shape=point, fillcolor="#28251d", style="filled", color="#28251d", penwidth=1.2, width=0.16]
+  "initial" [shape=box, label="kNotSynchronized\nUntilStartup", fillcolor="#ffffff", style="rounded,filled", color="#01696f", fontcolor="#01696f", fontsize=11, penwidth=1.2]
+  "start" -> "initial" [penwidth=1.1]
+  "sync" [shape=box, label="kSynchronized", fillcolor="#ffffff", style="rounded,filled", color="#01696f", fontcolor="#01696f", fontsize=11, penwidth=1.2]
+  "initial" -> "sync" [label="Update erfolgreich\nohne Gateway", fontsize=10, penwidth=1.1]
+  "gateway" [shape=box, label="kSynchToGateway", fillcolor="#ffffff", style="rounded,filled", color="#01696f", fontcolor="#01696f", fontsize=11, penwidth=1.2]
+  "initial" -> "gateway" [label="Update erfolgreich\nmit Gateway", fontsize=10, penwidth=1.1]
+  "ende" [shape=doublecircle, label="", fillcolor="#28251d", style="filled", color="#28251d", width=0.13]
+  "timeout" [shape=box, label="kTimeOut", fillcolor="#ffffff", style="rounded,filled", color="#01696f", fontcolor="#01696f", fontsize=11, penwidth=1.2]
+  "sync" -> "timeout" [label="syncLossTimeout\nüberschritten", fontsize=10, penwidth=1.1]
+  "leap" [shape=box, label="LeapJump:\nkTimeLeapFuture /\nkTimeLeapPast", fillcolor="#ffffff", style="rounded,filled", color="#01696f", fontcolor="#01696f", fontsize=11, penwidth=1.2]
+  "sync" -> "leap" [label="Resync über\nSchwellwert", fontsize=10, penwidth=1.1]
+  "gateway" -> "timeout" [label="syncLossTimeout\nüberschritten", fontsize=10, penwidth=1.1]
+  "gateway" -> "leap" [label="Resync über\nSchwellwert", fontsize=10, penwidth=1.1]
+  "timeout" -> "sync" [label="Update erfolgreich\nohne Gateway", fontsize=10, penwidth=1.1]
+  "timeout" -> "gateway" [label="Update erfolgreich\nmit Gateway", fontsize=10, penwidth=1.1]
+  "leap" -> "ende" [label="Status auslesen", fontsize=10, penwidth=1.1]
+}
