@@ -918,7 +918,10 @@
       return sel.length ? sel : [nodeId];
     };
     // Unpark one or many nodes in a single pass, then frame the result.
-    const restoreNodesToMainGraph = (nodeIds) => {
+    // `frame` controls the viewport reaction:
+    //   "neighborhood" -- zoom to the restored node and its neighbours (button restores)
+    //   "none"         -- leave the viewport alone (drag & drop: the user chose the spot)
+    const restoreNodesToMainGraph = (nodeIds, frame = "neighborhood") => {
       const ids = (Array.isArray(nodeIds) ? nodeIds : [nodeIds]).filter((id) => userRemoved.has(id));
       if (!ids.length) return [];
       ids.forEach((id) => userRemoved.delete(id));
@@ -928,14 +931,26 @@
         const el = cy.getElementById(id);
         if (el && el.nonempty()) restored.merge(el);
       });
-      if (restored.nonempty()) {
+      if (restored.nonempty() && frame !== "none") {
         clearHover();
         // A single restored node gets the hover focus treatment; a group would just flicker.
         if (restored.length === 1) applyHover(restored);
-        const frame = restored.length === 1
+        const eles = restored.length === 1
           ? restored.closedNeighborhood().filter((el) => el.style("display") !== "none")
           : restored.filter((el) => el.style("display") !== "none");
-        cy.animate({ fit: { eles: frame, padding: 80 }, duration: reduceMotion ? 0 : 260, easing: "ease-out-cubic" });
+        // Never zoom IN past the current level: framing one or two nodes would otherwise fill
+        // the whole stage and lose all context. Zooming out to reveal them is fine.
+        const target = fitTargetFor(eles, 80);
+        if (target && target.zoom > cy.zoom()) {
+          cy.animate({
+            zoom: cy.zoom(),          // hold the current level
+            center: { eles },         // just bring the arrivals into view
+            duration: reduceMotion ? 0 : 260,
+            easing: "ease-out-cubic"
+          });
+        } else {
+          cy.animate({ fit: { eles, padding: 80 }, duration: reduceMotion ? 0 : 260, easing: "ease-out-cubic" });
+        }
       }
       return ids;
     };
@@ -957,9 +972,40 @@
     // How long the loop keeps chasing the still-settling force layout after a removal.
     const AUTO_FIT_WINDOW = 3000;
 
-    const fitVisibleGraph = (animated = true) => {
+    // Viewport that a fit() over `eles` would produce. Computing it up front lets the
+    // auto-fit loop skip passes that would barely move anything.
+    const fitTargetFor = (eles, padding) => {
+      const bb = eles.boundingBox();
+      if (!bb || bb.w <= 0 || bb.h <= 0) return null;
+      const w = cy.width(), h = cy.height();
+      if (w <= 0 || h <= 0) return null;
+      let zoom = Math.min((w - 2 * padding) / bb.w, (h - 2 * padding) / bb.h);
+      zoom = Math.max(cy.minZoom(), Math.min(cy.maxZoom(), zoom));
+      return {
+        zoom,
+        pan: { x: (w - zoom * (bb.x1 + bb.x2)) / 2, y: (h - zoom * (bb.y1 + bb.y2)) / 2 }
+      };
+    };
+
+    // How far the viewport would have to travel for a fit to be worth animating.
+    const FIT_ZOOM_EPS = 0.02;   // 2% relative zoom change
+    const FIT_PAN_EPS = 12;      // px
+
+    const fitVisibleGraph = (animated = true, onlyIfMeaningful = false) => {
       const vis = cy.elements().filter((el) => el.style("display") !== "none");
-      if (vis.empty()) return;
+      if (vis.empty()) return false;
+      if (onlyIfMeaningful) {
+        // While the force layout is still settling the target barely changes between passes.
+        // Re-animating anyway is what made the graph look jumpy after a drag-out: every tick
+        // restarted a 360ms fit toward a target only a few pixels away.
+        const target = fitTargetFor(vis, 40);
+        if (target) {
+          const z = cy.zoom(), p = cy.pan();
+          const zoomOff = Math.abs(target.zoom - z) / Math.max(z, 1e-6);
+          const panOff = Math.hypot(target.pan.x - p.x, target.pan.y - p.y);
+          if (zoomOff < FIT_ZOOM_EPS && panOff < FIT_PAN_EPS) return false;
+        }
+      }
       const duration = animated && !reduceMotion ? AUTO_FIT_DURATION : 0;
       viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
       if (duration > 0) {
@@ -972,6 +1018,7 @@
       } else {
         cy.fit(vis, 40);
       }
+      return true;
     };
 
     const stopAutoFit = () => {
@@ -987,15 +1034,21 @@
       stopAutoFit();
       autoFitActive = true;
       autoFitDeadline = now() + (reduceMotion ? 400 : AUTO_FIT_WINDOW);
+      let idleTicks = 0;
       const tick = () => {
         if (!autoFitActive) return;
-        fitVisibleGraph(true);
+        // Skip passes whose target is essentially where we already are.
+        const moved = fitVisibleGraph(true, true);
+        // Once the target has stopped moving for a few consecutive ticks the layout has
+        // effectively settled -- keeping the loop alive would only cause more twitching.
+        idleTicks = moved ? 0 : idleTicks + 1;
+        if (idleTicks >= 2) { stopAutoFit(); return; }
         if (now() >= autoFitDeadline) {
           // Final settle pass: the layout has come to rest, so this fit is the one that
           // actually shows the complete remaining graph.
           autoFitTimer = setTimeout(() => {
             if (!autoFitActive) return;
-            fitVisibleGraph(true);
+            fitVisibleGraph(true, true);
             stopAutoFit();
           }, reduceMotion ? 60 : AUTO_FIT_INTERVAL);
           return;
@@ -1032,7 +1085,10 @@
       });
 
       sim.seed(recenter);
-      if (recenter) requestAnimationFrame(() => fitVisibleGraph(true));
+      // The auto-fit loop (started by the caller after a park) performs its own fits. Firing
+      // an extra one here raced against it: two overlapping fit animations toward slightly
+      // different targets are exactly what reads as a jump.
+      if (recenter && !autoFitActive) requestAnimationFrame(() => fitVisibleGraph(true));
 
       if (reduceMotion) {
         sim.settleOnce(90);
@@ -1148,8 +1204,8 @@
         cy.nodes().filter((n) => isContainer(n)).unselect();
         hasUserParkedNode = true;
         clearHover();
-        apply(true);
         startAutoFit();
+        apply(true);
       });
     }
     if (keepSelectedButton) {
@@ -1162,8 +1218,8 @@
         victims.forEach((n) => userRemoved.add(n.id()));
         hasUserParkedNode = true;
         clearHover();
-        apply(true);
         startAutoFit();
+        apply(true);
       });
     }
     if (collapseAllButton) {
@@ -1219,7 +1275,9 @@
         const ids = payload.startsWith("module:")
           ? moduleDragPayload(payload.slice("module:".length))
           : dragPayloadFor(payload);
-        const unparked = restoreNodesToMainGraph(ids);
+        // Drag & drop places the nodes exactly where the pointer released them, so the
+        // viewport must stay put -- reframing here is what yanked the view in too close.
+        const unparked = restoreNodesToMainGraph(ids, "none");
         if (!unparked.length) return;
         // Everything that just travelled to the canvas loses its mark: the panel highlight
         // exists to stage a set for exactly this move, so once the move happened the set is
@@ -1534,10 +1592,10 @@
         // The nodes keep their selection and continue to be marked inside the panel.
         hasUserParkedNode = true;
         applySelectionHighlight();
-        // After parking via drag-out, keep re-running the same fit used by background
-        // taps until the user takes over the viewport again (tap/zoom/pan/drag).
-        apply(true);
+        // Order matters: arm the auto-fit loop first so apply() does not additionally
+        // schedule its own competing fit for the same park.
         startAutoFit();
+        apply(true);
         return;
       }
 
