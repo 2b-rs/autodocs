@@ -1,0 +1,1566 @@
+(() => {
+  "use strict";
+  const host = document.querySelector("[data-component-graph]");
+  if (!host) return;
+  const ownScript = document.querySelector('script[src$="component-graph.js"]');
+  const root = new URL(".", ownScript ? ownScript.src : document.baseURI);
+  const dataUrl = new URL("data/component-graph.json", root);
+  const embedded = document.getElementById("component-graph-data");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ui = {
+    loading: host.dataset.loading || "Graph wird geladen …",
+    failed: host.dataset.failed || "Der Komponentengraph konnte nicht geladen werden."
+  };
+
+  // Fixed edge-weight threshold for the default hub view (previously a user-adjustable slider).
+  const MIN_WEIGHT = 0; // unused legacy constant; edge visibility no longer depends on weight
+
+  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button></div>
+  <div class="component-graph-split"><div class="component-graph-stage" role="img" aria-label="Radiale Clusterkarte der API-Komponenten mit Federphysik"><p class="dim">${ui.loading}</p></div><div class="component-graph-removed-panel"><div class="component-graph-removed-titlebar"><div class="component-graph-removed-title" data-graph-removed-title>Meistgenutzte Klassen</div><input class="component-graph-removed-search" data-graph-removed-search type="search" placeholder="Klasse suchen" aria-label="Geparkte Klassen filtern"><button type="button" class="component-graph-collapse-all" data-graph-collapse-all aria-label="Alle einklappen" title="Alle einklappen"><span class="component-graph-collapse-caret" aria-hidden="true"></span></button><button type="button" class="component-graph-removed-add-all" data-graph-restore-filtered>Alle hinzufügen</button></div><div class="component-graph-removed-canvas" data-graph-removed></div></div></div>`;
+
+  const stage = host.querySelector(".component-graph-stage");
+  const caption = host.querySelector("[data-graph-caption]");
+  const restoreButton = host.querySelector("[data-graph-restore]");
+  const keepSelectedButton = host.querySelector("[data-graph-keep-selected]");
+  const removedCanvas = host.querySelector("[data-graph-removed]");
+  const removedPanel = host.querySelector(".component-graph-removed-panel");
+  const removedTitle = host.querySelector("[data-graph-removed-title]");
+  const removedSearch = host.querySelector("[data-graph-removed-search]");
+  const restoreFilteredButton = host.querySelector("[data-graph-restore-filtered]");
+  const collapseAllButton = host.querySelector("[data-graph-collapse-all]");
+
+  const nodeLabel = (n) => n.label || n.shortLabel || n.id;
+
+  // Derive the C++ namespace a class/struct lives in from its qualified label,
+  // e.g. "ara::com::proxy::Foo" -> namespace "ara::com::proxy". Normalizes
+  // "namespace X" prefixes and drops the final segment (the type name itself).
+  const normNsSegment = (s) => {
+    const t = (s || "").trim();
+    return t.startsWith("namespace ") ? t.slice("namespace ".length) : t;
+  };
+  const namespaceOf = (n) => {
+    const label = n.label || "";
+    const parts = label.split("::").map(normNsSegment).filter(Boolean);
+    if (parts.length < 2) return null;
+    const nsParts = parts.slice(0, -1);
+    return nsParts.join("::");
+  };
+  const matchesQuery = (n, q) => {
+    if (!q) return true;
+    const hay = `${n.label || ""} ${n.shortLabel || ""} ${n.id || ""}`.toLowerCase();
+    return hay.includes(q);
+  };
+
+  // Curated display order for the well-known modules. Any further module present in the
+  // graph data is appended before "other" by registerModules() below, so a new AUTOSAR
+  // cluster never silently falls back to the unnamed/grey bucket.
+  const MODULE_ORDER = ["core", "com", "diag", "crypto", "per", "exec", "sm", "phm", "log", "tsync", "fw", "idsm", "nm", "rds", "shwa", "other"];
+  const MODULE_COLOR = {
+    core: "#01696f", com: "#0b5177", diag: "#964219", crypto: "#7a39bb", per: "#437a22",
+    exec: "#006494", sm: "#a13544", phm: "#da7101", log: "#5c5b56", tsync: "#0c4e54",
+    fw: "#8a6d1f", idsm: "#7d2f5e", nm: "#1f6f4a", rds: "#4a4fa6", shwa: "#8c5a2b",
+    other: "#7a7974"
+  };
+
+  // Deterministic fallback hue for modules that appear in the data but have no curated
+  // color: derived from the id so the same module always renders in the same color.
+  const derivedModuleColor = (id) => {
+    let h = 0;
+    for (let i = 0; i < id.length; i += 1) h = (h * 31 + id.charCodeAt(i)) % 360;
+    return `hsl(${h}, 46%, 34%)`;
+  };
+
+  // Ensures every module found in the graph data has both a rank and a color before the
+  // graph, the module boxes and the parked tray are rendered.
+  const registerModules = (modules) => {
+    (modules || []).forEach((m) => {
+      const id = m && m.id;
+      if (!id) return;
+      if (!MODULE_COLOR[id]) MODULE_COLOR[id] = derivedModuleColor(id);
+      if (MODULE_ORDER.indexOf(id) === -1) {
+        MODULE_ORDER.splice(Math.max(0, MODULE_ORDER.indexOf("other")), 0, id);
+      }
+    });
+  };
+
+  // ---------- scoring / hub subset (unchanged logic) ----------
+  const scoreGraph = (graph) => {
+    const byId = new Map(graph.nodes.map((n) => [n.id, n]));
+    const score = new Map(), degree = new Map(), cross = new Map(), coreCross = new Map();
+    const add = (map, id, v) => map.set(id, (map.get(id) || 0) + v);
+    graph.edges.forEach((e) => {
+      add(score, e.source, e.weight); add(score, e.target, e.weight);
+      add(degree, e.source, 1); add(degree, e.target, 1);
+      const s = byId.get(e.source), t = byId.get(e.target);
+      if (!s || !t || s.module === t.module) return;
+      add(cross, e.source, 1); add(cross, e.target, 1);
+      if (s.module === "core" || t.module === "core") {
+        add(coreCross, e.source, e.weight); add(coreCross, e.target, e.weight);
+      }
+    });
+    graph.nodes.forEach((n) => {
+      n.score = score.get(n.id) || 0;
+      n.degree = degree.get(n.id) || 0;
+      n.crossDegree = cross.get(n.id) || 0;
+      n.coreCross = coreCross.get(n.id) || 0;
+      n.defaultVisible = false;
+      n.hubRank = n.coreCross * 100 + n.crossDegree * 8 + n.score * 0.15 + n.degree;
+    });
+  };
+
+  const markDefaultSubset = (graph) => {
+    const byModule = new Map();
+    graph.nodes.forEach((n) => {
+      const arr = byModule.get(n.module) || [];
+      arr.push(n);
+      byModule.set(n.module, arr);
+    });
+    (byModule.get("core") || []).slice().sort((a, b) => b.hubRank - a.hubRank).forEach((n, i) => {
+      n.defaultVisible = i < 10 && (n.coreCross >= 40 || n.crossDegree >= 12 || n.score >= 110);
+    });
+    byModule.forEach((nodes, mod) => {
+      if (mod === "core") return;
+      nodes.sort((a, b) => b.hubRank - a.hubRank);
+      const cap = mod === "diag" || mod === "crypto" ? 5 : mod === "com" || mod === "per" ? 4 : 3;
+      nodes.slice(0, cap).forEach((n) => {
+        if (n.coreCross >= 8 || n.score >= 20 || n.crossDegree >= 2) n.defaultVisible = true;
+      });
+      if (nodes[0]) nodes[0].defaultVisible = true;
+    });
+    graph.edges.forEach((e) => {
+      const s = graph.nodesById.get(e.source), t = graph.nodesById.get(e.target);
+      if (!s || !t || s.module === t.module) return;
+      const coreEdge = s.module === "core" || t.module === "core";
+      if (coreEdge && e.weight >= 14) { s.defaultVisible = true; t.defaultVisible = true; }
+    });
+  };
+
+  // ---------- radial home positions (anchors for the spring simulation) ----------
+  const packInDisc = (ids, homes, ox, oy, radius, faceAngle) => {
+    const n = ids.length;
+    if (!n) return;
+    if (n === 1) { homes.set(ids[0], { x: ox, y: oy }); return; }
+    const rings = Math.max(1, Math.ceil(Math.sqrt(n)));
+    let idx = 0;
+    for (let r = 0; r < rings && idx < n; r++) {
+      const count = r === 0 ? 1 : Math.min(n - idx, Math.max(6, Math.round(2 * Math.PI * (r + 1))));
+      const rr = r === 0 ? 0 : (radius * r) / rings;
+      for (let k = 0; k < count && idx < n; k++, idx++) {
+        const ang = faceAngle != null
+          ? faceAngle + (k - (count - 1) / 2) * (0.55 / Math.max(count, 1))
+          : (k / count) * Math.PI * 2 - Math.PI / 2;
+        homes.set(ids[idx], { x: ox + Math.cos(ang) * rr, y: oy + Math.sin(ang) * rr });
+      }
+    }
+    while (idx < n) {
+      const ang = (idx / n) * Math.PI * 2 - Math.PI / 2;
+      homes.set(ids[idx], { x: ox + Math.cos(ang) * radius * 0.92, y: oy + Math.sin(ang) * radius * 0.92 });
+      idx++;
+    }
+  };
+
+  // Recursively packs a container's direct children into a disc, then, for any child that is
+  // itself a namespace sub-container, packs its own children into a smaller nested disc around
+  // that position — this is what lets classes nest inside their namespace boxes inside the module box.
+  const packChildrenRecursive = (containerNode, homes, ox, oy, radius, faceAngle) => {
+    const kids = containerNode.children().filter((c) => c.style("display") !== "none");
+    const ids = kids.map((c) => c.id());
+    packInDisc(ids, homes, ox, oy, radius, faceAngle);
+    kids.forEach((k) => {
+      if (k.data("kind") !== "namespace") return;
+      const home = homes.get(k.id());
+      if (!home) return;
+      const grandkids = k.children().filter((c) => c.style("display") !== "none");
+      const n = grandkids.length;
+      const subR = Math.max(70, Math.sqrt(Math.max(n, 1)) * 58);
+      packChildrenRecursive(k, homes, home.x, home.y, subR, faceAngle);
+    });
+  };
+
+  const computeHomes = (cy) => {
+    const homes = new Map();
+    const modAnchors = new Map();
+    const moduleNodes = cy.nodes().filter((n) => n.data("kind") === "module");
+    const visibleModules = moduleNodes.filter((m) => m.children().some((c) => c.style("display") !== "none"));
+    if (visibleModules.empty()) return { homes, modAnchors };
+    const ordered = visibleModules.toArray().sort((a, b) => {
+      const ia = MODULE_ORDER.indexOf(a.data("module")), ib = MODULE_ORDER.indexOf(b.data("module"));
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    const core = ordered.find((m) => m.data("module") === "core") || ordered[0];
+    const ring = ordered.filter((m) => m.id() !== core.id());
+    // Radii scale with how much content actually has to fit, otherwise the ring modules start
+    // life inside one another and the simulation has to untangle a knot at every load.
+    const totalVisible = visibleModules.toArray().reduce((sum, m) => sum + m.descendants().filter((c) => c.style("display") !== "none").length, 0);
+    const coreKids = core.descendants().filter((c) => c.style("display") !== "none").length;
+    const CORE_R = Math.max(210, 60 + Math.sqrt(Math.max(coreKids, 1)) * 62);
+    const RING_R = Math.max(760, CORE_R + 260 + Math.sqrt(Math.max(totalVisible, 1)) * 46);
+    const cx = 0, cy0 = 0;
+    modAnchors.set(core.id(), { x: cx, y: cy0 });
+    packChildrenRecursive(core, homes, cx, cy0, CORE_R * 0.78, null);
+    ring.forEach((mod, i) => {
+      const ang = -Math.PI / 2 + (i / Math.max(ring.length, 1)) * Math.PI * 2;
+      const mx = cx + Math.cos(ang) * RING_R, my = cy0 + Math.sin(ang) * RING_R;
+      modAnchors.set(mod.id(), { x: mx, y: my });
+      const kidCount = mod.children().filter((c) => c.style("display") !== "none").length;
+      const localR = Math.max(150, Math.sqrt(Math.max(kidCount, 1)) * 105);
+      const pull = 0.12;
+      const ox = mx * (1 - pull) + cx * pull, oy = my * (1 - pull) + cy0 * pull;
+      packChildrenRecursive(mod, homes, ox, oy, localR, ang + Math.PI);
+    });
+    return { homes, modAnchors };
+  };
+
+  // ---------- spring-physics simulation ----------
+  const SIM = {
+    // Anchors only provide the coarse radial structure; they are deliberately weak so
+    // that the separation forces below can resolve overlaps instead of being overruled.
+    ANCHOR_K: 0.009,
+    EDGE_K_CORE: 0.035,
+    EDGE_K_CROSS: 0.016,
+    EDGE_K_INTRA: 0.008,
+    REST_CORE: 210,
+    REST_CROSS: 340,
+    REST_INTRA: 120,
+    // Long-range soft repulsion (inverse square) keeps clusters loose ...
+    REPEL_K: 26000,
+    REPEL_MIN: 60,
+    REPEL_CUTOFF2: 420000,
+    // ... while the hard shell below guarantees the label boxes never overlap.
+    COLLIDE_PAD: 16,
+    COLLIDE_K: 0.16,
+    MODULE_REPEL_K: 4500000,
+    MODULE_REPEL_MIN: 460,
+    // Grab behaviour: a soft, size-aware shell around the held node nudges neighbours
+    // aside instead of firing them across the canvas.
+    POINTER_PUSH_K: 0.14,
+    POINTER_CLEARANCE: 54,
+    DAMPING: 0.86,
+    DRAG_DAMPING: 0.55,
+    MAX_SPEED: 26,
+    IDLE_AMPLITUDE: 2.2,
+    IDLE_FREQ: 0.0009
+  };
+
+  const createSimulation = (cy) => {
+    let homes = new Map();
+    let modAnchors = new Map();
+    let raf = null;
+    let t0 = performance.now();
+    const state = new Map(); // id -> {x,y,vx,vy,phase}
+    const draggingIds = new Set();
+
+    const nodesList = () => cy.nodes().filter((n) => n.data("kind") !== "module" && n.data("kind") !== "namespace" && n.style("display") !== "none");
+
+    const seed = (recenter) => {
+      const r = computeHomes(cy);
+      homes = r.homes;
+      modAnchors = r.modAnchors;
+      nodesList().forEach((n) => {
+        const id = n.id();
+        const home = homes.get(id) || { x: 0, y: 0 };
+        let s = state.get(id);
+        if (!s || recenter) {
+          const pos = recenter || !s ? home : n.position();
+          s = { x: pos.x, y: pos.y, vx: 0, vy: 0, phase: Math.random() * Math.PI * 2 };
+          state.set(id, s);
+          n.position({ x: s.x, y: s.y });
+        }
+      });
+      // drop stale state for hidden/removed nodes
+      Array.from(state.keys()).forEach((id) => {
+        if (!homes.has(id)) state.delete(id);
+      });
+      sizeNodes();
+    };
+
+    const sizeNodes = () => {
+      cy.nodes().forEach((n) => {
+        if (n.data("kind") === "module") return;
+        const hr = n.data("hubRank") || 0;
+        const tt = Math.min(1, hr / 400);
+        n.style("width", 86 + tt * 42);
+        n.style("height", 34 + tt * 14);
+        n.style("font-size", 10 + tt * 3);
+        n.style("border-width", 1.2 + tt * 1.8);
+      });
+    };
+
+    const edgeParams = (e) => {
+      if (e.data("coreLink")) return { k: SIM.EDGE_K_CORE, rest: SIM.REST_CORE };
+      if (e.data("cross")) return { k: SIM.EDGE_K_CROSS, rest: SIM.REST_CROSS };
+      return { k: SIM.EDGE_K_INTRA, rest: SIM.REST_INTRA };
+    };
+
+    const step = (now) => {
+      const dt = Math.min(2, (now - t0) / 16.67) || 1;
+      t0 = now;
+      const nodes = nodesList();
+      const ids = nodes.map((n) => n.id());
+      const fx = new Map(ids.map((id) => [id, 0]));
+      const fy = new Map(ids.map((id) => [id, 0]));
+
+      // 1) anchor springs (toward radial home, with gentle idle float)
+      nodes.forEach((n) => {
+        const id = n.id();
+        const s = state.get(id);
+        if (!s || draggingIds.has(id)) return;
+        const home = homes.get(id);
+        if (!home) return;
+        let hx = home.x, hy = home.y;
+        if (!reduceMotion) {
+          hx += Math.cos(now * SIM.IDLE_FREQ + s.phase) * SIM.IDLE_AMPLITUDE;
+          hy += Math.sin(now * SIM.IDLE_FREQ * 1.3 + s.phase) * SIM.IDLE_AMPLITUDE;
+        }
+        fx.set(id, fx.get(id) + (hx - s.x) * SIM.ANCHOR_K);
+        fy.set(id, fy.get(id) + (hy - s.y) * SIM.ANCHOR_K);
+      });
+
+      // 2) edge springs (this is what creates the visible "tug" and force feedback)
+      cy.edges().forEach((e) => {
+        if (e.style("display") === "none") return;
+        const s = e.source(), t = e.target();
+        const sid = s.id(), tid = t.id();
+        const ss = state.get(sid), ts = state.get(tid);
+        if (!ss || !ts) return;
+        const dx = ts.x - ss.x, dy = ts.y - ss.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const { k, rest } = edgeParams(e);
+        const stretch = dist - rest;
+        const f = k * stretch;
+        const nx = dx / dist, ny = dy / dist;
+        if (!draggingIds.has(sid)) { fx.set(sid, fx.get(sid) + nx * f); fy.set(sid, fy.get(sid) + ny * f); }
+        if (!draggingIds.has(tid)) { fx.set(tid, fx.get(tid) - nx * f); fy.set(tid, fy.get(tid) - ny * f); }
+        // tension feedback: color/width react live to how stretched the spring is
+        const tension = Math.max(0, Math.min(1, Math.abs(stretch) / (rest * 0.9)));
+        const prev = e.data("tension") || 0;
+        if (Math.abs(prev - tension) > 0.03) e.data("tension", tension);
+      });
+
+      // 3) local separation. Two cooperating terms:
+      //    - a soft inverse-square repulsion that spreads clusters out over a wide radius
+      //    - a hard "collision shell" sized from the actual rendered box of each node, so
+      //      labels drift into a non-overlapping configuration instead of piling up.
+      const halfW = new Map();
+      const halfH = new Map();
+      nodes.forEach((n) => {
+        halfW.set(n.id(), n.width() / 2);
+        halfH.set(n.id(), n.height() / 2);
+      });
+      for (let i = 0; i < nodes.length; i++) {
+        const idA = ids[i];
+        const a = state.get(idA);
+        if (!a) continue;
+        for (let j = i + 1; j < nodes.length; j++) {
+          const idB = ids[j];
+          const b = state.get(idB);
+          if (!b) continue;
+          let dx = a.x - b.x, dy = a.y - b.y;
+          let d2 = dx * dx + dy * dy;
+          if (d2 > SIM.REPEL_CUTOFF2) continue; // ignore far pairs
+          const raw = Math.sqrt(d2) || 0.01;
+          const d = Math.max(SIM.REPEL_MIN, raw);
+          let nx = dx / raw, ny = dy / raw;
+          if (!isFinite(nx) || !isFinite(ny)) { nx = Math.cos(i); ny = Math.sin(i); }
+          let f = SIM.REPEL_K / (d * d);
+          // collision shell: minimum centre distance from both boxes plus padding
+          const minX = halfW.get(idA) + halfW.get(idB) + SIM.COLLIDE_PAD;
+          const minY = halfH.get(idA) + halfH.get(idB) + SIM.COLLIDE_PAD;
+          const overlapX = minX - Math.abs(dx);
+          const overlapY = minY - Math.abs(dy);
+          if (overlapX > 0 && overlapY > 0) {
+            // resolve along the axis of least penetration -> boxes slide apart smoothly
+            if (overlapX < overlapY) {
+              const push = overlapX * SIM.COLLIDE_K * (dx >= 0 ? 1 : -1);
+              if (!draggingIds.has(idA)) fx.set(idA, fx.get(idA) + push);
+              if (!draggingIds.has(idB)) fx.set(idB, fx.get(idB) - push);
+            } else {
+              const push = overlapY * SIM.COLLIDE_K * (dy >= 0 ? 1 : -1);
+              if (!draggingIds.has(idA)) fy.set(idA, fy.get(idA) + push);
+              if (!draggingIds.has(idB)) fy.set(idB, fy.get(idB) - push);
+            }
+          }
+          if (!draggingIds.has(idA)) { fx.set(idA, fx.get(idA) + nx * f); fy.set(idA, fy.get(idA) + ny * f); }
+          if (!draggingIds.has(idB)) { fx.set(idB, fx.get(idB) - nx * f); fy.set(idB, fy.get(idB) - ny * f); }
+        }
+      }
+
+      // 3a) module-vs-module repulsion: push whole module clusters apart via their live centroids,
+      // so the outer module boxes keep clear separation instead of drifting into each other.
+      const modGroups = new Map();
+      nodes.forEach((n) => {
+        const mod = n.data("module");
+        if (!mod) return;
+        const s = state.get(n.id());
+        if (!s) return;
+        const g = modGroups.get(mod) || [];
+        g.push(n.id());
+        modGroups.set(mod, g);
+      });
+      const modCentroids = new Map();
+      modGroups.forEach((memberIds, mod) => {
+        let sx = 0, sy = 0;
+        memberIds.forEach((id) => { const s = state.get(id); sx += s.x; sy += s.y; });
+        modCentroids.set(mod, { x: sx / memberIds.length, y: sy / memberIds.length, members: memberIds });
+      });
+      const modKeys = Array.from(modCentroids.keys());
+      for (let i = 0; i < modKeys.length; i++) {
+        for (let j = i + 1; j < modKeys.length; j++) {
+          const A = modCentroids.get(modKeys[i]);
+          const B = modCentroids.get(modKeys[j]);
+          const dx = A.x - B.x, dy = A.y - B.y;
+          const d = Math.max(SIM.MODULE_REPEL_MIN, Math.hypot(dx, dy) || 0.01);
+          const f = SIM.MODULE_REPEL_K / (d * d);
+          const nx = dx / d, ny = dy / d;
+          A.members.forEach((id) => {
+            if (draggingIds.has(id)) return;
+            fx.set(id, fx.get(id) + nx * f);
+            fy.set(id, fy.get(id) + ny * f);
+          });
+          B.members.forEach((id) => {
+            if (draggingIds.has(id)) return;
+            fx.set(id, fx.get(id) - nx * f);
+            fy.set(id, fy.get(id) - ny * f);
+          });
+        }
+      }
+
+      // 3b) pointer push: a grabbed node gently shoves whatever it runs into. The force is a
+      // penetration-depth spring against a clearance shell derived from both node sizes, so it
+      // is exactly zero at contact distance and grows smoothly the deeper the overlap gets --
+      // neighbours glide aside and settle back instead of being catapulted away.
+      draggingIds.forEach((dragId) => {
+        const drag = state.get(dragId);
+        if (!drag) return;
+        const dragHW = halfW.get(dragId) || 45;
+        const dragHH = halfH.get(dragId) || 20;
+        nodes.forEach((n) => {
+          const id = n.id();
+          if (id === dragId || draggingIds.has(id)) return;
+          const s = state.get(id);
+          if (!s) return;
+          const dx = s.x - drag.x;
+          const dy = s.y - drag.y;
+          const raw = Math.hypot(dx, dy) || 0.01;
+          const clearance = Math.hypot(dragHW + (halfW.get(id) || 45), dragHH + (halfH.get(id) || 20)) + SIM.POINTER_CLEARANCE;
+          if (raw > clearance) return;
+          const penetration = clearance - raw;
+          const f = penetration * SIM.POINTER_PUSH_K;
+          const nx = dx / raw, ny = dy / raw;
+          fx.set(id, fx.get(id) + nx * f);
+          fy.set(id, fy.get(id) + ny * f);
+        });
+      });
+
+      // 4) integrate
+      cy.batch(() => {
+        nodes.forEach((n) => {
+          const id = n.id();
+          const s = state.get(id);
+          if (!s) return;
+          if (draggingIds.has(id)) {
+            const p = n.position();
+            s.vx = p.x - s.x;
+            s.vy = p.y - s.y;
+            s.x = p.x;
+            s.y = p.y;
+            return;
+          }
+          const damping = SIM.DAMPING;
+          s.vx = (s.vx + fx.get(id) * dt) * damping;
+          s.vy = (s.vy + fy.get(id) * dt) * damping;
+          const speed = Math.hypot(s.vx, s.vy);
+          if (speed > SIM.MAX_SPEED) { s.vx = (s.vx / speed) * SIM.MAX_SPEED; s.vy = (s.vy / speed) * SIM.MAX_SPEED; }
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          n.position({ x: s.x, y: s.y });
+        });
+      });
+
+      raf = requestAnimationFrame(step);
+    };
+
+    const start = () => {
+      if (raf) return;
+      t0 = performance.now();
+      raf = requestAnimationFrame(step);
+    };
+    const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
+
+    const settleOnce = (iterations) => {
+      // reduced-motion path: relax synchronously without a visible animation loop
+      for (let i = 0; i < iterations; i++) step(t0 + 16.6 * (i + 1));
+      stop();
+    };
+
+    const grab = (id) => draggingIds.add(id);
+    const free = (id) => draggingIds.delete(id);
+
+    return { seed, start, stop, settleOnce, grab, free, get modAnchors() { return modAnchors; } };
+  };
+
+  Promise.all([
+    embedded ? Promise.resolve(JSON.parse(embedded.textContent)) : fetch(dataUrl).then((r) => {
+      if (!r.ok) throw new Error(`Graph data: HTTP ${r.status}`);
+      return r.json();
+    }),
+    window.cytoscape ? Promise.resolve() : Promise.reject(new Error("cytoscape.min.js not loaded"))
+  ]).then(([graph]) => {
+    scoreGraph(graph);
+    graph.nodesById = new Map(graph.nodes.map((n) => [n.id, n]));
+    markDefaultSubset(graph);
+
+    const defaultCount = graph.nodes.filter((n) => n.defaultVisible).length;
+    if (caption) {
+      caption.textContent = `Federphysik-Karte · Standard: ${defaultCount} Hub-Komponenten (Kern = ara::core) · Ziehen erzeugt Zugspannung entlang der Kanten.`;
+    }
+
+    stage.textContent = "";
+
+    // Build namespace sub-containers per module: any class/struct whose qualified
+    // label carries a namespace path (e.g. "ara::com::proxy::Foo") gets nested inside
+    // a compound box for that namespace, which itself lives inside the module box.
+    const namespaceIds = new Map(); // key `module::ns::path` -> { id, label, module }
+    graph.nodes.forEach((n) => {
+      const ns = namespaceOf(n);
+      n.namespacePath = ns;
+      if (!ns) return;
+      const key = `${n.module}::${ns}`;
+      if (!namespaceIds.has(key)) {
+        namespaceIds.set(key, { id: `ns:${key}`, label: ns, module: n.module });
+      }
+    });
+
+    registerModules(graph.modules);
+
+    const elements = [
+      ...graph.modules.map((m) => ({ data: { id: `module:${m.id}`, label: m.label, module: m.id, kind: "module", color: MODULE_COLOR[m.id] || MODULE_COLOR.other } })),
+      ...Array.from(namespaceIds.values()).map((ns) => ({ data: { id: ns.id, label: ns.label, module: ns.module, kind: "namespace", parent: `module:${ns.module}`, color: MODULE_COLOR[ns.module] || MODULE_COLOR.other } })),
+      ...graph.nodes.map((n) => {
+        const nsKey = n.namespacePath ? `ns:${n.module}::${n.namespacePath}` : null;
+        const parent = nsKey && namespaceIds.has(nsKey) ? nsKey : `module:${n.module}`;
+        return { data: { ...n, parent, label: nodeLabel(n), fullLabel: n.label, color: MODULE_COLOR[n.module] || MODULE_COLOR.other } };
+      }),
+      ...graph.edges.map((e) => {
+        const s = graph.nodesById.get(e.source), t = graph.nodesById.get(e.target);
+        const cross = s && t && s.module !== t.module ? 1 : 0;
+        const coreLink = s && t && (s.module === "core" || t.module === "core") && cross ? 1 : 0;
+        return { data: { ...e, cross, coreLink, tension: 0 } };
+      })
+    ];
+
+    const cy = cytoscape({
+      container: stage,
+      elements,
+      minZoom: 0.12,
+      maxZoom: 2.6,
+      wheelSensitivity: 0.22,
+      motionBlur: !reduceMotion,
+      boxSelectionEnabled: true,
+      selectionType: "additive",
+      layout: { name: "preset", fit: false },
+      style: [
+        { selector: "node", style: {
+          "background-color": "#f9f8f5", "border-color": "data(color)", "border-width": 1.6,
+          label: "data(label)", "font-size": 10.5, color: "#28251d", "text-wrap": "wrap",
+          "text-max-width": 168, "text-valign": "center", "text-halign": "center",
+          width: "label", height: "label", "padding": 8,
+          shape: "round-rectangle", "overlay-padding": 2, "z-index": 10,
+          "transition-property": "background-color, border-color", "transition-duration": "120ms"
+        }},
+        { selector: "node[module = 'core']", style: { "background-color": "#d7e4e0", "border-color": "#01696f", "border-width": 2.2 } },
+        { selector: "node[kind = 'module']", style: {
+          "background-color": "#f3f0ec", "background-opacity": 0.5, "border-color": "data(color)",
+          "border-width": 2, "border-style": "dashed", label: "data(label)", "font-size": 14,
+          "font-weight": 700, color: "data(color)", "text-valign": "top", "text-halign": "center",
+          "text-margin-y": -10, padding: 30, shape: "ellipse", "z-index": 1
+        }},
+        { selector: "node[kind = 'module'][module = 'core']", style: { "background-color": "#cedcd8", "background-opacity": 0.4, "border-style": "solid", "border-width": 2.5, padding: 38 } },
+        { selector: "node.dragging", style: { "border-width": 3.2, "background-color": "#fff", "z-index": 50 } },
+        { selector: "node:selected", style: { "border-width": 3.4, "border-color": "#a13544", "background-color": "#fff4f4", "z-index": 55 } },
+        { selector: "node.sel-highlight", style: { opacity: 1, "z-index": 60 } },
+        { selector: "edge.sel-highlight", style: { opacity: 1, "line-color": "#a13544", "target-arrow-color": "#a13544", width: 2.4, "z-index": 58 } },
+        { selector: "edge", style: {
+          width: "mapData(weight, 1, 60, 1.2, 4.8)", "line-color": "#9c9890", "target-arrow-color": "#8f8b84",
+          "target-arrow-shape": "triangle", "curve-style": "bezier", opacity: 0.62, "arrow-scale": 0.85, "z-index": 12
+        }},
+        { selector: "edge[cross = 1]", style: { opacity: 0.4, "line-color": "#8aa3a5", "target-arrow-color": "#6d888a" } },
+        { selector: "edge[coreLink = 1]", style: { opacity: 0.58, "line-color": "#01696f", "target-arrow-color": "#01696f", width: "mapData(weight, 1, 60, 1, 4.6)" } },
+        { selector: "edge", style: { "line-color": "mapData(tension, 0, 1, #01696f, #a13544)" } },
+        { selector: "edge[cross = 0][coreLink = 0]", style: { "line-color": "mapData(tension, 0, 1, #b6b4ae, #a13544)" } },
+        { selector: "edge", style: { width: "mapData(tension, 0, 1, 0.6, 5.5)" } },
+        // Connection-type styling: reference edges (undirected, neutral) vs. inheritance
+        // edges (directed, hollow arrowhead). Declared after the tension-driven color
+        // rules above so the fixed per-type color always wins over the live stretch tint.
+        { selector: "edge[type = 'reference']", style: {
+          "line-color": "#c9c6c0", "target-arrow-shape": "none", "source-arrow-shape": "none"
+        }},
+        { selector: "edge[type = 'inheritance']", style: {
+          "line-color": "#7ec4e8", "target-arrow-color": "#7ec4e8",
+          "target-arrow-shape": "triangle", "target-arrow-fill": "hollow",
+          "source-arrow-shape": "none", "arrow-scale": 1.1, opacity: 0.85, "z-index": 14
+        }},
+        // When a reference and an inheritance edge both connect the same pair of nodes,
+        // bezier curve-style (set on the base "edge" selector above) automatically fans
+        // multiple parallel edges into distinct curved arcs instead of overlapping lines.
+        { selector: "edge[weight >= 8]", style: { "z-index": 6 } },
+        { selector: ".faded", style: { opacity: 0.18 } },
+        // compound module boxes composite their own opacity onto every child node,
+        // so a faded module container would drag down even fully-highlighted children.
+        // Keep module containers themselves out of the fade so nested highlighting is visible.
+        { selector: "node[kind = 'module'].faded", style: { opacity: 1 } },
+        { selector: ".focus", style: { opacity: 1, "z-index": 30 } },
+        { selector: "node.focus", style: { "z-index": 40 } },
+        { selector: "node.hover-root", style: { "z-index": 45 } },
+        { selector: "node.hover-neighbor", style: { "z-index": 42 } },
+        { selector: "edge.hover-edge", style: { opacity: 1, width: 4.2, "z-index": 35 } }
+      ]
+    });
+
+    const isModule = (n) => n.data("kind") === "module";
+    const isContainer = (n) => n.data("kind") === "module" || n.data("kind") === "namespace";
+
+    // Nodes the user has dragged off the main canvas; they appear in the tray until restored.
+    // Start with the seven most-connected classes parked to reduce initial visual density.
+    const INITIAL_PARKED_COUNT = 7;
+    let removedSearchTerm = "";
+    const initialParked = graph.nodes.filter((n) => {
+      if (!(n.kind === "class" || n.kind === "struct")) return false;
+      const label = (n.shortLabel || n.label || "").toLowerCase();
+      return !(/(^|::)(vector|array|string|span|map|unordered_map|set|unordered_set|list|deque|queue|stack|optional|variant|pair|tuple|unique_ptr|shared_ptr)$/.test(label));
+    }).slice().sort((a, b) => (b.degree || 0) - (a.degree || 0) || (b.score || 0) - (a.score || 0)).slice(0, INITIAL_PARKED_COUNT).map((n) => n.id);
+    const userRemoved = new Set(initialParked);
+    let hasUserParkedNode = false;
+    // Assigned further down, once apply()/applySelectionHighlight() exist. Tray items are
+    // rebuilt continuously, so their handlers call through this indirection.
+    let selectParkedFromTray = () => {};
+    // Is this parked node currently selected? Selected parked nodes stay in the tray but are
+    // highlighted there, and they bypass both the text filter and module collapsing.
+    // Selection lookups happen O(n log n) times per tray render (filter + sort comparator).
+    // One getElementById per call was needlessly expensive with hundreds of parked nodes, so
+    // the selected ids are cached and invalidated whenever the selection changes.
+    let selectedIdCache = null;
+    const invalidateSelectionCache = () => { selectedIdCache = null; };
+    const selectedIdSet = () => {
+      if (!selectedIdCache) {
+        selectedIdCache = new Set(cy.nodes(":selected").map((n) => n.id()));
+      }
+      return selectedIdCache;
+    };
+    const isNodeSelected = (nodeId) => selectedIdSet().has(nodeId);
+    const selectedParkedIds = () => Array.from(userRemoved).filter((id) => isNodeSelected(id));
+    const hasSelectedParked = () => selectedParkedIds().length > 0;
+
+    const filteredRemovedNodes = () => {
+      const query = removedSearchTerm.trim().toLowerCase();
+      return graph.nodes
+        .filter((n) => userRemoved.has(n.id) && (n.kind === "class" || n.kind === "struct"))
+        // A selected item is always listed, even when the search term would filter it out.
+        .filter((n) => isNodeSelected(n.id) || !query || nodeLabel(n).toLowerCase().includes(query) || (n.label || "").toLowerCase().includes(query))
+        // Keep a stable relevance/name order while the group is expanded. Desktop-style
+        // click/shift-click selection must not move items under the pointer as it changes.
+        .sort((a, b) => (b.degree || 0) - (a.degree || 0)
+          || (b.score || 0) - (a.score || 0) || nodeLabel(a).localeCompare(nodeLabel(b)));
+    };
+    // Preserve each module group's disclosure state when filtering or parking rerenders the tray.
+    const collapsedRemovedModules = new Set();
+    const moduleLabels = new Map((graph.modules || []).map((m) => [m.id, m.label || m.id]));
+    const moduleRank = (id) => {
+      const rank = MODULE_ORDER.indexOf(id);
+      return rank < 0 ? MODULE_ORDER.length : rank;
+    };
+    let trayRenderScheduled = false;
+    // Flat, visually ordered list of the node ids currently rendered in the tray. Shift-click
+    // ranges follow what the user sees. Expanded categories retain stable relevance/name order;
+    // only collapsed breakthrough lists place selected items at the top.
+    let trayOrder = [];
+    // The item that was focused last; anchor for shift-click range selection.
+    let trayFocusId = null;
+    const layoutRemovedTray = () => {
+      if (!removedCanvas) return;
+      removedCanvas.innerHTML = "";
+      trayOrder = [];
+      const removedNodes = filteredRemovedNodes();
+      const groups = new Map();
+      removedNodes.forEach((node) => {
+        const moduleId = node.module || "other";
+        if (!groups.has(moduleId)) groups.set(moduleId, []);
+        groups.get(moduleId).push(node);
+      });
+
+      Array.from(groups.entries())
+        .sort(([a], [b]) => moduleRank(a) - moduleRank(b) || String(moduleLabels.get(a) || a).localeCompare(String(moduleLabels.get(b) || b)))
+        .forEach(([moduleId, nodes]) => {
+          const group = document.createElement("details");
+          group.className = "component-graph-removed-group";
+          group.dataset.module = moduleId;
+          group.style.setProperty("--module-color", MODULE_COLOR[moduleId] || MODULE_COLOR.other);
+          // Search results are expanded temporarily without overwriting the user's choice.
+          // Collapsing does NOT hide selected entries: when a collapsed group contains a
+          // selection, those entries are rendered next to the summary (see breakthrough list
+          // below), so a collapse-all never makes a highlighted item disappear.
+          const groupHasSelected = nodes.some((n) => isNodeSelected(n.id));
+          group.open = removedSearchTerm.trim() ? true : !collapsedRemovedModules.has(moduleId);
+          if (groupHasSelected) group.classList.add("has-selected");
+          group.addEventListener("toggle", () => {
+            if (removedSearchTerm.trim()) return;
+            // The <details> "toggle" event is dispatched ASYNCHRONOUSLY, so the programmatic
+            // `group.open = ...` above also produces one after this listener is attached.
+            // Acting on that echo would re-render the tray, which builds fresh <details>
+            // elements, which emit their own echo -> an endless render loop that froze the
+            // page (most visible with "Alle entfernen", where every module group is created
+            // at once). Only a state change that the DOM did not already agree with is a
+            // genuine user toggle.
+            const wantOpen = !collapsedRemovedModules.has(moduleId);
+            if (group.open === wantOpen) return; // echo of our own assignment -> ignore
+            if (group.open) collapsedRemovedModules.delete(moduleId);
+            else collapsedRemovedModules.add(moduleId);
+            // Re-render so the breakthrough list appears/disappears with the collapse state.
+            if (!trayRenderScheduled) {
+              trayRenderScheduled = true;
+              requestAnimationFrame(() => { trayRenderScheduled = false; layoutRemovedTray(); });
+            }
+          });
+
+          const summary = document.createElement("summary");
+          summary.className = "component-graph-removed-group-summary";
+          const label = moduleLabels.get(moduleId) || moduleId;
+          const selCountInGroup = nodes.filter((n) => isNodeSelected(n.id)).length;
+          summary.textContent = selCountInGroup > 0
+            ? `${label} (${nodes.length}) · ${selCountInGroup} markiert`
+            : `${label} (${nodes.length})`;
+          // Dragging the group header onto the canvas unparks the entire module.
+          summary.draggable = true;
+          summary.addEventListener("dragstart", (ev) => {
+            ev.dataTransfer.effectAllowed = "move";
+            ev.dataTransfer.setData("text/plain", `module:${moduleId}`);
+            summary.classList.add("dragging");
+          });
+          summary.addEventListener("dragend", () => summary.classList.remove("dragging"));
+          group.appendChild(summary);
+
+          // When the group is collapsed, its selected entries are still rendered -- directly
+          // under the summary, outside the <details> content -- so a selection can never be
+          // hidden by collapsing. Expanded groups render the full list as usual.
+          const rendered = group.open
+            ? nodes
+            : nodes.filter((n) => isNodeSelected(n.id)).sort((a, b) =>
+                (b.degree || 0) - (a.degree || 0)
+                || (b.score || 0) - (a.score || 0)
+                || nodeLabel(a).localeCompare(nodeLabel(b)));
+          const list = document.createElement("div");
+          list.className = group.open
+            ? "component-graph-removed-group-list"
+            : "component-graph-removed-group-list component-graph-removed-breakthrough";
+          rendered.forEach((node) => {
+            const item = document.createElement("button");
+            item.type = "button";
+            item.className = "component-graph-removed-item";
+            if (isNodeSelected(node.id)) {
+              item.classList.add("selected");
+              item.setAttribute("aria-pressed", "true");
+            }
+            if (node.id === trayFocusId) item.classList.add("focused");
+            item.style.setProperty("--module-color", MODULE_COLOR[node.module || "other"] || MODULE_COLOR.other);
+            item.draggable = true;
+            item.dataset.nodeId = node.id;
+            trayOrder.push(node.id);
+            item.innerHTML = `<span class="component-graph-removed-name">${node.label || node.shortLabel || node.id}</span><span class="component-graph-removed-meta">Degree ${node.degree || 0}</span>`;
+            item.addEventListener("dragstart", (ev) => {
+              ev.dataTransfer.effectAllowed = "move";
+              ev.dataTransfer.setData("text/plain", node.id);
+              item.classList.add("dragging");
+            });
+            item.addEventListener("dragend", () => item.classList.remove("dragging"));
+            // Click semantics inside the panel (the class page is still reachable via the
+            // node on the canvas, so a plain click is free to mean "select" here):
+            //   plain  -> focus + select only this item
+            //   ctrl   -> focus + toggle this item, keep the rest
+            //   shift  -> focus + select the visual span from the previous focus to here
+            item.addEventListener("click", (ev) => {
+              ev.preventDefault();
+              if (ev.shiftKey) selectTrayRangeTo(node.id);
+              else if (ev.ctrlKey || ev.metaKey) toggleTrayItem(node.id);
+              else selectTrayItemExclusively(node.id);
+            });
+            // Right-clicking a tray entry toggles its selection. The node STAYS parked; it is
+            // merely highlighted inside this panel until the user adds it back explicitly.
+            item.addEventListener("contextmenu", (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const el = cy.getElementById(node.id);
+              if (!el || el.empty()) return;
+              if (el.selected()) el.unselect(); else el.select();
+              selectParkedFromTray(node.id);
+            });
+            list.appendChild(item);
+          });
+          group.appendChild(list);
+          removedCanvas.appendChild(group);
+          // A collapsed <details> hides everything after the <summary>, so the breakthrough
+          // list is lifted out of the group and placed right behind it in the panel.
+          if (!group.open) {
+            if (rendered.length) {
+              list.style.setProperty("--module-color", MODULE_COLOR[moduleId] || MODULE_COLOR.other);
+              removedCanvas.appendChild(list);
+            } else {
+              list.remove();
+            }
+          }
+        });
+      if (removedTitle) removedTitle.textContent = hasUserParkedNode ? "Ausgewählte Klassen" : "Meistgenutzte Klassen";
+      const parkedCount = Array.from(userRemoved).length;
+      if (removedPanel) {
+        removedPanel.hidden = parkedCount === 0;
+        // Height is owned by the stylesheet (locked to the canvas height); the item list
+        // scrolls internally, so no measuring/growing happens here any more.
+        removedPanel.style.minHeight = "";
+        removedPanel.style.height = "";
+      }
+    };
+    // ---------- parked-item selection gestures ----------
+    // "Focus" is purely a panel concept: the item last interacted with. It is the anchor for
+    // shift ranges and is rendered with an outline. It does not imply selection by itself.
+    const focusTrayItem = (nodeId) => {
+      trayFocusId = nodeId;
+      requestAnimationFrame(() => {
+        const el = removedCanvas && removedCanvas.querySelector(`[data-node-id="${CSS.escape(nodeId)}"]`);
+        if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+      });
+    };
+    const afterTraySelectionChange = () => {
+      invalidateSelectionCache();
+      applySelectionHighlight();
+      refreshRemovedUi();
+    };
+    // Plain click: this item becomes the only selected parked item. Selections on the canvas
+    // are left untouched -- the panel and the canvas hold independent selections.
+    const selectTrayItemExclusively = (nodeId) => {
+      focusTrayItem(nodeId);
+      cy.batch(() => {
+        cy.nodes(":selected").filter((n) => isParked(n)).unselect();
+        const el = cy.getElementById(nodeId);
+        if (el && el.nonempty()) el.select();
+      });
+      afterTraySelectionChange();
+    };
+    // Ctrl/Cmd click: additive toggle, everything else keeps its state.
+    const toggleTrayItem = (nodeId) => {
+      focusTrayItem(nodeId);
+      const el = cy.getElementById(nodeId);
+      if (el && el.nonempty()) { if (el.selected()) el.unselect(); else el.select(); }
+      afterTraySelectionChange();
+    };
+    // Shift click: select the contiguous visual span between the previous focus and this item.
+    // Without a previous focus this degrades to an exclusive click.
+    const selectTrayRangeTo = (nodeId) => {
+      const from = trayOrder.indexOf(trayFocusId);
+      const to = trayOrder.indexOf(nodeId);
+      if (trayFocusId === null || from < 0 || to < 0) { selectTrayItemExclusively(nodeId); return; }
+      const [lo, hi] = from <= to ? [from, to] : [to, from];
+      const span = trayOrder.slice(lo, hi + 1);
+      focusTrayItem(nodeId);
+      cy.batch(() => {
+        span.forEach((id) => {
+          const el = cy.getElementById(id);
+          if (el && el.nonempty()) el.select();
+        });
+      });
+      afterTraySelectionChange();
+    };
+
+    // Which parked ids a drag of `nodeId` should unpark:
+    //   - dragged item is selected   -> the whole parked selection travels with it
+    //   - dragged item is unselected -> only that item
+    // All parked node ids belonging to one module group (ignores the text filter, since a
+    // module drag means "this whole module", not "the part that currently matches").
+    const parkedIdsOfModule = (moduleId) => graph.nodes
+      .filter((n) => userRemoved.has(n.id) && (n.module || "other") === moduleId)
+      .map((n) => n.id);
+
+    const dragPayloadFor = (nodeId) => {
+      if (!isNodeSelected(nodeId)) return [nodeId];
+      const sel = selectedParkedIds();
+      return sel.length ? sel : [nodeId];
+    };
+    // Unpark one or many nodes in a single pass, then frame the result.
+    const restoreNodesToMainGraph = (nodeIds) => {
+      const ids = (Array.isArray(nodeIds) ? nodeIds : [nodeIds]).filter((id) => userRemoved.has(id));
+      if (!ids.length) return [];
+      ids.forEach((id) => userRemoved.delete(id));
+      apply(false);
+      const restored = cy.collection();
+      ids.forEach((id) => {
+        const el = cy.getElementById(id);
+        if (el && el.nonempty()) restored.merge(el);
+      });
+      if (restored.nonempty()) {
+        clearHover();
+        // A single restored node gets the hover focus treatment; a group would just flicker.
+        if (restored.length === 1) applyHover(restored);
+        const frame = restored.length === 1
+          ? restored.closedNeighborhood().filter((el) => el.style("display") !== "none")
+          : restored.filter((el) => el.style("display") !== "none");
+        cy.animate({ fit: { eles: frame, padding: 80 }, duration: reduceMotion ? 0 : 260, easing: "ease-out-cubic" });
+      }
+      return ids;
+    };
+    const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
+    const sim = createSimulation(cy);
+    let autoFitTimer = null;
+    let autoFitActive = false;
+    let autoFitDeadline = 0;
+    // Our own fit animations emit "zoom"/"pan" events on every frame. Without this guard the
+    // auto-fit loop cancels itself on its very first frame (see the "zoom pan" handler below),
+    // which is why the graph never zoomed all the way out after parking a node. The window
+    // marks the time span in which viewport events are known to be self-inflicted.
+    let viewportGuardUntil = 0;
+    const now = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now());
+    const isProgrammaticViewportChange = () => now() < viewportGuardUntil;
+
+    const AUTO_FIT_DURATION = 360;
+    const AUTO_FIT_INTERVAL = 420;
+    // How long the loop keeps chasing the still-settling force layout after a removal.
+    const AUTO_FIT_WINDOW = 3000;
+
+    const fitVisibleGraph = (animated = true) => {
+      const vis = cy.elements().filter((el) => el.style("display") !== "none");
+      if (vis.empty()) return;
+      const duration = animated && !reduceMotion ? AUTO_FIT_DURATION : 0;
+      viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
+      if (duration > 0) {
+        cy.stop(false, false);
+        cy.animate({
+          fit: { eles: vis, padding: 40 },
+          duration,
+          easing: "ease-out-cubic"
+        });
+      } else {
+        cy.fit(vis, 40);
+      }
+    };
+
+    const stopAutoFit = () => {
+      autoFitActive = false;
+      autoFitDeadline = 0;
+      if (autoFitTimer) {
+        clearTimeout(autoFitTimer);
+        autoFitTimer = null;
+      }
+    };
+
+    const startAutoFit = () => {
+      stopAutoFit();
+      autoFitActive = true;
+      autoFitDeadline = now() + (reduceMotion ? 400 : AUTO_FIT_WINDOW);
+      const tick = () => {
+        if (!autoFitActive) return;
+        fitVisibleGraph(true);
+        if (now() >= autoFitDeadline) {
+          // Final settle pass: the layout has come to rest, so this fit is the one that
+          // actually shows the complete remaining graph.
+          autoFitTimer = setTimeout(() => {
+            if (!autoFitActive) return;
+            fitVisibleGraph(true);
+            stopAutoFit();
+          }, reduceMotion ? 60 : AUTO_FIT_INTERVAL);
+          return;
+        }
+        autoFitTimer = setTimeout(tick, reduceMotion ? 120 : AUTO_FIT_INTERVAL);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const apply = (recenter) => {
+      // The interactive map intentionally opens on its curated hub subset. With controls
+      // removed, this is the sole visibility policy; module clicks only change the viewport.
+      cy.batch(() => {
+        cy.nodes().forEach((n) => {
+          if (isContainer(n)) return; // containers are derived below from leaf children
+          // Parked stays parked, even when selected: a selected parked node is highlighted in
+          // the tray instead of being returned to the canvas.
+          n.style("display", userRemoved.has(n.id()) ? "none" : "element"); // show the full graph, minus anything the user dragged out
+        });
+        // Resolve nested compound containers bottom-up.
+        cy.nodes().filter((n) => n.data("kind") === "namespace").forEach((p) => {
+          const any = p.children().some((c) => c.style("display") !== "none");
+          p.style("display", any ? "element" : "none");
+        });
+        cy.nodes().filter(isModule).forEach((p) => {
+          const any = p.children().some((c) => c.style("display") !== "none");
+          p.style("display", any ? "element" : "none");
+        });
+        cy.edges().forEach((e) => {
+          const visibleEnds = e.source().style("display") !== "none" && e.target().style("display") !== "none";
+          e.style("display", visibleEnds ? "element" : "none");
+        });
+
+      });
+
+      sim.seed(recenter);
+      if (recenter) requestAnimationFrame(() => fitVisibleGraph(true));
+
+      if (reduceMotion) {
+        sim.settleOnce(90);
+      } else {
+        sim.start();
+      }
+
+      if (caption) {
+        const shown = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none").length;
+        caption.textContent = `Federphysik-Karte · Vollständiger Graph · ${shown} Komponenten · Modul anklicken zum Zentrieren` +
+          (reduceMotion ? "" : " · Ziehen verdrängt nahe Komponenten");
+      }
+      refreshRemovedUi();
+    };
+
+    // Keep the auxiliary UI in sync with userRemoved after every graph update.
+    const refreshRemovedUi = () => {
+      if (restoreButton) {
+        const selectedLeaves = cy.nodes(":selected").filter((n) => !isContainer(n) && n.style("display") !== "none");
+        const visibleLeafCount = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none").length;
+        restoreButton.hidden = visibleLeafCount === 0;
+        if (selectedLeaves.length > 0) {
+          restoreButton.textContent = selectedLeaves.length <= 1
+            ? "Markierte entfernen"
+            : `Markierte entfernen (${selectedLeaves.length})`;
+        } else {
+          restoreButton.textContent = visibleLeafCount <= 1
+            ? "Alle entfernen"
+            : `Alle entfernen (${visibleLeafCount})`;
+        }
+      }
+      if (keepSelectedButton) {
+        // Only meaningful while something is selected and there is at least one unselected
+        // node on the canvas that could be parked.
+        const selectedLeaves = cy.nodes(":selected").filter((n) => !isContainer(n) && n.style("display") !== "none");
+        const unselectedVisible = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none" && !n.selected());
+        const show = selectedLeaves.length > 0 && unselectedVisible.length > 0;
+        keepSelectedButton.hidden = !show;
+        if (show) {
+          keepSelectedButton.textContent = unselectedVisible.length <= 1
+            ? "Nicht-Markierte entfernen"
+            : `Nicht-Markierte entfernen (${unselectedVisible.length})`;
+        }
+      }
+      if (collapseAllButton) {
+        const parkedModules = Array.from(new Set(
+          graph.nodes.filter((n) => userRemoved.has(n.id)).map((n) => n.module || "other")
+        ));
+        collapseAllButton.hidden = parkedModules.length === 0;
+        collapseAllButton.disabled = !!removedSearchTerm.trim(); // search forces all groups open
+        const everyCollapsed = parkedModules.length > 0 && parkedModules.every((m) => collapsedRemovedModules.has(m));
+        // The triangle points down when groups are open (click = collapse) and right when they
+        // are collapsed (click = expand), mirroring the per-group disclosure markers.
+        collapseAllButton.classList.toggle("collapsed", everyCollapsed);
+        collapseAllButton.setAttribute("aria-expanded", everyCollapsed ? "false" : "true");
+        const collapseLabel = everyCollapsed ? "Alle ausklappen" : "Alle einklappen";
+        collapseAllButton.setAttribute("aria-label", collapseLabel);
+        collapseAllButton.title = collapseLabel;
+      }
+      if (restoreFilteredButton) {
+        const filteredCount = filteredRemovedNodes().length;
+        const selCount = selectedParkedIds().length;
+        restoreFilteredButton.hidden = userRemoved.size === 0;
+        // A selection inside the panel takes precedence: the button then adds exactly the
+        // highlighted entries back to the canvas.
+        if (selCount > 0) {
+          restoreFilteredButton.disabled = false;
+          restoreFilteredButton.classList.add("has-selected");
+          restoreFilteredButton.textContent = selCount <= 1
+            ? "Auswahl hinzufügen"
+            : `Auswahl hinzufügen (${selCount})`;
+        } else {
+          restoreFilteredButton.disabled = filteredCount === 0;
+          restoreFilteredButton.classList.remove("has-selected");
+          restoreFilteredButton.textContent = removedSearchTerm.trim()
+            ? (filteredCount <= 1 ? "Treffer hinzufügen" : `Treffer hinzufügen (${filteredCount})`)
+            : (userRemoved.size <= 1 ? "Alle hinzufügen" : `Alle hinzufügen (${userRemoved.size})`);
+        }
+      }
+      layoutRemovedTray();
+    };
+
+    const focusModule = (moduleNode) => {
+      const visible = moduleNode.descendants().filter((n) => !isContainer(n) && n.style("display") !== "none");
+      if (visible.empty()) return;
+      clearHover();
+      cy.animate({
+        fit: { eles: visible, padding: 54 },
+        duration: reduceMotion ? 0 : 360,
+        easing: "ease-out-cubic"
+      });
+    };
+
+    const boot = () => {
+      if (stage.clientWidth <= 0 || stage.clientHeight <= 0) {
+        throw new Error(`Graph container has no size: ${stage.clientWidth}x${stage.clientHeight}`);
+      }
+      apply(true);
+    };
+
+    requestAnimationFrame(() => {
+      try { boot(); } catch (_) { requestAnimationFrame(boot); }
+    });
+
+    if (restoreButton) {
+      restoreButton.addEventListener("click", () => {
+        const selectedLeaves = cy.nodes(":selected").filter((n) => !isContainer(n) && n.style("display") !== "none");
+        const targetLeaves = selectedLeaves.length > 0 ? selectedLeaves : cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none");
+        if (targetLeaves.empty()) return;
+        targetLeaves.forEach((n) => userRemoved.add(n.id()));
+        cy.elements().unselect();
+        hasUserParkedNode = true;
+        clearHover();
+        apply(true);
+        startAutoFit();
+      });
+    }
+    if (keepSelectedButton) {
+      // Park every visible component that is NOT selected, keeping the selection on the canvas.
+      keepSelectedButton.addEventListener("click", () => {
+        const selectedLeaves = cy.nodes(":selected").filter((n) => !isContainer(n) && n.style("display") !== "none");
+        if (selectedLeaves.empty()) return;
+        const victims = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none" && !n.selected());
+        if (victims.empty()) return;
+        victims.forEach((n) => userRemoved.add(n.id()));
+        hasUserParkedNode = true;
+        clearHover();
+        apply(true);
+        startAutoFit();
+      });
+    }
+    if (collapseAllButton) {
+      // Collapse every module group in the tray. Selected entries break through the collapse
+      // and stay visible (rendered outside the collapsed <details>), so nothing marked is lost.
+      collapseAllButton.addEventListener("click", () => {
+        const allCollapsed = Array.from(new Set(
+          graph.nodes.filter((n) => userRemoved.has(n.id)).map((n) => n.module || "other")
+        ));
+        if (allCollapsed.length === 0) return;
+        const everyCollapsed = allCollapsed.every((m) => collapsedRemovedModules.has(m));
+        if (everyCollapsed) allCollapsed.forEach((m) => collapsedRemovedModules.delete(m));
+        else allCollapsed.forEach((m) => collapsedRemovedModules.add(m));
+        refreshRemovedUi();
+      });
+    }
+    if (removedSearch) {
+      removedSearch.addEventListener("input", () => {
+        removedSearchTerm = removedSearch.value || "";
+        refreshRemovedUi();
+      });
+    }
+    if (restoreFilteredButton) {
+      restoreFilteredButton.addEventListener("click", () => {
+        // With entries highlighted in the panel, only those are added back; otherwise the
+        // current filter result (or everything) is restored as before.
+        const selIds = selectedParkedIds();
+        const toRestore = selIds.length > 0 ? selIds : filteredRemovedNodes().map((n) => n.id);
+        if (toRestore.length === 0) return;
+        toRestore.forEach((id) => userRemoved.delete(id));
+        clearHover();
+        apply(true);
+        applySelectionHighlight();
+      });
+    }
+    if (removedCanvas) {
+      removedCanvas.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+      });
+      stage.addEventListener("dragover", (ev) => {
+        if (!ev.dataTransfer.types.includes("text/plain")) return;
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+      });
+      stage.addEventListener("drop", (ev) => {
+        const payload = ev.dataTransfer.getData("text/plain");
+        if (!payload) return;
+        ev.preventDefault();
+        const rect = stage.getBoundingClientRect();
+        const rendered = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+        // Payload is either "module:<id>" (drag of a group header) or a plain node id.
+        const ids = payload.startsWith("module:")
+          ? parkedIdsOfModule(payload.slice("module:".length))
+          : dragPayloadFor(payload);
+        const unparked = restoreNodesToMainGraph(ids);
+        if (!unparked.length) return;
+        // Drop point is the anchor; multiple nodes are fanned around it so they do not
+        // all land on the exact same coordinate and explode apart in the first frame.
+        const R = 26;
+        unparked.forEach((id, i) => {
+          const el = cy.getElementById(id);
+          if (!el || el.empty()) return;
+          const a = (2 * Math.PI * i) / Math.max(1, unparked.length);
+          const pos = unparked.length === 1
+            ? rendered
+            : { x: rendered.x + Math.cos(a) * R, y: rendered.y + Math.sin(a) * R };
+          el.renderedPosition(pos);
+          sim.grab(id);
+          sim.free(id);
+        });
+        if (reduceMotion) sim.settleOnce(60); else sim.start();
+      });
+    }
+
+    cy.on("select unselect", "node", () => {
+      invalidateSelectionCache();
+      applySelectionHighlight();
+      refreshRemovedUi();
+    });
+
+    // hover neighborhood focus (paused while dragging so it doesn't fight the drag)
+    let isDraggingAny = false;
+
+    // Track the pointer's last known position (relative to the stage) so we can tell,
+    // at the moment of release, whether the mouse itself — not the node — is outside the canvas.
+    let lastPointerInStage = { x: stage.clientWidth / 2, y: stage.clientHeight / 2 };
+    let pointerInsideStage = true;
+    stage.addEventListener("pointermove", (ev) => {
+      const rect = stage.getBoundingClientRect();
+      lastPointerInStage = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+      pointerInsideStage = true;
+    });
+    stage.addEventListener("pointerleave", () => { pointerInsideStage = false; });
+    // Pointer events are captured by the dragged element in most browsers, so listen on the
+    // window too while dragging to reliably detect the pointer leaving the stage bounds.
+    window.addEventListener("pointermove", (ev) => {
+      if (!isDraggingAny) return;
+      const rect = stage.getBoundingClientRect();
+      lastPointerInStage = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
+      pointerInsideStage = ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom;
+    });
+    // Drag-zoom: while a node is held, continuously fit the viewport (position AND zoom)
+    // around the bounding box of the grabbed node plus every directly adjacent (highlighted)
+    // node, zooming in as far as that bounding box allows.
+    let draggedNode = null;
+    let dragZoomRaf = null;
+    const DRAG_ZOOM_PADDING = 80;
+    const DRAG_ZOOM_EASE = 0.16;
+
+    const neighborhoodTarget = (n) => {
+      // Only follow neighbors reached through an edge that is actually rendered right now.
+      // closedNeighborhood() walks the full underlying graph model, including edges hidden
+      // by the default hub-subset filter — without this check the fit would balloon out to
+      // distant nodes connected only through a currently-invisible edge.
+      const visibleEdges = n.connectedEdges().filter((e) => e.style("display") !== "none");
+      const neighborNodes = visibleEdges.connectedNodes().filter((nd) => nd.style("display") !== "none");
+      const nodes = neighborNodes.union(n);
+      const bb = nodes.length ? nodes.boundingBox() : n.boundingBox();
+      const w = Math.max(1, bb.w + DRAG_ZOOM_PADDING * 2);
+      const h = Math.max(1, bb.h + DRAG_ZOOM_PADDING * 2);
+      const zw = stage.clientWidth / w;
+      const zh = stage.clientHeight / h;
+      const max = typeof cy.maxZoom === "function" ? cy.maxZoom() : Infinity;
+      const min = cy.minZoom ? cy.minZoom() : 0.05;
+      const zoom = Math.max(min, Math.min(zw, zh, max));
+      const cx = bb.x1 + bb.w / 2, cy0 = bb.y1 + bb.h / 2;
+      const pan = { x: stage.clientWidth / 2 - cx * zoom, y: stage.clientHeight / 2 - cy0 * zoom };
+      return { zoom, pan };
+    };
+
+    const dragZoomStep = () => {
+      if (!draggedNode) { dragZoomRaf = null; return; }
+      const target = neighborhoodTarget(draggedNode);
+      const curZoom = cy.zoom();
+      const curPan = cy.pan();
+      const nextZoom = curZoom + (target.zoom - curZoom) * DRAG_ZOOM_EASE;
+      const nextPan = {
+        x: curPan.x + (target.pan.x - curPan.x) * DRAG_ZOOM_EASE,
+        y: curPan.y + (target.pan.y - curPan.y) * DRAG_ZOOM_EASE
+      };
+      cy.viewport({ zoom: nextZoom, pan: nextPan });
+      dragZoomRaf = requestAnimationFrame(dragZoomStep);
+    };
+
+    const startDragZoom = (n) => {
+      draggedNode = n;
+      if (reduceMotion) {
+        const target = neighborhoodTarget(n);
+        cy.viewport(target);
+        return;
+      }
+      if (!dragZoomRaf) dragZoomRaf = requestAnimationFrame(dragZoomStep);
+    };
+    const stopDragZoom = () => {
+      draggedNode = null;
+      if (dragZoomRaf) { cancelAnimationFrame(dragZoomRaf); dragZoomRaf = null; }
+    };
+
+    // ---------- selection highlight ----------
+    // Parked nodes MAY be selected, but they stay in the tray: their selection is expressed by
+    // a highlight inside the parked-items panel, not by returning to the canvas. Container
+    // boxes are never a valid selection target.
+    const isParked = (n) => userRemoved.has(n.id());
+    const purgeParkedSelection = () => {
+      const stale = cy.nodes(":selected").filter((n) => isContainer(n));
+      if (stale.nonempty()) stale.unselect();
+    };
+    // The canvas highlight only ever concerns nodes that are actually on the canvas.
+    const liveSelection = () => {
+      purgeParkedSelection();
+      return cy.nodes(":selected").filter((n) => !isContainer(n) && !isParked(n));
+    };
+    const hasSelection = () => liveSelection().nonempty();
+
+    // When a selection exists, exactly the selected nodes (plus the edges strictly between
+    // them) stay lit; everything else is faded. With no selection, nothing is faded.
+    const applySelectionHighlight = () => {
+      const sel = liveSelection();
+      if (sel.empty()) {
+        cy.elements().removeClass("faded focus sel-highlight");
+        return;
+      }
+      cy.batch(() => {
+        cy.elements().removeClass("focus hover-root hover-neighbor hover-edge sel-highlight");
+        cy.elements().addClass("faded");
+        sel.removeClass("faded").addClass("focus sel-highlight");
+        sel.edgesWith(sel).removeClass("faded").addClass("focus sel-highlight");
+      });
+    };
+
+    // Wire the tray's right-click hook now that the highlight helper exists. Selecting a parked
+    // item does NOT unpark it -- only the canvas highlight and the tray rendering are refreshed.
+    selectParkedFromTray = () => {
+      applySelectionHighlight();
+      refreshRemovedUi();
+    };
+
+    const clearHover = () => {
+      cy.elements().removeClass("faded focus hover-root hover-neighbor hover-edge");
+      // A cleared hover must not wipe an active selection highlight.
+      applySelectionHighlight();
+    };
+    const applyHover = (n) => {
+      cy.elements().removeClass("faded focus hover-root hover-neighbor hover-edge");
+      cy.elements().addClass("faded");
+      const neighborhood = n.neighborhood();
+      n.removeClass("faded").addClass("focus hover-root");
+      neighborhood.removeClass("faded");
+      neighborhood.nodes().addClass("focus hover-neighbor");
+      neighborhood.edges().addClass("focus hover-edge");
+    };
+    cy.on("mouseover", "node", (e) => {
+      if (isDraggingAny) return;
+      // An explicit selection outranks transient hover: while something is selected the
+      // highlight must show the selection and nothing else.
+      if (hasSelection()) return;
+      const n = e.target;
+      if (isContainer(n)) return;
+      applyHover(n);
+    });
+    cy.on("mouseout", "node", () => { if (!isDraggingAny) clearHover(); });
+
+    // drag = force feedback: grabbed node pins to pointer, springs pull its neighbors live
+    // Leaves currently held because their module/namespace box is being dragged.
+    let containerDragLeaves = null;
+
+    cy.on("grab", "node", (e) => {
+      stopAutoFit();
+      const n = e.target;
+      if (isContainer(n)) {
+        // A compound box has no position of its own -- Cytoscape moves its children instead.
+        // Register every visible descendant leaf as "dragging" so the integrator stops writing
+        // its own positions and instead reads the dragged positions back into the sim state
+        // each frame (which is exactly the drag delta). Without this the physics loop
+        // overwrites the drag ~60x/s and the box fights the pointer.
+        containerDragLeaves = n.descendants().filter((c) => !isContainer(c) && c.style("display") !== "none");
+        if (containerDragLeaves.empty()) { containerDragLeaves = null; return; }
+        isDraggingAny = true;
+        n.addClass("dragging");
+        containerDragLeaves.forEach((c) => sim.grab(c.id()));
+        if (reduceMotion) sim.start();
+        return;
+      }
+      isDraggingAny = true;
+      n.addClass("dragging");
+      sim.grab(n.id());
+      applyHover(n);
+      startDragZoom(n);
+      if (reduceMotion) sim.start();
+    });
+    // Removal decision is based on the mouse position at release time, not the node's
+    // position — a node can be dragged far while the cursor (and thus the drop point) stays
+    // inside the canvas, and should NOT be removed in that case.
+    const isPointerOutsideCanvas = () => !pointerInsideStage
+      || lastPointerInStage.x < 0 || lastPointerInStage.y < 0
+      || lastPointerInStage.x > stage.clientWidth || lastPointerInStage.y > stage.clientHeight;
+
+    cy.on("free", "node", (e) => {
+      const n = e.target;
+      if (isContainer(n)) {
+        // Release every leaf that was held on behalf of this box and let the springs take over.
+        isDraggingAny = false;
+        n.removeClass("dragging");
+        if (containerDragLeaves) {
+          containerDragLeaves.forEach((c) => sim.free(c.id()));
+          containerDragLeaves = null;
+        }
+        if (reduceMotion) sim.settleOnce(60); else sim.start();
+        return;
+      }
+      isDraggingAny = false;
+      n.removeClass("dragging");
+      sim.free(n.id());
+      clearHover();
+      stopDragZoom();
+
+      // Removed only when the mouse itself was outside the canvas at the moment of release.
+      if (isPointerOutsideCanvas()) {
+        // The tray now scrolls, so it no longer has a capacity limit — every drag-out parks.
+        userRemoved.add(n.id());
+        n.unselect(); // dragging a node out is an explicit deselect-and-park gesture
+        hasUserParkedNode = true;
+        applySelectionHighlight();
+        // After parking via drag-out, keep re-running the same fit used by background
+        // taps until the user takes over the viewport again (tap/zoom/pan/drag).
+        apply(true);
+        startAutoFit();
+        return;
+      }
+
+      if (reduceMotion) {
+        sim.settleOnce(60);
+      }
+    });
+
+    // A module box is a navigational target: click it to center and zoom to its visible hubs.
+    cy.on("tap", "node[kind = 'module']", (e) => {
+      focusModule(e.target);
+    });
+
+    // ---------- right-click selection / neighbourhood growth ----------
+    // Right-clicking an unselected component selects it. Right-clicking a component that is
+    // already selected grows the selection: starting from that component we walk the transitive
+    // set of nodes that are both connected and already selected (a "selected island"), collect
+    // every not-yet-selected direct neighbour of that island, and select those too. Repeated
+    // right-clicks therefore expand the selection ring by ring along the real edges.
+    // Two different predicates, and the distinction is the whole point:
+    //  - frontierNode: may be part of the CURRENT frontier, i.e. may be traversed when the
+    //    connected selected region is determined. Parked nodes are excluded, so the frontier
+    //    is computed solely on the non-parked graph and never propagates through the tray.
+    //  - acquirableNode: may become part of the NEW frontier, i.e. may be picked up as a
+    //    neighbour. Parked nodes ARE allowed here; they get selected and highlighted in the
+    //    parked-items panel without returning to the canvas.
+    const frontierNode = (n) => n && n.isNode() && !isContainer(n) && !isParked(n) && n.style("display") !== "none";
+    const acquirableNode = (n) => n && n.isNode() && !isContainer(n);
+    const selectableNode = frontierNode;
+
+    const selectedIsland = (startNode) => {
+      // Breadth-first over edges, staying inside the set of currently selected, non-parked
+      // nodes. Hidden edges (which lead into the tray) are not traversed.
+      const island = new Map([[startNode.id(), startNode]]);
+      const queue = [startNode];
+      while (queue.length) {
+        const cur = queue.shift();
+        cur.connectedEdges().forEach((edge) => {
+          if (edge.style("display") === "none") return;
+          [edge.source(), edge.target()].forEach((cand) => {
+            if (island.has(cand.id())) return;
+            if (!frontierNode(cand) || !cand.selected()) return;
+            island.set(cand.id(), cand);
+            queue.push(cand);
+          });
+        });
+      }
+      return island;
+    };
+
+    const growSelectionFrom = (startNode) => {
+      const island = selectedIsland(startNode);
+      const additions = new Map();
+      island.forEach((member) => {
+        // ALL neighbours of the frontier are acquired, including parked ones. Their edges are
+        // hidden on the canvas, but the connection is real, so we deliberately do not filter
+        // by edge visibility here -- only the frontier itself was restricted to visible nodes.
+        member.connectedEdges().forEach((edge) => {
+          [edge.source(), edge.target()].forEach((cand) => {
+            const id = cand.id();
+            if (island.has(id) || additions.has(id)) return;
+            if (!acquirableNode(cand) || cand.selected()) return;
+            additions.set(id, cand);
+          });
+        });
+      });
+      if (!additions.size) return 0;
+      cy.batch(() => additions.forEach((n) => n.select()));
+      return additions.size;
+    };
+
+    // Right-clicking a module/namespace box selects exactly that container's components and
+    // clears every other selection -- a quick way to isolate one module as the new frontier.
+    cy.on("cxttap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
+      const box = e.target;
+      if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+      const members = box.descendants().filter((c) => frontierNode(c));
+      cy.batch(() => {
+        cy.nodes(":selected").unselect();
+        members.forEach((c) => c.select());
+      });
+      applySelectionHighlight();
+      refreshRemovedUi();
+    });
+
+    cy.on("cxttap", "node", (e) => {
+      const n = e.target;
+      // Containers are handled by their own listener above.
+      if (isContainer(n)) return;
+      // Only nodes actually on the canvas can start or extend a frontier here; parked nodes
+      // are reachable via the tray panel's own right-click handler.
+      if (!frontierNode(n)) return;
+      if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+      if (n.selected()) growSelectionFrom(n);
+      else n.select();
+      applySelectionHighlight();
+      refreshRemovedUi();
+    });
+
+    // Right-clicking empty canvas clears the selection; in both cases the native browser
+    // context menu is suppressed so the gesture stays inside the graph.
+    cy.on("cxttap", (e) => {
+      if (e.target !== cy) return;
+      if (e.originalEvent) e.originalEvent.preventDefault();
+      cy.nodes(":selected").unselect(); // right-click clears canvas AND panel selection
+      applySelectionHighlight();
+      refreshRemovedUi();
+    });
+
+    stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
+
+    cy.on("tap", "node", (e) => {
+      const n = e.target;
+      if (isContainer(n)) return;
+      if (!e.originalEvent || e.originalEvent.detail === 1) {
+        const u = n.data("url");
+        if (u) location.href = new URL(u, root).href;
+      }
+    });
+
+    // Clicking empty background (not on any node/edge) only resets the view to show
+    // everything. The selection is deliberately left untouched -- clearing it is the
+    // right-click gesture on the background.
+    cy.on("tap", (e) => {
+      if (e.target !== cy) return; // only the canvas itself, not a node/edge bubbling up
+      stopAutoFit();
+      clearHover();
+      fitVisibleGraph(true);
+    });
+
+    // Only a genuine user gesture (wheel, pinch, drag-pan) hands viewport control back to
+    // the user. Viewport events emitted by our own fit animations must be ignored, otherwise
+    // the auto-fit loop would abort itself immediately after a node is removed/parked.
+    cy.on("zoom pan", () => {
+      if (isProgrammaticViewportChange()) return;
+      stopAutoFit();
+    });
+
+    let resizeTimer;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { cy.resize(); apply(false); }, 150);
+    });
+  }).catch((err) => {
+    stage.innerHTML = `<p class="graph-error">${ui.failed}<br><code>${String((err && err.message) || err)}</code></p>`;
+    console.error("component graph", err);
+  });
+})();
