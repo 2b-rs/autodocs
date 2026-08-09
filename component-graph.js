@@ -556,7 +556,9 @@
       maxZoom: 2.6,
       wheelSensitivity: 0.22,
       motionBlur: !reduceMotion,
-      boxSelectionEnabled: true,
+      // The built-in box selection is replaced by our own marquee overlay further down: it
+      // needs desktop modifier semantics and custom visuals, which the native one cannot do.
+      boxSelectionEnabled: false,
       selectionType: "additive",
       layout: { name: "preset", fit: false },
       style: [
@@ -579,6 +581,18 @@
         { selector: "node.dragging", style: { "border-width": 3.2, "background-color": "#fff", "z-index": 50 } },
         { selector: "node:selected", style: { "border-width": 3.4, "border-color": "#a13544", "background-color": "#fff4f4", "z-index": 55 } },
         { selector: "node.sel-highlight", style: { opacity: 1, "z-index": 60 } },
+        // Marquee preview states: what the current band would do on release.
+        { selector: "node.marquee-will-select", style: {
+          "border-color": "#a13544", "border-width": 3, "background-color": "#fdeff0",
+          "overlay-color": "#a13544", "overlay-opacity": 0.12, "overlay-padding": 6, "z-index": 62
+        }},
+        { selector: "node.marquee-will-drop", style: {
+          "border-color": "#7a7974", "border-width": 2, "background-color": "#f1efec",
+          "overlay-color": "#7a7974", "overlay-opacity": 0.10, "overlay-padding": 4, "z-index": 61
+        }},
+        { selector: "node.marquee-flash", style: {
+          "overlay-color": "#a13544", "overlay-opacity": 0.28, "overlay-padding": 10, "z-index": 64
+        }},
         { selector: "edge.sel-highlight", style: { opacity: 1, "line-color": "#a13544", "target-arrow-color": "#a13544", width: 2.4, "z-index": 58 } },
         { selector: "edge", style: {
           width: "mapData(weight, 1, 60, 1.2, 4.8)", "line-color": "#9c9890", "target-arrow-color": "#8f8b84",
@@ -779,9 +793,18 @@
             //   shift  -> focus + select the visual span from the previous focus to here
             item.addEventListener("click", (ev) => {
               ev.preventDefault();
+              // A double-click navigates (see below); its first click must not also run a
+              // plain exclusive select, otherwise the selection flickers on the way out.
+              if (ev.detail > 1) return;
               if (ev.shiftKey) selectTrayRangeTo(node.id);
               else if (ev.ctrlKey || ev.metaKey) toggleTrayItem(node.id);
               else selectTrayItemExclusively(node.id);
+            });
+            // Double-click opens the class page -- same gesture as on the canvas.
+            item.addEventListener("dblclick", (ev) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              if (node.url) location.href = new URL(node.url, root).href;
             });
             // Right-clicking a tray entry toggles its selection. The node STAYS parked; it is
             // merely highlighted inside this panel until the user adds it back explicitly.
@@ -878,6 +901,17 @@
       .filter((n) => userRemoved.has(n.id) && (n.module || "other") === moduleId)
       .map((n) => n.id);
 
+    // Dragging a module header: the selection acts as a filter *within* that module.
+    //   module has selected items -> only those are unparked, other modules stay untouched
+    //   module has no selection    -> the whole module is unparked
+    const moduleDragPayload = (moduleId) => {
+      const all = parkedIdsOfModule(moduleId);
+      const selected = all.filter((id) => isNodeSelected(id));
+      return selected.length ? selected : all;
+    };
+
+    // Dragging an item: a selected item carries the entire parked selection across all
+    // modules; an unselected item travels alone.
     const dragPayloadFor = (nodeId) => {
       if (!isNodeSelected(nodeId)) return [nodeId];
       const sel = selectedParkedIds();
@@ -1109,7 +1143,9 @@
         const targetLeaves = selectedLeaves.length > 0 ? selectedLeaves : cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none");
         if (targetLeaves.empty()) return;
         targetLeaves.forEach((n) => userRemoved.add(n.id()));
-        cy.elements().unselect();
+        // Parked nodes keep their selection: they stay marked inside the panel, so the user
+        // can immediately act on the same set again (e.g. add it back).
+        cy.nodes().filter((n) => isContainer(n)).unselect();
         hasUserParkedNode = true;
         clearHover();
         apply(true);
@@ -1181,10 +1217,17 @@
         const rendered = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
         // Payload is either "module:<id>" (drag of a group header) or a plain node id.
         const ids = payload.startsWith("module:")
-          ? parkedIdsOfModule(payload.slice("module:".length))
+          ? moduleDragPayload(payload.slice("module:".length))
           : dragPayloadFor(payload);
         const unparked = restoreNodesToMainGraph(ids);
         if (!unparked.length) return;
+        // Everything that just travelled to the canvas loses its mark: the panel highlight
+        // exists to stage a set for exactly this move, so once the move happened the set is
+        // consumed. Marks on items that stayed parked are untouched.
+        cy.batch(() => unparked.forEach((id) => {
+          const el = cy.getElementById(id);
+          if (el && el.nonempty() && el.selected()) el.unselect();
+        }));
         // Drop point is the anchor; multiple nodes are fanned around it so they do not
         // all land on the exact same coordinate and explode apart in the first frame.
         const R = 26;
@@ -1354,6 +1397,52 @@
     // drag = force feedback: grabbed node pins to pointer, springs pull its neighbors live
     // Leaves currently held because their module/namespace box is being dragged.
     let containerDragLeaves = null;
+    // Leaves moving together because the grabbed node was part of a multi-node selection.
+    let coDragLeaves = null;
+    // Selected leaves that Cytoscape does NOT move on its own during the current drag, plus
+    // the reference node whose motion they copy. Cytoscape co-drags the selection only when a
+    // *selected leaf* is grabbed; a container drag moves just its own descendants. These
+    // "passengers" close that gap so any left-drag translates the whole selection uniformly.
+    let dragPassengers = null;
+    let dragReference = null;
+    let dragLastRefPos = null;
+
+    // Everything that should travel with the pointer: the visible, unparked selection.
+    const uniformDragSet = () => cy.nodes(":selected")
+      .filter((c) => !isContainer(c) && c.style("display") !== "none" && !isParked(c));
+
+    // `moved` is the collection Cytoscape already translates by itself.
+    const armPassengers = (reference, moved) => {
+      const movedIds = new Set(moved.map((c) => c.id()));
+      const rest = uniformDragSet().filter((c) => !movedIds.has(c.id()));
+      if (rest.empty() || !reference || reference.empty()) { dragPassengers = null; return; }
+      dragPassengers = rest;
+      dragReference = reference;
+      dragLastRefPos = { ...reference.position() };
+      dragPassengers.forEach((c) => { sim.grab(c.id()); c.addClass("dragging"); });
+    };
+
+    // Apply the reference node's per-frame delta to every passenger.
+    cy.on("drag", "node", () => {
+      if (!dragPassengers || !dragReference || dragReference.empty()) return;
+      const cur = dragReference.position();
+      const dx = cur.x - dragLastRefPos.x;
+      const dy = cur.y - dragLastRefPos.y;
+      if (dx === 0 && dy === 0) return;
+      dragLastRefPos = { x: cur.x, y: cur.y };
+      cy.batch(() => dragPassengers.forEach((c) => {
+        const p = c.position();
+        c.position({ x: p.x + dx, y: p.y + dy });
+      }));
+    });
+
+    const releasePassengers = () => {
+      if (!dragPassengers) return;
+      dragPassengers.forEach((c) => { sim.free(c.id()); c.removeClass("dragging"); });
+      dragPassengers = null;
+      dragReference = null;
+      dragLastRefPos = null;
+    };
 
     cy.on("grab", "node", (e) => {
       stopAutoFit();
@@ -1369,14 +1458,36 @@
         isDraggingAny = true;
         n.addClass("dragging");
         containerDragLeaves.forEach((c) => sim.grab(c.id()));
+        // Selected nodes outside this box ride along, so dragging a namespace moves the whole
+        // selection rather than only its own members.
+        armPassengers(containerDragLeaves.first(), containerDragLeaves);
         if (reduceMotion) sim.start();
         return;
       }
       isDraggingAny = true;
       n.addClass("dragging");
-      sim.grab(n.id());
+      // Cytoscape co-drags the entire selection when a selected node is grabbed, but it only
+      // reports "grab" for the one under the pointer. Registering just that node left the
+      // other movers under the integrator's control, so they were simultaneously pushed by
+      // the pointer AND overwritten by the physics loop -- the mixed static/physics drag.
+      // Hold every co-dragged leaf instead, exactly like a container drag does.
+      coDragLeaves = n.selected()
+        ? uniformDragSet()
+        : null;
+      if (coDragLeaves && coDragLeaves.length > 1) {
+        coDragLeaves.forEach((c) => { sim.grab(c.id()); c.addClass("dragging"); });
+      } else {
+        coDragLeaves = null;
+        sim.grab(n.id());
+      }
+      // Grabbing an unselected node: the selection is not co-dragged by Cytoscape, so it
+      // becomes passenger cargo and follows the pointer uniformly.
+      armPassengers(n, coDragLeaves || cy.collection().merge(n));
       applyHover(n);
-      startDragZoom(n);
+      // The drag-zoom follows a single node's neighbourhood. During a multi-node drag it has
+      // no meaningful focus and its panning is what felt like erratic scrolling, so it is
+      // only armed for a genuine single-node drag.
+      if (!coDragLeaves && !dragPassengers) startDragZoom(n);
       if (reduceMotion) sim.start();
     });
     // Removal decision is based on the mouse position at release time, not the node's
@@ -1396,20 +1507,31 @@
           containerDragLeaves.forEach((c) => sim.free(c.id()));
           containerDragLeaves = null;
         }
+        releasePassengers();
         if (reduceMotion) sim.settleOnce(60); else sim.start();
         return;
       }
       isDraggingAny = false;
       n.removeClass("dragging");
-      sim.free(n.id());
+      // Passengers exclude the grabbed node itself, so merge it back in for the park path.
+      const movedTogether = coDragLeaves || (dragPassengers ? dragPassengers.union(n) : null);
+      if (coDragLeaves) {
+        coDragLeaves.forEach((c) => { sim.free(c.id()); c.removeClass("dragging"); });
+        coDragLeaves = null;
+      } else {
+        sim.free(n.id());
+      }
+      releasePassengers();
       clearHover();
       stopDragZoom();
 
       // Removed only when the mouse itself was outside the canvas at the moment of release.
       if (isPointerOutsideCanvas()) {
         // The tray now scrolls, so it no longer has a capacity limit — every drag-out parks.
-        userRemoved.add(n.id());
-        n.unselect(); // dragging a node out is an explicit deselect-and-park gesture
+        // Dragging a whole selection out parks the entire group, matching what was moved.
+        if (movedTogether) movedTogether.forEach((c) => userRemoved.add(c.id()));
+        else userRemoved.add(n.id());
+        // The nodes keep their selection and continue to be marked inside the panel.
         hasUserParkedNode = true;
         applySelectionHighlight();
         // After parking via drag-out, keep re-running the same fit used by background
@@ -1425,8 +1547,12 @@
     });
 
     // A module box is a navigational target: click it to center and zoom to its visible hubs.
-    cy.on("tap", "node[kind = 'module']", (e) => {
-      focusModule(e.target);
+    // Left-clicking a module/namespace box selects its members; the zoom moved to right-click.
+    // The handler is registered after frontierNode/selectableNode exist (see below), so the
+    // actual work lives in selectContainerMembers, defined further down.
+    cy.on("tap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
+      if (e.originalEvent) e.originalEvent.preventDefault();
+      selectContainerMembers(e.target, e.originalEvent || {});
     });
 
     // ---------- right-click selection / neighbourhood growth ----------
@@ -1489,16 +1615,37 @@
 
     // Right-clicking a module/namespace box selects exactly that container's components and
     // clears every other selection -- a quick way to isolate one module as the new frontier.
-    cy.on("cxttap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
-      const box = e.target;
-      if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+    // Selecting the members of a module/namespace box. Only unparked, visible components
+    // count as members -- parked ones are represented in the panel and are deliberately left
+    // alone by every variant, so the panel state is never touched from here.
+    //   plain -> members become the selection (everything else is dropped)
+    //   shift -> members are added to the current selection
+    //   ctrl  -> if all members are already selected, unselect them; otherwise select them
+    function selectContainerMembers(box, mods) {
       const members = box.descendants().filter((c) => frontierNode(c));
+      if (members.empty()) return;
+      const additive = !!mods.shiftKey;
+      const toggle = !!(mods.ctrlKey || mods.metaKey);
       cy.batch(() => {
-        cy.nodes(":selected").unselect();
-        members.forEach((c) => c.select());
+        if (toggle) {
+          const allSelected = members.every((c) => c.selected());
+          members.forEach((c) => { if (allSelected) c.unselect(); else c.select(); });
+        } else if (additive) {
+          members.forEach((c) => c.select());
+        } else {
+          // Replace, but only on the canvas: parked selections stay as they are.
+          cy.nodes(":selected").forEach((c) => { if (!isParked(c)) c.unselect(); });
+          members.forEach((c) => c.select());
+        }
       });
       applySelectionHighlight();
       refreshRemovedUi();
+    }
+
+    // Right-clicking a module/namespace box zooms to it (formerly the left-click gesture).
+    cy.on("cxttap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
+      if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+      focusModule(e.target);
     });
 
     cy.on("cxttap", "node", (e) => {
@@ -1525,15 +1672,265 @@
       refreshRemovedUi();
     });
 
+    // ---------- marquee (drag-window) selection on the canvas ----------
+    // Left-drag on empty canvas spans a rubber band and selects the nodes inside it. Modifier
+    // semantics mirror the parked panel:
+    //   plain  -> the band's content becomes the new canvas selection (replace)
+    //   ctrl   -> each node inside the band is toggled against its state at drag start
+    //   shift  -> the band's content is added to the existing selection (union)
+    // Parked nodes are never affected: the band only sees what is drawn on the canvas.
+    const marquee = document.createElement("div");
+    marquee.className = "component-graph-marquee";
+    marquee.hidden = true;
+    stage.appendChild(marquee);
+
+    let marqueeActive = false;
+    let suppressNextBackgroundTap = false;
+    let marqueePointerId = null;
+    let marqueeOrigin = null;      // rendered coords where the drag started
+    let marqueeCurrent = null;     // last known pointer position during the drag
+    let marqueeBaseline = null;    // Set of ids selected at drag start (for ctrl toggling)
+    let marqueePanWasEnabled = true;
+    let marqueeModifiers = { shift: false, ctrl: false };
+    const MARQUEE_THRESHOLD = 4;   // px before a click turns into a drag
+
+    // Modifier state is tracked separately from pointer events: keydown/keyup carry it too,
+    // so the band can react to Ctrl/Shift while the mouse is standing still.
+    const readModifiers = (ev) => { marqueeModifiers = { shift: !!ev.shiftKey, ctrl: !!(ev.ctrlKey || ev.metaKey) }; };
+    const marqueeMode = () => (marqueeModifiers.shift ? "add" : marqueeModifiers.ctrl ? "toggle" : "replace");
+
+    const renderedBoxOf = (n) => n.renderedBoundingBox({ includeLabels: false, includeOverlays: false });
+
+    // Pointer position relative to the stage. `offsetX/Y` is relative to the *event target*,
+    // which may be the inner Cytoscape canvas or a child layer, so it cannot be trusted here.
+    const stagePoint = (ev) => {
+      const r = stage.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    };
+
+    // Own hit test against rendered bounding boxes -- avoids depending on the private
+    // cy.renderer() internals, and matches exactly what the marquee itself considers a hit.
+    const nodeAtRendered = (pt) => cy.nodes().filter((n) => {
+      if (n.style("display") === "none") return false;
+      const bb = renderedBoxOf(n);
+      return pt.x >= bb.x1 && pt.x <= bb.x2 && pt.y >= bb.y1 && pt.y <= bb.y2;
+    }).nonempty();
+
+    // Nodes whose rendered bounding box intersects the band. Containers are excluded so a
+    // sweep does not accidentally pick up whole module boxes.
+    const nodesInMarquee = (rect) => cy.nodes().filter((n) => {
+      if (isContainer(n) || n.style("display") === "none") return false;
+      const bb = renderedBoxOf(n);
+      return bb.x1 < rect.x2 && bb.x2 > rect.x1 && bb.y1 < rect.y2 && bb.y2 > rect.y1;
+    });
+
+    const marqueeRect = (cur) => ({
+      x1: Math.min(marqueeOrigin.x, cur.x), y1: Math.min(marqueeOrigin.y, cur.y),
+      x2: Math.max(marqueeOrigin.x, cur.x), y2: Math.max(marqueeOrigin.y, cur.y)
+    });
+
+    const paintMarquee = (rect, mode) => {
+      marquee.style.left = `${rect.x1}px`;
+      marquee.style.top = `${rect.y1}px`;
+      marquee.style.width = `${rect.x2 - rect.x1}px`;
+      marquee.style.height = `${rect.y2 - rect.y1}px`;
+      marquee.dataset.mode = mode;
+    };
+
+    // Live preview: nodes that the current band would end up selecting get a class so the
+    // user sees the outcome before releasing.
+    const previewMarquee = (rect, mode) => {
+      const inside = new Set(nodesInMarquee(rect).map((n) => n.id()));
+      cy.batch(() => {
+        cy.nodes().forEach((n) => {
+          if (isContainer(n) || n.style("display") === "none") return;
+          const id = n.id();
+          const hit = inside.has(id);
+          const was = marqueeBaseline.has(id);
+          const willBeSelected = mode === "add" ? (was || hit)
+            : mode === "toggle" ? (hit ? !was : was)
+            : hit;
+          n.toggleClass("marquee-hit", hit);
+          n.toggleClass("marquee-will-select", willBeSelected && !was);
+          n.toggleClass("marquee-will-drop", !willBeSelected && was);
+        });
+      });
+    };
+
+    const clearMarqueePreview = () => {
+      cy.nodes().removeClass("marquee-hit marquee-will-select marquee-will-drop");
+    };
+
+    const endMarquee = (commit, ev) => {
+      if (!marqueeActive) return;
+      marqueeActive = false;
+      marquee.hidden = true;
+      marquee.classList.remove("active");
+      cy.userPanningEnabled(marqueePanWasEnabled);
+      if (marqueePointerId !== null && stage.releasePointerCapture) {
+        try { stage.releasePointerCapture(marqueePointerId); } catch (_) {}
+      }
+      marqueePointerId = null;
+      clearMarqueePreview();
+      if (!commit) { marqueeBaseline = null; marqueeOrigin = null; marqueeCurrent = null; return; }
+
+      // Use the last tracked position rather than the release event: on pointerup the
+      // coordinates can already be stale/clamped, and modifier state is read from our own
+      // tracker so a key released just before the mouse button still counts correctly.
+      const rect = marqueeRect(marqueeCurrent || stagePoint(ev));
+      const mode = marqueeMode();
+      const inside = nodesInMarquee(rect);
+      const insideIds = new Set(inside.map((n) => n.id()));
+
+      // Resolve the target set once, then enforce it. Enforcing (rather than just applying)
+      // matters because the browser still delivers mouseup to Cytoscape *after* our
+      // pointerup, and its background handling clears the selection -- which is exactly why
+      // a plain sweep appeared to select nothing while add/toggle seemed to survive.
+      const targetIds = new Set();
+      cy.nodes().forEach((n) => {
+        if (isContainer(n) || n.style("display") === "none") return;
+        const id = n.id();
+        const hit = insideIds.has(id);
+        const was = marqueeBaseline.has(id);
+        const shouldSelect = mode === "add" ? (was || hit)
+          : mode === "toggle" ? (hit ? !was : was)
+          : hit;
+        if (shouldSelect) targetIds.add(id);
+      });
+      // Parked nodes are outside the band's authority and keep whatever state they had.
+      cy.nodes(":selected").forEach((n) => { if (isParked(n)) targetIds.add(n.id()); });
+
+      const enforceSelection = () => {
+        cy.batch(() => {
+          cy.nodes().forEach((n) => {
+            if (isContainer(n)) { if (n.selected()) n.unselect(); return; }
+            const want = targetIds.has(n.id());
+            if (want && !n.selected()) n.select();
+            else if (!want && n.selected()) n.unselect();
+          });
+        });
+        applySelectionHighlight();
+        refreshRemovedUi();
+      };
+
+      marqueeBaseline = null;
+      marqueeOrigin = null;
+      marqueeCurrent = null;
+      // Cytoscape emits a synthetic background "tap" right after the drag; it must not refit
+      // the view. The flag is cleared by the tap handler itself, or by the guard below.
+      suppressNextBackgroundTap = true;
+
+      enforceSelection();
+      // Re-assert after the native mouseup/tap has been processed, so nothing that runs later
+      // in the same gesture can undo the sweep.
+      requestAnimationFrame(() => {
+        enforceSelection();
+        suppressNextBackgroundTap = false;
+        const flash = cy.collection();
+        inside.forEach((n) => { if (n.selected()) flash.merge(n); });
+        if (flash.nonempty() && !reduceMotion) {
+          flash.addClass("marquee-flash");
+          setTimeout(() => flash.removeClass("marquee-flash"), 260);
+        }
+      });
+    };
+
+    // Also swallow the click that follows a completed sweep, so no click-level handler can
+    // reinterpret the release as a background click.
+    stage.addEventListener("click", (ev) => {
+      if (!suppressNextBackgroundTap) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+    }, true);
+
+    stage.addEventListener("pointerdown", (ev) => {
+      if (ev.button !== 0) return;                    // left button only
+      if (marqueeActive) return;
+      // Only when the drag starts on empty canvas -- never on top of a node/container.
+      const pt = stagePoint(ev);
+      if (nodeAtRendered(pt)) return;
+      marqueeOrigin = pt;
+      marqueeCurrent = pt;
+      readModifiers(ev);
+      marqueeBaseline = new Set(cy.nodes(":selected").filter((n) => !isParked(n)).map((n) => n.id()));
+      marqueePointerId = ev.pointerId;
+      // Armed but not yet active: only a real movement past the threshold starts the band,
+      // so a plain background click still behaves as a click.
+      marqueeActive = "armed";
+    });
+
+    stage.addEventListener("pointermove", (ev) => {
+      if (!marqueeActive || !marqueeOrigin) return;
+      const cur = stagePoint(ev);
+      if (marqueeActive === "armed") {
+        if (Math.abs(cur.x - marqueeOrigin.x) < MARQUEE_THRESHOLD &&
+            Math.abs(cur.y - marqueeOrigin.y) < MARQUEE_THRESHOLD) return;
+        marqueeActive = true;
+        marquee.hidden = false;
+        marquee.classList.add("active");
+        marqueePanWasEnabled = cy.userPanningEnabled();
+        cy.userPanningEnabled(false);   // the band owns the drag, not the viewport
+        stopAutoFit();
+        clearHover();
+        if (stage.setPointerCapture && marqueePointerId !== null) {
+          try { stage.setPointerCapture(marqueePointerId); } catch (_) {}
+        }
+      }
+      marqueeCurrent = cur;
+      readModifiers(ev);
+      refreshMarqueeVisuals();
+    });
+
+    // Repaint the band from the tracked state. Used by pointermove and, crucially, by
+    // keydown/keyup so pressing or releasing Ctrl/Shift changes the box immediately even
+    // while the mouse is standing perfectly still.
+    function refreshMarqueeVisuals() {
+      if (marqueeActive !== true || !marqueeOrigin || !marqueeCurrent) return;
+      const mode = marqueeMode();
+      const rect = marqueeRect(marqueeCurrent);
+      paintMarquee(rect, mode);
+      previewMarquee(rect, mode);
+    }
+
+    // Modifier changes during an active sweep: update immediately, no mouse motion needed.
+    const onMarqueeKeyState = (ev) => {
+      if (marqueeActive !== true) return;
+      const before = `${marqueeModifiers.shift}|${marqueeModifiers.ctrl}`;
+      readModifiers(ev);
+      if (`${marqueeModifiers.shift}|${marqueeModifiers.ctrl}` === before) return;
+      refreshMarqueeVisuals();
+    };
+    window.addEventListener("keydown", onMarqueeKeyState, true);
+    window.addEventListener("keyup", onMarqueeKeyState, true);
+
+    // Capture phase + stopPropagation: while a band is active the release belongs to the
+    // marquee alone. Letting it reach Cytoscape's own mouseup is what cleared the fresh
+    // selection on a plain sweep.
+    stage.addEventListener("pointerup", (ev) => {
+      if (marqueeActive === "armed") { marqueeActive = false; marqueeBaseline = null; marqueeOrigin = null; marqueeCurrent = null; return; }
+      if (marqueeActive !== true) return;
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      endMarquee(true, ev);
+    }, true);
+    stage.addEventListener("pointercancel", () => endMarquee(false));
+    // Escape aborts the sweep without changing the selection.
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape" && marqueeActive) endMarquee(false);
+    });
+
     stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
 
-    cy.on("tap", "node", (e) => {
+    // Navigation is a double-click gesture only. A single click stays inside the graph so it
+    // can be used for selection -- accidentally leaving the page while marking nodes was the
+    // main hazard of the previous single-click navigation.
+    cy.on("dbltap", "node", (e) => {
       const n = e.target;
       if (isContainer(n)) return;
-      if (!e.originalEvent || e.originalEvent.detail === 1) {
-        const u = n.data("url");
-        if (u) location.href = new URL(u, root).href;
-      }
+      if (e.originalEvent) e.originalEvent.preventDefault();
+      const u = n.data("url");
+      if (u) location.href = new URL(u, root).href;
     });
 
     // Clicking empty background (not on any node/edge) only resets the view to show
@@ -1541,6 +1938,8 @@
     // right-click gesture on the background.
     cy.on("tap", (e) => {
       if (e.target !== cy) return; // only the canvas itself, not a node/edge bubbling up
+      // A marquee sweep ends with a synthetic background tap -- it must not refit the view.
+      if (suppressNextBackgroundTap) { suppressNextBackgroundTap = false; return; }
       stopAutoFit();
       clearHover();
       fitVisibleGraph(true);
