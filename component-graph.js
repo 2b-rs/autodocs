@@ -15,13 +15,14 @@
   // Fixed edge-weight threshold for the default hub view (previously a user-adjustable slider).
   const MIN_WEIGHT = 0; // unused legacy constant; edge visibility no longer depends on weight
 
-  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="10" data-graph-anchor-force><output data-graph-anchor-output>10%</output></label></div>
+  host.innerHTML = `<div class="component-graph-toolbar"><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><button type="button" class="component-graph-reset-button" data-graph-save-view>Ansicht speichern</button><button type="button" class="component-graph-reset-button" data-graph-load-view>Ansicht laden</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="10" data-graph-anchor-force><output data-graph-anchor-output>10%</output></label></div>
   <div class="component-graph-split"><div class="component-graph-stage" role="img" aria-label="Radiale Clusterkarte der API-Komponenten mit Federphysik"><p class="dim">${ui.loading}</p></div><div class="component-graph-removed-panel"><div class="component-graph-removed-titlebar"><div class="component-graph-removed-title" data-graph-removed-title>Meistgenutzte Klassen</div><input class="component-graph-removed-search" data-graph-removed-search type="search" placeholder="Klasse suchen" aria-label="Geparkte Klassen filtern"><button type="button" class="component-graph-collapse-all" data-graph-collapse-all aria-label="Alle einklappen" title="Alle einklappen"><span class="component-graph-collapse-caret" aria-hidden="true"></span></button><button type="button" class="component-graph-removed-add-all" data-graph-restore-filtered>Alle hinzufügen</button></div><div class="component-graph-removed-canvas" data-graph-removed></div></div></div>`;
 
   const stage = host.querySelector(".component-graph-stage");
-  const caption = host.querySelector("[data-graph-caption]");
   const restoreButton = host.querySelector("[data-graph-restore]");
   const keepSelectedButton = host.querySelector("[data-graph-keep-selected]");
+  const saveViewButton = host.querySelector("[data-graph-save-view]");
+  const loadViewButton = host.querySelector("[data-graph-load-view]");
   const removedCanvas = host.querySelector("[data-graph-removed]");
   const removedPanel = host.querySelector(".component-graph-removed-panel");
   const removedTitle = host.querySelector("[data-graph-removed-title]");
@@ -642,11 +643,6 @@
     graph.nodesById = new Map(graph.nodes.map((n) => [n.id, n]));
     markDefaultSubset(graph);
 
-    const defaultCount = graph.nodes.filter((n) => n.defaultVisible).length;
-    if (caption) {
-      caption.textContent = `Federphysik-Karte · Standard: ${defaultCount} Hub-Komponenten (Kern = ara::core) · Ziehen erzeugt Zugspannung entlang der Kanten.`;
-    }
-
     stage.textContent = "";
 
     // Build namespace sub-containers per module: any class/struct whose qualified
@@ -826,6 +822,28 @@
       return !(/(^|::)(vector|array|string|span|map|unordered_map|set|unordered_set|list|deque|queue|stack|optional|variant|pair|tuple|unique_ptr|shared_ptr)$/.test(label));
     }).slice().sort((a, b) => (b.degree || 0) - (a.degree || 0) || (b.score || 0) - (a.score || 0)).slice(0, INITIAL_PARKED_COUNT).map((n) => n.id);
     const userRemoved = new Set(initialParked);
+    // Prefer an explicit graph id, then the embedded-data id, then this page/data URL. The
+    // lightweight hash keeps storage keys short while separating independent canvases.
+    const viewIdentity = host.dataset.graphId || host.id || embedded?.id ||
+      `${location.pathname}|${dataUrl.pathname}`;
+    let viewHash = 2166136261;
+    for (let i = 0; i < viewIdentity.length; i++)
+      viewHash = Math.imul(viewHash ^ viewIdentity.charCodeAt(i), 16777619);
+    const VIEW_STORAGE_KEY = `ara-component-graph:view:${(viewHash >>> 0).toString(36)}`;
+    // Save every real canvas leaf, not only class/struct records. The graph also contains leaf
+    // kinds such as service interfaces; excluding them made those nodes survive every load as
+    // apparently spurious items because they could never enter userRemoved.
+    const canvasNodeIds = new Set(graph.nodes
+      .filter((n) => n.kind !== "module" && n.kind !== "namespace")
+      .map((n) => n.id));
+    const storageAvailable = (() => {
+      try {
+        const probe = `${VIEW_STORAGE_KEY}:probe`;
+        localStorage.setItem(probe, "1");
+        localStorage.removeItem(probe);
+        return true;
+      } catch (_) { return false; }
+    })();
     let hasUserParkedNode = false;
     // Assigned further down, once apply()/applySelectionHighlight() exist. Tray items are
     // rebuilt continuously, so their handlers call through this indirection.
@@ -1395,11 +1413,6 @@
         sim.start();
       }
 
-      if (caption) {
-        const shown = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none").length;
-        caption.textContent = `Federphysik-Karte · Vollständiger Graph · ${shown} Komponenten · Modul anklicken zum Zentrieren` +
-          (reduceMotion ? "" : " · Ziehen verdrängt nahe Komponenten");
-      }
       refreshRemovedUi();
     };
 
@@ -1480,6 +1493,56 @@
     requestAnimationFrame(() => {
       try { boot(); } catch (_) { requestAnimationFrame(boot); }
     });
+
+    if (saveViewButton) {
+      saveViewButton.disabled = !storageAvailable;
+      saveViewButton.title = storageAvailable ? "Sichtbare Klassen lokal speichern" : "Lokaler Speicher nicht verfügbar";
+      saveViewButton.addEventListener("click", () => {
+        if (!storageAvailable) return;
+        const displayed = cy.nodes().filter((n) => !isContainer(n) && n.style("display") !== "none")
+          .map((n) => n.id()).filter((id) => canvasNodeIds.has(id)).sort();
+        const selected = cy.nodes(":selected").filter((n) => !isContainer(n))
+          .map((n) => n.id()).filter((id) => canvasNodeIds.has(id)).sort();
+        try {
+          localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({ version: 2, displayed, selected }));
+          saveViewButton.textContent = "Gespeichert";
+          setTimeout(() => { saveViewButton.textContent = "Ansicht speichern"; }, 900);
+          if (loadViewButton) loadViewButton.disabled = false;
+        } catch (_) { saveViewButton.disabled = true; }
+      });
+    }
+    if (loadViewButton) {
+      loadViewButton.disabled = !storageAvailable || !localStorage.getItem(VIEW_STORAGE_KEY);
+      loadViewButton.title = storageAvailable ? "Gespeicherte Klassenansicht laden" : "Lokaler Speicher nicht verfügbar";
+      loadViewButton.addEventListener("click", () => {
+        if (!storageAvailable) return;
+        try {
+          const saved = JSON.parse(localStorage.getItem(VIEW_STORAGE_KEY) || "null");
+          if (!saved || ![1, 2].includes(saved.version) || !Array.isArray(saved.displayed)) return;
+          const displayed = new Set(saved.displayed.filter((id) => typeof id === "string" && canvasNodeIds.has(id)));
+          const selected = new Set((Array.isArray(saved.selected) ? saved.selected : [])
+            .filter((id) => typeof id === "string" && canvasNodeIds.has(id)));
+          // Best effort: unknown/stale ids are ignored; new graph nodes remain parked until the
+          // user explicitly adds them, reproducing the saved displayed set as closely as possible.
+          userRemoved.clear();
+          canvasNodeIds.forEach((id) => { if (!displayed.has(id)) userRemoved.add(id); });
+          cy.batch(() => {
+            cy.nodes(":selected").unselect();
+            selected.forEach((id) => {
+              const node = cy.getElementById(id);
+              if (node && node.nonempty() && !isContainer(node)) node.select();
+            });
+          });
+          invalidateSelectionCache();
+          hasUserParkedNode = true;
+          clearHover();
+          setFocus({ type: "background" }, false);
+          apply(true);
+          loadViewButton.textContent = "Geladen";
+          setTimeout(() => { loadViewButton.textContent = "Ansicht laden"; }, 900);
+        } catch (_) { /* malformed or inaccessible saved state leaves the current view intact */ }
+      });
+    }
 
     if (restoreButton) {
       restoreButton.addEventListener("click", () => {
@@ -1793,6 +1856,9 @@
 
     const beginNodeDrag = (n) => {
       if (!n || n.empty() || isDraggingAny) return;
+      // Crossing the drag threshold turns the gesture into a move, so any hold-frontier
+      // preview (including its animation and temporary geometry) must end immediately.
+      clearFrontierHoldPeek();
       isDraggingAny = true;
       n.addClass("dragging");
       if (focus.type === "background" ||
@@ -2372,18 +2438,37 @@
     let frontierHoldPulseRaf = null;
     const pulseFrontierHoldPeek = (startedAt) => {
       if (!frontierHoldPeek.size || reduceMotion) { frontierHoldPulseRaf = null; return; }
-      const phase = (performance.now() - startedAt) / 700;
-      const wave = (Math.sin(phase * Math.PI * 2) + 1) / 2;
-      const opacity = 0.52 + wave * 0.36;
-      const overlayOpacity = 0.04 + wave * 0.12;
+      const elapsed = performance.now() - startedAt;
+      const hash01 = (text, salt) => {
+        let hash = 2166136261 ^ salt;
+        for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+        return (hash >>> 0) / 4294967295;
+      };
+      const waveAt = (period, phase) =>
+        (Math.sin((elapsed / period) * Math.PI * 2 + phase) + 1) / 2;
+      // Opacity uses one deliberately slow, shared rhythm. Halo and size retain stable per-id
+      // jitter so preview nodes still move organically without introducing color animation.
+      const opacityWave = waveAt(2400, 0);
+      const opacity = 0.1 + opacityWave * 0.5;
       frontierHoldPeek.forEach((id) => {
         const candidate = cy.getElementById(id);
-        if (candidate && candidate.nonempty()) candidate.style({
-          opacity,
-          "overlay-color": "#01696f",
-          "overlay-opacity": overlayOpacity,
-          "overlay-padding": 5 + wave * 5
-        });
+        if (candidate && candidate.nonempty()) {
+          const haloWave = waveAt(900 + hash01(id, 3) * 420, hash01(id, 4) * Math.PI * 2);
+          const sizeWave = waveAt(1200 + hash01(id, 5) * 520, hash01(id, 6) * Math.PI * 2);
+          const overlayOpacity = 0.04 + haloWave * 0.12;
+          const scale = 0.97 + sizeWave * 0.08;
+          const baseW = Number(candidate.data("umlW"));
+          const baseH = Number(candidate.data("umlH"));
+          candidate.style({
+            opacity,
+            "overlay-color": "#01696f",
+            "overlay-opacity": overlayOpacity,
+            "overlay-padding": 5 + haloWave * 5,
+            ...(Number.isFinite(baseW) && Number.isFinite(baseH)
+              ? { width: baseW * scale, height: baseH * scale }
+              : {})
+          });
+        }
       });
       frontierHoldPulseRaf = requestAnimationFrame(() => pulseFrontierHoldPeek(startedAt));
     };
@@ -2398,7 +2483,7 @@
       frontierHoldPulseRaf = null;
       cy.nodes(".frontier-hold-preview")
         .removeClass("frontier-hold-preview")
-        .removeStyle("opacity overlay-color overlay-opacity overlay-padding");
+        .removeStyle("opacity overlay-color overlay-opacity overlay-padding border-color width height");
       frontierHoldPeek = new Set();
       frontierHoldNodeId = null;
       syncAllDetail();
