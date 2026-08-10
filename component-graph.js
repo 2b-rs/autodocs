@@ -15,7 +15,7 @@
   // Fixed edge-weight threshold for the default hub view (previously a user-adjustable slider).
   const MIN_WEIGHT = 0; // unused legacy constant; edge visibility no longer depends on weight
 
-  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="100" data-graph-anchor-force><output data-graph-anchor-output>100%</output></label></div>
+  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="10" data-graph-anchor-force><output data-graph-anchor-output>10%</output></label></div>
   <div class="component-graph-split"><div class="component-graph-stage" role="img" aria-label="Radiale Clusterkarte der API-Komponenten mit Federphysik"><p class="dim">${ui.loading}</p></div><div class="component-graph-removed-panel"><div class="component-graph-removed-titlebar"><div class="component-graph-removed-title" data-graph-removed-title>Meistgenutzte Klassen</div><input class="component-graph-removed-search" data-graph-removed-search type="search" placeholder="Klasse suchen" aria-label="Geparkte Klassen filtern"><button type="button" class="component-graph-collapse-all" data-graph-collapse-all aria-label="Alle einklappen" title="Alle einklappen"><span class="component-graph-collapse-caret" aria-hidden="true"></span></button><button type="button" class="component-graph-removed-add-all" data-graph-restore-filtered>Alle hinzufügen</button></div><div class="component-graph-removed-canvas" data-graph-removed></div></div></div>`;
 
   const stage = host.querySelector(".component-graph-stage");
@@ -332,7 +332,7 @@
   const SIM = {
     // Anchors only provide the coarse radial structure; they are deliberately weak so
     // that the separation forces below can resolve overlaps instead of being overruled.
-    ANCHOR_K: 0.009,
+    ANCHOR_K: 0.009, // multiplied by anchorScale, initialised to 0.1 (10%) below
     EDGE_K_CORE: 0.035,
     EDGE_K_CROSS: 0.016,
     EDGE_K_INTRA: 0.008,
@@ -360,7 +360,7 @@
   };
 
   const createSimulation = (cy) => {
-    let anchorScale = 1;
+    let anchorScale = 0.1;
     let homes = new Map();
     let modAnchors = new Map();
     let raf = null;
@@ -766,7 +766,8 @@
         { selector: "edge.sel-highlight", style: { opacity: 1, "line-color": "#a13544", "target-arrow-color": "#a13544", width: 2.4, "z-index": 58 } },
         { selector: "edge", style: {
           width: "mapData(weight, 1, 60, 1.2, 4.8)", "line-color": "#9c9890", "target-arrow-color": "#8f8b84",
-          "target-arrow-shape": "triangle", "curve-style": "bezier", opacity: 0.62, "arrow-scale": 0.85, "z-index": 12
+          "target-arrow-shape": "triangle", "curve-style": "bezier", opacity: 0.62, "arrow-scale": 0.85,
+          "z-index": 12, events: "no"
         }},
         { selector: "edge[cross = 1]", style: { opacity: 0.4, "line-color": "#8aa3a5", "target-arrow-color": "#6d888a" } },
         { selector: "edge[coreLink = 1]", style: { opacity: 0.58, "line-color": "#01696f", "target-arrow-color": "#01696f", width: "mapData(weight, 1, 60, 1, 4.6)" } },
@@ -803,6 +804,10 @@
 
     const isModule = (n) => n.data("kind") === "module";
     const isContainer = (n) => n.data("kind") === "module" || n.data("kind") === "namespace";
+    // Compound containers are viewport/drag targets, never selection targets. Cytoscape's
+    // native compound selection can otherwise select the container together with all of its
+    // descendants before our tap handler gets a chance to restore the leaf selection.
+    cy.nodes().filter(isContainer).unselectify();
 
     // Nodes the user has dragged off the main canvas; they appear in the tray until restored.
     // Start with the seven most-connected classes parked to reduce initial visual density.
@@ -1125,7 +1130,7 @@
       }
       // The arrivals are pushed into place by the springs over the next moment, so a single
       // immediate check is not enough -- watch for a short while and widen as they spread.
-      startRevealLoop();
+      startFocusFollow();
       return ids;
     };
     const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
@@ -1140,24 +1145,35 @@
         sim.start();
       });
     }
-    let autoFitTimer = null;
-    let autoFitActive = false;
-    let autoFitDeadline = 0;
-    // Our own fit animations emit "zoom"/"pan" events on every frame. Without this guard the
-    // auto-fit loop cancels itself on its very first frame (see the "zoom pan" handler below),
-    // which is why the graph never zoomed all the way out after parking a node. The window
-    // marks the time span in which viewport events are known to be self-inflicted.
+    // ---------- unified focus controller ----------
+    // Viewport framing is derived from a single explicit `focus` state instead of the
+    // previous mix of auto-fit loops, reveal loops, and per-gesture zoom calls. There are
+    // exactly three kinds of focus, and each one has exactly one framing rule:
+    //   background -> fit every visible element
+    //   module     -> fit that module's visible descendants
+    //   node       -> keep the node centred; choose zoom so all selected visible nodes fit
+    // The same rule is re-applied continuously while the layout settles, so growth/removal/
+    // dragging never need a separate widen-only code path.
+    let focus = { type: "background" };
+    let focusFollowActive = false;
+    let focusFollowTimer = null;
+    let focusFollowDeadline = 0;
+
+    // Our own fit animations emit "zoom"/"pan" events on every frame. Without this guard a
+    // manual-gesture listener would cancel the follow loop on its own first frame.
     let viewportGuardUntil = 0;
     const now = () => (typeof performance !== "undefined" && performance.now ? performance.now() : Date.now());
     const isProgrammaticViewportChange = () => now() < viewportGuardUntil;
 
-    const AUTO_FIT_DURATION = 360;
-    const AUTO_FIT_INTERVAL = 420;
-    // How long the loop keeps chasing the still-settling force layout after a removal.
-    const AUTO_FIT_WINDOW = 3000;
+    const FOCUS_FIT_DURATION = 360;
+    const FOCUS_FOLLOW_INTERVAL = 260;
+    // How long the loop keeps chasing the still-settling force layout after a visibility change.
+    const FOCUS_FOLLOW_WINDOW = 3000;
+    const FOCUS_ZOOM_EPS = 0.02;   // 2% relative zoom change
+    const FOCUS_PAN_EPS = 12;      // px
 
-    // Viewport that a fit() over `eles` would produce. Computing it up front lets the
-    // auto-fit loop skip passes that would barely move anything.
+    const visibleElements = () => cy.elements().filter((el) => el.style("display") !== "none");
+
     const fitTargetFor = (eles, padding) => {
       const bb = eles.boundingBox();
       if (!bb || bb.w <= 0 || bb.h <= 0) return null;
@@ -1171,134 +1187,125 @@
       };
     };
 
-    // How far the viewport would have to travel for a fit to be worth animating.
-    const FIT_ZOOM_EPS = 0.02;   // 2% relative zoom change
-    const FIT_PAN_EPS = 12;      // px
-
-    // Does the visible graph currently stick out of the viewport?
-    const visibleOverflows = (padding = 40) => {
-      const vis = cy.elements().filter((el) => el.style("display") !== "none");
-      if (vis.empty()) return false;
-      const bb = vis.renderedBoundingBox();
-      if (!bb) return false;
-      return bb.x1 < padding || bb.y1 < padding
-        || bb.x2 > cy.width() - padding || bb.y2 > cy.height() - padding;
-    };
-
-    // Widen the view until everything visible fits again -- but never zoom IN. Used after
-    // nodes are added back: pulling in a component from another module can place it far
-    // outside the current frame, and the view has to open up to show the new whole.
-    const revealAllVisible = (animated = true) => {
-      const vis = cy.elements().filter((el) => el.style("display") !== "none");
-      if (vis.empty()) return false;
-      const target = fitTargetFor(vis, 40);
-      if (!target) return false;
-      // Only act when the graph no longer fits, or when the fit would zoom out.
-      const needsOut = target.zoom < cy.zoom() * (1 - FIT_ZOOM_EPS);
-      if (!needsOut && !visibleOverflows()) return false;
-      const zoom = Math.min(cy.zoom(), target.zoom);
-      const duration = animated && !reduceMotion ? AUTO_FIT_DURATION : 0;
-      viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
-      if (duration > 0) {
-        cy.stop(false, false);
-        cy.animate({ zoom, center: { eles: vis }, duration, easing: "ease-out-cubic" });
-      } else {
-        cy.zoom(zoom);
-        cy.center(vis);
+    // Resolves the current focus to the element set and padding that define its framing.
+    // Returns null when the focus target no longer exists (e.g. a parked/removed node) --
+    // callers fall back to the background focus in that case.
+    const framingFor = (f) => {
+      if (f.type === "module") {
+        const mod = cy.getElementById(f.id);
+        if (!mod || mod.empty()) return null;
+        const visible = mod.descendants().filter((n) => !isContainer(n) && n.style("display") !== "none");
+        if (visible.empty()) return null;
+        return { eles: visible, padding: 54, center: null };
       }
-      return true;
+      if (f.type === "node") {
+        const node = cy.getElementById(f.id);
+        if (!node || node.empty() || node.style("display") === "none") return null;
+        // All visible selected nodes (plus the focused node itself) must fit; the focused
+        // node stays centred rather than the bounding box's own centre.
+        const selected = cy.nodes(":selected").filter((n) => !isContainer(n) && n.style("display") !== "none");
+        const eles = selected.length > 0 ? selected.union(node) : node;
+        return { eles, padding: 80, center: node };
+      }
+      const vis = visibleElements();
+      if (vis.empty()) return null;
+      return { eles: vis, padding: 40, center: null };
     };
 
-    const fitVisibleGraph = (animated = true, onlyIfMeaningful = false) => {
-      const vis = cy.elements().filter((el) => el.style("display") !== "none");
-      if (vis.empty()) return false;
+    // Computes the pan that keeps `center` at the viewport centre for a given zoom.
+    const panForCenteredZoom = (center, zoom) => {
+      const p = center.position ? center.position() : center.renderedMidpoint();
+      const w = cy.width(), h = cy.height();
+      return { x: w / 2 - zoom * p.x, y: h / 2 - zoom * p.y };
+    };
+
+    // Applies the current focus's framing. Returns true if the viewport moved (or would need
+    // to), so the follow loop can tell when the layout has settled.
+    const applyFocusFraming = (animated = true, onlyIfMeaningful = false) => {
+      let framing = framingFor(focus);
+      if (!framing && focus.type !== "background") {
+        focus = { type: "background" };
+        framing = framingFor(focus);
+      }
+      if (!framing) return false;
+      const { eles, padding, center } = framing;
+      let target;
+      if (center) {
+        // Node focus is symmetric around the focused node, not around the selected set's
+        // geometric centre. This keeps even a strongly one-sided selection fully visible.
+        const bb = eles.boundingBox();
+        const cp = center.position();
+        const halfW = cy.width() / 2 - padding;
+        const halfH = cy.height() / 2 - padding;
+        if (!bb || halfW <= 0 || halfH <= 0) return false;
+        const horizontalExtent = Math.max(cp.x - bb.x1, bb.x2 - cp.x, 1);
+        const verticalExtent = Math.max(cp.y - bb.y1, bb.y2 - cp.y, 1);
+        let zoom = Math.min(halfW / horizontalExtent, halfH / verticalExtent);
+        zoom = Math.max(cy.minZoom(), Math.min(cy.maxZoom(), zoom));
+        target = { zoom, pan: panForCenteredZoom(center, zoom) };
+      } else {
+        target = fitTargetFor(eles, padding);
+        if (!target) return false;
+      }
       if (onlyIfMeaningful) {
-        // While the force layout is still settling the target barely changes between passes.
-        // Re-animating anyway is what made the graph look jumpy after a drag-out: every tick
-        // restarted a 360ms fit toward a target only a few pixels away.
-        const target = fitTargetFor(vis, 40);
-        if (target) {
-          const z = cy.zoom(), p = cy.pan();
-          const zoomOff = Math.abs(target.zoom - z) / Math.max(z, 1e-6);
-          const panOff = Math.hypot(target.pan.x - p.x, target.pan.y - p.y);
-          if (zoomOff < FIT_ZOOM_EPS && panOff < FIT_PAN_EPS) return false;
-        }
+        const z = cy.zoom(), p = cy.pan();
+        const zoomOff = Math.abs(target.zoom - z) / Math.max(z, 1e-6);
+        const panOff = Math.hypot(target.pan.x - p.x, target.pan.y - p.y);
+        if (zoomOff < FOCUS_ZOOM_EPS && panOff < FOCUS_PAN_EPS) return false;
       }
-      const duration = animated && !reduceMotion ? AUTO_FIT_DURATION : 0;
+      const duration = animated && !reduceMotion ? FOCUS_FIT_DURATION : 0;
       viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
       if (duration > 0) {
         cy.stop(false, false);
-        cy.animate({
-          fit: { eles: vis, padding: 40 },
-          duration,
-          easing: "ease-out-cubic"
-        });
+        cy.animate({ zoom: target.zoom, pan: target.pan, duration, easing: "ease-out-cubic" });
       } else {
-        cy.fit(vis, 40);
+        cy.zoom(target.zoom);
+        cy.pan(target.pan);
       }
       return true;
     };
 
-    // Restored nodes need a moment to be pushed outward by the springs. This loop keeps an
-    // eye on the growing graph and widens the view whenever it no longer fits, without ever
-    // zooming back in -- so the user's zoom level is only ever relaxed, never overridden.
-    let revealTimer = null;
-    const REVEAL_INTERVAL = 260;
-    const REVEAL_WINDOW = 2600;
-    const stopRevealLoop = () => {
-      if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
-    };
-    const startRevealLoop = () => {
-      stopRevealLoop();
-      const deadline = now() + (reduceMotion ? 400 : REVEAL_WINDOW);
-      let calm = 0;
-      const tick = () => {
-        revealTimer = null;
-        const widened = revealAllVisible(true);
-        calm = widened ? 0 : calm + 1;
-        // Two quiet passes in a row mean the layout has stopped growing.
-        if (calm >= 2 || now() >= deadline) return;
-        revealTimer = setTimeout(tick, reduceMotion ? 120 : REVEAL_INTERVAL);
-      };
-      revealTimer = setTimeout(tick, reduceMotion ? 0 : 80);
+    const stopFocusFollow = () => {
+      focusFollowActive = false;
+      focusFollowDeadline = 0;
+      if (focusFollowTimer) { clearTimeout(focusFollowTimer); focusFollowTimer = null; }
     };
 
-    const stopAutoFit = () => {
-      autoFitActive = false;
-      autoFitDeadline = 0;
-      if (autoFitTimer) {
-        clearTimeout(autoFitTimer);
-        autoFitTimer = null;
-      }
-    };
-
-    const startAutoFit = () => {
-      stopAutoFit();
-      autoFitActive = true;
-      autoFitDeadline = now() + (reduceMotion ? 400 : AUTO_FIT_WINDOW);
+    // Re-applies the current focus's framing repeatedly while the force layout is still
+    // settling (e.g. after a park/restore/reveal), stopping once two passes in a row move
+    // nothing. Superseded by simply calling setFocus() again, which restarts this loop.
+    const startFocusFollow = () => {
+      stopFocusFollow();
+      focusFollowActive = true;
+      focusFollowDeadline = now() + (reduceMotion ? 400 : FOCUS_FOLLOW_WINDOW);
       let idleTicks = 0;
       const tick = () => {
-        if (!autoFitActive) return;
-        // Skip passes whose target is essentially where we already are.
-        const moved = fitVisibleGraph(true, true);
-        // Once the target has stopped moving for a few consecutive ticks the layout has
-        // effectively settled -- keeping the loop alive would only cause more twitching.
+        if (!focusFollowActive) return;
+        const moved = applyFocusFraming(true, true);
         idleTicks = moved ? 0 : idleTicks + 1;
-        if (idleTicks >= 2) { stopAutoFit(); return; }
-        if (now() >= autoFitDeadline) {
-          // Final settle pass: the layout has come to rest, so this fit is the one that
-          // actually shows the complete remaining graph.
-          autoFitTimer = setTimeout(() => {
-            if (!autoFitActive) return;
-            fitVisibleGraph(true, true);
-            stopAutoFit();
-          }, reduceMotion ? 60 : AUTO_FIT_INTERVAL);
+        if (idleTicks >= 2) { stopFocusFollow(); return; }
+        if (now() >= focusFollowDeadline) {
+          focusFollowTimer = setTimeout(() => {
+            if (!focusFollowActive) return;
+            applyFocusFraming(true, true);
+            stopFocusFollow();
+          }, reduceMotion ? 60 : FOCUS_FOLLOW_INTERVAL);
           return;
         }
-        autoFitTimer = setTimeout(tick, reduceMotion ? 120 : AUTO_FIT_INTERVAL);
+        focusFollowTimer = setTimeout(tick, reduceMotion ? 120 : FOCUS_FOLLOW_INTERVAL);
       };
       requestAnimationFrame(tick);
     };
+
+    // Sets the focus and immediately (re-)starts the follow loop so the framing tracks the
+    // layout as it settles. This is the single entry point every click/park/restore handler
+    // now calls instead of choosing between fit/reveal/auto-fit helpers.
+    const setFocus = (next, animated = true) => {
+      focus = next;
+      applyFocusFraming(animated, false);
+      startFocusFollow();
+    };
+
 
     const apply = (recenter) => {
       // The interactive map intentionally opens on its curated hub subset. With controls
@@ -1327,10 +1334,10 @@
       });
 
       sim.seed(recenter);
-      // The auto-fit loop (started by the caller after a park) performs its own fits. Firing
-      // an extra one here raced against it: two overlapping fit animations toward slightly
-      // different targets are exactly what reads as a jump.
-      if (recenter && !autoFitActive) requestAnimationFrame(() => fitVisibleGraph(true));
+      // The focus follow loop (started by the caller after a park) performs its own fits.
+      // Firing an extra one here raced against it: two overlapping fit animations toward
+      // slightly different targets are exactly what reads as a jump.
+      if (recenter && !focusFollowActive) requestAnimationFrame(() => applyFocusFraming(true));
 
       if (reduceMotion) {
         sim.settleOnce(90);
@@ -1413,30 +1420,6 @@
       layoutRemovedTray();
     };
 
-    // Zoom to a single component plus its immediate neighbourhood, so a selected class is
-    // shown in context rather than filling the whole stage on its own.
-    const focusNode = (node) => {
-      const eles = node.closedNeighborhood().filter((el) => el.style("display") !== "none");
-      const target = eles.nonempty() ? eles : node;
-      viewportGuardUntil = Math.max(viewportGuardUntil, now() + (reduceMotion ? 0 : 360) + 150);
-      cy.animate({
-        fit: { eles: target, padding: 80 },
-        duration: reduceMotion ? 0 : 360,
-        easing: "ease-out-cubic"
-      });
-    };
-
-    const focusModule = (moduleNode) => {
-      const visible = moduleNode.descendants().filter((n) => !isContainer(n) && n.style("display") !== "none");
-      if (visible.empty()) return;
-      clearHover();
-      cy.animate({
-        fit: { eles: visible, padding: 54 },
-        duration: reduceMotion ? 0 : 360,
-        easing: "ease-out-cubic"
-      });
-    };
-
     const boot = () => {
       if (stage.clientWidth <= 0 || stage.clientHeight <= 0) {
         throw new Error(`Graph container has no size: ${stage.clientWidth}x${stage.clientHeight}`);
@@ -1459,7 +1442,7 @@
         cy.nodes().filter((n) => isContainer(n)).unselect();
         hasUserParkedNode = true;
         clearHover();
-        startAutoFit();
+        startFocusFollow();
         apply(true);
       });
     }
@@ -1473,7 +1456,7 @@
         victims.forEach((n) => userRemoved.add(n.id()));
         hasUserParkedNode = true;
         clearHover();
-        startAutoFit();
+        startFocusFollow();
         apply(true);
       });
     }
@@ -1509,7 +1492,7 @@
         apply(true);
         // Adding a batch back can grow the graph well past the current frame; keep widening
         // until the newcomers have settled inside it.
-        startRevealLoop();
+        startFocusFollow();
         applySelectionHighlight();
       });
     }
@@ -1555,6 +1538,7 @@
           sim.free(id);
         });
         if (reduceMotion) sim.settleOnce(60); else sim.start();
+        startFocusFollow();
       });
     }
 
@@ -1585,63 +1569,6 @@
       lastPointerInStage = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
       pointerInsideStage = ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom;
     });
-    // Drag-zoom: while a node is held, continuously fit the viewport (position AND zoom)
-    // around the bounding box of the grabbed node plus every directly adjacent (highlighted)
-    // node, zooming in as far as that bounding box allows.
-    let draggedNode = null;
-    let dragZoomRaf = null;
-    const DRAG_ZOOM_PADDING = 80;
-    const DRAG_ZOOM_EASE = 0.16;
-
-    const neighborhoodTarget = (n) => {
-      // Only follow neighbors reached through an edge that is actually rendered right now.
-      // closedNeighborhood() walks the full underlying graph model, including edges hidden
-      // by the default hub-subset filter — without this check the fit would balloon out to
-      // distant nodes connected only through a currently-invisible edge.
-      const visibleEdges = n.connectedEdges().filter((e) => e.style("display") !== "none");
-      const neighborNodes = visibleEdges.connectedNodes().filter((nd) => nd.style("display") !== "none");
-      const nodes = neighborNodes.union(n);
-      const bb = nodes.length ? nodes.boundingBox() : n.boundingBox();
-      const w = Math.max(1, bb.w + DRAG_ZOOM_PADDING * 2);
-      const h = Math.max(1, bb.h + DRAG_ZOOM_PADDING * 2);
-      const zw = stage.clientWidth / w;
-      const zh = stage.clientHeight / h;
-      const max = typeof cy.maxZoom === "function" ? cy.maxZoom() : Infinity;
-      const min = cy.minZoom ? cy.minZoom() : 0.05;
-      const zoom = Math.max(min, Math.min(zw, zh, max));
-      const cx = bb.x1 + bb.w / 2, cy0 = bb.y1 + bb.h / 2;
-      const pan = { x: stage.clientWidth / 2 - cx * zoom, y: stage.clientHeight / 2 - cy0 * zoom };
-      return { zoom, pan };
-    };
-
-    const dragZoomStep = () => {
-      if (!draggedNode) { dragZoomRaf = null; return; }
-      const target = neighborhoodTarget(draggedNode);
-      const curZoom = cy.zoom();
-      const curPan = cy.pan();
-      const nextZoom = curZoom + (target.zoom - curZoom) * DRAG_ZOOM_EASE;
-      const nextPan = {
-        x: curPan.x + (target.pan.x - curPan.x) * DRAG_ZOOM_EASE,
-        y: curPan.y + (target.pan.y - curPan.y) * DRAG_ZOOM_EASE
-      };
-      cy.viewport({ zoom: nextZoom, pan: nextPan });
-      dragZoomRaf = requestAnimationFrame(dragZoomStep);
-    };
-
-    const startDragZoom = (n) => {
-      draggedNode = n;
-      if (reduceMotion) {
-        const target = neighborhoodTarget(n);
-        cy.viewport(target);
-        return;
-      }
-      if (!dragZoomRaf) dragZoomRaf = requestAnimationFrame(dragZoomStep);
-    };
-    const stopDragZoom = () => {
-      draggedNode = null;
-      if (dragZoomRaf) { cancelAnimationFrame(dragZoomRaf); dragZoomRaf = null; }
-    };
-
     // ---------- selection highlight ----------
     // Parked nodes MAY be selected, but they stay in the tray: their selection is expressed by
     // a highlight inside the parked-items panel, not by returning to the canvas. Container
@@ -1810,6 +1737,11 @@
       if (!n || n.empty() || isDraggingAny) return;
       isDraggingAny = true;
       n.addClass("dragging");
+      if (focus.type === "background" ||
+          (focus.type === "node" && focus.id === n.id()) ||
+          (isContainer(n) && focus.type === "module" && focus.id === n.id())) {
+        startFocusFollow();
+      }
       if (isContainer(n)) {
         containerDragLeaves = n.descendants().filter((c) => !isContainer(c) && c.style("display") !== "none");
         if (containerDragLeaves.empty()) { containerDragLeaves = null; isDraggingAny = false; n.removeClass("dragging"); return; }
@@ -1827,12 +1759,10 @@
       }
       armPassengers(n, coDragLeaves || cy.collection().merge(n));
       applyHover(n);
-      if (!coDragLeaves && !dragPassengers) startDragZoom(n);
       if (reduceMotion) sim.start();
     };
 
     cy.on("grab", "node", (e) => {
-      stopAutoFit();
       const oe = e.originalEvent || {};
       pendingGrab = {
         node: e.target,
@@ -1864,7 +1794,7 @@
       pendingGrab = null;
       // No movement crossed the threshold: this was a click. Cytoscape has already released
       // its native grab here, and our simulation/drag mode was never entered.
-      if (!isDraggingAny) { n.removeClass("dragging"); stopDragZoom(); return; }
+      if (!isDraggingAny) { n.removeClass("dragging"); return; }
       if (isContainer(n)) {
         // Release every leaf that was held on behalf of this box and let the springs take over.
         isDraggingAny = false;
@@ -1889,7 +1819,6 @@
       }
       releasePassengers();
       clearHover();
-      stopDragZoom();
 
       // Removed only when the mouse itself was outside the canvas at the moment of release.
       if (isPointerOutsideCanvas()) {
@@ -1902,7 +1831,7 @@
         applySelectionHighlight();
         // Order matters: arm the auto-fit loop first so apply() does not additionally
         // schedule its own competing fit for the same park.
-        startAutoFit();
+        startFocusFollow();
         apply(true);
         return;
       }
@@ -1927,6 +1856,7 @@
     // taken before the first tap, which undoes both effects, and only then zooms.
     const CONTAINER_DBL_MS = 500;
     let pendingContainerTap = null;
+    let containerTapSnapshot = null;
 
     const canvasSelectionIds = () =>
       new Set(cy.nodes(":selected").filter((c) => !isParked(c)).map((c) => c.id()));
@@ -1941,10 +1871,33 @@
       });
     };
 
+    // Capture selection before Cytoscape applies its compound-node tap selection. A plain
+    // namespace click is navigation only and must leave the previous leaf selection intact.
+    cy.on("tapstart", "node[kind = 'module'], node[kind = 'namespace']", () => {
+      containerTapSnapshot = canvasSelectionIds();
+    });
+
     cy.on("tap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
       if (e.originalEvent) e.originalEvent.preventDefault();
       const n = e.target;
+      const mods = e.originalEvent || {};
+
+      if (n.data("kind") === "namespace" && !mods.shiftKey && !mods.ctrlKey && !mods.metaKey && !mods.altKey) {
+        if (pendingContainerTap) {
+          clearTimeout(pendingContainerTap.timer);
+          pendingContainerTap = null;
+        }
+        restoreCanvasSelection(containerTapSnapshot || canvasSelectionIds());
+        n.unselect();
+        applySelectionHighlight();
+        refreshRemovedUi();
+        setFocus({ type: "module", id: n.id() });
+        containerTapSnapshot = null;
+        return;
+      }
+
       const now = performance.now();
+      setFocus({ type: "module", id: n.id() });
 
       if (pendingContainerTap && pendingContainerTap.id === n.id() && now - pendingContainerTap.at <= CONTAINER_DBL_MS) {
         clearTimeout(pendingContainerTap.timer);
@@ -1956,12 +1909,11 @@
         n.unselect();
         applySelectionHighlight();
         refreshRemovedUi();
-        focusModule(n);
+        setFocus({ type: "module", id: n.id() });
         return;
       }
 
       if (pendingContainerTap) clearTimeout(pendingContainerTap.timer);
-      const mods = e.originalEvent || {};
       const modifierState = { shiftKey: !!mods.shiftKey, ctrlKey: !!mods.ctrlKey, metaKey: !!mods.metaKey };
       const before = canvasSelectionIds();
       const timer = setTimeout(() => {
@@ -2295,7 +2247,7 @@
         marquee.classList.add("active");
         marqueePanWasEnabled = cy.userPanningEnabled();
         cy.userPanningEnabled(false);   // the band owns the drag, not the viewport
-        stopAutoFit();
+        stopFocusFollow();
         clearHover();
         if (stage.setPointerCapture && marqueePointerId !== null) {
           try { stage.setPointerCapture(marqueePointerId); } catch (_) {}
@@ -2390,6 +2342,7 @@
       if (ev.shiftKey) {
         if (!n.selected()) n.select();
         commitFrontierGrowth(n);
+        setFocus({ type: "node", id: n.id() });
         return;
       }
 
@@ -2412,7 +2365,7 @@
         // Use exactly the same growth code path as the known-good right-click handler.
         commitFrontierGrowth(n);
       }
-      focusNode(n);
+      setFocus({ type: "node", id: n.id() });
     };
 
     cy.on("tap", "node", (e) => {
@@ -2456,7 +2409,7 @@
       if (e.target !== cy) return; // only the canvas itself, not a node/edge bubbling up
       // A marquee sweep ends with a synthetic background tap -- it must not refit the view.
       if (suppressNextBackgroundTap) { suppressNextBackgroundTap = false; return; }
-      stopAutoFit();
+      stopFocusFollow();
       // Background click is the "deselect everything" gesture: it drops the canvas selection
       // (parked items keep theirs), collapses every box back to level 0 and zooms out to the
       // whole graph.
@@ -2465,7 +2418,7 @@
       applySelectionHighlight();   // also collapses every box back to level 0
       refreshRemovedUi();
       clearHover();
-      fitVisibleGraph(true);
+      setFocus({ type: "background" });
     });
 
     // Only a genuine user gesture (wheel, pinch, drag-pan) hands viewport control back to
@@ -2473,15 +2426,19 @@
     // the auto-fit loop would abort itself immediately after a node is removed/parked.
     cy.on("zoom pan", () => {
       if (isProgrammaticViewportChange()) return;
-      stopAutoFit();
+      stopFocusFollow();
       // A deliberate zoom/pan also ends the reveal watch: the user has taken the wheel.
-      stopRevealLoop();
+      stopFocusFollow();
     });
 
     let resizeTimer;
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { cy.resize(); apply(false); }, 150);
+      resizeTimer = setTimeout(() => {
+        cy.resize();
+        applyFocusFraming(false);
+        startFocusFollow();
+      }, 150);
     });
   }).catch((err) => {
     stage.innerHTML = `<p class="graph-error">${ui.failed}<br><code>${String((err && err.message) || err)}</code></p>`;
