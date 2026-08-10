@@ -456,6 +456,55 @@ def _matrix_values(value) -> list[float] | None:
     return [round(float(item), 6) for item in value[:6]]
 
 
+def _effective_text_position(current_matrix, text_matrix) -> tuple[float, float] | None:
+    """Transform a text-matrix origin into page coordinates."""
+    cm = _matrix_values(current_matrix)
+    tm = _matrix_values(text_matrix)
+    if cm is None or tm is None:
+        return None
+    x = tm[4] * cm[0] + tm[5] * cm[2] + cm[4]
+    y = tm[4] * cm[1] + tm[5] * cm[3] + cm[5]
+    return round(x, 6), round(y, 6)
+
+
+def _cluster_spans_into_lines(spans: list[dict]) -> tuple[list[dict], list[str]]:
+    """Group positioned spans by baseline without imposing horizontal order."""
+    lines = []
+    warnings = []
+    for span in spans:
+        position = span.get("position")
+        if position is None:
+            warnings.append(f"{span['id']}: missing-position")
+            continue
+        x, y = position
+        font_size = max(float(span.get("font_size") or 0), 1.0)
+        tolerance = max(0.75, font_size * 0.25)
+        candidates = [line for line in lines if abs(line["baseline_y"] - y) <= max(line["tolerance"], tolerance)]
+        if candidates:
+            line = min(candidates, key=lambda item: (abs(item["baseline_y"] - y), item["operation_index"]))
+            count = len(line["span_ids"])
+            line["baseline_y"] = round((line["baseline_y"] * count + y) / (count + 1), 6)
+            line["tolerance"] = round(max(line["tolerance"], tolerance), 6)
+            line["span_ids"].append(span["id"] )
+            line["x_range"][0] = min(line["x_range"][0], x)
+            line["x_range"][1] = max(line["x_range"][1], x)
+        else:
+            lines.append({
+                "id": "",
+                "span_ids": [span["id"]],
+                "baseline_y": y,
+                "x_range": [x, x],
+                "tolerance": round(tolerance, 6),
+                "operation_index": int(span.get("operation_index", 0)),
+            })
+    lines.sort(key=lambda item: item["operation_index"])
+    for number, line in enumerate(lines, 1):
+        page = line["span_ids"][0].split("-s", 1)[0]
+        line["id"] = f"{page}-l{number}"
+        line["x_range"] = [round(value, 6) for value in line["x_range"]]
+    return lines, warnings
+
+
 def _pypdf_page_observations(path: Path) -> list[dict]:
     """Capture raw pypdf text and geometry without changing text reconstruction.
 
@@ -477,6 +526,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
                 "text": text,
                 "current_matrix": _matrix_values(current_matrix),
                 "text_matrix": _matrix_values(text_matrix),
+                "position": _effective_text_position(current_matrix, text_matrix),
                 "font": str((font or {}).get("/BaseFont", "")),
                 "font_size": round(float(font_size or 0), 6),
                 "operation_index": len(spans),
@@ -485,11 +535,13 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
             })
 
         raw_text = page.extract_text(visitor_text=visitor) or ""
+        lines, warnings = _cluster_spans_into_lines(spans)
         observations.append({
             "page_number": page_number,
             "raw_text": raw_text,
             "spans": spans,
-            "warnings": [],
+            "lines": lines,
+            "warnings": warnings,
             "backend": "pypdf",
         })
     return observations

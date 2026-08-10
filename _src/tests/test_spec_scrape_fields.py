@@ -22,6 +22,28 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertIsNone(scrape._matrix_values(None))
         self.assertIsNone(scrape._matrix_values([1, 2]))
 
+    def test_effective_text_position_composes_matrices(self):
+        self.assertEqual(
+            scrape._effective_text_position(
+                [2, 0, 0, 3, 10, 20], [1, 0, 0, 1, 4, 5]
+            ),
+            (18.0, 35.0),
+        )
+        self.assertIsNone(scrape._effective_text_position(None, [1, 0, 0, 1, 0, 0]))
+
+    def test_line_clustering_uses_font_relative_baselines(self):
+        spans = [
+            {"id": "p1-s1", "position": (10, 100), "font_size": 12, "operation_index": 0},
+            {"id": "p1-s2", "position": (40, 101.5), "font_size": 12, "operation_index": 1},
+            {"id": "p1-s3", "position": (10, 80), "font_size": 12, "operation_index": 2},
+            {"id": "p1-s4", "position": None, "font_size": 12, "operation_index": 3},
+        ]
+        lines, warnings = scrape._cluster_spans_into_lines(spans)
+        self.assertEqual([line["span_ids"] for line in lines], [["p1-s1", "p1-s2"], ["p1-s3"]])
+        self.assertEqual([line["id"] for line in lines], ["p1-l1", "p1-l2"])
+        self.assertEqual(lines[0]["x_range"], [10, 40])
+        self.assertEqual(warnings, ["p1-s4: missing-position"])
+
     def test_observations_reject_non_pypdf_backend(self):
         with unittest.mock.patch.object(scrape, "discover_pdfs", return_value=[Path("x.pdf")]):
             with unittest.mock.patch.object(Path, "is_dir", return_value=True):
