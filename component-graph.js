@@ -790,6 +790,8 @@
         // multiple parallel edges into distinct curved arcs instead of overlapping lines.
         { selector: "edge[weight >= 8]", style: { "z-index": 6 } },
         { selector: ".faded", style: { opacity: 0.18 } },
+        // Frontier nodes shown while holding a selected class remain subdued, but readable.
+        { selector: "node.frontier-hold-preview", style: { opacity: 0.68, "z-index": 32 } },
         // compound module boxes composite their own opacity onto every child node,
         // so a faded module container would drag down even fully-highlighted children.
         // Keep module containers themselves out of the fade so nested highlighting is visible.
@@ -2367,8 +2369,36 @@
     // before Cytoscape performs its tap-selection toggle.
     let nodeTapSnapshot = null;
     let frontierHoldNodeId = null;
+    let frontierHoldPulseRaf = null;
+    const pulseFrontierHoldPeek = (startedAt) => {
+      if (!frontierHoldPeek.size || reduceMotion) { frontierHoldPulseRaf = null; return; }
+      const phase = (performance.now() - startedAt) / 700;
+      const wave = (Math.sin(phase * Math.PI * 2) + 1) / 2;
+      const opacity = 0.52 + wave * 0.36;
+      const overlayOpacity = 0.04 + wave * 0.12;
+      frontierHoldPeek.forEach((id) => {
+        const candidate = cy.getElementById(id);
+        if (candidate && candidate.nonempty()) candidate.style({
+          opacity,
+          "overlay-color": "#01696f",
+          "overlay-opacity": overlayOpacity,
+          "overlay-padding": 5 + wave * 5
+        });
+      });
+      frontierHoldPulseRaf = requestAnimationFrame(() => pulseFrontierHoldPeek(startedAt));
+    };
+    const startFrontierHoldPulse = () => {
+      if (frontierHoldPulseRaf) cancelAnimationFrame(frontierHoldPulseRaf);
+      frontierHoldPulseRaf = null;
+      if (!reduceMotion && frontierHoldPeek.size) pulseFrontierHoldPeek(performance.now());
+    };
     const clearFrontierHoldPeek = () => {
       if (!frontierHoldPeek.size && !frontierHoldNodeId) return;
+      if (frontierHoldPulseRaf) cancelAnimationFrame(frontierHoldPulseRaf);
+      frontierHoldPulseRaf = null;
+      cy.nodes(".frontier-hold-preview")
+        .removeClass("frontier-hold-preview")
+        .removeStyle("opacity overlay-color overlay-opacity overlay-padding");
       frontierHoldPeek = new Set();
       frontierHoldNodeId = null;
       syncAllDetail();
@@ -2392,6 +2422,11 @@
             .filter((c) => frontierNode(c))
             .map((c) => c.id())
         );
+        frontierHoldPeek.forEach((id) => {
+          const candidate = cy.getElementById(id);
+          if (candidate && candidate.nonempty()) candidate.addClass("frontier-hold-preview");
+        });
+        startFrontierHoldPulse();
         syncAllDetail();
         const pointer = ev.clientX != null && ev.clientY != null
           ? stagePoint(ev)
