@@ -165,6 +165,7 @@ Perform extensive, iterative work on the `pypdf` backend.
 - Normalize known ligatures only in the normalized layer while retaining raw glyph evidence.
 - Handle soft hyphens, nonbreaking spaces, en/em dashes, smart quotes, and mathematical symbols deterministically.
 - Add fixtures for every observed glyph failure.
+- Recover readable characters from mixed spans that combine a few valid glyphs with unmapped codes, instead of quarantining the whole span; measured at 82 of 1,113 affected spans in CommunicationManagement.
 - Resolve fonts through Form XObject and inline resource dictionaries, not only page-level `/Resources`; unnamed spans currently account for half of all corpus glyph failures.
 - [x] Quarantine glyph-failed spans so control-code text cannot reach normalized output or requirement fields, and report affected pages per document.
 
@@ -495,9 +496,10 @@ These ideas complement the backend geometry plan and should be introduced as iso
 
 ### Geometry evidence hardening
 
-- Validate reconstructed reading order against body-only legacy text (headers and footers removed) instead of full raw text, so margin exclusion is not misreported as missing content.
+- [x] Validate reconstructed reading order against body-only legacy text (headers and footers removed) instead of full raw text, so margin exclusion is not misreported as missing content.
 - [x] Add a JSON schema for the observation artifact and validate every emitted document against it, so new geometry fields cannot silently change shape.
 - [x] Run all geometry classifiers over every cached PDF, not only one canonical document, and report per-document counts for margins, bullets, indentation, wraps, and columns.
 - [x] Add invariant checks that hold for any document: every span belongs to exactly one line, reading order covers body lines exactly once, and classifier outputs are pure functions of geometry.
 - [x] Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
-- Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
+- [x] Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
+- Insert separators between adjacent spans that legacy extraction separates, so joined line text does not fuse words such as `Rationale:error`; measured as a small body word shortfall on 23 of 42 pages of AUTOSAR_AP_RS_General.
