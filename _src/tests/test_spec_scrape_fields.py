@@ -44,6 +44,57 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(lines[0]["x_range"], [10, 40])
         self.assertEqual(warnings, ["p1-s4: missing-position"])
 
+    def test_line_layout_exposes_large_gap_cells(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"],
+                "ordered_span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "position": (10, 100), "font_size": 10},
+            "p1-s2": {"id": "p1-s2", "position": (20, 100), "font_size": 10},
+            "p1-s3": {"id": "p1-s3", "position": (100, 100), "font_size": 10},
+        }
+        layout = scrape._classify_line_layout(line, spans)
+        self.assertEqual(layout["kind"], "cell-candidate")
+        self.assertEqual([cell["span_ids"] for cell in layout["cells"]],
+                         [["p1-s1", "p1-s2"], ["p1-s3"]])
+        self.assertEqual(layout["cell_gap_threshold"], 36.0)
+
+    def test_line_layout_keeps_normal_word_gaps_in_one_flow(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"],
+                "ordered_span_ids": ["p1-s1", "p1-s2"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "position": (10, 100), "font_size": 12},
+            "p1-s2": {"id": "p1-s2", "position": (30, 100), "font_size": 12},
+        }
+        layout = scrape._classify_line_layout(line, spans)
+        self.assertEqual(layout["kind"], "single-flow")
+        self.assertEqual(len(layout["cells"]), 1)
+
+    def test_repeated_cell_patterns_are_promoted(self):
+        def line(number, starts):
+            return {"id": f"p1-l{number}", "layout": {"kind": "cell-candidate", "cells": [
+                {"x_range": [start, start], "span_ids": [f"p1-s{number}-{index}"]}
+                for index, start in enumerate(starts, 1)
+            ]}}
+        lines = [line(1, [10, 100]), line(2, [10.04, 100.03]), line(3, [20, 200])]
+        scrape._promote_repeated_cell_patterns(lines)
+        self.assertEqual(lines[0]["layout"]["kind"], "table-row-candidate")
+        self.assertEqual(lines[1]["layout"]["alignment_support"], 2)
+        self.assertEqual(lines[1]["layout"]["supporting_line_ids"], ["p1-l1", "p1-l2"])
+        self.assertEqual(lines[2]["layout"]["kind"], "isolated-gap-candidate")
+        self.assertEqual(lines[2]["layout"]["alignment_support"], 1)
+
+    def test_distant_matching_patterns_are_not_promoted(self):
+        lines = [{"id": f"p1-l{i}", "layout": {"kind": "single-flow", "cells": []}}
+                 for i in range(12)]
+        for i in (0, 11):
+            lines[i]["layout"] = {"kind": "cell-candidate", "cells": [
+                {"x_range": [10, 10], "span_ids": [f"a{i}"]},
+                {"x_range": [100, 100], "span_ids": [f"b{i}"]},
+            ]}
+        scrape._promote_repeated_cell_patterns(lines)
+        self.assertEqual(lines[0]["layout"]["kind"], "isolated-gap-candidate")
+        self.assertEqual(lines[11]["layout"]["kind"], "isolated-gap-candidate")
+
     def test_horizontal_order_is_geometric_and_stable(self):
         line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
         spans = {

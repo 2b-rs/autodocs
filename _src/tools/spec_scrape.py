@@ -467,6 +467,66 @@ def _effective_text_position(current_matrix, text_matrix) -> tuple[float, float]
     return round(x, 6), round(y, 6)
 
 
+def _classify_line_layout(line: dict, spans_by_id: dict[str, dict]) -> dict:
+    """Describe aligned horizontal cells without changing reading order."""
+    groups = []
+    for span_id in line["ordered_span_ids"]:
+        span = spans_by_id[span_id]
+        x = float(span["position"][0])
+        if not groups or abs(x - groups[-1]["x"]) > 1.0:
+            groups.append({"x": round(x, 6), "span_ids": [span_id]})
+        else:
+            groups[-1]["span_ids"].append(span_id)
+    gaps = [round(right["x"] - left["x"], 6) for left, right in zip(groups, groups[1:])]
+    font_size = max((float(spans_by_id[s].get("font_size") or 0) for s in line["span_ids"]), default=1.0)
+    threshold = max(36.0, font_size * 3.0)
+    boundaries = [index + 1 for index, gap in enumerate(gaps) if gap >= threshold]
+    cells = []
+    start = 0
+    for end in [*boundaries, len(groups)]:
+        ids = [sid for group in groups[start:end] for sid in group["span_ids"]]
+        if ids:
+            cells.append({"id": f"{line['id']}-c{len(cells) + 1}", "span_ids": ids,
+                          "x_range": [groups[start]["x"], groups[end - 1]["x"]]})
+        start = end
+    return {
+        "kind": "cell-candidate" if len(cells) > 1 else "single-flow",
+        "cells": cells,
+        "gaps": gaps,
+        "cell_gap_threshold": round(threshold, 6),
+    }
+
+
+def _promote_repeated_cell_patterns(lines: list[dict]) -> None:
+    """Promote nearby repeated alignments; leave isolated large gaps provisional."""
+    candidates = []
+    for line in lines:
+        layout = line["layout"]
+        if layout["kind"] != "cell-candidate":
+            layout["alignment_support"] = 0
+            continue
+        pattern = tuple(round(cell["x_range"][0], 1) for cell in layout["cells"])
+        layout["alignment_pattern"] = list(pattern)
+        candidates.append((lines.index(line), line, pattern))
+    for line_index, line, pattern in candidates:
+        supporting = []
+        for other_line_index, other, other_pattern in candidates:
+            if len(other_pattern) != len(pattern):
+                continue
+            if max(abs(a - b) for a, b in zip(pattern, other_pattern)) > 1.0:
+                continue
+            if abs(line_index - other_line_index) > 8:
+                continue
+            supporting.append(other["id"])
+        layout = line["layout"]
+        layout["alignment_support"] = len(supporting)
+        layout["supporting_line_ids"] = supporting
+        layout["kind"] = (
+            "table-row-candidate" if len(supporting) >= 2
+            else "isolated-gap-candidate"
+        )
+
+
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
     """Return deterministic left-to-right evidence order for one baseline line."""
     warnings = []
@@ -580,7 +640,9 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
             if len(current_group) > 1:
                 same_origin_groups.append(current_group)
             line["same_origin_groups"] = same_origin_groups
+            line["layout"] = _classify_line_layout(line, spans_by_id)
             warnings.extend(order_warnings)
+        _promote_repeated_cell_patterns(lines)
         observations.append({
             "page_number": page_number,
             "raw_text": raw_text,
