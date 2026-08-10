@@ -162,6 +162,32 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertIsNone(page["lines"][0]["bullet"])
         self.assertIsNone(page["lines"][0]["indent_level"])
 
+    def test_paragraph_flow_marks_wraps_and_block_starts(self):
+        def body(identifier, y, indent=0, bullet=None):
+            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+                    "indent_level": indent, "bullet": bullet,
+                    "layout": {"kind": "single-flow"}}
+        page = {"lines": [body("l1", 700), body("l2", 688), body("l3", 676),
+                          body("l4", 640), body("l5", 628, bullet={"marker": "•"})]}
+        scrape._classify_paragraph_flow([page])
+        flows = {line["id"]: line["flow"] for line in page["lines"]}
+        self.assertEqual(flows["l1"], "block-start")
+        self.assertEqual(flows["l2"], "wrap")
+        self.assertEqual(flows["l3"], "wrap")
+        self.assertEqual(flows["l4"], "block-start")
+        self.assertEqual(flows["l5"], "block-start")
+
+    def test_indent_change_starts_new_block(self):
+        def body(identifier, y, indent):
+            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+                    "indent_level": indent, "bullet": None,
+                    "layout": {"kind": "single-flow"}}
+        page = {"lines": [body("l1", 700, 0), body("l2", 688, 0), body("l3", 676, 2)]}
+        scrape._classify_paragraph_flow([page])
+        flows = {line["id"]: line["flow"] for line in page["lines"]}
+        self.assertEqual(flows["l2"], "wrap")
+        self.assertEqual(flows["l3"], "block-start")
+
     def test_zero_baseline_is_not_a_margin_band(self):
         pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
         scrape._classify_repeated_margin_bands(pages)

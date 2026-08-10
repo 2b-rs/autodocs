@@ -624,6 +624,44 @@ def _classify_list_structure(pages: list[dict]) -> None:
                 line["bullet"] = {"span_id": first_id, "marker": text[0]}
 
 
+def _classify_paragraph_flow(pages: list[dict]) -> None:
+    """Mark whether each body line continues the previous line or starts a block."""
+    for page in pages:
+        body = [
+            line for line in page["lines"]
+            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+            and line.get("ordered_span_ids")
+        ]
+        body.sort(key=lambda line: -float(line["baseline_y"]))
+        gaps = [
+            round(float(a["baseline_y"]) - float(b["baseline_y"]), 1)
+            for a, b in zip(body, body[1:])
+        ]
+        positive = sorted(gap for gap in gaps if gap > 0)
+        leading = positive[len(positive) // 2] if positive else 0.0
+        for line in page["lines"]:
+            line["flow"] = None
+            line["flow_gap"] = None
+        previous = None
+        for line in body:
+            if previous is None:
+                line["flow"] = "block-start"
+                previous = line
+                continue
+            gap = round(float(previous["baseline_y"]) - float(line["baseline_y"]), 1)
+            line["flow_gap"] = gap
+            same_block = (
+                leading > 0
+                and gap <= leading * 1.35
+                and line.get("bullet") is None
+                and line.get("indent_level") == previous.get("indent_level")
+                and previous["layout"]["kind"] == "single-flow"
+                and line["layout"]["kind"] == "single-flow"
+            )
+            line["flow"] = "wrap" if same_block else "block-start"
+            previous = line
+
+
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
     """Return deterministic left-to-right evidence order for one baseline line."""
     warnings = []
@@ -750,6 +788,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
         })
     _classify_repeated_margin_bands(observations)
     _classify_list_structure(observations)
+    _classify_paragraph_flow(observations)
     return observations
 
 

@@ -155,8 +155,8 @@ Perform extensive, iterative work on the `pypdf` backend.
 - [ ] Order spans horizontally within lines while respecting columns and table cells. Left-to-right evidence ordering is implemented; column/table region classification remains open.
 - [x] Detect headers, footers, and page numbers from repeated coordinates across pages, not only text regexes.
 - Detect multi-column pages and avoid interleaving columns.
-- Preserve bullets and list indentation.
-- Distinguish visual line wraps from paragraph boundaries.
+- [x] Preserve bullets and list indentation.
+- [x] Distinguish visual line wraps from paragraph boundaries.
 
 ### Fonts and glyphs
 
