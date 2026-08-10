@@ -44,6 +44,48 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(lines[0]["x_range"], [10, 40])
         self.assertEqual(warnings, ["p1-s4: missing-position"])
 
+    def test_horizontal_order_is_geometric_and_stable(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "position": (30, 100), "operation_index": 0},
+            "p1-s2": {"id": "p1-s2", "position": (10, 100), "operation_index": 1},
+            "p1-s3": {"id": "p1-s3", "position": (20, 100), "operation_index": 2},
+        }
+        ordered, warnings = scrape._horizontal_span_order(line, spans)
+        self.assertEqual(ordered, ["p1-s2", "p1-s3", "p1-s1"])
+        self.assertEqual(warnings, [])
+
+    def test_horizontal_order_ignores_layout_only_whitespace(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "text": "\n", "position": (10, 100), "operation_index": 0},
+            "p1-s2": {"id": "p1-s2", "text": "value", "position": (10, 100), "operation_index": 1},
+        }
+        ordered, warnings = scrape._horizontal_span_order(line, spans)
+        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+        self.assertEqual(warnings, [])
+
+    def test_horizontal_order_uses_operation_order_at_identical_origin(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "text": "first", "position": (10, 100), "operation_index": 0},
+            "p1-s2": {"id": "p1-s2", "text": "second", "position": (10, 100), "operation_index": 1},
+        }
+        ordered, warnings = scrape._horizontal_span_order(line, spans)
+        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+        self.assertEqual(warnings, [])
+
+    def test_horizontal_order_reports_ambiguous_positions(self):
+        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+        spans = {
+            "p1-s1": {"id": "p1-s1", "text": "left", "position": (10, 100), "operation_index": 1},
+            "p1-s2": {"id": "p1-s2", "text": "right", "position": (10.1, 100), "operation_index": 0},
+        }
+        ordered, warnings = scrape._horizontal_span_order(line, spans)
+        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+        self.assertEqual(len(warnings), 1)
+        self.assertIn("ambiguous-horizontal-order", warnings[0])
+
     def test_observations_reject_non_pypdf_backend(self):
         with unittest.mock.patch.object(scrape, "discover_pdfs", return_value=[Path("x.pdf")]):
             with unittest.mock.patch.object(Path, "is_dir", return_value=True):

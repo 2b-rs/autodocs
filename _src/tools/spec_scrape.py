@@ -467,6 +467,33 @@ def _effective_text_position(current_matrix, text_matrix) -> tuple[float, float]
     return round(x, 6), round(y, 6)
 
 
+def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
+    """Return deterministic left-to-right evidence order for one baseline line."""
+    warnings = []
+    positioned = []
+    for span_id in line["span_ids"]:
+        span = spans_by_id[span_id]
+        position = span.get("position")
+        if position is None:
+            warnings.append(f"{line['id']}: {span_id}: missing-horizontal-position")
+            continue
+        positioned.append((float(position[0]), int(span.get("operation_index", 0)), span_id))
+    positioned.sort(key=lambda item: (item[0], item[1], item[2]))
+    for left, right in zip(positioned, positioned[1:]):
+        left_span = spans_by_id[left[2]]
+        right_span = spans_by_id[right[2]]
+        delta = abs(left[0] - right[0])
+        if (
+            0 < delta <= 0.25
+            and left_span.get("text", "").strip()
+            and right_span.get("text", "").strip()
+        ):
+            warnings.append(
+                f"{line['id']}: ambiguous-horizontal-order: {left[2]}, {right[2]}"
+            )
+    return [item[2] for item in positioned], warnings
+
+
 def _cluster_spans_into_lines(spans: list[dict]) -> tuple[list[dict], list[str]]:
     """Group positioned spans by baseline without imposing horizontal order."""
     lines = []
@@ -536,6 +563,24 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
 
         raw_text = page.extract_text(visitor_text=visitor) or ""
         lines, warnings = _cluster_spans_into_lines(spans)
+        spans_by_id = {span["id"]: span for span in spans}
+        for line in lines:
+            line["ordered_span_ids"], order_warnings = _horizontal_span_order(line, spans_by_id)
+            same_origin_groups = []
+            current_group = []
+            current_x = None
+            for span_id in line["ordered_span_ids"]:
+                x = spans_by_id[span_id]["position"][0]
+                if current_x is not None and x != current_x:
+                    if len(current_group) > 1:
+                        same_origin_groups.append(current_group)
+                    current_group = []
+                current_group.append(span_id)
+                current_x = x
+            if len(current_group) > 1:
+                same_origin_groups.append(current_group)
+            line["same_origin_groups"] = same_origin_groups
+            warnings.extend(order_warnings)
         observations.append({
             "page_number": page_number,
             "raw_text": raw_text,
