@@ -15,7 +15,7 @@
   // Fixed edge-weight threshold for the default hub view (previously a user-adjustable slider).
   const MIN_WEIGHT = 0; // unused legacy constant; edge visibility no longer depends on weight
 
-  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button></div>
+  host.innerHTML = `<div class="component-graph-toolbar"><p class="component-graph-caption dim" data-graph-caption></p><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="100" data-graph-anchor-force><output data-graph-anchor-output>100%</output></label></div>
   <div class="component-graph-split"><div class="component-graph-stage" role="img" aria-label="Radiale Clusterkarte der API-Komponenten mit Federphysik"><p class="dim">${ui.loading}</p></div><div class="component-graph-removed-panel"><div class="component-graph-removed-titlebar"><div class="component-graph-removed-title" data-graph-removed-title>Meistgenutzte Klassen</div><input class="component-graph-removed-search" data-graph-removed-search type="search" placeholder="Klasse suchen" aria-label="Geparkte Klassen filtern"><button type="button" class="component-graph-collapse-all" data-graph-collapse-all aria-label="Alle einklappen" title="Alle einklappen"><span class="component-graph-collapse-caret" aria-hidden="true"></span></button><button type="button" class="component-graph-removed-add-all" data-graph-restore-filtered>Alle hinzufügen</button></div><div class="component-graph-removed-canvas" data-graph-removed></div></div></div>`;
 
   const stage = host.querySelector(".component-graph-stage");
@@ -311,7 +311,7 @@
     const totalVisible = visibleModules.toArray().reduce((sum, m) => sum + m.descendants().filter((c) => c.style("display") !== "none").length, 0);
     const coreKids = core.descendants().filter((c) => c.style("display") !== "none").length;
     const CORE_R = Math.max(210, 60 + Math.sqrt(Math.max(coreKids, 1)) * 62);
-    const RING_R = Math.max(760, CORE_R + 260 + Math.sqrt(Math.max(totalVisible, 1)) * 46);
+    const RING_R = Math.max(980, CORE_R + 420 + Math.sqrt(Math.max(totalVisible, 1)) * 58);
     const cx = 0, cy0 = 0;
     modAnchors.set(core.id(), { x: cx, y: cy0 });
     packChildrenRecursive(core, homes, cx, cy0, CORE_R * 0.78, null);
@@ -338,7 +338,7 @@
     EDGE_K_INTRA: 0.008,
     REST_CORE: 210,
     REST_CROSS: 340,
-    REST_INTRA: 120,
+    REST_INTRA: 60,
     // Long-range soft repulsion (inverse square) keeps clusters loose ...
     REPEL_K: 26000,
     REPEL_MIN: 60,
@@ -346,8 +346,8 @@
     // ... while the hard shell below guarantees the label boxes never overlap.
     COLLIDE_PAD: 16,
     COLLIDE_K: 0.16,
-    MODULE_REPEL_K: 4500000,
-    MODULE_REPEL_MIN: 460,
+    MODULE_REPEL_K: 7200000,
+    MODULE_REPEL_MIN: 620,
     // Grab behaviour: a soft, size-aware shell around the held node nudges neighbours
     // aside instead of firing them across the canvas.
     POINTER_PUSH_K: 0.14,
@@ -360,6 +360,7 @@
   };
 
   const createSimulation = (cy) => {
+    let anchorScale = 1;
     let homes = new Map();
     let modAnchors = new Map();
     let raf = null;
@@ -440,8 +441,8 @@
           hx += Math.cos(now * SIM.IDLE_FREQ + s.phase) * SIM.IDLE_AMPLITUDE;
           hy += Math.sin(now * SIM.IDLE_FREQ * 1.3 + s.phase) * SIM.IDLE_AMPLITUDE;
         }
-        fx.set(id, fx.get(id) + (hx - s.x) * SIM.ANCHOR_K);
-        fy.set(id, fy.get(id) + (hy - s.y) * SIM.ANCHOR_K);
+        fx.set(id, fx.get(id) + (hx - s.x) * SIM.ANCHOR_K * anchorScale);
+        fy.set(id, fy.get(id) + (hy - s.y) * SIM.ANCHOR_K * anchorScale);
       });
 
       // 2) edge springs (this is what creates the visible "tug" and force feedback)
@@ -626,7 +627,8 @@
 
     // sizeNodes is exposed so the UML detail toggle can restore the physics-driven pill size
     // when a node collapses back to level 0.
-    return { seed, start, stop, settleOnce, grab, free, sizeNodes, get modAnchors() { return modAnchors; } };
+    const setAnchorScale = (value) => { anchorScale = Math.max(0, Number(value) || 0); };
+    return { seed, start, stop, settleOnce, grab, free, sizeNodes, setAnchorScale, get modAnchors() { return modAnchors; } };
   };
 
   Promise.all([
@@ -1128,6 +1130,16 @@
     };
     const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
     const sim = createSimulation(cy);
+    const anchorSlider = host.querySelector("[data-graph-anchor-force]");
+    const anchorOutput = host.querySelector("[data-graph-anchor-output]");
+    if (anchorSlider) {
+      anchorSlider.addEventListener("input", () => {
+        const percent = Number(anchorSlider.value);
+        sim.setAnchorScale(percent / 100);
+        if (anchorOutput) anchorOutput.value = `${percent}%`;
+        sim.start();
+      });
+    }
     let autoFitTimer = null;
     let autoFitActive = false;
     let autoFitDeadline = 0;
@@ -1743,6 +1755,10 @@
     // drag = force feedback: grabbed node pins to pointer, springs pull its neighbors live
     // Leaves currently held because their module/namespace box is being dragged.
     let containerDragLeaves = null;
+    // Cytoscape may emit tiny drag movements during an otherwise stationary click. Require a
+    // real pointer displacement before entering drag mode.
+    const NODE_DRAG_THRESHOLD = 5;
+    let pendingGrab = null;
     // Leaves moving together because the grabbed node was part of a multi-node selection.
     let coDragLeaves = null;
     // Selected leaves that Cytoscape does NOT move on its own during the current drag, plus
@@ -1790,52 +1806,52 @@
       dragLastRefPos = null;
     };
 
-    cy.on("grab", "node", (e) => {
-      stopAutoFit();
-      const n = e.target;
+    const beginNodeDrag = (n) => {
+      if (!n || n.empty() || isDraggingAny) return;
+      isDraggingAny = true;
+      n.addClass("dragging");
       if (isContainer(n)) {
-        // A compound box has no position of its own -- Cytoscape moves its children instead.
-        // Register every visible descendant leaf as "dragging" so the integrator stops writing
-        // its own positions and instead reads the dragged positions back into the sim state
-        // each frame (which is exactly the drag delta). Without this the physics loop
-        // overwrites the drag ~60x/s and the box fights the pointer.
         containerDragLeaves = n.descendants().filter((c) => !isContainer(c) && c.style("display") !== "none");
-        if (containerDragLeaves.empty()) { containerDragLeaves = null; return; }
-        isDraggingAny = true;
-        n.addClass("dragging");
+        if (containerDragLeaves.empty()) { containerDragLeaves = null; isDraggingAny = false; n.removeClass("dragging"); return; }
         containerDragLeaves.forEach((c) => sim.grab(c.id()));
-        // Selected nodes outside this box ride along, so dragging a namespace moves the whole
-        // selection rather than only its own members.
         armPassengers(containerDragLeaves.first(), containerDragLeaves);
         if (reduceMotion) sim.start();
         return;
       }
-      isDraggingAny = true;
-      n.addClass("dragging");
-      // Cytoscape co-drags the entire selection when a selected node is grabbed, but it only
-      // reports "grab" for the one under the pointer. Registering just that node left the
-      // other movers under the integrator's control, so they were simultaneously pushed by
-      // the pointer AND overwritten by the physics loop -- the mixed static/physics drag.
-      // Hold every co-dragged leaf instead, exactly like a container drag does.
-      coDragLeaves = n.selected()
-        ? uniformDragSet()
-        : null;
+      coDragLeaves = n.selected() ? uniformDragSet() : null;
       if (coDragLeaves && coDragLeaves.length > 1) {
         coDragLeaves.forEach((c) => { sim.grab(c.id()); c.addClass("dragging"); });
       } else {
         coDragLeaves = null;
         sim.grab(n.id());
       }
-      // Grabbing an unselected node: the selection is not co-dragged by Cytoscape, so it
-      // becomes passenger cargo and follows the pointer uniformly.
       armPassengers(n, coDragLeaves || cy.collection().merge(n));
       applyHover(n);
-      // The drag-zoom follows a single node's neighbourhood. During a multi-node drag it has
-      // no meaningful focus and its panning is what felt like erratic scrolling, so it is
-      // only armed for a genuine single-node drag.
       if (!coDragLeaves && !dragPassengers) startDragZoom(n);
       if (reduceMotion) sim.start();
+    };
+
+    cy.on("grab", "node", (e) => {
+      stopAutoFit();
+      const oe = e.originalEvent || {};
+      pendingGrab = {
+        node: e.target,
+        x: Number.isFinite(oe.clientX) ? oe.clientX : lastPointerInStage.x,
+        y: Number.isFinite(oe.clientY) ? oe.clientY : lastPointerInStage.y
+      };
     });
+
+    cy.on("drag", "node", (e) => {
+      if (!pendingGrab || pendingGrab.node.id() !== e.target.id()) return;
+      const oe = e.originalEvent || {};
+      const x = Number.isFinite(oe.clientX) ? oe.clientX : lastPointerInStage.x;
+      const y = Number.isFinite(oe.clientY) ? oe.clientY : lastPointerInStage.y;
+      if (Math.hypot(x - pendingGrab.x, y - pendingGrab.y) < NODE_DRAG_THRESHOLD) return;
+      const n = pendingGrab.node;
+      pendingGrab = null;
+      beginNodeDrag(n);
+    });
+
     // Removal decision is based on the mouse position at release time, not the node's
     // position — a node can be dragged far while the cursor (and thus the drop point) stays
     // inside the canvas, and should NOT be removed in that case.
@@ -1845,6 +1861,10 @@
 
     cy.on("free", "node", (e) => {
       const n = e.target;
+      pendingGrab = null;
+      // No movement crossed the threshold: this was a click. Cytoscape has already released
+      // its native grab here, and our simulation/drag mode was never entered.
+      if (!isDraggingAny) { n.removeClass("dragging"); stopDragZoom(); return; }
       if (isContainer(n)) {
         // Release every leaf that was held on behalf of this box and let the springs take over.
         isDraggingAny = false;
@@ -1893,16 +1913,62 @@
     });
 
     // A module box is a navigational target: click it to center and zoom to its visible hubs.
-    // Left-clicking a module/namespace box selects its members; the zoom moved to right-click.
+    // Left-clicking a module/namespace box selects its members only. Zooming into the module
+    // is a double-click gesture (see dbltap below) so single click stays a pure selection action.
     // The handler is registered after frontierNode/selectableNode exist (see below), so the
     // actual work lives in selectContainerMembers, defined further down.
-    // Left-click on a module/namespace box selects its members AND zooms to it, matching the
-    // select-and-zoom gesture on individual classes.
+    // Delay the single-click action briefly so the first half of a double-click cannot select
+    // every member. Detect the second tap here instead of waiting for Cytoscape's dbltap event;
+    // this makes module zoom react as soon as the second click arrives.
+    // Single click selects the box members, double click zooms and must NOT leave a member
+    // selection behind. Timing alone is not enough: the first click may already have committed
+    // its selection before the second arrives (and Cytoscape additionally selects the box's
+    // descendants on its own). So the second tap explicitly RESTORES the selection snapshot
+    // taken before the first tap, which undoes both effects, and only then zooms.
+    const CONTAINER_DBL_MS = 500;
+    let pendingContainerTap = null;
+
+    const canvasSelectionIds = () =>
+      new Set(cy.nodes(":selected").filter((c) => !isParked(c)).map((c) => c.id()));
+
+    const restoreCanvasSelection = (ids) => {
+      cy.batch(() => {
+        cy.nodes(":selected").forEach((c) => { if (!isParked(c) && !ids.has(c.id())) c.unselect(); });
+        ids.forEach((id) => {
+          const c = cy.getElementById(id);
+          if (c && c.nonempty() && !c.selected()) c.select();
+        });
+      });
+    };
+
     cy.on("tap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
       if (e.originalEvent) e.originalEvent.preventDefault();
-      selectContainerMembers(e.target, e.originalEvent || {});
+      const n = e.target;
+      const now = performance.now();
+
+      if (pendingContainerTap && pendingContainerTap.id === n.id() && now - pendingContainerTap.at <= CONTAINER_DBL_MS) {
+        clearTimeout(pendingContainerTap.timer);
+        const before = pendingContainerTap.before;
+        pendingContainerTap = null;
+        // Undo whatever the first click (or Cytoscape) selected -- a zoom changes the viewport
+        // only, never the selection.
+        restoreCanvasSelection(before);
+        n.unselect();
+        applySelectionHighlight();
+        refreshRemovedUi();
+        focusModule(n);
+        return;
+      }
+
+      if (pendingContainerTap) clearTimeout(pendingContainerTap.timer);
       const mods = e.originalEvent || {};
-      if (!mods.shiftKey && !mods.ctrlKey && !mods.metaKey) focusModule(e.target);
+      const modifierState = { shiftKey: !!mods.shiftKey, ctrlKey: !!mods.ctrlKey, metaKey: !!mods.metaKey };
+      const before = canvasSelectionIds();
+      const timer = setTimeout(() => {
+        pendingContainerTap = null;
+        selectContainerMembers(n, modifierState);
+      }, 220);
+      pendingContainerTap = { id: n.id(), at: now, timer, before };
     });
 
     // ---------- right-click selection / neighbourhood growth ----------
@@ -1992,11 +2058,12 @@
       refreshRemovedUi();
     }
 
-    // Right-clicking a module/namespace box zooms to it (formerly the left-click gesture).
-    cy.on("cxttap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
-      if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
-      focusModule(e.target);
-    });
+    // One proven commit path for every gesture that grows a frontier.
+    const commitFrontierGrowth = (n) => {
+      growSelectionFrom(n);
+      applySelectionHighlight();
+      refreshRemovedUi();
+    };
 
     cy.on("cxttap", "node", (e) => {
       const n = e.target;
@@ -2006,10 +2073,9 @@
       // are reachable via the tray panel's own right-click handler.
       if (!frontierNode(n)) return;
       if (e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
-      if (n.selected()) growSelectionFrom(n);
-      else n.select();
-      applySelectionHighlight();
-      refreshRemovedUi();
+      // Right-click always grows the frontier from this node, regardless of prior selection
+      // state -- selection is a left-click concern, growth is a right-click concern.
+      commitFrontierGrowth(n);
     });
 
     // Right-clicking empty canvas clears the selection; in both cases the native browser
@@ -2281,31 +2347,104 @@
 
     stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
 
-    // Plain left-click on a component selects it and zooms to it. Detail level follows from
-    // that selection (level 1) and from hover (level 2) -- clicking no longer cycles levels.
-    // Modifier clicks keep their additive/toggle selection semantics and do not zoom.
-    cy.on("tap", "node", (e) => {
+    // Left-click frontier semantics are based on a stable app-owned selection snapshot, not
+    // on Cytoscape's transient state. With selectionType="additive" Cytoscape toggles a selected
+    // node off before emitting tap; reading n.selected() in tap was therefore inherently racy.
+    // The cache is maintained by our select/unselect listener and is captured at tapstart,
+    // before Cytoscape performs its tap-selection toggle.
+    let nodeTapSnapshot = null;
+    cy.on("tapstart", "node", (e) => {
       const n = e.target;
-      if (isContainer(n)) return;
-      if (!frontierNode(n)) return;
-      const ev = e.originalEvent;
-      if (ev && (ev.shiftKey || ev.ctrlKey || ev.metaKey || ev.altKey)) return;
-      cy.batch(() => {
-        cy.nodes(":selected").forEach((c) => { if (!isParked(c)) c.unselect(); });
-        n.select();
-      });
-      applySelectionHighlight();   // also reconciles the UML detail levels
-      refreshRemovedUi();
-      focusNode(n);
+      if (isContainer(n) || !frontierNode(n)) { nodeTapSnapshot = null; return; }
+      nodeTapSnapshot = {
+        id: n.id(),
+        wasSelected: isNodeSelected(n.id()),
+        ids: new Set(Array.from(selectedIdSet()).filter((id) => {
+          const c = cy.getElementById(id);
+          return c && c.nonempty() && !isParked(c);
+        }))
+      };
     });
 
-    // Navigation is a double-click gesture only. A single click stays inside the graph so it
-    // can be used for selection -- accidentally leaving the page while marking nodes was the
-    // main hazard of the previous single-click navigation.
+    const restoreTapSelection = (ids) => {
+      cy.batch(() => {
+        cy.nodes().forEach((c) => {
+          if (isContainer(c) || isParked(c)) return;
+          const want = ids.has(c.id());
+          if (want && !c.selected()) c.select();
+          else if (!want && c.selected()) c.unselect();
+        });
+      });
+    };
+
+    let pendingNodeTap = null;
+    const cancelPendingNodeTap = () => {
+      if (!pendingNodeTap) return;
+      clearTimeout(pendingNodeTap.timer);
+      pendingNodeTap = null;
+    };
+
+    const commitNodeTap = (n, ev, snap) => {
+      restoreTapSelection(snap.ids);
+
+      if (ev.shiftKey) {
+        if (!n.selected()) n.select();
+        commitFrontierGrowth(n);
+        return;
+      }
+
+      if (!snap.wasSelected) {
+        cy.batch(() => {
+          cy.nodes(":selected").forEach((c) => { if (!isParked(c)) c.unselect(); });
+          n.select();
+        });
+        applySelectionHighlight();
+        refreshRemovedUi();
+      } else {
+        if (!n.selected()) n.select();
+        const island = selectedIsland(n);
+        cy.batch(() => {
+          cy.nodes(":selected").forEach((c) => {
+            if (isParked(c) || island.has(c.id())) return;
+            c.unselect();
+          });
+        });
+        // Use exactly the same growth code path as the known-good right-click handler.
+        commitFrontierGrowth(n);
+      }
+      focusNode(n);
+    };
+
+    cy.on("tap", "node", (e) => {
+      const n = e.target;
+      if (isContainer(n) || !frontierNode(n)) return;
+      const ev = e.originalEvent || {};
+      if (ev.ctrlKey || ev.metaKey || ev.altKey) { nodeTapSnapshot = null; return; }
+
+      const snap = nodeTapSnapshot && nodeTapSnapshot.id === n.id()
+        ? nodeTapSnapshot
+        : { id: n.id(), wasSelected: isNodeSelected(n.id()), ids: new Set(selectedIdSet()) };
+      nodeTapSnapshot = null;
+      cancelPendingNodeTap();
+      const modifierState = { shiftKey: !!ev.shiftKey };
+      const timer = setTimeout(() => {
+        pendingNodeTap = null;
+        commitNodeTap(n, modifierState, snap);
+      }, 220);
+      pendingNodeTap = { id: n.id(), timer };
+    });
+
+    // Navigation and module zoom are both double-click gestures. A single click stays inside
+    // the graph so it can be used for selection -- accidentally leaving the page while marking
+    // nodes was the main hazard of the previous single-click navigation, and the same reasoning
+    // keeps module zoom off both single left-click and right-click.
     cy.on("dbltap", "node", (e) => {
       const n = e.target;
-      if (isContainer(n)) return;
       if (e.originalEvent) e.originalEvent.preventDefault();
+      if (isContainer(n)) return; // handled immediately by the container tap detector above
+      // A double-click is navigation only; suppress either pending single-click mutation.
+      cancelPendingNodeTap();
+      nodeTapSnapshot = null;
       const u = n.data("url");
       if (u) location.href = new URL(u, root).href;
     });
