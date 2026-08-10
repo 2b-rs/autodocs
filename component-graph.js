@@ -1525,13 +1525,9 @@
         // viewport must stay put -- reframing here is what yanked the view in too close.
         const unparked = restoreNodesToMainGraph(ids, "none");
         if (!unparked.length) return;
-        // Everything that just travelled to the canvas loses its mark: the panel highlight
-        // exists to stage a set for exactly this move, so once the move happened the set is
-        // consumed. Marks on items that stayed parked are untouched.
-        cy.batch(() => unparked.forEach((id) => {
-          const el = cy.getElementById(id);
-          if (el && el.nonempty() && el.selected()) el.unselect();
-        }));
+        // Moving an item from the panel to the canvas is a pure relocation: it must not
+        // change the selection status. A marked item stays marked after it lands, an
+        // unmarked one stays unmarked. Marks on items that stayed parked are untouched.
         // Drop point is the anchor; multiple nodes are fanned around it so they do not
         // all land on the exact same coordinate and explode apart in the first frame.
         const R = 26;
