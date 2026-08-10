@@ -798,7 +798,12 @@
         { selector: "node.focus", style: { "z-index": 40 } },
         { selector: "node.hover-root", style: { "z-index": 45 } },
         { selector: "node.hover-neighbor", style: { "z-index": 42 } },
-        { selector: "edge.hover-edge", style: { opacity: 1, width: 4.2, "z-index": 35 } }
+        { selector: "edge.hover-edge", style: { opacity: 1, width: 4.2, "z-index": 35 } },
+        // Viewport focus is independent of selection and hover. Keep the focused class visibly
+        // distinct even when another interaction temporarily changes the highlight classes.
+        { selector: "node.canvas-focused", style: {
+          "border-style": "double", "border-width": 6, "border-color": "#01696f", "z-index": 70
+        }}
       ]
     });
 
@@ -1335,6 +1340,16 @@
     // now calls instead of choosing between fit/reveal/auto-fit helpers.
     const setFocus = (next, animated = true) => {
       focus = next;
+      cy.nodes(".canvas-focused").removeClass("canvas-focused");
+      if (next.type === "node") {
+        const focusedNode = cy.getElementById(next.id);
+        if (focusedNode && focusedNode.nonempty() && !isContainer(focusedNode) &&
+            !isParked(focusedNode) && focusedNode.style("display") !== "none") {
+          focusedNode.addClass("canvas-focused");
+        }
+      }
+      // Focus participates in level-of-detail independently of selection and hover.
+      if (typeof syncAllDetail === "function") syncAllDetail();
       applyFocusFraming(animated, false);
       startFocusFollow();
     };
@@ -1663,7 +1678,11 @@
     const syncNodeDetail = (n) => {
       if (isContainer(n)) return;
       const id = n.id();
-      const want = levelFor(n.selected(), umlHoverId === id || umlPeek.has(id) || frontierHoldPeek.has(id));
+      const want = levelFor(
+        n.selected(),
+        (focus.type === "node" && focus.id === id) || umlHoverId === id ||
+          umlPeek.has(id) || frontierHoldPeek.has(id)
+      );
       if ((n.data("uml") || 0) === want) return;
       const raw = graph.nodesById.get(id) || n.data();
       const text = umlLabelFor(raw, want);
