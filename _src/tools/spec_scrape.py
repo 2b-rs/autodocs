@@ -135,6 +135,44 @@ DB_LABEL_MAP = {
 # Diese Felder werden verglichen (Rest ist nur informativ).
 COMPARED = ["Kind", "Header file", "Scope", "Symbol", "Underlying type"]
 
+# Bekannte Namespace-Praefixe aus der Spec-DB. Der laengste passende Praefix
+# gewinnt; alles dahinter ist umschliessender Typ, nicht Namespace. So werden
+# auch kleingeschriebene Typnamen wie std::hash, value_compare, reference oder
+# in_place_t korrekt behandelt.
+KNOWN_NAMESPACE_PREFIXES = [
+    "apext::com::secoc",
+    "apext::diag::uds_transport",
+    "apext::log",
+    "apext::phm",
+    "apext::sm",
+    "apext::tsync",
+    "apext",
+    "ara::com::e2e",
+    "ara::com::runtime",
+    "ara::com",
+    "ara::core::literals::string_view_literals",
+    "ara::core",
+    "ara::crypto::cryp",
+    "ara::crypto::x509",
+    "ara::crypto",
+    "ara::diag",
+    "ara::exec",
+    "ara::fw::states",
+    "ara::fw",
+    "ara::log",
+    "ara::per",
+    "ara::phm::supervised_entities",
+    "ara::phm",
+    "ara::rds",
+    "ara::shwa",
+    "ara::sm::s2r",
+    "ara::sm",
+    "ara::tsync",
+    "ara",
+    "std",
+]
+KNOWN_NAMESPACE_PREFIXES.sort(key=len, reverse=True)
+
 
 # ===========================================================================
 # PDF-Textextraktion
@@ -576,24 +614,33 @@ def parse_record(text: str, rid: str) -> dict:
 
 def namespace_from_scope(scope: str):
     """'namespace ara::log' -> ('ara::log', None);
-    'class ara::log::LogStream' -> ('ara::log', 'ara::log::LogStream')."""
-    s = re.sub(r"^(namespace|class|struct|enum(?:\s+class)?|union)\s+", "",
-               (scope or "").strip()).strip()
-    while re.search(r"<[^<>]*>", s):          # verschachtelte Template-Argumente
+    'class ara::log::LogStream' -> ('ara::log', 'ara::log::LogStream').
+
+    Die Ableitung beruht auf einem Whitelist-Match ueber bekannte
+    Namespace-Praefixe. Gross-/Kleinschreibung ist dafuer ungeeignet, weil es
+    kleingeschriebene Typen gibt (z. B. std::hash, value_compare, reference,
+    in_place_t), die keine Namespaces sind.
+    """
+    original = (scope or "").strip()
+    s = re.sub(r"^(namespace|class|struct|enum(?:\s+class)?|union)\s+", "", original).strip()
+    while re.search(r"<[^<>]*>", s):
         s = re.sub(r"<[^<>]*>", "", s)
-    s = s.strip()
+    s = re.sub(r"\s+", " ", s).strip()
     if not s:
         return None, None
+    if original.startswith("namespace"):
+        return s, None
+    for prefix in KNOWN_NAMESPACE_PREFIXES:
+        if s == prefix:
+            return prefix, None
+        if s.startswith(prefix + "::"):
+            return prefix, s
     parts = [p for p in (seg.strip() for seg in s.split("::")) if p]
     if not parts or parts[0] not in ("ara", "apext", "std"):
         return None, None
-    if (scope or "").strip().startswith("namespace"):
-        return "::".join(parts), None
-    ns = [p for p in parts if p[:1].islower() or p[:1] == "_"]
-    types = parts[len(ns):]
-    if not ns:
-        return None, None
-    return "::".join(ns), ("::".join(parts) if types else None)
+    if len(parts) == 1:
+        return parts[0], None
+    return parts[0], s
 
 
 def phase_props(index: dict, only_ids=None, backend="auto") -> dict:
