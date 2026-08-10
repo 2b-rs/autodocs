@@ -599,6 +599,7 @@ def _classify_list_structure(pages: list[dict]) -> None:
             for line in page["lines"]
             if not line.get("margin_band") and line.get("x_range")
             and float(line["baseline_y"]) > 0
+            and line.get("layout", {}).get("kind") == "single-flow"
         })
         levels = []
         for indent in indents:
@@ -612,12 +613,15 @@ def _classify_list_structure(pages: list[dict]) -> None:
             ordered = line.get("ordered_span_ids", [])
             if not ordered:
                 continue
-            left = round(float(line["x_range"][0]), 1)
-            level = 0
-            for index, candidate in enumerate(levels):
-                if left >= candidate - 0.05:
-                    level = index
-            line["indent_level"] = level
+            if line.get("layout", {}).get("kind") != "single-flow":
+                line["indent_level"] = None
+            else:
+                left = round(float(line["x_range"][0]), 1)
+                level = 0
+                for index, candidate in enumerate(levels):
+                    if left >= candidate - 0.05:
+                        level = index
+                line["indent_level"] = level
             first_id = ordered[0]
             text = spans.get(first_id, {}).get("text", "").strip()
             if text and text[0] in BULLET_GLYPHS and (len(text) == 1 or text[1:2] == " "):
@@ -654,6 +658,7 @@ def _classify_paragraph_flow(pages: list[dict]) -> None:
                 leading > 0
                 and gap <= leading * 1.35
                 and line.get("bullet") is None
+                and line.get("indent_level") is not None
                 and line.get("indent_level") == previous.get("indent_level")
                 and previous["layout"]["kind"] == "single-flow"
                 and line["layout"]["kind"] == "single-flow"
@@ -710,6 +715,29 @@ def _classify_page_columns(pages: list[dict]) -> None:
                 "x_range": [round(cluster["left"], 3), round(cluster["right"], 3)],
                 "line_count": len(cluster["lines"]),
             })
+
+
+def _finalize_line_order(pages: list[dict]) -> None:
+    """Record column-aware reading order for the lines of each page."""
+    for page in pages:
+        body = [
+            line for line in page["lines"]
+            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+            and line.get("ordered_span_ids")
+        ]
+        ordered = sorted(
+            body,
+            key=lambda line: (
+                line.get("column_index") if line.get("column_index") is not None else 0,
+                -float(line["baseline_y"]),
+                float(line["x_range"][0]),
+            ),
+        )
+        page["reading_order"] = [line["id"] for line in ordered]
+        for position, line in enumerate(ordered):
+            line["reading_position"] = position
+        for line in page["lines"]:
+            line.setdefault("reading_position", None)
 
 
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
@@ -840,6 +868,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
     _classify_list_structure(observations)
     _classify_paragraph_flow(observations)
     _classify_page_columns(observations)
+    _finalize_line_order(observations)
     return observations
 
 

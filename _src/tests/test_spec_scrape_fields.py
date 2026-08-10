@@ -140,10 +140,10 @@ class PypdfGeometryTests(unittest.TestCase):
                 {"id": "s4", "text": "-5 is negative"},
             ],
             "lines": [
-                {"id": "l1", "baseline_y": 700.0, "x_range": [70.0, 200.0], "ordered_span_ids": ["s1"]},
-                {"id": "l2", "baseline_y": 690.0, "x_range": [100.0, 220.0], "ordered_span_ids": ["s2"]},
-                {"id": "l3", "baseline_y": 680.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s3"]},
-                {"id": "l4", "baseline_y": 670.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s4"]},
+                {"id": "l1", "baseline_y": 700.0, "x_range": [70.0, 200.0], "ordered_span_ids": ["s1"], "layout": {"kind": "single-flow"}},
+                {"id": "l2", "baseline_y": 690.0, "x_range": [100.0, 220.0], "ordered_span_ids": ["s2"], "layout": {"kind": "single-flow"}},
+                {"id": "l3", "baseline_y": 680.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s3"], "layout": {"kind": "single-flow"}},
+                {"id": "l4", "baseline_y": 670.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s4"], "layout": {"kind": "single-flow"}},
             ],
         }
         scrape._classify_list_structure([page])
@@ -153,6 +153,20 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(lines["l2"]["indent_level"], 1)
         self.assertIsNone(lines["l3"]["bullet"])
         self.assertIsNone(lines["l4"]["bullet"])
+
+    def test_table_rows_do_not_create_indent_levels(self):
+        page = {
+            "spans": [{"id": "s1", "text": "cell"}, {"id": "s2", "text": "prose"}],
+            "lines": [
+                {"id": "l1", "baseline_y": 700.0, "x_range": [300.0, 400.0],
+                 "ordered_span_ids": ["s1"], "layout": {"kind": "table-row-candidate"}},
+                {"id": "l2", "baseline_y": 690.0, "x_range": [70.0, 200.0],
+                 "ordered_span_ids": ["s2"], "layout": {"kind": "single-flow"}},
+            ],
+        }
+        scrape._classify_list_structure([page])
+        self.assertIsNone(page["lines"][0]["indent_level"])
+        self.assertEqual(page["lines"][1]["indent_level"], 0)
 
     def test_margin_lines_have_no_list_structure(self):
         page = {"spans": [{"id": "s1", "text": "• x"}],
@@ -176,6 +190,16 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(flows["l3"], "wrap")
         self.assertEqual(flows["l4"], "block-start")
         self.assertEqual(flows["l5"], "block-start")
+
+    def test_unleveled_table_lines_never_wrap(self):
+        def cell(identifier, y):
+            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+                    "indent_level": None, "bullet": None,
+                    "layout": {"kind": "single-flow"}}
+        page = {"lines": [cell("l1", 700), cell("l2", 688), cell("l3", 676)]}
+        scrape._classify_paragraph_flow([page])
+        self.assertEqual([line["flow"] for line in page["lines"]],
+                         ["block-start", "block-start", "block-start"])
 
     def test_indent_change_starts_new_block(self):
         def body(identifier, y, indent):
@@ -211,6 +235,27 @@ class PypdfGeometryTests(unittest.TestCase):
         ]}
         scrape._classify_page_columns([page])
         self.assertEqual(page["columns"], [])
+
+    def test_reading_order_follows_columns_then_baselines(self):
+        def line(identifier, y, left, column):
+            return {"id": identifier, "baseline_y": y, "x_range": [left, left + 50],
+                    "ordered_span_ids": [f"{identifier}-s"], "column_index": column}
+        page = {"lines": [line("b1", 700, 320, 1), line("a1", 690, 70, 0),
+                          line("a2", 680, 70, 0), line("b2", 660, 320, 1)]}
+        scrape._finalize_line_order([page])
+        self.assertEqual(page["reading_order"], ["a1", "a2", "b1", "b2"])
+        self.assertEqual(page["lines"][1]["reading_position"], 0)
+
+    def test_margin_lines_are_excluded_from_reading_order(self):
+        page = {"lines": [
+            {"id": "h1", "baseline_y": 790, "x_range": [70, 300],
+             "ordered_span_ids": ["h1-s"], "margin_band": "header"},
+            {"id": "t1", "baseline_y": 700, "x_range": [70, 300],
+             "ordered_span_ids": ["t1-s"]},
+        ]}
+        scrape._finalize_line_order([page])
+        self.assertEqual(page["reading_order"], ["t1"])
+        self.assertIsNone(page["lines"][0]["reading_position"])
 
     def test_indented_prose_is_not_multi_column(self):
         def line(identifier, left, right, y):

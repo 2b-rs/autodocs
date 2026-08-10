@@ -490,3 +490,12 @@ These ideas complement the backend geometry plan and should be introduced as iso
 - Show raw spans, reconstructed lines, both backend fields, source-page overlay, and candidate-selection reasons together.
 - Allow review decisions to be exported as immutable fixtures and expected outcomes, not parser-specific overrides.
 - Require two-source agreement or explicit human verification before marking canonical upstream content as `verified`.
+
+### Geometry evidence hardening
+
+- Validate reconstructed reading order against body-only legacy text (headers and footers removed) instead of full raw text, so margin exclusion is not misreported as missing content.
+- Add a JSON schema for the observation artifact and validate every emitted document against it, so new geometry fields cannot silently change shape.
+- Run all geometry classifiers over every cached PDF, not only one canonical document, and report per-document counts for margins, bullets, indentation, wraps, and columns.
+- Add invariant checks that hold for any document: every span belongs to exactly one line, reading order covers body lines exactly once, and classifier outputs are pure functions of geometry.
+- Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
+- Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
