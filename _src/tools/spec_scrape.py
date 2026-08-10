@@ -74,6 +74,8 @@ from pathlib import Path
 SRC = Path(__file__).resolve().parent.parent
 ROOT = SRC.parent
 RECORDS = SRC / "spec" / "records"
+
+from spec_upstream import UpstreamIndex, rebuild_record_files
 RELEASE = "R25-11"
 # PDF-Cache: die normativen Standard-PDFs liegen versionsweise unter _src.
 PDF_CACHE = SRC / "spec" / "pdf-cache" / RELEASE
@@ -100,14 +102,38 @@ DOCS = OrderedDict([
     ("shwa",   ("AP", "AUTOSAR_AP_SWS_SafeHardwareAcceleration",    "AP_SWS")),
 ])
 
-ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b")
+# Canonical upstream-requirement sources. Kept separate so existing SWS
+# registry entries and module selection semantics remain unchanged.
+RS_DOCS = OrderedDict([
+    ("rs-general", ("AP", "AUTOSAR_AP_RS_General", "RS_AP")),
+    ("rs-cm", ("AP", "AUTOSAR_AP_RS_CommunicationManagement", "RS_CM")),
+    ("rs-crypto", ("AP", "AUTOSAR_AP_RS_Cryptography", "RS_CRYPTO")),
+    ("rs-em", ("AP", "AUTOSAR_AP_RS_ExecutionManagement", "RS_EM")),
+    ("rs-osi", ("AP", "AUTOSAR_AP_RS_OperatingSystemInterface", "RS_OSI")),
+    ("rs-per", ("AP", "AUTOSAR_AP_RS_Persistency", "RS_PER")),
+    ("rs-phm", ("AP", "AUTOSAR_AP_RS_PlatformHealthManagement", "RS_PHM")),
+    ("rs-shwa", ("AP", "AUTOSAR_AP_RS_SafeHardwareAcceleration", "RS_SHWA")),
+    ("rs-sm", ("AP", "AUTOSAR_AP_RS_StateManagement", "RS_SM")),
+    ("rs-ucm", ("AP", "AUTOSAR_AP_RS_UpdateAndConfigurationManagement", "RS_UCM")),
+    ("rs-vucm", ("AP", "AUTOSAR_AP_RS_VehicleUpdateAndConfigurationManagement", "RS_VUCM")),
+    ("rs-diag", ("FO", "AUTOSAR_FO_RS_Diagnostics", "RS_DIAG")),
+    ("rs-e2e", ("FO", "AUTOSAR_FO_RS_E2E", "RS_E2E")),
+    ("rs-hm", ("FO", "AUTOSAR_FO_RS_HealthMonitoring", "RS_HM")),
+    ("rs-ids", ("FO", "AUTOSAR_FO_RS_IntrusionDetectionSystem", "RS_IDS")),
+    ("rs-lt", ("FO", "AUTOSAR_FO_RS_LogAndTrace", "RS_LT")),
+    ("rs-nm", ("FO", "AUTOSAR_FO_RS_NetworkManagement", "RS_NM")),
+    ("rs-ts", ("FO", "AUTOSAR_FO_RS_TimeSync", "RS_TS")),
+])
+
+ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b", re.IGNORECASE)
 
 # Beschriftungen der Eigenschaftstabellen in den SWS-Dokumenten.
 LABELS = [
     "Kind", "Header file", "Forwarding header file", "Scope", "Symbol",
     "Underlying type", "Syntax", "Values", "Parameters (in)",
     "Parameters (inout)", "Parameters (out)", "Return value",
-    "Exception Safety", "Thread Safety", "Description", "Notes",
+    "Exception Safety", "Thread Safety", "Description", "Rationale",
+    "Dependencies", "Use Case", "AppliesTo", "Supporting Material", "Notes",
     "Type", "Default value", "Errors",
 ]
 LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))
@@ -177,40 +203,88 @@ KNOWN_NAMESPACE_PREFIXES.sort(key=len, reverse=True)
 # ===========================================================================
 # PDF-Textextraktion
 # ===========================================================================
-def _decode_pdf_string(raw: bytes) -> str:
-    """PDF-Literalstring (…) bzw. Hexstring <…> -> Text."""
+def _pdf_string_bytes(raw: bytes) -> bytes:
+    """Decode PDF literal/hex string syntax while preserving character codes."""
     if raw.startswith(b"<"):
-        hexdigits = re.sub(rb"[^0-9A-Fa-f]", b"", raw[1:-1])
-        if len(hexdigits) % 2:
-            hexdigits += b"0"
-        data = bytes.fromhex(hexdigits.decode("ascii"))
+        digits = re.sub(rb"[^0-9A-Fa-f]", b"", raw[1:-1])
+        if len(digits) % 2:
+            digits += b"0"
+        return bytes.fromhex(digits.decode("ascii"))
+    body, out, i = raw[1:-1], bytearray(), 0
+    simple = {ord("n"): 10, ord("r"): 13, ord("t"): 9, ord("b"): 8,
+              ord("f"): 12, ord("("): 40, ord(")"): 41, ord("\\"): 92}
+    while i < len(body):
+        if body[i] != 92:
+            out.append(body[i]); i += 1; continue
+        i += 1
+        if i >= len(body):
+            break
+        ch = body[i]
+        if ch in simple:
+            out.append(simple[ch]); i += 1
+        elif ch in (10, 13):
+            i += 1
+            if ch == 13 and i < len(body) and body[i] == 10:
+                i += 1
+        elif 48 <= ch <= 55:
+            j = i
+            while j < len(body) and j < i + 3 and 48 <= body[j] <= 55:
+                j += 1
+            out.append(int(body[i:j], 8) & 255); i = j
+        else:
+            out.append(ch); i += 1
+    return bytes(out)
+
+
+def _unicode_value(raw: bytes) -> str:
+    try:
+        return raw.decode("utf-16-be")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1", "replace")
+
+
+def _parse_tounicode(data: bytes) -> dict:
+    """Parse bfchar and bfrange entries from a PDF ToUnicode CMap."""
+    result = {}
+    for block in re.findall(rb"beginbfchar(.*?)endbfchar", data, re.S):
+        for src, dst in re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", block):
+            result[bytes.fromhex(src.decode())] = _unicode_value(bytes.fromhex(dst.decode()))
+    for block in re.findall(rb"beginbfrange(.*?)endbfrange", data, re.S):
+        entries = re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<([0-9A-Fa-f]+)>|\[(.*?)\])", block, re.S)
+        for lo, hi, target, sequential, array in entries:
+            lo_b, hi_b = bytes.fromhex(lo.decode()), bytes.fromhex(hi.decode())
+            width = len(lo_b); first, last = int.from_bytes(lo_b, "big"), int.from_bytes(hi_b, "big")
+            if sequential:
+                dst = bytes.fromhex(sequential.decode()); base = int.from_bytes(dst, "big"); dwidth = len(dst)
+                values = [(base + offset).to_bytes(dwidth, "big") for offset in range(last-first+1)]
+            else:
+                values = [bytes.fromhex(x.decode()) for x in re.findall(rb"<([0-9A-Fa-f]+)>", array)]
+            for offset, value in enumerate(values[:last-first+1]):
+                result[(first + offset).to_bytes(width, "big")] = _unicode_value(value)
+    return result
+
+
+def _decode_pdf_string(raw: bytes, cmap=None) -> str:
+    data = _pdf_string_bytes(raw)
+    if not cmap:
         if data[:2] in (b"\xfe\xff", b"\xff\xfe"):
             return data.decode("utf-16", "replace")
         return data.decode("latin-1", "replace")
-    body, out, i = raw[1:-1], [], 0
-    while i < len(body):
-        ch = body[i : i + 1]
-        if ch == b"\\" and i + 1 < len(body):
-            nxt = body[i + 1 : i + 2]
-            simple = {b"n": "\n", b"r": "\n", b"t": "\t", b"b": "", b"f": "",
-                      b"(": "(", b")": ")", b"\\": "\\"}
-            if nxt in simple:
-                out.append(simple[nxt]); i += 2; continue
-            if nxt.isdigit():
-                oct_digits = b""
-                j = i + 1
-                while j < len(body) and len(oct_digits) < 3 and body[j : j + 1].isdigit():
-                    oct_digits += body[j : j + 1]; j += 1
-                out.append(chr(int(oct_digits, 8))); i = j; continue
-            if nxt in (b"\n", b"\r"):
-                i += 2; continue
-            out.append(nxt.decode("latin-1", "replace")); i += 2; continue
-        out.append(ch.decode("latin-1", "replace")); i += 1
+    lengths = sorted({len(key) for key in cmap}, reverse=True)
+    out, pos = [], 0
+    while pos < len(data):
+        for width in lengths:
+            token = data[pos:pos + width]
+            if len(token) == width and token in cmap:
+                out.append(cmap[token]); pos += width; break
+        else:
+            out.append(bytes([data[pos]]).decode("latin-1", "replace")); pos += 1
     return "".join(out)
 
 
 _OPS = re.compile(rb"""
-    (?P<lit>\((?:\\.|[^\\()])*\))\s*(?:Tj|')
+    (?P<font>/[A-Za-z0-9_.+-]+)\s+-?\d+(?:\.\d+)?\s+Tf
+  | (?P<lit>\((?:\\.|[^\\()])*\))\s*(?:Tj|')
   | (?P<hex><[0-9A-Fa-f\s]*>)\s*Tj
   | (?P<arr>\[(?:\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>|[^\]()])*\])\s*TJ
   | (?P<brk>T\*|TD|Td|ET|BT)
@@ -218,20 +292,22 @@ _OPS = re.compile(rb"""
 _ARR_ITEM = re.compile(rb"\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>|-?\d+(?:\.\d+)?")
 
 
-def _content_to_text(content: bytes) -> str:
-    """Content-Stream -> Text. Positionierungsoperatoren werden zu Zeilenumbruechen,
-    grosse negative Kernwerte in TJ-Arrays zu Leerzeichen."""
-    parts = []
+def _content_to_text(content: bytes, fonts=None) -> str:
+    """Content stream to text, applying the active font's ToUnicode CMap."""
+    parts, active = [], None
+    fonts = fonts or {}
     for m in _OPS.finditer(content):
-        if m.group("brk"):
+        if m.group("font"):
+            active = m.group("font")[1:].decode("ascii", "replace")
+        elif m.group("brk"):
             parts.append("\n")
         elif m.group("lit") or m.group("hex"):
-            parts.append(_decode_pdf_string(m.group("lit") or m.group("hex")))
+            parts.append(_decode_pdf_string(m.group("lit") or m.group("hex"), fonts.get(active)))
         else:
             for item in _ARR_ITEM.finditer(m.group("arr")):
                 tok = item.group(0)
                 if tok[:1] in (b"(", b"<"):
-                    parts.append(_decode_pdf_string(tok))
+                    parts.append(_decode_pdf_string(tok, fonts.get(active)))
                 else:
                     try:
                         if float(tok) <= -100:
@@ -354,7 +430,19 @@ def _builtin_pdf_pages(path: Path) -> list:
         arr = re.search(rb"/Contents\s*\[(.*?)\]", body, re.S)
         if arr:
             refs += [int(r) for r in re.findall(rb"(\d+)\s+\d+\s+R", arr.group(1))]
-        ergebnis.append("".join(_content_to_text(streams[r]) for r in refs if r in streams))
+        resource = body
+        rm = re.search(rb"/Resources\s+(\d+)\s+\d+\s+R", body)
+        if rm:
+            resource = bodies.get(int(rm.group(1)), b"")
+        fonts = {}
+        fm = re.search(rb"/Font\s*<<(.*?)>>", resource, re.S)
+        if fm:
+            for alias, font_ref in re.findall(rb"/([A-Za-z0-9_.+-]+)\s+(\d+)\s+\d+\s+R", fm.group(1)):
+                font_body = bodies.get(int(font_ref), b"")
+                tm = re.search(rb"/ToUnicode\s+(\d+)\s+\d+\s+R", font_body)
+                if tm and int(tm.group(1)) in streams:
+                    fonts[alias.decode("ascii", "replace")] = _parse_tounicode(streams[int(tm.group(1))])
+        ergebnis.append("".join(_content_to_text(streams[r], fonts) for r in refs if r in streams))
     return ergebnis
 
 
@@ -434,15 +522,16 @@ def discover_pdfs(pdf_dir: Path, modules=None, docs=None) -> list:
 def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
               backend="auto") -> dict:
     """-> {pdf-name: {id: [seitenzahlen]}}"""
-    rx = re.compile(pattern) if pattern else None
-    keep = set(only_ids or ())
+    rx = re.compile(pattern, re.IGNORECASE) if pattern else None
+    keep = {rid.upper() for rid in (only_ids or ())}
     result = OrderedDict()
     for path in pdfs:
         pages = [strip_noise(x) for x in pdf_pages(path, backend)]
         hits = defaultdict(list)
         for pageno, text in enumerate(pages, 1):
-            definiert = set(DEF_RE.findall(text))
-            for rid in ID_RE.findall(text):
+            definiert = {rid.upper() for rid in DEF_RE.findall(text)}
+            for raw_rid in ID_RE.findall(text):
+                rid = raw_rid.upper()
                 if rx and not rx.search(rid):
                     continue
                 if keep and rid not in keep:
@@ -459,7 +548,7 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
 # ===========================================================================
 # Phase 2 — Eigenschaften je ID
 # ===========================================================================
-DEF_RE = re.compile(r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})\]")
+DEF_RE = re.compile(r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})\]", re.IGNORECASE)
 
 
 def _record_slice(text: str, rid: str) -> str:
@@ -469,9 +558,9 @@ def _record_slice(text: str, rid: str) -> str:
     Klammern stehende ID — sonst laufen die Eigenschaften des Folgerecords in
     den aktuellen hinein.
     """
-    m = DEF_RE.search(text, 0) and re.search(r"\[%s\]" % re.escape(rid), text)
+    m = DEF_RE.search(text, 0) and re.search(r"\[%s\]" % re.escape(rid), text, re.IGNORECASE)
     if not m:
-        m = re.search(re.escape(rid), text)
+        m = re.search(re.escape(rid), text, re.IGNORECASE)
         if not m:
             return ""
     rest = text[m.end():]
@@ -488,8 +577,18 @@ def _record_slice(text: str, rid: str) -> str:
 # Umbruch vor jeder Beschriftung — bewusst OHNE \b, weil pypdf die Zellen ohne
 # Trenner aneinanderhaengt ("ara::logSymbol: LogLevel"); dort steht zwischen
 # Wortende und Beschriftung keine Wortgrenze.
-NORM_RE = re.compile(r"(?<!^)(?=(?:%s)\s*:)" % "|".join(re.escape(x) for x in
-                     LABELS + ["Upstream requirements", "Upstream requirement"]))
+NORMATIVE_LABELS = ["Description", "Rationale", "Dependencies", "Use Case",
+                     "AppliesTo", "Supporting Material"]
+API_LABELS = [label for label in LABELS if label not in NORMATIVE_LABELS]
+# Normative RS tables frequently omit the colon after their field labels.  API
+# property labels remain colon-gated to avoid splitting prose on common words.
+NORM_RE = re.compile(
+    r"(?<!^)(?=(?:(?:%s)\s*:|(?:%s)(?:\s*:|(?=\s|[–—-]))|"
+    r"Upstream requirements?\s*:))" % (
+        "|".join(re.escape(x) for x in API_LABELS),
+        "|".join(re.escape(x) for x in NORMATIVE_LABELS),
+    )
+)
 
 
 # pypdf trennt Ligaturen ("T race"), der eingebaute Extraktor nicht — deshalb
@@ -579,18 +678,46 @@ def normalize_layout(text: str) -> str:
     return NORM_RE.sub("\n", text)
 
 
+def _requirement_text(chunk: str) -> str | None:
+    """Normativen Freitext eines Spec-Items zwischen ⌈ und ⌋ extrahieren.
+
+    API-Records enthalten in diesem Bereich Eigenschaftstabellen; für sie wird
+    kein ``requirement_text`` zurückgegeben. Prosa-Anforderungen haben dagegen
+    genau hier ihren kanonischen SHALL/SHOULD/MAY-Text. Die Unterscheidung über
+    eine bekannte Tabellenbeschriftung hält beide Record-Arten sauber getrennt.
+    """
+    if "⌈" not in chunk:
+        return None
+    text = chunk.split("⌈", 1)[1]
+    if "⌋" in text:
+        text = text.split("⌋", 1)[0]
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
+    if any(LABEL_RE.match(line) for line in lines):
+        return None
+    value = _clean_value(" ".join(lines))
+    return value or None
+
+
 def parse_record(text: str, rid: str) -> dict:
     """Eigenschaften eines Spec-Records aus dem PDF-Text."""
     chunk = _record_slice(normalize_layout(text), rid)
-    rec = {"id": rid, "props": OrderedDict(), "upstream": [], "heading": None}
+    rec = {"id": rid, "props": OrderedDict(), "upstream": [], "heading": None,
+           "requirement_text": None}
     if not chunk:
         return rec
+    rec["requirement_text"] = _requirement_text(chunk)
     for ups in UPSTREAM_RE.finditer(chunk):
         for uid in ID_RE.findall(ups.group(1).split("\n")[0]):
+            uid = uid.upper()
             if uid not in rec["upstream"]:
                 rec["upstream"].append(uid)
-    head = chunk.lstrip("\n").split("\n", 1)[0].strip()
-    head = re.split(r"\s*(?:Upstream requirements?|Kind)\s*:", head)[0].strip()
+    # A heading spans everything between the ID and the Status/table marker.
+    # builtin deliberately emits more positioning newlines than pypdf, so using
+    # only the first physical line truncates headings such as UCM to one word.
+    head_part = re.split(r"(?:⌈|(?:^|\n)\s*(?:Status|Upstream requirements?|Kind)\s*:?)",
+                         chunk.lstrip("\n"), maxsplit=1)[0]
+    head = _clean_value(" ".join(line.strip() for line in head_part.split("\n")
+                                  if line.strip()))
     if head and not LABEL_RE.match(head):
         rec["heading"] = head[:120]
     current, buf = None, []
@@ -659,11 +786,169 @@ def phase_props(index: dict, only_ids=None, backend="auto") -> dict:
                     best = rec
                     break
             rec = best or {"id": rid, "props": {}, "upstream": [], "heading": None,
-                          "namespace": None, "enclosing": None}
+                          "requirement_text": None, "namespace": None, "enclosing": None}
             rec["document"] = name
             rec["page"] = pagenos[0] if pagenos else None
             out[rid] = rec
     return out
+
+def _repair_requirements(requirements: dict, pages_by_doc: dict,
+                         agreement: dict | None = None) -> None:
+    """Normtext reparieren, Rohtext erhalten, Evidenzlage bewerten.
+
+    Der Lexikon-Guard stammt aus dem jeweiligen PDF selbst; damit ist jede
+    Reparatur durch das Quelldokument belegt und nicht durch externes Wissen.
+    """
+    import text_repair
+    identifiers = _known_identifiers()
+    lexicons = {doc: text_repair.build_lexicon(pages)
+                for doc, pages in pages_by_doc.items()}
+    for rid, rec in requirements.items():
+        lex = lexicons.get(rec.get("document")) or {}
+        entry = text_repair.repair_text(rec.get("requirement_text") or "",
+                                        lex, identifiers)
+        agree = (agreement or {}).get(rid)
+        conf, review, reason = text_repair.assess(entry, agree)
+        rec["requirement_text"] = entry["text_en"]
+        rec["requirement_text_raw"] = entry["text_raw"]
+        rec["repairs"] = entry["repairs"]
+        rec["suspects"] = entry["suspects"]
+        rec["confidence"] = conf
+        rec["review_status"] = review
+        rec["review_reason"] = reason
+
+
+def _known_identifiers() -> set:
+    """Bekannte C++-Bezeichner aus der Spec-DB als CamelCase-Whitelist."""
+    names = set()
+    if not RECORDS.exists():
+        return names
+    ident = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+    for path in RECORDS.glob("*/*.json"):
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for tok in ident.findall(raw):
+            if re.search(r"[a-z][A-Z]", tok):
+                names.add(tok.lower())
+    return names
+
+
+def phase_requirements(index: dict, only_ids=None, backend="auto") -> dict:
+    """Prosa-Anforderungen mit normativem Text aus den PDFs extrahieren.
+
+    Berücksichtigt nur Records mit ``requirement_text`` und ohne API-Property-
+    Tabelle. Das Ergebnis ist ein Import-Preview für künftige Requirement-
+    Records, nicht selbst die schreibende DB-Migration.
+    """
+    all_records = phase_props(index, only_ids, backend)
+    return OrderedDict((rid, rec) for rid, rec in all_records.items()
+                       if rec.get("requirement_text") and not rec.get("props"))
+
+def _requirement_prefix(rid: str) -> str:
+    """Den Spec-DB-Ordnernamen aus einer Requirement-ID ableiten."""
+    return "_".join(rid.split("_")[:-1])
+
+
+def _requirement_pdf_url(document: str, rid: str) -> str:
+    """Reproduzierbaren Deep-Link zum normativen PDF-Abschnitt erzeugen."""
+    branch = next((branch for branch, stem, _ in DOCS.values() if stem == document), "AP")
+    return "%s/%s/%s.pdf#nameddest=%s" % (BASE_URL, branch, document, rid)
+
+
+def write_requirement_records(requirements: dict, campaign: str,
+                              actor: str = "tool") -> list:
+    """Neue explizite Prosa-Requirements additiv in die Spec-DB schreiben.
+
+    Bestehende Records bleiben unberuehrt. Damit ist ein versehentliches
+    Ueberschreiben bereits vorhandener API- oder manuell gepflegter Records
+    ausgeschlossen; Konflikte werden als Rueckgabewerte gemeldet.
+    """
+    written, existing = [], []
+    date = __import__("datetime").date.today().isoformat()
+    for rid, rec in requirements.items():
+        prefix = _requirement_prefix(rid)
+        path = RECORDS / prefix / (rid + ".json")
+        if path.exists():
+            existing.append(rid)
+            continue
+        module = next((name for name, (_, stem, rec_prefix) in DOCS.items()
+                       if stem == rec["document"] and rec_prefix == prefix), None)
+        title = rec.get("heading") or rid
+        upstream = rec.get("upstream") or []
+        upstream_html = ""
+        if upstream:
+            links = []
+            for up in upstream:
+                up_url = "%s/FO/AUTOSAR_FO_RS_LogAndTrace.pdf#nameddest=%s" % (BASE_URL, up)
+                links.append('<a class="swsref" href="%s" title="Spezifikations-PDF">%s</a>'
+                             % (up_url, up))
+            upstream_html = ' <span class="ups">Upstream: %s</span>' % ", ".join(links)
+        record = {
+            "id": rid,
+            "attrs": [["class", "rec req"], ["id", rid]],
+            "lead": "\n",
+            "blocks": [
+                {"t": "html",
+                 "html": '<h3 class="recname"><span class="kind">requirement</span> %s <span class="sws"><a href="%s" title="Spezifikations-PDF (%s.pdf)">[%s]</a></span>%s</h3>'
+                         % (title, _requirement_pdf_url(rec["document"], rid), rec["document"], rid, upstream_html),
+                 "tail": "\n"},
+                {"t": "requirement_text", "text_en": rec["requirement_text"],
+                 "text_raw": rec.get("requirement_text_raw"),
+                 "repairs": rec.get("repairs") or [],
+                 "suspects": rec.get("suspects") or [],
+                 "status_flag": rec.get("status_flag"), "tail": "\n"},
+            ],
+            "requirement_meta": {
+                "confidence": rec.get("confidence", "medium"),
+                "review_status": rec.get("review_status", "pending"),
+                "review_reason": rec.get("review_reason", "single_backend"),
+                "heading": title,
+                "upstream": upstream,
+                "status_flag": rec.get("status_flag"),
+                "covers": [],
+                "covered_by": [],
+                "origin": "explicit",
+                "module": module,
+                "document": rec["document"],
+                "page": rec["page"],
+                "trace": [{
+                    "mode": "pdf_deep_link",
+                    "sources": [{
+                        "kind": "pdf_deep_link",
+                        "document": rec["document"],
+                        "url": _requirement_pdf_url(rec["document"], rid),
+                        "locator": "named destination %s; page %s" % (rid, rec["page"]),
+                    }],
+                    "extracts": [rec["requirement_text"]],
+                    "reasoning": "Direkt aus dem normativen, mit der ID gekennzeichneten PDF-Abschnitt extrahiert.",
+                    "rule": "pdf_requirement_text_between_delimiters@v1",
+                    "confidence": "high",
+                    "evidence_strength": "strong",
+                    "review": {"status": "accepted"},
+                    "created_by": "spec_scrape.py",
+                    "timestamp": date,
+                }],
+            },
+            "status": {"state": "valid/imported", "reason": "scrape", "campaign": campaign},
+            "history": [{
+                "campaign": campaign, "date": date, "from": None,
+                "to": "valid/imported",
+                "reason": "Scraping von %s" % rec["document"], "actor": actor,
+            }],
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(record, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        if rec.get("review_status", "pending") != "accepted":
+            import review_flags
+            review_flags.write_review_flag(
+                rid, rec.get("review_reason", "single_backend"),
+                {"suspects": rec.get("suspects") or [],
+                 "repairs": rec.get("repairs") or []},
+                str(path), campaign, rec.get("confidence", "medium"))
+        written.append(rid)
+    return {"written": written, "existing": existing}
 
 
 # ===========================================================================
@@ -866,21 +1151,37 @@ def phase_urls(modules=None, out_dir="output/pdf") -> str:
     return "\n".join(lines)
 
 
+
+def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
+    """Compare or explicitly rebuild canonical RS metadata in existing records."""
+    sources = [rec for rec in scraped.values() if str(rec.get("id", "")).upper().startswith("RS_")]
+    index = UpstreamIndex(sources)
+    paths = sorted(RECORDS.rglob("*.json"))
+    report = rebuild_record_files(paths, index, write=rebuild)
+    report["source_records"] = len(sources)
+    report["mode"] = "rebuild" if rebuild else "compare"
+    return report
+
 # ===========================================================================
 # CLI
 # ===========================================================================
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("phase", choices=["ids", "props", "compare", "all", "crosscheck", "urls"])
+    ap.add_argument("phase", choices=["ids", "props", "reqs", "compare", "all", "crosscheck", "urls", "upstream"])
     ap.add_argument("--pdf-dir", type=Path, default=PDF_CACHE)
     ap.add_argument("--module", action="append", help="Modulkuerzel, z. B. log (mehrfach)")
     ap.add_argument("--doc", action="append", help="PDF-Basisname (mehrfach)")
+    ap.add_argument("--rs-docs", action="store_true", help="alle kanonischen RS-Dokumente aus RS_DOCS")
     ap.add_argument("--id", action="append", help="nur diese ID(s)")
     ap.add_argument("--pattern", help="Regex-Filter fuer IDs, z. B. '^SWS_LOG_'")
     ap.add_argument("--include-refs", action="store_true",
                     help="auch blosse ID-Referenzen aufnehmen, nicht nur Definitionen")
     ap.add_argument("--check", action="store_true", help="nur pruefen (Standard)")
-    ap.add_argument("--rebuild", action="store_true", help="DB schreiben")
+    ap.add_argument("--rebuild", action="store_true", help="DB explizit schreiben; upstream vergleicht sonst nur")
+    ap.add_argument("--write-reqs", action="store_true",
+                    help="explizite Prosa-Requirements additiv in die DB schreiben (nur Phase reqs)")
+    ap.add_argument("--campaign", default="requirement-import",
+                    help="Kampagnen-ID fuer --write-reqs (Standard: requirement-import)")
     ap.add_argument("--json", action="store_true", help="Rohdaten als JSON ausgeben")
     ap.add_argument("--limit", type=int, help="nur die ersten N IDs (Phase 2/3)")
     ap.add_argument("--backend", choices=["auto", "pypdf", "mupdf", "builtin"],
@@ -899,7 +1200,10 @@ def main(argv=None) -> int:
         print("Tipp: 'urls'-Phase erzeugt die Download-Zeilen fuer die run.sh "
               "(die Sandbox hat keinen Netzzugriff).", file=sys.stderr)
         return 2
-    pdfs = discover_pdfs(args.pdf_dir, args.module, args.doc)
+    selected_docs = args.doc
+    if args.rs_docs:
+        selected_docs = list(dict.fromkeys([*(selected_docs or []), *(x[1] for x in RS_DOCS.values())]))
+    pdfs = discover_pdfs(args.pdf_dir, args.module, selected_docs)
     if not pdfs:
         print("keine passenden PDFs in %s" % args.pdf_dir, file=sys.stderr)
         return 2
@@ -928,7 +1232,37 @@ def main(argv=None) -> int:
     if args.limit:
         for info in index.values():
             info["ids"] = dict(list(info["ids"].items())[: args.limit])
+    if args.phase == "reqs":
+        requirements = phase_requirements(index, args.id, args.backend)
+        pages_by_doc = {name: pdf_pages(Path(info["path"]), args.backend)
+                        for name, info in index.items()}
+        _repair_requirements(requirements, pages_by_doc)
+        write_report = None
+        if args.write_reqs:
+            write_report = write_requirement_records(requirements, args.campaign)
+        if args.json:
+            payload = {"requirements": requirements}
+            if write_report is not None:
+                payload["write"] = write_report
+            print(json.dumps(payload, ensure_ascii=False, indent=1))
+        else:
+            for rid, rec in requirements.items():
+                print("\n%s  (%s, Seite %s)" % (rid, rec["document"], rec["page"]))
+                if rec.get("heading"):
+                    print("   Titel      : %s" % rec["heading"])
+                if rec.get("upstream"):
+                    print("   Upstream   : %s" % ", ".join(rec["upstream"]))
+                print("   Anforderung: %s" % rec["requirement_text"])
+            if write_report is not None:
+                print("\ngeschrieben: %d; bereits vorhanden: %d" %
+                      (len(write_report["written"]), len(write_report["existing"])))
+        return 0
+
     scraped = phase_props(index, args.id, args.backend)
+    if args.phase == "upstream":
+        report = phase_upstream(scraped, rebuild=args.rebuild)
+        print(json.dumps(report, ensure_ascii=False, indent=1))
+        return 1 if report.get("missing") or report.get("ambiguous") else 0
     if args.phase == "props":
         if args.json:
             print(json.dumps(scraped, ensure_ascii=False, indent=1))
