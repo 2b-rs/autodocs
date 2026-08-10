@@ -695,7 +695,8 @@ def load_db(prefixes=None) -> dict:
                 if m:
                     kind = _strip_html(m.group(1))
         db[rec.get("id") or path.stem] = {
-            "path": path, "kind": kind, "props": props, "ns": rec.get("ns") or {},
+            "path": path, "kind": kind, "props": props,
+            "namespace_meta": rec.get("namespace_meta") or rec.get("ns") or {},
         }
     return db
 
@@ -733,7 +734,8 @@ def phase_compare(scraped: dict, prefixes=None, rebuild=False, vollstaendig=True
         # Datenfehler des Inhalts, sondern ein Schemarest: eigener Topf,
         # damit nichts still verschwindet (siehe SPEC_BUILD_PROCESS.md).
         pdf_ns, pdf_enc = rec.get("namespace"), rec.get("enclosing")
-        db_ns, db_enc = entry["ns"].get("namespace"), entry["ns"].get("enclosing")
+        meta = entry.get("namespace_meta") or {}
+        db_ns, db_enc = meta.get("namespace"), meta.get("enclosing")
         if pdf_ns and db_ns and _norm(pdf_ns) != _norm(db_ns):
             if db_enc is None and pdf_enc and _norm(db_ns) == _norm(pdf_enc):
                 report["namespace_legacy_schema"].append(
@@ -772,13 +774,13 @@ def _rebuild(scraped: dict, db: dict) -> list:
         if not entry or not rec.get("namespace"):
             continue
         data = json.loads(entry["path"].read_text(encoding="utf-8"))
-        ns = dict(data.get("ns") or {})
+        ns = dict(data.get("namespace_meta") or data.get("ns") or {})
         before = dict(ns)
         ns["namespace"] = rec["namespace"]
         if rec.get("enclosing"):
             ns["enclosing"] = rec["enclosing"]
-        ns.setdefault("modul", entry["ns"].get("modul"))
-        ns["quelle"] = "pdf"
+        ns.setdefault("module", (entry.get("namespace_meta") or {}).get("module") or (entry.get("namespace_meta") or {}).get("modul"))
+        ns["source"] = "pdf"
         if rec.get("enclosing"):
             ns["umschliessend"] = rec["enclosing"]
         if ns == before:
