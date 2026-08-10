@@ -527,6 +527,39 @@ def _promote_repeated_cell_patterns(lines: list[dict]) -> None:
         )
 
 
+def _classify_repeated_margin_bands(pages: list[dict]) -> None:
+    """Mark coordinate-stable margin lines while preserving their evidence."""
+    if not pages:
+        return
+    page_count = len(pages)
+    minimum_support = max(2, int(page_count * 0.8 + 0.999999))
+    bands = {}
+    for page in pages:
+        seen = set()
+        for line in page["lines"]:
+            y = round(float(line["baseline_y"]), 0)
+            if y <= 0:
+                continue
+            seen.add(y)
+        for y in seen:
+            bands[y] = bands.get(y, 0) + 1
+    repeated = {y: support for y, support in bands.items() if support >= minimum_support}
+    for page in pages:
+        baselines = [float(line["baseline_y"]) for line in page["lines"] if line["baseline_y"] > 0]
+        top = max(baselines, default=0.0)
+        for line in page["lines"]:
+            y = round(float(line["baseline_y"]), 0)
+            support = repeated.get(y, 0)
+            line["margin_band"] = None
+            line["margin_band_support"] = support
+            if not support:
+                continue
+            if line["baseline_y"] <= 72:
+                line["margin_band"] = "footer"
+            elif top and line["baseline_y"] >= top - 36:
+                line["margin_band"] = "header"
+
+
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
     """Return deterministic left-to-right evidence order for one baseline line."""
     warnings = []
@@ -651,6 +684,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
             "warnings": warnings,
             "backend": "pypdf",
         })
+    _classify_repeated_margin_bands(observations)
     return observations
 
 

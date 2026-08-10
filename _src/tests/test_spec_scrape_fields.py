@@ -95,6 +95,30 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(lines[0]["layout"]["kind"], "isolated-gap-candidate")
         self.assertEqual(lines[11]["layout"]["kind"], "isolated-gap-candidate")
 
+    def test_repeated_margin_bands_require_cross_page_support(self):
+        pages = []
+        for page in range(1, 6):
+            lines = [
+                {"id": f"p{page}-l1", "baseline_y": 790.0},
+                {"id": f"p{page}-l2", "baseline_y": 400.0},
+                {"id": f"p{page}-l3", "baseline_y": 31.0},
+            ]
+            if page == 1:
+                lines.append({"id": "p1-l4", "baseline_y": 700.0})
+            pages.append({"lines": lines})
+        scrape._classify_repeated_margin_bands(pages)
+        self.assertEqual(pages[0]["lines"][0]["margin_band"], "header")
+        self.assertEqual(pages[0]["lines"][2]["margin_band"], "footer")
+        self.assertEqual(pages[0]["lines"][1]["margin_band"], None)
+        self.assertEqual(pages[0]["lines"][3]["margin_band_support"], 0)
+        self.assertEqual(pages[0]["lines"][0]["margin_band_support"], 5)
+
+    def test_zero_baseline_is_not_a_margin_band(self):
+        pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
+        scrape._classify_repeated_margin_bands(pages)
+        self.assertIsNone(pages[0]["lines"][0]["margin_band"])
+        self.assertEqual(pages[0]["lines"][0]["margin_band_support"], 0)
+
     def test_horizontal_order_is_geometric_and_stable(self):
         line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
         spans = {
