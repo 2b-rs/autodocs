@@ -13,6 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import geometry_schema  # noqa: E402
 import spec_scrape  # noqa: E402
 
 
@@ -29,6 +30,7 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
     }
     if [page["raw_text"] for page in pages] != legacy:
         violations.append("raw-text-parity")
+    violations.extend(f"schema:{issue}" for issue in geometry_schema.validate_document(pages)[:20])
     for page in pages:
         counts["spans"] += len(page["spans"])
         counts["lines"] += len(page["lines"])
