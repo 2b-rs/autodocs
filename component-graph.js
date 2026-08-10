@@ -921,6 +921,7 @@
     // `frame` controls the viewport reaction:
     //   "neighborhood" -- zoom to the restored node and its neighbours (button restores)
     //   "none"         -- leave the viewport alone (drag & drop: the user chose the spot)
+    // Every mode additionally opens the view up afterwards if the graph grew beyond it.
     const restoreNodesToMainGraph = (nodeIds, frame = "neighborhood") => {
       const ids = (Array.isArray(nodeIds) ? nodeIds : [nodeIds]).filter((id) => userRemoved.has(id));
       if (!ids.length) return [];
@@ -952,6 +953,9 @@
           cy.animate({ fit: { eles, padding: 80 }, duration: reduceMotion ? 0 : 260, easing: "ease-out-cubic" });
         }
       }
+      // The arrivals are pushed into place by the springs over the next moment, so a single
+      // immediate check is not enough -- watch for a short while and widen as they spread.
+      startRevealLoop();
       return ids;
     };
     const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
@@ -991,6 +995,40 @@
     const FIT_ZOOM_EPS = 0.02;   // 2% relative zoom change
     const FIT_PAN_EPS = 12;      // px
 
+    // Does the visible graph currently stick out of the viewport?
+    const visibleOverflows = (padding = 40) => {
+      const vis = cy.elements().filter((el) => el.style("display") !== "none");
+      if (vis.empty()) return false;
+      const bb = vis.renderedBoundingBox();
+      if (!bb) return false;
+      return bb.x1 < padding || bb.y1 < padding
+        || bb.x2 > cy.width() - padding || bb.y2 > cy.height() - padding;
+    };
+
+    // Widen the view until everything visible fits again -- but never zoom IN. Used after
+    // nodes are added back: pulling in a component from another module can place it far
+    // outside the current frame, and the view has to open up to show the new whole.
+    const revealAllVisible = (animated = true) => {
+      const vis = cy.elements().filter((el) => el.style("display") !== "none");
+      if (vis.empty()) return false;
+      const target = fitTargetFor(vis, 40);
+      if (!target) return false;
+      // Only act when the graph no longer fits, or when the fit would zoom out.
+      const needsOut = target.zoom < cy.zoom() * (1 - FIT_ZOOM_EPS);
+      if (!needsOut && !visibleOverflows()) return false;
+      const zoom = Math.min(cy.zoom(), target.zoom);
+      const duration = animated && !reduceMotion ? AUTO_FIT_DURATION : 0;
+      viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
+      if (duration > 0) {
+        cy.stop(false, false);
+        cy.animate({ zoom, center: { eles: vis }, duration, easing: "ease-out-cubic" });
+      } else {
+        cy.zoom(zoom);
+        cy.center(vis);
+      }
+      return true;
+    };
+
     const fitVisibleGraph = (animated = true, onlyIfMeaningful = false) => {
       const vis = cy.elements().filter((el) => el.style("display") !== "none");
       if (vis.empty()) return false;
@@ -1019,6 +1057,30 @@
         cy.fit(vis, 40);
       }
       return true;
+    };
+
+    // Restored nodes need a moment to be pushed outward by the springs. This loop keeps an
+    // eye on the growing graph and widens the view whenever it no longer fits, without ever
+    // zooming back in -- so the user's zoom level is only ever relaxed, never overridden.
+    let revealTimer = null;
+    const REVEAL_INTERVAL = 260;
+    const REVEAL_WINDOW = 2600;
+    const stopRevealLoop = () => {
+      if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
+    };
+    const startRevealLoop = () => {
+      stopRevealLoop();
+      const deadline = now() + (reduceMotion ? 400 : REVEAL_WINDOW);
+      let calm = 0;
+      const tick = () => {
+        revealTimer = null;
+        const widened = revealAllVisible(true);
+        calm = widened ? 0 : calm + 1;
+        // Two quiet passes in a row mean the layout has stopped growing.
+        if (calm >= 2 || now() >= deadline) return;
+        revealTimer = setTimeout(tick, reduceMotion ? 120 : REVEAL_INTERVAL);
+      };
+      revealTimer = setTimeout(tick, reduceMotion ? 0 : 80);
     };
 
     const stopAutoFit = () => {
@@ -1252,6 +1314,9 @@
         toRestore.forEach((id) => userRemoved.delete(id));
         clearHover();
         apply(true);
+        // Adding a batch back can grow the graph well past the current frame; keep widening
+        // until the newcomers have settled inside it.
+        startRevealLoop();
         applySelectionHighlight();
       });
     }
@@ -2009,6 +2074,8 @@
     cy.on("zoom pan", () => {
       if (isProgrammaticViewportChange()) return;
       stopAutoFit();
+      // A deliberate zoom/pan also ends the reveal watch: the user has taken the wheel.
+      stopRevealLoop();
     });
 
     let resizeTimer;
