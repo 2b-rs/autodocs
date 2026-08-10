@@ -113,6 +113,24 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(pages[0]["lines"][3]["margin_band_support"], 0)
         self.assertEqual(pages[0]["lines"][0]["margin_band_support"], 5)
 
+    def test_varying_margin_spans_are_separated_from_boilerplate(self):
+        pages = []
+        for number in range(1, 5):
+            pages.append({
+                "spans": [
+                    {"id": f"p{number}-s1", "text": f"{number} of 4"},
+                    {"id": f"p{number}-s2", "text": "Document ID 714" + ("\n" if number % 2 else "")},
+                ],
+                "lines": [{
+                    "id": f"p{number}-l1", "baseline_y": 31.0,
+                    "ordered_span_ids": [f"p{number}-s1", f"p{number}-s2"],
+                }],
+            })
+        scrape._classify_repeated_margin_bands(pages)
+        roles = pages[0]["lines"][0]["margin_span_roles"]
+        self.assertEqual(roles["p1-s1"], "page-varying")
+        self.assertEqual(roles["p1-s2"], "boilerplate")
+
     def test_zero_baseline_is_not_a_margin_band(self):
         pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
         scrape._classify_repeated_margin_bands(pages)

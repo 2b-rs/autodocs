@@ -558,6 +558,33 @@ def _classify_repeated_margin_bands(pages: list[dict]) -> None:
                 line["margin_band"] = "footer"
             elif top and line["baseline_y"] >= top - 36:
                 line["margin_band"] = "header"
+    _mark_varying_margin_spans(pages)
+
+
+def _mark_varying_margin_spans(pages: list[dict]) -> None:
+    """Separate page-varying margin text (page numbers) from boilerplate."""
+    observed = {}
+    for page in pages:
+        spans = {span["id"]: span for span in page.get("spans", [])}
+        for line in page["lines"]:
+            if not line["margin_band"]:
+                continue
+            for index, span_id in enumerate(line.get("ordered_span_ids", [])):
+                key = (line["margin_band"], round(float(line["baseline_y"]), 0), index)
+                text = spans.get(span_id, {}).get("text", "").strip()
+                observed.setdefault(key, set()).add(text)
+    for page in pages:
+        spans = {span["id"]: span for span in page.get("spans", [])}
+        for line in page["lines"]:
+            roles = {}
+            if line["margin_band"]:
+                for index, span_id in enumerate(line.get("ordered_span_ids", [])):
+                    key = (line["margin_band"], round(float(line["baseline_y"]), 0), index)
+                    variants = len(observed.get(key, ()))
+                    if not spans.get(span_id, {}).get("text", "").strip():
+                        continue
+                    roles[span_id] = "page-varying" if variants > 1 else "boilerplate"
+            line["margin_span_roles"] = roles
 
 
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
