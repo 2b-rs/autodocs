@@ -805,6 +805,27 @@ def _cluster_spans_into_lines(spans: list[dict]) -> tuple[list[dict], list[str]]
     return lines, warnings
 
 
+def _span_orientation(text_matrix: list[float]) -> str:
+    """Classify span orientation from its text matrix."""
+    a, b, c, d = (float(value) for value in text_matrix[:4])
+    if abs(b) < 1e-6 and abs(c) < 1e-6:
+        if a > 0 and d > 0:
+            return "upright"
+        return "flipped"
+    if abs(a) < 1e-6 and abs(d) < 1e-6:
+        return "vertical"
+    return "skewed"
+
+
+def _unmapped_glyph_count(text: str) -> int:
+    """Count characters that indicate a missing /ToUnicode mapping."""
+    return sum(
+        1 for character in text
+        if (ord(character) < 32 and character not in "\t\n\r")
+        or character == "\ufffd"
+    )
+
+
 def _pypdf_page_observations(path: Path) -> list[dict]:
     """Capture raw pypdf text and geometry without changing text reconstruction.
 
@@ -827,6 +848,8 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
                 "current_matrix": _matrix_values(current_matrix),
                 "text_matrix": _matrix_values(text_matrix),
                 "position": _effective_text_position(current_matrix, text_matrix),
+                "orientation": _span_orientation(_matrix_values(text_matrix)),
+                "unmapped_glyphs": _unmapped_glyph_count(text),
                 "font": str((font or {}).get("/BaseFont", "")),
                 "font_size": round(float(font_size or 0), 6),
                 "operation_index": len(spans),
@@ -835,7 +858,25 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
             })
 
         raw_text = page.extract_text(visitor_text=visitor) or ""
-        lines, warnings = _cluster_spans_into_lines(spans)
+        horizontal = [
+            span for span in spans
+            if span["orientation"] in ("upright", "flipped")
+        ]
+        lines, warnings = _cluster_spans_into_lines(horizontal)
+        for span in spans:
+            if span["orientation"] != "upright":
+                warnings.append({
+                    "kind": "non-upright-span",
+                    "span_id": span["id"],
+                    "orientation": span["orientation"],
+                })
+            if span["unmapped_glyphs"]:
+                warnings.append({
+                    "kind": "unmapped-glyphs",
+                    "span_id": span["id"],
+                    "count": span["unmapped_glyphs"],
+                    "font": span["font"],
+                })
         spans_by_id = {span["id"]: span for span in spans}
         for line in lines:
             line["ordered_span_ids"], order_warnings = _horizontal_span_order(line, spans_by_id)

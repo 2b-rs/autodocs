@@ -26,13 +26,24 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
         "pages": len(pages), "spans": 0, "lines": 0, "body_lines": 0,
         "header_lines": 0, "footer_lines": 0, "bullets": 0, "wraps": 0,
         "block_starts": 0, "column_pages": 0, "zero_baseline_lines": 0,
-        "max_indent_level": 0,
+        "max_indent_level": 0, "non_upright_spans": 0, "unmapped_glyph_spans": 0,
+        "unmapped_glyphs": 0,
     }
     if [page["raw_text"] for page in pages] != legacy:
         violations.append("raw-text-parity")
     violations.extend(f"schema:{issue}" for issue in geometry_schema.validate_document(pages)[:20])
     for page in pages:
         counts["spans"] += len(page["spans"])
+        for span in page["spans"]:
+            if span.get("orientation") != "upright":
+                counts["non_upright_spans"] += 1
+            if span.get("unmapped_glyphs"):
+                counts["unmapped_glyph_spans"] += 1
+                counts["unmapped_glyphs"] += span["unmapped_glyphs"]
+            if span.get("orientation") in ("vertical", "skewed") and any(
+                span["id"] in line.get("span_ids", []) for line in page["lines"]
+            ):
+                violations.append(f"non-horizontal-clustered:{page['page_number']}:{span['id']}")
         counts["lines"] += len(page["lines"])
         seen: set[str] = set()
         body_ids = set()

@@ -168,6 +168,17 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertIsNone(page["lines"][0]["indent_level"])
         self.assertEqual(page["lines"][1]["indent_level"], 0)
 
+    def test_span_orientation_classification(self):
+        self.assertEqual(scrape._span_orientation([1, 0, 0, 1, 0, 0]), "upright")
+        self.assertEqual(scrape._span_orientation([0.1, 0, 0, -0.1, 0, 0]), "flipped")
+        self.assertEqual(scrape._span_orientation([0, 1, -1, 0, 0, 0]), "vertical")
+        self.assertEqual(scrape._span_orientation([1, 0.5, 0.5, 1, 0, 0]), "skewed")
+
+    def test_unmapped_glyph_counting_ignores_normal_whitespace(self):
+        self.assertEqual(scrape._unmapped_glyph_count("plain text\n\t"), 0)
+        self.assertEqual(scrape._unmapped_glyph_count("\x01\x02 ok"), 2)
+        self.assertEqual(scrape._unmapped_glyph_count("bad \ufffd"), 1)
+
     def test_margin_lines_have_no_list_structure(self):
         page = {"spans": [{"id": "s1", "text": "• x"}],
                 "lines": [{"id": "l1", "baseline_y": 31.0, "x_range": [70.0, 90.0],

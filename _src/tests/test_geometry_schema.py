@@ -17,6 +17,7 @@ def _page() -> dict:
             "text_matrix": [1, 0, 0, 1, 10, 700], "position": [10, 700],
             "font": "/F1", "font_size": 10.0, "operation_index": 0,
             "inferred_spacing": False, "inferred_line_break": False,
+            "orientation": "upright", "unmapped_glyphs": 0,
         }],
         "lines": [{
             "id": "l1", "baseline_y": 700.0, "x_range": [10, 50],

@@ -11,6 +11,7 @@ SPAN_FIELDS = {
     "id": str, "text": str, "current_matrix": (list, tuple), "text_matrix": (list, tuple),
     "position": (list, tuple), "font": (str, type(None)), "font_size": NUMBER,
     "operation_index": int, "inferred_spacing": bool, "inferred_line_break": bool,
+    "orientation": str, "unmapped_glyphs": int,
 }
 
 LINE_FIELDS = {
