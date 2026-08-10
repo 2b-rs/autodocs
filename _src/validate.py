@@ -139,7 +139,10 @@ def check_langs():
     from generate import generate_lang
     de_seiten = set()
     for p in glob.glob(os.path.join(PAGES_DIR, "**", "*.json"), recursive=True):
-        de_seiten.add(json.load(open(p, encoding="utf-8"))["file"])
+        modell = json.load(open(p, encoding="utf-8"))
+        if modell.get("nolang"):
+            continue      # nur-deutsche Seite, absichtlich ohne Sprachbaum
+        de_seiten.add(modell["file"])
     for lang in LANGS:
         wurzel = os.path.join(ROOT, lang)
         if not os.path.isdir(wurzel):
@@ -171,10 +174,50 @@ def check_langs():
             problems.append("Flagge fehlt: flags/%s.svg" % f)
 
 
+def check_namespaces():
+    """Jeder Spec-Record traegt einen expliziten, konsistenten ns-Block.
+
+    Die Modulzugehoerigkeit darf implizit aus dem Ablageort kommen, der
+    Namensraum jedoch nicht: er steht als Klartextfeld im Record. Erlaubte
+    Abweichungen von "ara::<modul>" sind in spec/namespaces.json katalogisiert.
+    """
+    import json as _json
+    wurzel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spec", "records")
+    katalog = os.path.join(os.path.dirname(wurzel), "namespaces.json")
+    if not os.path.isdir(wurzel):
+        return
+    erlaubt = set()
+    if os.path.exists(katalog):
+        for gruppe in _json.load(open(katalog, encoding="utf-8")).get("abweichungen", {}).values():
+            erlaubt.update(gruppe)
+    ohne, unbekannt = [], []
+    for ordner, _, dateien in os.walk(wurzel):
+        for datei in dateien:
+            if not datei.endswith(".json"):
+                continue
+            pfad = os.path.join(ordner, datei)
+            rec = _json.load(open(pfad, encoding="utf-8"))
+            ns = rec.get("ns")
+            if not isinstance(ns, dict) or "namespace" not in ns:
+                ohne.append(rec.get("id", datei))
+                continue
+            if ns.get("namespace") is None and ns.get("quelle") != "dienst":
+                ohne.append(rec.get("id", datei))
+                continue
+            if ns.get("abweichung") and ns.get("namespace") and ns["namespace"] not in erlaubt:
+                unbekannt.append((rec.get("id", datei), ns["namespace"]))
+    if ohne:
+        problems.append("Records ohne expliziten Namensraum (%d): %s" % (len(ohne), ohne[:5]))
+    if unbekannt:
+        problems.append("Nicht katalogisierte Namensraum-Abweichung (%d): %s"
+                        % (len(unbekannt), unbekannt[:5]))
+
+
 def main():
     check_build()
     check_links()
     check_langs()
+    check_namespaces()
     if problems:
         print("PROBLEME:")
         for p in problems:
