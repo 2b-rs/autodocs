@@ -662,6 +662,56 @@ def _classify_paragraph_flow(pages: list[dict]) -> None:
             previous = line
 
 
+def _classify_page_columns(pages: list[dict]) -> None:
+    """Detect genuine side-by-side columns from disjoint horizontal extents."""
+    for page in pages:
+        body = [
+            line for line in page["lines"]
+            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+            and line.get("ordered_span_ids")
+        ]
+        page["columns"] = []
+        for line in page["lines"]:
+            line["column_index"] = None
+        if len(body) < 6:
+            continue
+        extents = sorted(
+            ((float(line["x_range"][0]), float(line["x_range"][1]), index)
+             for index, line in enumerate(body)),
+        )
+        clusters = []
+        for left, right, index in extents:
+            line = body[index]
+            if clusters and left <= clusters[-1]["right"] + 36.0:
+                clusters[-1]["right"] = max(clusters[-1]["right"], right)
+                clusters[-1]["lines"].append(line)
+            else:
+                clusters.append({"left": left, "right": right, "lines": [line]})
+        if len(clusters) < 2:
+            continue
+        minimum_lines = max(5, int(len(body) * 0.25))
+        if any(len(cluster["lines"]) < minimum_lines for cluster in clusters):
+            continue
+        baselines = [
+            {round(float(line["baseline_y"]), 0) for line in cluster["lines"]}
+            for cluster in clusters
+        ]
+        shared = min(
+            len(left & right) / max(1, min(len(left), len(right)))
+            for left, right in zip(baselines, baselines[1:])
+        )
+        if shared < 0.5:
+            continue
+        for index, cluster in enumerate(clusters):
+            for line in cluster["lines"]:
+                line["column_index"] = index
+            page["columns"].append({
+                "index": index,
+                "x_range": [round(cluster["left"], 3), round(cluster["right"], 3)],
+                "line_count": len(cluster["lines"]),
+            })
+
+
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
     """Return deterministic left-to-right evidence order for one baseline line."""
     warnings = []
@@ -789,6 +839,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
     _classify_repeated_margin_bands(observations)
     _classify_list_structure(observations)
     _classify_paragraph_flow(observations)
+    _classify_page_columns(observations)
     return observations
 
 

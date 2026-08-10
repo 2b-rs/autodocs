@@ -188,6 +188,39 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(flows["l2"], "wrap")
         self.assertEqual(flows["l3"], "block-start")
 
+    def test_disjoint_extents_are_detected_as_columns(self):
+        def line(identifier, left, right, y):
+            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+                    "ordered_span_ids": [f"{identifier}-s"]}
+        page = {"lines": [
+            *[line(f"a{i}", 70, 200, 700 - i * 12) for i in range(6)],
+            *[line(f"b{i}", 320, 500, 700 - i * 12) for i in range(6)],
+        ]}
+        scrape._classify_page_columns([page])
+        self.assertEqual(len(page["columns"]), 2)
+        self.assertEqual(page["lines"][0]["column_index"], 0)
+        self.assertEqual(page["lines"][6]["column_index"], 1)
+
+    def test_side_labels_without_shared_baselines_are_not_columns(self):
+        def line(identifier, left, right, y):
+            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+                    "ordered_span_ids": [f"{identifier}-s"]}
+        page = {"lines": [
+            *[line(f"a{i}", 70, 110, 700 - i * 12) for i in range(18)],
+            *[line(f"b{i}", 300, 320, 400 - i * 12) for i in range(6)],
+        ]}
+        scrape._classify_page_columns([page])
+        self.assertEqual(page["columns"], [])
+
+    def test_indented_prose_is_not_multi_column(self):
+        def line(identifier, left, right, y):
+            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+                    "ordered_span_ids": [f"{identifier}-s"]}
+        page = {"lines": [line(f"l{i}", 70 + (i % 2) * 20, 500, 700 - i * 12) for i in range(8)]}
+        scrape._classify_page_columns([page])
+        self.assertEqual(page["columns"], [])
+        self.assertIsNone(page["lines"][0]["column_index"])
+
     def test_zero_baseline_is_not_a_margin_band(self):
         pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
         scrape._classify_repeated_margin_bands(pages)
