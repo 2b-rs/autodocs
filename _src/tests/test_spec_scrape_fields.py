@@ -1,9 +1,34 @@
 import sys
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import spec_scrape as scrape
+
+
+class PypdfGeometryTests(unittest.TestCase):
+    def test_matrix_values_are_stable_and_detached(self):
+        source = [1, 0, 0, 1, 12.123456789, 34]
+        values = scrape._matrix_values(source)
+        self.assertEqual(
+            values,
+            [1.0, 0.0, 0.0, 1.0, 12.123457, 34.0],
+        )
+        source[4] = 99
+        self.assertEqual(values[4], 12.123457)
+
+    def test_invalid_matrix_is_explicitly_absent(self):
+        self.assertIsNone(scrape._matrix_values(None))
+        self.assertIsNone(scrape._matrix_values([1, 2]))
+
+    def test_observations_reject_non_pypdf_backend(self):
+        with unittest.mock.patch.object(scrape, "discover_pdfs", return_value=[Path("x.pdf")]):
+            with unittest.mock.patch.object(Path, "is_dir", return_value=True):
+                self.assertEqual(
+                    scrape.main(["observations", "--backend", "builtin"]),
+                    2,
+                )
 
 
 class BuiltinCMapTests(unittest.TestCase):

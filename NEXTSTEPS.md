@@ -432,3 +432,61 @@ After quality gates pass:
 ## Definition of done
 
 This work is done only when both backends have received substantial independent improvements, repeated parallel campaigns demonstrate the gains, side-by-side evidence explains every remaining disagreement, the benchmark and full-corpus quality gates pass, canonical full text is stored with provenance, generated documentation exposes it, and a second complete run is byte-stable and produces no database updates.
+
+## Additional improvement ideas
+
+These ideas complement the backend geometry plan and should be introduced as isolated, measurable campaigns rather than bundled into one parser rewrite.
+
+### Definition-occurrence classification
+
+- Classify every requirement-ID occurrence before record selection as `definition`, `toc`, `trace-table`, `changelog`, `cross-reference`, or `unknown`.
+- Base classification on own-page evidence only: section context, geometric region, record delimiters, field-label density, font/size patterns, and neighboring IDs. Never let joined continuation pages change the source page's class.
+- Keep all candidates and classification features in evidence artifacts; select only after classification, and record the selection reason.
+- Train no opaque model initially. Start with inspectable rules and a frozen labeled fixture set containing all known multi-occurrence failures, especially `RS_LT_00062` and `RS_AP_00143`.
+- Add a candidate-selection shadow mode that reports proposed changes without altering extraction, then require per-field non-regression before activation.
+
+### Geometry diagnostics
+
+- Generate optional SVG or HTML page overlays showing span boxes, baselines, font IDs, inferred lines, columns, record boundaries, and reading-order arrows.
+- Assign stable span and line IDs so a disagreement can be traced from parsed field text back to exact PDF operations.
+- Add per-page geometry sanity checks: impossible coordinates, overlapping lines, extreme jumps, reversed baselines, out-of-page spans, and unusually dense clusters.
+- Store compact geometry fingerprints per page to detect unintended layout changes even when normalized text remains equal.
+
+### Adaptive layout inference
+
+- Derive vertical clustering, word-gap, indentation, and column thresholds from each page's font-size and glyph-advance distributions rather than global constants.
+- Detect table regions from repeated x-alignments and ruled rectangles; use a table-specific reading order only inside those regions.
+- Model reading order as a directed acyclic graph of spans/lines with explicit edge reasons, then topologically sort it and report ambiguous edges.
+- Separate body, margin, header, footer, and sidebar regions geometrically before text normalization.
+- Preserve a confidence score and warnings for every inferred space, line break, column transition, and dehyphenation.
+
+### Differential and metamorphic testing
+
+- Add metamorphic fixtures where harmless PDF changes—content-stream splitting, equivalent `Tm`/`Td` positioning, reordered resource dictionaries, or alternative string encodings—must yield identical observations.
+- Add mutation tests that remove a CMap, alter a matrix, inject an unsupported filter, or corrupt one object and require localized diagnostics rather than silent global degradation.
+- Compare backend output at span, line, record, and field levels so the first divergence layer is visible.
+- Minimize every newly found corpus failure into a small committed PDF or synthetic content-stream fixture before fixing it.
+- Run deterministic-repeat checks and require byte-identical raw evidence and reports from identical inputs.
+
+### Quality and triage metrics
+
+- Track precision and recall for record starts, record ends, headings, and each normative field independently; aggregate agreement alone can hide shared omissions.
+- Add severity-weighted gates: missing records, boundary spillover, or empty normative fields outweigh punctuation and whitespace differences.
+- Report disagreement clusters by normalized edit signature, document template, font, page region, and operator sequence to prioritize fixes with the broadest impact.
+- Maintain a known-exceptions file with owner, rationale, first-seen campaign, affected IDs, and expiry/review date; never encode unexplained exceptions in parser logic.
+- Add automatic regression bisection support that can compare saved campaign artifacts across commits without rerunning PDF extraction.
+
+### Performance and reproducibility
+
+- Cache immutable page observations by PDF hash, backend version, and extractor configuration so parser-only campaigns do not repeat PDF decoding.
+- Separate extraction, layout reconstruction, segmentation, field parsing, and comparison into versioned artifact stages with explicit schemas and migration checks.
+- Record runtime, peak memory, warning counts, and artifact sizes per document/backend; gate pathological resource regressions.
+- Add manifest checksums for every input, configuration file, tool source, and output artifact used in a campaign.
+- Provide a single replay command that reconstructs any report entirely from its manifest and cached immutable observations.
+
+### Human review workflow
+
+- Produce a review queue ordered by severity, low confidence, and disagreement novelty rather than raw ID order.
+- Show raw spans, reconstructed lines, both backend fields, source-page overlay, and candidate-selection reasons together.
+- Allow review decisions to be exported as immutable fixtures and expected outcomes, not parser-specific overrides.
+- Require two-source agreement or explicit human verification before marking canonical upstream content as `verified`.

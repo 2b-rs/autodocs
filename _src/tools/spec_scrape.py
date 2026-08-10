@@ -449,9 +449,54 @@ def _builtin_pdf_pages(path: Path) -> list:
 BACKENDS = ("pypdf", "mupdf", "builtin")
 
 
-def _pypdf_pages(path: Path) -> list:
+def _matrix_values(value) -> list[float] | None:
+    """Return a stable six-value PDF matrix without retaining backend objects."""
+    if not value or len(value) < 6:
+        return None
+    return [round(float(item), 6) for item in value[:6]]
+
+
+def _pypdf_page_observations(path: Path) -> list[dict]:
+    """Capture raw pypdf text and geometry without changing text reconstruction.
+
+    This is deliberately an evidence-only first step: ``raw_text`` remains the
+    normal pypdf extraction result, while visitor fragments retain coordinates
+    for later, independently benchmarked line reconstruction.
+    """
     from pypdf import PdfReader  # type: ignore
-    return [(page.extract_text() or "") for page in PdfReader(str(path)).pages]
+
+    observations = []
+    for page_number, page in enumerate(PdfReader(str(path)).pages, 1):
+        spans = []
+
+        def visitor(text, current_matrix, text_matrix, font, font_size):
+            if not text:
+                return
+            spans.append({
+                "id": f"p{page_number}-s{len(spans) + 1}",
+                "text": text,
+                "current_matrix": _matrix_values(current_matrix),
+                "text_matrix": _matrix_values(text_matrix),
+                "font": str((font or {}).get("/BaseFont", "")),
+                "font_size": round(float(font_size or 0), 6),
+                "operation_index": len(spans),
+                "inferred_spacing": False,
+                "inferred_line_break": False,
+            })
+
+        raw_text = page.extract_text(visitor_text=visitor) or ""
+        observations.append({
+            "page_number": page_number,
+            "raw_text": raw_text,
+            "spans": spans,
+            "warnings": [],
+            "backend": "pypdf",
+        })
+    return observations
+
+
+def _pypdf_pages(path: Path) -> list:
+    return [item["raw_text"] for item in _pypdf_page_observations(path)]
 
 
 def _mupdf_pages(path: Path) -> list:
@@ -1167,7 +1212,7 @@ def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
 # ===========================================================================
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("phase", choices=["ids", "props", "reqs", "compare", "all", "crosscheck", "urls", "upstream"])
+    ap.add_argument("phase", choices=["ids", "props", "reqs", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
     ap.add_argument("--pdf-dir", type=Path, default=PDF_CACHE)
     ap.add_argument("--module", action="append", help="Modulkuerzel, z. B. log (mehrfach)")
     ap.add_argument("--doc", action="append", help="PDF-Basisname (mehrfach)")
@@ -1209,6 +1254,25 @@ def main(argv=None) -> int:
         return 2
 
     prefixes = {DOCS[m][2] for m in (args.module or [])} or None
+    if args.phase == "observations":
+        if args.backend != "pypdf":
+            print("observations unterstuetzt derzeit nur --backend pypdf", file=sys.stderr)
+            return 2
+        payload = {
+            "schema": 1,
+            "backend": "pypdf",
+            "documents": [
+                {
+                    "document": path.stem,
+                    "path": str(path),
+                    "pages": _pypdf_page_observations(path),
+                }
+                for path in pdfs
+            ],
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=True))
+        return 0
+
     if args.phase == "crosscheck":
         report = phase_crosscheck(pdfs, args.pattern, args.id, args.include_refs,
                                   tuple(args.cross_backend or ("pypdf", "builtin")),
