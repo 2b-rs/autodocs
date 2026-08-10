@@ -861,6 +861,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
         horizontal = [
             span for span in spans
             if span["orientation"] in ("upright", "flipped")
+            and not span["unmapped_glyphs"]
         ]
         lines, warnings = _cluster_spans_into_lines(horizontal)
         for span in spans:

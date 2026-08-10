@@ -40,10 +40,13 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
             if span.get("unmapped_glyphs"):
                 counts["unmapped_glyph_spans"] += 1
                 counts["unmapped_glyphs"] += span["unmapped_glyphs"]
-            if span.get("orientation") in ("vertical", "skewed") and any(
+            clustered = any(
                 span["id"] in line.get("span_ids", []) for line in page["lines"]
-            ):
+            )
+            if span.get("orientation") in ("vertical", "skewed") and clustered:
                 violations.append(f"non-horizontal-clustered:{page['page_number']}:{span['id']}")
+            if span.get("unmapped_glyphs") and clustered:
+                violations.append(f"unmapped-glyphs-clustered:{page['page_number']}:{span['id']}")
         counts["lines"] += len(page["lines"])
         seen: set[str] = set()
         body_ids = set()

@@ -166,7 +166,7 @@ Perform extensive, iterative work on the `pypdf` backend.
 - Handle soft hyphens, nonbreaking spaces, en/em dashes, smart quotes, and mathematical symbols deterministically.
 - Add fixtures for every observed glyph failure.
 - Resolve fonts through Form XObject and inline resource dictionaries, not only page-level `/Resources`; unnamed spans currently account for half of all corpus glyph failures.
-- Quarantine glyph-failed spans so control-code text cannot reach normalized output or requirement fields, and report affected pages per document.
+- [x] Quarantine glyph-failed spans so control-code text cannot reach normalized output or requirement fields, and report affected pages per document.
 
 ### Record continuity
 
