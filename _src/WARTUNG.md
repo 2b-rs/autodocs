@@ -49,6 +49,10 @@ ara-api-doku/
     ├── sources/pages/**.json    ← ein Seitenmodell pro HTML-Seite (Komposition)
     ├── spec/records/**.json     ← Spezifikations-DB: ein Record je Datei,
     │                              adressierbar über die ID (s. Kapitel unten)
+    ├── spec/pdf-cache/<REL>/    ← Cache der normativen AUTOSAR-Standard-PDFs
+    │                              (Quelle der Validierung; manifest.sha256
+    │                               dokumentiert den Stand; nur über run.sh
+    │                               befüllt, s. Kapitel „Spec-PDF-Cache“)
     ├── content/ai/**.html       ← alle KI-generierten Blöcke als Einzelfragmente
     │                              (+ Quellen der Inline-Diagramme:
     │                               <fragment>.<diag-id>.dot|.seq.json)
@@ -128,6 +132,7 @@ python3 _src/generate.py && python3 _src/validate.py
 | KI-Text (Guides, Nutzungshinweise, Fehlerpfad-Abschnitte) — manuell | `_src/content/ai/<seite>/<fragment>.html` (Herkunftsakte `_src/ai/traces/…` mitpflegen) |
 | KI-Text neu erzeugen / regenerieren lassen | `ai_workflow.py auftrag` → `merge` (s. Kapitel „KI-Kuratierung“) |
 | Inhalt eines Spezifikations-Records (Text, Attribute, Tabellen im Record) | `_src/spec/records/<GRUPPE>/<ID>.json` |
+| Normative Quell-PDFs fuer die Validierung (Dokumentregister, Cache) | `_src/tools/spec_scrape.py` (`DOCS`) + `_src/spec/pdf-cache/<RELEASE>/` (nur ueber `run.sh`) |
 | Referenzinhalt einer Seite (Blockfolge, Tabellen, Listen, Überschriften) | `_src/sources/pages/<seite>.json` |
 | Projekttitel, Bereiche (Rubriken), Sprachenliste, Flaggen | `_src/site.json` |
 | Leitplanken/Parameter der KI-Generierung (Modell, Budgets, Diagrammkriterien) | `_src/ai/policy.json` + `_src/ai/RICHTLINIEN.md` |
@@ -167,6 +172,37 @@ Jede Seite ist eine Liste von Blöcken unter `"main"`. Blocktypen:
 
 Jeder Block hat ein `tail`-Feld (Whitespace nach dem Element) — unverändert lassen.
 Die vollständige Felddoku steht im Kopf von `lib_docmodel.py`.
+
+## Spec-PDF-Cache (`_src/spec/pdf-cache/<RELEASE>/`)
+
+Die Spezifikations-DB unter `_src/spec/records/` wird gegen die **normativen
+AUTOSAR-Standard-PDFs** validiert. Diese PDFs liegen versionsweise im Cache:
+
+```
+_src/spec/pdf-cache/R25-11/
+├── AUTOSAR_AP_SWS_Core.pdf
+├── AUTOSAR_AP_SWS_LogAndTrace.pdf
+├── …
+└── manifest.sha256          ← Inhaltsverzeichnis (SHA-256 je PDF)
+```
+
+- **Dateinamen sind nicht frei waehlbar.** Sie entsprechen exakt den auf der
+  Startseite verlinkten Standarddokumenten (`_src/sources/pages/index.json`,
+  Abschnitt „Quellen“). Das Dokumentregister `DOCS` in
+  `_src/tools/spec_scrape.py` haelt Modul, Zweig, PDF-Basisnamen und
+  Record-Praefix zusammen; es muss mit dieser Liste deckungsgleich bleiben.
+- **Befuellt wird ausschliesslich ueber `run.sh`** (die MCP-Sandbox hat keinen
+  Netzzugriff, siehe `AGENTS.md`). Der Cache ist der Standardwert von
+  `--pdf-dir`; ohne Option arbeiten alle Unterbefehle auf diesem Verzeichnis.
+- **Ein gueltiger Cache-Eintrag wird nie ueberschrieben.** Heruntergeladen wird
+  in eine `.part`-Nebendatei, die erst nach Pruefung der PDF-Signatur
+  umbenannt wird.
+
+```bash
+python3 _src/tools/spec_scrape.py ids                       # nutzt den Cache
+python3 _src/tools/spec_scrape.py crosscheck --json         # beide Backends
+python3 _src/tools/spec_scrape.py all --check               # DB gegen PDFs
+```
 
 ## Spezifikations-DB (`_src/spec/records/`)
 

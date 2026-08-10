@@ -17,6 +17,9 @@ mit den Parametern aus `ai/policy.json`.
   s. Abschnitt „Mehrsprachigkeit (i18n)“.
 - Jede fachliche Aussage in KI-Texten ist belegt: mit `[SWS_…]`/`[RS_…]`-Verweis
   oder Kapitel-Link ins PDF.
+- Jeder kanonische Fakt in `spec/records/` trägt Herkunft: Deep-Link, Stützrecord
+  oder belegtes Mehrquellen-Argument. Abgeleitete Eigenschaften (z. B. `parents`)
+  sind als Inferenz zu markieren — verbindlich: `SPEC_TRACEABILITY.md`.
 
 ## Dateinamen und Seitentypen
 
@@ -160,3 +163,34 @@ belegt mit SWS-Requirements, wo sinnvoll mit Zustands-/Sequenzdiagramm.
   oder Kontrastprobleme (dunkler Text auf dunklem Grund).
 - Keine PDF-Extraktionsartefakte: Silbentrennungs-Leerzeichen in Bezeichnern
   („StartFind Service“), abgeschnittene Namen („variant_size< const“).
+
+## Namensraum-Zugehörigkeit
+
+Modulzugehörigkeit ist **implizit** (Ablageort `spec/records/<GRUPPE>/`),
+der Namensraum ist **explizit** — jeder Record trägt einen `ns`-Block:
+
+```json
+"ns": {
+  "namespace": "ara::idsm",   // kanonischer C++-Namensraum, null nur bei Dienstschnittstellen
+  "modul": "idsm",            // aus dem Ablageort abgeleitet
+  "quelle": "scope",          // scope | header | id-praefix | gruppe | dienst
+  "generiert": false,         // true bei modellgenerierten Platzhalter-Namensräumen
+  "abweichung": null          // gesetzt, wenn namespace != ara::<modul>
+}
+```
+
+Regelfall: `namespace == "ara::" + modul`. Die vier zulässigen Abweichungstypen
+sind in `spec/namespaces.json` katalogisiert:
+
+- `apext-erweiterung` — herstellerspezifische Erweiterungen unter `apext::*`
+  (z. B. `apext::com::secoc`, `apext::diag::uds_transport`).
+- `modellgenerierter-namensraum` — Platzhalter, die erst bei der Codegenerierung
+  aufgelöst werden (z. B. `<SI-Namespace>::proxy`).
+- `std-spezialisierung` — Spezialisierungen im Namensraum `std`
+  (z. B. `std::hash< ara::core::Optional< T > >`).
+- `dienstschnittstelle-ohne-namensraum` — Service Interfaces, die auf
+  Modellebene definiert sind und keinen C++-Namensraum besitzen.
+
+Neuen Abweichungstyp einführen: `tools/namespace_migrate.py` erweitern, Skript
+laufen lassen (idempotent), Katalog prüfen, `validate.py` meldet sonst
+„Nicht katalogisierte Namensraum-Abweichung“.

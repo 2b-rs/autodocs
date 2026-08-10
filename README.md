@@ -10,9 +10,7 @@ python3 _src/generate.py && python3 _src/validate.py
 
 - Anleitung: [`_src/WARTUNG.md`](_src/WARTUNG.md)
 - Konventionen: [`_src/KONVENTIONEN.md`](_src/KONVENTIONEN.md)
-- Automatisierungen: Wenn Skripte gestartet werden müssen, dann dafür bitte eine run.sh im Projekt-Wurzel-Verzeichnis anlegen. Sie wird automatisch gestartet und nach Ausführung gelöscht.
-  stout und stderr werden nach output/run.out umgeleitet. Bitte nach möglichkeit mit -x starten oder zwischendurch Fortschrittsmeldungen ausgehen.
-- für visual QA Aktivitäten generell run.sh verwenden - der normale Playwright-Aufruf über MCP funktioniert nicht.
+- Arbeitsregeln für Automatisierung und KI-Agenten: [`AGENTS.md`](AGENTS.md)
 
 Einstieg in die Dokumentation: [`index.html`](index.html)
 

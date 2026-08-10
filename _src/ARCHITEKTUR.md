@@ -5,7 +5,8 @@ aus Klartext-Quellen reproduzierbar — Spezifikations-Datenbank, KI-Erklärunge
 als Klartextfragmente mit Herkunftsakten, Diagrammquellen und i18n-fähige
 Templates. Handgriffe im generierten HTML sind die dokumentierte Ausnahme
 (WARTUNG.md, „Direkteingriff“). Tagesgeschäft: WARTUNG.md; inhaltliche Regeln:
-KONVENTIONEN.md; KI-Leitplanken: ai/RICHTLINIEN.md.
+KONVENTIONEN.md; KI-Leitplanken: ai/RICHTLINIEN.md; Herkunft und Inferenz in
+der Spezifikations-DB: SPEC_TRACEABILITY.md.
 
 ## Schichtenmodell
 
@@ -59,6 +60,9 @@ Annahmen, Transkripte) liegt daneben in `ai/traces/`.
 5. **Generierte Artefakte sind wegwerfbar**: HTML-Bäume, `data/*.csv`,
    gerenderte SVGs, `i18n/<lg>/diagrams|inline` lassen sich jederzeit aus den
    Schichten darunter neu erzeugen.
+6. **Spec-Fakten tragen Herkunft**: kein kanonischer Record-Fakt ohne
+   Traceability-Record; abgeleitete Eigenschaften (z. B. `parents`) sind als
+   Inferenz kenntlich zu machen (SPEC_TRACEABILITY.md).
 
 ## Erweiterungsrezepte
 
