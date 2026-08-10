@@ -767,6 +767,37 @@ def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[li
     return [item[2] for item in positioned], warnings
 
 
+def _infer_span_separators(line: dict, spans_by_id: dict[str, dict]) -> None:
+    """Mark adjacent spans that need a separator in reconstructed text."""
+    ids = line.get("ordered_span_ids", [])
+    for span in (spans_by_id[span_id] for span_id in ids):
+        span["inferred_spacing"] = False
+    for left_id, right_id in zip(ids, ids[1:]):
+        left = spans_by_id[left_id]
+        right = spans_by_id[right_id]
+        left_text = left.get("text", "")
+        right_text = right.get("text", "")
+        if not left_text or not right_text:
+            continue
+        if left_text[-1].isspace() or right_text[0].isspace():
+            continue
+        if (left_text[-1].isalnum() or left_text[-1] in ":;,.") and (
+            right_text[0].isalnum() or right_text[0] in "\"'([{•–—"
+        ):
+            right["inferred_spacing"] = True
+
+
+def _reconstructed_line_text(line: dict, spans_by_id: dict[str, dict]) -> str:
+    """Join ordered spans using recorded geometric separator evidence."""
+    parts = []
+    for span_id in line.get("ordered_span_ids", []):
+        span = spans_by_id[span_id]
+        if parts and span.get("inferred_spacing"):
+            parts.append(" ")
+        parts.append(span.get("text", ""))
+    return "".join(parts)
+
+
 def _cluster_spans_into_lines(spans: list[dict]) -> tuple[list[dict], list[str]]:
     """Group positioned spans by baseline without imposing horizontal order."""
     lines = []
@@ -881,6 +912,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
         spans_by_id = {span["id"]: span for span in spans}
         for line in lines:
             line["ordered_span_ids"], order_warnings = _horizontal_span_order(line, spans_by_id)
+            _infer_span_separators(line, spans_by_id)
             same_origin_groups = []
             current_group = []
             current_x = None

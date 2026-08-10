@@ -496,10 +496,13 @@ These ideas complement the backend geometry plan and should be introduced as iso
 
 ### Geometry evidence hardening
 
+- Compare quality metrics only against baselines that already contain the same metric fields; a missing field must be reported as unmeasured, never silently as zero.
+- Attribute the remaining corpus body-word shortfall per page and confirm it is fully explained by quarantined glyph-failed spans before treating any residue as a defect.
+
 - [x] Validate reconstructed reading order against body-only legacy text (headers and footers removed) instead of full raw text, so margin exclusion is not misreported as missing content.
 - [x] Add a JSON schema for the observation artifact and validate every emitted document against it, so new geometry fields cannot silently change shape.
 - [x] Run all geometry classifiers over every cached PDF, not only one canonical document, and report per-document counts for margins, bullets, indentation, wraps, and columns.
 - [x] Add invariant checks that hold for any document: every span belongs to exactly one line, reading order covers body lines exactly once, and classifier outputs are pure functions of geometry.
 - [x] Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
 - [x] Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
-- Insert separators between adjacent spans that legacy extraction separates, so joined line text does not fuse words such as `Rationale:error`; measured as a small body word shortfall on 23 of 42 pages of AUTOSAR_AP_RS_General.
+- [x] Insert separators between adjacent spans that legacy extraction separates, so joined line text does not fuse words such as `Rationale:error`; measured as a small body word shortfall on 23 of 42 pages of AUTOSAR_AP_RS_General.

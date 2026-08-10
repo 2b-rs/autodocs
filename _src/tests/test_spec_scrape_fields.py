@@ -168,6 +168,26 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertIsNone(page["lines"][0]["indent_level"])
         self.assertEqual(page["lines"][1]["indent_level"], 0)
 
+    def test_span_separator_inference_avoids_fused_words(self):
+        spans = {
+            "a": {"text": "Rationale:", "inferred_spacing": False},
+            "b": {"text": "error", "inferred_spacing": False},
+        }
+        line = {"ordered_span_ids": ["a", "b"]}
+        scrape._infer_span_separators(line, spans)
+        self.assertTrue(spans["b"]["inferred_spacing"])
+        self.assertEqual(scrape._reconstructed_line_text(line, spans), "Rationale: error")
+
+    def test_span_separator_preserves_existing_whitespace_and_punctuation(self):
+        spans = {
+            "a": {"text": "word ", "inferred_spacing": False},
+            "b": {"text": "next", "inferred_spacing": False},
+            "c": {"text": ".", "inferred_spacing": False},
+        }
+        line = {"ordered_span_ids": ["a", "b", "c"]}
+        scrape._infer_span_separators(line, spans)
+        self.assertEqual(scrape._reconstructed_line_text(line, spans), "word next.")
+
     def test_span_orientation_classification(self):
         self.assertEqual(scrape._span_orientation([1, 0, 0, 1, 0, 0]), "upright")
         self.assertEqual(scrape._span_orientation([0.1, 0, 0, -0.1, 0, 0]), "flipped")

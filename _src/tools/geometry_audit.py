@@ -94,19 +94,13 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
         for line in page["lines"]:
             if line.get("margin_band"):
                 continue
-            text = "".join(
-                spans_by_id[span_id]["text"]
-                for span_id in line.get("ordered_span_ids", [])
-            )
+            text = spec_scrape._reconstructed_line_text(line, spans_by_id)
             body_words.update(text.split())
         margin_words: collections.Counter = collections.Counter()
         for line in page["lines"]:
             if not line.get("margin_band"):
                 continue
-            text = "".join(
-                spans_by_id[span_id]["text"]
-                for span_id in line.get("ordered_span_ids", [])
-            )
+            text = spec_scrape._reconstructed_line_text(line, spans_by_id)
             margin_words.update(text.split())
         expected = collections.Counter(page["raw_text"].split())
         expected.subtract(margin_words)
