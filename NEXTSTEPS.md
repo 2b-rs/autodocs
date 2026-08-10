@@ -160,11 +160,13 @@ Perform extensive, iterative work on the `pypdf` backend.
 
 ### Fonts and glyphs
 
-- Inventory fonts and `/ToUnicode` maps by document.
-- Record missing mappings and replacement characters as warnings.
+- [x] Inventory fonts and `/ToUnicode` maps by document.
+- [x] Record missing mappings and replacement characters as warnings.
 - Normalize known ligatures only in the normalized layer while retaining raw glyph evidence.
 - Handle soft hyphens, nonbreaking spaces, en/em dashes, smart quotes, and mathematical symbols deterministically.
 - Add fixtures for every observed glyph failure.
+- Resolve fonts through Form XObject and inline resource dictionaries, not only page-level `/Resources`; unnamed spans currently account for half of all corpus glyph failures.
+- Quarantine glyph-failed spans so control-code text cannot reach normalized output or requirement fields, and report affected pages per document.
 
 ### Record continuity
 
@@ -497,5 +499,5 @@ These ideas complement the backend geometry plan and should be introduced as iso
 - [x] Add a JSON schema for the observation artifact and validate every emitted document against it, so new geometry fields cannot silently change shape.
 - [x] Run all geometry classifiers over every cached PDF, not only one canonical document, and report per-document counts for margins, bullets, indentation, wraps, and columns.
 - [x] Add invariant checks that hold for any document: every span belongs to exactly one line, reading order covers body lines exactly once, and classifier outputs are pure functions of geometry.
-- Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
+- [x] Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
 - Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
