@@ -1621,12 +1621,16 @@
     // drag so the user can read what the band is about to capture, then fall back to whatever
     // their selection state dictates once the band is gone.
     let umlPeek = new Set();
+    // While a selected component is held with the primary button, show the next frontier at
+    // level 2. The set is preview-only: it never changes the selection and is cleared when
+    // the pointer is released or cancelled.
+    let frontierHoldPeek = new Set();
 
     // Bring one node's caption and geometry in line with its current state.
     const syncNodeDetail = (n) => {
       if (isContainer(n)) return;
       const id = n.id();
-      const want = levelFor(n.selected(), umlHoverId === id || umlPeek.has(id));
+      const want = levelFor(n.selected(), umlHoverId === id || umlPeek.has(id) || frontierHoldPeek.has(id));
       if ((n.data("uml") || 0) === want) return;
       const raw = graph.nodesById.get(id) || n.data();
       const text = umlLabelFor(raw, want);
@@ -1960,7 +1964,7 @@
       return island;
     };
 
-    const growSelectionFrom = (startNode) => {
+    const frontierAdditionsFrom = (startNode) => {
       const island = selectedIsland(startNode);
       const additions = new Map();
       island.forEach((member) => {
@@ -1976,6 +1980,11 @@
           });
         });
       });
+      return additions;
+    };
+
+    const growSelectionFrom = (startNode) => {
+      const additions = frontierAdditionsFrom(startNode);
       if (!additions.size) return 0;
       cy.batch(() => additions.forEach((n) => n.select()));
       return additions.size;
@@ -2305,6 +2314,13 @@
     // The cache is maintained by our select/unselect listener and is captured at tapstart,
     // before Cytoscape performs its tap-selection toggle.
     let nodeTapSnapshot = null;
+    let frontierHoldNodeId = null;
+    const clearFrontierHoldPeek = () => {
+      if (!frontierHoldPeek.size && !frontierHoldNodeId) return;
+      frontierHoldPeek = new Set();
+      frontierHoldNodeId = null;
+      syncAllDetail();
+    };
     cy.on("tapstart", "node", (e) => {
       const n = e.target;
       if (isContainer(n) || !frontierNode(n)) { nodeTapSnapshot = null; return; }
@@ -2316,7 +2332,18 @@
           return c && c.nonempty() && !isParked(c);
         }))
       };
+      const ev = e.originalEvent || {};
+      if (nodeTapSnapshot.wasSelected && !ev.shiftKey && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
+        frontierHoldNodeId = n.id();
+        frontierHoldPeek = new Set(
+          Array.from(frontierAdditionsFrom(n).values())
+            .filter((c) => frontierNode(c))
+            .map((c) => c.id())
+        );
+        syncAllDetail();
+      }
     });
+    cy.on("tapend tapcancel", "node", () => clearFrontierHoldPeek());
 
     const restoreTapSelection = (ids) => {
       cy.batch(() => {
