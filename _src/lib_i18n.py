@@ -392,6 +392,20 @@ def uebersetze_seite(page, lang, seg, ui, stat, srcdir=SRC):
     p = copy.deepcopy(page)
     p["nav_html"] = uebersetze_nav(p["nav_html"], ui)
 
+    def ohne_nolang(bs):
+        """Nur-deutsche Blöcke (z. B. Verweis auf den Traceability-Bericht)
+        erscheinen nicht in den Sprachbäumen."""
+        raus = []
+        for b in bs:
+            if b.get("nolang"):
+                continue
+            if b["t"] in ("rec", "fold"):
+                b["blocks"] = ohne_nolang(b["blocks"])
+            raus.append(b)
+        return raus
+
+    p["main"] = ohne_nolang(p["main"])
+
     def inline_svgs_fuer(src):
         # content/ai/<dir>/<stem>.html -> i18n/<lang>/inline/<dir>/<stem>.<did>.svg
         rel = os.path.relpath(src, "content/ai")

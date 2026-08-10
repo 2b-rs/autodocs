@@ -308,13 +308,21 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH):
     prefix = "../" * depth
     body_cls = ' class="%s"' % esc_attr(page["body_class"]) if page.get("body_class") else ""
     main = render_blocks(page["main"], depth, srcdir)
+    graph_marker = "@@COMPONENT_GRAPH_JSON@@"
+    if graph_marker in main:
+        graph_file = os.path.join(ROOT, "data", "component-graph.json")
+        with open(graph_file, encoding="utf-8") as f:
+            graph_json = f.read().replace("</", "<\/")
+        main = main.replace(graph_marker, graph_json)
     return page_tmpl % {
         "title": esc(page["title"]),
         "htmllang": lang,
         "dir": ' dir="rtl"' if lang in RTL else "",
-        "langswitch": langswitch_html(page["file"], lang),
+        "langswitch": "" if page.get("nolang") else langswitch_html(page["file"], lang),
         "css": prefix + "style.css",
         "js": prefix + "fold.js",
+        "cytoscape_js": prefix + "cytoscape.min.js",
+        "graph_js": prefix + "component-graph.js",
         "home": prefix + "index.html",
         "body_class": body_cls,
         "nav": page["nav_html"],

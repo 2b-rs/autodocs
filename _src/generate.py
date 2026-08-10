@@ -39,6 +39,8 @@ def generate_lang(lang, only=None, check=False):
     stat = Statistik(soll=lade_soll())
     n, stale = 0, []
     for page in iter_pages(only):
+        if page.get("nolang"):
+            continue          # nur-deutsche Seite (z. B. Traceability-Bericht)
         uebers = uebersetze_seite(page, lang, seg, ui, stat)
         html_text = render_page(uebers, footers, page_tmpl, lang=lang)
         html_text = globale_ersetzungen(html_text, ui)
