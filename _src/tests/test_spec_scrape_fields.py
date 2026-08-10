@@ -77,11 +77,51 @@ class PypdfGeometryTests(unittest.TestCase):
             ]}}
         lines = [line(1, [10, 100]), line(2, [10.04, 100.03]), line(3, [20, 200])]
         scrape._promote_repeated_cell_patterns(lines)
-        self.assertEqual(lines[0]["layout"]["kind"], "table-row-candidate")
+        self.assertEqual(lines[0]["layout"]["kind"], "table-row")
         self.assertEqual(lines[1]["layout"]["alignment_support"], 2)
         self.assertEqual(lines[1]["layout"]["supporting_line_ids"], ["p1-l1", "p1-l2"])
+        self.assertEqual(lines[0]["layout"]["table_region_id"], "table-r1")
+        self.assertEqual(lines[1]["layout"]["table_region_id"], "table-r1")
+        self.assertEqual(
+            [cell["region_cell_id"] for cell in lines[0]["layout"]["cells"]],
+            ["table-r1-c1", "table-r1-c2"],
+        )
+        self.assertEqual(
+            [cell["column_index"] for cell in lines[1]["layout"]["cells"]], [0, 1]
+        )
         self.assertEqual(lines[2]["layout"]["kind"], "isolated-gap-candidate")
         self.assertEqual(lines[2]["layout"]["alignment_support"], 1)
+        self.assertIsNone(lines[2]["layout"]["table_region_id"])
+
+    def test_separate_matching_blocks_get_distinct_table_regions(self):
+        def line(number, starts, kind="cell-candidate"):
+            return {"id": f"p1-l{number}", "layout": {"kind": kind, "cells": [
+                {"x_range": [start, start], "span_ids": [f"p1-s{number}-{index}"]}
+                for index, start in enumerate(starts, 1)
+            ]}}
+        lines = [line(1, [10, 100]), line(2, [10, 100])]
+        lines.extend(line(i, [], "single-flow") for i in range(3, 12))
+        lines.extend([line(12, [10, 100]), line(13, [10, 100])])
+        scrape._promote_repeated_cell_patterns(lines)
+        self.assertEqual(lines[0]["layout"]["table_region_id"], "table-r1")
+        self.assertEqual(lines[1]["layout"]["table_region_id"], "table-r1")
+        self.assertEqual(lines[11]["layout"]["table_region_id"], "table-r2")
+        self.assertEqual(lines[12]["layout"]["table_region_id"], "table-r2")
+
+    def test_interrupted_nearby_rows_stay_in_one_table_region(self):
+        def row(number):
+            return {"id": f"p1-l{number}", "layout": {"kind": "cell-candidate", "cells": [
+                {"x_range": [10, 10], "span_ids": [f"p1-s{number}-1"]},
+                {"x_range": [100, 100], "span_ids": [f"p1-s{number}-2"]},
+            ]}}
+        note = {"id": "p1-l2", "layout": {"kind": "single-flow", "cells": []}}
+        lines = [row(1), note, row(3)]
+        scrape._promote_repeated_cell_patterns(lines)
+        self.assertEqual(lines[0]["layout"]["kind"], "table-row")
+        self.assertEqual(lines[2]["layout"]["kind"], "table-row")
+        self.assertEqual(lines[0]["layout"]["table_region_id"],
+                         lines[2]["layout"]["table_region_id"])
+        self.assertIsNone(note["layout"]["table_region_id"])
 
     def test_distant_matching_patterns_are_not_promoted(self):
         lines = [{"id": f"p1-l{i}", "layout": {"kind": "single-flow", "cells": []}}
@@ -177,6 +217,16 @@ class PypdfGeometryTests(unittest.TestCase):
         scrape._infer_span_separators(line, spans)
         self.assertTrue(spans["b"]["inferred_spacing"])
         self.assertEqual(scrape._reconstructed_line_text(line, spans), "Rationale: error")
+
+    def test_span_separator_splits_adjacent_bracketed_identifiers(self):
+        spans = {
+            "a": {"text": "[RS_E2E_08527]", "inferred_spacing": False},
+            "b": {"text": "[PRS_E2E_00219]", "inferred_spacing": False},
+        }
+        line = {"ordered_span_ids": ["a", "b"]}
+        scrape._infer_span_separators(line, spans)
+        self.assertEqual(scrape._reconstructed_line_text(line, spans),
+                         "[RS_E2E_08527] [PRS_E2E_00219]")
 
     def test_span_separator_preserves_existing_whitespace_and_punctuation(self):
         spans = {

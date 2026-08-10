@@ -498,16 +498,17 @@ def _classify_line_layout(line: dict, spans_by_id: dict[str, dict]) -> dict:
 
 
 def _promote_repeated_cell_patterns(lines: list[dict]) -> None:
-    """Promote nearby repeated alignments; leave isolated large gaps provisional."""
+    """Promote nearby repeated alignments into explicit, stable table regions."""
     candidates = []
-    for line in lines:
+    for line_index, line in enumerate(lines):
         layout = line["layout"]
+        layout["table_region_id"] = None
         if layout["kind"] != "cell-candidate":
             layout["alignment_support"] = 0
             continue
         pattern = tuple(round(cell["x_range"][0], 1) for cell in layout["cells"])
         layout["alignment_pattern"] = list(pattern)
-        candidates.append((lines.index(line), line, pattern))
+        candidates.append((line_index, line, pattern))
     for line_index, line, pattern in candidates:
         supporting = []
         for other_line_index, other, other_pattern in candidates:
@@ -525,6 +526,34 @@ def _promote_repeated_cell_patterns(lines: list[dict]) -> None:
             "table-row-candidate" if len(supporting) >= 2
             else "isolated-gap-candidate"
         )
+
+    regions = []
+    for line_index, line, pattern in candidates:
+        if line["layout"]["kind"] != "table-row-candidate":
+            continue
+        matching = None
+        for region in reversed(regions):
+            same_shape = len(region["pattern"]) == len(pattern)
+            aligned = same_shape and max(abs(a - b) for a, b in zip(region["pattern"], pattern)) <= 1.0
+            if aligned and line_index - region["last_line_index"] <= 8:
+                matching = region
+                break
+        if matching is None:
+            matching = {"id": f"table-r{len(regions) + 1}", "pattern": pattern,
+                        "last_line_index": line_index, "lines": []}
+            regions.append(matching)
+        matching["last_line_index"] = line_index
+        matching["lines"].append(line)
+    for region in regions:
+        if len(region["lines"]) < 2:
+            continue
+        for line in region["lines"]:
+            layout = line["layout"]
+            layout["kind"] = "table-row"
+            layout["table_region_id"] = region["id"]
+            for cell_index, cell in enumerate(layout["cells"], 1):
+                cell["column_index"] = cell_index - 1
+                cell["region_cell_id"] = f"{region['id']}-c{cell_index}"
 
 
 def _classify_repeated_margin_bands(pages: list[dict]) -> None:
@@ -781,7 +810,7 @@ def _infer_span_separators(line: dict, spans_by_id: dict[str, dict]) -> None:
             continue
         if left_text[-1].isspace() or right_text[0].isspace():
             continue
-        if (left_text[-1].isalnum() or left_text[-1] in ":;,.") and (
+        if (left_text[-1].isalnum() or left_text[-1] in ":;,.]") and (
             right_text[0].isalnum() or right_text[0] in "\"'([{•–—"
         ):
             right["inferred_spacing"] = True

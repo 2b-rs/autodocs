@@ -152,7 +152,7 @@ Perform extensive, iterative work on the `pypdf` backend.
 
 - [x] Use visitor callbacks or equivalent text-fragment access to capture coordinates, matrices, font size, and orientation.
 - [x] Reconstruct lines by vertical clustering with tolerances derived from font size.
-- [ ] Order spans horizontally within lines while respecting columns and table cells. Left-to-right evidence ordering is implemented; column/table region classification remains open.
+- [x] Order spans horizontally within lines while respecting columns and table cells. Left-to-right evidence ordering, multi-column page ordering, and stable repeated-alignment table regions with per-region cell identities are implemented. Validated on all 1,171 Diagnostics pages: 885 table regions, 2,896 table rows, and no table-region invariant violations.
 - [x] Detect headers, footers, and page numbers from repeated coordinates across pages, not only text regexes.
 - [x] Detect multi-column pages and avoid interleaving columns.
 - [x] Preserve bullets and list indentation.
