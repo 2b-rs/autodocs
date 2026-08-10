@@ -1219,6 +1219,39 @@
       return { x: w / 2 - zoom * p.x, y: h / 2 - zoom * p.y };
     };
 
+    // Zoom out around a rendered pointer position just far enough to include `eles`. Keeping
+    // the model point under the pointer fixed makes a hold preview widen in place instead of
+    // pulling the node away from the user's mouse.
+    const zoomOutAroundPointerToFit = (eles, pointer, padding = 48) => {
+      if (!eles || eles.empty() || !pointer) return false;
+      const bb = eles.boundingBox();
+      const w = cy.width(), h = cy.height();
+      const currentZoom = cy.zoom();
+      if (!bb || currentZoom <= 0 || w <= 2 * padding || h <= 2 * padding) return false;
+      const pan = cy.pan();
+      const anchor = { x: (pointer.x - pan.x) / currentZoom, y: (pointer.y - pan.y) / currentZoom };
+      const limits = [];
+      const addLimit = (available, distance) => {
+        if (distance > 0) limits.push(available / distance);
+      };
+      addLimit(pointer.x - padding, anchor.x - bb.x1);
+      addLimit(w - padding - pointer.x, bb.x2 - anchor.x);
+      addLimit(pointer.y - padding, anchor.y - bb.y1);
+      addLimit(h - padding - pointer.y, bb.y2 - anchor.y);
+      if (!limits.length) return false;
+      let zoom = Math.min(currentZoom, ...limits);
+      zoom = Math.max(cy.minZoom(), Math.min(cy.maxZoom(), zoom));
+      if (zoom >= currentZoom * (1 - FOCUS_ZOOM_EPS)) return false;
+      const targetPan = { x: pointer.x - zoom * anchor.x, y: pointer.y - zoom * anchor.y };
+      const duration = reduceMotion ? 0 : FOCUS_FIT_DURATION;
+      stopFocusFollow();
+      viewportGuardUntil = Math.max(viewportGuardUntil, now() + duration + 150);
+      cy.stop(false, false);
+      if (duration > 0) cy.animate({ zoom, pan: targetPan, duration, easing: "ease-out-cubic" });
+      else { cy.zoom(zoom); cy.pan(targetPan); }
+      return true;
+    };
+
     // Applies the current focus's framing. Returns true if the viewport moved (or would need
     // to), so the follow loop can tell when the layout has settled.
     const applyFocusFraming = (animated = true, onlyIfMeaningful = false) => {
@@ -2341,6 +2374,19 @@
             .map((c) => c.id())
         );
         syncAllDetail();
+        const pointer = ev.clientX != null && ev.clientY != null
+          ? stagePoint(ev)
+          : n.renderedPosition();
+        const heldId = n.id();
+        requestAnimationFrame(() => {
+          if (frontierHoldNodeId !== heldId || !frontierHoldPeek.size) return;
+          let preview = n;
+          frontierHoldPeek.forEach((id) => {
+            const candidate = cy.getElementById(id);
+            if (candidate && candidate.nonempty()) preview = preview.union(candidate);
+          });
+          zoomOutAroundPointerToFit(preview, pointer);
+        });
       }
     });
     cy.on("tapend tapcancel", "node", () => clearFrontierHoldPeek());
