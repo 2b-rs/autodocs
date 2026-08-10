@@ -587,6 +587,43 @@ def _mark_varying_margin_spans(pages: list[dict]) -> None:
             line["margin_span_roles"] = roles
 
 
+BULLET_GLYPHS = "•–—-*◦‣·"
+
+
+def _classify_list_structure(pages: list[dict]) -> None:
+    """Record bullet markers and indentation levels from geometry evidence."""
+    for page in pages:
+        spans = {span["id"]: span for span in page.get("spans", [])}
+        indents = sorted({
+            round(float(line["x_range"][0]), 1)
+            for line in page["lines"]
+            if not line.get("margin_band") and line.get("x_range")
+            and float(line["baseline_y"]) > 0
+        })
+        levels = []
+        for indent in indents:
+            if not levels or indent - levels[-1] > 6.0:
+                levels.append(indent)
+        for line in page["lines"]:
+            line["bullet"] = None
+            line["indent_level"] = None
+            if line.get("margin_band") or float(line["baseline_y"]) <= 0:
+                continue
+            ordered = line.get("ordered_span_ids", [])
+            if not ordered:
+                continue
+            left = round(float(line["x_range"][0]), 1)
+            level = 0
+            for index, candidate in enumerate(levels):
+                if left >= candidate - 0.05:
+                    level = index
+            line["indent_level"] = level
+            first_id = ordered[0]
+            text = spans.get(first_id, {}).get("text", "").strip()
+            if text and text[0] in BULLET_GLYPHS and (len(text) == 1 or text[1:2] == " "):
+                line["bullet"] = {"span_id": first_id, "marker": text[0]}
+
+
 def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
     """Return deterministic left-to-right evidence order for one baseline line."""
     warnings = []
@@ -712,6 +749,7 @@ def _pypdf_page_observations(path: Path) -> list[dict]:
             "backend": "pypdf",
         })
     _classify_repeated_margin_bands(observations)
+    _classify_list_structure(observations)
     return observations
 
 

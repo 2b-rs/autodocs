@@ -131,6 +131,37 @@ class PypdfGeometryTests(unittest.TestCase):
         self.assertEqual(roles["p1-s1"], "page-varying")
         self.assertEqual(roles["p1-s2"], "boilerplate")
 
+    def test_list_structure_records_bullets_and_indent_levels(self):
+        page = {
+            "spans": [
+                {"id": "s1", "text": "• first"},
+                {"id": "s2", "text": "– nested"},
+                {"id": "s3", "text": "plain paragraph"},
+                {"id": "s4", "text": "-5 is negative"},
+            ],
+            "lines": [
+                {"id": "l1", "baseline_y": 700.0, "x_range": [70.0, 200.0], "ordered_span_ids": ["s1"]},
+                {"id": "l2", "baseline_y": 690.0, "x_range": [100.0, 220.0], "ordered_span_ids": ["s2"]},
+                {"id": "l3", "baseline_y": 680.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s3"]},
+                {"id": "l4", "baseline_y": 670.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s4"]},
+            ],
+        }
+        scrape._classify_list_structure([page])
+        lines = {line["id"]: line for line in page["lines"]}
+        self.assertEqual(lines["l1"]["bullet"]["marker"], "•")
+        self.assertEqual(lines["l1"]["indent_level"], 0)
+        self.assertEqual(lines["l2"]["indent_level"], 1)
+        self.assertIsNone(lines["l3"]["bullet"])
+        self.assertIsNone(lines["l4"]["bullet"])
+
+    def test_margin_lines_have_no_list_structure(self):
+        page = {"spans": [{"id": "s1", "text": "• x"}],
+                "lines": [{"id": "l1", "baseline_y": 31.0, "x_range": [70.0, 90.0],
+                           "ordered_span_ids": ["s1"], "margin_band": "footer"}]}
+        scrape._classify_list_structure([page])
+        self.assertIsNone(page["lines"][0]["bullet"])
+        self.assertIsNone(page["lines"][0]["indent_level"])
+
     def test_zero_baseline_is_not_a_margin_band(self):
         pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
         scrape._classify_repeated_margin_bands(pages)
