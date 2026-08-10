@@ -31,6 +31,123 @@
 
   const nodeLabel = (n) => n.label || n.shortLabel || n.id;
 
+  // ---------- UML detail levels ----------
+  // Every component node can be shown at three levels of detail. Left-clicking a node cycles
+  // through them, so a single class can be expanded without blowing up the whole graph.
+  //   0 -- name (+ namespace): the compact caption the graph has always used
+  //   1 -- UML box with at most UML_PREVIEW members per compartment
+  //   2 -- UML box with every documented member
+  const UML_PREVIEW = 5;
+  // The level is derived from interaction state, never stored: hovering a node shows
+  // everything, selecting it shows the preview, anything else stays at the bare name.
+  const levelFor = (selected, hovered) => (hovered ? 2 : selected ? 1 : 0);
+
+  // Visibility markers follow UML: + public, # protected, - private.
+  const UML_VIS = { public: "+", protected: "#", private: "-" };
+  const umlMember = (m) => {
+    if (typeof m === "string") return m;
+    if (!m || typeof m !== "object") return "";
+    const sign = UML_VIS[m.access] || "+";
+    const type = m.type ? `: ${m.type}` : "";
+    return `${sign} ${m.name || "?"}${m.params || ""}${type}`;
+  };
+
+  // A compartment: at most `max` entries, with a trailing ellipsis line when truncated.
+  const umlCompartment = (members, max) => {
+    const all = (members || []).map(umlMember).filter(Boolean);
+    if (!all.length) return [];
+    if (max === Infinity || all.length <= max) return all;
+    return all.slice(0, max).concat([`… ${all.length - max} weitere`]);
+  };
+
+  // Build the multi-line caption for a node at a given detail level. Compartments are
+  // separated by a rule of box-drawing characters -- Cytoscape renders one text block per
+  // node, so the separators are part of the label rather than real geometry.
+  const RULE = "──────────";
+
+  // Cytoscape's `width: "label"` mis-measures our monospaced multi-line captions, so the box
+  // stayed small while the text spilled over the border. We measure the label ourselves with
+  // a canvas 2D context using the exact same font and hand Cytoscape explicit dimensions.
+  const UML_FONT_SIZE = 9;
+  const UML_FONT = `${UML_FONT_SIZE}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+  const UML_LINE_HEIGHT = UML_FONT_SIZE * 1.32;
+  const NAME_FONT_SIZE = 10;
+  const NAME_FONT = `${NAME_FONT_SIZE}px Satoshi, Inter, system-ui, sans-serif`;
+  const NAME_LINE_HEIGHT = NAME_FONT_SIZE * 1.35;
+  const UML_PAD = 10;
+  let measureCtx = null;
+  const measureLabel = (textBlock, font, lineHeight = UML_LINE_HEIGHT) => {
+    if (!measureCtx) {
+      const c = document.createElement("canvas");
+      measureCtx = c.getContext("2d");
+    }
+    const lines = String(textBlock).split("\n");
+    if (!measureCtx) {
+      // Canvas unavailable (very old browser): fall back to a character-count estimate.
+      const cols = Math.max(...lines.map((l) => l.length), 1);
+      return { w: cols * UML_FONT_SIZE * 0.62, h: lines.length * UML_LINE_HEIGHT };
+    }
+    measureCtx.font = font;
+    let w = 0;
+    for (const line of lines) w = Math.max(w, measureCtx.measureText(line).width);
+    return { w, h: lines.length * lineHeight };
+  };
+
+  // Box geometry for a node at a given level: level 0 keeps Cytoscape's own label sizing,
+  // expanded levels get measured pixel dimensions so the border always encloses the text.
+  const umlBoxFor = (labelText, level) => {
+    if (!level) return null;
+    // Measure in the font the level actually renders in, otherwise the border would not
+    // enclose the caption: level 1 is the proportional UI font, level 2 the monospace one.
+    const { w, h } = measureLabel(labelText, level === 1 ? NAME_FONT : UML_FONT, level === 1 ? NAME_LINE_HEIGHT : UML_LINE_HEIGHT);
+    return {
+      // A little slack on top of the measurement absorbs sub-pixel rounding.
+      umlW: Math.ceil(w + 2 * UML_PAD + 4),
+      umlH: Math.ceil(h + 2 * UML_PAD),
+      umlTextW: Math.ceil(w + 2)
+    };
+  };
+
+  const umlLabelFor = (n, level) => {
+    const name = n.shortLabel || n.label || n.id;
+    if (!level) return nodeLabel(n);
+    // Level 1 is the identity card: the canonical name split over two lines, namespace on
+    // top, type name below. No stereotype, no compartments, no metadata.
+    if (level === 1) {
+      const ns1 = n.namespace || namespaceOf(n);
+      return ns1 ? `${ns1}\n${name}` : name;
+    }
+    const max = level >= 2 ? Infinity : UML_PREVIEW;
+    const lines = [];
+    if (n.stereotype) lines.push(`«${n.stereotype}»`);
+    else if (n.kind && n.kind !== "class") lines.push(`«${n.kind}»`);
+    lines.push(name);
+    const ns = n.namespace || namespaceOf(n);
+    if (ns) lines.push(ns);
+    const attrs = umlCompartment(n.attributes, max);
+    const ops = umlCompartment(n.operations, max);
+    // Without generated member data the expanded box would be an empty frame; showing the
+    // known metadata keeps the level meaningful until the builder emits members.
+    if (!attrs.length && !ops.length) {
+      const meta = [];
+      if (n.module) meta.push(`Modul: ${n.module}`);
+      if (n.visibility) meta.push(`Sichtbarkeit: ${n.visibility}`);
+      if (level >= 2 && n.namespaceDeviation) meta.push(`Abweichung: ${n.namespaceDeviation}`);
+      if (meta.length) lines.push(RULE, ...meta);
+      return withRules(lines);
+    }
+    if (attrs.length) lines.push(RULE, ...attrs);
+    if (ops.length) lines.push(RULE, ...ops);
+    return withRules(lines);
+  };
+
+  // Stretch every separator to the width of the widest real line, so the compartment rules
+  // span the whole box the way they do in a drawn UML class diagram.
+  const withRules = (lines) => {
+    const width = Math.max(...lines.filter((l) => l !== RULE).map((l) => l.length), 4);
+    return lines.map((l) => (l === RULE ? "─".repeat(width) : l)).join("\n");
+  };
+
   // Derive the C++ namespace a class/struct lives in from its qualified label,
   // e.g. "ara::com::proxy::Foo" -> namespace "ara::com::proxy". Normalizes
   // "namespace X" prefixes and drops the final segment (the type name itself).
@@ -277,12 +394,23 @@
     const sizeNodes = () => {
       cy.nodes().forEach((n) => {
         if (n.data("kind") === "module") return;
+        // Expanded UML boxes carry their own measured geometry (umlW/umlH) and must not be
+        // squeezed back into the hub-rank pill size -- that inline width/height is exactly
+        // what made a clicked node keep its old dimensions while the caption grew.
+        if (n.data("uml")) {
+          n.removeStyle("width height font-size");
+          n.style("border-width", 2.2);
+          return;
+        }
         const hr = n.data("hubRank") || 0;
         const tt = Math.min(1, hr / 400);
-        n.style("width", 86 + tt * 42);
-        n.style("height", 34 + tt * 14);
+        // Level 0 renders as a dot, so the pill geometry is replaced by a small disc. The hub
+        // rank still shows through as diameter: busier components read as bigger dots.
+        const d = 9 + tt * 13;
+        n.style("width", d);
+        n.style("height", d);
         n.style("font-size", 10 + tt * 3);
-        n.style("border-width", 1.2 + tt * 1.8);
+        n.style("border-width", 1);
       });
     };
 
@@ -496,7 +624,9 @@
     const grab = (id) => draggingIds.add(id);
     const free = (id) => draggingIds.delete(id);
 
-    return { seed, start, stop, settleOnce, grab, free, get modAnchors() { return modAnchors; } };
+    // sizeNodes is exposed so the UML detail toggle can restore the physics-driven pill size
+    // when a node collapses back to level 0.
+    return { seed, start, stop, settleOnce, grab, free, sizeNodes, get modAnchors() { return modAnchors; } };
   };
 
   Promise.all([
@@ -539,7 +669,13 @@
       ...graph.nodes.map((n) => {
         const nsKey = n.namespacePath ? `ns:${n.module}::${n.namespacePath}` : null;
         const parent = nsKey && namespaceIds.has(nsKey) ? nsKey : `module:${n.module}`;
-        return { data: { ...n, parent, label: nodeLabel(n), fullLabel: n.label, color: MODULE_COLOR[n.module] || MODULE_COLOR.other } };
+        // `uml` carries the current detail level so it can be used in style selectors;
+        // `label` is always the caption for that level.
+        // Nodes start collapsed; selection and hover drive the level from then on.
+        return { data: {
+          ...n, parent, uml: 0, label: nodeLabel(n), compactLabel: nodeLabel(n),
+          fullLabel: n.label, color: MODULE_COLOR[n.module] || MODULE_COLOR.other
+        } };
       }),
       ...graph.edges.map((e) => {
         const s = graph.nodesById.get(e.source), t = graph.nodesById.get(e.target);
@@ -570,7 +706,33 @@
           shape: "round-rectangle", "overlay-padding": 2, "z-index": 10,
           "transition-property": "background-color, border-color", "transition-duration": "120ms"
         }},
+        // Expanded UML boxes: monospaced, left-aligned text so the compartment rules line up.
+        // Expanded boxes are sized from a real text measurement (see umlBoxFor): the width,
+        // height and wrap limit all come from node data, so the border always encloses the
+        // caption instead of the text spilling out of an undersized box.
+        { selector: "node[uml > 0]", style: {
+          "font-family": "ui-monospace, SFMono-Regular, Menlo, monospace", "font-size": 9,
+          "text-wrap": "wrap", "text-max-width": "data(umlTextW)", "text-justification": "left",
+          width: "data(umlW)", height: "data(umlH)", padding: 0,
+          "border-width": 2.2, "background-color": "#fbfbf9", "z-index": 30
+        }},
+        // Level 1 carries no compartment rules, so the monospaced left-aligned treatment that
+        // exists to line those rules up would only make the name card look ragged. Centre it
+        // in the UI font and let the namespace read as a quieter caption above the type name.
+        { selector: "node[uml = 1]", style: {
+          "font-family": "'Satoshi', 'Inter', system-ui, sans-serif", "font-size": 10,
+          "text-justification": "center", "text-halign": "center", "text-valign": "center"
+        }},
+        { selector: "node[uml = 2]", style: { "z-index": 32 } },
         { selector: "node[module = 'core']", style: { "background-color": "#d7e4e0", "border-color": "#01696f", "border-width": 2.2 } },
+        // Level 0 is a bare dot: no caption at all, just a filled disc in the module colour.
+        // Placed AFTER the core rule so the module tint cannot override the fill.
+        { selector: "node[uml = 0]", style: {
+          label: "", shape: "ellipse",
+          "background-color": "data(color)", "background-opacity": 1,
+          "border-color": "data(color)", "border-width": 1,
+          "overlay-padding": 6, "z-index": 10
+        }},
         { selector: "node[kind = 'module']", style: {
           "background-color": "#f3f0ec", "background-opacity": 0.5, "border-color": "data(color)",
           "border-width": 2, "border-style": "dashed", label: "data(label)", "font-size": 14,
@@ -593,6 +755,12 @@
         { selector: "node.marquee-flash", style: {
           "overlay-color": "#a13544", "overlay-opacity": 0.28, "overlay-padding": 10, "z-index": 64
         }},
+        // Dots have no caption and almost no area, so the states above -- which communicate
+        // through background colour -- would make them read as empty holes. Keep them filled
+        // and let the ring around them carry the state instead.
+        { selector: "node[uml = 0].marquee-will-select", style: { "background-color": "data(color)", "border-color": "#a13544", "border-width": 3 } },
+        { selector: "node[uml = 0].marquee-will-drop", style: { "background-color": "data(color)", "border-color": "#7a7974", "border-width": 2 } },
+        { selector: "node[uml = 0].dragging", style: { "background-color": "data(color)", "border-color": "#28251d", "border-width": 2.4 } },
         { selector: "edge.sel-highlight", style: { opacity: 1, "line-color": "#a13544", "target-arrow-color": "#a13544", width: 2.4, "z-index": 58 } },
         { selector: "edge", style: {
           width: "mapData(weight, 1, 60, 1.2, 4.8)", "line-color": "#9c9890", "target-arrow-color": "#8f8b84",
@@ -1233,6 +1401,19 @@
       layoutRemovedTray();
     };
 
+    // Zoom to a single component plus its immediate neighbourhood, so a selected class is
+    // shown in context rather than filling the whole stage on its own.
+    const focusNode = (node) => {
+      const eles = node.closedNeighborhood().filter((el) => el.style("display") !== "none");
+      const target = eles.nonempty() ? eles : node;
+      viewportGuardUntil = Math.max(viewportGuardUntil, now() + (reduceMotion ? 0 : 360) + 150);
+      cy.animate({
+        fit: { eles: target, padding: 80 },
+        duration: reduceMotion ? 0 : 360,
+        easing: "ease-out-cubic"
+      });
+    };
+
     const focusModule = (moduleNode) => {
       const visible = moduleNode.descendants().filter((n) => !isContainer(n) && n.style("display") !== "none");
       if (visible.empty()) return;
@@ -1475,6 +1656,10 @@
       const sel = liveSelection();
       if (sel.empty()) {
         cy.elements().removeClass("faded focus sel-highlight");
+        // Every selection change funnels through here, so this is the one place that has to
+        // bring the UML detail levels back in line -- marquee, tray, keyboard and click paths
+        // all get it for free.
+        syncAllDetail();
         return;
       }
       cy.batch(() => {
@@ -1483,6 +1668,7 @@
         sel.removeClass("faded").addClass("focus sel-highlight");
         sel.edgesWith(sel).removeClass("faded").addClass("focus sel-highlight");
       });
+      syncAllDetail();
     };
 
     // Wire the tray's right-click hook now that the highlight helper exists. Selecting a parked
@@ -1490,6 +1676,40 @@
     selectParkedFromTray = () => {
       applySelectionHighlight();
       refreshRemovedUi();
+    };
+
+    // ---------- UML level of detail, driven by selection + hover ----------
+    // Level is never stored per node: it is recomputed from the two pieces of interaction
+    // state below, so the display can never drift out of sync with what is selected.
+    let umlHoverId = null;
+    // Nodes currently inside the marquee band. They peek at level 2 for the duration of the
+    // drag so the user can read what the band is about to capture, then fall back to whatever
+    // their selection state dictates once the band is gone.
+    let umlPeek = new Set();
+
+    // Bring one node's caption and geometry in line with its current state.
+    const syncNodeDetail = (n) => {
+      if (isContainer(n)) return;
+      const id = n.id();
+      const want = levelFor(n.selected(), umlHoverId === id || umlPeek.has(id));
+      if ((n.data("uml") || 0) === want) return;
+      const raw = graph.nodesById.get(id) || n.data();
+      const text = umlLabelFor(raw, want);
+      n.data({ uml: want, label: text, ...(umlBoxFor(text, want) || { umlW: null, umlH: null, umlTextW: null }) });
+      // The physics loop writes width/height as inline styles, which outrank the stylesheet;
+      // expanded boxes must shed them, collapsed ones need them back.
+      if (want) n.removeStyle("width height font-size");
+      else sim.sizeNodes();
+    };
+
+    // Reconcile every visible component. Cheap enough to run on each selection/hover change,
+    // and it keeps a single source of truth for the level.
+    const syncAllDetail = () => {
+      cy.batch(() => {
+        cy.nodes().forEach((n) => {
+          if (!isContainer(n) && n.style("display") !== "none") syncNodeDetail(n);
+        });
+      });
     };
 
     const clearHover = () => {
@@ -1508,14 +1728,21 @@
     };
     cy.on("mouseover", "node", (e) => {
       if (isDraggingAny) return;
-      // An explicit selection outranks transient hover: while something is selected the
-      // highlight must show the selection and nothing else.
-      if (hasSelection()) return;
       const n = e.target;
       if (isContainer(n)) return;
+      // Hover always raises THIS node to the full member list, whether or not a selection
+      // exists -- the detail level and the fade highlight are independent concerns.
+      if (umlHoverId !== n.id()) { umlHoverId = n.id(); syncAllDetail(); }
+      // An explicit selection outranks transient hover for the FADE highlight: while
+      // something is selected the highlight must show the selection and nothing else.
+      if (hasSelection()) return;
       applyHover(n);
     });
-    cy.on("mouseout", "node", () => { if (!isDraggingAny) clearHover(); });
+    cy.on("mouseout", "node", (e) => {
+      const n = e.target;
+      if (!isContainer(n) && umlHoverId === n.id()) { umlHoverId = null; syncAllDetail(); }
+      if (!isDraggingAny) clearHover();
+    });
 
     // drag = force feedback: grabbed node pins to pointer, springs pull its neighbors live
     // Leaves currently held because their module/namespace box is being dragged.
@@ -1673,9 +1900,13 @@
     // Left-clicking a module/namespace box selects its members; the zoom moved to right-click.
     // The handler is registered after frontierNode/selectableNode exist (see below), so the
     // actual work lives in selectContainerMembers, defined further down.
+    // Left-click on a module/namespace box selects its members AND zooms to it, matching the
+    // select-and-zoom gesture on individual classes.
     cy.on("tap", "node[kind = 'module'], node[kind = 'namespace']", (e) => {
       if (e.originalEvent) e.originalEvent.preventDefault();
       selectContainerMembers(e.target, e.originalEvent || {});
+      const mods = e.originalEvent || {};
+      if (!mods.shiftKey && !mods.ctrlKey && !mods.metaKey) focusModule(e.target);
     });
 
     // ---------- right-click selection / neighbourhood growth ----------
@@ -1841,10 +2072,14 @@
 
     // Nodes whose rendered bounding box intersects the band. Containers are excluded so a
     // sweep does not accidentally pick up whole module boxes.
+    // Hit-test the node's CENTRE, not its bounding box. Box intersection would feed back on
+    // itself now that a covered node grows to level 2: the bigger box keeps intersecting the
+    // band even after the band has shrunk off it, so nodes would stick. The centre point is
+    // unaffected by the level, which keeps the band's captured set stable while it is dragged.
     const nodesInMarquee = (rect) => cy.nodes().filter((n) => {
       if (isContainer(n) || n.style("display") === "none") return false;
-      const bb = renderedBoxOf(n);
-      return bb.x1 < rect.x2 && bb.x2 > rect.x1 && bb.y1 < rect.y2 && bb.y2 > rect.y1;
+      const p = n.renderedPosition();
+      return p.x >= rect.x1 && p.x <= rect.x2 && p.y >= rect.y1 && p.y <= rect.y2;
     });
 
     const marqueeRect = (cur) => ({
@@ -1878,10 +2113,15 @@
           n.toggleClass("marquee-will-drop", !willBeSelected && was);
         });
       });
+      // Everything the band currently covers reads out in full, regardless of whether the
+      // mode would select or drop it -- the point is to see WHAT is under the band.
+      umlPeek = inside;
+      syncAllDetail();
     };
 
     const clearMarqueePreview = () => {
       cy.nodes().removeClass("marquee-hit marquee-will-select marquee-will-drop");
+      if (umlPeek.size) { umlPeek = new Set(); syncAllDetail(); }
     };
 
     const endMarquee = (commit, ev) => {
@@ -2045,6 +2285,24 @@
 
     stage.addEventListener("contextmenu", (ev) => ev.preventDefault());
 
+    // Plain left-click on a component selects it and zooms to it. Detail level follows from
+    // that selection (level 1) and from hover (level 2) -- clicking no longer cycles levels.
+    // Modifier clicks keep their additive/toggle selection semantics and do not zoom.
+    cy.on("tap", "node", (e) => {
+      const n = e.target;
+      if (isContainer(n)) return;
+      if (!frontierNode(n)) return;
+      const ev = e.originalEvent;
+      if (ev && (ev.shiftKey || ev.ctrlKey || ev.metaKey || ev.altKey)) return;
+      cy.batch(() => {
+        cy.nodes(":selected").forEach((c) => { if (!isParked(c)) c.unselect(); });
+        n.select();
+      });
+      applySelectionHighlight();   // also reconciles the UML detail levels
+      refreshRemovedUi();
+      focusNode(n);
+    });
+
     // Navigation is a double-click gesture only. A single click stays inside the graph so it
     // can be used for selection -- accidentally leaving the page while marking nodes was the
     // main hazard of the previous single-click navigation.
@@ -2064,6 +2322,13 @@
       // A marquee sweep ends with a synthetic background tap -- it must not refit the view.
       if (suppressNextBackgroundTap) { suppressNextBackgroundTap = false; return; }
       stopAutoFit();
+      // Background click is the "deselect everything" gesture: it drops the canvas selection
+      // (parked items keep theirs), collapses every box back to level 0 and zooms out to the
+      // whole graph.
+      cy.nodes(":selected").forEach((c) => { if (!isParked(c)) c.unselect(); });
+      umlHoverId = null;
+      applySelectionHighlight();   // also collapses every box back to level 0
+      refreshRemovedUi();
       clearHover();
       fitVisibleGraph(true);
     });
