@@ -1067,6 +1067,11 @@ HISTORY_CONTINUATION_RE = re.compile(
     re.IGNORECASE,
 )
 
+TRACEABILITY_HEADING_RE = re.compile(
+    r"\A(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
+    re.IGNORECASE,
+)
+
 
 TOC_LINE_RE = re.compile(r"^.*\.{4,}\s*\d+\s*$", re.MULTILINE)
 BIBLIO_HEADING_RE = re.compile(r"^\s*(?:Bibliography|References)\s*$", re.MULTILINE | re.IGNORECASE)
@@ -1082,6 +1087,8 @@ def classify_page_structure(text: str) -> dict:
     """
     regions = [{"kind": "history", "start": start, "stop": stop}
                for start, stop in _history_regions(text)]
+    regions.extend({"kind": "traceability", "start": start, "stop": stop}
+                   for start, stop in _traceability_regions(text))
     for match in TOC_LINE_RE.finditer(text):
         regions.append({"kind": "toc", "start": match.start(), "stop": match.end()})
     for match in BIBLIO_HEADING_RE.finditer(text):
@@ -1101,7 +1108,7 @@ def classify_page_structure(text: str) -> dict:
 
 def non_body_spans(text: str, kinds=None) -> list:
     """Character ranges to exclude from definition detection."""
-    wanted = set(kinds or ("history", "toc", "bibliography"))
+    wanted = set(kinds or ("history", "traceability", "toc", "bibliography"))
     return [(item["start"], item["stop"])
             for item in classify_page_structure(text)["regions"]
             if item["kind"] in wanted]
@@ -1126,13 +1133,26 @@ def _history_regions(text: str) -> list:
     return regions
 
 
+def _traceability_regions(text: str) -> list:
+    """Character ranges of top-of-page Requirements Tracing tables.
+
+    These pages enumerate upstream requirements or trace groups, not local
+    requirement definitions, so bracketed IDs inside them must not become
+    definition candidates for this document.
+    """
+    match = TRACEABILITY_HEADING_RE.search(text)
+    if not match:
+        return []
+    return [(match.start(), len(text))]
+
+
 def _definition_ids(text: str) -> set:
     """Bracketed IDs that are definition candidates on this page.
 
-    Occurrences inside a history region are ignored; an ID that also appears
-    outside such a region on the same page stays a candidate.
+    Occurrences inside a history or traceability region are ignored; an ID that
+    also appears outside such a region on the same page stays a candidate.
     """
-    regions = _history_regions(text)
+    regions = non_body_spans(text, kinds=("history", "traceability"))
     result = set()
     for match in DEF_RE.finditer(text):
         if any(start <= match.start() < stop for start, stop in regions):
