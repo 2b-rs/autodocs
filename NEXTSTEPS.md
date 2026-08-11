@@ -509,3 +509,31 @@ These ideas complement the backend geometry plan and should be introduced as iso
 - [x] Detect rotated or vertically written text and exclude it from horizontal line reconstruction instead of interleaving it into prose.
 - [x] Emit per-document geometry quality metrics (unclassified body lines, zero-baseline fragments, single-span lines) to expose extraction degradation early.
 - [x] Insert separators between adjacent spans that legacy extraction separates, so joined line text does not fuse words such as `Rationale:error`; measured as a small body word shortfall on 23 of 42 pages of AUTOSAR_AP_RS_General.
+
+## Additional ideas from the definition-precision investigation (2026-08-11)
+
+- [x] Reject history entries per *occurrence* instead of per page: a page can carry
+  both an appendix history table and body text, so page-level classification loses
+  real definitions (currently 8, all in ExecutionManagement and PlatformHealthManagement).
+- [x] Persist every rejected ID as evidence (`history_only_ids`,
+  `history_only_evidence` with page and region reason) so precision changes are auditable
+  and reversible rather than silent.
+- [x] Derive the negative fixtures automatically from the confirmed rejections
+  instead of hand-listing them, and fail the test suite when a known negative
+  reappears as a definition.
+- [ ] Add a document-structure pass that labels appendix/annex regions once
+  (history tables, change log, TOC, bibliography) and reuse it for extraction,
+  segmentation and the benchmark instead of re-detecting per phase.
+- [ ] Treat the dense definition lists (heading inline, no spec-item marker, e.g.
+  RS_PHM_00001..00003 on page 21) as an explicit record shape with its own
+  fixtures; it is currently the main source of false negatives.
+- [ ] Report precision/recall deltas against the previous campaign automatically
+  and refuse to check in a change whose recall drops without an accompanying
+  per-ID justification.
+- [ ] Cross-check IDs against the SWS traceability database: an ID referenced as
+  upstream by an existing record is strong evidence that it is a real requirement.
+- [ ] Detect release-scoped history phrasing ("revised", "deleted", "added" plus a
+  release token such as 19-03 or R23-11) as a secondary rejection signal that is
+  independent of table geometry.
+- [ ] Measure per-document definition counts against the published requirement
+  count where the document states one, as an external sanity check.

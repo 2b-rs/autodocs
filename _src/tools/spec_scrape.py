@@ -1044,6 +1044,82 @@ def discover_pdfs(pdf_dir: Path, modules=None, docs=None) -> list:
     return found
 
 
+HISTORY_PAGE_RE = re.compile(
+    r"(?:Added|Changed|Deleted|Removed)\s+(?:Requirements?|Constraints?)"
+    r"|Traceable item history"
+    r"|Document Change History"
+    r"|Change History", re.IGNORECASE)
+
+HISTORY_HEADING_RE = re.compile(
+    r"(?:[A-Z]?\.?\d+(?:\.\d+)*\s+)?(?:Added|Changed|Deleted|Removed)\s+"
+    r"(?:Requirements?|Constraints?)\b"
+    r"|Traceable item history"
+    r"|Document Change History"
+    r"|Change History", re.IGNORECASE)
+
+HISTORY_TABLE_CAPTION_RE = re.compile(
+    r"Table\s+[A-Za-z0-9.]+\s*:\s*(?:Added|Changed|Deleted|Removed)\s+"
+    r"(?:Requirements?|Constraints?)[^\n]*", re.IGNORECASE)
+
+
+def _history_regions(text: str) -> list:
+    """Character ranges of appendix history tables and change-log blocks.
+
+    A page may hold both a history table and ordinary body text, so rejection
+    has to work per occurrence.  A region starts at a history heading and ends
+    at the caption of the table it introduces, or at the next history heading,
+    or after a bounded window when neither is present.
+    """
+    regions = []
+    for match in HISTORY_HEADING_RE.finditer(text):
+        caption = HISTORY_TABLE_CAPTION_RE.search(text, match.end())
+        nxt = HISTORY_HEADING_RE.search(text, match.end())
+        stop = min([x for x in (caption.end() if caption else None,
+                                nxt.start() if nxt else None,
+                                match.end() + 4000) if x is not None])
+        regions.append((match.start(), stop))
+    return regions
+
+
+def _definition_ids(text: str) -> set:
+    """Bracketed IDs that are definition candidates on this page.
+
+    Occurrences inside a history region are ignored; an ID that also appears
+    outside such a region on the same page stays a candidate.
+    """
+    regions = _history_regions(text)
+    result = set()
+    for match in DEF_RE.finditer(text):
+        if any(start <= match.start() < stop for start, stop in regions):
+            continue
+        result.add(match.group(1).upper())
+    return result
+
+
+def _history_occurrences(text: str) -> list:
+    """Bracketed ID occurrences suppressed because they sit in a history region."""
+    regions = _history_regions(text)
+    found = []
+    for match in DEF_RE.finditer(text):
+        for start, stop in regions:
+            if start <= match.start() < stop:
+                found.append((match.group(1).upper(),
+                              text[start:min(stop, start + 90)].strip()))
+                break
+    return found
+
+
+def _history_only_evidence(text_by_page: list) -> dict:
+    """IDs seen only inside history regions, with page and reason per occurrence."""
+    outside, suppressed = set(), {}
+    for pageno, text in enumerate(text_by_page, 1):
+        outside |= _definition_ids(text)
+        for rid, reason in _history_occurrences(text):
+            suppressed.setdefault(rid, []).append({"page": pageno, "region": reason})
+    return {rid: places for rid, places in sorted(suppressed.items())
+            if rid not in outside}
+
+
 def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
               backend="auto") -> dict:
     """-> {pdf-name: {id: [seitenzahlen]}}"""
@@ -1055,7 +1131,7 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
         hits = defaultdict(list)
         spellings = defaultdict(list)
         for pageno, text in enumerate(pages, 1):
-            definiert = {rid.upper() for rid in DEF_RE.findall(text)}
+            definiert = _definition_ids(text)
             for raw_rid in ID_RE.findall(text):
                 rid = raw_rid.upper()
                 if rx and not rx.search(rid):
@@ -1068,9 +1144,18 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
                     hits[rid].append(pageno)
                 if raw_rid not in spellings[rid]:
                     spellings[rid].append(raw_rid)
+        evidence = _history_only_evidence(pages) if not include_refs else {}
+        rejected = sorted(rid for rid in evidence
+                          if not rx or rx.search(rid))
+        for rid in rejected:
+            hits.pop(rid, None)
+            spellings.pop(rid, None)
         result[path.name] = {"path": str(path), "pages": len(pages),
                             "ids": {k: v for k, v in sorted(hits.items())},
-                            "spellings": {k: v for k, v in sorted(spellings.items())}}
+                            "spellings": {k: v for k, v in sorted(spellings.items())},
+                            "history_only_ids": list(rejected),
+                            "history_only_evidence": {rid: evidence[rid]
+                                                      for rid in rejected}}
     return result
 
 
