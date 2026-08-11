@@ -1,0 +1,218 @@
+I want to replace all independent zoom behaviors with **one explicit focus state and one viewport calculation**. The goal is that the viewport always follows a predictable rule based solely on whether the user has focused the background, a module, or a node.[1]
+
+## Focus state
+
+The controller stores exactly one of these values:
+
+```js
+{ type: "background" }
+{ type: "module", id: moduleId }
+{ type: "node", id: nodeId }
+```
+
+No other function decides independently what should be visible. Plain clicks update this state; the controller then derives the target zoom and pan from it.
+
+## Background focus
+
+A plain click on empty canvas sets:
+
+```js
+setFocus({ type: "background" });
+```
+
+The controller collects every visible graph element and calculates the largest zoom at which its complete bounding box fits inside the canvas with approximately 40 pixels of padding.
+
+This mode remains active while physics moves the nodes. The controller periodically recalculates the bounding box so all visible modules continue to fit rather than drifting beyond the viewport.
+
+The existing background behavior remains otherwise intact:
+
+- Visible canvas nodes are deselected.
+- UML previews collapse.
+- Hover state is cleared.
+- Parked selections remain untouched.
+
+## Module focus
+
+A plain click on a module or namespace container sets:
+
+```js
+setFocus({ type: "module", id: container.id() });
+```
+
+The controller resolves the container’s visible leaf descendants and fits their bounding box with approximately 54 pixels of padding. Because Cytoscape compound-box geometry derives from those descendants, this frames the complete module box without fitting unrelated modules.
+
+The module remains the active focus while its members move. The framing therefore follows the module rather than performing a one-time zoom that becomes stale as physics continues.
+
+The old custom module double-click detector currently mixes selection restoration, member selection, and zoom. I want to separate those responsibilities:
+
+- Plain click immediately establishes module focus.
+- Existing modifier/member-selection behavior can still run after its delay.
+- Double-click can retain its special member-selection or navigation semantics, but it must not use a separate viewport implementation.
+- Any module framing always goes through `setFocus()`.
+
+## Node focus
+
+A plain click on a class node sets:
+
+```js
+setFocus({ type: "node", id: node.id() });
+```
+
+The viewport has two simultaneous requirements:
+
+1. The focused node stays at the exact canvas center.
+2. Every visible selected node remains inside the viewport.
+
+To achieve this, the controller:
+
+1. Collects all visible selected leaf nodes.
+2. Adds the focused node if it is not already in that collection.
+3. Computes the zoom required to fit that collection with about 80 pixels of margin.
+4. Ignores the collection’s center when calculating pan.
+5. Calculates pan from the focused node’s position, placing it at the canvas midpoint.
+
+Conceptually:
+
+```js
+pan.x = canvasWidth / 2 - zoom * focusedNode.x;
+pan.y = canvasHeight / 2 - zoom * focusedNode.y;
+```
+
+The focused node therefore remains central while the selected set determines how far the camera zooms out.
+
+One limitation needs explicit handling: if selected nodes are extremely asymmetric around the focused node, fitting their ordinary bounding box and then centering the focused node may move a distant selected node outside the viewport. I want to correct this by calculating the maximum selected-node extent **relative to the focused node**, rather than using an ordinary centered bounding-box fit. For each selected node, we calculate its left, right, top, and bottom distance from the focused node, then choose a zoom satisfying both sides:
+
+```js
+zoomX = availableHalfWidth / max(leftExtent, rightExtent);
+zoomY = availableHalfHeight / max(topExtent, bottomExtent);
+zoom = min(zoomX, zoomY);
+```
+
+That guarantees all selected nodes remain visible even though the focused node—not the selected set’s geometric center—defines the viewport center. The intermediate patch does not yet contain this correction; it currently reuses a normal fit zoom before centering the focused node.[1]
+
+## Selection semantics
+
+The focus controller should not replace the existing selection and frontier logic.
+
+A node click still performs the current behavior:
+
+- Shift-click grows the selected frontier.
+- Clicking an unselected node makes it the new selected starting point.
+- Clicking an already selected node keeps its connected selected island and grows from there.
+- Modifier actions continue to work as currently defined.
+
+Only after that selection transaction completes does the handler call:
+
+```js
+setFocus({ type: "node", id: n.id() });
+```
+
+This ordering matters because node-focus zoom depends on the final selected set.
+
+## Continuous following
+
+The old code has several overlapping mechanisms:
+
+- `fitVisibleGraph()`
+- `revealAllVisible()`
+- `startRevealLoop()`
+- `startAutoFit()`
+- `focusNode()`
+- `focusModule()`
+- Drag-related zoom
+
+I want to consolidate these into:
+
+```js
+applyFocusFraming()
+startFocusFollow()
+stopFocusFollow()
+setFocus()
+```
+
+`applyFocusFraming()` computes one target from the current focus. `startFocusFollow()` reapplies it periodically while physics settles.
+
+The follow loop:
+
+- Runs approximately every 260 ms.
+- Avoids a new animation when zoom differs by less than 2% and pan differs by less than 12 pixels.
+- Stops after two consecutive insignificant updates.
+- Has a maximum lifetime of about three seconds after a graph-changing operation.
+- Restarts whenever focus changes or nodes are parked/restored.
+
+This prevents perpetual camera motion while still tracking meaningful physical movement.
+
+## Manual viewport control
+
+Wheel zoom, pinch zoom, and manual panning should temporarily suspend automatic framing.
+
+Programmatic viewport animations also emit Cytoscape `zoom` and `pan` events, so the controller maintains `viewportGuardUntil`. Events inside that window are recognized as internal and ignored.
+
+A genuine user viewport event calls:
+
+```js
+stopFocusFollow();
+```
+
+The stored focus remains unchanged, but the camera stops following it. The next plain click calls `setFocus()` and reactivates automatic framing.
+
+## Graph mutations
+
+Parking, restoring, and filtering can invalidate a focus:
+
+- If the focused node is parked, node framing cannot continue.
+- If a focused module has no visible members, module framing cannot continue.
+- If selected nodes disappear, node zoom must use the remaining visible selection.
+
+The controller should validate the target every time it frames. When the focus target is invalid, it should explicitly change focus to background—not merely calculate a background frame while retaining a stale node/module state.
+
+Restore and park flows should then call `startFocusFollow()` instead of choosing between “reveal only,” “fit everything,” and “auto-fit after removal.”
+
+## Dragging
+
+I want to remove drag-specific camera scaling as a separate viewport policy. During node dragging:
+
+- The node continues to move through existing physics.
+- If it is the focused node, the controller may follow its new position.
+- If the user manually pans or zooms, following stops.
+- Parking a dragged node invalidates node focus and falls back to background.
+
+This avoids camera jumps caused by one subsystem zooming around a dragged node while another subsystem tries to fit the whole graph.
+
+## Anchor force
+
+The physics itself remains the restored handcrafted spring model. Only its initial anchor multiplier changes:
+
+```js
+let anchorScale = 0.1;
+```
+
+The toolbar also starts at:
+
+```html
+value="10"
+<output>10%</output>
+```
+
+The underlying `ANCHOR_K` remains `0.009`; effective initial anchor strength is therefore \(0.009 \times 0.1 = 0.0009\). The user can still adjust it from 0% to 300%. These changes are already present in the intermediate patch.[1]
+
+## Remaining edits
+
+Before the patch is complete, I want to:
+
+1. Remove the legacy `focusNode()` implementation.
+2. Remove the legacy `focusModule()` implementation.
+3. Make plain container clicks call `setFocus({type: "module", id})`.
+4. Make completed node-click transactions call `setFocus({type: "node", id})`.
+5. Make background clicks call `setFocus({type: "background"})`.
+6. Correct node zoom to use symmetric extents around the focused node.
+7. Make invalid targets update the stored focus to background.
+8. Remove or redirect drag-specific zoom.
+9. Replace compatibility aliases at park/restore call sites with direct focus-controller calls.
+10. Update resize handling to preserve and reapply the current focus.
+11. Run JavaScript syntax and whitespace checks.
+12. Search for every remaining old zoom helper and verify none can compete with the controller.
+
+The existing `unified-focus-controller.patch` is therefore a checkpoint, not the final patch. It contains the 10% anchor default and most controller internals, but should not be treated as complete until these integration edits are finished.[1]
+
+Sources
