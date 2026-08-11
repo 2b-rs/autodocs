@@ -4,14 +4,45 @@ Diese Datei richtet sich an automatisierte Werkzeuge und KI-Agenten, die im
 Projekt arbeiten. Sie ist keine Anleitung für die Nutzung oder Veröffentlichung
 der API-Referenz.
 
-## Way of Working
-- Never attempt to install software, download anything, write to the user's home directory, or run a headless browser directly through MCP. Every operation that requires internet access, needs to write anywhere outside the project directory, or is expected to consume significant CPU must be performed as follows: Put the necessary commands into a command script called "run.sh" into the directory where this file resides. It will be executed automatically, so then keep checking the existence of the file until it disappears. Keep trying for at least as long as the expected runtime of the script is. After that, inspect the output of the command in output/run-current.log.
-- Keep the contents and runtime of commands executed via run.sh as small as possible. Local commands and simple file read operations can generally performed directly via MCP.
-- If a run.sh is needed, describe the task comprehensively. Let the script echo to stdout: 1. A one-line title, containing CPU LOAD, INTERNET ACCESS, SW INSTALLATION or whatever was the reason. 2. A short summary what the script is supposed to do, 3. A detailed explanation of the hierarchy of goals in which it was created. 4. Expected "volume" - an estimate of how much internet data will be downloaded, the number of files and packages to be installed, the amount of CPU runtime and tne number of worker processes that is expected.
-- Include continuous output of progress information for run.sh. Console output is required at least once every 5s, so that the person running the script can see that it isn't stuck.
-- Always keep working towards the task's goal as long as possible. DON'T STOP WORKING just because a minor issue came into the way. DON'T ASK BACK TO THE USER unless reaching the goal has clearly become impossible.
-- Be THOROUGH, FACTUAL, PRECISE, and CONCISE in your reports.
-- Be HONEST. Report if something is unclear or you simply don't know.
+## Script execution
+- NEVER attempt to install software, download anything, write to the user's home directory, or run a headless browser directly through MCP. Every operation that requires internet access, needs to write anywhere outside the project directory, or is expected to consume significant CPU must be performed as follows: Put the necessary commands into a command script called "run.sh" into the directory where this file resides and YIELD IMMEDIATELY. The script will be executed by me and I will inform you about the result. I will redirect the script's output into output/run-current.log.
+- Try to offload as much work as possible this way. Use script-level parallelism where possible. You have 10 CPUs. Don't run any process using 'nice'.
+- At the beginning of the script, DESCRIBE THE JOB COMPREHENSIVELY. Echo to stdout:
+  1. A one-line title containing the Purpose, e.g. CPU OFFLOADING, DOWNLOAD, or SW INSTALLATION.
+  2. A short summary of the script's structure,
+  3. A detailed explanation of your goal hierarchy
+  4. An estimate of how much data traffic, cpu load, number of workers, or wall clock time will be needed for completion.
+- The script shall continuously inform about its progress, at least once every 5s.
+
+## Way of collaboration
+- ALWAYS WORK TOWARDS THE GOAL as possible. KEEP GOING unless the goal has clearly become unreachable.
+- If the user's intention is not 100% clear, DON'T ASK BACK, but make a best-guess of his preferences. Document your decisions and what you have achieved after completion.
+- Be THOROUGH, FACTUAL, PRECISE, CONCISE, and HONEST.
+- Find an open task list in NEXTSTEPS.md. Keep track of your goals there. After you've completed a task, mark it as done in NEXTSTEPS.md or delete it. Don't remove unfinished items.
+- Once you have completed a piece of work and are confident of the results, check it in.
+
+## MCP-Sandbox: Schreibzugriffe
+
+Beschreibbar sind `/tmp` und das Projektverzeichnis (inkl. `_src/`). Blockiert
+sind das Home-Verzeichnis, Netzzugriff und Schreibvorgänge ausserhalb dieser
+Bereiche. Die Sandbox prüft das **gesamte** Kommando vorab: Ein einziger
+unzulässiger Pfad bricht den kompletten Aufruf ab, auch wenn der restliche Teil
+zulässig wäre.
+
+Zwei Stolperfallen, die dabei regelmässig unbemerkt zuschlagen:
+
+- `TMPDIR` zeigt standardmässig auf `/var/folders/…`, also nach draussen. Jede
+  Nutzung von `tempfile` scheitert damit.
+- `python3 -m py_compile` schreibt `__pycache__` neben die Quelldatei.
+
+Deshalb jedem Kommando voranstellen:
+
+```bash
+export TMPDIR=/tmp PYTHONDONTWRITEBYTECODE=1
+```
+
+Für Syntaxprüfungen `ast.parse()` verwenden oder das Ziel explizit setzen:
+`py_compile.compile(src, cfile="/tmp/x.pyc", doraise=True)`.
 
 ## Generierte Inhalte
 

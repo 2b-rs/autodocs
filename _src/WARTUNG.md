@@ -413,3 +413,18 @@ verwaisten Fragmente/SVGs. Exit-Code 0 = grün.
 Bei Layoutänderungen zusätzlich Stichproben-Screenshots (Startseite, eine
 Klassen-, eine Namespace-, eine Modulseite) auf Textumbruch/Überlauf prüfen —
 Konventionen dazu in `KONVENTIONEN.md`.
+
+
+## Kanonische RS-Upstream-Metadaten
+
+Die RS-Quellen stehen getrennt vom bestehenden SWS-Dokumentregister in
+`RS_DOCS` in `_src/tools/spec_scrape.py`. Die zwei in R25-11 referenzierten, aber in den kanonischen Dokumenten nicht definierten IDs `RS_AP_00154` und `RS_DIAG_04005` bleiben als `expected-unresolved` diagnostisch sichtbar; fuer sie werden keine Quellenmetadaten erfunden. Fuer R25-11 sind derzeit die offiziell
+verifizierten AP-Dokumente Communication Management, Vehicle Update and
+Configuration Management und HWTestManager registriert.
+
+`spec_scrape.py upstream` vergleicht standardmaessig nur und schreibt keine
+Dateien. Erst `--rebuild` aktualisiert bestehende Requirement-Records atomar;
+dabei darf ausschliesslich das Feld `upstream` geaendert werden. Fehlende oder
+mehrdeutige RS-IDs werden explizit berichtet und fuehren zu einem von null
+verschiedenen Exit-Status. `--write-reqs` bleibt davon getrennt und schreibt nur
+neue Prosa-Requirement-Records additiv.

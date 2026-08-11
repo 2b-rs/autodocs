@@ -20,6 +20,17 @@ mit den Parametern aus `ai/policy.json`.
 - Jeder kanonische Fakt in `spec/records/` trägt Herkunft: Deep-Link, Stützrecord
   oder belegtes Mehrquellen-Argument. Abgeleitete Eigenschaften (z. B. `parents`)
   sind als Inferenz zu markieren — verbindlich: `SPEC_TRACEABILITY.md`.
+- **Requirement-Records** verwenden denselben Traceability-Maßstab wie Class-
+  und Member-Records. Explizite Requirements liegen unter
+  `spec/records/<PREFIX>/<ID>.json` und tragen `requirement_meta.origin =
+  "explicit"`; implizite Requirements müssen `origin = "implicit"`, ein
+  `inferred_from`-Argument und inferierte Traceability besitzen. Normtext bleibt
+  wörtlich englisch im Block `requirement_text`; `covers` und `covered_by`
+  dokumentieren die Verknüpfung zu implementierenden bzw. implementierenden
+  Spec-Records.
+- Normtext-Reparatur, Confidence und Review-Queue sind verbindlich in
+  `REQUIREMENT_TEXT_REPAIR.md` geregelt: Rohtext bleibt erhalten, jede
+  Reparatur ist protokolliert, Unsicheres wird eskaliert statt geraten.
 
 ## Dateinamen und Seitentypen
 
@@ -62,8 +73,12 @@ Kategorie eines Elements = Hintergrund-/Textfarbe seines Namens:
   (`span.ai-badge`, #7A39BB): „KI-generiert / AI generated“ und beginnt mit
   einer `p.ai-note` (Pflichttext: automatisch generiert, abgeleitet aus den
   referenzierten R25-11-Spezifikationselementen, kein offizieller AUTOSAR-Text).
-- Varianten: seitenweiter Guide (`div.ai module-guide` bzw. Klassen-Guide) und
-  kompakter Nutzungshinweis am Record (`div.ai usage`).
+- Varianten: seitenweiter Guide (`div.ai module-guide` bzw. Klassen-Guide),
+  kompakter Nutzungshinweis am Record (`div.ai usage`) und
+  Requirement-Kommentar (`t: "ai"`, `kind: "comment"`). Requirement-Kommentare
+  liegen unter `content/ai/requirements/<Requirement-ID>/`; sie referenzieren
+  den Requirement-Record, tragen die vollständige Herkunft nach
+  `ai/RICHTLINIEN.md` und formulieren niemals neuen Normtext.
 - KI-Guide-Abschnitte (Überschrift `h2.sect` mit Badge) sind klappbar
   (Blocktyp `fold`, `<details class="fold">`) und initial eingeklappt;
   Deep Links auf Anker im Abschnitt öffnen ihn automatisch (`fold.js`).
@@ -167,30 +182,37 @@ belegt mit SWS-Requirements, wo sinnvoll mit Zustands-/Sequenzdiagramm.
 ## Namensraum-Zugehörigkeit
 
 Modulzugehörigkeit ist **implizit** (Ablageort `spec/records/<GRUPPE>/`),
-der Namensraum ist **explizit** — jeder Record trägt einen `ns`-Block:
+der Namensraum ist **explizit** — jeder Record trägt ein Objekt
+`namespace_meta` mit kanonisch **englischen** Schlüsseln:
 
 ```json
-"ns": {
+"namespace_meta": {
   "namespace": "ara::idsm",   // kanonischer C++-Namensraum, null nur bei Dienstschnittstellen
-  "modul": "idsm",            // aus dem Ablageort abgeleitet
-  "quelle": "scope",          // scope | header | id-praefix | gruppe | dienst
-  "generiert": false,         // true bei modellgenerierten Platzhalter-Namensräumen
-  "abweichung": null          // gesetzt, wenn namespace != ara::<modul>
+  "module": "idsm",           // aus dem Ablageort abgeleitet
+  "source": "scope",          // scope | header | id-prefix | group | service | pdf
+  "generated": false,          // true bei modellgenerierten Platzhalter-Namensräumen
+  "deviation": null,           // gesetzt, wenn namespace != ara::<module>
+  "enclosing": null            // optional: vollqualifizierter einschließender Typ
 }
 ```
 
-Regelfall: `namespace == "ara::" + modul`. Die vier zulässigen Abweichungstypen
-sind in `spec/namespaces.json` katalogisiert:
+Legacy-Records mit `ns` sowie deutschen Unterschlüsseln (`modul`, `quelle`,
+`generiert`, `abweichung`) gelten nur noch als Lesekompatibilität in Tools;
+neu geschriebene Records verwenden ausschließlich `namespace_meta`.
 
-- `apext-erweiterung` — herstellerspezifische Erweiterungen unter `apext::*`
+Regelfall: `namespace == "ara::" + module`. Die zulässigen Abweichungstypen
+sind in `spec/namespaces.json` katalogisiert. Kanonische maschinenlesbare Werte
+sind englisch; bestehende deutsche Varianten gelten nur noch als Legacy-Daten:
+
+- `apext-extension` — herstellerspezifische Erweiterungen unter `apext::*`
   (z. B. `apext::com::secoc`, `apext::diag::uds_transport`).
-- `modellgenerierter-namensraum` — Platzhalter, die erst bei der Codegenerierung
+- `model-generated-namespace` — Platzhalter, die erst bei der Codegenerierung
   aufgelöst werden (z. B. `<SI-Namespace>::proxy`).
-- `std-spezialisierung` — Spezialisierungen im Namensraum `std`
+- `std-specialization` — Spezialisierungen im Namensraum `std`
   (z. B. `std::hash< ara::core::Optional< T > >`).
-- `dienstschnittstelle-ohne-namensraum` — Service Interfaces, die auf
-  Modellebene definiert sind und keinen C++-Namensraum besitzen.
+- `service-namespace` — Dienstschnittstellen bzw. dienstbezogene Namensräume,
+  einschließlich modellebener Service-Definitionen ohne `ara::<module>`-Namensraum.
 
-Neuen Abweichungstyp einführen: `tools/namespace_migrate.py` erweitern, Skript
-laufen lassen (idempotent), Katalog prüfen, `validate.py` meldet sonst
+Neue Abweichungstypen nur mit englischem Bezeichner einführen: Katalog,
+Migration und Validator anpassen; `validate.py` meldet sonst weiterhin
 „Nicht katalogisierte Namensraum-Abweichung“.
