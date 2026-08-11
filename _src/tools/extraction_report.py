@@ -492,7 +492,20 @@ def _residual_snapshot():
            for r in RESIDUAL}
 
 
-def record_version(datum, total_ids, total_pages):
+def _documents_parsed_count():
+    """Anzahl der AUTOSAR-Dokumente, aus denen die Spec-DB gespeist wird."""
+    return len(ss.DOCS)
+
+
+def _elements_extracted_count():
+    """Anzahl aller Spec-Records (Requirements/Constraints) in der internen DB."""
+    n = 0
+    for root, _dirs, files in os.walk(ss.RECORDS):
+        n += sum(1 for f in files if f.endswith(".json"))
+    return n
+
+
+def record_version(datum, total_ids, total_pages, issues_count=None, curation_open=None):
     """Neue Berichtsversion anlegen und gegen die letzte abgleichen.
 
     Jede Version haelt den RESIDUAL-Zustand zum Zeitpunkt der Erzeugung fest.
@@ -526,6 +539,10 @@ def record_version(datum, total_ids, total_pages):
         "git_rev": _git_rev(),
         "total_ids": total_ids,
         "total_pages": total_pages,
+        "documents_parsed": _documents_parsed_count(),
+        "elements_extracted": _elements_extracted_count(),
+        "issues_count": issues_count,
+        "curation_open": curation_open,
         "residual": snapshot,
         "diff_vs_previous": diff,
         "previous_version": prev["version"] if prev else None,
@@ -626,6 +643,10 @@ def write_archive_data_js(versions):
             "built_at": v.get("built_at", ""),
             "total_ids": v.get("total_ids"),
             "total_pages": v.get("total_pages"),
+            "documents_parsed": v.get("documents_parsed"),
+            "elements_extracted": v.get("elements_extracted"),
+            "issues_count": v.get("issues_count"),
+            "curation_open": v.get("curation_open"),
         })
     payload = "window.EXTRACTION_REPORTS = %s;\n" % json.dumps(rows, ensure_ascii=False)
     tmp = ARCHIVE_DATA_JS + ".tmp-%d" % os.getpid()
@@ -654,12 +675,16 @@ def write_archive_page(versions):
 def _versions_summary_html():
     versions = list(reversed(_load_versions()))
     write_archive_page(versions)
-    return ('<div class="tr-home-brief" data-extraction-quality>'
+    return ('<style>.tr-mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.6rem;margin:.6rem 0}'
+            '.tr-mini-kennzahl{border:1px solid #d9dce3;border-radius:10px;padding:.6rem .7rem;background:#fff}'
+            '.tr-mini-kennzahl strong{display:block;font-size:1.3rem;font-variant-numeric:tabular-nums}'
+            '.tr-mini-kennzahl span{display:block;color:#596274;font-size:.85rem}</style>'
+            '<div class="tr-home-brief" data-extraction-quality>'
             '<p class="dim">Extraktions-Qualitaet wird geladen …</p>'
             '<p><a href="extraction-reports.html">Berichtsverzeichnis öffnen</a></p>'
             '</div>'
             '<script src="extraction-reports-data.js"></script>'
-            "<script>(function(){var host=document.querySelector('[data-extraction-quality]');if(!host)return;var open=function(html){host.innerHTML=html;};try{var rows=window.EXTRACTION_REPORTS||[];var row=rows[0];if(!row){open('<p class=\"dim\">Keine Extraktions-Berichte gefunden.</p><p><a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a></p>');return;}var href=row.report_file||'extraction-reports.html';var v=row.version||'?';var built=row.built_at||'';var ids=row.total_ids!=null?row.total_ids:'?';var pages=row.total_pages!=null?row.total_pages:'?';open('<p>Neuester Extraktions-Bericht: <a href=\"'+href+'\">v'+v+' öffnen</a>.</p><p class=\"dim\">Stand '+built+'; '+ids+' betroffene Record-IDs auf '+pages+' Quellseiten. <a href=\"extraction-reports.html\">Verzeichnis</a>.</p>');}catch(e){open('<p class=\"dim\">Extraktions-Qualitaet derzeit nicht verfügbar. <a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a>.</p>');}})();</script>")
+            "<script>(function(){var host=document.querySelector('[data-extraction-quality]');if(!host)return;var open=function(html){host.innerHTML=html;};var val=function(x){return x!=null?x:'?';};try{var rows=window.EXTRACTION_REPORTS||[];var row=rows[0];if(!row){open('<p class=\"dim\">Keine Extraktions-Berichte gefunden.</p><p><a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a></p>');return;}var href=row.report_file||'extraction-reports.html';var v=row.version||'?';var kennzahl=function(label,wert){return '<div class=\"tr-mini-kennzahl\"><strong>'+val(wert)+'</strong><span>'+label+'</span></div>';};var grid='<div class=\"tr-mini-grid\">'+kennzahl('Dokumente geparst',row.documents_parsed)+kennzahl('Elemente extrahiert',row.elements_extracted)+kennzahl('Fehlerklassen',row.issues_count)+kennzahl('Offene Kurationsanfragen',row.curation_open)+'</div>';open('<p>Neuester Extraktions-Bericht: <a href=\"'+href+'\">v'+v+' öffnen</a>.</p>'+grid);}catch(e){open('<p class=\"dim\">Extraktions-Qualitaet derzeit nicht verfügbar. <a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a>.</p>');}})();</script>")
 
 
 def write_version_page(page, version_entry):
@@ -720,7 +745,8 @@ def baue(datum, gesamt_zaehlung):
     total_ids = sum(len(v) for v in gesamt_zaehlung["records"].values())
     total_pages = len(set((r["document"], r["page"]) for v in gesamt_zaehlung["records"].values() for r in v))
 
-    version_entry = record_version(datum, total_ids, total_pages)
+    version_entry = record_version(datum, total_ids, total_pages,
+                                    issues_count=len(CATEGORIES), curation_open=len(offene))
     diff = version_entry["diff_vs_previous"]
     version_note = (
         '<p class="tr-version-note">Berichtsversion <strong>v%d</strong>%s'
