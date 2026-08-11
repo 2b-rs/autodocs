@@ -580,7 +580,7 @@ def _version_row_html(v):
     er = scripts.get("extraction_report", {})
     ssv = scripts.get("spec_scrape", {})
     return (
-        '<tr>'
+        '<tr data-report-version="%d" data-report-file="%s" data-built-at="%s" data-total-ids="%s" data-total-pages="%s">'
         '<td><a href="%s">v%d</a></td>'
         '<td>%s</td>'
         '<td>%s</td>'
@@ -588,7 +588,8 @@ def _version_row_html(v):
         '<td>%s</td>'
         '<td>%s</td>'
         '</tr>'
-        % (esc(report_file), version_no, esc(v.get("built_at", "")),
+        % (version_no, esc(report_file), esc(v.get("built_at", "")), esc(v.get("total_ids", "")), esc(v.get("total_pages", "")),
+           esc(report_file), version_no, esc(v.get("built_at", "")),
            esc(v.get("git_rev", "")), esc(er.get("git_rev", "")), esc(er.get("checked_in_at", "")),
            esc(ssv.get("git_rev", "")), esc(ssv.get("checked_in_at", "")),
            pred, esc(v.get("script_delta", "")))
@@ -607,7 +608,7 @@ ARCHIVE_PAGE = os.path.join(SRC, "sources", "pages", "extraction-reports.json")
 
 
 def write_archive_page(versions):
-    tabelle = _versions_table_html(list(reversed(versions)))
+    tabelle = _versions_table_html(versions)
     inhalt = "\n".join([
         STIL,
         '<section class="tr-head"><p>Vollstaendige Historie aller Extraktions-Berichtsversionen, jeweils mit Ausfuehrungszeitpunkt, Vorgaenger-Verweis, Extraktionsskript-Version (Git-Hash + Checkin-Datum von <code>extraction_report.py</code> und <code>spec_scrape.py</code>) und Delta zur vorigen Script-Version.</p></section>',
@@ -615,7 +616,7 @@ def write_archive_page(versions):
     ])
     seite = {"file": "extraction-reports.html", "title": "Extraktions-Berichte — Versionshistorie",
             "body_class": None, "nolang": True,
-            "nav_html": '<a href="index.html">Start</a> / <a href="extraction-report.html">Extraktions-Bericht</a> / Versionshistorie',
+            "nav_html": '<a href="index.html">Start</a> / Extraktions-Berichte',
             "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
     with open(ARCHIVE_PAGE, "w", encoding="utf-8") as f:
         json.dump(seite, f, ensure_ascii=False, indent=1)
@@ -625,13 +626,11 @@ def write_archive_page(versions):
 def _versions_summary_html():
     versions = list(reversed(_load_versions()))
     write_archive_page(versions)
-    if not versions:
-        return '<p class="dim">Noch keine versionierten Extraktions-Berichte vorhanden.</p>'
-    recent = versions[:3]
-    tabelle = _versions_table_html(recent)
-    hinweis = ('<p class="dim">Zeigt die %d juengsten von insgesamt %d Berichtsversionen. <a href="extraction-reports.html">Vollstaendige Versionshistorie ansehen</a>.</p>'
-              % (len(recent), len(versions))) if len(versions) > len(recent) else '<p class="dim"><a href="extraction-reports.html">Vollstaendige Versionshistorie ansehen</a>.</p>'
-    return tabelle + hinweis
+    return ('<div class="tr-home-brief" data-extraction-quality>'
+            '<p class="dim">Extraktions-Qualitaet wird geladen …</p>'
+            '<p><a href="extraction-reports.html">Berichtsverzeichnis öffnen</a></p>'
+            '</div>'
+            "<script>(function(){var host=document.querySelector('[data-extraction-quality]');if(!host)return;fetch('extraction-reports.html').then(function(r){return r.text();}).then(function(html){var doc=new DOMParser().parseFromString(html,'text/html');var row=doc.querySelector('table.tr-table tbody tr[data-report-file]');if(!row){host.innerHTML='<p class=\"dim\">Keine Extraktions-Berichte gefunden.</p><p><a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a></p>';return;}var href=row.getAttribute('data-report-file')||'extraction-reports.html';var v=row.getAttribute('data-report-version')||'?';var built=row.getAttribute('data-built-at')||'';var ids=row.getAttribute('data-total-ids')||'?';var pages=row.getAttribute('data-total-pages')||'?';host.innerHTML='<p>Neuester Extraktions-Bericht: <a href=\"'+href+'\">v'+v+' öffnen</a>.</p><p class=\"dim\">Stand '+built+'; '+ids+' betroffene Record-IDs auf '+pages+' Quellseiten. <a href=\"extraction-reports.html\">Verzeichnis</a>.</p>';}).catch(function(){host.innerHTML='<p class=\"dim\">Extraktions-Qualitaet derzeit nicht verfügbar. <a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a>.</p>';});})();</script>")
 
 
 def write_version_page(page, version_entry):
@@ -732,15 +731,15 @@ def baue(datum, gesamt_zaehlung):
         '<h2 class="sect">Fixes seit der letzten Aenderung — vollstaendige Extraktionsergebnisse</h2>%s' % sections_html,
         '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Antworten auf Kurationsanfragen werden ueber das bestehende Review-Framework als Paket gespeichert; wenn zur Umsetzung KI noetig ist, darf sie nur einen Vorschlag aus den zugehoerigen Dokumenten ableiten. Die Person, die die Extraktionsskripte ausfuehrt, hat immer das letzte Wort und uebernimmt Aenderungen erst nach eigener Pruefung.</p>',
     ])
-    live_page = {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11 (v%d)" % (datum[:10], version_entry["version"]), "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
-    version_page = dict(live_page, file=version_entry["report_file"], nav_html='<a href="index.html">Start</a> / <a href="extraction-report.html">Extraktions-Bericht</a> / v%d' % version_entry["version"])
-    write_version_page(version_page, version_entry)
+    latest_file = version_entry["report_file"]
+    live_page = {"file": latest_file, "title": "Extraktions-Bericht %s — AUTOSAR R25-11 (v%d)" % (datum[:10], version_entry["version"]), "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / <a href="extraction-reports.html">Extraktions-Berichte</a> / v%d' % version_entry["version"], "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
+    write_version_page(dict(live_page), version_entry)
     return live_page
 
 
 def verlinke_startseite(datum):
     idx = json.load(open(INDEX, encoding="utf-8"))
-    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Aktueller Extraktions-Bericht, Stand %s: <a href="extraction-report.html">neueste Version öffnen</a>.</p><p>Juengste Berichtsversionen:</p>%s</aside>' % (html.escape(datum), _versions_summary_html()), "tail": "\n"}
+    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Aktueller Status aus dem <a href="extraction-reports.html">Berichtsverzeichnis</a>:</p>%s</aside>' % _versions_summary_html(), "tail": "\n"}
     idx["main"] = [b for b in idx["main"] if "tr-home-link" not in b.get("html", "")]
     pos = 3 if any("traceability.html" in b.get("html", "") for b in idx["main"]) else 2
     idx["main"].insert(pos, block)
