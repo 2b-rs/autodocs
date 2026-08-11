@@ -1,0 +1,89 @@
+# Werkzeuge — Katalog
+
+Jedes Skript unter `_src/tools/*.py` und den relevanten `_src/*.py`, mit
+Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
+
+## Kern-Pipeline (`_src/`)
+
+| Werkzeug | Zweck | Aufruf |
+|---|---|---|
+| `generate.py` | Erzeugt kompletten HTML-Tree aus Quellen unter `_src/` | `python3 _src/generate.py` / `--check` / `<seite>.html` |
+| `extract.py` | Zerlegt generierten HTML-Tree zurück in editierbare Quelldateien (Resync nach Hand-Edits) | selten nötig, siehe `WARTUNG.md` |
+| `validate.py` | Qualitätsprüfungen für HTML-Tree und Quellen | `python3 _src/validate.py` |
+| `ai_workflow.py` | Kuratierungs-Workflow für KI-generierte Erklärungen (Zyklus Invalidieren→Auftrag→Merge) | `status`, `zeige`, `invalidiere`, `auftrag`, `merge` |
+| `build_indexes.py` | Erzeugt kondensierte CSV-Sichten unter `_src/data/` (Lesesichten, nie zurückgeschrieben) | — |
+| `build_component_graph.py` | Baut abstrakten API-Abhängigkeitsgraphen aus Seitenmodellen + Spec-Records | — |
+| `render_diagrams.py` | Rendert alle Diagramme (Graphviz `.dot`, Sequenz `.seq.json`) neu | — |
+| `seqgen.py` | Generator für Sequenzdiagramme im Hausstil, Quelle: `.seq.json` | — |
+| `i18n_extract.py` | Baut deutsches Quellregister der Mehrsprachigkeit (`segments.de.json`) | — |
+| `i18n_translate.py` | Erzeugt/mergt Übersetzungs-Arbeitspakete | `split <lang> [--kb=40]` |
+| `i18n_diagrams.py` | Materialisiert übersetzte Diagramme (rendert neu bei Abweichung von Label-Register) | — |
+| `lib_docmodel.py` | Bibliothek: Dokumentmodell-Grundfunktionen (importiert von `ai_workflow.py` u. a.) | Bibliothek, kein CLI |
+| `lib_i18n.py` | Bibliothek: i18n-Grundfunktionen | Bibliothek, kein CLI |
+| `lib_svgdiag.py` | Bibliothek: SVG-Diagramm-Grundfunktionen | Bibliothek, kein CLI |
+
+## Spec-DB-Werkzeuge (`_src/tools/`)
+
+| Werkzeug | Zweck | Aufruf/Phasen |
+|---|---|---|
+| `spec_scrape.py` | Haupt-Extraktionswerkzeug: gewinnt Spezifikations-Records aus AUTOSAR-PDFs | Phasen: `ids props reqs trace trace-check siblings compare all crosscheck urls upstream observations` |
+| `spec_upstream.py` | Löst kanonische AUTOSAR-RS-Referenzen auf, aktualisiert Record-Metadaten sicher; bewusst unabhängig von PDF-Extraktion | Bibliothek (`UpstreamIndex`, `rebuild_record_files`, `rebuild_upstream`), importiert von `spec_scrape.py` |
+| `merge_trace_parts.py` | Mergt parallel erzeugte Trace-JSON-Teilergebnisse sequenziell, um Schreibkonflikte zu vermeiden | — |
+| `summarize_trace_all.py` | Fasst Trace-Ergebnisse zusammen (kein eigener Docstring gefunden) | — |
+| `summarize_trace_check.py` | Fasst `trace-check`-Ergebnisse zusammen, liest von stdin | `python3 _src/tools/summarize_trace_check.py < input.json` |
+| `review_ingest.py` | Review-Pakete aus dem HTML-Workflow (`review.js`) in Records schreiben; einziger schreibender Weg für Requirement-Text-Reviews | `--check`/`--apply paket.json`, `-g <issue-nr>...`, `--repo <org>/<repo>`, `--require-authenticated` |
+| `review_flags.py` | Flag-Dateien für KI-Review-Jobs, kollisionsfrei via `os.rename` (atomar) | Bibliothek: `write_review_flag`, `complete_flag`, `build_instruction` |
+| `curation_ingest.py` | Kurationsentscheidungen aus dem Extraktionsbericht übernehmen | `--check`/`--apply paket.json`, `--issue-body issue-42.md` |
+| `curation_flags.py` | Warteschlange für KI-gestützte Kurations-Anfragen, kollisionsfrei | Bibliothek: `write_curation_flag`, `complete_flag` |
+| `extraction_report.py` | Extraktionsbericht mit vollständiger Abweichungsliste (vier Fehlerklassen), zeigt Kurationsanfragen | Subkommandos u. a. `category`, `output`, `document`, `page` |
+| `spec_extraction_campaign.py` | Reproduzierbare Side-by-Side-Extraktionskampagnenberichte; führt selbst keine Extraktion aus | `create`, `report` |
+| `spec_extraction_benchmark.py` | Baut deterministischen, review-first 200-Record-Benchmark-Entwurf | — |
+| `traceability_report.py` | Baut Traceability-Seitenmodell aus `crosscheck --json` + Log | `--json <crosscheck.json> --log <crosscheck.log>` |
+| `upstream_evidence.py` | Persistiert rohe Backend-Beobachtungen je Dokument/ID/Backend ("Preserve raw evidence") | schreibt `_src/spec/upstream/evidence/<doc>/<id>/<backend>.json` |
+| `text_repair.py` | Repariert PDF-Extraktionsartefakte mit belegter Herkunft; jede Änderung ist eine versionierte, protokollierte Regel; unbeweisbare Fälle werden als `suspects` gemeldet, nicht geraten | Bibliothek |
+| `namespace_migrate.py` | Schreibt Namensraum-Zugehörigkeit explizit in jeden Spec-Record (statt implizit aus Modul) | Einmalwerkzeug |
+| `migriere_ns_enclosing.py` | Trennt `ns`-Block der Spec-DB in zwei Fakten (altes Schema trug teils den umschließenden Typ vermischt) | Einmalwerkzeug |
+| `migriere_schema_language.py` | Vereinheitlicht maschinenlesbare Schema-Sprache (Records trugen teils deutsche Schlüsselnamen im Legacy-`ns`-Objekt) | Einmalwerkzeug |
+| `migriere_spec_db.py` | **Einmalwerkzeug (August 2026)**: Migration der Spec-Records aus Seitenmodellen in eigenständige Spec-DB (`_src/spec/records/`) | Einmalwerkzeug, historisch |
+| `backfill_traces.py` | **Einmalwerkzeug (August 2026)**: rückwirkendes Anlegen der Trace-Dateien (`_src/ai/traces/**`) und Quellenregister (`_src/ai/quellen.json`) für den KI-Bestand | Einmalwerkzeug, historisch |
+| `fix_dopplungen.py` | Einmaliges Bereinigungsskript: Dopplungen in Modul-/Namespace-Guides | Einmalwerkzeug |
+| `namespace_migrate.py`, o.ä. Migrationsskripte | — siehe oben | — |
+
+## QA-Scans (aus `WARTUNG.md`, Abschnitt "QA der Sprachbäume")
+
+| Werkzeug | Zweck |
+|---|---|
+| `scan_bezeichner.py` | Punkt 3: Bezeichner-Scan — findet Label-Einträge, deren Schlüssel wie ein API-Identifier aussieht (CamelCase, etc.) |
+| `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
+| `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
+
+## PDF-/Geometrie-Diagnose-Werkzeuge
+
+| Werkzeug | Zweck |
+|---|---|
+| `font_inventory.py` | Inventarisiert eingebettete Fonts und Glyph-Mapping-Fehler je Dokument (ob `/ToUnicode`-Map vorhanden) |
+| `geometry_audit.py` | Prüft dokument-unabhängige Geometrie-Invarianten über den ganzen PDF-Korpus, meldet Counts je Dokument |
+| `geometry_schema.py` | Strukturelles Schema für pypdf-Geometrie-Beobachtungsartefakte; validiert Form ohne externe Abhängigkeiten |
+
+## Diagramm-Rückgewinnungs-Werkzeuge (einmalig)
+
+| Werkzeug | Zweck |
+|---|---|
+| `svg2dot.py` | Einmalige Rückgewinnung der Diagrammquellen aus SVGs (zurück in `.dot`) |
+| `svg2seq.py` | Einmalige Rückgewinnung der Sequenzdiagramm-Spezifikation aus SVGs (zurück in `.seq.json`) |
+
+## Externe Abhängigkeiten (nicht im Repo, aber im Workflow verwendet)
+
+| Werkzeug | Zweck | Installationsweg |
+|---|---|---|
+| `jq` | Strukturelles JSON-Filtern/Diffen über CLI | bereits installiert (`/usr/bin/jq`) |
+| `git` / `git diff` / `git difftool` | Versionskontrolle, Standard-Diff | bereits installiert |
+| `jd` (josephburnett/jd) | Semantisches JSON-Diffing (Set-Modus, unified-ähnliches Format) | nicht installiert; via `brew install jd`, dann `git config diff.jd.command 'jd --git-diff-driver -set'` + `.gitattributes`-Eintrag |
+
+## Skript-Ausführungs-Infrastruktur
+
+| Mechanismus | Zweck |
+|---|---|
+| `run.sh` | Task-Runner-Skript (nicht versioniert, per Task neu geschrieben); jeder Lauf wird archiviert |
+| `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
+| `output/run-current.log` | Log des jeweils letzten (oder laufenden) `run.sh`-Aufrufs |
