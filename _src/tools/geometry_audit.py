@@ -18,6 +18,19 @@ import geometry_schema  # noqa: E402
 import spec_scrape  # noqa: E402
 
 
+def _is_baseline_fusion(word: str, body_words) -> bool:
+    """Report whether legacy text fused two tokens that reconstruction kept apart.
+
+    Legacy pypdf extraction sometimes concatenates adjacent text runs without a
+    separator. The reconstructed line then legitimately contains the two parts
+    separately, so the apparent shortfall is a baseline artifact.
+    """
+    for split in range(2, len(word) - 1):
+        if body_words[word[:split]] and body_words[word[split:]]:
+            return True
+    return False
+
+
 def audit_document(pdf_dir: Path, doc: str) -> dict:
     path = pdf_dir / f"{doc}.pdf"
     pages = spec_scrape._pypdf_page_observations(path)
@@ -30,6 +43,7 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
         "max_indent_level": 0, "non_upright_spans": 0, "unmapped_glyph_spans": 0,
         "unmapped_glyphs": 0, "single_span_lines": 0, "unclassified_body_lines": 0,
         "quarantined_spans": 0, "body_word_shortfall": 0,
+        "unexplained_word_shortfall": 0, "baseline_fused_words": 0,
     }
     if [page["raw_text"] for page in pages] != legacy:
         violations.append("raw-text-parity")
@@ -110,6 +124,24 @@ def audit_document(pdf_dir: Path, doc: str) -> dict:
             if count > body_words[word]
         )
         counts["body_word_shortfall"] += max(shortfall, 0)
+        quarantined_words: collections.Counter = collections.Counter()
+        for span in page["spans"]:
+            if span["id"] not in clustered:
+                quarantined_words.update(span["text"].split())
+        residue = 0
+        fused = 0
+        available = "".join(body_words.elements())
+        for word, count in expected.items():
+            gap = count - body_words[word]
+            if gap <= 0:
+                continue
+            gap = max(gap - quarantined_words[word], 0)
+            if gap and _is_baseline_fusion(word, body_words):
+                fused += gap
+                continue
+            residue += gap
+        counts["unexplained_word_shortfall"] += residue
+        counts["baseline_fused_words"] += fused
         order = page.get("reading_order", [])
         if sorted(order) != sorted(body_ids):
             violations.append(f"reading-order-coverage:{page['page_number']}")

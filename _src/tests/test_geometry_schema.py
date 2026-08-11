@@ -1,3 +1,4 @@
+import collections
 import copy
 import sys
 import unittest
@@ -5,6 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
+import geometry_audit  # noqa: E402
 import geometry_schema  # noqa: E402
 
 
@@ -29,6 +31,20 @@ def _page() -> dict:
             "reading_position": 0,
         }],
     }
+
+
+class BaselineFusionTests(unittest.TestCase):
+    def test_fused_word_is_detected_when_both_parts_exist(self):
+        body = collections.Counter({"rollback_semantics": 1, "ara::crypto": 1})
+        self.assertTrue(geometry_audit._is_baseline_fusion("rollback_semanticsara::crypto", body))
+
+    def test_missing_word_is_not_reported_as_fusion(self):
+        body = collections.Counter({"present": 1})
+        self.assertFalse(geometry_audit._is_baseline_fusion("absentword", body))
+
+    def test_partial_match_is_not_reported_as_fusion(self):
+        body = collections.Counter({"roll": 1})
+        self.assertFalse(geometry_audit._is_baseline_fusion("rollback", body))
 
 
 class GeometrySchemaTests(unittest.TestCase):
