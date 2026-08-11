@@ -74,6 +74,7 @@ from pathlib import Path
 SRC = Path(__file__).resolve().parent.parent
 ROOT = SRC.parent
 RECORDS = SRC / "spec" / "records"
+TRACE_RECORDS = SRC / "spec" / "traceability"
 
 from spec_upstream import UpstreamIndex, rebuild_record_files
 RELEASE = "R25-11"
@@ -1079,6 +1080,13 @@ TRACEABILITY_HEADING_RE = re.compile(
     r"\A(?:\s*\n){0,4}(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
     re.IGNORECASE,
 )
+TRACEABILITY_CONTINUATION_RE = re.compile(
+    r"\A\s*(?:△\s*)?\n?\s*Requirement\s+Description\s+Satisfied\s+by\b",
+    re.IGNORECASE,
+)
+TRACEABILITY_HEADER_RE = re.compile(r"Requirement\s+Description\s+Satisfied\s+by", re.IGNORECASE)
+TRACEABILITY_ROW_ID_RE = re.compile(r"\bRS_[A-Z0-9]+(?:_[A-Z0-9]+)+\b", re.IGNORECASE)
+TRACEABILITY_CLEAN_RE = re.compile(r"\s+")
 
 
 TOC_LINE_RE = re.compile(r"^.*\.{4,}\s*\d+\s*$", re.MULTILINE)
@@ -1915,6 +1923,323 @@ def phase_crosscheck(pdfs, pattern=None, only_ids=None, include_refs=False,
             "database": db_reports}
 
 
+def _traceability_prefix(rid: str) -> str:
+    return "_".join(str(rid).upper().split("_")[:-1])
+
+
+def _traceability_pdf_url(document: str, rid: str) -> str:
+    branch = next((branch for branch, stem, _ in DOCS.values() if stem == document), "AP")
+    return "%s/%s/%s.pdf#nameddest=%s" % (BASE_URL, branch, document, rid)
+
+
+def _traceability_section_pages(pages: list[str]) -> tuple[int | None, list[tuple[int, str]]]:
+    start = next((i for i, raw in enumerate(pages) if TRACEABILITY_HEADING_RE.search(strip_noise(raw))), None)
+    if start is None:
+        return None, []
+    cleaned = [(start + 1, strip_noise(pages[start]))]
+    i = start + 1
+    while i < len(pages):
+        page = strip_noise(pages[i])
+        if not TRACEABILITY_CONTINUATION_RE.search(page):
+            break
+        cleaned.append((i + 1, page))
+        i += 1
+    return start + 1, cleaned
+
+
+def _clean_traceability_text(value: str) -> str:
+    value = strip_noise(value).replace("△", " ").strip()
+    value = TRACEABILITY_CLEAN_RE.sub(" ", value)
+    return value.strip()
+
+
+def _traceability_rows_for_pdf(path: Path, backend: str = "auto") -> list[dict]:
+    pages = pdf_pages(path, backend)
+    start_page, section_pages = _traceability_section_pages(pages)
+    if not section_pages:
+        return []
+    rows = []
+    current = None
+    for page_no, raw in section_pages:
+        text = strip_noise(raw)
+        text = TRACEABILITY_HEADING_RE.sub(" ", text, count=1)
+        text = TRACEABILITY_HEADER_RE.sub(" ", text)
+        text = text.replace("△", " ")
+        matches = list(DEF_RE.finditer(text))
+        for idx, match in enumerate(matches):
+            rid = match.group(1).upper()
+            next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+            between = text[match.end():next_start]
+            if TRACEABILITY_ROW_ID_RE.fullmatch(rid):
+                current = {
+                    "id": rid,
+                    "document": path.stem + ".pdf",
+                    "source_document": path.stem,
+                    "page": page_no,
+                    "section_start_page": start_page,
+                    "description": _clean_traceability_text(between),
+                    "satisfied_by": [],
+                }
+                rows.append(current)
+            elif current is not None:
+                if rid not in current["satisfied_by"]:
+                    current["satisfied_by"].append(rid)
+    return rows
+
+
+def phase_traceability(pdfs, pattern=None, only_ids=None, backend="auto", progress=False) -> dict:
+    rx = re.compile(pattern, re.IGNORECASE) if pattern else None
+    keep = {rid.upper() for rid in (only_ids or ())}
+    result = OrderedDict()
+    total = len(pdfs)
+    for i, path in enumerate(pdfs, 1):
+        if progress:
+            print("[trace %d/%d] %s ..." % (i, total, path.name), file=sys.stderr, flush=True)
+        rows = []
+        for row in _traceability_rows_for_pdf(path, backend):
+            rid = row["id"].upper()
+            if rx and not rx.search(rid):
+                continue
+            if keep and rid not in keep:
+                continue
+            rows.append(row)
+        if progress:
+            print("[trace %d/%d] %s -> %d rows" % (i, total, path.name, len(rows)), file=sys.stderr, flush=True)
+        if rows:
+            result[path.name] = rows
+    return result
+
+
+def write_traceability_records(traceability: dict, campaign: str, actor: str = "tool") -> dict:
+    grouped = OrderedDict()
+    for rows in traceability.values():
+        for row in rows:
+            rid = row["id"].upper()
+            bucket = grouped.setdefault(rid, {
+                "id": rid,
+                "description": row.get("description") or rid,
+                "rows": [],
+                "satisfied_by": [],
+            })
+            bucket["rows"].append(dict(row))
+            for sid in row.get("satisfied_by") or []:
+                sid = str(sid).upper()
+                if sid not in bucket["satisfied_by"]:
+                    bucket["satisfied_by"].append(sid)
+            if not bucket["description"] or bucket["description"] == rid:
+                bucket["description"] = row.get("description") or bucket["description"]
+
+    written, updated = [], []
+    date = __import__("datetime").date.today().isoformat()
+    for rid, bucket in grouped.items():
+        prefix = _traceability_prefix(rid)
+        path = TRACE_RECORDS / prefix / (rid + '.json')
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        downstream = list(bucket["satisfied_by"])
+        links = [f'<code>{sid}</code>' for sid in downstream]
+        downstream_html = ', '.join(links) if links else '<span class="dim">(leer)</span>'
+        title = bucket.get("description") or rid
+        first_row = bucket["rows"][0]
+        first_doc = first_row.get("source_document") or Path(first_row["document"]).stem
+        first_url = _traceability_pdf_url(first_doc, rid)
+        trace_entries = []
+        sources = []
+        source_docs = []
+        source_pages = []
+        for row in bucket["rows"]:
+            src_doc = row.get("source_document") or Path(row["document"]).stem
+            src_url = _traceability_pdf_url(src_doc, rid)
+            source_docs.append(src_doc)
+            source_pages.append(row.get("page"))
+            sources.append({
+                "kind": "pdf_deep_link",
+                "document": src_doc,
+                "url": src_url,
+                "locator": "named destination %s; page %s" % (rid, row["page"]),
+            })
+            trace_entries.append({
+                "mode": "pdf_deep_link",
+                "sources": [{
+                    "kind": "pdf_deep_link",
+                    "document": src_doc,
+                    "url": src_url,
+                    "locator": "named destination %s; page %s" % (rid, row["page"]),
+                }],
+                "extracts": [row.get("description") or "", ", ".join(row.get("satisfied_by") or [])],
+                "reasoning": "Aus Kapitel 6 Requirements Tracing als Traceability-Zeile extrahiert.",
+                "rule": "pdf_traceability_table@v1",
+                "confidence": "medium",
+                "evidence_strength": "medium",
+                "review": {"status": "pending"},
+                "created_by": "spec_scrape.py",
+                "timestamp": date,
+            })
+        record = {
+            "id": rid,
+            "attrs": [["class", "rec traceability"], ["id", rid]],
+            "lead": "\n",
+            "blocks": [
+                {"t": "html",
+                 "html": '<h3 class="recname"><span class="kind">traceability</span> %s <span class="sws"><a href="%s" title="Spezifikations-PDF (%s)">[%s]</a></span></h3>'
+                         % (title, first_url, first_row["document"], rid),
+                 "tail": "\n"},
+                {"t": "html",
+                 "html": '<p class="desc">Kapitel 6 „Requirements Tracing“: <code>%s</code> wird dokumentuebergreifend durch %s erfuellt.</p>'
+                         % (rid, downstream_html),
+                 "tail": "\n"},
+            ],
+            "traceability_meta": {
+                "origin": "chapter6_requirements_tracing",
+                "document": first_row["document"],
+                "page": min(p for p in source_pages if p is not None) if any(p is not None for p in source_pages) else None,
+                "description": title,
+                "satisfied_by": downstream,
+                "source_documents": list(dict.fromkeys(source_docs)),
+                "source_rows": [{
+                    "document": row["document"],
+                    "source_document": row.get("source_document") or Path(row["document"]).stem,
+                    "page": row.get("page"),
+                    "section_start_page": row.get("section_start_page"),
+                    "description": row.get("description") or "",
+                    "satisfied_by": list(row.get("satisfied_by") or []),
+                } for row in bucket["rows"]],
+                "confidence": "medium",
+                "review_status": "pending",
+                "review_reason": "traceability_table_import",
+                "trace": trace_entries,
+            },
+            "status": {"state": "valid/imported", "reason": "traceability", "campaign": campaign},
+            "history": [{
+                "campaign": campaign, "date": date, "from": None,
+                "to": "valid/imported", "by": actor,
+                "reason": "Merged import from chapter 6 traceability tables",
+            }],
+        }
+        before = None
+        if path.exists():
+            try:
+                before = json.loads(path.read_text(encoding='utf-8'))
+            except (json.JSONDecodeError, OSError):
+                before = None
+        tmp = path.with_suffix(path.suffix + '.tmp')
+        tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding='utf-8')
+        tmp.replace(path)
+        if before is None:
+            written.append(rid)
+        elif before != record:
+            updated.append(rid)
+    return {"written": written, "updated": updated, "total": len(grouped)}
+
+
+def load_traceability_index() -> dict:
+    """RS-ID -> {satisfied_by, document, page, description} aus den bereits
+    geschriebenen Traceability-Records unter ``_src/spec/traceability/``.
+
+    Getrennt von ``phase_traceability`` gehalten, weil der Konsistenzcheck
+    gegen den geschriebenen Stand prüfen soll, nicht gegen einen frischen
+    PDF-Lauf — das macht Abweichungen zwischen den beiden Phasen selbst
+    sichtbar, statt sie zu verschleiern.
+    """
+    index = {}
+    if not TRACE_RECORDS.is_dir():
+        return index
+    for path in sorted(TRACE_RECORDS.rglob("*.json")):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        meta = rec.get("traceability_meta") or {}
+        rid = str(rec.get("id", "")).upper()
+        if not rid:
+            continue
+        index[rid] = {
+            "satisfied_by": [s.upper() for s in (meta.get("satisfied_by") or [])],
+            "document": meta.get("document"),
+            "page": meta.get("page"),
+            "description": meta.get("description") or "",
+        }
+    return index
+
+
+def check_traceability_consistency(trace_index: dict | None = None) -> dict:
+    """Bestehende Spec-Records gegen Kapitel-6-Traceability-Records abgleichen.
+
+    Zwei Widerspruchsarten werden erkannt:
+
+    - ``upstream_not_traced``: ein Record nennt ein RS als Upstream, aber die
+      Traceability-Tabelle dieses RS listet den Record nicht unter
+      "Satisfied by" (oder das RS taucht in der Traceability-DB gar nicht auf).
+    - ``traced_not_upstream``: die Traceability-Tabelle nennt einen Record als
+      Erfüller eines RS, der Record selbst weist dieses RS aber nicht (oder
+      ein anderes) als Upstream aus.
+
+    Beide Fälle werden als Review-Kandidaten zurückgegeben, nicht automatisch
+    verändert — die Kuratierung bleibt bewusst ein manueller Schritt.
+    """
+    trace_index = trace_index if trace_index is not None else load_traceability_index()
+    flagged = []
+    checked = 0
+    for path in sorted(RECORDS.rglob("*.json")):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        rid = str(rec.get("id", "")).upper()
+        if not rid:
+            continue
+        upstream_ids = [str(u.get("id", "")).upper() for u in (rec.get("upstream") or [])
+                        if isinstance(u, dict) and u.get("id")]
+        if not upstream_ids:
+            continue
+        checked += 1
+        for rs_id in upstream_ids:
+            trace_row = trace_index.get(rs_id)
+            if trace_row is None:
+                flagged.append({
+                    "record": rid, "path": str(path), "rs_id": rs_id,
+                    "issue": "upstream_not_traced",
+                    "detail": "RS %s hat keinen Traceability-Record." % rs_id,
+                })
+            elif rid not in trace_row["satisfied_by"]:
+                flagged.append({
+                    "record": rid, "path": str(path), "rs_id": rs_id,
+                    "issue": "upstream_not_traced",
+                    "detail": "RS %s listet %s nicht unter 'Satisfied by'." % (rs_id, rid),
+                    "traced_satisfied_by": trace_row["satisfied_by"],
+                })
+    for rs_id, trace_row in trace_index.items():
+        for satisfier in trace_row["satisfied_by"]:
+            prefix = _requirement_prefix(satisfier) if satisfier.startswith("SWS_") or "_" in satisfier else None
+            candidate = None
+            if prefix:
+                candidate_path = RECORDS / prefix / (satisfier + ".json")
+                if candidate_path.exists():
+                    candidate = candidate_path
+            if candidate is None:
+                continue
+            try:
+                rec = json.loads(candidate.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            upstream_ids = {str(u.get("id", "")).upper() for u in (rec.get("upstream") or [])
+                           if isinstance(u, dict) and u.get("id")}
+            if rs_id not in upstream_ids:
+                flagged.append({
+                    "record": satisfier, "path": str(candidate), "rs_id": rs_id,
+                    "issue": "traced_not_upstream",
+                    "detail": "Traceability-Tabelle nennt %s als Erfueller von %s, "
+                              "Record weist dieses RS nicht als Upstream aus (hat: %s)."
+                              % (satisfier, rs_id, sorted(upstream_ids) or "keins"),
+                })
+    return {
+        "checked_records": checked,
+        "traceability_rs_count": len(trace_index),
+        "flagged": flagged,
+        "flagged_count": len(flagged),
+    }
+
+
 # ===========================================================================
 # urls — Downloadzeilen fuer die run.sh
 # ===========================================================================
@@ -1946,7 +2271,7 @@ def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
 # ===========================================================================
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("phase", choices=["ids", "props", "reqs", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
+    ap.add_argument("phase", choices=["ids", "props", "reqs", "trace", "trace-check", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
     ap.add_argument("--pdf-dir", type=Path, default=PDF_CACHE)
     ap.add_argument("--module", action="append", help="Modulkuerzel, z. B. log (mehrfach)")
     ap.add_argument("--doc", action="append", help="PDF-Basisname (mehrfach)")
@@ -1962,6 +2287,8 @@ def main(argv=None) -> int:
     ap.add_argument("--campaign", default="requirement-import",
                     help="Kampagnen-ID fuer --write-reqs (Standard: requirement-import)")
     ap.add_argument("--json", action="store_true", help="Rohdaten als JSON ausgeben")
+    ap.add_argument("--progress", action="store_true",
+                    help="Fortschritt pro Dokument auf stderr ausgeben (Phase trace)")
     ap.add_argument("--limit", type=int, help="nur die ersten N IDs (Phase 2/3)")
     ap.add_argument("--backend", choices=["auto", "pypdf", "mupdf", "builtin"],
                     default="auto", help="Extraktions-Backend (Standard: auto)")
@@ -1973,6 +2300,18 @@ def main(argv=None) -> int:
     if args.phase == "urls":
         print(phase_urls(args.module))
         return 0
+
+    if args.phase == "trace-check":
+        report = check_traceability_consistency()
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=1))
+        else:
+            print("geprueft: %d Records mit Upstream; %d Traceability-RS bekannt"
+                  % (report["checked_records"], report["traceability_rs_count"]))
+            print("markiert: %d" % report["flagged_count"])
+            for item in report["flagged"][: args.limit or 20]:
+                print("   [%s] %s (%s): %s" % (item["issue"], item["record"], item["rs_id"], item["detail"]))
+        return 1 if report["flagged_count"] else 0
 
     if not args.pdf_dir.is_dir():
         print("PDF-Verzeichnis fehlt: %s" % args.pdf_dir, file=sys.stderr)
@@ -2025,6 +2364,32 @@ def main(argv=None) -> int:
                 print("%s — %d Seiten, %d IDs" % (name, info["pages"], len(info["ids"])))
                 for rid, pages in list(info["ids"].items())[: args.limit or 20]:
                     print("   %-18s Seite %s" % (rid, ", ".join(map(str, pages[:4]))))
+        return 0
+
+    if args.phase == "trace":
+        rows = phase_traceability(pdfs, args.pattern, args.id, args.backend, progress=args.progress)
+        write_report = None
+        if args.rebuild:
+            if args.progress:
+                print("[trace] writing records ...", file=sys.stderr, flush=True)
+            write_report = write_traceability_records(rows, args.campaign)
+            if args.progress:
+                print("[trace] write done", file=sys.stderr, flush=True)
+        if args.json:
+            payload = {"traceability": rows}
+            if write_report is not None:
+                payload["write"] = write_report
+            print(json.dumps(payload, ensure_ascii=False, indent=1))
+        else:
+            total = sum(len(v) for v in rows.values())
+            print("traceability rows: %d" % total)
+            for name, entries in rows.items():
+                print("%s — %d Zeilen" % (name, len(entries)))
+                for row in entries[: args.limit or 5]:
+                    print("   %-14s -> %d satisfied-by" % (row["id"], len(row.get("satisfied_by") or [])))
+            if write_report is not None:
+                print("\ngeschrieben: %d; bereits vorhanden: %d" %
+                      (len(write_report["written"]), len(write_report["existing"])))
         return 0
 
     if args.limit:

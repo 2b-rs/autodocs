@@ -1,3 +1,88 @@
+# Traceability pipeline: status and next steps (2026-08-11)
+
+## What was built
+
+- `phase_traceability()` in `_src/tools/spec_scrape.py` extracts chapter 6
+  "Requirements Tracing" tables from each SWS PDF, producing one row per RS-ID
+  with its `satisfied_by` list of downstream SWS/record IDs, page, and
+  section-start page.
+- `write_traceability_records()` now **merges rows for the same RS-ID across
+  all source documents** before writing, and writes one canonical JSON record
+  per RS-ID under `_src/spec/traceability/<prefix>/<RS_ID>.json`, keeping
+  full per-source-document provenance in `traceability_meta.source_rows`.
+  (Earlier version keyed only by RS-ID and skipped-on-exists, silently
+  dropping every document's contribution after the first — this inflated
+  the consistency-check false-positive count roughly 4x; fixed 2026-08-11.)
+- `check_traceability_consistency()` / CLI phase `trace-check` cross-checks
+  every existing spec record's `upstream` field against the traceability
+  table in both directions (`upstream_not_traced`, `traced_not_upstream`) and
+  returns a review list without auto-modifying anything.
+- Extraction is parallelized across documents using zsh job control (one
+  background job per PDF, capped concurrency, PID-array pool since this
+  zsh build lacks `wait -n`), then merged and written sequentially to avoid
+  concurrent writers.
+
+## Current results (15 cached SWS PDFs, 423 canonical RS traceability records)
+
+- `trace-check` flags 467 items (down from 2,027 before the merge fix):
+  - 166 `upstream_not_traced` where the referenced RS has **no traceability
+    record at all** — expected, because these RS-IDs belong to RS-level
+    documents (`RS_TS`, `RS_CRYPTO`, `RS_AP` general chapters, etc.) that
+    were never scraped for chapter-6 tables in this run; only SWS documents
+    were processed. Not a defect — needs the RS/FO document set added to the
+    `trace --rebuild` corpus to close this gap properly.
+  - 2 genuine `upstream_not_traced` mismatches (e.g. `SWS_CRYPT_50145` vs
+    `RS_CRYPTO_02102`/`RS_CRYPTO_02107`) where a traceability record exists
+    but does not list the record as a satisfier — worth manual PDF spot
+    check before deciding which side is wrong.
+  - 299 `traced_not_upstream`, concentrated in `SWS_RDS_*` records against
+    `RS_AP_00119`/`RS_AP_00120` and similar — the traceability tables name
+    these records as satisfiers, but the records' own `upstream` metadata
+    (derived earlier via `spec_upstream.py`'s in-text RS-ID scan) doesn't
+    mention that RS. Likely the RDS records' inline `Upstream:` annotations
+    are incomplete relative to the chapter-6 table, or the RS text itself
+    doesn't repeat every RS-ID a table row lists. Needs a manual sample
+    review of a few RDS records against the PDF before deciding whether to
+    patch `upstream` from traceability data or leave the tables as a
+    separate, non-authoritative cross-reference.
+
+## Suggested next steps / improvement ideas
+
+1. **Extend the traceability corpus to RS/FO documents.** Add `RS_TS`,
+   `RS_CRYPTO`, `RS_General`, and other upstream-only documents to the
+   `trace --rebuild` run so `upstream_not_traced` items aren't just "missing
+   because we never scraped that RS's home document." This should eliminate
+   most of the 166 no-record flags.
+2. **Decide an authority policy for `traced_not_upstream`.** Once the RS/FO
+   documents are included, re-run `trace-check`. For any records still
+   flagged, decide whether the traceability table (chapter 6) or the
+   in-body `Upstream:` annotation is authoritative, then either (a) patch
+   `upstream` fields from traceability data via a guarded, reviewed batch
+   update, or (b) keep both as separate fields (`upstream` vs
+   `traceability_upstream`) and surface both in generated docs without
+   forcing a single answer.
+3. **Surface traceability data in the generated HTML docs.** Currently
+   `_src/spec/traceability/*.json` records exist but nothing renders them.
+   Add a "Traceability" tab/section per RS-ID page (or inline on SWS record
+   pages) showing the full `satisfied_by` list with links, backed by the new
+   canonical records.
+4. **Add a regression fixture for the merge bug.** Add a small unit test
+   (e.g. two synthetic per-document rows for the same RS-ID with different
+   `satisfied_by` lists) asserting `write_traceability_records` unions them
+   into one record, so the skip-on-exists regression can't silently return.
+5. **Investigate whether `check_traceability_consistency`'s RS-prefix
+   guessing (`_requirement_prefix`) for the reverse direction
+   (`traced_not_upstream`) correctly maps every SWS module prefix** — a few
+   modules (RDS, SHWA) use non-obvious record-ID prefixes and a wrong
+   guess would silently skip real records instead of flagging them, which
+   could hide additional true positives rather than produce false ones.
+6. **Make the parallel `run.sh` extraction pattern reusable** as a small
+   shared snippet/function (PID-pool with `no_bg_nice`) since this sandbox's
+   zsh lacks `wait -n` and disallows renicing — future run.sh scripts that
+   fan out per-document work will hit the same two issues otherwise.
+
+---
+
 # Next steps: significantly improve PDF extraction quality
 
 ## Objective
@@ -114,7 +199,8 @@ Each campaign should:
 Use `run.sh` parallelism amply:
 
 - Run independent document/backend pairs concurrently.
-- Cap active workers at eight.
+- When possible, spawn active workers (up to 12).
+- don't use "nice"
 - Prefer one worker per document/backend pair; avoid nested multiprocessing.
 - Print progress at least every five seconds: queued, active, completed, failed, records extracted, and disagreements found.
 - Keep compare/report generation as a separate phase after all extraction workers finish.
