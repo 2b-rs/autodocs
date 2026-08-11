@@ -69,17 +69,23 @@ CATEGORIES = {
 # ``curation_ingest.py`` fuer die Weiterverarbeitung.
 RESIDUAL = [
     {"id": "RS_DIAG_04005", "document": "AUTOSAR_FO_RS_Diagnostics", "page": 15,
-     "current_result": "Die Extraktion verwechselt heute zwei benachbarte Requirements auf derselben Seite: "
-                        "Beim Record RS_DIAG_04005 landet der Rest des vorherigen Items, weil die Inline-Referenz "
-                        "„Dependencies: [RS_Diag_04005] ...“ aus RS_Diag_04006 als Start des Records erkannt wird.",
+     "status": "resolved",
+     "resolution": {"git_rev": "cfcf23a3", "resolved_at": "2026-08-11",
+                     "note": "Parser-Fix in spec_scrape.py::_record_slice: bevorzugt echten "
+                             "Definitionsanker „[ID] ... ⌈“ statt Inline-Zitat. RS_DIAG_04005 und "
+                             "RS_Diag_04006 werden seither korrekt als zwei getrennte Requirements "
+                             "extrahiert (Security Access Handling bzw. Session Handling)."},
+     "current_result": "Die Extraktion verwechselte zwei benachbarte Requirements auf derselben Seite: "
+                        "Beim Record RS_DIAG_04005 landete der Rest des vorherigen Items, weil die "
+                        "Inline-Referenz „Dependencies: [RS_Diag_04005] ...“ aus RS_Diag_04006 als Start "
+                        "des Records erkannt wurde.",
      "simple_explanation": "Auf der Seite stehen zwei verschiedene Requirements direkt hintereinander: "
                             "RS_Diag_04006 zu Session Handling und RS_Diag_04005 zu Security Access Handling. "
-                            "Das Werkzeug springt beim zweiten fälschlich schon auf die Verweisstelle im ersten und "
-                            "nicht erst auf die echte Definition darunter.",
-     "decision_ask": "Kein fachlicher Kurationsentscheid mehr nötig: Dies ist ein Parser-Fehler und soll so "
-                      "behoben werden, dass nur echte Definitionsanker „[ID] ... ⌈“ einen Record starten, "
-                      "nicht bloße Inline-Zitate derselben ID."},
+                            "Das Werkzeug sprang beim zweiten faelschlich schon auf die Verweisstelle im "
+                            "ersten und nicht erst auf die echte Definition darunter.",
+     "decision_ask": "War ein Parser-Fehler, kein Kurationsentscheid — behoben, siehe Aufloesung."},
     {"id": "RS_SAF_21101", "document": "AUTOSAR_AP_RS_PlatformHealthManagement", "page": 9,
+     "status": "open",
      "current_result": "Kein Record wird angelegt; die Extraktion verwirft die ID, weil auf dieser "
                         "und der Folgeseite keine zugehoerige Definition (Ueberschrift + Beschreibung) "
                         "gefunden wird.",
@@ -89,6 +95,7 @@ RESIDUAL = [
      "decision_ask": "Ist es richtig, diese reine Zitierstelle zu ignorieren, oder soll trotzdem ein "
                       "leerer Platzhalter-Record angelegt werden, damit die ID nicht ganz fehlt?"},
     {"id": "RS_LT_00001", "document": "AUTOSAR_FO_RS_LogAndTrace", "page": 41,
+     "status": "open",
      "current_result": "Die Extraktion legt den Record ohne eigene Ueberschrift an (Feld „heading“ "
                         "bleibt leer); Beschreibungstext und Metadaten werden trotzdem uebernommen.",
      "simple_explanation": "Bei diesem und rund einem Dutzend weiterer Requirements in diesem "
@@ -134,6 +141,10 @@ STIL = """<style>
 .tr-curation .review-panel summary{background:#eef5ff}
 .tr-curation-note{background:#eef6ff;border:1px solid #cfe0ff;border-radius:10px;padding:.8rem .9rem;margin:.65rem 0 0}
 .tr-curation-note p{margin:.35rem 0}
+.tr-curation-resolved{opacity:.88;background:linear-gradient(180deg,#fff,#f7fbf5)}
+.tr-curation-badge{display:inline-block;background:#dff3e2;color:#1f6b34;border-radius:999px;padding:.1rem .55rem;font-size:.72rem;font-weight:700;letter-spacing:.02em;margin-right:.4rem;vertical-align:middle}
+.tr-curation-resolved .tr-curation-note{background:#eef8ef;border-color:#cdead2}
+.tr-version-note{margin:.5rem 0 0;font-size:.82rem;color:#425064}
 </style>"""
 
 
@@ -361,13 +372,36 @@ def curation_request_payload(r):
 
 
 def curation_request_html(r):
-    payload = curation_request_payload(r)
     rid = esc(r["id"])
     title_link = document_link(r["document"], r.get("id"))
     img_html = ""
     if r.get("page"):
         img = esc(ensure_screenshot(r["document"], r["page"]))
         img_html = '<div class="tr-screenshot"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="Quellseite %s Seite %s" loading="lazy"></a></div>' % (img, img, esc(r["document"]), esc(r["page"]))
+
+    if r.get("status") == "resolved":
+        res = r.get("resolution", {})
+        note = (
+            '<div class="tr-curation-note tr-curation-resolved">'
+            '<p><strong>Status:</strong> Aufgeloest seit Commit <code>%s</code> (%s) — keine Kurator-Entscheidung mehr noetig.</p>'
+            '<p>%s</p>'
+            '</div>'
+            % (esc(res.get("git_rev", "?")), esc(res.get("resolved_at", "?")), esc(res.get("note", "")))
+        )
+        return (
+            '<section class="tr-curation tr-curation-resolved" id="curation-%s">'
+            '<h3><span class="tr-curation-badge">Aufgeloest</span> <code>%s</code> — %s</h3>'
+            '<div class="tr-curation-grid">'
+            '<div>%s</div>'
+            '<div class="tr-curation-copy">'
+            '<p><span class="label">Originaldokument:</span> %s</p>'
+            '<p><span class="label">Was zuvor beobachtet wurde:</span> %s</p>'
+            '%s'
+            '</div></div></section>'
+            % (rid, rid, esc(r["document"]), img_html, title_link, esc(r["current_result"]), note)
+        )
+
+    payload = curation_request_payload(r)
     return (
         '<section class="tr-curation" id="curation-%s">'
         '<h3><code>%s</code> — %s</h3>'
@@ -400,6 +434,82 @@ def kennzahl(titel, wert, hinweis=""):
     return "<article><span>%s</span><strong>%s</strong>%s</article>" % (esc(titel), esc(wert), hz)
 
 
+VERSIONS_DIR = os.path.join(SRC, "spec", "campaigns", "extraction-report-versions")
+
+
+def _git_rev():
+    try:
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except Exception:
+        return None
+
+
+def _load_versions():
+    if not os.path.isdir(VERSIONS_DIR):
+        return []
+    out = []
+    for name in sorted(os.listdir(VERSIONS_DIR)):
+        if name.endswith(".json"):
+            out.append(json.load(open(os.path.join(VERSIONS_DIR, name), encoding="utf-8")))
+    return sorted(out, key=lambda v: v["version"])
+
+
+def _residual_snapshot():
+    return {r["id"]: {"status": r.get("status", "open"),
+                      "document": r["document"], "page": r.get("page")}
+           for r in RESIDUAL}
+
+
+def record_version(datum, total_ids, total_pages):
+    """Neue Berichtsversion anlegen und gegen die letzte abgleichen.
+
+    Jede Version haelt den RESIDUAL-Zustand zum Zeitpunkt der Erzeugung fest.
+    So lassen sich Kurationsanfragen ueber Laeufe hinweg nachverfolgen: neu
+    aufgetreten, weiterhin offen, oder seither aufgeloest — unabhaengig davon,
+    ob eine im Browser abgegebene Review-Entscheidung dazu vorliegt.
+    """
+    os.makedirs(VERSIONS_DIR, exist_ok=True)
+    prev_versions = _load_versions()
+    prev = prev_versions[-1] if prev_versions else None
+    version = (prev["version"] + 1) if prev else 1
+    snapshot = _residual_snapshot()
+
+    diff = {"neu_aufgetreten": [], "weiterhin_offen": [], "neu_aufgeloest": [], "weiterhin_aufgeloest": []}
+    prev_snapshot = prev["residual"] if prev else {}
+    for rid, cur in snapshot.items():
+        was = prev_snapshot.get(rid)
+        if was is None:
+            diff["neu_aufgetreten"].append(rid) if cur["status"] == "open" else None
+        elif was["status"] == "open" and cur["status"] == "open":
+            diff["weiterhin_offen"].append(rid)
+        elif was["status"] == "open" and cur["status"] == "resolved":
+            diff["neu_aufgeloest"].append(rid)
+        elif was["status"] == "resolved" and cur["status"] == "resolved":
+            diff["weiterhin_aufgeloest"].append(rid)
+    entry = {
+        "schema": "extraction-report-version@v1",
+        "version": version,
+        "built_at": datum,
+        "git_rev": _git_rev(),
+        "total_ids": total_ids,
+        "total_pages": total_pages,
+        "residual": snapshot,
+        "diff_vs_previous": diff,
+        "previous_version": prev["version"] if prev else None,
+    }
+    _atomic_write_json(os.path.join(VERSIONS_DIR, "v%04d.json" % version), entry)
+    return entry
+
+
+def _atomic_write_json(path, payload):
+    tmp = path + ".tmp-%d" % os.getpid()
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    os.replace(tmp, path)
+
+
 def load_raw_records(input_dir):
     raw = {}
     for key in CATEGORIES:
@@ -425,28 +535,50 @@ def enrich_records(records):
 
 def baue(datum, gesamt_zaehlung):
     sections_html = "".join(category_section(k, v) for k, v in gesamt_zaehlung["records"].items())
-    curation_html = "".join(curation_request_html(r) for r in RESIDUAL)
-    residual_html = ('<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th><th>Seite</th><th>Entscheidungsfrage</th></tr></thead><tbody>%s</tbody></table>' % "".join(residual_zeile(r) for r in RESIDUAL))
+    offene = [r for r in RESIDUAL if r.get("status", "open") != "resolved"]
+    aufgeloeste = [r for r in RESIDUAL if r.get("status") == "resolved"]
+    curation_html = "".join(curation_request_html(r) for r in offene)
+    resolved_html = "".join(curation_request_html(r) for r in aufgeloeste)
+    residual_html = ('<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th><th>Seite</th><th>Entscheidungsfrage</th></tr></thead><tbody>%s</tbody></table>' % "".join(residual_zeile(r) for r in offene))
     total_ids = sum(len(v) for v in gesamt_zaehlung["records"].values())
     total_pages = len(set((r["document"], r["page"]) for v in gesamt_zaehlung["records"].values() for r in v))
+
+    version_entry = record_version(datum, total_ids, total_pages)
+    diff = version_entry["diff_vs_previous"]
+    version_note = (
+        '<p class="tr-version-note">Berichtsversion <strong>v%d</strong>%s'
+        % (version_entry["version"],
+           " (vorherige: v%d)" % version_entry["previous_version"] if version_entry["previous_version"] else " (erste Version)"))
+    if version_entry["previous_version"]:
+        teile = []
+        if diff["neu_aufgeloest"]:
+            teile.append("seit v%d aufgeloest: %s" % (version_entry["previous_version"], ", ".join(diff["neu_aufgeloest"])))
+        if diff["neu_aufgetreten"]:
+            teile.append("seit v%d neu aufgetreten: %s" % (version_entry["previous_version"], ", ".join(diff["neu_aufgetreten"])))
+        if teile:
+            version_note += " — " + "; ".join(esc(t) for t in teile)
+    version_note += '</p>'
+
     karten = "".join([
         kennzahl("Behobene Fehlerklassen", len(CATEGORIES), "seit der letzten Berichtsaenderung dokumentiert"),
         kennzahl("Betroffene Record-IDs gesamt", total_ids, "vollstaendig unten aufgelistet"),
         kennzahl("Betroffene Quellseiten", total_pages, "je mit Seiten-Screenshot"),
-        kennzahl("Offene Kurationsanfragen", len(RESIDUAL), "oben priorisiert, mit Review-Widget"),
+        kennzahl("Offene Kurationsanfragen", len(offene), "oben priorisiert, mit Review-Widget"),
     ])
     inhalt = "\n".join([
         STIL,
-        '<section class="tr-head"><p>Dieser Extraktions-Bericht beschreibt die Aenderungen an der Pipeline seit der letzten Berichtsaenderung. Oben stehen die <strong>wichtigsten offenen Kurationsanfragen</strong>; darunter folgen die bereits umgesetzten Fixes, standardmaessig eingeklappt, jeweils mit Screenshot und aktuellem Extraktionsergebnis.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p></section>' % esc(datum),
+        '<section class="tr-head"><p>Dieser Extraktions-Bericht beschreibt die Aenderungen an der Pipeline seit der letzten Berichtsaenderung. Oben stehen die <strong>wichtigsten offenen Kurationsanfragen</strong>; darunter folgen die bereits umgesetzten Fixes, standardmaessig eingeklappt, jeweils mit Screenshot und aktuellem Extraktionsergebnis.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p>%s</section>' % (esc(datum), version_note),
         '<h2 class="sect">Kennzahlen</h2><div class="tr-grid">%s</div>' % karten,
         '<h2 class="sect">Kurationsanfragen — bitte zuerst entscheiden</h2>',
         '<p class="dim">Jeder Fall zeigt den heutigen Extraktionsstand, eine kompakte Screenshot-Vorschau der Quelle und in einfacher Sprache, welche Entscheidung benoetigt wird. Deine Antwort landet im vorhandenen Review-Framework und kann spaeter aus dem GitHub-Issue in einen umsetzbaren Aenderungsvorschlag fuer die Pipeline ueberfuehrt werden.</p>',
-        curation_html,
-        '<details class="tr-section"><summary><strong>Alle offenen Kurationsfragen als Liste</strong><span>%d Eintraege</span></summary><div class="tr-table-wrap">%s</div></details>' % (len(RESIDUAL), residual_html),
+        curation_html if curation_html else '<p class="dim">Keine offenen Kurationsanfragen.</p>',
+        '<details class="tr-section"><summary><strong>Alle offenen Kurationsfragen als Liste</strong><span>%d Eintraege</span></summary><div class="tr-table-wrap">%s</div></details>' % (len(offene), residual_html) if offene else "",
+        ('<details class="tr-section"><summary><strong>Aufgeloeste Kurationsanfragen (seit fruehreren Versionen)</strong><span>%d Eintraege</span></summary>%s</details>'
+         % (len(aufgeloeste), resolved_html)) if aufgeloeste else "",
         '<h2 class="sect">Fixes seit der letzten Aenderung — vollstaendige Extraktionsergebnisse</h2>%s' % sections_html,
         '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Antworten auf Kurationsanfragen werden ueber das bestehende Review-Framework als Paket gespeichert; wenn zur Umsetzung KI noetig ist, darf sie nur einen Vorschlag aus den zugehoerigen Dokumenten ableiten. Die Person, die die Extraktionsskripte ausfuehrt, hat immer das letzte Wort und uebernimmt Aenderungen erst nach eigener Pruefung.</p>',
     ])
-    return {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11" % datum[:10], "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
+    return {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11 (v%d)" % (datum[:10], version_entry["version"]), "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
 
 
 def verlinke_startseite(datum):
