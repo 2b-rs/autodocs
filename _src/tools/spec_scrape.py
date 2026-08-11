@@ -1067,6 +1067,11 @@ HISTORY_CONTINUATION_RE = re.compile(
     re.IGNORECASE,
 )
 
+HISTORY_NUMBER_HEADING_CONTINUATION_RE = re.compile(
+    r"\A(?:\s*\n){0,4}(?:.{0,80}\n){0,3}?\s*Number\s+Heading\s*\n",
+    re.IGNORECASE,
+)
+
 TRACEABILITY_HEADING_RE = re.compile(
     r"\A(?:\s*\n){0,4}(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
     re.IGNORECASE,
@@ -1146,6 +1151,14 @@ def _traceability_regions(text: str) -> list:
     return [(match.start(), len(text))]
 
 
+def _history_continuation_page(text: str) -> bool:
+    """Whether a page is a continuation of a multi-page history table/block."""
+    if HISTORY_CONTINUATION_RE.search(text):
+        return True
+    return bool(HISTORY_NUMBER_HEADING_CONTINUATION_RE.search(text)
+                and HISTORY_TABLE_CAPTION_RE.search(text))
+
+
 def _definition_ids(text: str) -> set:
     """Bracketed IDs that are definition candidates on this page.
 
@@ -1179,7 +1192,7 @@ def _history_only_evidence(text_by_page: list) -> dict:
     outside, suppressed = set(), {}
     in_history_continuation = False
     for pageno, text in enumerate(text_by_page, 1):
-        continuation = in_history_continuation and bool(HISTORY_CONTINUATION_RE.search(text))
+        continuation = in_history_continuation and _history_continuation_page(text)
         if continuation:
             definiert = set()
         else:
@@ -1214,7 +1227,7 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
         spellings = defaultdict(list)
         in_history_continuation = False
         for pageno, text in enumerate(pages, 1):
-            continuation = in_history_continuation and bool(HISTORY_CONTINUATION_RE.search(text))
+            continuation = in_history_continuation and _history_continuation_page(text)
             definiert = set() if continuation else _definition_ids(text)
             for raw_rid in ID_RE.findall(text):
                 rid = raw_rid.upper()
