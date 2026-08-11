@@ -1061,6 +1061,12 @@ HISTORY_TABLE_CAPTION_RE = re.compile(
     r"Table\s+[A-Za-z0-9.]+\s*:\s*(?:Added|Changed|Deleted|Removed)\s+"
     r"(?:Requirements?|Constraints?)[^\n]*", re.IGNORECASE)
 
+HISTORY_CONTINUATION_RE = re.compile(
+    r"\A(?:.{0,120}\n){0,6}?△?\s*\n?\s*\d{4}-\d{2}-\d{2}\s+[A-Za-z0-9.\-]+\s*\n"
+    r"\s*AUTOSAR\s*\n\s*Release\s*\n\s*Management",
+    re.IGNORECASE,
+)
+
 
 TOC_LINE_RE = re.compile(r"^.*\.{4,}\s*\d+\s*$", re.MULTILINE)
 BIBLIO_HEADING_RE = re.compile(r"^\s*(?:Bibliography|References)\s*$", re.MULTILINE | re.IGNORECASE)
@@ -1151,10 +1157,27 @@ def _history_occurrences(text: str) -> list:
 def _history_only_evidence(text_by_page: list) -> dict:
     """IDs seen only inside history regions, with page and reason per occurrence."""
     outside, suppressed = set(), {}
+    in_history_continuation = False
     for pageno, text in enumerate(text_by_page, 1):
-        outside |= _definition_ids(text)
-        for rid, reason in _history_occurrences(text):
-            suppressed.setdefault(rid, []).append({"page": pageno, "region": reason})
+        continuation = in_history_continuation and bool(HISTORY_CONTINUATION_RE.search(text))
+        if continuation:
+            definiert = set()
+        else:
+            definiert = _definition_ids(text)
+        outside |= definiert
+        if continuation:
+            for raw_rid in ID_RE.findall(text):
+                rid = raw_rid.upper()
+                suppressed.setdefault(rid, []).append({
+                    "page": pageno,
+                    "region": "Document Change History continuation",
+                })
+        else:
+            for rid, reason in _history_occurrences(text):
+                suppressed.setdefault(rid, []).append({"page": pageno, "region": reason})
+        regions = _history_regions(text)
+        starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
+        in_history_continuation = continuation or starts_new_run
     return {rid: places for rid, places in sorted(suppressed.items())
             if rid not in outside}
 
@@ -1169,8 +1192,10 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
         pages = [strip_noise(x) for x in pdf_pages(path, backend)]
         hits = defaultdict(list)
         spellings = defaultdict(list)
+        in_history_continuation = False
         for pageno, text in enumerate(pages, 1):
-            definiert = _definition_ids(text)
+            continuation = in_history_continuation and bool(HISTORY_CONTINUATION_RE.search(text))
+            definiert = set() if continuation else _definition_ids(text)
             for raw_rid in ID_RE.findall(text):
                 rid = raw_rid.upper()
                 if rx and not rx.search(rid):
@@ -1183,6 +1208,9 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
                     hits[rid].append(pageno)
                 if raw_rid not in spellings[rid]:
                     spellings[rid].append(raw_rid)
+            regions = _history_regions(text)
+            starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
+            in_history_continuation = continuation or starts_new_run
         evidence = _history_only_evidence(pages) if not include_refs else {}
         rejected = sorted(rid for rid in evidence
                           if not rx or rx.search(rid))
