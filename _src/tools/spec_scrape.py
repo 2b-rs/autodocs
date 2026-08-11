@@ -1068,7 +1068,7 @@ HISTORY_CONTINUATION_RE = re.compile(
 )
 
 TRACEABILITY_HEADING_RE = re.compile(
-    r"\A(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
+    r"\A(?:\s*\n){0,4}(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
     re.IGNORECASE,
 )
 
