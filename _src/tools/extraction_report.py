@@ -257,6 +257,25 @@ def ensure_screenshot(doc, pageno):
     return "extraction-report-assets/%s" % name
 
 
+def original_document_url(document, rid=None):
+    branch = next((branch for branch, stem, _ in list(ss.DOCS.values()) + list(ss.RS_DOCS.values())
+                   if stem == document), None)
+    if branch is None:
+        return None
+    url = "%s/%s/%s.pdf" % (ss.BASE_URL, branch, document)
+    if rid:
+        return "%s#nameddest=%s" % (url, rid)
+    return url
+
+
+def document_link(document, rid=None):
+    url = original_document_url(document, rid)
+    label = '<code>%s</code>' % esc(document)
+    if not url:
+        return label
+    return '<a href="%s" target="_blank" rel="noopener">%s</a>' % (esc(url), label)
+
+
 def group_by_page(records):
     by_page = {}
     for r in records:
@@ -272,11 +291,12 @@ def record_block(r, extra=""):
 
 def page_group_html(doc, pageno, records, category):
     img_path = ensure_screenshot(doc, pageno)
+    title_link = document_link(doc, records[0]["id"] if records else None)
     if category == "heading_label":
         blocks = "".join(record_block(r, '<p><strong>Vorher (Ueberschrift):</strong> %s<br><strong>Nachher (Ueberschrift):</strong> %s</p>' % ((esc(r["old_heading"]) if r["old_heading"] else "<em>leer</em>"), esc(r["new_heading"]))) for r in records)
     else:
         blocks = "".join(record_block(r) for r in records)
-    return ('<div class="tr-page-group"><h4><code>%s</code> — Seite %d (%d betroffene ID%s)</h4><div class="tr-screenshot"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="Quellseite %s Seite %d" loading="lazy"></a></div><div class="tr-record-list">%s</div></div>' % (esc(doc), pageno, len(records), "" if len(records) == 1 else "s", esc(img_path), esc(img_path), esc(doc), pageno, blocks))
+    return ('<div class="tr-page-group"><h4>%s — Seite %d (%d betroffene ID%s)</h4><div class="tr-screenshot"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="Quellseite %s Seite %d" loading="lazy"></a></div><div class="tr-record-list">%s</div></div>' % (title_link, pageno, len(records), "" if len(records) == 1 else "s", esc(img_path), esc(img_path), esc(doc), pageno, blocks))
 
 
 def category_section(key, records):
@@ -341,6 +361,7 @@ def curation_request_payload(r):
 def curation_request_html(r):
     payload = curation_request_payload(r)
     rid = esc(r["id"])
+    title_link = document_link(r["document"], r.get("id"))
     img_html = ""
     if r.get("page"):
         img = esc(ensure_screenshot(r["document"], r["page"]))
@@ -351,6 +372,7 @@ def curation_request_html(r):
         '<div class="tr-curation-grid">'
         '<div>%s</div>'
         '<div class="tr-curation-copy">'
+        '<p><span class="label">Originaldokument:</span> %s</p>'
         '<p><span class="label">So verarbeitet das Werkzeug die Daten heute:</span> %s</p>'
         '<p><span class="label">Warum es hier nicht automatisch entscheiden kann:</span> %s</p>'
         '<p><span class="label">Welche Entscheidung wir von der Kuratorin / dem Kurator brauchen:</span> %s</p>'
@@ -363,7 +385,7 @@ def curation_request_html(r):
         '<div class="review-panel-body"><div class="review-fields">'
         '<div class="review-form"><label class="review-field review-field-wide"><span data-i18n="why">Rationale</span><textarea class="review-why" required></textarea></label></div><div class="review-actions"><p class="review-identity" data-review-identity hidden></p><div class="review-decision" role="group" aria-label="Decision"><button type="button" class="review-choice review-choice-accept" data-review-outcome="accept"><span class="review-choice-icon" aria-hidden="true">✓</span><span data-i18n="accept">Approve</span></button><button type="button" class="review-choice review-choice-reject" data-review-outcome="reject"><span class="review-choice-icon" aria-hidden="true">×</span><span data-i18n="reject">Reject</span></button></div></div></div></div></details>'
         '</div></div></section>'
-        % (rid, rid, esc(r["document"]), img_html, esc(r["current_result"]), esc(r["simple_explanation"]), esc(r["decision_ask"]), rid, esc(r["decision_ask"]), json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
+        % (rid, rid, esc(r["document"]), img_html, title_link, esc(r["current_result"]), esc(r["simple_explanation"]), esc(r["decision_ask"]), rid, esc(r["decision_ask"]), json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
     )
 
 
