@@ -123,6 +123,7 @@ RS_DOCS = OrderedDict([
     ("rs-lt", ("FO", "AUTOSAR_FO_RS_LogAndTrace", "RS_LT")),
     ("rs-nm", ("FO", "AUTOSAR_FO_RS_NetworkManagement", "RS_NM")),
     ("rs-ts", ("FO", "AUTOSAR_FO_RS_TimeSync", "RS_TS")),
+    ("prs-e2e", ("FO", "AUTOSAR_FO_PRS_E2EProtocol", "PRS_E2E")),
 ])
 
 ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b", re.IGNORECASE)
