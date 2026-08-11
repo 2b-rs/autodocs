@@ -60,10 +60,42 @@ CATEGORIES = {
     },
 }
 
+# Kurationsanfragen: Faelle, die die Extraktion NICHT automatisch entscheiden
+# kann. Jeder Eintrag erscheint am Seitenanfang mit Screenshot (falls page
+# gesetzt ist), aktuellem Extraktionsergebnis und Klartext-Erklaerung, was
+# heute passiert und welche Entscheidung von der Kuratorin/dem Kurator
+# gefragt ist. Die Entscheidung selbst wird ueber das bestehende
+# Review-Widget (review.js) als GitHub-Issue abgegeben; siehe
+# ``curation_ingest.py`` fuer die Weiterverarbeitung.
 RESIDUAL = [
-    {"id": "RS_DIAG_04005", "dokument": "AUTOSAR_FO_RS_Diagnostics", "seite": "15", "befund": "ID-Schreibweise weicht ab: die reale Definition an dieser Stelle traegt die Schreibung „RS_Diag_04006“. Kein Werkzeugfehler, sondern manuell zu klaerende Gross-/Kleinschreibungs-Abweichung."},
-    {"id": "RS_SAF_21101", "dokument": "AUTOSAR_AP_RS_PlatformHealthManagement", "seite": "9–10", "befund": "Erscheint nur als reine Inline-Zitierung „[RS_SAF_21101]“, keine Definition. Manuell auszuschliessen."},
-    {"id": "RS_LT_00001 u.a. (12 Faelle im 200er Entwurf)", "dokument": "AUTOSAR_FO_RS_LogAndTrace", "seite": "diverse", "befund": "Diese Records tragen im Quell-PDF keinerlei Titelzeile zwischen der eckigen ID und dem Beschreibungstext. Bestaetigtes Dokument-Layout-Merkmal, kein Parser-Fehler."},
+    {"id": "RS_DIAG_04005", "document": "AUTOSAR_FO_RS_Diagnostics", "page": 15,
+     "current_result": "Die Extraktion legt aktuell einen Record unter der Schreibweise "
+                        "„RS_DIAG_04005“ an (Grossbuchstaben, wie im Index-Muster erwartet).",
+     "simple_explanation": "Auf dieser Seite steht die ID im Fliesstext einmal anders geschrieben "
+                            "als „RS_Diag_04006“ (gemischte Gross-/Kleinschreibung). Das Werkzeug kann "
+                            "nicht automatisch entscheiden, welche Schreibweise die eigentliche, "
+                            "gueltige Kennung des Requirements ist — das steht so im Original-PDF.",
+     "decision_ask": "Soll die Kennung als „RS_DIAG_04005“ (aktuelle Extraktion) oder als "
+                      "„RS_Diag_04006“ (abweichende Schreibweise im Fliesstext) gefuehrt werden?"},
+    {"id": "RS_SAF_21101", "document": "AUTOSAR_AP_RS_PlatformHealthManagement", "page": 9,
+     "current_result": "Kein Record wird angelegt; die Extraktion verwirft die ID, weil auf dieser "
+                        "und der Folgeseite keine zugehoerige Definition (Ueberschrift + Beschreibung) "
+                        "gefunden wird.",
+     "simple_explanation": "Die ID taucht hier nur als Verweis in eckigen Klammern auf, z. B. "
+                            "„[RS_SAF_21101]“ — wie eine Fussnote, die auf ein Requirement an anderer "
+                            "Stelle zeigt. Es gibt an dieser Stelle keinen eigenen Beschreibungstext.",
+     "decision_ask": "Ist es richtig, diese reine Zitierstelle zu ignorieren, oder soll trotzdem ein "
+                      "leerer Platzhalter-Record angelegt werden, damit die ID nicht ganz fehlt?"},
+    {"id": "RS_LT_00001", "document": "AUTOSAR_FO_RS_LogAndTrace", "page": 41,
+     "current_result": "Die Extraktion legt den Record ohne eigene Ueberschrift an (Feld „heading“ "
+                        "bleibt leer); Beschreibungstext und Metadaten werden trotzdem uebernommen.",
+     "simple_explanation": "Bei diesem und rund einem Dutzend weiterer Requirements in diesem "
+                            "Dokument fehlt im Original-PDF die sonst uebliche Titelzeile zwischen "
+                            "der eckigen ID und dem Beschreibungstext — das Layout dieser Tabelle hat "
+                            "schlicht keine eigene Spalte dafuer vorgesehen.",
+     "decision_ask": "Soll fuer diese Faelle dauerhaft eine leere Ueberschrift akzeptiert werden, "
+                      "oder soll das Werkzeug ersatzweise die erste Textzeile als Ueberschrift "
+                      "uebernehmen?"},
 ]
 
 STIL = """<style>
@@ -85,11 +117,21 @@ STIL = """<style>
 .tr-table code.nolink{color:#6b7280}
 .tr-page-group{border:1px dashed #d0d5e0;border-radius:10px;padding:.8rem 1rem;margin:.9rem 0;background:#fdfdff}
 .tr-page-group h4{margin:.1rem 0 .6rem;font-size:.95rem}
-.tr-screenshot{margin:.4rem 0 .8rem;border:1px solid #d9dce3;border-radius:8px;overflow:hidden;max-width:52rem}
+.tr-screenshot{margin:.4rem 0 .8rem;max-width:22rem}
+.tr-screenshot a{display:block;border:1px solid #d9dce3;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(20,40,80,.06)}
 .tr-screenshot img{display:block;width:100%;height:auto}
 .tr-record-list details{border:1px solid #e4e7ec;border-radius:8px;margin:.4rem 0;background:#fff}
 .tr-record-list summary{padding:.5rem .75rem;cursor:pointer;display:flex;justify-content:space-between;gap:1rem}
 .tr-pdf-context{white-space:pre-wrap;word-break:break-word;background:#f7f8fa;border-radius:6px;padding:.6rem .75rem;font-size:.83rem;margin:.5rem .75rem .75rem;border:1px solid #eceef2}
+.tr-curation{border:1px solid #d6dbe8;border-radius:14px;background:linear-gradient(180deg,#fff,#f8fbff);padding:1rem 1.05rem;margin:1rem 0 1.25rem;box-shadow:0 5px 18px rgba(20,40,80,.07)}
+.tr-curation h3{margin:.1rem 0 .7rem;font-size:1.02rem}
+.tr-curation-grid{display:grid;grid-template-columns:minmax(0,22rem) minmax(0,1fr);gap:1rem;align-items:start}
+.tr-curation-copy p{margin:.45rem 0}
+.tr-curation-copy .label{font-weight:700;color:#24344d}
+.tr-curation .review-panel{margin-top:.9rem}
+.tr-curation .review-panel summary{background:#eef5ff}
+.tr-curation-note{background:#eef6ff;border:1px solid #cfe0ff;border-radius:10px;padding:.8rem .9rem;margin:.65rem 0 0}
+.tr-curation-note p{margin:.35rem 0}
 </style>"""
 
 
@@ -234,7 +276,7 @@ def page_group_html(doc, pageno, records, category):
         blocks = "".join(record_block(r, '<p><strong>Vorher (Ueberschrift):</strong> %s<br><strong>Nachher (Ueberschrift):</strong> %s</p>' % ((esc(r["old_heading"]) if r["old_heading"] else "<em>leer</em>"), esc(r["new_heading"]))) for r in records)
     else:
         blocks = "".join(record_block(r) for r in records)
-    return ('<div class="tr-page-group"><h4><code>%s</code> — Seite %d (%d betroffene ID%s)</h4><div class="tr-screenshot"><img src="%s" alt="Quellseite %s Seite %d" loading="lazy"></div><div class="tr-record-list">%s</div></div>' % (esc(doc), pageno, len(records), "" if len(records) == 1 else "s", esc(img_path), esc(doc), pageno, blocks))
+    return ('<div class="tr-page-group"><h4><code>%s</code> — Seite %d (%d betroffene ID%s)</h4><div class="tr-screenshot"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="Quellseite %s Seite %d" loading="lazy"></a></div><div class="tr-record-list">%s</div></div>' % (esc(doc), pageno, len(records), "" if len(records) == 1 else "s", esc(img_path), esc(img_path), esc(doc), pageno, blocks))
 
 
 def category_section(key, records):
@@ -243,11 +285,90 @@ def category_section(key, records):
     groups_html = "".join(page_group_html(doc, pageno, recs, key) for (doc, pageno), recs in by_page.items())
     unique_ids = len(records)
     unique_pages = len(by_page)
-    return ('<details class="tr-section" open><summary><strong>%s</strong><span><code>%s</code> — %d ID%s auf %d Seite%s</span></summary><div class="tr-table-wrap"><p><strong>Problem:</strong> %s</p><p><strong>Fix:</strong> %s</p>%s</div></details>' % (esc(meta["title"]), esc(meta["commit"]), unique_ids, "" if unique_ids == 1 else "s", unique_pages, "" if unique_pages == 1 else "n", esc(meta["problem"]), esc(meta["fix"]), groups_html))
+    return ('<details class="tr-section"><summary><strong>%s</strong><span><code>%s</code> — %d ID%s auf %d Seite%s</span></summary><div class="tr-table-wrap"><p><strong>Problem:</strong> %s</p><p><strong>Fix:</strong> %s</p>%s</div></details>' % (esc(meta["title"]), esc(meta["commit"]), unique_ids, "" if unique_ids == 1 else "s", unique_pages, "" if unique_pages == 1 else "n", esc(meta["problem"]), esc(meta["fix"]), groups_html))
+
+
+def curation_request_payload(r):
+    doc = r["document"]
+    page = r.get("page")
+    screenshot = ensure_screenshot(doc, page) if page else None
+    rid = r["id"]
+    result_text = r.get("current_result", "")
+    if rid.startswith("RS_LT_"):
+        basis_id = "RS_LT_00001-group"
+    else:
+        basis_id = rid
+    return {
+        "id": rid,
+        "flag_id": "curation-%s" % basis_id,
+        "kind": "curation_request",
+        "text_hash": "curation-request:%s" % basis_id,
+        "decision_basis": {
+            "finding": {
+                "document": doc,
+                "page": page,
+                "current_result": result_text,
+                "simple_explanation": r.get("simple_explanation"),
+                "decision_ask": r.get("decision_ask"),
+                "screenshot": screenshot,
+            },
+            "instruction": {
+                "goal": "Kurationsentscheidung fuer %s treffen." % rid,
+                "forbidden": [
+                    "Die Aenderung ungeprueft automatisch uebernehmen",
+                    "Den Normtext ohne Beleg umformulieren",
+                ],
+                "steps": [
+                    "Vergleiche Screenshot und aktuelles Extraktionsergebnis.",
+                    "Entscheide, welche fachliche Behandlung kuenftig gelten soll.",
+                    "Begruende die Entscheidung so, dass daraus spaeter eine konkrete Code- oder Regel-Aenderung abgeleitet werden kann.",
+                ],
+            },
+        },
+        "meta": {
+            "heading": r.get("decision_ask"),
+            "document": doc,
+            "page": page,
+            "origin": "extraction_report",
+            "review_reason": "curation_request",
+            "review_status": "pending",
+            "text_en": result_text,
+            "text_raw": result_text,
+        },
+    }
+
+
+def curation_request_html(r):
+    payload = curation_request_payload(r)
+    rid = esc(r["id"])
+    img_html = ""
+    if r.get("page"):
+        img = esc(ensure_screenshot(r["document"], r["page"]))
+        img_html = '<div class="tr-screenshot"><a href="%s" target="_blank" rel="noopener"><img src="%s" alt="Quellseite %s Seite %s" loading="lazy"></a></div>' % (img, img, esc(r["document"]), esc(r["page"]))
+    return (
+        '<section class="tr-curation" id="curation-%s">'
+        '<h3><code>%s</code> — %s</h3>'
+        '<div class="tr-curation-grid">'
+        '<div>%s</div>'
+        '<div class="tr-curation-copy">'
+        '<p><span class="label">So verarbeitet das Werkzeug die Daten heute:</span> %s</p>'
+        '<p><span class="label">Warum es hier nicht automatisch entscheiden kann:</span> %s</p>'
+        '<p><span class="label">Welche Entscheidung wir von der Kuratorin / dem Kurator brauchen:</span> %s</p>'
+        '<div class="tr-curation-note">'
+        '<p><strong>Was mit deiner Antwort passiert:</strong> Deine Antwort wird im bestehenden Review-Framework gespeichert und als GitHub-Issue-Paket abgegeben. Daraus kann spaeter eine konkrete Aenderung fuer die Extraktions-Pipeline abgeleitet werden.</p>'
+        '<p><strong>Wichtig:</strong> Wenn fuer die Umsetzung Textverstehen oder Regelableitung noetig ist, darf ein KI-Agent einen Aenderungsvorschlag aus den zugehoerigen Dokumenten erstellen — aber die Person, die die Extraktionsskripte ausfuehrt, hat immer das letzte Wort und uebernimmt die Aenderung nur nach eigener Pruefung.</p>'
+        '</div>'
+        '<details class="review-panel" id="review-%s"><summary><span class="review-summary-mark" aria-hidden="true">?</span><span><span data-i18n="review">Validate requirement</span><small>%s</small></span><span class="review-summary-state" aria-hidden="true"></span></summary>'
+        '<script type="application/json" class="review-data">%s</script>'
+        '<div class="review-panel-body"><div class="review-fields">'
+        '<div class="review-form"><label class="review-field review-field-wide"><span data-i18n="why">Rationale</span><textarea class="review-why" required></textarea></label></div><div class="review-actions"><p class="review-identity" data-review-identity hidden></p><div class="review-decision" role="group" aria-label="Decision"><button type="button" class="review-choice review-choice-accept" data-review-outcome="accept"><span class="review-choice-icon" aria-hidden="true">✓</span><span data-i18n="accept">Approve</span></button><button type="button" class="review-choice review-choice-reject" data-review-outcome="reject"><span class="review-choice-icon" aria-hidden="true">×</span><span data-i18n="reject">Reject</span></button></div></div></div></div></details>'
+        '</div></div></section>'
+        % (rid, rid, esc(r["document"]), img_html, esc(r["current_result"]), esc(r["simple_explanation"]), esc(r["decision_ask"]), rid, esc(r["decision_ask"]), json.dumps(payload, ensure_ascii=False).replace("</", "<\\/"))
+    )
 
 
 def residual_zeile(r):
-    return ("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td></tr>" % (esc(r["id"]), esc(r["dokument"]), esc(r["seite"]), esc(r["befund"])))
+    return ("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td></tr>" % (esc(r["id"]), esc(r.get("document", "")), esc(r.get("page", "")), esc(r.get("decision_ask", ""))))
 
 
 def kennzahl(titel, wert, hinweis=""):
@@ -280,24 +401,26 @@ def enrich_records(records):
 
 def baue(datum, gesamt_zaehlung):
     sections_html = "".join(category_section(k, v) for k, v in gesamt_zaehlung["records"].items())
-    residual_html = ('<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th><th>Seite</th><th>Befund</th></tr></thead><tbody>%s</tbody></table>' % "".join(residual_zeile(r) for r in RESIDUAL))
+    curation_html = "".join(curation_request_html(r) for r in RESIDUAL)
+    residual_html = ('<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th><th>Seite</th><th>Entscheidungsfrage</th></tr></thead><tbody>%s</tbody></table>' % "".join(residual_zeile(r) for r in RESIDUAL))
     total_ids = sum(len(v) for v in gesamt_zaehlung["records"].values())
     total_pages = len(set((r["document"], r["page"]) for v in gesamt_zaehlung["records"].values() for r in v))
     karten = "".join([
-        kennzahl("Behobene Fehlerklassen", len(CATEGORIES), "heute verifiziert, corpus-weit"),
+        kennzahl("Behobene Fehlerklassen", len(CATEGORIES), "seit der letzten Berichtsaenderung dokumentiert"),
         kennzahl("Betroffene Record-IDs gesamt", total_ids, "vollstaendig unten aufgelistet"),
         kennzahl("Betroffene Quellseiten", total_pages, "je mit Seiten-Screenshot"),
-        kennzahl("Backend-Abweichungen", "0", "pypdf vs. builtin, corpus-weit"),
+        kennzahl("Offene Kurationsanfragen", len(RESIDUAL), "oben priorisiert, mit Review-Widget"),
     ])
     inhalt = "\n".join([
         STIL,
-        '<section class="tr-head"><p>Am 2026-08-11 wurden vier unabhaengige Extraktions-Fehlerklassen in <code>_src/tools/spec_scrape.py</code> gefunden und behoben. Diese Seite listet <strong>jede betroffene Record-ID im Volltext</strong>, gruppiert nach Quellseite, mit einem Screenshot der jeweiligen PDF-Seite zur unabhaengigen Nachpruefung.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p></section>' % esc(datum),
+        '<section class="tr-head"><p>Dieser Extraktions-Bericht beschreibt die Aenderungen an der Pipeline seit der letzten Berichtsaenderung. Oben stehen die <strong>wichtigsten offenen Kurationsanfragen</strong>; darunter folgen die bereits umgesetzten Fixes, standardmaessig eingeklappt, jeweils mit Screenshot und aktuellem Extraktionsergebnis.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p></section>' % esc(datum),
         '<h2 class="sect">Kennzahlen</h2><div class="tr-grid">%s</div>' % karten,
-        '<h2 class="sect">Behobene Fehlerklassen — vollstaendige Abweichungsliste</h2>%s' % sections_html,
-        '<h2 class="sect">Verbleibende manuelle Pruefung</h2>',
-        '<p class="dim">Kein weiterer Werkzeugfehler bekannt; diese Faelle benoetigen eine Kurator-Entscheidung im Rahmen der Benchmark-Freigabe.</p>',
-        '<div class="tr-table-wrap">%s</div>' % residual_html,
-        '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Der Bericht veraendert keine Spec-Records und wird nicht in die Sprachbaeume uebersetzt. Details siehe <code>NEXTSTEPS.md</code>.</p>',
+        '<h2 class="sect">Kurationsanfragen — bitte zuerst entscheiden</h2>',
+        '<p class="dim">Jeder Fall zeigt den heutigen Extraktionsstand, eine kompakte Screenshot-Vorschau der Quelle und in einfacher Sprache, welche Entscheidung benoetigt wird. Deine Antwort landet im vorhandenen Review-Framework und kann spaeter aus dem GitHub-Issue in einen umsetzbaren Aenderungsvorschlag fuer die Pipeline ueberfuehrt werden.</p>',
+        curation_html,
+        '<details class="tr-section"><summary><strong>Alle offenen Kurationsfragen als Liste</strong><span>%d Eintraege</span></summary><div class="tr-table-wrap">%s</div></details>' % (len(RESIDUAL), residual_html),
+        '<h2 class="sect">Fixes seit der letzten Aenderung — vollstaendige Extraktionsergebnisse</h2>%s' % sections_html,
+        '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Antworten auf Kurationsanfragen werden ueber das bestehende Review-Framework als Paket gespeichert; wenn zur Umsetzung KI noetig ist, darf sie nur einen Vorschlag aus den zugehoerigen Dokumenten ableiten. Die Person, die die Extraktionsskripte ausfuehrt, hat immer das letzte Wort und uebernimmt Aenderungen erst nach eigener Pruefung.</p>',
     ])
     return {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11" % datum[:10], "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
 
@@ -335,6 +458,9 @@ def cmd_render_shots(inputs):
     for inp in inputs:
         records = json.load(open(inp, encoding="utf-8"))
         for r in records:
+            pages.add((r["document"], int(r["page"])))
+    for r in RESIDUAL:
+        if r.get("page"):
             pages.add((r["document"], int(r["page"])))
     for doc, pageno in sorted(pages):
         ensure_screenshot(doc, pageno)
