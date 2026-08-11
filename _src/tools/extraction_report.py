@@ -569,37 +569,69 @@ def enrich_records(records):
     return records
 
 
-def _versions_list_html():
-    versions = list(reversed(_load_versions()))
+def _version_row_html(v):
+    version_no = int(v.get("version", 0))
+    report_file = v.get("report_file") or ("extraction-report-v%04d.html" % version_no)
+    predecessor_file = v.get("predecessor_file")
+    if not predecessor_file and v.get("previous_version"):
+        predecessor_file = "extraction-report-v%04d.html" % int(v["previous_version"])
+    pred = ('<a href="%s">Vorgaenger</a>' % esc(predecessor_file)) if predecessor_file else '–'
+    scripts = v.get("scripts", {})
+    er = scripts.get("extraction_report", {})
+    ssv = scripts.get("spec_scrape", {})
+    return (
+        '<tr>'
+        '<td><a href="%s">v%d</a></td>'
+        '<td>%s</td>'
+        '<td>%s</td>'
+        '<td><code>%s</code> (%s)<br><code>%s</code> (%s)</td>'
+        '<td>%s</td>'
+        '<td>%s</td>'
+        '</tr>'
+        % (esc(report_file), version_no, esc(v.get("built_at", "")),
+           esc(v.get("git_rev", "")), esc(er.get("git_rev", "")), esc(er.get("checked_in_at", "")),
+           esc(ssv.get("git_rev", "")), esc(ssv.get("checked_in_at", "")),
+           pred, esc(v.get("script_delta", "")))
+    )
+
+
+def _versions_table_html(versions):
     if not versions:
         return '<p class="dim">Noch keine versionierten Extraktions-Berichte vorhanden.</p>'
-    items = []
-    for v in versions:
-        version_no = int(v.get("version", 0))
-        report_file = v.get("report_file") or ("extraction-report-v%04d.html" % version_no)
-        predecessor_file = v.get("predecessor_file")
-        if not predecessor_file and v.get("previous_version"):
-            predecessor_file = "extraction-report-v%04d.html" % int(v["previous_version"])
-        pred = ('<a href="%s">Vorgaenger</a>' % esc(predecessor_file)) if predecessor_file else '–'
-        scripts = v.get("scripts", {})
-        er = scripts.get("extraction_report", {})
-        ssv = scripts.get("spec_scrape", {})
-        items.append(
-            '<tr>'
-            '<td><a href="%s">v%d</a></td>'
-            '<td>%s</td>'
-            '<td>%s</td>'
-            '<td><code>%s</code> (%s)<br><code>%s</code> (%s)</td>'
-            '<td>%s</td>'
-            '<td>%s</td>'
-            '</tr>'
-            % (esc(report_file), version_no, esc(v.get("built_at", "")),
-               esc(v.get("git_rev", "")), esc(er.get("git_rev", "")), esc(er.get("checked_in_at", "")),
-               esc(ssv.get("git_rev", "")), esc(ssv.get("checked_in_at", "")),
-               pred, esc(v.get("script_delta", "")))
-        )
+    rows = "".join(_version_row_html(v) for v in versions)
     return ('<div class="tr-table-wrap"><table class="tr-table"><thead><tr><th>Bericht</th><th>Ausgefuehrt am</th><th>Repo-Stand</th><th>Extraktionsskripte</th><th>Vorgaenger</th><th>Delta zur vorigen Script-Version</th></tr></thead><tbody>%s</tbody></table></div>'
-            % "".join(items))
+            % rows)
+
+
+ARCHIVE_PAGE = os.path.join(SRC, "sources", "pages", "extraction-reports.json")
+
+
+def write_archive_page(versions):
+    tabelle = _versions_table_html(list(reversed(versions)))
+    inhalt = "\n".join([
+        STIL,
+        '<section class="tr-head"><p>Vollstaendige Historie aller Extraktions-Berichtsversionen, jeweils mit Ausfuehrungszeitpunkt, Vorgaenger-Verweis, Extraktionsskript-Version (Git-Hash + Checkin-Datum von <code>extraction_report.py</code> und <code>spec_scrape.py</code>) und Delta zur vorigen Script-Version.</p></section>',
+        tabelle,
+    ])
+    seite = {"file": "extraction-reports.html", "title": "Extraktions-Berichte — Versionshistorie",
+            "body_class": None, "nolang": True,
+            "nav_html": '<a href="index.html">Start</a> / <a href="extraction-report.html">Extraktions-Bericht</a> / Versionshistorie',
+            "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
+    with open(ARCHIVE_PAGE, "w", encoding="utf-8") as f:
+        json.dump(seite, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+
+
+def _versions_summary_html():
+    versions = list(reversed(_load_versions()))
+    write_archive_page(versions)
+    if not versions:
+        return '<p class="dim">Noch keine versionierten Extraktions-Berichte vorhanden.</p>'
+    recent = versions[:3]
+    tabelle = _versions_table_html(recent)
+    hinweis = ('<p class="dim">Zeigt die %d juengsten von insgesamt %d Berichtsversionen. <a href="extraction-reports.html">Vollstaendige Versionshistorie ansehen</a>.</p>'
+              % (len(recent), len(versions))) if len(versions) > len(recent) else '<p class="dim"><a href="extraction-reports.html">Vollstaendige Versionshistorie ansehen</a>.</p>'
+    return tabelle + hinweis
 
 
 def write_version_page(page, version_entry):
@@ -708,7 +740,7 @@ def baue(datum, gesamt_zaehlung):
 
 def verlinke_startseite(datum):
     idx = json.load(open(INDEX, encoding="utf-8"))
-    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Aktueller Extraktions-Bericht, Stand %s: <a href="extraction-report.html">neueste Version öffnen</a>.</p><p>Alle versionierten Extraktions-Berichte:</p>%s</aside>' % (html.escape(datum), _versions_list_html()), "tail": "\n"}
+    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Aktueller Extraktions-Bericht, Stand %s: <a href="extraction-report.html">neueste Version öffnen</a>.</p><p>Juengste Berichtsversionen:</p>%s</aside>' % (html.escape(datum), _versions_summary_html()), "tail": "\n"}
     idx["main"] = [b for b in idx["main"] if "tr-home-link" not in b.get("html", "")]
     pos = 3 if any("traceability.html" in b.get("html", "") for b in idx["main"]) else 2
     idx["main"].insert(pos, block)
