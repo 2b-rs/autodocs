@@ -373,7 +373,10 @@ After quality gates pass:
 
 ### Campaign A — Baseline
 
-- [ ] Freeze corpus and 200-record benchmark.
+- [ ] Freeze corpus and 200-record benchmark. Draft built from campaign `2026-08-11-pagespan` at `_src/tests/fixtures/spec_extraction/benchmark-draft.json`: 200 records, 18/18 canonical documents, page provenance on every record, every difficult shape at or above 25 examples. Open: manual review of expected boundaries/headings/fields/page ranges, and the negative fixtures for TOC entries and cross-references.
+- [x] Emit per-record page-span provenance (`pages`, `pages_all_definitions`, `complete_end`) and observed ID spelling (`id_observed`) from `phase_props`, verified identical across both backends on all 18 RS documents (810 records each, 109 multi-page, 809/810 terminated).
+- [ ] Investigate `RS_SM_00201` (AUTOSAR_AP_RS_StateManagement p.22): no record terminator found within the six-page scan window.
+- [ ] Decide the canonical policy for the 269 records whose source spelling uses lowercase namespace tokens (e.g. `RS_Diag_00024` normalized to `RS_DIAG_00024`). Draft generated from campaign `2026-08-11-pagespan` at `_src/tests/fixtures/spec_extraction/benchmark-draft.json`: 200 records, 18/18 canonical documents, page provenance on every record, all difficult shapes at or above 25 examples. Still `draft-needs-manual-review`; freezing requires the manual review of expected boundaries, headings, fields and page ranges, plus the negative fixtures for TOC entries and cross-references.
 - [x] Run both current backends over all canonical documents.
 - [x] Produce the first side-by-side report and initial machine-readable failure taxonomy.
 - [x] Recover builtin record-boundary glyphs through ToUnicode CMap decoding and validate the improvement across all 18 RS documents.

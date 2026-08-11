@@ -1053,6 +1053,7 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
     for path in pdfs:
         pages = [strip_noise(x) for x in pdf_pages(path, backend)]
         hits = defaultdict(list)
+        spellings = defaultdict(list)
         for pageno, text in enumerate(pages, 1):
             definiert = {rid.upper() for rid in DEF_RE.findall(text)}
             for raw_rid in ID_RE.findall(text):
@@ -1065,8 +1066,11 @@ def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
                     continue          # blosse Referenz (z. B. Upstream-Angabe)
                 if pageno not in hits[rid]:
                     hits[rid].append(pageno)
+                if raw_rid not in spellings[rid]:
+                    spellings[rid].append(raw_rid)
         result[path.name] = {"path": str(path), "pages": len(pages),
-                            "ids": {k: v for k, v in sorted(hits.items())}}
+                            "ids": {k: v for k, v in sorted(hits.items())},
+                            "spellings": {k: v for k, v in sorted(spellings.items())}}
     return result
 
 
@@ -1295,6 +1299,43 @@ def namespace_from_scope(scope: str):
     return parts[0], s
 
 
+MAX_RECORD_PAGES = 6
+
+
+def _record_page_span(pages: list, start_page: int, rid: str) -> tuple[list[int], bool]:
+    """Inclusive page numbers a record occupies, plus whether its end was seen.
+
+    The window grows until ``_record_slice`` observes a terminator (spec-item
+    end or the next bracketed definition).  Without a terminator the record is
+    reported as unterminated instead of silently claiming a single page.
+    """
+    last = len(pages)
+    for width in range(1, MAX_RECORD_PAGES + 1):
+        stop = min(start_page - 1 + width, last)
+        joined = "\n".join(pages[start_page - 1:stop])
+        m = re.search(re.escape(rid), joined, re.IGNORECASE)
+        if not m:
+            continue
+        rest = joined[m.end():]
+        if "\u230b" in rest or DEF_RE.search(rest):
+            consumed = rest.split("\u230b")[0]
+            nxt = DEF_RE.search(rest)
+            if nxt:
+                consumed = min(consumed, rest[:nxt.start()], key=len)
+            # Count how many of the joined pages the consumed slice reaches into.
+            offset = m.end() + len(consumed)
+            used, cursor = start_page, 0
+            for idx in range(start_page - 1, stop):
+                cursor += len(pages[idx]) + 1
+                used = idx + 1
+                if cursor >= offset:
+                    break
+            return list(range(start_page, used + 1)), True
+        if stop >= last:
+            break
+    return list(range(start_page, min(start_page, len(pages)) + 1)), False
+
+
 def phase_props(index: dict, only_ids=None, backend="auto") -> dict:
     keep = set(only_ids or ())
     out = OrderedDict()
@@ -1314,6 +1355,14 @@ def phase_props(index: dict, only_ids=None, backend="auto") -> dict:
                           "requirement_text": None, "namespace": None, "enclosing": None}
             rec["document"] = name
             rec["page"] = pagenos[0] if pagenos else None
+            if pagenos:
+                span, terminated = _record_page_span(pages, pagenos[0], rid)
+            else:
+                span, terminated = [], False
+            rec["pages"] = span
+            rec["pages_all_definitions"] = list(pagenos)
+            rec["complete_end"] = terminated
+            rec["id_observed"] = (info.get("spellings", {}).get(rid) or [rid])[0]
             out[rid] = rec
     return out
 
