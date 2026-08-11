@@ -174,6 +174,78 @@ def check_langs():
             problems.append("Flagge fehlt: flags/%s.svg" % f)
 
 
+
+
+def check_requirement_review_schema():
+    """Schema-Gate fuer review-faehige Requirement-Records.
+
+    Bevor aus offenen Review-Befunden echte Prosa-Requirements im Tree landen,
+    muss die Quelle denselben Mindestvertrag erfuellen wie der HTML-Workflow und
+    review_ingest.py. Diese Pruefung blockiert Schreiblaeufe frueh, wenn
+    requirement_text-Bloecke oder review_flags nur halb erweitert wurden.
+    """
+    import json as _json
+    wurzel = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'spec', 'records')
+    if not os.path.isdir(wurzel):
+        return
+    fehler = []
+    for ordner, _, dateien in os.walk(wurzel):
+        for datei in dateien:
+            if not datei.endswith('.json'):
+                continue
+            pfad = os.path.join(ordner, datei)
+            rec = _json.load(open(pfad, encoding='utf-8'))
+            rid = rec.get('id', datei)
+            rmeta = rec.get('requirement_meta')
+            for i, block in enumerate(rec.get('blocks', [])):
+                if block.get('t') != 'requirement_text':
+                    continue
+                wo = '%s:block[%d]' % (rid, i)
+                for feld in ('text_en', 'text_raw', 'repairs', 'suspects'):
+                    if feld not in block:
+                        fehler.append('%s fehlt %s' % (wo, feld))
+                if not isinstance(block.get('repairs', []), list):
+                    fehler.append('%s repairs muss Liste sein' % wo)
+                if not isinstance(block.get('suspects', []), list):
+                    fehler.append('%s suspects muss Liste sein' % wo)
+                if rmeta is None:
+                    fehler.append('%s hat requirement_text ohne requirement_meta' % wo)
+                else:
+                    for feld in ('confidence', 'review_status', 'review_reason'):
+                        if not str(rmeta.get(feld) or '').strip():
+                            fehler.append('%s requirement_meta.%s fehlt' % (wo, feld))
+                flags = block.get('review_flags') or []
+                if not isinstance(flags, list):
+                    fehler.append('%s review_flags muss Liste sein' % wo)
+                    continue
+                for j, flag in enumerate(flags):
+                    wf = '%s.review_flags[%d]' % (wo, j)
+                    for feld in ('id', 'status'):
+                        if not str(flag.get(feld) or '').strip():
+                            fehler.append('%s %s fehlt' % (wf, feld))
+                    if flag.get('status', 'open') == 'open':
+                        finding = (flag.get('decision_basis') or {}).get('finding')
+                        if finding is None:
+                            if not str(flag.get('reason') or '').strip():
+                                fehler.append('%s offenes Flag ohne reason' % wf)
+                        else:
+                            if not isinstance(finding.get('suspects', []), list):
+                                fehler.append('%s decision_basis.finding.suspects muss Liste sein' % wf)
+                            if not isinstance(finding.get('repairs', []), list):
+                                fehler.append('%s decision_basis.finding.repairs muss Liste sein' % wf)
+                    else:
+                        for feld in ('decided_by', 'decided_at', 'rationale', 'identity', 'text_hash', 'decision_basis'):
+                            if feld not in flag or (feld != 'decision_basis' and not str(flag.get(feld) or '').strip()):
+                                fehler.append('%s resolved/rejected Flag ohne %s' % (wf, feld))
+                        basis = flag.get('decision_basis') or {}
+                        if not basis.get('finding'):
+                            fehler.append('%s decision_basis.finding fehlt' % wf)
+                        if flag.get('identity') not in ('github_authenticated', 'self_declared'):
+                            fehler.append('%s identity ungueltig: %r' % (wf, flag.get('identity')))
+    if fehler:
+        problems.append('Schema-Gate review-faehige Requirements verletzt (%d), z.B. %s'
+                        % (len(fehler), fehler[:10]))
+
 def check_namespaces():
     """Jeder Spec-Record traegt einen expliziten, konsistenten ns-Block.
 
@@ -217,6 +289,7 @@ def main():
     check_build()
     check_links()
     check_langs()
+    check_requirement_review_schema()
     check_namespaces()
     if problems:
         print("PROBLEME:")

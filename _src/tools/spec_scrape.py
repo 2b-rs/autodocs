@@ -2040,6 +2040,17 @@ def write_traceability_records(traceability: dict, campaign: str, actor: str = "
         links = [f'<code>{sid}</code>' for sid in downstream]
         downstream_html = ', '.join(links) if links else '<span class="dim">(leer)</span>'
         title = bucket.get("description") or rid
+        # Deterministic ordering: sort rows by source document name (then page)
+        # so which document ends up "first" for the summary document/page
+        # fields never depends on filesystem/glob iteration order across
+        # rebuild runs. Without this, re-running --rebuild with the exact
+        # same PDF set could still change traceability_meta.document/.page
+        # for records with rows from >1 document, producing diff noise that
+        # looks like a content change but isn't.
+        bucket["rows"].sort(key=lambda row: (
+            row.get("source_document") or Path(row["document"]).stem,
+            row.get("page") if row.get("page") is not None else -1,
+        ))
         first_row = bucket["rows"][0]
         first_doc = first_row.get("source_document") or Path(first_row["document"]).stem
         first_url = _traceability_pdf_url(first_doc, rid)
@@ -2153,13 +2164,115 @@ def load_traceability_index() -> dict:
         rid = str(rec.get("id", "")).upper()
         if not rid:
             continue
+        source_rows = []
+        for row in (meta.get("source_rows") or []):
+            if not isinstance(row, dict):
+                continue
+            source_rows.append({
+                "document": row.get("document"),
+                "source_document": row.get("source_document"),
+                "page": row.get("page"),
+                "section_start_page": row.get("section_start_page"),
+                "description": row.get("description") or "",
+                "satisfied_by": [str(s).upper() for s in (row.get("satisfied_by") or []) if s],
+            })
         index[rid] = {
             "satisfied_by": [s.upper() for s in (meta.get("satisfied_by") or [])],
             "document": meta.get("document"),
             "page": meta.get("page"),
             "description": meta.get("description") or "",
+            "path": str(path),
+            "provenance": {
+                "origin": meta.get("origin") or "chapter6_requirements_tracing",
+                "record_path": str(path),
+                "source_documents": list(meta.get("source_documents") or []),
+                "source_rows": source_rows,
+            },
         }
     return index
+
+
+def siblings_for_upstream(record_id: str, trace_index: dict | None = None) -> dict:
+    """Return the RS upstream(s) for one DB record and all sibling satisfiers.
+
+    This is the two-hop navigation needed for reviewer workflows:
+    record -> upstream RS -> every other record that satisfies the same RS,
+    with source-document provenance from the canonical traceability record.
+    """
+    target = str(record_id or "").upper()
+    if not target:
+        return {"record": target, "found": False, "error": "missing_record_id", "upstreams": []}
+
+    trace_index = trace_index if trace_index is not None else load_traceability_index()
+
+    rec = None
+    rec_path = None
+    by_upstream = {}
+    for path in sorted(RECORDS.rglob("*.json")):
+        try:
+            cur = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        rid = str(cur.get("id", "")).upper()
+        if not rid:
+            continue
+        if rid == target:
+            rec = cur
+            rec_path = str(path)
+        for item in (cur.get("upstream") or []):
+            if not isinstance(item, dict) or not item.get("id"):
+                continue
+            rs_id = str(item.get("id", "")).upper()
+            by_upstream.setdefault(rs_id, []).append({
+                "record": rid,
+                "path": str(path),
+                **({"document": item.get("document")} if item.get("document") else {}),
+                **({"page": item.get("page")} if item.get("page") is not None else {}),
+                **({"source": item.get("source")} if item.get("source") else {}),
+            })
+
+    if rec is None:
+        return {"record": target, "found": False, "error": "record_not_found", "upstreams": []}
+
+    upstream_entries = []
+    for item in (rec.get("upstream") or []):
+        if not isinstance(item, dict) or not item.get("id"):
+            continue
+        upstream_entries.append({
+            "id": str(item.get("id", "")).upper(),
+            **({"document": item.get("document")} if item.get("document") else {}),
+            **({"page": item.get("page")} if item.get("page") is not None else {}),
+            **({"url": item.get("url")} if item.get("url") else {}),
+            **({"source": item.get("source")} if item.get("source") else {}),
+        })
+
+    results = []
+    for upstream in upstream_entries:
+        rs_id = upstream["id"]
+        trace_row = trace_index.get(rs_id) or {}
+        siblings = sorted(by_upstream.get(rs_id, []), key=lambda item: item["record"])
+        results.append({
+            "rs_id": rs_id,
+            "record_has_upstream": True,
+            "upstream": upstream,
+            "sibling_records": siblings,
+            "traceability": {
+                "record_path": trace_row.get("path"),
+                "document": trace_row.get("document"),
+                "page": trace_row.get("page"),
+                "description": trace_row.get("description") or "",
+                "satisfied_by": list(trace_row.get("satisfied_by") or []),
+                "source_documents": list(((trace_row.get("provenance") or {}).get("source_documents") or [])),
+                "source_rows": list(((trace_row.get("provenance") or {}).get("source_rows") or [])),
+            },
+        })
+
+    return {
+        "record": target,
+        "found": True,
+        "path": rec_path,
+        "upstreams": results,
+    }
 
 
 def check_traceability_consistency(trace_index: dict | None = None) -> dict:
@@ -2177,6 +2290,40 @@ def check_traceability_consistency(trace_index: dict | None = None) -> dict:
     Beide Fälle werden als Review-Kandidaten zurückgegeben, nicht automatisch
     verändert — die Kuratierung bleibt bewusst ein manueller Schritt.
     """
+    def upstream_provenance(rec: dict, path: Path, rs_id: str) -> dict:
+        upstream = []
+        for item in (rec.get("upstream") or []):
+            if not isinstance(item, dict):
+                continue
+            current_id = str(item.get("id", "")).upper()
+            entry = {k: item[k] for k in ("id", "document", "page", "url") if item.get(k) is not None}
+            entry["id"] = current_id
+            upstream.append(entry)
+        matched = [u for u in upstream if u.get("id") == rs_id]
+        return {
+            "origin": "record_upstream_field",
+            "record_path": str(path),
+            "record_id": str(rec.get("id", "")).upper(),
+            "matched_upstream": matched,
+            "all_upstream": upstream,
+        }
+
+    def trace_side_provenance(trace_row: dict, rs_id: str, satisfier: str | None = None) -> dict:
+        source_rows = []
+        for row in ((trace_row.get("provenance") or {}).get("source_rows") or []):
+            if satisfier is None or satisfier in set(row.get("satisfied_by") or []):
+                source_rows.append(row)
+        return {
+            "origin": (trace_row.get("provenance") or {}).get("origin") or "chapter6_requirements_tracing",
+            "record_path": trace_row.get("path"),
+            "record_id": rs_id,
+            "document": trace_row.get("document"),
+            "page": trace_row.get("page"),
+            "description": trace_row.get("description") or "",
+            "source_documents": list(((trace_row.get("provenance") or {}).get("source_documents") or [])),
+            "matched_source_rows": source_rows,
+        }
+
     trace_index = trace_index if trace_index is not None else load_traceability_index()
     flagged = []
     checked = 0
@@ -2200,13 +2347,40 @@ def check_traceability_consistency(trace_index: dict | None = None) -> dict:
                     "record": rid, "path": str(path), "rs_id": rs_id,
                     "issue": "upstream_not_traced",
                     "detail": "RS %s hat keinen Traceability-Record." % rs_id,
+                    "provenance": {
+                        "db_upstream": upstream_provenance(rec, path, rs_id),
+                        "traceability": {
+                            "origin": "chapter6_requirements_tracing",
+                            "record_path": None,
+                            "record_id": rs_id,
+                            "matched": False,
+                            "reason": "missing_traceability_record",
+                            "matched_source_rows": [],
+                            "source_documents": [],
+                        },
+                    },
                 })
             elif rid not in trace_row["satisfied_by"]:
+                satisfied_by = trace_row["satisfied_by"]
+                if not satisfied_by:
+                    reason = "traceability_row_has_empty_satisfied_by"
+                    detail = "RS %s hat einen Traceability-Record, dessen 'Satisfied by'-Liste leer ist." % rs_id
+                else:
+                    reason = "record_not_listed_under_satisfied_by"
+                    detail = "RS %s listet %s nicht unter 'Satisfied by'." % (rs_id, rid)
                 flagged.append({
                     "record": rid, "path": str(path), "rs_id": rs_id,
                     "issue": "upstream_not_traced",
-                    "detail": "RS %s listet %s nicht unter 'Satisfied by'." % (rs_id, rid),
-                    "traced_satisfied_by": trace_row["satisfied_by"],
+                    "detail": detail,
+                    "traced_satisfied_by": satisfied_by,
+                    "provenance": {
+                        "db_upstream": upstream_provenance(rec, path, rs_id),
+                        "traceability": {
+                            **trace_side_provenance(trace_row, rs_id, rid),
+                            "matched": False,
+                            "reason": reason,
+                        },
+                    },
                 })
     for rs_id, trace_row in trace_index.items():
         for satisfier in trace_row["satisfied_by"]:
@@ -2231,6 +2405,14 @@ def check_traceability_consistency(trace_index: dict | None = None) -> dict:
                     "detail": "Traceability-Tabelle nennt %s als Erfueller von %s, "
                               "Record weist dieses RS nicht als Upstream aus (hat: %s)."
                               % (satisfier, rs_id, sorted(upstream_ids) or "keins"),
+                    "provenance": {
+                        "traceability": {
+                            **trace_side_provenance(trace_row, rs_id, satisfier),
+                            "matched": True,
+                            "reason": "record_listed_under_satisfied_by",
+                        },
+                        "db_upstream": upstream_provenance(rec, candidate, rs_id),
+                    },
                 })
     return {
         "checked_records": checked,
@@ -2271,7 +2453,7 @@ def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
 # ===========================================================================
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("phase", choices=["ids", "props", "reqs", "trace", "trace-check", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
+    ap.add_argument("phase", choices=["ids", "props", "reqs", "trace", "trace-check", "siblings", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
     ap.add_argument("--pdf-dir", type=Path, default=PDF_CACHE)
     ap.add_argument("--module", action="append", help="Modulkuerzel, z. B. log (mehrfach)")
     ap.add_argument("--doc", action="append", help="PDF-Basisname (mehrfach)")
@@ -2312,6 +2494,30 @@ def main(argv=None) -> int:
             for item in report["flagged"][: args.limit or 20]:
                 print("   [%s] %s (%s): %s" % (item["issue"], item["record"], item["rs_id"], item["detail"]))
         return 1 if report["flagged_count"] else 0
+
+    if args.phase == "siblings":
+        ids = [str(x).upper() for x in (args.id or []) if str(x).strip()]
+        if len(ids) != 1:
+            print("siblings erwartet genau ein --id RECORD_ID", file=sys.stderr)
+            return 2
+        payload = siblings_for_upstream(ids[0])
+        if args.json:
+            print(json.dumps(payload, ensure_ascii=False, indent=1))
+        else:
+            if not payload.get("found"):
+                print("Record nicht gefunden: %s" % ids[0], file=sys.stderr)
+                return 2
+            print("record: %s" % payload["record"])
+            print("path: %s" % payload.get("path"))
+            print("upstreams: %d" % len(payload.get("upstreams") or []))
+            for item in payload.get("upstreams") or []:
+                trace = item.get("traceability") or {}
+                print(" - %s" % item["rs_id"])
+                print("   siblings: %d" % len(item.get("sibling_records") or []))
+                print("   traceability: %s p.%s" % (trace.get("document"), trace.get("page")))
+                if trace.get("source_documents"):
+                    print("   source_documents: %s" % ', '.join(trace.get("source_documents") or []))
+        return 0
 
     if not args.pdf_dir.is_dir():
         print("PDF-Verzeichnis fehlt: %s" % args.pdf_dir, file=sys.stderr)

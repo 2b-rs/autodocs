@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Iterable, Mapping, Sequence
 
 EXPECTED_UNRESOLVED = {"RS_AP_00154", "RS_DIAG_04005"}
+TRACE_RECORDS = Path(__file__).resolve().parent.parent / "spec" / "traceability"
 
 RS_ID_RE = re.compile(r"(?<![A-Z0-9_])(RS_[A-Z0-9]+(?:_[A-Z0-9]+)+)(?![A-Z0-9_])", re.I)
 
@@ -60,6 +61,52 @@ class Resolution:
     upstream: tuple[dict, ...]
 
 
+def _traceability_reverse_index() -> dict[str, tuple[dict, ...]]:
+    """Satisfier-ID -> tuple of RS entries it satisfies, built once from disk.
+
+    A module-level cache keeps ``resolve()`` calls O(1) per record instead of
+    re-scanning every ``_src/spec/traceability/*.json`` file for each of the
+    thousands of DB records being rebuilt.
+    """
+    reverse: dict[str, list[dict]] = {}
+    if not TRACE_RECORDS.is_dir():
+        return {}
+    for path in sorted(TRACE_RECORDS.rglob("*.json")):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            continue
+        rid = canonical_requirement_id(rec.get("id") or "")
+        if not rid.startswith("RS_"):
+            continue
+        meta = rec.get("traceability_meta") or {}
+        entry = {
+            "id": rid,
+            **({"document": meta.get("document")} if meta.get("document") else {}),
+            **({"page": meta.get("page")} if meta.get("page") is not None else {}),
+            "source": "traceability",
+            "traceability_record": str(path),
+        }
+        for satisfier in (meta.get("satisfied_by") or []):
+            satisfier_id = canonical_requirement_id(satisfier)
+            if not satisfier_id:
+                continue
+            reverse.setdefault(satisfier_id, []).append(entry)
+    return {key: tuple(values) for key, values in reverse.items()}
+
+
+_TRACEABILITY_REVERSE_INDEX_CACHE: dict[str, tuple[dict, ...]] | None = None
+
+
+def _traceability_rows_for_record(record_id: str) -> tuple[dict, ...]:
+    global _TRACEABILITY_REVERSE_INDEX_CACHE
+    if not record_id:
+        return ()
+    if _TRACEABILITY_REVERSE_INDEX_CACHE is None:
+        _TRACEABILITY_REVERSE_INDEX_CACHE = _traceability_reverse_index()
+    return _TRACEABILITY_REVERSE_INDEX_CACHE.get(canonical_requirement_id(record_id), ())
+
+
 class UpstreamIndex:
     """Index canonical RS records without silently collapsing duplicates."""
 
@@ -82,6 +129,13 @@ class UpstreamIndex:
     def resolve(self, record: Mapping) -> Resolution:
         refs = referenced_rs_ids(record)
         resolved, expected, missing, ambiguous = [], [], [], []
+        seen = set()
+        def add_resolution(entry):
+            key = canonical_requirement_id(entry.get("id") or "")
+            if not key or key in seen:
+                return
+            seen.add(key)
+            resolved.append(entry)
         for rid in refs:
             matches = self._records.get(rid, ())
             if not matches and rid in EXPECTED_UNRESOLVED:
@@ -92,13 +146,16 @@ class UpstreamIndex:
                 ambiguous.append(rid)
             else:
                 source = matches[0]
-                resolved.append({
+                add_resolution({
                     "id": rid,
                     **({"document": source["document"]} if source.get("document") else {}),
                     **({"page": source["page"]} if source.get("page") is not None else {}),
                     **({"url": source["url"]} if source.get("url") else {}),
+                    "source": "inline",
                 })
-        status = "ambiguous" if ambiguous else "missing" if missing else "resolved" if refs else "none"
+        for entry in _traceability_rows_for_record(_record_id(record)):
+            add_resolution(entry)
+        status = "ambiguous" if ambiguous else "missing" if missing else "resolved" if (refs or resolved) else "none"
         diagnostics = [
             *({"id": rid, "status": "expected-unresolved"} for rid in expected),
             *({"id": rid, "status": "missing"} for rid in missing),
