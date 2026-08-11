@@ -605,9 +605,37 @@ def _versions_table_html(versions):
 
 
 ARCHIVE_PAGE = os.path.join(SRC, "sources", "pages", "extraction-reports.json")
+ARCHIVE_DATA_JS = os.path.join(ROOT, "extraction-reports-data.js")
+
+
+def write_archive_data_js(versions):
+    """Maschinenlesbare Kopie der Berichtshistorie als JS-Datei.
+
+    Wird per <script src> statt fetch() eingebunden, weil fetch() beim
+    lokalen Oeffnen der Seite ueber file:// von Browsern aus Sicherheitsgruenden
+    blockiert wird (keine CORS-Freigabe fuer lokale Dateien). Ein <script>-Tag
+    unterliegt dieser Einschraenkung nicht, daher funktioniert diese Variante
+    sowohl lokal als auch auf einem Webserver.
+    """
+    rows = []
+    for v in versions:
+        version_no = int(v.get("version", 0))
+        rows.append({
+            "version": version_no,
+            "report_file": v.get("report_file") or ("extraction-report-v%04d.html" % version_no),
+            "built_at": v.get("built_at", ""),
+            "total_ids": v.get("total_ids"),
+            "total_pages": v.get("total_pages"),
+        })
+    payload = "window.EXTRACTION_REPORTS = %s;\n" % json.dumps(rows, ensure_ascii=False)
+    tmp = ARCHIVE_DATA_JS + ".tmp-%d" % os.getpid()
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(payload)
+    os.replace(tmp, ARCHIVE_DATA_JS)
 
 
 def write_archive_page(versions):
+    write_archive_data_js(versions)
     tabelle = _versions_table_html(versions)
     inhalt = "\n".join([
         STIL,
@@ -630,7 +658,8 @@ def _versions_summary_html():
             '<p class="dim">Extraktions-Qualitaet wird geladen …</p>'
             '<p><a href="extraction-reports.html">Berichtsverzeichnis öffnen</a></p>'
             '</div>'
-            "<script>(function(){var host=document.querySelector('[data-extraction-quality]');if(!host)return;fetch('extraction-reports.html').then(function(r){return r.text();}).then(function(html){var doc=new DOMParser().parseFromString(html,'text/html');var row=doc.querySelector('table.tr-table tbody tr[data-report-file]');if(!row){host.innerHTML='<p class=\"dim\">Keine Extraktions-Berichte gefunden.</p><p><a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a></p>';return;}var href=row.getAttribute('data-report-file')||'extraction-reports.html';var v=row.getAttribute('data-report-version')||'?';var built=row.getAttribute('data-built-at')||'';var ids=row.getAttribute('data-total-ids')||'?';var pages=row.getAttribute('data-total-pages')||'?';host.innerHTML='<p>Neuester Extraktions-Bericht: <a href=\"'+href+'\">v'+v+' öffnen</a>.</p><p class=\"dim\">Stand '+built+'; '+ids+' betroffene Record-IDs auf '+pages+' Quellseiten. <a href=\"extraction-reports.html\">Verzeichnis</a>.</p>';}).catch(function(){host.innerHTML='<p class=\"dim\">Extraktions-Qualitaet derzeit nicht verfügbar. <a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a>.</p>';});})();</script>")
+            '<script src="extraction-reports-data.js"></script>'
+            "<script>(function(){var host=document.querySelector('[data-extraction-quality]');if(!host)return;var open=function(html){host.innerHTML=html;};try{var rows=window.EXTRACTION_REPORTS||[];var row=rows[0];if(!row){open('<p class=\"dim\">Keine Extraktions-Berichte gefunden.</p><p><a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a></p>');return;}var href=row.report_file||'extraction-reports.html';var v=row.version||'?';var built=row.built_at||'';var ids=row.total_ids!=null?row.total_ids:'?';var pages=row.total_pages!=null?row.total_pages:'?';open('<p>Neuester Extraktions-Bericht: <a href=\"'+href+'\">v'+v+' öffnen</a>.</p><p class=\"dim\">Stand '+built+'; '+ids+' betroffene Record-IDs auf '+pages+' Quellseiten. <a href=\"extraction-reports.html\">Verzeichnis</a>.</p>');}catch(e){open('<p class=\"dim\">Extraktions-Qualitaet derzeit nicht verfügbar. <a href=\"extraction-reports.html\">Berichtsverzeichnis öffnen</a>.</p>');}})();</script>")
 
 
 def write_version_page(page, version_entry):
