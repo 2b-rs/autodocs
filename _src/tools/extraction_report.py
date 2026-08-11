@@ -1,183 +1,311 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""extraction_report.py — Extraktions-Bericht aus den heutigen spec_scrape.py-Fixes bauen.
+"""extraction_report.py — Extraktions-Bericht mit vollstaendiger Abweichungsliste.
 
 Fasst die vier am 2026-08-11 behobenen Extraktions-Fehlerklassen in
-``_src/tools/spec_scrape.py`` zusammen und baut daraus das Seitenmodell
-``_src/sources/pages/extraction-report.html`` sowie einen Startseiten-Link,
-nach demselben Muster wie ``traceability_report.py``.
+``_src/tools/spec_scrape.py`` zusammen und listet JEDE betroffene Record-ID im
+Volltext, gruppiert nach Quellseite, zusammen mit einem Seiten-Screenshot des
+PDFs. Baut daraus das Seitenmodell ``_src/sources/pages/extraction-report.json``
+sowie einen Startseiten-Link, nach demselben Muster wie ``traceability_report.py``.
 
-    python3 _src/tools/extraction_report.py \\
-        --campaign output/extraction-campaigns/2026-08-11-headingfix
+CLI:
+    python3 _src/tools/extraction_report.py build
+    python3 _src/tools/extraction_report.py collect-one traceability output.json
+    python3 _src/tools/extraction_report.py render-shots output/records/*.json
+    python3 _src/tools/extraction_report.py assemble output/records
 
-Der Bericht ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird
-nicht in die Sprachbaeume uebersetzt.
+Screenshots werden per ``pdftoppm`` aus dem versionierten PDF-Cache gerendert
+und unter ``extraction-report-assets/`` (Website-Wurzel) abgelegt. Der Bericht
+ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird nicht in die
+Sprachbaeume uebersetzt.
 """
-import argparse, datetime, html, json, os, sys
+import argparse, glob, html, json, os, re, subprocess, sys
+from pathlib import Path
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
+TOOLS = os.path.join(SRC, "tools")
+sys.path.insert(0, TOOLS)
+import spec_scrape as ss
+
 PAGE = os.path.join(SRC, "sources", "pages", "extraction-report.json")
 INDEX = os.path.join(SRC, "sources", "pages", "index.json")
+PDF_DIR = os.path.join(SRC, "spec", "pdf-cache", "R25-11")
+ASSET_DIR = os.path.join(ROOT, "extraction-report-assets")
 
-FIXES = [
-    {
-        "commit": "bae18b1c",
+CATEGORIES = {
+    "history_continuation": {
         "title": "Mehrseitige „Document Change History“-Fortsetzung",
-        "problem": "Mehrseitige Changelog-Tabellen (datiertes „AUTOSAR / Release / Management“-Format) "
-                   "wurden auf Folgeseiten nicht mehr als Historie erkannt, weil dort keine neue "
-                   "Ueberschrift auftrat. Referenzierte IDs in der Historie wurden dadurch als lokale "
-                   "Definitionen fehlinterpretiert.",
-        "fix": "Zustandsbehafteter Fortsetzungs-Check: Endet eine Seite in einer Historie-Region, gilt "
-               "die naechste Seite als Fortsetzung, solange sie mit dem bekannten Changelog-Muster beginnt.",
-        "beispiele": ["RS_CRYPTO_02006", "RS_CRYPTO_02114", "RS_CRYPTO_02303",
-                      "RS_CRYPTO_02402", "RS_CRYPTO_02404", "RS_CRYPTO_02406"],
-        "dokument": "AUTOSAR_AP_RS_Cryptography",
+        "commit": "bae18b1c",
+        "problem": "Mehrseitige Changelog-Tabellen (datiertes „AUTOSAR / Release / Management“-Format) wurden auf Folgeseiten nicht mehr als Historie erkannt, weil dort keine neue Ueberschrift auftrat. IDs, die dort nur als Aenderungshistorie referenziert werden, wurden als lokale Definitionen fehlinterpretiert.",
+        "fix": "Zustandsbehafteter Fortsetzungs-Check: Endet eine Seite in einer Historie-Region, gilt die naechste Seite als Fortsetzung, solange sie mit dem bekannten Changelog-Muster beginnt.",
     },
-    {
-        "commit": "c2334c43 / ffa42b17",
+    "traceability": {
         "title": "„Requirements Tracing“-Tabellen",
-        "problem": "Seiten, die mit „N Requirements Tracing“ beginnen, listen Upstream- oder "
-                   "fremde Requirement-IDs auf, keine lokalen Definitionen. Diese IDs wurden trotzdem "
-                   "als Definitionskandidaten fuer das aktuelle Dokument gezaehlt.",
-        "fix": "Neue „traceability“-Region ab der Ueberschrift bis zum Seitenende; IDs darin zaehlen "
-               "nicht mehr als lokale Definition. Das Erkennungsmuster ist backend-symmetrisch "
-               "(toleriert fuehrende Leerzeilen des builtin-Backends).",
-        "beispiele": ["RS_HM_09249", "RS_SAF_10037", "RS_SAF_10040", "RS_SAF_31301", "RS_SAF_31302"],
-        "dokument": "AUTOSAR_AP_RS_PlatformHealthManagement / AUTOSAR_AP_RS_Persistency / AUTOSAR_FO_RS_E2E",
+        "commit": "c2334c43 / ffa42b17",
+        "problem": "Seiten, die mit „N Requirements Tracing“ beginnen, listen Upstream- oder fremde Requirement-IDs auf, keine lokalen Definitionen. Diese IDs wurden trotzdem als Definitionskandidaten fuer das aktuelle Dokument gezaehlt.",
+        "fix": "Neue „traceability“-Region ab der Ueberschrift bis zum Seitenende; IDs darin zaehlen nicht mehr als lokale Definition. Backend-symmetrisch (toleriert fuehrende Leerzeilen des builtin-Backends).",
     },
-    {
-        "commit": "e554a1a8",
+    "number_heading": {
         "title": "Anhangs-Tabellen „Number Heading“",
-        "problem": "Mehrseitige Anhangs-Tabellen „Added/Changed/Deleted Requirements“ beginnen mit "
-                   "„Number Heading“ und tragen ihre Beschriftung erst am Ende der Tabelle. Ohne erneute "
-                   "Ueberschrift auf Folgeseiten wurden solche Zeilen als normaler Fliesstext behandelt.",
-        "fix": "Zweites Fortsetzungsmuster: Eine Seite gilt als Historie-Fortsetzung, wenn sie mit "
-               "„Number Heading“ beginnt UND eine „Added/Changed/Deleted Requirements|Constraints“-"
-               "Beschriftung traegt. Die Kombination verhindert Fehltreffer bei regulaeren "
-               "SWS-Schnittstellentabellen im gleichen Layout ohne diese Beschriftung.",
-        "beispiele": ["RS_EM_00006", "RS_EM_00007", "RS_EM_00012", "RS_EM_00013",
-                      "RS_EM_00050", "RS_EM_00051", "RS_EM_00052", "RS_CM_00600", "RS_CM_00601"],
-        "dokument": "AUTOSAR_AP_RS_ExecutionManagement / AUTOSAR_AP_RS_CommunicationManagement",
+        "commit": "e554a1a8",
+        "problem": "Mehrseitige Anhangs-Tabellen „Added/Changed/Deleted Requirements“ beginnen mit „Number Heading“ und tragen ihre Beschriftung erst am Ende der Tabelle. Ohne erneute Ueberschrift auf Folgeseiten wurden solche Zeilen als normaler Fliesstext behandelt und ihre IDs als lokale Definitionen gezaehlt.",
+        "fix": "Zweites Fortsetzungsmuster: Eine Seite gilt als Historie-Fortsetzung, wenn sie mit „Number Heading“ beginnt UND eine „Added/Changed/Deleted Requirements|Constraints“-Beschriftung traegt. Die Kombination verhindert Fehltreffer bei regulaeren SWS-Schnittstellentabellen im gleichen Layout ohne diese Beschriftung.",
     },
-    {
-        "commit": "751013a2",
+    "heading_label": {
         "title": "Ueberschrift faelschlich als Label-Zeile verworfen",
-        "problem": "Die Ueberschriften-Erkennung nutzte einen ungebundenen Praefix-Abgleich gegen "
-                   "bekannte Feldbezeichner. Echte Requirement-Titel, die zufaellig mit denselben "
-                   "Woertern beginnen wie ein Feldname („Header file“, „Type“, „Return value“), "
-                   "wurden dadurch verworfen: „Header file name“, „Type names“ und „Return values / "
-                   "application errors“ ergaben leere Ueberschriften.",
-        "fix": "Eigenes, strengeres Muster nur fuer die Ueberschriften-Pruefung: ein Feldbezeichner "
-               "zaehlt nur als Label-Zeile, wenn ihm ein Doppelpunkt folgt oder er die gesamte Zeile bildet.",
-        "beispiele": ["RS_AP_00116", "RS_AP_00119", "RS_AP_00122"],
-        "dokument": "AUTOSAR_AP_RS_General",
+        "commit": "751013a2",
+        "problem": "Die Ueberschriften-Erkennung nutzte einen ungebundenen Praefix-Abgleich gegen bekannte Feldbezeichner. Echte Requirement-Titel, die zufaellig mit denselben Woertern beginnen wie ein Feldname („Header file“, „Type“, „Return value“), wurden dadurch verworfen und ergaben eine leere Ueberschrift.",
+        "fix": "Eigenes, strengeres Muster nur fuer die Ueberschriften-Pruefung: ein Feldbezeichner zaehlt nur als Label-Zeile, wenn ihm ein Doppelpunkt folgt oder er die gesamte Zeile bildet.",
     },
-]
+}
 
 RESIDUAL = [
-    {"id": "RS_DIAG_04005", "dokument": "AUTOSAR_FO_RS_Diagnostics", "seite": 15,
-     "befund": "ID-Schreibweise weicht ab: die reale Definition an dieser Stelle traegt die "
-               "Schreibung „RS_Diag_04006“. Kein Werkzeugfehler, sondern manuell zu klaerende "
-               "Gross-/Kleinschreibungs-Abweichung."},
-    {"id": "RS_SAF_21101", "dokument": "AUTOSAR_AP_RS_PlatformHealthManagement", "seite": "9–10",
-     "befund": "Erscheint nur als reine Inline-Zitierung „[RS_SAF_21101]“, keine Definition. "
-               "Manuell auszuschliessen."},
-    {"id": "RS_LT_00001 … RS_LT_00062 (12 Faelle im Entwurf)", "dokument": "AUTOSAR_FO_RS_LogAndTrace",
-     "seite": "diverse",
-     "befund": "Diese Records tragen im Quell-PDF keinerlei Titelzeile zwischen der eckigen ID und "
-               "dem Beschreibungstext. Bestaetigtes Dokument-Layout-Merkmal, kein Parser-Fehler."},
+    {"id": "RS_DIAG_04005", "dokument": "AUTOSAR_FO_RS_Diagnostics", "seite": "15", "befund": "ID-Schreibweise weicht ab: die reale Definition an dieser Stelle traegt die Schreibung „RS_Diag_04006“. Kein Werkzeugfehler, sondern manuell zu klaerende Gross-/Kleinschreibungs-Abweichung."},
+    {"id": "RS_SAF_21101", "dokument": "AUTOSAR_AP_RS_PlatformHealthManagement", "seite": "9–10", "befund": "Erscheint nur als reine Inline-Zitierung „[RS_SAF_21101]“, keine Definition. Manuell auszuschliessen."},
+    {"id": "RS_LT_00001 u.a. (12 Faelle im 200er Entwurf)", "dokument": "AUTOSAR_FO_RS_LogAndTrace", "seite": "diverse", "befund": "Diese Records tragen im Quell-PDF keinerlei Titelzeile zwischen der eckigen ID und dem Beschreibungstext. Bestaetigtes Dokument-Layout-Merkmal, kein Parser-Fehler."},
 ]
+
+STIL = """<style>
+.tr-head{padding:1.15rem 1.35rem;border:1px solid #d9dce3;border-radius:14px;background:linear-gradient(135deg,#f7f8ff,#eef5ff);margin:1rem 0 1.4rem}
+.tr-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0 0}
+.tr-meta span{background:#fff;border:1px solid #d7dcea;border-radius:999px;padding:.28rem .66rem;font-size:.88rem}
+.tr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:.8rem;margin:1rem 0 1.5rem}
+.tr-grid article{border:1px solid #d9dce3;border-radius:12px;padding:.95rem;background:#fff;box-shadow:0 3px 14px rgba(20,40,80,.06)}
+.tr-grid span,.tr-grid small{display:block;color:#596274}
+.tr-grid strong{display:block;font-size:1.7rem;margin:.18rem 0;font-variant-numeric:tabular-nums}
+.tr-section{border:1px solid #d9dce3;border-radius:10px;margin:.8rem 0;background:#fff;overflow:hidden}
+.tr-section summary{display:flex;justify-content:space-between;gap:1rem;padding:.8rem 1rem;cursor:pointer;background:#f7f8fa}
+.tr-section summary span{font-variant-numeric:tabular-nums;background:#e7ecf6;border-radius:999px;padding:.1rem .55rem}
+.tr-table-wrap{overflow:auto;max-height:52rem}
+.tr-table{border-collapse:collapse;width:100%;font-size:.9rem}
+.tr-table th{position:sticky;top:0;background:#eef1f6;text-align:left;z-index:1}
+.tr-table th,.tr-table td{padding:.5rem .7rem;border-bottom:1px solid #e4e7ec;vertical-align:top}
+.tr-table tbody tr:nth-child(even){background:#fafbfc}
+.tr-table code.nolink{color:#6b7280}
+.tr-page-group{border:1px dashed #d0d5e0;border-radius:10px;padding:.8rem 1rem;margin:.9rem 0;background:#fdfdff}
+.tr-page-group h4{margin:.1rem 0 .6rem;font-size:.95rem}
+.tr-screenshot{margin:.4rem 0 .8rem;border:1px solid #d9dce3;border-radius:8px;overflow:hidden;max-width:52rem}
+.tr-screenshot img{display:block;width:100%;height:auto}
+.tr-record-list details{border:1px solid #e4e7ec;border-radius:8px;margin:.4rem 0;background:#fff}
+.tr-record-list summary{padding:.5rem .75rem;cursor:pointer;display:flex;justify-content:space-between;gap:1rem}
+.tr-pdf-context{white-space:pre-wrap;word-break:break-word;background:#f7f8fa;border-radius:6px;padding:.6rem .75rem;font-size:.83rem;margin:.5rem .75rem .75rem;border:1px solid #eceef2}
+</style>"""
 
 
 def esc(v):
     return html.escape(str(v), quote=True)
 
 
-def fix_karte(f):
-    beispiele = ", ".join("<code>%s</code>" % esc(b) for b in f["beispiele"])
-    return (
-        '<details class="tr-section"><summary><strong>%s</strong>'
-        '<span><code>%s</code></span></summary>'
-        '<div class="tr-table-wrap"><p><strong>Problem:</strong> %s</p>'
-        '<p><strong>Fix:</strong> %s</p>'
-        '<p><strong>Dokument(e):</strong> %s</p>'
-        '<p><strong>Verifizierte Beispiele:</strong> %s</p></div></details>'
-        % (esc(f["title"]), esc(f["commit"]), esc(f["problem"]), esc(f["fix"]),
-           esc(f["dokument"]), beispiele)
-    )
+def all_pdf_paths():
+    return sorted(glob.glob(os.path.join(PDF_DIR, "AUTOSAR_*_RS_*.pdf")))
+
+
+def page_text(doc_stem, pageno):
+    f = os.path.join(PDF_DIR, doc_stem + ".pdf")
+    pages = ss.pdf_pages(Path(f), "pypdf")
+    return pages[pageno - 1] if pageno - 1 < len(pages) else ""
+
+
+def collect_history_continuation():
+    out = []
+    for f in all_pdf_paths():
+        doc = Path(f).stem
+        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
+        for i, t in enumerate(pages):
+            if ss.HISTORY_CONTINUATION_RE.search(t):
+                for m in ss.DEF_RE.finditer(t):
+                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
+    return out
+
+
+def collect_traceability():
+    out = []
+    for f in all_pdf_paths():
+        doc = Path(f).stem
+        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
+        for i, t in enumerate(pages):
+            if ss.TRACEABILITY_HEADING_RE.search(t):
+                for m in ss.DEF_RE.finditer(t):
+                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
+    return out
+
+
+def collect_number_heading():
+    out = []
+    for f in all_pdf_paths():
+        doc = Path(f).stem
+        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
+        for i, t in enumerate(pages):
+            if ss.HISTORY_NUMBER_HEADING_CONTINUATION_RE.search(t) and ss.HISTORY_TABLE_CAPTION_RE.search(t):
+                for m in ss.DEF_RE.finditer(t):
+                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
+    return out
+
+
+def collect_heading_label():
+    old_label_re = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in ss.LABELS))
+
+    def old_heading(chunk):
+        head_part = re.split(r"(?:⌈|(?:^|\n)\s*(?:Status|Upstream requirements?|Kind)\s*:?)", chunk.lstrip("\n"), maxsplit=1)[0]
+        head = ss._clean_value(" ".join(line.strip() for line in head_part.split("\n") if line.strip()))
+        if head and not old_label_re.match(head):
+            return head[:120]
+        return None
+
+    out = []
+    for f in all_pdf_paths():
+        doc = Path(f).stem
+        idx = ss.phase_ids([Path(f)], pattern="^RS_", include_refs=False, backend="pypdf")
+        info = idx[doc + ".pdf"]
+        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
+        for rid, pagenos in info["ids"].items():
+            if not pagenos:
+                continue
+            pageno = pagenos[0]
+            chunk = ss._record_slice(ss.normalize_layout(pages[pageno - 1]), rid)
+            if not chunk:
+                continue
+            old_h = old_heading(chunk)
+            new_rec = ss.parse_record(pages[pageno - 1], rid)
+            new_h = new_rec["heading"]
+            if old_h != new_h and (old_h is None) != (new_h is None):
+                out.append({"id": rid, "document": doc, "page": pageno, "old_heading": old_h, "new_heading": new_h})
+    return out
+
+
+def collector_for(category):
+    return {
+        "history_continuation": collect_history_continuation,
+        "traceability": collect_traceability,
+        "number_heading": collect_number_heading,
+        "heading_label": collect_heading_label,
+    }[category]
+
+
+def dedupe(records):
+    seen = {}
+    for r in records:
+        key = (r["document"], r["id"])
+        seen.setdefault(key, r)
+    return list(seen.values())
+
+
+def context_for(doc, pageno, rid, window=350):
+    raw = page_text(doc, pageno)
+    idx = raw.find(rid)
+    if idx == -1:
+        idx = raw.upper().find(rid.upper())
+    if idx == -1:
+        return raw[:window]
+    start = max(0, idx - 40)
+    return raw[start: idx + window]
+
+
+def ensure_screenshot(doc, pageno):
+    name = "%s_p%d.png" % (doc, pageno)
+    dest = os.path.join(ASSET_DIR, name)
+    if not os.path.exists(dest):
+        pdf = os.path.join(PDF_DIR, doc + ".pdf")
+        os.makedirs(ASSET_DIR, exist_ok=True)
+        prefix = os.path.join(ASSET_DIR, "%s_p%d" % (doc, pageno))
+        subprocess.run(["pdftoppm", "-png", "-f", str(pageno), "-l", str(pageno), "-r", "110", pdf, prefix], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for produced in glob.glob(prefix + "-*.png"):
+            os.rename(produced, dest)
+    return "extraction-report-assets/%s" % name
+
+
+def group_by_page(records):
+    by_page = {}
+    for r in records:
+        key = (r["document"], r["page"])
+        by_page.setdefault(key, []).append(r)
+    return dict(sorted(by_page.items()))
+
+
+def record_block(r, extra=""):
+    ctx = esc(r.get("context", ""))
+    return ('<details class="tr-section"><summary><strong><code>%s</code></strong><span>Seite %s</span></summary><div class="tr-table-wrap">%s<pre class="tr-pdf-context">%s</pre></div></details>' % (esc(r["id"]), esc(r["page"]), extra, ctx))
+
+
+def page_group_html(doc, pageno, records, category):
+    img_path = ensure_screenshot(doc, pageno)
+    if category == "heading_label":
+        blocks = "".join(record_block(r, '<p><strong>Vorher (Ueberschrift):</strong> %s<br><strong>Nachher (Ueberschrift):</strong> %s</p>' % ((esc(r["old_heading"]) if r["old_heading"] else "<em>leer</em>"), esc(r["new_heading"]))) for r in records)
+    else:
+        blocks = "".join(record_block(r) for r in records)
+    return ('<div class="tr-page-group"><h4><code>%s</code> — Seite %d (%d betroffene ID%s)</h4><div class="tr-screenshot"><img src="%s" alt="Quellseite %s Seite %d" loading="lazy"></div><div class="tr-record-list">%s</div></div>' % (esc(doc), pageno, len(records), "" if len(records) == 1 else "s", esc(img_path), esc(doc), pageno, blocks))
+
+
+def category_section(key, records):
+    meta = CATEGORIES[key]
+    by_page = group_by_page(records)
+    groups_html = "".join(page_group_html(doc, pageno, recs, key) for (doc, pageno), recs in by_page.items())
+    unique_ids = len(records)
+    unique_pages = len(by_page)
+    return ('<details class="tr-section" open><summary><strong>%s</strong><span><code>%s</code> — %d ID%s auf %d Seite%s</span></summary><div class="tr-table-wrap"><p><strong>Problem:</strong> %s</p><p><strong>Fix:</strong> %s</p>%s</div></details>' % (esc(meta["title"]), esc(meta["commit"]), unique_ids, "" if unique_ids == 1 else "s", unique_pages, "" if unique_pages == 1 else "n", esc(meta["problem"]), esc(meta["fix"]), groups_html))
 
 
 def residual_zeile(r):
-    return ("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td></tr>"
-            % (esc(r["id"]), esc(r["dokument"]), esc(r["seite"]), esc(r["befund"])))
+    return ("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td></tr>" % (esc(r["id"]), esc(r["dokument"]), esc(r["seite"]), esc(r["befund"])))
 
 
 def kennzahl(titel, wert, hinweis=""):
-    hz = '<small>%s</small>' % esc(hinweis) if hinweis else ""
-    return '<article><span>%s</span><strong>%s</strong>%s</article>' % (esc(titel), esc(wert), hz)
+    hz = "<small>%s</small>" % esc(hinweis) if hinweis else ""
+    return "<article><span>%s</span><strong>%s</strong>%s</article>" % (esc(titel), esc(wert), hz)
 
 
-def baue(datum, campaign_name, vorher, nachher):
-    fixes_html = "".join(fix_karte(f) for f in FIXES)
-    residual_html = (
-        '<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th>'
-        '<th>Seite</th><th>Befund</th></tr></thead><tbody>%s</tbody></table>'
-        % "".join(residual_zeile(r) for r in RESIDUAL)
-    )
+def load_raw_records(input_dir):
+    raw = {}
+    for key in CATEGORIES:
+        path = os.path.join(input_dir, key + ".json")
+        raw[key] = json.load(open(path, encoding="utf-8"))
+    return raw
+
+
+def all_pages_from_raw(raw):
+    pages = set()
+    for records in raw.values():
+        for r in records:
+            pages.add((r["document"], r["page"]))
+    return sorted(pages)
+
+
+def enrich_records(records):
+    for r in records:
+        if "context" not in r:
+            r["context"] = context_for(r["document"], r["page"], r["id"])
+    return records
+
+
+def baue(datum, gesamt_zaehlung):
+    sections_html = "".join(category_section(k, v) for k, v in gesamt_zaehlung["records"].items())
+    residual_html = ('<table class="tr-table"><thead><tr><th>Record-ID</th><th>Dokument</th><th>Seite</th><th>Befund</th></tr></thead><tbody>%s</tbody></table>' % "".join(residual_zeile(r) for r in RESIDUAL))
+    total_ids = sum(len(v) for v in gesamt_zaehlung["records"].values())
+    total_pages = len(set((r["document"], r["page"]) for v in gesamt_zaehlung["records"].values() for r in v))
     karten = "".join([
-        kennzahl("Behobene Fehlerklassen", len(FIXES), "heute verifiziert, corpus-weit"),
-        kennzahl("Ueberschriftslose Records", "%s → %s" % (vorher["headingless"], nachher["headingless"]),
-                 "im 200er Entwurf"),
-        kennzahl("Records ohne Felder", "%s → %s" % (vorher["empty_fields"], nachher["empty_fields"]),
-                 "im 200er Entwurf"),
+        kennzahl("Behobene Fehlerklassen", len(CATEGORIES), "heute verifiziert, corpus-weit"),
+        kennzahl("Betroffene Record-IDs gesamt", total_ids, "vollstaendig unten aufgelistet"),
+        kennzahl("Betroffene Quellseiten", total_pages, "je mit Seiten-Screenshot"),
         kennzahl("Backend-Abweichungen", "0", "pypdf vs. builtin, corpus-weit"),
     ])
     inhalt = "\n".join([
-        '<section class="tr-head"><p>Am 2026-08-11 wurden vier unabhaengige Extraktions-Fehlerklassen '
-        'in <code>_src/tools/spec_scrape.py</code> gefunden, behoben und gegen den vollstaendigen '
-        'R25-11-RS-Corpus (18 Dokumente, zwei Backends) verifiziert. Alle Fixes sind ueber Commits '
-        'einzeln nachvollziehbar und wurden vor und nach der Aenderung an konkreten IDs geprueft.</p>'
-        '<p class="tr-meta"><span>Kampagne: <strong>%s</strong></span>'
-        '<span>Stand: <strong>%s</strong></span>'
-        '<span>Dokumente: <strong>18</strong></span>'
-        '<span>Backends: <strong>pypdf, builtin</strong></span></p></section>'
-        % (esc(campaign_name), esc(datum)),
+        STIL,
+        '<section class="tr-head"><p>Am 2026-08-11 wurden vier unabhaengige Extraktions-Fehlerklassen in <code>_src/tools/spec_scrape.py</code> gefunden und behoben. Diese Seite listet <strong>jede betroffene Record-ID im Volltext</strong>, gruppiert nach Quellseite, mit einem Screenshot der jeweiligen PDF-Seite zur unabhaengigen Nachpruefung.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p></section>' % esc(datum),
         '<h2 class="sect">Kennzahlen</h2><div class="tr-grid">%s</div>' % karten,
-        '<h2 class="sect">Behobene Fehlerklassen</h2>%s' % fixes_html,
-        '<h2 class="sect">Verbleibende manuelle Pruefung</h2>'
-        '<p class="dim">Kein weiterer Werkzeugfehler bekannt; diese Faelle benoetigen eine '
-        'Kurator-Entscheidung im Rahmen der Benchmark-Freigabe.</p>'
+        '<h2 class="sect">Behobene Fehlerklassen — vollstaendige Abweichungsliste</h2>%s' % sections_html,
+        '<h2 class="sect">Verbleibende manuelle Pruefung</h2>',
+        '<p class="dim">Kein weiterer Werkzeugfehler bekannt; diese Faelle benoetigen eine Kurator-Entscheidung im Rahmen der Benchmark-Freigabe.</p>',
         '<div class="tr-table-wrap">%s</div>' % residual_html,
-        '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> aus der Kampagne '
-        '<code>%s</code>. Der Bericht veraendert keine Spec-Records und wird nicht in die '
-        'Sprachbaeume uebersetzt. Details siehe <code>NEXTSTEPS.md</code>.</p>' % esc(campaign_name),
+        '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Der Bericht veraendert keine Spec-Records und wird nicht in die Sprachbaeume uebersetzt. Details siehe <code>NEXTSTEPS.md</code>.</p>',
     ])
-    return {
-        "file": "extraction-report.html",
-        "title": "Extraktions-Bericht %s — AUTOSAR R25-11" % datum[:10],
-        "body_class": None,
-        "nolang": True,
-        "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht',
-        "footer": "extracted",
-        "main_lead": "",
-        "main": [{"t": "html", "html": inhalt, "tail": "\n"}],
-    }
+    return {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11" % datum[:10], "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
 
 
 def verlinke_startseite(datum):
     idx = json.load(open(INDEX, encoding="utf-8"))
-    block = {
-        "t": "html",
-        "nolang": True,
-        "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2>'
-                '<p>Zusammenfassung heute behobener Extraktions-Fehlerklassen und verbleibender '
-                'manueller Pruefpunkte, Stand %s: '
-                '<a href="extraction-report.html">Extraktions-Bericht öffnen</a>.</p></aside>' % html.escape(datum),
-        "tail": "\n",
-    }
+    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Vollstaendige Abweichungsliste (Volltext + Seiten-Screenshot) heute behobener Extraktions-Fehlerklassen, Stand %s: <a href="extraction-report.html">Extraktions-Bericht öffnen</a>.</p></aside>' % html.escape(datum), "tail": "\n"}
     idx["main"] = [b for b in idx["main"] if "extraction-report.html" not in b.get("html", "")]
-    # direkt nach dem Traceability-Link einfuegen (Index 3), sonst an Position 2
     pos = 3 if any("traceability.html" in b.get("html", "") for b in idx["main"]) else 2
     idx["main"].insert(pos, block)
     with open(INDEX, "w", encoding="utf-8") as f:
@@ -185,34 +313,87 @@ def verlinke_startseite(datum):
         f.write("\n")
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--campaign", required=True, help="Pfad der Extraktionskampagne (fuer Kennzahlen)")
-    a = ap.parse_args()
+def cmd_collect_one(category, output_path):
+    records = collector_for(category)()
+    if category != "heading_label":
+        records = dedupe(records)
+    records = enrich_records(records)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    print("%s: %d records" % (category, len(records)))
 
-    campaign_dir = a.campaign.rstrip("/")
-    campaign_name = os.path.basename(campaign_dir)
-    old_draft = json.load(open(os.path.join(ROOT, "output", "extraction-campaigns",
-                                             "benchmark-draft.pre-fix.json"), encoding="utf-8"))
-    new_draft = json.load(open(os.path.join(SRC, "tests", "fixtures", "spec_extraction",
-                                             "benchmark-draft.json"), encoding="utf-8"))
-    old_recs = {r["id"]: r for r in old_draft["records"]}
-    new_recs = {r["id"]: r for r in new_draft["records"]}
-    vorher = {
-        "headingless": sum(1 for r in old_recs.values() if not r["expected"].get("heading")),
-        "empty_fields": sum(1 for r in old_recs.values() if not r["expected"].get("fields")),
-    }
-    nachher = {
-        "headingless": sum(1 for r in new_recs.values() if not r["expected"].get("heading")),
-        "empty_fields": sum(1 for r in new_recs.values() if not r["expected"].get("fields")),
-    }
+
+def cmd_render_shot(doc, pageno):
+    path = ensure_screenshot(doc, int(pageno))
+    print(path)
+
+
+def cmd_render_shots(inputs):
+    pages = set()
+    for inp in inputs:
+        records = json.load(open(inp, encoding="utf-8"))
+        for r in records:
+            pages.add((r["document"], int(r["page"])))
+    for doc, pageno in sorted(pages):
+        ensure_screenshot(doc, pageno)
+    print("screenshots: %d" % len(pages))
+
+
+def cmd_assemble(input_dir):
+    import datetime
+    raw = load_raw_records(input_dir)
     datum = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    seite = baue(datum, campaign_name, vorher, nachher)
+    seite = baue(datum, {"records": raw})
     with open(PAGE, "w", encoding="utf-8") as f:
         json.dump(seite, f, ensure_ascii=False, indent=1)
         f.write("\n")
     verlinke_startseite(datum)
-    print("Extraktions-Bericht: Stand %s, Kampagne %s" % (datum, campaign_name))
+    total = sum(len(v) for v in raw.values())
+    print("Extraktions-Bericht: Stand %s, %d Abweichungen ueber %d Fehlerklassen" % (datum, total, len(CATEGORIES)))
+
+
+def cmd_build():
+    tmp = os.path.join(ROOT, "output", "extraction-report-work")
+    os.makedirs(tmp, exist_ok=True)
+    for key in CATEGORIES:
+        cmd_collect_one(key, os.path.join(tmp, key + ".json"))
+    cmd_render_shots([os.path.join(tmp, key + ".json") for key in CATEGORIES])
+    cmd_assemble(tmp)
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    sub = ap.add_subparsers(dest="cmd")
+
+    p = sub.add_parser("collect-one")
+    p.add_argument("category", choices=sorted(CATEGORIES))
+    p.add_argument("output")
+
+    p = sub.add_parser("render-shot")
+    p.add_argument("document")
+    p.add_argument("page", type=int)
+
+    p = sub.add_parser("render-shots")
+    p.add_argument("inputs", nargs="+")
+
+    p = sub.add_parser("assemble")
+    p.add_argument("input_dir")
+
+    sub.add_parser("build")
+    ns = ap.parse_args(argv)
+
+    if ns.cmd in (None, "build"):
+        cmd_build()
+    elif ns.cmd == "collect-one":
+        cmd_collect_one(ns.category, ns.output)
+    elif ns.cmd == "render-shot":
+        cmd_render_shot(ns.document, ns.page)
+    elif ns.cmd == "render-shots":
+        cmd_render_shots(ns.inputs)
+    elif ns.cmd == "assemble":
+        cmd_assemble(ns.input_dir)
     return 0
 
 
