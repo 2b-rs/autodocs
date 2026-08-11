@@ -1062,6 +1062,45 @@ HISTORY_TABLE_CAPTION_RE = re.compile(
     r"(?:Requirements?|Constraints?)[^\n]*", re.IGNORECASE)
 
 
+TOC_LINE_RE = re.compile(r"^.*\.{4,}\s*\d+\s*$", re.MULTILINE)
+BIBLIO_HEADING_RE = re.compile(r"^\s*(?:Bibliography|References)\s*$", re.MULTILINE | re.IGNORECASE)
+
+
+def classify_page_structure(text: str) -> dict:
+    """Label the non-body regions of a page once, for reuse across phases.
+
+    Extraction, segmentation and the benchmark all need to know which parts of
+    a page are appendix history, table of contents or bibliography.  Detecting
+    that separately in each phase invites drift, so the labels are produced
+    here and consumed everywhere else.
+    """
+    regions = [{"kind": "history", "start": start, "stop": stop}
+               for start, stop in _history_regions(text)]
+    for match in TOC_LINE_RE.finditer(text):
+        regions.append({"kind": "toc", "start": match.start(), "stop": match.end()})
+    for match in BIBLIO_HEADING_RE.finditer(text):
+        regions.append({"kind": "bibliography", "start": match.start(),
+                        "stop": min(len(text), match.end() + 4000)})
+    regions.sort(key=lambda item: (item["kind"], item["start"], item["stop"]))
+    merged = []
+    for item in regions:
+        if merged and merged[-1]["kind"] == item["kind"] and item["start"] <= merged[-1]["stop"]:
+            merged[-1]["stop"] = max(merged[-1]["stop"], item["stop"])
+            continue
+        merged.append(dict(item))
+    regions = sorted(merged, key=lambda item: (item["start"], item["stop"]))
+    return {"regions": regions,
+            "kinds": sorted({item["kind"] for item in regions})}
+
+
+def non_body_spans(text: str, kinds=None) -> list:
+    """Character ranges to exclude from definition detection."""
+    wanted = set(kinds or ("history", "toc", "bibliography"))
+    return [(item["start"], item["stop"])
+            for item in classify_page_structure(text)["regions"]
+            if item["kind"] in wanted]
+
+
 def _history_regions(text: str) -> list:
     """Character ranges of appendix history tables and change-log blocks.
 

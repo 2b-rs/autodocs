@@ -76,6 +76,11 @@ Create a fixed benchmark corpus before changing extraction logic.
 - Select at least 200 manually reviewed requirements, with at least 25 from each major difficult shape and examples from every canonical RS document.
 - Save expected record boundaries, headings, fields, and page ranges as fixtures under `_src/tests/fixtures/spec_extraction/`.
 - Include negative fixtures containing references and table-of-contents entries that must not become definitions.
+  Measured 2026-08-11 on the R25-11 corpus: TOC pages of the canonical RS documents carry no
+  bracketed IDs (0 dotted-leader entries with IDs), and no `Upstream requirements:` line contains a
+  bracketed ID, so neither category yields harvestable instances. The realized negatives are the 46
+  change-history entries in `negative-history.json`. Re-check this assumption when difficult SWS
+  documents enter the corpus, because their TOCs and traceability tables differ.
 
 Baseline metrics for each backend:
 
@@ -521,7 +526,7 @@ These ideas complement the backend geometry plan and should be introduced as iso
 - [x] Derive the negative fixtures automatically from the confirmed rejections
   instead of hand-listing them, and fail the test suite when a known negative
   reappears as a definition.
-- [ ] Add a document-structure pass that labels appendix/annex regions once
+- [x] Add a document-structure pass that labels appendix/annex regions once
   (history tables, change log, TOC, bibliography) and reuse it for extraction,
   segmentation and the benchmark instead of re-detecting per phase.
 - [ ] Treat the dense definition lists (heading inline, no spec-item marker, e.g.
@@ -537,3 +542,59 @@ These ideas complement the backend geometry plan and should be introduced as iso
   independent of table geometry.
 - [ ] Measure per-document definition counts against the published requirement
   count where the document states one, as an external sanity check.
+
+## Working-tree triage (2026-08-11)
+
+The checkout carries a large amount of pre-existing, unrelated work. Assessment
+and plan per cluster:
+
+### Committed in this session
+
+- `_src/tools/spec_scrape.py`, `_src/tests/test_spec_scrape_upstream.py`,
+  `_src/tests/fixtures/spec_extraction/`, `NEXTSTEPS.md`: page-span provenance,
+  occurrence-level history rejection, reusable page-structure classifier,
+  negative fixtures. Verified by campaign `2026-08-11-defprecision` (36/36 jobs,
+  both backends reject the identical 46 IDs, gate PASS) and 10 unit tests.
+
+### Not ready: 2514 modified spec records under `_src/spec/records/`
+
+Generated data, not hand-written source. Do not commit them mixed with tool
+changes.
+
+- [ ] Determine which tool produced the change (`migriere_spec_db.py`,
+  `spec_upstream.py`, `text_repair.py`) and record the exact command.
+- [ ] Re-run that command from the committed tool state and diff the result; a
+  reproducible regeneration is the precondition for committing.
+- [ ] Inspect a stratified sample of 20 records manually before bulk commit.
+- [ ] Commit as a single data-only change with the generating command in the
+  message, separate from any tool change.
+
+### Not ready: 814 modified HTML files in the published tree
+
+`AGENTS.md` declares the HTML tree a build artifact. Content changes belong in
+`_src/`.
+
+- [ ] Confirm the files are reproducible via `python3 _src/generate.py &&
+  python3 _src/validate.py` from the current `_src/` state.
+- [ ] If reproducible, commit as a regeneration; if not, find the missing `_src/`
+  change first and never hand-edit the tree.
+
+### Not ready: unrelated tooling and documentation in flight
+
+`_src/lib_docmodel.py`, `_src/publish.sh`, `_src/validate.py`,
+`_src/tools/geometry_audit.py`, `_src/tools/sync_to_devel.sh`,
+`_src/templates/page.html.tmpl`, `_src/i18n/ui.json`, `AGENTS.md`,
+`KONVENTIONEN.md`, `SPEC_TRACEABILITY.md`, `WARTUNG.md`, plus untracked
+`spec_upstream.py`, `text_repair.py`, `review_*.py`, `BACKLOG.md`, `TODO.md`,
+AppleScript helpers and `review.js`.
+
+- [ ] Not mine; author intent unknown. Leave untouched.
+- [ ] `_src/tests/test_geometry_schema.py` adds `BaselineFusionTests` for
+  `geometry_audit._is_baseline_fusion` and belongs with the `geometry_audit.py`
+  change; commit those two together once that work is finished.
+- [ ] `_src/tests/test_spec_upstream.py` imports as `from _src.tools...`, which
+  differs from the `sys.path` convention used by every other test module;
+  reconcile before adding it to the suite.
+- [ ] Untracked scratch artifacts (`graphrender.detail`,
+  `unified-focus-controller.patch`, `_src/perplexity-*.applescript`) should be
+  gitignored or deleted rather than committed.

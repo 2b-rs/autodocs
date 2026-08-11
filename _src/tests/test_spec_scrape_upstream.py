@@ -67,6 +67,29 @@ Table A.2: Deleted Requirements in R24-11
             self.assertEqual(index["refs.pdf"]["history_only_ids"], [])
 
 
+class PageStructureTests(unittest.TestCase):
+    def test_history_toc_and_bibliography_are_labelled(self):
+        text = ("Introduction .......... 4\n"
+                "A.1 Deleted Requirements in 19-03\n"
+                "[RS_X_00001] Old requirement.\n"
+                "Table A.1: Deleted Requirements in 19-03\n"
+                "Bibliography\n")
+        kinds = scrape.classify_page_structure(text)["kinds"]
+        self.assertEqual(kinds, ["bibliography", "history", "toc"])
+
+    def test_body_only_page_has_no_regions(self):
+        text = "[RS_Y_00001] A real requirement that opens a spec item.\n"
+        value = scrape.classify_page_structure(text)
+        self.assertEqual(value["regions"], [])
+        self.assertEqual(value["kinds"], [])
+
+    def test_non_body_spans_can_be_filtered_by_kind(self):
+        text = "Scope .......... 7\nA.1 Deleted Requirements in 19-03\nTable A.1: Deleted Requirements in 19-03\n"
+        self.assertEqual(len(scrape.non_body_spans(text, kinds=["toc"])), 1)
+        self.assertEqual(len(scrape.non_body_spans(text, kinds=["history"])), 1)
+        self.assertEqual(len(scrape.non_body_spans(text)), 2)
+
+
 class UpstreamCliIntegrationTests(unittest.TestCase):
     def fixtures(self, root):
         records=root/"SWS_X"; records.mkdir(parents=True)
