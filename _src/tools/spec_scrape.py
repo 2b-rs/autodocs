@@ -137,6 +137,8 @@ LABELS = [
     "Type", "Default value", "Errors",
 ]
 LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))
+HEADING_LABEL_RE = re.compile(r"^(?:%s)\s*:\s*.*$|^(?:%s)$" %
+                              tuple(["|".join(re.escape(x) for x in LABELS)] * 2))
 UPSTREAM_RE = re.compile(r"Upstream requirements?:\s*(.+)")
 
 # Deutsche th-Beschriftungen der DB -> kanonische PDF-Beschriftung.
@@ -1432,7 +1434,7 @@ def parse_record(text: str, rid: str) -> dict:
                          chunk.lstrip("\n"), maxsplit=1)[0]
     head = _clean_value(" ".join(line.strip() for line in head_part.split("\n")
                                   if line.strip()))
-    if head and not LABEL_RE.match(head):
+    if head and not HEADING_LABEL_RE.match(head):
         rec["heading"] = head[:120]
     current, buf = None, []
     for line in chunk.split("\n"):
