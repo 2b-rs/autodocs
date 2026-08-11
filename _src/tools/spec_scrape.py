@@ -1270,11 +1270,28 @@ DEF_RE = re.compile(r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})\]", 
 def _record_slice(text: str, rid: str) -> str:
     """Textausschnitt ab der ID-Definition bis zum Beginn des naechsten Records.
 
+    Bevorzugt einen *echten* Definitionsanker ``[ID] ... ⌈`` und nicht bloss
+    eine Inline-Zitierung derselben ID (z. B. in ``Dependencies``). Sonst kann
+    der Slice mitten im Vorgänger-Record starten und dessen Resttext der
+    gesuchten ID zuordnen.
+
     Grenze ist entweder das Spec-Item-Ende (⌋) oder die naechste in eckigen
     Klammern stehende ID — sonst laufen die Eigenschaften des Folgerecords in
     den aktuellen hinein.
     """
-    m = DEF_RE.search(text, 0) and re.search(r"\[%s\]" % re.escape(rid), text, re.IGNORECASE)
+    pattern = re.compile(r"\[%s\]" % re.escape(rid), re.IGNORECASE)
+    matches = list(pattern.finditer(text))
+    m = None
+    for cand in matches:
+        lookahead = text[cand.end():cand.end() + 240]
+        if "⌈" in lookahead:
+            pos = lookahead.find("⌈")
+            nxt = DEF_RE.search(lookahead)
+            if nxt is None or nxt.start() > pos:
+                m = cand
+                break
+    if m is None and matches:
+        m = matches[0]
     if not m:
         m = re.search(re.escape(rid), text, re.IGNORECASE)
         if not m:

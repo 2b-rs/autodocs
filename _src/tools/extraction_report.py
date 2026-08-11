@@ -69,14 +69,16 @@ CATEGORIES = {
 # ``curation_ingest.py`` fuer die Weiterverarbeitung.
 RESIDUAL = [
     {"id": "RS_DIAG_04005", "document": "AUTOSAR_FO_RS_Diagnostics", "page": 15,
-     "current_result": "Die Extraktion legt aktuell einen Record unter der Schreibweise "
-                        "„RS_DIAG_04005“ an (Grossbuchstaben, wie im Index-Muster erwartet).",
-     "simple_explanation": "Auf dieser Seite steht die ID im Fliesstext einmal anders geschrieben "
-                            "als „RS_Diag_04006“ (gemischte Gross-/Kleinschreibung). Das Werkzeug kann "
-                            "nicht automatisch entscheiden, welche Schreibweise die eigentliche, "
-                            "gueltige Kennung des Requirements ist — das steht so im Original-PDF.",
-     "decision_ask": "Soll die Kennung als „RS_DIAG_04005“ (aktuelle Extraktion) oder als "
-                      "„RS_Diag_04006“ (abweichende Schreibweise im Fliesstext) gefuehrt werden?"},
+     "current_result": "Die Extraktion verwechselt heute zwei benachbarte Requirements auf derselben Seite: "
+                        "Beim Record RS_DIAG_04005 landet der Rest des vorherigen Items, weil die Inline-Referenz "
+                        "„Dependencies: [RS_Diag_04005] ...“ aus RS_Diag_04006 als Start des Records erkannt wird.",
+     "simple_explanation": "Auf der Seite stehen zwei verschiedene Requirements direkt hintereinander: "
+                            "RS_Diag_04006 zu Session Handling und RS_Diag_04005 zu Security Access Handling. "
+                            "Das Werkzeug springt beim zweiten fälschlich schon auf die Verweisstelle im ersten und "
+                            "nicht erst auf die echte Definition darunter.",
+     "decision_ask": "Kein fachlicher Kurationsentscheid mehr nötig: Dies ist ein Parser-Fehler und soll so "
+                      "behoben werden, dass nur echte Definitionsanker „[ID] ... ⌈“ einen Record starten, "
+                      "nicht bloße Inline-Zitate derselben ID."},
     {"id": "RS_SAF_21101", "document": "AUTOSAR_AP_RS_PlatformHealthManagement", "page": 9,
      "current_result": "Kein Record wird angelegt; die Extraktion verwirft die ID, weil auf dieser "
                         "und der Folgeseite keine zugehoerige Definition (Ueberschrift + Beschreibung) "
