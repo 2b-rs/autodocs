@@ -435,6 +435,7 @@ def kennzahl(titel, wert, hinweis=""):
 
 
 VERSIONS_DIR = os.path.join(SRC, "spec", "campaigns", "extraction-report-versions")
+VERSION_PAGES_DIR = os.path.join(SRC, "sources", "pages", "reports")
 
 
 def _git_rev():
@@ -443,6 +444,36 @@ def _git_rev():
                               capture_output=True, text=True, check=True).stdout.strip()
     except Exception:
         return None
+
+
+def _git_file_version(relpath):
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%h %cI", "--", relpath],
+                             cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+        if not out:
+            return {"path": relpath, "git_rev": None, "checked_in_at": None}
+        rev, checked_in_at = out.split(" ", 1)
+        return {"path": relpath, "git_rev": rev, "checked_in_at": checked_in_at}
+    except Exception:
+        return {"path": relpath, "git_rev": None, "checked_in_at": None}
+
+
+def _script_versions():
+    return {
+        "spec_scrape": _git_file_version("_src/tools/spec_scrape.py"),
+        "extraction_report": _git_file_version("_src/tools/extraction_report.py"),
+    }
+
+
+def _script_delta(prev_scripts, cur_scripts):
+    msgs = []
+    for key, cur in cur_scripts.items():
+        prev = (prev_scripts or {}).get(key) or {}
+        if prev.get("git_rev") != cur.get("git_rev"):
+            msgs.append("%s: %s → %s" % (cur.get("path"), prev.get("git_rev") or "∅", cur.get("git_rev") or "∅"))
+    if not msgs:
+        return "Keine Aenderung an den maßgeblichen Extraktionsskripten seit der vorherigen Berichtsversion."
+    return "Aenderungen an Extraktionsskripten seit der vorherigen Berichtsversion: " + "; ".join(msgs)
 
 
 def _load_versions():
@@ -474,6 +505,7 @@ def record_version(datum, total_ids, total_pages):
     prev = prev_versions[-1] if prev_versions else None
     version = (prev["version"] + 1) if prev else 1
     snapshot = _residual_snapshot()
+    scripts = _script_versions()
 
     diff = {"neu_aufgetreten": [], "weiterhin_offen": [], "neu_aufgeloest": [], "weiterhin_aufgeloest": []}
     prev_snapshot = prev["residual"] if prev else {}
@@ -488,7 +520,7 @@ def record_version(datum, total_ids, total_pages):
         elif was["status"] == "resolved" and cur["status"] == "resolved":
             diff["weiterhin_aufgeloest"].append(rid)
     entry = {
-        "schema": "extraction-report-version@v1",
+        "schema": "extraction-report-version@v2",
         "version": version,
         "built_at": datum,
         "git_rev": _git_rev(),
@@ -497,6 +529,10 @@ def record_version(datum, total_ids, total_pages):
         "residual": snapshot,
         "diff_vs_previous": diff,
         "previous_version": prev["version"] if prev else None,
+        "scripts": scripts,
+        "script_delta": _script_delta((prev or {}).get("scripts"), scripts),
+        "report_file": "extraction-report-v%04d.html" % version,
+        "predecessor_file": ("extraction-report-v%04d.html" % prev["version"]) if prev else None,
     }
     _atomic_write_json(os.path.join(VERSIONS_DIR, "v%04d.json" % version), entry)
     return entry
@@ -533,6 +569,87 @@ def enrich_records(records):
     return records
 
 
+def _versions_list_html():
+    versions = list(reversed(_load_versions()))
+    if not versions:
+        return '<p class="dim">Noch keine versionierten Extraktions-Berichte vorhanden.</p>'
+    items = []
+    for v in versions:
+        version_no = int(v.get("version", 0))
+        report_file = v.get("report_file") or ("extraction-report-v%04d.html" % version_no)
+        predecessor_file = v.get("predecessor_file")
+        if not predecessor_file and v.get("previous_version"):
+            predecessor_file = "extraction-report-v%04d.html" % int(v["previous_version"])
+        pred = ('<a href="%s">Vorgaenger</a>' % esc(predecessor_file)) if predecessor_file else '–'
+        scripts = v.get("scripts", {})
+        er = scripts.get("extraction_report", {})
+        ssv = scripts.get("spec_scrape", {})
+        items.append(
+            '<tr>'
+            '<td><a href="%s">v%d</a></td>'
+            '<td>%s</td>'
+            '<td>%s</td>'
+            '<td><code>%s</code> (%s)<br><code>%s</code> (%s)</td>'
+            '<td>%s</td>'
+            '<td>%s</td>'
+            '</tr>'
+            % (esc(report_file), version_no, esc(v.get("built_at", "")),
+               esc(v.get("git_rev", "")), esc(er.get("git_rev", "")), esc(er.get("checked_in_at", "")),
+               esc(ssv.get("git_rev", "")), esc(ssv.get("checked_in_at", "")),
+               pred, esc(v.get("script_delta", "")))
+        )
+    return ('<div class="tr-table-wrap"><table class="tr-table"><thead><tr><th>Bericht</th><th>Ausgefuehrt am</th><th>Repo-Stand</th><th>Extraktionsskripte</th><th>Vorgaenger</th><th>Delta zur vorigen Script-Version</th></tr></thead><tbody>%s</tbody></table></div>'
+            % "".join(items))
+
+
+def write_version_page(page, version_entry):
+    os.makedirs(VERSION_PAGES_DIR, exist_ok=True)
+    path = os.path.join(VERSION_PAGES_DIR, "extraction-report-v%04d.json" % version_entry["version"])
+    _atomic_write_json(path, page)
+
+
+def _archive_stub_page(v):
+    version_no = int(v.get("version", 0))
+    predecessor_file = v.get("predecessor_file")
+    if not predecessor_file and v.get("previous_version"):
+        predecessor_file = "extraction-report-v%04d.html" % int(v["previous_version"])
+    scripts = v.get("scripts", {})
+    er = scripts.get("extraction_report", {})
+    ssv = scripts.get("spec_scrape", {})
+    links = ['<p><a href="extraction-report.html">Neueste Live-Version öffnen</a></p>']
+    if predecessor_file:
+        links.append('<p><a href="%s">Vorgaenger dieser Berichtsversion</a></p>' % esc(predecessor_file))
+    body = "\n".join([
+        STIL,
+        '<section class="tr-head"><p>Archivierte Extraktions-Berichtsversion v%d.</p><p class="tr-meta"><span>Ausgefuehrt: <strong>%s</strong></span><span>Repo-Stand: <strong>%s</strong></span></p><p class="tr-version-note">%s</p></section>' % (version_no, esc(v.get("built_at", "")), esc(v.get("git_rev", "")), esc(v.get("script_delta", ""))),
+        '<div class="tr-table-wrap"><table class="tr-table"><tbody>'
+        '<tr><th>Berichtsdatei</th><td><code>%s</code></td></tr>'
+        '<tr><th>Extraction report script</th><td><code>%s</code> (%s)</td></tr>'
+        '<tr><th>Spec scrape script</th><td><code>%s</code> (%s)</td></tr>'
+        '<tr><th>Vorgaenger</th><td>%s</td></tr>'
+        '</tbody></table></div>' % (
+            esc(v.get("report_file") or ("extraction-report-v%04d.html" % version_no)),
+            esc(er.get("git_rev", "")), esc(er.get("checked_in_at", "")),
+            esc(ssv.get("git_rev", "")), esc(ssv.get("checked_in_at", "")),
+            ('<a href="%s">%s</a>' % (esc(predecessor_file), esc(predecessor_file))) if predecessor_file else '–'),
+        *links,
+    ])
+    return {"file": v.get("report_file") or ("extraction-report-v%04d.html" % version_no),
+            "title": "Extraktions-Bericht Archiv v%d — AUTOSAR R25-11" % version_no,
+            "body_class": None, "nolang": True,
+            "nav_html": '<a href="index.html">Start</a> / <a href="extraction-report.html">Extraktions-Bericht</a> / Archiv v%d' % version_no,
+            "footer": "extracted", "main_lead": "",
+            "main": [{"t": "html", "html": body, "tail": "\n"}]}
+
+
+def ensure_version_pages():
+    os.makedirs(VERSION_PAGES_DIR, exist_ok=True)
+    for v in _load_versions():
+        path = os.path.join(VERSION_PAGES_DIR, "extraction-report-v%04d.json" % int(v.get("version", 0)))
+        if not os.path.exists(path):
+            _atomic_write_json(path, _archive_stub_page(v))
+
+
 def baue(datum, gesamt_zaehlung):
     sections_html = "".join(category_section(k, v) for k, v in gesamt_zaehlung["records"].items())
     offene = [r for r in RESIDUAL if r.get("status", "open") != "resolved"]
@@ -548,7 +665,7 @@ def baue(datum, gesamt_zaehlung):
     version_note = (
         '<p class="tr-version-note">Berichtsversion <strong>v%d</strong>%s'
         % (version_entry["version"],
-           " (vorherige: v%d)" % version_entry["previous_version"] if version_entry["previous_version"] else " (erste Version)"))
+           " (vorherige: <a href=\"%s\">v%d</a>)" % (esc(version_entry["predecessor_file"]), version_entry["previous_version"]) if version_entry["previous_version"] else " (erste Version)"))
     if version_entry["previous_version"]:
         teile = []
         if diff["neu_aufgeloest"]:
@@ -558,6 +675,11 @@ def baue(datum, gesamt_zaehlung):
         if teile:
             version_note += " — " + "; ".join(esc(t) for t in teile)
     version_note += '</p>'
+    script_meta = version_entry["scripts"]
+    script_note = ('<p class="tr-version-note">Script-Stand: <code>%s</code> (%s), <code>%s</code> (%s). %s</p>'
+                   % (esc(script_meta["extraction_report"].get("git_rev", "")), esc(script_meta["extraction_report"].get("checked_in_at", "")),
+                      esc(script_meta["spec_scrape"].get("git_rev", "")), esc(script_meta["spec_scrape"].get("checked_in_at", "")),
+                      esc(version_entry.get("script_delta", ""))))
 
     karten = "".join([
         kennzahl("Behobene Fehlerklassen", len(CATEGORIES), "seit der letzten Berichtsaenderung dokumentiert"),
@@ -567,7 +689,7 @@ def baue(datum, gesamt_zaehlung):
     ])
     inhalt = "\n".join([
         STIL,
-        '<section class="tr-head"><p>Dieser Extraktions-Bericht beschreibt die Aenderungen an der Pipeline seit der letzten Berichtsaenderung. Oben stehen die <strong>wichtigsten offenen Kurationsanfragen</strong>; darunter folgen die bereits umgesetzten Fixes, standardmaessig eingeklappt, jeweils mit Screenshot und aktuellem Extraktionsergebnis.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p>%s</section>' % (esc(datum), version_note),
+        '<section class="tr-head"><p>Dieser Extraktions-Bericht beschreibt die Aenderungen an der Pipeline seit der letzten Berichtsaenderung. Oben stehen die <strong>wichtigsten offenen Kurationsanfragen</strong>; darunter folgen die bereits umgesetzten Fixes, standardmaessig eingeklappt, jeweils mit Screenshot und aktuellem Extraktionsergebnis.</p><p class="tr-meta"><span>Stand: <strong>%s</strong></span><span>Dokumente: <strong>18</strong></span><span>Backends: <strong>pypdf, builtin</strong></span></p>%s%s</section>' % (esc(datum), version_note, script_note),
         '<h2 class="sect">Kennzahlen</h2><div class="tr-grid">%s</div>' % karten,
         '<h2 class="sect">Kurationsanfragen — bitte zuerst entscheiden</h2>',
         '<p class="dim">Jeder Fall zeigt den heutigen Extraktionsstand, eine kompakte Screenshot-Vorschau der Quelle und in einfacher Sprache, welche Entscheidung benoetigt wird. Deine Antwort landet im vorhandenen Review-Framework und kann spaeter aus dem GitHub-Issue in einen umsetzbaren Aenderungsvorschlag fuer die Pipeline ueberfuehrt werden.</p>',
@@ -578,13 +700,16 @@ def baue(datum, gesamt_zaehlung):
         '<h2 class="sect">Fixes seit der letzten Aenderung — vollstaendige Extraktionsergebnisse</h2>%s' % sections_html,
         '<p class="dim">Erzeugt mit <code>_src/tools/extraction_report.py</code> direkt aus dem versionierten PDF-Cache. Antworten auf Kurationsanfragen werden ueber das bestehende Review-Framework als Paket gespeichert; wenn zur Umsetzung KI noetig ist, darf sie nur einen Vorschlag aus den zugehoerigen Dokumenten ableiten. Die Person, die die Extraktionsskripte ausfuehrt, hat immer das letzte Wort und uebernimmt Aenderungen erst nach eigener Pruefung.</p>',
     ])
-    return {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11 (v%d)" % (datum[:10], version_entry["version"]), "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
+    live_page = {"file": "extraction-report.html", "title": "Extraktions-Bericht %s — AUTOSAR R25-11 (v%d)" % (datum[:10], version_entry["version"]), "body_class": None, "nolang": True, "nav_html": '<a href="index.html">Start</a> / Extraktions-Bericht', "footer": "extracted", "main_lead": "", "main": [{"t": "html", "html": inhalt, "tail": "\n"}]}
+    version_page = dict(live_page, file=version_entry["report_file"], nav_html='<a href="index.html">Start</a> / <a href="extraction-report.html">Extraktions-Bericht</a> / v%d' % version_entry["version"])
+    write_version_page(version_page, version_entry)
+    return live_page
 
 
 def verlinke_startseite(datum):
     idx = json.load(open(INDEX, encoding="utf-8"))
-    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Vollstaendige Abweichungsliste (Volltext + Seiten-Screenshot) heute behobener Extraktions-Fehlerklassen, Stand %s: <a href="extraction-report.html">Extraktions-Bericht öffnen</a>.</p></aside>' % html.escape(datum), "tail": "\n"}
-    idx["main"] = [b for b in idx["main"] if "extraction-report.html" not in b.get("html", "")]
+    block = {"t": "html", "nolang": True, "html": '<aside class="tr-home-link"><h2 class="sect">Extraktions-Qualitaet</h2><p>Aktueller Extraktions-Bericht, Stand %s: <a href="extraction-report.html">neueste Version öffnen</a>.</p><p>Alle versionierten Extraktions-Berichte:</p>%s</aside>' % (html.escape(datum), _versions_list_html()), "tail": "\n"}
+    idx["main"] = [b for b in idx["main"] if "tr-home-link" not in b.get("html", "")]
     pos = 3 if any("traceability.html" in b.get("html", "") for b in idx["main"]) else 2
     idx["main"].insert(pos, block)
     with open(INDEX, "w", encoding="utf-8") as f:
@@ -631,6 +756,7 @@ def cmd_assemble(input_dir):
     with open(PAGE, "w", encoding="utf-8") as f:
         json.dump(seite, f, ensure_ascii=False, indent=1)
         f.write("\n")
+    ensure_version_pages()
     verlinke_startseite(datum)
     total = sum(len(v) for v in raw.values())
     print("Extraktions-Bericht: Stand %s, %d Abweichungen ueber %d Fehlerklassen" % (datum, total, len(CATEGORIES)))
