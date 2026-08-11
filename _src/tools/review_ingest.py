@@ -11,9 +11,12 @@ und gibt sie als Paket ab:
     ``self_declared``. Die Person ist Selbstauskunft; solche Pakete werden
     strenger geprueft (siehe ``--require-authenticated``).
 
-Dieses Werkzeug ist der einzige schreibende Weg zurueck in die Spec-DB. Es
-arbeitet rein lokal (kein Netz, keine nennenswerte CPU-Last) und darf daher
-direkt ueber MCP laufen; eine ``run.sh`` ist nicht noetig (AGENTS.md).
+Dieses Werkzeug ist der einzige schreibende Weg zurueck in die Spec-DB.
+Standardmaessig arbeitet es lokal (kein Netz, keine nennenswerte CPU-Last)
+und darf daher direkt ueber MCP laufen. Der ``-g/--github``-Modus laedt
+Review-Pakete direkt aus GitHub-Issues und macht dafuer einen Netzzugriff
+(``https://api.github.com``) — dieser Modus MUSS ueber run.sh laufen, nicht
+direkt ueber MCP (AGENTS.md: kein Internetzugriff ausserhalb run.sh).
 
 Grundsatz
 ---------
@@ -37,6 +40,8 @@ Aufruf (immer vom Repo-Wurzelverzeichnis)
     python3 _src/tools/review_ingest.py --check  paket.json
     python3 _src/tools/review_ingest.py --apply  paket.json
     python3 _src/tools/review_ingest.py --apply --require-authenticated paket.json
+    python3 _src/tools/review_ingest.py -g 1 2
+    python3 _src/tools/review_ingest.py --apply -g 1 2 --repo 2b-rs/autodocs
 
 Exit-Code 1, wenn Konflikte auftraten oder das Paket abgelehnt wurde.
 """
@@ -45,7 +50,11 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import re
 import sys
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -88,6 +97,74 @@ def requirement_block(record: dict) -> dict | None:
         if block.get("t") == "requirement_text":
             return block
     return None
+
+
+def _github_headers() -> dict:
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "review_ingest.py",
+    }
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        headers["Authorization"] = "Bearer %s" % token
+    return headers
+
+
+_FENCE = re.compile(r"^\s*```(?:json)?\s*\n(.*?)\n?\s*```\s*$", re.DOTALL)
+
+
+def _strip_code_fence(text: str) -> str:
+    """GitHub-Issue-Bodies bettten das Paket haeufig in ```json ... ``` ein."""
+    m = _FENCE.match(text.strip())
+    return m.group(1) if m else text
+
+
+def fetch_github_issue_package(repo: str, issue_nr: int) -> tuple[dict | None, str | None]:
+    url = "https://api.github.com/repos/%s/issues/%d" % (repo, issue_nr)
+    req = urllib.request.Request(url, headers=_github_headers())
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")
+        return None, "GitHub-Issue #%d aus %s konnte nicht geladen werden: HTTP %s: %s" % (issue_nr, repo, e.code, detail)
+    except urllib.error.URLError as e:
+        return None, "GitHub-Issue #%d aus %s konnte nicht geladen werden: %s" % (issue_nr, repo, e)
+    except json.JSONDecodeError as e:
+        return None, "GitHub-Antwort fuer Issue #%d aus %s ist kein gueltiges JSON: %s" % (issue_nr, repo, e)
+
+    body = payload.get("body")
+    if not isinstance(body, str) or not body.strip():
+        return None, "GitHub-Issue #%d aus %s enthaelt keinen JSON-Body" % (issue_nr, repo)
+    try:
+        paket = json.loads(_strip_code_fence(body))
+    except json.JSONDecodeError as e:
+        return None, "GitHub-Issue #%d aus %s enthaelt kein gueltiges Review-Paket-JSON: %s" % (issue_nr, repo, e)
+    return paket, None
+
+
+def ingest_package(paket: dict, paket_label: str, apply: bool, require_auth: bool) -> dict:
+    bericht = {"paket": paket_label, "identity": paket.get("identity"),
+               "angewandt": apply, "fehler": [], "ergebnisse": []}
+
+    bericht["fehler"] = validate_package(paket)
+    if bericht["fehler"]:
+        return bericht
+
+    if paket["identity"] == "self_declared":
+        bericht.setdefault("warnungen", []).append(
+            "Nicht authentifiziertes Paket: decided_by ist Selbstauskunft. "
+            "Vor der Uebernahme inhaltlich pruefen.")
+        if require_auth:
+            bericht["fehler"].append(
+                "--require-authenticated: Paket ohne GitHub-Identitaet abgelehnt")
+            return bericht
+
+    for d in paket["decisions"]:
+        bericht["ergebnisse"].append(apply_decision(d, paket, apply))
+    bericht["konflikte"] = [r for r in bericht["ergebnisse"]
+                            if r["status"] == "conflict"]
+    return bericht
 
 
 def validate_package(paket: dict) -> list:
@@ -191,60 +268,67 @@ def apply_decision(d: dict, paket: dict, apply: bool) -> dict:
 
 def ingest(paket_pfad: Path, apply: bool, require_auth: bool) -> dict:
     paket = json.loads(paket_pfad.read_text(encoding="utf-8"))
-    bericht = {"paket": str(paket_pfad), "identity": paket.get("identity"),
-               "angewandt": apply, "fehler": [], "ergebnisse": []}
+    return ingest_package(paket, str(paket_pfad), apply, require_auth)
 
-    bericht["fehler"] = validate_package(paket)
-    if bericht["fehler"]:
-        return bericht
 
-    if paket["identity"] == "self_declared":
-        bericht.setdefault("warnungen", []).append(
-            "Nicht authentifiziertes Paket: decided_by ist Selbstauskunft. "
-            "Vor der Uebernahme inhaltlich pruefen.")
-        if require_auth:
-            bericht["fehler"].append(
-                "--require-authenticated: Paket ohne GitHub-Identitaet abgelehnt")
-            return bericht
-
-    for d in paket["decisions"]:
-        bericht["ergebnisse"].append(apply_decision(d, paket, apply))
-    bericht["konflikte"] = [r for r in bericht["ergebnisse"]
-                            if r["status"] == "conflict"]
-    return bericht
+def _print_bericht(bericht: dict, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(bericht, ensure_ascii=False, indent=1))
+        return
+    print("Paket:    %s (%s)" % (bericht["paket"], bericht.get("identity")))
+    for w in bericht.get("warnungen", []):
+        print("WARNUNG:  %s" % w)
+    for f in bericht.get("fehler", []):
+        print("FEHLER:   %s" % f)
+    for r in bericht.get("ergebnisse", []):
+        if r["status"] == "ok":
+            print("ok        %s -> %s" % (r["id"], r["pfad"]))
+        else:
+            print("KONFLIKT  %s: %s" % (r["id"], r["grund"]))
+    print("%d Entscheidungen, %d Konflikte, %s"
+          % (len(bericht.get("ergebnisse", [])), len(bericht.get("konflikte", [])),
+             "geschrieben" if bericht.get("angewandt") else "nur geprueft"))
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("paket", type=Path, help="Review-Paket (JSON)")
+    ap.add_argument("paket", nargs="*", type=Path, help="Review-Paket(e) als JSON-Datei")
     ap.add_argument("--apply", action="store_true",
                     help="Records schreiben (Standard: nur pruefen)")
     ap.add_argument("--require-authenticated", action="store_true",
                     help="Nur Pakete mit belegter GitHub-Identitaet zulassen")
     ap.add_argument("--json", action="store_true", help="Bericht als JSON")
+    ap.add_argument("--repo", default="2b-rs/autodocs",
+                    help="GitHub-Repo fuer -g/--github-Issues (Standard: %(default)s)")
+    ap.add_argument("-g", "--github", nargs="+", type=int, metavar="ISSUE",
+                    help="Review-Paket(e) direkt aus GitHub-Issue(s) laden")
     args = ap.parse_args(argv)
 
-    bericht = ingest(args.paket, args.apply, args.require_authenticated)
+    if not args.paket and not args.github:
+        ap.error("mindestens ein lokales paket oder -g/--github ISSUE erforderlich")
+
+    berichte = []
+    for paket_pfad in args.paket:
+        berichte.append(ingest(paket_pfad, args.apply, args.require_authenticated))
+    for issue_nr in args.github or []:
+        paket, fehler = fetch_github_issue_package(args.repo, issue_nr)
+        label = "github:%s#%d" % (args.repo, issue_nr)
+        if fehler:
+            berichte.append({"paket": label, "identity": None, "angewandt": args.apply,
+                             "fehler": [fehler], "ergebnisse": [], "konflikte": []})
+            continue
+        berichte.append(ingest_package(paket, label, args.apply, args.require_authenticated))
 
     if args.json:
-        print(json.dumps(bericht, ensure_ascii=False, indent=1))
+        print(json.dumps(berichte if len(berichte) != 1 else berichte[0], ensure_ascii=False, indent=1))
     else:
-        print("Paket:    %s (%s)" % (bericht["paket"], bericht["identity"]))
-        for w in bericht.get("warnungen", []):
-            print("WARNUNG:  %s" % w)
-        for f in bericht["fehler"]:
-            print("FEHLER:   %s" % f)
-        for r in bericht["ergebnisse"]:
-            if r["status"] == "ok":
-                print("ok        %s -> %s" % (r["id"], r["pfad"]))
-            else:
-                print("KONFLIKT  %s: %s" % (r["id"], r["grund"]))
-        print("%d Entscheidungen, %d Konflikte, %s"
-              % (len(bericht["ergebnisse"]), len(bericht.get("konflikte", [])),
-                 "geschrieben" if bericht["angewandt"] else "nur geprueft"))
+        for i, bericht in enumerate(berichte):
+            if i:
+                print()
+            _print_bericht(bericht, as_json=False)
 
-    return 1 if bericht["fehler"] or bericht.get("konflikte") else 0
+    return 1 if any(b.get("fehler") or b.get("konflikte") for b in berichte) else 0
 
 
 if __name__ == "__main__":
