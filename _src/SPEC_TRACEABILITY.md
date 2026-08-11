@@ -111,6 +111,174 @@ Stattdessen gilt:
 
 Damit ist die Klasse selbst als Entität adressierbar, reviewbar und tracebar.
 
+## Neue Anforderung: explizite Requirement-Records
+
+Normative Anforderungen dürfen künftig nicht mehr ausschließlich als Beschreibung, Upstream-Referenz oder impliziter Kontext eines API-, Class- oder Member-Records erscheinen.
+
+Stattdessen gilt:
+
+- Für jede explizit im Standard mit eigener ID ausgewiesene Anforderung wird ein eigener Requirement-Record unter `spec/records/<PREFIX>/<ID>.json` geführt.
+- Der Requirement-Record ist der kanonische Ort für Anforderungstext, Überschrift, Upstream-Beziehungen, Status, Dokumentfundstelle und Traceability.
+- Der normative Originaltext wird im Block `requirement_text` wörtlich und sprachlich unverändert gespeichert. Er ist nicht KI-generiert und wird bei der HTML-Generierung als englischer Originaltext ausgegeben.
+- API-, Class- und Member-Records bleiben eigenständig. Sie dürfen über `covers` bzw. `covered_by` mit Requirement-Records verknüpft werden, ersetzen den Requirement-Record aber nicht.
+- Requirement-Records erhalten bei Erstellung Datum, Kampagne, Begründung, Actor und Änderungshistorie.
+- Ein Requirement-Record wird nur additiv angelegt; ein vorhandener Record darf durch einen automatischen Extraktionslauf nicht überschrieben werden.
+
+Damit ist die Anforderung selbst adressierbar, kommentierbar, reviewbar, renderbar und über den gesamten Weg von PDF-Evidenz bis zur dokumentierten API-Beziehung tracebar.
+
+## Schema für Requirement-Records
+
+Ein Requirement-Record verwendet die allgemeine Record-Struktur mit `id`, `attrs`, `blocks`, `status` und `history` und ergänzt sie um `requirement_meta`.
+
+Empfohlenes logisches Modell:
+
+```json
+{
+  "id": "SWS_LOG_00227",
+  "attrs": [["class", "rec req"], ["id", "SWS_LOG_00227"]],
+  "blocks": [
+    { "t": "html", "html": "<h3 class=\"recname\">…</h3>" },
+    {
+      "t": "requirement_text",
+      "text_en": "The Logging framework shall append an EOL sequence to each message in console output.",
+      "status_flag": null
+    },
+    {
+      "t": "ai",
+      "kind": "comment",
+      "src": "content/ai/requirements/SWS_LOG_00227/comment_01.html"
+    }
+  ],
+  "requirement_meta": {
+    "heading": "Newline addition in console output",
+    "upstream": ["RS_LT_00002"],
+    "status_flag": null,
+    "origin": "explicit",
+    "module": "log",
+    "document": "AUTOSAR_AP_SWS_LogAndTrace",
+    "page": 44,
+    "covers": [],
+    "covered_by": [],
+    "trace": []
+  },
+  "status": {
+    "state": "valid/imported",
+    "reason": "scrape",
+    "campaign": "2026-08-requirement-import-log"
+  },
+  "history": []
+}
+```
+
+Die konkrete HTML-Auszeichnung darf sich weiterentwickeln. Verbindlich sind die semantischen Felder und die Herkunft des normativen Textes.
+
+## Explizite Requirements
+
+Ein explizites Requirement stammt unmittelbar aus einem mit eigener ID bezeichneten Standardabschnitt.
+
+Für `requirement_meta.origin = "explicit"` gilt:
+
+- Der Text in `requirement_text.text_en` benötigt mindestens einen direkten, starken PDF-Trace mit ID und reproduzierbarem Locator (Form A).
+- Der Trace enthält mindestens Dokument, Deep-Link, ID, Seite, Extraktor-/Regelversion, extrahierten Text, Confidence und Review-Status.
+- Der Status `valid/imported` bedeutet ausschließlich, dass der normativ markierte Text technisch aus dem angegebenen Standardabschnitt importiert wurde. Er bedeutet **nicht**, dass eine menschliche Inhaltsreview oder eine Implementierungsbestätigung erfolgt ist.
+- Upstream-Referenzen werden als Fakten aus demselben Fundabschnitt gespeichert, wenn sie dort explizit genannt sind.
+- Statusmarker wie `DRAFT` werden getrennt als `status_flag` erhalten und dürfen nicht in den Requirement-Text eingemischt werden.
+
+Ein direkter Import soll Traceability mindestens in dieser Form erzeugen:
+
+```json
+{
+  "mode": "pdf_deep_link",
+  "sources": [
+    {
+      "kind": "pdf_deep_link",
+      "document": "AUTOSAR_AP_SWS_LogAndTrace",
+      "url": "…#nameddest=SWS_LOG_00227",
+      "locator": "named destination SWS_LOG_00227; page 44"
+    }
+  ],
+  "extracts": [
+    "The Logging framework shall append an EOL sequence to each message in console output."
+  ],
+  "reasoning": "Direkt aus dem normativen, mit der ID gekennzeichneten PDF-Abschnitt extrahiert.",
+  "rule": "pdf_requirement_text_between_delimiters@v1",
+  "confidence": "high",
+  "evidence_strength": "strong",
+  "review": { "status": "accepted" }
+}
+```
+
+## Implizite Requirements
+
+Ein implizites Requirement ist keine wörtlich als eigene Anforderung im Standard vorhandene Aussage. Es wird aus vorhandener Evidenz, expliziten Requirements, API-Records, Code oder anderen zulässigen Quellen als nachvollziehbarer Kandidat abgeleitet.
+
+Für `requirement_meta.origin = "implicit"` gilt zwingend:
+
+- Es darf keinen Status `asserted` allein aufgrund einer KI-Generierung geben.
+- `inferred_from` ist Pflicht und enthält mindestens eine Quelle oder einen stützenden Spec-Record samt Rolle und Begründung.
+- Jeder Trace verwendet eine versionierte Inferenzregel, begründet die Schlussfolgerung und führt Gegen- oder Unsicherheits-Evidenz auf, sofern vorhanden.
+- Die initiale Confidence darf höchstens `medium` sein, wenn keine direkte normative Formulierung existiert.
+- Ohne menschliche oder regelbasierte Entscheidung bleibt der Record in einem reviewbaren Zustand, etwa `proposed/inferred`.
+- Der generierte Text muss als abgeleitete Anforderung erkennbar bleiben und darf nicht als offizieller AUTOSAR-Originaltext ausgegeben werden.
+
+Empfohlenes Modell für `inferred_from`:
+
+```json
+[
+  {
+    "id": "SWS_LOG_00227",
+    "role": "normative-source",
+    "reason": "Die explizite Anforderung setzt für Console-Output eine zeilenweise Nachrichtensemantik voraus."
+  },
+  {
+    "id": "SWS_LOG_00046",
+    "role": "implementing-api-record",
+    "reason": "Der API-Record beschreibt die Ausgabeoperation, an die die abgeleitete Anforderung gebunden ist."
+  }
+]
+```
+
+## Coverage und Rückverfolgbarkeit
+
+`covers` und `covered_by` bilden die fachliche Beziehung zwischen Requirements und Spec-Records ab:
+
+- `requirement_meta.covers` verweist auf Records, deren Verhalten oder Schnittstelle durch das Requirement eingeschränkt, definiert oder erklärt wird.
+- `requirement_meta.covered_by` verweist auf Records, die das Requirement implementieren, konkretisieren oder als Evidenz für dessen Umsetzung dienen.
+- Jede Coverage-Kante trägt mindestens Ziel-ID, Beziehungstyp, Status, Traceability und Review-Status.
+- Eine fehlende Coverage ist kein Fehler beim PDF-Import; sie zeigt zunächst nur, dass die Anforderung noch nicht auf API-, Class- oder Member-Records abgebildet wurde.
+- Ein HTML-Renderer darf aus diesen Kanten Anforderungsseiten, Implementierungsübersichten und Traceability-Matrizen erzeugen.
+
+Empfohlenes Kantenmodell:
+
+```json
+{
+  "id": "SWS_LOG_00046",
+  "relation": "implemented_by",
+  "status": "inferred",
+  "trace": [
+    {
+      "mode": "cross_record_inference",
+      "supporting_records": [{ "id": "SWS_LOG_00227", "role": "requirement" }],
+      "rule": "requirement_to_api_coverage@v1",
+      "confidence": "medium",
+      "review": { "status": "pending" }
+    }
+  ]
+}
+```
+
+## KI-Kommentare zu Requirements
+
+KI-Kommentare sind kein Teil des normativen Requirements und werden niemals in `requirement_text.text_en` gespeichert.
+
+Stattdessen gilt:
+
+- Kommentare werden als separater Block `t: "ai"` mit `kind: "comment"` eingebunden.
+- Der Inhalt liegt unter `content/ai/requirements/<Requirement-ID>/`.
+- Jeder Kommentar folgt `ai/RICHTLINIEN.md`, trägt seine Herkunft und grenzt Interpretation, Annahme und Originaltext sichtbar voneinander ab.
+- Ein KI-Kommentar kann Verständnisfragen, fachliche Folgen, Implementierungsrisiken, offene Coverage oder mögliche Ableitungs-Kandidaten erläutern.
+- Ein KI-Kommentar darf keine neue, scheinbar offizielle AUTOSAR-Anforderung behaupten. Entsteht aus einer Analyse ein Kandidat, wird er als separater impliziter Requirement-Record mit `origin = "implicit"` und vollständigem `inferred_from`-Argument angelegt.
+
 ## Anforderung an das Feld `parents`
 
 Class-Records dürfen ein optionales Feld `parents` tragen.
