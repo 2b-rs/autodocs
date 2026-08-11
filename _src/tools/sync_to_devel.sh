@@ -36,7 +36,9 @@ fi
 
 # A healthy tree has tens of thousands of files. Anything far below that means
 # the source is being purged or rebuilt right now.
-SRC_FILES=$(find "$SRC/_src" -type f | head -2000 | wc -l | tr -d ' ')
+# Count the complete tree. Do not cap find with head: under pipefail that gives
+# find SIGPIPE and aborts the backup before rsync starts.
+SRC_FILES=$(find "$SRC/_src" -type f | wc -l | tr -d ' ')
 if (( SRC_FILES < 1000 )); then
   log "ABORT: source looks truncated (only $SRC_FILES files under _src) — refusing to sync"
   exit 0
