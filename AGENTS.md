@@ -4,22 +4,32 @@ Diese Datei richtet sich an automatisierte Werkzeuge und KI-Agenten, die im
 Projekt arbeiten. Sie ist keine Anleitung für die Nutzung oder Veröffentlichung
 der API-Referenz.
 
-## Script execution
-- NEVER attempt to install software, download anything, write to the user's home directory, or run a headless browser directly through MCP. Every operation that requires internet access, needs to write anywhere outside the project directory, or is expected to consume significant CPU must be performed as follows: Put the necessary commands into a command script called "run.sh" into the directory where this file resides and YIELD IMMEDIATELY. The script will be executed by me and I will inform you about the result. I will redirect the script's output into output/run-current.log.
-- Try to offload as much work as possible this way. Use script-level parallelism where possible. You have 10 CPUs. Don't run any process using 'nice'.
-- At the beginning of the script, DESCRIBE THE JOB COMPREHENSIVELY. Echo to stdout:
+## Script execution / MCP
+- DO NOT EXECUTION SCRIPTS VIA MCP.
+
+  Instead, put the necessary commands into a command script called "run.sh" in the project's root directory and YIELD. run.sh will be executed manually and get back to you. You will find its stdout+stderr in output/run-current.log.
+
+- NEVER attempt to install software, download anything, write to the user's home directory, or run a headless browser through MCP. Internet access, writing outside /tmp, and anything that causes high CPU usage will be blocked by the sandbox. Therefore, all of these operations MUST be performed through the run.sh mechanism explained above.
+
+- if any other MCP operation fails, report this verbatim and YIELD.
+
+- Combine as much work as possible in each single call to run.sh. You can e.g. grep into multiple output streams under /tmp/output/, run multiple screenshot-tools in parallel etc. You may spawn up to 12 jobs in parallel.
+
+- At the beginning of run.sh, DESCRIBE THE PURPOSE. Echo to stdout:
   1. A one-line title containing the Purpose, e.g. CPU OFFLOADING, DOWNLOAD, or SW INSTALLATION.
-  2. A short summary of the script's structure,
+  2. A short summary of run.sh's structure,
   3. A detailed explanation of your goal hierarchy
   4. An estimate of how much data traffic, cpu load, number of workers, or wall clock time will be needed for completion.
-- The script shall continuously inform about its progress, at least once every 5s.
+- Have run.sh output progress information on a regular basis, at least once every 5s.
 
 ## Way of collaboration
-- ALWAYS WORK TOWARDS THE GOAL as possible. KEEP GOING unless the goal has clearly become unreachable.
-- If the user's intention is not 100% clear, DON'T ASK BACK, but make a best-guess of his preferences. Document your decisions and what you have achieved after completion.
+- ALWAYS KEEP GOING as long as possible, i.e. until the goal is reached or it has clearly become unreachable.
+- If the user's intention is not 100% clear, DON'T ASK BACK. Make a best-guess of his preferences and document your decisions.
 - Be THOROUGH, FACTUAL, PRECISE, CONCISE, and HONEST.
-- Find an open task list in NEXTSTEPS.md. Keep track of your goals there. After you've completed a task, mark it as done in NEXTSTEPS.md or delete it. Don't remove unfinished items.
-- Once you have completed a piece of work and are confident of the results, check it in.
+- Whenever you complete a piece of work:
+  1. check the box in TODO.md.
+  2. check it into the local git. Use the user's email adress as the author.
+  2. pick up the next piece of work from TODO.md and KEEP GOING.
 
 ## MCP-Sandbox: Schreibzugriffe
 

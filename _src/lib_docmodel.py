@@ -40,6 +40,7 @@ Blocktypen (jeder Block hat "tail": Text NACH dem Element, meist "\n" oder ""):
                                                        Parameter-/Rückgabe-Tabelle
 """
 import hashlib
+import html as _html
 import json
 import os
 import re
@@ -96,6 +97,17 @@ def esc(t):
 
 def esc_attr(t):
     return esc(t).replace('"', "&quot;")
+
+
+def esc_once(t):
+    """Wie esc(), aber fuer Texte, die bereits HTML-Entities enthalten koennen.
+
+    Spec-Headings kommen teils vorescaped aus der Quelle (z. B.
+    "function operator&lt;&lt;"). Ein zweites esc() wuerde daraus
+    "operator&amp;lt;&amp;lt;" machen, was der Leser als Rohtext sieht.
+    Deshalb zuerst entschaerfen, dann genau einmal escapen.
+    """
+    return esc(_html.unescape(t or ""))
 
 
 def serialize(el):
@@ -179,6 +191,8 @@ def resolve_recs(blocks, srcdir=SRC):
             b = {"t": "rec", "attrs": r["attrs"], "lead": r.get("lead", ""),
                  "blocks": r["blocks"], "tail": b.get("tail", ""),
                  "_src": b["src"]}
+            if r.get("requirement_meta"):
+                b["requirement_meta"] = r["requirement_meta"]
         if b["t"] in ("rec", "fold"):
             b = dict(b, blocks=resolve_recs(b["blocks"], srcdir))
         out.append(b)
@@ -243,7 +257,76 @@ def iter_pages(only=None, srcdir=SRC):
 
 # ---------------------------------------------------------------- Rendering
 
-def render_blocks(blocks, page_dir_depth, srcdir=SRC):
+_REVIEW_REASON_LABELS = {
+    "legacy_desc_import": ("Legacy-Beschreibung prüfen", "Der Beschreibungstext wurde aus einer älteren Dokumentationsquelle übernommen und konnte nicht mit hoher Sicherheit gegen die aktuelle Spezifikation verifiziert werden."),
+    "text_repair": ("Textkorrektur prüfen", "Der importierte Requirement-Text wurde automatisch repariert. Die vorgeschlagene Fassung muss fachlich bestätigt werden."),
+    "ambiguous_import": ("Mehrdeutigen Import prüfen", "Beim Import wurden mehrdeutige oder widersprüchliche Informationen erkannt."),
+    "low_confidence": ("Unsichere Zuordnung prüfen", "Die Zuordnung zur API oder Spezifikationsstelle hat eine geringe Konfidenz."),
+}
+
+def _review_reason(reason):
+    key = str(reason or "review_requested")
+    return _REVIEW_REASON_LABELS.get(key, (key.replace("_", " ").title(), "Für diese Anforderung liegt ein offener Review-Hinweis vor. Inhalt, Zuordnung und Formulierung müssen bestätigt werden."))
+
+def _review_meta_html(payload):
+    meta = payload.get("meta") or {}
+    finding = (payload.get("decision_basis") or {}).get("finding") or {}
+    title, explanation = _review_reason(meta.get("review_reason"))
+    def row(label, value, cls=""):
+        if value in (None, "", [], {}): return ""
+        if isinstance(value, (list, dict)): value = json.dumps(value, ensure_ascii=False, indent=2)
+        return '<div class="review-meta-row%s"><dt>%s</dt><dd>%s</dd></div>' % ((" "+cls) if cls else "", esc(label), esc_once(str(value)))
+    rows = [
+        row("Review-Grund", title, "review-meta-emphasis"),
+        row("Warum ist ein Review nötig?", explanation),
+        row("API-Element", meta.get("heading")),
+        row("Requirement-ID", payload.get("id")),
+        row("Flag-ID", payload.get("flag_id")),
+        row("Status", meta.get("review_status")),
+        row("Konfidenz", meta.get("confidence")),
+        row("Herkunft", meta.get("origin")),
+        row("Modul", meta.get("module")),
+        row("Spezifikationsdokument", meta.get("document")),
+        row("Seite", meta.get("page")),
+        row("Upstream", meta.get("upstream")),
+        row("Auffälligkeiten", finding.get("suspects")),
+        row("Automatische Reparaturen", finding.get("repairs")),
+        row("Review-Anweisung", (payload.get("decision_basis") or {}).get("instruction")),
+        row("Text-Hash", payload.get("text_hash"), "review-meta-hash"),
+    ]
+    original = meta.get("text_raw")
+    proposed = meta.get("text_en")
+    text = '<section class="review-target" aria-labelledby="review-target-%s"><h3 id="review-target-%s">Was muss freigegeben werden?</h3><p>Bestätige, dass der folgende Requirement-Text fachlich korrekt ist, zur genannten API gehört und ohne irreführende Importartefakte veröffentlicht werden kann.</p><blockquote lang="en">%s</blockquote>' % (esc_attr(payload.get("id") or "requirement"), esc_attr(payload.get("id") or "requirement"), esc(proposed or original or ""))
+    if original and proposed and original != proposed:
+        text += '<details class="review-original"><summary>Importierten Originaltext anzeigen</summary><pre>%s</pre></details>' % esc(original)
+    text += '</section><section class="review-context"><h3>Prüfkontext</h3><dl class="review-meta">%s</dl></section>' % "".join(rows)
+    return text
+
+def _review_page_enhancements(main):
+    """Top-Hinweis und Badges aus den eingebetteten Review-Payloads ableiten."""
+    payloads = []
+    for raw in re.findall(r'<script type="application/json" class="review-data">(.*?)</script>', main, re.S):
+        try: payloads.append(json.loads(raw.replace("<\\/", "</")))
+        except (ValueError, TypeError): pass
+    if not payloads: return main, ""
+    seen, items = set(), []
+    for data in payloads:
+        rid = str(data.get("id") or "")
+        if not rid or rid in seen: continue
+        seen.add(rid); items.append(data)
+        # Badge direkt nach dem Funktionslink in der Methoden-/Funktionsübersicht.
+        pattern = r'(<a class="fn" href="#%s">.*?</a>)' % re.escape(rid)
+        badge = r'\1 <a class="review-needed-badge" href="#review-%s" title="Offener Review: direkt zum Review-Panel"><span aria-hidden="true">!</span> Review</a>' % esc_attr(rid)
+        main = re.sub(pattern, badge, main, count=1)
+    links = []
+    for data in items:
+        rid = str(data.get("id")); heading = ((data.get("meta") or {}).get("heading") or rid).split(" [", 1)[0]
+        heading = _html.unescape(re.sub(r"<[^>]+>", "", heading))
+        links.append('<a class="page-review-link" href="#review-%s" data-review-link="%s">%s</a>' % (esc_attr(rid), esc_attr(rid), esc_once(heading)))
+    notice = '<aside class="page-review-notice" role="note" aria-labelledby="page-review-title"><span class="page-review-icon" aria-hidden="true">!</span><div><strong id="page-review-title">%d API-Element%s mit Review-Bedarf</strong><p>Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.</p><div class="page-review-links">%s</div></div></aside>' % (len(items), "e" if len(items) != 1 else "", "".join(links))
+    return main, notice
+
+def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requirement_meta=None):
     out = []
     for b in blocks:
         t = b["t"]
@@ -261,9 +344,10 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC):
             out.append(b.get("inner_tail", ""))
             out.append("</div>")
         elif t == "rec":
+            rec_requirement_meta = b.get("requirement_meta") or requirement_meta
             out.append(open_tag("article", b["attrs"]))
             out.append(esc(b.get("lead", "")))
-            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir))
+            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir, dict(b.get("attrs", [])).get("id") or record_id, rec_requirement_meta))
             out.append("</article>")
         elif t == "fold":
             out.append(open_tag("details", b["attrs"]))
@@ -271,7 +355,7 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC):
             out.append(b["summary"])
             out.append("</summary>")
             out.append(esc(b.get("lead", "")))
-            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir))
+            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir, dict(b.get("attrs", [])).get("id") or record_id, b.get("requirement_meta") or requirement_meta))
             out.append("</details>")
         elif t == "props":
             out.append(open_tag("table", b["attrs"]))
@@ -284,6 +368,34 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC):
                 out.append(r["td"])
                 out.append("</td></tr>")
             out.append("</table>")
+        elif t == "requirement_text":
+            flags = [f for f in b.get("review_flags", []) if f.get("status", "open") == "open"]
+            review_state = str(b.get("review_status") or b.get("status") or (requirement_meta or {}).get("review_status") or "").strip().lower()
+            reviewable = bool(flags or b.get("suspects") or review_state in ("pending", "review", "open"))
+            attrs = [["class", "reqtext" + (" unreviewed" if reviewable else "")], ["lang", "en"]]
+            if b.get("status_flag"):
+                out.append('<p class="reqstatus">%s</p>' % esc(b["status_flag"]))
+            out.append(open_tag("p", attrs))
+            out.append(esc(b["text_en"]))
+            out.append("</p>")
+            if reviewable:
+                meta = dict(requirement_meta or {})
+                basis = {"finding": {"suspects": b.get("suspects", []), "repairs": b.get("repairs", [])},
+                         "instruction": (flags[0].get("instruction") if flags else None)}
+                payload = {"id": record_id or b.get("requirement_id"),
+                           "flag_id": (flags[0].get("id") if flags else record_id),
+                           "text_hash": hashlib.sha256(json.dumps({"raw": b.get("text_raw"), "repairs": b.get("repairs", [])}, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest(),
+                           "decision_basis": basis,
+                           "meta": {"heading": meta.get("heading"), "review_reason": meta.get("review_reason"),
+                                    "review_status": review_state or meta.get("review_status"), "confidence": meta.get("confidence"),
+                                    "origin": meta.get("origin"), "module": meta.get("module"), "document": meta.get("document"),
+                                    "page": meta.get("page"), "upstream": meta.get("upstream"), "trace": meta.get("trace"),
+                                    "text_raw": b.get("text_raw"), "text_en": b.get("text_en")}}
+                rid = esc_attr(payload["id"] or "requirement")
+                out.append('<details class="review-panel" id="review-%s"><summary><span class="review-summary-mark" aria-hidden="true">?</span><span><span data-i18n="review">Validate requirement</span><small>%s</small></span><span class="review-summary-state" aria-hidden="true"></span></summary>' % (rid, esc_once(meta.get("heading") or payload["id"] or "")))
+                out.append('<script type="application/json" class="review-data">%s</script>' % json.dumps(payload, ensure_ascii=False).replace("</", "<\/"))
+                out.append('<div class="review-panel-body">%s<div class="review-fields">' % _review_meta_html(payload))
+                out.append('<div class="review-form"><label class="review-field review-field-wide"><span data-i18n="why">Rationale</span><textarea class="review-why" required></textarea></label></div><div class="review-actions"><p class="review-identity" data-review-identity hidden></p><div class="review-decision" role="group" aria-label="Decision"><button type="button" class="review-choice review-choice-accept" data-review-outcome="accept"><span class="review-choice-icon" aria-hidden="true">✓</span><span data-i18n="accept">Approve</span></button><button type="button" class="review-choice review-choice-reject" data-review-outcome="reject"><span class="review-choice-icon" aria-hidden="true">×</span><span data-i18n="reject">Reject</span></button></div></div></div></div></details>')
         elif t == "params":
             out.append(open_tag("table", b["attrs"]))
             for r in b["rows"]:
@@ -308,6 +420,10 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH):
     prefix = "../" * depth
     body_cls = ' class="%s"' % esc_attr(page["body_class"]) if page.get("body_class") else ""
     main = render_blocks(page["main"], depth, srcdir)
+    main, review_notice = _review_page_enhancements(main)
+    has_review = bool(review_notice)
+    if review_notice:
+        main = review_notice + main
     graph_marker = "@@COMPONENT_GRAPH_JSON@@"
     if graph_marker in main:
         graph_file = os.path.join(ROOT, "data", "component-graph.json")
@@ -321,6 +437,8 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH):
         "langswitch": "" if page.get("nolang") else langswitch_html(page["file"], lang),
         "css": prefix + "style.css",
         "js": prefix + "fold.js",
+        "review_js": prefix + "review.js",
+        "reviewbar": ('<div class="reviewbar" aria-label="Requirement reviews"><button type="button" class="reviewbar-package" data-review-open aria-expanded="false"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span>Reviews</span><span class="review-count" data-review-count>0</span></button><button type="button" class="reviewbar-github" data-review-token><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span data-gh-label>Connect GitHub</span><span class="reviewbar-status" aria-hidden="true"></span></button></div>' if has_review else ""),
         "cytoscape_js": prefix + "cytoscape.min.js",
         "graph_js": prefix + "component-graph.js",
         "home": prefix + "index.html",

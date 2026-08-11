@@ -12,7 +12,7 @@ KNOWN_HOSTS="${GITHUB_KNOWN_HOSTS:-$ROOT_DIR/output/github-known_hosts}"
 export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o IdentitiesOnly=yes -o UserKnownHostsFile=$KNOWN_HOSTS"
 
 PUBLIC_DIRS=(ar classes en es flags fr hi ko modules namespaces pt ru services zh)
-PUBLIC_FILES=(index.html style.css fold.js)
+PUBLIC_FILES=(index.html style.css fold.js review.js)
 
 [[ -d "$PUBLISH_DIR/.git" ]] || git clone "$REMOTE" "$PUBLISH_DIR"
 git -C "$PUBLISH_DIR" remote set-url origin "$REMOTE"
