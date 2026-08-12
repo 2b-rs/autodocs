@@ -19,7 +19,7 @@ HOW TO USE:
 ## Feature: Dutch (nl) Translation
 
 - [x] translate and merge `_src/i18n/work/nl/batch_01.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 202/202 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced. HTML tree regeneration still pending.
-- [ ] translate and merge `_src/i18n/work/nl/batch_02.jsonl` (0/215 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [x] translate and merge `_src/i18n/work/nl/batch_02.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 215/215 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced.
 - [ ] translate and merge `_src/i18n/work/nl/batch_03.jsonl` (0/210 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_04.jsonl` (0/223 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_05.jsonl` (0/204 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
@@ -34,7 +34,7 @@ HOW TO USE:
 - [ ] translate and merge `_src/i18n/work/nl/batch_14.jsonl` (0/236 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_15.jsonl` (0/199 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_16.jsonl` (0/232 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
-- [ ] translate and merge `_src/i18n/work/nl/batch_17.jsonl` (0/1218 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [x] translate and merge `_src/i18n/work/nl/batch_17.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 1218/1218 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced (179 German-bearing labels translated; 1039 code/identifier-only labels passed through unchanged). HTML tree regeneration still pending.
 
 ## Feature: Data Quality
 
