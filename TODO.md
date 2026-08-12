@@ -86,8 +86,11 @@ without a separate tool and without a server component.
 
 ### Validation debt surfaced by full-tree rebuild
 
-- [ ] Decide whether `PRS_E2E_*` records must be published on a dedicated content page or be excluded from the orphan-record validator; document the intended invariant before changing either side
+- [x] Decide whether `PRS_E2E_*` records must be published on a dedicated content page or be excluded from the orphan-record validator; document the intended invariant before changing either side
+  - Decision: excluded. `e2e-requirements.html` already presents all 349 `PRS_E2E_*` requirements as a flat overview table by design (no standalone C++ API, per its own intro text); wiring them individually into `rec-ref` panels would be artificial. `validate.py`'s orphan check now carries a documented, bounded exception for `spec/records/PRS_E2E/`.
 - [ ] Reduce `validate.py`'s `Records ohne expliziten Namensraum` finding from 3811 to a documented, intentional rule or a bounded exception list
+  - Root cause confirmed: `ns.namespace` is populated for exactly one group, `SWS_LOG` (71/71 records) — every other group (`SWS_CORE` 1177, `SWS_DM` 937, `SWS_CRYPT` 352, `PRS_E2E` 349, `SWS_CM` 225, `AP_SWS` 146, `SWS_TS` 123, `SWS_RDS` 133, `SWS_PER` 129, `SWS_EM` 47, `SWS_SM` 46, `SWS_AIDSM` 61, `SWS_PHM` 35, `SWS_ANM` 30, `SWS_UCM` 21) has 0% coverage
+  - This is a genuine backfill gap, not a validator scoping bug; needs a namespace-extraction pass (likely from the same spec sections `SWS_LOG`'s records were derived from) rather than a mechanical bulk-edit — use `SWS_LOG` as the reference for what a complete `ns` block looks like
 
 ### Working-tree triage — 2514 modified spec records (`_src/spec/records/`)
 
