@@ -1,264 +1,272 @@
 {
- "id": "SWS_CORE_00331",
- "attrs": [
-  [
-   "class",
-   "rec"
+  "id": "SWS_CORE_00331",
+  "attrs": [
+    [
+      "class",
+      "rec"
+    ],
+    [
+      "id",
+      "SWS_CORE_00331"
+    ]
   ],
-  [
-   "id",
-   "SWS_CORE_00331"
+  "lead": "\n",
+  "blocks": [
+    {
+      "t": "html",
+      "html": "<h3 class=\"recname\"><span class=\"kind\">function</span> then <span class=\"sws\"><a href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00331\" title=\"Spezifikations-PDF (AUTOSAR_AP_SWS_Core.pdf)\">[SWS_CORE_00331]</a></span> <span class=\"ups\">Upstream: <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00130\" title=\"Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)\">RS_AP_00130</a></span></h3>",
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<pre class=\"syntax\">template &lt;typename F&gt; auto then (F &amp;&amp;func) noexcept -&gt; <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a>&lt; &lt;see below&gt; &gt;;</pre>",
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<div class=\"desc\"><p>Create a new Future with the content returned by func when passed the Result of this Future. The callable func may be called in the context of this call or in the context of • Promise::set_result(const T&amp;) • Promise::set_result(T&amp;&amp;) • Promise::SetError(E&amp;&amp;) • Promise::SetError(const E&amp;) or somewhere else.</p><p>valid() ==FALSE on the original Future object immediately after it returns.</p><p>The Callable input argument func takes a Result&lt;T,E&gt; object as parameter. This will be the Result obtained via GetResult() from the Future instance itself, on which then(...) is being called. The Result is passed to func as an rvalue expression.</p><p>The return type of then(...) depends on the return type of func (aka continuation).</p><p>Let U be the return type of the continuation (i.e. a type equivalent to std::invoke_result_ t&lt;std::decay_t&lt;F&gt;,Result&lt;T,E&gt;&gt;). Return type deduction: • If U is Future&lt;T2,E2&gt; for some types T2, E2, then the return type of then(...) is Future&lt;T2,E2&gt;. This is known as implicit Future unwrapping. • If U is Result&lt;T2,E2&gt; for some types T2, E2, then the return type of then(...) is Future&lt;T2,E2&gt;. This is known as implicit Result unwrapping. • Otherwise it is Future&lt;U,E&gt; Continuations that are registered with then(...) are registered in the Future F that then (...) returns. No such continuation shall be executed after the destructor of the Future F returns. A continuation that is already being executed shall run to completion.</p><p>Note: that means that the destructor of Future might block until the currently running continuation has been completed.</p><p>The continuation shall not throw, except for the purpose of implementing a Violation.</p></div>",
+      "tail": "\n"
+    },
+    {
+      "t": "ai",
+      "src": "content/ai/classes/cl_ara_core_Future_420ba8/rec_SWS_CORE_00331_07.html",
+      "tail": "\n"
+    },
+    {
+      "t": "props",
+      "attrs": [
+        [
+          "class",
+          "props"
+        ]
+      ],
+      "rows": [
+        {
+          "th": "Header-Datei",
+          "th_attrs": [],
+          "td": "#include \"ara/core/future.h\"",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Scope",
+          "th_attrs": [],
+          "td": "class <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html\">ara::core::Future</a>",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Exception-Sicherheit",
+          "th_attrs": [],
+          "td": "exception safe",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Thread-Sicherheit",
+          "th_attrs": [],
+          "td": "not thread-safe",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Verletzungen (Violations)",
+          "th_attrs": [],
+          "td": "FutureInvalidVio-              If the <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a> is invalid ( valid ==FALSE ) lation FutureContinua-                If the continuation throws an exception tionHasThrownVio- lation",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<h4>Parameter (in)</h4>",
+      "tail": "\n"
+    },
+    {
+      "t": "params",
+      "attrs": [
+        [
+          "class",
+          "params"
+        ]
+      ],
+      "rows": [
+        {
+          "cells": [
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Parameter"
+            },
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Beschreibung"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "tag": "td",
+              "attrs": [
+                [
+                  "class",
+                  "mono"
+                ]
+              ],
+              "html": "func"
+            },
+            {
+              "tag": "td",
+              "attrs": [],
+              "html": "a callable to register"
+            }
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<h4>Rückgabewert</h4>",
+      "tail": "\n"
+    },
+    {
+      "t": "params",
+      "attrs": [
+        [
+          "class",
+          "params"
+        ]
+      ],
+      "rows": [
+        {
+          "cells": [
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Typ"
+            },
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Beschreibung"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "tag": "td",
+              "attrs": [
+                [
+                  "class",
+                  "mono"
+                ]
+              ],
+              "html": "<a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a>&lt; &lt;see below&gt; &gt;"
+            },
+            {
+              "tag": "td",
+              "attrs": [],
+              "html": "a new Future instance for the result of the continuation"
+            }
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<h4>Fehler</h4>",
+      "tail": "\n"
+    },
+    {
+      "t": "params",
+      "attrs": [
+        [
+          "class",
+          "params"
+        ]
+      ],
+      "rows": [
+        {
+          "cells": [
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Fehlercode"
+            },
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Beschreibung"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "tag": "td",
+              "attrs": [
+                [
+                  "colspan",
+                  "2"
+                ],
+                [
+                  "class",
+                  "note"
+                ]
+              ],
+              "html": "This function does not specify any standardized errors."
+            }
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<div class=\"notes\"><b>Hinweise:</b> Users who need to propagate information from closures’ exceptions should translate them to an error and return an <a class=\"vis-app\" href=\"cl_ara_core_Result_d51722.html\">ara::core::Result</a> or <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html\">ara::core::Future</a> from the continuation with the error stored in it.\n\nExceptions can be used within the continuation, however if they do not realize a Violation, they must not escape the continuation.</div>",
+      "tail": "\n"
+    }
+  ],
+  "namespace_meta": {
+    "namespace": "ara::core",
+    "enclosing": "ara::core::Future",
+    "module": "core",
+    "source": "scope",
+    "generated": false
+  },
+  "upstream": [
+    {
+      "id": "RS_AP_00130",
+      "document": "AUTOSAR_AP_RS_General.pdf",
+      "page": 10,
+      "source": "inline"
+    }
   ]
- ],
- "lead": "\n",
- "blocks": [
-  {
-   "t": "html",
-   "html": "<h3 class=\"recname\"><span class=\"kind\">function</span> then <span class=\"sws\"><a href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00331\" title=\"Spezifikations-PDF (AUTOSAR_AP_SWS_Core.pdf)\">[SWS_CORE_00331]</a></span> <span class=\"ups\">Upstream: <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00130\" title=\"Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)\">RS_AP_00130</a></span></h3>",
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<pre class=\"syntax\">template &lt;typename F&gt; auto then (F &amp;&amp;func) noexcept -&gt; <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a>&lt; &lt;see below&gt; &gt;;</pre>",
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<div class=\"desc\"><p>Create a new Future with the content returned by func when passed the Result of this Future. The callable func may be called in the context of this call or in the context of • Promise::set_result(const T&amp;) • Promise::set_result(T&amp;&amp;) • Promise::SetError(E&amp;&amp;) • Promise::SetError(const E&amp;) or somewhere else.</p><p>valid() ==FALSE on the original Future object immediately after it returns.</p><p>The Callable input argument func takes a Result&lt;T,E&gt; object as parameter. This will be the Result obtained via GetResult() from the Future instance itself, on which then(...) is being called. The Result is passed to func as an rvalue expression.</p><p>The return type of then(...) depends on the return type of func (aka continuation).</p><p>Let U be the return type of the continuation (i.e. a type equivalent to std::invoke_result_ t&lt;std::decay_t&lt;F&gt;,Result&lt;T,E&gt;&gt;). Return type deduction: • If U is Future&lt;T2,E2&gt; for some types T2, E2, then the return type of then(...) is Future&lt;T2,E2&gt;. This is known as implicit Future unwrapping. • If U is Result&lt;T2,E2&gt; for some types T2, E2, then the return type of then(...) is Future&lt;T2,E2&gt;. This is known as implicit Result unwrapping. • Otherwise it is Future&lt;U,E&gt; Continuations that are registered with then(...) are registered in the Future F that then (...) returns. No such continuation shall be executed after the destructor of the Future F returns. A continuation that is already being executed shall run to completion.</p><p>Note: that means that the destructor of Future might block until the currently running continuation has been completed.</p><p>The continuation shall not throw, except for the purpose of implementing a Violation.</p></div>",
-   "tail": "\n"
-  },
-  {
-   "t": "ai",
-   "src": "content/ai/classes/cl_ara_core_Future_420ba8/rec_SWS_CORE_00331_07.html",
-   "tail": "\n"
-  },
-  {
-   "t": "props",
-   "attrs": [
-    [
-     "class",
-     "props"
-    ]
-   ],
-   "rows": [
-    {
-     "th": "Header-Datei",
-     "th_attrs": [],
-     "td": "#include \"ara/core/future.h\"",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Scope",
-     "th_attrs": [],
-     "td": "class <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html\">ara::core::Future</a>",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Exception-Sicherheit",
-     "th_attrs": [],
-     "td": "exception safe",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Thread-Sicherheit",
-     "th_attrs": [],
-     "td": "not thread-safe",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Verletzungen (Violations)",
-     "th_attrs": [],
-     "td": "FutureInvalidVio-              If the <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a> is invalid ( valid ==FALSE ) lation FutureContinua-                If the continuation throws an exception tionHasThrownVio- lation",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<h4>Parameter (in)</h4>",
-   "tail": "\n"
-  },
-  {
-   "t": "params",
-   "attrs": [
-    [
-     "class",
-     "params"
-    ]
-   ],
-   "rows": [
-    {
-     "cells": [
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Parameter"
-      },
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Beschreibung"
-      }
-     ]
-    },
-    {
-     "cells": [
-      {
-       "tag": "td",
-       "attrs": [
-        [
-         "class",
-         "mono"
-        ]
-       ],
-       "html": "func"
-      },
-      {
-       "tag": "td",
-       "attrs": [],
-       "html": "a callable to register"
-      }
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<h4>Rückgabewert</h4>",
-   "tail": "\n"
-  },
-  {
-   "t": "params",
-   "attrs": [
-    [
-     "class",
-     "params"
-    ]
-   ],
-   "rows": [
-    {
-     "cells": [
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Typ"
-      },
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Beschreibung"
-      }
-     ]
-    },
-    {
-     "cells": [
-      {
-       "tag": "td",
-       "attrs": [
-        [
-         "class",
-         "mono"
-        ]
-       ],
-       "html": "<a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html#SWS_CORE_00334\">Future</a>&lt; &lt;see below&gt; &gt;"
-      },
-      {
-       "tag": "td",
-       "attrs": [],
-       "html": "a new Future instance for the result of the continuation"
-      }
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<h4>Fehler</h4>",
-   "tail": "\n"
-  },
-  {
-   "t": "params",
-   "attrs": [
-    [
-     "class",
-     "params"
-    ]
-   ],
-   "rows": [
-    {
-     "cells": [
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Fehlercode"
-      },
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Beschreibung"
-      }
-     ]
-    },
-    {
-     "cells": [
-      {
-       "tag": "td",
-       "attrs": [
-        [
-         "colspan",
-         "2"
-        ],
-        [
-         "class",
-         "note"
-        ]
-       ],
-       "html": "This function does not specify any standardized errors."
-      }
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<div class=\"notes\"><b>Hinweise:</b> Users who need to propagate information from closures’ exceptions should translate them to an error and return an <a class=\"vis-app\" href=\"cl_ara_core_Result_d51722.html\">ara::core::Result</a> or <a class=\"vis-app\" href=\"cl_ara_core_Future_420ba8.html\">ara::core::Future</a> from the continuation with the error stored in it.\n\nExceptions can be used within the continuation, however if they do not realize a Violation, they must not escape the continuation.</div>",
-   "tail": "\n"
-  }
- ],
- "namespace_meta": {
-  "namespace": "ara::core",
-  "enclosing": "ara::core::Future",
-  "module": "core",
-  "source": "scope",
-  "generated": false
- }
 }

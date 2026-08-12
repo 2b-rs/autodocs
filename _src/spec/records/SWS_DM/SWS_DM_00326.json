@@ -1,205 +1,219 @@
 {
- "id": "SWS_DM_00326",
- "attrs": [
-  [
-   "class",
-   "rec"
+  "id": "SWS_DM_00326",
+  "attrs": [
+    [
+      "class",
+      "rec"
+    ],
+    [
+      "id",
+      "SWS_DM_00326"
+    ]
   ],
-  [
-   "id",
-   "SWS_DM_00326"
+  "lead": "\n",
+  "blocks": [
+    {
+      "t": "html",
+      "html": "<h3 class=\"recname\"><span class=\"kind\">function</span> NotifyReestablishment <span class=\"sws\"><a href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00326\" title=\"Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)\">[SWS_DM_00326]</a></span> <span class=\"ups\">Upstream: <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04147\" title=\"Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)\">RS_Diag_04147</a>, <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04168\" title=\"Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)\">RS_Diag_04168</a></span></h3>",
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<pre class=\"syntax\">virtual bool NotifyReestablishment (<a class=\"vis-internal\" href=\"../namespaces/ns_diag_apext_diag_uds_transport_215b94.html#SWS_DM_00337\">ChannelID</a> channelId) noexcept=0;</pre>",
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<div class=\"desc\"><p>Tells the UdsTransportProtocolHandler, to notify the DM core via UdsTransportProtocol Mgr::ChannelReestablished() if the given channel has been re-established after next Uds TransportProtocolHandler::Start(). The main purpose of this method is to allow the DM to provide an ECU-Reset (0x11 service), with configuration option \"positive response AFTER reset\". In this scenario, the request for 0x11 will be received on a certain channel (GlobalChannel Identifier), then the ECU-Reset takes place and after ECU-Restart, all UdsProtocol Handlers/-plugins get restarted via call to UdsTransportProtocolHandler::Start().</p><p>Now there are two expectations, when this method has been called before and returned \"TRUE\": If the same remote client connects to the UdsProtocolHandler, it shall get a channel identification with the same identifying as the last time. It consecutively calls UdsTransportProtocolMgr::ChannelReestablished(Global ChannelIdentifier).</p><p>The detection/decision, whether the \"same\" client reconnects as before is an UdsProtocol Handler implementation specific decision.</p><p>The general expectation is:</p><p>If the channel is set up from exactly the same remote network-endpoint, it typically gets the same ChannelID. To support this functionality, the implementation at least has to store non-volatile, that this notification has to be done. Further it might be needed to store some additional connection specific info non-volatile to make sure, that the same ChannelID can be reassigned. This is the case if the mapping of protocol specific channel info -&gt; channelID isn’t a</p><p>stable bijective mapping!</p><p>Small example:</p><p>The underlying network protocol, which UdsProtocolHandler implements is based on TCP. At the point in time, where the 0x11 Service Identifier request is received on channel identified by the DM calls UdsTransportProtocolHandler::NotifyReestablishment() on this ChannelID.</p><p>Now the implementation of UdsProtocolHandler stores non-volatile in the context of this call:</p><p>• NetworkEndpoint (IP-address and port number) of the channel. • NetworkEndpoint (IP-address and port number) of the local port (because in this example, the UdsTransportProtocolHandler listens on/supports different ports). • ChannelID it has currently assigned. After restart this ChannelID is only reused for a channel with exactly the same Network Endpoint addresses as stored non-volatile.</p><p>If this ChannelID then gets reassigned, then UdsTransportProtocolMgr::Channel Reestablished() has to be called.</p></div>",
+      "tail": "\n"
+    },
+    {
+      "t": "ai",
+      "src": "content/ai/classes/cl_apext_diag_uds_transport_UdsTransportProtocolHandler_0a82b6/rec_SWS_DM_00326_05.html",
+      "tail": "\n"
+    },
+    {
+      "t": "props",
+      "attrs": [
+        [
+          "class",
+          "props"
+        ]
+      ],
+      "rows": [
+        {
+          "th": "Header-Datei",
+          "th_attrs": [],
+          "td": "#include \"apext/diag/uds_transport/protocol_handler.h\"",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Scope",
+          "th_attrs": [],
+          "td": "class <a class=\"vis-internal\" href=\"cl_apext_diag_uds_transport_UdsTransportProtocolHandler_0a82b6.html\">apext::diag::uds_transport::UdsTransportProtocolHandler</a>",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Exception-Sicherheit",
+          "th_attrs": [],
+          "td": "exception safe",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        },
+        {
+          "th": "Thread-Sicherheit",
+          "th_attrs": [],
+          "td": "not thread-safe",
+          "td_attrs": [
+            [
+              "class",
+              "mono"
+            ]
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<h4>Parameter (in)</h4>",
+      "tail": "\n"
+    },
+    {
+      "t": "params",
+      "attrs": [
+        [
+          "class",
+          "params"
+        ]
+      ],
+      "rows": [
+        {
+          "cells": [
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Parameter"
+            },
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Beschreibung"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "tag": "td",
+              "attrs": [
+                [
+                  "class",
+                  "mono"
+                ]
+              ],
+              "html": "channelId"
+            },
+            {
+              "tag": "td",
+              "attrs": [],
+              "html": "The channelID, whose re-establishment shall be notified to Uds TransportProtocolMgr"
+            }
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<h4>Rückgabewert</h4>",
+      "tail": "\n"
+    },
+    {
+      "t": "params",
+      "attrs": [
+        [
+          "class",
+          "params"
+        ]
+      ],
+      "rows": [
+        {
+          "cells": [
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Typ"
+            },
+            {
+              "tag": "th",
+              "attrs": [],
+              "html": "Beschreibung"
+            }
+          ]
+        },
+        {
+          "cells": [
+            {
+              "tag": "td",
+              "attrs": [
+                [
+                  "class",
+                  "mono"
+                ]
+              ],
+              "html": "bool"
+            },
+            {
+              "tag": "td",
+              "attrs": [],
+              "html": "TRUE, if notification request is accepted and can be fulfilled, else FALSE"
+            }
+          ]
+        }
+      ],
+      "tail": "\n"
+    },
+    {
+      "t": "html",
+      "html": "<div class=\"notes\"><b>Hinweise:</b> The UdsTransportProtocolHandler will call UdsTransportProtocolMgr::Channel Reestablished() after UdsTransportProtocolHandler::Start() is called and as soon as it detects that the remote client/tester is reachable again.</div>",
+      "tail": "\n"
+    }
+  ],
+  "namespace_meta": {
+    "namespace": "apext::diag::uds_transport",
+    "enclosing": "apext::diag::uds_transport::UdsTransportProtocolHandler",
+    "module": "diag",
+    "source": "scope",
+    "generated": false,
+    "deviation": "apext-erweiterung"
+  },
+  "upstream": [
+    {
+      "id": "RS_DIAG_04147",
+      "document": "AUTOSAR_FO_RS_Diagnostics.pdf",
+      "page": 33,
+      "source": "inline"
+    },
+    {
+      "id": "RS_DIAG_04168",
+      "document": "AUTOSAR_FO_RS_Diagnostics.pdf",
+      "page": 61,
+      "source": "inline"
+    }
   ]
- ],
- "lead": "\n",
- "blocks": [
-  {
-   "t": "html",
-   "html": "<h3 class=\"recname\"><span class=\"kind\">function</span> NotifyReestablishment <span class=\"sws\"><a href=\"https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00326\" title=\"Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)\">[SWS_DM_00326]</a></span> <span class=\"ups\">Upstream: <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04147\" title=\"Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)\">RS_Diag_04147</a>, <a class=\"swsref\" href=\"https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04168\" title=\"Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)\">RS_Diag_04168</a></span></h3>",
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<pre class=\"syntax\">virtual bool NotifyReestablishment (<a class=\"vis-internal\" href=\"../namespaces/ns_diag_apext_diag_uds_transport_215b94.html#SWS_DM_00337\">ChannelID</a> channelId) noexcept=0;</pre>",
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<div class=\"desc\"><p>Tells the UdsTransportProtocolHandler, to notify the DM core via UdsTransportProtocol Mgr::ChannelReestablished() if the given channel has been re-established after next Uds TransportProtocolHandler::Start(). The main purpose of this method is to allow the DM to provide an ECU-Reset (0x11 service), with configuration option \"positive response AFTER reset\". In this scenario, the request for 0x11 will be received on a certain channel (GlobalChannel Identifier), then the ECU-Reset takes place and after ECU-Restart, all UdsProtocol Handlers/-plugins get restarted via call to UdsTransportProtocolHandler::Start().</p><p>Now there are two expectations, when this method has been called before and returned \"TRUE\": If the same remote client connects to the UdsProtocolHandler, it shall get a channel identification with the same identifying as the last time. It consecutively calls UdsTransportProtocolMgr::ChannelReestablished(Global ChannelIdentifier).</p><p>The detection/decision, whether the \"same\" client reconnects as before is an UdsProtocol Handler implementation specific decision.</p><p>The general expectation is:</p><p>If the channel is set up from exactly the same remote network-endpoint, it typically gets the same ChannelID. To support this functionality, the implementation at least has to store non-volatile, that this notification has to be done. Further it might be needed to store some additional connection specific info non-volatile to make sure, that the same ChannelID can be reassigned. This is the case if the mapping of protocol specific channel info -&gt; channelID isn’t a</p><p>stable bijective mapping!</p><p>Small example:</p><p>The underlying network protocol, which UdsProtocolHandler implements is based on TCP. At the point in time, where the 0x11 Service Identifier request is received on channel identified by the DM calls UdsTransportProtocolHandler::NotifyReestablishment() on this ChannelID.</p><p>Now the implementation of UdsProtocolHandler stores non-volatile in the context of this call:</p><p>• NetworkEndpoint (IP-address and port number) of the channel. • NetworkEndpoint (IP-address and port number) of the local port (because in this example, the UdsTransportProtocolHandler listens on/supports different ports). • ChannelID it has currently assigned. After restart this ChannelID is only reused for a channel with exactly the same Network Endpoint addresses as stored non-volatile.</p><p>If this ChannelID then gets reassigned, then UdsTransportProtocolMgr::Channel Reestablished() has to be called.</p></div>",
-   "tail": "\n"
-  },
-  {
-   "t": "ai",
-   "src": "content/ai/classes/cl_apext_diag_uds_transport_UdsTransportProtocolHandler_0a82b6/rec_SWS_DM_00326_05.html",
-   "tail": "\n"
-  },
-  {
-   "t": "props",
-   "attrs": [
-    [
-     "class",
-     "props"
-    ]
-   ],
-   "rows": [
-    {
-     "th": "Header-Datei",
-     "th_attrs": [],
-     "td": "#include \"apext/diag/uds_transport/protocol_handler.h\"",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Scope",
-     "th_attrs": [],
-     "td": "class <a class=\"vis-internal\" href=\"cl_apext_diag_uds_transport_UdsTransportProtocolHandler_0a82b6.html\">apext::diag::uds_transport::UdsTransportProtocolHandler</a>",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Exception-Sicherheit",
-     "th_attrs": [],
-     "td": "exception safe",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    },
-    {
-     "th": "Thread-Sicherheit",
-     "th_attrs": [],
-     "td": "not thread-safe",
-     "td_attrs": [
-      [
-       "class",
-       "mono"
-      ]
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<h4>Parameter (in)</h4>",
-   "tail": "\n"
-  },
-  {
-   "t": "params",
-   "attrs": [
-    [
-     "class",
-     "params"
-    ]
-   ],
-   "rows": [
-    {
-     "cells": [
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Parameter"
-      },
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Beschreibung"
-      }
-     ]
-    },
-    {
-     "cells": [
-      {
-       "tag": "td",
-       "attrs": [
-        [
-         "class",
-         "mono"
-        ]
-       ],
-       "html": "channelId"
-      },
-      {
-       "tag": "td",
-       "attrs": [],
-       "html": "The channelID, whose re-establishment shall be notified to Uds TransportProtocolMgr"
-      }
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<h4>Rückgabewert</h4>",
-   "tail": "\n"
-  },
-  {
-   "t": "params",
-   "attrs": [
-    [
-     "class",
-     "params"
-    ]
-   ],
-   "rows": [
-    {
-     "cells": [
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Typ"
-      },
-      {
-       "tag": "th",
-       "attrs": [],
-       "html": "Beschreibung"
-      }
-     ]
-    },
-    {
-     "cells": [
-      {
-       "tag": "td",
-       "attrs": [
-        [
-         "class",
-         "mono"
-        ]
-       ],
-       "html": "bool"
-      },
-      {
-       "tag": "td",
-       "attrs": [],
-       "html": "TRUE, if notification request is accepted and can be fulfilled, else FALSE"
-      }
-     ]
-    }
-   ],
-   "tail": "\n"
-  },
-  {
-   "t": "html",
-   "html": "<div class=\"notes\"><b>Hinweise:</b> The UdsTransportProtocolHandler will call UdsTransportProtocolMgr::Channel Reestablished() after UdsTransportProtocolHandler::Start() is called and as soon as it detects that the remote client/tester is reachable again.</div>",
-   "tail": "\n"
-  }
- ],
- "namespace_meta": {
-  "namespace": "apext::diag::uds_transport",
-  "enclosing": "apext::diag::uds_transport::UdsTransportProtocolHandler",
-  "module": "diag",
-  "source": "scope",
-  "generated": false,
-  "deviation": "apext-erweiterung"
- }
 }
