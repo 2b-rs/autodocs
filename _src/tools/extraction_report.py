@@ -20,7 +20,11 @@ ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird nicht in die
 Sprachbaeume uebersetzt.
 """
 import argparse, glob, html, json, os, re, subprocess, sys
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
+from functools import lru_cache
 from pathlib import Path
+
+WORKERS = min(12, os.cpu_count() or 12)
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
@@ -153,52 +157,54 @@ def esc(v):
 
 
 def all_pdf_paths():
-    return sorted(glob.glob(os.path.join(PDF_DIR, "AUTOSAR_*_RS_*.pdf")))
+    return sorted(glob.glob(os.path.join(PDF_DIR, "**", "AUTOSAR_*_RS_*.pdf"), recursive=True))
+
+
+@lru_cache(maxsize=None)
+def resolve_pdf_path(doc_stem):
+    matches = glob.glob(os.path.join(PDF_DIR, "**", doc_stem + ".pdf"), recursive=True)
+    if not matches:
+        raise FileNotFoundError("PDF nicht im Cache gefunden: %s.pdf unter %s" % (doc_stem, PDF_DIR))
+    if len(matches) > 1:
+        raise RuntimeError("mehrdeutiger PDF-Name im Cache: %s.pdf -> %s" % (doc_stem, matches))
+    return matches[0]
+
+
+@lru_cache(maxsize=None)
+def _pdf_pages_cached(pdf_path):
+    return tuple(ss.strip_noise(x) for x in ss.pdf_pages(Path(pdf_path), "pypdf"))
+
+
+@lru_cache(maxsize=None)
+def _page_text_cached(doc_stem, pageno):
+    pages = _pdf_pages_cached(resolve_pdf_path(doc_stem))
+    idx = pageno - 1
+    return pages[idx] if idx < len(pages) else ""
 
 
 def page_text(doc_stem, pageno):
-    f = os.path.join(PDF_DIR, doc_stem + ".pdf")
-    pages = ss.pdf_pages(Path(f), "pypdf")
-    return pages[pageno - 1] if pageno - 1 < len(pages) else ""
+    return _page_text_cached(doc_stem, pageno)
 
 
-def collect_history_continuation():
-    out = []
-    for f in all_pdf_paths():
-        doc = Path(f).stem
-        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
-        for i, t in enumerate(pages):
-            if ss.HISTORY_CONTINUATION_RE.search(t):
-                for m in ss.DEF_RE.finditer(t):
-                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
-    return out
+def _collect_from_pdf(pdf_path):
+    doc = Path(pdf_path).stem
+    pages = _pdf_pages_cached(pdf_path)
+    history = []
+    traceability = []
+    number_heading = []
+    heading_label = []
 
+    for i, t in enumerate(pages, start=1):
+        if ss.HISTORY_CONTINUATION_RE.search(t):
+            for m in ss.DEF_RE.finditer(t):
+                history.append({"id": m.group(1).upper(), "document": doc, "page": i})
+        if ss.TRACEABILITY_HEADING_RE.search(t):
+            for m in ss.DEF_RE.finditer(t):
+                traceability.append({"id": m.group(1).upper(), "document": doc, "page": i})
+        if ss.HISTORY_NUMBER_HEADING_CONTINUATION_RE.search(t) and ss.HISTORY_TABLE_CAPTION_RE.search(t):
+            for m in ss.DEF_RE.finditer(t):
+                number_heading.append({"id": m.group(1).upper(), "document": doc, "page": i})
 
-def collect_traceability():
-    out = []
-    for f in all_pdf_paths():
-        doc = Path(f).stem
-        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
-        for i, t in enumerate(pages):
-            if ss.TRACEABILITY_HEADING_RE.search(t):
-                for m in ss.DEF_RE.finditer(t):
-                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
-    return out
-
-
-def collect_number_heading():
-    out = []
-    for f in all_pdf_paths():
-        doc = Path(f).stem
-        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
-        for i, t in enumerate(pages):
-            if ss.HISTORY_NUMBER_HEADING_CONTINUATION_RE.search(t) and ss.HISTORY_TABLE_CAPTION_RE.search(t):
-                for m in ss.DEF_RE.finditer(t):
-                    out.append({"id": m.group(1).upper(), "document": doc, "page": i + 1})
-    return out
-
-
-def collect_heading_label():
     old_label_re = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in ss.LABELS))
 
     def old_heading(chunk):
@@ -208,25 +214,55 @@ def collect_heading_label():
             return head[:120]
         return None
 
-    out = []
-    for f in all_pdf_paths():
-        doc = Path(f).stem
-        idx = ss.phase_ids([Path(f)], pattern="^RS_", include_refs=False, backend="pypdf")
-        info = idx[doc + ".pdf"]
-        pages = [ss.strip_noise(x) for x in ss.pdf_pages(Path(f), "pypdf")]
-        for rid, pagenos in info["ids"].items():
-            if not pagenos:
-                continue
-            pageno = pagenos[0]
-            chunk = ss._record_slice(ss.normalize_layout(pages[pageno - 1]), rid)
-            if not chunk:
-                continue
-            old_h = old_heading(chunk)
-            new_rec = ss.parse_record(pages[pageno - 1], rid)
-            new_h = new_rec["heading"]
-            if old_h != new_h and (old_h is None) != (new_h is None):
-                out.append({"id": rid, "document": doc, "page": pageno, "old_heading": old_h, "new_heading": new_h})
-    return out
+    idx = ss.phase_ids([Path(pdf_path)], pattern="^RS_", include_refs=False, backend="pypdf")
+    info = idx.get(doc + ".pdf", {"ids": {}})
+    for rid, pagenos in info["ids"].items():
+        if not pagenos:
+            continue
+        pageno = pagenos[0]
+        page = pages[pageno - 1] if pageno - 1 < len(pages) else ""
+        chunk = ss._record_slice(ss.normalize_layout(page), rid)
+        if not chunk:
+            continue
+        old_h = old_heading(chunk)
+        new_rec = ss.parse_record(page, rid)
+        new_h = new_rec["heading"]
+        if old_h != new_h and (old_h is None) != (new_h is None):
+            heading_label.append({"id": rid, "document": doc, "page": pageno, "old_heading": old_h, "new_heading": new_h})
+
+    return {
+        "history_continuation": history,
+        "traceability": traceability,
+        "number_heading": number_heading,
+        "heading_label": heading_label,
+    }
+
+
+def _collect_all_categories():
+    merged = {key: [] for key in CATEGORIES}
+    with ProcessPoolExecutor(max_workers=WORKERS) as ex:
+        futures = [ex.submit(_collect_from_pdf, pdf_path) for pdf_path in all_pdf_paths()]
+        for fut in as_completed(futures):
+            chunk = fut.result()
+            for key, rows in chunk.items():
+                merged[key].extend(rows)
+    return merged
+
+
+def collect_history_continuation():
+    return _collect_all_categories()["history_continuation"]
+
+
+def collect_traceability():
+    return _collect_all_categories()["traceability"]
+
+
+def collect_number_heading():
+    return _collect_all_categories()["number_heading"]
+
+
+def collect_heading_label():
+    return _collect_all_categories()["heading_label"]
 
 
 def collector_for(category):
@@ -261,7 +297,7 @@ def ensure_screenshot(doc, pageno):
     name = "%s_p%d.png" % (doc, pageno)
     dest = os.path.join(ASSET_DIR, name)
     if not os.path.exists(dest):
-        pdf = os.path.join(PDF_DIR, doc + ".pdf")
+        pdf = resolve_pdf_path(doc)
         os.makedirs(ASSET_DIR, exist_ok=True)
         prefix = os.path.join(ASSET_DIR, "%s_p%d" % (doc, pageno))
         subprocess.run(["pdftoppm", "-png", "-f", str(pageno), "-l", str(pageno), "-r", "110", pdf, prefix], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -512,6 +548,12 @@ def record_version(datum, total_ids, total_pages, issues_count=None, curation_op
     So lassen sich Kurationsanfragen ueber Laeufe hinweg nachverfolgen: neu
     aufgetreten, weiterhin offen, oder seither aufgeloest — unabhaengig davon,
     ob eine im Browser abgegebene Review-Entscheidung dazu vorliegt.
+
+    Wenn sich gegenueber der letzten Version weder Kennzahlen noch Residual- oder
+    Script-Stand geaendert haben, wird keine neue Version angelegt; stattdessen
+    wird die vorhandene letzte Version wiederverwendet. So bleiben reine
+    Publikationslaeufe (z. B. nachtraegliches HTML-Rendering via generate.py)
+    versionsneutral.
     """
     os.makedirs(VERSIONS_DIR, exist_ok=True)
     prev_versions = _load_versions()
@@ -532,6 +574,12 @@ def record_version(datum, total_ids, total_pages, issues_count=None, curation_op
             diff["neu_aufgeloest"].append(rid)
         elif was["status"] == "resolved" and cur["status"] == "resolved":
             diff["weiterhin_aufgeloest"].append(rid)
+
+    if prev and prev.get("total_ids") == total_ids and prev.get("total_pages") == total_pages \
+       and prev.get("issues_count") == issues_count and prev.get("curation_open") == curation_open \
+       and prev.get("residual") == snapshot and (prev.get("scripts") or {}) == scripts:
+        return prev
+
     entry = {
         "schema": "extraction-report-version@v2",
         "version": version,
@@ -820,6 +868,11 @@ def cmd_render_shot(doc, pageno):
     print(path)
 
 
+def _render_one_screenshot(args):
+    doc, pageno = args
+    return ensure_screenshot(doc, pageno)
+
+
 def cmd_render_shots(inputs):
     pages = set()
     for inp in inputs:
@@ -829,9 +882,12 @@ def cmd_render_shots(inputs):
     for r in RESIDUAL:
         if r.get("page"):
             pages.add((r["document"], int(r["page"])))
-    for doc, pageno in sorted(pages):
-        ensure_screenshot(doc, pageno)
-    print("screenshots: %d" % len(pages))
+    ordered = sorted(pages)
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        futures = [ex.submit(_render_one_screenshot, item) for item in ordered]
+        for fut in as_completed(futures):
+            fut.result()
+    print("screenshots: %d" % len(ordered))
 
 
 def cmd_assemble(input_dir):
@@ -851,8 +907,15 @@ def cmd_assemble(input_dir):
 def cmd_build():
     tmp = os.path.join(ROOT, "output", "extraction-report-work")
     os.makedirs(tmp, exist_ok=True)
+    collected = _collect_all_categories()
     for key in CATEGORIES:
-        cmd_collect_one(key, os.path.join(tmp, key + ".json"))
+        path = os.path.join(tmp, key + ".json")
+        records = dedupe(collected[key])
+        records = enrich_records(records)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=1)
+            f.write("\n")
+        print("%s: %d records" % (key, len(records)))
     cmd_render_shots([os.path.join(tmp, key + ".json") for key in CATEGORIES])
     cmd_assemble(tmp)
 

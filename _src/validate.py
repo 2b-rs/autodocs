@@ -17,9 +17,11 @@ Exit-Code 0 = alles in Ordnung.
 """
 import glob
 import json
+import multiprocessing
 import os
 import sys
 import urllib.parse
+from concurrent.futures import ProcessPoolExecutor
 
 from lxml import html as LH
 
@@ -28,6 +30,33 @@ from lib_docmodel import (SRC, ROOT, PAGES_DIR, LANGS, RTL, render_page,
                           load_templates, iter_pages)
 
 problems = []
+WORKERS = min(12, os.cpu_count() or 12)
+# 'fork' avoids re-importing lxml/lib_docmodel per worker on macOS (default
+# 'spawn' pays that cost on every worker, which dominates wall-clock time for
+# many small per-page tasks and effectively serializes the workload).
+_MP_CTX = multiprocessing.get_context("fork")
+
+
+def _check_one_page(args):
+    page, footers, page_tmpl = args
+    target = os.path.join(ROOT, page["file"])
+    gen = render_page(page, footers, page_tmpl)
+    cur = open(target, encoding="utf-8").read() if os.path.exists(target) else None
+    is_stale = gen != cur
+
+    referenced = set()
+    referenced_recs = set()
+
+    def collect(blocks):
+        for b in blocks:
+            if b["t"] in ("ai", "svg"):
+                referenced.add(b["src"])
+            if b["t"] == "rec" and b.get("_src"):
+                referenced_recs.add(b["_src"])
+            if b["t"] in ("rec", "fold"):
+                collect(b["blocks"])
+    collect(page["main"])
+    return page["file"], is_stale, referenced, referenced_recs
 
 
 def check_build():
@@ -35,21 +64,20 @@ def check_build():
     stale = []
     referenced = set()
     referenced_recs = set()
-    for page in iter_pages():
-        target = os.path.join(ROOT, page["file"])
-        gen = render_page(page, footers, page_tmpl)
-        cur = open(target, encoding="utf-8").read() if os.path.exists(target) else None
-        if gen != cur:
-            stale.append(page["file"])
-        def collect(blocks):
-            for b in blocks:
-                if b["t"] in ("ai", "svg"):
-                    referenced.add(b["src"])
-                if b["t"] == "rec" and b.get("_src"):
-                    referenced_recs.add(b["_src"])
-                if b["t"] in ("rec", "fold"):
-                    collect(b["blocks"])
-        collect(page["main"])
+    pages = list(iter_pages())
+    tasks = [(page, footers, page_tmpl) for page in pages]
+    chunksize = max(1, len(tasks) // (WORKERS * 4)) if tasks else 1
+    if len(tasks) < WORKERS * 2:
+        results = [_check_one_page(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=WORKERS, mp_context=_MP_CTX) as ex:
+            results = list(ex.map(_check_one_page, tasks, chunksize=chunksize))
+    for file, is_stale, refs, refs_recs in results:
+        if is_stale:
+            stale.append(file)
+        referenced |= refs
+        referenced_recs |= refs_recs
+    stale.sort()
     # Spezifikations-DB: verwaiste Record-Dateien melden
     #
     # Ausnahme PRS_E2E: Diese Requirements beschreiben Verhalten/Protokollregeln
@@ -146,44 +174,60 @@ def check_links():
         problems.append("fehlende Bilddateien: %d, z.B. %s" % (len(bilder), bilder[:5]))
 
 
-def check_langs():
+def _check_one_lang(args):
+    lang, de_seiten = args
     from generate import generate_lang
+
+    local_problems = []
+    wurzel = os.path.join(ROOT, lang)
+    if not os.path.isdir(wurzel):
+        local_problems.append("Sprachbaum fehlt: %s/" % lang)
+        return local_problems
+
+    vorhanden = {os.path.relpath(p, wurzel).replace(os.sep, "/") for p in
+                 glob.glob(os.path.join(wurzel, "**", "*.html"), recursive=True)}
+    if vorhanden != de_seiten:
+        local_problems.append("[%s] Seitenbestand weicht ab: +%s -%s"
+                              % (lang, sorted(vorhanden - de_seiten)[:3], sorted(de_seiten - vorhanden)[:3]))
+
+    _n, _stat, stale = generate_lang(lang, check=True)
+    if stale:
+        local_problems.append("[%s] Baum nicht aktuell (generate.py --lang=%s): %d Seiten, z.B. %s"
+                              % (lang, lang, len(stale), stale[:3]))
+
+    reste, falsch_lang = [], []
+    soll_html = '<html lang="%s"%s>' % (lang, ' dir="rtl"' if lang in RTL else "")
+    for rel in sorted(vorhanden):
+        text = open(os.path.join(wurzel, rel), encoding="utf-8").read()
+        if "\u27e6" in text:
+            reste.append(rel)
+        if soll_html not in text.split("\n", 2)[1]:
+            falsch_lang.append(rel)
+    if reste:
+        local_problems.append("[%s] Maskierungs-Platzhalter im Output: %s" % (lang, reste[:5]))
+    if falsch_lang:
+        local_problems.append("[%s] falsches lang-/dir-Attribut: %s" % (lang, falsch_lang[:5]))
+    return local_problems
+
+
+def check_langs():
     de_seiten = set()
     for p in glob.glob(os.path.join(PAGES_DIR, "**", "*.json"), recursive=True):
         modell = json.load(open(p, encoding="utf-8"))
         if modell.get("nolang"):
             continue      # nur-deutsche Seite, absichtlich ohne Sprachbaum
         de_seiten.add(modell["file"])
-    for lang in LANGS:
-        wurzel = os.path.join(ROOT, lang)
-        if not os.path.isdir(wurzel):
-            problems.append("Sprachbaum fehlt: %s/" % lang)
-            continue
-        vorhanden = {os.path.relpath(p, wurzel).replace(os.sep, "/") for p in
-                     glob.glob(os.path.join(wurzel, "**", "*.html"), recursive=True)}
-        if vorhanden != de_seiten:
-            problems.append("[%s] Seitenbestand weicht ab: +%s -%s"
-                            % (lang, sorted(vorhanden - de_seiten)[:3], sorted(de_seiten - vorhanden)[:3]))
-        _n, _stat, stale = generate_lang(lang, check=True)
-        if stale:
-            problems.append("[%s] Baum nicht aktuell (generate.py --lang=%s): %d Seiten, z.B. %s"
-                            % (lang, lang, len(stale), stale[:3]))
-        reste, falsch_lang = [], []
-        soll_html = '<html lang="%s"%s>' % (lang, ' dir="rtl"' if lang in RTL else "")
-        for rel in sorted(vorhanden):
-            text = open(os.path.join(wurzel, rel), encoding="utf-8").read()
-            if "\u27e6" in text:
-                reste.append(rel)
-            if soll_html not in text.split("\n", 2)[1]:
-                falsch_lang.append(rel)
-        if reste:
-            problems.append("[%s] Maskierungs-Platzhalter im Output: %s" % (lang, reste[:5]))
-        if falsch_lang:
-            problems.append("[%s] falsches lang-/dir-Attribut: %s" % (lang, falsch_lang[:5]))
+    tasks = [(lang, de_seiten) for lang in LANGS]
+    if len(tasks) < 2:
+        lang_problem_lists = [_check_one_lang(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=min(WORKERS, len(tasks)), mp_context=_MP_CTX) as ex:
+            lang_problem_lists = list(ex.map(_check_one_lang, tasks, chunksize=1))
+    for local in lang_problem_lists:
+        problems.extend(local)
     for f in ("de", "gb", "es", "fr", "ru", "sa", "in", "kr", "cn"):
         if not os.path.exists(os.path.join(ROOT, "flags", f + ".svg")):
             problems.append("Flagge fehlt: flags/%s.svg" % f)
-
 
 
 
@@ -273,6 +317,11 @@ def check_namespaces():
     if os.path.exists(katalog):
         for gruppe in _json.load(open(katalog, encoding="utf-8")).get("abweichungen", {}).values():
             erlaubt.update(gruppe)
+    # Ausnahme PRS_E2E: wie beim Waisen-Check oben beschrieben beschreiben
+    # diese Requirements Protokollregeln ohne eigene C++-API und tragen
+    # daher bewusst keinen Namensraum -- keine Modellierungsluecke.
+    PRS_E2E_PREFIX = "PRS_E2E_"
+
     ohne, unbekannt = [], []
     for ordner, _, dateien in os.walk(wurzel):
         for datei in dateien:
@@ -280,15 +329,26 @@ def check_namespaces():
                 continue
             pfad = os.path.join(ordner, datei)
             rec = _json.load(open(pfad, encoding="utf-8"))
-            ns = rec.get("ns")
-            if not isinstance(ns, dict) or "namespace" not in ns:
-                ohne.append(rec.get("id", datei))
+            rid = rec.get("id", datei)
+            if isinstance(rid, str) and rid.startswith(PRS_E2E_PREFIX):
                 continue
-            if ns.get("namespace") is None and ns.get("quelle") != "dienst":
-                ohne.append(rec.get("id", datei))
+            # namespace_meta ist das aktuelle Schema (ersetzt das aeltere
+            # "ns"-Feld nach einer Migration); beide Formen tragen dieselben
+            # Unterfelder (namespace, enclosing/umschliessend, module,
+            # source/quelle, generated). Rueckwaertskompatibel beide lesen,
+            # damit noch nicht migrierte Legacy-Records weiter greifen.
+            ns = rec.get("namespace_meta")
+            if not isinstance(ns, dict):
+                ns = rec.get("ns")
+            if not isinstance(ns, dict) or "namespace" not in ns:
+                ohne.append(rid)
+                continue
+            quelle = ns.get("source") or ns.get("quelle")
+            if ns.get("namespace") is None and quelle != "dienst":
+                ohne.append(rid)
                 continue
             if ns.get("abweichung") and ns.get("namespace") and ns["namespace"] not in erlaubt:
-                unbekannt.append((rec.get("id", datei), ns["namespace"]))
+                unbekannt.append((rid, ns["namespace"]))
     if ohne:
         problems.append("Records ohne expliziten Namensraum (%d): %s" % (len(ohne), ohne[:5]))
     if unbekannt:

@@ -15,10 +15,11 @@
   // Fixed edge-weight threshold for the default hub view (previously a user-adjustable slider).
   const MIN_WEIGHT = 0; // unused legacy constant; edge visibility no longer depends on weight
 
-  host.innerHTML = `<div class="component-graph-toolbar"><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><button type="button" class="component-graph-reset-button" data-graph-save-view>Ansicht speichern</button><button type="button" class="component-graph-reset-button" data-graph-load-view>Ansicht laden</button><label class="graph-anchor-force">Ankerkraft <input type="range" min="0" max="300" step="5" value="10" data-graph-anchor-force><output data-graph-anchor-output>10%</output></label></div>
+  host.innerHTML = `<div class="component-graph-toolbar"><button type="button" class="component-graph-reset-button" data-graph-keep-selected hidden>Nicht-Markierte entfernen</button><button type="button" class="component-graph-reset-button" data-graph-restore hidden>Alle entfernen</button><button type="button" class="component-graph-reset-button" data-graph-save-view>Ansicht speichern</button><button type="button" class="component-graph-reset-button" data-graph-load-view>Ansicht laden</button><button type="button" class="component-graph-fullscreen-button" data-graph-fullscreen aria-label="Vollbild umschalten" title="Vollbild umschalten">⛶</button></div>
   <div class="component-graph-split"><div class="component-graph-stage" role="img" aria-label="Radiale Clusterkarte der API-Komponenten mit Federphysik"><p class="dim">${ui.loading}</p></div><div class="component-graph-removed-panel"><div class="component-graph-removed-titlebar"><div class="component-graph-removed-title" data-graph-removed-title>Meistgenutzte Klassen</div><input class="component-graph-removed-search" data-graph-removed-search type="search" placeholder="Klasse suchen" aria-label="Geparkte Klassen filtern"><button type="button" class="component-graph-collapse-all" data-graph-collapse-all aria-label="Alle einklappen" title="Alle einklappen"><span class="component-graph-collapse-caret" aria-hidden="true"></span></button><button type="button" class="component-graph-removed-add-all" data-graph-restore-filtered>Alle hinzufügen</button></div><div class="component-graph-removed-canvas" data-graph-removed></div></div></div>`;
 
   const stage = host.querySelector(".component-graph-stage");
+  const fullscreenButton = host.querySelector("[data-graph-fullscreen]");
   const restoreButton = host.querySelector("[data-graph-restore]");
   const keepSelectedButton = host.querySelector("[data-graph-keep-selected]");
   const saveViewButton = host.querySelector("[data-graph-save-view]");
@@ -305,26 +306,51 @@
       const ia = MODULE_ORDER.indexOf(a.data("module")), ib = MODULE_ORDER.indexOf(b.data("module"));
       return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
     });
-    const core = ordered.find((m) => m.data("module") === "core") || ordered[0];
-    const ring = ordered.filter((m) => m.id() !== core.id());
-    // Radii scale with how much content actually has to fit, otherwise the ring modules start
-    // life inside one another and the simulation has to untangle a knot at every load.
     const totalVisible = visibleModules.toArray().reduce((sum, m) => sum + m.descendants().filter((c) => c.style("display") !== "none").length, 0);
-    const coreKids = core.descendants().filter((c) => c.style("display") !== "none").length;
-    const CORE_R = Math.max(210, 60 + Math.sqrt(Math.max(coreKids, 1)) * 62);
-    const RING_R = Math.max(980, CORE_R + 420 + Math.sqrt(Math.max(totalVisible, 1)) * 58);
+    const maxKids = ordered.reduce((mx, m) => Math.max(mx, m.descendants().filter((c) => c.style("display") !== "none").length), 0);
+    const MODULE_RING_R = Math.max(980, 520 + Math.sqrt(Math.max(totalVisible, 1)) * 52 + Math.sqrt(Math.max(maxKids, 1)) * 44);
     const cx = 0, cy0 = 0;
-    modAnchors.set(core.id(), { x: cx, y: cy0 });
-    packChildrenRecursive(core, homes, cx, cy0, CORE_R * 0.78, null);
-    ring.forEach((mod, i) => {
-      const ang = -Math.PI / 2 + (i / Math.max(ring.length, 1)) * Math.PI * 2;
-      const mx = cx + Math.cos(ang) * RING_R, my = cy0 + Math.sin(ang) * RING_R;
+
+    ordered.forEach((mod, i) => {
+      const ang = -Math.PI / 2 + (i / Math.max(ordered.length, 1)) * Math.PI * 2;
+      const mx = cx + Math.cos(ang) * MODULE_RING_R;
+      const my = cy0 + Math.sin(ang) * MODULE_RING_R;
       modAnchors.set(mod.id(), { x: mx, y: my });
-      const kidCount = mod.children().filter((c) => c.style("display") !== "none").length;
-      const localR = Math.max(150, Math.sqrt(Math.max(kidCount, 1)) * 105);
-      const pull = 0.12;
-      const ox = mx * (1 - pull) + cx * pull, oy = my * (1 - pull) + cy0 * pull;
-      packChildrenRecursive(mod, homes, ox, oy, localR, ang + Math.PI);
+
+      const axisX = mx - cx;
+      const axisY = my - cy0;
+      const axisLen = Math.max(1, Math.hypot(axisX, axisY));
+      const ux = axisX / axisLen;
+      const uy = axisY / axisLen;
+      const visibleLeaves = mod.descendants().filter((c) => c.style("display") !== "none" && c.data("kind") !== "namespace");
+      const leafArr = visibleLeaves.toArray().sort((a, b) => {
+        const aExt = a.data("crossDegree") || 0;
+        const bExt = b.data("crossDegree") || 0;
+        const aInt = Math.max(0, (a.data("degree") || 0) - aExt);
+        const bInt = Math.max(0, (b.data("degree") || 0) - bExt);
+        return bExt - aExt || bInt - aInt || a.id().localeCompare(b.id());
+      });
+      const maxExternal = leafArr.reduce((mx2, n) => Math.max(mx2, n.data("crossDegree") || 0), 0);
+      const maxInternal = leafArr.reduce((mx2, n) => Math.max(mx2, Math.max(0, (n.data("degree") || 0) - (n.data("crossDegree") || 0))), 0);
+      const outwardSpan = Math.max(120, Math.sqrt(Math.max(leafArr.length, 1)) * 36);
+      const inwardSpan = Math.max(120, Math.sqrt(Math.max(leafArr.length, 1)) * 54);
+
+      leafArr.forEach((n) => {
+        const external = n.data("crossDegree") || 0;
+        const internal = Math.max(0, (n.data("degree") || 0) - external);
+        const towardOrigin = maxExternal > 0 ? (external / maxExternal) * inwardSpan : 0;
+        const awayFromCenter = maxInternal > 0 ? (internal / maxInternal) * outwardSpan : 0;
+        const radial = towardOrigin - awayFromCenter;
+        homes.set(n.id(), { x: mx - ux * radial, y: my - uy * radial });
+      });
+
+      const namespaceNodes = mod.descendants().filter((c) => c.style("display") !== "none" && c.data("kind") === "namespace").toArray();
+      namespaceNodes.sort((a, b) => a.id().localeCompare(b.id()));
+      const nsStep = 32;
+      namespaceNodes.forEach((ns, idx) => {
+        const offset = (idx - (namespaceNodes.length - 1) / 2) * nsStep;
+        homes.set(ns.id(), { x: mx + uy * offset, y: my - ux * offset });
+      });
     });
     return { homes, modAnchors };
   };
@@ -335,7 +361,7 @@
     // that the separation forces below can resolve overlaps instead of being overruled.
     ANCHOR_K: 0.009, // multiplied by anchorScale, initialised to 0.1 (10%) below
     EDGE_K_CORE: 0.035,
-    EDGE_K_CROSS: 0.016,
+    EDGE_K_CROSS: 0.0016,
     EDGE_K_INTRA: 0.008,
     REST_CORE: 210,
     REST_CROSS: 340,
@@ -361,7 +387,9 @@
   };
 
   const createSimulation = (cy) => {
-    let anchorScale = 0.1;
+    let anchorScale = 0.85; // fixed at 85%; slider removed from toolbar
+    let textScale = 1;
+    let crossScale = 1;
     let homes = new Map();
     let modAnchors = new Map();
     let raf = null;
@@ -411,14 +439,14 @@
         const d = 9 + tt * 13;
         n.style("width", d);
         n.style("height", d);
-        n.style("font-size", 10 + tt * 3);
+        n.style("font-size", (10 + tt * 3) * textScale);
         n.style("border-width", 1);
       });
     };
 
     const edgeParams = (e) => {
       if (e.data("coreLink")) return { k: SIM.EDGE_K_CORE, rest: SIM.REST_CORE };
-      if (e.data("cross")) return { k: SIM.EDGE_K_CROSS, rest: SIM.REST_CROSS };
+      if (e.data("cross")) return { k: SIM.EDGE_K_CROSS * crossScale, rest: SIM.REST_CROSS };
       return { k: SIM.EDGE_K_INTRA, rest: SIM.REST_INTRA };
     };
 
@@ -629,7 +657,22 @@
     // sizeNodes is exposed so the UML detail toggle can restore the physics-driven pill size
     // when a node collapses back to level 0.
     const setAnchorScale = (value) => { anchorScale = Math.max(0, Number(value) || 0); };
-    return { seed, start, stop, settleOnce, grab, free, sizeNodes, setAnchorScale, get modAnchors() { return modAnchors; } };
+    const setTextScale = (value) => {
+      textScale = Math.max(0.4, Number(value) || 1);
+      cy.style()
+        .selector("node")
+          .style("font-size", 10.5 * textScale)
+        .selector("node[uml > 0]")
+          .style("font-size", 9 * textScale)
+        .selector("node[uml = 1]")
+          .style("font-size", 10 * textScale)
+        .selector("node[kind = 'module']")
+          .style("font-size", 14 * textScale)
+        .update();
+      sizeNodes();
+    };
+    const setCrossScale = (value) => { crossScale = Math.max(0, Number(value) || 0); };
+    return { seed, start, stop, settleOnce, grab, free, sizeNodes, setAnchorScale, setTextScale, setCrossScale, get modAnchors() { return modAnchors; } };
   };
 
   Promise.all([
@@ -1160,16 +1203,8 @@
     };
     const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
     const sim = createSimulation(cy);
-    const anchorSlider = host.querySelector("[data-graph-anchor-force]");
-    const anchorOutput = host.querySelector("[data-graph-anchor-output]");
-    if (anchorSlider) {
-      anchorSlider.addEventListener("input", () => {
-        const percent = Number(anchorSlider.value);
-        sim.setAnchorScale(percent / 100);
-        if (anchorOutput) anchorOutput.value = `${percent}%`;
-        sim.start();
-      });
-    }
+    // Anchor force is fixed (sliders removed from the toolbar); previously user-adjustable.
+    sim.setAnchorScale(0.85);
     // ---------- unified focus controller ----------
     // Viewport framing is derived from a single explicit `focus` state instead of the
     // previous mix of auto-fit loops, reveal loops, and per-gesture zoom calls. There are
@@ -2652,6 +2687,33 @@
         startFocusFollow();
       }, 150);
     });
+
+    if (fullscreenButton) {
+      const refit = () => {
+        cy.resize();
+        applyFocusFraming(false);
+        startFocusFollow();
+      };
+      const updateFullscreenButton = () => {
+        const isFs = document.fullscreenElement === host;
+        fullscreenButton.textContent = isFs ? "\u2715" : "\u26f6";
+        fullscreenButton.setAttribute("aria-pressed", isFs ? "true" : "false");
+        fullscreenButton.title = isFs ? "Vollbild verlassen" : "Vollbild umschalten";
+      };
+      fullscreenButton.addEventListener("click", () => {
+        if (document.fullscreenElement === host) {
+          document.exitFullscreen().catch(() => {});
+        } else if (host.requestFullscreen) {
+          host.requestFullscreen().catch(() => {});
+        }
+      });
+      document.addEventListener("fullscreenchange", () => {
+        updateFullscreenButton();
+        requestAnimationFrame(refit);
+        setTimeout(refit, 200);
+      });
+      updateFullscreenButton();
+    }
   }).catch((err) => {
     stage.innerHTML = `<p class="graph-error">${ui.failed}<br><code>${String((err && err.message) || err)}</code></p>`;
     console.error("component graph", err);

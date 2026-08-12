@@ -21,12 +21,30 @@ Quellen: _src/sources/pages/**.json  (Seitenmodelle / Komposition)
          _src/site.json              (Projektmanifest: Bereiche, Sprachen)
 Danach:  python3 _src/validate.py    (Prüfungen, siehe WARTUNG.md)
 """
+import multiprocessing
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from lib_docmodel import (SRC, ROOT, LANGS, render_page, load_templates,
                           compare_html, iter_pages)
+
+WORKERS = min(12, os.cpu_count() or 12)
+# 'fork' avoids re-importing lxml/lib_docmodel per worker (macOS defaults to
+# 'spawn', which pays that import cost on every one of the 12 workers and
+# dominates wall-clock time for a fast, many-small-tasks workload like this).
+_MP_CTX = multiprocessing.get_context("fork")
+
+
+def _render_one(args):
+    page, footers, page_tmpl, check = args
+    html_text = render_page(page, footers, page_tmpl)
+    target = os.path.join(ROOT, page["file"])
+    if check:
+        errs = compare_html(target, html_text) if os.path.exists(target) else ["Datei fehlt"]
+        return page["file"], None, errs
+    return page["file"], html_text, None
 
 
 def generate_lang(lang, only=None, check=False):
@@ -71,18 +89,26 @@ def main():
     only = set(a for a in args if not a.startswith("--")) or None
 
     page_tmpl, footers = load_templates()
+    pages = list(iter_pages(only))
     n, bad = 0, 0
-    for page in iter_pages(only):
-        html_text = render_page(page, footers, page_tmpl)
-        target = os.path.join(ROOT, page["file"])
+    tasks = [(page, footers, page_tmpl, check) for page in pages]
+    chunksize = max(1, len(tasks) // (WORKERS * 4)) if tasks else 1
+    if len(tasks) < WORKERS * 2:
+        rendered = [_render_one(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=WORKERS, mp_context=_MP_CTX) as ex:
+            rendered = list(ex.map(_render_one, tasks, chunksize=chunksize))
+    results = {file: (html_text, errs) for file, html_text, errs in rendered}
+    for page in pages:
+        html_text, errs = results[page["file"]]
         if check:
-            errs = compare_html(target, html_text) if os.path.exists(target) else ["Datei fehlt"]
             if errs:
                 bad += 1
                 print("ABWEICHUNG %s" % page["file"])
                 for e in errs[:5]:
                     print("   ", e)
         else:
+            target = os.path.join(ROOT, page["file"])
             os.makedirs(os.path.dirname(target), exist_ok=True)
             with open(target, "w", encoding="utf-8") as f:
                 f.write(html_text)

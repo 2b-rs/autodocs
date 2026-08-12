@@ -5,10 +5,10 @@
 # never be edited; anything changed there is overwritten on the next run.
 set -euo pipefail
 
-SRC="/private/tmp/ara-api-doku-r2511-edit"
-DST="$HOME/devel/ara-api-doku"
-LOG="$HOME/devel/ara-api-doku-sync.log"
-LOCK="$HOME/devel/.ara-api-doku-sync.lock"
+SRC="/private/tmp/autodocs"
+DST="$HOME/devel/autodocs.bak"
+LOG="$HOME/devel/autodocs-sync.log"
+LOCK="$HOME/devel/.autodocs-sync.lock"
 
 log() { printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')" "$*" >>"$LOG"; }
 

@@ -1,11 +1,19 @@
 # Wartungsanleitung — ara::* API-Referenz (R25-11)
 
+- Alle Prozesse zum manuellen und automatischen Umgang mit Projektdaten sind
+  verbindlich beschrieben in: docs/pipeline.
+
 Der HTML-Tree (`index.html`, `classes/`, `namespaces/`, `modules/`, `services/`)
 ist ein **Build-Artefakt**. Maßgebliche Quellen liegen unter `_src/`. Inhalte
 werden **nicht** im generierten HTML geändert, sondern in den Quellen — danach
 wird der Tree neu generiert. Das gilt auch für die neun übersetzten Sprachbäume
 (`en/`, `es/`, `pt/`, `fr/`, `ru/`, `ar/`, `hi/`, `ko/`, `zh/` — s. Kapitel
 „Mehrsprachige Bäume (i18n)“).
+
+Neugenerierung via:
+```bash
+python3 _src/generate.py && python3 _src/validate.py
+```
 
 Das Schichtenmodell der Pipeline (Spezifikations-DB → KI-Kuratierung →
 Komposition → i18n → HTML) und die Rezepte zum Erweitern des Umfangs (neue
@@ -84,6 +92,33 @@ python3 _src/generate.py --lang=alle   # zusätzlich alle 9 Sprachbäume
 python3 _src/validate.py        # Aktualität, tote Links/Anker, Waisen-Fragmente
 python3 _src/build_indexes.py   # CSV-Indizes auffrischen
 ```
+
+### Extraktions-Berichte: Bauen vs. Publizieren
+
+Der Extraktions-Bericht hat **zwei getrennte Schritte**:
+
+1. `python3 _src/tools/extraction_report.py build` erzeugt bzw. aktualisiert die
+   Berichtsdaten: `_src/sources/pages/extraction-report.json`,
+   `extraction-reports-data.js` und die versionierten Seitenmodelle unter
+   `_src/sources/pages/reports/extraction-report-v%04d.json`.
+2. `python3 _src/generate.py` rendert diese Seitenmodelle erst in die
+   browsebaren HTML-Seiten am Web-Wurzelverzeichnis, also u. a.
+   `extraction-reports.html` sowie `extraction-report-v%04d.html`.
+
+Wichtig: `build` **publiziert noch nichts sichtbar im HTML-Tree**. Wer nur
+`extraction_report.py build` ausführt, bekommt neue Versions-Metadaten, aber
+keine neuen `extraction-report-v%04d.html`-Dateien. Für sichtbare Änderungen im
+Web muss danach immer `generate.py` laufen.
+
+Seit 2026-08-12 ist `record_version()` versionsneutral für reine
+Publikationsläufe: Wenn Kennzahlen, Residual-Status und relevante
+Extraktionsskript-Stände unverändert sind, wird keine neue Berichtsversion
+angelegt; ein nachträgliches `generate.py` rendert dann lediglich bestehende
+Versionen nach HTML aus, statt Dubletten wie v0012/v0013 zu erzeugen.
+
+Für lokale Agent-/Sandbox-Läufe gilt zusätzlich AGENTS.md: wegen CPU-/I/O-Last
+immer über `run.sh` ausführen und darin **beide** Schritte kombinieren
+(`extraction_report.py build && python3 _src/generate.py`).
 
 Nach inhaltlichen Änderungen an deutschen Quellen gilt zusätzlich der
 i18n-Workflow (neue/geänderte Segmente übersetzen, s. u.) — sonst fallen die
@@ -176,21 +211,43 @@ Die vollständige Felddoku steht im Kopf von `lib_docmodel.py`.
 ## Spec-PDF-Cache (`_src/spec/pdf-cache/<RELEASE>/`)
 
 Die Spezifikations-DB unter `_src/spec/records/` wird gegen die **normativen
-AUTOSAR-Standard-PDFs** validiert. Diese PDFs liegen versionsweise im Cache:
+AUTOSAR-Standard-PDFs** validiert. Diese PDFs liegen versionsweise im Cache,
+jetzt hierarchisch nach Hersteller/Familie/Plattform gegliedert:
 
 ```
 _src/spec/pdf-cache/R25-11/
-├── AUTOSAR_AP_SWS_Core.pdf
-├── AUTOSAR_AP_SWS_LogAndTrace.pdf
-├── …
-└── manifest.sha256          ← Inhaltsverzeichnis (SHA-256 je PDF)
+├── AUTOSAR/
+│   ├── AP/
+│   │   ├── AUTOSAR_AP_SWS_Core.pdf
+│   │   ├── AUTOSAR_AP_RS_General.pdf
+│   │   └── …
+│   ├── CLASSIC/
+│   ├── FOUNDATION/
+│   │   ├── AUTOSAR_FO_RS_Diagnostics.pdf
+│   │   ├── AUTOSAR_FO_PRS_E2EProtocol.pdf
+│   │   ├── AUTOSAR_FO_RS_Safety.pdf
+│   │   └── …
+│   └── …
+├── ECLIPSE/
+└── manifest.sha256                 ← Inhaltsverzeichnis (SHA-256 je PDF, relativer Pfad)
 ```
+
+- **`source-map.json`** (`_src/spec/pdf-cache/<RELEASE>/source-map.json`) haelt
+  je Cache-Eintrag den relativen lokalen Pfad, den Plattformzweig, das Release
+  und die kanonische Download-URL unter `autosar.org/fileadmin/standards/`
+  fest, inklusive noch fehlender, aber bereits bekannter Dokumente (z. B.
+  `AUTOSAR_FO_EXP_SafetyOverview.pdf`, `cached: false`). Wird von Hand
+  gepflegt, sobald ein Dokument neu registriert oder umbenannt wird; nicht
+  automatisch generiert.
 
 - **Dateinamen sind nicht frei waehlbar.** Sie entsprechen exakt den auf der
   Startseite verlinkten Standarddokumenten (`_src/sources/pages/index.json`,
   Abschnitt „Quellen“). Das Dokumentregister `DOCS` in
   `_src/tools/spec_scrape.py` haelt Modul, Zweig, PDF-Basisnamen und
   Record-Praefix zusammen; es muss mit dieser Liste deckungsgleich bleiben.
+- **Die Cache-Hierarchie ist semantisch, nicht namensbildend.** Die Werkzeuge
+  suchen PDFs rekursiv unterhalb des Release-Verzeichnisses; massgeblich fuer
+  die Identitaet bleibt der PDF-Basisname, nicht sein Unterordner.
 - **Befuellt wird ausschliesslich ueber `run.sh`** (die MCP-Sandbox hat keinen
   Netzzugriff, siehe `AGENTS.md`). Der Cache ist der Standardwert von
   `--pdf-dir`; ohne Option arbeiten alle Unterbefehle auf diesem Verzeichnis.

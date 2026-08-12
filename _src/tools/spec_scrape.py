@@ -29,7 +29,9 @@ Drei Phasen (einzeln oder verkettet aufrufbar):
 PDF-Cache und Workflow
 ----------------------
 Die unveraenderten Quelldokumente liegen release-spezifisch unter
-``_src/spec/pdf-cache/R25-11/``. ``manifest.sha256`` dokumentiert ihren
+``_src/spec/pdf-cache/R25-11/`` mit der Hierarchie ``AUTOSAR/``,
+``AUTOSAR/AP/``, ``AUTOSAR/CLASSIC/``, ``AUTOSAR/FOUNDATION/`` und
+``ECLIPSE/``. ``manifest.sha256`` dokumentiert ihren
 Inhalt. Eine run.sh laedt nur fehlende/ungueltige PDFs ueber eine temporaere
 Datei und ersetzt niemals einen gueltigen Cache-Eintrag. Der Cache ist damit
 zwischen Prueflaeufen wiederverwendbar; ein Release-Wechsel bekommt ein eigenes
@@ -111,6 +113,7 @@ DOCS = OrderedDict([
     ("rds",    ("AP", "AUTOSAR_AP_SWS_RawDataStream",               "SWS_RDS")),
     ("ucm",    ("AP", "AUTOSAR_AP_SWS_UpdateAndConfigurationManagement", "SWS_UCM")),
     ("shwa",   ("AP", "AUTOSAR_AP_SWS_SafeHardwareAcceleration",    "AP_SWS")),
+    ("osi",    ("AP", "AUTOSAR_AP_SWS_OperatingSystemInterface",    "SWS_OSI")),
 ])
 
 # Canonical upstream-requirement sources. Kept separate so existing SWS
@@ -135,6 +138,12 @@ RS_DOCS = OrderedDict([
     ("rs-nm", ("FO", "AUTOSAR_FO_RS_NetworkManagement", "RS_NM")),
     ("rs-ts", ("FO", "AUTOSAR_FO_RS_TimeSync", "RS_TS")),
     ("prs-e2e", ("FO", "AUTOSAR_FO_PRS_E2EProtocol", "PRS_E2E")),
+    ("prs-ids", ("FO", "AUTOSAR_FO_PRS_IntrusionDetectionSystem", "PRS_IDS")),
+    ("prs-ts", ("FO", "AUTOSAR_FO_PRS_TimeSyncOverEthernetProtocol", "PRS_TS")),
+    ("rs-someip", ("FO", "AUTOSAR_FO_RS_SOMEIPProtocol", "RS_SOMEIP")),
+    ("rs-saf", ("FO", "AUTOSAR_FO_RS_Safety", "RS_SAF")),
+    ("rs-htm", ("AP", "AUTOSAR_AP_RS_HWTestManager", "AP_RS_HTM")),
+    ("exp-saf-overview", ("FO", "AUTOSAR_FO_EXP_SafetyOverview", "RS_SAF")),
 ])
 
 ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b", re.IGNORECASE)
@@ -2721,8 +2730,8 @@ def main(argv=None) -> int:
                 for row in entries[: args.limit or 5]:
                     print("   %-14s -> %d satisfied-by" % (row["id"], len(row.get("satisfied_by") or [])))
             if write_report is not None:
-                print("\ngeschrieben: %d; bereits vorhanden: %d" %
-                      (len(write_report["written"]), len(write_report["existing"])))
+                print("\ngeschrieben: %d; aktualisiert: %d" %
+                      (len(write_report["written"]), len(write_report["updated"])))
         return 0
 
     if args.limit:

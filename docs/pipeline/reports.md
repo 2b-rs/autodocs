@@ -48,6 +48,20 @@ compare,all,crosscheck,urls,upstream,observations}`.
 - **Kennzahlen** (`kennzahl(...)`): u. a. "Behobene Fehlerklassen" (=
   `len(CATEGORIES)`), Issues-Count, Curation-Open-Count.
 - **Output-Format**: HTML-Seitenmodell (verlinkt von der Startseite).
+- **Bauen vs. Publizieren (wichtig, seit Vorfall 2026-08-12)**: `extraction_report.py
+  build` erzeugt/aktualisiert nur die Seitenmodell-JSONs (u. a.
+  `_src/sources/pages/extraction-report.json`, `extraction-reports-data.js`,
+  versionierte Stubs unter `_src/sources/pages/reports/`). Es schreibt **kein**
+  sichtbares HTML. Erst ein anschließender Lauf von `python3 _src/generate.py`
+  rendert diese Modelle in die browsebaren Seiten (`extraction-reports.html`,
+  `extraction-report-v%04d.html`). Beide Schritte gehören für Agenten/Sandbox-
+  Läufe zusammen in **ein** `run.sh` (`extraction_report.py build && python3
+  _src/generate.py`) — siehe `_src/WARTUNG.md`, Abschnitt „Extraktions-Berichte:
+  Bauen vs. Publizieren“.
+- **Versionsneutrale Re-Publikation**: `record_version()` legt seit 2026-08-12
+  keine neue Version an, wenn Kennzahlen, Residual-Status und Skript-Stände
+  gegenüber der letzten Version unverändert sind — ein reiner Publikationslauf
+  (nur `generate.py` nötig) erzeugt dadurch keine Versions-Dubletten mehr.
 
 ## Extraktions-Kampagnenbericht (`spec_extraction_campaign.py`)
 
