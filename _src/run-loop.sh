@@ -218,21 +218,66 @@ cat > "$SELFTEST_SCRIPT" <<'EOF'
 #!/usr/bin/env bash
 set -uo pipefail
 
+print_selftest_result() {
+  local name="$1"
+  local value="$2"
+  local label
+  case "$name" in
+    tmp_write_probe) label="Temp write access" ;;
+    python_tempfile_probe) label="Python tempfile" ;;
+    python_lxml_probe) label="Python import lxml" ;;
+    python3_path) label="python3 path" ;;
+    pip_path) label="pip path" ;;
+    git_path) label="git path" ;;
+    ssh_path) label="ssh path" ;;
+    python_version_probe) label="python3 --version" ;;
+    git_version_probe) label="git --version" ;;
+    ssh_version_probe) label="ssh -V" ;;
+    output_write_probe) label="Output write" ;;
+    output_read_probe) label="Output read" ;;
+    output_symlink_probe) label="Output symlink create" ;;
+    output_symlink_target_probe) label="Output symlink resolve" ;;
+    github_key_read_probe) label="GitHub SSH key readable" ;;
+    npm_install_probe) label="npm install into output prefix" ;;
+    playwright_node_path_probe) label="playwright_node_path_probe" ;;
+    playwright_node_bin_probe) label="playwright_node_bin_probe" ;;
+    playwright_require_resolve_probe) label="Playwright require.resolve" ;;
+    playwright_module_probe) label="Playwright Node module" ;;
+    playwright_cache_read_probe) label="Playwright cache readable" ;;
+    playwright_runner_exec_probe) label="WebKit runner executable" ;;
+    playwright_webkit_page_probe) label="WebKit creates a page" ;;
+    run_sh_zsh_status_probe) label="run_sh_zsh_status_probe" ;;
+    *) label="$name" ;;
+  esac
+  if [[ "$value" == ok* ]]; then
+    printf '  [OK]   %-28s %s\n' "$label" "$value"
+  else
+    printf '  [FAIL] %-28s %s\n' "$label" "$value"
+  fi
+}
+
+append_selftest_log() {
+  local name="$1"
+  local value="$2"
+  printf '%s=%s\n' "$name" "$value" >> "$SELFTEST_LOG"
+  print_selftest_result "$name" "$value"
+}
+
 record() {
   local name="$1"
   local label="$2"
   shift 2
   local detail_file="$OUTPUT_DIR/run-sandbox-selftest-${name}.err"
   if "$@" >/dev/null 2>"$detail_file"; then
-    printf '%s=ok\n' "$name" >> "$SELFTEST_LOG"
+    append_selftest_log "$name" "ok"
     rm -f "$detail_file"
   else
     local detail
     detail="$(tr '\n' ' ' < "$detail_file" | sed 's/[[:space:]][[:space:]]*/ /g; s/^ //; s/ $//' | cut -c1-240)"
     if [[ -n "$detail" ]]; then
-      printf '%s=fail (%s)\n' "$name" "$detail" >> "$SELFTEST_LOG"
+      append_selftest_log "$name" "fail ($detail)"
     else
-      printf '%s=fail\n' "$name" >> "$SELFTEST_LOG"
+      append_selftest_log "$name" "fail"
     fi
     if [[ "$name" == "playwright_webkit_page_probe" ]]; then
       cp "$detail_file" "$OUTPUT_DIR/run-sandbox-selftest-${name}-full.log"
@@ -248,11 +293,15 @@ record_command() {
   local resolved
   resolved="$(command -v "$command_name" 2>/dev/null || true)"
   if [[ -n "$resolved" ]]; then
-    printf '%s=ok (%s)\n' "$name" "$resolved" >> "$SELFTEST_LOG"
+    append_selftest_log "$name" "ok ($resolved)"
   else
-    printf '%s=fail\n' "$name" >> "$SELFTEST_LOG"
+    append_selftest_log "$name" "fail"
   fi
 }
+
+printf '╔══════════════════════════════════════════════╗\n'
+printf '║ Environment self-test                        ║\n'
+printf '╚══════════════════════════════════════════════╝\n'
 
 TMP_PROBE="/var/folders/50/mnp917ks6_zgm_pz0v3prqjw0000gn/T/run-loop-selftest.$$"
 record tmp_write_probe "Temp write access" touch "$TMP_PROBE"
@@ -280,6 +329,26 @@ record github_key_read_probe "GitHub SSH key readable" test -r "$GITHUB_SSH_KEY_
 
 # Regression checks for the Playwright/WebKit conditions that previously failed.
 PLAYWRIGHT_WEBKIT_RUNNER="$HOME/Library/Caches/ms-playwright/webkit-2336/pw_run.sh"
+
+# Local node_modules can be lost across reboots since only $OUTPUT_DIR is
+# writable per the sandbox profile above. Install missing deps there (npm
+# --prefix) rather than into the default (blocked) location, and point
+# NODE_PATH at the resulting lib/node_modules so require("playwright")
+# resolves. Only runs when the prefix directory is missing, to avoid
+# reinstalling on every loop iteration.
+NPM_INSTALL_PREFIX="$OUTPUT_DIR/npm-prefix"
+if [[ -d "$OUTPUT_DIR" ]]; then
+  if [[ ! -d "$NPM_INSTALL_PREFIX/node_modules/playwright" ]]; then
+    record npm_install_probe "npm install into output prefix" \
+      npm install --prefix "$NPM_INSTALL_PREFIX" playwright@^1.62.1
+  fi
+  export NODE_PATH="$NPM_INSTALL_PREFIX/node_modules${NODE_PATH:+:$NODE_PATH}"
+  printf 'playwright_node_path_probe=ok (%s)\n' "$NODE_PATH" >> "$SELFTEST_LOG"
+  printf 'playwright_node_bin_probe=ok (%s)\n' "$(command -v node 2>/dev/null || echo missing)" >> "$SELFTEST_LOG"
+  record playwright_require_resolve_probe "Playwright require.resolve" \
+    node -e 'console.log(process.env.NODE_PATH); console.log(require.resolve("playwright"))'
+fi
+
 record playwright_module_probe "Playwright Node module" node -e 'require("playwright")'
 record playwright_cache_read_probe "Playwright cache readable" test -r "$PLAYWRIGHT_WEBKIT_RUNNER"
 record playwright_runner_exec_probe "WebKit runner executable" test -x "$PLAYWRIGHT_WEBKIT_RUNNER"
@@ -310,42 +379,6 @@ set +e
 SELFTEST_STATUS=$?
 set -e
 rm -f "$SELFTEST_SCRIPT"
-
-echo
-printf '╔══════════════════════════════════════════════╗\n'
-printf '║ Environment self-test                        ║\n'
-printf '╚══════════════════════════════════════════════╝\n'
-while IFS= read -r line; do
-  key="${line%%=*}"
-  value="${line#*=}"
-  case "$key" in
-    tmp_write_probe) label="Temp write access" ;;
-    python_tempfile_probe) label="Python tempfile" ;;
-    python_lxml_probe) label="Python import lxml" ;;
-    python3_path) label="python3 path" ;;
-    pip_path) label="pip path" ;;
-    git_path) label="git path" ;;
-    ssh_path) label="ssh path" ;;
-    python_version_probe) label="python3 --version" ;;
-    git_version_probe) label="git --version" ;;
-    ssh_version_probe) label="ssh -V" ;;
-    output_write_probe) label="Output write" ;;
-    output_read_probe) label="Output read" ;;
-    output_symlink_probe) label="Output symlink create" ;;
-    output_symlink_target_probe) label="Output symlink resolve" ;;
-    github_key_read_probe) label="GitHub SSH key readable" ;;
-    playwright_module_probe) label="Playwright Node module" ;;
-    playwright_cache_read_probe) label="Playwright cache readable" ;;
-    playwright_runner_exec_probe) label="WebKit runner executable" ;;
-    playwright_webkit_page_probe) label="WebKit creates a page" ;;
-    *) label="$key" ;;
-  esac
-  if [[ "$value" == ok* ]]; then
-    printf '  [OK]   %-28s %s\n' "$label" "$value"
-  else
-    printf '  [FAIL] %-28s %s\n' "$label" "$value"
-  fi
-done < "$SELFTEST_LOG"
 echo
 printf '  Log file: %s\n' "$SELFTEST_LOG"
 if grep -q '=fail' "$SELFTEST_LOG"; then
