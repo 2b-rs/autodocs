@@ -74,7 +74,8 @@ without a separate tool and without a server component.
 
 ### Campaign A — Baseline
 
-- [ ] Freeze corpus and 200-record benchmark (still not freezable: `review.status = needs_review` on all 200 records, `complete_start = null`; 12 headingless-but-populated records still need fixing or manual truthing first)
+- [ ] Freeze corpus and 200-record benchmark (still not freezable: `review.status = needs_review` on all 200 records, `complete_start = null` on many)
+  - 2026-08-12: the 12 headingless-but-populated blockers (all `RS_LT_*`) are resolved. `spec_scrape.py`'s new numbered-subsection heading fallback (commit `fdba7e28`) recovers their real headings from the source PDF; `benchmark-draft.json`'s expected values were updated to match and verified against the source (recount confirms 0 headingless-but-populated entries remain). The remaining freeze blockers are exclusively `review.status`/`complete_start` metadata, not extraction-shape gaps.
   - 2026-08-12: manually truthed the two previously called-out "empty-fields" blockers in `_src/tests/fixtures/spec_extraction/benchmark-draft.json`:
     - `RS_SAF_21101` is intentionally an inline citation in prose on pages 9-10 of `AUTOSAR_AP_RS_PlatformHealthManagement.pdf`, not a formal requirement block; `heading = null`, `fields = {}`, and `complete_start = null` are correct ground truth. Added an explanatory review note.
     - `RS_DIAG_04005` on page 15 of `AUTOSAR_FO_RS_Diagnostics.pdf` is a real formal requirement block (`[RS_Diag_04005] Manage Security Access level handling`); replaced the incorrect empty expected values with the actual heading/fields and `complete_start = true`, with a review note explaining the mixed-case source ID.
@@ -83,7 +84,8 @@ without a separate tool and without a server component.
 ### Definition-precision follow-ups
 
 - [ ] Treat dense definition lists (heading inline, no spec-item marker, e.g. RS_PHM_00001..00003 p.21) as an explicit record shape with its own fixtures
-  - 2026-08-12: verified representative remaining benchmark blockers in `AUTOSAR_FO_RS_LogAndTrace.pdf` (pages 15, 16, 30: `RS_LT_00001`, `RS_LT_00002`, `RS_LT_00032`). They share the same structural pattern: the true heading text lives in the numbered subsection line immediately above a bare `[RS_LT_xxxxx]` record marker, e.g. `4.2.1.1.8 The LT shall ...` followed by `[RS_LT_00001] ⌈`. This confirms the remaining 12 freeze blockers are one coherent shape problem, not 12 unrelated truthing mysteries.
+  - 2026-08-12: implemented and shipped the `AUTOSAR_FO_RS_LogAndTrace` variant of this shape (numbered subsection line immediately above a bare `[RS_LT_xxxxx]` marker, e.g. `4.2.1.1.8 The LT shall ...` followed by `[RS_LT_00001] ⌈`) as `spec_scrape.py`'s new `_subsection_heading_before` fallback, commit `fdba7e28`. All 12 affected benchmark entries now have correct headings and the recount confirms 0 headingless-but-populated entries remain.
+  - NOT yet verified: the originally cited `RS_PHM_00001..00003` example does not appear in `benchmark-draft.json` at all (no matching IDs found), so it's unconfirmed whether AUTOSAR_AP_RS_PlatformHealthManagement uses the exact same shape or a different one. This item stays open until that case (or another concrete instance beyond RS_LT) is located and confirmed handled.
 - [ ] Report precision/recall deltas against the previous campaign automatically; refuse check-in if recall drops without per-ID justification
 - [ ] Cross-check IDs against the SWS traceability database as evidence of real requirements
 - [ ] Detect release-scoped history phrasing ("revised"/"deleted"/"added" + release token like 19-03/R23-11) as a secondary rejection signal
