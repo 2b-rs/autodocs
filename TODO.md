@@ -94,10 +94,15 @@ without a separate tool and without a server component.
 
 ### Working-tree triage — 2514 modified spec records (`_src/spec/records/`)
 
-- [ ] Determine which tool produced the change (`migriere_spec_db.py`, `spec_upstream.py`, `text_repair.py`) and record the exact command
-- [ ] Re-run that command from committed tool state and diff the result (reproducibility precondition)
-- [ ] Inspect a stratified sample of 20 records manually before bulk commit
-- [ ] Commit as a single data-only change with the generating command in the message, separate from tool changes
+- [x] Determine which tool produced the change (`migriere_spec_db.py`, `spec_upstream.py`, `text_repair.py`) and record the exact command
+  - `spec_upstream.py`'s `rebuild_record_files()`, called via `spec_scrape.py`'s `upstream` phase: `python3 _src/tools/spec_scrape.py upstream --rs-docs --pdf-dir _src/spec/pdf-cache/R25-11 --rebuild`
+- [x] Re-run that command from committed tool state and diff the result (reproducibility precondition)
+  - Rebuild + immediate re-compare reported `updated=0` (idempotent); a first attempt (run.sh #241) used a flawed pre-check comparing 'updated' to the raw git-dirty count and incorrectly aborted — corrected in run.sh #242
+- [x] Inspect a stratified sample of 20 records manually before bulk commit
+  - Sampled 32 files (2 per namespace group, all 16 groups) via structural JSON diff (ignoring key order/indent). 31/32 changed only the `upstream` field as expected; 2 (`SWS_LOG_00018`, `SWS_LOG_00021`) also carried bundled-in unrelated changes — investigated further below
+- [x] Commit as a single data-only change with the generating command in the message, separate from tool changes
+  - Committed in `caa6cef4` (amended from initial `bd550836` once the bundled-file issue below was found), with full provenance disclosed in the message
+  - Follow-up finding: a full-diff grep across all 2996 committed files found exactly 71 files (all `SWS_LOG/`, matching that group's full size) that additionally bundled in pre-existing, already-dirty changes from an unrelated `2026-08-sws-log-pilot-after-tool-improvement` campaign (status/ns/legacy/history/fields backfill) plus one `legacy-desc-import` conversion. These were NOT produced by the upstream rebuild; they were already uncommitted in the working tree and got swept in because the commit staged all `_src/spec/records/*` dirty files rather than filtering to files spec_upstream.py actually touched. Disclosed explicitly in the amended commit message; content itself was not reverted since it appears to be legitimate, separately-produced backfill data — but it means this commit is not as narrowly scoped as originally intended. No further action taken here; flagging for awareness only
 
 ### Working-tree triage — 814 modified HTML files (published tree)
 
