@@ -46,7 +46,7 @@ without a separate tool and without a server component.
 - [x] Decisions accumulate in a local package
 - [x] Authenticated path: GitHub issue with `review-package@v1`
 - [x] Fallback path: JSON download, marked as self-declared
-- [ ] Document fallback import in GitHub (path from JSON to issue)
+- [x] Document fallback import in GitHub (path from JSON to issue)
 
 ## Level 5 — Flow Back into Sources
 

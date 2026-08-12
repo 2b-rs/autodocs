@@ -232,6 +232,48 @@ Seiten-JSON setzen. `validate.py` meldet Record-Dateien, die nirgends
 referenziert sind, und `extract.py` (Resync) lagert Records automatisch wieder
 in die DB aus.
 
+### Review-Fallback: JSON manuell nach GitHub uebernehmen
+
+Der Browser-Workflow in `review.js` kennt zwei Versandwege:
+
+- **Authentifiziert**: `submitPackage()` postet direkt ein neues GitHub-Issue an
+  `https://api.github.com/repos/<repo>/issues`. Der Issue-Body besteht nur aus
+  einem ```json-Block mit einem `review-package@v1`, `identity` ist dabei
+  `github_authenticated`.
+- **Fallback ohne Token**: `exportPackage()` laedt stattdessen eine Datei
+  `ara-review-<timestamp>.json` herunter. Das JSON hat ebenfalls
+  `schema: "review-package@v1"`, aber `identity: "self_declared"` und einen
+  Warnhinweis zur geringeren Vertrauensstufe.
+
+Manuelle Uebernahme des Fallback-Pakets in GitHub:
+
+1. Die exportierte `ara-review-*.json` lokal oeffnen und den kompletten Inhalt
+   unveraendert kopieren.
+2. Im Ziel-Repository ein neues Issue anlegen (derselbe Repo-Wert wie im
+   `<meta name="review-github-repo">` der HTML-Seite; aktuell
+   `2b-rs/autodocs`).
+3. Als Titel z. B. `Requirement review package (manual fallback)` verwenden.
+4. Den kopierten JSON-Inhalt als einzigen Issue-Body in einen fenced Block
+   einsetzen:
+
+   ```json
+   { ... exportierter Paketinhalt ... }
+   ```
+
+5. Issue absenden. Danach kann der Import lokal mit
+   `python3 _src/tools/review_ingest.py -g <ISSUE_NR>` geprueft oder mit
+   `python3 _src/tools/review_ingest.py --apply -g <ISSUE_NR>` uebernommen
+   werden.
+6. Fuer strengere Uebernahme `--require-authenticated` **nicht** setzen: ein
+   Fallback-Paket traegt absichtlich `identity: self_declared` und wird damit
+   sonst schon vor der Einzelpruefung abgelehnt.
+
+Wichtig: Das JSON nicht umformatieren, nicht mit zusaetzlichem Freitext
+mischen und nicht auf mehrere Kommentare verteilen. `review_ingest.py`
+erwartet im Issue-Body genau ein gueltiges Paket-JSON (optional in einem
+äusseren ```json-Block), das `_strip_code_fence()` / `json.loads()` direkt
+parsen koennen.
+
 ## KI-Kuratierung und Traceability (`_src/ai/`)
 
 Vollständig dokumentiert in `ai/RICHTLINIEN.md` (inhaltliche Leitplanken,
