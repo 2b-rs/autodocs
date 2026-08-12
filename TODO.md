@@ -101,8 +101,10 @@ without a separate tool and without a server component.
 
 ### Working-tree triage — 814 modified HTML files (published tree)
 
-- [ ] Confirm files are reproducible via `python3 _src/generate.py && python3 _src/validate.py` from current `_src/` state
-- [ ] If reproducible, commit as a regeneration; if not, find the missing `_src/` change first
+- [x] Confirm files are reproducible via `python3 _src/generate.py && python3 _src/validate.py` from current `_src/` state
+  - Confirmed: a direct re-run of validate.py's stale-check (`iter_pages()` + `render_page()` vs. tree) reports 0 stale pages across the German tree; `generate.py --lang=alle` has run clean twice in a row via run.sh with no "Tree nicht aktuell" warning. Modified-file count has grown to ~4060 (all languages) as further _src/ edits landed in this session
+- [x] If reproducible, commit as a regeneration; if not, find the missing `_src/` change first
+  - Committed in `0b059142`: 4060 modified `*.html` files (8680 insertions, 4150 deletions), pure regeneration with 0 stale pages confirmed and `validate.py` showing no "Tree nicht aktuell"
 
 ### Working-tree triage — unrelated tooling/docs in flight
 
