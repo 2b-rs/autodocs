@@ -14,7 +14,7 @@ on run argv
 		set promptRoll to random number from 1 to 100
 
 		if promptRoll is less than or equal to 80 then
-			set promptText to "go on with your task. Check in occasionally. When you're finished with one task, pick another from NEXTSTEPS.md and start working on that. If you're completely stuck or nothing is left to do, write \"He's dead, Jim!\" into run.sh."
+			set promptText to "go on with your task until completed. Don't yield except when waiting for a run.sh to finish. If you're entirely stuck or there's nothing left to do, write \"He's dead, Jim!\" into run.sh."
 		else if promptRoll is less than or equal to 100 then
 			set promptText to "Read AGENTS.md and keep going."
 		else if promptRoll is less than or equal to 30 then

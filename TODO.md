@@ -113,9 +113,12 @@ without a separate tool and without a server component.
 
 ### Working-tree triage — unrelated tooling/docs in flight
 
-- [ ] `_src/tests/test_geometry_schema.py`'s `BaselineFusionTests` (for `geometry_audit._is_baseline_fusion`) should be committed together with the `geometry_audit.py` change once finished
-- [ ] Reconcile `_src/tests/test_spec_upstream.py`'s `from _src.tools...` import style with the `sys.path` convention used by other test modules before adding it to the suite
-- [ ] Gitignore or delete untracked scratch artifacts (`graphrender.detail`, `unified-focus-controller.patch`, `_src/perplexity-*.applescript`) rather than committing them
+- [x] `_src/tests/test_geometry_schema.py`'s `BaselineFusionTests` (for `geometry_audit._is_baseline_fusion`) should be committed together with the `geometry_audit.py` change once finished
+  - Already done: both landed together in `826f792e` ("Separate baseline text fusion from unexplained word shortfall"); no working-tree diff remains. Re-ran `BaselineFusionTests` directly — 3/3 pass.
+- [x] Reconcile `_src/tests/test_spec_upstream.py`'s `from _src.tools...` import style with the `sys.path` convention used by other test modules before adding it to the suite
+  - Stale: the file already uses `sys.path.insert(str(Path(__file__).resolve().parents[1] / "tools"))` followed by a plain `from spec_upstream import ...` — exactly the convention used by `test_geometry_schema.py` and other test modules. No `from _src...` import exists anywhere in `_src/tests/`. It was already committed as part of `1f15ba6c` ("Add spec_upstream reference resolver with tests"), so it's already in the suite.
+- [x] Gitignore or delete untracked scratch artifacts (`graphrender.detail`, `unified-focus-controller.patch`, `_src/perplexity-*.applescript`) rather than committing them
+  - Stale: `docs/brainstorming/graphrender.detail` and `_src/perplexity-echo.as` are already tracked and clean (no diff vs. HEAD). `unified-focus-controller.patch` doesn't exist anywhere in the tree. `_src/perplexity-loop.applescript` is also already tracked; its only diff is this session's prompt-text update (matching this very run loop's instruction), not scratch content — nothing here needs gitignoring or deleting.
 
 ## Next Sensible Steps
 
