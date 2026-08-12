@@ -153,6 +153,15 @@ HEADING_LABEL_RE = re.compile(r"^(?:%s)\s*:\s*.*$|^(?:%s)$" %
                               tuple(["|".join(re.escape(x) for x in LABELS)] * 2))
 UPSTREAM_RE = re.compile(r"Upstream requirements?:\s*(.+)")
 
+# Some documents (e.g. AUTOSAR_FO_RS_LogAndTrace) carry the actual heading not
+# inside the record itself but in the numbered subsection line immediately
+# before it -- the [ID] marker there is followed directly by the opening
+# bracket with no title text of its own, e.g.:
+#   4.2.1.1.8 The LT shall transmit log and trace messages ...
+#   [RS_LT_00001] <opening bracket>
+# Fallback used only when the normal heading detection yields nothing.
+SUBSECTION_HEADING_RE = re.compile(r"^\d+(?:\.\d+)+\s+(.*\S)$")
+
 # Deutsche th-Beschriftungen der DB -> kanonische PDF-Beschriftung.
 DB_LABEL_MAP = {
     "header-datei": "Header file",
@@ -1483,6 +1492,40 @@ def _requirement_text(chunk: str) -> str | None:
     return value or None
 
 
+def _subsection_heading_before(text: str, rid: str) -> str | None:
+    """Fallback-Ueberschrift aus der nummerierten Zeile vor ``[rid]``.
+
+    Manche Dokumente (z. B. AUTOSAR_FO_RS_LogAndTrace) setzen den Titeltext
+    nicht in den Record selbst, sondern in die nummerierte Unterabschnitts-
+    Zeile direkt davor; der [ID]-Marker folgt dort unmittelbar von der
+    oeffnenden Klammer ohne eigenen Titeltext. ``text`` ist bereits durch
+    ``normalize_layout`` auf harte Zeilenumbrueche vor jeder [ID] normiert.
+    Der Unterabschnittstitel kann ueber mehrere physische Zeilen umbrechen, die
+    erste Zeile traegt aber stets das Nummernpraefix ``4.2.1...``.
+    """
+    pattern = re.compile(r"\[%s\]" % re.escape(rid), re.IGNORECASE)
+    m = pattern.search(text)
+    if not m:
+        return None
+    lines = text[:m.start()].split("\n")
+    tail = []
+    seen_text = False
+    for line in reversed(lines):
+        line = line.strip()
+        if not line:
+            if seen_text:
+                break
+            continue
+        seen_text = True
+        tail.append(line)
+        sub = SUBSECTION_HEADING_RE.match(line)
+        if sub:
+            prefix = sub.group(1)
+            rest = " ".join(reversed(tail[:-1]))
+            return _clean_value((prefix + " " + rest).strip())[:120] or None
+    return None
+
+
 def parse_record(text: str, rid: str) -> dict:
     """Eigenschaften eines Spec-Records aus dem PDF-Text."""
     chunk = _record_slice(normalize_layout(text), rid)
@@ -1505,6 +1548,8 @@ def parse_record(text: str, rid: str) -> dict:
                                   if line.strip()))
     if head and not HEADING_LABEL_RE.match(head):
         rec["heading"] = head[:120]
+    if rec["heading"] is None:
+        rec["heading"] = _subsection_heading_before(normalize_layout(text), rid)
     current, buf = None, []
     for line in chunk.split("\n"):
         line = line.strip()

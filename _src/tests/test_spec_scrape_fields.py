@@ -444,6 +444,22 @@ class RequirementFieldTests(unittest.TestCase):
         self.assertEqual(rec["heading"], "UCM shall support uninstalling software on AUTOSAR Adap- tive Platform")
         self.assertEqual(rec["props"]["Description"], "body")
 
+    def test_heading_falls_back_to_numbered_subsection_line_before_bare_id(self):
+        text = """4.2.1.1.8 The LT shall transmit log and trace messages from several sources
+over a communication interface to a receiving external client.
+[RS_LT_00001] ⌈
+Description:
+The LT module shall be a BSW module.
+Rationale: Because.
+AppliesTo: CP ,AP
+Use Case: Testing
+Dependencies: –
+Supporting Material: –
+⌋"""
+        rec = scrape.parse_record(text, "RS_LT_00001")
+        self.assertEqual(rec["heading"], "The LT shall transmit log and trace messages from several sources over a communication interface to a receiving external")
+        self.assertEqual(rec["props"]["Description"], "The LT module shall be a BSW module")
+
     def test_next_requirement_never_spills_into_field(self):
         text = """[RS_X_00001] First ⌈Description: AlphaRationale: Because⌋
 [RS_X_00002] Second ⌈Description: BetaRationale: Other⌋"""
