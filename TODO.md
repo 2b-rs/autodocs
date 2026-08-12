@@ -1,6 +1,8 @@
 # TODO — Review Workflow Goal Hierarchy
 
-As of: 2026-08-10
+## Feature: Performance
+
+- [ ] benchmark, optimize and parallelize generate.py, validate.py, and lib_docmodel.py
 
 ## Feature: Review & Feedback:
 
@@ -81,6 +83,11 @@ without a separate tool and without a server component.
 - [ ] Cross-check IDs against the SWS traceability database as evidence of real requirements
 - [ ] Detect release-scoped history phrasing ("revised"/"deleted"/"added" + release token like 19-03/R23-11) as a secondary rejection signal
 - [ ] Measure per-document definition counts against published requirement counts as an external sanity check
+
+### Validation debt surfaced by full-tree rebuild
+
+- [ ] Decide whether `PRS_E2E_*` records must be published on a dedicated content page or be excluded from the orphan-record validator; document the intended invariant before changing either side
+- [ ] Reduce `validate.py`'s `Records ohne expliziten Namensraum` finding from 3811 to a documented, intentional rule or a bounded exception list
 
 ### Working-tree triage — 2514 modified spec records (`_src/spec/records/`)
 
