@@ -16,31 +16,39 @@ HOW TO USE:
   [x] - executed - task has been completed. If a task is completed, the results shall be checked in and REF: xxxxxx (git hash) shall be added 
 - *Tasks* shall have a granularity so that they can be implemented in one go, i.e. without further user interaction. 
 
+## Feature: Dutch (nl) Translation
+
+- [x] translate and merge `_src/i18n/work/nl/batch_01.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 202/202 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced. HTML tree regeneration still pending.
+- [ ] translate and merge `_src/i18n/work/nl/batch_02.jsonl` (0/215 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_03.jsonl` (0/210 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_04.jsonl` (0/223 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_05.jsonl` (0/204 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_06.jsonl` (0/214 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_07.jsonl` (0/215 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_08.jsonl` (0/210 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_09.jsonl` (0/225 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_10.jsonl` (0/192 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_11.jsonl` (0/205 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_12.jsonl` (0/226 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_13.jsonl` (0/229 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_14.jsonl` (0/236 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_15.jsonl` (0/199 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_16.jsonl` (0/232 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [ ] translate and merge `_src/i18n/work/nl/batch_17.jsonl` (0/1218 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+
 ## Feature: Data Quality
 
 - [ ] investigate 3811 spec records without an explicit namespace (e.g. `SWS_AIDSM_10706`, `SWS_AIDSM_10301`, `SWS_AIDSM_10602`, `SWS_AIDSM_10205`, `SWS_AIDSM_10710`), flagged by `validate.py` (2026-08-12, run.sh #252). Currently causes `validate.py` to exit 1. Determine whether namespace should be inferred/backfilled during scrape/rebuild, or whether these records are legitimately namespace-less and validate.py's check needs an allowlist/exception similar to the existing PRS_E2E carve-out.
 
 - [x] investigate 34 remaining SWS_UCM_* records without namespace data after fixing validate.py's check_namespaces() schema mismatch (2026-08-12, run.sh #265): all 34 are 'service method' records scoped to a service interface (e.g. SWS_UCM_00348 -> PackageManagement), suggesting the namespace-assignment tooling doesn't cover service-interface-scoped methods (unlike class-scoped methods, which populate namespace_meta correctly). Determine whether these need a namespace derived from the service interface's own namespace, or whether service methods are legitimately namespace-less and belong in spec/namespaces.json's 'abweichungen' catalog instead. -- RESOLVED 2026-08-12 (run.sh #268): confirmed via AUTOSAR spec research (SWS_CM_01005, EXP_ARAComAPI.pdf) that service methods MUST inherit their enclosing service interface's namespace (this is Path A, backfill, not a legitimate exception). Backfilled namespace_meta for all 34 records with source='ai-derived-from-service-interface' and review_status='pending' for curator confirmation; namespace-assignment tooling should be extended with this rule to prevent recurrence for future service-interface-scoped records.
 
-## Feature: Document Coverage
-
-- [x] investigate possible missing AUTOSAR Safety RS document — resolved 2026-08-12: the authoritative source is `AUTOSAR_FO_RS_Safety.pdf` (Foundation branch, requirements document). Earlier assumption that `AUTOSAR_FO_EXP_SafetyOverview.pdf` defines the `RS_SAF_*` records was wrong; that EXP document only references Safety requirements inline. `rs-saf` is now registered in `RS_DOCS` (`spec_scrape.py`) against `AUTOSAR_FO_RS_Safety`; the PDF still needs to be downloaded into `AUTOSAR/FOUNDATION/` and then re-run through `spec_scrape.py`. Also flagged: `AUTOSAR_AP_RS_HWTestManager`, `AUTOSAR_AP_SWS_OperatingSystemInterface`, `AUTOSAR_FO_PRS_IntrusionDetectionSystem`, `AUTOSAR_FO_PRS_TimeSyncOverEthernetProtocol` are cached but not yet registered in `DOCS`/`RS_DOCS`; also `RS_SOMEIP` has orphaned traceability records with no registered source document yet — needs the same treatment.
-
 ## Feature: Review & Feedback:
 
-Requirement texts in the AUTOSAR AP documentation should be reviewable and
-approvable in a traceable way — directly in the published HTML documentation,
-without a separate tool and without a server component.
-
-## Level 1 — Make Review Need Visible
-
-- [x] Open review need is visible at the top of the page as a notice
-- [x] Notice states the number of affected API elements
-- [x] Notice links via intra-page link directly to the 
+- [ ] Requirement texts in the AUTOSAR AP documentation should be reviewable and approvable in a traceable way — directly in the published HTML documentation, without a separate tool and without a server component.
 
 ## Feature: Unified Curation Platform
 
-From the curator's and user's perspective, review, feedback, and curation should not split into separate silos based on technical origin (scrape ambiguity vs. DB correction vs. AI amendment vs. AI-proposed new element). There should be one coherent, traceable lifecycle for "an item that needs human judgment", with stable identity across projects, full history, visible status, and both static and future dynamic presentation layers.
+- [ ] From the curator's and user's perspective, review, feedback, and curation should not split into separate silos based on technical origin (scrape ambiguity vs. DB correction vs. AI amendment vs. AI-proposed new element). There should be one coherent, traceable lifecycle for "an item that needs human judgment", with stable identity across projects, full history, visible status, and both static and future dynamic presentation layers.
 
 ### Architecture decisions to make visible in code/data
 
