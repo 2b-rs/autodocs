@@ -1,18 +1,30 @@
-# TODO — Review Workflow Goal Hierarchy
+# TODO — Open Point List
 
-## Feature: Performance
+HOW TO USE:
 
-- [x] benchmark, optimize and parallelize generate.py, validate.py, and lib_docmodel.py — 2026-08-12: `generate.py` parallelizes the German page workload using `ProcessPoolExecutor`, explicit macOS `fork` context, batched `map(..., chunksize=...)`, and `WORKERS=min(12, cpu_count)`; small targeted builds stay sequential to avoid pool overhead. `validate.py` parallelizes both German `check_build()` page validation and the dominant language-tree workload across all independent languages. `lib_docmodel.py` remains the pure worker-level renderer; no shared cache was added because separate processes cannot benefit from one and most records are read once per page. Verified by run.sh #253/#254: generate.py dropped from 11.14s to 1.49s for 424 pages (7.5x), with byte-identical output (`generate.py --check`: Abweichungen 0); validate.py dropped from 44.07s to 12.98s (3.4x), with user+sys CPU 33.55s exceeding 12.98s wall time, confirming Python-level multi-core execution. Validation findings remain unchanged: 3811 namespace-less records, tracked separately below.
-- [x] optimize and parallelize extraction_report.py (single ProcessPoolExecutor pass over PDFs for all 4 categories, ThreadPoolExecutor for pdftoppm screenshots, WORKERS=min(12, cpu_count) per AGENTS.md job-level parallelism guidance) — 2026-08-12, verified via run.sh (#250) exit 0, 355 deviations reproduced identically to the pre-optimization baseline
-- [x] fix run.sh incident from 2026-08-12: extraction_report.py build only writes page-model JSON, never publishes HTML; run.sh must always chain `build && python3 _src/generate.py`. Also made record_version() versions-neutral for unchanged republish runs to avoid duplicate versions (v0012/v0013 dedup incident). Docs updated: _src/WARTUNG.md ("Extraktions-Berichte: Bauen vs. Publizieren") and docs/pipeline/reports.md.
+- *Features* are represented as 2nd level Headings.
+- New *Features* shall normally be added to the top of list
+- Features consist of *Tasks*.
+- a *Feature* is considered complete once all of its *Tasks* are complete.
+- Complete *Features* shall be moved to DONE.md and marked with a completion date + time. TODO.md and DONE.md must be committed after each completed feature.
+
+- *Tasks* are dashed items, one line per task, with a completion marker. Examples see below
+  [ ] - open. No work has been done w/r to this item
+  [u] - unclear. Before work can proceed, the manager needs to be interviewed and make a decision.
+  [p] - partially implemented - work has been done but it's not complete. open items after TODO: in the same line.
+  [?] - unknown - we simply don't know. Next step is to look into the repository and decide whether to amend TODO: or promote do [x]
+  [x] - executed - task has been completed. If a task is completed, the results shall be checked in and REF: xxxxxx (git hash) shall be added 
+- *Tasks* shall have a granularity so that they can be implemented in one go, i.e. without further user interaction. 
 
 ## Feature: Data Quality
 
 - [ ] investigate 3811 spec records without an explicit namespace (e.g. `SWS_AIDSM_10706`, `SWS_AIDSM_10301`, `SWS_AIDSM_10602`, `SWS_AIDSM_10205`, `SWS_AIDSM_10710`), flagged by `validate.py` (2026-08-12, run.sh #252). Currently causes `validate.py` to exit 1. Determine whether namespace should be inferred/backfilled during scrape/rebuild, or whether these records are legitimately namespace-less and validate.py's check needs an allowlist/exception similar to the existing PRS_E2E carve-out.
 
+- [x] investigate 34 remaining SWS_UCM_* records without namespace data after fixing validate.py's check_namespaces() schema mismatch (2026-08-12, run.sh #265): all 34 are 'service method' records scoped to a service interface (e.g. SWS_UCM_00348 -> PackageManagement), suggesting the namespace-assignment tooling doesn't cover service-interface-scoped methods (unlike class-scoped methods, which populate namespace_meta correctly). Determine whether these need a namespace derived from the service interface's own namespace, or whether service methods are legitimately namespace-less and belong in spec/namespaces.json's 'abweichungen' catalog instead. -- RESOLVED 2026-08-12 (run.sh #268): confirmed via AUTOSAR spec research (SWS_CM_01005, EXP_ARAComAPI.pdf) that service methods MUST inherit their enclosing service interface's namespace (this is Path A, backfill, not a legitimate exception). Backfilled namespace_meta for all 34 records with source='ai-derived-from-service-interface' and review_status='pending' for curator confirmation; namespace-assignment tooling should be extended with this rule to prevent recurrence for future service-interface-scoped records.
+
 ## Feature: Document Coverage
 
-- [ ] investigate possible missing AUTOSAR Safety RS document (`AUTOSAR_FO_RS_Safety` or equivalent) in the sourced document base — confirmed absent from `_src/tools/spec_scrape.py`'s `RS_DOCS` registry and from `_src/spec/pdf-cache/` as of 2026-08-12; `RS_SAF_21101` currently seen in the corpus is only an inline cross-reference inside `AUTOSAR_AP_RS_PlatformHealthManagement.pdf`, not a locally sourced Safety requirement. Confirm with AUTOSAR release R25-11 document list whether a dedicated Safety RS document exists and should be onboarded (PDF cache entry, `RS_DOCS` registration, re-run `spec_scrape.py` phases, rebuild upstream metadata).
+- [x] investigate possible missing AUTOSAR Safety RS document — resolved 2026-08-12: the authoritative source is `AUTOSAR_FO_RS_Safety.pdf` (Foundation branch, requirements document). Earlier assumption that `AUTOSAR_FO_EXP_SafetyOverview.pdf` defines the `RS_SAF_*` records was wrong; that EXP document only references Safety requirements inline. `rs-saf` is now registered in `RS_DOCS` (`spec_scrape.py`) against `AUTOSAR_FO_RS_Safety`; the PDF still needs to be downloaded into `AUTOSAR/FOUNDATION/` and then re-run through `spec_scrape.py`. Also flagged: `AUTOSAR_AP_RS_HWTestManager`, `AUTOSAR_AP_SWS_OperatingSystemInterface`, `AUTOSAR_FO_PRS_IntrusionDetectionSystem`, `AUTOSAR_FO_PRS_TimeSyncOverEthernetProtocol` are cached but not yet registered in `DOCS`/`RS_DOCS`; also `RS_SOMEIP` has orphaned traceability records with no registered source document yet — needs the same treatment.
 
 ## Feature: Review & Feedback:
 
@@ -24,60 +36,78 @@ without a separate tool and without a server component.
 
 - [x] Open review need is visible at the top of the page as a notice
 - [x] Notice states the number of affected API elements
-- [x] Notice links via intra-page link directly to the review panels
-- [x] Each affected function carries a review badge in the function overview
-- [x] Badge links to the associated panel (`#review-<Requirement-ID>`)
-- [x] Overview page for all open reviews across the entire tree
+- [x] Notice links via intra-page link directly to the 
 
-## Level 2 — Decision Basis in the Panel
+## Feature: Unified Curation Platform
 
-- [x] Panel explicitly states what must be approved
-- [x] Panel explains in plain language why a review is needed
-- [x] Technical review reasons are translated into understandable labels
-- [x] Metadata: API element, requirement ID, status, confidence, provenance
-- [x] Source reference: module, specification document, page, upstream
-- [x] Findings: anomalies, automatic repairs, review instruction
-- [x] Original text viewable when the text was changed
-- [x] Text hash protects against decisions on outdated text versions
+From the curator's and user's perspective, review, feedback, and curation should not split into separate silos based on technical origin (scrape ambiguity vs. DB correction vs. AI amendment vs. AI-proposed new element). There should be one coherent, traceable lifecycle for "an item that needs human judgment", with stable identity across projects, full history, visible status, and both static and future dynamic presentation layers.
 
-## Level 3 — Reviewer Identity
+### Architecture decisions to make visible in code/data
 
-- [x] "Decided by" field removed
-- [x] With GitHub token, login is taken automatically
-- [x] Without token, one-time self-declaration, stored locally
-- [x] Empty name structurally excluded (minimum length, button disabled)
-- [x] Name is normalized (whitespace, length)
-- [x] Identity mode is recorded with every decision
-- [x] Authenticated = person with checkmark, fallback = struck-through person
-- [x] Panel shows the currently active identity, including switch option
+- [ ] introduce a project-aware canonical identity scheme for every curatable item
+  - Current gap (2026-08-12): records and queues are implicitly single-project (`_src/spec/records/<MODULE>/<ID>.json`, queue filenames = `<ID>.json`), and the docs contain no evidence of multi-project support for future AUTOSAR Classic / FOUNDATION / Eclipse S-Core expansion.
+  - Decide and document a canonical key such as `project/release/kind/id` (example dimensions: `AUTOSAR/AP/R25-11/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/R25-11/record/RS_SAF_00001`, `ECLIPSE/S-CORE/<release>/record/<id>`), then propagate it into record metadata, queue payloads, campaign manifests, and rendered HTML anchors.
+  - Ensure the raw record `id` can remain human-familiar while the canonical identity becomes the cross-project stable key for queues, history, links, and reports.
 
-## Level 4 — Submission
+- [ ] define one unified "curation item" schema that subsumes `review-flag@v1` and `curation-flag@v1`
+  - Current gap: `review_flags.py` and `curation_flags.py` are near-duplicate but divergent queues with different payload shapes, different directory trees, and different semantics.
+  - Design a single schema with at least: `schema`, `canonical_id`, `project`, `release`, `item_kind` (record-field / record / ai-amendment / ai-hypothesis / scrape-observation / report-entry), `origin` (tool / ai / browser / curator), `status` (open / claimed / proposed / accepted / rejected / superseded / applied), `subject`, `current_state`, `proposed_state`, `evidence`, `counter_evidence`, `decision_basis`, `campaign`, `created`, `claimed_by`, `decided_by`, `completed_at`, and `history`.
+  - Make the schema expressive enough to represent: (a) scrape ambiguities, (b) DB-value corrections, (c) AI-generated amendments to existing records, (d) AI-proposed new spec elements / requirements currently only described as `hypothesized/unconfirmed` in the process docs.
 
-- [x] Decisions accumulate in a local package
-- [x] Authenticated path: GitHub issue with `review-package@v1`
-- [x] Fallback path: JSON download, marked as self-declared
-- [x] Document fallback import in GitHub (path from JSON to issue)
+- [ ] extend the record schema to carry stable provenance for curator-visible changes across all modules, not just pilot records
+  - Current gap: `history[]`, `status`, and field-level states exist mostly in pilot-style records (`SWS_LOG` etc.), while many production records still only carry additive fields like `upstream` without matching lifecycle/history entries.
+  - Make `status`, `history[]`, and (where applicable) field-level `fields.<name>.state/reason/trace` mandatory or mechanically backfillable for any write path (`spec_scrape.py`, `review_ingest.py`, `curation_ingest.py`, migrations, future AI-amendment tools).
+  - Add explicit provenance for AI-originated proposals vs. curator-accepted DB changes so that "proposal" and "applied truth" remain distinguishable in static and dynamic views.
 
-## Level 5 — Flow Back into Sources
+- [ ] add first-class support for AI-proposed NEW elements in the DB and queue model
+  - Current gap: `hypothesized/unconfirmed` exists in docs as a status, but no implemented CLI or queue path creates such elements.
+  - Define where hypotheses live before acceptance (separate hypothesis store vs. lightweight record stubs), how they get canonical IDs, how evidence is attached, and how acceptance promotes them into the main DB without losing history.
 
-- [x] `review_ingest.py` validates package schema and identity mode
-- [x] Hash conflict prevents adoption of outdated decisions
-- [x] Decision documentation is written into the record
-- [x] `--require-authenticated` enforces authenticated packages
-- [x] Verify end-to-end `--apply` run with real record write
-- [x] Define behavior for partial failures in large packages
+### Workflow / pipeline convergence
 
+- [ ] converge browser review, queue review, AI proposals, and curator decisions into one end-to-end state machine
+  - Current gap: the docs show two partially disconnected paths — queue-based (`review-queue` / `curation-queue` -> AI agent -> curator) and browser-based (`review.js` -> GitHub issue / JSON -> `*_ingest.py`).
+  - Model one shared lifecycle with explicit states and transitions, including: discovered -> queued -> claimed -> proposed -> accepted/rejected -> applied -> published -> superseded.
+  - Map every existing tool to that lifecycle (`review_flags.py`, `curation_flags.py`, `review_ingest.py`, `curation_ingest.py`, `spec_scrape.py`, future AI-amendment tools) and document which transitions each tool may perform.
 
-## Level 6 — Canonical RS Upstream Metadata
+- [ ] design a feedback loop from curator decision back into extraction/scrape/database logic
+  - Current strength: `curation_flags.py` already assumes the output of a curation request is not just "data overwrite" but sometimes a code change or new residual rule.
+  - Missing piece: a generalized, documented mechanism that can express whether a decision should update a DB value, create a migration, change parser logic, add an allowlist/exception, or spawn a new benchmark/fixture.
+  - Add decision outcome classes and post-decision hooks so feedback scales beyond the extraction-report residual list.
 
-- [x] Map canonical RS documents in the document registry
-- [x] Extract RS requirements and provide as upstream index
-- [x] Consider existing requirement records during compare/rebuild
-- [x] Add or update `upstream` metadata in existing records
-- [x] Keep additive writing of new requirement records unchanged
-- [x] Test unchanged, updated, missing, and ambiguous upstream matches
-- [x] Run compare/rebuild via `run.sh` with up to eight parallel jobs
-- [x] Validate that only expected record metadata is changed
+- [ ] resurrect and implement campaign manifests as the versioning backbone for curation work
+  - Current gap: `docs/pipeline/data-model.md` documents `_src/spec/campaigns/<id>.json`, but explicitly notes no such manifest files were found in the repo.
+  - Use campaign manifests to version review/curation waves across projects/releases (source corpus hash, tool versions, queue snapshot, curator decisions, published reports) so a curator can later answer "which exact state of the corpus and tools produced this request?"
+
+### Visibility / UX
+
+- [ ] build a static HTML "curation report" that renders all open and recent curation items from the queue(s)
+  - Current gap: open flags in `_src/spec/curation-queue/open/` and `_src/spec/review-queue/open/` are invisible unless someone browses the filesystem.
+  - Implement a `curation_report.py` (or broader `workflow_report.py`) analogous to `traceability_report.py`: read the queue(s), render a page model under `_src/sources/pages/`, publish via `generate.py`, and link it from the start page.
+  - Each rendered item should show canonical identity, project/release, current DB state, proposed state, rationale, evidence, status, and links to the affected record/page/report.
+
+- [ ] design the future dynamic JS/API view around the same schema, not a second ad-hoc model
+  - Static HTML is needed first, but the future JS layer should consume the same canonical curation-item schema (serialized to JSON/JS) so filter/sort/group functionality does not fork the data model.
+  - Plan for filters by project, release, queue status, item kind, module, source tool, curator, and campaign.
+
+- [ ] expose curator-visible history for each DB element in published pages
+  - Current gap: record pages do not systematically surface `history[]`, status evolution, or open review/curation state to users.
+  - Add a visible section/badge on record pages showing current review/curation status, latest accepted decision, and links to the relevant curation item/report entry.
+  - This should work for both existing records and future AI-proposed elements, with clear labeling of "proposed", "accepted", "rejected", and "applied".
+
+### Hardening / migration
+
+- [ ] inventory and migrate existing queue items and special-case review surfaces into the unified model
+  - Inputs to cover: `review-queue`, `curation-queue`, extraction-report `RESIDUAL` items, ad-hoc TODO-driven investigations like the 34 service-method namespace conflict, and any pilot record-level `requirement_meta.review_*` states.
+  - Define which of these become first-class curation items, which remain reports only, and which are historical artifacts to archive.
+
+- [ ] add validation and tests for the unified workflow model
+  - Extend `validate.py` (or add a dedicated validator) to check canonical IDs, queue payload schema/version, allowed state transitions, referential integrity to records/pages, and history completeness.
+  - Add fixtures covering at least: a scrape ambiguity, a DB correction request, an AI-generated amendment to an existing record, and a new hypothesized requirement.
+
+- [ ] document the feature as a repo-level workflow contract before implementation spreads further
+  - Update `docs/pipeline/{data-model,roles,actions,processes,reports,tools}.md` and `_src/SPEC_BUILD_PROCESS.md` so the unified curation model is the documented source of truth, not just emergent queue code.
+  - Explicitly record what remains human-only, what AI may propose, and what tools may apply automatically.
 
 
 ## Feature: Database Quality Assurance
@@ -96,57 +126,3 @@ without a separate tool and without a server component.
 - [ ] Treat dense definition lists (heading inline, no spec-item marker, e.g. RS_PHM_00001..00003 p.21) as an explicit record shape with its own fixtures
   - 2026-08-12: implemented and shipped the `AUTOSAR_FO_RS_LogAndTrace` variant of this shape (numbered subsection line immediately above a bare `[RS_LT_xxxxx]` marker, e.g. `4.2.1.1.8 The LT shall ...` followed by `[RS_LT_00001] ⌈`) as `spec_scrape.py`'s new `_subsection_heading_before` fallback, commit `fdba7e28`. All 12 affected benchmark entries now have correct headings and the recount confirms 0 headingless-but-populated entries remain.
   - NOT yet verified: the originally cited `RS_PHM_00001..00003` example does not appear in `benchmark-draft.json` at all (no matching IDs found), so it's unconfirmed whether AUTOSAR_AP_RS_PlatformHealthManagement uses the exact same shape or a different one. This item stays open until that case (or another concrete instance beyond RS_LT) is located and confirmed handled.
-- [ ] Report precision/recall deltas against the previous campaign automatically; refuse check-in if recall drops without per-ID justification
-- [ ] Cross-check IDs against the SWS traceability database as evidence of real requirements
-- [ ] Detect release-scoped history phrasing ("revised"/"deleted"/"added" + release token like 19-03/R23-11) as a secondary rejection signal
-- [ ] Measure per-document definition counts against published requirement counts as an external sanity check
-
-### Validation debt surfaced by full-tree rebuild
-
-- [x] Decide whether `PRS_E2E_*` records must be published on a dedicated content page or be excluded from the orphan-record validator; document the intended invariant before changing either side
-  - Decision: excluded. `e2e-requirements.html` already presents all 349 `PRS_E2E_*` requirements as a flat overview table by design (no standalone C++ API, per its own intro text); wiring them individually into `rec-ref` panels would be artificial. `validate.py`'s orphan check now carries a documented, bounded exception for `spec/records/PRS_E2E/`.
-- [ ] Reduce `validate.py`'s `Records ohne expliziten Namensraum` finding from 3811 to a documented, intentional rule or a bounded exception list
-  - Root cause confirmed: `ns.namespace` is populated for exactly one group, `SWS_LOG` (71/71 records) — every other group (`SWS_CORE` 1177, `SWS_DM` 937, `SWS_CRYPT` 352, `PRS_E2E` 349, `SWS_CM` 225, `AP_SWS` 146, `SWS_TS` 123, `SWS_RDS` 133, `SWS_PER` 129, `SWS_EM` 47, `SWS_SM` 46, `SWS_AIDSM` 61, `SWS_PHM` 35, `SWS_ANM` 30, `SWS_UCM` 21) has 0% coverage
-  - This is a genuine backfill gap, not a validator scoping bug; needs a namespace-extraction pass (likely from the same spec sections `SWS_LOG`'s records were derived from) rather than a mechanical bulk-edit — use `SWS_LOG` as the reference for what a complete `ns` block looks like
-
-### Working-tree triage — 2514 modified spec records (`_src/spec/records/`)
-
-- [x] Determine which tool produced the change (`migriere_spec_db.py`, `spec_upstream.py`, `text_repair.py`) and record the exact command
-  - `spec_upstream.py`'s `rebuild_record_files()`, called via `spec_scrape.py`'s `upstream` phase: `python3 _src/tools/spec_scrape.py upstream --rs-docs --pdf-dir _src/spec/pdf-cache/R25-11 --rebuild`
-- [x] Re-run that command from committed tool state and diff the result (reproducibility precondition)
-  - Rebuild + immediate re-compare reported `updated=0` (idempotent); a first attempt (run.sh #241) used a flawed pre-check comparing 'updated' to the raw git-dirty count and incorrectly aborted — corrected in run.sh #242
-- [x] Inspect a stratified sample of 20 records manually before bulk commit
-  - Sampled 32 files (2 per namespace group, all 16 groups) via structural JSON diff (ignoring key order/indent). 31/32 changed only the `upstream` field as expected; 2 (`SWS_LOG_00018`, `SWS_LOG_00021`) also carried bundled-in unrelated changes — investigated further below
-- [x] Commit as a single data-only change with the generating command in the message, separate from tool changes
-  - Committed in `caa6cef4` (amended from initial `bd550836` once the bundled-file issue below was found), with full provenance disclosed in the message
-  - Follow-up finding: a full-diff grep across all 2996 committed files found exactly 71 files (all `SWS_LOG/`, matching that group's full size) that additionally bundled in pre-existing, already-dirty changes from an unrelated `2026-08-sws-log-pilot-after-tool-improvement` campaign (status/ns/legacy/history/fields backfill) plus one `legacy-desc-import` conversion. These were NOT produced by the upstream rebuild; they were already uncommitted in the working tree and got swept in because the commit staged all `_src/spec/records/*` dirty files rather than filtering to files spec_upstream.py actually touched. Disclosed explicitly in the amended commit message; content itself was not reverted since it appears to be legitimate, separately-produced backfill data — but it means this commit is not as narrowly scoped as originally intended. No further action taken here; flagging for awareness only
-
-### Working-tree triage — 814 modified HTML files (published tree)
-
-- [x] Confirm files are reproducible via `python3 _src/generate.py && python3 _src/validate.py` from current `_src/` state
-  - Confirmed: a direct re-run of validate.py's stale-check (`iter_pages()` + `render_page()` vs. tree) reports 0 stale pages across the German tree; `generate.py --lang=alle` has run clean twice in a row via run.sh with no "Tree nicht aktuell" warning. Modified-file count has grown to ~4060 (all languages) as further _src/ edits landed in this session
-- [x] If reproducible, commit as a regeneration; if not, find the missing `_src/` change first
-  - Committed in `0b059142`: 4060 modified `*.html` files (8680 insertions, 4150 deletions), pure regeneration with 0 stale pages confirmed and `validate.py` showing no "Tree nicht aktuell"
-
-### Working-tree triage — unrelated tooling/docs in flight
-
-- [x] `_src/tests/test_geometry_schema.py`'s `BaselineFusionTests` (for `geometry_audit._is_baseline_fusion`) should be committed together with the `geometry_audit.py` change once finished
-  - Already done: both landed together in `826f792e` ("Separate baseline text fusion from unexplained word shortfall"); no working-tree diff remains. Re-ran `BaselineFusionTests` directly — 3/3 pass.
-- [x] Reconcile `_src/tests/test_spec_upstream.py`'s `from _src.tools...` import style with the `sys.path` convention used by other test modules before adding it to the suite
-  - Stale: the file already uses `sys.path.insert(str(Path(__file__).resolve().parents[1] / "tools"))` followed by a plain `from spec_upstream import ...` — exactly the convention used by `test_geometry_schema.py` and other test modules. No `from _src...` import exists anywhere in `_src/tests/`. It was already committed as part of `1f15ba6c` ("Add spec_upstream reference resolver with tests"), so it's already in the suite.
-- [x] Gitignore or delete untracked scratch artifacts (`graphrender.detail`, `unified-focus-controller.patch`, `_src/perplexity-*.applescript`) rather than committing them
-  - Stale: `docs/brainstorming/graphrender.detail` and `_src/perplexity-echo.as` are already tracked and clean (no diff vs. HEAD). `unified-focus-controller.patch` doesn't exist anywhere in the tree. `_src/perplexity-loop.applescript` is also already tracked; its only diff is this session's prompt-text update (matching this very run loop's instruction), not scratch content — nothing here needs gitignoring or deleting.
-
-## Next Sensible Steps
-
-1. End-to-end test of `review_ingest.py --apply` in a writable environment
-2. Global overview page of all open reviews
-3. Document fallback import path
-4. Then delete this file
-
-### Document Coverage: AUTOSAR_FO_RS_Safety confirmed in R25-11 (2026-08-12)
-
-- [x] confirm existence of a dedicated Safety RS document for R25-11 -- CONFIRMED via web research (run.sh's own network access is blocked in this sandbox tier by an OpenSSL/libressl config-file permission error, reproduced even against a neutral control host in run #257; verified externally instead): `AUTOSAR_FO_RS_Safety` ("Safety Requirements for AUTOSAR Adaptive Platform and AUTOSAR Classic Platform", Foundation standard, Document ID 986) is `published` in R25-11 at `https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Safety.pdf`, and is actively cross-referenced by other R25-11 documents (e.g. `AUTOSAR_AP_RS_OperatingSystemInterface`, `AUTOSAR_AP_RS_PlatformHealthManagement`, `AUTOSAR_FO_TR_ReleaseOverview`). This is a real coverage gap, not a naming mismatch: our current `_src/tools/spec_scrape.py` `RS_DOCS` registry and `_src/spec/pdf-cache/R25-11/` have no entry for it, yet OSI/PHM RS records already uptrace to it upstream.
-- [ ] download `AUTOSAR_FO_RS_Safety.pdf` into `_src/spec/pdf-cache/R25-11/` (blocked here: outbound network access from `run.sh` currently fails sandbox-wide with an OpenSSL config-file permission error -- see `output/rs-bulk/network-diagnosis.txt` from run #257; needs either a sandbox network-policy fix or manual download by the user)
-- [ ] once cached, register `("rs-safety", ("FO", "AUTOSAR_FO_RS_Safety", "RS_SAF"))` in `RS_DOCS` in `_src/tools/spec_scrape.py`
-- [ ] re-run `spec_scrape.py all --doc AUTOSAR_FO_RS_Safety` (ids/props/reqs/trace phases) and rebuild upstream metadata for `RS_OSI`/`RS_PHM` uptrace targets that already reference `RS_SAF_*` IDs
