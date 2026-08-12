@@ -2,7 +2,17 @@
 
 ## Feature: Performance
 
-- [ ] benchmark, optimize and parallelize generate.py, validate.py, and lib_docmodel.py
+- [x] benchmark, optimize and parallelize generate.py, validate.py, and lib_docmodel.py — 2026-08-12: `generate.py` parallelizes the German page workload using `ProcessPoolExecutor`, explicit macOS `fork` context, batched `map(..., chunksize=...)`, and `WORKERS=min(12, cpu_count)`; small targeted builds stay sequential to avoid pool overhead. `validate.py` parallelizes both German `check_build()` page validation and the dominant language-tree workload across all independent languages. `lib_docmodel.py` remains the pure worker-level renderer; no shared cache was added because separate processes cannot benefit from one and most records are read once per page. Verified by run.sh #253/#254: generate.py dropped from 11.14s to 1.49s for 424 pages (7.5x), with byte-identical output (`generate.py --check`: Abweichungen 0); validate.py dropped from 44.07s to 12.98s (3.4x), with user+sys CPU 33.55s exceeding 12.98s wall time, confirming Python-level multi-core execution. Validation findings remain unchanged: 3811 namespace-less records, tracked separately below.
+- [x] optimize and parallelize extraction_report.py (single ProcessPoolExecutor pass over PDFs for all 4 categories, ThreadPoolExecutor for pdftoppm screenshots, WORKERS=min(12, cpu_count) per AGENTS.md job-level parallelism guidance) — 2026-08-12, verified via run.sh (#250) exit 0, 355 deviations reproduced identically to the pre-optimization baseline
+- [x] fix run.sh incident from 2026-08-12: extraction_report.py build only writes page-model JSON, never publishes HTML; run.sh must always chain `build && python3 _src/generate.py`. Also made record_version() versions-neutral for unchanged republish runs to avoid duplicate versions (v0012/v0013 dedup incident). Docs updated: _src/WARTUNG.md ("Extraktions-Berichte: Bauen vs. Publizieren") and docs/pipeline/reports.md.
+
+## Feature: Data Quality
+
+- [ ] investigate 3811 spec records without an explicit namespace (e.g. `SWS_AIDSM_10706`, `SWS_AIDSM_10301`, `SWS_AIDSM_10602`, `SWS_AIDSM_10205`, `SWS_AIDSM_10710`), flagged by `validate.py` (2026-08-12, run.sh #252). Currently causes `validate.py` to exit 1. Determine whether namespace should be inferred/backfilled during scrape/rebuild, or whether these records are legitimately namespace-less and validate.py's check needs an allowlist/exception similar to the existing PRS_E2E carve-out.
+
+## Feature: Document Coverage
+
+- [ ] investigate possible missing AUTOSAR Safety RS document (`AUTOSAR_FO_RS_Safety` or equivalent) in the sourced document base — confirmed absent from `_src/tools/spec_scrape.py`'s `RS_DOCS` registry and from `_src/spec/pdf-cache/` as of 2026-08-12; `RS_SAF_21101` currently seen in the corpus is only an inline cross-reference inside `AUTOSAR_AP_RS_PlatformHealthManagement.pdf`, not a locally sourced Safety requirement. Confirm with AUTOSAR release R25-11 document list whether a dedicated Safety RS document exists and should be onboarded (PDF cache entry, `RS_DOCS` registration, re-run `spec_scrape.py` phases, rebuild upstream metadata).
 
 ## Feature: Review & Feedback:
 
@@ -133,3 +143,10 @@ without a separate tool and without a server component.
 2. Global overview page of all open reviews
 3. Document fallback import path
 4. Then delete this file
+
+### Document Coverage: AUTOSAR_FO_RS_Safety confirmed in R25-11 (2026-08-12)
+
+- [x] confirm existence of a dedicated Safety RS document for R25-11 -- CONFIRMED via web research (run.sh's own network access is blocked in this sandbox tier by an OpenSSL/libressl config-file permission error, reproduced even against a neutral control host in run #257; verified externally instead): `AUTOSAR_FO_RS_Safety` ("Safety Requirements for AUTOSAR Adaptive Platform and AUTOSAR Classic Platform", Foundation standard, Document ID 986) is `published` in R25-11 at `https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Safety.pdf`, and is actively cross-referenced by other R25-11 documents (e.g. `AUTOSAR_AP_RS_OperatingSystemInterface`, `AUTOSAR_AP_RS_PlatformHealthManagement`, `AUTOSAR_FO_TR_ReleaseOverview`). This is a real coverage gap, not a naming mismatch: our current `_src/tools/spec_scrape.py` `RS_DOCS` registry and `_src/spec/pdf-cache/R25-11/` have no entry for it, yet OSI/PHM RS records already uptrace to it upstream.
+- [ ] download `AUTOSAR_FO_RS_Safety.pdf` into `_src/spec/pdf-cache/R25-11/` (blocked here: outbound network access from `run.sh` currently fails sandbox-wide with an OpenSSL config-file permission error -- see `output/rs-bulk/network-diagnosis.txt` from run #257; needs either a sandbox network-policy fix or manual download by the user)
+- [ ] once cached, register `("rs-safety", ("FO", "AUTOSAR_FO_RS_Safety", "RS_SAF"))` in `RS_DOCS` in `_src/tools/spec_scrape.py`
+- [ ] re-run `spec_scrape.py all --doc AUTOSAR_FO_RS_Safety` (ids/props/reqs/trace phases) and rebuild upstream metadata for `RS_OSI`/`RS_PHM` uptrace targets that already reference `RS_SAF_*` IDs
