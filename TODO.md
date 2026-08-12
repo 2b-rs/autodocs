@@ -83,6 +83,7 @@ without a separate tool and without a server component.
 ### Definition-precision follow-ups
 
 - [ ] Treat dense definition lists (heading inline, no spec-item marker, e.g. RS_PHM_00001..00003 p.21) as an explicit record shape with its own fixtures
+  - 2026-08-12: verified representative remaining benchmark blockers in `AUTOSAR_FO_RS_LogAndTrace.pdf` (pages 15, 16, 30: `RS_LT_00001`, `RS_LT_00002`, `RS_LT_00032`). They share the same structural pattern: the true heading text lives in the numbered subsection line immediately above a bare `[RS_LT_xxxxx]` record marker, e.g. `4.2.1.1.8 The LT shall ...` followed by `[RS_LT_00001] ⌈`. This confirms the remaining 12 freeze blockers are one coherent shape problem, not 12 unrelated truthing mysteries.
 - [ ] Report precision/recall deltas against the previous campaign automatically; refuse check-in if recall drops without per-ID justification
 - [ ] Cross-check IDs against the SWS traceability database as evidence of real requirements
 - [ ] Detect release-scoped history phrasing ("revised"/"deleted"/"added" + release token like 19-03/R23-11) as a secondary rejection signal
