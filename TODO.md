@@ -17,7 +17,7 @@ without a separate tool and without a server component.
 - [x] Notice links via intra-page link directly to the review panels
 - [x] Each affected function carries a review badge in the function overview
 - [x] Badge links to the associated panel (`#review-<Requirement-ID>`)
-- [ ] Overview page for all open reviews across the entire tree
+- [x] Overview page for all open reviews across the entire tree
 
 ## Level 2 — Decision Basis in the Panel
 
