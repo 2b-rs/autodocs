@@ -55,7 +55,7 @@ without a separate tool and without a server component.
 - [x] Decision documentation is written into the record
 - [x] `--require-authenticated` enforces authenticated packages
 - [x] Verify end-to-end `--apply` run with real record write
-- [ ] Define behavior for partial failures in large packages
+- [x] Define behavior for partial failures in large packages
 
 
 ## Level 6 — Canonical RS Upstream Metadata

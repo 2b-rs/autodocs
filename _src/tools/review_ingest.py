@@ -35,6 +35,29 @@ der Anzeige im Browser veraendert: Die Entscheidung wird dann NICHT angewandt,
 sondern als Konflikt gemeldet. Stilles Uebernehmen waere eine nicht belegte
 Aenderung am Normtext.
 
+Verhalten bei Teilfehlern in grossen Paketen
+--------------------------------------------
+Die Uebernahme ist **entscheidungsweise isoliert**, nicht transaktional ueber
+das gesamte Paket. Das bedeutet:
+
+- Formale Paketfehler (ungueltiges Schema, fehlende Pflichtfelder,
+  ``--require-authenticated`` gegen ``self_declared``) stoppen das Paket vor
+  dem ersten Schreibversuch komplett.
+- Erwartete fachliche Einzelkonflikte (Record fehlt, ``text_hash`` weicht ab,
+  kein ``requirement_text``-Block) werden pro Entscheidung als ``conflict``
+  berichtet; die restlichen Entscheidungen laufen weiter.
+- Unerwartete technische Einzelprobleme (defektes Record-JSON, I/O-Fehler,
+  Queue-Aufraeumen scheitert etc.) werden pro Entscheidung als ``error``
+  berichtet; auch dann laufen die restlichen Entscheidungen weiter.
+- Bereits erfolgreich geschriebene Entscheidungen werden **nicht**
+  zurueckgerollt. Der Operator muss nach einem Lauf mit Konflikten/Fehlern nur
+  die fehlgeschlagenen IDs nacharbeiten und anschliessend in einem neuen Paket
+  erneut einspielen.
+
+Damit gibt es bei grossen Paketen kein "alles oder nichts": maximaler
+Fortschritt pro Lauf, aber keine stille Teiluebernahme. Exit-Code 1 bedeutet
+mindestens ein Paketfehler, Konflikt oder technischer Einzel-Fehler.
+
 Aufruf (immer vom Repo-Wurzelverzeichnis)
 -----------------------------------------
     python3 _src/tools/review_ingest.py --check  paket.json
@@ -160,10 +183,17 @@ def ingest_package(paket: dict, paket_label: str, apply: bool, require_auth: boo
                 "--require-authenticated: Paket ohne GitHub-Identitaet abgelehnt")
             return bericht
 
-    for d in paket["decisions"]:
-        bericht["ergebnisse"].append(apply_decision(d, paket, apply))
+    for i, d in enumerate(paket["decisions"]):
+        try:
+            ergebnis = apply_decision(d, paket, apply)
+        except Exception as e:  # noqa: BLE001 -- ein Record darf die anderen nicht mitreissen
+            ergebnis = {"id": d.get("id") or "decisions[%d]" % i, "status": "error",
+                       "grund": "%s: %s" % (type(e).__name__, e)}
+        bericht["ergebnisse"].append(ergebnis)
     bericht["konflikte"] = [r for r in bericht["ergebnisse"]
                             if r["status"] == "conflict"]
+    bericht["fehlgeschlagen"] = [r for r in bericht["ergebnisse"]
+                                 if r["status"] == "error"]
     return bericht
 
 
@@ -283,10 +313,13 @@ def _print_bericht(bericht: dict, as_json: bool) -> None:
     for r in bericht.get("ergebnisse", []):
         if r["status"] == "ok":
             print("ok        %s -> %s" % (r["id"], r["pfad"]))
+        elif r["status"] == "error":
+            print("FEHLER    %s: %s" % (r["id"], r["grund"]))
         else:
             print("KONFLIKT  %s: %s" % (r["id"], r["grund"]))
-    print("%d Entscheidungen, %d Konflikte, %s"
+    print("%d Entscheidungen, %d Konflikte, %d Fehler, %s"
           % (len(bericht.get("ergebnisse", [])), len(bericht.get("konflikte", [])),
+             len(bericht.get("fehlgeschlagen", [])),
              "geschrieben" if bericht.get("angewandt") else "nur geprueft"))
 
 
@@ -328,7 +361,8 @@ def main(argv=None) -> int:
                 print()
             _print_bericht(bericht, as_json=False)
 
-    return 1 if any(b.get("fehler") or b.get("konflikte") for b in berichte) else 0
+    return 1 if any(b.get("fehler") or b.get("konflikte") or b.get("fehlgeschlagen")
+                    for b in berichte) else 0
 
 
 if __name__ == "__main__":
