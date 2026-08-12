@@ -64,12 +64,22 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import logging
 import os
 import re
 import sys
+import time
 import zlib
 from collections import OrderedDict, defaultdict
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+
+LOG = logging.getLogger("spec_scrape")
+if not LOG.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(message)s"))
+    LOG.addHandler(_handler)
+LOG.setLevel(logging.INFO)
 
 SRC = Path(__file__).resolve().parent.parent
 ROOT = SRC.parent
@@ -1226,47 +1236,80 @@ def _history_only_evidence(text_by_page: list) -> dict:
             if rid not in outside}
 
 
-def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
-              backend="auto") -> dict:
-    """-> {pdf-name: {id: [seitenzahlen]}}"""
+def _ids_for_document(task: tuple[str, str, str | None, frozenset, bool]) -> tuple[str, dict]:
+    """Per-document worker for phase_ids.
+
+    Each source PDF is independent, so ID discovery is naturally parallel at the
+    document level. The old implementation scanned every PDF sequentially,
+    calling ``pdf_pages`` and then running all regex/history heuristics in a
+    single process; that kept one core saturated and blocked later parallelized
+    phases from ever starting.
+    """
+    path_str, backend, pattern, keep, include_refs = task
+    path = Path(path_str)
+    started = time.perf_counter()
     rx = re.compile(pattern, re.IGNORECASE) if pattern else None
-    keep = {rid.upper() for rid in (only_ids or ())}
+    pages = [strip_noise(x) for x in pdf_pages(path, backend)]
+    hits = defaultdict(list)
+    spellings = defaultdict(list)
+    in_history_continuation = False
+    for pageno, text in enumerate(pages, 1):
+        continuation = in_history_continuation and _history_continuation_page(text)
+        definiert = set() if continuation else _definition_ids(text)
+        for raw_rid in ID_RE.findall(text):
+            rid = raw_rid.upper()
+            if rx and not rx.search(rid):
+                continue
+            if keep and rid not in keep:
+                continue
+            if not include_refs and rid not in definiert:
+                continue
+            if pageno not in hits[rid]:
+                hits[rid].append(pageno)
+            if raw_rid not in spellings[rid]:
+                spellings[rid].append(raw_rid)
+        regions = _history_regions(text)
+        starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
+        in_history_continuation = continuation or starts_new_run
+    evidence = _history_only_evidence(pages) if not include_refs else {}
+    rejected = sorted(rid for rid in evidence if not rx or rx.search(rid))
+    for rid in rejected:
+        hits.pop(rid, None)
+        spellings.pop(rid, None)
+    doc_result = {"path": str(path), "pages": len(pages),
+                  "ids": {k: v for k, v in sorted(hits.items())},
+                  "spellings": {k: v for k, v in sorted(spellings.items())},
+                  "history_only_ids": list(rejected),
+                  "history_only_evidence": {rid: evidence[rid] for rid in rejected}}
+    elapsed = time.perf_counter() - started
+    LOG.info("phase_ids document done name=%s ids=%d elapsed=%.3fs", path.name, len(doc_result["ids"]), elapsed)
+    return path.name, doc_result
+
+
+def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
+              backend="auto", jobs: int | None = None) -> dict:
+    """-> {pdf-name: {id: [seitenzahlen]}}"""
+    keep = frozenset(rid.upper() for rid in (only_ids or ()))
+    paths = [str(path) for path in pdfs]
     result = OrderedDict()
-    for path in pdfs:
-        pages = [strip_noise(x) for x in pdf_pages(path, backend)]
-        hits = defaultdict(list)
-        spellings = defaultdict(list)
-        in_history_continuation = False
-        for pageno, text in enumerate(pages, 1):
-            continuation = in_history_continuation and _history_continuation_page(text)
-            definiert = set() if continuation else _definition_ids(text)
-            for raw_rid in ID_RE.findall(text):
-                rid = raw_rid.upper()
-                if rx and not rx.search(rid):
-                    continue
-                if keep and rid not in keep:
-                    continue
-                if not include_refs and rid not in definiert:
-                    continue          # blosse Referenz (z. B. Upstream-Angabe)
-                if pageno not in hits[rid]:
-                    hits[rid].append(pageno)
-                if raw_rid not in spellings[rid]:
-                    spellings[rid].append(raw_rid)
-            regions = _history_regions(text)
-            starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
-            in_history_continuation = continuation or starts_new_run
-        evidence = _history_only_evidence(pages) if not include_refs else {}
-        rejected = sorted(rid for rid in evidence
-                          if not rx or rx.search(rid))
-        for rid in rejected:
-            hits.pop(rid, None)
-            spellings.pop(rid, None)
-        result[path.name] = {"path": str(path), "pages": len(pages),
-                            "ids": {k: v for k, v in sorted(hits.items())},
-                            "spellings": {k: v for k, v in sorted(spellings.items())},
-                            "history_only_ids": list(rejected),
-                            "history_only_evidence": {rid: evidence[rid]
-                                                      for rid in rejected}}
+    if not paths:
+        return result
+    worker_count = max(1, min(len(paths), jobs or (os.cpu_count() or 1)))
+    started = time.perf_counter()
+    LOG.info("phase_ids start documents=%d workers=%d", len(paths), worker_count)
+    tasks = [(path_str, backend, pattern, keep, include_refs) for path_str in paths]
+    if worker_count == 1:
+        results = [_ids_for_document(task) for task in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+            results = list(executor.map(_ids_for_document, tasks, chunksize=1))
+    by_name = dict(results)
+    for path_str in paths:
+        path = Path(path_str)
+        result[path.name] = by_name[path.name]
+    elapsed = time.perf_counter() - started
+    total_ids = sum(len(info.get("ids", {})) for info in result.values())
+    LOG.info("phase_ids done documents=%d ids=%d elapsed=%.3fs rate=%.1f docs/s", len(paths), total_ids, elapsed, len(paths) / max(elapsed, 1e-9))
     return result
 
 
@@ -1549,34 +1592,73 @@ def _record_page_span(pages: list, start_page: int, rid: str) -> tuple[list[int]
     return list(range(start_page, min(start_page, len(pages)) + 1)), False
 
 
-def phase_props(index: dict, only_ids=None, backend="auto") -> dict:
-    keep = set(only_ids or ())
+def _props_for_document(task: tuple[str, dict, frozenset, str]) -> tuple[str, dict]:
+    """Per-document worker: extract+parse one PDF's records. Independent of
+    every other document, so this is the natural unit of parallelism --
+    ``phase_props`` previously ran this loop body sequentially for every
+    document, which meant only one core was ever busy on PDF extraction and
+    regex-heavy parsing across ~7500+ IDs.
+    """
+    name, info, keep, backend = task
+    started = time.perf_counter()
+    pages = [strip_noise(x) for x in pdf_pages(Path(info["path"]), backend)]
+    doc_out: dict = {}
+    for rid, pagenos in info["ids"].items():
+        if keep and rid not in keep:
+            continue
+        best = None
+        for pageno in pagenos:
+            joined = "\n".join(pages[pageno - 1 : pageno + 1])  # Seitenumbruch mitnehmen
+            rec = parse_record(joined, rid)
+            if rec["props"] or rec["upstream"]:
+                best = rec
+                break
+        rec = best or {"id": rid, "props": {}, "upstream": [], "heading": None,
+                      "requirement_text": None, "namespace": None, "enclosing": None}
+        rec["document"] = name
+        rec["page"] = pagenos[0] if pagenos else None
+        if pagenos:
+            span, terminated = _record_page_span(pages, pagenos[0], rid)
+        else:
+            span, terminated = [], False
+        rec["pages"] = span
+        rec["pages_all_definitions"] = list(pagenos)
+        rec["complete_end"] = terminated
+        rec["id_observed"] = (info.get("spellings", {}).get(rid) or [rid])[0]
+        doc_out[rid] = rec
+    elapsed = time.perf_counter() - started
+    LOG.info(
+        "phase_props document done name=%s ids=%d elapsed=%.3fs",
+        name, len(doc_out), elapsed,
+    )
+    return name, doc_out
+
+
+def phase_props(index: dict, only_ids=None, backend="auto", jobs: int | None = None) -> dict:
+    keep = frozenset(only_ids or ())
     out = OrderedDict()
-    for name, info in index.items():
-        pages = [strip_noise(x) for x in pdf_pages(Path(info["path"]), backend)]
-        for rid, pagenos in info["ids"].items():
-            if keep and rid not in keep:
-                continue
-            best = None
-            for pageno in pagenos:
-                joined = "\n".join(pages[pageno - 1 : pageno + 1])  # Seitenumbruch mitnehmen
-                rec = parse_record(joined, rid)
-                if rec["props"] or rec["upstream"]:
-                    best = rec
-                    break
-            rec = best or {"id": rid, "props": {}, "upstream": [], "heading": None,
-                          "requirement_text": None, "namespace": None, "enclosing": None}
-            rec["document"] = name
-            rec["page"] = pagenos[0] if pagenos else None
-            if pagenos:
-                span, terminated = _record_page_span(pages, pagenos[0], rid)
-            else:
-                span, terminated = [], False
-            rec["pages"] = span
-            rec["pages_all_definitions"] = list(pagenos)
-            rec["complete_end"] = terminated
-            rec["id_observed"] = (info.get("spellings", {}).get(rid) or [rid])[0]
-            out[rid] = rec
+    documents = list(index.items())
+    if not documents:
+        return out
+    worker_count = max(1, min(len(documents), jobs or (os.cpu_count() or 1)))
+    started = time.perf_counter()
+    LOG.info("phase_props start documents=%d workers=%d", len(documents), worker_count)
+    tasks = [(name, info, keep, backend) for name, info in documents]
+    if worker_count == 1:
+        results = [_props_for_document(task) for task in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+            results = list(executor.map(_props_for_document, tasks, chunksize=1))
+    # Preserve original document-then-id insertion order regardless of the
+    # (nondeterministic) completion order of parallel workers.
+    by_name = dict(results)
+    for name, _info in documents:
+        out.update(by_name.get(name, {}))
+    elapsed = time.perf_counter() - started
+    LOG.info(
+        "phase_props done documents=%d ids=%d elapsed=%.3fs rate=%.1f docs/s",
+        len(documents), len(out), elapsed, len(documents) / max(elapsed, 1e-9),
+    )
     return out
 
 def _repair_requirements(requirements: dict, pages_by_doc: dict,
@@ -2655,7 +2737,16 @@ def main(argv=None) -> int:
                            vollstaendig=vollstaendig)
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=1))
-        return 1 if (report["diffs"] or report["namespace_diffs"] or report["only_in_pdf"]) else 0
+        problems = bool(report["diffs"] or report["namespace_diffs"] or report["only_in_pdf"])
+        if problems:
+            print("[spec_scrape] --check/all completed successfully: returning exit code 1 because differences were found (not a crash). diffs=%d namespace_diffs=%d only_in_pdf=%d only_in_db=%d empty_extraction=%d" %
+                  (len(report["diffs"]), len(report["namespace_diffs"]), len(report["only_in_pdf"]),
+                   len(report["only_in_db"]), len(report["empty_extraction"])),
+                  file=sys.stderr, flush=True)
+        else:
+            print("[spec_scrape] --check/all completed successfully: no differences found, returning exit code 0.",
+                  file=sys.stderr, flush=True)
+        return 1 if problems else 0
     print("verglichen: %d Records" % report["checked"])
     for key, title in (("only_in_pdf", "nur im PDF (fehlen in der DB)"),
                        ("only_in_db", "nur in der DB (im PDF nicht gefunden)"),

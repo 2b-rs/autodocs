@@ -7,12 +7,30 @@ record values rather than mutating caller-owned dictionaries.
 """
 from __future__ import annotations
 
-import copy
 import json
+import logging
+import os
 import re
+import time
+from concurrent.futures import ProcessPoolExecutor
+
+# NOTE: real OS processes. This previously failed under the MCP sandbox
+# because ProcessPoolExecutor's inter-process queue needs POSIX semaphores
+# (multiprocessing.synchronize.SemLock raised PermissionError: [Errno 1]
+# Operation not permitted). The sandbox profile in _src/run-loop.sh now
+# explicitly allows ipc-posix-sem-*/ipc-posix-shm-*, so process-based
+# parallelism works again and gives true multi-core scaling (unlike threads,
+# which are capped by the GIL for the CPU-bound regex/JSON work here).
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Mapping, Sequence
+
+LOG = logging.getLogger("spec_upstream")
+if not LOG.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(message)s"))
+    LOG.addHandler(_handler)
+LOG.setLevel(logging.INFO)
 
 EXPECTED_UNRESOLVED = {"RS_AP_00154", "RS_DIAG_04005"}
 TRACE_RECORDS = Path(__file__).resolve().parent.parent / "spec" / "traceability"
@@ -171,26 +189,110 @@ def rebuild_upstream(record: Mapping, index: UpstreamIndex) -> tuple[dict, str]:
     records without an RS reference are left unchanged with outcome ``none``.
     """
     resolution = index.resolve(record)
-    rebuilt = copy.deepcopy(dict(record))
     if resolution.status == "none":
-        return rebuilt, "none"
+        return dict(record), "none"
     value = list(resolution.upstream)
-    if rebuilt.get("upstream") == value:
-        return rebuilt, "unchanged"
+    if record.get("upstream") == value:
+        return dict(record), "unchanged"
+    rebuilt = dict(record)
     rebuilt["upstream"] = value
     return rebuilt, resolution.status if resolution.status in {"missing", "ambiguous"} else "updated"
 
 
-def rebuild_record_files(record_paths: Iterable[Path], index: UpstreamIndex, *, write=False) -> dict:
+_WORKER_INDEX: UpstreamIndex | None = None
+_WORKER_WRITE: bool = False
+
+
+def _init_worker(index: UpstreamIndex, write: bool) -> None:
+    """Pool initializer: unpickle ``index`` once per worker process, not per file.
+
+    Passing ``index`` inside every task tuple forces the parent process to
+    re-pickle the whole RS index for each of the thousands of files before a
+    worker ever sees it. Binding it once via the pool's ``initializer``
+    fixes that: pickling now happens exactly ``worker_count`` times instead
+    of ``len(paths)`` times. Requires the sandbox profile's ipc-posix-sem-*/
+    ipc-posix-shm-* allow rules (see _src/run-loop.sh) for SemLock creation.
+    """
+    global _WORKER_INDEX, _WORKER_WRITE
+    _WORKER_INDEX = index
+    _WORKER_WRITE = write
+
+
+def _rebuild_record_file(path_str: str) -> tuple[str, str, bool, float, int, int]:
+    started = time.perf_counter()
+    path = Path(path_str)
+    before = json.loads(path.read_text(encoding="utf-8"))
+    after, outcome = rebuild_upstream(before, _WORKER_INDEX)
+    changed = after != before
+    if _WORKER_WRITE and changed:
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        temporary.write_text(json.dumps(after, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        temporary.replace(path)
+    elapsed = time.perf_counter() - started
+    return path_str, outcome, changed, elapsed, len(json.dumps(before, ensure_ascii=False)), len(json.dumps(after, ensure_ascii=False))
+
+
+def rebuild_record_files(record_paths: Iterable[Path], index: UpstreamIndex, *, write=False, jobs: int | None = None) -> dict:
     """Compare or rebuild files; writes are atomic and only touch changed files."""
     counts = {name: 0 for name in ("unchanged", "updated", "missing", "ambiguous", "none")}
-    for path in record_paths:
-        path = Path(path)
-        before = json.loads(path.read_text(encoding="utf-8"))
-        after, outcome = rebuild_upstream(before, index)
-        counts[outcome] += 1
-        if write and after != before:
-            temporary = path.with_suffix(path.suffix + ".tmp")
-            temporary.write_text(json.dumps(after, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            temporary.replace(path)
-    return counts
+    paths = [str(Path(path)) for path in record_paths]
+    if not paths:
+        return counts
+    worker_count = max(1, jobs or (os.cpu_count() or 1))
+    started = time.perf_counter()
+    durations: list[float] = []
+    changed_files = 0
+    bytes_before = 0
+    bytes_after = 0
+    LOG.info(
+        "rebuild_record_files start mode=%s files=%d workers=%d",
+        "write" if write else "compare",
+        len(paths),
+        worker_count,
+    )
+    with ProcessPoolExecutor(
+        max_workers=worker_count,
+        initializer=_init_worker,
+        initargs=(index, write),
+    ) as executor:
+        for idx, (path_str, outcome, changed, elapsed, size_before, size_after) in enumerate(
+            executor.map(_rebuild_record_file, paths, chunksize=25),
+            start=1,
+        ):
+            counts[outcome] += 1
+            durations.append(elapsed)
+            bytes_before += size_before
+            bytes_after += size_after
+            if changed:
+                changed_files += 1
+            if idx == 1 or idx % 250 == 0 or idx == len(paths):
+                LOG.info(
+                    "rebuild_record_files progress processed=%d/%d changed=%d rate=%.1f files/s last=%.4fs path=%s",
+                    idx,
+                    len(paths),
+                    changed_files,
+                    idx / max(time.perf_counter() - started, 1e-9),
+                    elapsed,
+                    path_str,
+                )
+    total_elapsed = time.perf_counter() - started
+    report = dict(counts)
+    report["files"] = len(paths)
+    report["workers"] = worker_count
+    report["changed_files"] = changed_files
+    report["elapsed_seconds"] = round(total_elapsed, 6)
+    report["files_per_second"] = round(len(paths) / max(total_elapsed, 1e-9), 3)
+    report["avg_file_seconds"] = round(sum(durations) / len(durations), 6)
+    report["max_file_seconds"] = round(max(durations), 6)
+    report["bytes_before"] = bytes_before
+    report["bytes_after"] = bytes_after
+    LOG.info(
+        "rebuild_record_files done files=%d changed=%d elapsed=%.3fs rate=%.1f files/s avg=%.4fs max=%.4fs",
+        len(paths),
+        changed_files,
+        total_elapsed,
+        len(paths) / max(total_elapsed, 1e-9),
+        sum(durations) / len(durations),
+        max(durations),
+    )
+    return report

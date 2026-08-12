@@ -109,7 +109,7 @@ class UpstreamCliIntegrationTests(unittest.TestCase):
             with mock.patch.object(scrape,"RECORDS",Path(td)):
                 first=scrape.phase_upstream({source["id"]:source},rebuild=True); once=path.read_bytes()
                 second=scrape.phase_upstream({source["id"]:source},rebuild=True)
-            after=json.loads(once); expected=copy.deepcopy(value); expected["upstream"]=[{"id":"RS_CM_00003","document":source["document"],"page":12}]
+            after=json.loads(once); expected=copy.deepcopy(value); expected["upstream"]=[{"id":"RS_CM_00003","document":source["document"],"page":12,"source":"inline"}]
             self.assertEqual(after,expected); self.assertEqual(first["updated"],1); self.assertEqual(second["unchanged"],1); self.assertEqual(once,path.read_bytes())
     def test_missing_is_visible(self):
         with tempfile.TemporaryDirectory(dir="/tmp") as td:
