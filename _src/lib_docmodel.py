@@ -332,7 +332,14 @@ def _review_page_enhancements(main, notice_ui=None):
         seen.add(rid); items.append(data)
         # Badge direkt nach dem Funktionslink in der Methoden-/Funktionsübersicht.
         anchor_rid = _canonical_anchor(rid, data)
-        pattern = r'(<a class="fn" href="#%s">.*?</a>)' % re.escape(anchor_rid)
+        # 0008-0x fix: badge must sit AFTER the whole <code class="sig">...</code>
+        # signature, not right after the bare function-name link -- splicing it in
+        # right after the <a class="fn"> link (the old behavior) interjected it
+        # between the function name and its own parameter list, breaking the
+        # signature visually ("Arg [Review] (T &&arg, ...)"). Capture everything from
+        # the fn-link through the signature's closing </code> tag so the badge can be
+        # emitted after that closing tag instead.
+        pattern = r'(<a class="fn" href="#%s">.*?</a>.*?</code>)' % re.escape(anchor_rid)
         badge = r'\1 <a class="review-needed-badge" href="#review-%s" title="Offener Review: direkt zum Review-Panel"><span aria-hidden="true">!</span> Review</a>' % esc_attr(anchor_rid)
         main = re.sub(pattern, badge, main, count=1)
     links = []
