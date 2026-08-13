@@ -445,6 +445,36 @@ def check_no_hardcoded_german():
 
 
 
+def check_workflow_lifecycle():
+    """0006-13: curation-item@v1s status vocabulary (0006-03) and the
+    unified workflow lifecycle's state vocabulary (0006-06) are maintained
+    in two separate modules and must not silently drift apart. Also spot-
+    checks that every currently-persisted queue-flag-shaped payload on disk
+    (review-queue/, curation-queue/, if present) normalizes into a
+    curation-item@v1 item whose status maps to a real lifecycle state."""
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
+    import curation_item_lifecycle_check as cilc
+    vocab_problems = cilc.validate_vocabularies()
+    if vocab_problems:
+        problems.extend("0006-13 vocabulary drift: %s" % p for p in vocab_problems)
+        return
+    import curation_item as ci
+    import glob as _glob
+    for queue_dir in ("review-queue", "curation-queue"):
+        base = os.path.join(SRC, "..", queue_dir)
+        if not os.path.isdir(base):
+            continue
+        for pfad in _glob.glob(os.path.join(base, "**", "*.json"), recursive=True):
+            payload = json.load(open(pfad, encoding="utf-8"))
+            adapter = ci.from_review_flag if queue_dir == "review-queue" else ci.from_curation_flag
+            item = adapter(payload)
+            if not ci.is_conformant(item):
+                problems.append("%s: normalized curation-item is not conformant" % pfad)
+                continue
+            if cilc.item_lifecycle_state(item) is None:
+                problems.append("%s: status %r has no mapped lifecycle state" % (pfad, item.get("status")))
+
+
 def check_record_status():
     """0006-04: jeder Spec-Record muss einen 'status'-Schluessel tragen
     (Zustand/Historie), damit Kurations-Sichtbarkeit nicht mehr auf das
@@ -478,6 +508,7 @@ def main():
     check_home_links()
     check_no_hardcoded_german()
     check_record_status()
+    check_workflow_lifecycle()
     if problems:
         print("PROBLEME:")
         for p in problems:
