@@ -21,6 +21,7 @@ Quellen: _src/sources/pages/**.json  (Seitenmodelle / Komposition)
          _src/site.json              (Projektmanifest: Bereiche, Sprachen)
 Danach:  python3 _src/validate.py    (Prüfungen, siehe WARTUNG.md)
 """
+import json
 import multiprocessing
 import os
 import sys
