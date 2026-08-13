@@ -13,6 +13,7 @@ _TOOLS_DIR = str(Path(__file__).resolve().parent)
 if _TOOLS_DIR not in sys.path:
     sys.path.insert(0, _TOOLS_DIR)
 from canonical_id import resolve_legacy, parse_canonical_id  # noqa: E402
+from version_store import latest_version  # noqa: E402
 
 CURATION_ITEM_SCHEMA = "curation-item@v1"
 
@@ -61,6 +62,7 @@ def from_review_flag(payload: dict) -> dict:
         "created": payload.get("created"),
         "claimed_by": payload.get("claimed_by"),
         "decided_by": None,
+        "decided_on_version": payload.get("decided_on_version"),
         "completed_at": payload.get("completed_at"),
         "history": payload.get("history") or [],
     }
@@ -94,6 +96,7 @@ def from_curation_flag(payload: dict) -> dict:
         "created": payload.get("created"),
         "claimed_by": payload.get("claimed_by"),
         "decided_by": payload.get("decided_by"),
+        "decided_on_version": payload.get("decided_on_version"),
         "completed_at": payload.get("completed_at"),
         "history": payload.get("history") or [],
     }
@@ -115,3 +118,15 @@ def is_conformant(item: dict) -> bool:
     if item["status"] not in VALID_STATUSES:
         return False
     return True
+
+
+def resolve_decided_on_version(canonical_id: str) -> str | None:
+    """0006-17: convenience lookup for future writer wiring -- the
+    requirement-version id (from the 0006-16 immutable version store) that
+    was CURRENT at the moment this is called, suitable for stamping onto a
+    curation decision's decided_on_version field. Returns None if no
+    version has been recorded yet for this requirement (store not yet
+    backfilled for that record), which callers should treat as "pin
+    unavailable", not as an error."""
+    entry = latest_version(canonical_id)
+    return entry["version_id"] if entry else None

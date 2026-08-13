@@ -27,6 +27,7 @@ both into this shape. A future task may migrate the writers themselves.
 | `created` | string (ISO 8601) | Creation timestamp. |
 | `claimed_by` | string \| null | Agent/operator who claimed the item. |
 | `decided_by` | string \| null | Agent/operator/curator who decided. |
+| `decided_on_version` | string \| null | 0006-17: requirement-version id (see `version_id.requirement_version_id()`) the decision was made against; null if unknown/predates version minting. |
 | `completed_at` | string (ISO 8601) \| null | Completion timestamp. |
 | `history` | list | Append-only list of prior state transitions. |
 
@@ -58,3 +59,7 @@ Does not migrate `review_flags.py`/`curation_flags.py` writers, does not
 change on-disk queue file layout, and does not implement the graph/version
 concepts from 0006-15 through 0006-22 — those remain separate follow-on
 tasks that build on this schema.
+
+## Evidence snippets and staleness (0006-17)
+
+`_src/tools/evidence_snippet.py` provides the first-class `evidence:<uuid7>` object referenced conceptually in **0006-15**/**0006-18**: every snippet mandatorily carries a `source_version` (a requirement-version id from the **0006-16** immutable version store) pinning it to the exact requirement snapshot it was extracted from. `evidence_snippet.is_stale()` compares a snippet's `source_version` against the requirement's current latest version to detect drift -- the capability this task exists to unlock. See `docs/pipeline/evidence-snippet.md` for details.
