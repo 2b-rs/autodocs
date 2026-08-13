@@ -170,3 +170,20 @@ Nach `merge` folgt laut Docstring der übliche Nachlauf: `render_diagrams.py`
 ## Seiten-Chrome-Texte (Banner, Hinweise, Badges)
 
 Neue statische UI-Texte im generierten Seiten-Chrome muessen ueber `_src/i18n/ui.json` lokalisierbar sein, nicht als literale deutsche Strings im Python-Code der Renderer (`lib_docmodel.py`). Details und Hintergrund: siehe `_src/WARTUNG.md`, Abschnitt „Regel: Seiten-Chrome-Texte gehoeren in die i18n-Register, nicht in Python-Strings“ (0008-01/0008-06).
+
+## Bezug zum vereinheitlichten Kurations-/Review-Modell (0006-14)
+
+Die Aktionen "Ingest Review" und "Ingest Feedback" oben schreiben weiterhin
+direkt in `review-flag@v1`/`curation-flag@v1`-Formate; sie ändern sich durch
+**0006-03**/**0006-06** nicht. Was neu ist: jedes so entstandene Flag lässt
+sich verlustfrei in **curation-item@v1** normalisieren
+(`curation_item.from_review_flag()`/`from_curation_flag()`,
+[`curation-item-schema.md`](curation-item-schema.md)), und jeder erlaubte
+Zustandsübergang jeder hier aufgeführten Aktion ist im
+gemeinsamen Lebenszyklus (`_src/tools/workflow_lifecycle.py`,
+[`workflow-lifecycle.md`](workflow-lifecycle.md)) als `TOOL_TRANSITIONS`-
+Eintrag hinterlegt und durch `validate.py::check_workflow_lifecycle()`
+(**0006-13**) laufend gegen das Schema geprüft. Neue Ingest-/Kurations-
+Aktionen sollen von Anfang an so entworfen werden, dass ihr Ergebnis in
+`curation-item@v1` normalisierbar ist, statt ein weiteres Ad-hoc-Format zu
+erfinden.

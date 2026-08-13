@@ -162,3 +162,17 @@ lauffähige Tools — aber nicht als ein einziger orchestrierter
 5. Backend reparieren, je Fix ein Commit, Regression nachweisen.
 6. Informelle Dokumente ernten, Evidenz und Hypothesen anlegen.
 7. Validieren, freigeben, generieren, Kampagne schließen.
+
+## Einordnung: vereinheitlichtes Kurations-/Review-Modell (0006-14)
+
+Die oben beschriebenen Prozessschritte, die auf eine menschliche oder
+KI-Entscheidung warten (Review, Kuration), durchlaufen seit **0006-06**
+konzeptionell denselben Lebenszyklus, unabhängig davon, über welchen
+Einstiegspunkt (Warteschlange, Browser-Widget, oder — neu seit **0006-05** —
+den warteschlangenlosen Hypothesen-Speicher) sie entstanden sind:
+`discovered → queued → claimed → proposed → accepted/rejected → applied →
+published → superseded`. Details und die vollständige Zuordnung jeder
+bestehenden Aktion zu diesem Lebenszyklus stehen in
+[`workflow-lifecycle.md`](workflow-lifecycle.md); das zugrundeliegende
+Datenschema in [`data-model.md`](data-model.md) und
+[`curation-item-schema.md`](curation-item-schema.md).

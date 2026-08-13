@@ -119,3 +119,14 @@ nächsten kommt:
   `decision.suspected_backend_bug` — das ist die nächstliegende Form einer
   "KI-Analyse", aber pro Feld/Record, nicht als eigenständiger
   Gesamtbericht.
+
+## Zukünftiger Kurationsbericht (0006-14 / Ausblick auf 0006-09)
+
+Die hier dokumentierten Berichte (Build-, Übersetzungs-, QA-Berichte) decken
+bislang keinen zusammenfassenden Überblick über offene Kurations-/Review-
+Items ab. **0006-09** (noch offen) soll aus genau den in
+[`curation-item-schema.md`](curation-item-schema.md) normalisierten Items
+einen statischen HTML-"Kurationsbericht" erzeugen, der alle offenen und
+kürzlich entschiedenen Items über beide Warteschlangen hinweg einheitlich
+darstellt — dieser Abschnitt dient als Verweisstelle, sobald **0006-09**
+implementiert ist.

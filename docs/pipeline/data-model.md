@@ -182,3 +182,22 @@ AUTOSAR AP, CP, and Foundation currently expose document-extracted `record` item
 ## Record status/history coverage (0006-04)
 
 As of 2026-08-13, every record under `_src/spec/records/` carries a `status` key (previously only the `SWS_LOG` pilot module and a handful of others did). Records that never went through a real curation campaign were mechanically backfilled by `_src/tools/migriere_status_backfill.py` with `status.state="valid/unmigrated"` -- deliberately distinct from `"valid/auto-approved"`, which is reserved for records with a genuine campaign history. Field-level `fields.<name>.state/reason/trace` backfill remains out of scope (no real per-field vote data exists outside the pilot set); `validate.py`'s `check_record_status()` only enforces presence of the top-level `status` key, not field-level detail.
+
+## Vereinheitlichtes Kurations-/Review-Modell (0006-14)
+
+Die beiden oben genannten Warteschlangen (`review-queue`, `curation-queue`)
+sind seit **0006-03** zusätzlich über ein gemeinsames Ziel-Schema
+beschrieben, **curation-item@v1** (`_src/tools/curation_item.py`,
+siehe [`curation-item-schema.md`](curation-item-schema.md)). Beide
+Warteschlangen-Formate (`review-flag@v1`, `curation-flag@v1`) bleiben die
+tatsächlichen Schreibformate auf Platte; `curation_item.py` liefert nur
+lesende Adapter (`from_review_flag()`, `from_curation_flag()`), die beide
+auf dieselbe Feldliste normalisieren. Die dazugehörigen Zustände
+(`open`/`claimed`/`proposed`/`accepted`/`rejected`/`superseded`/`applied`)
+sind Teilmenge des größeren, pipeline-weiten Lebenszyklus aus **0006-06**
+(`discovered → queued → claimed → proposed → accepted/rejected → applied →
+published → superseded`, siehe [`workflow-lifecycle.md`](workflow-lifecycle.md)).
+Dieses Datenmodell ist damit die kanonische Quelle für "was ein
+Kurations-Item ist" — neue Datenquellen (z. B. zukünftige S-Core-Elemente,
+**0009-05**) sollen auf `curation-item@v1` abgebildet werden, nicht auf ein
+neues Ad-hoc-Schema.

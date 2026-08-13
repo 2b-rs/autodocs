@@ -275,3 +275,45 @@ Diese Zahlen gehoeren in den Kampagnenreport und in die Traceability-Seite.
 5. Backend reparieren, je Fix ein Commit, Regression nachweisen.
 6. Informelle Dokumente ernten, Evidenz und Hypothesen anlegen.
 7. Validieren, freigeben, generieren, Kampagne schliessen.
+
+## Vereinheitlichtes Kurations-/Review-Modell (0006-14, Nachtrag 2026-08-13)
+
+Die in diesem Dokument beschriebenen Phasen 3 (KI-Entscheidung bei
+Extraktions-Unsicherheit) und 5 (informelle Evidenz/Kuration) laufen seit
+**0006-03**/**0006-06** über ein gemeinsames Datenschema und einen
+gemeinsamen Lebenszyklus, nicht mehr über zwei separate, nur implizit
+verwandte Mechanismen. Dieser Abschnitt macht das explizit, weil dieses
+Dokument laut Vorgabe von **0006-14** die "Source of Truth" für den
+Gesamtprozess bleiben soll, nicht nur emergenter Warteschlangen-Code:
+
+- **Datenschema**: `curation-item@v1` (`_src/tools/curation_item.py`,
+  `docs/pipeline/curation-item-schema.md`). Jedes Review- oder
+  Kurationsflag lässt sich verlustfrei hierauf abbilden.
+- **Lebenszyklus**: `discovered → queued → claimed → proposed →
+  accepted/rejected → applied → published → superseded`
+  (`_src/tools/workflow_lifecycle.py`,
+  `docs/pipeline/workflow-lifecycle.md`). Jede bestehende Schreibfunktion
+  (`review_flags.py`, `curation_flags.py`, `review_ingest.py`,
+  `curation_ingest.py`, `hypothesis_store.py`) ist genau einem gültigen
+  Von-/Nach-Zustandspaar zugeordnet.
+- **Validierung**: `validate.py::check_workflow_lifecycle()` (**0006-13**)
+  prüft laufend, dass Schema und Lebenszyklus-Vokabular nicht auseinander-
+  laufen.
+
+### Zuständigkeitsgrenzen (verbindlich)
+
+- **Nur Mensch**: finale Entscheidung (`accepted`/`rejected`), tatsächliches
+  Anwenden auf einen Record (`applied`), Betrieb der Extraktionsskripte.
+- **KI darf vorschlagen, nie selbst final entscheiden**: `proposed`-Zustand
+  erzeugen (konkrete Änderung oder neues hypothetisches Element, siehe
+  **0006-05**). Die Ausnahme `review_flags.complete_flag(): proposed →
+  applied` überspringt keinen menschlichen Schritt — sie überspringt nur
+  einen separaten *Buchhaltungs*-Zustand ("accepted"), weil in diesem Pfad
+  das Einreichen der Entscheidung durch einen Menschen (im Browser-Widget)
+  bereits die Freigabe IST.
+- **Werkzeug darf automatisch**: rein mechanische Übergänge ohne
+  inhaltliche Bewertung (`discovered → queued`, `queued ⇄ claimed`,
+  `applied → published`). Nie `accepted`/`rejected`.
+
+Siehe `docs/pipeline/roles.md` Abschnitt "Zuständigkeitsgrenzen im
+vereinheitlichten Modell" für die tabellarische Fassung.

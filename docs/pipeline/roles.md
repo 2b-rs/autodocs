@@ -36,3 +36,18 @@ Autor (Browser, review.js) ──sendet Paket──> GitHub-Issue oder JSON-Down
    ▼
 review_ingest.py / curation_ingest.py ──prüft text_hash, Authentizität──> Record aktualisiert (einziger Schreibweg für diese Paket-Art)
 ```
+
+## Zuständigkeitsgrenzen im vereinheitlichten Modell (0006-14)
+
+Damit die Rollen-Tabelle oben nicht implizit lässt, wer im vereinheitlichten
+Kurations-/Review-Modell (**0006-03**/**0006-06**) was darf, hier explizit:
+
+| Zuständigkeit | Wer |
+|---|---|
+| **Nur Mensch** (`curator`) | Endgültige Entscheidung (`accepted`/`rejected`), tatsächliches Anwenden auf einen Record (`applied`), Betrieb der Extraktionsskripte (`--apply`). Kein Tool und keine KI darf einen Record ohne diesen Schritt final ändern. |
+| **KI darf vorschlagen** (`ai`) | Einen `proposed`-Zustand erzeugen: eine konkrete Änderung (`ai-amendment`) oder ein neues hypothetisches Element (`ai-hypothesis`, **0006-05**). Wendet nichts selbst an — Ausnahme: `review_flags.complete_flag()` erlaubt `proposed → applied` direkt, weil dieser Pfad keinen separaten Kurator-Freigabeschritt vom Schreiben der Entscheidung trennt (siehe `workflow-lifecycle.md`); die Entscheidung selbst stammt aber weiterhin von einem Menschen, der das Review-Paket einreicht. |
+| **Werkzeug darf automatisch** (`tool`) | Zustandsübergänge, die keine inhaltliche Entscheidung sind: `discovered → queued` (Flag anlegen), `queued → claimed`/`claimed → queued` (atomare Warteschlangen-Mechanik), `applied → published` (regulärer `generate.py`-Lauf). Trifft niemals `accepted`/`rejected`. |
+
+Siehe [`data-model.md`](data-model.md) für das zugehörige Schema und
+[`workflow-lifecycle.md`](workflow-lifecycle.md) für die vollständige
+Zustandsmaschine samt Tool-zu-Übergang-Zuordnung.

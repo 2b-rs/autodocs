@@ -87,3 +87,18 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `run.sh` | Task-Runner-Skript (nicht versioniert, per Task neu geschrieben); jeder Lauf wird archiviert |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Log des jeweils letzten (oder laufenden) `run.sh`-Aufrufs |
+
+## Werkzeuge des vereinheitlichten Kurations-/Review-Modells (0006-14)
+
+Zusätzlich zu den oben gelisteten Werkzeugen gehören zum vereinheitlichten
+Modell (**0006-03**/**0006-06**/**0006-13**):
+
+| Werkzeug | Zweck |
+|---|---|
+| `_src/tools/curation_item.py` | Lesende Normalisierung von `review-flag@v1`/`curation-flag@v1` nach `curation-item@v1`. Schreibt nichts. |
+| `_src/tools/workflow_lifecycle.py` | Gemeinsame Zustandsvokabular (`discovered…superseded`) und `TOOL_TRANSITIONS`-Zuordnung jeder bestehenden Schreib-Funktion zu ihrem gültigen Von-/Nach-Zustand; `validate_transition()`-Helfer. |
+| `_src/tools/curation_item_lifecycle_check.py` | Prüft, dass `curation_item.VALID_STATUSES` und `workflow_lifecycle.STATES` konsistent bleiben (`validate_vocabularies()`), und ordnet einem konkreten Item seinen Lebenszyklus-Zustand zu (`item_lifecycle_state()`). Eingebunden in `validate.py::check_workflow_lifecycle()`. |
+
+Siehe [`curation-item-schema.md`](curation-item-schema.md),
+[`workflow-lifecycle.md`](workflow-lifecycle.md),
+[`workflow-validation.md`](workflow-validation.md) für Details.
