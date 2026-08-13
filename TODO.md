@@ -16,6 +16,33 @@ HOW TO USE:
   [x] - executed - task has been completed. If a task is completed, the results shall be checked in and REF: xxxxxx (git hash) shall be added 
 - *Tasks* shall have a granularity so that they can be implemented in one go, i.e. without further user interaction. 
 
+## Feature: Nachvollziehbare Build-Reports für i18n und HTML
+
+- [ ] define one canonical build-report schema for i18n + HTML publication runs, covering inputs, commands, timestamps, durations, exit codes, changed artifacts, fallback counts, reject counts, and validation findings
+- [ ] decide where build reports live in source control vs generated output (`_src/`, `output/`, published HTML), and document retention/overwrite/archive rules
+- [ ] extend the i18n pipeline so each `i18n_translate.py merge <lang>` run emits a machine-readable report with batch files consumed, accepted/rejected counts, `fehler.json` summary, and resulting register changes
+- [ ] extend `i18n_diagrams.py` so each run emits a report of diagram sources considered, translated outputs written, unchanged outputs skipped, and stale translated SVGs deleted
+- [ ] extend the HTML build/publication path so each `generate.py` run emits a machine-readable report with generated page counts per language, fallback-to-German counts, changed target files, and wall-clock duration
+- [ ] extend `validate.py` so each run emits a structured report with all checks performed, all findings grouped by category, and an explicit success/failure summary usable from automation
+- [ ] add a runner-side orchestration step (via `run.sh` archive flow) that combines merge/diagram/build/validate subreports into one end-to-end publication report for a release/build run
+- [ ] publish the combined build report into the generated HTML tree as a browsable report page with links to archived logs and referenced artifacts
+- [ ] ensure the published report page links back to the corresponding `run.sh` archive (`run-<timestamp>-n<seq>.sh` + `.log`) so every generated artifact can be traced to its exact execution log
+- [ ] add tests/fixtures for report generation and schema stability, including failure cases (rejects, stale diagrams, fallback translations, validate findings)
+- [ ] update `_src/WARTUNG.md`, `docs/pipeline/actions.md`, `docs/pipeline/reports.md`, and `docs/pipeline/tools.md` so the build-report process is documented as a required part of i18n/HTML publication
+
+## Feature: Prozessbeschreibung im publizierten HTML
+
+- [ ] define the target audience and scope of the published process description: curator/maintainer-facing operational documentation, not AGENT-only rules
+- [ ] decide whether the process description should be a single static `nolang` page or a localized page family, and document the rationale
+- [ ] design the page structure for the published process documentation: source of truth, i18n extraction/translation/merge, diagram translation, HTML generation, validation, reports, and traceability links
+- [ ] create a dedicated page model under `_src/sources/pages/` for the process description and wire it into site navigation and indexes where appropriate
+- [ ] describe the end-to-end i18n → diagrams → HTML → validate pipeline in the published page, including which artifacts are sources, which are generated, and which are only caches/work products
+- [ ] describe how `run.sh` / `output/run-archive/` fit into traceability, including what can be reconstructed from archived script+log pairs and what cannot
+- [ ] include a section explaining report artifacts (`fehler.json`, `i18n_translate.py status`, QA scans, validate findings, combined build reports) and where maintainers can inspect them
+- [ ] include a section explaining failure handling: how to interpret rejects, fallback counts, stale diagrams, and validate errors without silently patching outputs
+- [ ] add links from the published process page to the relevant repo documentation (`_src/WARTUNG.md`, `docs/pipeline/*.md`) and to representative generated report pages once Feature 1 exists
+- [ ] ensure the published process page itself is covered by generate/validate and documented in repo-level maintenance docs
+
 ## Feature: Dutch (nl) Translation
 
 - [x] translate and merge `_src/i18n/work/nl/batch_01.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 202/202 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced. HTML tree regeneration still pending.
