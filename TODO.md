@@ -23,9 +23,9 @@ HOW TO USE:
 - [ ] translate and merge `_src/i18n/work/nl/batch_03.jsonl` (0/210 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_04.jsonl` (0/223 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_05.jsonl` (0/204 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
-- [ ] translate and merge `_src/i18n/work/nl/batch_06.jsonl` (0/214 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
-- [ ] translate and merge `_src/i18n/work/nl/batch_07.jsonl` (0/215 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
-- [ ] translate and merge `_src/i18n/work/nl/batch_08.jsonl` (0/210 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
+- [x] translate and merge `_src/i18n/work/nl/batch_06.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 214/214 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
+- [x] translate and merge `_src/i18n/work/nl/batch_07.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 215/215 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
+- [x] translate and merge `_src/i18n/work/nl/batch_08.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 210/210 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
 - [ ] translate and merge `_src/i18n/work/nl/batch_09.jsonl` (0/225 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_10.jsonl` (0/192 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
 - [ ] translate and merge `_src/i18n/work/nl/batch_11.jsonl` (0/205 entries completed as of 2026-08-12); then run `python3 _src/i18n_translate.py merge nl` and verify no new rejects in `_src/i18n/work/nl/fehler.json`.
