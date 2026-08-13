@@ -31,6 +31,9 @@ FIELDS = ("heading", "requirement_text", "Description", "Rationale", "AppliesTo"
           "Dependencies", "Use Case", "Supporting Material")
 
 
+from canonical_id import DEFAULT_PROJECT, DEFAULT_KIND  # noqa: E402 (0006-02 propagation)
+
+
 def _stable_json(value) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
 
@@ -141,6 +144,8 @@ def compare_records(left: dict, right: dict) -> tuple[list[dict], dict]:
                                                                   _normalized(bv, field)).ratio()})
         rows.append({
             "id": rid,
+            "project": DEFAULT_PROJECT,  # 0006-02: default until multi-project extraction lands
+            "kind": DEFAULT_KIND,
             "status": status,
             "similarity": round(similarity, 6),
             "pypdf_page": a.get("page") if a else None,

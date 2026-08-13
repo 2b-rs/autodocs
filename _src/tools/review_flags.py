@@ -21,6 +21,9 @@ DONE_DIR = QUEUE / "done"
 SCHEMA = "review-flag@v1"
 
 
+from canonical_id import resolve_legacy  # noqa: E402 (0006-02 propagation)
+
+
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -37,8 +40,12 @@ def _atomic_write(path, payload):
     os.replace(tmp, path)
 
 
-def build_instruction(rid, reason, entry, record_path):
-    """Agentenanweisung deterministisch aus dem Prozessbefund erzeugen."""
+def build_instruction(rid, reason, entry, record_path, project=None, kind=None):
+    """Agentenanweisung deterministisch aus dem Prozessbefund erzeugen.
+
+    project/kind optional, default AUTOSAR/AP/record (0006-02).
+    """
+    canonical = resolve_legacy(rid, project, kind)
     steps = [
         "Oeffne %s und vergleiche requirement_text.text_raw mit text_en." % record_path,
         "Pruefe jeden Eintrag in requirement_text.repairs auf Korrektheit.",

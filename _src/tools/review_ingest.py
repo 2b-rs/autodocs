@@ -106,7 +106,15 @@ def text_hash(text_raw, repairs) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+from canonical_id import parse_canonical_id  # noqa: E402 (0006-02 propagation)
+
+
 def find_record(rid: str) -> Path | None:
+    """Accepts either a bare legacy id or a canonical project/kind/id string;
+    falls back to the bare id lookup below when not canonical (0006-02)."""
+    parsed = parse_canonical_id(rid)
+    if parsed is not None:
+        rid = parsed["id"]
     prefix = rid.rsplit("_", 1)[0]
     direkt = RECORDS / prefix / (rid + ".json")
     if direkt.exists():

@@ -46,6 +46,9 @@ VALID_IDENTITY = ("github_authenticated", "self_declared")
 CODE_FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 
 
+from canonical_id import parse_canonical_id  # noqa: E402 (0006-02 propagation)
+
+
 def load_package(pfad: Path, from_issue_body: bool) -> dict:
     raw = pfad.read_text(encoding="utf-8")
     if from_issue_body:
@@ -92,6 +95,11 @@ def ingest(paket_pfad: Path, apply: bool, from_issue_body: bool) -> dict:
             "Die Betreiberin/der Betreiber sollte das vor dem Merge inhaltlich pruefen.")
 
     decisions = [d for d in paket["decisions"] if d.get("kind") == "curation_request"]
+    for _d in decisions:
+        _parsed = parse_canonical_id(_d.get("id", ""))
+        if _parsed is not None:
+            _d["id"] = _parsed["id"]
+            _d["project"], _d["kind_project"] = _parsed["project"], _parsed["kind"]
     for d in decisions:
         if not apply:
             bericht["ergebnisse"].append({"id": d["id"], "status": "ok", "dry_run": True})

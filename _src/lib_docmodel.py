@@ -302,6 +302,19 @@ def _review_meta_html(payload):
     text += '</section><section class="review-context"><h3>Prüfkontext</h3><dl class="review-meta">%s</dl></section>' % "".join(rows)
     return text
 
+def _canonical_anchor(rid, data=None):
+    """0006-02: namespace anchor by project/kind if known on payload, else bare rid."""
+    if data and data.get("project") and data.get("kind"):
+        import sys as _sys
+        from pathlib import Path as _Path
+        _tools_dir = str(_Path(__file__).resolve().parent / "tools")
+        if _tools_dir not in _sys.path:
+            _sys.path.insert(0, _tools_dir)
+        from canonical_id import canonical_id, slug
+        return slug(canonical_id(rid, data["project"], data["kind"]))
+    return rid
+
+
 def _review_page_enhancements(main):
     """Top-Hinweis und Badges aus den eingebetteten Review-Payloads ableiten."""
     payloads = []
@@ -315,14 +328,15 @@ def _review_page_enhancements(main):
         if not rid or rid in seen: continue
         seen.add(rid); items.append(data)
         # Badge direkt nach dem Funktionslink in der Methoden-/Funktionsübersicht.
-        pattern = r'(<a class="fn" href="#%s">.*?</a>)' % re.escape(rid)
-        badge = r'\1 <a class="review-needed-badge" href="#review-%s" title="Offener Review: direkt zum Review-Panel"><span aria-hidden="true">!</span> Review</a>' % esc_attr(rid)
+        anchor_rid = _canonical_anchor(rid, data)
+        pattern = r'(<a class="fn" href="#%s">.*?</a>)' % re.escape(anchor_rid)
+        badge = r'\1 <a class="review-needed-badge" href="#review-%s" title="Offener Review: direkt zum Review-Panel"><span aria-hidden="true">!</span> Review</a>' % esc_attr(anchor_rid)
         main = re.sub(pattern, badge, main, count=1)
     links = []
     for data in items:
         rid = str(data.get("id")); heading = ((data.get("meta") or {}).get("heading") or rid).split(" [", 1)[0]
         heading = _html.unescape(re.sub(r"<[^>]+>", "", heading))
-        links.append('<a class="page-review-link" href="#review-%s" data-review-link="%s">%s</a>' % (esc_attr(rid), esc_attr(rid), esc_once(heading)))
+        links.append('<a class="page-review-link" href="#review-%s" data-review-link="%s">%s</a>' % (esc_attr(_canonical_anchor(rid, data)), esc_attr(rid), esc_once(heading)))
     notice = '<aside class="page-review-notice" role="note" aria-labelledby="page-review-title"><span class="page-review-icon" aria-hidden="true">!</span><div><strong id="page-review-title">%d API-Element%s mit Review-Bedarf</strong><p>Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.</p><div class="page-review-links">%s</div></div></aside>' % (len(items), "e" if len(items) != 1 else "", "".join(links))
     return main, notice
 

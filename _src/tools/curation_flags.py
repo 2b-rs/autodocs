@@ -43,6 +43,9 @@ DONE_DIR = QUEUE / "done"
 SCHEMA = "curation-flag@v1"
 
 
+from canonical_id import resolve_legacy  # noqa: E402 (0006-02 propagation)
+
+
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -58,8 +61,13 @@ def _atomic_write(path, payload):
     os.replace(tmp, path)
 
 
-def write_curation_flag(decision, campaign="html-curation"):
-    """Flag additiv anlegen; eine bereits offene Anfrage zur selben ID bleibt fuehrend."""
+def write_curation_flag(decision, campaign="html-curation", project=None, kind=None):
+    """Flag additiv anlegen; eine bereits offene Anfrage zur selben ID bleibt fuehrend.
+
+    project/kind optional, default AUTOSAR/AP/record (0006-02).
+    """
+    if isinstance(decision, dict) and decision.get("id"):
+        decision.setdefault("canonical_id", resolve_legacy(decision["id"], project, kind))
     _ensure_dirs()
     rid = decision["id"]
     path = OPEN_DIR / (rid + ".json")
