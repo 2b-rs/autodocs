@@ -52,7 +52,7 @@ HOW TO USE:
 - [ ] **0001-05** extend the HTML build/publication path so each `generate.py` run emits a machine-readable report with generated page counts per language, fallback-to-German counts, changed target files, and wall-clock duration
 - [ ] **0001-06** PREREQ: 0001-06:0004-01, 0001-06:0006-13 — extend `validate.py` so each run emits a structured report with all checks performed, all findings grouped by category, and an explicit success/failure summary usable from automation
 - [ ] **0001-07** add a runner-side orchestration step (via `run.sh` archive flow) that combines merge/diagram/build/validate subreports into one end-to-end publication report for a release/build run
-- [ ] **0001-08** PREREQ: 0001-08:0006-09 — publish the combined build report into the generated HTML tree as a browsable report page with links to archived logs and referenced artifacts
+- [ ] **0001-08** publish the combined build report into the generated HTML tree as a browsable report page with links to archived logs and referenced artifacts
 - [ ] **0001-09** ensure the published report page links back to the corresponding `run.sh` archive (`run-<timestamp>-n<seq>.sh` + `.log`) so every generated artifact can be traced to its exact execution log
 - [ ] **0001-10** add tests/fixtures for report generation and schema stability, including failure cases (rejects, stale diagrams, fallback translations, validate findings)
 - [ ] **0001-11** update `_src/WARTUNG.md`, `docs/pipeline/actions.md`, `docs/pipeline/reports.md`, and `docs/pipeline/tools.md` so the build-report process is documented as a required part of i18n/HTML publication
