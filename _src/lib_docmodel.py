@@ -315,8 +315,11 @@ def _canonical_anchor(rid, data=None):
     return rid
 
 
-def _review_page_enhancements(main):
-    """Top-Hinweis und Badges aus den eingebetteten Review-Payloads ableiten."""
+def _review_page_enhancements(main, notice_ui=None):
+    """Top-Hinweis und Badges aus den eingebetteten Review-Payloads ableiten.
+    notice_ui: optionales dict mit singular/plural/body fuer die Sprache des
+    Sprachbaums (0008-01); None/fehlend -> deutscher Text (unveraendertes
+    Verhalten fuer den kanonischen deutschen Baum)."""
     payloads = []
     for raw in re.findall(r'<script type="application/json" class="review-data">(.*?)</script>', main, re.S):
         try: payloads.append(json.loads(raw.replace("<\\/", "</")))
@@ -337,7 +340,16 @@ def _review_page_enhancements(main):
         rid = str(data.get("id")); heading = ((data.get("meta") or {}).get("heading") or rid).split(" [", 1)[0]
         heading = _html.unescape(re.sub(r"<[^>]+>", "", heading))
         links.append('<a class="page-review-link" href="#review-%s" data-review-link="%s">%s</a>' % (esc_attr(_canonical_anchor(rid, data)), esc_attr(rid), esc_once(heading)))
-    notice = '<aside class="page-review-notice" role="note" aria-labelledby="page-review-title"><span class="page-review-icon" aria-hidden="true">!</span><div><strong id="page-review-title">%d API-Element%s mit Review-Bedarf</strong><p>Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.</p><div class="page-review-links">%s</div></div></aside>' % (len(items), "e" if len(items) != 1 else "", "".join(links))
+    nu = notice_ui or {}
+    singular = nu.get("singular", "%d API-Element mit Review-Bedarf")
+    plural = nu.get("plural", "%d API-Elemente mit Review-Bedarf")
+    body = nu.get("body", "Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.")
+    title = (singular if len(items) == 1 else plural) % len(items)
+    notice = ('<aside class="page-review-notice" role="note" aria-labelledby="page-review-title">'
+              '<span class="page-review-icon" aria-hidden="true">!</span><div>'
+              '<strong id="page-review-title">%s</strong><p>%s</p>'
+              '<div class="page-review-links">%s</div></div></aside>'
+              % (title, body, "".join(links)))
     return main, notice
 
 def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requirement_meta=None):
@@ -426,7 +438,7 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requiremen
     return "".join(out)
 
 
-def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH):
+def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=None):
     """Seite rendern. lang steuert nur das Chrome (html-lang, dir, Umschalter);
     für Sprachbäume muss das Seitenmodell bereits übersetzt und page["file"]
     der Pfad OHNE Sprachpräfix sein (der Aufrufer schreibt nach <lang>/…)."""
@@ -434,7 +446,7 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH):
     prefix = "../" * depth
     body_cls = ' class="%s"' % esc_attr(page["body_class"]) if page.get("body_class") else ""
     main = render_blocks(page["main"], depth, srcdir)
-    main, review_notice = _review_page_enhancements(main)
+    main, review_notice = _review_page_enhancements(main, notice_ui)
     has_review = bool(review_notice)
     if review_notice:
         main = review_notice + main
