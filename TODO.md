@@ -151,9 +151,9 @@ HOW TO USE:
   - Inputs to cover: `review-queue`, `curation-queue`, extraction-report `RESIDUAL` items, ad-hoc TODO-driven investigations like the 34 service-method namespace conflict, and any pilot record-level `requirement_meta.review_*` states.
   - Define which of these become first-class curation items, which remain reports only, and which are historical artifacts to archive.
 
-- [ ] **0006-13** PREREQ: 0006-13:0006-03, 0006-13:0006-06 — add validation and tests for the unified workflow model
+- [x] **0006-13** PREREQ: 0006-13:0006-03, 0006-13:0006-06 — add validation and tests for the unified workflow model
   - Extend `validate.py` (or add a dedicated validator) to check canonical IDs, queue payload schema/version, allowed state transitions, referential integrity to records/pages, and history completeness.
-  - Add fixtures covering at least: a scrape ambiguity, a DB correction request, an AI-generated amendment to an existing record, and a new hypothesized requirement.
+  - Add fixtures covering at least: a scrape ambiguity, a DB correction request, an AI-generated amendment to an existing record, and a new hypothesized requirement. -- DONE 2026-08-13: added `_src/tools/curation_item_lifecycle_check.py` mapping curation_item.VALID_STATUSES (0006-03) onto workflow_lifecycle.STATES (0006-06) with a `validate_vocabularies()` drift check and an `item_lifecycle_state()` per-item lookup; wired into `validate.py` as `check_workflow_lifecycle()` (also walks any real review-queue/curation-queue payloads on disk, currently none in this sandbox); added `_src/tests/test_curation_item_lifecycle.py` covering the vocabulary mapping, from_review_flag/from_curation_flag status derivation, and failure cases (unknown status, wrong schema version, missing required field). Full validate.py run confirmed still exits 0. Documented in docs/pipeline/workflow-validation.md. REF: 65b9adc0
 
 - [ ] **0006-14** document the feature as a repo-level workflow contract before implementation spreads further
   - Update `docs/pipeline/{data-model,roles,actions,processes,reports,tools}.md` and `_src/SPEC_BUILD_PROCESS.md` so the unified curation model is the documented source of truth, not just emergent queue code.
