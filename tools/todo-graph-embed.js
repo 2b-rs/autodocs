@@ -203,10 +203,10 @@
       if (!hpcc || !hpcc.Graphviz) return;
       return hpcc.Graphviz.load().then(function (gv) {
         var svg = gv.layout(dot, 'svg', 'dot');
-        var wrap = document.createElement('section');
+        var wrap = document.createElement('details');
+        wrap.className = 'fold';
         wrap.innerHTML =
-          '<h2 class="sect">Internal TODO Dependency Graph ' +
-          '<span class="ai-badge" title="internal, not part of the API reference">internal</span></h2>' +
+          '<summary><h2 class="sect" style="display:inline">TODO (internal)</h2></summary>' +
           svg;
         var svgEl = wrap.querySelector('svg');
         if (svgEl) {
