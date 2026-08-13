@@ -27,3 +27,25 @@ Completed: 2026-08-12 15:31 CEST — REF: 83a2c2da
 - [x] Open review need is visible at the top of the page as a notice
 - [x] Notice states the number of affected API elements
 - [x] Notice links via intra-page link directly to the
+
+## Feature: 0003 — Dutch (nl) Translation
+
+Completed: 2026-08-13 11:10 CEST — REF: 8bb8c67e
+
+- [x] **0003-01** translate and merge `_src/i18n/work/nl/batch_01.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 202/202 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced. HTML tree regeneration still pending.
+- [x] **0003-02** translate and merge `_src/i18n/work/nl/batch_02.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 215/215 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced.
+- [x] **0003-03** translate and merge `_src/i18n/work/nl/batch_03.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 210/210 entries completed and merged (2026-08-13 verified), 0 rejects, no `fehler.json` produced.
+- [x] **0003-04** translate and merge `_src/i18n/work/nl/batch_04.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 223/223 entries completed and merged (2026-08-13 verified), 0 rejects, no `fehler.json` produced.
+- [x] **0003-05** translate and merge `_src/i18n/work/nl/batch_05.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 204/204 entries completed and merged (2026-08-13 verified), 0 rejects, no `fehler.json` produced.
+- [x] **0003-06** translate and merge `_src/i18n/work/nl/batch_06.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 214/214 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
+- [x] **0003-07** translate and merge `_src/i18n/work/nl/batch_07.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 215/215 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
+- [x] **0003-08** translate and merge `_src/i18n/work/nl/batch_08.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 210/210 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced.
+- [x] **0003-09** translate and merge `_src/i18n/work/nl/batch_09.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 225/225 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-10** translate and merge `_src/i18n/work/nl/batch_10.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 192/192 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-11** translate and merge `_src/i18n/work/nl/batch_11.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 205/205 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-12** translate and merge `_src/i18n/work/nl/batch_12.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 226/226 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-13** translate and merge `_src/i18n/work/nl/batch_13.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 229/229 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-14** translate and merge `_src/i18n/work/nl/batch_14.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 236/236 entries completed and merged (2026-08-13), 0 rejects, no `fehler.json` produced. Pre-existing `.out.jsonl` was already translated; only the merge step was pending.
+- [x] **0003-15** translate and merge `_src/i18n/work/nl/batch_15.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 199/199 entries completed and merged (2026-08-13, corrected after prior mislabeling — see 2026-08-13 note above), 0 rejects, no `fehler.json` produced. `python3 _src/i18n_translate.py merge nl` reported: übernommen 4655, abgelehnt 0, offen 0 (all languages fully translated per `i18n_translate.py status`).
+- [x] **0003-16** translate and merge `_src/i18n/work/nl/batch_16.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 232/232 entries completed and merged (2026-08-13, corrected from earlier mislabeling), 0 rejects, no `fehler.json` produced.
+- [x] **0003-17** translate and merge `_src/i18n/work/nl/batch_17.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 1218/1218 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced (179 German-bearing labels translated; 1039 code/identifier-only labels passed through unchanged). HTML tree regeneration still pending.
