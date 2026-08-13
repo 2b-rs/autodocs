@@ -667,7 +667,7 @@
         .selector("node[uml = 1]")
           .style("font-size", 10 * textScale)
         .selector("node[kind = 'module']")
-          .style("font-size", 14 * textScale)
+          .style("font-size", 78 * textScale)
         .update();
       sizeNodes();
     };
@@ -776,7 +776,7 @@
         }},
         { selector: "node[kind = 'module']", style: {
           "background-color": "#f3f0ec", "background-opacity": 0.5, "border-color": "data(color)",
-          "border-width": 2, "border-style": "dashed", label: "data(label)", "font-size": 14,
+          "border-width": 2, "border-style": "dashed", label: "data(label)", "font-size": 78,
           "font-weight": 700, color: "data(color)", "text-valign": "top", "text-halign": "center",
           "text-margin-y": -10, padding: 30, shape: "ellipse", "z-index": 1
         }},
@@ -1203,7 +1203,7 @@
     };
     const restoreNodeToMainGraph = (nodeId) => restoreNodesToMainGraph([nodeId]);
     const sim = createSimulation(cy);
-    // Anchor force is fixed (sliders removed from the toolbar); previously user-adjustable.
+    // Anchor force and text scale are fixed (sliders removed from the toolbar); previously user-adjustable.
     sim.setAnchorScale(0.85);
     // ---------- unified focus controller ----------
     // Viewport framing is derived from a single explicit `focus` state instead of the
