@@ -67,7 +67,7 @@ HOW TO USE:
 - [ ] **0002-06** describe how `run.sh` / `output/run-archive/` fit into traceability, including what can be reconstructed from archived script+log pairs and what cannot
 - [ ] **0002-07** include a section explaining report artifacts (`fehler.json`, `i18n_translate.py status`, QA scans, validate findings, combined build reports) and where maintainers can inspect them
 - [ ] **0002-08** include a section explaining failure handling: how to interpret rejects, fallback counts, stale diagrams, and validate errors without silently patching outputs
-- [ ] **0002-09** add links from the published process page to the relevant repo documentation (`_src/WARTUNG.md`, `docs/pipeline/*.md`) and to representative generated report pages once Feature 1 exists
+- [ ] **0002-09** PREREQ: 0002-09:0001 — add links from the published process page to the relevant repo documentation (`_src/WARTUNG.md`, `docs/pipeline/*.md`) and to representative generated report pages once Feature 1 exists
 - [ ] **0002-10** ensure the published process page itself is covered by generate/validate and documented in repo-level maintenance docs
 
 ## Feature: 0003 — Dutch (nl) Translation
@@ -111,23 +111,23 @@ HOW TO USE:
   - Decide and document a canonical key such as `project/release/kind/id` (example dimensions: `AUTOSAR/AP/R25-11/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/R25-11/record/RS_SAF_00001`, `ECLIPSE/S-CORE/<release>/record/<id>`), then propagate it into record metadata, queue payloads, campaign manifests, and rendered HTML anchors.
   - Ensure the raw record `id` can remain human-familiar while the canonical identity becomes the cross-project stable key for queues, history, links, and reports.
 
-- [ ] **0006-03** define one unified "curation item" schema that subsumes `review-flag@v1` and `curation-flag@v1`
+- [ ] **0006-03** PREREQ: 0006-03:0006-02 — define one unified "curation item" schema that subsumes `review-flag@v1` and `curation-flag@v1`
   - Current gap: `review_flags.py` and `curation_flags.py` are near-duplicate but divergent queues with different payload shapes, different directory trees, and different semantics.
   - Design a single schema with at least: `schema`, `canonical_id`, `project`, `release`, `item_kind` (record-field / record / ai-amendment / ai-hypothesis / scrape-observation / report-entry), `origin` (tool / ai / browser / curator), `status` (open / claimed / proposed / accepted / rejected / superseded / applied), `subject`, `current_state`, `proposed_state`, `evidence`, `counter_evidence`, `decision_basis`, `campaign`, `created`, `claimed_by`, `decided_by`, `completed_at`, and `history`.
   - Make the schema expressive enough to represent: (a) scrape ambiguities, (b) DB-value corrections, (c) AI-generated amendments to existing records, (d) AI-proposed new spec elements / requirements currently only described as `hypothesized/unconfirmed` in the process docs.
 
-- [ ] **0006-04** extend the record schema to carry stable provenance for curator-visible changes across all modules, not just pilot records
+- [ ] **0006-04** PREREQ: 0006-04:0006-03 — extend the record schema to carry stable provenance for curator-visible changes across all modules, not just pilot records
   - Current gap: `history[]`, `status`, and field-level states exist mostly in pilot-style records (`SWS_LOG` etc.), while many production records still only carry additive fields like `upstream` without matching lifecycle/history entries.
   - Make `status`, `history[]`, and (where applicable) field-level `fields.<name>.state/reason/trace` mandatory or mechanically backfillable for any write path (`spec_scrape.py`, `review_ingest.py`, `curation_ingest.py`, migrations, future AI-amendment tools).
   - Add explicit provenance for AI-originated proposals vs. curator-accepted DB changes so that "proposal" and "applied truth" remain distinguishable in static and dynamic views.
 
-- [ ] **0006-05** add first-class support for AI-proposed NEW elements in the DB and queue model
+- [ ] **0006-05** PREREQ: 0006-05:0006-03 — add first-class support for AI-proposed NEW elements in the DB and queue model
   - Current gap: `hypothesized/unconfirmed` exists in docs as a status, but no implemented CLI or queue path creates such elements.
   - Define where hypotheses live before acceptance (separate hypothesis store vs. lightweight record stubs), how they get canonical IDs, how evidence is attached, and how acceptance promotes them into the main DB without losing history.
 
 ### Workflow / pipeline convergence
 
-- [ ] **0006-06** converge browser review, queue review, AI proposals, and curator decisions into one end-to-end state machine
+- [ ] **0006-06** PREREQ: 0006-06:0006-03 — converge browser review, queue review, AI proposals, and curator decisions into one end-to-end state machine
   - Current gap: the docs show two partially disconnected paths — queue-based (`review-queue` / `curation-queue` -> AI agent -> curator) and browser-based (`review.js` -> GitHub issue / JSON -> `*_ingest.py`).
   - Model one shared lifecycle with explicit states and transitions, including: discovered -> queued -> claimed -> proposed -> accepted/rejected -> applied -> published -> superseded.
   - Map every existing tool to that lifecycle (`review_flags.py`, `curation_flags.py`, `review_ingest.py`, `curation_ingest.py`, `spec_scrape.py`, future AI-amendment tools) and document which transitions each tool may perform.
@@ -143,12 +143,12 @@ HOW TO USE:
 
 ### Visibility / UX
 
-- [ ] **0006-09** build a static HTML "curation report" that renders all open and recent curation items from the queue(s)
+- [ ] **0006-09** PREREQ: 0006-09:0006-03 — build a static HTML "curation report" that renders all open and recent curation items from the queue(s)
   - Current gap: open flags in `_src/spec/curation-queue/open/` and `_src/spec/review-queue/open/` are invisible unless someone browses the filesystem.
   - Implement a `curation_report.py` (or broader `workflow_report.py`) analogous to `traceability_report.py`: read the queue(s), render a page model under `_src/sources/pages/`, publish via `generate.py`, and link it from the start page.
   - Each rendered item should show canonical identity, project/release, current DB state, proposed state, rationale, evidence, status, and links to the affected record/page/report.
 
-- [ ] **0006-10** design the future dynamic JS/API view around the same schema, not a second ad-hoc model
+- [ ] **0006-10** PREREQ: 0006-10:0006-09 — design the future dynamic JS/API view around the same schema, not a second ad-hoc model
   - Static HTML is needed first, but the future JS layer should consume the same canonical curation-item schema (serialized to JSON/JS) so filter/sort/group functionality does not fork the data model.
   - Plan for filters by project, release, queue status, item kind, module, source tool, curator, and campaign.
 
@@ -159,11 +159,11 @@ HOW TO USE:
 
 ### Hardening / migration
 
-- [ ] **0006-12** inventory and migrate existing queue items and special-case review surfaces into the unified model
+- [ ] **0006-12** PREREQ: 0006-12:0006-03 — inventory and migrate existing queue items and special-case review surfaces into the unified model
   - Inputs to cover: `review-queue`, `curation-queue`, extraction-report `RESIDUAL` items, ad-hoc TODO-driven investigations like the 34 service-method namespace conflict, and any pilot record-level `requirement_meta.review_*` states.
   - Define which of these become first-class curation items, which remain reports only, and which are historical artifacts to archive.
 
-- [ ] **0006-13** add validation and tests for the unified workflow model
+- [ ] **0006-13** PREREQ: 0006-13:0006-03, 0006-13:0006-06 — add validation and tests for the unified workflow model
   - Extend `validate.py` (or add a dedicated validator) to check canonical IDs, queue payload schema/version, allowed state transitions, referential integrity to records/pages, and history completeness.
   - Add fixtures covering at least: a scrape ambiguity, a DB correction request, an AI-generated amendment to an existing record, and a new hypothesized requirement.
 
@@ -195,5 +195,5 @@ HOW TO USE:
 - [ ] **0008-02** fix the header logo/home link (`lib_docmodel.py::render_page`, key `"home": prefix + "index.html"`): it reuses the site-root-relative `prefix` (correct for shared assets like `style.css` that exist once at the tree root) instead of the language-root-relative depth used by `nav_html`'s breadcrumb "Start" link, so on every non-German page the logo link jumps one level too far up into the German root `index.html` instead of staying in `<lang>/index.html` (found 2026-08-13 via nl screenshot, `ara::log` namespace page)
 - [ ] **0008-03** add a regression check to `validate.py` (or a dedicated test) that asserts, for every language tree, both the breadcrumb "Start" link and the header logo link resolve to that language's own `index.html`, not the German root
 - [ ] **0008-04** add a regression check (scan or test) that flags any hardcoded German UI string in generated non-German HTML output, so future chrome/banner text additions can't silently bypass the i18n pipeline again
-- [ ] **0008-05** after fixing, rebuild and `--check` all 10 language trees (not just nl) since both bugs are structural to `render_page`/`_review_page_enhancements` and are not nl-specific
+- [ ] **0008-05** PREREQ: 0008-05:0008-01, 0008-05:0008-02 — after fixing, rebuild and `--check` all 10 language trees (not just nl) since both bugs are structural to `render_page`/`_review_page_enhancements` and are not nl-specific
 - [ ] **0008-06** document the requirement in `_src/WARTUNG.md` / `docs/pipeline/actions.md` that any new page-chrome text (banners, notices, badges) must go through `ui.json`/segment registers, not literal German strings in Python
