@@ -46,7 +46,7 @@ HOW TO USE:
 
 ## Feature: 0001 — Traceable Build Reports for i18n and HTML
 
-- [ ] **0001-01** define one canonical build-report schema for i18n + HTML publication runs, covering inputs, commands, timestamps, durations, exit codes, changed artifacts, fallback counts, reject counts, and validation findings
+- [x] **0001-01** define one canonical build-report schema for i18n + HTML publication runs, covering inputs, commands, timestamps, durations, exit codes, changed artifacts, fallback counts, reject counts, and validation findings -- DONE 2026-08-13: schema documented in `docs/pipeline/build-report-schema.md` (envelope + per-producer `counts` fields for i18n_merge, i18n_diagrams, html_generate, validate, combined). REF: d47435fb
 - [u] **0001-02** decide where build reports live in source control vs generated output (`_src/`, `output/`, published HTML), and document retention/overwrite/archive rules — TODO: this is an architectural choice (not an implementation detail) with no existing convention to anchor on; needs a manager/user decision before 0001-01/03-11 can commit to a storage layout (flagged 2026-08-13 review).
 - [ ] **0001-03** extend the i18n pipeline so each `i18n_translate.py merge <lang>` run emits a machine-readable report with batch files consumed, accepted/rejected counts, `fehler.json` summary, and resulting register changes
 - [ ] **0001-04** extend `i18n_diagrams.py` so each run emits a report of diagram sources considered, translated outputs written, unchanged outputs skipped, and stale translated SVGs deleted
