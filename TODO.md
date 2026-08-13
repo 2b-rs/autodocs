@@ -10,11 +10,12 @@ HOW TO USE:
 
 - *Tasks* are dashed items, one line per task, with a completion marker. Examples see below
   [ ] - open. No work has been done w/r to this item
-  [u] - unclear. Before work can proceed, the manager needs to be interviewed and make a decision.
-  [p] - partially implemented - work has been done but it's not complete. open items after TODO: in the same line.
+  [u] - unclear. No agentic work can currently be performed on this item because user/manager discussion or clarification is required before proceeding.
+  [p] - partially implemented. The agent has started work on this item, but it is not yet complete; use this while work is in progress, including across conversations, so agents can determine the next best unfinished item.
   [?] - unknown - we simply don't know. Next step is to look into the repository and decide whether to amend TODO: or promote do [x]
   [x] - executed - task has been completed. If a task is completed, the results shall be checked in and REF: xxxxxx (git hash) shall be added 
 - *Tasks* shall have a granularity so that they can be implemented in one go, i.e. without further user interaction. 
+- Agents shall keep these markers up to date while working and in conversation hand-offs: set `[p]` once implementation/investigation has started, set `[u]` only when further progress is blocked on user discussion/decision, and avoid leaving active work as plain `[ ]` when a better state is known.
 
 ## ID scheme
 
@@ -86,10 +87,17 @@ HOW TO USE:
 
 ### Architecture decisions to make visible in code/data
 
-- [ ] **0006-02** introduce a project-aware canonical identity scheme for every curatable item
+- [p] **0006-02** introduce a project-aware canonical identity scheme for every curatable item — TODO: `project`/`kind` design resolved 2026-08-13, but `projects.json` registry (0006-02.01), propagation into record metadata/queue payloads/campaign manifests/HTML anchors, and Eclipse S-Core's concrete `kind`/ID-minting convention are not yet implemented
   - Current gap (2026-08-12): records and queues are implicitly single-project (`_src/spec/records/<MODULE>/<ID>.json`, queue filenames = `<ID>.json`), and the docs contain no evidence of multi-project support for future AUTOSAR Classic / FOUNDATION / Eclipse S-Core expansion.
-  - Decide and document a canonical key such as `project/release/kind/id` (example dimensions: `AUTOSAR/AP/R25-11/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/R25-11/record/RS_SAF_00001`, `ECLIPSE/S-CORE/<release>/record/<id>`), then propagate it into record metadata, queue payloads, campaign manifests, and rendered HTML anchors.
+  - RESOLVED design (2026-08-13, supersedes the release-inclusive draft below): canonical identity is **release-free** — `project/kind/id`, e.g. `AUTOSAR/AP/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/record/RS_SAF_00001`, `ECLIPSE/S-CORE/module/<id>`. Release only ever appears inside the separate version ID from **0006-15** (`<canonical-id>@rel:<release>#<content-hash8>`), never in the canonical key itself — otherwise the same requirement in two releases would be two unrelated identities and supersession tracking breaks.
+  - `project` values are namespaced two-level strings registered in one place (see **0006-02.01**), not left implicit in code: `AUTOSAR/AP`, `AUTOSAR/CP`, `AUTOSAR/FOUNDATION`, `ECLIPSE/S-CORE`.
+  - `kind` is an open, documented enum, not fixed to `record`: AP/CP/Foundation use `record` (document-extracted requirement); Eclipse S-Core is a live codebase, not a PDF spec, so its curatable units (module, component-interface, design-doc, ...) need their own `kind` values and their own ID-minting convention (e.g. derived from repo path/component name) since there is no upstream "SWS_xxx"-style source ID to inherit.
+  - Superseded original wording (kept for history): canonical key was originally drafted as `project/release/kind/id` (example dimensions: `AUTOSAR/AP/R25-11/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/R25-11/record/RS_SAF_00001`, `ECLIPSE/S-CORE/<release>/record/<id>`); superseded 2026-08-13 for the release-free scheme above.
   - Ensure the raw record `id` can remain human-familiar while the canonical identity becomes the cross-project stable key for queues, history, links, and reports.
+
+- [x] **0006-02.01** PREREQ: 0006-02.01:0006-02 — add a small `projects.json` registry listing every known `project` value, its display name, and its `kind` enum
+  - One place to register `AUTOSAR/AP`, `AUTOSAR/CP`, `AUTOSAR/FOUNDATION`, `ECLIPSE/S-CORE` (and future projects) instead of leaving valid `project`/`kind` combinations implicit in scraper/validator code.
+  - `validate.py` (or its 0006-13 extension) should check every canonical ID's `project`/`kind` against this registry.
 
 - [ ] **0006-03** PREREQ: 0006-03:0006-02 — define one unified "curation item" schema that subsumes `review-flag@v1` and `curation-flag@v1`
   - Current gap: `review_flags.py` and `curation_flags.py` are near-duplicate but divergent queues with different payload shapes, different directory trees, and different semantics.
@@ -150,6 +158,72 @@ HOW TO USE:
 - [ ] **0006-14** document the feature as a repo-level workflow contract before implementation spreads further
   - Update `docs/pipeline/{data-model,roles,actions,processes,reports,tools}.md` and `_src/SPEC_BUILD_PROCESS.md` so the unified curation model is the documented source of truth, not just emergent queue code.
   - Explicitly record what remains human-only, what AI may propose, and what tools may apply automatically.
+
+### Cross-release traceability and invalidation
+
+- [p] **0006-15** PREREQ: 0006-15:0006-02, 0006-15:0006-03 — define the ID naming schemes needed for cross-release traceability of curated decisions, evidence snippets, and AI-derived artifacts — TODO: naming schemes documented 2026-08-13, hash algorithm/truncation length not yet pinned, no code mints these IDs yet
+  - Motivating scenario (2026-08-13): a curator decides on a requirement's value; a later AUTOSAR release changes that same requirement; the system must be able to find every AI-generated artifact (comment/amendment/hypothesis/synthesis) whose evidence depended on the now-superseded decision or requirement version, and every requirement that changed, without deleting any prior decision, curation, evidence snippet, synthesis, or specification version — all of which must remain retrievable under a stable, unique ID.
+  - Versioning grain for AUTOSAR AP: requirement level.
+  - Define and document at least these ID families, layered on the canonical identity from **0006-02**:
+    - canonical requirement identity: `project/kind/id` (release-independent, e.g. `AUTOSAR/AP/record/SWS_UCM_00348`)
+    - requirement version: `<canonical-id>@rel:<release>#<content-hash8>` — one immutable content snapshot per release
+    - curation decision: `curation:<uuid7>` — immutable once decided, only ever superseded, never mutated or deleted
+    - evidence snippet: `evidence:<uuid7>` — first-pass AI extraction result assigned to one requirement version together with its reason
+    - AI-generated artifact / synthesis: `artifact:<uuid7>` — second-pass description/amendment/hypothesis, including later resyntheses
+    - supersession edge: explicit `supersedes:<old-version-id>-><new-version-id>` link, not inferred from timestamps
+  - Specify ID generation rules (UUIDv7 for decisions/evidence/artifacts to stay sortable-by-time across concurrent queue/browser/AI write paths per **0006-06**; content-hash truncation length and hash algorithm for requirement versions) and where each ID family is minted (which tool/script).
+
+- [ ] **0006-16** PREREQ: 0006-16:0006-15 — add an immutable requirement-version store, separate from the current mutable record store
+  - Current gap: records are overwritten in place per module/ID (`_src/spec/records/<MODULE>/<ID>.json`); there is no append-only history of prior content per requirement.
+  - Design an append-only version table/store keyed by the requirement-version ID from **0006-15**, with the existing record store becoming a "current pointer" into it; define retention (never delete) and how old versions are exposed/rendered on request.
+
+- [ ] **0006-17** PREREQ: 0006-17:0006-15, 0006-17:0006-16 — pin every curation decision and evidence snippet to the exact requirement version they judged or extracted from
+  - Add a `decided_on_version` field (requirement-version ID) to the unified curation-item schema from **0006-03**, populated at decision time.
+  - Add an equivalent `source_version` field to each `evidence:<uuid7>` snippet so first-pass extraction always points at one immutable requirement snapshot.
+  - Without these pins, drift detection can only say "this record changed since some undated point," not "this decision/evidence snippet is now stale relative to version X."
+
+- [u] **0006-18** PREREQ: 0006-18:0006-15, 0006-18:0006-16 — model evidence/dependency links as a first-class, queryable graph rather than free text — TODO: whether curator dismissal severs existing downstream edges (for audit) or only halts future propagation is explicitly left as an open choice in the task text; needs a manager/curator decision before implementation can start
+  - Current gap: the `evidence` field in the unified curation-item schema (**0006-03**) is descriptive text, not a queryable edge.
+  - Introduce first-class node kinds for `requirement-version`, `curation-decision`, `evidence-snippet`, `artifact/synthesis`, and `human-comment`, with typed edges that distinguish at least: `derived_from`, `quotes`, `supersedes`, `revisits`, `comments_on`, `dismisses`, and `confirms`.
+  - Support `artifact -> artifact` edges explicitly: AI may resynthesize its own prior text together with newly changed facts or comments, so synthesis-depends-on-synthesis is a real, potentially unbounded scenario.
+  - Implement invalidation/revisit discovery as a graph traversal to fixed point (visited-set / cycle-safe), not a fixed hop count; termination comes from exhausting reachable dependents or hitting curator-dismissed nodes.
+  - Define whether dismissal merely stops future propagation or also severs existing downstream dependency edges for audit purposes; document the chosen semantics.
+
+- [u] **0006-19** PREREQ: 0006-19:0006-18 — add invalidation state and confidence history orthogonal to the existing curation-item lifecycle — TODO: the exact confidence-scoring function/formula (how human comments, curator confirm/reject, and provenance type combine into a number) is undefined; needs a manager/domain decision before a `confidence_history[]` entry can actually be computed, not just stored
+  - Current gap: the lifecycle states (discovered -> queued -> claimed -> proposed -> accepted/rejected -> applied -> published -> superseded, per **0006-06**) have no state representing "still retrievable, but based on superseded facts / comments / model settings."
+  - Model invalidation as a flag/status set by cascade (from **0006-18**'s graph), not a curator-driven lifecycle transition; ensure invalidated artifacts remain retrievable and are never deleted, only marked.
+  - Add append-only `confidence_history[]` for AI-generated knowledge so prior confidence values remain retained and re-calculable even after the underlying requirement version, curated decision, user comment, source set, or model/settings become superseded.
+  - Define how human comments, curator confirmations/rejections, and AI-inferred vs. hard-fact vs. curated-fact provenance increase or decrease confidence.
+
+- [ ] **0006-20** PREREQ: 0006-20:0006-15, 0006-20:0006-16, 0006-20:0006-18, 0006-20:0006-19 — generalize release-diff into a supersession-trigger job that detects changed inputs and cascades invalidation / revisit requests
+  - Triggers to cover: new AUTOSAR release, new curation input, user comment, scraper update, extraction bugfix, newly available sources, and AI model/settings change.
+  - On each trigger, compute which requirement versions / curated decisions / evidence snippets / synthesis inputs changed, write new immutable versions where applicable (**0006-16**), and walk the dependency graph (**0006-18**) to mark dependent knowledge `invalidated` and/or enqueue it for AI revisit (**0006-19**).
+  - Current gap: no existing tool (`review_flags.py`, `curation_flags.py`, `review_ingest.py`, `curation_ingest.py`, `spec_scrape.py`) performs version-to-version diffing plus graph-based revisit scheduling across releases and non-release triggers; this is new pipeline logic.
+  - Emit a report of: changed requirements, superseded decisions/evidence/artifacts, revisit tasks enqueued, and any cases that could not be resolved automatically (candidates for **0001**'s build-report work).
+
+- [p] **0006-21** PREREQ: 0006-21:0006-18, 0006-21:0006-19 — define the structure of synthesized knowledge units so fact type, evidence, and confidence remain inspectable and re-runnable — TODO: typed-claim object model sketched 2026-08-13 (claim ID, type, evidence refs, confidence, history, dismissal flag), not yet turned into a concrete field-by-field schema or fixture
+  - A synthesized description must not be a single opaque blob. Define a typed-claim object model where each claim/section can distinguish at least: hard fact, curated fact, user comment, and AI-inferred knowledge.
+  - For each claim, store: stable claim ID, parent artifact/synthesis ID, claim type, textual content, evidence/dependency refs, current confidence, append-only `confidence_history[]`, invalidation status, and whether curator action has dismissed it from future synthesis runs.
+  - Ensure the model can represent AI revisiting its own prior text: later syntheses may cite/reuse/supersede earlier synthesis claims without losing the original text or confidence trail.
+
+- [p] **0006-22** PREREQ: 0006-22:0006-15, 0006-22:0006-16, 0006-22:0006-18, 0006-22:0006-21 — document the resulting DB schema, graph semantics, and ID scheme in the pipeline data-model docs before implementation spreads — done so far: `docs/pipeline/data-model.md` has a draft "Versionierungs- und ID-Schema" section (2026-08-13); TODO: worked examples (a)-(c) not yet added, and `docs/pipeline/{roles,actions,processes,reports,tools}.md` / `_src/SPEC_BUILD_PROCESS.md` not yet cross-updated
+  - Primary documentation home: `docs/pipeline/data-model.md`.
+  - Update `docs/pipeline/{roles,actions,processes,reports,tools}.md` and `_src/SPEC_BUILD_PROCESS.md` where needed so the versioned requirement/evidence/synthesis graph and invalidation semantics are described consistently across the repo.
+  - Include worked examples covering: (a) new AUTOSAR release superseding a curated requirement, (b) human comment triggering AI resynthesis, (c) curator dismissal pruning future propagation while preserving audit history.
+
+### Point-in-time and delta views
+
+- [ ] **0006-23** PREREQ: 0006-23:0006-15, 0006-23:0006-16, 0006-23:0006-17 — support retrieving a coherent "as of release R" (or "as of date D") view of requirements, curated decisions, and AI artifacts
+  - Motivating scenario (2026-08-13): after R32-11 ships, a user must still be able to review R25-11's requirement text, the curator's decisions, and the AI comments/syntheses that applied to it — even though newer versions now exist and older ones are marked superseded/invalidated.
+  - Define a query contract that, given a release tag (or a date, resolved to the latest version/decision/artifact at or before that date), returns: the requirement-version active at that point, the curation decision(s) whose `decided_on_version` matches or precedes it, and the evidence/artifact graph nodes valid as of that point — all without filtering out `superseded`/`invalidated` items, since "superseded now" must not mean "absent from a past view."
+  - Because nothing in **0006-16** through **0006-19** is ever deleted, this is a read-side query problem ("reconstruct the graph state as of R/D"), not a storage problem; document it as such to avoid accidental future work on redundant snapshot storage.
+  - Decide how this view is exposed: CLI query, static per-release HTML render, or both; note dependency on **0006-14**'s presentation-layer work.
+
+- [ ] **0006-24** PREREQ: 0006-24:0006-18, 0006-24:0006-19, 0006-24:0006-20 — support a "delta view" of everything changed, superseded, or invalidated since a given release or date
+  - Motivating scenario (2026-08-13): a user needs a report of exactly what changed since R25-11 (or since a given date) — which requirement versions were superseded, which curated decisions became stale, and which AI artifacts were invalidated or flagged for revisit as a result.
+  - Define a query that takes a baseline release/date and returns: new requirement versions created since then, decisions/evidence/artifacts marked `invalidated` as a consequence (traced via the **0006-18** dependency graph), and any revisit tasks enqueued by **0006-20**'s trigger job in that window.
+  - This is closely related to but distinct from **0006-20**'s per-trigger cascade report: **0006-20** reports the immediate blast radius of one trigger event; **0006-24** aggregates across an arbitrary time/release window for ad-hoc review, so implement it as a query over the stored cascade results rather than a second cascade mechanism.
+  - Note overlap with **0001**'s build-report work: the per-trigger report from **0006-20** is a natural input to a delta view, so align schemas rather than defining a second, incompatible "what changed" report format.
 
 
 ## Feature: 0007 — Database Quality Assurance

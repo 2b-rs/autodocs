@@ -76,3 +76,105 @@ Eintrag (siehe Beobachtung in `campaigns.md`).
 Belegdatei mit tatsächlichen `evidence[]`-Einträgen in diesem Format
 gefunden (zu unterscheiden von `upstream_evidence.py`'s separatem
 Rohbeobachtungs-Speicher).
+
+## Versionierungs- und ID-Schema für Cross-Release-Nachverfolgbarkeit (Entwurf, 0006-15..22)
+
+> Status: **Entwurf** — beschreibt die Zielarchitektur für `TODO.md`
+> Feature 0006, Aufgaben 0006-15 bis 0006-22. Noch nicht implementiert.
+> Motivations-Szenario: eine kuratierte Entscheidung zu einem Requirement
+> wird durch ein neues AUTOSAR-Release überholt; alle davon abhängigen
+> Evidenzen, Synthesen und KI-Artefakte müssen auffindbar, aber nichts darf
+> gelöscht werden.
+
+### Versionierungsgranularität
+
+Für AUTOSAR AP wird auf **Requirement-Ebene** versioniert (nicht Feld- oder
+Dokumentebene). Jede inhaltliche Änderung eines Requirements über Releases
+hinweg erzeugt eine neue, unveränderliche Version.
+
+### ID-Familien
+
+| ID-Familie | Schema | Beispiel | Charakteristik |
+|---|---|---|---|
+| Kanonische Requirement-Identität | `project/kind/id` | `AUTOSAR/AP/record/SWS_UCM_00348` | releaseunabhängig, stabil über alle Releases |
+| Requirement-Version | `<canonical-id>@rel:<release>#<content-hash8>` | `AUTOSAR/AP/record/SWS_UCM_00348@rel:R25-11#a1c9f3e2` | ein unveränderlicher Inhalts-Snapshot pro Release |
+| Kurationsentscheidung | `curation:<uuid7>` | `curation:018f2b3a-...` | unveränderlich nach Entscheidung, nur "superseded", nie gelöscht |
+| Evidenz-Snippet | `evidence:<uuid7>` | `evidence:018f2c4d-...` | Ergebnis des ersten KI-Durchlaufs (Scraping), fest an eine Requirement-Version gebunden |
+| Artefakt / Synthese | `artifact:<uuid7>` | `artifact:018f2d1a-...` | Ergebnis des zweiten KI-Durchlaufs (Beschreibung, Amendment, Hypothese, Resynthese) |
+| Supersession-Kante | `supersedes:<old-version-id>-><new-version-id>` | — | explizite Kante, nicht aus Zeitstempeln abgeleitet |
+
+UUIDv7 wird für Kurationsentscheidungen, Evidenz-Snippets und Artefakte
+verwendet, da es über nebenläufige Schreibpfade (Queue, Browser, KI-Agent)
+hinweg zeitlich sortierbar bleibt (siehe 0006-06). Die Hash-Länge/-Funktion
+für Requirement-Versionen ist in 0006-15 final festzulegen.
+
+### Speicherstruktur (Zielbild)
+
+- **Requirement-Version-Store** (neu, 0006-16): Append-only-Ablage je
+  Requirement-Version-ID; der bestehende Record-Store
+  (`_src/spec/records/<MODULE>/<ID>.json`) wird zu einem "current pointer"
+  auf die jeweils aktuelle Version.
+- **Kurationsentscheidung** trägt `decided_on_version` (Requirement-Version-ID),
+  gesetzt zum Entscheidungszeitpunkt (0006-17).
+- **Evidenz-Snippet** trägt `source_version` (Requirement-Version-ID) sowie
+  Text, Quelle, Locator, Stärke und die vom KI-Scraper vergebene Begründung
+  für die Zuordnung (0006-17).
+- **Artefakt/Synthese** referenziert Evidenz-Snippets, Kurationsentscheidungen
+  und ggf. frühere Artefakte (Resynthese) über `evidence_refs[]`.
+
+### Abhängigkeitsgraph (0006-18)
+
+Knotentypen: `requirement-version`, `curation-decision`, `evidence-snippet`,
+`artifact/synthesis`, `human-comment`.
+
+Kantentypen: `derived_from`, `quotes`, `supersedes`, `revisits`,
+`comments_on`, `dismisses`, `confirms`.
+
+**Wichtig**: `artifact -> artifact`-Kanten sind explizit erlaubt und nötig,
+da die KI ihre eigene vorherige Synthese zusammen mit neuen/geänderten
+Fakten oder Kommentaren erneut zusammenfassen kann (Resynthese). Eine
+lebendige Mensch-KI-Diskussion, in der der Kurator einen KI-Kommentar nie
+vollständig verwirft, kann daher beliebig viele Hops erzeugen — der Graph
+ist **nicht** auf eine feste Hop-Zahl begrenzt.
+
+Invalidierungs-/Revisit-Erkennung erfolgt als Graphtraversierung bis zum
+Fixpunkt (mit Visited-Set zur Zyklensicherheit), nicht als Traversierung
+mit fester Tiefe. Die Traversierung terminiert, wenn keine weiteren
+abhängigen Knoten erreichbar sind oder ein vom Kurator verworfener
+("dismissed") Knoten erreicht wird — Dismissal ist der Mechanismus, der die
+Weiterpropagierung stoppt.
+
+### Invalidierung und Konfidenz (0006-19, 0006-21)
+
+- `invalidated`/`stale` ist ein von der Lifecycle-Statusmaschine
+  (discovered → queued → claimed → proposed → accepted/rejected → applied →
+  published → superseded, siehe 0006-06) **unabhängiges** Flag, das per
+  Graph-Kaskade gesetzt wird, nicht durch eine Kurator-Aktion.
+- Invalidierte Artefakte bleiben abrufbar und werden nie gelöscht, nur
+  markiert.
+- Jede KI-generierte Wissenseinheit trägt ein append-only
+  `confidence_history[]` (Wert, Zeitpunkt, zugrunde liegende Version,
+  Eingaben). Alte Konfidenzwerte bleiben erhalten und müssen mit denselben
+  Eingaben neu berechenbar sein, auch nachdem das zugrunde liegende
+  Requirement, ein Kommentar, eine Quelle oder das verwendete KI-Modell
+  durch eine neuere Version abgelöst wurde.
+- Innerhalb einer Synthese wird pro Claim (Aussage/Abschnitt) unterschieden:
+  Hard Fact, kuratierter Fakt, Nutzerkommentar, KI-inferiertes Wissen. Jeder
+  Claim trägt eigene `evidence_refs[]`, `confidence` und
+  `confidence_history[]` (siehe 0006-21).
+
+### Auslöser für Neubewertung (0006-20)
+
+Ein generischer Supersession-Trigger-Job ersetzt den reinen
+Release-Diff-Gedanken. Auslöser umfassen: neues AUTOSAR-Release, neue
+Kurationseingabe, Nutzerkommentar, Scraper-Update, Extraktions-Bugfix, neu
+verfügbare Quellen, geändertes KI-Modell/geänderte Einstellungen. Jeder
+Auslöser erzeugt neue unveränderliche Versionen (wo zutreffend) und stößt
+die Graphtraversierung an, um abhängiges Wissen zu invalidieren und/oder
+zur KI-Neubewertung einzureihen.
+
+### Org/project registry
+
+Canonical identity uses the release-free form `org/project/item_type/id`. Valid `org/project` pairs and their supported `item_type` values are registered in `_src/spec/projects.json`; consumers must not maintain private copies of this enum. `AUTOSAR` and `ECLIPSE` are organizations; `AP`, `CP`, `FOUNDATION`, and `S-Core` are projects run by those organizations. A registry entry records the organization, the project, a curator-facing display name, and the open set of curatable item types currently supported for that project.
+
+AUTOSAR AP, CP, and Foundation currently expose document-extracted `record` items. Eclipse S-Core initially registers `module`, `component-interface`, and `design-doc` item types; adding another item type or org/project pair requires an explicit registry change so validators and downstream tools can reject accidental or misspelled identity dimensions.
