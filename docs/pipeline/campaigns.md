@@ -18,9 +18,15 @@ scope:    <Teilmenge der Records, z. B. "alle Records unter spec/records/">
 Manifest-Pfad: `spec/campaigns/<id>.json` (Auslöser, Release, Werkzeugstand /
 Git-Commit von `spec_scrape.py`, Backend-Liste, PDF-Cache-Hash).
 
-**Implementierungsstatus des Manifests**: Kein `spec/campaigns/`-Verzeichnis
-mit `.json`-Dateien wurde im Repo gefunden — das Manifest-Konzept ist
-beschrieben, aber (noch) nicht materialisiert.
+**Implementierungsstatus des Manifests (0006-08, 2026-08-13)**: implementiert in
+`_src/tools/campaign_manifest.py`. `write_manifest()` legt `spec/campaigns/<id>.json`
+an (Trigger, Release, Scope, Git-Commit von `spec_scrape.py`, Backend-Liste,
+`corpus_hash` -- ein hash8 einer deterministischen (Pfad, mtime)-Auflistung aller
+Records, kein Volltext-Hash -- sowie ein `queue_snapshot` mit offen/claimed/done-
+Zählern beider Warteschlangen). `append_decision()`/`append_report()` ergänzen
+append-only Listen `curator_decisions`/`published_reports`. Die drei in Records
+gefundenen Kampagnen-IDs unten sind rückwirkend als Manifeste materialisiert.
+Siehe `docs/pipeline/campaign-manifest-schema.md` für das vollständige Feldschema.
 
 ## Tatsächlich vorkommende Kampagnen-IDs in den Records
 
