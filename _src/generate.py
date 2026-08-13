@@ -61,7 +61,7 @@ def generate_lang(lang, only=None, check=False):
         if page.get("nolang"):
             continue          # nur-deutsche Seite (z. B. Traceability-Bericht)
         uebers = uebersetze_seite(page, lang, seg, ui, stat)
-        html_text = render_page(uebers, footers, page_tmpl, lang=lang)
+        html_text = render_page(uebers, footers, page_tmpl, lang=lang, notice_ui=ui.get("review_notice"))
         html_text = globale_ersetzungen(html_text, ui)
         target = os.path.join(ROOT, lang, page["file"])
         if check:
@@ -123,7 +123,6 @@ def main():
             _fallback_by_lang[lang] = len(getattr(_stat, "fehlend", []) or [])
     _exit_code = 1 if bad else 0
     if not check:
-        import json, os
         reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
         os.makedirs(reports_dir, exist_ok=True)
         finished_at = time.time()
