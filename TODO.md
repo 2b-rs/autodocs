@@ -161,7 +161,7 @@ HOW TO USE:
 
 ### Cross-release traceability and invalidation
 
-- [p] **0006-15** PREREQ: 0006-15:0006-02, 0006-15:0006-03 — define the ID naming schemes needed for cross-release traceability of curated decisions, evidence snippets, and AI-derived artifacts — TODO: naming schemes documented 2026-08-13, hash algorithm/truncation length not yet pinned, no code mints these IDs yet
+- [x] **0006-15** PREREQ: 0006-15:0006-02, 0006-15:0006-03 — define the ID naming schemes needed for cross-release traceability of curated decisions, evidence snippets, and AI-derived artifacts — REF: 8792b642 — hash algorithm (SHA-256/hash8) and UUIDv7 generation pinned and implemented in `_src/tools/version_id.py`; documented in `docs/pipeline/version-id-scheme.md`. Minting code exists but is not yet wired into review_flags.py/curation_flags.py write paths (0006-16/0006-17 scope).
   - Motivating scenario (2026-08-13): a curator decides on a requirement's value; a later AUTOSAR release changes that same requirement; the system must be able to find every AI-generated artifact (comment/amendment/hypothesis/synthesis) whose evidence depended on the now-superseded decision or requirement version, and every requirement that changed, without deleting any prior decision, curation, evidence snippet, synthesis, or specification version — all of which must remain retrievable under a stable, unique ID.
   - Versioning grain for AUTOSAR AP: requirement level.
   - Define and document at least these ID families, layered on the canonical identity from **0006-02**:
