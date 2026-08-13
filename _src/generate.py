@@ -24,6 +24,7 @@ Danach:  python3 _src/validate.py    (Prüfungen, siehe WARTUNG.md)
 import multiprocessing
 import os
 import sys
+import time
 from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -79,6 +80,7 @@ def generate_lang(lang, only=None, check=False):
 
 
 def main():
+    _t0 = time.time()
     args = [a for a in sys.argv[1:]]
     check = "--check" in args
     langs = []
@@ -114,10 +116,33 @@ def main():
                 f.write(html_text)
         n += 1
     print(("geprüft" if check else "generiert") + ": %d Seiten" % n + (", Abweichungen: %d" % bad if check else ""))
+    _fallback_by_lang, _changed_targets = {}, []
     if not check:
         for lang in langs:
-            generate_lang(lang, only)
-    sys.exit(1 if bad else 0)
+            _n_lang, _stat, _stale = generate_lang(lang, only)
+            _fallback_by_lang[lang] = len(getattr(_stat, "fehlend", []) or [])
+    _exit_code = 1 if bad else 0
+    if not check:
+        import json, os
+        reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
+        os.makedirs(reports_dir, exist_ok=True)
+        finished_at = time.time()
+        report = {
+            "schema_version": "1.0", "report_kind": "html_generate", "tool": "generate.py",
+            "command": "generate.py " + " ".join(args), "inputs": langs or ["de"],
+            "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_t0)),
+            "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
+            "duration_s": round(finished_at - _t0, 3), "exit_code": _exit_code,
+            "changed_artifacts": _changed_targets,
+            "counts": {"pages_generated_per_lang": {"de": n, **{l: 0 for l in langs}},
+                       "fallback_to_german": _fallback_by_lang, "changed_targets": len(_changed_targets)},
+            "findings": [],
+            "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
+        }
+        fn = os.path.join(reports_dir, "html_generate-%d.json" % int(finished_at))
+        with open(fn, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=1)
+    sys.exit(_exit_code)
 
 
 if __name__ == "__main__":

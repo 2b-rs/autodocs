@@ -27,12 +27,41 @@ import json
 import os
 import re
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 I18N = os.path.join(HERE, "i18n")
 WORK = os.path.join(I18N, "work")
 sys.path.insert(0, HERE)
 from lib_docmodel import LANGS
+
+REPORTS_DIR = os.path.join(HERE, "..", "output", "build-reports")
+
+
+def _write_report(report_kind, tool, command, inputs, started_at, exit_code,
+                   changed_artifacts, counts, findings):
+    """Emit a build-report JSON conforming to docs/pipeline/build-report-schema.md."""
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+    finished_at = time.time()
+    report = {
+        "schema_version": "1.0",
+        "report_kind": report_kind,
+        "tool": tool,
+        "command": command,
+        "inputs": inputs,
+        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started_at)),
+        "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
+        "duration_s": round(finished_at - started_at, 3),
+        "exit_code": exit_code,
+        "changed_artifacts": changed_artifacts,
+        "counts": counts,
+        "findings": findings,
+        "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
+    }
+    fname = "%s-%d.json" % (report_kind, int(finished_at))
+    with open(os.path.join(REPORTS_DIR, fname), "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=1)
+    return report
 
 _PH = re.compile(r"\u27e6\d+\u27e7")
 _IDS = re.compile(r"\[SWS_[A-Z]+_\d+\]|\b(?:AUTOSAR|EXP|FO)_[A-Za-z0-9]+\b")
@@ -122,13 +151,16 @@ def normalisiere_zitate(t, lang):
 
 
 def merge(lang):
+    _t0 = time.time()
     qseg, qlab = _quelle()
     seg, lab = _register(lang)
     d = os.path.join(WORK, lang)
     fehler, uebernommen = [], 0
+    _batches_consumed = 0
     for f in sorted(os.listdir(d) if os.path.isdir(d) else []):
         if not re.fullmatch(r"batch_\d+\.out\.jsonl", f):
             continue
+        _batches_consumed += 1
         for zeilennr, zeile in enumerate(open(os.path.join(d, f), encoding="utf-8"), 1):
             zeile = zeile.strip()
             if not zeile:
@@ -174,6 +206,19 @@ def merge(lang):
     print("[%s] übernommen: %d, abgelehnt: %d, noch offen: %d%s"
           % (lang, uebernommen, len(fehler), rest,
              "  (Details: i18n/work/%s/fehler.json)" % lang if fehler else ""))
+    _changed = [os.path.join("i18n", lang, "segments.json"), os.path.join("i18n", lang, "labels.json")]
+    if fehler:
+        _changed.append(os.path.join("i18n", "work", lang, "fehler.json"))
+    _write_report(
+        report_kind="i18n_merge", tool="i18n_translate.py",
+        command="i18n_translate.py merge %s" % lang, inputs=[lang],
+        started_at=_t0, exit_code=(1 if fehler else 0),
+        changed_artifacts=_changed,
+        counts={"batches_consumed": _batches_consumed, "accepted": uebernommen,
+                "rejected": len(fehler), "register_changes": uebernommen},
+        findings=[{"category": "merge-reject", "severity": "error",
+                   "message": "%s: %s" % (e.get("id", "?"), e.get("grund", "?"))} for e in fehler],
+    )
     return len(fehler)
 
 
