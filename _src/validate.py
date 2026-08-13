@@ -18,6 +18,7 @@ Exit-Code 0 = alles in Ordnung.
 import glob
 import json
 import multiprocessing
+import re
 import os
 import sys
 import urllib.parse
@@ -356,12 +357,102 @@ def check_namespaces():
                         % (len(unbekannt), unbekannt[:5]))
 
 
+def _check_home_links_one_lang(lang):
+    """0008-03: header-logo (a.home) und Breadcrumb-"Start"-Link muessen innerhalb
+    des eigenen Sprachbaums bleiben (bzw. beim kanonischen Baum im Wurzel-index.html),
+    duerfen also nicht in den deutschen Wurzelbaum eines anderen Sprachbaums springen."""
+    local_problems = []
+    wurzel = os.path.join(ROOT, lang) if lang != "de" else ROOT
+    if not os.path.isdir(wurzel):
+        return local_problems
+    for full in glob.glob(os.path.join(wurzel, "**", "*.html"), recursive=True):
+        rel = os.path.relpath(full, wurzel)
+        if lang == "de" and rel.split(os.sep, 1)[0] in LANGS:
+            continue  # ROOT also directly contains the language subtrees; skip them here
+        text = open(full, encoding="utf-8").read()
+        m = re.search(r'<a class="home" href="([^"]+)"', text)
+        if not m:
+            continue
+        home_href = m.group(1)
+        page_dir = os.path.dirname(full)
+        home_target = os.path.normpath(os.path.join(page_dir, home_href))
+        expected = os.path.join(wurzel, "index.html")
+        if home_target != expected:
+            local_problems.append("[%s] home-Link zeigt aus dem Sprachbaum heraus: %s -> %s (erwartet %s)"
+                                  % (lang, rel, home_href, os.path.relpath(expected, wurzel)))
+        nav_m = re.search(r'<nav class="crumbs">(.*?)</nav>', text, re.S)
+        if nav_m:
+            crumb_m = re.search(r'<a[^>]+href="([^"]+)"[^>]*>', nav_m.group(1))
+            if crumb_m:
+                crumb_href = crumb_m.group(1)
+                crumb_target = os.path.normpath(os.path.join(page_dir, crumb_href))
+                if crumb_target != expected:
+                    local_problems.append("[%s] Breadcrumb-Start-Link zeigt aus dem Sprachbaum heraus: %s -> %s (erwartet %s)"
+                                          % (lang, rel, crumb_href, os.path.relpath(expected, wurzel)))
+    return local_problems
+
+
+def check_home_links():
+    """0008-03: Regressionspruefung fuer den Header-Logo- und Breadcrumb-"Start"-Link
+    in allen Sprachbaeumen (gefunden 2026-08-13, behoben in 0008-02)."""
+    for lang in ["de"] + LANGS:
+        problems.extend(_check_home_links_one_lang(lang))
+
+
+_GERMAN_CHROME_STRINGS = None
+
+
+def _german_chrome_strings():
+    """0008-04: die deutschen Quelltexte aus ui.json["global"] (feste, per
+    globale_ersetzungen() zu ersetzende Chrome-/Badge-Texte) plus die hartcodierten
+    Default-Strings aus lib_docmodel._review_page_enhancements(), die durch die
+    i18n-Pipeline laufen MUESSEN und in keinem Sprachbaum unuebersetzt ueberleben duerfen."""
+    global _GERMAN_CHROME_STRINGS
+    if _GERMAN_CHROME_STRINGS is None:
+        ui_all = json.load(open(os.path.join(SRC, "i18n", "ui.json"), encoding="utf-8"))
+        de_ui = ui_all.get("de", {})
+        strings = set(de_ui.get("global", {}).keys())
+        strings.add("mit Review-Bedarf")
+        strings.add("Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.")
+        _GERMAN_CHROME_STRINGS = sorted(s for s in strings if s)
+    return _GERMAN_CHROME_STRINGS
+
+
+def _check_no_hardcoded_german_one_lang(lang):
+    local_problems = []
+    wurzel = os.path.join(ROOT, lang)
+    if not os.path.isdir(wurzel):
+        return local_problems
+    strings = _german_chrome_strings()
+    hits = {}
+    for full in glob.glob(os.path.join(wurzel, "**", "*.html"), recursive=True):
+        text = open(full, encoding="utf-8").read()
+        for s in strings:
+            if s in text:
+                hits.setdefault(s, []).append(os.path.relpath(full, wurzel))
+    for s, files in hits.items():
+        local_problems.append("[%s] unuebersetzter deutscher Chrome-Text %r in %d Datei(en), z.B. %s"
+                              % (lang, s, len(files), files[:3]))
+    return local_problems
+
+
+def check_no_hardcoded_german():
+    """0008-04: erkennt hartcodierte deutsche UI-Strings in generiertem
+    nicht-deutschem HTML, damit zukuenftige Chrome-/Badge-Texte nicht mehr
+    stillschweigend an der i18n-Pipeline vorbeigehen (gefunden 2026-08-13, 0008-01)."""
+    for lang in LANGS:
+        problems.extend(_check_no_hardcoded_german_one_lang(lang))
+
+
+
 def main():
     check_build()
     check_links()
     check_langs()
     check_requirement_review_schema()
     check_namespaces()
+    check_home_links()
+    check_no_hardcoded_german()
     if problems:
         print("PROBLEME:")
         for p in problems:
