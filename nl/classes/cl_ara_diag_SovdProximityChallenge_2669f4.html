@@ -11,42 +11,42 @@
 <pre class="syntax">class SovdProximityChallenge {...};</pre>
 <div class="desc"><p>Class to implement the SOVD proximity_challenge interfaces in the application.</p></div>
 <table class="props"><tr><th>Headerbestand</th><td class="mono">#include "ara/diag/sovd_proximity_challenge.h"</td></tr><tr><th>Forwarding-header</th><td class="mono">#include "ara/diag/diag_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html">ara::diag</a></td></tr></table>
-<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">Door AI gegenereerd</span></h2></summary><div class="ai"><p class="ai-note">Automatisch gegenereerde beschrijving, inhoudelijk afgeleid uit de gerefereerde AUTOSAR-R25-11-documenten (SWS-specificatie en bijbehorende standaarddocumenten) — geen officiele AUTOSAR-tekst. Als interpretatie gemarkeerde uitspraken zijn conclusies uit de bronnen.</p><h4>Gebruiksdoel</h4><p><code>SovdProximityChallenge</code> implementeert de SOVD-interface voor Proximity Challenges. <code>GetChallenge()</code> retourneert een door de applicatie gegenereerde Challenge met geldigheidstijdstip; als voor een SOVD-operatie een proximity-bewijs vereist is, plaatst de Diagnostic Server deze waarde in het betreffende antwoord. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01481" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01481]</a> <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01398">[SWS_DM_01398]</a> <code>ValidateResponse()</code> controleert het door de client geleverde antwoord. <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01395">[SWS_DM_01395]</a></p><h4>Aanmaak &amp; levenscyclus</h4><p>De constructor bindt een PortPrototype van de <code>DiagnosticSovdProximityChallengeInterface</code> en ontvangt de gelijktijdigheidsvoorgave. <a class="swsref" href="#SWS_DM_01480">[SWS_DM_01480]</a> <code>Offer()</code> activeert en <code>StopOffer()</code> deactiveert de doorgifte door de DM. Een offer kan <code>kAlreadyOffered</code> of <code>kConfigurationMismatch</code> leveren. <a class="swsref" href="#SWS_DM_01478">[SWS_DM_01478]</a> <a class="swsref" href="#SWS_DM_01495">[SWS_DM_01495]</a> De destructor is exception-safe. <a class="swsref" href="#SWS_DM_01479">[SWS_DM_01479]</a></p><h4>Beperkingen &amp; foutafhandeling</h4><p>Het proximity-antwoord is slechts geldig tot de promise-vervulling respectievelijk annuleringsverwerking. <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> Voor de beëindiging van een SOVD-operatie moet de Diagnostic Server een aanwezige <code>proximity_response</code> met <code>ValidateResponse()</code> controleren. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01391">[SWS_DM_01391]</a> GetChallenge en ValidateResponse zijn voor thread-safety afhankelijk van de <code>ConcurrencyType</code>; Offer en StopOffer zijn niet thread-safe. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> <a class="swsref" href="#SWS_DM_01478">[SWS_DM_01478]</a> <a class="swsref" href="#SWS_DM_01495">[SWS_DM_01495]</a></p><p><code>GetChallenge()</code> en <code>ValidateResponse()</code> leveren hun resultaten asynchroon en specificeren geen gestandaardiseerde fouten. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> De DM beschouwt een proximity-challenge als geldig wanneer de validatie <code>kProximityChallengeValidationSuccessful</code> retourneert. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01395">[SWS_DM_01395]</a> De constructor zelf is thread-safe, terwijl de destructor niet thread-safe is. <a class="swsref" href="#SWS_DM_01480">[SWS_DM_01480]</a> <a class="swsref" href="#SWS_DM_01479">[SWS_DM_01479]</a></p><p>De Challenge zelf en haar geldigheid worden door <code>GetChallenge()</code> als retourwaarde overgedragen. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a></p><h4>SOVD-toegangscontext</h4><p>Een SOVD-proximity-challenge vraagt vóór de uitvoering van een SOVD-bewerking om het bewijs van fysieke nabijheid. De interface <code>SovdProximityChallenge</code> geeft de challenge-procedure door aan de applicatie en informeert de diagnostic manager over het resultaat; op basis daarvan voert deze de bewerking uit. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf#nameddest=subsubsection.3.2.1.1">EXP SOVD §3.2.1.1 “Proximity Challenge”</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 224.00 519.00" style="max-width:299px">
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">Door AI gegenereerd</span></h2></summary><div class="ai"><p class="ai-note">Automatisch gegenereerde beschrijving, inhoudelijk afgeleid uit de gerefereerde AUTOSAR-R25-11-documenten (SWS-specificatie en bijbehorende standaarddocumenten) — geen officiele AUTOSAR-tekst. Als interpretatie gemarkeerde uitspraken zijn conclusies uit de bronnen.</p><h4>Gebruiksdoel</h4><p><code>SovdProximityChallenge</code> implementeert de SOVD-interface voor Proximity Challenges. <code>GetChallenge()</code> retourneert een door de applicatie gegenereerde Challenge met geldigheidstijdstip; als voor een SOVD-operatie een proximity-bewijs vereist is, plaatst de Diagnostic Server deze waarde in het betreffende antwoord. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01481" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01481]</a> <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01398">[SWS_DM_01398]</a> <code>ValidateResponse()</code> controleert het door de client geleverde antwoord. <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01395">[SWS_DM_01395]</a></p><h4>Aanmaak &amp; levenscyclus</h4><p>De constructor bindt een PortPrototype van de <code>DiagnosticSovdProximityChallengeInterface</code> en ontvangt de gelijktijdigheidsvoorgave. <a class="swsref" href="#SWS_DM_01480">[SWS_DM_01480]</a> <code>Offer()</code> activeert en <code>StopOffer()</code> deactiveert de doorgifte door de DM. Een offer kan <code>kAlreadyOffered</code> of <code>kConfigurationMismatch</code> leveren. <a class="swsref" href="#SWS_DM_01478">[SWS_DM_01478]</a> <a class="swsref" href="#SWS_DM_01495">[SWS_DM_01495]</a> De destructor is exception-safe. <a class="swsref" href="#SWS_DM_01479">[SWS_DM_01479]</a></p><h4>Beperkingen &amp; foutafhandeling</h4><p>Het proximity-antwoord is slechts geldig tot de promise-vervulling respectievelijk annuleringsverwerking. <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> Voor de beëindiging van een SOVD-operatie moet de Diagnostic Server een aanwezige <code>proximity_response</code> met <code>ValidateResponse()</code> controleren. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01391">[SWS_DM_01391]</a> GetChallenge en ValidateResponse zijn voor thread-safety afhankelijk van de <code>ConcurrencyType</code>; Offer en StopOffer zijn niet thread-safe. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> <a class="swsref" href="#SWS_DM_01478">[SWS_DM_01478]</a> <a class="swsref" href="#SWS_DM_01495">[SWS_DM_01495]</a></p><p><code>GetChallenge()</code> en <code>ValidateResponse()</code> leveren hun resultaten asynchroon en specificeren geen gestandaardiseerde fouten. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a> <a class="swsref" href="#SWS_DM_01493">[SWS_DM_01493]</a> De DM beschouwt een proximity-challenge als geldig wanneer de validatie <code>kProximityChallengeValidationSuccessful</code> retourneert. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01395">[SWS_DM_01395]</a> De constructor zelf is thread-safe, terwijl de destructor niet thread-safe is. <a class="swsref" href="#SWS_DM_01480">[SWS_DM_01480]</a> <a class="swsref" href="#SWS_DM_01479">[SWS_DM_01479]</a></p><p>De Challenge zelf en haar geldigheid worden door <code>GetChallenge()</code> als retourwaarde overgedragen. <a class="swsref" href="#SWS_DM_01494">[SWS_DM_01494]</a></p><h4>SOVD-toegangscontext</h4><p>Een SOVD-proximity-challenge vraagt vóór de uitvoering van een SOVD-bewerking om het bewijs van fysieke nabijheid. De interface <code>SovdProximityChallenge</code> geeft de challenge-procedure door aan de applicatie en informeert de diagnostic manager over het resultaat; op basis daarvan voert deze de bewerking uit. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf#nameddest=subsubsection.3.2.1.1">EXP SOVD §3.2.1.1 “Proximity Challenge”</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 223.00 519.00" style="max-width:297px">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 515.13)">
 <title>G</title>
-<text xml:space="preserve" text-anchor="middle" x="107.94" y="-494.78" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">SOVD Proximity Challenge</text>
+<text xml:space="preserve" text-anchor="middle" x="107.44" y="-494.78" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">SOVD Proximity Challenge</text>
 <!-- start -->
 <g id="node1" class="node">
 <title>start</title>
-<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="137.38" cy="-483.87" rx="5.76" ry="5.76"></ellipse>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="136.38" cy="-483.87" rx="5.76" ry="5.76"></ellipse>
 </g>
 <!-- operation -->
 <g id="node2" class="node vis-app">
 <title>operation</title>
 <g id="a_node2"><a xlink:href="cl_ara_diag_GenericDiagnosticSovdOperation_fbec16.html" xlink:title="SOVD-Operation angefordert" target="_top" class="vis-app">
-<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M203.88,-441.11C203.88,-441.11 70.88,-441.11 70.88,-441.11 64.88,-441.11 58.88,-435.11 58.88,-429.11 58.88,-429.11 58.88,-417.11 58.88,-417.11 58.88,-411.11 64.88,-405.11 70.88,-405.11 70.88,-405.11 203.88,-405.11 203.88,-405.11 209.88,-405.11 215.88,-411.11 215.88,-417.11 215.88,-417.11 215.88,-429.11 215.88,-429.11 215.88,-435.11 209.88,-441.11 203.88,-441.11"></path>
-<text xml:space="preserve" text-anchor="middle" x="137.38" y="-418.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SOVD-Operation angefordert</text>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M202.88,-441.11C202.88,-441.11 69.88,-441.11 69.88,-441.11 63.88,-441.11 57.88,-435.11 57.88,-429.11 57.88,-429.11 57.88,-417.11 57.88,-417.11 57.88,-411.11 63.88,-405.11 69.88,-405.11 69.88,-405.11 202.88,-405.11 202.88,-405.11 208.88,-405.11 214.88,-411.11 214.88,-417.11 214.88,-417.11 214.88,-429.11 214.88,-429.11 214.88,-435.11 208.88,-441.11 202.88,-441.11"></path>
+<text xml:space="preserve" text-anchor="middle" x="136.38" y="-418.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SOVD-Operation angefordert</text>
 </a>
 </g>
 </g>
 <!-- start&#45;&gt;operation -->
 <g id="edge1" class="edge">
 <title>start-&gt;operation</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M137.38,-477.86C137.38,-472.22 137.38,-462.58 137.38,-453.01"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="140.88,-453.31 137.38,-443.31 133.88,-453.31 140.88,-453.31"></polygon>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M136.38,-477.86C136.38,-472.22 136.38,-462.58 136.38,-453.01"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="139.88,-453.31 136.38,-443.31 132.88,-453.31 139.88,-453.31"></polygon>
 </g>
 <!-- needed -->
 <g id="node3" class="node">
 <title>needed</title>
-<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="137.38,-368.11 61.38,-336.11 137.37,-304.11 213.38,-336.11 137.38,-368.11"></polygon>
-<text xml:space="preserve" text-anchor="middle" x="137.38" y="-337.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Nachweis</text>
-<text xml:space="preserve" text-anchor="middle" x="137.38" y="-325.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">erforderlich?</text>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="136.38,-368.11 60.38,-336.11 136.37,-304.11 212.38,-336.11 136.38,-368.11"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="136.38" y="-337.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Nachweis</text>
+<text xml:space="preserve" text-anchor="middle" x="136.38" y="-325.66" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">erforderlich?</text>
 </g>
 <!-- operation&#45;&gt;needed -->
 <g id="edge2" class="edge">
 <title>operation-&gt;needed</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M137.38,-404.91C137.38,-397.69 137.38,-388.94 137.38,-380.16"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="140.88,-380.39 137.38,-370.39 133.88,-380.39 140.88,-380.39"></polygon>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M136.38,-404.91C136.38,-397.69 136.38,-388.94 136.38,-380.16"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="139.88,-380.39 136.38,-370.39 132.88,-380.39 139.88,-380.39"></polygon>
 </g>
 <!-- challenge -->
 <g id="node4" class="node vis-app">
@@ -61,57 +61,57 @@
 <!-- needed&#45;&gt;challenge -->
 <g id="edge3" class="edge">
 <title>needed-&gt;challenge</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M122.4,-310.08C114.46,-296.82 104.7,-280.51 96.59,-266.95"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="99.75,-265.42 91.61,-258.64 93.74,-269.02 99.75,-265.42"></polygon>
-<text xml:space="preserve" text-anchor="middle" x="110.92" y="-276.61" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">ja</text>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M121.66,-310.08C113.86,-296.82 104.27,-280.51 96.3,-266.95"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="99.5,-265.49 91.42,-258.64 93.47,-269.04 99.5,-265.49"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="110.45" y="-276.61" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">ja</text>
 </g>
 <!-- execute -->
 <g id="node5" class="node vis-app">
 <title>execute</title>
 <g id="a_node5"><a xlink:href="cl_ara_diag_GenericDiagnosticSovdOperation_fbec16.html" xlink:title="Operation ausführen" target="_top" class="vis-app">
-<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M170.5,-90.36C170.5,-90.36 80.25,-90.36 80.25,-90.36 74.25,-90.36 68.25,-84.36 68.25,-78.36 68.25,-78.36 68.25,-66.36 68.25,-66.36 68.25,-60.36 74.25,-54.36 80.25,-54.36 80.25,-54.36 170.5,-54.36 170.5,-54.36 176.5,-54.36 182.5,-60.36 182.5,-66.36 182.5,-66.36 182.5,-78.36 182.5,-78.36 182.5,-84.36 176.5,-90.36 170.5,-90.36"></path>
-<text xml:space="preserve" text-anchor="middle" x="125.38" y="-67.91" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Operation ausführen</text>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M171.5,-90.36C171.5,-90.36 81.25,-90.36 81.25,-90.36 75.25,-90.36 69.25,-84.36 69.25,-78.36 69.25,-78.36 69.25,-66.36 69.25,-66.36 69.25,-60.36 75.25,-54.36 81.25,-54.36 81.25,-54.36 171.5,-54.36 171.5,-54.36 177.5,-54.36 183.5,-60.36 183.5,-66.36 183.5,-66.36 183.5,-78.36 183.5,-78.36 183.5,-84.36 177.5,-90.36 171.5,-90.36"></path>
+<text xml:space="preserve" text-anchor="middle" x="126.38" y="-67.91" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Operation ausführen</text>
 </a>
 </g>
 </g>
 <!-- needed&#45;&gt;execute -->
 <g id="edge4" class="edge">
 <title>needed-&gt;execute</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M151.82,-309.65C174.56,-265.89 212.69,-174.7 177.38,-108.36 175.48,-104.79 173.04,-101.53 170.25,-98.54"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="172.69,-96.03 162.89,-92 168.03,-101.26 172.69,-96.03"></polygon>
-<text xml:space="preserve" text-anchor="middle" x="199.51" y="-193.36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">nein</text>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M150.69,-309.72C173.24,-266.06 211.08,-175.02 176.38,-108.36 174.53,-104.82 172.15,-101.57 169.43,-98.59"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="172,-96.2 162.25,-92.05 167.28,-101.37 172,-96.2"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="198.15" y="-193.36" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">nein</text>
 </g>
 <!-- result -->
 <g id="node6" class="node">
 <title>result</title>
-<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M106.38,-173.61C106.38,-173.61 18.37,-173.61 18.37,-173.61 12.38,-173.61 6.38,-167.61 6.38,-161.61 6.38,-161.61 6.38,-149.61 6.38,-149.61 6.38,-143.61 12.38,-137.61 18.38,-137.61 18.38,-137.61 106.38,-137.61 106.38,-137.61 112.38,-137.61 118.38,-143.61 118.38,-149.61 118.38,-149.61 118.38,-161.61 118.38,-161.61 118.38,-167.61 112.38,-173.61 106.38,-173.61"></path>
-<text xml:space="preserve" text-anchor="middle" x="62.38" y="-157.16" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Ergebnis an</text>
-<text xml:space="preserve" text-anchor="middle" x="62.38" y="-145.16" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Diagnostic Manager</text>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M109.38,-173.61C109.38,-173.61 21.37,-173.61 21.37,-173.61 15.38,-173.61 9.38,-167.61 9.38,-161.61 9.38,-161.61 9.38,-149.61 9.38,-149.61 9.38,-143.61 15.38,-137.61 21.38,-137.61 21.38,-137.61 109.38,-137.61 109.38,-137.61 115.38,-137.61 121.38,-143.61 121.38,-149.61 121.38,-149.61 121.38,-161.61 121.38,-161.61 121.38,-167.61 115.38,-173.61 109.38,-173.61"></path>
+<text xml:space="preserve" text-anchor="middle" x="65.38" y="-157.16" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Resultaat aan</text>
+<text xml:space="preserve" text-anchor="middle" x="65.38" y="-145.16" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Diagnostic Manager</text>
 </g>
 <!-- challenge&#45;&gt;result -->
 <g id="edge5" class="edge">
 <title>challenge-&gt;result</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M76.56,-220.63C74.28,-210.36 71.34,-197.06 68.72,-185.25"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="72.19,-184.73 66.61,-175.72 65.35,-186.24 72.19,-184.73"></polygon>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M77.19,-220.63C75.3,-210.36 72.84,-197.06 70.66,-185.25"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="74.16,-184.93 68.91,-175.73 67.28,-186.2 74.16,-184.93"></polygon>
 </g>
 <!-- end -->
 <g id="node7" class="node">
 <title>end</title>
-<ellipse fill="#28251d" stroke="#28251d" cx="125.38" cy="-8.68" rx="4.68" ry="4.68"></ellipse>
-<ellipse fill="none" stroke="#28251d" cx="125.38" cy="-8.68" rx="8.68" ry="8.68"></ellipse>
+<ellipse fill="#28251d" stroke="#28251d" cx="126.38" cy="-8.68" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="126.38" cy="-8.68" rx="8.68" ry="8.68"></ellipse>
 </g>
 <!-- execute&#45;&gt;end -->
 <g id="edge6" class="edge">
 <title>execute-&gt;end</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M125.38,-53.85C125.38,-46.18 125.38,-37.15 125.38,-29.26"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="128.88,-29.5 125.38,-19.5 121.88,-29.5 128.88,-29.5"></polygon>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M126.38,-53.85C126.38,-46.18 126.38,-37.15 126.38,-29.26"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="129.88,-29.5 126.38,-19.5 122.88,-29.5 129.88,-29.5"></polygon>
 </g>
 <!-- result&#45;&gt;execute -->
 <g id="edge7" class="edge">
 <title>result-&gt;execute</title>
-<path fill="none" stroke="#28251d" stroke-width="1.1" d="M57.25,-137.23C55.57,-128.03 55.26,-116.92 60.38,-108.36 62.71,-104.45 65.65,-100.95 68.98,-97.82"></path>
-<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="70.93,-100.74 76.64,-91.82 66.61,-95.23 70.93,-100.74"></polygon>
-<text xml:space="preserve" text-anchor="middle" x="118.88" y="-110.11" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">auf Basis des Ergebnisses</text>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M60.57,-137.26C59.03,-128.07 58.84,-116.95 63.88,-108.36 66.08,-104.6 68.85,-101.21 72,-98.16"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="74.16,-100.92 79.76,-91.92 69.77,-95.46 74.16,-100.92"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="120.12" y="-110.11" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">op basis van het resultaat</text>
 </g>
 </g>
 </svg>
