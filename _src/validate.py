@@ -445,6 +445,30 @@ def check_no_hardcoded_german():
 
 
 
+def check_record_status():
+    """0006-04: jeder Spec-Record muss einen 'status'-Schluessel tragen
+    (Zustand/Historie), damit Kurations-Sichtbarkeit nicht mehr auf das
+    SWS_LOG-Pilotmodul beschraenkt bleibt. Nach dem einmaligen Backfill
+    (migriere_status_backfill.py) darf kein neuer Schreibpfad hierhinter
+    zurueckfallen."""
+    import json as _json
+    wurzel = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spec", "records")
+    if not os.path.isdir(wurzel):
+        return
+    ohne = []
+    for ordner, _, dateien in os.walk(wurzel):
+        for datei in dateien:
+            if not datei.endswith(".json"):
+                continue
+            pfad = os.path.join(ordner, datei)
+            rec = _json.load(open(pfad, encoding="utf-8"))
+            if "status" not in rec:
+                ohne.append(rec.get("id", datei))
+    if ohne:
+        problems.append("Records ohne 'status' (%d): %s" % (len(ohne), ohne[:5]))
+
+
+
 def main():
     check_build()
     check_links()
@@ -453,6 +477,7 @@ def main():
     check_namespaces()
     check_home_links()
     check_no_hardcoded_german()
+    check_record_status()
     if problems:
         print("PROBLEME:")
         for p in problems:
