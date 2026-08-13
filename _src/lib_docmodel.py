@@ -348,9 +348,9 @@ def _review_page_enhancements(main, notice_ui=None):
         heading = _html.unescape(re.sub(r"<[^>]+>", "", heading))
         links.append('<a class="page-review-link" href="#review-%s" data-review-link="%s">%s</a>' % (esc_attr(_canonical_anchor(rid, data)), esc_attr(rid), esc_once(heading)))
     nu = notice_ui or {}
-    singular = nu.get("singular", "%d API-Element mit Review-Bedarf")
-    plural = nu.get("plural", "%d API-Elemente mit Review-Bedarf")
-    body = nu.get("body", "Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.")
+    singular = nu.get("singular") or nu.get("title_singular") or "%d API element needs review"
+    plural = nu.get("plural") or nu.get("title_plural") or "%d API elements need review"
+    body = nu.get("body") or "Before release, requirement text and mapping must be reviewed."
     title = (singular if len(items) == 1 else plural) % len(items)
     notice = ('<aside class="page-review-notice" role="note" aria-labelledby="page-review-title">'
               '<span class="page-review-icon" aria-hidden="true">!</span><div>'
