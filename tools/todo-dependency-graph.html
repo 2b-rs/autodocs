@@ -27,20 +27,20 @@
 <h1>TODO.md Dependency Graph</h1>
 <div class="warn">
   Maintainer-only tool. Not linked from the published site, not covered by
-  <code>generate.py</code>/<code>validate.py</code>. Renders live in the
-  browser via a vendored local Graphviz-WASM bundle
-  (<code>tools/vendor/hpcc-js-wasm-graphviz.umd.js</code>) so it works fully
-  offline and from <code>file://</code> URLs once fetched via <code>run.sh</code>.
+  <code>generate.py</code>/<code>validate.py</code>. Auto-loads <code>../TODO.md</code>
+  on page load and renders live via a vendored local Graphviz-WASM bundle
+  (<code>tools/vendor/hpcc-js-wasm-graphviz.umd.js</code>). Requires the page to be
+  served over <code>http(s)://</code> (e.g. <code>python3 -m http.server</code> in the
+  repo root) — <code>fetch()</code> cannot read sibling files across the <code>file://</code>
+  origin boundary.
 </div>
 
 <div class="toolbar">
-  <button id="btn-fetch">Load TODO.md (fetch, needs a local web server)</button>
-  <label>or pick a file: <input type="file" id="file-input" accept=".md"></label>
   <label><input type="checkbox" id="chk-include-done"> include finished tasks/features</label>
   <button id="btn-rerender" disabled>Re-render</button>
 </div>
 
-<div id="status">No TODO.md loaded yet.</div>
+<div id="status">Loading…</div>
 
 <div id="legend">
   <span><i style="background:black"></i>same-feature / explicit</span>
@@ -209,9 +209,7 @@ function buildDot(features, includeDone) {
 // ---------------------------------------------------------------------------
 const statusEl = document.getElementById('status');
 const graphEl = document.getElementById('graph-container');
-const btnFetch = document.getElementById('btn-fetch');
 const btnRerender = document.getElementById('btn-rerender');
-const fileInput = document.getElementById('file-input');
 const chkIncludeDone = document.getElementById('chk-include-done');
 
 let lastText = null;
@@ -269,7 +267,7 @@ async function renderFromText(text) {
   }
 }
 
-btnFetch.addEventListener('click', async () => {
+async function loadAndRender() {
   setStatus('Fetching ../TODO.md…');
   try {
     const res = await fetch('../TODO.md', { cache: 'no-store' });
@@ -279,25 +277,22 @@ btnFetch.addEventListener('click', async () => {
   } catch (err) {
     setStatus(
       'ERROR: ' + err.message +
-      '\nfetch() only works when this page is served over http(s):// (e.g. `python3 -m http.server` in the repo root, ' +
-      'then open http://localhost:8000/tools/todo-dependency-graph.html). ' +
-      'If you opened this file directly (file://), use the file picker instead.',
+      '\nThis page must be served over http(s):// to auto-load TODO.md ' +
+      '(e.g. run `python3 -m http.server 8000` in the repo root, then open ' +
+      'http://localhost:8000/tools/todo-dependency-graph.html). Opening this file ' +
+      'directly via file:// will not work since fetch() cannot read sibling files ' +
+      'across the file:// origin boundary.',
       true
     );
   }
-});
+}
 
-fileInput.addEventListener('change', async () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  setStatus(`Reading ${file.name}…`);
-  const text = await file.text();
-  await renderFromText(text);
-});
-
-btnRerender.addEventListener('click', () => {
+btnRerender.addEventListener('click', () => loadAndRender());
+chkIncludeDone.addEventListener('change', () => {
   if (lastText != null) renderFromText(lastText);
 });
+
+loadAndRender();
 </script>
 </body>
 </html>
