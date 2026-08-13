@@ -182,7 +182,7 @@ HOW TO USE:
   - Add an equivalent `source_version` field to each `evidence:<uuid7>` snippet so first-pass extraction always points at one immutable requirement snapshot.
   - Without these pins, drift detection can only say "this record changed since some undated point," not "this decision/evidence snippet is now stale relative to version X."
 
-- [u] **0006-18** PREREQ: 0006-18:0006-15, 0006-18:0006-16 — model evidence/dependency links as a first-class, queryable graph rather than free text — TODO: whether curator dismissal severs existing downstream edges (for audit) or only halts future propagation is explicitly left as an open choice in the task text; needs a manager/curator decision before implementation can start
+- [x] **0006-18** PREREQ: 0006-18:0006-15, 0006-18:0006-16 — model evidence/dependency links as a first-class, queryable graph rather than free text — REF: 048ffef1 — RESOLVED (user decision 2026-08-13): dismissal halts future propagation only, never severs existing edges (Option B); implemented in `_src/tools/dependency_graph.py`, documented in `docs/pipeline/dependency-graph.md`.
   - Current gap: the `evidence` field in the unified curation-item schema (**0006-03**) is descriptive text, not a queryable edge.
   - Introduce first-class node kinds for `requirement-version`, `curation-decision`, `evidence-snippet`, `artifact/synthesis`, and `human-comment`, with typed edges that distinguish at least: `derived_from`, `quotes`, `supersedes`, `revisits`, `comments_on`, `dismisses`, and `confirms`.
   - Support `artifact -> artifact` edges explicitly: AI may resynthesize its own prior text together with newly changed facts or comments, so synthesis-depends-on-synthesis is a real, potentially unbounded scenario.
