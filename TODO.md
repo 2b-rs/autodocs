@@ -50,9 +50,9 @@ HOW TO USE:
 - [ ] **0001-03** extend the i18n pipeline so each `i18n_translate.py merge <lang>` run emits a machine-readable report with batch files consumed, accepted/rejected counts, `fehler.json` summary, and resulting register changes
 - [ ] **0001-04** extend `i18n_diagrams.py` so each run emits a report of diagram sources considered, translated outputs written, unchanged outputs skipped, and stale translated SVGs deleted
 - [ ] **0001-05** extend the HTML build/publication path so each `generate.py` run emits a machine-readable report with generated page counts per language, fallback-to-German counts, changed target files, and wall-clock duration
-- [ ] **0001-06** extend `validate.py` so each run emits a structured report with all checks performed, all findings grouped by category, and an explicit success/failure summary usable from automation
+- [ ] **0001-06** PREREQ: 0001-06:0004-01, 0001-06:0006-13 — extend `validate.py` so each run emits a structured report with all checks performed, all findings grouped by category, and an explicit success/failure summary usable from automation
 - [ ] **0001-07** add a runner-side orchestration step (via `run.sh` archive flow) that combines merge/diagram/build/validate subreports into one end-to-end publication report for a release/build run
-- [ ] **0001-08** publish the combined build report into the generated HTML tree as a browsable report page with links to archived logs and referenced artifacts
+- [ ] **0001-08** PREREQ: 0001-08:0006-09 — publish the combined build report into the generated HTML tree as a browsable report page with links to archived logs and referenced artifacts
 - [ ] **0001-09** ensure the published report page links back to the corresponding `run.sh` archive (`run-<timestamp>-n<seq>.sh` + `.log`) so every generated artifact can be traced to its exact execution log
 - [ ] **0001-10** add tests/fixtures for report generation and schema stability, including failure cases (rejects, stale diagrams, fallback translations, validate findings)
 - [ ] **0001-11** update `_src/WARTUNG.md`, `docs/pipeline/actions.md`, `docs/pipeline/reports.md`, and `docs/pipeline/tools.md` so the build-report process is documented as a required part of i18n/HTML publication
@@ -65,7 +65,7 @@ HOW TO USE:
 - [ ] **0002-04** create a dedicated page model under `_src/sources/pages/` for the process description and wire it into site navigation and indexes where appropriate
 - [ ] **0002-05** describe the end-to-end i18n → diagrams → HTML → validate pipeline in the published page, including which artifacts are sources, which are generated, and which are only caches/work products
 - [ ] **0002-06** describe how `run.sh` / `output/run-archive/` fit into traceability, including what can be reconstructed from archived script+log pairs and what cannot
-- [ ] **0002-07** include a section explaining report artifacts (`fehler.json`, `i18n_translate.py status`, QA scans, validate findings, combined build reports) and where maintainers can inspect them
+- [ ] **0002-07** PREREQ: 0002-07:0006-09 — include a section explaining report artifacts (`fehler.json`, `i18n_translate.py status`, QA scans, validate findings, combined build reports) and where maintainers can inspect them
 - [ ] **0002-08** include a section explaining failure handling: how to interpret rejects, fallback counts, stale diagrams, and validate errors without silently patching outputs
 - [ ] **0002-09** PREREQ: 0002-09:0001 — add links from the published process page to the relevant repo documentation (`_src/WARTUNG.md`, `docs/pipeline/*.md`) and to representative generated report pages once Feature 1 exists
 - [ ] **0002-10** ensure the published process page itself is covered by generate/validate and documented in repo-level maintenance docs
@@ -92,13 +92,13 @@ HOW TO USE:
 
 ## Feature: 0004 — Data Quality
 
-- [ ] **0004-01** investigate 3811 spec records without an explicit namespace (e.g. `SWS_AIDSM_10706`, `SWS_AIDSM_10301`, `SWS_AIDSM_10602`, `SWS_AIDSM_10205`, `SWS_AIDSM_10710`), flagged by `validate.py` (2026-08-12, run.sh #252). Currently causes `validate.py` to exit 1. Determine whether namespace should be inferred/backfilled during scrape/rebuild, or whether these records are legitimately namespace-less and validate.py's check needs an allowlist/exception similar to the existing PRS_E2E carve-out.
+- [ ] **0004-01** PREREQ: 0004-01:0006 — investigate 3811 spec records without an explicit namespace (e.g. `SWS_AIDSM_10706`, `SWS_AIDSM_10301`, `SWS_AIDSM_10602`, `SWS_AIDSM_10205`, `SWS_AIDSM_10710`), flagged by `validate.py` (2026-08-12, run.sh #252). Currently causes `validate.py` to exit 1. Determine whether namespace should be inferred/backfilled during scrape/rebuild, or whether these records are legitimately namespace-less and validate.py's check needs an allowlist/exception similar to the existing PRS_E2E carve-out.
 
 - [x] **0004-02** investigate 34 remaining SWS_UCM_* records without namespace data after fixing validate.py's check_namespaces() schema mismatch (2026-08-12, run.sh #265): all 34 are 'service method' records scoped to a service interface (e.g. SWS_UCM_00348 -> PackageManagement), suggesting the namespace-assignment tooling doesn't cover service-interface-scoped methods (unlike class-scoped methods, which populate namespace_meta correctly). Determine whether these need a namespace derived from the service interface's own namespace, or whether service methods are legitimately namespace-less and belong in spec/namespaces.json's 'abweichungen' catalog instead. -- RESOLVED 2026-08-12 (run.sh #268): confirmed via AUTOSAR spec research (SWS_CM_01005, EXP_ARAComAPI.pdf) that service methods MUST inherit their enclosing service interface's namespace (this is Path A, backfill, not a legitimate exception). Backfilled namespace_meta for all 34 records with source='ai-derived-from-service-interface' and review_status='pending' for curator confirmation; namespace-assignment tooling should be extended with this rule to prevent recurrence for future service-interface-scoped records.
 
 ## Feature: 0005 — Review & Feedback
 
-- [ ] **0005-01** Requirement texts in the AUTOSAR AP documentation should be reviewable and approvable in a traceable way — directly in the published HTML documentation, without a separate tool and without a server component.
+- [ ] **0005-01** PREREQ: 0005-01:0006 — Requirement texts in the AUTOSAR AP documentation should be reviewable and approvable in a traceable way — directly in the published HTML documentation, without a separate tool and without a server component.
 
 ## Feature: 0006 — Unified Curation Platform
 
@@ -143,7 +143,7 @@ HOW TO USE:
 
 ### Visibility / UX
 
-- [ ] **0006-09** PREREQ: 0006-09:0006-03 — build a static HTML "curation report" that renders all open and recent curation items from the queue(s)
+- [ ] **0006-09** PREREQ: 0006-09:0006-03, 0006-09:0001-08 — build a static HTML "curation report" that renders all open and recent curation items from the queue(s)
   - Current gap: open flags in `_src/spec/curation-queue/open/` and `_src/spec/review-queue/open/` are invisible unless someone browses the filesystem.
   - Implement a `curation_report.py` (or broader `workflow_report.py`) analogous to `traceability_report.py`: read the queue(s), render a page model under `_src/sources/pages/`, publish via `generate.py`, and link it from the start page.
   - Each rendered item should show canonical identity, project/release, current DB state, proposed state, rationale, evidence, status, and links to the affected record/page/report.
@@ -176,7 +176,7 @@ HOW TO USE:
 
 ### Campaign A — Baseline
 
-- [ ] **0007-01** Freeze corpus and 200-record benchmark (still not freezable: `review.status = needs_review` on all 200 records, `complete_start = null` on many)
+- [ ] **0007-01** PREREQ: 0007-01:0006 — Freeze corpus and 200-record benchmark (still not freezable: `review.status = needs_review` on all 200 records, `complete_start = null` on many)
   - 2026-08-12: the 12 headingless-but-populated blockers (all `RS_LT_*`) are resolved. `spec_scrape.py`'s new numbered-subsection heading fallback (commit `fdba7e28`) recovers their real headings from the source PDF; `benchmark-draft.json`'s expected values were updated to match and verified against the source (recount confirms 0 headingless-but-populated entries remain). The remaining freeze blockers are exclusively `review.status`/`complete_start` metadata, not extraction-shape gaps.
   - 2026-08-12: manually truthed the two previously called-out "empty-fields" blockers in `_src/tests/fixtures/spec_extraction/benchmark-draft.json`:
     - `RS_SAF_21101` is intentionally an inline citation in prose on pages 9-10 of `AUTOSAR_AP_RS_PlatformHealthManagement.pdf`, not a formal requirement block; `heading = null`, `fields = {}`, and `complete_start = null` are correct ground truth. Added an explanatory review note.
@@ -191,7 +191,7 @@ HOW TO USE:
 
 ## Feature: 0008 — Cross-language HTML chrome bugs (untranslated review banner, wrong home link)
 
-- [ ] **0008-01** extract the hardcoded German review-notice banner (`lib_docmodel.py`, `_review_page_enhancements()`: "%d API-Element%s mit Review-Bedarf" / "Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.") into the i18n segment/ui.json pipeline so it renders translated in all 9 non-German language trees instead of always German (found 2026-08-13 via nl screenshot, `ara::log` namespace page)
+- [ ] **0008-01** PREREQ: 0008-01:0006-09 (soft — fix independently now, but content/placement likely rebuilt once 0006 lands) — extract the hardcoded German review-notice banner (`lib_docmodel.py`, `_review_page_enhancements()`: "%d API-Element%s mit Review-Bedarf" / "Vor der Freigabe müssen Requirement-Text und Zuordnung geprüft werden.") into the i18n segment/ui.json pipeline so it renders translated in all 9 non-German language trees instead of always German (found 2026-08-13 via nl screenshot, `ara::log` namespace page)
 - [ ] **0008-02** fix the header logo/home link (`lib_docmodel.py::render_page`, key `"home": prefix + "index.html"`): it reuses the site-root-relative `prefix` (correct for shared assets like `style.css` that exist once at the tree root) instead of the language-root-relative depth used by `nav_html`'s breadcrumb "Start" link, so on every non-German page the logo link jumps one level too far up into the German root `index.html` instead of staying in `<lang>/index.html` (found 2026-08-13 via nl screenshot, `ara::log` namespace page)
 - [ ] **0008-03** add a regression check to `validate.py` (or a dedicated test) that asserts, for every language tree, both the breadcrumb "Start" link and the header logo link resolve to that language's own `index.html`, not the German root
 - [ ] **0008-04** add a regression check (scan or test) that flags any hardcoded German UI string in generated non-German HTML output, so future chrome/banner text additions can't silently bypass the i18n pipeline again
