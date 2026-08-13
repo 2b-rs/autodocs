@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TODO.md Dependency Graph (maintainer tool, not published)</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; padding: 1.2rem 1.5rem; background: #f7f8fa; color: #1d2129; }
+  h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
+  .warn { background: #fff3cd; border: 1px solid #f0c36d; border-radius: 8px; padding: .6rem .9rem; font-size: .9rem; margin-bottom: 1rem; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 1rem; }
+  .toolbar label { font-size: .9rem; display: flex; align-items: center; gap: .35rem; }
+  button, input[type=file] { font-size: .9rem; padding: .4rem .7rem; border-radius: 6px; border: 1px solid #c7ccd6; background: #fff; cursor: pointer; }
+  button:hover { background: #eef1f6; }
+  #status { font-size: .85rem; color: #596274; white-space: pre-wrap; margin-bottom: .8rem; }
+  #status.error { color: #b3261e; }
+  #legend { font-size: .8rem; color: #596274; margin-bottom: .8rem; }
+  #legend span { display: inline-flex; align-items: center; gap: .3rem; margin-right: 1.1rem; }
+  #legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; }
+  #graph-container { background: #fff; border: 1px solid #d9dce3; border-radius: 10px; padding: .8rem; overflow: auto; min-height: 200px; }
+  #graph-container svg { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+
+<h1>TODO.md Dependency Graph</h1>
+<div class="warn">
+  Maintainer-only tool. Not linked from the published site, not covered by
+  <code>generate.py</code>/<code>validate.py</code>. Renders live in the
+  browser via a vendored local Graphviz-WASM bundle
+  (<code>tools/vendor/hpcc-js-wasm-graphviz.umd.js</code>) so it works fully
+  offline and from <code>file://</code> URLs once fetched via <code>run.sh</code>.
+</div>
+
+<div class="toolbar">
+  <button id="btn-fetch">Load TODO.md (fetch, needs a local web server)</button>
+  <label>or pick a file: <input type="file" id="file-input" accept=".md"></label>
+  <label><input type="checkbox" id="chk-include-done"> include finished tasks/features</label>
+  <button id="btn-rerender" disabled>Re-render</button>
+</div>
+
+<div id="status">No TODO.md loaded yet.</div>
+
+<div id="legend">
+  <span><i style="background:black"></i>same-feature / explicit</span>
+  <span><i style="background:#1f4e79"></i>cross-feature / explicit</span>
+  <span><i style="background:crimson"></i>cross-feature / implicit</span>
+  <span><i style="background:gray;border-top:2px dashed gray;height:0"></i>cross-feature / soft</span>
+</div>
+
+<div id="graph-container"><p style="color:#8a90a0">Graph will render here.</p></div>
+
+<script src="vendor/hpcc-js-wasm-graphviz.umd.js"></script>
+<script type="module">
+// ---------------------------------------------------------------------------
+// Inlined port of tools/todo_dependency_graph.js's parsing/DOT-building logic
+// (browser build: no require/fs/child_process; identical parsing semantics).
+// ---------------------------------------------------------------------------
+const FEATURE_RE = /^##\s*Feature:\s*(\d{4})\s*(?:—|--|-)?\s*(.*)$/;
+const TASK_RE = /^-\s*\[([ xup?])\]\s*(?:\*\*)?(\d+-\d+(?:\.\d+)?)(?:\*\*)?\s*(.*)$/;
+const PREREQ_BLOCK_RE = /PREREQ:\s*(.+?)(?:\s*(?:—|--)\s|\s*$)/;
+const PREREQ_ITEM_RE = /(\d{4}(?:-\d+(?:\.\d+)?)?)\s*:\s*(\d{4}(?:-\d+(?:\.\d+)?)?)/g;
+const SOFT_RE = /\(soft\b/i;
+
+const FEATURE_COLORS = [
+  '#cfe8ff', '#d6ecff', '#d9f2d9', '#ffe0cc',
+  '#ffd6d6', '#ffe680', '#ffe9cc', '#e6dcff',
+  '#c9f7f5', '#f7d9e3', '#e3f7c9', '#d9d9f7',
+];
+
+function dotQuote(s) {
+  return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
+
+class Task {
+  constructor(id, featureId, mark, text) {
+    this.id = id; this.featureId = featureId; this.mark = mark; this.text = text;
+    this.prereqs = [];
+  }
+  get done() { return this.mark === 'x'; }
+}
+
+class Feature {
+  constructor(id, name) { this.id = id; this.name = name; this.tasks = []; }
+  get done() { return this.tasks.length > 0 && this.tasks.every((t) => t.done); }
+}
+
+function parseTodo(text) {
+  const features = new Map();
+  const order = [];
+  let currentFeature = null;
+
+  for (const rawLine of text.split(/\r?\n/)) {
+    const line = rawLine.trim();
+
+    const mFeat = FEATURE_RE.exec(line);
+    if (mFeat) {
+      const fid = mFeat[1];
+      const name = (mFeat[2] || '').trim();
+      if (!features.has(fid)) { features.set(fid, new Feature(fid, name)); order.push(fid); }
+      currentFeature = features.get(fid);
+      continue;
+    }
+
+    const mTask = TASK_RE.exec(line);
+    if (mTask && currentFeature) {
+      const mark = mTask[1];
+      const id = mTask[2];
+      const restText = mTask[3] || '';
+      const tidFeature = id.split('-', 1)[0];
+      const feature = features.get(tidFeature) || currentFeature;
+      const task = new Task(id, feature.id, mark, restText);
+
+      const mBlock = PREREQ_BLOCK_RE.exec(restText);
+      if (mBlock) {
+        const body = mBlock[1];
+        const isSoft = SOFT_RE.test(restText);
+        PREREQ_ITEM_RE.lastIndex = 0;
+        let mItem;
+        while ((mItem = PREREQ_ITEM_RE.exec(body)) !== null) {
+          task.prereqs.push([mItem[2], isSoft]);
+        }
+      }
+      feature.tasks.push(task);
+    }
+  }
+  return order.map((fid) => features.get(fid));
+}
+
+function classifyEdge(srcTask, dstId) {
+  const isSoft = srcTask.prereqs.some(([dst, soft]) => dst === dstId && soft);
+  const dstIsFeatureOnly = !dstId.includes('-');
+  const sameFeature = dstId.split('-', 1)[0] === srcTask.featureId;
+  if (isSoft) return 'soft_cross';
+  if (sameFeature && !dstIsFeatureOnly) return 'explicit_same';
+  if (dstIsFeatureOnly) return 'implicit_cross';
+  return 'explicit_cross';
+}
+
+function buildDot(features, includeDone) {
+  const liveFeatures = features.filter((f) => includeDone || !f.done);
+
+  const allTaskIds = new Set();
+  for (const f of liveFeatures) for (const t of f.tasks) if (includeDone || !t.done) allTaskIds.add(t.id);
+  const liveFeatureIds = new Set(liveFeatures.map((f) => f.id));
+
+  const lines = [];
+  lines.push('digraph todo_dependency_graph {');
+  lines.push('  rankdir=LR;');
+  lines.push('  splines=true;');
+  lines.push('  overlap=false;');
+  lines.push('  bgcolor="white";');
+  lines.push('  pad="0.3";');
+  lines.push('  nodesep="0.25";');
+  lines.push('  ranksep="0.8";');
+  lines.push('  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize="10", margin="0.08,0.05"];');
+  lines.push('  edge [fontname="Helvetica", fontsize="9"];');
+
+  const edges = [];
+
+  liveFeatures.forEach((feature, idx) => {
+    const color = FEATURE_COLORS[idx % FEATURE_COLORS.length];
+    const openTasks = feature.tasks.filter((t) => includeDone || !t.done);
+    if (openTasks.length === 0) return;
+
+    lines.push(`  subgraph cluster_${feature.id} {`);
+    const label = feature.name ? `${feature.id} — ${feature.name}` : feature.id;
+    lines.push(`    label=${dotQuote(label)};`);
+    lines.push('    style="rounded,filled";');
+    lines.push('    color="#777777";');
+    lines.push(`    fillcolor=${dotQuote(color)};`);
+    lines.push('    penwidth="1.2";');
+    lines.push('    node [fillcolor="white"];');
+    lines.push(`    ${dotQuote(feature.id)} [label=${dotQuote(feature.id)}, shape=tab, fillcolor=${dotQuote(color)}, style="filled,bold"];`);
+    for (const t of openTasks) lines.push(`    ${dotQuote(t.id)} [label=${dotQuote(t.id)}];`);
+    lines.push('  }');
+
+    for (const t of openTasks) {
+      for (const [dstId] of t.prereqs) {
+        const dstIsFeatureOnly = !dstId.includes('-');
+        const targetAlive = allTaskIds.has(dstId) || (dstIsFeatureOnly && liveFeatureIds.has(dstId));
+        if (!targetAlive) continue;
+        edges.push([t.id, dstId, classifyEdge(t, dstId)]);
+      }
+    }
+  });
+
+  const styles = {
+    explicit_same: 'color="black", penwidth="1.2"',
+    explicit_cross: 'color="#1f4e79", penwidth="1.4"',
+    implicit_cross: 'color="crimson", penwidth="1.5"',
+    soft_cross: 'color="gray50", penwidth="1.2", style="dashed"',
+  };
+  for (const [src, dst, kind] of edges) lines.push(`  ${dotQuote(src)} -> ${dotQuote(dst)} [${styles[kind]}];`);
+
+  lines.push('}');
+
+  return {
+    dot: lines.join('\n') + '\n',
+    nodeCount: allTaskIds.size,
+    edgeCount: edges.length,
+    liveFeatureCount: liveFeatures.length,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// UI wiring
+// ---------------------------------------------------------------------------
+const statusEl = document.getElementById('status');
+const graphEl = document.getElementById('graph-container');
+const btnFetch = document.getElementById('btn-fetch');
+const btnRerender = document.getElementById('btn-rerender');
+const fileInput = document.getElementById('file-input');
+const chkIncludeDone = document.getElementById('chk-include-done');
+
+let lastText = null;
+let graphviz = null;
+
+function setStatus(msg, isError) {
+  statusEl.textContent = msg;
+  statusEl.className = isError ? 'error' : '';
+}
+
+async function ensureGraphviz() {
+  if (graphviz) return graphviz;
+  setStatus('Loading local Graphviz-WASM bundle…');
+  const hpcc = globalThis['@hpcc-js/wasm/graphviz'];
+  if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
+    throw new Error('Local Graphviz-WASM bundle not found. Run ./run.sh once to download tools/vendor/hpcc-js-wasm-graphviz.umd.js.');
+  }
+  graphviz = await hpcc.Graphviz.load();
+  return graphviz;
+}
+
+async function renderFromText(text) {
+  lastText = text;
+  btnRerender.disabled = false;
+  try {
+    const features = parseTodo(text);
+    if (features.length === 0) {
+      setStatus("ERROR: no '## Feature: XXXX — ...' headings found in the loaded file.", true);
+      return;
+    }
+    const totalTasks = features.reduce((sum, f) => sum + f.tasks.length, 0);
+    if (totalTasks === 0) {
+      setStatus("ERROR: features found, but no '- [ ] **XXXX-YY** ...' tasks parsed.", true);
+      return;
+    }
+
+    const includeDone = chkIncludeDone.checked;
+    const { dot, nodeCount, edgeCount, liveFeatureCount } = buildDot(features, includeDone);
+
+    const gv = await ensureGraphviz();
+    setStatus('Rendering…');
+    const svg = gv.layout(dot, 'svg', 'dot');
+    graphEl.innerHTML = svg;
+
+    const nFeaturesTotal = features.length;
+    const nFeaturesDone = features.filter((f) => f.done).length;
+    setStatus(
+      `Parsed ${nFeaturesTotal} feature(s) (${nFeaturesDone} fully done), ${totalTasks} task(s) total.\n` +
+      `Rendered ${nodeCount} open task node(s), ${liveFeatureCount} live feature cluster(s), ${edgeCount} dependency edge(s).` +
+      (includeDone ? ' (including finished items)' : '')
+    );
+  } catch (err) {
+    setStatus('ERROR: ' + err.message, true);
+    console.error(err);
+  }
+}
+
+btnFetch.addEventListener('click', async () => {
+  setStatus('Fetching ../TODO.md…');
+  try {
+    const res = await fetch('../TODO.md', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching ../TODO.md`);
+    const text = await res.text();
+    await renderFromText(text);
+  } catch (err) {
+    setStatus(
+      'ERROR: ' + err.message +
+      '\nfetch() only works when this page is served over http(s):// (e.g. `python3 -m http.server` in the repo root, ' +
+      'then open http://localhost:8000/tools/todo-dependency-graph.html). ' +
+      'If you opened this file directly (file://), use the file picker instead.',
+      true
+    );
+  }
+});
+
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  setStatus(`Reading ${file.name}…`);
+  const text = await file.text();
+  await renderFromText(text);
+});
+
+btnRerender.addEventListener('click', () => {
+  if (lastText != null) renderFromText(lastText);
+});
+</script>
+</body>
+</html>
