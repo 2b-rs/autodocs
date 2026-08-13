@@ -317,3 +317,14 @@ Gesamtprozess bleiben soll, nicht nur emergenter Warteschlangen-Code:
 
 Siehe `docs/pipeline/roles.md` Abschnitt "Zuständigkeitsgrenzen im
 vereinheitlichten Modell" für die tabellarische Fassung.
+
+
+## Versioned curation backbone
+
+The spec-build pipeline now coexists with an explicit versioned curation
+backbone: immutable requirement versions, version-pinned curation decisions and
+evidence, typed dependency edges, confidence/invalidation history, typed AI
+claims, and read-side as-of / delta queries. Publication/build steps must treat
+these artifacts as additive audit data, not as mutable caches that may be
+rewritten in place.
+

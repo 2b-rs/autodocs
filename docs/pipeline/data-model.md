@@ -201,3 +201,63 @@ Dieses Datenmodell ist damit die kanonische Quelle für "was ein
 Kurations-Item ist" — neue Datenquellen (z. B. zukünftige S-Core-Elemente,
 **0009-05**) sollen auf `curation-item@v1` abgebildet werden, nicht auf ein
 neues Ad-hoc-Schema.
+
+
+## Versioned requirement / evidence / synthesis model (integrated 2026-08-13)
+
+The versioned curation model is now implemented by concrete modules, not just
+planned abstractions:
+
+- `version_id.py` defines stable ids for requirement versions, curation ids,
+  evidence ids, artifact ids, and hypotheses / typed claims.
+- `version_store.py` is the append-only immutable requirement-version store.
+- `curation_item.py` pins decisions/evidence to exact `decided_on_version`
+  values.
+- `dependency_graph.py` models typed graph edges between requirement versions,
+  curated decisions, evidence nodes, and synthesized artifacts/claims.
+- `confidence.py` tracks confidence history, invalidation, dismissal behavior,
+  and revisit enqueueing.
+- `typed_claim.py` defines the concrete `typed-claim@v1` schema for
+  inspectable synthesized knowledge units.
+- `supersession_trigger.py`, `asof_view.py`, and `delta_view.py` provide the
+  orchestration/query layer over these append-only stores.
+
+### Worked example A: new AUTOSAR release supersedes a curated requirement
+
+1. `version_store.record_version()` records `AUTOSAR/.../REQ_X@rel:R25-11#...`.
+2. A curator decision and related evidence snippets are pinned to that exact
+   version id via `decided_on_version` / evidence refs.
+3. Later, a new release arrives; `supersession_trigger.process_trigger()`
+   detects that `R32-11` has genuinely changed content and records a new
+   immutable version.
+4. The same trigger reuses `confidence.cascade_invalidate()` to walk
+   `dependency_graph.find_dependents()` and mark downstream evidence/artifacts
+   invalidated + enqueue revisits.
+5. `asof_view.as_of_release(..., 'R25-11')` still reconstructs the older world
+   without hiding what is now superseded; `delta_view.delta_view(release='R25-11')`
+   summarizes what changed since then.
+
+### Worked example B: human comment triggers AI resynthesis
+
+1. A human comment is represented as a typed claim or graph/comment input,
+   not as an invisible overwrite of prior AI text.
+2. `supersession_trigger.process_trigger(trigger_kind='user_comment', ...)`
+   records a new causal event for the affected requirement/artifact context.
+3. Downstream synthesized claims/artifacts are invalidated and revisit work is
+   enqueued.
+4. A later AI synthesis may emit a new `typed-claim@v1` object that
+   `supersedes_claim_ids` from the old AI-inferred claim while preserving the
+   old text and its confidence history.
+
+### Worked example C: curator dismissal prunes future propagation but keeps history
+
+1. A curator can dismiss a node/claim for future propagation.
+2. In the dependency graph/confidence model, dismissal never severs historical
+   edges or deletes prior artifacts; it only blocks future derivation and can
+   floor confidence appropriately.
+3. In the typed-claim schema this appears as
+   `dismissed_from_future_synthesis = true` while evidence refs, prior text,
+   supersession links, and confidence history remain auditable.
+4. As-of and delta queries therefore keep the node visible as history instead
+   of silently removing it.
+

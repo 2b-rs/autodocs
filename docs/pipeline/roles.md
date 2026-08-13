@@ -51,3 +51,13 @@ Kurations-/Review-Modell (**0006-03**/**0006-06**) was darf, hier explizit:
 Siehe [`data-model.md`](data-model.md) für das zugehörige Schema und
 [`workflow-lifecycle.md`](workflow-lifecycle.md) für die vollständige
 Zustandsmaschine samt Tool-zu-Übergang-Zuordnung.
+
+
+## Versioned curation roles
+
+Curators and maintainers now operate against append-only requirement versions,
+version-pinned decisions/evidence, and typed synthesized claims rather than a
+single mutable "current truth" document. Curator actions can invalidate or
+prune future propagation, but must preserve auditability of prior versions,
+confidence history, and supersession links.
+

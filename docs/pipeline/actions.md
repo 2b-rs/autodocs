@@ -187,3 +187,14 @@ Eintrag hinterlegt und durch `validate.py::check_workflow_lifecycle()`
 Aktionen sollen von Anfang an so entworfen werden, dass ihr Ergebnis in
 `curation-item@v1` normalisierbar ist, statt ein weiteres Ad-hoc-Format zu
 erfinden.
+
+
+## Version-aware actions
+
+The pipeline's curation actions are now explicitly version-aware: record new
+immutable requirement versions, pin decisions/evidence to exact versions,
+append graph edges, record confidence/invalidation events, and query either
+point-in-time (`asof_view`) or windowed-delta (`delta_view`) views. Actions
+that react to new releases/comments/scraper changes should route through the
+supersession-trigger layer rather than inventing their own ad-hoc diff logic.
+

@@ -176,3 +176,14 @@ bestehenden Aktion zu diesem Lebenszyklus stehen in
 [`workflow-lifecycle.md`](workflow-lifecycle.md); das zugrundeliegende
 Datenschema in [`data-model.md`](data-model.md) und
 [`curation-item-schema.md`](curation-item-schema.md).
+
+
+## Versioned curation process
+
+The end-to-end curation process is now: ingest immutable requirement version;
+pin decisions/evidence to that version; model dependencies between source,
+curation, evidence, and synthesized claims; propagate invalidation/revisit via
+supersession-trigger events; and inspect the resulting state either as-of a
+past release/date or as a delta since a baseline. This process is additive and
+query-driven; it never depends on deleting older states.
+

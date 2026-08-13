@@ -102,3 +102,14 @@ Modell (**0006-03**/**0006-06**/**0006-13**):
 Siehe [`curation-item-schema.md`](curation-item-schema.md),
 [`workflow-lifecycle.md`](workflow-lifecycle.md),
 [`workflow-validation.md`](workflow-validation.md) für Details.
+
+
+## Versioned data-model tools
+
+The versioned curation toolchain now spans `version_id.py`, `version_store.py`,
+`curation_item.py`, `dependency_graph.py`, `confidence.py`, `typed_claim.py`,
+`supersession_trigger.py`, `asof_view.py`, and `delta_view.py`. Together they
+cover id minting, immutable storage, version-pinning, graph semantics,
+invalidation/confidence, typed synthesized claims, trigger orchestration, and
+historical/delta queries.
+

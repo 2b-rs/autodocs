@@ -130,3 +130,14 @@ einen statischen HTML-"Kurationsbericht" erzeugen, der alle offenen und
 kürzlich entschiedenen Items über beide Warteschlangen hinweg einheitlich
 darstellt — dieser Abschnitt dient als Verweisstelle, sobald **0006-09**
 implementiert ist.
+
+
+## Versioned reports
+
+Report-producing tools should align with the versioned model's existing query
+surfaces instead of inventing parallel schemas: per-trigger blast-radius
+reports from `supersession_trigger`, point-in-time reconstruction via
+`asof_view`, and arbitrary-window change summaries via `delta_view`. These
+reports are audit/report views over append-only stores, not separate sources of
+truth.
+
