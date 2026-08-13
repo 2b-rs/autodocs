@@ -95,7 +95,7 @@ HOW TO USE:
   - Superseded original wording (kept for history): canonical key was originally drafted as `project/release/kind/id` (example dimensions: `AUTOSAR/AP/R25-11/record/SWS_UCM_00348`, `AUTOSAR/FOUNDATION/R25-11/record/RS_SAF_00001`, `ECLIPSE/S-CORE/<release>/record/<id>`); superseded 2026-08-13 for the release-free scheme above.
   - Ensure the raw record `id` can remain human-familiar while the canonical identity becomes the cross-project stable key for queues, history, links, and reports.
 
-- [x] **0006-02.01** PREREQ: 0006-02.01:0006-02 — add a small `projects.json` registry listing every known `project` value, its display name, and its `kind` enum
+- [x] **0006-02.01** PREREQ: 0006-02.01:0006-02 — add a small `projects.json` registry listing every known `project` value, its display name, and its `kind` enum — REF: 9daffda4
   - One place to register `AUTOSAR/AP`, `AUTOSAR/CP`, `AUTOSAR/FOUNDATION`, `ECLIPSE/S-CORE` (and future projects) instead of leaving valid `project`/`kind` combinations implicit in scraper/validator code.
   - `validate.py` (or its 0006-13 extension) should check every canonical ID's `project`/`kind` against this registry.
 
