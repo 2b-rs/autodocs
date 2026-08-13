@@ -166,3 +166,7 @@ Nach `merge` folgt laut Docstring der übliche Nachlauf: `render_diagrams.py`
 | Rest-Deutsch-Scan | `scan_restdeutsch.py` | Sucht in Übersetzungsregistern nach verbliebenem Deutsch | Implementiert |
 | Font-Inventar | `font_inventory.py` | Inventarisiert eingebettete Fonts und Glyph-Mapping-Fehler je Dokument | Implementiert |
 | Geometrie-Audit | `geometry_audit.py` | Prüft dokument-unabhängige Geometrie-Invarianten über den PDF-Korpus | Implementiert |
+
+## Seiten-Chrome-Texte (Banner, Hinweise, Badges)
+
+Neue statische UI-Texte im generierten Seiten-Chrome muessen ueber `_src/i18n/ui.json` lokalisierbar sein, nicht als literale deutsche Strings im Python-Code der Renderer (`lib_docmodel.py`). Details und Hintergrund: siehe `_src/WARTUNG.md`, Abschnitt „Regel: Seiten-Chrome-Texte gehoeren in die i18n-Register, nicht in Python-Strings“ (0008-01/0008-06).
