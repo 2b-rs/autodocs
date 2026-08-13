@@ -66,7 +66,12 @@ def artifact_id() -> str:
     return f"artifact:{uuid7()}"
 
 
-_PREFIXED_RE = re.compile(r"^(?P<prefix>curation|evidence|artifact):(?P<uuid>[0-9a-f-]{36})$")
+def hypothesis_id() -> str:
+    """0006-05: id for an AI-proposed NEW spec element before promotion."""
+    return f"hypothesis:{uuid7()}"
+
+
+_PREFIXED_RE = re.compile(r"^(?P<prefix>curation|evidence|artifact|hypothesis):(?P<uuid>[0-9a-f-]{36})$")
 
 
 def parse_prefixed_id(value: str) -> dict | None:
