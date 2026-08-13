@@ -87,7 +87,7 @@
             '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#fff3b0;"></i>partial [p]</span>' +
             '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#ffb3b3;"></i>unclear [u]</span>' +
             '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#d9d9d9;"></i>unknown [?]</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#b6e3b6;"></i>done [x]</span>' +
+            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#ffffff;border:1px solid #808080;"></i><span style="color:#808080;">done [x]</span></span>' +
           '</div>';
         var wrap = document.createElement('details');
         wrap.className = 'fold';

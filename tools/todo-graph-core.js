@@ -39,7 +39,34 @@
     '?': '#d9d9d9',
     'x': '#b6e3b6',
   };
+  // 'x' (done) is rendered unfilled with this font color instead of using
+  // MARK_COLORS.x as a fill — finished tasks recede visually but stay legible.
+  var DONE_FONT_COLOR = '#808080';
 
+  function htmlEscape(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  // Builds an HTML-like Graphviz label: task text on the left, a
+  // right-aligned checkmark glyph in its own cell, wrapped in a
+  // rounded, unfilled table so it still looks like the other task
+  // boxes. No BGCOLOR is set here intentionally — same rendering
+  // behavior as the plain style="rounded" box this replaces.
+  // multiLineLabel may contain '\n' (id + wrapped task text).
+  function htmlDoneLabel(multiLineLabel) {
+    var textHtml = multiLineLabel.split('\n').map(htmlEscape).join('<BR/>');
+    return '<' +
+      '<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#808080">' +
+      '<TR>' +
+      '<TD ALIGN="LEFT"><FONT COLOR="' + DONE_FONT_COLOR + '">' + textHtml + '</FONT></TD>' +
+      '<TD ALIGN="RIGHT" VALIGN="MIDDLE"><FONT COLOR="' + DONE_FONT_COLOR + '">&#10003;</FONT></TD>' +
+      '</TR>' +
+      '</TABLE>' +
+      '>';
+  }
   function dotQuote(s) {
     return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
   }
@@ -170,8 +197,16 @@
       lines.push('    ' + dotQuote(feature.id) + ' [label=' + dotQuote(feature.id) + ', shape=tab, fillcolor=' + dotQuote(color) + ', style="filled,bold"];');
       openTasks.forEach(function (t) {
         var taskLabel = taskLabelMaxLen ? (t.id + '\n' + truncate(t.text, taskLabelMaxLen)) : t.id;
-        var fill = MARK_COLORS[t.mark] || '#ffffff';
-        lines.push('    ' + dotQuote(t.id) + ' [label=' + dotQuote(taskLabel) + ', fillcolor=' + dotQuote(fill) + '];');
+        if (t.mark === 'x') {
+          // Done: unfilled rounded box, grey text, plus a right-aligned
+          // checkmark glyph. HTML-like labels are required to place the
+          // checkmark in its own cell instead of inline with the text.
+          var htmlLabel = htmlDoneLabel(taskLabel);
+          lines.push('    ' + dotQuote(t.id) + ' [shape="none", margin="0", label=' + htmlLabel + '];');
+        } else {
+          var fill = MARK_COLORS[t.mark] || '#ffffff';
+          lines.push('    ' + dotQuote(t.id) + ' [label=' + dotQuote(taskLabel) + ', fillcolor=' + dotQuote(fill) + '];');
+        }
       });
       lines.push('  }');
 
@@ -214,5 +249,6 @@
     featureDone: featureDone,
     FEATURE_COLORS: FEATURE_COLORS,
     MARK_COLORS: MARK_COLORS,
+    DONE_FONT_COLOR: DONE_FONT_COLOR,
   };
 })(window);
