@@ -124,8 +124,26 @@ def claim_flag(path, agent=None):
     return target
 
 
-def complete_flag(path, note=None):
-    """Nur von der Person aufzurufen, die die Aenderung final gemergt/verworfen hat."""
+def complete_flag(path, note=None, outcome_class=None, outcome_detail=None):
+    """Nur von der Person aufzurufen, die die Aenderung final gemergt/verworfen hat.
+
+    outcome_class (0006-07, optional): one of decision_outcome.OUTCOME_CLASSES,
+    naming what kind of follow-up work this decision implies (DB value update,
+    migration, parser change, allowlist exception, new fixture, or none).
+    Defaults to "no_action" when omitted so existing callers are unaffected.
+    outcome_detail (optional): free-form string/dict with specifics (e.g. which
+    file/line the allowlist exception was added to). After the flag is written,
+    any hooks registered for outcome_class (decision_outcome.register_hook) run
+    against the completed payload; hook exceptions are collected onto the
+    returned Path's associated flag file as "_outcome_hook_errors" rather than
+    raised, so a broken future hook can never block completing a decision.
+    """
+    import sys as _sys
+    _tools_dir = str(Path(__file__).resolve().parent)
+    if _tools_dir not in _sys.path:
+        _sys.path.insert(0, _tools_dir)
+    import decision_outcome as _do
+
     _ensure_dirs()
     path = Path(path)
     target = DONE_DIR / path.name
@@ -133,6 +151,12 @@ def complete_flag(path, note=None):
     payload["completed_at"] = _now()
     if note:
         payload["operator_note"] = note
+    payload["outcome_class"] = outcome_class or "no_action"
+    if outcome_detail is not None:
+        payload["outcome_detail"] = outcome_detail
+    errors = _do.run_hooks(payload["outcome_class"], payload)
+    if errors:
+        payload["_outcome_hook_errors"] = [repr(e) for e in errors]
     _atomic_write(target, payload)
     path.unlink()
     return target
