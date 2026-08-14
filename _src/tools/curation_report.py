@@ -178,7 +178,9 @@ def generate_curation_report_page(items):
             prop_val = _esc(it.get("proposed_value") or it.get("current_value") or "-")
             if len(prop_val) > 120:
                 prop_val = prop_val[:117] + "..."
-            html_parts.append(f"<tr><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
+            raw_rid = it.get("canonical_id", "").split("/")[-1]
+            row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''
+            html_parts.append(f"<tr{row_id_attr}><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
     else:
         html_parts.append("<tr><td colspan=\"7\">Keine offenen Kurations-Items vorhanden.</td></tr>")
     html_parts.append("</tbody></table></div></details>")
@@ -200,7 +202,9 @@ def generate_curation_report_page(items):
             badge = f'<span class="cr-badge-{st}">{_esc(st)}</span>'
             curator = _esc(it.get("curator", "-"))
             src_file = _esc(it.get("source_file", "-"))
-            html_parts.append(f"<tr><td><code>{cid}</code></td><td>{proj}</td><td>{kind}</td><td>{badge}</td><td>{curator}</td><td><small>{src_file}</small></td></tr>")
+            raw_rid = it.get("canonical_id", "").split("/")[-1]
+            row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''
+            html_parts.append(f"<tr{row_id_attr}><td><code>{cid}</code></td><td>{proj}</td><td>{kind}</td><td>{badge}</td><td>{curator}</td><td><small>{src_file}</small></td></tr>")
     else:
         html_parts.append("<tr><td colspan=\"6\">Keine weiteren Items vorhanden.</td></tr>")
     html_parts.append("</tbody></table></div></details>")

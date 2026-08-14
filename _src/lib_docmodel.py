@@ -193,6 +193,34 @@ def resolve_recs(blocks, srcdir=SRC):
                  "_src": b["src"]}
             if r.get("requirement_meta"):
                 b["requirement_meta"] = r["requirement_meta"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
+            if r.get("status"):
+                b["status"] = r["status"]
+            if r.get("history"):
+                b["history"] = r["history"]
         if b["t"] in ("rec", "fold"):
             b = dict(b, blocks=resolve_recs(b["blocks"], srcdir))
         out.append(b)
@@ -359,6 +387,92 @@ def _review_page_enhancements(main, notice_ui=None):
               % (title, body, "".join(links)))
     return main, notice
 
+
+
+
+
+
+
+_KNOWN_CURATION_IDS = None
+
+def _get_known_curation_ids(srcdir=SRC):
+    global _KNOWN_CURATION_IDS
+    if _KNOWN_CURATION_IDS is None:
+        _KNOWN_CURATION_IDS = set()
+        data_path = os.path.join(srcdir, "data", "curation-items.json")
+        if os.path.exists(data_path):
+            try:
+                with open(data_path, "r", encoding="utf-8") as f:
+                    payload = json.load(f)
+                    for item in payload.get("items", []):
+                        cid = item.get("canonical_id", "")
+                        if cid:
+                            _KNOWN_CURATION_IDS.add(cid)
+                            _KNOWN_CURATION_IDS.add(cid.split("/")[-1])
+            except Exception:
+                pass
+    return _KNOWN_CURATION_IDS
+
+def _render_rec_history_html(record_id, status, history, page_dir_depth=0, srcdir=SRC):
+    """0006-11: Render curator-visible history timeline and status badge for a record."""
+    if not status and not history:
+        return ""
+    
+    st_state = (status or {}).get("state", "unspecified")
+    st_reason = (status or {}).get("reason", "")
+    st_campaign = (status or {}).get("campaign", "")
+    
+    # State badge styling class
+    badge_cls = "rec-status-neutral"
+    if "valid" in st_state or st_state in ("applied", "accepted"):
+        badge_cls = "rec-status-valid"
+    elif "invalid" in st_state or st_state == "rejected":
+        badge_cls = "rec-status-invalid"
+    elif "proposed" in st_state or "hypothesized" in st_state or "pending" in st_state:
+        badge_cls = "rec-status-proposed"
+
+    rows = []
+    for h in (history or []):
+        dt = esc(h.get("date", "-"))
+        actor = esc(h.get("actor", "-"))
+        frm = esc(h.get("from") or "none")
+        to = esc(h.get("to") or "-")
+        reason = esc(h.get("reason", ""))
+        camp = esc(h.get("campaign", ""))
+        rows.append(f"<tr><td>{dt}</td><td><span class=\"rec-actor\">{actor}</span></td><td><code>{frm}</code> &rarr; <code>{to}</code></td><td>{reason}</td><td><small>{camp}</small></td></tr>")
+
+    history_table = ""
+    if rows:
+        history_table = f"""<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+{''.join(rows)}
+</tbody>
+</table>"""
+
+    curation_report_link = ""
+    known_cids = _get_known_curation_ids(srcdir)
+    if record_id and record_id in known_cids:
+        rel_prefix = "../" * page_dir_depth
+        curation_report_link = f'<p class="rec-curation-link"><a href="{rel_prefix}curation-report.html#{esc_attr(record_id)}">View in Curation Report &rarr;</a></p>'
+
+    html = f"""<details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge {badge_cls}">Status: {esc(st_state)}</span>
+<span class="rec-history-summary-text">Curation & History ({len(history or [])} transition{'s' if len(history or []) != 1 else ''})</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>{esc(st_state)}</code></dd>
+{f'<dt>Reason</dt><dd>{esc(st_reason)}</dd>' if st_reason else ''}
+{f'<dt>Campaign</dt><dd><code>{esc(st_campaign)}</code></dd>' if st_campaign else ''}
+</dl>
+{history_table}
+{curation_report_link}
+</div>
+</details>"""
+    return html
+
 def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requirement_meta=None):
     out = []
     for b in blocks:
@@ -378,9 +492,13 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requiremen
             out.append("</div>")
         elif t == "rec":
             rec_requirement_meta = b.get("requirement_meta") or requirement_meta
+            rec_id = dict(b.get("attrs", [])).get("id") or record_id
+            history_html = _render_rec_history_html(rec_id, b.get("status"), b.get("history"), page_dir_depth, srcdir)
             out.append(open_tag("article", b["attrs"]))
             out.append(esc(b.get("lead", "")))
-            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir, dict(b.get("attrs", [])).get("id") or record_id, rec_requirement_meta))
+            out.append(render_blocks(b["blocks"], page_dir_depth, srcdir, rec_id, rec_requirement_meta))
+            if history_html:
+                out.append(history_html)
             out.append("</article>")
         elif t == "fold":
             out.append(open_tag("details", b["attrs"]))

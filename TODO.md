@@ -133,7 +133,7 @@ HOW TO USE:
 
 - [x] **0006-09** PREREQ: 0006-09:0006-03, 0006-09:0001-08 — build a static HTML "curation report" that renders all open and recent curation items from the queue(s) -- DONE 2026-08-14: `_src/tools/curation_report.py` normalizes all items from `curation-queue` and `review-queue` into `curation-item@v1` and generates `curation-report.html`.
 - [x] **0006-10** PREREQ: 0006-10:0006-09 — design the future dynamic JS/API view around the same schema, not a second ad-hoc model -- DONE 2026-08-14: `_src/tools/curation_report.py` exports the canonical dataset to `_src/data/curation-items.json` (`curation-items-export@v1`) matching the exact schema for future client-side and API filtering.
-- [ ] **0006-11** expose curator-visible history for each DB element in published pages
+- [x] **0006-11** expose curator-visible history for each DB element in published pages -- DONE 2026-08-14: `_src/lib_docmodel.py` renders collapsible `.rec-history-panel` with status badges, full `history[]` transition timelines, and verified depth-aware relative links to `curation-report.html`. Documented in `docs/pipeline/rec-history.md`; tested in `_src/tests/test_rec_history.py`.
   - Current gap: record pages do not systematically surface `history[]`, status evolution, or open review/curation state to users.
   - Add a visible section/badge on record pages showing current review/curation status, latest accepted decision, and links to the relevant curation item/report entry.
   - This should work for both existing records and future AI-proposed elements, with clear labeling of "proposed", "accepted", "rejected", and "applied".
