@@ -122,6 +122,16 @@ und führt genau diese Aktion aus.
   `.dot`, Sequenzdiagramme `.seq.json` via `seqgen.py`) neu.
 - **Status**: Implementiert.
 
+### Publish Build Report (Zusammenfassenden Veröffentlichungs- und Validierungsbericht erzeugen)
+
+- **Werkzeug**: `build_report.py`
+- **Aufruf**: `python3 _src/tools/build_report.py combine` / `publish`
+- **Beschreibung**: Aggregiert die neuesten Subreports der Pipeline (`i18n_merge`,
+  `i18n_diagrams`, `html_generate`, `validate`) zu einem kanonischen Gesamtreport
+  unter `output/build-reports/combined-<timestamp>.json` und erzeugt das publizierte
+  Seitenmodell `_src/sources/pages/build-reports.json` für `build-reports.html`.
+- **Status**: Implementiert.
+
 ### Rebuild Indexes (Analyse-CSVs neu erzeugen)
 
 - **Werkzeug**: `build_indexes.py`

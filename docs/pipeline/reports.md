@@ -132,6 +132,18 @@ darstellt — dieser Abschnitt dient als Verweisstelle, sobald **0006-09**
 implementiert ist.
 
 
+## Build- und Publikations-Bericht (`build_report.py`)
+
+- **Inhalt**: Aggregierter Veröffentlichungs- und Validierungsbericht der gesamten Dokumentations-Pipeline (Schema: `docs/pipeline/build-report-schema.md`). Führt alle Subreports aus `i18n_merge`, `i18n_diagrams`, `html_generate` und `validate` zusammen.
+- **Output-Formate**:
+  - Maschinenlesbarer JSON-Gesamtbericht unter `output/build-reports/combined-<timestamp>.json`.
+  - Statisches Seitenmodell `_src/sources/pages/build-reports.json`, gerendert nach `build-reports.html` im Root-Verzeichnis.
+- **Traceability**: Trägt die exakte Runner-Referenz (`run_archive_ref` auf `run-<timestamp>-n<seq>.sh` / `.log`), Start-/Endzeitpunkte, aggregierte Kennzahlen und eine detaillierte Tabelle aller Validierungsbefunde.
+- **Befehle**:
+  - `python3 _src/tools/build_report.py combine` — Aggregiert neueste Subreports.
+  - `python3 _src/tools/build_report.py publish` — Aggregiert Subreports und erzeugt das Seitenmodell `build-reports.json`.
+- **Retention & Archivierung**: Jede Veröffentlichung aktualisiert das kanonische `build-reports.html`. Historische Maschinenberichte verbleiben chronologisch in `output/build-reports/combined-*.json` und sind über die zugehörigen Runner-Archive auditierbar.
+
 ## Versioned reports
 
 Report-producing tools should align with the versioned model's existing query

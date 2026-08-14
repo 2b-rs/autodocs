@@ -354,6 +354,30 @@ Relevanz-Cutoffs — globale Änderung ⇒ `version` erhöhen). Kurzfassung:
 - KI-Fragmente doch manuell editiert? Trace mitpflegen (mindestens `laeufe`
   ergänzen bzw. `status` prüfen) — sonst lügt die Herkunftsakte.
 
+## Build- & Publikations-Berichte (`build_report.py`)
+
+Jeder Veröffentlichungslauf der Dokumentations-Pipeline erzeugt maschinenlesbare
+Subreports (`i18n_merge`, `i18n_diagrams`, `html_generate`, `validate`) unter
+`output/build-reports/` gemäß `docs/pipeline/build-report-schema.md`.
+
+`build_report.py` führt diese Subreports zusammen und erzeugt das publizierte
+Seitenmodell `_src/sources/pages/build-reports.json`, welches in `build-reports.html`
+gerendert wird:
+
+```bash
+# 1. Subreports aggregieren
+python3 _src/tools/build_report.py combine
+
+# 2. Seitenmodell erzeugen und in HTML-Tree rendern
+python3 _src/tools/build_report.py publish
+python3 _src/generate.py build-reports.html
+python3 _src/validate.py
+```
+
+Das publizierte `build-reports.html` verlinkt direkt auf das zugehörige
+Runner-Archiv (`output/run-archive/run-<timestamp>-n<seq>.log`), um vollständige
+Traceability vom HTML-Artefakt bis zum ausführenden Prozess zu gewährleisten.
+
 ## CSV-Indizes unter `_src/data/` (nur lesen!)
 
 Kondensierte Sichten für Analyse, Reviews und als kompakter Kontext für
