@@ -44,10 +44,6 @@ HOW TO USE:
 
   Prerequisites are noted inline in the task/feature text, e.g. `0002-09:0001-08`.
 
-## Feature: 0010 — Performance Package 2
-
-- [x] **0010-01** parallelize `validate.py` -- 2026-08-14: parallelized check_client_rendered_german() (per-language Node/WebKit calls) via ThreadPoolExecutor; check_build()/check_langs() were already parallelized via ProcessPoolExecutor. Pre-existing rc=1 (30 dead links under process.html in all languages) is unrelated and tracked separately. REF: 941b73a4
-
 ## Feature: 0001 — Traceable Build Reports for i18n and HTML
 
 - [x] **0001-01** define one canonical build-report schema for i18n + HTML publication runs, covering inputs, commands, timestamps, durations, exit codes, changed artifacts, fallback counts, reject counts, and validation findings -- DONE 2026-08-13: schema documented in `docs/pipeline/build-report-schema.md` (envelope + per-producer `counts` fields for i18n_merge, i18n_diagrams, html_generate, validate, combined). REF: d47435fb

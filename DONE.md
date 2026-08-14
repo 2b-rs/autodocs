@@ -49,3 +49,9 @@ Completed: 2026-08-13 11:10 CEST — REF: 8bb8c67e
 - [x] **0003-15** translate and merge `_src/i18n/work/nl/batch_15.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 199/199 entries completed and merged (2026-08-13, corrected after prior mislabeling — see 2026-08-13 note above), 0 rejects, no `fehler.json` produced. `python3 _src/i18n_translate.py merge nl` reported: übernommen 4655, abgelehnt 0, offen 0 (all languages fully translated per `i18n_translate.py status`).
 - [x] **0003-16** translate and merge `_src/i18n/work/nl/batch_16.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 232/232 entries completed and merged (2026-08-13, corrected from earlier mislabeling), 0 rejects, no `fehler.json` produced.
 - [x] **0003-17** translate and merge `_src/i18n/work/nl/batch_17.jsonl` into `_src/i18n/nl/{segments,labels}.json`; 1218/1218 entries completed and merged (2026-08-12), 0 rejects, no `fehler.json` produced (179 German-bearing labels translated; 1039 code/identifier-only labels passed through unchanged). HTML tree regeneration still pending.
+
+## Feature: 0010 — Performance Package 2
+
+Completed: 2026-08-14 11:48 CEST — REF: a44164f5
+
+- [x] **0010-01** parallelize `validate.py` -- 2026-08-14: parallelized check_client_rendered_german() (per-language Node/WebKit calls) via ThreadPoolExecutor; check_build()/check_langs() were already parallelized via ProcessPoolExecutor. Pre-existing rc=1 (30 dead links under process.html in all languages) is unrelated and tracked separately. REF: 941b73a4
