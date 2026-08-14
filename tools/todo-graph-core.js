@@ -6,13 +6,17 @@
 //   - tools/todo-graph-embed.js (live embed on the published start page)
 //
 // This replaces two previously independent, manually-"kept in sync" copies
-// of the same ~150 lines of logic (2026-08-13). The formerly separate Node.js
-// CLI (tools/todo_dependency_graph.js) and Python CLI (tools/todo_dependency_
+// of the same ~150 lines of logic for the active browser consumers (2026-08-13).
+// The live embed was migrated immediately; the standalone maintainer page was
+// later re-pointed at this module on 2026-08-14 after a drift bug was traced
+// to its stale inline copy. The formerly separate Node.js CLI
+// (tools/todo_dependency_graph.js) and Python CLI (tools/todo_dependency_
 // graph.py) twins were removed the same day (not used for static artifact
 // generation); this browser module is now the sole implementation.
 //
 // Exposes a single global: window.TodoGraphCore = { parseTodo, buildDot,
-// dotQuote, truncate, FEATURE_COLORS, MARK_COLORS }.
+// dotQuote, truncate, FEATURE_COLORS, MARK_COLORS, DONE_FONT_COLOR,
+// DONE_EDGE_COLOR }.
 
 (function (global) {
   'use strict';
@@ -42,6 +46,12 @@
   // 'x' (done) is rendered unfilled with this font color instead of using
   // MARK_COLORS.x as a fill — finished tasks recede visually but stay legible.
   var DONE_FONT_COLOR = '#808080';
+  // Edges originating FROM a done task render in this light grey instead of
+  // their normal classification color (re-added 2026-08-14; was dropped
+  // during the 2026-08-13 revert/squash that produced 73f27778 despite that
+  // commit's message still claiming it was present). Edges merely pointing
+  // AT a done task are unaffected and keep their normal classification.
+  var DONE_EDGE_COLOR = '#d9d9d9';
 
   function htmlEscape(s) {
     return String(s)
@@ -52,14 +62,14 @@
 
   // Builds an HTML-like Graphviz label: task text on the left, a
   // right-aligned checkmark glyph in its own cell, wrapped in a
-  // rounded, unfilled table so it still looks like the other task
-  // boxes. No BGCOLOR is set here intentionally — same rendering
-  // behavior as the plain style="rounded" box this replaces.
+  // rounded table filled with the enclosing feature's color so done
+  // tasks still read as part of that feature. The grey text/checkmark
+  // is now the only visual distinction from non-done tasks.
   // multiLineLabel may contain '\n' (id + wrapped task text).
-  function htmlDoneLabel(multiLineLabel) {
+  function htmlDoneLabel(multiLineLabel, featureColor) {
     var textHtml = multiLineLabel.split('\n').map(htmlEscape).join('<BR/>');
     return '<' +
-      '<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#808080">' +
+      '<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4" STYLE="ROUNDED" COLOR="#808080" BGCOLOR="' + featureColor + '">' +
       '<TR>' +
       '<TD ALIGN="LEFT"><FONT COLOR="' + DONE_FONT_COLOR + '">' + textHtml + '</FONT></TD>' +
       '<TD ALIGN="RIGHT" VALIGN="MIDDLE"><FONT COLOR="' + DONE_FONT_COLOR + '">&#10003;</FONT></TD>' +
@@ -198,10 +208,11 @@
       openTasks.forEach(function (t) {
         var taskLabel = taskLabelMaxLen ? (t.id + '\n' + truncate(t.text, taskLabelMaxLen)) : t.id;
         if (t.mark === 'x') {
-          // Done: unfilled rounded box, grey text, plus a right-aligned
-          // checkmark glyph. HTML-like labels are required to place the
-          // checkmark in its own cell instead of inline with the text.
-          var htmlLabel = htmlDoneLabel(taskLabel);
+          // Done: rounded box filled with the feature's color, grey text,
+          // plus a right-aligned checkmark glyph. HTML-like labels are
+          // required to place the checkmark in its own cell instead of
+          // inline with the text.
+          var htmlLabel = htmlDoneLabel(taskLabel, color);
           lines.push('    ' + dotQuote(t.id) + ' [shape="none", margin="0", label=' + htmlLabel + '];');
         } else {
           var fill = MARK_COLORS[t.mark] || '#ffffff';
@@ -227,8 +238,16 @@
       implicit_cross: 'color="crimson", penwidth="1.5"',
       soft_cross: 'color="gray50", penwidth="1.2", style="dashed"',
     };
+    var taskById = new Map();
+    liveFeatures.forEach(function (f) {
+      f.tasks.forEach(function (t) { taskById.set(t.id, t); });
+    });
     edges.forEach(function (e) {
-      lines.push('  ' + dotQuote(e[0]) + ' -> ' + dotQuote(e[1]) + ' [' + styles[e[2]] + '];');
+      var srcTask = taskById.get(e[0]);
+      var style = (srcTask && srcTask.mark === 'x')
+        ? 'color=' + dotQuote(DONE_EDGE_COLOR) + ', penwidth="1.2"'
+        : styles[e[2]];
+      lines.push('  ' + dotQuote(e[0]) + ' -> ' + dotQuote(e[1]) + ' [' + style + '];');
     });
 
     lines.push('}');
@@ -250,5 +269,6 @@
     FEATURE_COLORS: FEATURE_COLORS,
     MARK_COLORS: MARK_COLORS,
     DONE_FONT_COLOR: DONE_FONT_COLOR,
+    DONE_EDGE_COLOR: DONE_EDGE_COLOR,
   };
 })(window);
