@@ -20,9 +20,11 @@ import json
 import multiprocessing
 import re
 import os
+import shutil
+import subprocess
 import sys
 import urllib.parse
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from lxml import html as LH
 
@@ -439,9 +441,117 @@ def _check_no_hardcoded_german_one_lang(lang):
 def check_no_hardcoded_german():
     """0008-04: erkennt hartcodierte deutsche UI-Strings in generiertem
     nicht-deutschem HTML, damit zukuenftige Chrome-/Badge-Texte nicht mehr
-    stillschweigend an der i18n-Pipeline vorbeigehen (gefunden 2026-08-13, 0008-01)."""
+    stillschweigend an der i18n-Pipeline vorbeigehen (gefunden 2026-08-13, 0008-01).
+
+    LIMITATION (see 0008-09): this only ever scans the pre-JS static HTML on
+    disk. It cannot see text that page-level JS (e.g. review.js) rewrites
+    into the DOM after load, which is exactly how the 0008-08 recurrence
+    (hardcoded German #page-review-title in review.js) slipped past this
+    check undetected. check_client_rendered_german() below covers that gap."""
     for lang in LANGS:
         problems.extend(_check_no_hardcoded_german_one_lang(lang))
+
+
+def _pick_review_notice_page(lang):
+    """Finds one generated page per language that contains a
+    page-review-notice element, i.e. one whose client-side JS actually
+    exercises the code path check_client_rendered_german() needs to probe.
+    Returns None if no such page exists in that language tree (e.g. lang
+    dir missing, or no pages currently carry open review items)."""
+    wurzel = os.path.join(ROOT, lang) if lang != "de" else ROOT
+    if not os.path.isdir(wurzel):
+        return None
+    for full in sorted(glob.glob(os.path.join(wurzel, "**", "*.html"), recursive=True)):
+        rel = os.path.relpath(full, wurzel)
+        if lang == "de" and rel.split(os.sep, 1)[0] in LANGS:
+            continue
+        text = open(full, encoding="utf-8").read()
+        if 'class="page-review-notice"' in text and 'data-review-link' in text:
+            return full
+    return None
+
+
+def _check_client_rendered_german_one_lang(lang):
+    """0008-09: renders a representative page for `lang` through headless
+    WebKit (via tools/check_client_rendered_german.cjs) so client-side JS
+    like review.js actually runs, then scans the *post-JS* DOM text for the
+    same German chrome strings check_no_hardcoded_german() looks for in
+    static HTML. This is the only way to catch a bug like 0008-08, where
+    the static HTML was already correctly localized but review.js
+    overwrote it with a hardcoded German string at runtime."""
+    local_problems = []
+    if lang == "de":
+        return local_problems  # German output is the canonical source; nothing to catch
+    page = _pick_review_notice_page(lang)
+    if page is None:
+        return local_problems  # no open-review page in this tree right now; nothing to render
+
+    script = os.path.join(SRC, "tools", "check_client_rendered_german.cjs")
+    env = dict(os.environ)
+    # playwright is installed under a custom npm prefix outside this repo
+    # (~/devel/output/npm-prefix/node_modules), which sits outside Node's
+    # normal upward node_modules search from _src/tools/; NODE_PATH makes
+    # it resolvable regardless of the caller's inherited environment.
+    npm_prefix_modules = os.path.expanduser("~/devel/output/npm-prefix/node_modules")
+    if os.path.isdir(npm_prefix_modules):
+        env["NODE_PATH"] = npm_prefix_modules + os.pathsep + env.get("NODE_PATH", "")
+    try:
+        proc = subprocess.run(
+            ["node", script, page],
+            capture_output=True, text=True, timeout=30, cwd=SRC, env=env,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        local_problems.append("[%s] check_client_rendered_german: could not run headless check for %s (%s)"
+                              % (lang, os.path.relpath(page, ROOT), exc))
+        return local_problems
+    if proc.returncode != 0:
+        local_problems.append("[%s] check_client_rendered_german: headless render of %s failed: %s"
+                              % (lang, os.path.relpath(page, ROOT), proc.stderr.strip()[:300]))
+        return local_problems
+
+    try:
+        result = json.loads(proc.stdout)
+    except ValueError:
+        local_problems.append("[%s] check_client_rendered_german: non-JSON output for %s"
+                              % (lang, os.path.relpath(page, ROOT)))
+        return local_problems
+
+    body_text = result.get("bodyText", "")
+    for s in _german_chrome_strings():
+        if s in body_text:
+            local_problems.append("[%s] unuebersetzter deutscher Chrome-Text %r nach Client-JS-Rendering in %s"
+                                  % (lang, s, os.path.relpath(page, ROOT)))
+    return local_problems
+
+
+def check_client_rendered_german():
+    """0008-09: client-side counterpart to check_no_hardcoded_german() —
+    catches hardcoded German UI strings that are only introduced via
+    JS-driven DOM mutation after page load (e.g. review.js overwriting
+    #page-review-title), which the static-HTML-only scan cannot see.
+    Skipped entirely if `node`/Playwright is unavailable in this
+    environment; treated as a soft skip, not a hard failure, since the
+    static-HTML check still provides baseline coverage on its own.
+
+    0010-01: each language spawns a Node/WebKit subprocess with its own
+    30s timeout; run serially this dominates validate.py wall-clock
+    (~10 languages x up to 30s). This is I/O-bound (waiting on a
+    subprocess), not CPU-bound, so a ThreadPoolExecutor — not a process
+    pool — is the right tool: it avoids re-importing this module per
+    worker and there is no GIL contention while blocked on subprocess
+    I/O. Findings are collected per language and appended in the
+    original LANGS order so output stays deterministic."""
+    if shutil.which("node") is None:
+        problems.append("[hinweis] check_client_rendered_german uebersprungen: 'node' nicht verfuegbar")
+        return
+    results = {}
+    with ThreadPoolExecutor(max_workers=min(WORKERS, len(LANGS)) or 1) as ex:
+        futures = {ex.submit(_check_client_rendered_german_one_lang, lang): lang for lang in LANGS}
+        for fut in futures:
+            lang = futures[fut]
+            results[lang] = fut.result()
+    for lang in LANGS:
+        problems.extend(results[lang])
 
 
 
@@ -507,6 +617,7 @@ def main():
     check_namespaces()
     check_home_links()
     check_no_hardcoded_german()
+    check_client_rendered_german()
     check_record_status()
     check_workflow_lifecycle()
     if problems:

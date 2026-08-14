@@ -46,7 +46,7 @@ HOW TO USE:
 
 ## Feature: 0010 — Performance Package 2
 
-- [ ] **0010-01** parallelize `validate.py`
+- [p] **0010-01** parallelize `validate.py` -- 2026-08-14: parallelized check_client_rendered_german() (per-language Node/WebKit calls) via ThreadPoolExecutor; check_build()/check_langs() were already parallelized via ProcessPoolExecutor. Pre-existing rc=1 (30 dead links under process.html in all languages) is unrelated and tracked separately.
 
 ## Feature: 0001 — Traceable Build Reports for i18n and HTML
 
