@@ -1,19 +1,24 @@
-# Eclipse S-Core `kind`/ID-Minting Convention (0009-01)
+# Eclipse S-Core `kind`/ID-Minting Convention (0009-01) and Version Tracking (0009-04)
 
-Status: DECIDED 2026-08-14. Layered on the canonical identity scheme from
-**0006-02** (`project/kind/id`), which 0009-01 could not directly inherit
-because S-Core is a live codebase, not a PDF spec, with no upstream
-`SWS_xxx`-style source ID to anchor on.
+Status: DECIDED 2026-08-14 (0009-01), DECIDED 2026-08-14 (0009-04). Layered
+on the canonical identity scheme from **0006-02** (`project/kind/id`),
+which 0009-01/0009-04 could not directly inherit because S-Core is a live
+codebase, not a PDF spec, with no upstream `SWS_xxx`-style source ID or
+AUTOSAR-style discrete release to anchor on.
 
 ## Motivating problem
 
 Unlike AUTOSAR AP records, Eclipse S-Core units have no existing
-`kind`/ID convention to inherit. This document fixes the enumerated `kind`
-values, the deterministic derivation rule from repo/component to `id`, and
-stability rules across renames/refactors, so **0009-02/03/05/06** can
-proceed.
+`kind`/ID convention to inherit, and no discrete "release" concept
+comparable to AUTOSAR SWS releases. This document fixes (a) the
+enumerated `kind` values and deterministic derivation rule from
+repo/component to `id`, with stability rules across renames/refactors
+(0009-01), and (b) how S-Core content changes are tracked over time as
+the S-Core equivalent of the AUTOSAR `@rel:<release>#<content-hash8>`
+version ID from **0006-15** (0009-04). Together these unblock
+**0009-02/03/05/06**.
 
-## Research basis
+## Research basis (0009-01)
 
 S-Core already exposes three overlapping identity mechanisms in its own
 tooling and docs, which are reused here instead of inventing a new scheme:
@@ -30,7 +35,7 @@ tooling and docs, which are reused here instead of inventing a new scheme:
   (`needs_id_regex`, optional `id_prefix`) for requirements, architecture
   elements, and work products.
 
-## Pinned design decisions
+## Pinned design decisions (0009-01)
 
 ### `kind` taxonomy
 
@@ -69,9 +74,78 @@ grade stability without a custom persistence layer.
   ID as-is, since S-Core already enforces uniqueness/regex validation on
   these IDs. Store the sphinx-needs `type` as a sub-field on the record.
 
+## Pinned design decision (0009-04): version tracking over time
+
+### Why a Git commit hash cannot be the canonical version axis
+
+A raw commit SHA is excellent **provenance evidence** but the wrong
+**canonical integration boundary**: rebasing, squashing, mirroring, or
+importing an S-Core repository into another repository changes the commit
+DAG identity while the logical specification release may be unchanged.
+Since this system's amendment/curation/supersession machinery pins
+decisions and evidence to a version ID, coupling that ID to a mutable
+commit graph would silently invalidate amendments whenever a repository is
+relocated, mirrored, or absorbed — unacceptable for a system built around
+stable, addressable spec-element identity.
+
+### Decision: release tags first, release branches second, commit hash as provenance only
+
+Use a **release label** as the canonical version axis, with priority:
+
+1. **Annotated release tag** — preferred whenever S-Core publishes one.
+2. **Named release/maintenance branch** — used when no qualifying tag
+   exists.
+3. **No synthetic rolling version** — an untagged development branch is
+   scrapeable only when explicitly requested, and must be labeled as a
+   non-release snapshot, never treated as a canonical published release.
+
+Canonical S-Core version IDs follow the existing AUTOSAR-compatible
+format from **0006-15** unchanged:
+
+```
+ECLIPSE/S-CORE/<kind>/<id>@rel:<release-label>#<content-hash8>
+```
+
+Examples:
+
+```
+ECLIPSE/S-CORE/module/communication@rel:2026.1#a1c9f3e2
+ECLIPSE/S-CORE/component/communication.mw.com@rel:release/2026.1#f0e1d2c3
+```
+
+This lets existing amendment, curation, evidence, and supersession
+machinery treat S-Core exactly like any other release-bearing corpus,
+without special-casing.
+
+### Provenance metadata (non-canonical)
+
+Each scraped record additionally carries provenance fields that do **not**
+participate in the canonical ID, so relocation/mirroring of the source
+repo never breaks stable IDs:
+
+| Field | Meaning |
+|---|---|
+| `source_repo_origin` | Logical upstream/project source, not merely the current hosting URL |
+| `source_ref_kind` | `tag` or `release-branch` |
+| `source_ref` | The selected tag or immutable release-branch name |
+| `source_commit` | Full resolved Git SHA, for exact reproducibility of the scrape input |
+| `source_repo_url` | Current fetch location |
+| `source_path` | Path within the repo at the captured release |
+
+### Ref migration rule
+
+If a release branch is later converted to a tag, the original
+`@rel:<branch-name>` version is retained as an alias/supersession-
+compatible source reference rather than silently rewritten. New ingestion
+may prefer the tag only if it resolves to the same content (same
+`content_hash8`); otherwise it is a distinct release snapshot.
+
 ## Non-goals of this task
 
-- Does not define how content changes are tracked over time for S-Core
-  (commit hash / tag / release branch) — that is **0009-04**, still open.
 - Does not implement the scraper, registry entries, curation mapping, or
   validation checks — those are **0009-02/03/05/06**, now unblocked.
+- Does not define what constitutes a qualifying "release" for repos that
+  publish neither tags nor named branches; such repos are out of scope for
+  canonical versioning until the project adopts a release process, and are
+  scraped (if at all) only as explicitly-labeled non-release snapshots per
+  rule 3 above.
