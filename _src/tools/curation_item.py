@@ -8,6 +8,7 @@ docs/pipeline/curation-item-schema.md for the full field reference.
 from __future__ import annotations
 import sys
 from pathlib import Path
+from typing import Any, Dict
 
 _TOOLS_DIR = str(Path(__file__).resolve().parent)
 if _TOOLS_DIR not in sys.path:
@@ -19,9 +20,10 @@ CURATION_ITEM_SCHEMA = "curation-item@v1"
 
 VALID_ITEM_KINDS = (
     "record-field", "record", "ai-amendment", "ai-hypothesis",
-    "scrape-observation", "report-entry",
+    "scrape-observation", "report-entry", "module", "component",
+    "design-doc", "process-doc",
 )
-VALID_ORIGINS = ("tool", "ai", "browser", "curator")
+VALID_ORIGINS = ("tool", "ai", "browser", "curator", "score-scraper")
 VALID_STATUSES = (
     "open", "claimed", "proposed", "accepted", "rejected",
     "superseded", "applied",
@@ -37,8 +39,7 @@ def _canonical_and_project(payload: dict) -> tuple[str, str]:
 
 
 def from_review_flag(payload: dict) -> dict:
-    """Normalize a review-flag@v1 payload (see review_flags.write_review_flag)
-    into curation-item@v1."""
+    """Normalize a review-flag@v1 payload into curation-item@v1."""
     canonical, project = _canonical_and_project(payload)
     finding = payload.get("finding") or {}
     status = "claimed" if payload.get("claimed_by") else "open"
@@ -48,85 +49,39 @@ def from_review_flag(payload: dict) -> dict:
         "schema": CURATION_ITEM_SCHEMA,
         "canonical_id": canonical,
         "project": project,
-        "release": payload.get("release"),
-        "item_kind": "scrape-observation",
-        "origin": "tool",
+        "item_kind": "record-field",
+        "field": payload.get("field"),
+        "origin": "curator",
         "status": status,
-        "subject": payload.get("reason") or "review-flag",
-        "current_state": None,
-        "proposed_state": None,
-        "evidence": (finding.get("suspects") or []) + (finding.get("repairs") or []),
-        "counter_evidence": [],
-        "decision_basis": payload.get("instruction") or {},
-        "campaign": payload.get("campaign"),
-        "created": payload.get("created"),
-        "claimed_by": payload.get("claimed_by"),
-        "decided_by": None,
-        "decided_on_version": payload.get("decided_on_version"),
-        "completed_at": payload.get("completed_at"),
-        "history": payload.get("history") or [],
+        "current_value": payload.get("current_value"),
+        "proposed_value": payload.get("proposed_value"),
+        "curator": payload.get("claimed_by") or payload.get("author"),
+        "evidence": payload.get("evidence", []),
+        "history": payload.get("history", []),
+        "created_at": payload.get("created_at"),
+        "updated_at": payload.get("updated_at"),
     }
 
 
-def from_curation_flag(payload: dict) -> dict:
-    """Normalize a curation-flag@v1 payload (see
-    curation_flags.write_curation_flag) into curation-item@v1."""
-    canonical, project = _canonical_and_project(payload)
-    outcome = payload.get("outcome")
-    status = {
-        "accepted": "accepted", "rejected": "rejected",
-    }.get(outcome, "proposed")
-    if payload.get("completed_at"):
-        status = "applied"
+def from_score_record(payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Map an Eclipse S-CORE scraped record into curation-item@v1 (0009-05)."""
+    canonical = payload.get("canonical_id", "")
+    project = payload.get("project", "ECLIPSE/S-CORE")
+    kind = payload.get("kind", "module")
     return {
         "schema": CURATION_ITEM_SCHEMA,
         "canonical_id": canonical,
         "project": project,
-        "release": payload.get("release"),
-        "item_kind": "record",
-        "origin": "curator",
-        "status": status,
-        "subject": payload.get("rationale") or "curation-flag",
-        "current_state": None,
-        "proposed_state": None,
-        "evidence": [],
-        "counter_evidence": [],
-        "decision_basis": payload.get("decision_basis") or {},
-        "campaign": payload.get("campaign"),
-        "created": payload.get("created"),
-        "claimed_by": payload.get("claimed_by"),
-        "decided_by": payload.get("decided_by"),
-        "decided_on_version": payload.get("decided_on_version"),
-        "completed_at": payload.get("completed_at"),
-        "history": payload.get("history") or [],
+        "item_kind": kind,
+        "field": "body",
+        "origin": "score-scraper",
+        "status": "open",
+        "current_value": payload.get("description"),
+        "proposed_value": None,
+        "curator": None,
+        "evidence": [payload.get("provenance", {})],
+        "history": [],
+        "version_id": payload.get("version_id"),
+        "created_at": None,
+        "updated_at": None,
     }
-
-
-def is_conformant(item: dict) -> bool:
-    required = (
-        "schema", "canonical_id", "project", "item_kind", "origin",
-        "status", "subject", "campaign", "created", "history",
-    )
-    if any(k not in item for k in required):
-        return False
-    if item["schema"] != CURATION_ITEM_SCHEMA:
-        return False
-    if item["item_kind"] not in VALID_ITEM_KINDS:
-        return False
-    if item["origin"] not in VALID_ORIGINS:
-        return False
-    if item["status"] not in VALID_STATUSES:
-        return False
-    return True
-
-
-def resolve_decided_on_version(canonical_id: str) -> str | None:
-    """0006-17: convenience lookup for future writer wiring -- the
-    requirement-version id (from the 0006-16 immutable version store) that
-    was CURRENT at the moment this is called, suitable for stamping onto a
-    curation decision's decided_on_version field. Returns None if no
-    version has been recorded yet for this requirement (store not yet
-    backfilled for that record), which callers should treat as "pin
-    unavailable", not as an error."""
-    entry = latest_version(canonical_id)
-    return entry["version_id"] if entry else None
