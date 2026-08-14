@@ -63,6 +63,32 @@ def from_review_flag(payload: dict) -> dict:
     }
 
 
+def from_curation_flag(payload: dict) -> dict:
+    """Normalize a curation-flag@v1 payload into curation-item@v1."""
+    canonical, project = _canonical_and_project(payload)
+    status = "claimed" if payload.get("claimed_by") else "open"
+    if payload.get("completed_at"):
+        status = "applied"
+    return {
+        "schema": CURATION_ITEM_SCHEMA,
+        "canonical_id": canonical,
+        "project": project,
+        "item_kind": payload.get("item_kind") or "record",
+        "field": payload.get("field"),
+        "origin": payload.get("origin") or "browser",
+        "status": status,
+        "current_value": payload.get("current_value"),
+        "proposed_value": payload.get("proposed_value"),
+        "curator": payload.get("claimed_by") or payload.get("decided_by"),
+        "evidence": payload.get("evidence", []),
+        "history": payload.get("history", []),
+        "decision_basis": payload.get("decision_basis", {}),
+        "campaign": payload.get("campaign"),
+        "created_at": payload.get("created_at"),
+        "updated_at": payload.get("updated_at"),
+    }
+
+
 def from_score_record(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Map an Eclipse S-CORE scraped record into curation-item@v1 (0009-05)."""
     canonical = payload.get("canonical_id", "")
