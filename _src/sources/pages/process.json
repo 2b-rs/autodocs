@@ -1,0 +1,76 @@
+{
+ "file": "process.html",
+ "title": "Prozess der Veröffentlichung — R25-11",
+ "body_class": null,
+ "nav_html": "<a href=\"index.html\">Start</a> / Prozess",
+ "footer": "extracted",
+ "main_lead": "",
+ "main": [
+  {
+   "t": "html",
+   "html": "<h1>Prozess der Veröffentlichung</h1>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<p class=\"desc\">Diese Seite beschreibt den vollständigen Pipeline-Ablauf der AUTOSAR Adaptive Platform API-Referenz: von den führenden Spezifikations-Records über Übersetzung und Diagramme bis zu HTML-Ausgabe, Validierung, Berichten und Traceability. Sie richtet sich an Kurator:innen, Maintainer und AI-Agenten gleichermaßen. Operative Agent-Instruktionen (wie <code>AGENTS.md</code>) sind selbst als eigenständige Pipeline-Artefakte mit eigenem Kurations- und Review-Lebenszyklus geführt und werden hier referenziert.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">1. Überblick</h2><p>Die Pipeline folgt einem deterministischen Schichtenmodell: <strong>Spezifikations-DB → Kuratierung & Review → i18n-Segmentierung → Diagrammübersetzung → HTML-Generierung → Validierung → Berichte & Traceability</strong>. Jede Veröffentlichung entsteht reproduzierbar aus den definierten Quellen unter <code>_src/</code>.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">2. Source of Truth & Artefakt-Kategorien</h2><p>Die Ablagestruktur unterscheidet strikt zwischen autoritativen Quellen, verwalteten Pipeline-Artefakten und flüchtigen Build-Produkten:</p><ul><li><strong>Source of Truth (maßgeblich):</strong> <code>_src/spec/records/**/*.json</code> (Spezifikations-Records) sowie Kataloge wie <code>_src/spec/namespaces.json</code> und <code>_src/spec/projects.json</code>. Alle inhaltlichen Änderungen müssen hier erfolgen.</li><li><strong>Pipeline-Artefakte (versioniert/kuratiert):</strong> Seitenmodelle unter <code>_src/sources/pages/</code>, Review- und Curation-Queues, i18n-Register (<code>_src/i18n/</code>), Diagramm-Quellen (<code>.dot</code>, <code>.seq.json</code>) sowie Agent-Instruktionen (z. B. <code>AGENTS.md</code>).</li><li><strong>Generierte Build-Artefakte (disposable):</strong> Der gesamte HTML-Baum (<code>index.html</code>, <code>classes/</code>, <code>namespaces/</code>, <code>modules/</code>, <code>services/</code>) und alle lokalisierten Sprachbäume (<code>en/</code>, <code>es/</code>, <code>pt/</code>, <code>fr/</code>, <code>ru/</code>, <code>ar/</code>, <code>hi/</code>, <code>ko/</code>, <code>zh/</code>).</li><li><strong>Arbeits- und Cache-Produkte:</strong> PDF-Cache (<code>_src/spec/pdf-cache/</code>), <code>output/</code> sowie Ausführungs- und Protokollarchive unter <code>output/run-archive/</code>.</li></ul>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">3. Pipeline-Artefaktklassen</h2><p>Folgende Einheiten fließen durch die Verarbeitungsstufen der Pipeline:</p><ul><li><strong>Spec-Records:</strong> Strukturierte Datensätze der normativen Anforderungen und Typen mit stabiler kanonischer Identität (<code>AUTOSAR/AP/record/SWS_...</code> bzw. <code>ECLIPSE/S-CORE/...</code>).</li><li><strong>Review- & Kurations-Objekte:</strong> Diskrete Flags und Vorschläge (<code>curation-item@v1</code>) für menschliche Prüfungen und Korrekturen.</li><li><strong>Agent-Instruktionen:</strong> Formale Vorgaben für KI-Werkzeuge, die dem gleichen Revisions- und Kurationsprozess unterliegen wie Spezifikationsinhalte.</li><li><strong>i18n-Segmente & Batches:</strong> Extrahierte Textblöcke und Übersetzungseinheiten für die 9 Zielsprachen.</li><li><strong>Diagramme:</strong> Grafische Modelle (Graphviz DOT und Sequenzdiagramme) mit automatischer sprachspezifischer Textanpassung.</li><li><strong>Seitenmodelle:</strong> Kompositionsvorlagen unter <code>_src/sources/pages/*.json</code> zur Strukturierung der HTML-Ausgabe.</li><li><strong>Berichte:</strong> Statische und maschinenlesbare Protokolle zu Extraktion, Traceability, Validierungsbefunden und Qualitätskennzahlen.</li><li><strong>Runner-Laufpaare:</strong> Archivierte <code>run.sh</code>-Skripte und <code>.log</code>-Dateien zur exakten Rekonstruktion jedes Build-Laufs.</li></ul>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">4. Mehrsprachigkeit (i18n): Extraktion, Übersetzung & Merge</h2><p>Die Internationalisierung erfolgt über <code>_src/i18n_extract.py</code> und <code>_src/i18n_translate.py</code>:</p><ol><li><strong>Extraktion:</strong> Textsegmente und UI-Labels werden aus den deutschen Quellen extrahiert und in den Registern unter <code>_src/i18n/</code> erfasst.</li><li><strong>Übersetzungs-Batches:</strong> Offene Segmente werden batchweise für die Zielsprachen aufbereitet und nach Review zusammengeführt (<code>merge</code>).</li><li><strong>Fallback-Verhalten:</strong> Für Segmente ohne freigegebene Übersetzung greift das System automatisch auf den deutschen Originaltext zurück. Nicht übersetzte Teile werden in <code>fehler.json</code> und im Build-Report ausgewiesen.</li></ol>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">5. Diagrammübersetzung</h2><p>Diagramme werden aus <code>.dot</code>- und <code>.seq.json</code>-Quellen über <code>_src/render_diagrams.py</code> und <code>_src/i18n_diagrams.py</code> generiert. Textinhalte der Diagramme durchlaufen dieselbe i18n-Segmentierung wie Fließtexte. Für jede Zielsprache wird ein SVG mit lokalisierten Beschriftungen erzeugt, das semantisch und strukturell mit dem deutschen Originaldiagramm übereinstimmt.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">6. HTML-Generierung</h2><p>Der Generator <code>_src/generate.py</code> transformiert die Seitenmodelle (<code>_src/sources/pages/*.json</code>) und Datenkataloge in die Zielseiten. Er erzeugt sowohl den primären deutschen HTML-Tree als auch die neun lokalisierten Sprachbäume unter Anwendung des gemeinsamen Templates <code>_src/templates/page.html.tmpl</code>.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">7. Validierung & Qualitätsprüfung</h2><p>Vor einer Veröffentlichung prüft <code>_src/validate.py</code> das Gesamtergebnis auf Konsistenz:</p><ul><li>Prüfung aller internen und externen Links sowie Anker.</li><li>Prüfung auf verwaiste Seiten oder fehlende Referenzen.</li><li>Überprüfung der Namespace-Zugehörigkeiten und Signaturkonsistenz.</li><li>Kontrolle der i18n-Vollständigkeit und Erkennung unbeabsichtigter Sprachmischungen.</li></ul><p>Ein Exit-Code ungleich 0 blockiert den Release-Schritt und erzwingt die Korrektur der zugrundeliegenden Quellen.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">8. Berichte, Traceability & Ausführungs-Archive</h2><p>Die Dokumentation stellt dedizierte Auswertungsseiten bereit, um den Zustand der Datenbasis transparent zu machen:</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "nolang": true,
+   "html": "<ul><li><a href=\"extraction-reports.html\"><strong>Extraktions-Berichte:</strong></a> Status und Abweichungsanalysen aus der Extraktion der normativen PDFs.</li><li><a href=\"traceability.html\"><strong>Traceability-Bericht:</strong></a> Vollständige Rückverfolgbarkeit von Anforderungen über Review-Status bis zu den publizierten Elementen.</li><li><a href=\"open-reviews.html\"><strong>Offene Reviews:</strong></a> Übersicht aller zur Kuration oder Prüfung anstehenden Punkte.</li><li><strong>Ausführungs-Archive:</strong> Über <code>output/run-archive/run-&lt;timestamp&gt;-n&lt;seq&gt;.log</code> und <code>.sh</code> lässt sich jedes generierte Artefakt auf den exakten Erzeugungslauf und dessen Konsolenausgabe zurückführen.</li></ul>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">9. Fehlerbehandlung & Richtlinien</h2><p>Abweichungen, Validierungsfehler oder Übersetzungslücken dürfen <strong>niemals direkt im generierten HTML gepatcht</strong> werden. Fehlerbehebungen erfolgen immer auf Ebene der autoritativen Quellen (<code>_src/spec/</code> oder <code>_src/sources/pages/</code>), gefolgt von einer vollständigen Neugenerierung und Validierung. Ablehnungen (Rejects) in Übersetzungs-Batches müssen im Kurationsteam geprüft und neu zugeführt werden.</p>",
+   "tail": "\n"
+  },
+  {
+   "t": "html",
+   "html": "<h2 class=\"sect\">10. Weiterführende Dokumentation</h2><p>Vertiefende technische Details zur Pipeline und den Werkzeugen befinden sich in den internen Projekthandbüchern:</p><ul><li><code>_src/WARTUNG.md</code> — Wartungsanleitung und Standard-Befehle für Maintainer.</li><li><code>_src/ARCHITEKTUR.md</code> — Schichtenmodell, Erweiterungskonzepte und Komponentenarchitektur.</li><li><code>_src/KONVENTIONEN.md</code> — Gestalterische und sprachliche Richtlinien.</li><li><code>docs/pipeline/*.md</code> — Verbindliche Spezifikationen der Pipeline-Abläufe und Datenmodelle.</li></ul>",
+   "tail": "\n"
+  }
+ ]
+}
