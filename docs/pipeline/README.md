@@ -25,11 +25,21 @@ beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
 
 | Dokument | Rolle |
 |---|---|
-| `_src/SPEC_BUILD_PROCESS.md` | Maßgebliches Prozessdokument: Kampagnen-Phasen 0–6, Statusmodell, Rollen |
+| `docs/pipeline/*.md` | **Maßgebliche** Prozess- und Modell-Dokumentation für dieses Repository. Änderungen an Rollen, Statusmodell, Kampagnenphasen, Queues, Aktionen, Berichten, Identitätsschemata oder Werkzeugzuständigkeiten müssen hier zuerst oder gleichzeitig dokumentiert werden. |
+| `_src/SPEC_BUILD_PROCESS.md` | Historisches, informelles Ursprungsdokument und Design-Herkunft für den ursprünglichen Kampagnenablauf; nicht mehr normativ, wenn Aussagen von `docs/pipeline/` präzisiert, erweitert oder ersetzt wurden. |
 | `SPEC_QUALITY_ROADMAP.md` | Offene Punkte, Ebenen-Fortschritt, Working-Tree-Triage |
 | `NEXTSTEPS.md` (jetzt in `SPEC_QUALITY_ROADMAP.md` umbenannt) | Ursprungsanalyse der Traceability-Arbeit |
 | `AGENTS.md` | Betriebsregeln für Agenten/Werkzeuge in diesem Repo |
 | Docstrings in `_src/tools/*.py` und `_src/*.py` | Zweck und Aufruf jedes einzelnen Werkzeugs |
+
+## Normative Geltung
+
+`docs/pipeline/` ist die autoritative Dokumentationsschicht für Prozess,
+Datenmodell, Statusmodell, Kampagnen, Rollen, Reports, Identity/Versioning und
+Workflow-Regeln dieses Repositories. `_src/SPEC_BUILD_PROCESS.md` bleibt als
+historisches Überblicksdokument erhalten, dient aber nur noch der Herkunft und
+Einordnung des ursprünglichen Modells. Bei Abweichungen, Präzisierungen oder
+später hinzugekommenen Regeln gilt **immer** die Fassung unter `docs/pipeline/`.
 
 ## Wichtigster Grundsatz (aus `SPEC_BUILD_PROCESS.md`)
 

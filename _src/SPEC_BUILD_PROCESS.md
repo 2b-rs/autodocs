@@ -1,5 +1,10 @@
 # Prozess: Aufbau und Pflege der Spezifikations-Datenbank
 
+> **Status dieses Dokuments:** historisches, informelles Ursprungsdokument.
+> Die autoritative Fassung der Prozess-, Rollen-, Status-, Kampagnen- und
+> Datenmodell-Dokumentation liegt unter `docs/pipeline/`. Bei Abweichungen,
+> Präzisierungen oder Erweiterungen gilt `docs/pipeline/`.
+
 Dieser Prozess beschreibt, wie die Records unter `spec/records/` nach einer
 Werkzeugverbesserung neu aufgebaut, bewertet, entschieden und um Evidenz aus
 informellen Dokumenten angereichert werden. Er setzt die Anforderungen aus

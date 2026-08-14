@@ -1,7 +1,13 @@
 # Prozesse
 
-Quelle: `_src/SPEC_BUILD_PROCESS.md`. Dies ist der einzige Ort im Repo, der
-den vollen Lebenszyklus einer Kampagne end-to-end beschreibt.
+Quelle: `docs/pipeline/` (autoritative Fassung), historischer Ursprung:
+`_src/SPEC_BUILD_PROCESS.md`.
+
+Diese Datei ist die maßgebliche Beschreibung des Kampagnen-Lebenszyklus im
+aktuellen Repository. `_src/SPEC_BUILD_PROCESS.md` bleibt als informelles
+Ursprungs- und Kontextdokument erhalten, ist aber nicht mehr normativ.
+Präzisierungen, Implementierungsstatus, Erweiterungen und spätere Regeln in
+`docs/pipeline/` haben Vorrang.
 
 ## Grundhaltung
 
