@@ -79,11 +79,11 @@ HOW TO USE:
 
 ## Feature: 0005 — Review & Feedback
 
-- [ ] **0005-01** PREREQ: 0005-01:0006 — Requirement texts in the AUTOSAR AP documentation should be reviewable and approvable in a traceable way — directly in the published HTML documentation, without a separate tool and without a server component.
+- [x] **0005-01** PREREQ: 0005-01:0006 — Requirement texts in the AUTOSAR AP documentation should be reviewable and approvable in a traceable way — directly in the published HTML documentation, without a separate tool and without a server component. -- DONE 2026-08-14: Implemented client-side review workflow in published HTML (`review.js`, `.rec-history-panel`, curation report linkage) with zero server-side requirement; verified across all 11 language trees.
 
 ## Feature: 0006 — Unified Curation Platform
 
-- [ ] **0006-01** From the curator's and user's perspective, review, feedback, and curation should not split into separate silos based on technical origin (scrape ambiguity vs. DB correction vs. AI amendment vs. AI-proposed new element). There should be one coherent, traceable lifecycle for "an item that needs human judgment", with stable identity across projects, full history, visible status, and both static and future dynamic presentation layers.
+- [x] **0006-01** From the curator's and user's perspective, review, feedback, and curation should not split into separate silos based on technical origin (scrape ambiguity vs. DB correction vs. AI amendment vs. AI-proposed new element). There should be one coherent, traceable lifecycle for "an item that needs human judgment", with stable identity across projects, full history, visible status, and both static and future dynamic presentation layers. -- DONE 2026-08-14: Implemented unified curation lifecycle (0006-02..0006-25), unified curation-item@v1 schema, canonical identity, versioning, dependency tracking, delta views, and HTML status/history rendering across all specification records.
 
 ### Architecture decisions to make visible in code/data
 
