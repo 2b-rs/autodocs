@@ -45,6 +45,9 @@ import json
 import os
 import re
 from lxml import etree, html as LH
+import sys
+sys.path.insert(0, __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "tools"))
+from version_id import requirement_version_id, content_hash8
 
 SRC = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(SRC)
@@ -413,6 +416,60 @@ def _get_known_curation_ids(srcdir=SRC):
                 pass
     return _KNOWN_CURATION_IDS
 
+def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
+    """0021-05: Render the record-page re-review trigger + bound payload data.
+
+    Pure server-side HTML/JSON emission; client JS in review_request.js owns all
+    dialog behavior and transport. This keeps generated HTML deterministic while
+    binding the exact record identity/status/version/hash/source URL into the
+    page with no user re-entry.
+    """
+    rec_meta = dict(rec_meta or {})
+    if not record_id:
+        return ""
+
+    canonical_id = rec_meta.get("canonical_id") or record_id
+    release = rec_meta.get("release")
+    content_text = rec_meta.get("content_text") or rec_meta.get("text") or rec_meta.get("value") or ""
+    content_hash = rec_meta.get("content_hash") or (content_hash8(content_text) if content_text else None)
+    version_id = rec_meta.get("version_id") or (requirement_version_id(canonical_id, release, content_text) if release and content_text else None)
+    source_url = rec_meta.get("source_url") or ""
+    current_state = (status or {}).get("state", "unspecified")
+    has_open_request = bool(rec_meta.get("has_open_review_request"))
+
+    payload = {
+        "canonical_id": canonical_id,
+        "version_id": version_id,
+        "content_hash": content_hash,
+        "status": current_state,
+        "source_url": source_url,
+        "title": rec_meta.get("title") or canonical_id,
+        "category_default": "missing-context" if str(current_state).startswith("invalid/") else "",
+        "has_open_review_request": has_open_request,
+        "existing_request_url": rec_meta.get("existing_request_url") or "",
+    }
+    rid = esc_attr(canonical_id)
+    status_label = esc(current_state)
+    btn = ('<p class="review-request-duplicate" data-review-request-duplicate><strong>Review request already open.</strong> ' +
+           ('<a href="%s">View request &rarr;</a>' % esc_attr(payload["existing_request_url"]) if payload["existing_request_url"] else 'A second request cannot be opened until the current one is resolved.') +
+           '</p>') if has_open_request else ('<button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button>' if str(current_state).startswith('valid/') else '<button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Add supporting evidence</button>')
+
+    return ('<section class="review-request-panel" data-review-request-root>'
+            '<script type="application/json" class="review-request-data">%s</script>'
+            '<div class="review-request-summary">'
+            '<p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p>'
+            '<dl class="review-request-bound"><dt>Record</dt><dd><code>%s</code></dd>'
+            '<dt>Status</dt><dd>%s</dd>'
+            '%s%s%s</dl>%s'
+            '<p class="review-request-state" data-review-request-state hidden></p>'
+            '</div></section>'
+            % (json.dumps(payload, ensure_ascii=False).replace('</', '<\/'),
+               esc(canonical_id), status_label,
+               ('<dt>Version</dt><dd><code>%s</code></dd>' % esc(version_id)) if version_id else '',
+               ('<dt>Content hash</dt><dd><code>%s</code></dd>' % esc(content_hash)) if content_hash else '',
+               ('<dt>Source</dt><dd><a href="%s">%s</a></dd>' % (esc_attr(source_url), esc(source_url))) if source_url else '',
+               btn))
+
 def _render_rec_history_html(record_id, status, history, page_dir_depth=0, srcdir=SRC):
     """0006-11: Render curator-visible history timeline and status badge for a record."""
     if not status and not history:
@@ -493,10 +550,13 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requiremen
         elif t == "rec":
             rec_requirement_meta = b.get("requirement_meta") or requirement_meta
             rec_id = dict(b.get("attrs", [])).get("id") or record_id
+            review_request_html = _render_review_request_panel(rec_id, b.get("review_request") or {}, b.get("status"), page_dir_depth)
             history_html = _render_rec_history_html(rec_id, b.get("status"), b.get("history"), page_dir_depth, srcdir)
             out.append(open_tag("article", b["attrs"]))
             out.append(esc(b.get("lead", "")))
             out.append(render_blocks(b["blocks"], page_dir_depth, srcdir, rec_id, rec_requirement_meta))
+            if review_request_html:
+                out.append(review_request_html)
             if history_html:
                 out.append(history_html)
             out.append("</article>")
@@ -595,6 +655,7 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
         "css": prefix + "style.css",
         "js": prefix + "fold.js",
         "review_js": prefix + "review.js",
+        "review_request_js": prefix + "review_request.js",
         "reviewbar": ('<div class="reviewbar" aria-label="Requirement reviews"><button type="button" class="reviewbar-package" data-review-open aria-expanded="false"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span>Reviews</span><span class="review-count" data-review-count>0</span></button><button type="button" class="reviewbar-github" data-review-token><svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span data-gh-label>Connect GitHub</span><span class="reviewbar-status" aria-hidden="true"></span></button></div>' if has_review else ""),
         "cytoscape_js": prefix + "cytoscape.min.js",
         "graph_js": prefix + "component-graph.js",
