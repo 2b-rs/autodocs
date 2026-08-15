@@ -51,6 +51,180 @@ HOW TO USE:
 
   Prerequisites are noted inline in the task/feature text after `PREREQ:`.
 
+## Feature: 0037 — Git-Native Issue Store, Provenance Graph, and Backlog Migration
+
+**PREREQ:** 0037:0002, 0037:0006
+
+**Decision — canonical paths (2026-08-16, user approved proposal):** A Feature is authoritative at `issues/XXXX/index.md`. Every Task or Subtask is authoritative in its own stable directory at `issues/XXXX/XXXX-YY[.ZZ]/index.md`; Task/Subtask directories stay flat beneath the Feature and use structured `parent` references rather than filesystem nesting. Item directories may additionally contain `claim.json`, terminal `closure.json`, `decisions/`, and `attachments/`. IDs, never titles or lifecycle states, determine paths. A same-directory `feature.md` plus many `task-*.md` files was rejected because it provides no isolated namespace for claims/closures/evidence and increases Feature-directory contention; deeply nesting Subtasks was rejected because hierarchy is already encoded by IDs and would make reclassification/moves unnecessarily disruptive.
+
+**Goal:** Replace the merge-prone authoritative `TODO.md`/`DONE.md` database with one human-readable, schema-enforced Markdown item per Feature/Task/Subtask; generate legacy lists, query catalogs, dependency graphs, and published embeddings deterministically; and add typed provenance so reports, findings, fixes, re-scrapes, database snapshots, AI artifacts, diagrams, user guides, i18n outputs, HTML trees, validation evidence, and release decisions can be followed as one causal graph.
+
+**Authority and migration boundary:** Until authorized cutover, committed `TODO.md`, `DONE.md`, and active claim files remain authoritative and `issues/` is a disposable shadow database. The migration implementation, schemas, Feature `0037` itself, and the legacy source database will all change while migration is developed. Therefore migration must operate from explicit Git source/cutover commits, support deterministic full shadow re-import plus schema-to-schema transformation, and reconcile every committed delta before cutover; agents must not hand-maintain both databases or treat an early import as frozen truth. At cutover, one reviewed commit atomically makes `issues/**/index.md` authoritative and turns `TODO.md`, `DONE.md`, catalogs, graphs, and website payloads into generated views. Uncommitted/staged backlog changes or unresolved live claims block the final import.
+
+**Feature Definition of Done:**
+- The approved `issue-item@v1` Markdown/YAML profile, lifecycle, claim, closure, typed-reference, provenance-event, and artifact-set schemas are implemented and enforced with stable IDs, criterion-level evidence, dependency-cycle checks, authenticated authority where required, and no placeholder-ref acceptance.
+- `issues/XXXX/index.md` and `issues/XXXX/XXXX-YY[.ZZ]/index.md` are the sole authoritative Feature/item paths after cutover; generated catalogs/SQLite views are explicitly non-authoritative and reproducible.
+- One deterministic command validates the issue store and regenerates every declared derived issue artifact, including `TODO.md`, `DONE.md`, machine catalogs, dependency-graph data/views, website embedding payloads, i18n-derived graph UI/title data, and migration/consistency reports where applicable.
+- `docs/pipeline/` defines the canonical issue lifecycle and derived-artifact regeneration process, source/derived authority matrix, ordering, clean-tree and atomic-write behavior, validation/rollback rules, and how pipeline producers attach issue/run/campaign/artifact provenance. It records when and why the one-time migration occurred without promoting the historical migration procedure into a permanent canonical operating process.
+- The TODO dependency graph no longer parses free-form `TODO.md`; its standalone tool and published embedding consume one validated normalized issue catalog, share graph semantics, support every lifecycle state/prerequisite type, and are covered by i18n, generation, link/DOM/client-render, accessibility, and deterministic-tree checks.
+- Every migrated Feature/Task/Subtask, state, prerequisite, acceptance criterion, Definition of Done, decision/history note, real commit reference, unresolved placeholder, active claim, and archive disposition is reconciled in a retained machine/human-readable migration report tied to exact source, schema, tool, and cutover commits.
+- A representative end-to-end trace proves implementation Task → scrape/database/build activity → report finding → defect issue → fix commit → re-scrape/rebuild campaign → immutable evidence/database snapshot → invalidated/regenerated AI/diagram/guide/i18n/HTML artifacts → validation and release decision, without relying on commit-message prose alone.
+- Independent pre-cutover review, authorized cutover, clean-checkout regeneration, rollback rehearsal, and post-cutover audit pass; `TODO.md`/`DONE.md` cannot diverge from the authoritative issue store afterward.
+
+### Campaign A — Canonical Model, Authority, and Cutover Contract
+
+- [ ] **0037-01** Record the canonical path, identity, hierarchy, authority, and source-versus-derived contract for the issue store.
+  - **Acceptance criteria:** Pin `issues/XXXX/index.md` for Features and `issues/XXXX/XXXX-YY[.ZZ]/index.md` for Tasks/Subtasks; define flat item directories, structured parent references, immutable IDs/paths, title/state rename rules, optional item-local claim/closure/decision/attachment artifacts, generated-view locations, and the prohibition on dual authority.
+  - **Definition of Done:** A reviewable contract and positive/negative path fixtures are committed; validators can derive an item ID and level from any canonical path without heuristics.
+
+- [ ] **0037-02** PREREQ: 0037-02:0037-01 Define `issue-item@v1`: strict YAML front matter plus a constrained Markdown profile for goals, scope, findings, stable acceptance-criterion IDs, Definition of Done, decisions, and history.
+  - **Acceptance criteria:** Required/optional fields, enums, timestamps, parent/prefix rules, prerequisites, labels, work types, origin/relations, authority requirements, criterion syntax, normative versus informative sections, unknown-field behavior, extension/version negotiation, Unicode, multiline text, and size limits are unambiguous; prose remains easy to amend without duplicating structured facts.
+  - **Definition of Done:** JSON Schema or equivalent executable schema, valid Feature/Task/Subtask examples, adversarial invalid examples, canonical serialization rules, and parser fixtures are committed.
+
+- [ ] **0037-03** PREREQ: 0037-03:0037-02 Define the issue lifecycle, exclusive claim/lease model, authority rules, terminal closure/supersession/archive records, and criterion-level completion evidence.
+  - **Acceptance criteria:** Map legacy `[ ]/[u]/[p]/[?]/[w]/[x]` states without ambiguity; require a live task-local claim for in-progress work, prevent overlapping write scopes, retain immutable claim/release history, require `closure.json` plus checked criteria and reachable evidence for completion, distinguish successful completion from wontfix/superseded/not-accepted archives, and preserve the two-commit rule for real commit refs.
+  - **Definition of Done:** `issue-claim@v1` and `issue-closure@v1` schemas, permitted transition table, authority matrix, lease/recovery rules, and positive/negative lifecycle fixtures are approved and committed.
+
+- [ ] **0037-04** PREREQ: 0037-04:0037-02 Define the shared typed-reference grammar, provenance relations, immutable event schema, finding identity, run identity, and artifact/artifact-set manifests used by issues and all pipeline producers.
+  - **Acceptance criteria:** Cover issue/criterion/commit/run/campaign/finding/decision/artifact/artifact-set/record-version/evidence/curation-item references; define relations such as detected-during, reported-by, remediates, implements, verifies, triggered, produced-by, derived-from, invalidated-by, regenerated-by, supersedes, published-as, decides, and blocks; require path+digest where path alone is mutable; distinguish synthetic, development, production, and assessment evidence.
+  - **Definition of Done:** Versioned schemas, relation semantics/direction/cardinality, UUID/content-ID rules, redaction/privacy constraints, complete causal-chain example, and invalid-reference fixtures are committed.
+
+- [ ] **0037-05** PREREQ: 0037-05:0037-01, 0037-05:0037-02, 0037-05:0037-04 Define the authoritative-source/derived-artifact matrix and deterministic regeneration DAG for issue views and their website representations.
+  - **Acceptance criteria:** Classify item Markdown, claims/closures/decisions, provenance events, and retained source evidence as authoritative or immutable inputs; classify `TODO.md`, `DONE.md`, catalog JSON/optional SQLite, graph data/DOT/SVG/HTML, website payload/page models, language variants, and reports as derived; define exact stage order, inputs, outputs, hashes, atomic replacement, failure cleanup, stale detection, clean-tree expectations, and whether each output is committed or ephemeral.
+  - **Definition of Done:** A machine-readable DAG/manifest and human-readable matrix identify one writer and one validation rule for every derived artifact, with no circular generation dependency.
+
+- [ ] **0037-06** PREREQ: 0037-06:0037-01, 0037-06:0037-02, 0037-06:0037-03, 0037-06:0037-05 Define the shadow-import, moving-database reconciliation, cutover, and rollback strategy.
+  - **Acceptance criteria:** Legacy files remain authoritative until cutover; every import records source commit and schema/tool version; shadow output is disposable and rebuilt fully after source or target-schema change; stable IDs and independently authored post-import provenance are preserved through explicit transforms rather than accidental overwrite; final reconciliation includes all commits after the first baseline, including Feature `0037`; staged/uncommitted changes and unresolved claims block cutover; rollback restores the prior authority contract without losing post-cutover events.
+  - **Definition of Done:** Versioned migration-state model, source/candidate/cutover watermarks, re-import and schema-upgrade rules, freeze-window protocol, conflict/anomaly dispositions, and rollback rehearsal plan are review-ready.
+
+- [ ] **0037-07** PREREQ: 0037-07:0037-02, 0037-07:0037-03, 0037-07:0037-04, 0037-07:0037-05, 0037-07:0037-06 Obtain authorized approval of the issue model, provenance model, regeneration contract, and cutover/rollback strategy before implementation.
+  - **Acceptance criteria:** Process, configuration/evidence, security/privacy, operations, UX/i18n, and release authorities review the same versioned contract set; all findings are closed or explicitly block approval; approval names exact versions and accepted residual limitations.
+  - **Definition of Done:** Authenticated approval and finding log are committed. Keep implementation tasks blocked until this gate passes; use `[u]` only when the completed review package is waiting solely for human decision.
+
+### Campaign B — Issue Store, Validation, Rendering, and Migration Tooling
+
+- [ ] **0037-08** PREREQ: 0037-08:0037-02, 0037-08:0037-07 Implement the canonical issue-store loader/parser and normalized in-memory/catalog representation.
+  - **Acceptance criteria:** Discover only canonical paths; parse YAML and constrained Markdown deterministically; retain stable criterion IDs and source locators; expose Features, Tasks, Subtasks, states, prerequisites, origins, relations, authority, and text without lossy round trips; reject duplicate keys and ambiguous YAML types.
+  - **Definition of Done:** Unit/property tests cover valid/invalid files, Unicode, large prose, ordering independence, path mismatch, duplicate IDs, and canonical normalized JSON output.
+
+- [ ] **0037-09** PREREQ: 0037-09:0037-03, 0037-09:0037-04, 0037-09:0037-05, 0037-09:0037-08 Implement the strict repository validator for issue structure, lifecycle, ownership, dependencies, evidence, provenance references, and generated-view freshness.
+  - **Acceptance criteria:** Detect unknown/duplicate IDs and criteria, parent/prefix/path mismatch, cycles/self-dependencies, illegal state transitions, missing/expired/overlapping claims, completion without closure/evidence/authority, unreachable commit refs, archive misrepresentation, invalid typed edges, synthetic-as-production evidence, hand-edited derived output, and stale/missing generation stages with actionable item/field diagnostics.
+  - **Definition of Done:** Negative fixtures exercise every rule; validation is deterministic, side-effect free, integrated into the project validator/CI, and can validate a staged candidate before commit.
+
+- [ ] **0037-10** PREREQ: 0037-10:0037-03, 0037-10:0037-08, 0037-10:0037-09 Implement `issuectl` lifecycle operations for item creation, claim/release/recovery, prerequisite/relation changes, findings, decisions, closure, supersession, validation, rendering, graph queries, and trace queries.
+  - **Acceptance criteria:** Commands use atomic writes and schema validation, never silently overwrite user edits, enforce claim/authority rules, record immutable provenance events, support dry-run/staged-output modes, and produce stable diagnostics and exit codes; agents may edit prose but machine-critical state transitions use controlled operations.
+  - **Definition of Done:** CLI/API tests cover concurrent claims, stale leases, crash recovery, invalid transitions, same-commit-ref prohibition, rollback after injected write failure, and byte-stable no-op reruns.
+
+- [ ] **0037-11** PREREQ: 0037-11:0037-05, 0037-11:0037-08, 0037-11:0037-09 Implement deterministic generated views: legacy `TODO.md`/`DONE.md`, open/blocked/unclear/owner summaries, catalog JSON, optional generated SQLite query DB, and dependency data.
+  - **Acceptance criteria:** One normalized catalog drives every view; no view becomes an input to another authoritative stage; all current states including superseded/not-accepted archives render truthfully; generated warnings and source/schema/tool hashes are embedded; manual divergence and item omission fail validation.
+  - **Definition of Done:** Golden fixtures and repeated clean runs prove semantic and byte determinism; source-to-view counts/IDs/edges reconcile exactly and optional SQLite is disposable/rebuildable.
+
+- [ ] **0037-12** PREREQ: 0037-12:0037-05, 0037-12:0037-08, 0037-12:0037-09, 0037-12:0037-11 Replace the TODO-graph Markdown parser with a normalized issue-catalog graph adapter while preserving one shared graph semantic core.
+  - **Acceptance criteria:** `tools/todo-graph-core.js`, the standalone tool, and the website embed no longer parse free-form `TODO.md`; the adapter represents Feature/Task/Subtask nodes, every lifecycle state, explicit task and Feature-closure prerequisites, soft/conditional edges if approved, missing/archived endpoints, labels, counts, filtering, and stable links back to item pages; malformed catalogs fail visibly rather than dropping edges.
+  - **Definition of Done:** Parser/DOT tests use catalog fixtures, compare all nodes/edges with the authoritative store, cover legacy edge cases and new states, and prove both browser consumers use the same tested core without duplicated parsing logic.
+
+- [ ] **0037-13** PREREQ: 0037-13:0037-06, 0037-13:0037-08, 0037-13:0037-09 Inventory the legacy backlog database and define the importer fidelity/anomaly baseline.
+  - **Acceptance criteria:** Inventory every Feature/Task/Subtask, status marker, prerequisite, criterion, DoD, decision/history/closure note, `REF`, `local-*`/pending placeholder, archive exception, duplicate/malformed construct, and active `TODO-<agent>.md` claim at an exact source commit; classify what can be mapped losslessly, needs a typed migration finding, or requires authority.
+  - **Definition of Done:** Machine-readable inventory plus human review report and frozen fixtures cover `TODO.md`, `DONE.md`, Feature `0037`, and representative historical anomalies without modifying either database.
+
+- [ ] **0037-14** PREREQ: 0037-14:0037-08, 0037-14:0037-09, 0037-14:0037-13 Implement a deterministic legacy importer into a disposable shadow issue-store root.
+  - **Acceptance criteria:** Preserve exact IDs/text/source locators and structured dependencies; map states and archives according to the approved contract; assign stable criterion IDs deterministically; retain real refs and explicitly classify unresolved placeholders without fabricating evidence; emit no authoritative claims/closures absent source support; support arbitrary output root and source commit/archive input.
+  - **Definition of Done:** Repeated imports of one source commit are byte-identical; malformed/ambiguous input creates deterministic blocking findings; tests prove no write to live issue, queue, evidence, or generated-output roots.
+
+- [ ] **0037-15** PREREQ: 0037-15:0037-06, 0037-15:0037-10, 0037-15:0037-14 Implement moving-source and moving-target reconciliation for repeated shadow imports while schemas/tools and the legacy backlog continue changing.
+  - **Acceptance criteria:** Track baseline/latest-source/candidate-schema/import-tool watermarks; rebuild from the newest committed legacy snapshot after each relevant change; distinguish source deltas, importer changes, schema transforms, and independently authored new-store events; prevent stale shadow data or manual edits from winning; detect deleted/reused IDs, changed prerequisites, task moves, concurrent claims, and representation-version drift; include the migration Feature's latest state.
+  - **Definition of Done:** Tests simulate commits arriving during migration and at least one target-schema upgrade, then prove the final candidate equals a clean full import plus explicitly preserved authorized events with no lost or duplicated item.
+
+- [ ] **0037-16** PREREQ: 0037-16:0037-04, 0037-16:0037-13, 0037-16:0037-14, 0037-16:0037-15 Implement the versioned migration report and source/target reconciliation gate.
+  - **Acceptance criteria:** Emit machine-readable and human-readable reports with source/candidate commits, schema/tool versions, counts/hashes by item/state/type, IDs, prerequisites, criteria/DoD/text fidelity, refs, claims, archives, anomalies/dispositions, generated-view reconciliation, provenance completeness, rerun delta, and pass/fail; reports themselves have artifact identity and producing-run/issue refs.
+  - **Definition of Done:** Report fixtures detect omission, text drift, edge drift, state/authority inflation, fabricated refs, stale shadow imports, and self-baseline mutation; a failing report blocks cutover.
+
+- [ ] **0037-17** PREREQ: 0037-17:0037-04, 0037-17:0037-07, 0037-17:0037-09 Implement immutable provenance-event/artifact-set storage, deterministic graph indexes, and reverse trace queries.
+  - **Acceptance criteria:** Use one event per file to avoid append conflicts; validate typed endpoints/relations, source commits, path+digest members, run/campaign context, privacy class and evidence class; generate disposable indexes that answer issue→runs/artifacts/findings and artifact→source issue/campaign/input queries without editing both ends of a relation.
+  - **Definition of Done:** Tests cover concurrent event creation, duplicate/colliding IDs, dangling refs, redacted refs, artifact-tree digest changes, graph traversal/cycles, and index regeneration from immutable source events.
+
+### Campaign C — Canonical Process and Regeneration Documentation
+
+- [ ] **0037-18** PREREQ: 0037-18:0037-01, 0037-18:0037-02, 0037-18:0037-03, 0037-18:0037-10 Write the canonical issue lifecycle and collaboration process in `docs/pipeline/`.
+  - **Acceptance criteria:** Define creation/decomposition, dependencies, claims/leases/write scopes, agent handoff, decisions/authority, findings, criteria/evidence, closure/wontfix/supersession/not-accepted archive, provenance links, privacy, conflict recovery, and separation from curation/problem/change lifecycles; replace contradictory AGENT/TODO operating rules only through an explicit controlled update.
+  - **Definition of Done:** Normative document, role/action/tool cross-links, examples, and conformance checklist match implemented schemas/transitions and are committed with review evidence.
+
+- [ ] **0037-19** PREREQ: 0037-19:0037-05, 0037-19:0037-11, 0037-19:0037-12, 0037-19:0037-16, 0037-19:0037-17 Write the canonical derived-artifact regeneration process in `docs/pipeline/`.
+  - **Acceptance criteria:** Document authoritative inputs, complete DAG/stage order and commands, output ownership, clean/staged-tree policy, atomic writes, run IDs, issue/campaign context, input/output artifact manifests and hashes, i18n ordering, graph rendering/embedding, HTML rebuild, validation, retained reports, no-op determinism, stale/missing stage failure, rollback, and how adding a new derived view updates the matrix/DAG/validator.
+  - **Definition of Done:** One operator recipe regenerates and validates every declared issue-derived artifact from a clean checkout; docs and executable manifest agree and drift is tested.
+
+- [ ] **0037-20** PREREQ: 0037-20:0037-06, 0037-20:0037-14, 0037-20:0037-15, 0037-20:0037-16 Prepare a bounded migration rationale/record in `docs/pipeline/` without making the one-time migration procedure a permanent canonical process.
+  - **Acceptance criteria:** Explain why monolithic TODO/DONE and copied agent files are being replaced, selected canonical paths, authority-switch conditions, moving-database strategy, candidate/report/decision/rollback evidence requirements, known limitations, and where historical artifacts will remain; include placeholders that are structurally required but explicitly not presented as actual cutover values; direct future maintainers to the canonical issue/regeneration processes rather than obsolete migration commands.
+  - **Definition of Done:** A review-ready pre-cutover record is committed without unsupported success claims; Task `0037-34` must fill exact source/candidate/decision/cutover commits and actual cutover time as part of the authority-switch commit.
+
+- [ ] **0037-21** PREREQ: 0037-21:0037-10, 0037-21:0037-11, 0037-21:0037-12, 0037-21:0037-17, 0037-21:0037-18, 0037-21:0037-19 Update tool/report catalogs and maintainer guidance for `issuectl`, validation, graph/query views, claims, provenance, regeneration, and recovery.
+  - **Acceptance criteria:** Commands, inputs/outputs, authority, side effects, dry-run behavior, errors, report locations, privacy limits, clean-checkout prerequisites, and recovery/rollback are current; old direct-edit and TODO-parser guidance is removed or marked historical.
+  - **Definition of Done:** Catalog links resolve, examples execute against fixtures, and docs validation reports no contradictory active instruction.
+
+### Campaign D — Graph, Website, i18n, Pipeline Provenance, and Tree Integration
+
+- [ ] **0037-22** PREREQ: 0037-22:0037-12 Implement the standalone dependency-graph maintainer tool against generated catalog/graph data.
+  - **Acceptance criteria:** Preserve filtering, counts, zoom/scroll, state/edge legend, done/archive handling and actionable errors; add stable item links and source/schema/tool/run identity; eliminate live fetch/parsing of `../TODO.md`; work over HTTP and documented local static serving without network dependencies beyond tracked assets.
+  - **Definition of Done:** Browser/DOM tests cover all states and prerequisite classes, malformed/stale data, missing Graphviz assets, item navigation, and parity with catalog counts/edges.
+
+- [ ] **0037-23** PREREQ: 0037-23:0037-12, 0037-23:0037-22 Integrate the issue graph into authoritative page models/templates and the published/maintainer website boundary.
+  - **Acceptance criteria:** Decide and enforce whether full internal issue data is published or a privacy-safe projection is embedded; generate the host/payload/scripts from `_src/`, not direct HTML edits; use language-tree-correct asset/data/item links; avoid silent disappearance on required deployments; include accessible non-graph summary/fallback and no-JS behavior.
+  - **Definition of Done:** Page-model, generation, privacy projection, DOM/link/accessibility, client-render, missing-data/failure and no-JS tests pass for canonical and translated trees.
+
+- [ ] **0037-24** PREREQ: 0037-24:0037-02, 0037-24:0037-12, 0037-24:0037-23 Integrate issue/graph UI, state/edge legends, summaries, and approved issue titles into the existing i18n pipeline.
+  - **Acceptance criteria:** Define which issue fields are canonical-only versus translated; use stable IDs/source hashes and protected placeholders; translate graph chrome and approved titles without changing issue identity, code, refs or IDs; support all configured languages, RTL, fallback, stale-translation invalidation, and language-local deep links; remove hardcoded English/German legend strings from renderer code.
+  - **Definition of Done:** Extraction/merge fixtures, completeness reports, client-render checks and representative LTR/RTL browser assertions pass with no untranslated required UI or corrupted protected token.
+
+- [ ] **0037-25** PREREQ: 0037-25:0037-11, 0037-25:0037-19, 0037-25:0037-23, 0037-25:0037-24 Wire issue-derived regeneration into the normal page/i18n/HTML-tree build and validation sequence.
+  - **Acceptance criteria:** One bounded command builds catalog/views/graph data, extracts/merges required translations, generates every language tree, validates links/anchors/DOM/client behavior and artifact manifests, and fails on stale/missing issue stages; generation uses temporary staging and atomic promotion and does not leak fixtures or mutate authoritative issues.
+  - **Definition of Done:** Clean repeated full-tree runs are byte- or explicitly semantic-deterministic, report exact issue/page/language/artifact counts and hashes, and leave no unexplained working-tree changes.
+
+- [ ] **0037-26** PREREQ: 0037-26:0037-17, 0037-26:0037-19 Extend scrape/extraction reports, campaign manifests, raw evidence, database rebuild/migration/version writers, curation items, validation and build reports with the common issue/run/finding/artifact provenance envelope.
+  - **Acceptance criteria:** Automatically record source/tool/config commits, exact input snapshots, issue/criterion/campaign/run refs, stable findings, output artifact sets/tree digests, changed records/versions, queue/decision refs, trigger/cause and production/synthetic classification; replace mtime/listing-only corpus identity with content manifests where evidential claims require it.
+  - **Definition of Done:** Schema migrations and integration tests prove backward disposition, no fabricated provenance, immutable raw evidence, deterministic rebuild identity, and reverse trace from database/report artifact to triggering issue and source evidence.
+
+- [ ] **0037-27** PREREQ: 0037-27:0037-17, 0037-27:0037-19 Extend AI workflow/traces, typed claims, diagram sources/rendered SVGs, user guides, i18n registers/diagram translations, page composition and generated HTML artifact sets with the common provenance envelope.
+  - **Acceptance criteria:** Pin exact record/evidence/claim/policy/model/config/input versions, issue/criterion/campaign/run refs and source/output hashes; record invalidation and regeneration causes; keep generated HTML/SVG metadata in manifests rather than uncontrolled file injection; preserve legacy traces with explicit confidence rather than invented run history.
+  - **Definition of Done:** Integration tests trace representative AI prose and diagram/guide content from final language-specific HTML back through render/generation runs to exact source versions, issue and trigger; input changes mark dependent artifacts stale and produce linked regeneration work.
+
+- [ ] **0037-28** PREREQ: 0037-28:0037-16, 0037-28:0037-25, 0037-28:0037-26, 0037-28:0037-27 Demonstrate the complete issue-to-artifact causal chain with a hermetic representative defect and reprocessing campaign.
+  - **Acceptance criteria:** A Task initiates a scrape/build; its report emits a stable finding; a linked defect issue is created and fixed by a real commit; that fix triggers a re-scrape/database rebuild; immutable evidence and record versions change; dependent AI/diagram/guide/i18n/HTML artifacts invalidate and regenerate; validation/release evidence links the same candidate. Every edge is queryable in both directions and no production store is polluted by the fixture.
+  - **Definition of Done:** Retained machine/human trace report, graph query assertions, input/output snapshots and mutation guards pass from a clean checkout without relying on free-form commit-message text.
+
+### Campaign E — Shadow Migration, Cutover, Regeneration, and Closure
+
+- [ ] **0037-29** PREREQ: 0037-29:0037-14, 0037-29:0037-15, 0037-29:0037-16, 0037-29:0037-21 Execute repeated non-authoritative shadow migrations from pinned current legacy commits and resolve importer/schema findings.
+  - **Acceptance criteria:** Each run records source/candidate/tool/schema hashes, includes all newly committed legacy changes, writes only disposable staging roots, regenerates views/reports, and routes every mismatch to a bounded issue or authorized disposition; no shadow state is presented as cut over.
+  - **Definition of Done:** At least two source-watermark runs plus one schema/tool-change rerun demonstrate convergence, zero unexplained loss/duplication, and a passing candidate report.
+
+- [ ] **0037-30** PREREQ: 0037-30:0037-03, 0037-30:0037-10, 0037-30:0037-14, 0037-30:0037-15 Reconcile active `TODO-<agent>.md` ownership/work, staged or uncommitted backlog edits, leases, and handoffs before the final candidate.
+  - **Acceptance criteria:** Identify every active agent/task/base commit/write scope and discrepancy; migrate to task-local claims or close/release with retained events; never overwrite another agent's changes; block reused IDs, unmerged task text, expired ambiguous ownership, or dirty backlog state from final import.
+  - **Definition of Done:** Signed-off ownership reconciliation and clean committed legacy source watermark exist; no active work is orphaned or simultaneously owned in both models.
+
+- [ ] **0037-31** PREREQ: 0037-31:0037-25, 0037-31:0037-28, 0037-31:0037-29, 0037-31:0037-30 Produce the final frozen migration candidate and complete reconciliation/rollback evidence without changing authority.
+  - **Acceptance criteria:** Freeze legacy writes at a named commit; perform clean full import using approved schema/tool; include Feature `0037` and final claims; regenerate all derived views, graph/i18n/HTML outputs and reports; compare IDs/text/states/edges/criteria/refs/counts/hashes; rehearse rollback; any discrepancy reopens migration and requires a new candidate.
+  - **Definition of Done:** Immutable candidate artifact sets, passing migration report, complete validation bundle, generated diff review and rollback result all identify one exact candidate/source commit pair.
+
+- [ ] **0037-32** PREREQ: 0037-32:0037-31 Conduct an independent pre-cutover audit of schema/process conformance, migration fidelity, provenance, generated views/tree, privacy, active-work reconciliation, and rollback readiness.
+  - **Acceptance criteria:** Reviewer re-runs representative import/validation/trace queries, samples historical anomalies and active/completed items, checks no acceptance or authority inflation, verifies graph/i18n/HTML parity and the full causal chain, and records every finding against exact candidate artifacts.
+  - **Definition of Done:** Authenticated independent recommendation and closed finding log identify the unchanged final candidate or block cutover.
+
+- [ ] **0037-33** PREREQ: 0037-33:0037-20, 0037-33:0037-31, 0037-33:0037-32 Obtain the authorized cutover decision for the exact independently audited candidate.
+  - **Acceptance criteria:** Authority reviews source/candidate commits, migration/validation reports, generated diff, unresolved limitations, publication/privacy scope, claims, support and rollback; conditions or rejection keep legacy authority and create bounded remediation.
+  - **Definition of Done:** Authenticated decision identifies the exact candidate and authority-switch commit plan; no implementation author self-approves.
+
+- [ ] **0037-34** PREREQ: 0037-34:0037-33 Atomically cut over authority to `issues/`, install generated `TODO.md`/`DONE.md` and graph/catalog views, and remove obsolete dual-write/legacy parser paths.
+  - **Acceptance criteria:** One reviewed commit promotes the unchanged candidate, marks legacy lists generated, activates issue validation/claims/regeneration, retains historical source/migration evidence, updates agent/process entry points, finalizes the bounded migration record from `0037-20` with exact source/candidate/decision/cutover commits and actual time, and provides immediate rollback without losing new immutable events; no gap permits edits to both authorities.
+  - **Definition of Done:** Cutover commit and generated manifests match the authorization; post-commit validation reports exactly one authority and no stale legacy parser/owner path.
+
+- [ ] **0037-35** PREREQ: 0037-35:0037-34 Rebuild every derived issue view, graph, i18n artifact, page model, language tree and validation/report artifact from a clean checkout of the cutover commit.
+  - **Acceptance criteria:** Use only tracked dependencies or explicit approved environment manifests; regenerate in documented order; compare source/catalog/view/tree/artifact counts and hashes; prove no source mutation, fixture leakage, missing optional stage, network-only dependency, or unexplained diff; execute rollback rehearsal against the actual cutover.
+  - **Definition of Done:** Retained clean-run and rollback reports exit zero and identify exact commands, tools, environment, inputs, outputs and hashes.
+
+- [ ] **0037-36** PREREQ: 0037-36:0037-34, 0037-36:0037-35 Conduct an independent post-cutover audit and close the migration Feature only if authority, views, provenance, active claims and generated trees remain consistent.
+  - **Acceptance criteria:** Verify the decision/candidate/cutover/clean-run chain, sample forward and reverse traces, rerun issue/view/graph/link/i18n checks, confirm new edits can occur only through the issue store, and route any mismatch through rollback or a new remediation cycle rather than accepting drift.
+  - **Definition of Done:** Committed audit addendum and closure record link the final authority state, reports, residual limitations, support/rollback obligations and exact commits. Only this task may authorize moving Feature `0037` to `DONE.md`.
+
 ## Feature: 0036 — Review-Prozess-Dokumentation: Illustriert, verlinkt, mehrsprachig
 
 **Kontext:** Nutzerwunsch (2026-08-15). Die beiden im Zuge von Feature 0035 identifizierten Prozesse — (1) das Curator-Entscheidungsprotokoll `review-package@v1` aus `review.js` und (2) der Flag-for-review-Antragsprozess `review-request-package@v1` aus Feature 0021 — sollen in `docs/pipeline/` praezise und detailliert beschrieben werden, gleichzeitig aber fuer Website-Nutzer leicht verstaendlich sein, inklusive Illustrationen und Ablaufdiagrammen, verlinkt aus den jeweiligen Dialogen, und vollstaendig uebersetzt.
