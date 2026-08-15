@@ -73,6 +73,13 @@ HOW TO USE:
   - **Acceptance criteria:** `Additional Information` recognised as a normative label; `parse_record()` on the Persistency document returns both `Description` and `Additional Information` for `RS_PER_00010` and `RS_PER_00021` with the boundary at the label; a regression test covers it; existing scrape tests still pass.
   - **Suggested follow-up (not required):** Sweep the RS corpus for `^[A-Z][A-Za-z ]{2,30}:` line-initial candidates that are not in `LABELS`, to find further unrecognised labels rather than discovering them one document at a time.
 
+- [ ] **0034-04** Exclude citation-only ID mentions from benchmark record selection in `_src/tools/spec_extraction_benchmark.py`, so an ID that is merely referenced in prose never becomes a benchmark entry.
+  - **Discovery (2026-08-15, found while working 0007-01):** `RS_SAF_21101` was selected as a benchmark record for `AUTOSAR_AP_RS_PlatformHealthManagement`, but that document does not define it. Its sole occurrence (p.9) is an inline citation inside a running sentence: "...as recommended in ISO26262, for instance [RS_SAF_21101][4]." No block-opening marker appears within 120 characters before or 200 characters after the ID, and no formal block exists anywhere in the file.
+  - **Symptom:** the produced entry had `heading: null`, `fields: {}` and `pages: [9, 10]` - it anchored to the citation and then spilled past the page boundary, which additionally gave it a bogus `multi_page` category.
+  - **Distinct from 0034-01/02/03:** those are extractor defects (field splitting, anchor direction, missing label). This one is a record-SELECTION defect in the benchmark builder: the record should never have been created. Note `spec_extraction_benchmark.py` was previously cleared of blame for 0034-01, which remains correct; this is a separate concern in the same file.
+  - **Acceptance criteria:** a candidate ID is promoted to a benchmark record only when a definition block can be anchored to it (marker present in either direction, per the 0034-02 fix); citation-only mentions are skipped and counted in a report so silent loss is impossible; a regression test covers the `RS_SAF_21101` case; upstream-requirement cross-references such as `RS_SAF_10039` cited inside other records are likewise not promoted.
+  - **Definition of Done:** fix and tests committed with `REF`; the existing `RS_SAF_21101` entry in `_src/tests/fixtures/spec_extraction/benchmark-draft.json` (currently reviewed and flagged `not_defined_in_document`) is removed as part of the regeneration, reducing the benchmark from 200 to 199 records, and the count is updated wherever it is asserted.
+
 ## Feature: 0033 — Website Review Request Contract and End-to-End Remediation
 
 **PREREQ:** 0033:0021
