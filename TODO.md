@@ -80,7 +80,7 @@ HOW TO USE:
 
 ### Campaign B — Website Experience and Generated Views
 
-- [x] **0021-04** PREREQ: 0021-04:0021-01, 0021-04:0021-02 Design the record-page interaction, confirmation, and accessibility behavior for requesting re-review. REF: PENDING
+- [x] **0021-04** PREREQ: 0021-04:0021-01, 0021-04:0021-02 Design the record-page interaction, confirmation, and accessibility behavior for requesting re-review. REF: 25eef65b
   - **Acceptance criteria:** The UX defines the action placement for valid and non-valid records, required rationale/category fields, optional evidence references, current record/version/status disclosure, consent/trust disclosure, confirmation behavior, success/error/stale states, keyboard operation, focus management, mobile layout, and the no-JavaScript fallback transport/confirmation/failure behavior; terminology makes clear that a request does not alter the record immediately.
   - **Definition of Done:** Approved UI contract is recorded in authoritative pipeline/UI documentation; testable acceptance scenarios cover standard, valid-curated, stale, duplicate, and submission-failure paths.
 
