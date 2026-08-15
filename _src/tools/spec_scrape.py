@@ -155,6 +155,7 @@ LABELS = [
     "Parameters (inout)", "Parameters (out)", "Return value",
     "Exception Safety", "Thread Safety", "Description", "Rationale",
     "Dependencies", "Use Case", "AppliesTo", "Supporting Material", "Notes",
+    "Additional Information",
     "Type", "Default value", "Errors",
 ]
 LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))

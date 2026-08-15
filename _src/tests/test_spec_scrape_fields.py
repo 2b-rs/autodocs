@@ -468,6 +468,49 @@ Supporting Material: –
         self.assertEqual(rec["props"]["Rationale"], "Because")
         self.assertNotIn("Beta", str(rec))
 
+    def test_additional_information_is_a_field_boundary(self):
+        """Persistency-style blocks carry Description + Additional Information.
+
+        Regression for 0034-03: before the fix "Additional Information" was
+        absent from LABELS, so NORM_RE never split on it and its whole body
+        was silently swallowed into the preceding Description value.
+        """
+        text = ("[RS_PER_00010] Heading \u2308Description: The Persistency cluster shall "
+                "provide a key-value storage.Additional Information: The keys are "
+                "unique within one storage.\u230b")
+        rec = scrape.parse_record(text, "RS_PER_00010")
+        self.assertEqual(rec["props"]["Description"],
+                         "The Persistency cluster shall provide a key-value storage")
+        self.assertEqual(rec["props"]["Additional Information"],
+                         "The keys are unique within one storage")
+
+    def test_additional_information_on_its_own_line_is_a_field_boundary(self):
+        text = """[RS_PER_00021] Heading \u2308
+Description:
+The Persistency cluster shall provide a file storage.
+Additional Information:
+Files are accessed via an accessor object.
+\u230b"""
+        rec = scrape.parse_record(text, "RS_PER_00021")
+        self.assertEqual(rec["props"]["Description"],
+                         "The Persistency cluster shall provide a file storage")
+        self.assertEqual(rec["props"]["Additional Information"],
+                         "Files are accessed via an accessor object")
+
+    def test_additional_information_without_colon_does_not_split_prose(self):
+        """Colon-gated on purpose: the label is a common English phrase.
+
+        Unlike Description/Rationale/..., "Additional Information" is not in
+        NORMATIVE_LABELS, so it only acts as a boundary when followed by a
+        colon.  This keeps prose such as the sentence below intact.
+        """
+        text = ("[RS_X_00001] Heading \u2308Description: See the annex for "
+                "Additional Information about timing.\u230b")
+        rec = scrape.parse_record(text, "RS_X_00001")
+        self.assertEqual(rec["props"]["Description"],
+                         "See the annex for Additional Information about timing")
+        self.assertNotIn("Additional Information", rec["props"])
+
     def test_prose_requirement_without_labels_remains_requirement_text(self):
         text = "[RS_X_00001] Heading ⌈The platform shall preserve this prose.⌋"
         rec = scrape.parse_record(text, "RS_X_00001")
