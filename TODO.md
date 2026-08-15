@@ -4,7 +4,8 @@ HOW TO USE:
 
 - *Features* are represented as 2nd level Headings.
 - New *Features* shall normally be added to the top of list
-- Features consist of *Tasks*.
+- Features have an ID. 
+- They consist of *Tasks* whose prefix corresponds to the Feature's ID.
 - a *Feature* is considered complete once all of its *Tasks* are complete.
 - Complete *Features* shall be moved to DONE.md and marked with a completion date + time. TODO.md and DONE.md must be committed after each completed feature.
 
@@ -84,7 +85,7 @@ HOW TO USE:
   - **Acceptance criteria:** The UX defines the action placement for valid and non-valid records, required rationale/category fields, optional evidence references, current record/version/status disclosure, consent/trust disclosure, confirmation behavior, success/error/stale states, keyboard operation, focus management, mobile layout, and the no-JavaScript fallback transport/confirmation/failure behavior; terminology makes clear that a request does not alter the record immediately.
   - **Definition of Done:** Approved UI contract is recorded in authoritative pipeline/UI documentation; testable acceptance scenarios cover standard, valid-curated, stale, duplicate, and submission-failure paths.
 
-- [ ] **0021-05** PREREQ: 0021-05:0021-03, 0021-05:0021-04 Implement the browser-side “Flag for review” flow on generated record pages.
+- [x] **0021-05** PREREQ: 0021-05:0021-03, 0021-05:0021-04 Implement the browser-side “Flag for review” flow on generated record pages. REF: 62f638bf
   - **Acceptance criteria:** Generated pages expose an accessible action and dialog/form; the form binds the rendered record’s canonical/version ID, current hash, status, and source URL without user re-entry; it validates required inputs locally, produces the specified request package, and uses GitHub submission or JSON export without browser-side record mutation. The UI distinguishes `exported`, `submitted`, and `ingested/queued`; a JSON download is never presented as submitted or queued, a submitted GitHub issue shows only its transport receipt until ingestion, and queue identity/linkage appears only after trusted ingestion returns or publishes it.
   - **Definition of Done:** Desktop/mobile/browser tests verify keyboard accessibility, visible focus, accessible labels/errors, request serialization, cancellation, transport failure, and no-JavaScript fallback behavior; generated HTML remains deterministic.
 
@@ -464,4 +465,3 @@ HOW TO USE:
 - [ ] **0007-04** PREREQ: 0007-04:0007-03 Freeze and enforce the independently approved benchmark as the extraction regression oracle.
   - **Acceptance criteria:** The frozen artifact has a stable ID/content hash and cannot be silently regenerated over reviewed expectations; a deterministic clean run compares all 200 benchmark entries/cases and reports semantic field/heading/page/completeness drift; negative tests prove changed, missing, duplicate, or unresolved entries fail.
   - **Definition of Done:** The draft status/path is retired or clearly superseded, the automated benchmark gate and operator documentation are committed, and a retained passing report identifies the exact source/tool/benchmark versions.
-
