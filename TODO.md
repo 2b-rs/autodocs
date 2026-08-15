@@ -554,7 +554,7 @@ HOW TO USE:
 
 ### Campaign A — Candidate truth set
 
-- [p] **0007-01** OWNED BY THIS AGENT. PREREQ: 0007-01:0006 Complete source-backed truthing of the 200-record benchmark and produce a reviewable freeze candidate.
+- [p] **0007-01** OWNED BY THIS AGENT. PREREQ: 0007-01:0006 Complete source-backed truthing of the 200-record benchmark and produce a reviewable freeze candidate. (in progress by agent-0007-01, see `TODO-agent-0007-01.md`)
   - **Acceptance criteria:** Exactly 200 unique entries cover all 18 source documents and the selection policy's difficult shapes; every entry records source pages/locator, expected heading/fields/pages, explicit completeness disposition, reviewer identity/status/notes, and any exclusion/non-record rationale. No entry remains `needs_review`, and no unexplained `complete_start = null` is accepted as a freeze result.
   - **Definition of Done:** The candidate schema/version, inventory, coverage report, and validation command are committed; automated checks reject duplicate/missing entries, unresolved review state, missing provenance, and invalid completeness dispositions.
   - **History (2026-08-12):** Manually truthed the two previously called-out empty-field cases: `RS_SAF_21101` is an inline citation rather than a formal block, while mixed-case source ID `RS_DIAG_04005` is a real formal block with recovered heading/fields and `complete_start = true`.
