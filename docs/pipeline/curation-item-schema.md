@@ -14,7 +14,7 @@ both into this shape. A future task may migrate the writers themselves.
 | `canonical_id` | string | `project/kind/id` from **0006-02**, e.g. `AUTOSAR/AP/record/SWS_UCM_00348`. |
 | `project` | string | e.g. `AUTOSAR/AP`. Derived from `canonical_id`. |
 | `release` | string \| null | AUTOSAR release the item pertains to, if known. Not part of `canonical_id` (0006-02 is release-free). |
-| `item_kind` | enum | `record-field` \| `record` \| `ai-amendment` \| `ai-hypothesis` \| `scrape-observation` \| `report-entry`. |
+| `item_kind` | enum | `record-field` | `record` | `review-request` | `ai-amendment` | `ai-hypothesis` | `scrape-observation` | `report-entry`. |
 | `origin` | enum | `tool` \| `ai` \| `browser` \| `curator`. |
 | `status` | enum | `open` \| `claimed` \| `proposed` \| `accepted` \| `rejected` \| `superseded` \| `applied`. |
 | `subject` | string | Human-readable one-line description of what is being curated. |
