@@ -66,7 +66,7 @@ HOW TO USE:
 
 ### Campaign A — Contract and Process Definition
 
-- [ ] **0021-01** Define the authoritative website “Flag for review” process, role boundaries, lifecycle semantics, and non-bypass rules in `docs/pipeline/`.
+- [x] **0021-01** Define the authoritative website “Flag for review” process, role boundaries, lifecycle semantics, and non-bypass rules in `docs/pipeline/`. REF: PENDING
   - **Acceptance criteria:** The docs define which published records are eligible and every exclusion; define who may submit, claim, propose, accept/reject, apply, and close a web-originated request; distinguish review versus curation routing; specify the `valid/*` re-review rule; define stale/duplicate/abuse handling; and state that the website never mutates records directly.
   - **Definition of Done:** `docs/pipeline/` documents are internally consistent with `workflow-lifecycle.md`, `roles.md`, `actions.md`, `status-model.md`, and `curation-item-schema.md`; a validation/testable set of normative requirements is committed.
 
