@@ -255,14 +255,14 @@ Evidence:
 
 - broad integrated validation orchestrated by `_src/validate.py`;
 - generated report pages and structured findings;
-- reproducibility, links, languages, namespaces, records, and lifecycle checks.
+- reproducibility, links, languages, namespaces, records, and lifecycle checks;
+- as of 2026-08-15, workflow validation scans the real `_src/spec/review-queue` and `_src/spec/curation-queue` trees, validates normalized `curation-item@v1` payloads, and reports malformed JSON without aborting the remaining scan.
 
 Insufficiency:
 
 - checks verify internal invariants, not a controlled software-requirement baseline;
 - no requirements-to-measures/results trace;
 - no approved release/regression selection and pass/fail specification;
-- sampled workflow validation code was reported to inspect queue paths different from the actual `_src/spec/review-queue` and `_src/spec/curation-queue` locations;
 - no retained, controlled release-specific test result set.
 
 Documentation-foundation coverage: partial; no ECU `SWE.6` result or rating.
@@ -316,7 +316,7 @@ Insufficiency:
 
 - verification/testing is not equivalent to independent QA;
 - no QA plan, independence criteria, conformance-audit schedule, objective process audit, nonconformance owner/due date, escalation record, management resolution, or recurrence-prevention evidence;
-- some checks can be skipped or inspect incomplete paths;
+- client-render checks can still be skipped and release-stage correlation/completeness controls remain incomplete;
 - open queues do not demonstrate issue resolution.
 
 Documentation-foundation coverage: partial; no ECU `SUP.1` result or rating.

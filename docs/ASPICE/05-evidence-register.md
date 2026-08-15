@@ -71,7 +71,7 @@ All artifacts in this section belong to the current documentation/data-pipeline 
 
 | Artifact | Evidence | Class | Relevance | Limitation |
 |---|---|---:|---|---|
-| `_src/validate.py` | Structural, link, language, record, namespace, status, and workflow checks; structured report | M | `SWE.5`, `SWE.6`, `SUP.1` | Mostly invariant-based; no requirement baseline/trace. Queue lookup has been reported to target paths inconsistent with `_src/spec/*-queue`; client-render check may be skipped. |
+| `_src/validate.py` | Structural, link, language, record, namespace, status, and workflow checks; structured report | M | `SWE.5`, `SWE.6`, `SUP.1` | Mostly invariant-based; no requirement baseline/trace. Real `_src/spec/*-queue` discovery and malformed-payload continuation are regression-tested as of 2026-08-15, but client-render checks may still be skipped and release-specific results are not retained. |
 | `_src/tests/` and `_src/tools/test_*.py` | Unit/integration-oriented checks and negative fixtures | M | `SWE.4`, `SWE.5` | No controlled verification strategy, selection/coverage rationale, CI result, or release-specific retained execution evidence. |
 | `_src/tests/fixtures/spec_extraction/benchmark-draft.json` | 200-record benchmark draft | O/I | Verification test data | Not frozen/approved; `TODO.md` Feature 0007 records unresolved review metadata and definition-shape questions. |
 | `docs/pipeline/client-rendered-validation.md` | Browser/client-render validation approach | I | `SWE.6` | Browser verification is not end-user intended-use validation (`VAL.1`). |

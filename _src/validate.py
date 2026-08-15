@@ -496,9 +496,20 @@ def check_client_rendered_german():
             record_finding("client-rendered-german-leak", "error", prob, ref=lang)
 
 
+def _workflow_queue_roots():
+    """Return canonical queue roots below ``_src/spec``."""
+    spec_root = os.path.join(SRC, "spec")
+    return tuple(
+        (queue_dir, os.path.join(spec_root, queue_dir))
+        for queue_dir in ("review-queue", "curation-queue")
+    )
+
+
 def check_workflow_lifecycle():
     checks_performed.append("check_workflow_lifecycle")
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
+    tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
     import curation_item_lifecycle_check as cilc
     vocab_problems = cilc.validate_vocabularies()
     if vocab_problems:
@@ -507,14 +518,32 @@ def check_workflow_lifecycle():
         return
     import curation_item as ci
     import glob as _glob
-    for queue_dir in ("review-queue", "curation-queue"):
-        base = os.path.join(SRC, "..", queue_dir)
+    for queue_dir, base in _workflow_queue_roots():
         if not os.path.isdir(base):
             continue
-        for pfad in _glob.glob(os.path.join(base, "**", "*.json"), recursive=True):
-            payload = json.load(open(pfad, encoding="utf-8"))
+        for pfad in sorted(_glob.glob(os.path.join(base, "**", "*.json"), recursive=True)):
+            try:
+                with open(pfad, encoding="utf-8") as handle:
+                    payload = json.load(handle)
+            except (OSError, json.JSONDecodeError) as exc:
+                record_finding(
+                    "invalid-curation-queue-json",
+                    "error",
+                    f"{pfad}: queue payload is not readable JSON: {exc}",
+                    ref=pfad,
+                )
+                continue
             adapter = ci.from_review_flag if queue_dir == "review-queue" else ci.from_curation_flag
-            item = adapter(payload)
+            try:
+                item = adapter(payload)
+            except (AttributeError, KeyError, TypeError, ValueError) as exc:
+                record_finding(
+                    "invalid-curation-queue-payload",
+                    "error",
+                    f"{pfad}: queue payload cannot be normalized: {exc}",
+                    ref=pfad,
+                )
+                continue
             if not ci.is_conformant(item):
                 record_finding("nonconformant-curation-item", "error", f"{pfad}: normalized curation-item is not conformant", ref=pfad)
                 continue
