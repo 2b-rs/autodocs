@@ -70,7 +70,7 @@ HOW TO USE:
   - **Acceptance criteria:** The docs define which published records are eligible and every exclusion; define who may submit, claim, propose, accept/reject, apply, and close a web-originated request; distinguish review versus curation routing; specify the `valid/*` re-review rule; define stale/duplicate/abuse handling; and state that the website never mutates records directly.
   - **Definition of Done:** `docs/pipeline/` documents are internally consistent with `workflow-lifecycle.md`, `roles.md`, `actions.md`, `status-model.md`, and `curation-item-schema.md`; a validation/testable set of normative requirements is committed.
 
-- [ ] **0021-02** PREREQ: 0021-02:0021-01 Specify the versioned browser request-package schema and deterministic request identity for a re-curation flag.
+- [x] **0021-02** PREREQ: 0021-02:0021-01 Specify the versioned browser request-package schema and deterministic request identity for a re-curation flag. REF: PENDING
   - **Acceptance criteria:** Schema includes request ID/version, target canonical and version ID, content/text hash, source URL/locator, status snapshot, actor claim, authoritative transport-derived identity/trust metadata, category, rationale, optional field/evidence references, timestamps, and client/schema version; downloaded JSON is always self-declared until a trusted ingestion envelope proves otherwise; duplicate identity, canonical serialization, stale-hash, sensitive-field, and retention rules are unambiguous.
   - **Definition of Done:** JSON Schema or equivalent validator, valid/invalid examples, and deterministic-ID fixtures are committed; the same semantic package supports GitHub-Issue submission and JSON export/later transfer without conflating their lifecycle states.
 
