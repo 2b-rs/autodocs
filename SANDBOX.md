@@ -26,7 +26,7 @@ Feature `0037` is designed to be implemented entirely by sandboxed/grunt agents.
 
 Until Feature `0037` completes its authorized cutover:
 
-- committed `TODO.md`, `DONE.md`, and active `TODO-<agent>.md` claim files are authoritative;
+- committed `TODO.md`, `DONE.md`, and active `TODO-<agent-id>.md` claim files are authoritative;
 - `issues/` is non-authoritative shadow or implementation data;
 - agents must not maintain both representations or infer cutover from the presence of `issues/`.
 
@@ -36,16 +36,16 @@ A later cutover must update this file, `AGENTS.md`, and the machine-readable aut
 
 The runner is an execution service. It is not the user, and the user is not expected to execute an agent's script.
 
-Until Feature `0037` installs and activates the versioned request queue/dispatcher, root `run.sh` is a singleton runner slot. The manager/runner must serialize its users; sandboxed agents must never assume that checking for a file is an atomic reservation.
+Until Feature `0037` installs and activates the versioned request queue/dispatcher, root `run.sh` is a singleton runner slot. Active Task/claim ownership serializes requests. Never overwrite an existing/pending `run.sh` or another Task's runner scope.
 
-A claimless request is permitted only for read-only bootstrap discovery and only when the runner/manager has placed an exclusive bootstrap lease ID, owner, and expiry in the agent's assignment metadata. Without that lease, a sandboxed agent must not create root `run.sh`. The leased script uses the fixed discovery profile, declares `expected_base: discover`, prints the lease identity, and may return only current commit, authority state, index/worktree status, active claims, and runner-slot state. It must not mutate files, refs, index, or external state. The runner rejects an absent, expired, wrong-owner, or already-consumed lease, uses no-clobber slot publication, and archives/removes the discovery script before releasing the slot. The agent records the result and lease in its claim before requesting mutation.
+A pre-claim assignment lease is not required. When a sandboxed agent needs Git/base/status data for a new claim, it first selects an eligible Task, creates its collision-resistant `TODO-<agent-id>.md` with matching immutable `owner_token`, `base_commit: pending-discovery`, and a unique request ID, marks the Task `[p]`, and then publishes the fixed read-only discovery `run.sh` if the slot is free. That script declares `expected_base: discover` and may return only current commit, authority state, index/worktree status, active claims, and slot state. It must not mutate files, refs, index, or external state. The runner accepts only a script referencing the active claim/request ID, rejects conflicts, and archives/removes it before releasing the slot. The agent then replaces `pending-discovery` with the returned base commit before requesting mutation.
 
 A sandboxed agent requests execution as follows:
 
-1. Inspect active claims and runner-slot state with non-execution tools. If the base commit/status is unavailable, use the leased claimless discovery exception above; otherwise do not submit a claimless request. Never overwrite an existing/pending `run.sh`.
-2. Create or update the Task claim, including the discovered base commit, bootstrap lease/result when used, and exclusive runner scope.
-3. Obtain or verify a runner reservation for the claimed request. Record its identity and expiry in the claim.
-4. Only while that reservation is valid, create `run.sh` with non-execution file tools; the runner enforces reservation ownership and no-clobber publication.
+1. Select or resume a Task under `AGENTS.md`, inspect active claims and runner-slot state with non-execution tools, and never overwrite an existing/pending request.
+2. Create or update the Task claim. If command-derived base/status is unavailable, use `base_commit: pending-discovery`; this is permitted only until the fixed read-only discovery result returns.
+3. Record a unique runner request ID and exclusive runner scope in the claim.
+4. When the singleton slot is free, publish `run.sh` with non-execution file tools. The script must reference the active claim/request ID; the runner rejects stale, conflicting, or unclaimed requests.
 5. Make the script non-interactive, bounded, deterministic where possible, and safe to rerun. It must fail closed on an unexpected base commit, authority state, working-tree scope, dependency, or input.
 6. At startup print:
    - a one-line purpose;
@@ -70,8 +70,9 @@ Before changing the repository:
 
 1. Determine and record the agent capability class; default to sandboxed.
 2. Read this file and `AGENTS.md`.
-3. Read the complete target Feature/Task and prerequisites in `TODO.md`.
-4. Inspect active `TODO-<agent>.md` claims and relevant working-tree changes using permitted tools or a read-only runner request.
-5. Follow the claim and state-transition procedure in `AGENTS.md`.
+3. Read `TODO.md` and active claims. If no Task was assigned, deterministically select work under `AGENTS.md` instead of asking the user to choose.
+4. Read the complete selected Feature/Task and prerequisites.
+5. Inspect relevant claims and working-tree information using permitted tools or the claimed read-only discovery request.
+6. Follow the claim and state-transition procedure in `AGENTS.md`.
 
 Further information is available in [`README.md`](README.md), [`_src/WARTUNG.md`](_src/WARTUNG.md), and [`docs/pipeline/`](docs/pipeline/README.md).
