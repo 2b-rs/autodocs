@@ -105,7 +105,8 @@ HOW TO USE:
   - **Acceptance criteria:** All three Subtasks pass against the same examples and normalized-object contract; no parser, importer, or writer implementation may begin from a partial profile.
   - **Definition of Done:** `0037-02.01` through `0037-02.03` are complete and their artifacts are listed with SHA-256 digests in the architecture review package.
 
-- [ ] **0037-02.01** PREREQ: 0037-02.01:0037-01 Define the YAML runtime, dependency, security, and canonical serialization profile in `docs/pipeline/issue-yaml-profile.md`.
+- [x] **0037-02.01** PREREQ: 0037-02.01:0037-01 Define the YAML runtime, dependency, security, and canonical serialization profile in `docs/pipeline/issue-yaml-profile.md`. REF: 5b93372971c7eda5455f323f0c9a59d46db2f5a4
+  - **Claim (2026-08-16):** Claimed by sandboxed agent `perplexity` via `TODO-perplexity-0037-02.01-b6c815ea4f21.md`, `owner_token: agent:perplexity:0037-02.01:b6c815ea4f21`, request ID `b6c815ea4f21`, `base_commit: pending-discovery`. Self-selected per `AGENTS.md` rule 3 as the first eligible subtask now that `0037-01` is `[x]`.
   - **Acceptance criteria:** Select and test one exact `ruamel.yaml` version for later pinning in root `pyproject.toml` and `requirements.lock`; require safe YAML 1.2; reject duplicate keys, aliases/anchors, merge keys, tags, multi-document streams, non-string keys, implicit timestamps, non-finite numbers, NUL/control characters, excessive aliases/depth/bytes, and ambiguous booleans/nulls; define UTF-8/LF, key ordering, two-space indentation, quoted timestamps, final newline, and front-matter delimiters. Controlled writers rewrite only front matter or named structured sections and preserve unrelated Markdown bytes.
   - **Definition of Done:** A review-ready profile records the exact package/version/hash and supported Python range; executable probe fixtures demonstrate every accepted/rejected scalar and security limit without adding production parser behavior.
 
