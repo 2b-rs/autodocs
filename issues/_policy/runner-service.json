@@ -1,0 +1,16 @@
+{
+  "schema": "runner-service@v1",
+  "repo_path": "/tmp/autodocs",
+  "run_slot": "/tmp/autodocs/run.sh",
+  "runner_executable": "/tmp/autodocs/_src/run-loop.sh",
+  "invocation": "run-loop.sh run.sh",
+  "launch_mechanism": "manual",
+  "launch_notes": "Operator launches run-loop.sh manually from the repo working directory. No launchd/systemd service. Process is not automatically restarted by the OS.",
+  "health_check": "pgrep -f 'run-loop.sh run.sh'",
+  "restart_path": "cd /tmp/autodocs && _src/run-loop.sh run.sh",
+  "rollback_path": "git checkout HEAD -- _src/run-loop.sh",
+  "revocation_path": "kill $(pgrep -f 'run-loop.sh run.sh') && truncate -s 0 /tmp/autodocs/run.sh",
+  "operator": "tobias.anton <tobias.anton@accenture.com>",
+  "restart_notes": "Manual restart — operator restarts as soon as crash is observed by re-running the invocation above.",
+  "rollback_notes": "Restore run-loop.sh from its original location in the tracked repository tree. Canonical source is _src/run-loop.sh at HEAD."
+}
