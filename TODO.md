@@ -137,7 +137,9 @@ HOW TO USE:
   - **Definition of Done:** Review-ready schema, state table, compare-and-swap pseudocode, merge-time rules, and race fixtures cover two worktrees, two clones, expiry, takeover, stale base, overlapping scopes, and failed integration.
   - **Closure (2026-08-16):** Claim/recovery lifecycle contract, `issue-claim@v1` schema, and six race fixtures committed in `536c824f095f1563b9c565378afecabb4ff07bf1`. Validation passed: claim schema and six race fixtures passed syntax/semantic checks.
 
-- [ ] **0037-04** PREREQ: 0037-04:0037-04.01, 0037-04:0037-04.02 Complete the review-ready typed-reference, provenance-event, run, finding, and artifact-set contract.
+- [x] **0037-04** PREREQ: 0037-04:0037-04.01, 0037-04:0037-04.02 Complete the review-ready typed-reference, provenance-event, run, finding, and artifact-set contract.
+  - **Claim (2026-08-16):** Claimed by sandboxed agent `perplexity` via `TODO-perplexity-0037-04-8c2e91f4b7ad.md`, `owner_token: agent:perplexity:0037-04:8c2e91f4b7ad`, request ID `8c2e91f4b7ad`, `base_commit: pending-discovery`. Both prerequisite Subtasks are terminal.
+  - **Closure (2026-08-16):** Aggregates typed-reference/provenance-event/run/finding contract `9aae0b7a295800478bc8eb0d0df795283b28c2a5` and artifact identity/storage contract `b6ebe46faf81cc3cf95def6c7d7e52304fd6a072`. Runner request `8c2e91f4b7ad-close01` verified valid JSON, all 14 required relations, all 12 endpoint kinds, and the linked event/finding/run/artifact causal chain in `provenance/fixtures/valid/provenance-chain.json`; both source contracts remain review-ready pending architecture approval `0037-07`. REF: PENDING_SECOND_COMMIT
   - **Acceptance criteria:** The two Subtasks define one non-duplicated causal model that existing campaign/build/AI/version/evidence formats can adapt to without fabricating history.
   - **Definition of Done:** Both Subtasks and a complete bidirectional causal-chain fixture are included in the architecture review package.
 
