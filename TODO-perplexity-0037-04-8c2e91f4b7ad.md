@@ -35,12 +35,19 @@
 - **Consumed request:** `8c2e91f4b7ad-close01` — validation-only aggregation check, completed 2026-08-16 13:53 CEST with exit code 0.
 - **Validation evidence:** Valid JSON; 14/14 required relations; 12/12 endpoint kinds; linked event/finding/run/artifact causal chain; provenance and artifact-storage contract evidence present. No paths changed.
 
+## Failure recovery
+
+- **Consumed request:** `8c2e91f4b7ad-close02` — guarded bookkeeping request, completed 2026-08-16 13:54 CEST with exit code 1 after its first path-limited commit.
+- **Partial outcome:** Commit `b6963479` created the parent closure state and claim file, but the follow-up REF-bookkeeping Python invocation incorrectly consumed the heredoc placeholder `-` as a file path and failed before any subsequent commit.
+- **Recovery discovery:** Request `8c2e91f4b7ad-recover-discover01` completed 2026-08-16 14:03 CEST with exit code 0. Exact current base is `b69634793352f9ea2ad941fa2ea6ac2b53fb407b`; all eight recovery guards passed. The earlier recovery failure was therefore caused by an unreported shell guard, not an invalid task/claim/marker condition.
+- **Remaining repair:** Replace `PENDING_SECOND_COMMIT` in `TODO.md`; replace both pending markers in this claim; preserve the existing completed parent state and commit only the two claim-scope paths. The repair must start from full base `b69634793352f9ea2ad941fa2ea6ac2b53fb407b`.
+
 ## Next step
 
-- Allocate and record a fresh request ID. Publish a fail-closed path-limited bookkeeping/commit request that may modify only this claim and `TODO.md`, marks `0037-04` terminal after rechecking the preceding validation evidence and base, commits only those two paths, and returns the commit REF for final closure bookkeeping.
+- Allocate and record a fresh request ID. Publish a fail-closed path-limited recovery request that verifies commit `b6963479`, replaces pending REF markers with its returned bookkeeping commit, and commits only `TODO.md` and this claim.
 
 ## Closure
 
 - Parent aggregation validated by runner request `8c2e91f4b7ad-close01`: valid JSON, 14/14 relations, 12/12 endpoint kinds, and complete linked causal-chain evidence.
-- First bookkeeping commit: PENDING_FIRST_COMMIT.
-- Final REF bookkeeping commit: PENDING_SECOND_COMMIT.
+- First bookkeeping commit: b69634793352f9ea2ad941fa2ea6ac2b53fb407b.
+- Final REF bookkeeping commit: b69634793352f9ea2ad941fa2ea6ac2b53fb407b.
