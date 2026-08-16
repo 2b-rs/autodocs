@@ -1,0 +1,22 @@
++ run.sh:50: echo '--- TODO excerpt before commit ---'
+--- TODO excerpt before commit ---
++ run.sh:51: sed -n 145,152p TODO.md
+- [x] **0034-03** Add `Additional Information` to the recognised field labels in `spec_scrape.py` so Persistency-style requirement blocks do not silently drop their second field. REF: 7b2b572ab18ecab29e7e6fd9704b9b85e7b806ab
+  - **Discovery (2026-08-15, found while working 0007-01):** `AUTOSAR_AP_RS_Persistency.pdf` does not use the Description/Rationale/Dependencies/Use Case/Supporting Material schema of the other RS documents. Its formal blocks carry exactly two labels: `Description:` and `Additional Information:`. `Additional Information` is absent from `LABELS` in `spec_scrape.py`, so `NORM_RE` never splits on it and its entire body is silently swallowed into the preceding `Description` value. Verified for `RS_PER_00010` (p.10-11) and `RS_PER_00021` (p.15-16); the draft fixture stores a single `Description` field for both, matching the loss.
+  - **Why it matters:** This is silent data loss rather than a visible mis-split — nothing in the output signals that a field went missing, so it would not be caught by eyeballing extracted records. Any other document-specific labels may be lost the same way.
+  - **Acceptance criteria:** `Additional Information` recognised as a normative label; `parse_record()` on the Persistency document returns both `Description` and `Additional Information` for `RS_PER_00010` and `RS_PER_00021` with the boundary at the label; a regression test covers it; existing scrape tests still pass.
+  - **Suggested follow-up (not required):** Sweep the RS corpus for `^[A-Z][A-Za-z ]{2,30}:` line-initial candidates that are not in `LABELS`, to find further unrecognised labels rather than discovering them one document at a time.
+  - **Resolution (2026-08-15, AGENT PERPLEXITY):** `Additional Information` added to `LABELS` in `_src/tools/spec_scrape.py`. Three regression tests added to `RequirementFieldTests` in `_src/tests/test_spec_scrape_fields.py` (concatenated-cell form, own-line form, and a negative case). Evidence in `logs/validate-db-contents/20260815-214205/`: end-to-end `parse_record()` against the real cached `AUTOSAR_AP_RS_Persistency.pdf` now returns `['Description', 'Additional Information']` for both `RS_PER_00010` (heading "Configurable Layout of Persistent Data") and `RS_PER_00021` (heading "Initialization and Shutdown"), with the boundary at the label and no label leak into `Description`. Scrape selection 65 -> 68 passed / 144 deselected; full suite 212 passed, 0 failed.
+  - **Design decision (deliberate, pinned by test):** The label was added to `LABELS` but NOT to `NORMATIVE_LABELS`. Members of `NORMATIVE_LABELS` split even without a trailing colon; that is safe for rare tokens like `Rationale` but not for the common English phrase `Additional Information`, which would shred prose such as "see the annex for Additional Information about timing". The label is therefore colon-gated via `API_LABELS`. Verified sufficient: the real Persistency tables do emit the colon. `test_additional_information_without_colon_does_not_split_prose` pins this so a later change cannot loosen it silently.
+  - **Observed while validating (new, not in scope of this task):** Both Persistency `Additional Information` values end with the absorbed running header `Requirements on Persistency`. This is the same page-furniture absorption already noted in 0034-01's live-reproduction bullet (page markers and running headers bleeding into field values), now confirmed on a second document and a different label. No new task filed — it belongs to 0034-01's stated scope; flagged here so 0034-01 covers it.
++ run.sh:52: echo
+
++ run.sh:53: git diff --check -- TODO.md TODO-perplexity.md
++ run.sh:54: echo DIFF_CHECK_EXIT=0
+DIFF_CHECK_EXIT=0
++ run.sh:55: echo
+
++ run.sh:56: git diff --stat -- TODO.md TODO-perplexity.md
+ TODO-perplexity.md | 49 +++++++++++++------------------------------------
+ TODO.md            |  2 +-
+ 2 files changed, 14 insertions(+), 37 deletions(-)

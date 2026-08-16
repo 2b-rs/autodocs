@@ -1,0 +1,482 @@
++ run.sh:143: echo '##### TEST FILE: ./_src/tests/test_spec_scrape_fields.py'
+##### TEST FILE: ./_src/tests/test_spec_scrape_fields.py
++ run.sh:143: nl -ba ./_src/tests/test_spec_scrape_fields.py
+     1	import sys
+     2	import unittest
+     3	import unittest.mock
+     4	from pathlib import Path
+     5	
+     6	sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+     7	import spec_scrape as scrape
+     8	
+     9	
+    10	class PypdfGeometryTests(unittest.TestCase):
+    11	    def test_matrix_values_are_stable_and_detached(self):
+    12	        source = [1, 0, 0, 1, 12.123456789, 34]
+    13	        values = scrape._matrix_values(source)
+    14	        self.assertEqual(
+    15	            values,
+    16	            [1.0, 0.0, 0.0, 1.0, 12.123457, 34.0],
+    17	        )
+    18	        source[4] = 99
+    19	        self.assertEqual(values[4], 12.123457)
+    20	
+    21	    def test_invalid_matrix_is_explicitly_absent(self):
+    22	        self.assertIsNone(scrape._matrix_values(None))
+    23	        self.assertIsNone(scrape._matrix_values([1, 2]))
+    24	
+    25	    def test_effective_text_position_composes_matrices(self):
+    26	        self.assertEqual(
+    27	            scrape._effective_text_position(
+    28	                [2, 0, 0, 3, 10, 20], [1, 0, 0, 1, 4, 5]
+    29	            ),
+    30	            (18.0, 35.0),
+    31	        )
+    32	        self.assertIsNone(scrape._effective_text_position(None, [1, 0, 0, 1, 0, 0]))
+    33	
+    34	    def test_line_clustering_uses_font_relative_baselines(self):
+    35	        spans = [
+    36	            {"id": "p1-s1", "position": (10, 100), "font_size": 12, "operation_index": 0},
+    37	            {"id": "p1-s2", "position": (40, 101.5), "font_size": 12, "operation_index": 1},
+    38	            {"id": "p1-s3", "position": (10, 80), "font_size": 12, "operation_index": 2},
+    39	            {"id": "p1-s4", "position": None, "font_size": 12, "operation_index": 3},
+    40	        ]
+    41	        lines, warnings = scrape._cluster_spans_into_lines(spans)
+    42	        self.assertEqual([line["span_ids"] for line in lines], [["p1-s1", "p1-s2"], ["p1-s3"]])
+    43	        self.assertEqual([line["id"] for line in lines], ["p1-l1", "p1-l2"])
+    44	        self.assertEqual(lines[0]["x_range"], [10, 40])
+    45	        self.assertEqual(warnings, ["p1-s4: missing-position"])
+    46	
+    47	    def test_line_layout_exposes_large_gap_cells(self):
+    48	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"],
+    49	                "ordered_span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
+    50	        spans = {
+    51	            "p1-s1": {"id": "p1-s1", "position": (10, 100), "font_size": 10},
+    52	            "p1-s2": {"id": "p1-s2", "position": (20, 100), "font_size": 10},
+    53	            "p1-s3": {"id": "p1-s3", "position": (100, 100), "font_size": 10},
+    54	        }
+    55	        layout = scrape._classify_line_layout(line, spans)
+    56	        self.assertEqual(layout["kind"], "cell-candidate")
+    57	        self.assertEqual([cell["span_ids"] for cell in layout["cells"]],
+    58	                         [["p1-s1", "p1-s2"], ["p1-s3"]])
+    59	        self.assertEqual(layout["cell_gap_threshold"], 36.0)
+    60	
+    61	    def test_line_layout_keeps_normal_word_gaps_in_one_flow(self):
+    62	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"],
+    63	                "ordered_span_ids": ["p1-s1", "p1-s2"]}
+    64	        spans = {
+    65	            "p1-s1": {"id": "p1-s1", "position": (10, 100), "font_size": 12},
+    66	            "p1-s2": {"id": "p1-s2", "position": (30, 100), "font_size": 12},
+    67	        }
+    68	        layout = scrape._classify_line_layout(line, spans)
+    69	        self.assertEqual(layout["kind"], "single-flow")
+    70	        self.assertEqual(len(layout["cells"]), 1)
+    71	
+    72	    def test_repeated_cell_patterns_are_promoted(self):
+    73	        def line(number, starts):
+    74	            return {"id": f"p1-l{number}", "layout": {"kind": "cell-candidate", "cells": [
+    75	                {"x_range": [start, start], "span_ids": [f"p1-s{number}-{index}"]}
+    76	                for index, start in enumerate(starts, 1)
+    77	            ]}}
+    78	        lines = [line(1, [10, 100]), line(2, [10.04, 100.03]), line(3, [20, 200])]
+    79	        scrape._promote_repeated_cell_patterns(lines)
+    80	        self.assertEqual(lines[0]["layout"]["kind"], "table-row")
+    81	        self.assertEqual(lines[1]["layout"]["alignment_support"], 2)
+    82	        self.assertEqual(lines[1]["layout"]["supporting_line_ids"], ["p1-l1", "p1-l2"])
+    83	        self.assertEqual(lines[0]["layout"]["table_region_id"], "table-r1")
+    84	        self.assertEqual(lines[1]["layout"]["table_region_id"], "table-r1")
+    85	        self.assertEqual(
+    86	            [cell["region_cell_id"] for cell in lines[0]["layout"]["cells"]],
+    87	            ["table-r1-c1", "table-r1-c2"],
+    88	        )
+    89	        self.assertEqual(
+    90	            [cell["column_index"] for cell in lines[1]["layout"]["cells"]], [0, 1]
+    91	        )
+    92	        self.assertEqual(lines[2]["layout"]["kind"], "isolated-gap-candidate")
+    93	        self.assertEqual(lines[2]["layout"]["alignment_support"], 1)
+    94	        self.assertIsNone(lines[2]["layout"]["table_region_id"])
+    95	
+    96	    def test_separate_matching_blocks_get_distinct_table_regions(self):
+    97	        def line(number, starts, kind="cell-candidate"):
+    98	            return {"id": f"p1-l{number}", "layout": {"kind": kind, "cells": [
+    99	                {"x_range": [start, start], "span_ids": [f"p1-s{number}-{index}"]}
+   100	                for index, start in enumerate(starts, 1)
+   101	            ]}}
+   102	        lines = [line(1, [10, 100]), line(2, [10, 100])]
+   103	        lines.extend(line(i, [], "single-flow") for i in range(3, 12))
+   104	        lines.extend([line(12, [10, 100]), line(13, [10, 100])])
+   105	        scrape._promote_repeated_cell_patterns(lines)
+   106	        self.assertEqual(lines[0]["layout"]["table_region_id"], "table-r1")
+   107	        self.assertEqual(lines[1]["layout"]["table_region_id"], "table-r1")
+   108	        self.assertEqual(lines[11]["layout"]["table_region_id"], "table-r2")
+   109	        self.assertEqual(lines[12]["layout"]["table_region_id"], "table-r2")
+   110	
+   111	    def test_interrupted_nearby_rows_stay_in_one_table_region(self):
+   112	        def row(number):
+   113	            return {"id": f"p1-l{number}", "layout": {"kind": "cell-candidate", "cells": [
+   114	                {"x_range": [10, 10], "span_ids": [f"p1-s{number}-1"]},
+   115	                {"x_range": [100, 100], "span_ids": [f"p1-s{number}-2"]},
+   116	            ]}}
+   117	        note = {"id": "p1-l2", "layout": {"kind": "single-flow", "cells": []}}
+   118	        lines = [row(1), note, row(3)]
+   119	        scrape._promote_repeated_cell_patterns(lines)
+   120	        self.assertEqual(lines[0]["layout"]["kind"], "table-row")
+   121	        self.assertEqual(lines[2]["layout"]["kind"], "table-row")
+   122	        self.assertEqual(lines[0]["layout"]["table_region_id"],
+   123	                         lines[2]["layout"]["table_region_id"])
+   124	        self.assertIsNone(note["layout"]["table_region_id"])
+   125	
+   126	    def test_distant_matching_patterns_are_not_promoted(self):
+   127	        lines = [{"id": f"p1-l{i}", "layout": {"kind": "single-flow", "cells": []}}
+   128	                 for i in range(12)]
+   129	        for i in (0, 11):
+   130	            lines[i]["layout"] = {"kind": "cell-candidate", "cells": [
+   131	                {"x_range": [10, 10], "span_ids": [f"a{i}"]},
+   132	                {"x_range": [100, 100], "span_ids": [f"b{i}"]},
+   133	            ]}
+   134	        scrape._promote_repeated_cell_patterns(lines)
+   135	        self.assertEqual(lines[0]["layout"]["kind"], "isolated-gap-candidate")
+   136	        self.assertEqual(lines[11]["layout"]["kind"], "isolated-gap-candidate")
+   137	
+   138	    def test_repeated_margin_bands_require_cross_page_support(self):
+   139	        pages = []
+   140	        for page in range(1, 6):
+   141	            lines = [
+   142	                {"id": f"p{page}-l1", "baseline_y": 790.0},
+   143	                {"id": f"p{page}-l2", "baseline_y": 400.0},
+   144	                {"id": f"p{page}-l3", "baseline_y": 31.0},
+   145	            ]
+   146	            if page == 1:
+   147	                lines.append({"id": "p1-l4", "baseline_y": 700.0})
+   148	            pages.append({"lines": lines})
+   149	        scrape._classify_repeated_margin_bands(pages)
+   150	        self.assertEqual(pages[0]["lines"][0]["margin_band"], "header")
+   151	        self.assertEqual(pages[0]["lines"][2]["margin_band"], "footer")
+   152	        self.assertEqual(pages[0]["lines"][1]["margin_band"], None)
+   153	        self.assertEqual(pages[0]["lines"][3]["margin_band_support"], 0)
+   154	        self.assertEqual(pages[0]["lines"][0]["margin_band_support"], 5)
+   155	
+   156	    def test_varying_margin_spans_are_separated_from_boilerplate(self):
+   157	        pages = []
+   158	        for number in range(1, 5):
+   159	            pages.append({
+   160	                "spans": [
+   161	                    {"id": f"p{number}-s1", "text": f"{number} of 4"},
+   162	                    {"id": f"p{number}-s2", "text": "Document ID 714" + ("\n" if number % 2 else "")},
+   163	                ],
+   164	                "lines": [{
+   165	                    "id": f"p{number}-l1", "baseline_y": 31.0,
+   166	                    "ordered_span_ids": [f"p{number}-s1", f"p{number}-s2"],
+   167	                }],
+   168	            })
+   169	        scrape._classify_repeated_margin_bands(pages)
+   170	        roles = pages[0]["lines"][0]["margin_span_roles"]
+   171	        self.assertEqual(roles["p1-s1"], "page-varying")
+   172	        self.assertEqual(roles["p1-s2"], "boilerplate")
+   173	
+   174	    def test_list_structure_records_bullets_and_indent_levels(self):
+   175	        page = {
+   176	            "spans": [
+   177	                {"id": "s1", "text": "• first"},
+   178	                {"id": "s2", "text": "– nested"},
+   179	                {"id": "s3", "text": "plain paragraph"},
+   180	                {"id": "s4", "text": "-5 is negative"},
+   181	            ],
+   182	            "lines": [
+   183	                {"id": "l1", "baseline_y": 700.0, "x_range": [70.0, 200.0], "ordered_span_ids": ["s1"], "layout": {"kind": "single-flow"}},
+   184	                {"id": "l2", "baseline_y": 690.0, "x_range": [100.0, 220.0], "ordered_span_ids": ["s2"], "layout": {"kind": "single-flow"}},
+   185	                {"id": "l3", "baseline_y": 680.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s3"], "layout": {"kind": "single-flow"}},
+   186	                {"id": "l4", "baseline_y": 670.0, "x_range": [70.0, 210.0], "ordered_span_ids": ["s4"], "layout": {"kind": "single-flow"}},
+   187	            ],
+   188	        }
+   189	        scrape._classify_list_structure([page])
+   190	        lines = {line["id"]: line for line in page["lines"]}
+   191	        self.assertEqual(lines["l1"]["bullet"]["marker"], "•")
+   192	        self.assertEqual(lines["l1"]["indent_level"], 0)
+   193	        self.assertEqual(lines["l2"]["indent_level"], 1)
+   194	        self.assertIsNone(lines["l3"]["bullet"])
+   195	        self.assertIsNone(lines["l4"]["bullet"])
+   196	
+   197	    def test_table_rows_do_not_create_indent_levels(self):
+   198	        page = {
+   199	            "spans": [{"id": "s1", "text": "cell"}, {"id": "s2", "text": "prose"}],
+   200	            "lines": [
+   201	                {"id": "l1", "baseline_y": 700.0, "x_range": [300.0, 400.0],
+   202	                 "ordered_span_ids": ["s1"], "layout": {"kind": "table-row-candidate"}},
+   203	                {"id": "l2", "baseline_y": 690.0, "x_range": [70.0, 200.0],
+   204	                 "ordered_span_ids": ["s2"], "layout": {"kind": "single-flow"}},
+   205	            ],
+   206	        }
+   207	        scrape._classify_list_structure([page])
+   208	        self.assertIsNone(page["lines"][0]["indent_level"])
+   209	        self.assertEqual(page["lines"][1]["indent_level"], 0)
+   210	
+   211	    def test_span_separator_inference_avoids_fused_words(self):
+   212	        spans = {
+   213	            "a": {"text": "Rationale:", "inferred_spacing": False},
+   214	            "b": {"text": "error", "inferred_spacing": False},
+   215	        }
+   216	        line = {"ordered_span_ids": ["a", "b"]}
+   217	        scrape._infer_span_separators(line, spans)
+   218	        self.assertTrue(spans["b"]["inferred_spacing"])
+   219	        self.assertEqual(scrape._reconstructed_line_text(line, spans), "Rationale: error")
+   220	
+   221	    def test_span_separator_splits_adjacent_bracketed_identifiers(self):
+   222	        spans = {
+   223	            "a": {"text": "[RS_E2E_08527]", "inferred_spacing": False},
+   224	            "b": {"text": "[PRS_E2E_00219]", "inferred_spacing": False},
+   225	        }
+   226	        line = {"ordered_span_ids": ["a", "b"]}
+   227	        scrape._infer_span_separators(line, spans)
+   228	        self.assertEqual(scrape._reconstructed_line_text(line, spans),
+   229	                         "[RS_E2E_08527] [PRS_E2E_00219]")
+   230	
+   231	    def test_span_separator_preserves_existing_whitespace_and_punctuation(self):
+   232	        spans = {
+   233	            "a": {"text": "word ", "inferred_spacing": False},
+   234	            "b": {"text": "next", "inferred_spacing": False},
+   235	            "c": {"text": ".", "inferred_spacing": False},
+   236	        }
+   237	        line = {"ordered_span_ids": ["a", "b", "c"]}
+   238	        scrape._infer_span_separators(line, spans)
+   239	        self.assertEqual(scrape._reconstructed_line_text(line, spans), "word next.")
+   240	
+   241	    def test_span_orientation_classification(self):
+   242	        self.assertEqual(scrape._span_orientation([1, 0, 0, 1, 0, 0]), "upright")
+   243	        self.assertEqual(scrape._span_orientation([0.1, 0, 0, -0.1, 0, 0]), "flipped")
+   244	        self.assertEqual(scrape._span_orientation([0, 1, -1, 0, 0, 0]), "vertical")
+   245	        self.assertEqual(scrape._span_orientation([1, 0.5, 0.5, 1, 0, 0]), "skewed")
+   246	
+   247	    def test_unmapped_glyph_counting_ignores_normal_whitespace(self):
+   248	        self.assertEqual(scrape._unmapped_glyph_count("plain text\n\t"), 0)
+   249	        self.assertEqual(scrape._unmapped_glyph_count("\x01\x02 ok"), 2)
+   250	        self.assertEqual(scrape._unmapped_glyph_count("bad \ufffd"), 1)
+   251	
+   252	    def test_margin_lines_have_no_list_structure(self):
+   253	        page = {"spans": [{"id": "s1", "text": "• x"}],
+   254	                "lines": [{"id": "l1", "baseline_y": 31.0, "x_range": [70.0, 90.0],
+   255	                           "ordered_span_ids": ["s1"], "margin_band": "footer"}]}
+   256	        scrape._classify_list_structure([page])
+   257	        self.assertIsNone(page["lines"][0]["bullet"])
+   258	        self.assertIsNone(page["lines"][0]["indent_level"])
+   259	
+   260	    def test_paragraph_flow_marks_wraps_and_block_starts(self):
+   261	        def body(identifier, y, indent=0, bullet=None):
+   262	            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+   263	                    "indent_level": indent, "bullet": bullet,
+   264	                    "layout": {"kind": "single-flow"}}
+   265	        page = {"lines": [body("l1", 700), body("l2", 688), body("l3", 676),
+   266	                          body("l4", 640), body("l5", 628, bullet={"marker": "•"})]}
+   267	        scrape._classify_paragraph_flow([page])
+   268	        flows = {line["id"]: line["flow"] for line in page["lines"]}
+   269	        self.assertEqual(flows["l1"], "block-start")
+   270	        self.assertEqual(flows["l2"], "wrap")
+   271	        self.assertEqual(flows["l3"], "wrap")
+   272	        self.assertEqual(flows["l4"], "block-start")
+   273	        self.assertEqual(flows["l5"], "block-start")
+   274	
+   275	    def test_unleveled_table_lines_never_wrap(self):
+   276	        def cell(identifier, y):
+   277	            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+   278	                    "indent_level": None, "bullet": None,
+   279	                    "layout": {"kind": "single-flow"}}
+   280	        page = {"lines": [cell("l1", 700), cell("l2", 688), cell("l3", 676)]}
+   281	        scrape._classify_paragraph_flow([page])
+   282	        self.assertEqual([line["flow"] for line in page["lines"]],
+   283	                         ["block-start", "block-start", "block-start"])
+   284	
+   285	    def test_indent_change_starts_new_block(self):
+   286	        def body(identifier, y, indent):
+   287	            return {"id": identifier, "baseline_y": y, "ordered_span_ids": [f"{identifier}-s"],
+   288	                    "indent_level": indent, "bullet": None,
+   289	                    "layout": {"kind": "single-flow"}}
+   290	        page = {"lines": [body("l1", 700, 0), body("l2", 688, 0), body("l3", 676, 2)]}
+   291	        scrape._classify_paragraph_flow([page])
+   292	        flows = {line["id"]: line["flow"] for line in page["lines"]}
+   293	        self.assertEqual(flows["l2"], "wrap")
+   294	        self.assertEqual(flows["l3"], "block-start")
+   295	
+   296	    def test_disjoint_extents_are_detected_as_columns(self):
+   297	        def line(identifier, left, right, y):
+   298	            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+   299	                    "ordered_span_ids": [f"{identifier}-s"]}
+   300	        page = {"lines": [
+   301	            *[line(f"a{i}", 70, 200, 700 - i * 12) for i in range(6)],
+   302	            *[line(f"b{i}", 320, 500, 700 - i * 12) for i in range(6)],
+   303	        ]}
+   304	        scrape._classify_page_columns([page])
+   305	        self.assertEqual(len(page["columns"]), 2)
+   306	        self.assertEqual(page["lines"][0]["column_index"], 0)
+   307	        self.assertEqual(page["lines"][6]["column_index"], 1)
+   308	
+   309	    def test_side_labels_without_shared_baselines_are_not_columns(self):
+   310	        def line(identifier, left, right, y):
+   311	            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+   312	                    "ordered_span_ids": [f"{identifier}-s"]}
+   313	        page = {"lines": [
+   314	            *[line(f"a{i}", 70, 110, 700 - i * 12) for i in range(18)],
+   315	            *[line(f"b{i}", 300, 320, 400 - i * 12) for i in range(6)],
+   316	        ]}
+   317	        scrape._classify_page_columns([page])
+   318	        self.assertEqual(page["columns"], [])
+   319	
+   320	    def test_reading_order_follows_columns_then_baselines(self):
+   321	        def line(identifier, y, left, column):
+   322	            return {"id": identifier, "baseline_y": y, "x_range": [left, left + 50],
+   323	                    "ordered_span_ids": [f"{identifier}-s"], "column_index": column}
+   324	        page = {"lines": [line("b1", 700, 320, 1), line("a1", 690, 70, 0),
+   325	                          line("a2", 680, 70, 0), line("b2", 660, 320, 1)]}
+   326	        scrape._finalize_line_order([page])
+   327	        self.assertEqual(page["reading_order"], ["a1", "a2", "b1", "b2"])
+   328	        self.assertEqual(page["lines"][1]["reading_position"], 0)
+   329	
+   330	    def test_margin_lines_are_excluded_from_reading_order(self):
+   331	        page = {"lines": [
+   332	            {"id": "h1", "baseline_y": 790, "x_range": [70, 300],
+   333	             "ordered_span_ids": ["h1-s"], "margin_band": "header"},
+   334	            {"id": "t1", "baseline_y": 700, "x_range": [70, 300],
+   335	             "ordered_span_ids": ["t1-s"]},
+   336	        ]}
+   337	        scrape._finalize_line_order([page])
+   338	        self.assertEqual(page["reading_order"], ["t1"])
+   339	        self.assertIsNone(page["lines"][0]["reading_position"])
+   340	
+   341	    def test_indented_prose_is_not_multi_column(self):
+   342	        def line(identifier, left, right, y):
+   343	            return {"id": identifier, "baseline_y": y, "x_range": [left, right],
+   344	                    "ordered_span_ids": [f"{identifier}-s"]}
+   345	        page = {"lines": [line(f"l{i}", 70 + (i % 2) * 20, 500, 700 - i * 12) for i in range(8)]}
+   346	        scrape._classify_page_columns([page])
+   347	        self.assertEqual(page["columns"], [])
+   348	        self.assertIsNone(page["lines"][0]["column_index"])
+   349	
+   350	    def test_zero_baseline_is_not_a_margin_band(self):
+   351	        pages = [{"lines": [{"baseline_y": 0.0}]} for _ in range(3)]
+   352	        scrape._classify_repeated_margin_bands(pages)
+   353	        self.assertIsNone(pages[0]["lines"][0]["margin_band"])
+   354	        self.assertEqual(pages[0]["lines"][0]["margin_band_support"], 0)
+   355	
+   356	    def test_horizontal_order_is_geometric_and_stable(self):
+   357	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2", "p1-s3"]}
+   358	        spans = {
+   359	            "p1-s1": {"id": "p1-s1", "position": (30, 100), "operation_index": 0},
+   360	            "p1-s2": {"id": "p1-s2", "position": (10, 100), "operation_index": 1},
+   361	            "p1-s3": {"id": "p1-s3", "position": (20, 100), "operation_index": 2},
+   362	        }
+   363	        ordered, warnings = scrape._horizontal_span_order(line, spans)
+   364	        self.assertEqual(ordered, ["p1-s2", "p1-s3", "p1-s1"])
+   365	        self.assertEqual(warnings, [])
+   366	
+   367	    def test_horizontal_order_ignores_layout_only_whitespace(self):
+   368	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+   369	        spans = {
+   370	            "p1-s1": {"id": "p1-s1", "text": "\n", "position": (10, 100), "operation_index": 0},
+   371	            "p1-s2": {"id": "p1-s2", "text": "value", "position": (10, 100), "operation_index": 1},
+   372	        }
+   373	        ordered, warnings = scrape._horizontal_span_order(line, spans)
+   374	        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+   375	        self.assertEqual(warnings, [])
+   376	
+   377	    def test_horizontal_order_uses_operation_order_at_identical_origin(self):
+   378	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+   379	        spans = {
+   380	            "p1-s1": {"id": "p1-s1", "text": "first", "position": (10, 100), "operation_index": 0},
+   381	            "p1-s2": {"id": "p1-s2", "text": "second", "position": (10, 100), "operation_index": 1},
+   382	        }
+   383	        ordered, warnings = scrape._horizontal_span_order(line, spans)
+   384	        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+   385	        self.assertEqual(warnings, [])
+   386	
+   387	    def test_horizontal_order_reports_ambiguous_positions(self):
+   388	        line = {"id": "p1-l1", "span_ids": ["p1-s1", "p1-s2"]}
+   389	        spans = {
+   390	            "p1-s1": {"id": "p1-s1", "text": "left", "position": (10, 100), "operation_index": 1},
+   391	            "p1-s2": {"id": "p1-s2", "text": "right", "position": (10.1, 100), "operation_index": 0},
+   392	        }
+   393	        ordered, warnings = scrape._horizontal_span_order(line, spans)
+   394	        self.assertEqual(ordered, ["p1-s1", "p1-s2"])
+   395	        self.assertEqual(len(warnings), 1)
+   396	        self.assertIn("ambiguous-horizontal-order", warnings[0])
+   397	
+   398	    def test_observations_reject_non_pypdf_backend(self):
+   399	        with unittest.mock.patch.object(scrape, "discover_pdfs", return_value=[Path("x.pdf")]):
+   400	            with unittest.mock.patch.object(Path, "is_dir", return_value=True):
+   401	                self.assertEqual(
+   402	                    scrape.main(["observations", "--backend", "builtin"]),
+   403	                    2,
+   404	                )
+   405	
+   406	
+   407	class BuiltinCMapTests(unittest.TestCase):
+   408	    def test_bfchar_bfrange_and_array_are_decoded(self):
+   409	        cmap = scrape._parse_tounicode(b"""beginbfchar <63> <2308> endbfchar
+   410	beginbfrange <64> <65> <230A> <66> <67> [<0041> <0042>] endbfrange""")
+   411	        self.assertEqual(scrape._decode_pdf_string(b"(cdefg)", cmap), "⌈⌊⌋AB")
+   412	
+   413	    def test_active_font_selects_tounicode_map(self):
+   414	        text = scrape._content_to_text(b"/F1 10 Tf [(c)(d)]TJ /F2 10 Tf (A) Tj",
+   415	                                       {"F1": {b"c": "⌈", b"d": "⌋"}, "F2": {b"A": "X"}})
+   416	        self.assertEqual(text, "⌈⌋X")
+   417	
+   418	
+   419	class RequirementFieldTests(unittest.TestCase):
+   420	    def test_normative_fields_are_split_when_cells_are_concatenated(self):
+   421	        text = """[RS_X_00001] Heading ⌈Description: The platform shall work.Rationale: Safety reason.Dependencies: RS_X_00002Use Case: Startup.AppliesTo: AP, CPSupporting Material: [1]⌋"""
+   422	        rec = scrape.parse_record(text, "RS_X_00001")
+   423	        self.assertEqual(rec["heading"], "Heading")
+   424	        self.assertEqual(rec["props"]["Description"], "The platform shall work")
+   425	        self.assertEqual(rec["props"]["Rationale"], "Safety reason")
+   426	        self.assertEqual(rec["props"]["Dependencies"], "RS_X_00002")
+   427	        self.assertEqual(rec["props"]["Use Case"], "Startup")
+   428	        self.assertEqual(rec["props"]["AppliesTo"], "AP, CP")
+   429	        self.assertEqual(rec["props"]["Supporting Material"], "[1]")
+   430	
+   431	    def test_normative_labels_without_colons_are_boundaries(self):
+   432	        text = "[RS_X_00001] Heading ⌈Description Alpha Rationale – Dependencies RS_X_00002 Use Case Startup AppliesTo AP Supporting Material [1]⌋"
+   433	        rec = scrape.parse_record(text, "RS_X_00001")
+   434	        self.assertEqual(rec["props"]["Description"], "Alpha")
+   435	        self.assertEqual(rec["props"]["Rationale"], "")
+   436	        self.assertEqual(rec["props"]["Dependencies"], "RS_X_00002")
+   437	        self.assertEqual(rec["props"]["Use Case"], "Startup")
+   438	        self.assertEqual(rec["props"]["AppliesTo"], "AP")
+   439	        self.assertEqual(rec["props"]["Supporting Material"], "[1]")
+   440	
+   441	    def test_heading_joins_positioning_lines_until_status(self):
+   442	        text = "[RS_X_00001]\nUCM\nshall support uninstalling software on\nAUTOSAR Adap-\ntive Platform\nStatus:\nDRAFT\n⌈Description: body⌋"
+   443	        rec = scrape.parse_record(text, "RS_X_00001")
+   444	        self.assertEqual(rec["heading"], "UCM shall support uninstalling software on AUTOSAR Adap- tive Platform")
+   445	        self.assertEqual(rec["props"]["Description"], "body")
+   446	
+   447	    def test_heading_falls_back_to_numbered_subsection_line_before_bare_id(self):
+   448	        text = """4.2.1.1.8 The LT shall transmit log and trace messages from several sources
+   449	over a communication interface to a receiving external client.
+   450	[RS_LT_00001] ⌈
+   451	Description:
+   452	The LT module shall be a BSW module.
+   453	Rationale: Because.
+   454	AppliesTo: CP ,AP
+   455	Use Case: Testing
+   456	Dependencies: –
+   457	Supporting Material: –
+   458	⌋"""
+   459	        rec = scrape.parse_record(text, "RS_LT_00001")
+   460	        self.assertEqual(rec["heading"], "The LT shall transmit log and trace messages from several sources over a communication interface to a receiving external")
+   461	        self.assertEqual(rec["props"]["Description"], "The LT module shall be a BSW module")
+   462	
+   463	    def test_next_requirement_never_spills_into_field(self):
+   464	        text = """[RS_X_00001] First ⌈Description: AlphaRationale: Because⌋
+   465	[RS_X_00002] Second ⌈Description: BetaRationale: Other⌋"""
+   466	        rec = scrape.parse_record(text, "RS_X_00001")
+   467	        self.assertEqual(rec["props"]["Description"], "Alpha")
+   468	        self.assertEqual(rec["props"]["Rationale"], "Because")
+   469	        self.assertNotIn("Beta", str(rec))
+   470	
+   471	    def test_prose_requirement_without_labels_remains_requirement_text(self):
+   472	        text = "[RS_X_00001] Heading ⌈The platform shall preserve this prose.⌋"
+   473	        rec = scrape.parse_record(text, "RS_X_00001")
+   474	        self.assertEqual(rec["requirement_text"], "The platform shall preserve this prose")
+   475	        self.assertEqual(rec["props"], {})
+   476	
+   477	
+   478	if __name__ == "__main__":
+   479	    unittest.main()

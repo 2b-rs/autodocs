@@ -1,0 +1,85 @@
++ run.sh:143: echo '##### TEST FILE: ./_src/tools/test_score_scrape.py'
+##### TEST FILE: ./_src/tools/test_score_scrape.py
++ run.sh:143: nl -ba ./_src/tools/test_score_scrape.py
+     1	#!/usr/bin/env python3
+     2	# -*- coding: utf-8 -*-
+     3	"""Test suite for score_scrape.py (0009-02)."""
+     4	import json
+     5	import shutil
+     6	import tempfile
+     7	from pathlib import Path
+     8	import sys
+     9	
+    10	# Ensure _src/tools is in sys.path
+    11	sys.path.insert(0, str(Path(__file__).resolve().parent))
+    12	from score_scrape import ScoreRepoScraper, parse_bazel_module_name, extract_sphinx_needs
+    13	
+    14	
+    15	def test_score_scraper():
+    16	    tmp_dir = Path("/tmp/test_score_repo")
+    17	    if tmp_dir.exists():
+    18	        shutil.rmtree(tmp_dir)
+    19	    tmp_dir.mkdir(parents=True)
+    20	
+    21	    try:
+    22	        # Create mock module
+    23	        (tmp_dir / "MODULE.bazel").write_text('module(name = "communication", version = "2026.1")\n', encoding="utf-8")
+    24	        (tmp_dir / "README.md").write_text("# Communication Module\nProvides ara::com support.\n", encoding="utf-8")
+    25	
+    26	        # Create mock component package
+    27	        comp_dir = tmp_dir / "mw" / "com"
+    28	        comp_dir.mkdir(parents=True)
+    29	        (comp_dir / "BUILD.bazel").write_text('cc_library(name = "com")\n', encoding="utf-8")
+    30	
+    31	        # Create mock sphinx-needs doc
+    32	        doc_dir = tmp_dir / "docs"
+    33	        doc_dir.mkdir(parents=True)
+    34	        (doc_dir / "arch.rst").write_text("""
+    35	Architecture Overview
+    36	=====================
+    37	
+    38	.. req:: IPC Communication Requirement
+    39	   :id: REQ_SCORE_COM_001
+    40	   :title: Fast IPC transport
+    41	
+    42	   The communication module shall provide low-latency IPC.
+    43	""", encoding="utf-8")
+    44	
+    45	        scraper = ScoreRepoScraper(
+    46	            repo_path=tmp_dir,
+    47	            release_label="2026.1",
+    48	            source_ref_kind="tag",
+    49	            source_commit="abcdef1234567890abcdef1234567890abcdef12",
+    50	            repo_origin="eclipse-score/communication"
+    51	        )
+    52	        records = scraper.scrape()
+    53	
+    54	        assert len(records) >= 3, f"Expected at least 3 records, got {len(records)}"
+    55	
+    56	        kinds = {r["kind"] for r in records}
+    57	        assert "module" in kinds, "Missing module kind"
+    58	        assert "component" in kinds, "Missing component kind"
+    59	        assert "design-doc" in kinds, "Missing design-doc kind"
+    60	
+    61	        mod_rec = next(r for r in records if r["kind"] == "module")
+    62	        assert mod_rec["id"] == "communication"
+    63	        assert mod_rec["canonical_id"] == "ECLIPSE/S-CORE/module/communication"
+    64	        assert "@rel:2026.1#" in mod_rec["version_id"]
+    65	        assert mod_rec["provenance"]["source_ref_kind"] == "tag"
+    66	
+    67	        comp_rec = next(r for r in records if r["kind"] == "component")
+    68	        assert comp_rec["id"] == "communication.mw.com"
+    69	        assert comp_rec["canonical_id"] == "ECLIPSE/S-CORE/component/communication.mw.com"
+    70	
+    71	        doc_rec = next(r for r in records if r["kind"] == "design-doc")
+    72	        assert doc_rec["id"] == "REQ_SCORE_COM_001"
+    73	        assert doc_rec["canonical_id"] == "ECLIPSE/S-CORE/design-doc/REQ_SCORE_COM_001"
+    74	
+    75	        print("All score_scrape unit tests passed successfully!")
+    76	    finally:
+    77	        if tmp_dir.exists():
+    78	            shutil.rmtree(tmp_dir)
+    79	
+    80	
+    81	if __name__ == "__main__":
+    82	    test_score_scraper()

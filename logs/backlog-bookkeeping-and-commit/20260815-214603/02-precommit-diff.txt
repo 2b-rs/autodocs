@@ -1,0 +1,177 @@
++ run.sh:55: git diff --check -- _src/tools/spec_scrape.py _src/tests/test_spec_scrape_fields.py TODO.md TODO-perplexity.md
++ run.sh:56: echo DIFF_CHECK_EXIT=0
+DIFF_CHECK_EXIT=0
++ run.sh:57: git diff --stat -- _src/tools/spec_scrape.py _src/tests/test_spec_scrape_fields.py TODO.md TODO-perplexity.md
+ TODO.md                               | 80 ++++++++++++++++++++++++++++++++++-
+ _src/tests/test_spec_scrape_fields.py | 43 +++++++++++++++++++
+ _src/tools/spec_scrape.py             |  1 +
+ 3 files changed, 123 insertions(+), 1 deletion(-)
++ run.sh:58: git diff -- _src/tools/spec_scrape.py _src/tests/test_spec_scrape_fields.py TODO.md TODO-perplexity.md
+diff --git a/TODO.md b/TODO.md
+index 674aad45..7552dea1 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -50,6 +50,81 @@ HOW TO USE:
+ 
+   Prerequisites are noted inline in the task/feature text after `PREREQ:`.
+ 
++## Feature: 0036 — Review-Prozess-Dokumentation: Illustriert, verlinkt, mehrsprachig
++
++**Kontext:** Nutzerwunsch (2026-08-15). Die beiden im Zuge von Feature 0035 identifizierten Prozesse — (1) das Curator-Entscheidungsprotokoll `review-package@v1` aus `review.js` und (2) der Flag-for-review-Antragsprozess `review-request-package@v1` aus Feature 0021 — sollen in `docs/pipeline/` praezise und detailliert beschrieben werden, gleichzeitig aber fuer Website-Nutzer leicht verstaendlich sein, inklusive Illustrationen und Ablaufdiagrammen, verlinkt aus den jeweiligen Dialogen, und vollstaendig uebersetzt.
++
++**Abgrenzung laut `docs/brainstorming/README.md`:** `docs/pipeline/` beantwortet "was existiert, wer macht was, welches Tool laeuft wo" und ist die operative, normative Ebene; `docs/brainstorming/` ist explizit NICHT der richtige Ort fuer diese Prozessbeschreibung, sondern nur fuer Design-Ideen. Die neue Dokumentation gehoert also in `docs/pipeline/`, nicht als weitere Brainstorming-Notiz.
++
++**Bereits vorhandene Infrastruktur, die zu nutzen bzw. zu beruecksichtigen ist:**
++- Layering-Regel `Spec-DB → KI-Kuratierung → Komposition → i18n → HTML`: generierte HTML-Baeume sind Build-Artefakte, niemals direkt editiert. Neue Illustrationen/Diagramme muessen also aus `_src/` erzeugt werden, nicht händisch in generiertes HTML eingefuegt.
++- i18n-Pipeline ist eine strikte, maschinenpruefbare JSONL-Transformation mit stabilen IDs und geschuetzten Platzhaltertoken (z. B. `⟦0⟧`); `[SWS_…]`/`[RS_…]`-Marker und Code bleiben sprachuebergreifend unveraendert. Neue Prozessdoku-Texte und Diagramm-Beschriftungen muessen durch dieselbe Pipeline laufen, nicht per Sonderweg uebersetzt werden.
++- AI-generierter Inhalt wird kanonisch nur auf Deutsch erzeugt; Uebersetzung ist ein spaeterer, getrennter Schritt. Falls Diagrammtexte/Illustrationen KI-unterstuetzt erzeugt werden, gilt dieselbe Policy-Bindung (versioniert, invalidierbar) wie fuer anderen AI-Content.
++- Es existiert bereits eine Cytoscape-basierte Graph-Rendering-Infrastruktur (`docs/brainstorming/graphrender.detail`) fuer interaktive Diagramme im generierten Baum; vor dem Aufbau eines neuen Diagramm-Renderers ist zu pruefen, ob sie fuer Ablaufdiagramme wiederverwendbar ist, statt eine zweite Diagramm-Loesung einzufuehren.
++
++**Feature Definition of Done:**
++- `docs/pipeline/` enthaelt fuer beide Prozesse je ein normatives, in sich konsistentes Dokument (Rollen, Zustaende, Uebergaenge, Nicht-Bypass-Regeln), im selben Detailgrad wie bestehende `docs/pipeline/`-Dokumente zu Feature 0021.
++- Fuer Website-Nutzer existiert eine leicht verstaendliche, illustrierte Fassung mit mindestens einem Ablaufdiagramm pro Prozess, generiert aus `_src/` und damit Teil des regulaeren Build-Artefakts (nicht handgepflegtes HTML).
++- Jeder betroffene Dialog (Flag-for-review aus `review_request.js`, Review-Paket aus `review.js`) verlinkt an geeigneter Stelle auf die passende Nutzer-Doku-Seite.
++- Normative und nutzerfreundliche Fassung sowie alle Diagramm-Beschriftungen sind vollstaendig durch die bestehende i18n-Pipeline in alle unterstuetzten Sprachen uebersetzt, ohne Verletzung der Platzhalter-/Marker-Invarianten.
++- Automatisierte Pruefungen (Link-/Anker-Validierung `validate.py`, i18n-Vollstaendigkeit) decken die neuen Seiten und Links ab.
++
++- [ ] **0036-01** Normative Prozessbeschreibung fuer das Curator-Entscheidungsprotokoll (`review-package@v1`, `review.js`) in `docs/pipeline/` verfassen.
++  - **Akzeptanzkriterien:** Beschreibt Item-Schema (`outcome`, `decided_by`, `identity`, `rationale`, `decision_basis`), Speicherort (`ara-review-package-v1`), Sammel-Submit als GitHub-Issue, Verhaeltnis zu `ara-review-github-token-v1`, und den fehlenden formalen Lifecycle-Zustand (kein Queue-Eintrag, da bereits Entscheidung); Konsistenz mit bestehenden `docs/pipeline/`-Dokumenten (`workflow-lifecycle.md`, `roles.md`) wird explizit hergestellt oder Abweichung begruendet.
++  - **Definition of Done:** Dokument committed mit `REF`; Review durch Abgleich mit dem tatsaechlichen Code (`review.js`) ohne Widerspruch.
++
++- [ ] **0036-02** Normative Prozessbeschreibung fuer den Flag-for-review-Antragsprozess (`review-request-package@v1`) in `docs/pipeline/` um die 0035-Erkenntnisse (Storage-Abgrenzung zu `review.js`, Root Cause des Submit-Defekts) ergaenzen bzw. konsolidieren.
++  - **Akzeptanzkriterien:** Grenzzieht klar zu 0036-01 ab (Entscheidung vs. Antrag, siehe Feature-0035-Diskussion); dokumentiert nach Abschluss von Feature 0035, welchen Speicher- und Absendeweg der Flag-for-review-Request tatsaechlich nutzt.
++  - **Definition of Done:** Dokument committed mit `REF`; PREREQ: 0036-02:0035 (Feature 0035 muss die tatsaechliche Ziel-Architektur festgelegt haben, sonst wuerde diese Aufgabe eine noch nicht getroffene Implementierungsentscheidung vorwegnehmen).
++
++- [ ] **0036-03** Nutzerverstaendliche, illustrierte Fassung beider Prozesse als generierte HTML-Seite(n) erstellen, inkl. mindestens eines Ablaufdiagramms pro Prozess.
++  - **Zu klaeren vor Umsetzung:** Ob die vorhandene Cytoscape-Graph-Infrastruktur fuer Ablaufdiagramme (Zustand/Uebergang statt Modul-Abhaengigkeit) geeignet ist, oder ob ein einfacheres statisches Diagramm-Format (z. B. serverseitig aus `_src/` gerendertes SVG) angemessener ist.
++  - **Akzeptanzkriterien:** Seite(n) sind Build-Artefakt (generiert aus `_src/`, nicht manuell im HTML-Baum editiert); Sprache ist einfach und an Website-Nutzer gerichtet, ohne die normativen Dokumente aus 0036-01/0036-02 zu widersprechen; jedes Diagramm ist mit den tatsaechlichen Zustaenden/Uebergaengen aus dem Code konsistent.
++  - **Definition of Done:** Seiten generiert, `validate.py` meldet keine defekten Links/Anker; Diagramme committed als Teil der `_src/`-Quellen mit `REF`.
++
++- [ ] **0036-04** Verlinkung der Prozessdoku aus den betroffenen Dialogen (`review_request.js`, `review.js`). PREREQ: 0036-04:0036-03
++  - **Akzeptanzkriterien:** Jeder Dialog erhaelt einen kontextbezogenen Link (z. B. "Wie funktioniert das?") zur passenden Seite aus 0036-03; Link ist barrierefrei erreichbar (Tastatur, Screenreader-Label) analog zu den Anforderungen aus 0021-05; Link funktioniert in allen Sprachtree-Varianten (zeigt auf die sprachlokale Doku-Seite, nicht hart auf Deutsch/Englisch verdrahtet).
++  - **Definition of Done:** UI-Aenderung committed mit `REF`; stichprobenhafte Pruefung in mind. zwei Sprachtrees.
++
++- [ ] **0036-05** Vollstaendige Uebersetzung der normativen und nutzerfreundlichen Prozessdokumentation sowie aller Diagramm-Texte/Beschriftungen ueber die bestehende i18n-Pipeline. PREREQ: 0036-05:0036-01, 0036-05:0036-02, 0036-05:0036-03
++  - **Akzeptanzkriterien:** Alle neuen uebersetzbaren Strings durchlaufen die JSONL-Pipeline mit stabilen IDs; Platzhaltertoken und `[SWS_…]`/`[RS_…]`-Marker bleiben in jeder Zielsprache unveraendert; alle unterstuetzten Sprachtrees (siehe Startseite, u. a. en/es/pt/fr/ru/ar/hi/ko/zh/nl) enthalten die neuen Seiten vollstaendig, keine fehlenden/englisch durchgerutschten Segmente.
++  - **Definition of Done:** Uebersetzungslauf durchgefuehrt, Vollstaendigkeitspruefung dokumentiert und committed mit `REF`.
++
++- [ ] **0036-06** Governance-Check: Sicherstellen, dass die neue Nutzer-Doku nirgends die Sicherheits-/Lifecycle-Grenze aus Feature 0021 (kein direktes Mutieren von Records durch Website/KI/Browser) relativiert oder missverstaendlich darstellt.
++  - **Akzeptanzkriterien:** Textliche und diagrammatische Darstellung beider Prozesse macht fuer Laien unmissverstaendlich klar, dass ein Review-Paket (Entscheidung) und ein Flag-for-review-Request (Antrag) unterschiedliche Wirkung auf den Record haben; kein Diagramm suggeriert eine sofortige Record-Aenderung durch einen der beiden Wege.
++  - **Definition of Done:** Review-Notiz mit Fundstellen-Check committed mit `REF`.
++
++## Feature: 0035 — Review-Request Dialog: Submit Defect, Storage Reuse, Evidence Usability
++
++**Kontext:** Befunde des Nutzers (2026-08-15) am ausgelieferten "Flag for review"-Dialog aus Feature 0021 (Task 0021-05, REF 62f638bf). Belegt durch drei Screenshots des gerenderten Dialogs auf einer `SWS_DM_01157`-Record-Seite (Status `valid/unmigrated`, Transport `json_export`, Identity `Tobias Anton (self_declared)`).
++
++**Abgrenzung:** Die Sicherheits- und Lifecycle-Grenze aus Feature 0021 bleibt unveraendert normativ: Der Browser darf weiterhin keinen Record mutieren, keinen Status nach `valid/*` setzen und kein Curation-Item schliessen. Die Zustaende `exported` / `submitted` / `ingested-queued` duerfen auch nach Umbau nicht vermischt werden. Ein lokal in localStorage gehaltener Request ist NICHT `submitted` und NICHT `queued` und darf dem Nutzer nicht so praesentiert werden.
++
++- [ ] **0035-01** Reparieren, dass der `Submit`-Button im Bestaetigungsschritt des "Flag for review"-Dialogs wirkungslos ist.
++  - **Befund (2026-08-15, Nutzer):** Im Schritt "Confirm request" loest `Submit` keine erkennbare Aktion aus.
++  - **Root Cause (2026-08-15, verifiziert per Volldump von `review_request.js`, 236 Zeilen):** `[data-submit].onclick` ruft ausschliesslich `submitGithub(root, data)` auf (Zeilen 218-224), welches intern via `activeToken()` einen gespeicherten GitHub-Token voraussetzt. Ohne gueltigen Token bricht `submitGithub` fehlerfrei-leise ab bzw. wirft, ohne dass ein sichtbarer Fehlertext im `[data-errors]`-Feld erscheint, wenn kein Token vorhanden ist (im gezeigten Screenshot ist Identity `self_declared`, also kein Token gesetzt). Der Button ist also nicht generell tot, sondern **nur fuer self-declared/nicht-GitHub-authentifizierte Nutzer praktisch wirkungslos**, waehrend `Transport: json_export` im Bestaetigungstext bereits anzeigt, dass fuer diesen Fall der JSON-Pfad vorgesehen war. `[data-export].onclick` ruft separat `exportJson(root, data)` auf und funktioniert unabhaengig. Die beiden Buttons sind also nicht wie vom Transport-Feld suggeriert exklusiv, sondern immer beide sichtbar (Zeilen 204-205), unabhaengig vom tatsaechlich waehlbaren Pfad.
++  - **Klarstellung:** Der urspruengliche Verdacht (Handler generell nicht verdrahtet) ist widerlegt — der Handler existiert und ist verdrahtet (Zeile 218), das eigentliche Problem ist ein UX-/Fehlerbehandlungsdefekt: Fuer self-declared Identitaet ist `Submit` faktisch nicht nutzbar, ohne dass dies vor dem Klick kommuniziert wird, und ein etwaiger Fehlschlag zeigt laut Code zwar `[data-errors]`, aber ggf. nicht fuer den Fall "kein Token vorhanden" mit einer fuer den Nutzer verstaendlichen Meldung.
++  - **Akzeptanzkriterien:** Root Cause ist benannt und dokumentiert (nicht nur symptomatisch umgangen); `Submit` fuehrt den fuer den gewaehlten Transport definierten Pfad aus; jeder Fehlerfall (Transportfehler, Validierungsfehler, fehlende Berechtigung) erzeugt sichtbares, verstaendliches Nutzerfeedback statt eines stummen No-Op; ein automatisierter Browser-Test deckt Klick auf `Submit` inkl. Fehlerpfad ab und wuerde den jetzigen Zustand rot melden.
++  - **Definition of Done:** Fix und Regressionstest committed mit `REF`; die Zustandsunterscheidung `exported` / `submitted` / `ingested-queued` aus 0021-05 ist nachweislich nicht verletzt.
++
++- [ ] **0035-02** Den Review-Request auf die bereits vorhandene localStorage-Struktur fuer Reviews/Feedback umstellen, statt einen eigenen Weg zu verwenden. PREREQ: 0035-02:0035-01
++  - **Befund (2026-08-15, Nutzer):** Auf der Website existiert bereits eine Struktur, um Reviews und Feedback in localStorage vorzuhalten und spaeter gesammelt zu submitten. Der Flag-for-review-Dialog (`review_request.js`) nutzt diese Struktur nicht — verifiziert durch Volldump: `review_request.js` legt Requests nicht in localStorage ab (nur `ara-review-github-token-v1` / `ara-review-identity` fuer Identitaet) und submitted stattdessen direkt per GitHub-Issue oder JSON-Export im selben Klick.
++  - **Nutzer-Screenshot (2026-08-15, `namespaces/ns_log_ara_log_10815c.html#review-SWS_LOG_00210`):** Zeigt einen bereits existierenden "Review-Paket"-Dialog mit Untertitel "Gesammelte Entscheidungen, nur in diesem Browser gespeichert."; einzelne Eintraege je Record-ID mit Freigeben/Ablehnen-Status, Freitext-Kommentar, Autor und Zeitstempel, jeweils einzeln entfernbar (×); Footer-Aktionen `Alle verwerfen`, `JSON exportieren`, `Paket absenden`. Dies ist mutmasslich ein anderes JS-Modul als `review_request.js` und muss lokalisiert werden (Arbeitsname hier: Review-Paket-Modul).
++  - **Lokalisiert (2026-08-15, verifiziert per Volldump, 577 Zeilen):** Modul ist `review.js` (Kommentarkopf: "Sammel- und Abgabe-Workflow fuer Requirement-Reviews"), voellig getrennt von `review_request.js`. Storage-Key `ara-review-package-v1` (Array von Items via `load()`/`store()`), GitHub-Token separat unter `ara-review-github-token-v1` (identisch zum Key in `review_request.js` — beide Module teilen sich offenbar bereits die Identitaets-/Token-Ablage, aber nicht die Request-Ablage). Item-Schema pro Entscheidung: `{ id, outcome, decided_by, identity, decided_at (ISO), rationale, decision_basis }`; `id` wird beim Speichern dedupliziert (`filter x.id !== d.id` vor `push`). Sammel-Submit `submitPackage()` baut `payload = { schema: "review-package@v1", identity: "github_authenticated", ... }` und postet per `fetch` einen GitHub-Issue nach `/repos/{repo}/issues` mit dem gesamten Paket als JSON-Codeblock im Issue-Body; `exportPackage()` bietet denselben Payload als lokalen JSON-Download. `repo()` liest das Ziel-Repository aus `<meta name="review-github-repo">`, exakt wie in `review_request.js`.
++  - **Schema-Luecke fuer 0035-02:** `review-package@v1` ist ein Item-Array pro Requirement-Entscheidung (`outcome`/`decided_by`/`rationale`/...) und kennt keine Felder aus `review-request-package@v1` (0021-02: `target_canonical_id`, `target_content_hash`, `category`, `evidence_refs` usw.). Eine Wiederverwendung erfordert entweder (a) einen neuen `kind`- oder `schema`-Discriminator, der beide Item-Formen im selben `ara-review-package-v1`-Array unterscheidet, oder (b) eine Konvertierung des Flag-for-review-Pakets in ein `outcome`-aehnliches Item mit `rationale` als Trager und den 0021-02-Feldern in `decision_basis` oder einem neuen optionalen Feld. Diese Entwurfsentscheidung ist vor der Implementierung zu treffen und hier festzuhalten, nicht implizit im Code.
++  - **Akzeptanzkriterien:** Ein erzeugter Review-Request wird in der bestehenden Struktur abgelegt und erscheint in deren Sammel-/Uebersichtsansicht; das Paketschema aus 0021-02 (Record-/Versions-ID, Content-Hash, Status-Snapshot, Actor, Kategorie, Rationale, Evidence) bleibt vollstaendig und schema-valide erhalten; ein lokal gehaltener Request wird in der UI klar als lokal/noch nicht eingereicht ausgewiesen; der spaetere Sammel-Submit erzeugt dasselbe Paket wie der direkte Weg.
++  - **Definition of Done:** Umstellung und Tests committed mit `REF`; Nachweis, dass Stale-Erkennung weiterhin greift, wenn ein lokal zwischengespeicherter Request erst nach einer Aenderung des Ziel-Records eingereicht wird.
++
++- [ ] **0035-03** "Evidence references" nutzerverstaendlich gestalten: getrenntes Link-Feld und Freitextzeile statt Kind/Value/Note.
++  - **Befund (2026-08-15, Nutzer):** Die aktuelle Darstellung mit `Kind` (Platzhalter `quote|url|note`), `Value` und `Note (optional)` ist aus Nutzersicht komplett unverstaendlich. Zusaetzlich werden drei leere Referenzzeilen gleichzeitig angeboten, was den Eindruck einer Pflichteingabe verstaerkt.
++  - **Akzeptanzkriterien:** Der Nutzer bekommt ein klar beschriftetes Eingabefeld fuer einen Link sowie eine Eingabezeile fuer Freitext; die interne Repraesentation bleibt zum Evidence-Schema aus 0021-02 kompatibel (der `kind` wird abgeleitet statt vom Nutzer getippt); der optionale Charakter ist sichtbar; Link-Eingaben werden validiert und eine ungueltige Eingabe blockiert das Absenden nicht stumm; Barrierefreiheit aus 0021-05 (Labels, Fokus, Fehlermeldungen, Tastaturbedienung) bleibt erfuellt.
++  - **Definition of Done:** UI-Aenderung und Tests committed mit `REF`; ein Beispielpaket mit Link- und Freitext-Evidence validiert gegen das Schema.
++
++- [ ] **0035-04** Pruefen, ob Feature 0021 aufgrund der Befunde 0035-01 bis 0035-03 verfrueht nach `DONE.md` verschoben wurde, und das Ergebnis dokumentieren. PREREQ: 0035-04:0035-01
++  - **Begruendung:** Die Feature-0021-Definition-of-Done verlangt automatisierte Tests, die den Browser-Flow abdecken, sowie klares Nutzerfeedback in Fehlerfaellen. Ein wirkungsloser `Submit`-Button deutet auf eine Luecke in genau dieser Testabdeckung hin.
++  - **Akzeptanzkriterien:** Es ist belegt, welcher Test den Submit-Pfad haette abdecken muessen und warum er den Defekt nicht gemeldet hat; das Ergebnis wird entweder als Testluecke behoben oder mit Begruendung als akzeptiert dokumentiert.
++  - **Hinweis zur Zustaendigkeit:** Ob Feature 0021 formal aus `DONE.md` zurueckzuholen ist, ist eine Governance-Entscheidung des Nutzers/Managers, nicht des Agenten.
++
+ ## Feature: 0034 — Requirement Field Extraction: Wrapped Label Handling
+ 
+ - [ ] **0034-01** Fix `spec_scrape.py` requirement-field parsing so field labels that the PDF wraps across two physical lines (e.g. `Supporting` / `Material:`) are recognized as labels instead of being appended to the preceding field's value.
+@@ -67,11 +142,14 @@ HOW TO USE:
+   - **Acceptance criteria:** Anchor detection considers `⌈` appearing shortly before the ID as well as after it, without regressing the existing guard that avoids binding to inline citations (e.g. IDs mentioned inside `Dependencies`); a regression test covers the anchor-before-ID ordering and asserts a non-empty `props` plus a heading that is not changelog text; `test_spec_scrape_fields.py` still passes.
+   - **Definition of Done:** Fix and regression test committed with `REF`; note recorded that `RS_OSI_00209` in `benchmark-draft.json` was hand-corrected under `0007-01` and should agree with regenerated output.
+ 
+-- [ ] **0034-03** Add `Additional Information` to the recognised field labels in `spec_scrape.py` so Persistency-style requirement blocks do not silently drop their second field.
++- [x] **0034-03** Add `Additional Information` to the recognised field labels in `spec_scrape.py` so Persistency-style requirement blocks do not silently drop their second field. REF: PENDING-COMMIT
+   - **Discovery (2026-08-15, found while working 0007-01):** `AUTOSAR_AP_RS_Persistency.pdf` does not use the Description/Rationale/Dependencies/Use Case/Supporting Material schema of the other RS documents. Its formal blocks carry exactly two labels: `Description:` and `Additional Information:`. `Additional Information` is absent from `LABELS` in `spec_scrape.py`, so `NORM_RE` never splits on it and its entire body is silently swallowed into the preceding `Description` value. Verified for `RS_PER_00010` (p.10-11) and `RS_PER_00021` (p.15-16); the draft fixture stores a single `Description` field for both, matching the loss.
+   - **Why it matters:** This is silent data loss rather than a visible mis-split — nothing in the output signals that a field went missing, so it would not be caught by eyeballing extracted records. Any other document-specific labels may be lost the same way.
+   - **Acceptance criteria:** `Additional Information` recognised as a normative label; `parse_record()` on the Persistency document returns both `Description` and `Additional Information` for `RS_PER_00010` and `RS_PER_00021` with the boundary at the label; a regression test covers it; existing scrape tests still pass.
+   - **Suggested follow-up (not required):** Sweep the RS corpus for `^[A-Z][A-Za-z ]{2,30}:` line-initial candidates that are not in `LABELS`, to find further unrecognised labels rather than discovering them one document at a time.
++  - **Resolution (2026-08-15, AGENT PERPLEXITY):** `Additional Information` added to `LABELS` in `_src/tools/spec_scrape.py`. Three regression tests added to `RequirementFieldTests` in `_src/tests/test_spec_scrape_fields.py` (concatenated-cell form, own-line form, and a negative case). Evidence in `logs/validate-db-contents/20260815-214205/`: end-to-end `parse_record()` against the real cached `AUTOSAR_AP_RS_Persistency.pdf` now returns `['Description', 'Additional Information']` for both `RS_PER_00010` (heading "Configurable Layout of Persistent Data") and `RS_PER_00021` (heading "Initialization and Shutdown"), with the boundary at the label and no label leak into `Description`. Scrape selection 65 -> 68 passed / 144 deselected; full suite 212 passed, 0 failed.
++  - **Design decision (deliberate, pinned by test):** The label was added to `LABELS` but NOT to `NORMATIVE_LABELS`. Members of `NORMATIVE_LABELS` split even without a trailing colon; that is safe for rare tokens like `Rationale` but not for the common English phrase `Additional Information`, which would shred prose such as "see the annex for Additional Information about timing". The label is therefore colon-gated via `API_LABELS`. Verified sufficient: the real Persistency tables do emit the colon. `test_additional_information_without_colon_does_not_split_prose` pins this so a later change cannot loosen it silently.
++  - **Observed while validating (new, not in scope of this task):** Both Persistency `Additional Information` values end with the absorbed running header `Requirements on Persistency`. This is the same page-furniture absorption already noted in 0034-01's live-reproduction bullet (page markers and running headers bleeding into field values), now confirmed on a second document and a different label. No new task filed — it belongs to 0034-01's stated scope; flagged here so 0034-01 covers it.
+ 
+ - [ ] **0034-04** Exclude citation-only ID mentions from benchmark record selection in `_src/tools/spec_extraction_benchmark.py`, so an ID that is merely referenced in prose never becomes a benchmark entry.
+   - **Discovery (2026-08-15, found while working 0007-01):** `RS_SAF_21101` was selected as a benchmark record for `AUTOSAR_AP_RS_PlatformHealthManagement`, but that document does not define it. Its sole occurrence (p.9) is an inline citation inside a running sentence: "...as recommended in ISO26262, for instance [RS_SAF_21101][4]." No block-opening marker appears within 120 characters before or 200 characters after the ID, and no formal block exists anywhere in the file.
+diff --git a/_src/tests/test_spec_scrape_fields.py b/_src/tests/test_spec_scrape_fields.py
+index 1b39187f..a11f7014 100644
+--- a/_src/tests/test_spec_scrape_fields.py
++++ b/_src/tests/test_spec_scrape_fields.py
+@@ -468,6 +468,49 @@ Supporting Material: –
+         self.assertEqual(rec["props"]["Rationale"], "Because")
+         self.assertNotIn("Beta", str(rec))
+ 
++    def test_additional_information_is_a_field_boundary(self):
++        """Persistency-style blocks carry Description + Additional Information.
++
++        Regression for 0034-03: before the fix "Additional Information" was
++        absent from LABELS, so NORM_RE never split on it and its whole body
++        was silently swallowed into the preceding Description value.
++        """
++        text = ("[RS_PER_00010] Heading \u2308Description: The Persistency cluster shall "
++                "provide a key-value storage.Additional Information: The keys are "
++                "unique within one storage.\u230b")
++        rec = scrape.parse_record(text, "RS_PER_00010")
++        self.assertEqual(rec["props"]["Description"],
++                         "The Persistency cluster shall provide a key-value storage")
++        self.assertEqual(rec["props"]["Additional Information"],
++                         "The keys are unique within one storage")
++
++    def test_additional_information_on_its_own_line_is_a_field_boundary(self):
++        text = """[RS_PER_00021] Heading \u2308
++Description:
++The Persistency cluster shall provide a file storage.
++Additional Information:
++Files are accessed via an accessor object.
++\u230b"""
++        rec = scrape.parse_record(text, "RS_PER_00021")
++        self.assertEqual(rec["props"]["Description"],
++                         "The Persistency cluster shall provide a file storage")
++        self.assertEqual(rec["props"]["Additional Information"],
++                         "Files are accessed via an accessor object")
++
++    def test_additional_information_without_colon_does_not_split_prose(self):
++        """Colon-gated on purpose: the label is a common English phrase.
++
++        Unlike Description/Rationale/..., "Additional Information" is not in
++        NORMATIVE_LABELS, so it only acts as a boundary when followed by a
++        colon.  This keeps prose such as the sentence below intact.
++        """
++        text = ("[RS_X_00001] Heading \u2308Description: See the annex for "
++                "Additional Information about timing.\u230b")
++        rec = scrape.parse_record(text, "RS_X_00001")
++        self.assertEqual(rec["props"]["Description"],
++                         "See the annex for Additional Information about timing")
++        self.assertNotIn("Additional Information", rec["props"])
++
+     def test_prose_requirement_without_labels_remains_requirement_text(self):
+         text = "[RS_X_00001] Heading ⌈The platform shall preserve this prose.⌋"
+         rec = scrape.parse_record(text, "RS_X_00001")
+diff --git a/_src/tools/spec_scrape.py b/_src/tools/spec_scrape.py
+index 4a6266a7..07a87d06 100644
+--- a/_src/tools/spec_scrape.py
++++ b/_src/tools/spec_scrape.py
+@@ -155,6 +155,7 @@ LABELS = [
+     "Parameters (inout)", "Parameters (out)", "Return value",
+     "Exception Safety", "Thread Safety", "Description", "Rationale",
+     "Dependencies", "Use Case", "AppliesTo", "Supporting Material", "Notes",
++    "Additional Information",
+     "Type", "Default value", "Errors",
+ ]
+ LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))

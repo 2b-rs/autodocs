@@ -1,0 +1,104 @@
+   419	class RequirementFieldTests(unittest.TestCase):
+   420	    def test_normative_fields_are_split_when_cells_are_concatenated(self):
+   421	        text = """[RS_X_00001] Heading ⌈Description: The platform shall work.Rationale: Safety reason.Dependencies: RS_X_00002Use Case: Startup.AppliesTo: AP, CPSupporting Material: [1]⌋"""
+   422	        rec = scrape.parse_record(text, "RS_X_00001")
+   423	        self.assertEqual(rec["heading"], "Heading")
+   424	        self.assertEqual(rec["props"]["Description"], "The platform shall work")
+   425	        self.assertEqual(rec["props"]["Rationale"], "Safety reason")
+   426	        self.assertEqual(rec["props"]["Dependencies"], "RS_X_00002")
+   427	        self.assertEqual(rec["props"]["Use Case"], "Startup")
+   428	        self.assertEqual(rec["props"]["AppliesTo"], "AP, CP")
+   429	        self.assertEqual(rec["props"]["Supporting Material"], "[1]")
+   430	
+   431	    def test_normative_labels_without_colons_are_boundaries(self):
+   432	        text = "[RS_X_00001] Heading ⌈Description Alpha Rationale – Dependencies RS_X_00002 Use Case Startup AppliesTo AP Supporting Material [1]⌋"
+   433	        rec = scrape.parse_record(text, "RS_X_00001")
+   434	        self.assertEqual(rec["props"]["Description"], "Alpha")
+   435	        self.assertEqual(rec["props"]["Rationale"], "")
+   436	        self.assertEqual(rec["props"]["Dependencies"], "RS_X_00002")
+   437	        self.assertEqual(rec["props"]["Use Case"], "Startup")
+   438	        self.assertEqual(rec["props"]["AppliesTo"], "AP")
+   439	        self.assertEqual(rec["props"]["Supporting Material"], "[1]")
+   440	
+   441	    def test_heading_joins_positioning_lines_until_status(self):
+   442	        text = "[RS_X_00001]\nUCM\nshall support uninstalling software on\nAUTOSAR Adap-\ntive Platform\nStatus:\nDRAFT\n⌈Description: body⌋"
+   443	        rec = scrape.parse_record(text, "RS_X_00001")
+   444	        self.assertEqual(rec["heading"], "UCM shall support uninstalling software on AUTOSAR Adap- tive Platform")
+   445	        self.assertEqual(rec["props"]["Description"], "body")
+   446	
+   447	    def test_heading_falls_back_to_numbered_subsection_line_before_bare_id(self):
+   448	        text = """4.2.1.1.8 The LT shall transmit log and trace messages from several sources
+   449	over a communication interface to a receiving external client.
+   450	[RS_LT_00001] ⌈
+   451	Description:
+   452	The LT module shall be a BSW module.
+   453	Rationale: Because.
+   454	AppliesTo: CP ,AP
+   455	Use Case: Testing
+   456	Dependencies: –
+   457	Supporting Material: –
+   458	⌋"""
+   459	        rec = scrape.parse_record(text, "RS_LT_00001")
+   460	        self.assertEqual(rec["heading"], "The LT shall transmit log and trace messages from several sources over a communication interface to a receiving external")
+   461	        self.assertEqual(rec["props"]["Description"], "The LT module shall be a BSW module")
+   462	
+   463	    def test_next_requirement_never_spills_into_field(self):
+   464	        text = """[RS_X_00001] First ⌈Description: AlphaRationale: Because⌋
+   465	[RS_X_00002] Second ⌈Description: BetaRationale: Other⌋"""
+   466	        rec = scrape.parse_record(text, "RS_X_00001")
+   467	        self.assertEqual(rec["props"]["Description"], "Alpha")
+   468	        self.assertEqual(rec["props"]["Rationale"], "Because")
+   469	        self.assertNotIn("Beta", str(rec))
+   470	
+   471	    def test_additional_information_is_a_field_boundary(self):
+   472	        """Persistency-style blocks carry Description + Additional Information.
+   473	
+   474	        Regression for 0034-03: before the fix "Additional Information" was
+   475	        absent from LABELS, so NORM_RE never split on it and its whole body
+   476	        was silently swallowed into the preceding Description value.
+   477	        """
+   478	        text = ("[RS_PER_00010] Heading \u2308Description: The Persistency cluster shall "
+   479	                "provide a key-value storage.Additional Information: The keys are "
+   480	                "unique within one storage.\u230b")
+   481	        rec = scrape.parse_record(text, "RS_PER_00010")
+   482	        self.assertEqual(rec["props"]["Description"],
+   483	                         "The Persistency cluster shall provide a key-value storage")
+   484	        self.assertEqual(rec["props"]["Additional Information"],
+   485	                         "The keys are unique within one storage")
+   486	
+   487	    def test_additional_information_on_its_own_line_is_a_field_boundary(self):
+   488	        text = """[RS_PER_00021] Heading \u2308
+   489	Description:
+   490	The Persistency cluster shall provide a file storage.
+   491	Additional Information:
+   492	Files are accessed via an accessor object.
+   493	\u230b"""
+   494	        rec = scrape.parse_record(text, "RS_PER_00021")
+   495	        self.assertEqual(rec["props"]["Description"],
+   496	                         "The Persistency cluster shall provide a file storage")
+   497	        self.assertEqual(rec["props"]["Additional Information"],
+   498	                         "Files are accessed via an accessor object")
+   499	
+   500	    def test_additional_information_without_colon_does_not_split_prose(self):
+   501	        """Colon-gated on purpose: the label is a common English phrase.
+   502	
+   503	        Unlike Description/Rationale/..., "Additional Information" is not in
+   504	        NORMATIVE_LABELS, so it only acts as a boundary when followed by a
+   505	        colon.  This keeps prose such as the sentence below intact.
+   506	        """
+   507	        text = ("[RS_X_00001] Heading \u2308Description: See the annex for "
+   508	                "Additional Information about timing.\u230b")
+   509	        rec = scrape.parse_record(text, "RS_X_00001")
+   510	        self.assertEqual(rec["props"]["Description"],
+   511	                         "See the annex for Additional Information about timing")
+   512	        self.assertNotIn("Additional Information", rec["props"])
+   513	
+   514	    def test_prose_requirement_without_labels_remains_requirement_text(self):
+   515	        text = "[RS_X_00001] Heading ⌈The platform shall preserve this prose.⌋"
+   516	        rec = scrape.parse_record(text, "RS_X_00001")
+   517	        self.assertEqual(rec["requirement_text"], "The platform shall preserve this prose")
+   518	        self.assertEqual(rec["props"], {})
+   519	
+   520	
+   521	if __name__ == "__main__":
+   522	    unittest.main()

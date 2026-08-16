@@ -1,0 +1,121 @@
+     1	import copy
+     2	import importlib.util
+     3	import json
+     4	import sys
+     5	import tempfile
+     6	import unittest
+     7	from pathlib import Path
+     8	from unittest import mock
+     9	
+    10	TOOLS = Path(__file__).resolve().parents[1] / "tools"
+    11	sys.path.insert(0, str(TOOLS))
+    12	spec = importlib.util.spec_from_file_location("spec_scrape", TOOLS / "spec_scrape.py")
+    13	scrape = importlib.util.module_from_spec(spec); spec.loader.exec_module(scrape)
+    14	
+    15	class MixedCaseIdTests(unittest.TestCase):
+    16	    def test_mixed_case_rs_ids_are_canonicalized(self):
+    17	        text = "[RS_Diag_04260] Read / Write Access ⌈\nDescription: Canonical text\n⌋"
+    18	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+    19	            pdf = Path(td) / "mixed.pdf"; pdf.write_bytes(b"placeholder")
+    20	            with mock.patch.object(scrape, "pdf_pages", return_value=[text]):
+    21	                index = scrape.phase_ids([pdf], pattern=r"^RS_DIAG_", include_refs=False)
+    22	            self.assertEqual(index["mixed.pdf"]["ids"], {"RS_DIAG_04260": [1]})
+    23	            rec = scrape.parse_record(text, "RS_DIAG_04260")
+    24	            self.assertEqual(rec["heading"], "Read / Write Access")
+    25	            self.assertEqual(rec["props"]["Description"], "Canonical text")
+    26	
+    27	class DefinitionPrecisionTests(unittest.TestCase):
+    28	    def test_history_table_entry_is_rejected_with_evidence(self):
+    29	        text = """A.8.3 Deleted Requirements in 19-03
+    30	Number Heading
+    31	[RS_SM_00201] State Management shall provide the interface over ara::com.
+    32	Table A.14: Deleted Requirements in 19-03
+    33	"""
+    34	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+    35	            pdf = Path(td) / "history.pdf"; pdf.write_bytes(b"placeholder")
+    36	            with mock.patch.object(scrape, "pdf_pages", return_value=[text]):
+    37	                index = scrape.phase_ids([pdf], pattern=r"^RS_", include_refs=False)
+    38	            doc = index["history.pdf"]
+    39	            self.assertNotIn("RS_SM_00201", doc["ids"])
+    40	            self.assertEqual(doc["history_only_ids"], ["RS_SM_00201"])
+    41	            self.assertEqual(doc["history_only_evidence"]["RS_SM_00201"][0]["page"], 1)
+    42	
+    43	    def test_dense_definition_list_survives_history_on_same_page(self):
+    44	        text = """Body requirements
+    45	[RS_PHM_00001] PHM shall provide service headers.
+    46	[RS_PHM_00002] PHM shall define the namespace.
+    47	A.2 Deleted Requirements in R24-11
+    48	Number Heading
+    49	[RS_PHM_09999] Obsolete requirement.
+    50	Table A.2: Deleted Requirements in R24-11
+    51	"""
+    52	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+    53	            pdf = Path(td) / "mixed.pdf"; pdf.write_bytes(b"placeholder")
+    54	            with mock.patch.object(scrape, "pdf_pages", return_value=[text]):
+    55	                index = scrape.phase_ids([pdf], pattern=r"^RS_", include_refs=False)
+    56	            doc = index["mixed.pdf"]
+    57	            self.assertEqual(set(doc["ids"]), {"RS_PHM_00001", "RS_PHM_00002"})
+    58	            self.assertEqual(doc["history_only_ids"], ["RS_PHM_09999"])
+    59	
+    60	    def test_include_refs_keeps_history_entries(self):
+    61	        text = "A.1 Deleted Requirements in 19-03\n[RS_X_00001] Old\nTable A.1: Deleted Requirements in 19-03"
+    62	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+    63	            pdf = Path(td) / "refs.pdf"; pdf.write_bytes(b"placeholder")
+    64	            with mock.patch.object(scrape, "pdf_pages", return_value=[text]):
+    65	                index = scrape.phase_ids([pdf], pattern=r"^RS_", include_refs=True)
+    66	            self.assertIn("RS_X_00001", index["refs.pdf"]["ids"])
+    67	            self.assertEqual(index["refs.pdf"]["history_only_ids"], [])
+    68	
+    69	
+    70	class PageStructureTests(unittest.TestCase):
+    71	    def test_history_toc_and_bibliography_are_labelled(self):
+    72	        text = ("Introduction .......... 4\n"
+    73	                "A.1 Deleted Requirements in 19-03\n"
+    74	                "[RS_X_00001] Old requirement.\n"
+    75	                "Table A.1: Deleted Requirements in 19-03\n"
+    76	                "Bibliography\n")
+    77	        kinds = scrape.classify_page_structure(text)["kinds"]
+    78	        self.assertEqual(kinds, ["bibliography", "history", "toc"])
+    79	
+    80	    def test_body_only_page_has_no_regions(self):
+    81	        text = "[RS_Y_00001] A real requirement that opens a spec item.\n"
+    82	        value = scrape.classify_page_structure(text)
+    83	        self.assertEqual(value["regions"], [])
+    84	        self.assertEqual(value["kinds"], [])
+    85	
+    86	    def test_non_body_spans_can_be_filtered_by_kind(self):
+    87	        text = "Scope .......... 7\nA.1 Deleted Requirements in 19-03\nTable A.1: Deleted Requirements in 19-03\n"
+    88	        self.assertEqual(len(scrape.non_body_spans(text, kinds=["toc"])), 1)
+    89	        self.assertEqual(len(scrape.non_body_spans(text, kinds=["history"])), 1)
+    90	        self.assertEqual(len(scrape.non_body_spans(text)), 2)
+    91	
+    92	
+    93	class UpstreamCliIntegrationTests(unittest.TestCase):
+    94	    def fixtures(self, root):
+    95	        records=root/"SWS_X"; records.mkdir(parents=True)
+    96	        value={"id":"SWS_X_00001","blocks":[{"text":"Uses RS_CM_00003"}],"review":{"status":"manual"},"text_hash":"abc","upstream":[]}
+    97	        path=records/"SWS_X_00001.json"; path.write_text(json.dumps(value,indent=1)+"\n",encoding="utf-8")
+    98	        source={"id":"RS_CM_00003","document":"AUTOSAR_AP_RS_CommunicationManagement.pdf","page":12}
+    99	        return path,value,source
+   100	    def test_compare_does_not_write(self):
+   101	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+   102	            path,value,source=self.fixtures(Path(td)); before=path.read_bytes()
+   103	            with mock.patch.object(scrape,"RECORDS",Path(td)):
+   104	                report=scrape.phase_upstream({source["id"]:source},rebuild=False)
+   105	            self.assertEqual(before,path.read_bytes()); self.assertEqual(report["updated"],1); self.assertEqual(report["mode"],"compare")
+   106	    def test_rebuild_changes_only_upstream_and_is_idempotent(self):
+   107	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+   108	            path,value,source=self.fixtures(Path(td))
+   109	            with mock.patch.object(scrape,"RECORDS",Path(td)):
+   110	                first=scrape.phase_upstream({source["id"]:source},rebuild=True); once=path.read_bytes()
+   111	                second=scrape.phase_upstream({source["id"]:source},rebuild=True)
+   112	            after=json.loads(once); expected=copy.deepcopy(value); expected["upstream"]=[{"id":"RS_CM_00003","document":source["document"],"page":12,"source":"inline"}]
+   113	            self.assertEqual(after,expected); self.assertEqual(first["updated"],1); self.assertEqual(second["unchanged"],1); self.assertEqual(once,path.read_bytes())
+   114	    def test_missing_is_visible(self):
+   115	        with tempfile.TemporaryDirectory(dir="/tmp") as td:
+   116	            path,value,source=self.fixtures(Path(td))
+   117	            with mock.patch.object(scrape,"RECORDS",Path(td)):
+   118	                report=scrape.phase_upstream({},rebuild=False)
+   119	            self.assertEqual(report["missing"],1); self.assertEqual(path.read_text(encoding="utf-8"),json.dumps(value,indent=1)+"\n")
+   120	
+   121	if __name__ == "__main__": unittest.main()
