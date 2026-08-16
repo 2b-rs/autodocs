@@ -49,7 +49,7 @@ def _render_one(args):
     return page["file"], html_text, None
 
 
-def generate_lang(lang, only=None, check=False):
+def generate_lang(lang, only=None, check=False, announce=True):
     """Einen Sprachbaum ../<lang>/ erzeugen (oder mit check=True nur byte-genau
     vergleichen). Liefert (Seitenzahl, Statistik, Liste abweichender Dateien)."""
     from lib_i18n import lade_register, lade_soll, uebersetze_seite, globale_ersetzungen, Statistik
@@ -74,10 +74,39 @@ def generate_lang(lang, only=None, check=False):
             with open(target, "w", encoding="utf-8") as f:
                 f.write(html_text)
         n += 1
-    if not check:
+    if not check and announce:
         print("generiert [%s]: %d Seiten, Treffer %d, fehlende Übersetzungen (Fallback deutsch): %d eindeutige Segmente"
               % (lang, n, stat.treffer, len(stat.fehlend)))
     return n, stat, stale
+
+
+def _generate_lang_one(args):
+    lang, only, check = args
+    n, stat, stale = generate_lang(lang, only, check, announce=False)
+    return lang, n, stat.treffer, len(stat.fehlend), stale
+
+
+def generate_languages(langs, only=None, check=False):
+    """Generate independent language trees concurrently and return results in
+    input order. Duplicate languages are collapsed to prevent concurrent writes
+    to the same output tree."""
+    ordered_langs = list(dict.fromkeys(langs))
+    unsupported = [lang for lang in ordered_langs if lang not in LANGS]
+    if unsupported:
+        raise ValueError("unsupported language(s): %s" % ", ".join(unsupported))
+    tasks = [(lang, only, check) for lang in ordered_langs]
+    if len(tasks) < 2 or WORKERS < 2:
+        results = [_generate_lang_one(task) for task in tasks]
+    else:
+        with ProcessPoolExecutor(
+            max_workers=min(WORKERS, len(tasks)), mp_context=_MP_CTX
+        ) as ex:
+            results = list(ex.map(_generate_lang_one, tasks, chunksize=1))
+    if not check:
+        for lang, n, hits, missing, _stale in results:
+            print("generiert [%s]: %d Seiten, Treffer %d, fehlende Übersetzungen (Fallback deutsch): %d eindeutige Segmente"
+                  % (lang, n, hits, missing))
+    return results
 
 
 def main():
@@ -117,11 +146,11 @@ def main():
                 f.write(html_text)
         n += 1
     print(("geprüft" if check else "generiert") + ": %d Seiten" % n + (", Abweichungen: %d" % bad if check else ""))
-    _fallback_by_lang, _changed_targets = {}, []
+    _fallback_by_lang, _lang_page_counts, _changed_targets = {}, {}, []
     if not check:
-        for lang in langs:
-            _n_lang, _stat, _stale = generate_lang(lang, only)
-            _fallback_by_lang[lang] = len(getattr(_stat, "fehlend", []) or [])
+        for lang, _n_lang, _hits, _missing, _stale in generate_languages(langs, only):
+            _lang_page_counts[lang] = _n_lang
+            _fallback_by_lang[lang] = _missing
     _exit_code = 1 if bad else 0
     if not check:
         reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
@@ -134,7 +163,7 @@ def main():
             "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
             "duration_s": round(finished_at - _t0, 3), "exit_code": _exit_code,
             "changed_artifacts": _changed_targets,
-            "counts": {"pages_generated_per_lang": {"de": n, **{l: 0 for l in langs}},
+            "counts": {"pages_generated_per_lang": {"de": n, **_lang_page_counts},
                        "fallback_to_german": _fallback_by_lang, "changed_targets": len(_changed_targets)},
             "findings": [],
             "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),

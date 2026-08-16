@@ -138,37 +138,58 @@ def check_build():
             record_finding("orphan-fragment", "error", f"verwaiste Datei in _src/content|diagrams: {o}", ref=o)
 
 
+def _scan_one_link_page(rel):
+    """Parse one HTML page and return only data needed for global link checks."""
+    doc = LH.parse(os.path.join(ROOT, rel)).getroot()
+    page_ids = {element.get("id") for element in doc.iter() if element.get("id")}
+    base = os.path.dirname(rel)
+    images = []
+    links = []
+    placeholders = []
+    for img in doc.iter("img"):
+        src = img.get("src") or ""
+        if src and not src.startswith(("http://", "https://", "data:")):
+            target = os.path.normpath(os.path.join(base, urllib.parse.unquote(src)))
+            images.append((src, target))
+    for anchor_element in doc.iter("a"):
+        href = anchor_element.get("href") or ""
+        if href.startswith(("http://", "https://", "mailto:")):
+            continue
+        if href == "#":
+            placeholders.append(anchor_element.text_content()[:40])
+            continue
+        path, _, anchor = href.partition("#")
+        target = rel if not path else os.path.normpath(
+            os.path.join(base, urllib.parse.unquote(path))
+        )
+        links.append((href, path, target, anchor))
+    return rel, page_ids, images, links, placeholders
+
+
+def _scan_link_pages(pages):
+    chunksize = max(1, len(pages) // (WORKERS * 4)) if pages else 1
+    if len(pages) < WORKERS * 2 or WORKERS < 2:
+        return [_scan_one_link_page(rel) for rel in pages]
+    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=_MP_CTX) as ex:
+        return list(ex.map(_scan_one_link_page, pages, chunksize=chunksize))
+
+
 def check_links():
     checks_performed.append("check_links")
-    ids = {}
-    pages = sorted(os.path.relpath(p, ROOT) for p in
-                   glob.glob(os.path.join(ROOT, "*.html"))
-                   + glob.glob(os.path.join(ROOT, "*", "*.html"))
-                   + [p for lang in LANGS for p in
-                      glob.glob(os.path.join(ROOT, lang, "**", "*.html"), recursive=True)])
-    docs = {}
-    for rel in pages:
-        doc = LH.parse(os.path.join(ROOT, rel)).getroot()
-        docs[rel] = doc
-        ids[rel] = {e.get("id") for e in doc.iter() if e.get("id")}
+    pages = sorted({os.path.relpath(p, ROOT) for p in
+                    glob.glob(os.path.join(ROOT, "*.html"))
+                    + glob.glob(os.path.join(ROOT, "*", "*.html"))
+                    + [p for lang in LANGS for p in
+                       glob.glob(os.path.join(ROOT, lang, "**", "*.html"), recursive=True)]})
+    scans = _scan_link_pages(pages)
+    ids = {rel: page_ids for rel, page_ids, _images, _links, _placeholders in scans}
     dead, placeholder, bilder = [], [], []
-    for rel, doc in docs.items():
-        base = os.path.dirname(rel)
-        for img in doc.iter("img"):
-            src = img.get("src") or ""
-            if src and not src.startswith(("http://", "https://", "data:")):
-                ziel = os.path.normpath(os.path.join(base, urllib.parse.unquote(src)))
-                if not os.path.exists(os.path.join(ROOT, ziel)):
-                    bilder.append((rel, src))
-        for a in doc.iter("a"):
-            href = a.get("href") or ""
-            if href.startswith(("http://", "https://", "mailto:")):
-                continue
-            if href == "#":
-                placeholder.append((rel, a.text_content()[:40]))
-                continue
-            path, _, anchor = href.partition("#")
-            target = rel if not path else os.path.normpath(os.path.join(base, urllib.parse.unquote(path)))
+    for rel, _page_ids, images, links, placeholders in scans:
+        placeholder.extend((rel, text) for text in placeholders)
+        for src, target in images:
+            if not os.path.exists(os.path.join(ROOT, target)):
+                bilder.append((rel, src))
+        for href, path, target, anchor in links:
             if path and not os.path.exists(os.path.join(ROOT, target)):
                 dead.append((rel, href, "Datei fehlt"))
             elif anchor and target in ids and anchor not in ids[target]:
