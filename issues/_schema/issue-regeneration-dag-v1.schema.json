@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "issue-regeneration-dag-v1.schema.json",
+  "title": "issue-regeneration-dag@v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "generation_id_rule", "stages"],
+  "properties": {
+    "schema": {"const": "issue-regeneration-dag@v1"},
+    "generation_id_rule": {"type": "string", "minLength": 1},
+    "stages": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/stage"}}
+  },
+  "$defs": {
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "argv", "depends_on", "inputs", "outputs", "sole_writer", "required", "retention", "privacy", "determinism", "promotion_group", "cleanup", "validator"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "inputs": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["glob", "kind"], "properties": {"glob": {"type": "string"}, "kind": {"enum": ["canonical", "derived", "configuration", "tool"]}}}},
+        "outputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "sole_writer": {"type": "string", "minLength": 1},
+        "required": {"type": "boolean"},
+        "retention": {"enum": ["committed", "ephemeral"]},
+        "privacy": {"enum": ["public", "internal", "restricted"]},
+        "determinism": {"enum": ["byte", "semantic", "volatile-external-run-manifest"]},
+        "promotion_group": {"type": ["string", "null"]},
+        "cleanup": {"type": "string", "minLength": 1},
+        "validator": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
