@@ -1,0 +1,120 @@
+{
+  "$id": "https://internal/provenance/_schema/artifact-set-v1.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "classification": {
+      "enum": [
+        "public",
+        "internal",
+        "restricted"
+      ],
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "environment": {
+      "enum": [
+        "synthetic",
+        "development-test",
+        "production",
+        "assessment"
+      ],
+      "type": "string"
+    },
+    "members": {
+      "items": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "classification": {
+                  "const": "restricted"
+                }
+              },
+              "required": [
+                "classification"
+              ]
+            },
+            "then": {
+              "required": [
+                "redacted"
+              ]
+            }
+          }
+        ],
+        "properties": {
+          "classification": {
+            "enum": [
+              "public",
+              "internal",
+              "restricted"
+            ],
+            "type": "string"
+          },
+          "digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "media_type": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "path": {
+            "pattern": "^[A-Za-z0-9_./@-]+$",
+            "type": "string"
+          },
+          "redacted": {
+            "type": "boolean"
+          },
+          "size_bytes": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "source_commit": {
+            "pattern": "^[0-9a-f]{40}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "digest",
+          "size_bytes",
+          "media_type",
+          "source_commit"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "producer": {
+      "$ref": "typed-reference-v1.schema.json"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "set_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "set_id": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "set_id",
+    "created_at",
+    "classification",
+    "environment",
+    "set_digest",
+    "members"
+  ],
+  "title": "artifact-set@v1",
+  "type": "object"
+}
