@@ -126,7 +126,7 @@ HOW TO USE:
   - **Acceptance criteria:** Lifecycle and live-claim protocols agree on state, authority, evidence, recovery, and event semantics and do not promise cross-clone guarantees Git cannot provide.
   - **Definition of Done:** Both Subtasks are complete and included in the architecture review package; artifacts are review-ready, not described as approved before `0037-07`.
 
-- [ ] **0037-03.01** PREREQ: 0037-03.01:0037-02 Define lifecycle transitions, criterion evidence, decisions, and terminal records in `docs/pipeline/issue-lifecycle.md`.
+- [p] **0037-03.01** PREREQ: 0037-03.01:0037-02 Define lifecycle transitions, criterion evidence, decisions, and terminal records in `docs/pipeline/issue-lifecycle.md`.
   - **Acceptance criteria:** Map `[ ]/[u]/[p]/[?]/[w]/[x]`; reserve `[u]` for the next unresolved human decision; define roles and transition authority; require checked `AC-NNN` entries with reachable evidence and `closure.json` for completion; distinguish completed, wontfix, superseded, duplicate, cancelled, and archived-not-accepted; preserve Feature `0021`'s historical non-acceptance; and retain the two-commit rule for real commit refs.
   - **Definition of Done:** `issues/_schema/issue-closure-v1.schema.json`, `issues/_schema/issue-decision-v1.schema.json`, transition table, authority matrix, and positive/negative fixtures are review-ready and committed.
 
