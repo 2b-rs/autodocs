@@ -1,0 +1,38 @@
+stateDiagram-v2
+    [*] --> uninitialized
+
+    uninitialized: uninitialized (orange)\nIcon questionmark.circle.fill
+    idle: idle (gray)\nIcon pause.circle.fill
+    pathError: path error (red)\nIcon exclamationmark.triangle.fill
+    ready: ready (green)\nIcon runnerReadyStatusImage
+    running: running (red bold)\nIcon xmark.circle.fill
+    sentinelState: NEW sentinel (red)\nIcon nosign to trash.circle.fill on hover
+    orphaned: CHANGED orphaned (red)\nIcon xmark.circle.fill to exclamationmark.triangle.fill
+    orphanStopping: orphan stopping (red bold)\nIcon xmark.circle.fill
+    orphanRecovery: orphan recovery (orange)\nIcon arrow.counterclockwise.circle.fill
+    orphanConflict: orphan conflict (orange)\nIcon exclamationmark.triangle.fill
+
+    uninitialized --> idle: Self-test passes, run.sh absent
+    uninitialized --> ready: Self-test passes, run.sh present
+    idle --> ready: run.sh appears
+    ready --> idle: run.sh removed
+    idle --> pathError: project directory deleted
+    pathError --> idle: directory restored
+
+    ready --> running: Click LED or Auto Mode fires\nstartOneShotRunner
+    running --> idle: task exits cleanly, no orphan
+    running --> running: Click LED while running\nrequestRunnerStop sends TERM
+
+    ready --> sentinelState: Poll finds sentinel token\nin run.sh
+    sentinelState --> idle: Click LED\ndelete run.sh, rotate sentinel
+
+    [*] --> orphaned: Detects single verified\ndetached process
+    orphaned --> orphanStopping: Click LED\nTERM sent, KILL fallback armed
+    orphanStopping --> idle: process exits\nsnapshot auto recovered
+    orphanStopping --> orphanConflict: survives past KILL deadline\nphase forced to conflict
+
+    [*] --> orphanConflict: Multiple owners, invalid record,\nor foreign live owner process
+    orphanConflict --> idle: manual cleanup outside app
+
+    [*] --> orphanRecovery: owner process gone,\nsnapshot file still exists
+    orphanRecovery --> idle: Click LED\nrecover restore exact snapshot

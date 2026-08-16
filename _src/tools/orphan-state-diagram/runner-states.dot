@@ -1,0 +1,151 @@
+/*
+ * Runner status LED — state diagram source (Graphviz / dot)
+ * ============================================================
+ * Generated for perplexity-cpu-loop.js. Reflects runnerDisplayState()
+ * and the associated icon/action mapping in runnerStatusSymbolImage()
+ * and the "runnerLED:" click handler.
+ *
+ * ------------------------------------------------------------------
+ * ORPHANED STATE — ICON DEFINITION (updated)
+ * ------------------------------------------------------------------
+ * Previous icon: xmark.circle.fill (same glyph as "running" and
+ * "orphan stopping", which was visually ambiguous — it read as
+ * "this process is already stopped" rather than "there is a
+ * detached process still alive that you can stop").
+ *
+ * New icon: SF Symbol "clock.badge.xmark". Composition:
+ *   - Base: a clock face, signaling "a process is still running /
+ *     time-based, ongoing state".
+ *   - Badge: a small red circle with a white "x" anchored at the
+ *     lower-right of the clock face, signaling "this ongoing thing
+ *     can be interrupted/stopped by you".
+ * This distinguishes "orphaned" (ongoing, interruptible) from
+ * "orphan stopping" (xmark.circle.fill, already mid-termination) and
+ * from "running" (xmark.circle.fill, the normal in-app kill switch).
+ * The bundled icons/clock_badge_xmark.png is a hand-drawn placeholder
+ * used only for this diagram render; the actual JXA implementation
+ * requests the real system symbol via imageWithSystemSymbolName...
+ *
+ * ------------------------------------------------------------------
+ * ORPHANED STATE — ADDITIONAL OUTGOING EDGE (self-disappearance)
+ * ------------------------------------------------------------------
+ * orphanedRunnerTick() polls every ORPHAN_RUNNER_POLL_SECONDS while
+ * orphanedRunner.phase === "running" (i.e. while displayed as
+ * "orphaned"). If verifiedOrphanedRunnerProcess() no longer finds
+ * the process alive — meaning the detached runner exited or was
+ * killed by something outside this app (user's shell, OS reaping,
+ * crash, etc.) — recoverOrphanedRunner() is called automatically,
+ * with NO user click required. This transitions directly to "idle"
+ * and recovers the unconsumed snapshot, same terminal outcome as
+ * the manual TERM/KILL path but without passing through
+ * "orphan stopping". This is modeled below as a second, dashed edge
+ * out of "orphaned", to distinguish it from the user-initiated
+ * "click LED" edge.
+ *
+ * There is no separate edge for "orphaned -> orphan conflict" via
+ * self-disappearance: multi-owner/foreign conflicts are only ever
+ * detected fresh from [*] or during the kill-sent phase, per
+ * detectOrphanedRunner()/orphanedRunnerTick().
+ */
+
+digraph RunnerStates {
+    rankdir=TB;
+    splines=true;
+    nodesep=0.6;
+    ranksep=0.9;
+    bgcolor="white";
+    node [shape=none, fontsize=14, fontname="Helvetica"];
+    edge [fontsize=11, fontname="Helvetica", color="#555555", fontcolor="#333333"];
+
+    start [shape=circle, style=filled, fillcolor=black, width=0.15, label=""];
+
+    uninitialized [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF9500" BGCOLOR="#FFF3E0">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/questionmark_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">uninitialized<BR/>(orange)</TD></TR></TABLE>>];
+
+    idle [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#8E8E93" BGCOLOR="#F2F2F7">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/idle_history_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">idle<BR/>(gray)</TD></TR></TABLE>>];
+
+    pathError [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF3B30" BGCOLOR="#FFEBEE">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/triangle_red.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">path error<BR/>(red)</TD></TR></TABLE>>];
+
+    ready [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#34C759" BGCOLOR="#E8F8ED">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/check_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">ready<BR/>(green)</TD></TR></TABLE>>];
+
+    running [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF3B30" BGCOLOR="#FFEBEE">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/xmark_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">running<BR/>(red, bold)</TD></TR></TABLE>>];
+
+    sentinel [label=<
+      <TABLE BORDER="3" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#7B2FBF" BGCOLOR="#FFEBEE">
+      <TR><TD COLSPAN="2" ALIGN="LEFT"><FONT COLOR="#7B2FBF"><B>&#9733; NEW</B></FONT></TD></TR>
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/nosign.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">sentinel<BR/>(red)</TD></TR></TABLE>>];
+
+    sentinelHover [label=<
+      <TABLE BORDER="3" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#7B2FBF" BGCOLOR="#FFEBEE">
+      <TR><TD COLSPAN="2" ALIGN="LEFT"><FONT COLOR="#7B2FBF"><B>&#9733; NEW (hover)</B></FONT></TD></TR>
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/trash_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">sentinel,<BR/>hovering (red)</TD></TR></TABLE>>];
+
+    orphaned [label=<
+      <TABLE BORDER="3" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#7B2FBF" BGCOLOR="#FFEBEE">
+      <TR><TD COLSPAN="2" ALIGN="LEFT"><FONT COLOR="#7B2FBF"><B>&#9733; CHANGED</B></FONT></TD></TR>
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/clock_badge_xmark.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">orphaned<BR/>(red)</TD></TR></TABLE>>];
+
+    orphanStopping [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF3B30" BGCOLOR="#FFEBEE">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/xmark_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">orphan stopping<BR/>(red, bold)</TD></TR></TABLE>>];
+
+    orphanConflict [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF9500" BGCOLOR="#FFF3E0">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/triangle_orange.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">orphan conflict<BR/>(orange)</TD></TR></TABLE>>];
+
+    orphanRecovery [label=<
+      <TABLE BORDER="2" CELLBORDER="0" CELLSPACING="4" STYLE="ROUNDED" COLOR="#FF9500" BGCOLOR="#FFF3E0">
+      <TR><TD FIXEDSIZE="TRUE" WIDTH="40" HEIGHT="40"><IMG SRC="icons/arrow_ccw_circle.png" SCALE="TRUE"/></TD>
+      <TD ALIGN="LEFT">orphan recovery<BR/>(orange)</TD></TR></TABLE>>];
+
+    start -> uninitialized [label="app launch"];
+    start -> orphaned [label="detects single verified\ndetached process"];
+    start -> orphanConflict [label="multiple owners, invalid\nrecord, or foreign owner"];
+    start -> orphanRecovery [label="owner gone,\nsnapshot still exists"];
+
+    uninitialized -> idle [label="self-test passes,\nrun.sh absent"];
+    uninitialized -> ready [label="self-test passes,\nrun.sh present"];
+
+    idle -> ready [label="run.sh appears"];
+    ready -> idle [label="run.sh removed"];
+
+    idle -> pathError [label="project directory\ndeleted"];
+    pathError -> idle [label="directory restored"];
+
+    ready -> running [label="click LED / Auto Mode:\nstartOneShotRunner"];
+    running -> idle [label="task exits cleanly,\nno orphan"];
+    running -> running [label="click LED while running:\nrequestRunnerStop sends TERM"];
+
+    ready -> sentinel [label="poll finds sentinel\ntoken in run.sh"];
+    sentinel -> sentinelHover [label="mouse enters LED"];
+    sentinelHover -> sentinel [label="mouse exits LED"];
+    sentinel -> idle [label="click LED (not hovering):\ndelete run.sh, rotate sentinel"];
+    sentinelHover -> idle [label="click LED (hovering):\ndelete run.sh, rotate sentinel"];
+
+    orphaned -> orphanStopping [label="click LED:\nTERM sent, KILL armed"];
+    orphaned -> idle [label="poll detects process exited\non its own; snapshot auto-recovered", color="#7B2FBF", fontcolor="#7B2FBF", style=dashed];
+    orphanStopping -> idle [label="process exits;\nsnapshot auto-recovered"];
+    orphanStopping -> orphanConflict [label="survives past KILL\ndeadline; forced to conflict"];
+
+    orphanConflict -> idle [label="manual cleanup\noutside app"];
+    orphanRecovery -> idle [label="click LED:\nrecover exact snapshot"];
+}
