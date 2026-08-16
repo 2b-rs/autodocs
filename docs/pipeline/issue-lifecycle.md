@@ -62,3 +62,66 @@ Feature `0021` remains **archived-not-accepted**. Its historical records are ret
 ## Fixture expectations
 
 `issues/_schema/fixtures/issue-lifecycle/` contains valid completed and wontfix closures, valid decisions, and invalid examples for missing criterion evidence, placeholder refs, invalid dispositions, invalid decision authority, and missing required decision fields. Validation first checks JSON Schema and then applies repository-level reachability/path checks that JSON Schema cannot express.
+# Claim and Recovery Protocol
+
+This section governs active ownership of Git-native issue items. It supplements the lifecycle rules above; it is not the Feature-0006 typed-claim or curation workflow contract.
+
+## Claim record
+
+An active item claim is stored at the canonical item-local `claim.json` path and validates against `issues/_schema/issue-claim-v1.schema.json`. It binds one item to one owner identity, clone/worktree identity, exact base commit, declared write scopes, issuance/expiry timestamps, a lease nonce, and a digest of the compare-and-swap (CAS) ref payload. Claim records are append-only evidence: release, expiry, handoff, takeover, and integration rejection are recorded as events; they never erase an earlier owner’s record.
+
+A claim permits work only within its declared repository-relative scopes. It is not completion evidence and cannot make generated output authoritative.
+
+## Same-clone acquisition
+
+Within a clone, claim acquisition uses the local ref `refs/autodocs/claims/<item-id>` as the serialization point. The claimant reads the current ref, validates the candidate claim, writes the claim object, computes its SHA-256 digest, and atomically updates the ref only if its expected old value still matches:
+
+```text
+old = git rev-parse -q --verify refs/autodocs/claims/<item-id> || zero
+assert candidate.base_commit == HEAD
+assert candidate not expired
+assert no active local claim overlaps candidate.write_scopes
+write canonical claim.json candidate
+new = sha256(canonical-json(candidate))
+git update-ref refs/autodocs/claims/<item-id> new old
+if update-ref failed: re-read ref and candidate state; do not overwrite
+```
+
+The object named by the ref is the canonical claim payload/digest representation selected by the claim tooling. An update failure means another local contender won; the loser must re-fetch/re-read and either choose a disjoint item/scope or await release/expiry. No time-of-check/time-of-use assumption may substitute for the CAS operation.
+
+## Independent clones and integration
+
+Independent clones cannot use a local ref as a shared mutex. A claimant first fetches the protected integration branch, rechecks item state, prerequisite state, active integrated claims, and overlapping scopes, then promptly integrates its `claim.json` plus claim-ref update to that protected branch. The integration service/reviewer rejects a candidate when any of these are true:
+
+- Its `base_commit` is stale relative to the protected branch policy.
+- An unexpired integrated claim exists for the same item.
+- An unexpired claim has the same or overlapping declared write scope.
+- A competing claim from another clone is unmerged or cannot be ordered without an authority decision.
+- Its CAS-ref digest does not match canonical claim bytes or its claimed ref transition.
+
+After integration, every clone must fetch/recheck before performing an irreversible operation or publishing a new request. Two disconnected clones may each obtain a locally valid claim before either integrates; Git alone provides no repository-only guarantee of pre-merge exclusivity. The protected integration rule detects and serializes the conflict when connectivity returns.
+
+## State table
+
+| State | Meaning | Permitted next action |
+|---|---|---|
+| `proposed` | Candidate claim not yet acquired/integrated | Validate and CAS acquire, or abandon |
+| `active` | Unexpired claim acquired and integrated | Work, renew, hand off, or release |
+| `renewing` | Owner is extending expiry with same nonce/scope | CAS update after fetch/recheck |
+| `released` | Owner explicitly relinquished lease | New claimant may acquire after recheck |
+| `expired` | Expiry time passed; no work may continue | Record release or authority-approved takeover |
+| `takeover-pending` | Expired claim awaits named authority decision | No new owner work until decision recorded |
+| `superseded` | Handoff/takeover accepted; prior record retained | New claim references predecessor |
+| `rejected` | Integration or CAS validation failed | Re-fetch/recheck and resolve conflict |
+
+## Renewal, handoff, expiry, and takeover
+
+Renewal retains item, owner, clone/worktree identity, base policy, and lease nonce; it updates only allowed temporal/audit fields through CAS after fetch/recheck. Handoff creates a new claim linked to the predecessor and requires explicit release by the prior owner or an authority decision. A crash is not implicit release: once expiry passes, the item enters `expired` and blocks new work until an explicit release event or an authority-approved takeover is integrated. Takeover never deletes the expired claim or its evidence.
+
+When the remote/protected branch is unavailable, an owner may perform only reversible local investigation within its existing unexpired scope. It MUST NOT claim global exclusivity, start a conflicting irreversible mutation, renew against unavailable integration state, or treat a local ref as cross-clone proof. On recovery it fetches/rechecks and submits the pending claim/release/handoff decision for integration.
+
+## Merge-time rules and race fixtures
+
+Merge-time validation checks JSON Schema, canonical-path identity, base freshness, expiry, nonce continuity, exact CAS digest, same-item uniqueness, and overlap of active write scopes. It rejects stale bases, duplicate claims, overlapping scopes, malformed releases, and competing unmerged claims. Repository-level validation also verifies that `base_commit` is reachable and timestamps satisfy `issued_at < expires_at`; JSON Schema alone cannot prove these conditions.
+
+Fixtures under `issues/_schema/fixtures/issue-claim/` cover two worktrees contending for one item, two clones with protected-branch integration, expiry and authority-approved takeover, stale base rejection, overlapping scope rejection, and failed CAS/integration. They are contract fixtures; they do not promise that a disconnected repository can prevent a conflict before merge.
