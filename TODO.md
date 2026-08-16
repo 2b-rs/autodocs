@@ -550,7 +550,7 @@ HOW TO USE:
 - Normative und nutzerfreundliche Fassung sowie alle Diagramm-Beschriftungen, Ankertexte und Linklabels sind vollstaendig durch die bestehende i18n-Pipeline in alle unterstuetzten Sprachen uebersetzt, ohne Verletzung der Platzhalter-/Marker-Invarianten.
 - Automatisierte Pruefungen (Link-/Anker-Validierung `validate.py`, i18n-Vollstaendigkeit) decken die neuen Seiten, Deep-Links und Links aus den Dialogen ab.
 
-- [ ] **0036-01** Normative Prozessbeschreibung fuer das Curator-Entscheidungsprotokoll (`review-package@v1`, `review.js`) in `docs/pipeline/` verfassen.
+- [x] **0036-01** Normative Prozessbeschreibung fuer das Curator-Entscheidungsprotokoll (`review-package@v1`, `review.js`) in `docs/pipeline/` verfassen. REF: f3c266708c85156bd4c7791b36ab84a6fa078c11 (`review-package@v1`, `review.js`) in `docs/pipeline/` verfassen.
   - **Akzeptanzkriterien:** Beschreibt Item-Schema (`outcome`, `decided_by`, `identity`, `rationale`, `decision_basis`), Speicherort (`ara-review-package-v1`), Sammel-Submit als GitHub-Issue, Verhaeltnis zu `ara-review-github-token-v1`, und den fehlenden formalen Lifecycle-Zustand (kein Queue-Eintrag, da bereits Entscheidung); Konsistenz mit bestehenden `docs/pipeline/`-Dokumenten (`workflow-lifecycle.md`, `roles.md`) wird explizit hergestellt oder Abweichung begruendet.
   - **Definition of Done:** Dokument committed mit `REF`; Review durch Abgleich mit dem tatsaechlichen Code (`review.js`) ohne Widerspruch.
 
