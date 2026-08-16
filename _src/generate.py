@@ -7,7 +7,7 @@ generate.py — Erzeugt den kompletten HTML-Tree aus den Quellen unter _src/.
     python3 _src/generate.py --check    # schreibt nichts, vergleicht nur (DOM)
     python3 _src/generate.py classes/cl_ara_core_Future_420ba8.html   # einzelne Seite(n)
     python3 _src/generate.py --lang=en  # zusätzlich Sprachbaum ../en/ erzeugen
-    python3 _src/generate.py --lang=alle   # alle Sprachbäume (en es fr ru ar hi ko zh)
+    python3 _src/generate.py --lang=alle   # alle Sprachbäume (en es pt fr ru ar hi ko zh nl)
 
 Sprachbäume (Details in lib_i18n.py): Deutsch ist kanonisch; Übersetzungen
 kommen aus _src/i18n/. Segmente ohne Übersetzung bleiben deutsch (Fallback,
@@ -33,6 +33,12 @@ from lib_docmodel import (SRC, ROOT, LANGS, render_page, load_templates,
                           compare_html, iter_pages)
 
 WORKERS = min(12, os.cpu_count() or 12)
+
+
+def _missing_count(stat):
+    return len(stat.fehlend) + len(getattr(stat, "fehlende_labels", {}))
+
+
 # 'fork' avoids re-importing lxml/lib_docmodel per worker (macOS defaults to
 # 'spawn', which pays that import cost on every one of the 12 workers and
 # dominates wall-clock time for a fast, many-small-tasks workload like this).
@@ -52,16 +58,17 @@ def _render_one(args):
 def generate_lang(lang, only=None, check=False, announce=True):
     """Einen Sprachbaum ../<lang>/ erzeugen (oder mit check=True nur byte-genau
     vergleichen). Liefert (Seitenzahl, Statistik, Liste abweichender Dateien)."""
-    from lib_i18n import lade_register, lade_soll, uebersetze_seite, globale_ersetzungen, Statistik
-    seg, _lab, ui = lade_register(lang)
+    from lib_i18n import (Statistik, globale_ersetzungen, lade_register,
+                          lade_soll, lade_soll_labels, uebersetze_seite)
+    seg, lab, ui = lade_register(lang)
     page_tmpl, footers = load_templates()
     footers = dict(footers, **ui.get("footers", {}))
-    stat = Statistik(soll=lade_soll())
+    stat = Statistik(soll=lade_soll(), soll_labels=lade_soll_labels())
     n, stale = 0, []
     for page in iter_pages(only):
         if page.get("nolang"):
             continue          # nur-deutsche Seite (z. B. Traceability-Bericht)
-        uebers = uebersetze_seite(page, lang, seg, ui, stat)
+        uebers = uebersetze_seite(page, lang, seg, ui, stat, lab=lab)
         html_text = render_page(uebers, footers, page_tmpl, lang=lang, notice_ui=ui.get("review_notice"))
         html_text = globale_ersetzungen(html_text, ui)
         target = os.path.join(ROOT, lang, page["file"])
@@ -76,14 +83,14 @@ def generate_lang(lang, only=None, check=False, announce=True):
         n += 1
     if not check and announce:
         print("generiert [%s]: %d Seiten, Treffer %d, fehlende Übersetzungen (Fallback deutsch): %d eindeutige Segmente"
-              % (lang, n, stat.treffer, len(stat.fehlend)))
+              % (lang, n, stat.treffer, _missing_count(stat)))
     return n, stat, stale
 
 
 def _generate_lang_one(args):
     lang, only, check = args
     n, stat, stale = generate_lang(lang, only, check, announce=False)
-    return lang, n, stat.treffer, len(stat.fehlend), stale
+    return lang, n, stat.treffer, _missing_count(stat), stale
 
 
 def generate_languages(langs, only=None, check=False):

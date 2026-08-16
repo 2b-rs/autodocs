@@ -7,9 +7,10 @@
         unter i18n/work/<lang>/batch_NN.jsonl schreiben.
         Zeilenformat: {"id": …, "de": …}   (Label-IDs tragen Präfix "L:")
 
-    python3 i18n_translate.py merge <lang>
-        Alle i18n/work/<lang>/batch_NN.out.jsonl validieren und in die
-        Register i18n/<lang>/segments.json + labels.json einarbeiten.
+    python3 i18n_translate.py merge <lang> [--only=batch_NN.out.jsonl]
+        Alle oder nur die explizit ausgewählte Antwortdatei unter
+        i18n/work/<lang>/ validieren und in die Register
+        i18n/<lang>/segments.json + labels.json einarbeiten.
         Zeilenformat der Antwortdateien: {"id": …, "t": …}
         Abgelehnte Zeilen landen in i18n/work/<lang>/fehler.json.
 
@@ -18,7 +19,7 @@
 
 Validierung beim Merge:
   - Platzhalter ⟦k⟧: exakt dieselbe Multimenge wie im Quelltext
-  - [SWS_…]-Kennungen und AUTOSAR_/EXP_/FO_-Dokumentkürzel bleiben erhalten
+  - [SWS_…]/[RS_…]-Kennungen und AUTOSAR_/EXP_/FO_-Dokumentkürzel bleiben erhalten
   - <em>/<strong>-Tags: gleiche Anzahl wie im Quelltext
   - Übersetzung nicht leer und nicht identisch mit Quelle (außer Label ohne
     natürliche Wörter, z. B. reine Symbolfolgen)
@@ -64,7 +65,9 @@ def _write_report(report_kind, tool, command, inputs, started_at, exit_code,
     return report
 
 _PH = re.compile(r"\u27e6\d+\u27e7")
-_IDS = re.compile(r"\[SWS_[A-Z]+_\d+\]|\b(?:AUTOSAR|EXP|FO)_[A-Za-z0-9]+\b")
+_IDS = re.compile(
+    r"\[(?:SWS|RS)_[A-Za-z]+_\d+\]|\b(?:AUTOSAR|EXP|FO)_[A-Za-z0-9]+\b"
+)
 _TAGS = re.compile(r"</?(em|strong|i|u|sub|sup)\b")
 
 
@@ -76,6 +79,17 @@ def _register(lang):
     seg = _lade(os.path.join(I18N, lang, "segments.json"), {})
     lab = _lade(os.path.join(I18N, lang, "labels.json"), {})
     return seg, lab
+
+
+def _bestehender_einzug(path, default=2):
+    """Preserve a register's established JSON indentation (not global style)."""
+    if not os.path.exists(path):
+        return default
+    with open(path, encoding="utf-8") as stream:
+        for line in stream:
+            if line.strip() and line.lstrip().startswith('"'):
+                return len(line) - len(line.lstrip())
+    return default
 
 
 def _quelle():
@@ -150,16 +164,34 @@ def normalisiere_zitate(t, lang):
     return _DE_PAAR.sub(lambda m: za + m.group(1) + zz, t)
 
 
-def merge(lang):
+def _waehle_batches(dateien, only=None):
+    batches = sorted(f for f in dateien
+                     if re.fullmatch(r"batch_\d+\.out\.jsonl", f))
+    if only is None:
+        return batches
+    requested = list(dict.fromkeys(only))
+    invalid = [f for f in requested
+               if not re.fullmatch(r"batch_\d+\.out\.jsonl", f)]
+    missing = [f for f in requested if f not in batches]
+    if invalid or missing:
+        details = []
+        if invalid:
+            details.append("ungültig: %s" % ", ".join(invalid))
+        if missing:
+            details.append("fehlt: %s" % ", ".join(missing))
+        raise ValueError("Batch-Auswahl abgelehnt (%s)" % "; ".join(details))
+    return requested
+
+
+def merge(lang, only=None):
     _t0 = time.time()
     qseg, qlab = _quelle()
     seg, lab = _register(lang)
     d = os.path.join(WORK, lang)
     fehler, uebernommen = [], 0
     _batches_consumed = 0
-    for f in sorted(os.listdir(d) if os.path.isdir(d) else []):
-        if not re.fullmatch(r"batch_\d+\.out\.jsonl", f):
-            continue
+    dateien = os.listdir(d) if os.path.isdir(d) else []
+    for f in _waehle_batches(dateien, only=only):
         _batches_consumed += 1
         for zeilennr, zeile in enumerate(open(os.path.join(d, f), encoding="utf-8"), 1):
             zeile = zeile.strip()
@@ -193,11 +225,19 @@ def merge(lang):
                 seg[id_] = t
             uebernommen += 1
     os.makedirs(os.path.join(I18N, lang), exist_ok=True)
-    json.dump(seg, open(os.path.join(I18N, lang, "segments.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=0)
-    json.dump(lab, open(os.path.join(I18N, lang, "labels.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=0)
-    fp = os.path.join(d, "fehler.json")
+    seg_path = os.path.join(I18N, lang, "segments.json")
+    lab_path = os.path.join(I18N, lang, "labels.json")
+    seg_indent = _bestehender_einzug(seg_path)
+    lab_indent = _bestehender_einzug(lab_path)
+    json.dump(seg, open(seg_path, "w", encoding="utf-8"),
+              ensure_ascii=False, indent=seg_indent)
+    json.dump(lab, open(lab_path, "w", encoding="utf-8"),
+              ensure_ascii=False, indent=lab_indent)
+    if only:
+        scope = "-".join(os.path.splitext(os.path.splitext(f)[0])[0] for f in only)
+        fp = os.path.join(d, "fehler.%s.json" % scope)
+    else:
+        fp = os.path.join(d, "fehler.json")
     if fehler:
         json.dump(fehler, open(fp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     elif os.path.exists(fp):
@@ -205,13 +245,15 @@ def merge(lang):
     rest = len(offene(lang))
     print("[%s] übernommen: %d, abgelehnt: %d, noch offen: %d%s"
           % (lang, uebernommen, len(fehler), rest,
-             "  (Details: i18n/work/%s/fehler.json)" % lang if fehler else ""))
+             "  (Details: %s)" % os.path.relpath(fp, HERE) if fehler else ""))
     _changed = [os.path.join("i18n", lang, "segments.json"), os.path.join("i18n", lang, "labels.json")]
     if fehler:
-        _changed.append(os.path.join("i18n", "work", lang, "fehler.json"))
+        _changed.append(os.path.relpath(fp, HERE))
     _write_report(
         report_kind="i18n_merge", tool="i18n_translate.py",
-        command="i18n_translate.py merge %s" % lang, inputs=[lang],
+        command="i18n_translate.py merge %s%s" % (
+            lang, " --only=%s" % ",".join(only) if only else ""),
+        inputs=[lang] + (list(only) if only else []),
         started_at=_t0, exit_code=(1 if fehler else 0),
         changed_artifacts=_changed,
         counts={"batches_consumed": _batches_consumed, "accepted": uebernommen,
@@ -249,7 +291,15 @@ def main():
                 kb = int(a[5:])
         split(lang, kb)
     else:
-        sys.exit(1 if merge(lang) else 0)
+        only = None
+        for arg in sys.argv[3:]:
+            if arg.startswith("--only="):
+                only = [name for name in arg[7:].split(",") if name]
+        try:
+            errors = merge(lang, only=only)
+        except ValueError as ex:
+            sys.exit(str(ex))
+        sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

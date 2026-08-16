@@ -6,7 +6,7 @@ lib_i18n.py — Gemeinsame Bausteine der Mehrsprachigkeit (siehe WARTUNG.md, Kap
 Sprachmodell:
   Deutsch (de) ist die kanonische Quellsprache und liegt an der Doku-Wurzel.
   Jede weitere Sprache erhält einen vollständigen Spiegelbaum unter <lang>/
-  (en/, es/, fr/, ru/, ar/, hi/, ko/, zh/). Alle relativen Links funktionieren
+  (en/, es/, pt/, fr/, ru/, ar/, hi/, ko/, zh/, nl/). Alle relativen Links funktionieren
   dort unverändert, weil die Baumstruktur identisch ist.
 
 Übersetzt wird ausschließlich selbst erzeugter Inhalt:
@@ -54,7 +54,7 @@ _DE_WORT = re.compile(
     r"aus|bei|nach|über|unter|ohne|zwischen|sowie|bzw|zurück|liefert|gibt|siehe|"
     r"gemäß|laut|dieser|diese|dieses|alle|keine|wenn|dann|wie|vom|zum|zur|im|am|"
     r"Funktionen|Klassen|Seiten|freie|KI-generierte?|Strukturen|Verzeichnis|Spezifikation|Mitglieder|"
-    r"beim|dabei|dazu|dafür|hier|noch|bereits|jeweils|sonst|z\.\u2009?B\.)(?![\w:])")
+    r"beim|dabei|dazu|dafür|hier|noch|bereits|jeweils|sonst|Prozess|z\.\u2009?B\.)(?![\w:])")
 
 
 def ist_deutsch(text):
@@ -91,6 +91,48 @@ def link_uebersetzbar(el):
 
 def hat_prosa(text):
     return bool(re.search(r"[A-Za-zÄÖÜäöüß]{2}", text))
+
+
+INLINE_LABEL_ATTRS = ("aria-label",)
+_INLINE_SVG_TEXT_TAGS = {"text", "tspan"}
+
+
+def _localname(tag):
+    return tag.split("}")[-1] if isinstance(tag, str) else ""
+
+
+def _in_svg(el):
+    return any(_localname(parent.tag) == "svg" for parent in el.iterancestors())
+
+
+def _inline_label_targets(wrapper):
+    """Yield mutable inline-label targets as ``(element, attribute, raw)``.
+
+    ``attribute`` is ``None`` for text inside inline SVG ``text``/``tspan``
+    nodes. Only accessibility attributes that are explicitly part of the
+    translation contract are included; identifiers and geometry stay intact.
+    """
+    for el in wrapper.iter():
+        if not isinstance(el.tag, str):
+            continue
+        for attr in INLINE_LABEL_ATTRS:
+            raw = el.get(attr)
+            if raw and raw.strip():
+                yield el, attr, raw
+        if (_localname(el.tag) in _INLINE_SVG_TEXT_TAGS and _in_svg(el)
+                and el.text and el.text.strip()):
+            yield el, None, el.text
+
+
+def inline_html_labels(wrapper):
+    """Return authored ARIA and inline-SVG labels from a parsed fragment."""
+    return [raw.strip() for _el, _attr, raw in _inline_label_targets(wrapper)]
+
+
+def _with_original_spacing(raw, translated):
+    leading = raw[:len(raw) - len(raw.lstrip())]
+    trailing = raw[len(raw.rstrip()):]
+    return leading + translated + trailing
 
 
 # ------------------------------------------------------------- Maskierung
@@ -171,6 +213,12 @@ def lade_soll():
     return set(json.load(open(p, encoding="utf-8"))) if os.path.exists(p) else set()
 
 
+def lade_soll_labels():
+    """Labeltexte, die übersetzt werden sollen (deutsches Quellregister)."""
+    p = os.path.join(I18N, "labels.de.json")
+    return set(json.load(open(p, encoding="utf-8"))) if os.path.exists(p) else set()
+
+
 # ------------------------------------------------------------- Transformation
 
 class Statistik:
@@ -178,14 +226,20 @@ class Statistik:
     die übersetzt werden SOLLEN (segments.de.json) — nur diese zählen als
     fehlend; englische Original-Spezifikationstexte bleiben unberücksichtigt."""
 
-    def __init__(self, soll=None):
+    def __init__(self, soll=None, soll_labels=None):
         self.treffer = 0
         self.soll = soll
+        self.soll_labels = soll_labels
         self.fehlend = {}
+        self.fehlende_labels = {}
 
     def fehlt(self, sid, masked):
         if self.soll is None or sid in self.soll:
             self.fehlend.setdefault(sid, masked)
+
+    def fehlt_label(self, label):
+        if self.soll_labels is None or label in self.soll_labels:
+            self.fehlende_labels.setdefault(label, label)
 
 
 # Kapitel-/Quellen-Linktexte (a.docref): deutsche Verpackung lokalisieren,
@@ -208,8 +262,54 @@ def lokalisiere_docref(text, dr):
     return text
 
 
-def uebersetze_wrapper(wrapper, seg, ui, stat, zellmodus=False):
+def _uebersetze_element(el, seg, stat):
+    masked, tags = maskiere(el)
+    m = masked.strip()
+    if not m or not hat_prosa(re.sub(r"\u27e6\d+\u27e7", "", m)):
+        return
+    sid = seg_id(m)
+    if sid in seg:
+        leading = masked[:len(masked) - len(masked.lstrip())]
+        trailing = masked[len(masked.rstrip()):]
+        setze_inner(el, leading + entmaskiere(seg[sid], tags) + trailing)
+        stat.treffer += 1
+    else:
+        stat.fehlt(sid, m)
+
+
+def uebersetze_kurztext(text, seg, stat):
+    """Translate a plain page-model string through the stable segment ID."""
+    if not text or not text.strip():
+        return text
+    key = text.strip()
+    sid = seg_id(key)
+    if sid in seg:
+        stat.treffer += 1
+        return _with_original_spacing(text, seg[sid])
+    stat.fehlt(sid, key)
+    return text
+
+
+def _uebersetze_inline_labels(wrapper, lab, stat):
+    for el, attr, raw in _inline_label_targets(wrapper):
+        key = raw.strip()
+        translated = lab.get(key)
+        if translated is None:
+            stat.fehlt_label(key)
+            continue
+        value = _with_original_spacing(raw, translated)
+        if attr is None:
+            el.text = value
+        else:
+            el.set(attr, value)
+        stat.treffer += 1
+
+
+def uebersetze_wrapper(wrapper, seg, ui, stat, zellmodus=False, lab=None,
+                        complete=False):
     """Segmente + strukturelle UI-Teile in einem geparsten Fragment ersetzen."""
+    if complete and lab is not None:
+        _uebersetze_inline_labels(wrapper, lab, stat)
     # Strukturell: h1/h2-Abschnittstitel, Fold-lose h2, span.kind
     sect = ui.get("sect", {})
     kind = ui.get("kind", {})
@@ -221,11 +321,15 @@ def uebersetze_wrapper(wrapper, seg, ui, stat, zellmodus=False):
             neu = kind.get((el.text or "").strip())
             if neu:
                 el.text = neu
+        elif el.tag == "h1" and complete:
+            _uebersetze_element(el, seg, stat)
         elif el.tag == "h2" and "sect" in (el.get("class") or ""):
             kern = (el.text or "").strip()
             neu = sect.get(kern)
             if neu:
                 el.text = neu + (" " if len(el) else "")
+            elif complete:
+                _uebersetze_element(el, seg, stat)
         elif span_uebersetzbar(el) and ist_deutsch(el.text_content()):
             # Geschützte Kurztext-Spans (Statistiken, Chips, Interpretationen):
             # eigener Registereintrag, da sie in Eltern-Segmenten nur als
@@ -270,12 +374,14 @@ def uebersetze_wrapper(wrapper, seg, ui, stat, zellmodus=False):
             stat.fehlt(sid, m)
 
 
-def uebersetze_html(raw, seg, ui, stat, zellmodus=False):
+def uebersetze_html(raw, seg, ui, stat, zellmodus=False, lab=None,
+                    complete=False):
     """HTML-String (Block/Zelle/Fragment) übersetzen -> HTML-String."""
     if not raw or not raw.strip():
         return raw
     wrap = LH.fragment_fromstring(raw, create_parent="x")
-    uebersetze_wrapper(wrap, seg, ui, stat, zellmodus=zellmodus)
+    uebersetze_wrapper(
+        wrap, seg, ui, stat, zellmodus=zellmodus, lab=lab, complete=complete)
     out = esc(wrap.text) if wrap.text else ""
     for k in wrap:
         out += LH.tostring(k, encoding="unicode", with_tail=True)
@@ -364,7 +470,8 @@ def uebersetze_nav(nav_html, ui):
     return out
 
 
-def _uebersetze_fragment(raw, lang, seg, ui, stat, inline_svgs):
+def _uebersetze_fragment(raw, lang, seg, ui, stat, inline_svgs, lab=None,
+                          complete=False):
     """KI-Fragment übersetzen; ggf. übersetzte Inline-Diagramme einsetzen."""
     wrap = LH.fragment_fromstring(raw, create_parent="x")
     for did, svg_text in inline_svgs.items():
@@ -377,20 +484,32 @@ def _uebersetze_fragment(raw, lang, seg, ui, stat, inline_svgs):
                     neu.tail = alte[0].tail
                     el.replace(alte[0], neu)
                 break
-    uebersetze_wrapper(wrap, seg, ui, stat)
+    uebersetze_wrapper(wrap, seg, ui, stat, lab=lab, complete=complete)
     out = esc(wrap.text) if wrap.text else ""
     for k in wrap:
         out += LH.tostring(k, encoding="unicode", with_tail=True)
     return out
 
 
-def uebersetze_seite(page, lang, seg, ui, stat, srcdir=SRC):
+def uebersetze_seite(page, lang, seg, ui, stat, srcdir=SRC, lab=None):
     """Übersetzte Kopie eines Seitenmodells erzeugen (Original bleibt unberührt).
     ai-Blöcke werden zu html-Blöcken materialisiert; svg-Blöcke zeigen auf
     übersetzte Diagramme unter i18n/<lang>/, sofern vorhanden (sonst Fallback)."""
     import copy
     p = copy.deepcopy(page)
+    complete = bool(p.get("i18n_complete"))
+    page_lab = lab if complete else None
+    if complete:
+        p["title"] = uebersetze_kurztext(p["title"], seg, stat)
     p["nav_html"] = uebersetze_nav(p["nav_html"], ui)
+    if complete:
+        p["nav_html"] = uebersetze_html(
+            p["nav_html"], seg, ui, stat, zellmodus=True, lab=page_lab,
+            complete=True)
+        if p.get("main_lead"):
+            p["main_lead"] = uebersetze_html(
+                p["main_lead"], seg, ui, stat, zellmodus=True, lab=page_lab,
+                complete=True)
 
     def ohne_nolang(bs):
         """Nur-deutsche Blöcke (z. B. Verweis auf den Traceability-Bericht)
@@ -423,11 +542,13 @@ def uebersetze_seite(page, lang, seg, ui, stat, srcdir=SRC):
         for b in bs:
             t = b["t"]
             if t == "html":
-                b["html"] = uebersetze_html(b["html"], seg, ui, stat)
+                b["html"] = uebersetze_html(
+                    b["html"], seg, ui, stat, lab=page_lab, complete=complete)
             elif t == "ai":
                 raw = open(os.path.join(srcdir, b["src"]), encoding="utf-8").read().rstrip("\n")
-                neu = _uebersetze_fragment(raw, lang, seg, ui, stat,
-                                           inline_svgs_fuer(b["src"]))
+                neu = _uebersetze_fragment(
+                    raw, lang, seg, ui, stat, inline_svgs_fuer(b["src"]),
+                    lab=page_lab, complete=complete)
                 tail = b.get("tail", "")
                 b.clear()
                 b.update({"t": "html", "html": neu, "tail": tail})
@@ -437,16 +558,24 @@ def uebersetze_seite(page, lang, seg, ui, stat, srcdir=SRC):
                     b["src"] = kand
             elif t in ("rec", "fold"):
                 if t == "fold":
-                    b["summary"] = uebersetze_html(b["summary"], seg, ui, stat)
+                    b["summary"] = uebersetze_html(
+                        b["summary"], seg, ui, stat, lab=page_lab,
+                        complete=complete)
                 blocks(b["blocks"])
             elif t == "props":
                 for r in b["rows"]:
-                    r["th"] = uebersetze_html(r["th"], seg, ui, stat, zellmodus=True)
-                    r["td"] = uebersetze_html(r["td"], seg, ui, stat, zellmodus=True)
+                    r["th"] = uebersetze_html(
+                        r["th"], seg, ui, stat, zellmodus=True, lab=page_lab,
+                        complete=complete)
+                    r["td"] = uebersetze_html(
+                        r["td"], seg, ui, stat, zellmodus=True, lab=page_lab,
+                        complete=complete)
             elif t == "params":
                 for r in b["rows"]:
                     for c in r["cells"]:
-                        c["html"] = uebersetze_html(c["html"], seg, ui, stat, zellmodus=True)
+                        c["html"] = uebersetze_html(
+                            c["html"], seg, ui, stat, zellmodus=True,
+                            lab=page_lab, complete=complete)
 
     blocks(p["main"])
     return p

@@ -17,8 +17,8 @@ Ausgabe: JSONL-Datei gleicher Länge, eine Zeile je Segment: `{"id": "…", "t":
    Position im Satz darf (und soll) der Zielgrammatik folgen.
    Platzhalter stehen für geschützte Inhalte (Links, `code`, Bilder) — nie
    erfinden, nie weglassen, Ziffern nie ändern.
-2. Kennungen wie `[SWS_CM_00701]`, `AUTOSAR_AP_SWS_…`, `EXP_…`, `FO_…`
-   unverändert lassen.
+2. Kennungen wie `[SWS_CM_00701]`, `[RS_AP_00111]`, `AUTOSAR_AP_SWS_…`,
+   `EXP_…`, `FO_…` unverändert lassen.
 3. HTML-Tags `<em>…</em>`, `<strong>…</strong>` u. ä. bleiben als Markup
    erhalten (gleiche Anzahl); den Text darin übersetzen.
 
@@ -45,7 +45,8 @@ Ausgabe: JSONL-Datei gleicher Länge, eine Zeile je Segment: `{"id": "…", "t":
 - Typografie der Zielsprache verwenden (Anführungszeichen, Spatien bei
   französischen Doppelzeichen, arabische/chinesische Interpunktion), aber:
   in Platzhaltern/Kennungen nichts verändern.
-- Labels (`id` beginnt mit `L:`) sind kurze Diagramm-/Tabellenbeschriftungen:
+- Labels (`id` beginnt mit `L:`) sind kurze Diagramm-/Tabellenbeschriftungen
+  sowie ARIA- und Inline-SVG-Beschriftungen:
   knapp übersetzen, Zeilenumbruch-Escapes `\n` an sinnvoller Stelle erhalten
   (gleiche Anzahl Teilzeilen, ähnliche Zeilenlängen — die Beschriftung muss
   in eine Diagrammbox passen). Pfeile `→`, Punkte `·` und Trennzeichen
@@ -55,8 +56,9 @@ Ausgabe: JSONL-Datei gleicher Länge, eine Zeile je Segment: `{"id": "…", "t":
 
 ## Kontext
 
-Die Segmente stammen aus KI-generierten Erläuterungen (User Guides,
-Verwendungshinweise, Interpretationen) einer API-Referenz zu AUTOSAR R25-11.
+Die Segmente stammen aus selbst verfassten Seitenmodellen, Prozessseiten und
+KI-generierten Erläuterungen (User Guides, Verwendungshinweise,
+Interpretationen) einer API-Referenz zu AUTOSAR R25-11.
 "**Interpretation:**"-Präfixe (als <strong>Interpretation:</strong> im Markup
 oder als Platzhalter) leiten vorsichtige Deutungen ein; entsprechend
 vorsichtige Modalität in der Zielsprache wählen. Wörter wie "Annahme",
