@@ -34,3 +34,4 @@ Initial request is fixed read-only discovery: obtain current base, scoped worktr
 ## Progress log
 
 - 2026-08-16 — Claimed after `0037-02` closed and after the separate `0037-03.02` marker was restored in `cd6d8db17341cf2616b016c7a0b80f5912e96673`. Publishing required read-only discovery request.
+- 2026-08-16 — Retry request `5d1a8e3c7f49` corrected the rejected overlapping-scope fixture and committed `536c824f095f1563b9c565378afecabb4ff07bf1` after earlier assertion-only failures. Task marked [x]; closure REF recorded.
