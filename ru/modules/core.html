@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::core — Adaptive Platform Core</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">Справочник API ara::*</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../modules/core.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/modules/core.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/modules/core.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/modules/core.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/modules/core.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a class="cur" href="../../ru/modules/core.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/modules/core.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/modules/core.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/modules/core.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/modules/core.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/modules/core.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Главная</a> › ara::core</nav>
+<main><h1><span class="kind">модуль</span> ara::core — Adaptive Platform Core</h1>
+<p class="meta">Спецификация: <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf">AUTOSAR_AP_SWS_Core.pdf (R25-11)</a> · 1237 записей API</p>
+<p><span class="chip">function: 1060</span> <span class="chip">type alias: 101</span> <span class="chip">class: 34</span> <span class="chip">struct: 26</span> <span class="chip">variable: 13</span> <span class="chip">enumeration: 3</span></p>
+<details class="fold"><summary><h2 class="sect">Руководство пользователя <span class="ai-badge" title="AI generated">Сгенерировано ИИ / AI generated</span></h2></summary><div class="ai module-guide"><p class="ai-note">Автоматически создаваемое описание, контент получен из ссылочных документов AUTOSAR R25-11 (спецификация SWS и сопроводительные стандартные документы) — не официальный текст AUTOSAR. Утверждения, помеченные как интерпретация, представляют собой выводы, сделанные на основе источников.</p><h4>Классификация &amp; назначение</h4>
+<p>Модуль <code>ara::core</code> является базовой базовой библиотекой адаптивной платформы AUTOSAR и определен в официальной спецификации <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#page=60">AUTOSAR_AP_SWS_Core.pdf (R25-11)</a>. Он предоставляет безошибочный тип возврата <code>ara::core::Result</code>, а также базовый класс домена ошибок <code>ara::core::ErrorDomain</code>, который определяет контекст для набора ошибочных условий; Подклассы ErrorDomain являются корнем всех данных об ошибках <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10303">[SWS_CORE_10303]</a>. Обработка ошибок в Адаптивной платформе обычно осуществляется без исключений C++ через <code>ara::core::ErrorCode</code> и <code>ara::core::Result</code> в соответствии с концепцией «ValueOrError» (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>). Пространство имен <code>ara</code> и все базовые пространства имен также зарезервированы AUTOSAR; Если адаптивное приложение добавляет туда свои собственные объявления, поведение не определено (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>). Таким образом, <code>ara::core</code> формирует общую основу для инициализации, обработки ошибок и правил параллелизма для всех функциональных кластеров AP.</p>
+<h4>Ключевые объекты и типичное использование</h4>
+<p><code>ara::core::Result&lt;T, E&gt;</code> содержит либо значение, либо ошибку; тип ошибки должен быть <code>ErrorCode</code>, иначе возникает ошибка компиляции <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html">[SWS_CORE_00701]</a>, со специализациями для ссылочных типов <a class="swsref vis-app" href="../classes/cl_ara_core_Result_T_E_8b59ba.html">[SWS_CORE_00901]</a> и значений <code>void</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Result_void_E_c9d1e9.html">[SWS_CORE_00801]</a>. <code>Result</code> создаётся через статические фабричные функции <code>FromValue</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00733">[SWS_CORE_00733]</a> либо <code>FromError</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00736">[SWS_CORE_00736]</a>. <code>Bind</code> применяет Callable к содержащемуся значению и возвращает новый <code>Result</code>; если экземпляр не содержит значения, исходная ошибка переносится без изменений <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00768">[SWS_CORE_00768]</a>. <code>Resolve</code> возвращает значение или в случае ошибки вызывает совместимый Callable <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00767">[SWS_CORE_00767]</a>, тогда как <code>ErrorOr</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00764">[SWS_CORE_00764]</a><a class="swsref vis-app" href="../classes/cl_ara_core_Result_d51722.html#SWS_CORE_00763">[SWS_CORE_00763]</a> предоставляет простые резервные значения. Экземпляры <code>ErrorDomain</code> равны тогда и только тогда, когда совпадают их уникальные 64-битные идентификаторы; доступ обычно осуществляется через не-членные accessor, такие как <code>GetFutureErrorDomain</code> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10401">[SWS_CORE_10401]</a>.</p>
+<p>Для контейнеров и обработки текста модуль предоставляет реализации стандартной библиотеки C++ с поддержкой PMR: <code>ara::core::Vector</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Vector_53b788.html">[SWS_CORE_01301]</a>, <code>ara::core::Map</code> <a class="swsref vis-app" href="../classes/cl_ara_core_Map_cba7f0.html">[SWS_CORE_01400]</a>, <code>ara::core::StringView</code> <a class="swsref vis-app" href="../classes/cl_ara_core_StringView_cfeb8f.html">[SWS_CORE_02001]</a>, <code>ara::core::BasicString</code> <a class="swsref vis-app" href="../classes/cl_ara_core_BasicString_b75ad8.html">[SWS_CORE_03000]</a> и <code>ara::core::Span</code>. <a class="swsref vis-app" href="../classes/cl_ara_core_Span_f16d72.html">[SWS_CORE_01900]</a>. Для ссылок на модели на уровне приложения класс <code>final</code> <code>ara::core::InstanceSpecifier</code> существует в <code>ara/core/instance_specifier.h</code>, который инкапсулирует путь короткого имени AUTOSAR <a class="swsref vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">[SWS_CORE_08001]</a>.</p>
+<h4>Создание, жизненный цикл &amp; Ownership</h4>
+<p>Жизненный цикл всей ARA централизованно управляется двумя свободными функциями <code>ara::core::Initialize</code> и <code>ara::core::Deinitialize</code>. <code>Initialize</code> запускает ARA-Framework; это может включать инициализацию внутренних структур данных и системных ресурсов, а также запуск фоновых потоков <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15003">[SWS_CORE_15003]</a>. Если <code>Initialize</code> использует внедрение аргументов командной строки, соответствующие аргументы должны быть прозрачно удалены, чтобы не влиять на разбор аргументов приложения <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15006">[SWS_CORE_15006]</a>. Успешный вызов переводит Framework в состояние, в котором все сконфигурированные компоненты могут немедленно обслуживать вызовы API <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90026">[SWS_CORE_90026]</a>; повторный вызов без предшествующего <code>Deinitialize</code> возвращает <code>kAlreadyInitialized</code>, не нарушая работу текущего экземпляра <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90029">[SWS_CORE_90029]</a>. Напротив, <code>Deinitialize</code> запускает завершение работы Framework, включая остановку запущенных фоновых потоков и освобождение динамической памяти и прочих системных ресурсов <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15004">[SWS_CORE_15004]</a>; если Framework не был успешно инициализирован или уже деинициализирован, каждый вызов возвращает <code>kNotInitialized</code> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90030">[SWS_CORE_90030]</a>.</p>
+<p>Лишь небольшое, явно названное подмножество <code>ara::core</code> — среди прочих. <code>ErrorCode</code>, <code>StringView</code>, <code>Result</code> (без <code>ValueOrThrow</code>), <code>ErrorDomain</code> (без <code>ThrowAsException</code>), <code>Initialize</code>, <code>Abort</code>, <code>SetAbortHandler</code> и <code>AddAbortHandler</code> - можно использовать независимо от <code>Initialize</code>/<code>Deinitialize</code> можно использовать <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15002">[SWS_CORE_15002]</a>. Поведение всех других функций ARA до <code>Initialize</code> определяется реализацией <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_15005">[SWS_CORE_15005]</a>, а вызов после <code>Deinitialize</code> за пределами этого подмножества также имеет поведение, определяемое реализацией, поскольку соответствующая проверка во время выполнения намеренно не требовалась по соображениям производительности <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90022">[SWS_CORE_90022]</a>. <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">Guidelines for using Adaptive Platform interfaces</a> резюмирует это как обязательный контракт запуска/выключения: <code>Initialize</code> должен вызываться в точке входа, <code>Deinitialize</code> - только после того, как все ресурсы ARA будут освобождены в других потоках; оба доставляют <code>Result&lt;void&gt;</code>, который необходимо проверить, и ошибка не может быть исправлена, поэтому приложение должно завершиться с <code>EXIT_FAILURE</code> (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>). Кроме того, <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#page=23">AUTOSAR AP RS General</a> запрещает функции инициализации, специфичные для кластера: если кластер функций требует явной инициализации или деинициализации, он должен использовать исключительно <code>ara::core::Initialize</code>/<code>ara::core::Deinitialize</code>.</p>
+<h4>Обработка ошибок, параллелизм и ограничения</h4>
+<p>Спецификация точно определяет Thread Safety: нестатическая функция-член AUTOSAR API является thread-safe, если её допускается одновременно вызывать на одном объекте из нескольких Threads без синхронизации вызывающим кодом; деструкторы и операторы присваивания обычно не thread-safe <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_13200">[SWS_CORE_13200]</a>. Если не thread-safe функцию-член всё же конкурентно вызывают на одном объекте, поведение не определено — даже если другая участвующая функция thread-safe <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_13203">[SWS_CORE_13203]</a>; напротив, конкурентный вызов на различных экземплярах без синхронизации допустим <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_13205">[SWS_CORE_13205]</a>. Callbacks или чисто виртуальные функции, специфицированные как non-thread-safe, реализация ARA вызывает исключительно последовательно, например <code>ara::tsync::SynchronizedTimeBaseNotifier</code>, тогда как, например, <code>ara::phm::RecoveryAction::RecoveryHandler</code> является thread-safe <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_13214">[SWS_CORE_13214]</a>. Использование произвольных ARA API в Signal Handler приводит к неопределённому поведению, если не указано иное <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_13210">[SWS_CORE_13210]</a> (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>: Async-Signal-Safety). Кроме того, <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#page=23">AUTOSAR AP RS General</a> требует, чтобы каждая функция API указывала свой уровень Thread Safety как «thread-safe», «not thread-safe» или «conditional», а контракт Thread Safety действует двусторонне: если API специфицирован как thread-safe, то и реализация, предоставляемая Vendor или пользователем, например Callbacks или чисто виртуальные Skeleton-функции, должна соблюдать это обещание (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>).</p>
+<p>Для неисправимых ошибок <code>ara::core</code> отличает Violation от обычной обработки ошибок: Violation является следствием нарушения предусловий или постусловий Framework и неустранимо, подобно неуспешной Assertion <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00021">[SWS_CORE_00021]</a>. При стандартизированном Violation процесс аварийно завершается через <code>ara::core::Abort</code>; Debug-сообщение согласно определению DLT выводится в <code>stderr</code> и должно записываться в Log-Sinks с Context ID распознавшего Functional Cluster <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00090">[SWS_CORE_00090]</a>. Пока выполняется вызов <code>Abort</code>, дальнейшие вызовы блокируют вызывающие Threads <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_12407">[SWS_CORE_12407]</a>; установленные Abort-Handler вызываются в обратном порядке установки, а без Handler вызывается <code>std::abort()</code> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_12404">[SWS_CORE_12404]</a>. Это разделение между устранимыми посредством <code>Result</code>/<code>ErrorCode</code> ошибками и неустранимыми Violations <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00021">[SWS_CORE_00021]</a> поддерживается <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#page=23">AUTOSAR AP RS General</a> как общий принцип для всех Functional Cluster AP.</p>
+<h4>Интеграция &amp; конфигурация</h4>
+<p>Каждый Functional Cluster ARA использует стандартизированные настройки журнала и трассировки из <code>ara::core</code>, в частности идентификатор контекста и диапазон идентификаторов сообщений <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00055">[SWS_CORE_00055]</a>, при регистрации через <code>ara::log</code>. С этой целью спецификация, среди прочего, определяет стандартизированные идентификаторы контекста журнала для каждого Functional Cluster. <code>#COM</code> для com, <code>#COR</code> для ядра, <code>#CRY</code> для шифрования, <code>#DIA</code> для диагностики, <code>#EXE</code> для exec, <code>#LOG</code> для журнала и <code>#PER</code> для per <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_90024">[SWS_CORE_90024]</a>. На уровне требований <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#page=23">AUTOSAR AP RS General</a> добавляется, что интерфейсы ARA должны использовать типы <code>ara::core</code> вместо стандартных типов C++ при условии, что <code>ara::core</code> предоставляет эквивалентный тип. Поскольку пространство имен <code>ara</code> полностью зарезервировано для AUTOSAR, все типы данных Functional Cluster также доступны через файл заголовка пересылки <code>&lt;fc&gt;_fwd.h</code> (<a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">EXP InterfacesGuidelines</a>).</p>
+<h4>Источники</h4>
+<ul>
+<li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#page=60">AUTOSAR AP SWS Core (R25-11)</a> – спецификация программного обеспечения модуля Core, включая правила инициализации, Threading и обработки ошибок.</li>
+<li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#page=9">AUTOSAR AP EXP InterfacesGuidelines (R25-11)</a> – Контракт запуска/остановки, концепция обработки ошибок, принципы безопасности потоков и сигналов.</li>
+<li><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#page=23">AUTOSAR AP RS General (R25-11)</a> — требования к инициализации, документация по потокобезопасности, классификация ошибок и использование типов.</li>
+</ul><h4>Архитектурный контекст: распространенные типы контрактов и терминов</h4><p>Core Types объединяют общие классы и функциональность для публичных интерфейсов нескольких Functional Clusters. <code>Result</code> и <code>Future</code> переносят восстанавливаемые ошибки в качестве возвращаемого значения, тогда как <code>Initialize()</code> и <code>Deinitialize()</code> определяют общий жизненный цикл ARA. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.1">EXP PlatformDesign §18.1 «Error Handling»</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=subsection.4.1.2">RS General §4.1.2 «Error handling»</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.4">EXP PlatformDesign §18.4 «Global initialization and shutdown functions»</a></p><p>Контейнеры и типы представлений, представленные в <code>ara::core</code>, также предназначены для распределения памяти некоторых типов стандартных библиотек, что не подходит для автомобильных приложений; <code>StringView</code>, <code>Span</code>, <code>Optional</code> и <code>Variant</code> также поддерживают конструкции API, связанные с манифестами. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.18.2">EXP PlatformDesign §18.2 «Advanced data types»</a></p><h4>Контракт главы 7 между приложением и Functional Cluster</h4><p>Core определяет общий каркас для всех Functional Clusters: <code>Initialize()</code> и <code>Deinitialize()</code> могут инициализировать или деинициализировать другие кластеры по необходимости реализации; типы Result, Future и ErrorDomain делают контракт ошибок повторно используемым в публичных API. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=section.5.3">SWS Core §5.3 – Functional Cluster initialization</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsection.7.1.7">SWS Core §7.1.7 «Initialization/De-initialization»</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=section.7.2">SWS Core §7.2 «Error handling»</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 580.00 72.00" style="max-width:773px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 67.99)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="285.75" y="-47.64" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Core как общий контракт времени выполнения</text>
+<!-- app -->
+<g id="node1" class="node">
+<title>app</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="68.5,-42.49 0,-42.49 0,-6.49 68.5,-6.49 68.5,-42.49"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="34.25" y="-26.04" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Adaptive</text>
+<text xml:space="preserve" text-anchor="middle" x="34.25" y="-14.04" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Application</text>
+</g>
+<!-- core -->
+<g id="node2" class="node vis-app">
+<title>core</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_core_ara_core_e30e31.html" xlink:title="ara::core" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="290,-42.49 231.25,-42.49 231.25,-6.49 290,-6.49 290,-42.49"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="260.62" y="-20.04" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ara::core</text>
+</a>
+</g>
+</g>
+<!-- app&#45;&gt;core -->
+<g id="edge1" class="edge">
+<title>app-&gt;core</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M68.84,-24.49C109.07,-24.49 176.39,-24.49 219.37,-24.49"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="219.14,-27.99 229.14,-24.49 219.14,-20.99 219.14,-27.99"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="149.88" y="-26.24" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: Initialize()\n4: Deinitialize()</text>
+</g>
+<!-- fc -->
+<g id="node3" class="node">
+<title>fc</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="571.5,-42.49 506,-42.49 506,-6.49 571.5,-6.49 571.5,-42.49"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="538.75" y="-26.04" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Functional</text>
+<text xml:space="preserve" text-anchor="middle" x="538.75" y="-14.04" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Clusters</text>
+</g>
+<!-- core&#45;&gt;fc -->
+<g id="edge2" class="edge">
+<title>core-&gt;fc</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M290.39,-24.49C338.88,-24.49 437.15,-24.49 494.15,-24.49"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="493.99,-27.99 503.99,-24.49 493.99,-20.99 493.99,-27.99"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="398" y="-26.24" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: Инициализирует по необходимости</text>
+</g>
+<!-- fc&#45;&gt;core -->
+<g id="edge3" class="edge">
+<title>fc-&gt;core</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M505.42,-13.07C499.69,-11.48 493.72,-10.1 488,-9.24 408.88,2.61 386.99,3.41 308,-9.24 305.8,-9.59 303.57,-10.03 301.33,-10.54"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="300.57,-7.12 291.82,-13.09 302.39,-13.88 300.57,-7.12"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="398" y="-10.99" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">3: Общие типы / контракт ошибок</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Диаграмма взаимодействия: приложение использует Core как общий контракт жизненного цикла и типов; инициализация дальнейших Functional Clusters зависит от реализации. <em>Частичная интерпретация:</em> объединение связи кластеров в одном узле абстрагирует отдельные пути запуска, специфичные для кластеров. Источники: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=section.5.3">SWS Core §5.3 – Functional Cluster initialization</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsection.7.1.7">SWS Core §7.1.7 «Initialization/De-initialization»</a>.</p><h4>Привязка моделируемых типов данных</h4><p>Для смоделированных типов данных реализации языковая привязка определяет отображение на C++; спецификация Platform Types также сопоставляет примитивные типы данных с типами C++. Типы <code>ara::core</code> образуют общий библиотечный каркас, на котором основаны сгенерированные C++ API. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_LanguageBindingForModeledAPdatatypes.pdf#nameddest=section.7.1">SWS LanguageBinding §7.1 «C++ binding for CppImplementationDataTypes»</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_PlatformTypes.pdf#nameddest=section.7.1">SWS PlatformTypes §7.1 «Primitive ImplementationDataTypes and their mapping to C++ datatypes»</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=section.7.4">SWS Core §7.4 «Core data types»</a></p></div>
+</details>
+<h2 class="sect">Пространства имён</h2><ul class="mlist boxes"><li><a class="dbox vis-app" href="../namespaces/ns_core_ara_core_e30e31.html">ara::core</a> <span class="dim">50 классов, 194 свободные функции</span></li><li><a class="dbox vis-app" href="../namespaces/ns_core_ara_core_literals_string_view_literals_c613a9.html">ara::core::literals::string_view_literals</a> <span class="dim">0 классов, 1 свободная функция</span></li><li><a class="dbox vis-app" href="../namespaces/ns_core_std_193df4.html">std</a> <span class="dim">8 классов, 0 свободных функций</span></li></ul>
+<h2 class="sect">UML-диаграмма классов модуля</h2><p class="dim">Закругленные рамки = пространства имен; полые треугольные стрелки = наследование (указывают на базовый класс); серые прямоугольники = немодульные или внешние базовые классы. При нажатии открывается страница класса.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="7628pt" height="226pt" viewbox="0.00 0.00 7628.00 226.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 221.5)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M20,-8C20,-8 5697,-8 5697,-8 5703,-8 5709,-14 5709,-20 5709,-20 5709,-141.5 5709,-141.5 5709,-147.5 5703,-153.5 5697,-153.5 5697,-153.5 20,-153.5 20,-153.5 14,-153.5 8,-147.5 8,-141.5 8,-141.5 8,-20 8,-20 8,-14 14,-8 20,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="2858.5" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::core</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_2</title>
+<path fill="none" stroke="#d4d1ca" d="M5729,-8C5729,-8 5816,-8 5816,-8 5822,-8 5828,-14 5828,-20 5828,-20 5828,-69.5 5828,-69.5 5828,-75.5 5822,-81.5 5816,-81.5 5816,-81.5 5729,-81.5 5729,-81.5 5723,-81.5 5717,-75.5 5717,-69.5 5717,-69.5 5717,-20 5717,-20 5717,-14 5723,-8 5729,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="5772.5" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::core::Bitset</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_3</title>
+<path fill="none" stroke="#d4d1ca" d="M5848,-8C5848,-8 5938,-8 5938,-8 5944,-8 5950,-14 5950,-20 5950,-20 5950,-69.5 5950,-69.5 5950,-75.5 5944,-81.5 5938,-81.5 5938,-81.5 5848,-81.5 5848,-81.5 5842,-81.5 5836,-75.5 5836,-69.5 5836,-69.5 5836,-20 5836,-20 5836,-14 5842,-8 5848,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="5893" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::core::Map</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_4</title>
+<path fill="none" stroke="#d4d1ca" d="M5970,-8C5970,-8 7520,-8 7520,-8 7526,-8 7532,-14 7532,-20 7532,-20 7532,-69.5 7532,-69.5 7532,-75.5 7526,-81.5 7520,-81.5 7520,-81.5 5970,-81.5 5970,-81.5 5964,-81.5 5958,-75.5 5958,-69.5 5958,-69.5 5958,-20 5958,-20 5958,-14 5964,-8 5970,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="6745" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">часы</text>
+</g>
+<!-- nara__core__CoreErrorDomain113 -->
+<g id="node1" class="node vis-app">
+<title>nara__core__CoreErrorDomain113</title>
+<g id="a_node1"><a xlink:href="../classes/cl_ara_core_CoreErrorDomain_723639.html" xlink:title="CoreErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M114.25,-73.5C114.25,-73.5 27.75,-73.5 27.75,-73.5 21.75,-73.5 15.75,-67.5 15.75,-61.5 15.75,-61.5 15.75,-49.5 15.75,-49.5 15.75,-43.5 21.75,-37.5 27.75,-37.5 27.75,-37.5 114.25,-37.5 114.25,-37.5 120.25,-37.5 126.25,-43.5 126.25,-49.5 126.25,-49.5 126.25,-61.5 126.25,-61.5 126.25,-67.5 120.25,-73.5 114.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="71" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">CoreErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorDomain335 -->
+<g id="node2" class="node vis-app">
+<title>nara__core__ErrorDomain335</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M167.12,-145.5C167.12,-145.5 106.88,-145.5 106.88,-145.5 100.88,-145.5 94.88,-139.5 94.88,-133.5 94.88,-133.5 94.88,-121.5 94.88,-121.5 94.88,-115.5 100.88,-109.5 106.88,-109.5 106.88,-109.5 167.12,-109.5 167.12,-109.5 173.12,-109.5 179.12,-115.5 179.12,-121.5 179.12,-121.5 179.12,-133.5 179.12,-133.5 179.12,-139.5 173.12,-145.5 167.12,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="137" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__CoreErrorDomain113&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge1" class="edge">
+<title>nara__core__CoreErrorDomain113-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M87.31,-73.8C94.99,-81.94 104.29,-91.81 112.77,-100.8"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="110.22,-103.2 119.63,-108.07 115.31,-98.4 110.22,-103.2"></polygon>
+</g>
+<!-- nara__core__CoreException713 -->
+<g id="node3" class="node vis-app">
+<title>nara__core__CoreException713</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_core_CoreException_6fef0c.html" xlink:title="CoreException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M364.75,-73.5C364.75,-73.5 293.25,-73.5 293.25,-73.5 287.25,-73.5 281.25,-67.5 281.25,-61.5 281.25,-61.5 281.25,-49.5 281.25,-49.5 281.25,-43.5 287.25,-37.5 293.25,-37.5 293.25,-37.5 364.75,-37.5 364.75,-37.5 370.75,-37.5 376.75,-43.5 376.75,-49.5 376.75,-49.5 376.75,-61.5 376.75,-61.5 376.75,-67.5 370.75,-73.5 364.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="329" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">CoreException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Exception792 -->
+<g id="node4" class="node vis-app">
+<title>nara__core__Exception792</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="Исключение" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M419.62,-145.5C419.62,-145.5 356.38,-145.5 356.38,-145.5 350.38,-145.5 344.38,-139.5 344.38,-133.5 344.38,-133.5 344.38,-121.5 344.38,-121.5 344.38,-115.5 350.38,-109.5 356.38,-109.5 356.38,-109.5 419.62,-109.5 419.62,-109.5 425.62,-109.5 431.62,-115.5 431.62,-121.5 431.62,-121.5 431.62,-133.5 431.62,-133.5 431.62,-139.5 425.62,-145.5 419.62,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="388" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Исключение</text>
+</a>
+</g>
+</g>
+<!-- nara__core__CoreException713&#45;&gt;nara__core__Exception792 -->
+<g id="edge2" class="edge">
+<title>nara__core__CoreException713-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M343.58,-73.8C350.37,-81.86 358.59,-91.61 366.1,-100.52"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="363.29,-102.62 372.41,-108.01 368.64,-98.1 363.29,-102.62"></polygon>
+</g>
+<!-- nextstd__exception28 -->
+<g id="node59" class="node">
+<title>nextstd__exception28</title>
+<path fill="#efeeea" stroke="#7a7974" d="M420.75,-217.5C420.75,-217.5 355.25,-217.5 355.25,-217.5 349.25,-217.5 343.25,-211.5 343.25,-205.5 343.25,-205.5 343.25,-193.5 343.25,-193.5 343.25,-187.5 349.25,-181.5 355.25,-181.5 355.25,-181.5 420.75,-181.5 420.75,-181.5 426.75,-181.5 432.75,-187.5 432.75,-193.5 432.75,-193.5 432.75,-205.5 432.75,-205.5 432.75,-211.5 426.75,-217.5 420.75,-217.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="388" y="-194.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">std::exception</text>
+</g>
+<!-- nara__core__Exception792&#45;&gt;nextstd__exception28 -->
+<g id="edge3" class="edge">
+<title>nara__core__Exception792-&gt;nextstd__exception28</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M388,-145.8C388,-153.01 388,-161.57 388,-169.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="384.5,-169.58 388,-179.58 391.5,-169.58 384.5,-169.58"></polygon>
+</g>
+<!-- nara__core__FutureErrorDomain146 -->
+<g id="node5" class="node vis-app">
+<title>nara__core__FutureErrorDomain146</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_core_FutureErrorDomain_fa421f.html" xlink:title="FutureErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M251.38,-73.5C251.38,-73.5 156.62,-73.5 156.62,-73.5 150.62,-73.5 144.62,-67.5 144.62,-61.5 144.62,-61.5 144.62,-49.5 144.62,-49.5 144.62,-43.5 150.62,-37.5 156.62,-37.5 156.62,-37.5 251.38,-37.5 251.38,-37.5 257.38,-37.5 263.38,-43.5 263.38,-49.5 263.38,-49.5 263.38,-61.5 263.38,-61.5 263.38,-67.5 257.38,-73.5 251.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="204" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FutureErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__FutureErrorDomain146&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge4" class="edge">
+<title>nara__core__FutureErrorDomain146-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M187.44,-73.8C179.57,-82.03 170.01,-92.02 161.33,-101.08"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="159.01,-98.44 154.63,-108.08 164.07,-103.28 159.01,-98.44"></polygon>
+</g>
+<!-- nara__core__FutureException511 -->
+<g id="node6" class="node vis-app">
+<title>nara__core__FutureException511</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_core_FutureException_aa6c40.html" xlink:title="FutureException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M486.88,-73.5C486.88,-73.5 407.12,-73.5 407.12,-73.5 401.12,-73.5 395.12,-67.5 395.12,-61.5 395.12,-61.5 395.12,-49.5 395.12,-49.5 395.12,-43.5 401.12,-37.5 407.12,-37.5 407.12,-37.5 486.88,-37.5 486.88,-37.5 492.88,-37.5 498.88,-43.5 498.88,-49.5 498.88,-49.5 498.88,-61.5 498.88,-61.5 498.88,-67.5 492.88,-73.5 486.88,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="447" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FutureException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__FutureException511&#45;&gt;nara__core__Exception792 -->
+<g id="edge5" class="edge">
+<title>nara__core__FutureException511-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M432.42,-73.8C425.63,-81.86 417.41,-91.61 409.9,-100.52"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="407.36,-98.1 403.59,-108.01 412.71,-102.62 407.36,-98.1"></polygon>
+</g>
+<!-- nara__core__MemoryResource130 -->
+<g id="node7" class="node vis-app">
+<title>nara__core__MemoryResource130</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_core_MemoryResource_67fcc0.html" xlink:title="MemoryResource" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M815.25,-145.5C815.25,-145.5 728.75,-145.5 728.75,-145.5 722.75,-145.5 716.75,-139.5 716.75,-133.5 716.75,-133.5 716.75,-121.5 716.75,-121.5 716.75,-115.5 722.75,-109.5 728.75,-109.5 728.75,-109.5 815.25,-109.5 815.25,-109.5 821.25,-109.5 827.25,-115.5 827.25,-121.5 827.25,-121.5 827.25,-133.5 827.25,-133.5 827.25,-139.5 821.25,-145.5 815.25,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="772" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">MemoryResource</text>
+</a>
+</g>
+</g>
+<!-- nara__core__MonotonicBufferResource118 -->
+<g id="node8" class="node vis-app">
+<title>nara__core__MonotonicBufferResource118</title>
+<g id="a_node8"><a xlink:href="../classes/cl_ara_core_MonotonicBufferResource_ff50ce.html" xlink:title="MonotonicBufferResource" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M659.38,-73.5C659.38,-73.5 528.62,-73.5 528.62,-73.5 522.62,-73.5 516.62,-67.5 516.62,-61.5 516.62,-61.5 516.62,-49.5 516.62,-49.5 516.62,-43.5 522.62,-37.5 528.62,-37.5 528.62,-37.5 659.38,-37.5 659.38,-37.5 665.38,-37.5 671.38,-43.5 671.38,-49.5 671.38,-49.5 671.38,-61.5 671.38,-61.5 671.38,-67.5 665.38,-73.5 659.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="594" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">MonotonicBufferResource</text>
+</a>
+</g>
+</g>
+<!-- nara__core__MonotonicBufferResource118&#45;&gt;nara__core__MemoryResource130 -->
+<g id="edge6" class="edge">
+<title>nara__core__MonotonicBufferResource118-&gt;nara__core__MemoryResource130</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M638.46,-73.98C662.23,-83.33 691.71,-94.93 716.92,-104.84"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="715.52,-108.05 726.11,-108.45 718.09,-101.54 715.52,-108.05"></polygon>
+</g>
+<!-- nara__core__SynchronizedPoolResource481 -->
+<g id="node9" class="node vis-app">
+<title>nara__core__SynchronizedPoolResource481</title>
+<g id="a_node9"><a xlink:href="../classes/cl_ara_core_SynchronizedPoolResource_dbddce.html" xlink:title="SynchronizedPoolResource" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M843,-73.5C843,-73.5 701,-73.5 701,-73.5 695,-73.5 689,-67.5 689,-61.5 689,-61.5 689,-49.5 689,-49.5 689,-43.5 695,-37.5 701,-37.5 701,-37.5 843,-37.5 843,-37.5 849,-37.5 855,-43.5 855,-49.5 855,-49.5 855,-61.5 855,-61.5 855,-67.5 849,-73.5 843,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="772" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SynchronizedPoolResource</text>
+</a>
+</g>
+</g>
+<!-- nara__core__SynchronizedPoolResource481&#45;&gt;nara__core__MemoryResource130 -->
+<g id="edge7" class="edge">
+<title>nara__core__SynchronizedPoolResource481-&gt;nara__core__MemoryResource130</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M772,-73.8C772,-81.01 772,-89.57 772,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="768.5,-97.58 772,-107.58 775.5,-97.58 768.5,-97.58"></polygon>
+</g>
+<!-- nara__core__UnsynchronizedPoolResource176 -->
+<g id="node10" class="node vis-app">
+<title>nara__core__UnsynchronizedPoolResource176</title>
+<g id="a_node10"><a xlink:href="../classes/cl_ara_core_UnsynchronizedPoolResource_652373.html" xlink:title="UnsynchronizedPoolResource" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1040.75,-73.5C1040.75,-73.5 885.25,-73.5 885.25,-73.5 879.25,-73.5 873.25,-67.5 873.25,-61.5 873.25,-61.5 873.25,-49.5 873.25,-49.5 873.25,-43.5 879.25,-37.5 885.25,-37.5 885.25,-37.5 1040.75,-37.5 1040.75,-37.5 1046.75,-37.5 1052.75,-43.5 1052.75,-49.5 1052.75,-49.5 1052.75,-61.5 1052.75,-61.5 1052.75,-67.5 1046.75,-73.5 1040.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="963" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">UnsynchronizedPoolResource</text>
+</a>
+</g>
+</g>
+<!-- nara__core__UnsynchronizedPoolResource176&#45;&gt;nara__core__MemoryResource130 -->
+<g id="edge8" class="edge">
+<title>nara__core__UnsynchronizedPoolResource176-&gt;nara__core__MemoryResource130</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M915.3,-73.98C889.56,-83.42 857.59,-95.13 830.37,-105.11"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="829.32,-101.77 821.13,-108.49 831.73,-108.34 829.32,-101.77"></polygon>
+</g>
+<!-- nara__core__Array326 -->
+<g id="node11" class="node vis-app">
+<title>nara__core__Array326</title>
+<g id="a_node11"><a xlink:href="../classes/cl_ara_core_Array_940f9b.html" xlink:title="Array" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1113,-73.5C1113,-73.5 1083,-73.5 1083,-73.5 1077,-73.5 1071,-67.5 1071,-61.5 1071,-61.5 1071,-49.5 1071,-49.5 1071,-43.5 1077,-37.5 1083,-37.5 1083,-37.5 1113,-37.5 1113,-37.5 1119,-37.5 1125,-43.5 1125,-49.5 1125,-49.5 1125,-61.5 1125,-61.5 1125,-67.5 1119,-73.5 1113,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1098" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Array</text>
+</a>
+</g>
+</g>
+<!-- nara__core__BasicString716 -->
+<g id="node12" class="node vis-app">
+<title>nara__core__BasicString716</title>
+<g id="a_node12"><a xlink:href="../classes/cl_ara_core_BasicString_b75ad8.html" xlink:title="BasicString" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1208.75,-73.5C1208.75,-73.5 1155.25,-73.5 1155.25,-73.5 1149.25,-73.5 1143.25,-67.5 1143.25,-61.5 1143.25,-61.5 1143.25,-49.5 1143.25,-49.5 1143.25,-43.5 1149.25,-37.5 1155.25,-37.5 1155.25,-37.5 1208.75,-37.5 1208.75,-37.5 1214.75,-37.5 1220.75,-43.5 1220.75,-49.5 1220.75,-49.5 1220.75,-61.5 1220.75,-61.5 1220.75,-67.5 1214.75,-73.5 1208.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1182" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">BasicString</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Bitset255 -->
+<g id="node13" class="node vis-app">
+<title>nara__core__Bitset255</title>
+<g id="a_node13"><a xlink:href="../classes/cl_ara_core_Bitset_9afc89.html" xlink:title="Bitset" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1281,-73.5C1281,-73.5 1251,-73.5 1251,-73.5 1245,-73.5 1239,-67.5 1239,-61.5 1239,-61.5 1239,-49.5 1239,-49.5 1239,-43.5 1245,-37.5 1251,-37.5 1251,-37.5 1281,-37.5 1281,-37.5 1287,-37.5 1293,-43.5 1293,-49.5 1293,-49.5 1293,-61.5 1293,-61.5 1293,-67.5 1287,-73.5 1281,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1266" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Bitset</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorCode330 -->
+<g id="node14" class="node vis-app">
+<title>nara__core__ErrorCode330</title>
+<g id="a_node14"><a xlink:href="../classes/cl_ara_core_ErrorCode_538b08.html" xlink:title="ErrorCode" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1370.75,-73.5C1370.75,-73.5 1323.25,-73.5 1323.25,-73.5 1317.25,-73.5 1311.25,-67.5 1311.25,-61.5 1311.25,-61.5 1311.25,-49.5 1311.25,-49.5 1311.25,-43.5 1317.25,-37.5 1323.25,-37.5 1323.25,-37.5 1370.75,-37.5 1370.75,-37.5 1376.75,-37.5 1382.75,-43.5 1382.75,-49.5 1382.75,-49.5 1382.75,-61.5 1382.75,-61.5 1382.75,-67.5 1376.75,-73.5 1370.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1347" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ErrorCode</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Executor877 -->
+<g id="node15" class="node vis-app">
+<title>nara__core__Executor877</title>
+<g id="a_node15"><a xlink:href="../classes/cl_ara_core_Executor_3ea577.html" xlink:title="Executor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1451.62,-73.5C1451.62,-73.5 1412.38,-73.5 1412.38,-73.5 1406.38,-73.5 1400.38,-67.5 1400.38,-61.5 1400.38,-61.5 1400.38,-49.5 1400.38,-49.5 1400.38,-43.5 1406.38,-37.5 1412.38,-37.5 1412.38,-37.5 1451.62,-37.5 1451.62,-37.5 1457.62,-37.5 1463.62,-43.5 1463.62,-49.5 1463.62,-49.5 1463.62,-61.5 1463.62,-61.5 1463.62,-67.5 1457.62,-73.5 1451.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1432" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Executor</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Future930 -->
+<g id="node16" class="node vis-app">
+<title>nara__core__Future930</title>
+<g id="a_node16"><a xlink:href="../classes/cl_ara_core_Future_420ba8.html" xlink:title="Future" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1524,-73.5C1524,-73.5 1494,-73.5 1494,-73.5 1488,-73.5 1482,-67.5 1482,-61.5 1482,-61.5 1482,-49.5 1482,-49.5 1482,-43.5 1488,-37.5 1494,-37.5 1494,-37.5 1524,-37.5 1524,-37.5 1530,-37.5 1536,-43.5 1536,-49.5 1536,-49.5 1536,-61.5 1536,-61.5 1536,-67.5 1530,-73.5 1524,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1509" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Future</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Future__void__E__740 -->
+<g id="node17" class="node vis-app">
+<title>nara__core__Future__void__E__740</title>
+<g id="a_node17"><a xlink:href="../classes/cl_ara_core_Future_void_E_7151bc.html" xlink:title="Future&lt; void, E &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1648.38,-73.5C1648.38,-73.5 1565.62,-73.5 1565.62,-73.5 1559.62,-73.5 1553.62,-67.5 1553.62,-61.5 1553.62,-61.5 1553.62,-49.5 1553.62,-49.5 1553.62,-43.5 1559.62,-37.5 1565.62,-37.5 1565.62,-37.5 1648.38,-37.5 1648.38,-37.5 1654.38,-37.5 1660.38,-43.5 1660.38,-49.5 1660.38,-49.5 1660.38,-61.5 1660.38,-61.5 1660.38,-67.5 1654.38,-73.5 1648.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1607" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Future&lt; void, E &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__hash88 -->
+<g id="node18" class="node vis-app">
+<title>nara__core__hash88</title>
+<g id="a_node18"><a xlink:href="../classes/cl_ara_core_hash_83e629.html" xlink:title="хэш" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1753.25,-73.5C1753.25,-73.5 1690.75,-73.5 1690.75,-73.5 1684.75,-73.5 1678.75,-67.5 1678.75,-61.5 1678.75,-61.5 1678.75,-49.5 1678.75,-49.5 1678.75,-43.5 1684.75,-37.5 1690.75,-37.5 1690.75,-37.5 1753.25,-37.5 1753.25,-37.5 1759.25,-37.5 1765.25,-43.5 1765.25,-49.5 1765.25,-49.5 1765.25,-61.5 1765.25,-61.5 1765.25,-67.5 1759.25,-73.5 1753.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1722" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="1722" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш</text>
+</a>
+</g>
+</g>
+<!-- nara__core__in_place_index_t938 -->
+<g id="node19" class="node vis-app">
+<title>nara__core__in_place_index_t938</title>
+<g id="a_node19"><a xlink:href="../classes/cl_ara_core_in_place_index_t_c66f81.html" xlink:title="in_place_index_t" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1878.75,-73.5C1878.75,-73.5 1795.25,-73.5 1795.25,-73.5 1789.25,-73.5 1783.25,-67.5 1783.25,-61.5 1783.25,-61.5 1783.25,-49.5 1783.25,-49.5 1783.25,-43.5 1789.25,-37.5 1795.25,-37.5 1795.25,-37.5 1878.75,-37.5 1878.75,-37.5 1884.75,-37.5 1890.75,-43.5 1890.75,-49.5 1890.75,-49.5 1890.75,-61.5 1890.75,-61.5 1890.75,-67.5 1884.75,-73.5 1878.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1837" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="1837" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">in_place_index_t</text>
+</a>
+</g>
+</g>
+<!-- nara__core__in_place_t356 -->
+<g id="node20" class="node vis-app">
+<title>nara__core__in_place_t356</title>
+<g id="a_node20"><a xlink:href="../classes/cl_ara_core_in_place_t_343915.html" xlink:title="in_place_t" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M1983.25,-73.5C1983.25,-73.5 1920.75,-73.5 1920.75,-73.5 1914.75,-73.5 1908.75,-67.5 1908.75,-61.5 1908.75,-61.5 1908.75,-49.5 1908.75,-49.5 1908.75,-43.5 1914.75,-37.5 1920.75,-37.5 1920.75,-37.5 1983.25,-37.5 1983.25,-37.5 1989.25,-37.5 1995.25,-43.5 1995.25,-49.5 1995.25,-49.5 1995.25,-61.5 1995.25,-61.5 1995.25,-67.5 1989.25,-73.5 1983.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="1952" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="1952" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">in_place_t</text>
+</a>
+</g>
+</g>
+<!-- nara__core__in_place_type_t306 -->
+<g id="node21" class="node vis-app">
+<title>nara__core__in_place_type_t306</title>
+<g id="a_node21"><a xlink:href="../classes/cl_ara_core_in_place_type_t_8f2d1a.html" xlink:title="in_place_type_t" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2102.38,-73.5C2102.38,-73.5 2025.62,-73.5 2025.62,-73.5 2019.62,-73.5 2013.62,-67.5 2013.62,-61.5 2013.62,-61.5 2013.62,-49.5 2013.62,-49.5 2013.62,-43.5 2019.62,-37.5 2025.62,-37.5 2025.62,-37.5 2102.38,-37.5 2102.38,-37.5 2108.38,-37.5 2114.38,-43.5 2114.38,-49.5 2114.38,-49.5 2114.38,-61.5 2114.38,-61.5 2114.38,-67.5 2108.38,-73.5 2102.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2064" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="2064" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">in_place_type_t</text>
+</a>
+</g>
+</g>
+<!-- nara__core__InstanceSpecifier92 -->
+<g id="node22" class="node vis-app">
+<title>nara__core__InstanceSpecifier92</title>
+<g id="a_node22"><a xlink:href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html" xlink:title="InstanceSpecifier" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2229.12,-73.5C2229.12,-73.5 2144.88,-73.5 2144.88,-73.5 2138.88,-73.5 2132.88,-67.5 2132.88,-61.5 2132.88,-61.5 2132.88,-49.5 2132.88,-49.5 2132.88,-43.5 2138.88,-37.5 2144.88,-37.5 2144.88,-37.5 2229.12,-37.5 2229.12,-37.5 2235.12,-37.5 2241.12,-43.5 2241.12,-49.5 2241.12,-49.5 2241.12,-61.5 2241.12,-61.5 2241.12,-67.5 2235.12,-73.5 2229.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2187" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">InstanceSpecifier</text>
+</a>
+</g>
+</g>
+<!-- nara__core__is_nothrow_swappable987 -->
+<g id="node23" class="node vis-app">
+<title>nara__core__is_nothrow_swappable987</title>
+<g id="a_node23"><a xlink:href="../classes/cl_ara_core_is_nothrow_swappable_f9d29b.html" xlink:title="is_nothrow_swappable" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2380.5,-73.5C2380.5,-73.5 2271.5,-73.5 2271.5,-73.5 2265.5,-73.5 2259.5,-67.5 2259.5,-61.5 2259.5,-61.5 2259.5,-49.5 2259.5,-49.5 2259.5,-43.5 2265.5,-37.5 2271.5,-37.5 2271.5,-37.5 2380.5,-37.5 2380.5,-37.5 2386.5,-37.5 2392.5,-43.5 2392.5,-49.5 2392.5,-49.5 2392.5,-61.5 2392.5,-61.5 2392.5,-67.5 2386.5,-73.5 2380.5,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2326" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="2326" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">is_notrow_swappable</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Map274 -->
+<g id="node24" class="node vis-app">
+<title>nara__core__Map274</title>
+<g id="a_node24"><a xlink:href="../classes/cl_ara_core_Map_cba7f0.html" xlink:title="Карта" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2453,-73.5C2453,-73.5 2423,-73.5 2423,-73.5 2417,-73.5 2411,-67.5 2411,-61.5 2411,-61.5 2411,-49.5 2411,-49.5 2411,-43.5 2417,-37.5 2423,-37.5 2423,-37.5 2453,-37.5 2453,-37.5 2459,-37.5 2465,-43.5 2465,-49.5 2465,-49.5 2465,-61.5 2465,-61.5 2465,-67.5 2459,-73.5 2453,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2438" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Карта</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Monostate901 -->
+<g id="node25" class="node vis-app">
+<title>nara__core__Monostate901</title>
+<g id="a_node25"><a xlink:href="../classes/cl_ara_core_Monostate_1e0a12.html" xlink:title="Monostate" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2557.25,-73.5C2557.25,-73.5 2494.75,-73.5 2494.75,-73.5 2488.75,-73.5 2482.75,-67.5 2482.75,-61.5 2482.75,-61.5 2482.75,-49.5 2482.75,-49.5 2482.75,-43.5 2488.75,-37.5 2494.75,-37.5 2494.75,-37.5 2557.25,-37.5 2557.25,-37.5 2563.25,-37.5 2569.25,-43.5 2569.25,-49.5 2569.25,-49.5 2569.25,-61.5 2569.25,-61.5 2569.25,-67.5 2563.25,-73.5 2557.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2526" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="2526" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Monostate</text>
+</a>
+</g>
+</g>
+<!-- nara__core__nullopt_t64 -->
+<g id="node26" class="node vis-app">
+<title>nara__core__nullopt_t64</title>
+<g id="a_node26"><a xlink:href="../classes/cl_ara_core_nullopt_t_e22f58.html" xlink:title="nullopt_t" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2662.25,-73.5C2662.25,-73.5 2599.75,-73.5 2599.75,-73.5 2593.75,-73.5 2587.75,-67.5 2587.75,-61.5 2587.75,-61.5 2587.75,-49.5 2587.75,-49.5 2587.75,-43.5 2593.75,-37.5 2599.75,-37.5 2599.75,-37.5 2662.25,-37.5 2662.25,-37.5 2668.25,-37.5 2674.25,-43.5 2674.25,-49.5 2674.25,-49.5 2674.25,-61.5 2674.25,-61.5 2674.25,-67.5 2668.25,-73.5 2662.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2631" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="2631" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">nullopt_t</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Optional627 -->
+<g id="node27" class="node vis-app">
+<title>nara__core__Optional627</title>
+<g id="a_node27"><a xlink:href="../classes/cl_ara_core_Optional_27f98b.html" xlink:title="Optional" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2741.5,-73.5C2741.5,-73.5 2704.5,-73.5 2704.5,-73.5 2698.5,-73.5 2692.5,-67.5 2692.5,-61.5 2692.5,-61.5 2692.5,-49.5 2692.5,-49.5 2692.5,-43.5 2698.5,-37.5 2704.5,-37.5 2704.5,-37.5 2741.5,-37.5 2741.5,-37.5 2747.5,-37.5 2753.5,-43.5 2753.5,-49.5 2753.5,-49.5 2753.5,-61.5 2753.5,-61.5 2753.5,-67.5 2747.5,-73.5 2741.5,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2723" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Optional</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Optional__T____62 -->
+<g id="node28" class="node vis-app">
+<title>nara__core__Optional__T____62</title>
+<g id="a_node28"><a xlink:href="../classes/cl_ara_core_Optional_T_35cc9e.html" xlink:title="Optional&lt; T &amp; &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M2858.25,-73.5C2858.25,-73.5 2783.75,-73.5 2783.75,-73.5 2777.75,-73.5 2771.75,-67.5 2771.75,-61.5 2771.75,-61.5 2771.75,-49.5 2771.75,-49.5 2771.75,-43.5 2777.75,-37.5 2783.75,-37.5 2783.75,-37.5 2858.25,-37.5 2858.25,-37.5 2864.25,-37.5 2870.25,-43.5 2870.25,-49.5 2870.25,-49.5 2870.25,-61.5 2870.25,-61.5 2870.25,-67.5 2864.25,-73.5 2858.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2821" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Optional&lt; T &amp; &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__PolymorphicAllocator970 -->
+<g id="node29" class="node vis-app">
+<title>nara__core__PolymorphicAllocator970</title>
+<g id="a_node29"><a xlink:href="../classes/cl_ara_core_PolymorphicAllocator_82ca05.html" xlink:title="PolymorphicAllocator" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3006,-73.5C3006,-73.5 2900,-73.5 2900,-73.5 2894,-73.5 2888,-67.5 2888,-61.5 2888,-61.5 2888,-49.5 2888,-49.5 2888,-43.5 2894,-37.5 2900,-37.5 2900,-37.5 3006,-37.5 3006,-37.5 3012,-37.5 3018,-43.5 3018,-49.5 3018,-49.5 3018,-61.5 3018,-61.5 3018,-67.5 3012,-73.5 3006,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="2953" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PolymorphicAllocator</text>
+</a>
+</g>
+</g>
+<!-- nara__core__PoolOptions463 -->
+<g id="node30" class="node vis-app">
+<title>nara__core__PoolOptions463</title>
+<g id="a_node30"><a xlink:href="../classes/cl_ara_core_PoolOptions_c9b7fd.html" xlink:title="PoolOptions" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3110.25,-73.5C3110.25,-73.5 3047.75,-73.5 3047.75,-73.5 3041.75,-73.5 3035.75,-67.5 3035.75,-61.5 3035.75,-61.5 3035.75,-49.5 3035.75,-49.5 3035.75,-43.5 3041.75,-37.5 3047.75,-37.5 3047.75,-37.5 3110.25,-37.5 3110.25,-37.5 3116.25,-37.5 3122.25,-43.5 3122.25,-49.5 3122.25,-49.5 3122.25,-61.5 3122.25,-61.5 3122.25,-67.5 3116.25,-73.5 3110.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3079" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="3079" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PoolOptions</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Promise131 -->
+<g id="node31" class="node vis-app">
+<title>nara__core__Promise131</title>
+<g id="a_node31"><a xlink:href="../classes/cl_ara_core_Promise_6db9e1.html" xlink:title="Promise" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3188.12,-73.5C3188.12,-73.5 3151.88,-73.5 3151.88,-73.5 3145.88,-73.5 3139.88,-67.5 3139.88,-61.5 3139.88,-61.5 3139.88,-49.5 3139.88,-49.5 3139.88,-43.5 3145.88,-37.5 3151.88,-37.5 3151.88,-37.5 3188.12,-37.5 3188.12,-37.5 3194.12,-37.5 3200.12,-43.5 3200.12,-49.5 3200.12,-49.5 3200.12,-61.5 3200.12,-61.5 3200.12,-67.5 3194.12,-73.5 3188.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3170" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Promise</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Promise__void__E__714 -->
+<g id="node32" class="node vis-app">
+<title>nara__core__Promise__void__E__714</title>
+<g id="a_node32"><a xlink:href="../classes/cl_ara_core_Promise_void_E_e5a8db.html" xlink:title="Promise&lt; void, E &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3322.25,-73.5C3322.25,-73.5 3229.75,-73.5 3229.75,-73.5 3223.75,-73.5 3217.75,-67.5 3217.75,-61.5 3217.75,-61.5 3217.75,-49.5 3217.75,-49.5 3217.75,-43.5 3223.75,-37.5 3229.75,-37.5 3229.75,-37.5 3322.25,-37.5 3322.25,-37.5 3328.25,-37.5 3334.25,-43.5 3334.25,-49.5 3334.25,-49.5 3334.25,-61.5 3334.25,-61.5 3334.25,-67.5 3328.25,-73.5 3322.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3276" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Promise&lt; void, E &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Result167 -->
+<g id="node33" class="node vis-app">
+<title>nara__core__Result167</title>
+<g id="a_node33"><a xlink:href="../classes/cl_ara_core_Result_d51722.html" xlink:title="Result" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3394,-73.5C3394,-73.5 3364,-73.5 3364,-73.5 3358,-73.5 3352,-67.5 3352,-61.5 3352,-61.5 3352,-49.5 3352,-49.5 3352,-43.5 3358,-37.5 3364,-37.5 3364,-37.5 3394,-37.5 3394,-37.5 3400,-37.5 3406,-43.5 3406,-49.5 3406,-49.5 3406,-61.5 3406,-61.5 3406,-67.5 3400,-73.5 3394,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3379" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Result</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Result__T____E__551 -->
+<g id="node34" class="node vis-app">
+<title>nara__core__Result__T____E__551</title>
+<g id="a_node34"><a xlink:href="../classes/cl_ara_core_Result_T_E_8b59ba.html" xlink:title="Result&lt; T &amp;, E &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3514.12,-73.5C3514.12,-73.5 3435.88,-73.5 3435.88,-73.5 3429.88,-73.5 3423.88,-67.5 3423.88,-61.5 3423.88,-61.5 3423.88,-49.5 3423.88,-49.5 3423.88,-43.5 3429.88,-37.5 3435.88,-37.5 3435.88,-37.5 3514.12,-37.5 3514.12,-37.5 3520.12,-37.5 3526.12,-43.5 3526.12,-49.5 3526.12,-49.5 3526.12,-61.5 3526.12,-61.5 3526.12,-67.5 3520.12,-73.5 3514.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3475" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Result&lt; T &amp;, E &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Result__void__E__788 -->
+<g id="node35" class="node vis-app">
+<title>nara__core__Result__void__E__788</title>
+<g id="a_node35"><a xlink:href="../classes/cl_ara_core_Result_void_E_c9d1e9.html" xlink:title="Result&lt; void, E &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3639.38,-73.5C3639.38,-73.5 3556.62,-73.5 3556.62,-73.5 3550.62,-73.5 3544.62,-67.5 3544.62,-61.5 3544.62,-61.5 3544.62,-49.5 3544.62,-49.5 3544.62,-43.5 3550.62,-37.5 3556.62,-37.5 3556.62,-37.5 3639.38,-37.5 3639.38,-37.5 3645.38,-37.5 3651.38,-43.5 3651.38,-49.5 3651.38,-49.5 3651.38,-61.5 3651.38,-61.5 3651.38,-67.5 3645.38,-73.5 3639.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3598" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Result&lt; void, E &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Span436 -->
+<g id="node36" class="node vis-app">
+<title>nara__core__Span436</title>
+<g id="a_node36"><a xlink:href="../classes/cl_ara_core_Span_f16d72.html" xlink:title="Пролет" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3715,-73.5C3715,-73.5 3681,-73.5 3681,-73.5 3675,-73.5 3669,-67.5 3669,-61.5 3669,-61.5 3669,-49.5 3669,-49.5 3669,-43.5 3675,-37.5 3681,-37.5 3681,-37.5 3715,-37.5 3715,-37.5 3721,-37.5 3727,-43.5 3727,-49.5 3727,-49.5 3727,-61.5 3727,-61.5 3727,-67.5 3721,-73.5 3715,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3698" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Пролет</text>
+</a>
+</g>
+</g>
+<!-- nara__core__SteadyClock455 -->
+<g id="node37" class="node vis-app">
+<title>nara__core__SteadyClock455</title>
+<g id="a_node37"><a xlink:href="../classes/cl_ara_core_SteadyClock_57bda3.html" xlink:title="SteadyClock" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3817.12,-73.5C3817.12,-73.5 3756.88,-73.5 3756.88,-73.5 3750.88,-73.5 3744.88,-67.5 3744.88,-61.5 3744.88,-61.5 3744.88,-49.5 3744.88,-49.5 3744.88,-43.5 3750.88,-37.5 3756.88,-37.5 3756.88,-37.5 3817.12,-37.5 3817.12,-37.5 3823.12,-37.5 3829.12,-43.5 3829.12,-49.5 3829.12,-49.5 3829.12,-61.5 3829.12,-61.5 3829.12,-67.5 3823.12,-73.5 3817.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3787" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SteadyClock</text>
+</a>
+</g>
+</g>
+<!-- nara__core__StringView801 -->
+<g id="node38" class="node vis-app">
+<title>nara__core__StringView801</title>
+<g id="a_node38"><a xlink:href="../classes/cl_ara_core_StringView_cfeb8f.html" xlink:title="StringView" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3908.88,-73.5C3908.88,-73.5 3859.12,-73.5 3859.12,-73.5 3853.12,-73.5 3847.12,-67.5 3847.12,-61.5 3847.12,-61.5 3847.12,-49.5 3847.12,-49.5 3847.12,-43.5 3853.12,-37.5 3859.12,-37.5 3859.12,-37.5 3908.88,-37.5 3908.88,-37.5 3914.88,-37.5 3920.88,-43.5 3920.88,-49.5 3920.88,-49.5 3920.88,-61.5 3920.88,-61.5 3920.88,-67.5 3914.88,-73.5 3908.88,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3884" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">StringView</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Variant465 -->
+<g id="node39" class="node vis-app">
+<title>nara__core__Variant465</title>
+<g id="a_node39"><a xlink:href="../classes/cl_ara_core_Variant_70f719.html" xlink:title="Variant" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M3981,-73.5C3981,-73.5 3951,-73.5 3951,-73.5 3945,-73.5 3939,-67.5 3939,-61.5 3939,-61.5 3939,-49.5 3939,-49.5 3939,-43.5 3945,-37.5 3951,-37.5 3951,-37.5 3981,-37.5 3981,-37.5 3987,-37.5 3993,-43.5 3993,-49.5 3993,-49.5 3993,-61.5 3993,-61.5 3993,-67.5 3987,-73.5 3981,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="3966" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Variant</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_alternative370 -->
+<g id="node40" class="node vis-app">
+<title>nara__core__variant_alternative370</title>
+<g id="a_node40"><a xlink:href="../classes/cl_ara_core_variant_alternative_50c77e.html" xlink:title="variant_alternative" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M4147,-73.5C4147,-73.5 4023,-73.5 4023,-73.5 4017,-73.5 4011,-67.5 4011,-61.5 4011,-61.5 4011,-49.5 4011,-49.5 4011,-43.5 4017,-37.5 4023,-37.5 4023,-37.5 4147,-37.5 4147,-37.5 4153,-37.5 4159,-43.5 4159,-49.5 4159,-49.5 4159,-61.5 4159,-61.5 4159,-67.5 4153,-73.5 4147,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="4085" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="4085" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_альтернатива</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_alternative__I_433 -->
+<g id="node41" class="node vis-app">
+<title>nara__core__variant_alternative__I_433</title>
+<g id="a_node41"><a xlink:href="../classes/cl_ara_core_variant_alternative_50c77e.html#cv-spez" xlink:title="вариант_альтернатив — частичная специализация для типов с указанием cv (const T, летучий T, const летучий T)" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M4346.88,-73.5C4346.88,-73.5 4189.12,-73.5 4189.12,-73.5 4183.12,-73.5 4177.12,-67.5 4177.12,-61.5 4177.12,-61.5 4177.12,-49.5 4177.12,-49.5 4177.12,-43.5 4183.12,-37.5 4189.12,-37.5 4189.12,-37.5 4346.88,-37.5 4346.88,-37.5 4352.88,-37.5 4358.88,-43.5 4358.88,-49.5 4358.88,-49.5 4358.88,-61.5 4358.88,-61.5 4358.88,-67.5 4352.88,-73.5 4346.88,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="4268" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="4268" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_альтернатив&lt; I, … &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_alternative__I__Variant__Types_______15 -->
+<g id="node42" class="node vis-app">
+<title>nara__core__variant_alternative__I__Variant__Types_______15</title>
+<g id="a_node42"><a xlink:href="../classes/cl_ara_core_variant_alternative_I_Variant_Types..._8df711.html" xlink:title="вариант_альтернатив&lt; I, Variant&lt; Types... &gt; &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M4632.62,-73.5C4632.62,-73.5 4389.38,-73.5 4389.38,-73.5 4383.38,-73.5 4377.38,-67.5 4377.38,-61.5 4377.38,-61.5 4377.38,-49.5 4377.38,-49.5 4377.38,-43.5 4383.38,-37.5 4389.38,-37.5 4389.38,-37.5 4632.62,-37.5 4632.62,-37.5 4638.62,-37.5 4644.62,-43.5 4644.62,-49.5 4644.62,-49.5 4644.62,-61.5 4644.62,-61.5 4644.62,-67.5 4638.62,-73.5 4632.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="4511" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="4511" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_альтернатив&lt; I, Variant&lt; Types... &gt; &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_size885 -->
+<g id="node43" class="node vis-app">
+<title>nara__core__variant_size885</title>
+<g id="a_node43"><a xlink:href="../classes/cl_ara_core_variant_size_e3a186.html" xlink:title="variant_size" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M4761.25,-73.5C4761.25,-73.5 4674.75,-73.5 4674.75,-73.5 4668.75,-73.5 4662.75,-67.5 4662.75,-61.5 4662.75,-61.5 4662.75,-49.5 4662.75,-49.5 4662.75,-43.5 4668.75,-37.5 4674.75,-37.5 4674.75,-37.5 4761.25,-37.5 4761.25,-37.5 4767.25,-37.5 4773.25,-43.5 4773.25,-49.5 4773.25,-49.5 4773.25,-61.5 4773.25,-61.5 4773.25,-67.5 4767.25,-73.5 4761.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="4718" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="4718" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_размер</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_size__const24 -->
+<g id="node44" class="node vis-app">
+<title>nara__core__variant_size__const24</title>
+<g id="a_node44"><a xlink:href="../classes/cl_ara_core_variant_size_const_ec9113.html" xlink:title="вариант_размер&lt; const volatile T &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M4988.75,-73.5C4988.75,-73.5 4803.25,-73.5 4803.25,-73.5 4797.25,-73.5 4791.25,-67.5 4791.25,-61.5 4791.25,-61.5 4791.25,-49.5 4791.25,-49.5 4791.25,-43.5 4797.25,-37.5 4803.25,-37.5 4803.25,-37.5 4988.75,-37.5 4988.75,-37.5 4994.75,-37.5 5000.75,-43.5 5000.75,-49.5 5000.75,-49.5 5000.75,-61.5 5000.75,-61.5 5000.75,-67.5 4994.75,-73.5 4988.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="4896" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="4896" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_размер&lt; const volatile T &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_size__const_T__418 -->
+<g id="node45" class="node vis-app">
+<title>nara__core__variant_size__const_T__418</title>
+<g id="a_node45"><a xlink:href="../classes/cl_ara_core_variant_size_const_T_ffccc0.html" xlink:title="вариант_размер&lt; const T &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5175.12,-73.5C5175.12,-73.5 5030.88,-73.5 5030.88,-73.5 5024.88,-73.5 5018.88,-67.5 5018.88,-61.5 5018.88,-61.5 5018.88,-49.5 5018.88,-49.5 5018.88,-43.5 5024.88,-37.5 5030.88,-37.5 5030.88,-37.5 5175.12,-37.5 5175.12,-37.5 5181.12,-37.5 5187.12,-43.5 5187.12,-49.5 5187.12,-49.5 5187.12,-61.5 5187.12,-61.5 5187.12,-67.5 5181.12,-73.5 5175.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5103" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="5103" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_размер&lt; const T &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_size__Variant_60 -->
+<g id="node46" class="node vis-app">
+<title>nara__core__variant_size__Variant_60</title>
+<g id="a_node46"><a xlink:href="../classes/cl_ara_core_variant_size_Variant_37d48d.html" xlink:title="вариант_размер&lt; Variant&lt; Types... &gt; &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5420.75,-73.5C5420.75,-73.5 5217.25,-73.5 5217.25,-73.5 5211.25,-73.5 5205.25,-67.5 5205.25,-61.5 5205.25,-61.5 5205.25,-49.5 5205.25,-49.5 5205.25,-43.5 5211.25,-37.5 5217.25,-37.5 5217.25,-37.5 5420.75,-37.5 5420.75,-37.5 5426.75,-37.5 5432.75,-43.5 5432.75,-49.5 5432.75,-49.5 5432.75,-61.5 5432.75,-61.5 5432.75,-67.5 5426.75,-73.5 5420.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5319" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="5319" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_размер&lt; Variant&lt; Types... &gt; &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__variant_size__volatile_T__105 -->
+<g id="node47" class="node vis-app">
+<title>nara__core__variant_size__volatile_T__105</title>
+<g id="a_node47"><a xlink:href="../classes/cl_ara_core_variant_size_volatile_T_e7f22e.html" xlink:title="вариант_размер&lt; volatile T &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5617,-73.5C5617,-73.5 5463,-73.5 5463,-73.5 5457,-73.5 5451,-67.5 5451,-61.5 5451,-61.5 5451,-49.5 5451,-49.5 5451,-43.5 5457,-37.5 5463,-37.5 5463,-37.5 5617,-37.5 5617,-37.5 5623,-37.5 5629,-43.5 5629,-49.5 5629,-49.5 5629,-61.5 5629,-61.5 5629,-67.5 5623,-73.5 5617,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5540" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="5540" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">вариант_размер&lt; volatile T &gt;</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Vector473 -->
+<g id="node48" class="node vis-app">
+<title>nara__core__Vector473</title>
+<g id="a_node48"><a xlink:href="../classes/cl_ara_core_Vector_53b788.html" xlink:title="Vector" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5689,-73.5C5689,-73.5 5659,-73.5 5659,-73.5 5653,-73.5 5647,-67.5 5647,-61.5 5647,-61.5 5647,-49.5 5647,-49.5 5647,-43.5 5653,-37.5 5659,-37.5 5659,-37.5 5689,-37.5 5689,-37.5 5695,-37.5 5701,-43.5 5701,-49.5 5701,-49.5 5701,-61.5 5701,-61.5 5701,-67.5 5695,-73.5 5689,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5674" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Vector</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Bitset__reference533 -->
+<g id="node49" class="node vis-app">
+<title>nara__core__Bitset__reference533</title>
+<g id="a_node49"><a xlink:href="../classes/cl_ara_core_Bitset_reference_d7719d.html" xlink:title="ссылка" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5788.62,-73.5C5788.62,-73.5 5755.38,-73.5 5755.38,-73.5 5749.38,-73.5 5743.38,-67.5 5743.38,-61.5 5743.38,-61.5 5743.38,-49.5 5743.38,-49.5 5743.38,-43.5 5749.38,-37.5 5755.38,-37.5 5755.38,-37.5 5788.62,-37.5 5788.62,-37.5 5794.62,-37.5 5800.62,-43.5 5800.62,-49.5 5800.62,-49.5 5800.62,-61.5 5800.62,-61.5 5800.62,-67.5 5794.62,-73.5 5788.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5772" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ссылка</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Map__value_compare839 -->
+<g id="node50" class="node vis-app">
+<title>nara__core__Map__value_compare839</title>
+<g id="a_node50"><a xlink:href="../classes/cl_ara_core_Map_value_compare_a09452.html" xlink:title="value_compare" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M5930.25,-73.5C5930.25,-73.5 5855.75,-73.5 5855.75,-73.5 5849.75,-73.5 5843.75,-67.5 5843.75,-61.5 5843.75,-61.5 5843.75,-49.5 5843.75,-49.5 5843.75,-43.5 5849.75,-37.5 5855.75,-37.5 5855.75,-37.5 5930.25,-37.5 5930.25,-37.5 5936.25,-37.5 5942.25,-43.5 5942.25,-49.5 5942.25,-49.5 5942.25,-61.5 5942.25,-61.5 5942.25,-67.5 5936.25,-73.5 5930.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="5893" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">value_compare</text>
+</a>
+</g>
+</g>
+<!-- nstd__hash__ara__core__Monostate__722 -->
+<g id="node51" class="node vis-app">
+<title>nstd__hash__ara__core__Monostate__722</title>
+<g id="a_node51"><a xlink:href="../classes/cl_std_hash_ara_core_Monostate_a73c80.html" xlink:title="хэш&lt; ara::core::Monostate &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M6118.25,-73.5C6118.25,-73.5 5977.75,-73.5 5977.75,-73.5 5971.75,-73.5 5965.75,-67.5 5965.75,-61.5 5965.75,-61.5 5965.75,-49.5 5965.75,-49.5 5965.75,-43.5 5971.75,-37.5 5977.75,-37.5 5977.75,-37.5 6118.25,-37.5 6118.25,-37.5 6124.25,-37.5 6130.25,-43.5 6130.25,-49.5 6130.25,-49.5 6130.25,-61.5 6130.25,-61.5 6130.25,-67.5 6124.25,-73.5 6118.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6048" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6048" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш&lt; ara::core::Monostate &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__Monostate__802 -->
+<g id="node60" class="node">
+<title>next_core__Monostate__802</title>
+<path fill="#efeeea" stroke="#7a7974" d="M6092.75,-145.5C6092.75,-145.5 6003.25,-145.5 6003.25,-145.5 5997.25,-145.5 5991.25,-139.5 5991.25,-133.5 5991.25,-133.5 5991.25,-121.5 5991.25,-121.5 5991.25,-115.5 5997.25,-109.5 6003.25,-109.5 6003.25,-109.5 6092.75,-109.5 6092.75,-109.5 6098.75,-109.5 6104.75,-115.5 6104.75,-121.5 6104.75,-121.5 6104.75,-133.5 6104.75,-133.5 6104.75,-139.5 6098.75,-145.5 6092.75,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6048" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Monostate &gt;</text>
+</g>
+<!-- nstd__hash__ara__core__Monostate__722&#45;&gt;next_core__Monostate__802 -->
+<g id="edge9" class="edge">
+<title>nstd__hash__ara__core__Monostate__722-&gt;next_core__Monostate__802</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6048,-73.8C6048,-81.01 6048,-89.57 6048,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6044.5,-97.58 6048,-107.58 6051.5,-97.58 6044.5,-97.58"></polygon>
+</g>
+<!-- nstd__hash__ara__core__Optional__T__781 -->
+<g id="node52" class="node vis-app">
+<title>nstd__hash__ara__core__Optional__T__781</title>
+<g id="a_node52"><a xlink:href="../classes/cl_std_hash_ara_core_Optional_T_992b73.html" xlink:title="хэш&lt; ara::core::Optional&lt; T &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M6307.25,-73.5C6307.25,-73.5 6160.75,-73.5 6160.75,-73.5 6154.75,-73.5 6148.75,-67.5 6148.75,-61.5 6148.75,-61.5 6148.75,-49.5 6148.75,-49.5 6148.75,-43.5 6154.75,-37.5 6160.75,-37.5 6160.75,-37.5 6307.25,-37.5 6307.25,-37.5 6313.25,-37.5 6319.25,-43.5 6319.25,-49.5 6319.25,-49.5 6319.25,-61.5 6319.25,-61.5 6319.25,-67.5 6313.25,-73.5 6307.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6234" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6234" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш&lt; ara::core::Optional&lt; T &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__Optional__T____961 -->
+<g id="node61" class="node">
+<title>next_core__Optional__T____961</title>
+<path fill="#efeeea" stroke="#7a7974" d="M6286.62,-145.5C6286.62,-145.5 6181.38,-145.5 6181.38,-145.5 6175.38,-145.5 6169.38,-139.5 6169.38,-133.5 6169.38,-133.5 6169.38,-121.5 6169.38,-121.5 6169.38,-115.5 6175.38,-109.5 6181.38,-109.5 6181.38,-109.5 6286.62,-109.5 6286.62,-109.5 6292.62,-109.5 6298.62,-115.5 6298.62,-121.5 6298.62,-121.5 6298.62,-133.5 6298.62,-133.5 6298.62,-139.5 6292.62,-145.5 6286.62,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6234" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Optional&lt; T &gt; &gt;</text>
+</g>
+<!-- nstd__hash__ara__core__Optional__T__781&#45;&gt;next_core__Optional__T____961 -->
+<g id="edge10" class="edge">
+<title>nstd__hash__ara__core__Optional__T__781-&gt;next_core__Optional__T____961</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6234,-73.8C6234,-81.01 6234,-89.57 6234,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6230.5,-97.58 6234,-107.58 6237.5,-97.58 6230.5,-97.58"></polygon>
+</g>
+<!-- nstd__hash__ara__core__String__667 -->
+<g id="node53" class="node vis-app">
+<title>nstd__hash__ara__core__String__667</title>
+<g id="a_node53"><a xlink:href="../classes/cl_std_hash_ara_core_String_71fe0f.html" xlink:title="хэш&lt; ara::core::String &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M6466.25,-73.5C6466.25,-73.5 6349.75,-73.5 6349.75,-73.5 6343.75,-73.5 6337.75,-67.5 6337.75,-61.5 6337.75,-61.5 6337.75,-49.5 6337.75,-49.5 6337.75,-43.5 6343.75,-37.5 6349.75,-37.5 6349.75,-37.5 6466.25,-37.5 6466.25,-37.5 6472.25,-37.5 6478.25,-43.5 6478.25,-49.5 6478.25,-49.5 6478.25,-61.5 6478.25,-61.5 6478.25,-67.5 6472.25,-73.5 6466.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6408" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6408" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш&lt; ara::core::String &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__String___final444 -->
+<g id="node62" class="node">
+<title>next_core__String___final444</title>
+<path fill="#efeeea" stroke="#7a7974" d="M6453.5,-145.5C6453.5,-145.5 6362.5,-145.5 6362.5,-145.5 6356.5,-145.5 6350.5,-139.5 6350.5,-133.5 6350.5,-133.5 6350.5,-121.5 6350.5,-121.5 6350.5,-115.5 6356.5,-109.5 6362.5,-109.5 6362.5,-109.5 6453.5,-109.5 6453.5,-109.5 6459.5,-109.5 6465.5,-115.5 6465.5,-121.5 6465.5,-121.5 6465.5,-133.5 6465.5,-133.5 6465.5,-139.5 6459.5,-145.5 6453.5,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6408" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::String &gt; final</text>
+</g>
+<!-- nstd__hash__ara__core__String__667&#45;&gt;next_core__String___final444 -->
+<g id="edge11" class="edge">
+<title>nstd__hash__ara__core__String__667-&gt;next_core__String___final444</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6408,-73.8C6408,-81.01 6408,-89.57 6408,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6404.5,-97.58 6408,-107.58 6411.5,-97.58 6404.5,-97.58"></polygon>
+</g>
+<!-- nstd__hash__ara__core__StringView__122 -->
+<g id="node54" class="node vis-app">
+<title>nstd__hash__ara__core__StringView__122</title>
+<g id="a_node54"><a xlink:href="../classes/cl_std_hash_ara_core_StringView_129f65.html" xlink:title="хэш&lt; ara::core::StringView &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M6651.38,-73.5C6651.38,-73.5 6508.62,-73.5 6508.62,-73.5 6502.62,-73.5 6496.62,-67.5 6496.62,-61.5 6496.62,-61.5 6496.62,-49.5 6496.62,-49.5 6496.62,-43.5 6502.62,-37.5 6508.62,-37.5 6508.62,-37.5 6651.38,-37.5 6651.38,-37.5 6657.38,-37.5 6663.38,-43.5 6663.38,-49.5 6663.38,-49.5 6663.38,-61.5 6663.38,-61.5 6663.38,-67.5 6657.38,-73.5 6651.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6580" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6580" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш&lt; ara::core::StringView &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__StringView___final857 -->
+<g id="node63" class="node">
+<title>next_core__StringView___final857</title>
+<path fill="#efeeea" stroke="#7a7974" d="M6628.62,-145.5C6628.62,-145.5 6511.38,-145.5 6511.38,-145.5 6505.38,-145.5 6499.38,-139.5 6499.38,-133.5 6499.38,-133.5 6499.38,-121.5 6499.38,-121.5 6499.38,-115.5 6505.38,-109.5 6511.38,-109.5 6511.38,-109.5 6628.62,-109.5 6628.62,-109.5 6634.62,-109.5 6640.62,-115.5 6640.62,-121.5 6640.62,-121.5 6640.62,-133.5 6640.62,-133.5 6640.62,-139.5 6634.62,-145.5 6628.62,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6570" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::StringView &gt; final</text>
+</g>
+<!-- nstd__hash__ara__core__StringView__122&#45;&gt;next_core__StringView___final857 -->
+<g id="edge12" class="edge">
+<title>nstd__hash__ara__core__StringView__122-&gt;next_core__StringView___final857</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6577.53,-73.8C6576.49,-81.09 6575.25,-89.77 6574.08,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6570.65,-97.2 6572.7,-107.6 6577.58,-98.19 6570.65,-97.2"></polygon>
+</g>
+<!-- nstd__hash__ara__core__Variant_545 -->
+<g id="node55" class="node vis-app">
+<title>nstd__hash__ara__core__Variant_545</title>
+<g id="a_node55"><a xlink:href="../classes/cl_std_hash_ara_core_Variant_22cf88.html" xlink:title="хэш&lt; ara::core::Variant&lt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M6812.38,-73.5C6812.38,-73.5 6693.62,-73.5 6693.62,-73.5 6687.62,-73.5 6681.62,-67.5 6681.62,-61.5 6681.62,-61.5 6681.62,-49.5 6681.62,-49.5 6681.62,-43.5 6687.62,-37.5 6693.62,-37.5 6693.62,-37.5 6812.38,-37.5 6812.38,-37.5 6818.38,-37.5 6824.38,-43.5 6824.38,-49.5 6824.38,-49.5 6824.38,-61.5 6824.38,-61.5 6824.38,-67.5 6818.38,-73.5 6812.38,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6753" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6753" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хэш&lt; ara::core::Variant&lt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__Variant__Types__________________978 -->
+<g id="node64" class="node">
+<title>next_core__Variant__Types__________________978</title>
+<path fill="#efeeea" stroke="#7a7974" d="M6835.25,-145.5C6835.25,-145.5 6670.75,-145.5 6670.75,-145.5 6664.75,-145.5 6658.75,-139.5 6658.75,-133.5 6658.75,-133.5 6658.75,-121.5 6658.75,-121.5 6658.75,-115.5 6664.75,-109.5 6670.75,-109.5 6670.75,-109.5 6835.25,-109.5 6835.25,-109.5 6841.25,-109.5 6847.25,-115.5 6847.25,-121.5 6847.25,-121.5 6847.25,-133.5 6847.25,-133.5 6847.25,-139.5 6841.25,-145.5 6835.25,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6753" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Variant&lt; Types...            &gt; &gt;</text>
+</g>
+<!-- nstd__hash__ara__core__Variant_545&#45;&gt;next_core__Variant__Types__________________978 -->
+<g id="edge13" class="edge">
+<title>nstd__hash__ara__core__Variant_545-&gt;next_core__Variant__Types__________________978</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6753,-73.8C6753,-81.01 6753,-89.57 6753,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6749.5,-97.58 6753,-107.58 6756.5,-97.58 6749.5,-97.58"></polygon>
+</g>
+<!-- nstd__hash__ara__core__Vector__T__Allocator____942 -->
+<g id="node56" class="node vis-app">
+<title>nstd__hash__ara__core__Vector__T__Allocator____942</title>
+<g id="a_node56"><a xlink:href="../classes/cl_std_hash_ara_core_Vector_T_Allocator_c98564.html" xlink:title="хеш&lt; ara::core::Vector&lt; T, Allocator &gt; &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M7051.75,-73.5C7051.75,-73.5 6854.25,-73.5 6854.25,-73.5 6848.25,-73.5 6842.25,-67.5 6842.25,-61.5 6842.25,-61.5 6842.25,-49.5 6842.25,-49.5 6842.25,-43.5 6848.25,-37.5 6854.25,-37.5 6854.25,-37.5 7051.75,-37.5 7051.75,-37.5 7057.75,-37.5 7063.75,-43.5 7063.75,-49.5 7063.75,-49.5 7063.75,-61.5 7063.75,-61.5 7063.75,-67.5 7057.75,-73.5 7051.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6953" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="6953" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">хеш&lt; ara::core::Vector&lt; T, Allocator &gt; &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__Vector__T__Allocator_____final470 -->
+<g id="node65" class="node">
+<title>next_core__Vector__T__Allocator_____final470</title>
+<path fill="#efeeea" stroke="#7a7974" d="M7048.62,-145.5C7048.62,-145.5 6877.38,-145.5 6877.38,-145.5 6871.38,-145.5 6865.38,-139.5 6865.38,-133.5 6865.38,-133.5 6865.38,-121.5 6865.38,-121.5 6865.38,-115.5 6871.38,-109.5 6877.38,-109.5 6877.38,-109.5 7048.62,-109.5 7048.62,-109.5 7054.62,-109.5 7060.62,-115.5 7060.62,-121.5 7060.62,-121.5 7060.62,-133.5 7060.62,-133.5 7060.62,-139.5 7054.62,-145.5 7048.62,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="6963" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Vector&lt; T, Allocator &gt; &gt; final</text>
+</g>
+<!-- nstd__hash__ara__core__Vector__T__Allocator____942&#45;&gt;next_core__Vector__T__Allocator_____final470 -->
+<g id="edge14" class="edge">
+<title>nstd__hash__ara__core__Vector__T__Allocator____942-&gt;next_core__Vector__T__Allocator_____final470</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M6955.47,-73.8C6956.51,-81.09 6957.75,-89.77 6958.92,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="6955.42,-98.19 6960.3,-107.6 6962.35,-97.2 6955.42,-98.19"></polygon>
+</g>
+<!-- nstd__tuple_element__I__ara__core__Array__T__N____988 -->
+<g id="node57" class="node vis-app">
+<title>nstd__tuple_element__I__ara__core__Array__T__N____988</title>
+<g id="a_node57"><a xlink:href="../classes/cl_std_tuple_element_I_ara_core_Array_T_N_e90135.html" xlink:title="tuple_element&lt; I, ara::core::Array&lt; T, N &gt; &gt;" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M7312.25,-73.5C7312.25,-73.5 7093.75,-73.5 7093.75,-73.5 7087.75,-73.5 7081.75,-67.5 7081.75,-61.5 7081.75,-61.5 7081.75,-49.5 7081.75,-49.5 7081.75,-43.5 7087.75,-37.5 7093.75,-37.5 7093.75,-37.5 7312.25,-37.5 7312.25,-37.5 7318.25,-37.5 7324.25,-43.5 7324.25,-49.5 7324.25,-49.5 7324.25,-61.5 7324.25,-61.5 7324.25,-67.5 7318.25,-73.5 7312.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="7203" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="7203" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">tuple_element&lt; I, ara::core::Array&lt; T, N &gt; &gt;</text>
+</a>
+</g>
+</g>
+<!-- next_core__Array__T__N____306 -->
+<g id="node66" class="node">
+<title>next_core__Array__T__N____306</title>
+<path fill="#efeeea" stroke="#7a7974" d="M7241.88,-145.5C7241.88,-145.5 7138.12,-145.5 7138.12,-145.5 7132.12,-145.5 7126.12,-139.5 7126.12,-133.5 7126.12,-133.5 7126.12,-121.5 7126.12,-121.5 7126.12,-115.5 7132.12,-109.5 7138.12,-109.5 7138.12,-109.5 7241.88,-109.5 7241.88,-109.5 7247.88,-109.5 7253.88,-115.5 7253.88,-121.5 7253.88,-121.5 7253.88,-133.5 7253.88,-133.5 7253.88,-139.5 7247.88,-145.5 7241.88,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="7190" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Array&lt; T, N &gt; &gt;</text>
+</g>
+<!-- nstd__tuple_element__I__ara__core__Array__T__N____988&#45;&gt;next_core__Array__T__N____306 -->
+<g id="edge15" class="edge">
+<title>nstd__tuple_element__I__ara__core__Array__T__N____988-&gt;next_core__Array__T__N____306</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M7199.79,-73.8C7198.43,-81.09 7196.82,-89.77 7195.3,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="7191.89,-97.14 7193.51,-107.61 7198.78,-98.42 7191.89,-97.14"></polygon>
+</g>
+<!-- nstd__tuple_size__ara__core__Array__T_805 -->
+<g id="node58" class="node vis-app">
+<title>nstd__tuple_size__ara__core__Array__T_805</title>
+<g id="a_node58"><a xlink:href="../classes/cl_std_tuple_size_ara_core_Array_T_c75763.html" xlink:title="tuple_size&lt; ara::core::Array&lt; T," class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M7511.5,-73.5C7511.5,-73.5 7354.5,-73.5 7354.5,-73.5 7348.5,-73.5 7342.5,-67.5 7342.5,-61.5 7342.5,-61.5 7342.5,-49.5 7342.5,-49.5 7342.5,-43.5 7348.5,-37.5 7354.5,-37.5 7354.5,-37.5 7511.5,-37.5 7511.5,-37.5 7517.5,-37.5 7523.5,-43.5 7523.5,-49.5 7523.5,-49.5 7523.5,-61.5 7523.5,-61.5 7523.5,-67.5 7517.5,-73.5 7511.5,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="7433" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«структура»</text>
+<text xml:space="preserve" text-anchor="middle" x="7433" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">tuple_size&lt; ara::core::Array&lt; T,</text>
+</a>
+</g>
+</g>
+<!-- next_core__Array__T__N________________________integral__constant__size_548 -->
+<g id="node67" class="node">
+<title>next_core__Array__T__N________________________integral__constant__size_548</title>
+<path fill="#efeeea" stroke="#7a7974" d="M7608.12,-145.5C7608.12,-145.5 7283.88,-145.5 7283.88,-145.5 7277.88,-145.5 7271.88,-139.5 7271.88,-133.5 7271.88,-133.5 7271.88,-121.5 7271.88,-121.5 7271.88,-115.5 7277.88,-109.5 7283.88,-109.5 7283.88,-109.5 7608.12,-109.5 7608.12,-109.5 7614.12,-109.5 7620.12,-115.5 7620.12,-121.5 7620.12,-121.5 7620.12,-133.5 7620.12,-133.5 7620.12,-139.5 7614.12,-145.5 7608.12,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="7446" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">:core::Array&lt; T, N &gt; &gt; :                  integral_ constant&lt; size_t, N &gt;</text>
+</g>
+<!-- nstd__tuple_size__ara__core__Array__T_805&#45;&gt;next_core__Array__T__N________________________integral__constant__size_548 -->
+<g id="edge16" class="edge">
+<title>nstd__tuple_size__ara__core__Array__T_805-&gt;next_core__Array__T__N________________________integral__constant__size_548</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M7436.21,-73.8C7437.57,-81.09 7439.18,-89.77 7440.7,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="7437.22,-98.42 7442.49,-107.61 7444.11,-97.14 7437.22,-98.42"></polygon>
+</g>
+</g>
+</svg>
+</div></main>
+<footer>Автоматически извлечено из официальных PDF-документов спецификации AUTOSAR R25-11
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Не является официальной публикацией AUTOSAR; описательные тексты приведены в оригинале (на английском).</footer></body></html>

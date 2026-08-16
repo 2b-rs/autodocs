@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>namespace ara::com — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API 参考</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../namespaces/ns_com_ara_com_4a3210.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/namespaces/ns_com_ara_com_4a3210.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/namespaces/ns_com_ara_com_4a3210.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/namespaces/ns_com_ara_com_4a3210.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/namespaces/ns_com_ara_com_4a3210.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/namespaces/ns_com_ara_com_4a3210.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/namespaces/ns_com_ara_com_4a3210.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/namespaces/ns_com_ara_com_4a3210.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/namespaces/ns_com_ara_com_4a3210.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a class="cur" href="../../zh/namespaces/ns_com_ara_com_4a3210.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/namespaces/ns_com_ara_com_4a3210.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">首页</a> › <a class="vis-app" href="../modules/com.html">ara::com</a> › ara::com</nav>
+<main><h1><span class="kind">命名空间</span> ara::com</h1>
+<details class="fold"><summary><h2 class="sect">用户指南 <span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h2></summary><div class="ai"><p class="ai-note">自动生成的描述、内容源自引用的AUTOSAR-R25-11文档（SWS规范和随附的标准文档）——不是正式的AUTOSAR文本。标记为解释的陈述是从来源得出的结论。</p><h4>Communication Management的公共语言</h4><p><code>ara::com</code>包含从Service Interfaces生成的Proxy和Skeleton-APIs所基于的通用类型、错误和Callback签名。 SWS将API分配给语言绑定和通信/网络绑定；底层中间件的细节尚未标准化。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.1.1">SWS CM §7.1.1 “Architectural concepts”</a>和<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 “Proxy/Skeleton Architecture”</a>给出了自上而下的视图。</p><h4>四种互动形式</h4><p>事件和触发器通过Handler或轮询订阅和接收；方法可以选择返回Future；字段将 <code>Get</code>/<code>Set</code> 与更新通知连接起来。枚举<code>MethodCallProcessingMode</code>控制服务器端的轮询、并行或顺序激活。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.6">SWS CM §7.5.6 “Processing of service methods”</a>和<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.20">SWS CM §7.5.20 “Update notification events for fields”</a>指定交互语义。</p><h4>可用性和资源</h4><p><code>FindServiceHandler</code> 报告可用实例的变化。 <code>SubscriptionState</code> 区分注销、待建立和已建立的订阅。 <code>SampleAllocateePtr</code> 形成要发送的事件数据的镜像、服务器端零拷贝所有权。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.10">SWS CM §7.5.10 “Find service”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.13">SWS CM §7.5.13 “Service event subscription”</a> 和 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.5">SWS CM §7.5.5 “Send event”</a> 是其中的关键部分。</p><h4>作为合同一部分的错误</h4><p><code>ComErrc</code>和相关的域传输可恢复通信错误。 Handler 不得注册为空； SWS 将这种移交称为违规。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10417">[SWS_CM_10417]</a>和<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.7">EXP ARAComAPI §4.7 “Error Handling”</a>明确区分了错误路径和违规。</p><p>该命名空间的交互和状态模型在模块指南<a href="../modules/com.html">ara::com — Communication Management</a>的“实例引用和绑定抽象”部分中以图表形式记录：</p>
+<ul>
+<li><a href="../modules/com.html#diag-service-rollen">协作图“Service Interface、Proxy、Skeleton 与绑定”</a></li>
+<li><a href="../modules/com.html#diag-subscribe-sequenz">顺序图“异步 Subscribe 与样本提取”</a></li>
+<li><a href="../modules/com.html#diag-field-sequenz">顺序图“Field：读取、写入与更新通知”</a></li>
+<li><a href="../modules/com.html#diag-skeleton-modi">状态图“Skeleton 的处理模式”</a></li>
+<li><a href="../modules/com.html#diag-subscription-zustaende">状态图“Proxy 端的订阅状态”</a></li>
+</ul><h4>进一步详细证据</h4><p>以下在先前说明中使用的规范引用将予以保留，以供深入核查：<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.9.3">EXP SWArchitecture §9.3 “Communication”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=section.4.2">TPS ManifestSpecification §4.2 “Service Interface”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=section.13.15">EXP SWArchitecture §13.15 “Service-Oriented Communication”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.2">EXP ARAComAPI §4.2 “Means of Communication”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.3">EXP ARAComAPI §4.3 “ara::com Event and Trigger based communication”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.3.7">EXP ARAComAPI §5.3.7 “Fields”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.7">EXP ARAComAPI §4.7 “Error Handling”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00224">[RS_CM_00224]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.1">EXP ARAComAPI §4.1 “Proxy/Skeleton Architecture”</a>。</p></div> </details>
+<h3>自由函数 — 概述</h3>
+<ul class="mlist"><li><code class="sig">constexpr const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp; <a class="fn" href="#SWS_CM_11334">GetComErrorDomain</a> () noexcept;</code> <span class="dim">Returns a reference to the ara::com::ComErrorDomain object</span></li><li><code class="sig">constexpr <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a> <a class="fn" href="#SWS_CM_11335">MakeErrorCode</a> (<a class="vis-app" href="ns_com_ara_com_4a3210.html#SWS_CM_10432">ara::com::ComErrc</a> code, <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00123">ara::core::ErrorDomain::SupportDataType</a> data) noexcept;</code> <span class="dim">Creates an instance of ara::core::ErrorCode</span></li></ul>
+<h2 class="sect">类与结构体</h2><ul class="mlist boxes"><li><a class="dbox  vis-app" href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html">ComErrorDomain</a> <span class="dim">Defines a class representing the Communication error domain.</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_ComException_85bfb4.html">ComException</a> <span class="dim">Defines a class for exceptions to be thrown by the API.</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_FindServiceHandle_c56b5d.html">FindServiceHandle</a> <span class="dim">The exact definition of ara::com::FindServiceHandle is Communication Management implementation specific</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_InstanceIdentifier_662eea.html">InstanceIdentifier</a> <span class="dim">Unique identifier of a specific AdaptivePlatformServiceInstance, to distinguish different instances of exactly the same service</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_SamplePtr_f95130.html">SamplePtr</a> <span class="dim">Emulates a std::unique_ptr to an event sample.
+
+The ara::com::SamplePtr behaves as a std::unique_ptr as long as the event/ field is subscrib</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_ServiceIdentifierType_7d13a0.html">ServiceIdentifierType</a> <span class="dim">Specifies a Service Identifier The exact type may be overridden by the Communication Management software provider</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_com_ServiceVersionType_c1349a.html">ServiceVersionType</a> <span class="dim">Specifies a Service Version</span></li></ul>
+<h2 class="sect">命名空间的 UML 类图</h2><p class="dim">圆角框架 = 命名空间或类范围；空心三角形箭头=继承（指向基类）；灰色框=非命名空间或外部基类。单击可打开相应的类或 cppreference 页面。</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="913pt" height="154pt" viewbox="0.00 0.00 913.00 154.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 149.5)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_ns</title>
+<path fill="none" stroke="#d4d1ca" d="M31.38,-8C31.38,-8 885.38,-8 885.38,-8 891.38,-8 897.38,-14 897.38,-20 897.38,-20 897.38,-69.5 897.38,-69.5 897.38,-75.5 891.38,-81.5 885.38,-81.5 885.38,-81.5 31.37,-81.5 31.37,-81.5 25.37,-81.5 19.38,-75.5 19.38,-69.5 19.38,-69.5 19.38,-20 19.38,-20 19.38,-14 25.38,-8 31.38,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="458.38" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::com</text>
+</g>
+<!-- nara__com__ComErrorDomain -->
+<g id="node1" class="node vis-app">
+<title>nara__com__ComErrorDomain</title>
+<g id="a_node1"><a xlink:href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html" xlink:title="ara::com::ComErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M125.25,-73.5C125.25,-73.5 39.5,-73.5 39.5,-73.5 33.5,-73.5 27.5,-67.5 27.5,-61.5 27.5,-61.5 27.5,-49.5 27.5,-49.5 27.5,-43.5 33.5,-37.5 39.5,-37.5 39.5,-37.5 125.25,-37.5 125.25,-37.5 131.25,-37.5 137.25,-43.5 137.25,-49.5 137.25,-49.5 137.25,-61.5 137.25,-61.5 137.25,-67.5 131.25,-73.5 125.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="82.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- next_ara__core__ErrorDomain -->
+<g id="node8" class="node vis-app">
+<title>next_ara__core__ErrorDomain</title>
+<g id="a_node8"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M124.75,-145.5C124.75,-145.5 12,-145.5 12,-145.5 6,-145.5 0,-139.5 0,-133.5 0,-133.5 0,-121.5 0,-121.5 0,-115.5 6,-109.5 12,-109.5 12,-109.5 124.75,-109.5 124.75,-109.5 130.75,-109.5 136.75,-115.5 136.75,-121.5 136.75,-121.5 136.75,-133.5 136.75,-133.5 136.75,-139.5 130.75,-145.5 124.75,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="68.38" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ComErrorDomain&#45;&gt;next_ara__core__ErrorDomain -->
+<g id="edge1" class="edge">
+<title>nara__com__ComErrorDomain-&gt;next_ara__core__ErrorDomain</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M78.91,-73.8C77.46,-81.09 75.72,-89.77 74.08,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="70.68,-97.12 72.15,-107.61 77.55,-98.5 70.68,-97.12"></polygon>
+</g>
+<!-- nara__com__ComException -->
+<g id="node2" class="node vis-app">
+<title>nara__com__ComException</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_com_ComException_85bfb4.html" xlink:title="ara::com::ComException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M237.75,-73.5C237.75,-73.5 167,-73.5 167,-73.5 161,-73.5 155,-67.5 155,-61.5 155,-61.5 155,-49.5 155,-49.5 155,-43.5 161,-37.5 167,-37.5 167,-37.5 237.75,-37.5 237.75,-37.5 243.75,-37.5 249.75,-43.5 249.75,-49.5 249.75,-49.5 249.75,-61.5 249.75,-61.5 249.75,-67.5 243.75,-73.5 237.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="202.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ComException</text>
+</a>
+</g>
+</g>
+<!-- next_ara__core__Exception -->
+<g id="node9" class="node vis-app">
+<title>next_ara__core__Exception</title>
+<g id="a_node9"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M264.25,-145.5C264.25,-145.5 166.5,-145.5 166.5,-145.5 160.5,-145.5 154.5,-139.5 154.5,-133.5 154.5,-133.5 154.5,-121.5 154.5,-121.5 154.5,-115.5 160.5,-109.5 166.5,-109.5 166.5,-109.5 264.25,-109.5 264.25,-109.5 270.25,-109.5 276.25,-115.5 276.25,-121.5 276.25,-121.5 276.25,-133.5 276.25,-133.5 276.25,-139.5 270.25,-145.5 264.25,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="215.38" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ComException&#45;&gt;next_ara__core__Exception -->
+<g id="edge2" class="edge">
+<title>nara__com__ComException-&gt;next_ara__core__Exception</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M205.59,-73.8C206.94,-81.09 208.55,-89.77 210.08,-97.96"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="206.6,-98.42 211.87,-107.61 213.48,-97.14 206.6,-98.42"></polygon>
+</g>
+<!-- nara__com__FindServiceHandle -->
+<g id="node3" class="node vis-app">
+<title>nara__com__FindServiceHandle</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_com_FindServiceHandle_c56b5d.html" xlink:title="ara::com::FindServiceHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M375.12,-73.5C375.12,-73.5 279.62,-73.5 279.62,-73.5 273.62,-73.5 267.62,-67.5 267.62,-61.5 267.62,-61.5 267.62,-49.5 267.62,-49.5 267.62,-43.5 273.62,-37.5 279.62,-37.5 279.62,-37.5 375.12,-37.5 375.12,-37.5 381.12,-37.5 387.12,-43.5 387.12,-49.5 387.12,-49.5 387.12,-61.5 387.12,-61.5 387.12,-67.5 381.12,-73.5 375.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="327.38" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="327.38" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FindServiceHandle</text>
+</a>
+</g>
+</g>
+<!-- nara__com__InstanceIdentifier -->
+<g id="node4" class="node vis-app">
+<title>nara__com__InstanceIdentifier</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_com_InstanceIdentifier_662eea.html" xlink:title="ara::com::InstanceIdentifier" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M499.75,-73.5C499.75,-73.5 417,-73.5 417,-73.5 411,-73.5 405,-67.5 405,-61.5 405,-61.5 405,-49.5 405,-49.5 405,-43.5 411,-37.5 417,-37.5 417,-37.5 499.75,-37.5 499.75,-37.5 505.75,-37.5 511.75,-43.5 511.75,-49.5 511.75,-49.5 511.75,-61.5 511.75,-61.5 511.75,-67.5 505.75,-73.5 499.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="458.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">InstanceIdentifier</text>
+</a>
+</g>
+</g>
+<!-- nara__com__SamplePtr -->
+<g id="node5" class="node vis-app">
+<title>nara__com__SamplePtr</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_com_SamplePtr_f95130.html" xlink:title="ara::com::SamplePtr" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M590.5,-73.5C590.5,-73.5 542.25,-73.5 542.25,-73.5 536.25,-73.5 530.25,-67.5 530.25,-61.5 530.25,-61.5 530.25,-49.5 530.25,-49.5 530.25,-43.5 536.25,-37.5 542.25,-37.5 542.25,-37.5 590.5,-37.5 590.5,-37.5 596.5,-37.5 602.5,-43.5 602.5,-49.5 602.5,-49.5 602.5,-61.5 602.5,-61.5 602.5,-67.5 596.5,-73.5 590.5,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="566.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SamplePtr</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ServiceIdentifierType -->
+<g id="node6" class="node vis-app">
+<title>nara__com__ServiceIdentifierType</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_com_ServiceIdentifierType_7d13a0.html" xlink:title="ara::com::ServiceIdentifierType" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M736.62,-73.5C736.62,-73.5 632.12,-73.5 632.12,-73.5 626.12,-73.5 620.12,-67.5 620.12,-61.5 620.12,-61.5 620.12,-49.5 620.12,-49.5 620.12,-43.5 626.12,-37.5 632.12,-37.5 632.12,-37.5 736.62,-37.5 736.62,-37.5 742.62,-37.5 748.62,-43.5 748.62,-49.5 748.62,-49.5 748.62,-61.5 748.62,-61.5 748.62,-67.5 742.62,-73.5 736.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="684.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ServiceIdentifierType</text>
+</a>
+</g>
+</g>
+<!-- nara__com__ServiceVersionType -->
+<g id="node7" class="node vis-app">
+<title>nara__com__ServiceVersionType</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_com_ServiceVersionType_c1349a.html" xlink:title="ara::com::ServiceVersionType" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M877.62,-73.5C877.62,-73.5 779.12,-73.5 779.12,-73.5 773.12,-73.5 767.12,-67.5 767.12,-61.5 767.12,-61.5 767.12,-49.5 767.12,-49.5 767.12,-43.5 773.12,-37.5 779.12,-37.5 779.12,-37.5 877.62,-37.5 877.62,-37.5 883.62,-37.5 889.62,-43.5 889.62,-49.5 889.62,-49.5 889.62,-61.5 889.62,-61.5 889.62,-67.5 883.62,-73.5 877.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="828.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ServiceVersionType</text>
+</a>
+</g>
+</g>
+</g>
+</svg></div>
+
+<h2 class="sect">枚举</h2><article class="rec" id="SWS_CM_10432">
+<h3 class="recname"><span class="kind">枚举</span> ComErrc <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10432" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_10432]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00130" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00130</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00122" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00122</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00127" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00127</a></span></h3>
+<pre class="syntax">enum class ComErrc :         <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00122">ara::core::ErrorDomain::CodeType</a> {...};</pre>
+<div class="desc"><p>Defines the error codes for the <a class="vis-app" href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html">ara::com::ComErrorDomain</a></p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/com_error_domain.h"</td></tr><tr><th>转发-Header</th><td class="mono">#include "ara/com/com_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">ComErrc</td></tr><tr><th>基本型</th><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00122">ara::core::ErrorDomain::CodeType</a></td></tr></table>
+<h4>Werte</h4>
+<table class="params"><tr><th>枚举器</th><th>Beschreibung</th></tr><tr><td class="mono">kServiceNotAvailable</td><td>=1 Service is not available after being previously offered via Offer</td></tr><tr><td class="mono">Service()</td><td></td></tr><tr><td class="mono">kMaxSamplesExceeded</td><td>=2 Application holds more <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com::SamplePtrs</a> than commited in Subscribe() Samples were possibly skipped.</td></tr><tr><td class="mono">kCommunicationFailure</td><td>=3 The network binding reported a recoverable communications error or a secure communication failure</td></tr><tr><td class="mono">kFieldValueNotInitialized</td><td>=6 Field value has yet not been initialized via Update() (see <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00128" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00128]</a></td></tr><tr><td class="mono">kFieldSetHandlerNotSet</td><td>=7 Field SetHandler has not been registered via RegisterSet Handler()</td></tr><tr><td class="mono">kServiceNotOffered</td><td>= 11 Service has not yet been offered via OfferService()</td></tr><tr><td class="mono">kInstanceIDNotResolvable</td><td>= 15 The <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> is valid but could not be resolved/mapped to an existing <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a>:: InstanceIdentifier</td></tr><tr><td class="mono">kMaxSampleCountNotRealizable</td><td>= 16 Provided maxSampleCount for event re-subscription does not match the maxSampleCount for the current subscription</td></tr><tr><td class="mono">kUnknownApplicationError</td><td>= 22 A remote service returned an unconfigured application error.</td></tr><tr><td class="mono">kMinimumSendIntervalViolationError</td><td>= 23 Minimum Send Interval violation, because a transmission request for a service instance element (event, field or method call) was issued faster than allowed, i.e., the configured minimum send interval ServiceInterfaceDeploymentElement. minimumSendInterval for the service instance element has not yet expired.</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>区分可处理的通信错误</h5><p><code>ComErrc</code> 标识 ara::com 操作可能在其 <code>Result</code> 或 <code>Future</code> 中返回的标准化错误。接口规则的示例包括未达到的最小发送间隔或提供时未初始化的字段。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00138">[SWS_CM_00138]</a> 和 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00128">[SWS_CM_00128]</a> 说明了两个原因。</p><h5>检查域名</h5><p>除了数值之外，还要评估ErrorDomain。 E2E和FVM错误使用自己的域；因此，没有域的相等数值是不够的。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.7">EXP ARAComAPI §4.7 “Error Handling”</a> 描述模型。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=section.4.7">EXP ARAComAPI §4.7 “Error Handling”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_10432", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_10432", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_10432</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00301">
+<h3 class="recname"><span class="kind">枚举</span> MethodCallProcessingMode <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00301" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00301]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00211" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00211</a></span></h3>
+<pre class="syntax">enum class MethodCallProcessingMode :               <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a> {...};</pre>
+<div class="desc"><p>Processing modes for the service implementation.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>转发-Header</th><td class="mono">#include "ara/com/com_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">MethodCallProcessingMode</td></tr><tr><th>基本型</th><td class="mono">std::uint8_t</td></tr></table>
+<h4>Werte</h4>
+<table class="params"><tr><th>枚举器</th><th>Beschreibung</th></tr><tr><td class="mono">kPoll</td><td>Polling mode</td></tr><tr><td class="mono">kEvent</td><td>Event driven and concurrent mode</td></tr><tr><td class="mono">kEventSingleThread</td><td>Event driven, sequential mode</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>选择Skeleton的处理模型</h5><p><code>MethodCallProcessingMode</code> 是在该实例的所有方法的骨架创建期间设置的。 <code>kPoll</code> 让实现显式地选择下一个调用； <code>kEvent</code> 并发处理调用，<code>kEventSingleThread</code> 在服务器端将它们序列化。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.6">SWS CM §7.5.6 “Processing of service methods”</a>指定了三种型号。</p><h5>重要E2E案例</h5><p>对于具有E2E受保护方法的服务，不支持<code>kEvent</code>；骨架生成报告错误模式为Violation。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10467">[SWS_CM_10467]</a> 记录了该限制。</p><div class="diagram" id="diag-sws-cm-00301-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 354.00 206.00" style="max-width:472px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 202.27)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="173.06" y="-181.92" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">骨架方法的处理选择</text>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="184.88" cy="-165.76" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- m -->
+<g id="node2" class="node vis-app">
+<title>m</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="选择方法调用处理模式" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M237.12,-123C237.12,-123 132.62,-123 132.62,-123 126.63,-123 120.62,-117 120.62,-111 120.62,-111 120.62,-99 120.62,-99 120.62,-93 126.62,-87 132.62,-87 132.62,-87 237.12,-87 237.12,-87 243.12,-87 249.12,-93 249.12,-99 249.12,-99 249.12,-111 249.12,-111 249.12,-117 243.12,-123 237.12,-123"></path>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-102.42" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">选择方法调用处理模式</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;m -->
+<g id="edge1" class="edge">
+<title>i-&gt;m</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M184.88,-159.75C184.88,-154.11 184.88,-144.47 184.88,-134.9"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="188.38,-135.2 184.88,-125.2 181.38,-135.2 188.38,-135.2"></polygon>
+</g>
+<!-- p -->
+<g id="node3" class="node">
+<title>p</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M127.75,-36C127.75,-36 12,-36 12,-36 6,-36 0,-30 0,-24 0,-24 0,-12 0,-12 0,-6 6,0 12,0 12,0 127.75,0 127.75,0 133.75,0 139.75,-6 139.75,-12 139.75,-12 139.75,-24 139.75,-24 139.75,-30 133.75,-36 127.75,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="69.88" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kPoll</text>
+<text xml:space="preserve" text-anchor="middle" x="69.88" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ProcessNextMethodCall()</text>
+</g>
+<!-- m&#45;&gt;p -->
+<g id="edge2" class="edge">
+<title>m-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M161.33,-86.59C144.43,-74.1 121.43,-57.11 102.73,-43.28"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="104.85,-40.5 94.73,-37.37 100.69,-46.13 104.85,-40.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="144.01" y="-59.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">轮询</text>
+</g>
+<!-- e -->
+<g id="node4" class="node">
+<title>e</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M199.88,-36C199.88,-36 169.88,-36 169.88,-36 163.88,-36 157.88,-30 157.88,-24 157.88,-24 157.88,-12 157.88,-12 157.88,-6 163.88,0 169.88,0 169.88,0 199.88,0 199.88,0 205.88,0 211.88,-6 211.88,-12 211.88,-12 211.88,-24 211.88,-24 211.88,-30 205.88,-36 199.88,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-21.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kEvent </text>
+<text xml:space="preserve" text-anchor="middle" x="184.88" y="-9.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"> 并行</text>
+</g>
+<!-- m&#45;&gt;e -->
+<g id="edge3" class="edge">
+<title>m-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M184.88,-86.8C184.88,-75.7 184.88,-60.97 184.88,-48.08"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="188.38,-48.13 184.88,-38.13 181.38,-48.13 188.38,-48.13"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="204.38" y="-59.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">事件驱动</text>
+</g>
+<!-- s -->
+<g id="node5" class="node">
+<title>s</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M334.12,-36C334.12,-36 241.62,-36 241.62,-36 235.62,-36 229.62,-30 229.62,-24 229.62,-24 229.62,-12 229.62,-12 229.62,-6 235.62,0 241.62,0 241.62,0 334.12,0 334.12,0 340.12,0 346.12,-6 346.12,-12 346.12,-12 346.12,-24 346.12,-24 346.12,-30 340.12,-36 334.12,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="287.88" y="-21.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kEventSingleThread </text>
+<text xml:space="preserve" text-anchor="middle" x="287.88" y="-9.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f"> 顺序</text>
+</g>
+<!-- m&#45;&gt;s -->
+<g id="edge4" class="edge">
+<title>m-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M206.35,-86.6C213.24,-81 220.89,-74.75 227.88,-69 237.79,-60.83 248.58,-51.87 258.25,-43.81"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="260.39,-46.58 265.82,-37.48 255.9,-41.2 260.39,-46.58"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="283.4" y="-59.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">事件驱动、序列化</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">状态图：为骨架选择的模式决定了应用程序是否获取方法或通信管理是否并行或顺序激活它们。来源：<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.6">SWS CM §7.5.6 “Processing of service methods”</a>。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.5">EXP ARAComAPI §5.4.5 “Polling and event-driven processing modes”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00301", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00301", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00301</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_01071">
+<h3 class="recname"><span class="kind">枚举</span> ServiceState <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_01071" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_01071]</a></span></h3>
+<pre class="syntax">enum class ServiceState :            <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a> {...};</pre>
+<div class="desc"><p>The state of the service from GetServiceState()</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>转发-Header</th><td class="mono">#include "ara/com/com_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">ServiceState</td></tr><tr><th>基本型</th><td class="mono">std::uint8_t</td></tr></table>
+<h4>Werte</h4>
+<table class="params"><tr><th>枚举器</th><th>Beschreibung</th></tr><tr><td class="mono">kNotAvailable</td><td>=0 Service is not available</td></tr><tr><td class="mono">kAvailable</td><td>=1 Service is available</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_01071", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_01071", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_01071</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00310">
+<h3 class="recname"><span class="kind">枚举</span> SubscriptionState <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00310" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00310]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00103" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00103</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00104" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00104</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00106" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00106</a></span></h3>
+<pre class="syntax">enum class SubscriptionState :              <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a> {...};</pre>
+<div class="desc"><p>The subscription state of an event.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>转发-Header</th><td class="mono">#include "ara/com/com_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">SubscriptionState</td></tr><tr><th>基本型</th><td class="mono">std::uint8_t</td></tr></table>
+<h4>Werte</h4>
+<table class="params"><tr><th>枚举器</th><th>Beschreibung</th></tr><tr><td class="mono">kSubscribed</td><td>Subscription is active</td></tr><tr><td class="mono">kNotSubscribed</td><td>Subscription is not active</td></tr><tr><td class="mono">kSubscriptionPending</td><td>Subscription is pending</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>切勿仅根据返回值进行订阅</h5><p><code>SubscriptionState</code>代表代理端的异步进度。 <code>Subscribe()</code>之后，仅Handler中或通过查询确认<code>kSubscribed</code>； <code>kSubscriptionPending</code> 代表即使先前建立了订阅，服务也暂时不可用。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12006">[SWS_CM_12006]</a>和<a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00313">[SWS_CM_00313]</a>是基本规则。</p><h5>以不同的方式读取服务器端</h5><p>在骨架页面，<code>kSubscribed</code>表示至少有1个活跃订阅；那里没有使用<code>kSubscriptionPending</code>。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12015">[SWS_CM_12015]</a>描述了不同的观点。</p><div class="diagram" id="diag-sws-cm-00310-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 526.00 95.00" style="max-width:701px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 90.95)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="259.01" y="-70.6" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">代理端的订阅状态</text>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18.2" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- n -->
+<g id="node2" class="node vis-app">
+<title>n</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kNotSubscribed" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M129.02,-36.2C129.02,-36.2 60.52,-36.2 60.52,-36.2 54.52,-36.2 48.52,-30.2 48.52,-24.2 48.52,-24.2 48.52,-12.2 48.52,-12.2 48.52,-6.2 54.52,-0.2 60.52,-0.2 60.52,-0.2 129.02,-0.2 129.02,-0.2 135.02,-0.2 141.02,-6.2 141.02,-12.2 141.02,-12.2 141.02,-24.2 141.02,-24.2 141.02,-30.2 135.02,-36.2 129.02,-36.2"></path>
+<text xml:space="preserve" text-anchor="middle" x="94.77" y="-13.75" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kNotSubscribed</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;n -->
+<g id="edge1" class="edge">
+<title>i-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.94,-18.2C17.37,-18.2 26.52,-18.2 36.78,-18.2"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.57,-21.7 46.57,-18.2 36.57,-14.7 36.57,-21.7"></polygon>
+</g>
+<!-- p -->
+<g id="node3" class="node vis-app">
+<title>p</title>
+<g id="a_node3"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kSubscriptionPending" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M346.02,-60.2C346.02,-60.2 249.77,-60.2 249.77,-60.2 243.77,-60.2 237.77,-54.2 237.77,-48.2 237.77,-48.2 237.77,-36.2 237.77,-36.2 237.77,-30.2 243.77,-24.2 249.77,-24.2 249.77,-24.2 346.02,-24.2 346.02,-24.2 352.02,-24.2 358.02,-30.2 358.02,-36.2 358.02,-36.2 358.02,-48.2 358.02,-48.2 358.02,-54.2 352.02,-60.2 346.02,-60.2"></path>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-37.75" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscriptionPending</text>
+</a>
+</g>
+</g>
+<!-- n&#45;&gt;p -->
+<g id="edge2" class="edge">
+<title>n-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M141.28,-27.41C147.23,-28.44 153.26,-29.41 159.02,-30.2 180.71,-33.2 204.43,-35.58 225.98,-37.41"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="225.46,-40.88 235.71,-38.2 226.03,-33.9 225.46,-40.88"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-38.59" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Subscribe()</text>
+</g>
+<!-- p&#45;&gt;n -->
+<g id="edge3" class="edge">
+<title>p-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M248.1,-23.67C238.82,-20.88 229.09,-18.44 219.77,-16.95 193.11,-12.7 186.02,-16.69 159.02,-16.95 156.97,-16.97 154.88,-17 152.77,-17.03"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.98,-13.52 143.04,-17.17 153.09,-20.52 152.98,-13.52"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="189.39" y="-18.7" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- s -->
+<g id="node4" class="node vis-app">
+<title>s</title>
+<g id="a_node4"><a xlink:href="../namespaces/ns_com_ara_com_4a3210.html" xlink:title="kSubscribed" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M506.02,-36.2C506.02,-36.2 454.77,-36.2 454.77,-36.2 448.77,-36.2 442.77,-30.2 442.77,-24.2 442.77,-24.2 442.77,-12.2 442.77,-12.2 442.77,-6.2 448.77,-0.2 454.77,-0.2 454.77,-0.2 506.02,-0.2 506.02,-0.2 512.02,-0.2 518.02,-6.2 518.02,-12.2 518.02,-12.2 518.02,-24.2 518.02,-24.2 518.02,-30.2 512.02,-36.2 506.02,-36.2"></path>
+<text xml:space="preserve" text-anchor="middle" x="480.39" y="-13.75" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">kSubscribed</text>
+</a>
+</g>
+</g>
+<!-- p&#45;&gt;s -->
+<g id="edge4" class="edge">
+<title>p-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M358.45,-41.12C379.52,-40.03 403.31,-37.98 424.77,-34.2 426.83,-33.84 428.93,-33.43 431.04,-32.98"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="431.82,-36.39 440.72,-30.64 430.18,-29.58 431.82,-36.39"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="400.39" y="-45.47" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">订阅已建立</text>
+</g>
+<!-- s&#45;&gt;n -->
+<g id="edge5" class="edge">
+<title>s-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M442.43,-11.68C436.54,-10.76 430.49,-9.9 424.77,-9.2 307.52,5.04 276.53,0.71 159.02,-11.2 156.97,-11.41 154.87,-11.63 152.76,-11.85"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="152.59,-8.35 143.02,-12.88 153.33,-15.31 152.59,-8.35"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="297.89" y="-5.25" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Unsubscribe()</text>
+</g>
+<!-- s&#45;&gt;p -->
+<g id="edge6" class="edge">
+<title>s-&gt;p</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M442.38,-15.9C436.49,-15.61 430.47,-15.36 424.77,-15.2 403.11,-14.61 397.38,-11.57 376.02,-15.2 369.04,-16.39 361.86,-18.14 354.81,-20.19"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="353.98,-16.78 345.49,-23.11 356.08,-23.46 353.98,-16.78"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="400.39" y="-20.7" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">服务不可用</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">状态图：在代理端，<code>kSubscriptionPending</code> 表示订阅尚未建立或由于不可用而已中断。来源：<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.13">SWS CM §7.5.13 “Service event subscription”</a>。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsubsection.5.3.5.2">EXP ARAComAPI §5.3.5.2 “Monitoring Event Subscription”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00310", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00310", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00310</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">类型别名</h2><article class="rec" id="SWS_CM_00309">
+<h3 class="recname"><span class="kind">类型别名</span> EventReceiveHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00309" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00309]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00203" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00203</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00114" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00114</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a></span></h3>
+<pre class="syntax">using EventReceiveHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void()&gt;;</pre>
+<div class="desc"><p>Callback function invoked if new event data arrives for an event. The event receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">EventReceiveHandler</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>通知不是数据检索</h5><p><code>EventReceiveHandler</code> 表示消费者可以检索新的事件数据。然后使用 <code>GetNewSamples()</code> 获取实际样本；处理程序本身应该规划此所有权和失败路径。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.14">SWS CM §7.5.14 “Receive event”</a> 对轮询和触发处理进行分类。</p><h5>提前确认订阅</h5><p>在订阅之前或同时注册接收Handler，并且不要将待处理的订阅视为已验证的数据源。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_12006">[SWS_CM_12006]</a>描述了异步确认。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsubsection.5.3.5.5">EXP ARAComAPI §5.3.5.5 “Event-Driven vs Polling-Based access”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00309", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00309", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00309</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_11615">
+<h3 class="recname"><span class="kind">类型别名</span> FieldReceiveHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11615" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_11615]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00203" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00203</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00114" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00114</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a></span></h3>
+<pre class="syntax">using FieldReceiveHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void()&gt;;</pre>
+<div class="desc"><p>Callback function invoked if a new notification arrives for a field. The field receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">FieldReceiveHandler</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_11615", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_11615", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_11615</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00383">
+<h3 class="recname"><span class="kind">类型别名</span> FindServiceHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00383" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00383]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00102" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00102</a></span></h3>
+<pre class="syntax">using FindServiceHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(ServiceHandle Container&lt;T&gt;, <a class="vis-app" href="../classes/cl_ara_com_FindServiceHandle_c56b5d.html">FindServiceHandle</a>)&gt;;</pre>
+<div class="desc"><p>Callback function invoked if service availability changes. It takes as input parameter a handle container containing handles for all matching service instances and a <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a>:: FindServiceHandle which can be used to invoke StopFindService() from within the <a class="vis-app" href="ns_com_ara_com_4a3210.html#SWS_CM_00383">ara::com::FindServiceHandler</a>.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">FindServiceHandler</td></tr></table>
+<h4>模板参数</h4>
+<table class="params"><tr><th>范围</th><th>Beschreibung</th></tr><tr><td class="mono">T</td><td>Data type of data sample</td></tr></table>
+<div class="notes"><b>Siehe auch:</b> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00125" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00125]</a></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>以变​​革为导向的发现</h5><p><code>FindServiceHandler</code> 接收当前适当的句柄以及第一个响应以及随后的可用性更改。应用程序应该将整个传递的列表视为当前状态，而不仅仅是增量。 <em>（解释：SWS 描述每次可用性更改时都会更新的Container。）</em> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.10">SWS CM §7.5.10 “Find service”</a> 提供Callback 语义。</p><h5>保持处理程序简短且可控</h5><p>处理程序可以使用自己的句柄调用<code>StopFindService</code>。发现实现不需要处理程序重入；因此，长期的技术工作应该从Callback外包。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.3.4">EXP ARAComAPI §5.3.4 “Finding Services”</a> 描述处理程序中的停止和序列化。</p><div class="diagram" id="diag-sws-cm-00383-01"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 374" font-family="Helvetica,sans-Serif" style="max-width:900px"><text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">查找服务、创建并使用 Proxy</text><line x1="135" y1="102" x2="135" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="360" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Consumer</text><a class="vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">代理类</text></a><a class="vis-app" href="../namespaces/ns_com_ara_com_4a3210.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="72.5" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Communication</text><text x="555" y="85.5" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Management</text></a><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Skeleton</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">StartFindService(handler,</text><text x="240.0" y="139" text-anchor="middle" font-size="11" fill="#28251d">criteria)</text><line x1="135" y1="145" x2="345" y2="145" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="173" text-anchor="middle" font-size="11" fill="#28251d">启动 Discovery</text><line x1="345" y1="179" x2="555" y2="179" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="345.0" y="207" text-anchor="middle" font-size="11" fill="#28251d">可用时的 Handler(handles)</text><line x1="555" y1="213" x2="135" y2="213" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrO)"></line><text x="240.0" y="241" text-anchor="middle" font-size="11" fill="#28251d">Create(handle)</text><line x1="135" y1="247" x2="345" y2="247" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="555.0" y="275" text-anchor="middle" font-size="11" fill="#28251d">Method / Get / Set</text><line x1="345" y1="281" x2="765" y2="281" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 379.0 298 h 132 l 10 10 v 32 h -142 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 511.0 298 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="387.0" y="312" font-size="11" fill="#28251d">重新 Offer 后，现有 Proxy 可</text><text x="387.0" y="325" font-size="11" fill="#28251d">变得可重用。</text></svg></div><p class="diagram-note">顺序：发现传递句柄；这将创建一个可用的Proxy。现有Proxy的自动重新连接是指定的运行时行为。来源：<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.10">SWS CM §7.5.10 “Find service”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.11">SWS CM §7.5.11 “Service proxy creation”</a>。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.3.4">EXP ARAComAPI §5.3.4 “Finding Services”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00383", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00383", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00383</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00319">
+<h3 class="recname"><span class="kind">类型别名</span> InstanceIdentifierContainer <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00319" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00319]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00101" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00101</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00102" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00102</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00114" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00114</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00122" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00122</a></span></h3>
+<pre class="syntax">using InstanceIdentifierContainer = <a class="vis-app" href="../classes/cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;Instance Identifier&gt;;</pre>
+<div class="desc"><p>Holds a list of <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com::InstanceIdentifiers</a>. The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per <a class="bibref" href="https://www.iso.org" title="ISO/IEC 14882:2014, Information technology – Programming languages – C++">[30]</a> A <a class="vis-app" href="../classes/cl_ara_core_Vector_53b788.html">ara::core::Vector</a> (<a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_01301" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Core.pdf)">[SWS_CORE_01301]</a>) for example fulfills these requirements.</p><p class="fnote">参考书目 SWS CommunicationManagement: <span id="fn-SWS_CM_00319-30">[30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – <a href="https://www.iso.org">www.iso.org</a></span></p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">InstanceIdentifierContainer</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00319", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00319", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00319</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00308">
+<h3 class="recname"><span class="kind">类型别名</span> SampleAllocateePtr <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00308" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00308]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00201" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00201</a></span></h3>
+<pre class="syntax">using SampleAllocateePtr = <a class="cppref" href="https://en.cppreference.com/w/cpp/memory/unique_ptr" title="cppreference.com (C++17)">std::unique_ptr</a>&lt;T&gt;;</pre>
+<div class="desc"><p>Pointer to an allocated (by Communication Management) data sample. The implementation is allowed to be changed by the Communication Management software provider.</p><p>The precondition defined in <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00086" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00086]</a> must be fulfilled. Otherwise it is considered a violation.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">SampleAllocateePtr</td></tr></table>
+<h4>模板参数</h4>
+<table class="params"><tr><th>范围</th><th>Beschreibung</th></tr><tr><td class="mono">T</td><td>Data type of data sample</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>发送方的零拷贝 Sample</h5><p><code>SampleAllocateePtr</code> 是通过<code>Allocate()</code> 请求的事件存储的服务器端所有权类型。发送后，Communication Management接管内存；因此，指针被移动以进行零拷贝传输。</p><h5>不要用未完成的样品破坏Skeleton</h5><p>所有分配的事件样本必须在骨架销毁之前发送、重置或销毁。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00086">[SWS_CM_00086]</a>描述了这个前提； <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.5">SWS CM §7.5.5 “Send event”</a>解释了两条传输路径。</p><h4>进一步详细证据</h4><p>保留先前描述中使用的以下规范参考以供进一步审查：<a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARAComAPI.pdf#nameddest=subsection.5.4.7">EXP ARAComAPI §5.4.7 “Events”</a>。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00308", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00308", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00308</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00304">
+<h3 class="recname"><span class="kind">类型别名</span> ServiceHandleContainer <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00304" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00304]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00102" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00102</a></span></h3>
+<pre class="syntax">using ServiceHandleContainer = <a class="vis-app" href="../classes/cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;T&gt;;</pre>
+<div class="desc"><p>Holds a list of service handles and is used as a return value of any of the FindService() methods) • <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00122" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00122]</a> • <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00622" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00622]</a> . The assigned data type is allowed to be changed by the Communication Management software provider, but must adhere to [container.requirements.general] and [sequence.reqmts] requirements as per <a class="bibref" href="https://www.iso.org" title="ISO/IEC 14882:2014, Information technology – Programming languages – C++">[30]</a>. A <a class="vis-app" href="../classes/cl_ara_core_Vector_53b788.html">ara::core::Vector</a> ([SWS_CORE_ 01301]) for example fulfills these requirements.</p><p class="fnote">参考书目 SWS CommunicationManagement: <span id="fn-SWS_CM_00304-30">[30] ISO/IEC 14882:2014, Information technology – Programming languages – C++ – <a href="https://www.iso.org">www.iso.org</a></span></p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">ServiceHandleContainer</td></tr></table>
+<h4>模板参数</h4>
+<table class="params"><tr><th>范围</th><th>Beschreibung</th></tr><tr><td class="mono">T</td><td>service handle</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00304", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00304", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00304</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_01072">
+<h3 class="recname"><span class="kind">类型别名</span> ServiceStateHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_01072" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_01072]</a></span></h3>
+<pre class="syntax">using ServiceStateHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(<a class="vis-app" href="ns_com_ara_com_4a3210.html#SWS_CM_01071">ServiceState</a>)&gt;;</pre>
+<div class="desc"><p>Functor used as input arguments for any of the SetServiceStateChangeHandler() methods: • <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_01074" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_01074]</a> • <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_01076" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_01076]</a></p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">ServiceStateHandler</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_01072", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_01072", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_01072</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00311">
+<h3 class="recname"><span class="kind">类型别名</span> SubscriptionStateChangeHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00311" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00311]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00103" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00103</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00104" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00104</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00106" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00106</a></span></h3>
+<pre class="syntax">using SubscriptionStateChangeHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(Subscription State)&gt;;</pre>
+<div class="desc"><p>Callback function invoked if <a class="vis-app" href="ns_com_ara_com_4a3210.html#SWS_CM_00310">ara::com::SubscriptionState</a> of an event has changed.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">SubscriptionStateChangeHandler</td></tr></table>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>观察状态变化而不是轮询</h5><p>每当订阅状态发生变化时就会调用<code>SubscriptionStateChangeHandler</code>。在Proxy页面上，它特别提供了有关<code>kSubscriptionPending</code>和<code>kSubscribed</code>的信息；在Skeleton一侧，它标志着零到至少一个活跃订阅者之间的过渡。 <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.4">SWS CM §7.5.4 “Query Service Event Subscription State on Skeleton side”</a>和<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=subsection.7.5.13">SWS CM §7.5.13 “Service event subscription”</a>解释了这两个角色。</p><h5>不要注册空处理程序</h5><p>空指针或空 <code>std::function</code> 不允许注册，并被视为违规。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_10417">[SWS_CM_10417]</a> 命名了此要求。</p></div><section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00311", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00311", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00311</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_00351">
+<h3 class="recname"><span class="kind">类型别名</span> TriggerReceiveHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_00351" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_00351]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_CommunicationManagement.pdf#nameddest=RS_CM_00203" title="Spezifikations-PDF (AUTOSAR_AP_RS_CommunicationManagement.pdf)">RS_CM_00203</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00114" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00114</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a></span></h3>
+<pre class="syntax">using TriggerReceiveHandler = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void()&gt;;</pre>
+<div class="desc"><p>A function wrapper for the handler function that gets called in case a new trigger arrives for an event. The trigger receiver must provide the function implementation which is not required to be re-entrant. Usage of std::function is recommended but not mandatory.</p></div>
+
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>象征</th><td class="mono">TriggerReceiveHandler</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_00351", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_00351", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_00351</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">自由函数文档</h2><article class="rec" id="SWS_CM_11334">
+<h3 class="recname"><span class="kind">函数</span> GetComErrorDomain <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11334" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_11334]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00130" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00130</a></span></h3>
+<pre class="syntax">constexpr const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp; GetComErrorDomain () noexcept;</pre>
+<div class="desc"><p>Returns a reference to the <a class="vis-app" href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html">ara::com::ComErrorDomain</a> object</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">源自此 AUTOSAR R25-11 规范元素的自动生成的使用通知 — 非官方 AUTOSAR 文本。文档：[SWS_…]。</p><p>免费的 <code>constexpr</code> 和 <code>noexcept</code> 函数 <code>ara::com::GetComErrorDomain</code> 提供对单例对象 <code>ara::com::ComErrorDomain</code> 的引用，用于识别 <code>ara::core::ErrorCode</code> 对象 <a class="swsref" href="#SWS_CM_11334">[SWS_CM_11334]</a> 的常见通信管理故障域。该函数是异常安全的。</p></div>
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/com_error_domain.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>异常安全</th><td class="mono">exception safe</td></tr></table>
+<h4>返回值</h4>
+<table class="params"><tr><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp;</td><td>Reference to the <a class="vis-app" href="../classes/cl_ara_com_ComErrorDomain_f7fe3f.html">ara::com::ComErrorDomain</a> object</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_11334", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_11334", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_11334</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CM_11335">
+<h3 class="recname"><span class="kind">函数</span> MakeErrorCode <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_CommunicationManagement.pdf#nameddest=SWS_CM_11335" title="Spezifikations-PDF (AUTOSAR_AP_SWS_CommunicationManagement.pdf)">[SWS_CM_11335]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00121" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00121</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00130" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00130</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a> MakeErrorCode (<a class="vis-app" href="ns_com_ara_com_4a3210.html#SWS_CM_10432">ara::com::ComErrc</a> code, <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00123">ara::core::ErrorDomain::SupportDataType</a> data) noexcept;</pre>
+<div class="desc"><p>Creates an instance of <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a></p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">源自此 AUTOSAR R25-11 规范元素的自动生成的使用通知 — 非官方 AUTOSAR 文本。文档：[SWS_…]。</p><p>免费的<code>constexpr</code>和<code>noexcept</code>函数<code>ara::com::MakeErrorCode</code>根据错误代码号（<code>code</code>：错误代码号）和供应商定义的附加数据（<code>data</code>：与错误关联的供应商定义的数据）<a class="swsref" href="#SWS_CM_11335">[SWS_CM_11335]</a>，创建通用ara::com错误域的<code>ara::core::ErrorCode</code>实例。它通常用于构造错误对象以在<code>ara::core::Result</code>中返回。该函数是异常安全的。</p></div>
+<table class="props"><tr><th>Header 文件</th><td class="mono">#include "ara/com/com_error_domain.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_com_ara_com_4a3210.html">ara::com</a></td></tr><tr><th>异常安全</th><td class="mono">exception safe</td></tr></table>
+<h4>参数（中）</h4>
+<table class="params"><tr><th>范围</th><th>Beschreibung</th></tr><tr><td class="mono">code</td><td>Error code number.</td></tr><tr><td class="mono">data</td><td>Vendor defined data associated with the error</td></tr></table>
+<h4>返回值</h4>
+<table class="params"><tr><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a></td><td>An <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a> object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CM_11335", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CM_11335", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CM_11335</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>自动提取自 AUTOSAR R25-11 官方规范 PDF
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>)。
+非 AUTOSAR 官方出版物；描述性文本保留原文（英文）。</footer></body></html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::per — Persistency</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API Reference</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../modules/per.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a class="cur" href="../../en/modules/per.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/modules/per.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/modules/per.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/modules/per.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/modules/per.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/modules/per.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/modules/per.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/modules/per.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/modules/per.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/modules/per.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Home</a> › ara::per</nav>
+<main><h1><span class="kind">module</span> ara::per — Persistency</h1>
+<p class="meta">Specification: <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf">AUTOSAR_AP_SWS_Persistency.pdf (R25-11)</a> · 140 API records</p>
+<p><span class="chip">function: 116</span> <span class="chip">class: 10</span> <span class="chip">enumeration: 6</span> <span class="chip">variable: 5</span> <span class="chip">type alias: 2</span> <span class="chip">struct: 1</span></p>
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">AI generated</span></h2></summary><div class="ai module-guide"><p class="ai-note">Automatically generated description, content derived from the referenced AUTOSAR R25-11 documents (SWS specification and accompanying standard documents) — not an official AUTOSAR text. Statements marked as interpretation are conclusions drawn from the sources.</p><h4>Purpose and system boundary</h4><p><code>ara::per</code> makes configured persistent data accessible to Adaptive Applications. The model distinguishes key-value storages as sets of typed key-value pairs and file storages as sets of named files; both can be combined per application. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.1">SWS Persistency §7.1 “The Architecture of Persistency”</a></p><p>The storage instance cannot be freely selected, but is referenced to a manifested persistence interface through a <code>ara::core::InstanceSpecifier</code>. Access rights can be read-only, read/write, write-only or – for applications – write-only-once. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.1">SWS Persistency §7.1.1 “Configuration of Persistency”</a></p><h4>Decision: key or file</h4><p>Choose <code>KeyValueStorage</code> for addressable, typed states with an explicit synchronization boundary; choose <code>FileStorage</code> for file-like content and Accessor-based reading or writing. Initial values and initial files can be supplied with installation or update. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.2">SWS Persistency §7.1.2 “Configuration of Key-Value Storages”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.1.3">SWS Persistency §7.1.3 “Configuration of File Storages”</a></p><p class="interp"><strong>Interpretation:</strong> The selection is a data model decision: small, logically separated states benefit from keys; Contiguous or stream-like content is more suited to the file interface. It follows from the different access models described in the specification.</p><h4>Operating model and data durability</h4><p>An opened key-value storage initially works on temporary data. <code>SyncToStorage</code> permanently writes all changes since opening or last synchronization and updates configured redundancy; Without syncing, changes are discarded when you close or restart. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a></p><p>For files, the specific file is opened via an accessor. Write accesses can be specifically transferred to the physical memory via <code>SyncToFile</code>; Ownership of the accessor is exclusive. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.4">SWS Persistency §7.4 “File Storage specific Features”</a></p><h4>Protection, recovery and resources</h4><p>Redundancy can safeguard integrity through checksums or multiple copies; a Recovery Report callback can inform the application of unrecoverable findings. Recovery can yield initial or older data and must therefore be evaluated from an application perspective. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.4">SWS Persistency §7.2.4 “Redundancy Concepts”</a></p><p>The configured maximum limits actual memory used. The size queries include metadata as well as redundancy and backup needs and may be inaccurate for open storage or parallel operations. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.6">SWS Persistency §7.2.6 “Resource Management Concepts”</a></p><h4>Installation, update and rollback</h4><p>The target configuration can bring in predefined values ​​and files. During the verification phase, <code>UpdatePersistency</code> can make changes according to new configuration data; After successful finalization, <code>CleanUpPersistency</code> removes backup data. If an older configuration is activated, a restore or new installation will take place depending on the backup version saved. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.5">SWS Persistency §7.2.5 “Installation and Update of Persistent Data”</a></p><div class="diagram" id="diag-oeffnen-vor-nutzung"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 293" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Open and use Storage</text><line x1="135" y1="102" x2="135" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Adaptive Application</text><a class="vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::per</text></a><a class="vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Storage</text></a><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Open…Storage(InstanceSpecifier)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">Create access structure</text><line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">Result with SharedHandle</text><line x1="555" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 238.5 217 h 203 l 10 10 v 32 h -213 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 441.5 217 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="246.5" y="231" font-size="11" fill="#28251d">Changes and approval depend on the</text><text x="246.5" y="244" font-size="11" fill="#28251d">selected Storage type.</text></svg></div><p class="diagram-note">Opening requires a configured, initialized persistence. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.1">SWS Persistency §7.1 “The Architecture of Persistency”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a>.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 728.00 66.00" style="max-width:971px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 61.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="360.06" y="-41.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Transaction boundary of a Key-Value Storage</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node vis-app">
+<title>b</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00052" xlink:title="Open Storage" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M120.02,-36C120.02,-36 60.52,-36 60.52,-36 54.52,-36 48.52,-30 48.52,-24 48.52,-24 48.52,-12 48.52,-12 48.52,-6 54.52,0 60.52,0 60.52,0 120.02,0 120.02,0 126.02,0 132.02,-6 132.02,-12 132.02,-12 132.02,-24 132.02,-24 132.02,-30 126.02,-36 120.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="90.27" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Open Storage</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.67,-18C17.08,-18 26.37,-18 36.68,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.48,-21.5 46.48,-18 36.48,-14.5 36.48,-21.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node vis-app">
+<title>c</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00046" xlink:title="SetValue / RemoveKey" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M284.77,-36C284.77,-36 181.02,-36 181.02,-36 175.02,-36 169.02,-30 169.02,-24 169.02,-24 169.02,-12 169.02,-12 169.02,-6 175.02,0 181.02,0 181.02,0 284.77,0 284.77,0 290.77,0 296.77,-6 296.77,-12 296.77,-12 296.77,-24 296.77,-24 296.77,-30 290.77,-36 284.77,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="232.89" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SetValue / RemoveKey</text>
+</a>
+</g>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M132.32,-18C140.13,-18 148.51,-18 156.99,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="156.9,-21.5 166.9,-18 156.9,-14.5 156.9,-21.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node vis-app">
+<title>d</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00049" xlink:title="SyncToStorage" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M492.02,-36C492.02,-36 426.52,-36 426.52,-36 420.52,-36 414.52,-30 414.52,-24 414.52,-24 414.52,-12 414.52,-12 414.52,-6 420.52,0 426.52,0 426.52,0 492.02,0 492.02,0 498.02,0 504.02,-6 504.02,-12 504.02,-12 504.02,-24 504.02,-24 504.02,-30 498.02,-36 492.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="459.27" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SyncToStorage</text>
+</a>
+</g>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M297.29,-18C330.53,-18 370.87,-18 402.85,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="402.56,-21.5 412.56,-18 402.56,-14.5 402.56,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="355.64" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">persist deliberately</text>
+</g>
+<!-- e -->
+<g id="node5" class="node">
+<title>e</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M653.77,-36C653.77,-36 553.02,-36 553.02,-36 547.02,-36 541.02,-30 541.02,-24 541.02,-24 541.02,-12 541.02,-12 541.02,-6 547.02,0 553.02,0 553.02,0 653.77,0 653.77,0 659.77,0 665.77,-6 665.77,-12 665.77,-12 665.77,-24 665.77,-24 665.77,-30 659.77,-36 653.77,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="603.39" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">update redundant data</text>
+</g>
+<!-- d&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>d-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M504.46,-18C512.3,-18 520.66,-18 529.06,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="528.82,-21.5 538.82,-18 528.82,-14.5 528.82,-21.5"></polygon>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="711.45" cy="-18" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="711.45" cy="-18" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- e&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>e-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M666.09,-18C675.09,-18 683.75,-18 690.99,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="690.9,-21.5 700.9,-18 690.9,-14.5 690.9,-21.5"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">The persistence boundary affects all keys changed since opening or the last synchronization; updating configured redundancy is included. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a>.</p><div class="diagram" id="diag-02"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 650.00 120.00" style="max-width:867px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="321.24" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Redundancy check and recovery</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node">
+<title>b</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M189.02,-63C189.02,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 189.02,-27 189.02,-27 195.02,-27 201.02,-33 201.02,-39 201.02,-39 201.02,-51 201.02,-51 201.02,-57 195.02,-63 189.02,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="124.77" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Check integrity / redundancy</text>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.09,-45C17.4,-45 26.25,-45 36.72,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.47,-48.5 46.47,-45 36.47,-41.5 36.47,-48.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node">
+<title>c</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="304.57,-63 238.02,-45 304.57,-27 371.11,-45 304.57,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="304.57" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">recoverable?</text>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M201.43,-45C209.02,-45 216.75,-45 224.38,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="224.19,-48.5 234.19,-45 224.19,-41.5 224.19,-48.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M571.24,-90C571.24,-90 439.74,-90 439.74,-90 433.74,-90 427.74,-84 427.74,-78 427.74,-78 427.74,-66 427.74,-66 427.74,-60 433.74,-54 439.74,-54 439.74,-54 571.24,-54 571.24,-54 577.24,-54 583.24,-60 583.24,-66 583.24,-66 583.24,-78 583.24,-78 583.24,-84 577.24,-90 571.24,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="505.49" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Use intact copy or initial state</text>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M350.7,-51.13C370.12,-53.76 393.52,-56.94 416.14,-60.01"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="415.49,-63.45 425.87,-61.33 416.43,-56.52 415.49,-63.45"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="396.99" y="-59.44" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">yes</text>
+</g>
+<!-- e -->
+<g id="node5" class="node vis-app">
+<title>e</title>
+<g id="a_node5"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00433" xlink:title="Notify Recovery report callback" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M576.11,-36C576.11,-36 434.86,-36 434.86,-36 428.86,-36 422.86,-30 422.86,-24 422.86,-24 422.86,-12 422.86,-12 422.86,-6 428.86,0 434.86,0 434.86,0 576.11,0 576.11,0 582.11,0 588.11,-6 588.11,-12 588.11,-12 588.11,-24 588.11,-24 588.11,-30 582.11,-36 576.11,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="505.49" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Notify Recovery report callback</text>
+</a>
+</g>
+</g>
+<!-- c&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>c-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M350.7,-38.87C368.68,-36.43 390.07,-33.53 411.1,-30.68"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="411.29,-34.18 420.73,-29.37 410.35,-27.25 411.29,-34.18"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="396.99" y="-34.87" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">no</text>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="633.79" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="633.79" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- d&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>d-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M583.7,-55.24C591.61,-53.48 599.52,-51.72 607.11,-50 609.29,-49.51 611.58,-48.98 613.85,-48.46"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="614.59,-51.88 623.54,-46.19 613,-45.06 614.59,-51.88"></polygon>
+</g>
+<!-- e&#45;&gt;f -->
+<g id="edge6" class="edge">
+<title>e-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M588.62,-34.91C597.8,-36.8 606.4,-38.57 613.53,-40.03"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="612.74,-43.45 623.24,-42.03 614.15,-36.59 612.74,-43.45"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Recovery is best effort; In the event of an error, a report can name the affected storage or elements. Source: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.4">SWS Persistency §7.2.4 “Redundancy Concepts”</a>. <em>Partial interpretation: The activity sequence combines several permitted redundancy procedures.</em></p><div class="diagram" id="diag-update-rollback"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 965.00 120.00" style="max-width:1287px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="478.44" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Update persistent data</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- b -->
+<g id="node2" class="node vis-app">
+<title>b</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00576" xlink:title="detect new Target Configuration" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M205.52,-63C205.52,-63 60.52,-63 60.52,-63 54.52,-63 48.52,-57 48.52,-51 48.52,-51 48.52,-39 48.52,-39 48.52,-33 54.52,-27 60.52,-27 60.52,-27 205.52,-27 205.52,-27 211.52,-27 217.52,-33 217.52,-39 217.52,-39 217.52,-51 217.52,-51 217.52,-57 211.52,-63 205.52,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="133.02" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">detect new Target Configuration</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;b -->
+<g id="edge1" class="edge">
+<title>a-&gt;b</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.83,-45C17.02,-45 25.83,-45 36.38,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.27,-48.5 46.27,-45 36.27,-41.5 36.27,-48.5"></polygon>
+</g>
+<!-- c -->
+<g id="node3" class="node vis-app">
+<title>c</title>
+<g id="a_node3"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00357" xlink:title="UpdatePersistency" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M349.27,-63C349.27,-63 266.52,-63 266.52,-63 260.52,-63 254.52,-57 254.52,-51 254.52,-51 254.52,-39 254.52,-39 254.52,-33 260.52,-27 266.52,-27 266.52,-27 349.27,-27 349.27,-27 355.27,-27 361.27,-33 361.27,-39 361.27,-39 361.27,-51 361.27,-51 361.27,-57 355.27,-63 349.27,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="307.89" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">UpdatePersistency</text>
+</a>
+</g>
+</g>
+<!-- b&#45;&gt;c -->
+<g id="edge2" class="edge">
+<title>b-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M217.93,-45C226.25,-45 234.6,-45 242.68,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="242.61,-48.5 252.61,-45 242.61,-41.5 242.61,-48.5"></polygon>
+</g>
+<!-- d -->
+<g id="node4" class="node">
+<title>d</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="506.27,-63 398.27,-45 506.27,-27 614.28,-45 506.27,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="506.27" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Verification successful?</text>
+</g>
+<!-- c&#45;&gt;d -->
+<g id="edge3" class="edge">
+<title>c-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M361.78,-45C368.64,-45 375.89,-45 383.32,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="383.07,-48.5 393.07,-45 383.07,-41.5 383.07,-48.5"></polygon>
+</g>
+<!-- e -->
+<g id="node5" class="node vis-app">
+<title>e</title>
+<g id="a_node5"><a xlink:href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00567" xlink:title="CleanUpPersistency: remove backups" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M890.53,-90C890.53,-90 715.53,-90 715.53,-90 709.53,-90 703.53,-84 703.53,-78 703.53,-78 703.53,-66 703.53,-66 703.53,-60 709.53,-54 715.53,-54 715.53,-54 890.53,-54 890.53,-54 896.53,-54 902.53,-60 902.53,-66 902.53,-66 902.53,-78 902.53,-78 902.53,-84 896.53,-90 890.53,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="803.03" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">CleanUpPersistency: remove backups</text>
+</a>
+</g>
+</g>
+<!-- d&#45;&gt;e -->
+<g id="edge4" class="edge">
+<title>d-&gt;e</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M578.62,-51.54C612.44,-54.63 653.61,-58.4 691.35,-61.86"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="691,-65.34 701.28,-62.77 691.64,-58.37 691,-65.34"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="658.9" y="-62.67" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">yes</text>
+</g>
+<!-- f -->
+<g id="node6" class="node">
+<title>f</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M863.15,-36C863.15,-36 742.9,-36 742.9,-36 736.9,-36 730.9,-30 730.9,-24 730.9,-24 730.9,-12 730.9,-12 730.9,-6 736.9,0 742.9,0 742.9,0 863.15,0 863.15,0 869.15,0 875.15,-6 875.15,-12 875.15,-12 875.15,-24 875.15,-24 875.15,-30 869.15,-36 863.15,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="803.03" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Restore backup or reinstall</text>
+</g>
+<!-- d&#45;&gt;f -->
+<g id="edge5" class="edge">
+<title>d-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M578.62,-38.46C620.85,-34.6 674.55,-29.68 718.71,-25.63"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="719.01,-29.12 728.65,-24.72 718.38,-22.15 719.01,-29.12"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="658.9" y="-34.87" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">no / rollback</text>
+</g>
+<!-- g -->
+<g id="node7" class="node">
+<title>g</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="948.21" cy="-44" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="948.21" cy="-44" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- e&#45;&gt;g -->
+<g id="edge6" class="edge">
+<title>e-&gt;g</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M902.82,-53.83C909.16,-52.56 915.43,-51.28 921.53,-50 923.72,-49.54 926.01,-49.04 928.28,-48.52"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="929.03,-51.94 937.96,-46.25 927.43,-45.13 929.03,-51.94"></polygon>
+</g>
+<!-- f&#45;&gt;g -->
+<g id="edge7" class="edge">
+<title>f-&gt;g</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M875.62,-31C895.11,-34.54 914.61,-38.08 928.32,-40.57"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="927.41,-43.96 937.87,-42.3 928.66,-37.07 927.41,-43.96"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Update, finalization and rollback are anchored in the target configuration versioning. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=subsection.7.2.5">SWS Persistency §7.2.5 “Installation and Update of Persistent Data”</a>. <em>Partial interpretation: The arrangement shows the intended operation flow, not the signaling of a single API call.</em></p><h4>Evidence base and API references</h4><p>The following already linked specification and API locations remain as detailed evidence for the operations mentioned: <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html">FileStorage</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html">KeyValueStorage</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00408">[SWS_PER_00408]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00116">[SWS_PER_00116]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00052">[SWS_PER_00052]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00506">[SWS_PER_00506]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00430">[SWS_PER_00430]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00431">[SWS_PER_00431]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00429">[SWS_PER_00429]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00113">[SWS_PER_00113]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00512">[SWS_PER_00512]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00599">[SWS_PER_00599]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00438">[SWS_PER_00438]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html">ReadAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00119">[SWS_PER_00119]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00165">[SWS_PER_00165]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html#SWS_PER_00422">[SWS_PER_00422]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html">WriteAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00166">[SWS_PER_00166]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00423">[SWS_PER_00423]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_WriteAccessor_a926f9.html#SWS_PER_00122">[SWS_PER_00122]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html">FileAccessor</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00162">[SWS_PER_00162]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00163">[SWS_PER_00163]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileAccessor_efe7d0.html#SWS_PER_00424">[SWS_PER_00424]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00046">[SWS_PER_00046]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00044">[SWS_PER_00044]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00047">[SWS_PER_00047]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00554">[SWS_PER_00554]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00574">[SWS_PER_00574]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_20029">[SWS_PER_20029]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_20035">[SWS_PER_20035]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html">SharedHandle</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html#SWS_PER_00367">[SWS_PER_00367]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_SharedHandle_a773d0.html#SWS_PER_00369">[SWS_PER_00369]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00582">[SWS_PER_00582]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_UniqueHandle_94e9f0.html">UniqueHandle</a> <a class="swsref vis-app" href="../classes/cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00373">[SWS_PER_00373]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00470">[SWS_PER_00470]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_FileStorage_29266b.html#SWS_PER_00338">[SWS_PER_00338]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00426">[SWS_PER_00426]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00336">[SWS_PER_00336]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00334">[SWS_PER_00334]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00452">[SWS_PER_00452]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00547">[SWS_PER_00547]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00317">[SWS_PER_00317]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00481">[SWS_PER_00481]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html">PerErrorDomain</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00314">[SWS_PER_00314]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00315">[SWS_PER_00315]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html#SWS_PER_00350">[SWS_PER_00350]</a> <a class="swsref vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html#SWS_PER_00427">[SWS_PER_00427]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00406">[SWS_PER_00406]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00405">[SWS_PER_00405]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00576">[SWS_PER_00576]</a> <a class="swsref vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html#SWS_PER_00577">[SWS_PER_00577]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.10.1">EXP PlatformDesign §10.1 “Overview”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_TPS_ManifestSpecification.pdf#nameddest=subsubsection.4.6.1.1">TPS ManifestSpecification §4.6.1.1 “The big Picture”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00010">[RS_PER_00010]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00013">[RS_PER_00013]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00009">[RS_PER_00009]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00008">[RS_PER_00008]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00005">[RS_PER_00005]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00011">[RS_PER_00011]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.11.3.1.4.1">EXP SWArchitecture §11.3.1.4.1 “Scenario: Store Persistent Data with Unique ID”</a>.</p></div>
+</details>
+<h2 class="sect">Namespaces</h2><ul class="mlist boxes"><li><a class="dbox vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html">ara::per</a> <span class="dim">11 classes, 20 free functions</span></li></ul>
+<h2 class="sect">UML class diagram of the module</h2><p class="dim">Rounded Frames = Namespaces; hollow triangle arrows = inheritance (pointing to base class); gray boxes = non-module or external base classes. Clicking opens the class page.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="457pt" height="566pt" viewbox="0.00 0.00 457.00 566.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 562)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M20,-98C20,-98 429,-98 429,-98 435,-98 441,-104 441,-110 441,-110 441,-538 441,-538 441,-544 435,-550 429,-550 429,-550 20,-550 20,-550 14,-550 8,-544 8,-538 8,-538 8,-110 8,-110 8,-104 14,-98 20,-98"></path>
+<text xml:space="preserve" text-anchor="middle" x="224.5" y="-103.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::per</text>
+</g>
+<!-- nara__per__FileAccessor932 -->
+<g id="node1" class="node vis-app">
+<title>nara__per__FileAccessor932</title>
+<g id="a_node1"><a xlink:href="../classes/cl_ara_per_FileAccessor_efe7d0.html" xlink:title="FileAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M421,-434C421,-434 359.25,-434 359.25,-434 353.25,-434 347.25,-428 347.25,-422 347.25,-422 347.25,-410 347.25,-410 347.25,-404 353.25,-398 359.25,-398 359.25,-398 421,-398 421,-398 427,-398 433,-404 433,-410 433,-410 433,-422 433,-422 433,-428 427,-434 421,-434"></path>
+<text xml:space="preserve" text-anchor="middle" x="390.12" y="-410.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadAccessor956 -->
+<g id="node2" class="node vis-app">
+<title>nara__per__ReadAccessor956</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_per_ReadAccessor_4ffb0b.html" xlink:title="ReadAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M278.25,-407C278.25,-407 207.5,-407 207.5,-407 201.5,-407 195.5,-401 195.5,-395 195.5,-395 195.5,-383 195.5,-383 195.5,-377 201.5,-371 207.5,-371 207.5,-371 278.25,-371 278.25,-371 284.25,-371 290.25,-377 290.25,-383 290.25,-383 290.25,-395 290.25,-395 290.25,-401 284.25,-407 278.25,-407"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-383.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ReadAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadAccessor956&#45;&gt;nara__per__FileAccessor932 -->
+<g id="edge1" class="edge">
+<title>nara__per__ReadAccessor956-&gt;nara__per__FileAccessor932</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M290.63,-397.69C304.9,-400.34 320.7,-403.28 335.39,-406.01"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="334.62,-409.43 345.09,-407.81 335.9,-402.55 334.62,-409.43"></polygon>
+</g>
+<!-- nara__per__ReadWriteAccessor483 -->
+<g id="node3" class="node vis-app">
+<title>nara__per__ReadWriteAccessor483</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_per_ReadWriteAccessor_30aeb5.html" xlink:title="ReadWriteAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M126.5,-434C126.5,-434 28,-434 28,-434 22,-434 16,-428 16,-422 16,-422 16,-410 16,-410 16,-404 22,-398 28,-398 28,-398 126.5,-398 126.5,-398 132.5,-398 138.5,-404 138.5,-410 138.5,-410 138.5,-422 138.5,-422 138.5,-428 132.5,-434 126.5,-434"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-410.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">ReadWriteAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadWriteAccessor483&#45;&gt;nara__per__ReadAccessor956 -->
+<g id="edge2" class="edge">
+<title>nara__per__ReadWriteAccessor483-&gt;nara__per__ReadAccessor956</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M138.71,-406.02C153.44,-403.59 169.16,-401 183.77,-398.59"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="184.12,-402.08 193.42,-397 182.98,-395.17 184.12,-402.08"></polygon>
+</g>
+<!-- nara__per__WriteAccessor940 -->
+<g id="node4" class="node vis-app">
+<title>nara__per__WriteAccessor940</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_per_WriteAccessor_a926f9.html" xlink:title="WriteAccessor" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M277.5,-461C277.5,-461 208.25,-461 208.25,-461 202.25,-461 196.25,-455 196.25,-449 196.25,-449 196.25,-437 196.25,-437 196.25,-431 202.25,-425 208.25,-425 208.25,-425 277.5,-425 277.5,-425 283.5,-425 289.5,-431 289.5,-437 289.5,-437 289.5,-449 289.5,-449 289.5,-455 283.5,-461 277.5,-461"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-437.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">WriteAccessor</text>
+</a>
+</g>
+</g>
+<!-- nara__per__ReadWriteAccessor483&#45;&gt;nara__per__WriteAccessor940 -->
+<g id="edge3" class="edge">
+<title>nara__per__ReadWriteAccessor483-&gt;nara__per__WriteAccessor940</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M138.71,-425.98C153.65,-428.44 169.62,-431.08 184.41,-433.52"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="183.76,-436.96 194.19,-435.13 184.89,-430.05 183.76,-436.96"></polygon>
+</g>
+<!-- nara__per__WriteAccessor940&#45;&gt;nara__per__FileAccessor932 -->
+<g id="edge4" class="edge">
+<title>nara__per__WriteAccessor940-&gt;nara__per__FileAccessor932</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M289.83,-434.46C304.4,-431.75 320.64,-428.73 335.69,-425.93"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="335.94,-429.45 345.13,-424.18 334.66,-422.56 335.94,-429.45"></polygon>
+</g>
+<!-- nara__per__FileInfo503 -->
+<g id="node5" class="node vis-app">
+<title>nara__per__FileInfo503</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_per_FileInfo_15b6f6.html" xlink:title="FileInfo" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M94.25,-218C94.25,-218 60.25,-218 60.25,-218 54.25,-218 48.25,-212 48.25,-206 48.25,-206 48.25,-194 48.25,-194 48.25,-188 54.25,-182 60.25,-182 60.25,-182 94.25,-182 94.25,-182 100.25,-182 106.25,-188 106.25,-194 106.25,-194 106.25,-206 106.25,-206 106.25,-212 100.25,-218 94.25,-218"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-201.35" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-188.6" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileInfo</text>
+</a>
+</g>
+</g>
+<!-- nara__per__FileStorage945 -->
+<g id="node6" class="node vis-app">
+<title>nara__per__FileStorage945</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_per_FileStorage_29266b.html" xlink:title="FileStorage" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M104.38,-272C104.38,-272 50.12,-272 50.12,-272 44.12,-272 38.12,-266 38.12,-260 38.12,-260 38.12,-248 38.12,-248 38.12,-242 44.12,-236 50.12,-236 50.12,-236 104.38,-236 104.38,-236 110.38,-236 116.38,-242 116.38,-248 116.38,-248 116.38,-260 116.38,-260 116.38,-266 110.38,-272 104.38,-272"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-248.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">FileStorage</text>
+</a>
+</g>
+</g>
+<!-- nara__per__KeyValueStorage981 -->
+<g id="node7" class="node vis-app">
+<title>nara__per__KeyValueStorage981</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_per_KeyValueStorage_e55123.html" xlink:title="KeyValueStorage" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M119.75,-326C119.75,-326 34.75,-326 34.75,-326 28.75,-326 22.75,-320 22.75,-314 22.75,-314 22.75,-302 22.75,-302 22.75,-296 28.75,-290 34.75,-290 34.75,-290 119.75,-290 119.75,-290 125.75,-290 131.75,-296 131.75,-302 131.75,-302 131.75,-314 131.75,-314 131.75,-320 125.75,-326 119.75,-326"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-302.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">KeyValueStorage</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerErrorDomain979 -->
+<g id="node8" class="node vis-app">
+<title>nara__per__PerErrorDomain979</title>
+<g id="a_node8"><a xlink:href="../classes/cl_ara_per_PerErrorDomain_5cc5d1.html" xlink:title="PerErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M116.75,-380C116.75,-380 37.75,-380 37.75,-380 31.75,-380 25.75,-374 25.75,-368 25.75,-368 25.75,-356 25.75,-356 25.75,-350 31.75,-344 37.75,-344 37.75,-344 116.75,-344 116.75,-344 122.75,-344 128.75,-350 128.75,-356 128.75,-356 128.75,-368 128.75,-368 128.75,-374 122.75,-380 116.75,-380"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-356.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PerErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorDomain335 -->
+<g id="node12" class="node vis-app">
+<title>nara__core__ErrorDomain335</title>
+<g id="a_node12"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M299.25,-90C299.25,-90 186.5,-90 186.5,-90 180.5,-90 174.5,-84 174.5,-78 174.5,-78 174.5,-66 174.5,-66 174.5,-60 180.5,-54 186.5,-54 186.5,-54 299.25,-54 299.25,-54 305.25,-54 311.25,-60 311.25,-66 311.25,-66 311.25,-78 311.25,-78 311.25,-84 305.25,-90 299.25,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-66.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerErrorDomain979&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge5" class="edge">
+<title>nara__per__PerErrorDomain979-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M129.19,-344.16C132.69,-341.51 135.87,-338.47 138.5,-335 201.64,-251.75 111.37,-181.79 170.94,-99.35"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="173.51,-101.74 176.94,-91.71 168.01,-97.41 173.51,-101.74"></polygon>
+</g>
+<!-- nara__per__PerException768 -->
+<g id="node9" class="node vis-app">
+<title>nara__per__PerException768</title>
+<g id="a_node9"><a xlink:href="../classes/cl_ara_per_PerException_03e937.html" xlink:title="PerException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M109.25,-164C109.25,-164 45.25,-164 45.25,-164 39.25,-164 33.25,-158 33.25,-152 33.25,-152 33.25,-140 33.25,-140 33.25,-134 39.25,-128 45.25,-128 45.25,-128 109.25,-128 109.25,-128 115.25,-128 121.25,-134 121.25,-140 121.25,-140 121.25,-152 121.25,-152 121.25,-158 115.25,-164 109.25,-164"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-140.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PerException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Exception792 -->
+<g id="node13" class="node vis-app">
+<title>nara__core__Exception792</title>
+<g id="a_node13"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M291.75,-36C291.75,-36 194,-36 194,-36 188,-36 182,-30 182,-24 182,-24 182,-12 182,-12 182,-6 188,0 194,0 194,0 291.75,0 291.75,0 297.75,0 303.75,-6 303.75,-12 303.75,-12 303.75,-24 303.75,-24 303.75,-30 297.75,-36 291.75,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="242.88" y="-12.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- nara__per__PerException768&#45;&gt;nara__core__Exception792 -->
+<g id="edge6" class="edge">
+<title>nara__per__PerException768-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M91.69,-127.67C108.78,-105.49 140.21,-68.23 174.5,-45 175.93,-44.03 177.41,-43.08 178.92,-42.16"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="180.57,-45.25 187.64,-37.36 177.19,-39.12 180.57,-45.25"></polygon>
+</g>
+<!-- nara__per__SharedHandle980 -->
+<g id="node10" class="node vis-app">
+<title>nara__per__SharedHandle980</title>
+<g id="a_node10"><a xlink:href="../classes/cl_ara_per_SharedHandle_a773d0.html" xlink:title="SharedHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M112.25,-488C112.25,-488 42.25,-488 42.25,-488 36.25,-488 30.25,-482 30.25,-476 30.25,-476 30.25,-464 30.25,-464 30.25,-458 36.25,-452 42.25,-452 42.25,-452 112.25,-452 112.25,-452 118.25,-452 124.25,-458 124.25,-464 124.25,-464 124.25,-476 124.25,-476 124.25,-482 118.25,-488 112.25,-488"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-464.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SharedHandle</text>
+</a>
+</g>
+</g>
+<!-- nara__per__UniqueHandle733 -->
+<g id="node11" class="node vis-app">
+<title>nara__per__UniqueHandle733</title>
+<g id="a_node11"><a xlink:href="../classes/cl_ara_per_UniqueHandle_94e9f0.html" xlink:title="UniqueHandle" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M112.25,-542C112.25,-542 42.25,-542 42.25,-542 36.25,-542 30.25,-536 30.25,-530 30.25,-530 30.25,-518 30.25,-518 30.25,-512 36.25,-506 42.25,-506 42.25,-506 112.25,-506 112.25,-506 118.25,-506 124.25,-512 124.25,-518 124.25,-518 124.25,-530 124.25,-530 124.25,-536 118.25,-542 112.25,-542"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.25" y="-518.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">UniqueHandle</text>
+</a>
+</g>
+</g>
+</g>
+</svg>
+</div></main>
+<footer>Automatically extracted from the official AUTOSAR R25-11 specification PDFs
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Not an official AUTOSAR publication; description texts in the original (English).</footer></body></html>

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>namespace ara::crypto — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">Référence de l'API ara::*</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../namespaces/ns_crypto_ara_crypto_aacf86.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/namespaces/ns_crypto_ara_crypto_aacf86.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/namespaces/ns_crypto_ara_crypto_aacf86.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/namespaces/ns_crypto_ara_crypto_aacf86.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a class="cur" href="../../fr/namespaces/ns_crypto_ara_crypto_aacf86.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/namespaces/ns_crypto_ara_crypto_aacf86.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/namespaces/ns_crypto_ara_crypto_aacf86.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/namespaces/ns_crypto_ara_crypto_aacf86.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/namespaces/ns_crypto_ara_crypto_aacf86.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/namespaces/ns_crypto_ara_crypto_aacf86.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/namespaces/ns_crypto_ara_crypto_aacf86.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Accueil</a> › <a class="vis-app" href="../modules/crypto.html">ara::crypto</a> › ara::crypto</nav>
+<main><h1><span class="kind">namespace</span> ara::crypto</h1>
+<details class="fold"><summary><h2 class="sect">Guide utilisateur <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h2></summary><div class="ai"><p class="ai-note">Description générée automatiquement, déduite du contenu des documents AUTOSAR R25-11 référencés (spécification SWS et documents normatifs d’accompagnement) — ce n’est pas un texte AUTOSAR officiel. Les énoncés signalés comme interprétation sont des conclusions tirées des sources.</p><h4 id="guide-rolle-crypto-stack">Rôle dans la Crypto Stack</h4><p><code>ara::crypto</code> regroupe l'accès public aux Crypto Providers, KeySlots, types de clés et fonctions X.509. Les API sont composées au moyen de ressources modélisées et d'identifiants d'algorithmes déclarés. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=38">SWS Cryptography §7.1 « Architecture &amp; Concepts »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=48">SWS Cryptography §7.3 « Crypto Provider »</a></p><h4 id="guide-providerzugaenge">Accès fournisseur</h4><p><code>LoadCryptoProvider()</code> adresse un fournisseur modélisé pour les hachages ou les clés de session, par exemple. <code>LoadKeySlot()</code> et <code>LoadWriteableKeySlot()</code> traitent du matériel clé persistant conformément aux droits du modèle. <code>LoadX509Provider()</code> fournit le fournisseur X.509 à l'échelle de la machine. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=49">SWS Cryptography §7.3.1 « KeySlot Access »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=50">SWS Cryptography §7.3.2 « CryptoProvider Instantiation »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=68">SWS Cryptography §7.5 « Certificate handling (X.509 Provider) »</a></p><p>L'interaction des chemins d'accès est documentée sous forme de diagramme dans le guide du module : <a href="../modules/crypto.html#diag-zugangswege">ara::crypto — Cryptography, diagramme « Interaction dans la pile crypto »</a>.</p><h4 id="guide-sicherheitsregeln">Règles de sécurité communes</h4><p>Les limites du fournisseur, les droits d'emplacement, <code>AllowedUsageFlags</code> et le cycle de vie de l'application font partie de la sémantique de l'API. Les applications ne sont autorisées à utiliser l'API de chiffrement qu'après une initialisation réussie et avant la désinitialisation. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=41">SWS Cryptography §7.1.3 « Access Control »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#page=47">SWS Cryptography §7.2 « Functional Cluster Lifecycle »</a></p><p class="ai-evidence"><strong>Références d'API et de sources :</strong> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.5.1.1.1">EXP SWArchitecture §9.5.1.1.1 « Common interfaces »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02305">[RS_CRYPTO_02305]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02307">[RS_CRYPTO_02307]</a></p></div> </details>
+<h3>Fonctions gratuites — aperçu</h3>
+<ul class="mlist"><li><code class="sig">constexpr const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp; <a class="fn" href="#SWS_CRYPT_19952">GetCryptoErrorDomain</a> () noexcept;</code> <span class="dim">Return a reference to the global CryptoErrorDomain.</span></li><li><code class="sig"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::CryptoProvider::Sptr &gt; <a class="fn" href="#SWS_CRYPT_20099">LoadCryptoProvider</a> (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</code> <span class="dim">This factory method shall create or return the existing instance of a specific Crypto Provider.</span></li><li><code class="sig"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../classes/cl_ara_crypto_Formatter_6738f9.html">Formatter</a>::Sptr &gt; <a class="fn" href="#SWS_CRYPT_50200">LoadFormatter</a> () noexcept;</code> <span class="dim">Factory that creates a Formatter.</span></li><li><code class="sig"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::KeySlot::Sptr &gt; <a class="fn" href="#SWS_CRYPT_50004">LoadKeySlot</a> (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</code> <span class="dim">Load a read-only key slot</span></li><li><code class="sig"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::WriteableKeySlot::Sptr &gt; <a class="fn" href="#SWS_CRYPT_50005">LoadWriteableKeySlot</a> (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</code> <span class="dim">Load a writeable key slot</span></li><li><code class="sig"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; x509::X509Provider::Sptr &gt; <a class="fn" href="#SWS_CRYPT_40099">LoadX509Provider</a> () noexcept;</code> <span class="dim">This factory method shall create or return the existing instance of the singleton X.509 Provider.</span></li><li><code class="sig">constexpr <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a> <a class="fn" href="#SWS_CRYPT_19951">MakeErrorCode</a> (CryptoErrorDomain::Errc code, <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00123">ara::core::ErrorDomain::SupportDataType</a> data) noexcept;</code> <span class="dim">Makes Error Code instances from the Crypto Error Domain</span></li></ul>
+<h2 class="sect">Classes et structures</h2><ul class="mlist boxes"><li><a class="dbox  vis-app" href="../classes/cl_ara_crypto_CryptoErrorDomain_65cc5f.html">CryptoErrorDomain</a> <span class="dim">Crypto Error Domain class that provides interfaces as defined by ara::core::ErrorDomain such as a name of the Crypto Error Domain or message</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_crypto_CryptoException_e96f3d.html">CryptoException</a> <span class="dim">Exception type thrown for CRYPTO errors.</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_crypto_Formatter_6738f9.html">Formatter</a> <span class="dim">Formatter object interface.</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_crypto_SecureCounter_b841c1.html">SecureCounter</a> <span class="dim">128 bit secure counter made up of two uint64_t’s representing the most significant and least significant bits</span></li><li><a class="dbox  vis-app" href="../classes/cl_ara_crypto_Serializable_e0adda.html">Serializable</a> <span class="dim">Serializable object interface.</span></li></ul>
+<h2 class="sect">Diagramme de classes UML du namespace</h2><p class="dim">Cadres arrondis = étendues d’espace de noms ou de classe ; flèches triangulaires creuses = héritage (pointant vers la classe de base) ; cases grises = classes de base sans espace de noms ou externes. Un clic ouvre la page de classe ou de référence cpp correspondante.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="585pt" height="154pt" viewbox="0.00 0.00 585.00 154.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 149.5)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_ns</title>
+<path fill="none" stroke="#d4d1ca" d="M21.38,-8C21.38,-8 557.38,-8 557.38,-8 563.38,-8 569.38,-14 569.38,-20 569.38,-20 569.38,-69.5 569.38,-69.5 569.38,-75.5 563.38,-81.5 557.38,-81.5 557.38,-81.5 21.38,-81.5 21.38,-81.5 15.37,-81.5 9.38,-75.5 9.38,-69.5 9.38,-69.5 9.38,-20 9.38,-20 9.38,-14 15.38,-8 21.38,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="289.38" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::crypto</text>
+</g>
+<!-- nara__crypto__CryptoErrorDomain -->
+<g id="node1" class="node vis-app">
+<title>nara__crypto__CryptoErrorDomain</title>
+<g id="a_node1"><a xlink:href="../classes/cl_ara_crypto_CryptoErrorDomain_65cc5f.html" xlink:title="ara::crypto::CryptoErrorDomain" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M125.12,-73.5C125.12,-73.5 29.63,-73.5 29.63,-73.5 23.63,-73.5 17.63,-67.5 17.63,-61.5 17.63,-61.5 17.63,-49.5 17.63,-49.5 17.63,-43.5 23.63,-37.5 29.63,-37.5 29.63,-37.5 125.12,-37.5 125.12,-37.5 131.12,-37.5 137.12,-43.5 137.12,-49.5 137.12,-49.5 137.12,-61.5 137.12,-61.5 137.12,-67.5 131.12,-73.5 125.12,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="77.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">CryptoErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- next_ara__core__ErrorDomain -->
+<g id="node6" class="node vis-app">
+<title>next_ara__core__ErrorDomain</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M124.75,-145.5C124.75,-145.5 12,-145.5 12,-145.5 6,-145.5 0,-139.5 0,-133.5 0,-133.5 0,-121.5 0,-121.5 0,-115.5 6,-109.5 12,-109.5 12,-109.5 124.75,-109.5 124.75,-109.5 130.75,-109.5 136.75,-115.5 136.75,-121.5 136.75,-121.5 136.75,-133.5 136.75,-133.5 136.75,-139.5 130.75,-145.5 124.75,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="68.38" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__crypto__CryptoErrorDomain&#45;&gt;next_ara__core__ErrorDomain -->
+<g id="edge1" class="edge">
+<title>nara__crypto__CryptoErrorDomain-&gt;next_ara__core__ErrorDomain</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M75.15,-73.8C74.22,-81.01 73.12,-89.57 72.08,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="68.61,-97.23 70.81,-107.59 75.55,-98.12 68.61,-97.23"></polygon>
+</g>
+<!-- nara__crypto__CryptoException -->
+<g id="node2" class="node vis-app">
+<title>nara__crypto__CryptoException</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_crypto_CryptoException_e96f3d.html" xlink:title="ara::crypto::CryptoException" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M247.62,-73.5C247.62,-73.5 167.12,-73.5 167.12,-73.5 161.12,-73.5 155.12,-67.5 155.12,-61.5 155.12,-61.5 155.12,-49.5 155.12,-49.5 155.12,-43.5 161.12,-37.5 167.12,-37.5 167.12,-37.5 247.62,-37.5 247.62,-37.5 253.62,-37.5 259.62,-43.5 259.62,-49.5 259.62,-49.5 259.62,-61.5 259.62,-61.5 259.62,-67.5 253.62,-73.5 247.62,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="207.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">CryptoException</text>
+</a>
+</g>
+</g>
+<!-- next_ara__core__Exception -->
+<g id="node7" class="node vis-app">
+<title>next_ara__core__Exception</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M264.25,-145.5C264.25,-145.5 166.5,-145.5 166.5,-145.5 160.5,-145.5 154.5,-139.5 154.5,-133.5 154.5,-133.5 154.5,-121.5 154.5,-121.5 154.5,-115.5 160.5,-109.5 166.5,-109.5 166.5,-109.5 264.25,-109.5 264.25,-109.5 270.25,-109.5 276.25,-115.5 276.25,-121.5 276.25,-121.5 276.25,-133.5 276.25,-133.5 276.25,-139.5 270.25,-145.5 264.25,-145.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="215.38" y="-122.47" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- nara__crypto__CryptoException&#45;&gt;next_ara__core__Exception -->
+<g id="edge2" class="edge">
+<title>nara__crypto__CryptoException-&gt;next_ara__core__Exception</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M209.35,-73.8C210.18,-81.01 211.15,-89.57 212.08,-97.68"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="208.6,-98.05 213.21,-107.59 215.56,-97.26 208.6,-98.05"></polygon>
+</g>
+<!-- nara__crypto__Formatter -->
+<g id="node3" class="node vis-app">
+<title>nara__crypto__Formatter</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_crypto_Formatter_6738f9.html" xlink:title="ara::crypto::Formatter" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M336.75,-73.5C336.75,-73.5 290,-73.5 290,-73.5 284,-73.5 278,-67.5 278,-61.5 278,-61.5 278,-49.5 278,-49.5 278,-43.5 284,-37.5 290,-37.5 290,-37.5 336.75,-37.5 336.75,-37.5 342.75,-37.5 348.75,-43.5 348.75,-49.5 348.75,-49.5 348.75,-61.5 348.75,-61.5 348.75,-67.5 342.75,-73.5 336.75,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="313.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Formateur</text>
+</a>
+</g>
+</g>
+<!-- nara__crypto__SecureCounter -->
+<g id="node4" class="node vis-app">
+<title>nara__crypto__SecureCounter</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_crypto_SecureCounter_b841c1.html" xlink:title="ara::crypto::SecureCounter" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M451.88,-73.5C451.88,-73.5 378.88,-73.5 378.88,-73.5 372.88,-73.5 366.88,-67.5 366.88,-61.5 366.88,-61.5 366.88,-49.5 366.88,-49.5 366.88,-43.5 372.88,-37.5 378.88,-37.5 378.88,-37.5 451.88,-37.5 451.88,-37.5 457.88,-37.5 463.88,-43.5 463.88,-49.5 463.88,-49.5 463.88,-61.5 463.88,-61.5 463.88,-67.5 457.88,-73.5 451.88,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="415.38" y="-56.85" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">«struct»</text>
+<text xml:space="preserve" text-anchor="middle" x="415.38" y="-44.1" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SecureCounter</text>
+</a>
+</g>
+</g>
+<!-- nara__crypto__Serializable -->
+<g id="node5" class="node vis-app">
+<title>nara__crypto__Serializable</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_crypto_Serializable_e0adda.html" xlink:title="ara::crypto::Serializable" class="vis-app">
+<path fill="#f9f8f5" stroke="#01696f" d="M549.25,-73.5C549.25,-73.5 493.5,-73.5 493.5,-73.5 487.5,-73.5 481.5,-67.5 481.5,-61.5 481.5,-61.5 481.5,-49.5 481.5,-49.5 481.5,-43.5 487.5,-37.5 493.5,-37.5 493.5,-37.5 549.25,-37.5 549.25,-37.5 555.25,-37.5 561.25,-43.5 561.25,-49.5 561.25,-49.5 561.25,-61.5 561.25,-61.5 561.25,-67.5 555.25,-73.5 549.25,-73.5"></path>
+<text xml:space="preserve" text-anchor="middle" x="521.38" y="-50.48" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">Serializable</text>
+</a>
+</g>
+</g>
+</g>
+</svg></div>
+
+<h2 class="sect">Énumérations</h2><article class="rec" id="SWS_CRYPT_10099">
+<h3 class="recname"><span class="kind">énumération</span> CryptoErrc <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10099" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10099]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02310" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02310</a></span></h3>
+<pre class="syntax">enum class CryptoErrc :            <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00122">ara::core::ErrorDomain::CodeType</a> {...};</pre>
+<div class="desc"><p>Defines the error codes for the <a class="vis-app" href="../classes/cl_ara_crypto_CryptoErrorDomain_65cc5f.html">ara::crypto::CryptoErrorDomain</a></p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/crypto_error_domain.h"</td></tr><tr><th>Forwarding Header</th><td class="mono">#include "ara/crypto/crypto_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">CryptoErrc</td></tr><tr><th>Type de base</th><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00122">ara::core::ErrorDomain::CodeType</a></td></tr></table>
+<h4>Valeurs</h4>
+<table class="params"><tr><th>Recenseur</th><th>Description</th></tr><tr><td colspan="2" class="note">ResourceException: Specified resource is busy!</td></tr><tr><td class="mono">kNoSuchValue</td><td>= 2U kNoSuchElement: The requested element is not present in the object.</td></tr><tr><td class="mono">kInvalidArgument</td><td>= 33619968U InvalidArgumentException: An invalid argument value is provided!</td></tr><tr><td class="mono">kUnknownIdentifier</td><td>= 33619969U InvalidArgumentException: Unknown identifier is provided!</td></tr><tr><td class="mono">kInsufficientCapacity</td><td>= 33619970U InvalidArgumentException: Insufficient capacity of the output buffer!</td></tr><tr><td class="mono">kInvalidInputSize</td><td>= 33619971U InvalidArgumentException: Invalid size of an input buffer!</td></tr><tr><td class="mono">kIncompatibleArguments</td><td>= 33619972U InvalidArgumentException: Provided values of arguments are incompatible!</td></tr><tr><td class="mono">kOutOfBounds</td><td>= 67174407U InvalidArgumentException: Provided value is above the upper boundary!</td></tr><tr><td class="mono">kAuthTagNotValid</td><td>= 33619976U AuthTagNotValidException: Provided authentication-tag cannot be verified!</td></tr><tr><td class="mono">kUnsupported</td><td>= 33620224U UnsupportedException: Unsupported request (due to limitations of the implementation)!</td></tr><tr><td class="mono">kInvalidUsageOrder</td><td>= 33685504U InvalidUsageOrderException: Invalid usage order of the interface!</td></tr><tr><td class="mono">kUninitializedContext</td><td>= 33685505U InvalidUsageOrderException: Context of the interface was not initialized!</td></tr><tr><td class="mono">kProcessingNotStarted</td><td>= 33685506U InvalidUsageOrderException: Data processing was not started yet!</td></tr><tr><td class="mono">kProcessingNotFinished</td><td>= 33685507U InvalidUsageOrderException: Data processing was not finished yet!</td></tr><tr><td class="mono">kUnsupportedFormat</td><td>= 50331649U RuntimeException: Unsupported serialization format for this object type!</td></tr><tr><td class="mono">kIncompatibleObject</td><td>= 50397185U UnexpectedValueException: The provided object is incompatible with requested operation or its configuration!</td></tr><tr><td class="mono">kEmptyKeySlot</td><td>= 50397187U UnexpectedValueException: Specified container is empty!</td></tr><tr><td class="mono">kUsageViolation</td><td>= 50462720U UsageViolationException: Violation of allowed usage for the object!</td></tr><tr><td class="mono">kEmptyCertificateSlot</td><td>= 50462721U --</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10099", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10099", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10099</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10016">
+<h3 class="recname"><span class="kind">énumération</span> CryptoObjectType <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10016" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10016]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax">enum class CryptoObjectType :               <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a> {...};</pre>
+<div class="desc"><p>Enumeration of all types of crypto objects, i.e. types of content that can be stored to a key slot.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Forwarding Header</th><td class="mono">#include "ara/crypto/crypto_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">CryptoObjectType</td></tr><tr><th>Type de base</th><td class="mono">std::uint8_t</td></tr></table>
+<h4>Valeurs</h4>
+<table class="params"><tr><th>Recenseur</th><th>Description</th></tr><tr><td class="mono">kSymmetricKey</td><td>=1 cryp::SymmetricKey object</td></tr><tr><td class="mono">kPrivateKey</td><td>=2 cryp::PrivateKey object</td></tr><tr><td class="mono">kPublicKey</td><td>=3 cryp::PublicKey object</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10016", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10016", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10016</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10019">
+<h3 class="recname"><span class="kind">énumération</span> CryptoTransform <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10019" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10019]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax">enum class CryptoTransform :               <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a> {...};</pre>
+<div class="desc"><p>Enumeration of cryptographic transformation directions.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Forwarding Header</th><td class="mono">#include "ara/crypto/crypto_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">CryptoTransform</td></tr><tr><th>Type de base</th><td class="mono">std::uint8_t</td></tr></table>
+<h4>Valeurs</h4>
+<table class="params"><tr><th>Recenseur</th><th>Description</th></tr><tr><td class="mono">kEncrypt</td><td>=1 encryption</td></tr><tr><td class="mono">kDecrypt</td><td>=2 decryption</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10019", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10019", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10019</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">Alias de type</h2><article class="rec" id="SWS_CRYPT_10014">
+<h3 class="recname"><span class="kind">alias de type</span> AlgId <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10014" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10014]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02102" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02102</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02107" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02107</a></span></h3>
+<pre class="syntax">using AlgId = <a class="vis-app" href="../classes/cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a>;</pre>
+<div class="desc"><p>Type for holding StringView of algorithm according to standardized format described in the chapter ’Naming Convention’.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">AlgId</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10014", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10014", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10014</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50000">
+<h3 class="recname"><span class="kind">alias de type</span> AlgIdString <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50000" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50000]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02102" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02102</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02107" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02107</a></span></h3>
+<pre class="syntax">using AlgIdString = <a class="vis-app" href="ns_core_ara_core_e30e31.html#SWS_CORE_03001">ara::core::String</a>;</pre>
+<div class="desc"><p>Type for holding String of algorithm according to standardized format described in the chapter ’Naming Convention’.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">AlgIdString</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50000", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50000", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50000</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10015">
+<h3 class="recname"><span class="kind">alias de type</span> AllowedUsageFlags <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10015" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10015]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">using AllowedUsageFlags = <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a>;</pre>
+<div class="desc"><p>Type for holding bit-flags of allowed usages of a key.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">AllowedUsageFlags</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10015", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10015", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10015</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10701">
+<h3 class="recname"><span class="kind">alias de type</span> FormatId <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10701" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10701]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02302" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02302</a></span></h3>
+<pre class="syntax">using FormatId = <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a>;</pre>
+<div class="desc"><p>A container type for the encoding format identifiers.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/serializable.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">FormatId</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10701", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10701", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10701</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10033">
+<h3 class="recname"><span class="kind">alias de type</span> ReadOnlyMemRegion <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10033" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10033]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax">using ReadOnlyMemRegion = <a class="vis-app" href="../classes/cl_ara_core_Span_f16d72.html">ara::core::Span</a>&lt;const <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a>&gt;;</pre>
+<div class="desc"><p>Read-Only Memory Region (intended for [in] arguments)</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/mem_region.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">ReadOnlyMemRegion</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10033", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10033", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10033</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_10031">
+<h3 class="recname"><span class="kind">alias de type</span> ReadWriteMemRegion <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_10031" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_10031]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax">using ReadWriteMemRegion = <a class="vis-app" href="../classes/cl_ara_core_Span_f16d72.html">ara::core::Span</a>&lt;<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint8_t</a>&gt;;</pre>
+<div class="desc"><p>Read-Write Memory Region (intended for [out] or [in/out] arguments)</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/mem_region.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">ReadWriteMemRegion</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_10031", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_10031", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_10031</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50003">
+<h3 class="recname"><span class="kind">alias de type</span> Timestamp <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50003" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50003]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02306" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02306</a></span></h3>
+<pre class="syntax">using Timestamp = <a class="cppref" href="https://en.cppreference.com/w/cpp/chrono/time_point" title="cppreference.com (C++17)">std::chrono::time_point</a>&lt;<a class="cppref" href="https://en.cppreference.com/w/cpp/chrono/system_clock" title="cppreference.com (C++17)">std::chrono::system_clock</a>, <a class="cppref" href="https://en.cppreference.com/w/cpp/chrono/duration" title="cppreference.com (C++17)">std::chrono::seconds</a>&gt;;</pre>
+<div class="desc"><p>Type for timestamps.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">Timestamp</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50003", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50003", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50003</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50145">
+<h3 class="recname"><span class="kind">alias de type</span> LoadCryptoProvider <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50145" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50145]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02102" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02102</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02107" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02107</a></span></h3>
+<pre class="syntax">using <a href="#SWS_CRYPT_10014">AlgId</a> = <a class="vis-app" href="../classes/cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a>;</pre>
+<div class="desc"><p>Type for holding StringView of algorithm according to standardized format described in the chapter ’Naming Convention’.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10014">AlgId</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50145", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50145", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50145</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">Constantes / variables</h2><article class="rec" id="SWS_CRYPT_13102">
+<h3 class="recname"><span class="kind">variable</span> kAllowDataDecryption <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13102" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13102]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowDataDecryption {0x0002};</pre>
+<div class="desc"><p>The key can be used for data decryption.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowDataDecryption</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13102", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13102", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13102</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13101">
+<h3 class="recname"><span class="kind">variable</span> kAllowDataEncryption <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13101" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13101]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowDataEncryption {0x0001};</pre>
+<div class="desc"><p>The following constants define 1-bit values representing allowed usages. The key can be used for data encryption</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowDataEncryption</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13101", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13101", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13101</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13150">
+<h3 class="recname"><span class="kind">variable</span> kAllowDerivedPlaintextExport <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13150" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13150]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowDerivedPlaintextExport {0x4000};</pre>
+<div class="desc"><p>The derived key can be exported in plaintext.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowDerivedPlaintextExport</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13150", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13150", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13150</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13110">
+<h3 class="recname"><span class="kind">variable</span> kAllowHashCalculation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13110" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13110]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowHashCalculation {0x1000};</pre>
+<div class="desc"><p>The key can be used as input to a HashFunctionCtx.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowHashCalculation</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13110", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13110", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13110</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13105">
+<h3 class="recname"><span class="kind">variable</span> kAllowKeyAgreement <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13105" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13105]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowKeyAgreement {0x0020};</pre>
+<div class="desc"><p>The key can be used as private or public input to key agreement.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowKeyAgreement</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13105", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13105", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13105</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13106">
+<h3 class="recname"><span class="kind">variable</span> kAllowKeyDerivation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13106" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13106]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowKeyDerivation {0x0040};</pre>
+<div class="desc"><p>The key can be used for key derivation.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowKeyDerivation</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13106", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13106", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13106</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50002">
+<h3 class="recname"><span class="kind">variable</span> kAllowKeyUnwrapping <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50002" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50002]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowKeyUnwrapping {0x0100};</pre>
+<div class="desc"><p>The key can be used as a key encryption key for key unwrapping or key decapsulation.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowKeyUnwrapping</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50002", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50002", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50002</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13108">
+<h3 class="recname"><span class="kind">variable</span> kAllowKeyWrapping <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13108" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13108]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowKeyWrapping {0x0080};</pre>
+<div class="desc"><p>The key can be used as a key encryption key for key wrapping or key encapsulation.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowKeyWrapping</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13108", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13108", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13108</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50001">
+<h3 class="recname"><span class="kind">variable</span> kAllowMac <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50001" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50001]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowMac {0x0004};</pre>
+<div class="desc"><p>The key can be used for MAC generation and verification.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowMac</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50001", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50001", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50001</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13109">
+<h3 class="recname"><span class="kind">variable</span> kAllowPersist <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13109" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13109]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowPersist {0x0200};</pre>
+<div class="desc"><p>The key can persisted.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowPersist</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13109", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13109", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13109</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_40992">
+<h3 class="recname"><span class="kind">variable</span> kAllowPlaintextExport <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_40992" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_40992]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowPlaintextExport {0x2000};</pre>
+<div class="desc"><p>The key can be exported in plaintext.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowPlaintextExport</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_40992", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_40992", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_40992</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13107">
+<h3 class="recname"><span class="kind">variable</span> kAllowRngInit <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13107" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13107]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowRngInit {0x0800};</pre>
+<div class="desc"><p>The symmetric key can be used for seeding of a RandomGeneratorCtx.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowRngInit</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13107", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13107", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13107</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_40991">
+<h3 class="recname"><span class="kind">variable</span> kAllowSecuredExport <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_40991" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_40991]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowSecuredExport {0x0400};</pre>
+<div class="desc"><p>The key can be securely exported (protected export)</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowSecuredExport</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_40991", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_40991", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_40991</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13103">
+<h3 class="recname"><span class="kind">variable</span> kAllowSigGeneration <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13103" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13103]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowSigGeneration {0x0008};</pre>
+<div class="desc"><p>The key can be used for signature generation.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowSigGeneration</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13103", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13103", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13103</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_13104">
+<h3 class="recname"><span class="kind">variable</span> kAllowSigVerification <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_13104" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_13104]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02111" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02111</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a> kAllowSigVerification {0x0010};</pre>
+<div class="desc"><p>The key can be used for signature verification.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/base_id_types.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kAllowSigVerification</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10015">AllowedUsageFlags</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_13104", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_13104", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_13104</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_60018">
+<h3 class="recname"><span class="kind">variable</span> kFormatDerEncoded <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_60018" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_60018]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02302" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02302</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a> kFormatDerEncoded {2};</pre>
+<div class="desc"><p>Export DER-encoded value of an object.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/serializable.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kFormatDerEncoded</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_60018", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_60018", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_60018</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_60019">
+<h3 class="recname"><span class="kind">variable</span> kFormatPemEncoded <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_60019" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_60019]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02302" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02302</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a> kFormatPemEncoded {3};</pre>
+<div class="desc"><p>Export PEM-encoded value of an object.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/serializable.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kFormatPemEncoded</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_60019", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_60019", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_60019</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_60017">
+<h3 class="recname"><span class="kind">variable</span> kFormatRawValueOnly <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_60017" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_60017]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02302" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02302</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a> kFormatRawValueOnly {1};</pre>
+<div class="desc"><p>Export only raw value of an object, i.e., a plain byte array for symmetric keys and ISO/IEC 7816-8 / IEEE P1363 encoding for combined values.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/serializable.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kFormatRawValueOnly</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_60017", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_60017", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_60017</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_60016">
+<h3 class="recname"><span class="kind">variable</span> kProprietaryFormat <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_60016" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_60016]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02302" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02302</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a> kProprietaryFormat {0};</pre>
+<div class="desc"><p>Proprietary format that is only valid in the context of a CryptoProvider.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/serializable.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Symbole</th><td class="mono">kProprietaryFormat</td></tr><tr><th>Type</th><td class="mono"><a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html#SWS_CRYPT_10701">FormatId</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_60016", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_60016", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_60016</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">Documentation des fonctions libres</h2><article class="rec" id="SWS_CRYPT_19952">
+<h3 class="recname"><span class="kind">fonction</span> GetCryptoErrorDomain <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_19952" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_19952]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02310" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02310</a></span></h3>
+<pre class="syntax">constexpr const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp; GetCryptoErrorDomain () noexcept;</pre>
+<div class="desc"><p>Return a reference to the global CryptoErrorDomain.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/crypto_error_domain.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono">const <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html">ara::core::ErrorDomain</a> &amp;</td><td>the CryptoErrorDomain</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_19952", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_19952", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_19952</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_20099">
+<h3 class="recname"><span class="kind">fonction</span> LoadCryptoProvider <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_20099" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_20099]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02401" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02401</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02301" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02301</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::CryptoProvider::Sptr &gt; <a href="#SWS_CRYPT_50145">LoadCryptoProvider</a> (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</pre>
+<div class="desc"><p>This factory method shall create or return the existing instance of a specific Crypto Provider.</p></div>
+<div class="ai usage"><h4>Utilisation de <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h4><p class="ai-note">Indication d'utilisation générée automatiquement, dérivée des documents AUTOSAR R25-11 référencés — ne constitue pas un texte AUTOSAR officiel.</p><h5>Classement de l'opération</h5><p><code>ara::crypto::LoadCryptoProvider</code> Transfère la représentation transmise ou la ressource modélisée dans un objet API. Le format, les droits d'accès, l'occupation et la compatibilité sont vérifiés avant l'utilisation du résultat. <a class="swsref" href="#SWS_CRYPT_20099">[SWS_CRYPT_20099]</a></p><p class="ai-evidence"><strong>API et crédits sources :</strong> <a class="swsref" href="#SWS_CRYPT_20099">[SWS_CRYPT_20099]</a></p></div>
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/entry_point.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr><tr><th>Violations</th><td class="mono">ProcessMappingVio-           In case InstanceSpecifier does not point to a PortPrototype typed lation                       by a CryptoProviderInterface modeled for the current process.</td></tr></table>
+<h4>Paramètre (in)</h4>
+<table class="params"><tr><th>paramètre</th><th>Description</th></tr><tr><td class="mono">iSpecify</td><td>InstanceSpecifier of the RPortPrototype of type CryptoProvider Interface</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="ns_crypto_ara_crypto_cryp_39bdc3.html">ara::crypto::cryp::Crypto</a>Provider::Sptr &gt;</td><td>shared pointer to loaded Crypto Provider</td></tr></table>
+<h4>Erreur</h4>
+<table class="params"><tr><th>Code d'erreur</th><th>Description</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_20099", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_20099", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_20099</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50200">
+<h3 class="recname"><span class="kind">fonction</span> LoadFormatter <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50200" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50200]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02112" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02112</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../classes/cl_ara_crypto_Formatter_6738f9.html">Formatter</a>::Sptr &gt; LoadFormatter () noexcept;</pre>
+<div class="desc"><p>Factory that creates a Formatter.</p></div>
+<div class="ai usage"><h4>Utilisation de <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h4><p class="ai-note">Indication d'utilisation générée automatiquement, dérivée des documents AUTOSAR R25-11 référencés — ne constitue pas un texte AUTOSAR officiel.</p><h5>Classement de l'opération</h5><p><code>ara::crypto::LoadFormatter</code> Transfère la représentation transmise ou la ressource modélisée dans un objet API. Le format, les droits d'accès, l'occupation et la compatibilité sont vérifiés avant l'utilisation du résultat. <a class="swsref" href="#SWS_CRYPT_50200">[SWS_CRYPT_50200]</a></p><p class="ai-evidence"><strong>API et crédits sources :</strong> <a class="swsref" href="#SWS_CRYPT_50200">[SWS_CRYPT_50200]</a></p></div>
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/formatter.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="../classes/cl_ara_crypto_Formatter_6738f9.html#SWS_CRYPT_50191">ara::crypto::Formatter::Sptr</a>&gt;</td><td>shared pointer to Formatter</td></tr></table>
+<h4>Erreur</h4>
+<table class="params"><tr><th>Code d'erreur</th><th>Description</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50200", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50200", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50200</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50004">
+<h3 class="recname"><span class="kind">fonction</span> LoadKeySlot <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50004" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50004]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::KeySlot::Sptr &gt; LoadKeySlot (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</pre>
+<div class="desc"><p>Load a read-only key slot. This factory method shall load the information associated with the specified KeySlot into a KeySlot object.</p></div>
+<div class="ai usage"><h4>Utilisation de <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h4><p class="ai-note">Indication d'utilisation générée automatiquement, dérivée des documents AUTOSAR R25-11 référencés — ne constitue pas un texte AUTOSAR officiel.</p><h5>Classement de l'opération</h5><p><code>ara::crypto::LoadKeySlot</code> Transfère la représentation transmise ou la ressource modélisée dans un objet API. Le format, les droits d'accès, l'occupation et la compatibilité sont vérifiés avant l'utilisation du résultat. <a class="swsref" href="#SWS_CRYPT_50004">[SWS_CRYPT_50004]</a></p><p class="ai-evidence"><strong>API et crédits sources :</strong> <a class="swsref" href="#SWS_CRYPT_50004">[SWS_CRYPT_50004]</a></p></div>
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/entry_point.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr><tr><th>Violations</th><td class="mono">ProcessMappingVio-           In case InstanceSpecifier does not point to a PortPrototype typed lation                       by a CryptoKeySlotInterface or CryptoKeySlotClientInterface modeled for the current process.</td></tr></table>
+<h4>Paramètre (in)</h4>
+<table class="params"><tr><th>paramètre</th><th>Description</th></tr><tr><td class="mono">iSpecify</td><td>instance specifier to the RPortPrototype of a CryptoKeySlot Interface or a CryptoKeySlotClientInterface that identifies the key to be loaded</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;cryp::KeySlot::Sptr &gt;</td><td>a result containing either the KeySlot or an error</td></tr></table>
+<h4>Erreur</h4>
+<table class="params"><tr><th>Code d'erreur</th><th>Description</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50004", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50004", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50004</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_50005">
+<h3 class="recname"><span class="kind">fonction</span> LoadWriteableKeySlot <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_50005" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_50005]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02004" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02004</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; cryp::WriteableKeySlot::Sptr &gt; LoadWriteableKeySlot (const <a class="vis-app" href="../classes/cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;iSpecify) noexcept;</pre>
+<div class="desc"><p>Load a writeable key slot. This factory method shall load the information associated with the specified KeySlot into a WriteableKeySlot object.</p></div>
+<div class="ai usage"><h4>Utilisation de <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h4><p class="ai-note">Indication d'utilisation générée automatiquement, dérivée des documents AUTOSAR R25-11 référencés — ne constitue pas un texte AUTOSAR officiel.</p><h5>Classement de l'opération</h5><p><code>ara::crypto::LoadWriteableKeySlot</code> Transfère la représentation transmise ou la ressource modélisée dans un objet API. Le format, les droits d'accès, l'occupation et la compatibilité sont vérifiés avant l'utilisation du résultat. <a class="swsref" href="#SWS_CRYPT_50005">[SWS_CRYPT_50005]</a></p><p class="ai-evidence"><strong>API et crédits sources :</strong> <a class="swsref" href="#SWS_CRYPT_50005">[SWS_CRYPT_50005]</a></p></div>
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/entry_point.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr><tr><th>Violations</th><td class="mono">ProcessMappingVio-           In case InstanceSpecifier does not point to a PortPrototype typed lation                       by a CryptoKeySlotInterface modeled for the current process.</td></tr></table>
+<h4>Paramètre (in)</h4>
+<table class="params"><tr><th>paramètre</th><th>Description</th></tr><tr><td class="mono">iSpecify</td><td>instance specifier to the RPortPrototype of a CryptoKeySlot Interface that identifies the key to be loaded</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;cryp::WriteableKeySlot::Sptr &gt;</td><td>a result containing either the KeySlot or an error</td></tr></table>
+<h4>Erreur</h4>
+<table class="params"><tr><th>Code d'erreur</th><th>Description</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_50005", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_50005", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_50005</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_40099">
+<h3 class="recname"><span class="kind">fonction</span> LoadX509Provider <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_40099" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_40099]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02306" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02306</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02301" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02301</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; x509::X509Provider::Sptr &gt; LoadX509Provider () noexcept;</pre>
+<div class="desc"><p>This factory method shall create or return the existing instance of the singleton X.509 Provider.</p></div>
+<div class="ai usage"><h4>Utilisation de <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h4><p class="ai-note">Indication d'utilisation générée automatiquement, dérivée des documents AUTOSAR R25-11 référencés — ne constitue pas un texte AUTOSAR officiel.</p><h5>Classement de l'opération</h5><p><code>ara::crypto::LoadX509Provider</code> Transfère la représentation transmise ou la ressource modélisée dans un objet API. Le format, les droits d'accès, l'occupation et la compatibilité sont vérifiés avant l'utilisation du résultat. <a class="swsref" href="#SWS_CRYPT_40099">[SWS_CRYPT_40099]</a></p><p class="ai-evidence"><strong>API et crédits sources :</strong> <a class="swsref" href="#SWS_CRYPT_40099">[SWS_CRYPT_40099]</a></p></div>
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/entry_point.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="ns_crypto_ara_crypto_x509_6a3cad.html">ara::crypto::x509::X509</a>Provider::Sptr &gt;</td><td>shared pointer to loaded X.509 Provider</td></tr></table>
+<h4>Erreur</h4>
+<table class="params"><tr><th>Code d'erreur</th><th>Description</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_40099", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_40099", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_40099</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_CRYPT_19951">
+<h3 class="recname"><span class="kind">fonction</span> MakeErrorCode <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Cryptography.pdf#nameddest=SWS_CRYPT_19951" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Cryptography.pdf)">[SWS_CRYPT_19951]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Cryptography.pdf#nameddest=RS_CRYPTO_02310" title="Spezifikations-PDF (AUTOSAR_AP_RS_Cryptography.pdf)">RS_CRYPTO_02310</a></span></h3>
+<pre class="syntax">constexpr <a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a> MakeErrorCode (CryptoErrorDomain::Errc code, <a class="vis-app" href="../classes/cl_ara_core_ErrorDomain_a538fe.html#SWS_CORE_00123">ara::core::ErrorDomain::SupportDataType</a> data) noexcept;</pre>
+<div class="desc"><p>Makes Error Code instances from the Crypto Error Domain. The returned ErrorCode instance always references to CryptoErrorDomain.</p></div>
+
+<table class="props"><tr><th>Fichier d'en-tête</th><td class="mono">#include "ara/crypto/common/crypto_error_domain.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="ns_crypto_ara_crypto_aacf86.html">ara::crypto</a></td></tr><tr><th>Sécurité des exceptions</th><td class="mono">exception safe</td></tr><tr><th>Sûreté des threads</th><td class="mono">thread-safe</td></tr></table>
+<h4>Paramètre (in)</h4>
+<table class="params"><tr><th>paramètre</th><th>Description</th></tr><tr><td class="mono">code</td><td>an error code identifier from the CryptoErrc enumeration</td></tr><tr><td class="mono">data</td><td>supplementary data for the error description</td></tr></table>
+<h4>Valeur de retour</h4>
+<table class="params"><tr><th>Type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="../classes/cl_ara_core_ErrorCode_538b08.html">ara::core::ErrorCode</a></td><td>an instance of ErrorCode created according the arguments</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_CRYPT_19951", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_CRYPT_19951", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_CRYPT_19951</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>Extrait automatiquement des PDF officiels de la spécification AUTOSAR R25-11
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Ceci n’est pas une publication officielle AUTOSAR ; les textes descriptifs sont dans l’original (anglais).</footer></body></html>

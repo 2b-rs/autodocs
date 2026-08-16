@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/issue-item-v1.schema.json",
+  "title": "issue-item@v1",
+  "description": "Normalized frontmatter object for a single issues/.../index.md item, applied AFTER strict YAML front-matter parsing (docs/pipeline/issue-yaml-profile.md) and Markdown-body validation (docs/pipeline/issue-store.md #11). Schema success never substitutes for those checks.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "level", "state", "schema_version"],
+  "properties": {
+    "schema_version": {
+      "description": "Extension/version negotiation. Consumers must reject unknown major versions and may ignore unknown fields only within the SAME declared version (this document defines closed-object behavior for v1 itself; forward-compat is a consumer contract, not a schema loophole).",
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
+    "id": {
+      "description": "Must exactly match the ID derived from the file path (issue-store.md #3).",
+      "type": "string",
+      "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?$"
+    },
+    "level": {
+      "description": "Must match the hierarchy depth implied by id/path.",
+      "type": "string",
+      "enum": ["feature", "task", "subtask"]
+    },
+    "parent": {
+      "description": "Required for level=task|subtask; forbidden for level=feature. Must exactly match the parent ID derived from the path.",
+      "type": "string",
+      "pattern": "^[0-9]{4}(-[0-9]{2})?$"
+    },
+    "state": {
+      "description": "Lifecycle state token; full lifecycle semantics defined in docs/pipeline/issue-lifecycle.md (Task 0037-03.01). This schema only fixes the closed enum.",
+      "type": "string",
+      "enum": ["open", "in_progress", "blocked", "closed", "withdrawn"]
+    },
+    "visibility": {
+      "description": "Publication class (issue-store.md #6). Missing field defaults to internal at the application layer; this schema still requires it be explicit and valid whenever present.",
+      "type": "string",
+      "enum": ["internal", "public-summary"]
+    },
+    "created_at": {
+      "description": "Timestamps are always strings (quoted per issue-yaml-profile.md #5), never native YAML timestamp type.",
+      "type": "string",
+      "format": "date"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "prerequisites": {
+      "description": "List of PREREQ edges pointing at other item IDs. Self-reference is invalid (checked by the fixture runner; JSON Schema alone cannot express self != id).",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?$"
+      },
+      "uniqueItems": true
+    },
+    "labels": {
+      "description": "Free-form but closed-vocabulary classification tags.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true
+    },
+    "work_type": {
+      "description": "Closed enum of the kind of work this item represents.",
+      "type": "string",
+      "enum": ["design", "implementation", "migration", "tooling", "research", "documentation"]
+    },
+    "origin": {
+      "description": "Where this item's identity originated, for provenance/migration traceability.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["authored", "migrated-from-legacy-todo", "split-from", "merged-from"]
+        },
+        "source": {
+          "description": "Locator string, e.g. legacy-todo-md#L108 or an item id for split/merge origins.",
+          "type": "string"
+        }
+      }
+    },
+    "relations": {
+      "description": "Non-prerequisite typed edges to other items (e.g. supersedes, derived-from, blocks).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "target"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["supersedes", "superseded_by", "derived_from", "blocks", "blocked_by"]
+          },
+          "target": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?(#AC-[0-9]{3})?$"
+          }
+        }
+      }
+    },
+    "authority": {
+      "description": "Whether this item's index.md is currently authoritative or shadow-only (issue-store.md #8, cutover-gated).",
+      "type": "string",
+      "enum": ["shadow", "authoritative"]
+    },
+    "criteria": {
+      "description": "Structured mirror of the ## Acceptance criteria Markdown list (issue-store.md #11.4), for machine consumption. The Markdown body remains the human-readable source of truth; this array must stay consistent with it (checked by the fixture runner, not expressible in JSON Schema alone).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^AC-[0-9]{3}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "withdrawn", "superseded", "moved"]
+          },
+          "supersedes": {
+            "type": "string",
+            "pattern": "^AC-[0-9]{3}$"
+          },
+          "superseded_by": {
+            "type": "string",
+            "pattern": "^AC-[0-9]{3}$"
+          },
+          "derived_from": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?#AC-[0-9]{3}$"
+          },
+          "moved_to": {
+            "type": "string",
+            "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?#AC-[0-9]{3}$"
+          },
+          "source": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "limits": {
+      "description": "Optional per-item override of global size/depth limits (issue-yaml-profile.md #4); absence means the global defaults apply.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_criterion_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"level": {"const": "feature"}}},
+      "then": {"not": {"required": ["parent"]}}
+    },
+    {
+      "if": {"properties": {"level": {"enum": ["task", "subtask"]}}},
+      "then": {"required": ["parent"]}
+    }
+  ]
+}

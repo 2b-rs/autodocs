@@ -1,0 +1,910 @@
+{
+  "$id": "https://internal/provenance/_schema/provenance-event-v1.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "environment": {
+            "const": "synthetic"
+          }
+        },
+        "required": [
+          "environment"
+        ]
+      },
+      "then": {
+        "required": [
+          "synthetic_reason"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "detected-during"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "finding"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "run",
+                      "campaign"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "reported-by"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "finding"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "curation-item"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "remediates"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "commit",
+                      "issue"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "finding",
+                      "issue"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "implements"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "commit",
+                      "artifact",
+                      "record-version"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "criterion",
+                      "decision"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "verifies"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "run",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "criterion",
+                      "issue",
+                      "artifact",
+                      "record-version"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "triggered"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "finding",
+                      "decision"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "run",
+                      "campaign"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "produced-by"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "run",
+                      "campaign"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "derived-from"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "invalidated-by"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence",
+                      "finding"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "finding",
+                      "decision",
+                      "run"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "regenerated-by"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "run",
+                      "campaign"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "supersedes"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "finding",
+                      "decision",
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "finding",
+                      "decision",
+                      "artifact",
+                      "artifact-set",
+                      "record-version",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "published-as"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "artifact-set",
+                      "record-version"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "artifact",
+                      "evidence"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "decides"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "decision"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "finding",
+                      "criterion"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "relation": {
+            "const": "blocks"
+          }
+        },
+        "required": [
+          "relation"
+        ]
+      },
+      "then": {
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "finding",
+                      "decision"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          },
+          "target": {
+            "allOf": [
+              {
+                "$ref": "typed-reference-v1.schema.json"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "issue",
+                      "criterion",
+                      "run",
+                      "campaign"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "classification": {
+      "enum": [
+        "public",
+        "internal",
+        "restricted"
+      ],
+      "type": "string"
+    },
+    "environment": {
+      "enum": [
+        "synthetic",
+        "development-test",
+        "production",
+        "assessment"
+      ],
+      "type": "string"
+    },
+    "event_id": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "type": "string"
+    },
+    "occurred_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "relation": {
+      "enum": [
+        "detected-during",
+        "reported-by",
+        "remediates",
+        "implements",
+        "verifies",
+        "triggered",
+        "produced-by",
+        "derived-from",
+        "invalidated-by",
+        "regenerated-by",
+        "supersedes",
+        "published-as",
+        "decides",
+        "blocks"
+      ],
+      "type": "string"
+    },
+    "run": {
+      "$ref": "typed-reference-v1.schema.json"
+    },
+    "schema_version": {
+      "const": "1.0"
+    },
+    "source": {
+      "$ref": "typed-reference-v1.schema.json"
+    },
+    "synthetic_reason": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "target": {
+      "$ref": "typed-reference-v1.schema.json"
+    }
+  },
+  "required": [
+    "schema_version",
+    "event_id",
+    "occurred_at",
+    "relation",
+    "source",
+    "target",
+    "environment",
+    "classification"
+  ],
+  "title": "provenance-event@v1",
+  "type": "object"
+}

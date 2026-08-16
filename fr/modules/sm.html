@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::sm — State Management</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-priv"><header><div class="titleblock"><a class="home" href="../index.html">Référence de l'API ara::*</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../modules/sm.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/modules/sm.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/modules/sm.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/modules/sm.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a class="cur" href="../../fr/modules/sm.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/modules/sm.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/modules/sm.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/modules/sm.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/modules/sm.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/modules/sm.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/modules/sm.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-priv">PRIVILEGED INTERFACE (Users: SM-Control-Application, S2R-Satelliten; Except INTERNAL UpdateRequest, UpdateAllowedService, apext::sm::PowerStateInterface)</span><a href="../index.html">Accueil</a> › ara::sm</nav>
+<main><h1><span class="kind">module</span> ara::sm — State Management</h1>
+<p class="meta">Spécification : <a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf">AUTOSAR_AP_SWS_StateManagement.pdf (R25-11)</a> · 51 enregistrements API</p>
+<p><span class="chip">function: 31</span> <span class="chip">service method: 7</span> <span class="chip">class: 5</span> <span class="chip">type alias: 3</span> <span class="chip">service field: 3</span> <span class="chip">enumeration: 2</span></p>
+<details class="fold"><summary><h2 class="sect">Guide utilisateur <span class="ai-badge" title="AI generated">Généré par IA / AI generated</span></h2></summary><div class="ai module-guide"><p class="ai-note">Description générée automatiquement, déduite du contenu des documents AUTOSAR R25-11 référencés (spécification SWS et documents normatifs d’accompagnement) — ce n’est pas un texte AUTOSAR officiel. Les énoncés signalés comme interprétation sont des conclusions tirées des sources.</p><h4>De la machine cible à l'application en cours d'exécution</h4>
+<p><code>ara::sm</code> détermine les états de la machine et des groupes de fonctions ; La gestion proprement dite du processus s'effectue via Execution Management. Le concept sépare ainsi la décision technique concernant un état cible du démarrage, de l'arrêt et de la séquence des processus. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00400">[SWS_SM_00400]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.1">SWS StateManagement §7.1 « Responsibilities »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.6">SWS StateManagement §7.6 « Interaction with Execution Management »</a></p>
+<h4>Machines à états configurables</h4>
+<p>Un StateMachine regroupe les états, les transitions et les ActionLists. Une application de contrôle demande une transition ; les notifications d'état permettent à d'autres applications de surveiller l'état actuel. Le contrôleur est unique par configuration StateMachine. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.7">SWS StateManagement §7.7 « StateMachine »</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00619">[SWS_SM_00619]</a></p>
+<div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 865.00 120.00" style="max-width:1153px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 115.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="428.38" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Trigger collaboration d'un StateMachine</text>
+<!-- ctl -->
+<g id="node1" class="node">
+<title>ctl</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="120.25,-63 0,-63 0,-27 120.25,-27 120.25,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="60.12" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SMControlApplication</text>
+</g>
+<!-- tin -->
+<g id="node2" class="node">
+<title>tin</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="289.25,-63 229.75,-63 229.75,-27 289.25,-27 289.25,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="259.5" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">TriggerIn</text>
+</g>
+<!-- ctl&#45;&gt;tin -->
+<g id="edge1" class="edge">
+<title>ctl-&gt;tin</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M120.61,-45C152.1,-45 189.94,-45 218.01,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="217.72,-48.5 227.72,-45 217.72,-41.5 217.72,-48.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="175" y="-46.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1 : définir Trigger</text>
+</g>
+<!-- sm -->
+<g id="node3" class="node vis-priv">
+<title>sm</title>
+<g id="a_node3"><a xlink:href="../services/sv_sm_StateMachineService_b68b0b.html" xlink:title="StateMachine" target="_top" class="vis-priv">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="524.25,-63 442.25,-63 442.25,-27 524.25,-27 524.25,-63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="483.25" y="-40.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">StateMachine</text>
+</a>
+</g>
+</g>
+<!-- tin&#45;&gt;sm -->
+<g id="edge2" class="edge">
+<title>tin-&gt;sm</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M289.49,-45C325.19,-45 386.49,-45 430.38,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="430.32,-48.5 440.32,-45 430.32,-41.5 430.32,-48.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="365.75" y="-46.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2 : Déclencher la transition</text>
+</g>
+<!-- tout -->
+<g id="node4" class="node">
+<title>tout</title>
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="816.62,-90 748.88,-90 748.88,-54 816.62,-54 816.62,-90"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="782.75" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">TriggerOut</text>
+</g>
+<!-- sm&#45;&gt;tout -->
+<g id="edge3" class="edge">
+<title>sm-&gt;tout</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M524.68,-48.67C580.12,-53.7 679.4,-62.71 737.01,-67.94"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="736.37,-71.4 746.64,-68.81 737,-64.42 736.37,-71.4"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="616.5" y="-65.02" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">3 : Mettre à jour le signal de sortie</text>
+</g>
+<!-- client -->
+<g id="node5" class="node vis-priv">
+<title>client</title>
+<g id="a_node5"><a xlink:href="../services/sv_sm_StateMachineNotification_5aed9a.html" xlink:title="application observationnelle" target="_top" class="vis-priv">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="856.75,-36 708.75,-36 708.75,0 856.75,0 856.75,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="782.75" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">application observationnelle</text>
+</a>
+</g>
+</g>
+<!-- sm&#45;&gt;client -->
+<g id="edge4" class="edge">
+<title>sm-&gt;client</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M524.75,-38.1C530.61,-37.23 536.58,-36.41 542.25,-35.75 593.41,-29.79 650.96,-25.44 696.83,-22.55"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="696.8,-26.06 706.56,-21.95 696.36,-19.07 696.8,-26.06"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="616.5" y="-37.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">4 : rapport CurrentState</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Diagramme de collaboration pour les déclencheurs et les messages d'état. Sources : <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=subsection.7.7.5">SWS StateManagement §7.7.5 « State changes »</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=subsection.7.7.11">SWS StateManagement §7.7.11 « State notification »</a>. <em>Interprétation partielle : l'affectation des rôles de déclencheur modélisés aux rôles de service condense la configuration dans une vue de communication.</em></p>
+<h4>Session de mise à jour en tant que coordination de l'État</h4>
+<p>UCM commence la collaboration via <code>RequestUpdateSession()</code>. Ensuite, <code>PrepareUpdate</code>, <code>VerifyUpdate</code> et, si nécessaire, <code>PrepareRollback</code> conduisent les StateMachines concernées vers les états configurés. La décision d'autoriser ou non une mise à jour est spécifique au projet et dépend de l'état de la machine ou du véhicule. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.3">SWS StateManagement §7.3 « Interaction with UCM »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=subsection.7.7.14">SWS StateManagement §7.7.14 « StateMachine support for UCM »</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00206">[SWS_SM_00206]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00207">[SWS_SM_00207]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00208">[SWS_SM_00208]</a></p>
+<div class="diagram" id="diag-02"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 387" font-family="Helvetica,sans-Serif" style="max-width:900px"><text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Session Update entre UCM et State Management</text><line x1="135" y1="102" x2="135" y2="373" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="373" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="373" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="373" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><a class="vis-priv" href="../services/sv_ucm_PackageManagement_3e8fec.html"><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">UCM PackageManagement</text></a><a class="vis-internal" href="../services/sv_sm_UpdateRequest_5d5803.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">SM UpdateRequest</text></a><a class="vis-priv" href="../services/sv_sm_StateMachineService_b68b0b.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">StateMachine</text></a><a class="vis-app" href="../modules/exec.html"><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Execution Management</text></a><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">RequestUpdateSession()</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">autorisé ou refusé</text><line x1="345" y1="166" x2="135" y2="166" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="240.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">PrepareUpdate(FunctionGroups)</text><line x1="135" y1="200" x2="345" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="228" text-anchor="middle" font-size="11" fill="#28251d">état PrepareUpdate</text><text x="450.0" y="241" text-anchor="middle" font-size="11" fill="#28251d">demander</text><line x1="345" y1="247" x2="555" y2="247" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="660.0" y="275" text-anchor="middle" font-size="11" fill="#28251d">Amener les processus à l’état cible</text><line x1="555" y1="281" x2="765" y2="281" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="309" text-anchor="middle" font-size="11" fill="#28251d">VerifyUpdate(FunctionGroups)</text><line x1="135" y1="315" x2="345" y2="315" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="343" text-anchor="middle" font-size="11" fill="#28251d">StopUpdateSession()</text><line x1="135" y1="349" x2="345" y2="349" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line></svg></div><p class="diagram-note">Séquence de la session de mise à jour entre UCM, SM et EM. Sources : <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.3">SWS StateManagement §7.3 « Interaction with UCM »</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=section.7.5">SWS UCM §7.5 « Activation and rollback »</a>. <em>Interprétation partielle : l'opération EM résume les changements d'état déclenchés par StateManagement.</em></p>
+<h4>Limites d’intégration et chemins additionnels</h4>
+<p>L'accès à <code>UpdateRequest</code> doit être limité à UCM via la gestion des identités et des accès. Pour la suspension vers la RAM, <code>S2RHub</code> coordonne les instances <code>S2RSatellite</code> enregistrées ; l'extension de plate-forme couple l'état d'alimentation du système d'exploitation et le gestionnaire de réveil. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=section.7.5">SWS StateManagement §7.5 « Suspend-to-RAM »</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00710">[SWS_SM_00710]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00711">[SWS_SM_00711]</a></p>
+<h4>Comportement en cas d'erreur</h4>
+<p>La plage d'erreur <code>SmErrorDomain</code> définit <code>SmErrc::kRejected</code> pour les problèmes d'un satellite S2R entrant ou sortant du mode suspension. Séparément, le type <code>UpdateStatusType</code> décrit les valeurs de progression du service de mise à jour : <code>kRejected</code> pour une requête en dehors d'une session de mise à jour et <code>kFailed</code> pour un traitement ayant échoué. <code>ResetMachineNotifier</code> est un champ avec getter et notifier ; State Management l'utilise pour informer l'UCM pendant et après le <code>ResetMachine()</code>. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_81240">[SWS_SM_81240]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_91027">[SWS_SM_91027]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_91106">[SWS_SM_91106]</a></p>
+<p>Pour le chemin StateMachine, un <code>ExecutionError</code> est utilisé par Execution Management (via <code>GetExecutionError()</code> ou <code>undefinedStateCallback</code>) ou par Platform Health Management (via RecoveryHandler) comme code d'erreur de StateMachine qui gère le groupe de fonctions concerné. Pour une StateMachine qui n'est pas marquée comme <code>ImpactedByUpdate</code>, State Management définit la gestion continue des erreurs, évalue <code>ErrorRecoveryTable</code>, met fin au traitement ActionList précédent et passe immédiatement à l'état suivant configuré. Une entrée <code>ANY</code> est obligatoire pour les erreurs qui ne sont pas explicitement mappées. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00670">[SWS_SM_00670]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00601">[SWS_SM_00601]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_CONSTR_00014">[SWS_SM_CONSTR_00014]</a></p>
+<div class="diagram" id="diag-03"><!-- Generated by graphviz version 14.1.2 (0)
+ -->
+<!-- Title: G Pages: 1 -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 836.00 66.00" style="max-width:1115px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 61.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="413.94" y="-41.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">Gestion des erreurs de StateMachine</text>
+<!-- start -->
+<g id="node1" class="node">
+<title>start</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- eingang -->
+<g id="node2" class="node">
+<title>eingang</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M132.02,-36C132.02,-36 60.52,-36 60.52,-36 54.52,-36 48.52,-30 48.52,-24 48.52,-24 48.52,-12 48.52,-12 48.52,-6 54.52,0 60.52,0 60.52,0 132.02,0 132.02,0 138.02,0 144.02,-6 144.02,-12 144.02,-12 144.02,-24 144.02,-24 144.02,-30 138.02,-36 132.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="96.27" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ExecutionError</text>
+<text xml:space="preserve" text-anchor="middle" x="96.27" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">von EM ou PHM</text>
+</g>
+<!-- start&#45;&gt;eingang -->
+<g id="edge1" class="edge">
+<title>start-&gt;eingang</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.03,-18C17.44,-18 26.49,-18 36.68,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.4,-21.5 46.4,-18 36.4,-14.5 36.4,-21.5"></polygon>
+</g>
+<!-- zuordnung -->
+<g id="node3" class="node vis-priv">
+<title>zuordnung</title>
+<g id="a_node3"><a xlink:href="../modules/sm.html" xlink:title="SM : ErrorCode\nassign" target="_top" class="vis-priv">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M345.27,-36C345.27,-36 276.77,-36 276.77,-36 270.77,-36 264.77,-30 264.77,-24 264.77,-24 264.77,-12 264.77,-12 264.77,-6 270.77,0 276.77,0 276.77,0 345.27,0 345.27,0 351.27,0 357.27,-6 357.27,-12 357.27,-12 357.27,-24 357.27,-24 357.27,-30 351.27,-36 345.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="311.02" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SM : ErrorCode</text>
+<text xml:space="preserve" text-anchor="middle" x="311.02" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">zuordnen</text>
+</a>
+</g>
+</g>
+<!-- eingang&#45;&gt;zuordnung -->
+<g id="edge2" class="edge">
+<title>eingang-&gt;zuordnung</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M144.49,-18C176.46,-18 218.89,-18 252.79,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="252.73,-21.5 262.73,-18 252.73,-14.5 252.73,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="204.39" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Événement d'erreur</text>
+</g>
+<!-- tabelle -->
+<g id="node5" class="node">
+<title>tabelle</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M501.02,-36C501.02,-36 406.27,-36 406.27,-36 400.27,-36 394.27,-30 394.27,-24 394.27,-24 394.27,-12 394.27,-12 394.27,-6 400.27,0 406.27,0 406.27,0 501.02,0 501.02,0 507.02,0 513.02,-6 513.02,-12 513.02,-12 513.02,-24 513.02,-24 513.02,-30 507.02,-36 501.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="453.64" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ErrorRecoveryTable</text>
+<text xml:space="preserve" text-anchor="middle" x="453.64" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">next Déterminer l'état</text>
+</g>
+<!-- zuordnung&#45;&gt;tabelle -->
+<g id="edge3" class="edge">
+<title>zuordnung-&gt;tabelle</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M357.68,-18C365.62,-18 374.04,-18 382.45,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="382.22,-21.5 392.22,-18 382.22,-14.5 382.22,-21.5"></polygon>
+</g>
+<!-- ende -->
+<g id="node4" class="node">
+<title>ende</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="819.2" cy="-18" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="819.2" cy="-18" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- ziel -->
+<g id="node6" class="node vis-priv">
+<title>ziel</title>
+<g id="a_node6"><a xlink:href="../services/sv_sm_StateMachineService_b68b0b.html" xlink:title="État-cible-StateMachine\net ActionList" target="_top" class="vis-priv">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M761.52,-36C761.52,-36 645.77,-36 645.77,-36 639.77,-36 633.77,-30 633.77,-24 633.77,-24 633.77,-12 633.77,-12 633.77,-6 639.77,0 645.77,0 645.77,0 761.52,0 761.52,0 767.52,0 773.52,-6 773.52,-12 773.52,-12 773.52,-24 773.52,-24 773.52,-30 767.52,-36 761.52,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="703.64" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Cible-StateMachine-State</text>
+<text xml:space="preserve" text-anchor="middle" x="703.64" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">et ActionList</text>
+</a>
+</g>
+</g>
+<!-- tabelle&#45;&gt;ziel -->
+<g id="edge4" class="edge">
+<title>tabelle-&gt;ziel</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M513.42,-18C545.86,-18 586.63,-18 622.01,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="621.62,-21.5 631.62,-18 621.62,-14.5 621.62,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="573.39" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">configuré nextState</text>
+</g>
+<!-- ziel&#45;&gt;ende -->
+<g id="edge5" class="edge">
+<title>ziel-&gt;ende</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M773.97,-18C782.98,-18 791.54,-18 798.69,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="798.47,-21.5 808.47,-18 798.47,-14.5 798.47,-21.5"></polygon>
+</g>
+</g>
+</svg></div>
+<p class="diagram-note">Diagramme d'activité : une erreur de processus signalée par Execution Management ou Platform Health Management est traitée en tant que ErrorCode de la StateMachine responsable ; le <code>ErrorRecoveryTable</code> détermine son état cible et son ActionList. Sources : <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=subsection.7.7.13">SWS State Management §7.7.13 « StateMachine ErrorCode configuration and handling »</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00601">[SWS_SM_00601]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00670">[SWS_SM_00670]</a>.</p>
+<p>Les erreurs d'un appel <code>StateClient::SetState()</code> avec <code>ExecErrc::kNoCommunication</code>, <code>kInvalidTransition</code> ou <code>kInvalidMetaModelIdentifier</code> sont mappées au <code>functionGroupTransitionRequestFailedError</code> configuré ; sans configuration, la valeur d'erreur <code>1</code> doit être utilisée. Lors de la mise à jour, <code>RequestUpdateSession()</code> peut être rejeté avec <code>kOperationRejected</code> en raison de l'état de la machine ; <code>kNotAllowedMultipleUpdateSessions</code> est obligatoire lorsqu'une session est déjà active. <code>ResetMachine()</code> est rejeté sans une session de mise à jour demandée précédemment avec succès et définit le <code>ResetMachineNotifier</code> sur <code>kRejected</code> en dehors d'une session de mise à jour. Si la transition vers <code>ContinueUpdate</code> échoue après une réinitialisation, <code>kFailed</code> doit être défini. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00671">[SWS_SM_00671]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00672">[SWS_SM_00672]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_91102">[SWS_SM_91102]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_91100">[SWS_SM_91100]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00661">[SWS_SM_00661]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00663">[SWS_SM_00663]</a></p>
+<h4>Ordre de lecture pratique</h4><ol><li>Pour le contrôle StateMachine, commencez par <a class="vis-priv" href="../services/sv_sm_StateMachineService_b68b0b.html"><code>StateMachineService</code></a>.</li><li>Pour l'orchestration des mises à jour, considérez <a class="vis-internal" href="../services/sv_sm_UpdateRequest_5d5803.html"><code>UpdateRequest</code></a> et l'interface UCM ensemble.</li><li>Pour la suspension vers la RAM, proposez d'abord les satellites, puis intégrez les appels du hub et l'état d'alimentation du système d'exploitation.</li></ol><p class="ai-evidence">Preuves supplémentaires obtenues du bloc précédent : <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00400">[SWS_SM_00400]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=SWS_EM_01000">[SWS_EM_01000]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=SWS_EM_01060">[SWS_EM_01060]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=SWS_EM_01066">[SWS_EM_01066]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_ExecutionManagement.pdf#nameddest=SWS_EM_02298">[SWS_EM_02298]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00206">[SWS_SM_00206]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00207">[SWS_SM_00207]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00208">[SWS_SM_00208]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00209">[SWS_SM_00209]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html">[SWS_SM_81002]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81012">[SWS_SM_81012]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81013">[SWS_SM_81013]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81010">[SWS_SM_81010]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81011">[SWS_SM_81011]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html">[SWS_SM_81102]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81110">[SWS_SM_81110]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81111">[SWS_SM_81111]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81112">[SWS_SM_81112]</a> <a class="swsref vis-internal" href="../classes/cl_apext_sm_PowerStateInterface_0ecf4e.html">[SWS_SM_71000]</a> <a class="swsref vis-internal" href="../classes/cl_apext_sm_PowerStateInterface_0ecf4e.html#SWS_SM_71003">[SWS_SM_71003]</a> <a class="swsref vis-internal" href="../classes/cl_apext_sm_PowerStateInterface_0ecf4e.html#SWS_SM_71005">[SWS_SM_71005]</a> <a class="swsref vis-internal" href="../classes/cl_apext_sm_PowerStateInterface_0ecf4e.html#SWS_SM_71001">[SWS_SM_71001]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81014">[SWS_SM_81014]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81003">[SWS_SM_81003]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81103">[SWS_SM_81103]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html#SWS_SM_81006">[SWS_SM_81006]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81106">[SWS_SM_81106]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_s2r_S2RHub_824327.html#SWS_SM_81105">[SWS_SM_81105]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00663">[SWS_SM_00663]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00636">[SWS_SM_00636]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00640">[SWS_SM_00640]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_StateManagement.pdf#nameddest=SWS_SM_00619">[SWS_SM_00619]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmErrorDomain_2fd907.html">[SWS_SM_81241]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmErrorDomain_2fd907.html#SWS_SM_81248">[SWS_SM_81248]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmErrorDomain_2fd907.html#SWS_SM_81249">[SWS_SM_81249]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10304">[SWS_CORE_10304]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmErrorDomain_2fd907.html#SWS_SM_81250">[SWS_SM_81250]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmException_0484af.html">[SWS_SM_81242]</a> <a class="swsref vis-priv" href="../classes/cl_ara_sm_SmException_0484af.html#SWS_SM_81243">[SWS_SM_81243]</a> <a class="swsref vis-priv" href="../namespaces/ns_sm_ara_sm_0efb8d.html#SWS_SM_81251">[SWS_SM_81251]</a> <a class="swsref vis-priv" href="../namespaces/ns_sm_ara_sm_0efb8d.html#SWS_SM_81244">[SWS_SM_81244]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=ARFunctionalCluster:State%20Management">EXP SWArchitecture §9.2.2 « State Management »</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_StateManagement.pdf#nameddest=RS_SM_00001">[RS_SM_00001]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=chapter.5">EXP InterfacesGuidelines §5 « State Management »</a>.</p></div>
+</details>
+<h2 class="sect">Namespaces</h2><ul class="mlist boxes"><li><a class="dbox vis-internal" href="../namespaces/ns_sm_apext_sm_a5dc2b.html">apext::sm</a> <span class="dim">1 classe, 0 fonctions libres</span></li><li><a class="dbox vis-priv" href="../namespaces/ns_sm_ara_sm_0efb8d.html">ara::sm</a> <span class="dim">2 classes, 2 fonctions libres</span></li><li><a class="dbox vis-priv" href="../namespaces/ns_sm_ara_sm_s2r_b2e85c.html">ara::sm::s2r</a> <span class="dim">2 classes, 0 fonctions libres</span></li></ul>
+<h2 class="sect">Interfaces de service (modélisées via ara::com)</h2><ul class="mlist boxes"><li><a class="dbox vis-priv" href="../services/sv_sm_StateMachineNotification_5aed9a.html">StateMachineNotification</a> <span class="dim">1 membre</span></li><li><a class="dbox vis-priv" href="../services/sv_sm_StateMachineService_b68b0b.html">StateMachineService</a> <span class="dim">1 membre</span></li><li><a class="dbox vis-internal" href="../services/sv_sm_UpdateAllowedService_ed06fe.html">UpdateAllowedService</a> <span class="dim">1 membre</span></li><li><a class="dbox vis-internal" href="../services/sv_sm_UpdateRequest_5d5803.html">UpdateRequest</a> <span class="dim">7 membres</span></li></ul>
+<h2 class="sect">Diagramme de classes UML du module</h2><p class="dim">Cadres arrondis = namespaces ; flèches triangulaires creuses = héritage (pointent vers la classe de base) ; boîtes grises = classes de base externes ou d’un autre module. Un clic ouvre la page de classe.</p><div class="umlwrap wide"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="321pt" height="370pt" viewbox="0.00 0.00 321.00 370.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 366)">
+<title>G</title>
+<g id="clust1" class="cluster">
+<title>cluster_1</title>
+<path fill="none" stroke="#d4d1ca" d="M20,-8C20,-8 136,-8 136,-8 142,-8 148,-14 148,-20 148,-20 148,-70 148,-70 148,-76 142,-82 136,-82 136,-82 20,-82 20,-82 14,-82 8,-76 8,-70 8,-70 8,-20 8,-20 8,-14 14,-8 20,-8"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-13.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">apext::sm</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_2</title>
+<path fill="none" stroke="#d4d1ca" d="M30.88,-90C30.88,-90 125.12,-90 125.12,-90 131.12,-90 137.12,-96 137.12,-102 137.12,-102 137.12,-206 137.12,-206 137.12,-212 131.12,-218 125.12,-218 125.12,-218 30.88,-218 30.88,-218 24.88,-218 18.88,-212 18.88,-206 18.88,-206 18.88,-102 18.88,-102 18.88,-96 24.88,-90 30.88,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-95.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::sm</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_3</title>
+<path fill="none" stroke="#d4d1ca" d="M40.25,-226C40.25,-226 115.75,-226 115.75,-226 121.75,-226 127.75,-232 127.75,-238 127.75,-238 127.75,-342 127.75,-342 127.75,-348 121.75,-354 115.75,-354 115.75,-354 40.25,-354 40.25,-354 34.25,-354 28.25,-348 28.25,-342 28.25,-342 28.25,-238 28.25,-238 28.25,-232 34.25,-226 40.25,-226"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-231.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#7a7974">ara::sm::s2r</text>
+</g>
+<!-- napext__sm__PowerStateInterface528 -->
+<g id="node1" class="node vis-internal">
+<title>napext__sm__PowerStateInterface528</title>
+<g id="a_node1"><a xlink:href="../classes/cl_apext_sm_PowerStateInterface_0ecf4e.html" xlink:title="PowerStateInterface" class="vis-internal">
+<path fill="#f9f8f5" stroke="#01696f" d="M128,-74C128,-74 28,-74 28,-74 22,-74 16,-68 16,-62 16,-62 16,-50 16,-50 16,-44 22,-38 28,-38 28,-38 128,-38 128,-38 134,-38 140,-44 140,-50 140,-50 140,-62 140,-62 140,-68 134,-74 128,-74"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-50.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">PowerStateInterface</text>
+</a>
+</g>
+</g>
+<!-- nara__sm__SmErrorDomain386 -->
+<g id="node2" class="node vis-priv">
+<title>nara__sm__SmErrorDomain386</title>
+<g id="a_node2"><a xlink:href="../classes/cl_ara_sm_SmErrorDomain_2fd907.html" xlink:title="SmErrorDomain" class="vis-priv">
+<path fill="#f9f8f5" stroke="#01696f" d="M117.12,-210C117.12,-210 38.88,-210 38.88,-210 32.88,-210 26.88,-204 26.88,-198 26.88,-198 26.88,-186 26.88,-186 26.88,-180 32.88,-174 38.88,-174 38.88,-174 117.12,-174 117.12,-174 123.12,-174 129.12,-180 129.12,-186 129.12,-186 129.12,-198 129.12,-198 129.12,-204 123.12,-210 117.12,-210"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-186.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SmErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__core__ErrorDomain335 -->
+<g id="node6" class="node vis-app">
+<title>nara__core__ErrorDomain335</title>
+<g id="a_node6"><a xlink:href="../classes/cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ara::core::ErrorDomain" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M300.75,-210C300.75,-210 188,-210 188,-210 182,-210 176,-204 176,-198 176,-198 176,-186 176,-186 176,-180 182,-174 188,-174 188,-174 300.75,-174 300.75,-174 306.75,-174 312.75,-180 312.75,-186 312.75,-186 312.75,-198 312.75,-198 312.75,-204 306.75,-210 300.75,-210"></path>
+<text xml:space="preserve" text-anchor="middle" x="244.38" y="-186.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- nara__sm__SmErrorDomain386&#45;&gt;nara__core__ErrorDomain335 -->
+<g id="edge1" class="edge">
+<title>nara__sm__SmErrorDomain386-&gt;nara__core__ErrorDomain335</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M129.21,-192C140.19,-192 152.06,-192 163.87,-192"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="163.79,-195.5 173.79,-192 163.79,-188.5 163.79,-195.5"></polygon>
+</g>
+<!-- nara__sm__SmException872 -->
+<g id="node3" class="node vis-priv">
+<title>nara__sm__SmException872</title>
+<g id="a_node3"><a xlink:href="../classes/cl_ara_sm_SmException_0484af.html" xlink:title="SmException" class="vis-priv">
+<path fill="#f9f8f5" stroke="#01696f" d="M109.62,-156C109.62,-156 46.37,-156 46.37,-156 40.38,-156 34.38,-150 34.38,-144 34.38,-144 34.38,-132 34.38,-132 34.38,-126 40.38,-120 46.38,-120 46.38,-120 109.62,-120 109.62,-120 115.62,-120 121.62,-126 121.62,-132 121.62,-132 121.62,-144 121.62,-144 121.62,-150 115.62,-156 109.62,-156"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-132.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">SmException</text>
+</a>
+</g>
+</g>
+<!-- nara__core__Exception792 -->
+<g id="node7" class="node vis-app">
+<title>nara__core__Exception792</title>
+<g id="a_node7"><a xlink:href="../classes/cl_ara_core_Exception_a2d771.html" xlink:title="ara::core::Exception" class="vis-app">
+<path fill="#efeeea" stroke="#7a7974" d="M293.25,-156C293.25,-156 195.5,-156 195.5,-156 189.5,-156 183.5,-150 183.5,-144 183.5,-144 183.5,-132 183.5,-132 183.5,-126 189.5,-120 195.5,-120 195.5,-120 293.25,-120 293.25,-120 299.25,-120 305.25,-126 305.25,-132 305.25,-132 305.25,-144 305.25,-144 305.25,-150 299.25,-156 293.25,-156"></path>
+<text xml:space="preserve" text-anchor="middle" x="244.38" y="-132.97" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#7a7974">ara::core::Exception</text>
+</a>
+</g>
+</g>
+<!-- nara__sm__SmException872&#45;&gt;nara__core__Exception792 -->
+<g id="edge2" class="edge">
+<title>nara__sm__SmException872-&gt;nara__core__Exception792</title>
+<path fill="none" stroke="#7a7974" stroke-width="1.2" d="M121.76,-138C136.98,-138 154.58,-138 171.57,-138"></path>
+<polygon fill="none" stroke="#7a7974" stroke-width="1.2" points="171.38,-141.5 181.38,-138 171.38,-134.5 171.38,-141.5"></polygon>
+</g>
+<!-- nara__sm__s2r__S2RHub106 -->
+<g id="node4" class="node vis-priv">
+<title>nara__sm__s2r__S2RHub106</title>
+<g id="a_node4"><a xlink:href="../classes/cl_ara_sm_s2r_S2RHub_824327.html" xlink:title="S2RHub" class="vis-priv">
+<path fill="#f9f8f5" stroke="#01696f" d="M97.25,-292C97.25,-292 58.75,-292 58.75,-292 52.75,-292 46.75,-286 46.75,-280 46.75,-280 46.75,-268 46.75,-268 46.75,-262 52.75,-256 58.75,-256 58.75,-256 97.25,-256 97.25,-256 103.25,-256 109.25,-262 109.25,-268 109.25,-268 109.25,-280 109.25,-280 109.25,-286 103.25,-292 97.25,-292"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-268.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">S2RHub</text>
+</a>
+</g>
+</g>
+<!-- nara__sm__s2r__S2RSatellite502 -->
+<g id="node5" class="node vis-priv">
+<title>nara__sm__s2r__S2RSatellite502</title>
+<g id="a_node5"><a xlink:href="../classes/cl_ara_sm_s2r_S2RSatellite_fbf4f1.html" xlink:title="S2RSatellite" class="vis-priv">
+<path fill="#f9f8f5" stroke="#01696f" d="M107.75,-346C107.75,-346 48.25,-346 48.25,-346 42.25,-346 36.25,-340 36.25,-334 36.25,-334 36.25,-322 36.25,-322 36.25,-316 42.25,-310 48.25,-310 48.25,-310 107.75,-310 107.75,-310 113.75,-310 119.75,-316 119.75,-322 119.75,-322 119.75,-334 119.75,-334 119.75,-340 113.75,-346 107.75,-346"></path>
+<text xml:space="preserve" text-anchor="middle" x="78" y="-322.98" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#01696f">S2RSatellite</text>
+</a>
+</g>
+</g>
+</g>
+</svg>
+</div></main>
+<footer>Extrait automatiquement des PDF officiels de la spécification AUTOSAR R25-11
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Ceci n’est pas une publication officielle AUTOSAR ; les textes descriptifs sont dans l’original (anglais).</footer></body></html>

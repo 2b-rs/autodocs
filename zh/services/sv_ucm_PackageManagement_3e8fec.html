@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>PackageManagement — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-priv"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API 参考</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../services/sv_ucm_PackageManagement_3e8fec.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/services/sv_ucm_PackageManagement_3e8fec.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/services/sv_ucm_PackageManagement_3e8fec.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/services/sv_ucm_PackageManagement_3e8fec.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/services/sv_ucm_PackageManagement_3e8fec.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/services/sv_ucm_PackageManagement_3e8fec.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/services/sv_ucm_PackageManagement_3e8fec.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/services/sv_ucm_PackageManagement_3e8fec.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/services/sv_ucm_PackageManagement_3e8fec.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a class="cur" href="../../zh/services/sv_ucm_PackageManagement_3e8fec.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/services/sv_ucm_PackageManagement_3e8fec.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-priv">PRIVILEGED INTERFACE (Users: UCM Client: OTA-Client, V-UCM, Diagnose-Applikation)</span><a href="../index.html">首页</a> › <a class="vis-priv" href="../modules/ucm.html">ara::ucm</a> › PackageManagement</nav>
+<main><h1><span class="kind">服务接口</span> PackageManagement</h1>
+<p class="desc">接口建模为ara::com服务；方法/字段通过生成的代理/骨架调用（参数方向IN/OUT）。</p>
+<details class="fold"><summary><h2 class="sect">用户指南 <span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h2></summary><div class="ai"><p class="ai-note">自动生成的描述、内容源自引用的AUTOSAR-R25-11文档（SWS规范和随附的标准文档）——不是正式的AUTOSAR文本。标记为解释的陈述是从来源得出的结论。</p><h4>一项服务，三个专业级别</h4><p><code>PackageManagement</code> 将数据包接收、数据包处理以及正在运行的软件 Cluster 集合的变更分离。<code>CurrentStatus</code> 是当前执行的 UCM 阶段的全局视图；传输 ID 可唯一分配各个传输。<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=chapter.7">SWS UCM 第7章 “Functional specification”</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00361">[SWS_UCM_00361]</a></p>
+<h4>稳健的块传输</h4><p><code>TransferStart</code>保留资源并提供传输ID和最大块大小。 <code>TransferData</code> 检查ID、顺序、大小以及块一致性（如有必要）。 <code>TransferExit</code>仅在数据块之后允许并检查完整性和数据包格式。因此，传输中的错误必须按传输进行处理，而不是解释为激活错误。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00272">[SWS_UCM_00272]</a><a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00275">[SWS_UCM_00275]</a><a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00276">[SWS_UCM_00276]</a></p>
+<div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 804.00 106.00" style="max-width:1072px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 101.75)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="397.81" y="-81.4" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">包裹验收直至激活</text>
+<!-- a -->
+<g id="node1" class="node">
+<title>a</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- ts -->
+<g id="node2" class="node">
+<title>ts</title>
+<g id="a_node2"><a xlink:href="#SWS_UCM_00345" xlink:title="TransferStart" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M116.27,-36C116.27,-36 60.52,-36 60.52,-36 54.52,-36 48.52,-30 48.52,-24 48.52,-24 48.52,-12 48.52,-12 48.52,-6 54.52,0 60.52,0 60.52,0 116.27,0 116.27,0 122.27,0 128.27,-6 128.27,-12 128.27,-12 128.27,-24 128.27,-24 128.27,-30 122.27,-36 116.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="88.39" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">TransferStart</text>
+</a>
+</g>
+</g>
+<!-- a&#45;&gt;ts -->
+<g id="edge1" class="edge">
+<title>a-&gt;ts</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.05,-18C17.5,-18 26.59,-18 36.6,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.49,-21.5 46.49,-18 36.49,-14.5 36.49,-21.5"></polygon>
+</g>
+<!-- td -->
+<g id="node3" class="node">
+<title>td</title>
+<g id="a_node3"><a xlink:href="#SWS_UCM_00346" xlink:title="传输数据（块）" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M248.02,-36C248.02,-36 177.27,-36 177.27,-36 171.27,-36 165.27,-30 165.27,-24 165.27,-24 165.27,-12 165.27,-12 165.27,-6 171.27,0 177.27,0 177.27,0 248.02,0 248.02,0 254.02,0 260.02,-6 260.02,-12 260.02,-12 260.02,-24 260.02,-24 260.02,-30 254.02,-36 248.02,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="212.64" y="-15.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">传输数据（块）</text>
+</a>
+</g>
+</g>
+<!-- ts&#45;&gt;td -->
+<g id="edge2" class="edge">
+<title>ts-&gt;td</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M128.75,-18C136.53,-18 144.85,-18 153.11,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="153.02,-21.5 163.02,-18 153.02,-14.5 153.02,-21.5"></polygon>
+</g>
+<!-- td&#45;&gt;td -->
+<g id="edge3" class="edge">
+<title>td-&gt;td</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M200.66,-36.52C199,-45.76 203,-54 212.64,-54 217.92,-54 221.51,-51.54 223.4,-47.79"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="226.85,-48.5 224.45,-38.18 219.89,-47.74 226.85,-48.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="212.64" y="-59.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">下一个街区</text>
+</g>
+<!-- te -->
+<g id="node4" class="node">
+<title>te</title>
+<g id="a_node4"><a xlink:href="#SWS_UCM_00347" xlink:title="TransferExit" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M359.52,-36C359.52,-36 309.02,-36 309.02,-36 303.02,-36 297.02,-30 297.02,-24 297.02,-24 297.02,-12 297.02,-12 297.02,-6 303.02,0 309.02,0 309.02,0 359.52,0 359.52,0 365.52,0 371.52,-6 371.52,-12 371.52,-12 371.52,-24 371.52,-24 371.52,-30 365.52,-36 359.52,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="334.27" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">TransferExit</text>
+</a>
+</g>
+</g>
+<!-- td&#45;&gt;te -->
+<g id="edge4" class="edge">
+<title>td-&gt;te</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M260.58,-18C268.58,-18 276.91,-18 284.95,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="284.79,-21.5 294.79,-18 284.79,-14.5 284.79,-21.5"></polygon>
+</g>
+<!-- pr -->
+<g id="node5" class="node">
+<title>pr</title>
+<g id="a_node5"><a xlink:href="#SWS_UCM_00349" xlink:title="ProcessSwPackage" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M509.27,-36C509.27,-36 420.52,-36 420.52,-36 414.52,-36 408.52,-30 408.52,-24 408.52,-24 408.52,-12 408.52,-12 408.52,-6 414.52,0 420.52,0 420.52,0 509.27,0 509.27,0 515.27,0 521.27,-6 521.27,-12 521.27,-12 521.27,-24 521.27,-24 521.27,-30 515.27,-36 509.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="464.89" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ProcessSwPackage</text>
+</a>
+</g>
+</g>
+<!-- te&#45;&gt;pr -->
+<g id="edge5" class="edge">
+<title>te-&gt;pr</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M371.78,-18C379.55,-18 387.98,-18 396.48,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="396.4,-21.5 406.4,-18 396.4,-14.5 396.4,-21.5"></polygon>
+</g>
+<!-- ac -->
+<g id="node6" class="node">
+<title>ac</title>
+<g id="a_node6"><a xlink:href="#SWS_UCM_00352" xlink:title="激活" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M600.27,-36C600.27,-36 570.27,-36 570.27,-36 564.27,-36 558.27,-30 558.27,-24 558.27,-24 558.27,-12 558.27,-12 558.27,-6 564.27,0 570.27,0 570.27,0 600.27,0 600.27,0 606.27,0 612.27,-6 612.27,-12 612.27,-12 612.27,-24 612.27,-24 612.27,-30 606.27,-36 600.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="585.27" y="-15.43" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">激活</text>
+</a>
+</g>
+</g>
+<!-- pr&#45;&gt;ac -->
+<g id="edge6" class="edge">
+<title>pr-&gt;ac</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M521.62,-18C529.98,-18 538.43,-18 546.31,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="546.07,-21.5 556.07,-18 546.07,-14.5 546.07,-21.5"></polygon>
+</g>
+<!-- rb -->
+<g id="node7" class="node">
+<title>rb</title>
+<g id="a_node7"><a xlink:href="#SWS_UCM_00353" xlink:title="回滚" target="_top">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M729.27,-71C729.27,-71 699.27,-71 699.27,-71 693.27,-71 687.27,-65 687.27,-59 687.27,-59 687.27,-47 687.27,-47 687.27,-41 693.27,-35 699.27,-35 699.27,-35 729.27,-35 729.27,-35 735.27,-35 741.27,-41 741.27,-47 741.27,-47 741.27,-59 741.27,-59 741.27,-65 735.27,-71 729.27,-71"></path>
+<text xml:space="preserve" text-anchor="middle" x="714.27" y="-50.42" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">回滚</text>
+</a>
+</g>
+</g>
+<!-- ac&#45;&gt;rb -->
+<g id="edge7" class="edge">
+<title>ac-&gt;rb</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M612.58,-25.25C630.89,-30.3 655.56,-37.1 675.9,-42.7"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="674.81,-46.03 685.38,-45.31 676.67,-39.28 674.81,-46.03"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="649.77" y="-46.18" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">需要恢复</text>
+</g>
+<!-- z -->
+<g id="node8" class="node">
+<title>z</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="786.95" cy="-14" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="786.95" cy="-14" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- ac&#45;&gt;z -->
+<g id="edge8" class="edge">
+<title>ac-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M612.83,-15.66C633.18,-13.98 661.97,-11.88 687.27,-11 711.26,-10.17 717.28,-10.2 741.27,-11 749.53,-11.28 758.64,-11.84 766.47,-12.41"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="766.15,-15.89 776.39,-13.18 766.69,-8.91 766.15,-15.89"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="714.27" y="-16.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">已验证</text>
+</g>
+<!-- rb&#45;&gt;z -->
+<g id="edge9" class="edge">
+<title>rb-&gt;z</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M741.59,-38.48C750.66,-33.47 760.58,-28 768.73,-23.5"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="770.29,-26.64 777.35,-18.74 766.91,-20.51 770.29,-26.64"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">从块传输到激活的活动图。来源：<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=section.7.3">SWS UCM §7.3 “Transfer and processing”</a>、<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=section.7.5">SWS UCM §7.5 “Activation and rollback”</a>。 <em>部分解释：虽然个别传输和处理可能在时间上解耦，但该表示强调客户端订单。</em></p>
+<h4>处理、激活和撤销</h4><p>根据<code>ProcessSwPackage</code>，<code>Activate</code>只能从处理包的准备阶段开始。激活请求来自 SM 的更新会话。验证确定完成或恢复； <code>Rollback</code> 具有显式错误退出，可以从 <code>kRollingBackFailed</code> 重试。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00241">[SWS_UCM_00241]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00257">[SWS_UCM_00257]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00300">[SWS_UCM_00300]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00301">[SWS_UCM_00301]</a></p>
+<h4>状态和查询操作</h4><p><code>GetProgress</code>、<code>GetSwPackages</code>、Cluster 查询以及 <code>GetHistory</code> 用于监控和可审计性；它们不能替代状态绑定操作之前的状态检查。<code>Suspend</code>／<code>Resume</code> 涉及长时间运行的操作，必须结合 <code>CurrentStatus</code> 进行解读。<a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=section.7.6">SWS UCM §7.6 “Progress and interruption”</a></p>
+<h4>客户端检查清单</h4><ol><li>按原样使用 <code>TransferStart</code> 提供的最大块大小和传输 ID。</li><li>传输<code>TransferExit</code>之前的所有块并评估每个错误的传输 ID 特定原因。</li><li>处理后，仅在允许的阶段观察<code>CurrentStatus</code>并调用<code>Activate</code>。</li><li>如果验证结果是否定的，请选择记录的回滚路径而不是重新激活。</li></ol><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00361">[SWS_UCM_00361]</a> <a class="swsref" href="#SWS_UCM_00343">[SWS_UCM_00343]</a> <a class="swsref" href="#SWS_UCM_00344">[SWS_UCM_00344]</a> <a class="swsref" href="#SWS_UCM_00345">[SWS_UCM_00345]</a> <a class="swsref" href="#SWS_UCM_00346">[SWS_UCM_00346]</a> <a class="swsref" href="#SWS_UCM_00347">[SWS_UCM_00347]</a> <a class="swsref" href="#SWS_UCM_00348">[SWS_UCM_00348]</a> <a class="swsref" href="#SWS_UCM_00349">[SWS_UCM_00349]</a> <a class="swsref" href="#SWS_UCM_00351">[SWS_UCM_00351]</a> <a class="swsref" href="#SWS_UCM_00350">[SWS_UCM_00350]</a> <a class="swsref" href="#SWS_UCM_00352">[SWS_UCM_00352]</a> <a class="swsref" href="#SWS_UCM_00353">[SWS_UCM_00353]</a> <a class="swsref" href="#SWS_UCM_00354">[SWS_UCM_00354]</a> <a class="swsref" href="#SWS_UCM_00355">[SWS_UCM_00355]</a> <a class="swsref" href="#SWS_UCM_00356">[SWS_UCM_00356]</a> <a class="swsref" href="#SWS_UCM_00357">[SWS_UCM_00357]</a> <a class="swsref" href="#SWS_UCM_00358">[SWS_UCM_00358]</a> <a class="swsref" href="#SWS_UCM_00359">[SWS_UCM_00359]</a> <a class="swsref" href="#SWS_UCM_00360">[SWS_UCM_00360]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00390">[SWS_UCM_00390]</a> <a class="swsref" href="#SWS_UCM_00397">[SWS_UCM_00397]</a> <a class="swsref" href="#SWS_UCM_00398">[SWS_UCM_00398]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00030">[SWS_UCM_00030]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_PlatformDesign.pdf#nameddest=section.13.2">EXP PlatformDesign §13.2 “Update protocol”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=ARFunctionalClusterApi:ucm:PackageManagement">EXP SWArchitecture §9.7.1.1.1 “General”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00026">[RS_UCM_00026]</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00006">[RS_UCM_00006]</a><a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00021">[RS_UCM_00021]</a><a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00008">[RS_UCM_00008]</a><a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00027">[RS_UCM_00027]</a>。</p></div>
+<h3>成员</h3><ul class="mlist"><li><a href="#SWS_UCM_00352"><code>Activate</code></a> <span class="dim">This method activates the Software Clusters extracted from the processed Software Packages.</span></li><li><a href="#SWS_UCM_00351"><code>Cancel</code></a> <span class="dim">This method aborts an ongoing processing of a Software Package.</span></li><li><a href="#SWS_UCM_00361"><code>CurrentStatus</code></a> <span class="dim">The current status of UCM.</span></li><li><a href="#SWS_UCM_00348"><code>DeleteTransfer</code></a> <span class="dim">Delete a transferred Software Package.</span></li><li><a href="#SWS_UCM_00354"><code>Finish</code></a> <span class="dim">This method finishes the processing for the current set of processed Software Packages</span></li><li><a href="#SWS_UCM_00355"><code>GetHistory</code></a> <span class="dim">Getter method to retrieve all actions that have been performed by UCM.</span></li><li><a href="#SWS_UCM_00343"><code>GetId</code></a> <span class="dim">Get the UCM Instance Identifier.</span></li><li><a href="#SWS_UCM_00360"><code>GetProgress</code></a> <span class="dim">Get the progress information of the currently active state in the Package Management state machine.</span></li><li><a href="#SWS_UCM_00356"><code>GetSwClusterChangeInfo</code></a> <span class="dim">This method returns a list pending changes to the set of SoftwareClusters on the adaptive platform</span></li><li><a href="#SWS_UCM_00357"><code>GetSwClusterInfo</code></a> <span class="dim">This method returns a list with information of all SoftwareClusters that are in state kPresent.</span></li><li><a href="#SWS_UCM_00358"><code>GetSwClusterManifestInfo</code></a> <span class="dim">This method returns the general information of a Software Cluster that are in state kPresent.</span></li><li><a href="#SWS_UCM_00359"><code>GetSwPackages</code></a> <span class="dim">This method returns the Software Packages that available in UCM.</span></li><li><a href="#SWS_UCM_00349"><code>ProcessSwPackage</code></a> <span class="dim">Process a previously transferred Software Package or a partly transferred Software Package from a stream.</span></li><li><a href="#SWS_UCM_00344"><code>RegisterSoftwarePackage</code></a> <span class="dim">registers a package that could already be in Machine’s file system or to be downloaded.</span></li><li><a href="#SWS_UCM_00398"><code>Resume</code></a> <span class="dim">This method resumes ongoing time consuming actions or actions related to specific states.</span></li><li><a href="#SWS_UCM_00350"><code>RevertProcessedSwPackages</code></a> <span class="dim">Revert the changes done by processing (ProcessSwPackage) of one or several software packages.</span></li><li><a href="#SWS_UCM_00353"><code>Rollback</code></a> <span class="dim">Rollback the system to the state before the packages were processed.</span></li><li><a href="#SWS_UCM_00397"><code>Suspend</code></a> <span class="dim">This method suspends ongoing time consuming actions or actions related to specific states.</span></li><li><a href="#SWS_UCM_00346"><code>TransferData</code></a> <span class="dim">Block-wise transfer of a Software Package to UCM.</span></li><li><a href="#SWS_UCM_00347"><code>TransferExit</code></a> <span class="dim">Finish the transfer of a Software Package to UCM.</span></li><li><a href="#SWS_UCM_00345"><code>TransferStart</code></a> <span class="dim">Start the transfer of a Software Package after having received a Vehicle Package</span></li></ul>
+</details>
+<h2 class="sect">文档</h2><article class="rec" id="SWS_UCM_00352">
+<h3 class="recname"><span class="kind">服务方法</span> Activate <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00352" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00352]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00021" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00021</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00030" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00030</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00352">Activate</a> ()</pre>
+<div class="desc"><p>This method activates the Software Clusters extracted from the processed Software Packages.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Activate</code> 启动已处理包的激活阶段和UpdateRequest 协作。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00352">[SWS_UCM_00352]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00352">[SWS_UCM_00352]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr><tr><td class="mono">kDependencyMissing</td><td>Activation is not allowed because dependencies are missing.</td></tr><tr><td class="mono">kPersistencyAllocationFailed</td><td>UCM failed to allocate persistent data.</td></tr><tr><td class="mono">kUpdateSessionRejected</td><td>Start of an update session was rejected by State Management</td></tr><tr><td class="mono">kPrepareUpdateFailed</td><td>Error during update preparation step.</td></tr><tr><td class="mono">kVerificationFailed</td><td>State Management returned verification failure</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00352", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00352", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00352</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00352">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00351">
+<h3 class="recname"><span class="kind">服务方法</span> Cancel <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00351" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00351]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00020" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00020</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00351">Cancel</a> (IN TransferIdType id)</pre>
+<div class="desc"><p>This method aborts an ongoing processing of a Software Package.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Cancel</code> 中止正在进行的数据包处理。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00351">[SWS_UCM_00351]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00351">[SWS_UCM_00351]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>IN</td><td class="mono">TransferIdType</td><td>The Transfer ID.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context. Management</td></tr><tr><td class="mono">kTransferIdInvalid</td><td>The Transfer ID is invalid.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00351", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00351", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00351</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00351">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00361">
+<h3 class="recname"><span class="kind">服务字段</span> CurrentStatus <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00361" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00361]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00018" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00018</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00024" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00024</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00361">CurrentStatus</a> : CurrentStatusType  // Field (Getter, Notifier)</pre>
+<div class="desc"><p>The current status of UCM.</p></div>
+
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>类型</th><td class="mono">CurrentStatusType</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr><tr><th>HasGetter</th><td class="mono">true</td></tr><tr><th>HasSetter</th><td class="mono">false</td></tr><tr><th>HasNotifier</th><td class="mono">true</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00361", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00361", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00361</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00361">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00348">
+<h3 class="recname"><span class="kind">服务方法</span> DeleteTransfer <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00348" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00348]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00019" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00019</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00025" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00025</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00348">DeleteTransfer</a> (IN TransferIdType id)</pre>
+<div class="desc"><p>Delete a transferred Software Package.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p>如果不应处理已传输的包，则<code>DeleteTransfer</code> 会删除该包的状态。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00348">[SWS_UCM_00348]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00348">[SWS_UCM_00348]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>IN</td><td class="mono">TransferIdType</td><td>Transfer ID of the currently running request.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kTransferIdInvalid</td><td>The Transfer ID is invalid. Management</td></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00348", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00348", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00348</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00348">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00354">
+<h3 class="recname"><span class="kind">服务方法</span> Finish <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00354" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00354]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00015" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00015</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00354">Finish</a> ()</pre>
+<div class="desc"><p>This method finishes the processing for the current set of processed Software Packages. It does a cleanup of all data of the processing including the sources of the Software Packages.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Finish</code> 清除已完成处理的数据。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00354">[SWS_UCM_00354]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00354">[SWS_UCM_00354]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00354", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00354", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00354</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00354">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00355">
+<h3 class="recname"><span class="kind">服务方法</span> GetHistory <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00355" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00355]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00032" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00032</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00355">GetHistory</a> (IN <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">uint64_t</a> timestampGE, IN <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">uint64_t</a> timestampLT, OUT HistoryVectorType history)</pre>
+<div class="desc"><p>Getter method to retrieve all actions that have been performed by UCM.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetHistory</code> 交付UCM 在请求的时间窗口内执行的操作。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00355">[SWS_UCM_00355]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00355">[SWS_UCM_00355]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">timestampGE</td><td>IN</td><td class="mono">uint64_t</td><td>Earliest timestamp (inclusive)</td></tr><tr><td class="mono">timestampLT</td><td>IN</td><td class="mono">uint64_t</td><td>Latest timestamp (exclusive)</td></tr><tr><td class="mono">history</td><td>OUT</td><td class="mono">HistoryVectorType</td><td>The history of all actions that have been performed by UCM.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00355", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00355", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00355</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00355">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00343">
+<h3 class="recname"><span class="kind">服务方法</span> GetId <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00343" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00343]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00004" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00004</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00010" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00010</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00343">GetId</a> (OUT UCMIdentifierType id)</pre>
+<div class="desc"><p>Get the UCM Instance Identifier.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetId</code> 提供与端点关联的 UCM 实例标识符。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00343">[SWS_UCM_00343]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00343">[SWS_UCM_00343]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>OUT</td><td class="mono">UCMIdentifierType</td><td>UCM Module Instantiation Identifier.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00343", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00343", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00343</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00343">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00360">
+<h3 class="recname"><span class="kind">服务方法</span> GetProgress <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00360" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00360]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00011" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00011</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00018" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00018</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00360">GetProgress</a> (OUT ProgressInformationType Management progressInformation)</pre>
+<div class="desc"><p>Get the progress information of the currently active state in the Package Management state machine.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetProgress</code>提供活动阶段的进度信息。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00360">[SWS_UCM_00360]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00360">[SWS_UCM_00360]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">progressInformation</td><td>OUT</td><td class="mono">ProgressInformationType Management</td><td>The progress information of the current active state in the Package Management state machine.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00360", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00360", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00360</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00360">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00356">
+<h3 class="recname"><span class="kind">服务方法</span> GetSwClusterChangeInfo <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00356" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00356]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00011" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00011</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00018" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00018</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00356">GetSwClusterChangeInfo</a> (OUT SwClusterInfoVectorType swInfo)</pre>
+<div class="desc"><p>This method returns a list pending changes to the set of SoftwareClusters on the adaptive platform. The returned list includes all SoftwareClusters that are to be added, updated or removed. The list of changes is extended in the course of processing Software Packages.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetSwClusterChangeInfo</code> 提供了对软件集群集的显着更改。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00356">[SWS_UCM_00356]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00356">[SWS_UCM_00356]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">swInfo</td><td>OUT</td><td class="mono">SwClusterInfoVectorType</td><td>List of SoftwareClusters that are in state kAdded,kUpdating or kRemoved.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00356", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00356", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00356</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00356">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00357">
+<h3 class="recname"><span class="kind">服务方法</span> GetSwClusterInfo <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00357" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00357]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00002</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00357">GetSwClusterInfo</a> (OUT SwClusterInfoVectorType swInfo)</pre>
+<div class="desc"><p>This method returns a list with information of all SoftwareClusters that are in state kPresent.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetSwClusterInfo</code> 提供现有软件集群的信息。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00357">[SWS_UCM_00357]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00357">[SWS_UCM_00357]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">swInfo</td><td>OUT</td><td class="mono">SwClusterInfoVectorType</td><td>List of installed SoftwareClusters that are in state kPresent.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00357", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00357", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00357</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00357">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00358">
+<h3 class="recname"><span class="kind">服务方法</span> GetSwClusterManifestInfo <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00358" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00358]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00002</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00358">GetSwClusterManifestInfo</a> (IN SwClusterNameType swClusterName, OUT SwClusterManifestInfoType swInfo)</pre>
+<div class="desc"><p>This method returns the general information of a Software Cluster that are in state kPresent.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetSwClusterManifestInfo</code>提供指定软件集群的Manifest信息。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00358">[SWS_UCM_00358]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00358">[SWS_UCM_00358]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0 Management</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">swClusterName</td><td>IN</td><td class="mono">SwClusterNameType</td><td>Name of the Software Cluster that is in state kPresent.</td></tr><tr><td class="mono">swInfo</td><td>OUT</td><td class="mono">SwClusterManifestInfoType</td><td>Manifest information of Software Cluster at state kPresent.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00358", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00358", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00358</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00358">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00359">
+<h3 class="recname"><span class="kind">服务方法</span> GetSwPackages <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00359" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00359]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00011" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00011</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00018" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00018</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00359">GetSwPackages</a> (OUT SwPackageInfoVectorType packages)</pre>
+<div class="desc"><p>This method returns the Software Packages that available in UCM.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>GetSwPackages</code> 提供UCM 中提供的软件包。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00359">[SWS_UCM_00359]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00359">[SWS_UCM_00359]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">packages</td><td>OUT</td><td class="mono">SwPackageInfoVectorType</td><td>List of Software Packages.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00359", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00359", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00359</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00359">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00349">
+<h3 class="recname"><span class="kind">服务方法</span> ProcessSwPackage <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00349" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00349]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00005" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00005</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00015" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00015</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00026" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00026</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00349">ProcessSwPackage</a> (IN TransferIdType id)</pre>
+<div class="desc"><p>Process a previously transferred Software Package or a partly transferred Software Package from a stream.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>ProcessSwPackage</code> 按照预期的UCM 顺序处理传输的数据包。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00349">[SWS_UCM_00349]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00349">[SWS_UCM_00349]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>IN</td><td class="mono">TransferIdType</td><td>The Transfer ID of the Software Package which should be processed.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr><tr><td class="mono">kServiceBusy</td><td>Another processing is already ongoing and therefore the current processing request has to be rejected.</td></tr><tr><td class="mono">kTransferIdInvalid</td><td>The Transfer ID is invalid.</td></tr><tr><td class="mono">kAuthenticationFailed</td><td>Package authentication failed.</td></tr><tr><td class="mono">kPackageVersionIncompatible</td><td>The version of the Software or Vehicle Package to be processed is not compatible with the current version of UCM or V-UCM.</td></tr><tr><td class="mono">kPackageManifestInvalid</td><td>Package manifest could not be read.</td></tr><tr><td class="mono">kSoftwareClusterMissing</td><td>The Software Cluster is not present in the Machine.</td></tr><tr><td class="mono">kDeltaIncompatible</td><td>Delta package dependency check failed.</td></tr><tr><td class="mono">kMemoryInsufficient</td><td>Insufficient memory to perform operation.</td></tr><tr><td class="mono">kChecksumDescriptionInvalid</td><td>Checksum attribute not recognised.</td></tr><tr><td class="mono">kProcessedSoftwarePackageInconsistent</td><td>The processed Software Package integrity check has failed. Management</td></tr><tr><td class="mono">kSwclRemovalDenied</td><td>Attempt to remove PLATFORM_CORE Software Cluster.</td></tr><tr><td class="mono">kOldVersion</td><td>Software Package version is too old.</td></tr><tr><td class="mono">kProcessSwPackageCanceled</td><td>The processing operation has been interrupted by a Cancel() call.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00349", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00349", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00349</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00349">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00344">
+<h3 class="recname"><span class="kind">服务方法</span> RegisterSoftwarePackage <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00344" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00344]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00019" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00019</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00025" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00025</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00344">RegisterSoftwarePackage</a> (IN UriString uri, OUT TransferIdType transferId)</pre>
+<div class="desc"><p>registers a package that could already be in Machine’s file system or to be downloaded.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>RegisterSoftwarePackage</code> 注册一个已在本地或通过 URI 可用的软件包，并返回传输 ID。<a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00344">[SWS_UCM_00344]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00344">[SWS_UCM_00344]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">uri</td><td>IN</td><td class="mono">UriString</td><td>uri pointing to software package.</td></tr><tr><td class="mono">transferId</td><td>OUT</td><td class="mono">TransferIdType</td><td>transfer identifier.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kInvalidUri</td><td>Provided URI is not valid.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00344", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00344", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00344</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00344">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00398">
+<h3 class="recname"><span class="kind">服务方法</span> Resume <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00398" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00398]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00047" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00047</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00398">Resume</a> ()</pre>
+<div class="desc"><p>This method resumes ongoing time consuming actions or actions related to specific states.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Resume</code> 恢复先前暂停的支持行动。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00398">[SWS_UCM_00398]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00398">[SWS_UCM_00398]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00398", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00398", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00398</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00398">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00350">
+<h3 class="recname"><span class="kind">服务方法</span> RevertProcessedSwPackages <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00350" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00350]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00026" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00026</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00350">RevertProcessedSwPackages</a> ()</pre>
+<div class="desc"><p>Revert the changes done by processing (ProcessSwPackage) of one or several software packages.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>RevertProcessedSwPackages</code> 回滚处理中的更改，而不替换激活回滚。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00350">[SWS_UCM_00350]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00350">[SWS_UCM_00350]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr><tr><td class="mono">kNotAbleToRevertPackages</td><td>RevertProcessedSwPackages failed.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00350", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00350", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00350</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00350">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00353">
+<h3 class="recname"><span class="kind">服务方法</span> Rollback <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00353" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00353]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00008" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00008</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00353">Rollback</a> ()</pre>
+<div class="desc"><p>Rollback the system to the state before the packages were processed.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Rollback</code> 通过定义的回滚路径恢复处理包之前的状态。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00353">[SWS_UCM_00353]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00353">[SWS_UCM_00353]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00353", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00353", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00353</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00353">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00397">
+<h3 class="recname"><span class="kind">服务方法</span> Suspend <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00397" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00397]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00047" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00047</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00397">Suspend</a> ()</pre>
+<div class="desc"><p>This method suspends ongoing time consuming actions or actions related to specific states.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>Suspend</code> 以受控方式中断支持的长时间运行的操作。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00397">[SWS_UCM_00397]</a></p><h5>来电规则</h5><p>在致电之前，评估<code>CurrentStatus</code>并记录ApplicationErrors。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00397">[SWS_UCM_00397]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00397", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00397", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00397</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00397">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00346">
+<h3 class="recname"><span class="kind">服务方法</span> TransferData <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00346" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00346]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00019" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00019</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00025" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00025</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00346">TransferData</a> (IN TransferIdType id, IN ByteVectorType Management data, IN <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">uint64_t</a> blockCounter)</pre>
+<div class="desc"><p>Block-wise transfer of a Software Package to UCM.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>TransferData</code> 恰好传输由传输ID标识的传输的一个块。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00346">[SWS_UCM_00346]</a></p><h5>来电规则</h5><p>在传输操作期间，传输ID、块大小和块计数器必须保持一致。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00346">[SWS_UCM_00346]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>IN</td><td class="mono">TransferIdType</td><td>Transfer ID.</td></tr><tr><td class="mono">data</td><td>IN</td><td class="mono">ByteVectorType Management</td><td>Data block of the Software Package.</td></tr><tr><td class="mono">blockCounter</td><td>IN</td><td class="mono">uint64_t</td><td>Block counter value of the current block.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr><tr><td class="mono">kTransferIdInvalid</td><td>The Transfer ID is invalid.</td></tr><tr><td class="mono">kBlockIncorrect</td><td>The same block number is received twice.</td></tr><tr><td class="mono">kBlockSizeIncorrect</td><td>The size of the block exceeds the provided block size from TransferStart or Transfer VehiclePackage.</td></tr><tr><td class="mono">kSizeIncorrect</td><td>The size of the Software or Vehicle Package exceeds the provided size in TransferStart.</td></tr><tr><td class="mono">kMemoryInsufficient</td><td>Insufficient memory to perform operation.</td></tr><tr><td class="mono">kTransferFailed</td><td>UCM cannot persist transferred block.</td></tr><tr><td class="mono">kBlockInconsistent</td><td>Consistency check for transferred block failed.</td></tr><tr><td class="mono">kPackageFormatUnsupported</td><td>The Vehicle Package or Software Package archiving format is not supported.</td></tr><tr><td class="mono">kAuthenticationFailed</td><td>Package authentication failed.</td></tr><tr><td class="mono">kPackageManifestInvalid</td><td>Package manifest could not be read.</td></tr><tr><td class="mono">kPackageVersionIncompatible</td><td>The version of the Software or Vehicle Package to be processed is not compatible with the current version of UCM or V-UCM.</td></tr><tr><td class="mono">kPackageInconsistent</td><td>Package integrity check failed.</td></tr><tr><td class="mono">kSwclRemovalDenied</td><td>Attempt to remove PLATFORM_CORE Software Cluster.</td></tr><tr><td class="mono">kOldVersion</td><td>Software Package version is too old.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00346", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00346", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00346</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00346">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00347">
+<h3 class="recname"><span class="kind">服务方法</span> TransferExit <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00347" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00347]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00019" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00019</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00025" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00025</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00347">TransferExit</a> (IN TransferIdType id)</pre>
+<div class="desc"><p>Finish the transfer of a Software Package to UCM.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>TransferExit</code> 完成数据接受并触发指定的完整性和格式检查。 <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00347">[SWS_UCM_00347]</a></p><h5>来电规则</h5><p>在传输操作期间，传输ID、块大小和块计数器必须保持一致。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00347">[SWS_UCM_00347]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0 Management</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">id</td><td>IN</td><td class="mono">TransferIdType</td><td>Transfer ID of the currently running request.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kOperationNotPermitted</td><td>The operation is not supported in the current context.</td></tr><tr><td class="mono">kTransferIdInvalid</td><td>The Transfer ID is invalid.</td></tr><tr><td class="mono">kDataInsufficient</td><td>TransferExit has been called but total transferred data size does not match expected data size provided with TransferStart call.</td></tr><tr><td class="mono">kAuthenticationFailed</td><td>Package authentication failed.</td></tr><tr><td class="mono">kPackageFormatUnsupported</td><td>The Vehicle Package or Software Package archiving format is not supported.</td></tr><tr><td class="mono">kPackageInconsistent</td><td>Package integrity check failed.</td></tr><tr><td class="mono">kPackageVersionIncompatible</td><td>The version of the Software or Vehicle Package to be processed is not compatible with the current version of UCM or V-UCM.</td></tr><tr><td class="mono">kPackageManifestInvalid</td><td>Package manifest could not be read.</td></tr><tr><td class="mono">kSwclRemovalDenied</td><td>Attempt to remove PLATFORM_CORE Software Cluster.</td></tr><tr><td class="mono">kOldVersion</td><td>Software Package version is too old.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00347", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00347", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00347</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00347">View in Curation Report &rarr;</a></p>
+</div>
+</details></article><article class="rec" id="SWS_UCM_00345">
+<h3 class="recname"><span class="kind">服务方法</span> TransferStart <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00345" title="Spezifikations-PDF (AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf)">[SWS_UCM_00345]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00019" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00019</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf#nameddest=RS_UCM_00025" title="Spezifikations-PDF (AUTOSAR_AP_RS_UpdateAndConfigurationManagement.pdf)">RS_UCM_00025</a></span></h3>
+<pre class="syntax"><a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html#SWS_UCM_00345">TransferStart</a> (IN <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">uint64_t</a> size, OUT TransferIdType id, OUT <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">uint32_t</a> blockSize)</pre>
+<div class="desc"><p>Start the transfer of a Software Package after having received a Vehicle Package. The size of the Software Package to be transferred to UCM must be provided. UCM will generate a Transfer ID for subsequent calls to TransferData, TransferExit, ProcessSwPackage, DeleteTransfer.</p></div>
+<div class="ai usage"><h4>使用量<span class="ai-badge" title="AI generated">AI 生成 / AI generated</span></h4><p class="ai-note">根据所引用的 AUTOSAR R25-11 文档自动生成的使用说明，不是 AUTOSAR 官方文本。</p><h5>专业角色</h5><p><code>TransferStart</code> 预留传输并返回传输 ID 和允许的 <code>blockSize</code>。<a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_UpdateAndConfigurationManagement.pdf#nameddest=SWS_UCM_00345">[SWS_UCM_00345]</a></p><h5>来电规则</h5><p>在传输操作期间，传输ID、块大小和块计数器必须保持一致。</p><p class="ai-evidence">从上一个区块获得的进一步证据：<a class="swsref" href="#SWS_UCM_00345">[SWS_UCM_00345]</a>。</p></div>
+<table class="props"><tr><th>Scope</th><td class="mono">service interface <a class="vis-priv" href="sv_ucm_PackageManagement_3e8fec.html">PackageManagement</a></td></tr><tr><th>Fire &amp; Forget</th><td class="mono">false</td></tr><tr><th>版本</th><td class="mono">1.0</td></tr></table>
+<h4>范围</h4><table class="params"><tr><th>姓名</th><th>方向</th><th>类型</th><th>Beschreibung</th></tr><tr><td class="mono">size</td><td>IN</td><td class="mono">uint64_t</td><td>Size (in bytes) of the Software Package to be transferred.</td></tr><tr><td class="mono">id</td><td>OUT</td><td class="mono">TransferIdType</td><td>Return TransferId.</td></tr><tr><td class="mono">blockSize</td><td>OUT</td><td class="mono">uint32_t</td><td>Size of the blocks to be received with TransferData method.</td></tr></table>
+<h4>Application Errors</h4>
+<table class="params"><tr><th>Fehler</th><th>Beschreibung</th></tr><tr><td class="mono">kMemoryInsufficient</td><td>Insufficient memory to perform operation.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_UCM_00345", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_UCM_00345", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_UCM_00345</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+<p class="rec-curation-link"><a href="../../curation-report.html#SWS_UCM_00345">View in Curation Report &rarr;</a></p>
+</div>
+</details></article></main>
+<footer>自动提取自 AUTOSAR R25-11 官方规范 PDF
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>)。
+非 AUTOSAR 官方出版物；描述性文本保留原文（英文）。</footer></body></html>

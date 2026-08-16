@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::diag::Conversation — ara::* API</title><link rel="stylesheet" href="../style.css"><script src="../fold.js" defer></script><script src="../review.js" defer></script><script src="../review_request.js" defer></script><script src="../cytoscape.min.js" defer></script><script src="../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API-Referenz</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a class="cur" href="../classes/cl_ara_diag_Conversation_8b92b3.html" title="Deutsch" hreflang="de"><img src="../flags/de.svg" alt="DE"></a><a href="../en/classes/cl_ara_diag_Conversation_8b92b3.html" title="English" hreflang="en"><img src="../flags/gb.svg" alt="EN"></a><a href="../es/classes/cl_ara_diag_Conversation_8b92b3.html" title="Español" hreflang="es"><img src="../flags/es.svg" alt="ES"></a><a href="../pt/classes/cl_ara_diag_Conversation_8b92b3.html" title="Português" hreflang="pt"><img src="../flags/pt.svg" alt="PT"></a><a href="../fr/classes/cl_ara_diag_Conversation_8b92b3.html" title="Français" hreflang="fr"><img src="../flags/fr.svg" alt="FR"></a><a href="../ru/classes/cl_ara_diag_Conversation_8b92b3.html" title="Русский" hreflang="ru"><img src="../flags/ru.svg" alt="RU"></a><a href="../ar/classes/cl_ara_diag_Conversation_8b92b3.html" title="العربية" hreflang="ar"><img src="../flags/sa.svg" alt="AR"></a><a href="../hi/classes/cl_ara_diag_Conversation_8b92b3.html" title="हिन्दी" hreflang="hi"><img src="../flags/in.svg" alt="HI"></a><a href="../ko/classes/cl_ara_diag_Conversation_8b92b3.html" title="한국어" hreflang="ko"><img src="../flags/kr.svg" alt="KO"></a><a href="../zh/classes/cl_ara_diag_Conversation_8b92b3.html" title="中文" hreflang="zh"><img src="../flags/cn.svg" alt="ZH"></a><a href="../nl/classes/cl_ara_diag_Conversation_8b92b3.html" title="Nederlands" hreflang="nl"><img src="../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Start</a> › <a class="vis-app" href="../modules/diag.html">ara::diag</a> › Conversation</nav>
+<main><h1><span class="kind">class</span> ara::diag::Conversation</h1>
+<p class="meta"><span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00693" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00693]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04166" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04166</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a></span></p>
+<pre class="syntax">class Conversation final {...};</pre>
+<div class="desc"><p>Conversation interface.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Forwarding-Header</th><td class="mono">#include "ara/diag/diag_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html">ara::diag</a></td></tr></table>
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h2></summary><div class="ai"><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><h4>Laufzeitmodell eines Clientdialogs</h4><p><code>Conversation</code> repräsentiert die dynamisch zur Laufzeit angelegte Beziehung eines bestimmten Diagnoseclients zu einem Diagnostic Server. Der Client wird als Tupel aus UDS-Quelladresse und <code>globalChannelId</code> identifiziert <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00421">[SWS_DM_00421]</a>; ein Server kann mehrere Conversations parallel verwalten. Die Anzahl angebotener <code>Conversation</code>-Instanzen folgt <code>maxConversations</code>, ohne Konfiguration gilt eins <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00840">[SWS_DM_00840]</a>.</p><h4>Sichtbarer Zustand und Parallelität</h4><p>Die Schnittstelle gibt Aktivität, Diagnose-Session, Security-Level und Kennung wieder und kann Zustandswechsel per Notifier melden. Im Default-Session-Betrieb sind parallele Clientrequests möglich; wechselt ein Client in eine Non-default Session, wird dessen Conversation zum exklusiven UDS-Kontext <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.2.1.1">SWS Diagnostics §7.3.2.1.1 „Multiple Client Handling“</a>. Anwendungen sollten daher Zustandsabfragen als momentane Beobachtung und Notifier als Folge von Änderungen behandeln.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 755.00 127.00" style="max-width:1007px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 123.25)">
+<title>G</title>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-52" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- d -->
+<g id="node2" class="node vis-app">
+<title>d</title>
+<g id="a_node2"><a xlink:href="cl_ara_diag_Conversation_8b92b3.html" xlink:title="Default Session" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M270.52,-70C270.52,-70 202.77,-70 202.77,-70 196.77,-70 190.77,-64 190.77,-58 190.77,-58 190.77,-46 190.77,-46 190.77,-40 196.77,-34 202.77,-34 202.77,-34 270.52,-34 270.52,-34 276.52,-34 282.52,-40 282.52,-46 282.52,-46 282.52,-58 282.52,-58 282.52,-64 276.52,-70 270.52,-70"></path>
+<text xml:space="preserve" text-anchor="middle" x="236.64" y="-47.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Default Session</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;d -->
+<g id="edge1" class="edge">
+<title>i-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M11.97,-52C33.93,-52 120.5,-52 179.27,-52"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="178.96,-55.5 188.96,-52 178.96,-48.5 178.96,-55.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="101.14" y="-53.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">erste UDS-Anfrage eines Clients</text>
+</g>
+<!-- n -->
+<g id="node3" class="node">
+<title>n</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M594.39,-90C594.39,-90 504.89,-90 504.89,-90 498.89,-90 492.89,-84 492.89,-78 492.89,-78 492.89,-66 492.89,-66 492.89,-60 498.89,-54 504.89,-54 504.89,-54 594.39,-54 594.39,-54 600.39,-54 606.39,-60 606.39,-66 606.39,-66 606.39,-78 606.39,-78 606.39,-84 600.39,-90 594.39,-90"></path>
+<text xml:space="preserve" text-anchor="middle" x="549.64" y="-67.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Non-default Session</text>
+</g>
+<!-- d&#45;&gt;n -->
+<g id="edge2" class="edge">
+<title>d-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M282.85,-61.5C288.77,-62.49 294.78,-63.36 300.52,-64 361.2,-70.73 430.69,-72.46 480.67,-72.66"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="480.62,-76.16 490.63,-72.68 480.64,-69.16 480.62,-76.16"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="384.14" y="-74.31" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Session wechseln</text>
+</g>
+<!-- r -->
+<g id="node4" class="node">
+<title>r</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M601.52,-36C601.52,-36 497.77,-36 497.77,-36 491.77,-36 485.77,-30 485.77,-24 485.77,-24 485.77,-12 485.77,-12 485.77,-6 491.77,0 497.77,0 497.77,0 601.52,0 601.52,0 607.52,0 613.52,-6 613.52,-12 613.52,-12 613.52,-24 613.52,-24 613.52,-30 607.52,-36 601.52,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="549.64" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Antwort abgeschlossen</text>
+</g>
+<!-- d&#45;&gt;r -->
+<g id="edge3" class="edge">
+<title>d-&gt;r</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M282.88,-34.23C288.74,-32.45 294.73,-30.89 300.52,-29.75 357.92,-18.49 424.14,-15.86 473.73,-15.88"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="473.64,-19.38 483.66,-15.93 473.67,-12.38 473.64,-19.38"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="384.14" y="-31.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Antwort / Unterdrückung</text>
+</g>
+<!-- n&#45;&gt;d -->
+<g id="edge4" class="edge">
+<title>n-&gt;d</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M492.45,-55.26C484.24,-53.39 475.83,-51.79 467.77,-50.75 408.96,-43.15 340.99,-44.79 294.25,-47.5"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="294.27,-43.99 284.5,-48.1 294.7,-50.98 294.27,-43.99"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="384.14" y="-52.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">ResetToDefaultSession nach Request</text>
+</g>
+<!-- n&#45;&gt;n -->
+<g id="edge5" class="edge">
+<title>n-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M527.45,-90.52C524.37,-99.76 531.77,-108 549.64,-108 559.42,-108 566.06,-105.54 569.57,-101.79"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="572.97,-102.65 571.51,-92.15 566.11,-101.26 572.97,-102.65"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="549.64" y="-109.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">weitere Requests bis Timeout</text>
+</g>
+<!-- f -->
+<g id="node5" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="738.45" cy="-45" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="738.45" cy="-45" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- n&#45;&gt;f -->
+<g id="edge6" class="edge">
+<title>n-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M606.95,-63.86C644.64,-58.41 691.95,-51.58 718,-47.81"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="718.48,-51.28 727.88,-46.38 717.48,-44.35 718.48,-51.28"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="671.64" y="-61.87" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Abbruch / Timeout</text>
+</g>
+<!-- r&#45;&gt;f -->
+<g id="edge7" class="edge">
+<title>r-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M613.81,-19.57C643.87,-21.48 680.09,-25.49 711.77,-33.75 714.45,-34.45 717.2,-35.39 719.87,-36.44"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="718.4,-39.61 728.95,-40.54 721.28,-33.23 718.4,-39.61"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="671.64" y="-35.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Default Session</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Der Lebenszyklus beginnt mit der ersten UDS-Anfrage; in einer Non-default Session bleibt die Conversation bis zum Timeout oder Abbruch bestehen. Quellen: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.2.1.2">SWS Diagnostics §7.3.2.1.2 „Life-cycle of a Diagnostic Conversation“</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00842">[SWS_DM_00842]</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00843">[SWS_DM_00843]</a>. <em>Teilweise Interpretation: Die Darstellung verdichtet die beschriebenen Endbedingungen.</em></p><h4>Session gezielt zurücksetzen</h4><p><code>ResetToDefaultSession</code> fordert keinen sofortigen Abbruch an: der DM beendet zunächst die laufende Anfrage und wechselt anschließend in die Default Session <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00842">[SWS_DM_00842]</a>. Beim Ende der Conversation wird ihr ActivityStatus auf <code>kInactive</code> gesetzt <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00843">[SWS_DM_00843]</a>. Ein erneutes Setzen eines Activity-, Session- oder Security-Notifiers überschreibt jeweils die vorherige Registrierung; die Callback-Lebensdauer muss daher dem Besitz der jeweiligen Conversation folgen.</p><h4>Fehlerbehandlung und geordneter Session-Abbruch</h4><p>Abfragen einer Conversation, etwa <code>GetActivityStatus()</code> oder <code>GetDiagnosticSession()</code>, liefern ihren Zustand als <code>ara::core::Result</code>. Ist die dafür essentielle Funktionalität des Diagnostic Managers nicht verfügbar, wird der Fehler <code>DiagErrc::kServiceNotAvailable</code> zurückgegeben; die aufrufende Anwendung behandelt diesen Pfad ohne Teilfortschritt beziehungsweise mit Rollback-Semantik <a class="docref" href="#SWS_DM_00694">[SWS_DM_00694]</a>, <a class="docref" href="#SWS_DM_00696">[SWS_DM_00696]</a>. Die Rückgabe ist damit als fachlicher Fehlerpfad zu prüfen und nicht als gültiger Zustandswert weiterzuverwenden.</p><p>Endet eine Conversation durch Abbruch oder Timeout, setzt der Diagnostic Manager ihren Aktivitätsstatus auf <code>kInactive</code> und meldet die Änderung über den registrierten Activity-Notifier <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00843">[SWS_DM_00843]</a>, <a class="docref" href="#SWS_DM_00695">[SWS_DM_00695]</a>. Interpretation für die Anwendungslogik: Der Inaktivitäts-Callback markiert das Ende der Beobachtung; aus dieser Conversation werden keine Folgeanfragen abgeleitet. Eine erneute Registrierung ersetzt jeweils den zuvor gesetzten Notifier <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01355">[SWS_DM_01355]</a>.</p><div class="diagram" id="diag-02"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 900 813" font-family="Helvetica,sans-Serif" style="max-width:900px"><text x="450.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Conversation: Fehlerbehandlung und Session-Abbruch</text><line x1="135" y1="102" x2="135" y2="799" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="799" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="799" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="765" y1="102" x2="765" y2="799" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Diagnoseanwendung</text><a class="vis-app" href="../classes/cl_ara_diag_Conversation_8b92b3.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Conversation</text></a><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Diagnostic Manager</text><rect x="672" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="765" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Diagnoseclient</text><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker><marker id="arrO" markerwidth="12" markerheight="10" refx="11" refy="5" orient="auto"><polyline points="1 1, 11 5, 1 9" fill="none" stroke="#28251d" stroke-width="1.2"></polyline></marker></defs><rect x="40" y="278" width="820" height="246" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><rect x="40" y="538" width="820" height="186" fill="none" stroke="#8a867c" stroke-width="1.1"></rect><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">SetActivityNotifier(notifier)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">Notifier registrieren</text><text x="450.0" y="173" text-anchor="middle" font-size="11" fill="#28251d">(ersetzt vorherigen Notifier)</text><line x1="345" y1="179" x2="555" y2="179" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="207" text-anchor="middle" font-size="11" fill="#28251d">GetActivityStatus() oder</text><text x="240.0" y="220" text-anchor="middle" font-size="11" fill="#28251d">GetDiagnosticSession()</text><line x1="135" y1="226" x2="345" y2="226" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="254" text-anchor="middle" font-size="11" fill="#28251d">aktuellen Conversation-Zustand abfragen</text><line x1="345" y1="260" x2="555" y2="260" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 40 278 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="293" font-size="11" font-weight="bold" fill="#28251d">alt</text><text x="96" y="293" font-size="11" font-style="italic" fill="#28251d">[DM-Service verfügbar]</text><text x="450.0" y="318" text-anchor="middle" font-size="11" fill="#28251d">Result: ActivityStatus /</text><text x="450.0" y="331" text-anchor="middle" font-size="11" fill="#28251d">DiagnosticSession</text><line x1="555" y1="337" x2="345" y2="337" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="240.0" y="365" text-anchor="middle" font-size="11" fill="#28251d">Result erfolgreich zurückgeben</text><line x1="345" y1="371" x2="135" y2="371" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><line x1="40" y1="393" x2="860" y2="393" stroke="#8a867c" stroke-width="1" stroke-dasharray="5,3"></line><text x="52" y="408" font-size="11" font-style="italic" fill="#28251d">[essentielle DM-Funktionalität nicht verfügbar]</text><text x="450.0" y="436" text-anchor="middle" font-size="11" fill="#28251d">Result: DiagErrc::</text><text x="450.0" y="449" text-anchor="middle" font-size="11" fill="#28251d">kServiceNotAvailable</text><line x1="555" y1="455" x2="345" y2="455" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><text x="240.0" y="483" text-anchor="middle" font-size="11" fill="#28251d">Fehler result zurückgeben;</text><text x="240.0" y="496" text-anchor="middle" font-size="11" fill="#28251d">Operation mit Rollback behandeln</text><line x1="345" y1="502" x2="135" y2="502" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 40 538 h 46 v 14 l -8 8 h -38 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><text x="48" y="553" font-size="11" font-weight="bold" fill="#28251d">alt</text><text x="96" y="553" font-size="11" font-style="italic" fill="#28251d">[Session endet durch Abbruch oder Timeout]</text><text x="660.0" y="578" text-anchor="middle" font-size="11" fill="#28251d">Conversation beenden</text><line x1="765" y1="584" x2="555" y2="584" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 555 598 h 46 v 22 h -46" fill="none" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></path><text x="609" y="613" text-anchor="start" font-size="11" fill="#28251d">ActivityStatus auf kInactive setzen</text><text x="450.0" y="649" text-anchor="middle" font-size="11" fill="#28251d">ActivityStatusTypeNotifier(kInactive)</text><line x1="555" y1="655" x2="345" y2="655" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="240.0" y="683" text-anchor="middle" font-size="11" fill="#28251d">Notifier: Conversation inaktiv;</text><text x="240.0" y="696" text-anchor="middle" font-size="11" fill="#28251d">keine Folgeanfragen ableiten</text><line x1="345" y1="702" x2="135" y2="702" stroke="#28251d" stroke-width="1.1" stroke-dasharray="6,4" marker-end="url(#arrO)"></line><path d="M 70.0 737 h 540 l 10 10 v 32 h -550 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 610.0 737 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="78.0" y="751" font-size="11" fill="#28251d">Fehlerpfade: SWS_DM_00692, SWS_DM_00694, SWS_DM_00696, SWS_DM_00698, SWS_DM_00700</text><text x="78.0" y="764" font-size="11" fill="#28251d">Notifier und Conversation-Ende: SWS_DM_00695, SWS_DM_00843, SWS_DM_01355</text></svg></div> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00840">[SWS_DM_00840]</a>, <a class="docref" href="#SWS_DM_00692">[SWS_DM_00692]</a>, <a class="docref" href="#SWS_DM_00782">[SWS_DM_00782]</a>, <a class="docref" href="#SWS_DM_00783">[SWS_DM_00783]</a>, <a class="docref" href="#SWS_DM_00694">[SWS_DM_00694]</a>, <a class="docref" href="#SWS_DM_00700">[SWS_DM_00700]</a>, <a class="docref" href="#SWS_DM_00696">[SWS_DM_00696]</a>, <a class="docref" href="#SWS_DM_00698">[SWS_DM_00698]</a>, <a class="docref" href="#SWS_DM_00707">[SWS_DM_00707]</a>, <a class="docref" href="#SWS_DM_00708">[SWS_DM_00708]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01259">[SWS_DM_01259]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01260">[SWS_DM_01260]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01261">[SWS_DM_01261]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00856">[SWS_DM_00856]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00426">[SWS_DM_00426]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00843">[SWS_DM_00843]</a>, <a class="docref" href="#SWS_DM_00701">[SWS_DM_00701]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00842">[SWS_DM_00842]</a>, <a class="docref" href="#SWS_DM_00695">[SWS_DM_00695]</a>, <a class="docref" href="#SWS_DM_00697">[SWS_DM_00697]</a>, <a class="docref" href="#SWS_DM_00699">[SWS_DM_00699]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01355">[SWS_DM_01355]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01356">[SWS_DM_01356]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01357">[SWS_DM_01357]</a>, <a class="docref" href="#SWS_DM_02090">[SWS_DM_02090]</a>, <a class="docref" href="#SWS_DM_02091">[SWS_DM_02091]</a>, <a class="docref" href="#SWS_DM_02092">[SWS_DM_02092]</a>, <a class="docref" href="#SWS_DM_02093">[SWS_DM_02093]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00277">[SWS_DM_00277]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00279">[SWS_DM_00279]</a>.</div>
+</details>
+<h2 class="sect">UML-Klassendiagramm</h2><p class="dim">Hohle Dreieckspfeile = Vererbung (zeigt zur Basisklasse); Klicken öffnet die jeweilige Klassenseite.</p><div class="umlwrap"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="249pt" height="263pt" viewbox="0.00 0.00 249.00 263.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 258.75)">
+<title>G</title>
+<!-- nara__diag__Conversation235 -->
+<g id="node1" class="node vis-app">
+<title>nara__diag__Conversation235</title>
+<polygon fill="#f9f8f5" stroke="none" points="0,0 0,-254.75 240.5,-254.75 240.5,0 0,0"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-229 0,-229 240.5,-229 240.5,-229 0,-229"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-204.25 0,-204.25 240.5,-204.25 240.5,-204.25 0,-204.25"></polygon>
+<polygon fill="none" stroke="#01696f" points="0,0 0,-254.75 240.5,-254.75 240.5,0 0,0"></polygon>
+<text xml:space="preserve" text-anchor="start" x="7" y="-237.35" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#28251d">Conversation</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-213.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d"> </text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-188.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ Conversation()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-175.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator=()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-163" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetActivityStatus()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-150.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetAllConversations()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-137.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetConversation()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-124.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetConversationIdentifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-112" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetCurrentActiveConversations()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-99.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetDiagnosticSecurityLevel()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-86.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetDiagnosticSecurityLevelShortName()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-73.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetDiagnosticSession()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-61" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetDiagnosticSessionShortName()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-48.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ ResetToDefaultSession()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-35.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetActivityNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-22.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetDiagnosticSessionNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-10" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetSecurityLevelNotifier()</text>
+</g>
+</g>
+</svg>
+</div>
+<h2 class="sect">Eingebettete Typen</h2><ul class="mlist"><li><a class="dbox  vis-app" href="cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e.html">ConversationIdentifierType</a></li></ul>
+<h3>Methodenübersicht</h3><ul class="mlist"><li><code class="sig"><a class="fn" href="#SWS_DM_02092">Conversation</a> (<a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">Conversation</a> &amp;&amp;)=delete;</code> <span class="dim">Move constructor of conversation is deleted.</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_02090">Conversation</a> (const <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">Conversation</a> &amp;)=delete;</code> <span class="dim">Copy constructor of conversation is deleted.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00690">ActivityStatusType</a> &gt; <a class="fn" href="#SWS_DM_00694">GetActivityStatus</a> () noexcept;</code> <span class="dim">Represents the status of an active conversation.</span></li><li><code class="sig">static <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper" title="cppreference.com (C++17)">std::reference_wrapper</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &gt; &gt; <a class="fn" href="#SWS_DM_00782">Get AllConversations</a> () noexcept;</code> <span class="dim">Get all possible conversations.</span></li><li><code class="sig">static <a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; &gt; <a class="fn" href="#SWS_DM_00692">GetConversation</a> (const Meta Info &amp;metaInfo) noexcept;</code> <span class="dim">Get one conversation based on given MetaInfo.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e.html">ConversationIdentifierType</a> &gt; <a class="fn" href="#SWS_DM_00700">GetConversation Identifier</a> () noexcept;</code> <span class="dim">Getter for the current identification properties of the active conversation.</span></li><li><code class="sig">static <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper" title="cppreference.com (C++17)">std::reference_wrapper</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &gt; &gt; <a class="fn" href="#SWS_DM_00783">Get CurrentActiveConversations</a> () noexcept;</code> <span class="dim">Get all currently active conversations.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> &gt; <a class="fn" href="#SWS_DM_00698">GetDiagnosticSecurityLevel</a> () noexcept;</code> <span class="dim">Represents the current active diagnostic SecurityLevel of an active conversation.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt; <a class="fn" href="#SWS_DM_00708">GetDiagnosticSecurityLevel ShortName</a> (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> securityLevel) noexcept;</code> <span class="dim">Converts the given diagnostic SecurityLevel into the ShortName.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00706">SessionControlType</a> &gt; <a class="fn" href="#SWS_DM_00696">GetDiagnosticSession</a> () noexcept;</code> <span class="dim">Represents the current active diagnostic session of an active conversation.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt; <a class="fn" href="#SWS_DM_00707">GetDiagnosticSessionShort Name</a> (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00706">SessionControlType</a> session) noexcept;</code> <span class="dim">Converts the given diagnostic session into the ShortName.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00701">ResetToDefaultSession</a> () noexcept;</code> <span class="dim">Method to reset the current session to default session.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00695">SetActivityNotifier</a> (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00690">ActivityStatusType</a> Notifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the activity is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00697">SetDiagnosticSessionNotifier</a> (SessionControl TypeNotifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the Session is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00699">SetSecurityLevelNotifier</a> (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> Notifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the SecurityLevel is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; <a class="fn" href="#SWS_DM_02091">operator=</a> (const <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp;)=delete;</code> <span class="dim">Copy assignment operator of conversation is deleted.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; <a class="fn" href="#SWS_DM_02093">operator=</a> (<a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp;&amp;)=delete;</code> <span class="dim">Move assignment operator of conversation is deleted.</span></li></ul>
+<h3>Typaliase</h3><ul class="mlist"><li><a href="#SWS_DM_02126"><code>ActivityStatusTypeNotifier</code></a> <span class="dim">Register a notifier function which is called if the activity is changed.</span></li><li><a href="#SWS_DM_02128"><code>SecurityLevelTypeNotifier</code></a> <span class="dim">Register a notifier function which is called if the SecurityLevel is changed.</span></li><li><a href="#SWS_DM_02127"><code>SessionControlTypeNotifier</code></a> <span class="dim">Register a notifier function which is called if the Session is changed.</span></li></ul>
+<h2 class="sect">Dokumentation der Methoden</h2><article class="rec" id="SWS_DM_02090">
+<h3 class="recname"><span class="kind">function</span> Conversation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02090" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02090]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a></span></h3>
+<pre class="syntax">Conversation (const <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">Conversation</a> &amp;)=delete;</pre>
+<div class="desc"><p>Copy constructor of conversation is deleted.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02090", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02090", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02090</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02092">
+<h3 class="recname"><span class="kind">function</span> Conversation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02092" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02092]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a></span></h3>
+<pre class="syntax">Conversation (<a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">Conversation</a> &amp;&amp;)=delete;</pre>
+<div class="desc"><p>Move constructor of conversation is deleted.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02092", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02092", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02092</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00694">
+<h3 class="recname"><span class="kind">function</span> GetActivityStatus <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00694" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00694]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00690">ActivityStatusType</a> &gt; GetActivityStatus () noexcept;</pre>
+<div class="desc"><p>Represents the status of an active conversation.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetActivityStatus</code> repräsentiert den Status einer aktiven Konversation und liefert diesen asynchron über ein <code>ara::core::Result&lt;ActivityStatusType&gt;</code> <a class="swsref" href="#SWS_DM_00694">[SWS_DM_00694]</a>.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Ist die essentielle DM-Funktionalität aktuell nicht verfügbar, liefert der Aufruf <code>DiagErrc::kServiceNotAvailable</code> mit Rollback-Semantik. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;ActivityStatusType &gt;</td><td>the activity status of the conversation</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00694", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00694", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00694</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00782">
+<h3 class="recname"><span class="kind">function</span> GetAllConversations <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00782" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00782]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04166" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04166</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04209" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04209</a></span></h3>
+<pre class="syntax">static <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper" title="cppreference.com (C++17)">std::reference_wrapper</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &gt; &gt; Get AllConversations () noexcept;</pre>
+<div class="desc"><p>Get all possible conversations.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p>Die statische Methode <code>GetAllConversations</code> liefert alle möglichen Konversationen als <code>ara::core::Vector</code> von Referenzen auf <code>Conversation</code>-Objekte <a class="swsref" href="#SWS_DM_00782">[SWS_DM_00782]</a>.</p>
+<h4>Nebenläufigkeit &amp; Einschränkungen</h4>
+<p>Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;std::reference_wrapper&lt;Conversation &gt; &gt;</td><td>A Vector of all possible Conversation objects</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00782", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00782", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00782</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00692">
+<h3 class="recname"><span class="kind">function</span> GetConversation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00692" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00692]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04170" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04170</a></span></h3>
+<pre class="syntax">static <a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; &gt; GetConversation (const Meta Info &amp;metaInfo) noexcept;</pre>
+<div class="desc"><p>Get one conversation based on given MetaInfo.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p>Die statische Methode <code>GetConversation</code> liefert genau eine Konversation anhand der übergebenen <code>metaInfo</code> <a class="swsref" href="#SWS_DM_00692">[SWS_DM_00692]</a>. Das Ergebnis wird als <code>ara::core::Result&lt;Conversation&amp;&gt;</code> zurückgegeben.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Ist die essentielle DM-Funktionalität aktuell nicht verfügbar, liefert der Aufruf <code>DiagErrc::kServiceNotAvailable</code> mit Rollback-Semantik. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">metaInfo</td><td>MetaInfo of the request.</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;Conversation &amp; &gt;</td><td>Conversation object or error</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00692", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00692", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00692</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00700">
+<h3 class="recname"><span class="kind">function</span> GetConversationIdentifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00700" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00700]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_ConversationIdentifierType_16ba5e.html">ConversationIdentifierType</a> &gt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_00692">GetConversation</a> Identifier () noexcept;</pre>
+<div class="desc"><p>Getter for the current identification properties of the active conversation.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetConversationIdentifier</code> liefert die aktuellen Identifikationseigenschaften der aktiven Konversation als <code>ara::core::Result&lt;ConversationIdentifierType&gt;</code> <a class="swsref" href="#SWS_DM_00700">[SWS_DM_00700]</a>.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Ist die essentielle DM-Funktionalität aktuell nicht verfügbar, liefert der Aufruf <code>DiagErrc::kServiceNotAvailable</code> mit Rollback-Semantik. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;ConversationIdentifierType &gt;</td><td>Returns the conversation information</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00700", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00700", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00700</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00783">
+<h3 class="recname"><span class="kind">function</span> GetCurrentActiveConversations <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00783" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00783]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04166" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04166</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04209" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04209</a></span></h3>
+<pre class="syntax">static <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper" title="cppreference.com (C++17)">std::reference_wrapper</a>&lt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &gt; &gt; Get CurrentActiveConversations () noexcept;</pre>
+<div class="desc"><p>Get all currently active conversations.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p>Die statische Methode <code>GetCurrentActiveConversations</code> liefert alle aktuell aktiven Konversationen, also jene, für die <code>GetActivityStatus()</code> <code>kActive</code> ergibt, als <code>ara::core::Vector</code> von Referenzen auf <code>Conversation</code>-Objekte <a class="swsref" href="#SWS_DM_00783">[SWS_DM_00783]</a>.</p>
+<h4>Nebenläufigkeit &amp; Einschränkungen</h4>
+<p>Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;std::reference_wrapper&lt;Conversation &gt; &gt;</td><td>A Vector of all currently active (GetActivityStatus() == kActive) Conversation objects.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00783", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00783", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00783</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00698">
+<h3 class="recname"><span class="kind">function</span> GetDiagnosticSecurityLevel <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00698" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00698]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> &gt; GetDiagnosticSecurityLevel () noexcept;</pre>
+<div class="desc"><p>Represents the current active diagnostic SecurityLevel of an active conversation.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetDiagnosticSecurityLevel</code> repräsentiert das aktuell aktive Diagnostic-SecurityLevel einer aktiven Konversation und liefert es als <code>ara::core::Result&lt;SecurityLevelType&gt;</code> <a class="swsref" href="#SWS_DM_00698">[SWS_DM_00698]</a>.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Ist die essentielle DM-Funktionalität aktuell nicht verfügbar, liefert der Aufruf <code>DiagErrc::kServiceNotAvailable</code> mit Rollback-Semantik. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;SecurityLevelType &gt;</td><td>Returns the current SecurityLevel</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00698", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00698", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00698</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00708">
+<h3 class="recname"><span class="kind">function</span> GetDiagnosticSecurityLevelShortName <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00708" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00708]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt; <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_00698">GetDiagnosticSecurityLevel</a> ShortName (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> securityLevel) noexcept;</pre>
+<div class="desc"><p>Converts the given diagnostic SecurityLevel into the ShortName.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetDiagnosticSecurityLevelShortName</code> wandelt das übergebene Diagnostic-<code>SecurityLevelType</code> in den zugehörigen ShortName (<code>DiagnosticSecurityLevel.shortName</code>) um und liefert diesen als <code>ara::core::Result&lt;ara::core::StringView&gt;</code> <a class="swsref" href="#SWS_DM_00708">[SWS_DM_00708]</a>. Übergeben wird der zu konvertierende <code>securityLevel</code>-Enum-Wert.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Bei ungültigem Wert liefert der Aufruf <code>DiagErrc::kInvalidArgument</code> mit Rollback-Semantik, z. B. bei internem Debouncing. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">securityLevel</td><td>Security level enum the shortname shall be returned for.</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt;</td><td><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a>&gt; the SecurityLevel as shortName; DiagnosticSecurityLevel.shortName.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00708", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00708", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00708</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00696">
+<h3 class="recname"><span class="kind">function</span> GetDiagnosticSession <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00696" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00696]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00706">SessionControlType</a> &gt; GetDiagnosticSession () noexcept;</pre>
+<div class="desc"><p>Represents the current active diagnostic session of an active conversation.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetDiagnosticSession</code> repräsentiert die aktuelle aktive Diagnosesitzung einer aktiven Konversation und liefert sie als <code>ara::core::Result&lt;SessionControlType&gt;</code> <a class="swsref" href="#SWS_DM_00696">[SWS_DM_00696]</a>.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Ist die essentielle DM-Funktionalität aktuell nicht verfügbar, liefert der Aufruf <code>DiagErrc::kServiceNotAvailable</code> mit Rollback-Semantik. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;SessionControlType &gt;</td><td>the current session</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00696", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00696", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00696</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00707">
+<h3 class="recname"><span class="kind">function</span> GetDiagnosticSessionShortName <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00707" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00707]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; <a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt; GetDiagnosticSessionShort Name (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00706">SessionControlType</a> session) noexcept;</pre>
+<div class="desc"><p>Converts the given diagnostic session into the ShortName.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>GetDiagnosticSessionShortName</code> wandelt die übergebene Diagnosesitzung in den zugehörigen ShortName (<code>DiagnosticSession.shortName</code>) um und liefert diesen als <code>ara::core::Result&lt;ara::core::StringView&gt;</code> <a class="swsref" href="#SWS_DM_00707">[SWS_DM_00707]</a>. Übergeben wird der zu konvertierende <code>session</code>-Enum-Wert.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Bei ungültigem Wert liefert der Aufruf <code>DiagErrc::kInvalidArgument</code> mit Rollback-Semantik, z. B. bei internem Debouncing. Der Aufruf ist thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">session</td><td>Diagnostic session the shortname shall be returned for.</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a> &gt;</td><td><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt;<a class="vis-app" href="cl_ara_core_StringView_cfeb8f.html">ara::core::StringView</a>&gt; the session as shortName; DiagnosticSession.shortName.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00707", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00707", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00707</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00701">
+<h3 class="recname"><span class="kind">function</span> ResetToDefaultSession <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00701" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00701]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04006" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04006</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04166" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04166</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04209" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04209</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; ResetToDefaultSession () noexcept;</pre>
+<div class="desc"><p>Method to reset the current session to default session.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>ResetToDefaultSession</code> setzt die aktuelle Sitzung auf die Standardsitzung zurück und liefert ein <code>ara::core::Result&lt;void&gt;</code> <a class="swsref" href="#SWS_DM_00701">[SWS_DM_00701]</a>.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Laut Spezifikation werden für diese Funktion keine standardisierten Fehler festgelegt. Der Aufruf ist nicht thread-safe, jedoch exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00701", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00701", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00701</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00695">
+<h3 class="recname"><span class="kind">function</span> SetActivityNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00695" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00695]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetActivityNotifier (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00690">ActivityStatusType</a> Notifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the activity is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten — kein offizieller AUTOSAR-Text.</p><h5>Aktivität einer Conversation beobachten</h5><p><code>SetActivityNotifier</code> registriert einen Rückruf für Wechsel der Activity einer <code>Conversation</code> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00695">[SWS_DM_00695]</a>. Die Instanz repräsentiert den Dialog eines bestimmten Clients, nicht einen globalen Diagnosestatus.</p><h5>Registrierung austauschbar behandeln</h5><p>Der DM überschreibt bei einer erneuten Registrierung den bisherigen Activity-Notifier <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01355">[SWS_DM_01355]</a>. Den Callback daher an die Lebensdauer der Conversation koppeln und nicht mehrere Komponenten um dieselbe Registrierung konkurrieren lassen.</p><h5>Ende berücksichtigen</h5><p>Beim Ende der Conversation wird der ActivityStatus auf <code>kInactive</code> gesetzt <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00843">[SWS_DM_00843]</a>. Inaktive Zustände als Abschluss der Beobachtung behandeln und keine weitere Anfrage aus der verlassenen Conversation ableiten.</p><p class="retained-evidence">Ergänzende, bereits verknüpfte Spezifikationsbelege zu dieser API: <a class="docref" href="#SWS_DM_00695">[SWS_DM_00695]</a>.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">notifier</td><td>notifier function to be called</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00695", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00695", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00695</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00697">
+<h3 class="recname"><span class="kind">function</span> SetDiagnosticSessionNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00697" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00697]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetDiagnosticSessionNotifier (SessionControl TypeNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the Session is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>SetDiagnosticSessionNotifier</code> registriert eine Notifier-Funktion, die aufgerufen wird, wenn sich die Diagnosesitzung ändert; ein erneuter Aufruf überschreibt den zuvor registrierten Notifier <a class="swsref" href="#SWS_DM_00697">[SWS_DM_00697]</a>. Übergeben wird die zu registrierende <code>notifier</code>-Funktion. Das Ergebnis wird als <code>ara::core::Result&lt;void&gt;</code> geliefert.</p>
+<h4>Fehlerbehandlung</h4>
+<p>Laut Spezifikation werden für diese Funktion keine standardisierten Fehler festgelegt. Der Aufruf ist nicht thread-safe, jedoch exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">notifier</td><td>notifier function to be called</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00697", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00697", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00697</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00699">
+<h3 class="recname"><span class="kind">function</span> SetSecurityLevelNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00699" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00699]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetSecurityLevelNotifier (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00705">SecurityLevelType</a> Notifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the SecurityLevel is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Verwendung <span class="ai-badge" title="AI generated">KI-generiert / AI generated</span></h4><p class="ai-note">Automatisch generierter Nutzungshinweis, abgeleitet aus diesem AUTOSAR-R25-11-Spezifikationselement — kein offizieller AUTOSAR-Text. Beleg: [SWS_…].</p><p><code>SetSecurityLevelNotifier</code> von <code>Conversation</code> <a class="swsref" href="#SWS_DM_00699">[SWS_DM_00699]</a> registriert eine vom Aufrufer bereitgestellte Notifier-Funktion (<code>notifier</code>), die bei der betreffenden Zustandsänderung aufgerufen wird. Ein erneuter Aufruf überschreibt den zuvor registrierten Notifier.</p><h4>Fehlerbehandlung</h4><p>Der Rückgabewert ist ein <code>ara::core::Result&lt;void&gt;</code>; laut Vertrag sind keine standardisierten Fehler spezifiziert.</p><h4>Nebenläufigkeit &amp; Einschränkungen</h4><p>Die Methode gilt laut Vertrag als not thread-safe und exception safe.</p></div>
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Exception-Sicherheit</th><td class="mono">exception safe</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameter</th><th>Beschreibung</th></tr><tr><td class="mono">notifier</td><td>notifier function to be called</td></tr></table>
+<h4>Rückgabewert</h4>
+<table class="params"><tr><th>Typ</th><th>Beschreibung</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Fehler</h4>
+<table class="params"><tr><th>Fehlercode</th><th>Beschreibung</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00699", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00699", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00699</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02091">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02091" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02091]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; operator= (const <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp;)=delete;</pre>
+<div class="desc"><p>Copy assignment operator of conversation is deleted.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02091", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02091", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02091</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02093">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02093" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02093]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp; operator= (<a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html#SWS_DM_02092">Conversation</a> &amp;&amp;)=delete;</pre>
+<div class="desc"><p>Move assignment operator of conversation is deleted.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02093", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02093", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02093</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">Dokumentation der Typaliase</h2><article class="rec" id="SWS_DM_02126">
+<h3 class="recname"><span class="kind">type alias</span> ActivityStatusTypeNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02126" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02126]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a></span></h3>
+<pre class="syntax">using ActivityStatusTypeNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(ActivityStatus Type)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if the activity is changed.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Symbol</th><td class="mono">ActivityStatusTypeNotifier</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02126", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02126", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02126</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02128">
+<h3 class="recname"><span class="kind">type alias</span> SecurityLevelTypeNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02128" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02128]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax">using SecurityLevelTypeNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(SecurityLevel Type)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if the SecurityLevel is changed.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Symbol</th><td class="mono">SecurityLevelTypeNotifier</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02128", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02128", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02128</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02127">
+<h3 class="recname"><span class="kind">type alias</span> SessionControlTypeNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02127" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02127]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04169" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04169</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04208" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04208</a></span></h3>
+<pre class="syntax">using SessionControlTypeNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(SessionControl Type)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if the Session is changed.</p></div>
+
+<table class="props"><tr><th>Header-Datei</th><td class="mono">#include "ara/diag/conversation.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_Conversation_8b92b3.html">ara::diag::Conversation</a></td></tr><tr><th>Symbol</th><td class="mono">SessionControlTypeNotifier</td></tr><tr><th>Thread-Sicherheit</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02127", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02127", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02127</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>Automatisch aus den offiziellen AUTOSAR-R25-11-Spezifikations-PDFs extrahiert
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Keine offizielle AUTOSAR-Publikation; Beschreibungstexte im Original (Englisch).</footer></body></html>

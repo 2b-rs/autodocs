@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::per::UniqueHandle — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API Reference</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a class="cur" href="../../en/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/classes/cl_ara_per_UniqueHandle_94e9f0.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Home</a> › <a class="vis-app" href="../modules/per.html">ara::per</a> › UniqueHandle</nav>
+<main><h1><span class="kind">class</span> ara::per::UniqueHandle</h1>
+<p class="meta"><span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00359" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00359]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00122" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00122</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00140" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00140</a></span></p>
+<pre class="syntax" id="class-decl">template &lt;typename T&gt; class UniqueHandle final {...};</pre>
+<div class="desc"><p>Handle to a ReadAccessor or ReadWriteAccessor. A UniqueHandle is returned by the functions OpenFileReadOnly(), OpenFileWriteOnly(), and OpenFileReadWrite().</p></div>
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Forwarding header</th><td class="mono">#include "ara/per/per_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html">ara::per</a></td></tr></table>
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">AI generated</span></h2></summary><div class="ai"><p class="ai-note">Automatically generated description, content derived from the referenced AUTOSAR R25-11 documents (SWS specification and accompanying standard documents) — not an official AUTOSAR text. Statements marked as interpretation are conclusions drawn from the sources.</p><h4>Exclusive Accessor ownership</h4><p><code>UniqueHandle</code> owns a specific file accessor exclusively. It is movable rather than copyable; When its lifespan ends, the open file is closed. This makes it clear who controls the cursor and content of an open file. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.4">SWS Persistency §7.4 “File Storage specific Features”</a></p><h4>Handover instead of sharing</h4><p>If necessary, use Move to pass the accessor to the component that is responsible for the further I/O step. For parallel work, separate, permitted accesses should be planned - not multiple users of the same handle.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 690 293" font-family="Helvetica,sans-Serif" style="max-width:690px"><text x="345.0" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#28251d">Open and use Storage</text><line x1="135" y1="102" x2="135" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="345" y1="102" x2="345" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><line x1="555" y1="102" x2="555" y2="279" stroke="#8a867c" stroke-dasharray="4,4" stroke-width="1"></line><rect x="42" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="135" y="79.0" text-anchor="middle" font-size="12" fill="#01696f">Adaptive Application</text><a class="vis-app" href="../namespaces/ns_per_ara_per_d9a3e9.html"><rect x="252" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="345" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">ara::per</text></a><a class="vis-app" href="../classes/cl_ara_per_KeyValueStorage_e55123.html"><rect x="462" y="56" width="186" height="38" fill="#ffffff" stroke="#01696f" stroke-width="1.2"></rect><text x="555" y="79.0" text-anchor="middle" font-size="12" fill="#01696f" text-decoration="underline">Storage</text></a><defs><marker id="arrF" markerwidth="11" markerheight="9" refx="10" refy="4.5" orient="auto"><polygon points="0 0, 11 4.5, 0 9" fill="#28251d"></polygon></marker></defs><text x="240.0" y="126" text-anchor="middle" font-size="11" fill="#28251d">Open…Storage(InstanceSpecifier)</text><line x1="135" y1="132" x2="345" y2="132" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="450.0" y="160" text-anchor="middle" font-size="11" fill="#28251d">Create access structure</text><line x1="345" y1="166" x2="555" y2="166" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><text x="345.0" y="194" text-anchor="middle" font-size="11" fill="#28251d">Result with SharedHandle</text><line x1="555" y1="200" x2="135" y2="200" stroke="#28251d" stroke-width="1.1" marker-end="url(#arrF)"></line><path d="M 238.5 217 h 203 l 10 10 v 32 h -213 z" fill="#f0eeea" stroke="#8a867c" stroke-width="1"></path><path d="M 441.5 217 v 10 h 10" fill="none" stroke="#8a867c" stroke-width="1"></path><text x="246.5" y="231" font-size="11" fill="#28251d">Changes and approval depend on the</text><text x="246.5" y="244" font-size="11" fill="#28251d">selected Storage type.</text></svg></div><p class="diagram-note">Opening requires a configured, initialized persistence. Sources: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.1">SWS Persistency §7.1 “The Architecture of Persistency”</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=section.7.3">SWS Persistency §7.3 “Key-Value Storage specific Features”</a>.</p><h4>Evidence base and API references</h4><p>The following already linked specification and API locations remain as detailed evidence for the operations mentioned: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00512">[SWS_PER_00512]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00599">[SWS_PER_00599]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00513">[SWS_PER_00513]</a> <a class="swsref" href="#SWS_PER_00371">[SWS_PER_00371]</a> <a class="swsref" href="#SWS_PER_00372">[SWS_PER_00372]</a> <a class="swsref" href="#SWS_PER_00373">[SWS_PER_00373]</a> <a class="swsref" href="#SWS_PER_00374">[SWS_PER_00374]</a> <a class="swsref" href="#SWS_PER_00399">[SWS_PER_00399]</a> <a class="swsref vis-app" href="cl_ara_per_FileStorage_29266b.html#SWS_PER_00114">[SWS_PER_00114]</a> <a class="swsref vis-app" href="cl_ara_per_FileStorage_29266b.html#SWS_PER_00377">[SWS_PER_00377]</a> <a class="swsref vis-app" href="cl_ara_per_FileStorage_29266b.html#SWS_PER_00375">[SWS_PER_00375]</a> <a class="swsref" href="#SWS_PER_00401">[SWS_PER_00401]</a> <a class="swsref" href="#SWS_PER_00400">[SWS_PER_00400]</a> <a class="swsref" href="#SWS_PER_00360">[SWS_PER_00360]</a> <a class="swsref" href="#SWS_PER_00361">[SWS_PER_00361]</a>.</p></div>
+<h3>Method overview</h3><ul class="mlist"><li><code class="sig"><a class="fn" href="#SWS_PER_00371">UniqueHandle</a> (<a href="#class-decl">UniqueHandle</a> &amp;&amp;uh) noexcept;</code> <span class="dim">Move constructor for UniqueHandle</span></li><li><code class="sig"><a class="fn" href="#SWS_PER_00373">UniqueHandle</a> (const <a href="#class-decl">UniqueHandle</a> &amp;)=delete;</code> <span class="dim">The copy constructor for UniqueHandle shall not be used.</span></li><li><code class="sig">const <a href="#class-decl">T</a> &amp; <a class="fn" href="#SWS_PER_00401">operator*</a> () const noexcept;</code> <span class="dim">Constant dereference operator.</span></li><li><code class="sig"><a href="#class-decl">T</a> &amp; <a class="fn" href="#SWS_PER_00400">operator*</a> () noexcept;</code> <span class="dim">Non-constant dereference operator.</span></li><li><code class="sig"><a href="#class-decl">T</a> * <a class="fn" href="#SWS_PER_00360">operator-&gt;</a> () noexcept;</code> <span class="dim">Non-constant arrow operator.</span></li><li><code class="sig">const <a href="#class-decl">T</a> * <a class="fn" href="#SWS_PER_00361">operator-&gt;</a> () const noexcept;</code> <span class="dim">Constant arrow operator.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp; <a class="fn" href="#SWS_PER_00374">operator=</a> (const <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp;)=delete;</code> <span class="dim">The copy assignment operator for UniqueHandle shall not be used.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp; <a class="fn" href="#SWS_PER_00372">operator=</a> (<a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp;&amp;uh) &amp; noexcept;</code> <span class="dim">Move assignment operator for UniqueHandle</span></li><li><code class="sig">explicit <a class="fn" href="#SWS_PER_00399">operator bool</a> () const noexcept;</code> <span class="dim">Handle state</span></li><li><code class="sig"><a class="fn" href="#SWS_PER_00569">~UniqueHandle</a> () noexcept;</code> <span class="dim">Destructor for UniqueHandle.</span></li></ul>
+</details>
+<h2 class="sect">UML class diagram</h2><p class="dim">Hollow triangle arrows = inheritance (pointing to base class); Clicking opens the respective class page.</p><div class="umlwrap"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="124pt" height="148pt" viewbox="0.00 0.00 124.00 148.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 144)">
+<title>G</title>
+<!-- nara__per__UniqueHandle733 -->
+<g id="node1" class="node vis-app">
+<title>nara__per__UniqueHandle733</title>
+<polygon fill="#f9f8f5" stroke="none" points="0,0 0,-140 116,-140 116,0 0,0"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-114.25 0,-114.25 116,-114.25 116,-114.25 0,-114.25"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-89.5 0,-89.5 116,-89.5 116,-89.5 0,-89.5"></polygon>
+<polygon fill="none" stroke="#01696f" points="0,0 0,-140 116,-140 116,0 0,0"></polygon>
+<text xml:space="preserve" text-anchor="start" x="7" y="-122.6" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#28251d">UniqueHandle</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-98.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d"> </text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-73.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ UniqueHandle()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-61" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator=()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-48.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ ~UniqueHandle()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-35.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operatorbool()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-22.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator*()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-10" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator-&gt;()</text>
+</g>
+</g>
+</svg>
+</div>
+<h2 class="sect">Method documentation</h2><article class="rec" id="SWS_PER_00371">
+<h3 class="recname"><span class="kind">function</span> UniqueHandle <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00371" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00371]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00121" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00121</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00135" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00135</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00145" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00145</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax">UniqueHandle (<a href="#class-decl">UniqueHandle</a> &amp;&amp;uh) noexcept;</pre>
+<div class="desc"><p>Move constructor for UniqueHandle. The source handle object is invalidated and cannot be used anymore. The operator bool() shall be used to check the state of a handle object before using any other operators of the handle object.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">uh</td><td>The UniqueHandle object to be moved.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00371", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00371", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00371</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00373">
+<h3 class="recname"><span class="kind">function</span> UniqueHandle <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00373" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00373]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00145" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00145</a></span></h3>
+<pre class="syntax">UniqueHandle (const <a href="#class-decl">UniqueHandle</a> &amp;)=delete;</pre>
+<div class="desc"><p>The copy constructor for UniqueHandle shall not be used.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00373", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00373", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00373</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00400">
+<h3 class="recname"><span class="kind">function</span> operator* <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00400" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00400]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00003" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00003</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax"><a href="#class-decl">T</a> &amp; operator* () noexcept;</pre>
+<div class="desc"><p>Non-constant dereference operator.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">thread-safe</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono">T&amp;</td><td>A reference to the UniqueHandle object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00400", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00400", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00400</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00401">
+<h3 class="recname"><span class="kind">function</span> operator* <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00401" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00401]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00003" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00003</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax">const <a href="#class-decl">T</a> &amp; operator* () const noexcept;</pre>
+<div class="desc"><p>Constant dereference operator.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">thread-safe</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono">const T &amp;</td><td>A constant reference to the UniqueHandle object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00401", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00401", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00401</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00360">
+<h3 class="recname"><span class="kind">function</span> operator-&gt; <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00360" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00360]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00003" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00003</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax"><a href="#class-decl">T</a> * operator-&gt; () noexcept;</pre>
+<div class="desc"><p>Non-constant arrow operator.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">thread-safe</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono">T*</td><td>A pointer to the UniqueHandle object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00360", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00360", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00360</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00361">
+<h3 class="recname"><span class="kind">function</span> operator-&gt; <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00361" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00361]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00003" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00003</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax">const <a href="#class-decl">T</a> * operator-&gt; () const noexcept;</pre>
+<div class="desc"><p>Constant arrow operator.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">thread-safe</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono">const T *</td><td>A constant pointer to the UniqueHandle object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00361", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00361", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00361</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00372">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00372" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00372]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00121" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00121</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00135" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00135</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00145" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00145</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00153" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00153</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp; operator= (<a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp;&amp;uh) &amp; noexcept;</pre>
+<div class="desc"><p>Move assignment operator for UniqueHandle. The source handle object is invalidated and cannot be used anymore. The operator bool() shall be used to check the state of a handle object before using any other operators of the handle object.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">uh</td><td>The UniqueHandle object to be moved.</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp;</td><td>The moved UniqueHandle object.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00372", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00372", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00372</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00374">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00374" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00374]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00145" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00145</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp; operator= (const <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> &amp;)=delete;</pre>
+<div class="desc"><p>The copy assignment operator for UniqueHandle shall not be used.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00374", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00374", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00374</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00399">
+<h3 class="recname"><span class="kind">function</span> operatorbool <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00399" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00399]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00001" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00001</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00003" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00003</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax">explicit operator bool () const noexcept;</pre>
+<div class="desc"><p>Handle state. True if the handle represents a valid object of the templated class, False if the handle is empty (e.g. after a move operation). Using other operators than bool() of an empty handle will result in undefined behavior.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">thread-safe</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono">bool</td><td>False if the handle is empty, otherwise true.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00399", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00399", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00399</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_PER_00569">
+<h3 class="recname"><span class="kind">function</span> ~UniqueHandle <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Persistency.pdf#nameddest=SWS_PER_00569" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Persistency.pdf)">[SWS_PER_00569]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_Persistency.pdf#nameddest=RS_PER_00002" title="Spezifikations-PDF (AUTOSAR_AP_RS_Persistency.pdf)">RS_PER_00002</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00120" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00120</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00129" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00129</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00145" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00145</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00159" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00159</a></span></h3>
+<pre class="syntax">~<a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html#SWS_PER_00371">UniqueHandle</a> () noexcept;</pre>
+<div class="desc"><p>Destructor for UniqueHandle.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/per/unique_handle.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_per_UniqueHandle_94e9f0.html">ara::per::UniqueHandle</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_PER_00569", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_PER_00569", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_PER_00569</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>Automatically extracted from the official AUTOSAR R25-11 specification PDFs
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Not an official AUTOSAR publication; description texts in the original (English).</footer></body></html>

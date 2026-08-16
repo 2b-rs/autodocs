@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/issue-claim-v1.schema.json",
+  "title": "issue-claim@v1",
+  "description": "Active Git-native issue claim. Repository-level validation verifies reachable base commits, issued_at < expires_at, CAS digest against canonical bytes, scope overlap, and protected-branch integration state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "item_id", "state", "owner", "worktree_id", "clone_id", "base_commit", "write_scopes", "issued_at", "expires_at", "lease_nonce", "cas_ref", "cas_ref_digest"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^1\\.[0-9]+$"},
+    "item_id": {"type": "string", "pattern": "^[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?$"},
+    "state": {"type": "string", "enum": ["proposed", "active", "renewing", "released", "expired", "takeover-pending", "superseded", "rejected"]},
+    "owner": {"type": "object", "additionalProperties": false, "required": ["identity"], "properties": {"identity": {"type": "string", "minLength": 1}, "agent": {"type": "string"}, "contact": {"type": "string"}}},
+    "worktree_id": {"type": "string", "minLength": 1},
+    "clone_id": {"type": "string", "minLength": 1},
+    "base_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "write_scopes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"}},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "lease_nonce": {"type": "string", "pattern": "^[A-Za-z0-9_-]{16,128}$"},
+    "cas_ref": {"type": "string", "pattern": "^refs/autodocs/claims/[0-9]{4}(-[0-9]{2}(\\.[0-9]{2})?)?$"},
+    "cas_ref_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "predecessor_claim": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"},
+    "authority_decision": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"},
+    "rejection_reason": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"state": {"const": "superseded"}}}, "then": {"required": ["predecessor_claim"]}},
+    {"if": {"properties": {"state": {"const": "takeover-pending"}}}, "then": {"required": ["predecessor_claim", "authority_decision"]}},
+    {"if": {"properties": {"state": {"const": "rejected"}}}, "then": {"required": ["rejection_reason"]}}
+  ]
+}

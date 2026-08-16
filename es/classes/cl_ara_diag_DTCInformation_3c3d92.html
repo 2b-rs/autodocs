@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::diag::DTCInformation — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">Referencia de la API ara::*</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a href="../../en/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a class="cur" href="../../es/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/classes/cl_ara_diag_DTCInformation_3c3d92.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Inicio</a> › <a class="vis-app" href="../modules/diag.html">ara::diag</a> › DTCInformation</nav>
+<main><h1><span class="kind">clase</span> ara::diag::DTCInformation</h1>
+<p class="meta"><span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00657" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00657]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04150" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04150</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04105" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04105</a></span></p>
+<pre class="syntax">class DTCInformation final {...};</pre>
+<div class="desc"><p>Class to implement operations on DTC informations per configured DiagnosticMemory Destination.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Cabecera de reenvío</th><td class="mono">#include "ara/diag/diag_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html">ara::diag</a></td></tr></table>
+<details class="fold"><summary><h2 class="sect">Guía del usuario <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h2></summary><div class="ai"><p class="ai-note">Descripción generada automáticamente, contenido derivado de los documentos AUTOSAR R25-11 a los que se hace referencia (especificación SWS y documentos estándar adjuntos), no es un texto oficial de AUTOSAR. Las declaraciones marcadas como interpretación son conclusiones extraídas de las fuentes.</p><h4>Vista DTC de la memoria de errores</h4><p><code>DTCInformation</code> es la interfaz de la aplicación para los resultados relacionados con DTC de un evento de diagnóstico asociado: estado actual de DTC de UDS, actualizaciones de instantáneas, número de entradas guardadas, desbordamiento y estado de control de DTC. Esta información se crea en el procesamiento de la memoria de eventos y no se puede entender independientemente del evento, el destino de la memoria y la configuración del DTC <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=subsubsection.7.3.4.4">SWS Diagnostics §7.3.4.4 «Event memory»</a>.</p><h4>Monitorear cambios</h4><p>El estado UDS-DTC se actualiza tras el procesamiento de Event; <code>SetDTCStatusChangedNotifier</code> registra el Callback para este cambio <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00667">[SWS_DM_00667]</a>. Otros Notifiers separan cambios de estado, Snapshot, número de memoria y Overflow. Una nueva llamada de registro sustituye el Callback anterior de la categoría correspondiente; por ello, la aplicación debe centralizar su lógica de recepción.</p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 625.00 105.00" style="max-width:833px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 101)">
+<title>G</title>
+<!-- i -->
+<g id="node1" class="node">
+<title>i</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-45" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- s -->
+<g id="node2" class="node vis-app">
+<title>s</title>
+<g id="a_node2"><a xlink:href="cl_ara_diag_DTCInformation_3c3d92.html" xlink:title="DTC estado / almacenamiento de datos" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M232.27,-63C232.27,-63 175.77,-63 175.77,-63 169.77,-63 163.77,-57 163.77,-51 163.77,-51 163.77,-39 163.77,-39 163.77,-33 169.77,-27 175.77,-27 175.77,-27 232.27,-27 232.27,-27 238.27,-27 244.27,-33 244.27,-39 244.27,-39 244.27,-51 244.27,-51 244.27,-57 238.27,-63 232.27,-63"></path>
+<text xml:space="preserve" text-anchor="middle" x="204.02" y="-46.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">DTC estado /</text>
+<text xml:space="preserve" text-anchor="middle" x="204.02" y="-34.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Datenablage</text>
+</a>
+</g>
+</g>
+<!-- i&#45;&gt;s -->
+<g id="edge1" class="edge">
+<title>i-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.01,-45C31.65,-45 102.2,-45 151.82,-45"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="151.65,-48.5 161.65,-45 151.65,-41.5 151.65,-48.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="87.64" y="-46.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Procesamiento de eventos</text>
+</g>
+<!-- n -->
+<g id="node3" class="node">
+<title>n</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M550.52,-97C550.52,-97 425.02,-97 425.02,-97 419.02,-97 413.02,-91 413.02,-85 413.02,-85 413.02,-73 413.02,-73 413.02,-67 419.02,-61 425.02,-61 425.02,-61 550.52,-61 550.52,-61 556.52,-61 562.52,-67 562.52,-73 562.52,-73 562.52,-85 562.52,-85 562.52,-91 556.52,-97 550.52,-97"></path>
+<text xml:space="preserve" text-anchor="middle" x="487.77" y="-80.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Notifier</text>
+<text xml:space="preserve" text-anchor="middle" x="487.77" y="-68.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">DTC / instantánea / número</text>
+</g>
+<!-- s&#45;&gt;n -->
+<g id="edge2" class="edge">
+<title>s-&gt;n</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M244.72,-51.48C250.59,-52.37 256.59,-53.24 262.27,-54 308.01,-60.14 359.14,-65.92 401.04,-70.37"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="400.63,-73.85 410.94,-71.41 401.37,-66.88 400.63,-73.85"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="328.64" y="-70.94" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Cambio de estado/instantánea</text>
+</g>
+<!-- c -->
+<g id="node4" class="node">
+<title>c</title>
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M539.27,-36C539.27,-36 436.27,-36 436.27,-36 430.27,-36 424.27,-30 424.27,-24 424.27,-24 424.27,-12 424.27,-12 424.27,-6 430.27,0 436.27,0 436.27,0 539.27,0 539.27,0 545.27,0 551.27,-6 551.27,-12 551.27,-12 551.27,-24 551.27,-24 551.27,-30 545.27,-36 539.27,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="487.77" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Proceso de eliminación</text>
+</g>
+<!-- s&#45;&gt;c -->
+<g id="edge3" class="edge">
+<title>s-&gt;c</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M244.79,-41.19C288.18,-37.03 358.6,-30.28 412.32,-25.13"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="412.58,-28.63 422.2,-24.19 411.91,-21.66 412.58,-28.63"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="328.64" y="-40.92" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Clear(grupo DTC)</text>
+</g>
+<!-- f -->
+<g id="node5" class="node">
+<title>f</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="608.2" cy="-79" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="608.2" cy="-79" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- n&#45;&gt;f -->
+<g id="edge4" class="edge">
+<title>n-&gt;f</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M563.1,-79C572.05,-79 580.51,-79 587.57,-79"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="587.55,-82.5 597.55,-79 587.55,-75.5 587.55,-82.5"></polygon>
+</g>
+<!-- c&#45;&gt;s -->
+<g id="edge5" class="edge">
+<title>c-&gt;s</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M423.75,-7.33C378.15,-1.81 315.44,1.2 262.27,-12.75 255.17,-14.61 248.03,-17.57 241.31,-20.96"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="239.7,-17.86 232.62,-25.75 243.07,-23.99 239.7,-17.86"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="328.64" y="-14.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Eliminación exitosa</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">La información del DTC sigue al procesamiento de eventos y memoria; Notifier expone cambios relevantes, mientras que <code>Clear</code> inicia una ruta de eliminación asincrónica separada. Fuentes: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=subsubsection.7.3.4.4">SWS Diagnostics §7.3.4.4 «Event memory»</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.2">SWS Diagnostics §7.3.4.4.2 «UDS DTC Status»</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.5">SWS Diagnostics §7.3.4.4.5 «Clearing DTCs»</a>. <em>Interpretación parcial: el gráfico resume las relaciones de estado y notificación.</em></p><h4>Borrar DTC</h4><p><code>Clear</code> desencadena la eliminación asincrónica de un DTC o un grupo de DTC de <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00671">[SWS_DM_00671]</a>. Espere el resultado futuro antes de que se origine una acción técnica posterior desde la memoria limpia: ClearConditions y posibles bloqueos son parte del procesamiento de borrado de DTC <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.5">SWS Diagnostics §7.3.4.4.5 «Clearing DTCs»</a>. El grupo de todos los DTC tiene el identificador <code>0xFFFFFF</code> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.1">SWS Diagnostics §7.3.4.4.1 «DTC Introduction»</a> en la especificación.</p><h4>Límite de uso</h4><p>La clase es una interfaz de estado y notificación. Sólo debe usarse para el evento configurado; El número de DTC, la antigüedad, el desplazamiento y el registro de instantáneas/datos extendidos siguen siendo responsabilidad del DM y de la configuración.</p><p class="retained-evidence">Documentos de especificación adicionales ya vinculados para esta API: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00911">[SWS_DM_00911]</a>, <a class="docref" href="#SWS_DM_00664">[SWS_DM_00664]</a>, <a class="docref" href="#SWS_DM_00665">[SWS_DM_00665]</a>, <a class="docref" href="#SWS_DM_01613">[SWS_DM_01613]</a>, <a class="docref" href="#SWS_DM_01614">[SWS_DM_01614]</a>, <a class="docref" href="#SWS_DM_01611">[SWS_DM_01611]</a>, <a class="docref" href="#SWS_DM_01612">[SWS_DM_01612]</a>, <a class="docref" href="#SWS_DM_00666">[SWS_DM_00666]</a>, <a class="docref" href="#SWS_DM_00672">[SWS_DM_00672]</a>, <a class="docref" href="#SWS_DM_00669">[SWS_DM_00669]</a>, <a class="docref" href="#SWS_DM_00919">[SWS_DM_00919]</a>, <a class="docref" href="#SWS_DM_00671">[SWS_DM_00671]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00897">[SWS_DM_00897]</a>, <a class="docref" href="#SWS_DM_00667">[SWS_DM_00667]</a>, <a class="docref" href="#SWS_DM_00668">[SWS_DM_00668]</a>, <a class="docref" href="#SWS_DM_00670">[SWS_DM_00670]</a>, <a class="docref" href="#SWS_DM_00918">[SWS_DM_00918]</a>, <a class="docref" href="#SWS_DM_00673">[SWS_DM_00673]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00899">[SWS_DM_00899]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00900">[SWS_DM_00900]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00901">[SWS_DM_00901]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.8.1.1.1">[paragraph.9.8.1.1.1]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04157">[RS_Diag_04157]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04067">[RS_Diag_04067]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04105">[RS_Diag_04105]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.8.1.1.2">[paragraph.9.8.1.1.2]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04179">[RS_Diag_04179]</a>, <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04151">[RS_Diag_04151]</a>.</p></div>
+</details>
+<h2 class="sect">Diagrama de clases UML</h2><p class="dim">Flechas de triángulo hueco = herencia (apuntando a la clase base); Al hacer clic se abre la página de clase respectiva.</p><div class="umlwrap"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="231pt" height="250pt" viewbox="0.00 0.00 231.00 250.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 246)">
+<title>G</title>
+<!-- nara__diag__DTCInformation53 -->
+<g id="node1" class="node vis-app">
+<title>nara__diag__DTCInformation53</title>
+<polygon fill="#f9f8f5" stroke="none" points="0,0 0,-242 223.25,-242 223.25,0 0,0"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-216.25 0,-216.25 223.25,-216.25 223.25,-216.25 0,-216.25"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-191.5 0,-191.5 223.25,-191.5 223.25,-191.5 0,-191.5"></polygon>
+<polygon fill="none" stroke="#01696f" points="0,0 0,-242 223.25,-242 223.25,0 0,0"></polygon>
+<text xml:space="preserve" text-anchor="start" x="7" y="-224.6" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#28251d">DTCInformation</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-200.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d"> </text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-175.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ DTCInformation()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-163" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator=()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-150.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ ~DTCInformation()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-137.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ Clear()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-124.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ EnableControlDtc()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-112" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetControlDTCStatus()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-99.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetCurrentStatus()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-86.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetEventMemoryOverflow()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-73.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ GetNumberOfStoredEntries()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-61" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetControlDtcStatusNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-48.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetDTCStatusChangedNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-35.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetEventMemoryOverflowNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-22.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetNumberOfStoredEntriesNotifier()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-10" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ SetSnapshotRecordUpdatedNotifier()</text>
+</g>
+</g>
+</svg>
+</div>
+<h2 class="sect">Tipos anidados</h2><ul class="mlist"><li><a class="dbox  vis-app" href="cl_ara_diag_DTCInformation_SnapshotDataIdentifierType_a23042.html">SnapshotDataIdentifierType</a></li><li><a class="dbox  vis-app" href="cl_ara_diag_DTCInformation_SnapshotDataRecordType_313075.html">SnapshotDataRecordType</a></li><li><a class="dbox  vis-app" href="cl_ara_diag_DTCInformation_SnapshotRecordUpdatedType_1c8ea6.html">SnapshotRecordUpdatedType</a></li><li><a class="dbox  vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a></li></ul>
+<h3>Descripción general del método</h3><ul class="mlist"><li><code class="sig"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00671">Clear</a> (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> dtcGroup) noexcept;</code> <span class="dim">Method for Clearing a DTC or a group of DTCs.</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_01614">DTCInformation</a> (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">DTCInformation</a> &amp;&amp;) noexcept=delete;</code> <span class="dim">Move constructor of DTCInformation.</span></li><li><code class="sig">explicit <a class="fn" href="#SWS_DM_00664">DTCInformation</a> (const <a class="vis-app" href="cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;specifier) noexcept;</code> <span class="dim">Constructor for a DTCInformation instance which allows for DTC related operation per DiagnosticMemoryDestination.</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_01613">DTCInformation</a> (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">DTCInformation</a> &amp;)=delete;</code> <span class="dim">DTCInformation shall be a single not copy-able instance.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00674">EnableControlDtc</a> () noexcept;</code> <span class="dim">Triggers a setting of ControlDTCStatus to enabled in case the application has some conditions or states demands to do so</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00663">ControlDtcStatusType</a> &gt; <a class="fn" href="#SWS_DM_00672">GetControlDTCStatus</a> () noexcept;</code> <span class="dim">Contains the current status of the ControlDTCStatus.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a> &gt; <a class="fn" href="#SWS_DM_00666">GetCurrentStatus</a> (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> dtc) noexcept;</code> <span class="dim">Retrieves the current UDS DTC status byte of the given DTC identifier.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; bool &gt; <a class="fn" href="#SWS_DM_00919">GetEventMemoryOverflow</a> () noexcept;</code> <span class="dim">Contains the current event memory overflow status.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> &gt; <a class="fn" href="#SWS_DM_00669">GetNumberOfStoredEntries</a> () noexcept;</code> <span class="dim">Contains the number of currently stored fault memory entries.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00673">SetControlDtcStatusNotifier</a> (ControlDtc StatusTypeNotifier notifier) noexcept;</code> <span class="dim">Registers a notifier function which is called if the control DTC setting is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00667">SetDTCStatusChangedNotifier</a> (DtcStatus ChangedNotifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if a UDS DTC status is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00918">SetEventMemoryOverflowNotifier</a> (EventMemory OverflowSetNotifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the current event memory overflow status changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00670">SetNumberOfStoredEntriesNotifier</a> (NumberOf StoredEntriesNotifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the number of currently stored fault memory entries changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; <a class="fn" href="#SWS_DM_00668">SetSnapshotRecordUpdatedNotifier</a> (Snapshot RecordUpdatedTypeNotifier notifier) noexcept;</code> <span class="dim">Register a notifier function which is called if the SnapshotRecord is changed</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp; <a class="fn" href="#SWS_DM_01612">operator=</a> (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp;&amp;)=delete;</code> <span class="dim">Move assignment operator of DTCInformation.</span></li><li><code class="sig"><a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp; <a class="fn" href="#SWS_DM_01611">operator=</a> (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp;)=delete;</code> <span class="dim">DTCInformation shall be a single not assignable instance.</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_00665">~DTCInformation</a> () noexcept;</code> <span class="dim">Destructor of class DTCInformation.</span></li></ul>
+<h3>Escriba alias</h3><ul class="mlist"><li><a href="#SWS_DM_02125"><code>ControlDtcStatusTypeNotifier</code></a> <span class="dim">Registers a notifier function which is called if the control DTC setting is changed.</span></li><li><a href="#SWS_DM_02122"><code>DtcStatusChangedNotifier</code></a> <span class="dim">Register a notifier function which is called if a UDS DTC status is changed.</span></li><li><a href="#SWS_DM_02076"><code>EventMemoryOverflowSetNotifier</code></a> <span class="dim">Notifier function which is called if the current event memory overflow status changed.</span></li><li><a href="#SWS_DM_02124"><code>NumberOfStoredEntriesNotifier</code></a> <span class="dim">Register a notifier function which is called if the number of currently stored fault memory entries changed.</span></li><li><a href="#SWS_DM_02123"><code>SnapshotRecordUpdatedTypeNotifier</code></a> <span class="dim">Register a notifier function which is called if the SnapshotRecord is changed.</span></li></ul>
+<h2 class="sect">Documentación de los métodos</h2><article class="rec" id="SWS_DM_00671">
+<h3 class="recname"><span class="kind">función</span> Clear <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00671" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00671]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00119" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00119</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04194" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04194</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; void &gt; Clear (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> dtcGroup) noexcept;</pre>
+<div class="desc"><p>Method for Clearing a DTC or a group of DTCs.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de los documentos AUTOSAR R25-11 a los que se hace referencia, no del texto oficial AUTOSAR.</p><h5>Iniciar el trabajo de eliminación conscientemente</h5><p><code>Clear</code> solicita la eliminación de un DTC o grupo de DTC y devuelve un <code>Future&lt;void&gt;</code> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00671">[SWS_DM_00671]</a>. La rutina es asincrónica porque el DM procesa la recolección de basura y sus condiciones.</p><h5>Orden recomendado</h5><ol><li>Pase únicamente un DTC configurado o un número de grupo.</li><li>Espere al futuro y evalúe el éxito o los errores.</li><li>Solo entonces lleve a cabo pasos de seguimiento locales que requieran vaciar la memoria.</li></ol><h5>Sin condiciones de elusión</h5><p>ClearConditions y bloqueos son parte del procesamiento de compensación especificado <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.5">SWS Diagnostics §7.3.4.4.5 «Clearing DTCs»</a>. Por lo tanto, la aplicación no debe establecer un indicador local de "eliminado" antes de que el futuro se complete exitosamente.</p><p class="retained-evidence">Documentos de especificación adicionales ya vinculados para esta API: <a class="docref" href="#SWS_DM_00671">[SWS_DM_00671]</a>.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kBusy             rollback_semantics</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">dtcGroup</td><td>DTC group to be cleared.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; void &gt;</td><td>void or errors</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td colspan="2" class="note">Interface is busy with processing.</td></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kFailed</td><td>rollback_semantics Failed to process.</td></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kMemoryError</td><td>rollback_semantics A memory error occurred during processing.</td></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kWrongDtc</td><td>rollback_semantics A wrong DTC number was requested.</td></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00671", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00671", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00671</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00664">
+<h3 class="recname"><span class="kind">función</span> DTCInformation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00664" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00664]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00137" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00137</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04150" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04150</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04105" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04105</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00170" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00170</a>, RS_ AP_00171, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00172" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00172</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00173" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00173</a></span></h3>
+<pre class="syntax">explicit DTCInformation (const <a class="vis-app" href="cl_ara_core_InstanceSpecifier_4f5967.html">ara::core::InstanceSpecifier</a> &amp;specifier) noexcept;</pre>
+<div class="desc"><p>Constructor for a DTCInformation instance which allows for DTC related operation per DiagnosticMemoryDestination.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p>El constructor <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00664">[SWS_DM_00664]</a> crea una instancia de <code>DTCInformation</code> a partir de un <code>InstanceSpecifier</code> (<code>specifier</code>) que apunta a un PortPrototype de un DiagnosticDTCInformationInterface, habilitando así operaciones relacionadas con DTC por DiagnosticMemoryDestination.</p><h4>Manejo de errores</h4><p>Según el contrato, pueden producirse infracciones, entre otras, si InstanceSpecifier no se puede resolver en el modelo o hace referencia a un elemento de modelo distinto de una PortPrototype, si la PortPrototype referenciada no está tipada por una DiagnosticDTCInformationInterface, si no se encuentra un proceso adecuado o si InstanceSpecifier ya se utiliza en el proceso.</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el constructor es seguro para subprocesos y excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">thread-safe</td></tr><tr><th>Lesiones (Violations)</th><td class="mono">InstanceSpeci-              InstanceSpecifier either cannot be resolved in the model in the fierMappingIn-              context of your executable, or it refers to a model element other tegrityViolation            than a PortPrototype. PortInterfaceMap-           A PortPrototype that is referenced by a pingViolation               DiagnosticMemoryDestinationPortMapping needs to be typed by a DiagnosticDTCInformationInterface. ProcessMappingVio-          Matching InstanceRef exists, but no matching (modelled) Process lation                      found that matches the (runtime) process. InstanceSpecifier-          Violation message that is sent in case a constructor in the ara AlreadyInUseViola-          framework was called with an InstanceSpecifier already in use in tion                        this process.</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">specifier</td><td>InstanceSpecifier to a PortPrototype of a DiagnosticDTCInformationInterface.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00664", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00664", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00664</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01613">
+<h3 class="recname"><span class="kind">función</span> DTCInformation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01613" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01613]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00147" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00147</a></span></h3>
+<pre class="syntax">DTCInformation (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">DTCInformation</a> &amp;)=delete;</pre>
+<div class="desc"><p>DTCInformation shall be a single not copy-able instance.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01613", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01613", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01613</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01614">
+<h3 class="recname"><span class="kind">función</span> DTCInformation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01614" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01614]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00147" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00147</a></span></h3>
+<pre class="syntax">DTCInformation (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">DTCInformation</a> &amp;&amp;) noexcept=delete;</pre>
+<div class="desc"><p>Move constructor of DTCInformation.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01614", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01614", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01614</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00674">
+<h3 class="recname"><span class="kind">función</span> EnableControlDtc <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00674" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00674]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04159" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04159</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; EnableControlDtc () noexcept;</pre>
+<div class="desc"><p>Triggers a setting of ControlDTCStatus to enabled in case the application has some conditions or states demands to do so. The control DTC setting state might be set to enabled only after this API has returned.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>EnableControlDtc</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00674">[SWS_DM_00674]</a> activa ControlDTCStatus para que se active cuando las condiciones de la aplicación lo requieran; Según la descripción, el estado solo se puede establecer después de que regrese el método.</p><h4>Manejo de errores</h4><p>El valor de retorno es <code>ara::core::Result&lt;void&gt;</code>; Según el contrato no se especifican errores estandarizados.</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método no es seguro para subprocesos ni para excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns void.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00674", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00674", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00674</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00672">
+<h3 class="recname"><span class="kind">función</span> GetControlDTCStatus <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00672" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00672]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04159" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04159</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00663">ControlDtcStatusType</a> &gt; GetControlDTCStatus () noexcept;</pre>
+<div class="desc"><p>Contains the current status of the ControlDTCStatus.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>GetControlDTCStatus</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00672">[SWS_DM_00672]</a> proporciona el estado actual de ControlDTCStatus a través de un <code>ara::core::Future&lt;ControlDtcStatusType&gt;</code>, que según la descripción está asignado al servicio UDS 0x85.</p><h4>Manejo de errores</h4><p>Si la funcionalidad DM asociada no está disponible, Future está preparado con <code>DiagErrc::kServiceNotAvailable</code> (semántica de reversión).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método es seguro para subprocesos y excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00663">ControlDtcStatusType</a> &gt;</td><td>The current status of ControlDtcStatus (related to UDS service 0x85)</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00672", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00672", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00672</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00666">
+<h3 class="recname"><span class="kind">función</span> GetCurrentStatus <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00666" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00666]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a> &gt; GetCurrentStatus (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> dtc) noexcept;</pre>
+<div class="desc"><p>Retrieves the current UDS DTC status byte of the given DTC identifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>GetCurrentStatus</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00666">[SWS_DM_00666]</a> recupera el byte de estado UDS-DTC actual utilizando un identificador DTC (<code>dtc</code>) y entrega el resultado a través de un <code>ara::core::Future&lt;UdsDtcStatusByteType&gt;</code>.</p><h4>Manejo de errores</h4><p>El Future se puede preparar con <code>DiagErrc::kNoSuchDTC; DiagErrc::kServiceNotAvailable</code>, por ejemplo si no existe un DTC adecuado o la funcionalidad DM no está disponible, en cada caso con semántica de reversión.</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método es seguro para subprocesos y excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">dtc</td><td>DTC identifier for which the status should be retrieved.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a> &gt;</td><td>A Future which is readied with current UDS DTC status byte of the given DTC identifier or an internal error code.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kNoSuchDTC</td><td>rollback_semantics No mapped DTC exits for the requested event.</td></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00666", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00666", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00666</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00919">
+<h3 class="recname"><span class="kind">función</span> GetEventMemoryOverflow <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00919" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00919]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04093" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04093</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; bool &gt; GetEventMemoryOverflow () noexcept;</pre>
+<div class="desc"><p>Contains the current event memory overflow status.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>GetEventMemoryOverflow</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00919">[SWS_DM_00919]</a> proporciona el estado actual de un desbordamiento de la memoria de eventos a través de un <code>ara::core::Result&lt;bool&gt;</code>.</p><h4>Manejo de errores</h4><p>Si la funcionalidad DM asociada no está disponible, el método devuelve <code>DiagErrc::kServiceNotAvailable</code> (semántica de reversión).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método es seguro para subprocesos y excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; bool &gt;</td><td>Current status of event memory overflow.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00919", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00919", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00919</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00669">
+<h3 class="recname"><span class="kind">función</span> GetNumberOfStoredEntries <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00669" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00669]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04109" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04109</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> &gt; GetNumberOfStoredEntries () noexcept;</pre>
+<div class="desc"><p>Contains the number of currently stored fault memory entries.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>GetNumberOfStoredEntries</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00669">[SWS_DM_00669]</a> proporciona el número de entradas de memoria de errores guardadas actualmente a través de un <code>ara::core::Future&lt;std::uint32_t&gt;</code>.</p><h4>Manejo de errores</h4><p>Si la funcionalidad DM asociada no está disponible, Future está preparado con <code>DiagErrc::kServiceNotAvailable</code> (semántica de reversión).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método es seguro para subprocesos y excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">thread-safe</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;std::uint32_t &gt;</td><td>Number of currently stored fault memory entries.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kServiceNotAvailable</td><td>rollback_semantics The call cannot be executed, because essential DM functionality is currently not available.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00669", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00669", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00669</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00673">
+<h3 class="recname"><span class="kind">función</span> SetControlDtcStatusNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00673" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00673]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04159" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04159</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetControlDtcStatusNotifier (ControlDtc StatusTypeNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Registers a notifier function which is called if the control DTC setting is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>SetControlDtcStatusNotifier</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00673">[SWS_DM_00673]</a> registra una función de notificación proporcionada por la persona que llama (<code>notifier</code>) que se invoca ante el cambio de estado relevante. Una nueva llamada sobrescribe el notificador registrado anteriormente.</p><h4>Manejo de errores</h4><p>El valor de retorno es <code>ara::core::Result&lt;void&gt;</code>; En caso de error, el método devuelve <code>DiagErrc::kInvalidArgument</code> (por ejemplo, kPreFailed con antirrebote interno).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método se considera no seguro para subprocesos y seguro para excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">notifier</td><td>The function to be called if the ControlDTCStatus (related to UDS service 0x85) for this diagnostic memory instance has changed.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00673", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00673", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00673</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00667">
+<h3 class="recname"><span class="kind">función</span> SetDTCStatusChangedNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00667" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00667]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04148" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04148</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetDTCStatusChangedNotifier (DtcStatus ChangedNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if a UDS DTC status is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de los documentos AUTOSAR R25-11 a los que se hace referencia, no del texto oficial AUTOSAR.</p><h5>Suscríbete al cambio de estado</h5><p><code>SetDTCStatusChangedNotifier</code> registra un Callback para cambios de estado UDS-DTC <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00667">[SWS_DM_00667]</a>. El Callback complementa las consultas sobre el estado actual, pero no reemplaza la configuración del Events subyacente.</p><h5>Un propietario por instancia</h5><p>Un registro posterior sustituye al anterior Notifier. Por lo tanto, la aplicación debe proporcionar un propietario único y una rutina de callback breve y sin bloqueo para cada instancia de <code>DTCInformation</code>.</p><h5>Clasificación técnica</h5><p>El estado se deriva del procesamiento de eventos y las reglas UDS-DTC <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=paragraph.7.3.4.4.2">SWS Diagnostics §7.3.4.4.2 «UDS DTC Status»</a>; Por lo tanto, un Notifier puede tener varias causas, como un hallazgo calificado del monitor o un procesamiento de la memoria.</p><p class="retained-evidence">Documentos de especificación adicionales ya vinculados para esta API: <a class="docref" href="#SWS_DM_00667">[SWS_DM_00667]</a>.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">notifier</td><td>The function to be called if a DTC status has changed.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns void.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td colspan="2" class="note">This function does not specify any standardized errors.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00667", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00667", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00667</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00918">
+<h3 class="recname"><span class="kind">función</span> SetEventMemoryOverflowNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00918" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00918]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04093" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04093</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetEventMemoryOverflowNotifier (EventMemory OverflowSetNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the current event memory overflow status changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>SetEventMemoryOverflowNotifier</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00918">[SWS_DM_00918]</a> registra una función de notificación proporcionada por la persona que llama (<code>notifier</code>) que se invoca ante el cambio de estado relevante. Una nueva llamada sobrescribe el notificador registrado anteriormente.</p><h4>Manejo de errores</h4><p>El valor de retorno es <code>ara::core::Result&lt;void&gt;</code>; En caso de error, el método devuelve <code>DiagErrc::kInvalidArgument</code> (por ejemplo, kPreFailed con antirrebote interno).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método se considera no seguro para subprocesos y seguro para excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">notifier</td><td>The function to be called if the overflow status for this diagnostic event memory instance has changed.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00918", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00918", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00918</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00670">
+<h3 class="recname"><span class="kind">función</span> SetNumberOfStoredEntriesNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00670" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00670]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04109" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04109</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetNumberOfStoredEntriesNotifier (NumberOf StoredEntriesNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the number of currently stored fault memory entries changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>SetNumberOfStoredEntriesNotifier</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00670">[SWS_DM_00670]</a> registra una función de notificación proporcionada por la persona que llama (<code>notifier</code>) que se invoca ante el cambio de estado relevante. Una nueva llamada sobrescribe el notificador registrado anteriormente.</p><h4>Manejo de errores</h4><p>El valor de retorno es <code>ara::core::Result&lt;void&gt;</code>; En caso de error, el método devuelve <code>DiagErrc::kInvalidArgument</code> (por ejemplo, kPreFailed con antirrebote interno).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método se considera no seguro para subprocesos y seguro para excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">notifier</td><td>The function to be called if the number of entries for this diagnostic event memory instance has changed.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00670", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00670", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00670</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00668">
+<h3 class="recname"><span class="kind">función</span> SetSnapshotRecordUpdatedNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00668" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00668]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04205" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04205</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04091" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04091</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt; SetSnapshotRecordUpdatedNotifier (Snapshot RecordUpdatedTypeNotifier notifier) noexcept;</pre>
+<div class="desc"><p>Register a notifier function which is called if the SnapshotRecord is changed. A consecutive call of this method will overwrite the previous registered notifier.</p></div>
+<div class="ai usage"><h4>Uso <span class="ai-badge" title="AI generated">Generado por IA / AI generated</span></h4><p class="ai-note">Aviso de uso generado automáticamente derivado de este elemento de especificación AUTOSAR-R25-11; no es texto oficial AUTOSAR. Prueba: [SWS_…].</p><p><code>SetSnapshotRecordUpdatedNotifier</code> de <code>DTCInformation</code> <a class="swsref" href="#SWS_DM_00668">[SWS_DM_00668]</a> registra una función de notificación proporcionada por la persona que llama (<code>notifier</code>) que se invoca ante el cambio de estado relevante. Una nueva llamada sobrescribe el notificador registrado anteriormente.</p><h4>Manejo de errores</h4><p>El valor de retorno es <code>ara::core::Result&lt;void&gt;</code>; En caso de error, el método devuelve <code>DiagErrc::kInvalidArgument</code> (por ejemplo, kPreFailed con antirrebote interno).</p><h4>Limitaciones de simultaneidad &amp;</h4><p>Según el contrato, el método se considera no seguro para subprocesos y seguro para excepciones.</p></div>
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parámetros (entrada)</h4>
+<table class="params"><tr><th>parámetro</th><th>Descripción</th></tr><tr><td class="mono">notifier</td><td>The function to be called if the SnapshotRecord is changed.</td></tr></table>
+<h4>Valor de retorno</h4>
+<table class="params"><tr><th>tipo</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Result_d51722.html">ara::core::Result</a>&lt; void &gt;</td><td>Returns nothing or an error.</td></tr></table>
+<h4>Error</h4>
+<table class="params"><tr><th>código de error</th><th>Descripción</th></tr><tr><td class="mono"><a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_00514">DiagErrc</a>::kInvalidArgument</td><td>rollback_semantics e.g. kPreFailed with internal debouncing</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00668", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00668", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00668</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01611">
+<h3 class="recname"><span class="kind">función</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01611" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01611]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00147" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00147</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp; operator= (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp;)=delete;</pre>
+<div class="desc"><p>DTCInformation shall be a single not assignable instance.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01611", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01611", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01611</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01612">
+<h3 class="recname"><span class="kind">función</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01612" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01612]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00147" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00147</a></span></h3>
+<pre class="syntax"><a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp; operator= (<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> &amp;&amp;)=delete;</pre>
+<div class="desc"><p>Move assignment operator of DTCInformation.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01612", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01612", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01612</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_00665">
+<h3 class="recname"><span class="kind">función</span> ~DTCInformation <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_00665" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_00665]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00134" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00134</a></span></h3>
+<pre class="syntax">~<a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html#SWS_DM_01614">DTCInformation</a> () noexcept;</pre>
+<div class="desc"><p>Destructor of class DTCInformation.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Seguridad de excepción</th><td class="mono">exception safe</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_00665", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_00665", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_00665</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article>
+<h2 class="sect">Documentación de los alias de tipo</h2><article class="rec" id="SWS_DM_02125">
+<h3 class="recname"><span class="kind">alias de tipo</span> ControlDtcStatusTypeNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02125" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02125]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04159" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04159</a></span></h3>
+<pre class="syntax">using ControlDtcStatusTypeNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(ControlDtc StatusType)&gt;;</pre>
+<div class="desc"><p>Registers a notifier function which is called if the control DTC setting is changed.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Símbolo</th><td class="mono">ControlDtcStatusTypeNotifier</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02125", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02125", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02125</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02122">
+<h3 class="recname"><span class="kind">alias de tipo</span> DtcStatusChangedNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02122" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02122]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04148" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04148</a></span></h3>
+<pre class="syntax">using DtcStatusChangedNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_t</a> dtc, <a class="vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a> udsStatusByteOld, <a class="vis-app" href="cl_ara_diag_DTCInformation_UdsDtcStatusByteType_4d708b.html">UdsDtcStatusByteType</a> udsStatus ByteNew)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if a UDS DTC status is changed.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Símbolo</th><td class="mono">DtcStatusChangedNotifier</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02122", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02122", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02122</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02076">
+<h3 class="recname"><span class="kind">alias de tipo</span> EventMemoryOverflowSetNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02076" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02076]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04093" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04093</a></span></h3>
+<pre class="syntax">using EventMemoryOverflowSetNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(bool)&gt;;</pre>
+<div class="desc"><p>Notifier function which is called if the current event memory overflow status changed.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Símbolo</th><td class="mono">EventMemoryOverflowSetNotifier</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02076", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02076", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02076</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02124">
+<h3 class="recname"><span class="kind">alias de tipo</span> NumberOfStoredEntriesNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02124" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02124]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04109" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04109</a></span></h3>
+<pre class="syntax">using NumberOfStoredEntriesNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(<a class="cppref" href="https://en.cppreference.com/w/cpp/types/integer" title="cppreference.com (C++17)">std::uint32_ t</a>)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if the number of currently stored fault memory entries changed.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Símbolo</th><td class="mono">NumberOfStoredEntriesNotifier</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02124", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02124", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02124</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_02123">
+<h3 class="recname"><span class="kind">alias de tipo</span> SnapshotRecordUpdatedTypeNotifier <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02123" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02123]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=RS_AP_00139" title="Spezifikations-PDF (AUTOSAR_AP_RS_General.pdf)">RS_AP_00139</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04205" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04205</a>, <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04091" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04091</a></span></h3>
+<pre class="syntax">using SnapshotRecordUpdatedTypeNotifier = <a class="cppref" href="https://en.cppreference.com/w/cpp/utility/functional/function" title="cppreference.com (C++17)">std::function</a>&lt;void(Snapshot RecordUpdatedType)&gt;;</pre>
+<div class="desc"><p>Register a notifier function which is called if the SnapshotRecord is changed.</p></div>
+
+<table class="props"><tr><th>Archivo de cabecera</th><td class="mono">#include "ara/diag/dtc_information.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DTCInformation_3c3d92.html">ara::diag::DTCInformation</a></td></tr><tr><th>Símbolo</th><td class="mono">SnapshotRecordUpdatedTypeNotifier</td></tr><tr><th>Seguridad para hilos</th><td class="mono">not thread-safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_02123", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_02123", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_02123</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>Extraído automáticamente de los PDF oficiales de la especificación AUTOSAR R25-11
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+No es una publicación oficial de AUTOSAR; los textos descriptivos están en el original (inglés).</footer></body></html>

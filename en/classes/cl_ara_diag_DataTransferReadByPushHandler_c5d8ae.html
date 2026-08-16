@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="review-github-repo" content="2b-rs/autodocs">
+<title>ara::diag::DataTransferReadByPushHandler — ara::* API</title><link rel="stylesheet" href="../../style.css"><script src="../../fold.js" defer></script><script src="../../review.js" defer></script><script src="../../review_request.js" defer></script><script src="../../cytoscape.min.js" defer></script><script src="../../component-graph.js" defer></script></head>
+<body class="vis-app"><header><div class="titleblock"><a class="home" href="../index.html">ara::* API Reference</a>
+<span class="rel">AUTOSAR Adaptive Platform R25-11</span></div><div class="langs"><a href="../../classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Deutsch" hreflang="de"><img src="../../flags/de.svg" alt="DE"></a><a class="cur" href="../../en/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="English" hreflang="en"><img src="../../flags/gb.svg" alt="EN"></a><a href="../../es/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Español" hreflang="es"><img src="../../flags/es.svg" alt="ES"></a><a href="../../pt/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Português" hreflang="pt"><img src="../../flags/pt.svg" alt="PT"></a><a href="../../fr/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Français" hreflang="fr"><img src="../../flags/fr.svg" alt="FR"></a><a href="../../ru/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Русский" hreflang="ru"><img src="../../flags/ru.svg" alt="RU"></a><a href="../../ar/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="العربية" hreflang="ar"><img src="../../flags/sa.svg" alt="AR"></a><a href="../../hi/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="हिन्दी" hreflang="hi"><img src="../../flags/in.svg" alt="HI"></a><a href="../../ko/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="한국어" hreflang="ko"><img src="../../flags/kr.svg" alt="KO"></a><a href="../../zh/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="中文" hreflang="zh"><img src="../../flags/cn.svg" alt="ZH"></a><a href="../../nl/classes/cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html" title="Nederlands" hreflang="nl"><img src="../../flags/nl.svg" alt="NL"></a></div></header>
+<nav class="crumbs"><span class="vis-tag vis-app">APPLICATION INTERFACE</span><a href="../index.html">Home</a> › <a class="vis-app" href="../modules/diag.html">ara::diag</a> › DataTransferReadByPushHandler</nav>
+<main><h1><span class="kind">class</span> ara::diag::DataTransferReadByPushHandler</h1>
+<p class="meta"><span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01515" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01515]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></p>
+<pre class="syntax">class DataTransferReadByPushHandler {...};</pre>
+<div class="desc"><p>Handles data transfers initiated by RequestReadFile/-Directory with data pushed by the implementation.</p></div>
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Forwarding header</th><td class="mono">#include "ara/diag/diag_fwd.h"</td></tr><tr><th>Scope</th><td class="mono">namespace <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html">ara::diag</a></td></tr></table>
+<details class="fold"><summary><h2 class="sect">User Guide <span class="ai-badge" title="AI generated">AI generated</span></h2></summary><div class="ai"><p class="ai-note">Automatically generated description, content derived from the referenced AUTOSAR R25-11 specification elements — not an official AUTOSAR text. Evidence: [SWS_…] references.</p><h4>intended use</h4><p><code>DataTransferReadByPushHandler</code> implements read data transfers to RequestReadFile or RequestReadDirectory, where the application passes the data block to AraDiag as a result. <code>Read()</code> receives a recommended number of bytes and returns the data asynchronously as <code>ara::core::Vector</code>. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01515" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01515]</a> <a class="swsref" href="#SWS_DM_01522">[SWS_DM_01522]</a></p><h4>Lifecycle &amp; Ownership</h4><p>The handler is not copyable for a one-time file transfer session, but is movable and move-assignable. It must not be destroyed before <code>ExitRead()</code>. ExitRead ends the session and returns the transfer response parameter record or a UDS error via a future. <a class="swsref" href="#SWS_DM_01518">[SWS_DM_01518]</a> <a class="swsref" href="#SWS_DM_01517">[SWS_DM_01517]</a> <a class="swsref" href="#SWS_DM_01520">[SWS_DM_01520]</a> <a class="swsref" href="#SWS_DM_01519">[SWS_DM_01519]</a> <a class="swsref" href="#SWS_DM_01523">[SWS_DM_01523]</a></p><h4>Limitations &amp; Error handling</h4><p>Read and ExitRead get <code>MetaInfo</code> and <code>CancellationHandler</code>. The application can use this to check an abort or be notified; In case of incorrect processing, a suitable <code>DiagUdsNrcErrc</code> is provided. Both methods are exception-safe and not thread-safe. <a class="swsref" href="#SWS_DM_01522">[SWS_DM_01522]</a> <a class="swsref" href="#SWS_DM_01523">[SWS_DM_01523]</a></p></div>
+<h3>Method overview</h3><ul class="mlist"><li><code class="sig"><a class="fn" href="#SWS_DM_01517">DataTransferReadByPushHandler</a> (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">DataTransferReadByPushHandler</a> &amp;&amp;other) noexcept=default;</code> <span class="dim">Move constructs an instance of this class.</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_01518">DataTransferReadByPushHandler</a> (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">DataTransferReadByPushHandler</a> const &amp;)=delete;</code> <span class="dim">Handlers shall not be copy-able since only one way usage i.e</span></li><li><code class="sig"><a class="fn" href="#SWS_DM_01516">DataTransferReadByPushHandler</a> () noexcept=default;</code> <span class="dim">Constructs an instance of this class.</span></li><li><code class="sig">virtual auto <a class="fn" href="#SWS_DM_01523">ExitRead</a> (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_01538">DataTransferExitType</a> exit_type, <a class="vis-app" href="cl_ara_core_Span_f16d72.html">ara::core::Span</a>&lt; const <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; transfer_request_parameter_ record, <a class="vis-app" href="cl_ara_diag_MetaInfo_818707.html">MetaInfo</a> const &amp;meta_info, <a class="vis-app" href="cl_ara_diag_CancellationHandler_e2b2ab.html">CancellationHandler</a> cancellation_ handler) noexcept -&gt; <a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;=0;</code> <span class="dim">Exits an ongoing data transfer session.</span></li><li><code class="sig">virtual auto <a class="fn" href="#SWS_DM_01522">Read</a> (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/size_t" title="cppreference.com (C++17)">std::size_t</a> recommended_number_bytes_to_return, <a class="vis-app" href="cl_ara_diag_MetaInfo_818707.html">MetaInfo</a> const &amp;meta_info, <a class="vis-app" href="cl_ara_diag_CancellationHandler_e2b2ab.html">CancellationHandler</a> cancellation_handler) noexcept -&gt; <a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;=0;</code> <span class="dim">Reads data chunk from the application</span></li><li><code class="sig">auto <a class="fn" href="#SWS_DM_01520">operator=</a> (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> &amp;&amp;other) &amp; noexcept -&gt; <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> &amp; =default;</code> <span class="dim">Move assigns an instance of this class.</span></li><li><code class="sig">auto <a class="fn" href="#SWS_DM_01521">operator=</a> (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> const &amp;) -&gt; DataTransfer ReadByPushHandler &amp;=delete;</code> <span class="dim">Handlers shall not be assignable since only one way usage i.e</span></li><li><code class="sig">virtual <a class="fn" href="#SWS_DM_01519">~DataTransferReadByPushHandler</a> () noexcept=default;</code> <span class="dim">Destructs an instance of this class</span></li></ul>
+</details>
+<h2 class="sect">UML class diagram</h2><p class="dim">Hollow triangle arrows = inheritance (pointing to base class); Clicking opens the respective class page.</p><div class="umlwrap"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="229pt" height="135pt" viewbox="0.00 0.00 229.00 135.00" style="max-width:100%;height:auto">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 131.25)">
+<title>G</title>
+<!-- nara__diag__DataTransferReadByPushHandler95 -->
+<g id="node1" class="node vis-app">
+<title>nara__diag__DataTransferReadByPushHandler95</title>
+<polygon fill="#f9f8f5" stroke="none" points="0,0 0,-127.25 221,-127.25 221,0 0,0"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-101.5 0,-101.5 221,-101.5 221,-101.5 0,-101.5"></polygon>
+<polygon fill="#01696f" stroke="#01696f" points="0,-76.75 0,-76.75 221,-76.75 221,-76.75 0,-76.75"></polygon>
+<polygon fill="none" stroke="#01696f" points="0,0 0,-127.25 221,-127.25 221,0 0,0"></polygon>
+<text xml:space="preserve" text-anchor="start" x="7" y="-109.85" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="12.00" fill="#28251d">DataTransferReadByPushHandler</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-85.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d"> </text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-61" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ DataTransferReadByPushHandler()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-48.25" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ ~DataTransferReadByPushHandler()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-35.5" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ ExitRead()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-22.75" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ Read()</text>
+<text xml:space="preserve" text-anchor="start" x="7" y="-10" font-family="Helvetica,sans-Serif" font-size="12.00" fill="#28251d">+ operator=()</text>
+</g>
+</g>
+</svg>
+</div>
+<h2 class="sect">Method documentation</h2><article class="rec" id="SWS_DM_01516">
+<h3 class="recname"><span class="kind">function</span> DataTransferReadByPushHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01516" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01516]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">DataTransferReadByPushHandler () noexcept=default;</pre>
+<div class="desc"><p>Constructs an instance of this class.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>visibility</th><td class="mono">protected</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01516", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01516", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01516</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01517">
+<h3 class="recname"><span class="kind">function</span> DataTransferReadByPushHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01517" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01517]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">DataTransferReadByPushHandler (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">DataTransferReadByPushHandler</a> &amp;&amp;other) noexcept=default;</pre>
+<div class="desc"><p>Move constructs an instance of this class.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr></table>
+<h4>Parameters (out)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">other</td><td>The other object</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01517", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01517", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01517</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01518">
+<h3 class="recname"><span class="kind">function</span> DataTransferReadByPushHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01518" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01518]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">DataTransferReadByPushHandler (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">DataTransferReadByPushHandler</a> const &amp;)=delete;</pre>
+<div class="desc"><p>Handlers shall not be copy-able since only one way usage i.e. per single file transfer session.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01518", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01518", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01518</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01523">
+<h3 class="recname"><span class="kind">function</span> ExitRead <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01523" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01523]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">virtual auto ExitRead (<a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html#SWS_DM_01538">DataTransferExitType</a> exit_type, <a class="vis-app" href="cl_ara_core_Span_f16d72.html">ara::core::Span</a>&lt; const <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; transfer_request_parameter_ record, <a class="vis-app" href="cl_ara_diag_MetaInfo_818707.html">MetaInfo</a> const &amp;meta_info, <a class="vis-app" href="cl_ara_diag_CancellationHandler_e2b2ab.html">CancellationHandler</a> cancellation_ handler) noexcept -&gt; <a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;=0;</pre>
+<div class="desc"><p>Exits an ongoing data transfer session.</p></div>
+<div class="ai usage"><h4>Usage <span class="ai-badge" title="AI generated">AI generated</span></h4><p class="ai-note">Automatically generated usage note derived from this AUTOSAR R25-11 specification element—not official AUTOSAR text. Evidence: [SWS_…].</p><p><code>ExitRead</code> from <code>DataTransferReadByPushHandler</code> <a class="swsref" href="#SWS_DM_01523">[SWS_DM_01523]</a> is a purely virtual callback method for terminating an ongoing data transfer session; it receives the cancellation reason (<code>exit_type</code>), a parameter record of the transfer request (<code>transfer_request_</code>), MetaInfo of the request and a cancellation handler for querying or registering a cancellation notifier function.</p><h4>Error handling</h4><p>Errors are reported as an applicable NRC according to ISO 14229-1 via <code>DiagUdsNrcErrc</code>.</p><h4>Concurrency &amp; restrictions</h4><p>According to the contract, the method is not thread-safe and exception-safe; according to the description, the parameter record remains valid only until the Promise is fulfilled or processing is canceled through the Cancellation Handler.</p></div>
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">exit_type</td><td>Specifies the exit reason</td></tr><tr><td class="mono">transfer_request_</td><td>This parameter record contains parameter(s), which are required</td></tr><tr><td class="mono">parameter_record</td><td>by the server to support the transfer of data. Format and length of this parameter(s) are vehicle manufacturer specific. Lifetime: Valid until Promise is fulfilled or the processing is cancelled by the cancellationHandler.</td></tr><tr><td class="mono">meta_info</td><td>MetaInfo of the request.</td></tr><tr><td class="mono">cancellation_handler</td><td>This parameter is used to • Query the current cancellation status by calling cancellation_ handler.IsCanceled(). Returns true in case, the current conversation has been cancelled and false otherwise. • Register a notifier function by calling cancellation_handler.Set Notifier(). The registered notifier is called if the current conversation is cancelled.</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;<a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;<a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;</td><td>A Future, which either gets readied to OperationOutput (transfer ResponseParameterRecord for a positive response message) or readied with ErrorCode from DiagUdsNrcErrc (for an negative response message). Data in OperationOutput.response_data will be placed after SID as transferResponseParameterRecord in the positive response.</td></tr></table>
+<h4>Mistake</h4>
+<table class="params"><tr><th>Error code</th><th>Description</th></tr><tr><td colspan="2" class="note">Please use an applicable NRC, as defined in ISO 14229-1, using DiagUdsNrcErrc.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01523", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01523", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01523</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01522">
+<h3 class="recname"><span class="kind">function</span> Read <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01522" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01522]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">virtual auto Read (<a class="cppref" href="https://en.cppreference.com/w/cpp/types/size_t" title="cppreference.com (C++17)">std::size_t</a> recommended_number_bytes_to_return, <a class="vis-app" href="cl_ara_diag_MetaInfo_818707.html">MetaInfo</a> const &amp;meta_info, <a class="vis-app" href="cl_ara_diag_CancellationHandler_e2b2ab.html">CancellationHandler</a> cancellation_handler) noexcept -&gt; <a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt; <a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt; <a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;=0;</pre>
+<div class="desc"><p>Reads data chunk from the application. The first or subsequent file/directory info content chunk to be sent back to the UDS client will be composed by the application and its ownership is passed as a result to <a class="vis-app" href="../namespaces/ns_diag_ara_diag_fbd60d.html">ara::diag</a>.</p></div>
+<div class="ai usage"><h4>Usage <span class="ai-badge" title="AI generated">AI generated</span></h4><p class="ai-note">Automatically generated usage note derived from this AUTOSAR R25-11 specification element—not official AUTOSAR text. Evidence: [SWS_…].</p><p><code>Read</code> from <code>DataTransferReadByPushHandler</code> <a class="swsref" href="#SWS_DM_01522">[SWS_DM_01522]</a> is a purely virtual callback method through which the application assembles a data block and passes its ownership to ara::diag as a result, as described; The recommended number of bytes (<code>recommended_number_</code>), MetaInfo of the request and a cancellation handler serve as parameters.</p><h4>Error handling</h4><p>Errors are reported as an applicable NRC according to ISO 14229-1 via <code>DiagUdsNrcErrc</code>.</p><h4>Concurrency &amp; restrictions</h4><p>According to the contract, the method is not thread-safe and exception safe.</p></div>
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr><tr><th>Thread safety</th><td class="mono">not thread-safe</td></tr></table>
+<h4>Parameter (in)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">recommended_number_</td><td>The recommended number of bytes to send back to DM in order to</td></tr><tr><td class="mono">bytes_to_return</td><td>get optimum data throughput.</td></tr><tr><td class="mono">meta_info</td><td>MetaInfo of the request.</td></tr><tr><td class="mono">cancellation_handler</td><td>This parameter is used to • Query the current cancellation status by calling cancellation_ handler.IsCanceled(). Returns true in case, the current conversation has been cancelled and false otherwise. • Register a notifier function by calling cancellation_handler.Set Notifier(). The registered notifier is called if the current conversation is cancelled.</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_core_Future_420ba8.html">ara::core::Future</a>&lt;<a class="vis-app" href="cl_ara_core_Vector_53b788.html">ara::core::Vector</a>&lt;<a class="vis-app" href="../namespaces/ns_core_ara_core_e30e31.html#SWS_CORE_04200">ara::core::Byte</a> &gt; &gt;</td><td>A Future, which either gets readied to ReadPushOutput (transfer ResponseParameterRecord for a positive response message) or readied with ErrorCode from DiagUdsNrcErrc (for a negative response message). Data in ReadPushOutput.responseData will be placed after block SequenceCounter as transferResponseParameterRecord in the positive response.</td></tr></table>
+<h4>Mistake</h4>
+<table class="params"><tr><th>Error code</th><th>Description</th></tr><tr><td colspan="2" class="note">Please use an applicable NRC, as defined in ISO 14229-1, using DiagUdsNrcErrc.</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01522", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01522", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01522</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01520">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01520" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01520]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">auto operator= (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> &amp;&amp;other) &amp; noexcept -&gt; <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> &amp; =default;</pre>
+<div class="desc"><p>Move assigns an instance of this class.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr></table>
+<h4>Parameters (out)</h4>
+<table class="params"><tr><th>Parameters</th><th>Description</th></tr><tr><td class="mono">other</td><td>The other object</td></tr></table>
+<h4>Return value</h4>
+<table class="params"><tr><th>type</th><th>Description</th></tr><tr><td class="mono"><a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a></td><td>Reference to self</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01520", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01520", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01520</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01521">
+<h3 class="recname"><span class="kind">function</span> operator= <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01521" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01521]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">auto operator= (<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> const &amp;) -&gt; DataTransfer ReadByPushHandler &amp;=delete;</pre>
+<div class="desc"><p>Handlers shall not be assignable since only one way usage i.e. per single file transfer session.</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01521", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01521", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01521</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article><article class="rec" id="SWS_DM_01519">
+<h3 class="recname"><span class="kind">function</span> ~DataTransferReadByPushHandler <span class="sws"><a href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_01519" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_01519]</a></span> <span class="ups">Upstream: <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/FO/AUTOSAR_FO_RS_Diagnostics.pdf#nameddest=RS_Diag_04135" title="Spezifikations-PDF (AUTOSAR_FO_RS_Diagnostics.pdf)">RS_Diag_04135</a></span></h3>
+<pre class="syntax">virtual ~<a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html#SWS_DM_01517">DataTransferReadByPushHandler</a> () noexcept=default;</pre>
+<div class="desc"><p>Destructs an instance of this class. An instance of this class must not be destroyed before ExitRead() is called</p></div>
+
+<table class="props"><tr><th>Header file</th><td class="mono">#include "ara/diag/data_transfer.h"</td></tr><tr><th>Scope</th><td class="mono">class <a class="vis-app" href="cl_ara_diag_DataTransferReadByPushHandler_c5d8ae.html">ara::diag::DataTransferReadByPushHandler</a></td></tr><tr><th>Exception safety</th><td class="mono">exception safe</td></tr></table>
+<section class="review-request-panel" data-review-request-root><script type="application/json" class="review-request-data">{"canonical_id": "SWS_DM_01519", "version_id": null, "content_hash": null, "status": "valid/unmigrated", "source_url": "", "title": "SWS_DM_01519", "category_default": "", "has_open_review_request": false, "existing_request_url": ""}</script><div class="review-request-summary"><p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p><dl class="review-request-bound"><dt>Record</dt><dd><code>SWS_DM_01519</code></dd><dt>Status</dt><dd>valid/unmigrated</dd></dl><button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button><p class="review-request-state" data-review-request-state hidden></p></div></section><details class="rec-history-panel">
+<summary>
+<span class="rec-status-badge rec-status-valid">Status: valid/unmigrated</span>
+<span class="rec-history-summary-text">Curation & History (1 transition)</span>
+</summary>
+<div class="rec-history-body">
+<dl class="rec-status-details">
+<dt>Current State</dt><dd><code>valid/unmigrated</code></dd>
+<dt>Reason</dt><dd>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</dd>
+<dt>Campaign</dt><dd><code>2026-08-13-status-backfill</code></dd>
+</dl>
+<table class="rec-history-table">
+<thead><tr><th>Date</th><th>Actor</th><th>Transition</th><th>Reason / Rationale</th><th>Campaign</th></tr></thead>
+<tbody>
+<tr><td>2026-08-13</td><td><span class="rec-actor">tool</span></td><td><code>none</code> &rarr; <code>valid/unmigrated</code></td><td>mechanically backfilled by migriere_status_backfill.py -- no per-field curation history exists yet for this record</td><td><small>2026-08-13-status-backfill</small></td></tr>
+</tbody>
+</table>
+
+</div>
+</details></article></main>
+<footer>Automatically extracted from the official AUTOSAR R25-11 specification PDFs
+(<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
+Not an official AUTOSAR publication; description texts in the original (English).</footer></body></html>
