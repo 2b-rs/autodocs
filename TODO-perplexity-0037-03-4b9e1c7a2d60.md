@@ -26,3 +26,4 @@ Both declared prerequisites are complete: `0037-03.01` closed with substantive l
 ## Progress
 
 - 2026-08-16 — Parent claim opened. Read-only discovery will establish exact base and confirm both closure refs remain reachable before a scoped bookkeeping commit.
+- 2026-08-16 — Request `6b2d9e4a1c78` closed parent 0037-03 in local aggregation commit `f4679e5d2a58612a5043a264a183ddb2aa198250` after verifying both child contracts. Architecture review/approval remains downstream (`0037-37`/`0037-07`).
