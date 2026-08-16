@@ -41,4 +41,4 @@
 
 ## Closure
 
-- Task package committed with REF: PENDING_COMMIT.
+- Task package committed with REF: f05ce02a7c69e9b3d1eafb66ac815183dcc3b13e.
