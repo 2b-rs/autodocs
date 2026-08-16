@@ -51,6 +51,90 @@ HOW TO USE:
 
   Prerequisites are noted inline in the task/feature text after `PREREQ:`.
 
+## Feature: 0038 — Transactional Task Work, Reliable Evidence, and Chore Automation
+
+**Goal:** Make routine Task work fail closed, reproducible, quick to resume, and cheap to review. Replace copied shell/Python orchestration with narrow tested tools; prevent validation, bookkeeping, claim, index, generated-output, evidence, and cleanup mistakes; and carry reusable semantics into Feature `0037` without creating a competing issue store or runner protocol.
+
+**Evidence baseline (2026-08-16):** The Task `0036-05` singleton request changed `TODO.md` and wildcard-deleted claims before project validation; historical closure commits `9e033f32`, `9c4795bb`, and `cd6d8db1` show heredoc/Task-boundary repair churn; `723b485d` and `a1cbbbdc` repaired stale pre-amend REFs; commit `50b20829` retained 184 evidence files/10,384 lines including duplicate source/scripts; Feature `0021` had green focused/generation checks but was later archived not accepted; current build artifacts show repeated npm/cache/watchdog/browser retries, mutable `run-current` evidence, fixed-path exports, empty/partial attempts, and exit-zero reports containing failed required cases. Current legacy claims also expose marker/claim drift, derived-output scope overlap, context overflow, and inaccurate publication state. These are retained lessons, not claims that every historical run was invalid.
+
+**Compatibility boundary:** This Feature hardens the current legacy workflow. It must reuse the approved Feature `0037` contracts where available, must not weaken or bypass `0037-07`, and must map every surviving primitive to `0037-46.01` or retire it at `0037-46.02`. Tasks that remain useful after cutover become typed queue/issue-store actions; legacy-only wrappers do not become a second permanent protocol.
+
+**Feature Definition of Done:** Historical incident fixtures fail at the intended gate; a sandboxed agent can discover, claim, generate, validate, commit, close, retain evidence, recover, and resume a representative Task without handwritten destructive orchestration or direct execution; unrelated staged/unstaged/untracked work and foreign claims survive; required failures cannot produce a passing aggregate result; compact evidence remains traceable without copied source dumps; stale/partial artifacts have an explicit lifecycle; and queue activation has an executed handoff/retirement map with no duplicate authority.
+
+### Campaign A — Stop destructive and false-success task closure
+
+- [p] **0038-01** Implement and document a fail-closed legacy close-Task transaction coordinator. Claim: `TODO-zed-runner-safety-20260816-c4f91e7d2a6b.md`; owner token `agent:zed:user-directed-runner-safety:20260816-c4f91e7d2a6b`; base `0f21b9f14bfe18654196ddd9fc51c5a27ffa5638`.
+  - **Acceptance criteria:** Add stdlib-only `_src/tools/runner_transaction.py`, hermetic tests, and `docs/pipeline/runner-transaction.md`. The versioned `close-task-v1` manifest uses fixed action IDs and exact files; binds Task/request/owner/base, exact loaded manifest bytes, authority, full action/report/timeout controls, commit provenance, bookkeeping, and read/write scope to one exact claim; rejects shell strings, globs, pathspecs, symlinks, role aliases, dirty shared TODO state, stale authority/base/branch/index, and runtime-evidence overlap; executes generation and validation in a detached candidate; fails on child nonzero or fresh structured error findings; forbids generator input and validator tree mutation; promotes with a durable rollback journal; prepares exact no-filter blobs plus separate substantive/REF commits without the ambient index; validates the final bookkeeping tree; publishes once by expected-ref CAS; retains the claim through durable non-passing recovery evidence; and emits PASS only after exact claim archival and final verification. The canonical `run.sh` envelope contains only strict mode, fixed root, and one `exec` of this tool.
+  - **Definition of Done:** Focused fixtures cover unsafe manifests/envelopes, generator/validator/structured-report failures, input/tree mutation, partial promotion rollback, dirty TODO, unrelated staged work, two-commit REF closure, post-publication interruption, CAS loss, result persistence failure, runtime alias, candidate symlink escape, dry-run, exact Task boundaries, and successful claim finalization. Syntax, focused tests, project validation, path-limited substantive commit with verbatim provenance, and separate real REF bookkeeping commit pass.
+
+- [ ] **0038-02** PREREQ: 0038-02:0038-01 Add durable hard-kill, stale-lock, rollback-conflict, and transaction-resume recovery.
+  - **Acceptance criteria:** Journal every mutation/ref/finalization boundary with PID/process start identity, request/owner/base, preimage/promoted digests, backup paths, and commit objects; add signal/process-group handling; retain backups on incomplete rollback; provide a read-only doctor plus explicit recover/finalize operations that never delete a live lock or overwrite newer edits. Inject termination before/after each file, commit-object, CAS, TODO, result, and claim boundary.
+  - **Definition of Done:** Crash/restart tests prove each state is either unchanged, automatically reconciled, or accompanied by one deterministic safe recovery command and retained claim/evidence; no stale lock requires guessing or blind deletion.
+
+- [ ] **0038-03** PREREQ: 0038-03:0038-01 Add an automation-safety validator and remediate high-risk tracked scripts.
+  - **Acceptance criteria:** Stable rules detect unchecked mutating subprocesses, unconditional PASS, broad/wildcard staging or deletion, protected-ref force push, hard-coded remote/identity, shell execution, repair mixed into validation, mutation before gates, ignored commit return codes, and missing recovery/result state. Historical patterns from `_src/tools/link_verification_evidence.py`, publish tooling, and old runner envelopes are fixtures; findings name exact path/line/rule and distinguish deliberate per-item resumability from accidental continuation.
+  - **Definition of Done:** `_src/validate.py` runs the checker; every critical finding is fixed, narrowly suppressed with rationale/owner/expiry, or represented by a blocking Task; no false-green fixture passes.
+
+### Campaign B — Make backlog, claims, collisions, and context mechanical
+
+- [ ] **0038-04** PREREQ: 0038-04:0038-01 Implement a read-only legacy Task/claim/bootstrap doctor.
+  - **Acceptance criteria:** Normalize `TODO.md`, `DONE.md`, `agent-workflow.json`, and exact active claims; detect undefined markers such as `[d]`, malformed/hidden/duplicate/unreachable REFs, Task/claim state disagreement, stale terminal claims, filename/request/token/base/scope mismatches, missing next steps, invalid prerequisites/cycles, eligible parent closures, broken instruction links, and contradictions such as `SENTINTEL.md` versus `SENTINEL.md`/runner-notification policy. It prepares exact-path reconciliation plans but never takes over or deletes a foreign claim.
+  - **Definition of Done:** Current known drift and historical malformed-claim/REF/marker fixtures produce deterministic JSON plus a summary of at most ten lines; a clean fixture produces zero findings without mutation.
+
+- [ ] **0038-05** PREREQ: 0038-05:0038-04 Replace free-form legacy Task closure edits with a structural backlog/claim reconciliation editor.
+  - **Acceptance criteria:** Parse exact Feature/Task boundaries and normative sections; use expected block/document digests; support pickup, progress, closure, wontfix, parent aggregation, REF injection, claim handoff/finalization, and append-only correction without heredocs or broad regex replacement. Reject unrelated shared-file drift and generate candidate/diff before atomic promotion.
+  - **Definition of Done:** Fixtures reproduce and reject the `9e033f32`→`9c4795bb`→`cd6d8db1` corruption chain, stale amend REFs, duplicate Task text, neighboring-header capture, concurrent TODO edits, and wrong-claim deletion; all operations preserve unrelated bytes.
+
+- [ ] **0038-06** PREREQ: 0038-06:0038-04, 0038-06:0037-05 Implement explicit plus derived write-scope collision planning.
+  - **Acceptance criteria:** Expand source paths through known generator/report/i18n/publication output ownership, compare them with active claims and runner/Git snapshots, identify exact/direct versus derived collisions, and calculate a safe serialization or disjoint execution plan. Include `0036-05`/`0036-06`-style source-disjoint but language-tree-overlapping fixtures.
+  - **Definition of Done:** The planner blocks every known overlap fixture before mutation, permits two genuinely disjoint agents, explains the conflicting producer/output edge, and feeds the future queue scope model rather than maintaining a second DAG.
+
+- [ ] **0038-07** PREREQ: 0038-07:0038-04, 0038-07:0038-06 Generate bounded Task context and resume capsules.
+  - **Acceptance criteria:** Compile only selected Task/Feature constraints, prerequisite states, claim identity, authority/policy digests, pending request/result, explicit/derived scope, material findings, completed phases, retained evidence references, and exact next action into machine JSON plus a short human summary. Full logs/prompts remain referenced by path/digest; immutable ownership survives context/tool-budget boundaries.
+  - **Definition of Done:** Fixtures resume `0037-48` after premature publication reporting and `0036-06` after context overflow without repeating completed work, changing owner, dropping blockers, or exceeding a fixed context-size budget.
+
+### Campaign C — Make validation and environments trustworthy
+
+- [ ] **0038-08** PREREQ: 0038-08:0038-01, 0038-08:0038-04 Implement Task validation profiles with coverage canaries and aggregate verdicts.
+  - **Acceptance criteria:** Profiles declare required stages, exact inputs/outputs, freshness/run identity, expected counts/invariants, allowed mutations, time/resources, structured findings, and known-bad canaries proving each detector ran. Required failure, missing stage, mixed/stale runs, baseline-only checks, unexpected zero coverage, or error findings fail even when child processes exit zero; statuses are PASS/FAIL/SKIP/INCONCLUSIVE, never ambiguous success.
+  - **Definition of Done:** Fixtures cover the four-URL probe, baseline-only determinism PASS, stale i18n register reporting zero open work, mtime-mixed reports, and Feature `0021`-style synthetic-only green validation; project profiles produce one bounded aggregate verdict.
+
+- [ ] **0038-09** Build a portable environment/capability doctor and reusable prepared-environment fingerprint.
+  - **Acceptance criteria:** Check writable project-local caches, Python/Node modules, browser launch/navigation, Graphviz/fonts, locale/timezone, platform-safe watchdog support, Git identity/operation state, disk/resource bounds, and approved network/credential handles without exposing secrets. Cache the validated dependency fingerprint; unchanged missing prerequisites fail immediately instead of retrying install/test phases.
+  - **Definition of Done:** Fixtures reproduce root-owned npm-cache `EPERM`, missing macOS `timeout`, browser navigation/selector failures, unknown phase heartbeats, and dependency drift; one concise result identifies the first actionable gate and safe remediation.
+
+- [ ] **0038-10** PREREQ: 0038-10:0038-01 Standardize immutable per-attempt results and an atomic mutable current pointer.
+  - **Acceptance criteria:** Every attempt writes `result.json` with Task/request/base/authority, per-phase RC/status/duration, aggregate verdict, exact actions, structured findings, path counts/digests, commits, cleanup/recovery state, and evidence references before an atomic `current.json` pointer changes. A retained script or free-text `run-current.log` is never interpreted as pending/completed state; partial attempts use explicit lifecycle markers.
+  - **Definition of Done:** Success, failure, timeout, cancellation, crash, retry, tamper, and pointer-update fixtures are deterministic; an empty archive or overwritten current log cannot erase the last immutable attempt result.
+
+### Campaign D — Make artifacts and evidence compact, fresh, and recoverable
+
+- [ ] **0038-11** PREREQ: 0038-11:0038-04, 0038-11:0038-10 Implement claim-aware artifact quarantine, retention, and garbage collection.
+  - **Acceptance criteria:** Partial/failed translations, exports, generated trees, reports, and scratch attempts use run-specific `.partial`/quarantine roots plus structured state/error/source/output digests and retry eligibility. A dry-run GC removes only terminal, unowned artifacts after policy TTL; refuses live claims, unfinalized journals, and unknown state; prunes safe empty tombstones; and applies explicit successful-log, failed-trace, cache, scratch, and permanent-manifest retention tiers.
+  - **Definition of Done:** Fixtures cover fixed-path export deletion, empty service-error files, failed-sentinel outputs, empty request directories, interrupted attempts, reused log names, live claims, clock skew, and rollback; no retained evidence link silently points to a deleted artifact without a manifest/digest disposition.
+
+- [ ] **0038-12** PREREQ: 0038-12:0038-10 Define compact content-addressed Task evidence packs.
+  - **Acceptance criteria:** Record argv/action, base/tool/environment, exit status, counts, input/output digests, privacy class, bounded excerpt, full-log digest/path, commits, and criterion mapping; store duplicate content once; reference tracked source/scripts by commit/blob rather than copying them into timestamped logs; reject secrets, unrelated-run evidence, broad globs, and ignored scratch as sole closure proof.
+  - **Definition of Done:** A representative 184-file/10,384-line historical evidence bundle is losslessly represented by a concise manifest plus unique blobs and remains navigable/auditable; duplicate probe scripts/source dumps are eliminated without losing provenance.
+
+- [ ] **0038-13** PREREQ: 0038-13:0038-06, 0038-13:0038-08 Isolate generated candidates and enforce output/diff/realism budgets.
+  - **Acceptance criteria:** Generate into run-specific candidate roots, validate before promotion, declare sole writer and expected file/count/byte budgets, compare exact source-to-output manifests, split source versus generated review, and require production-realistic rendered/downloaded/submitted bytes plus negative paths—not only synthesized in-memory objects. Large or unexplained diffs block before commit.
+  - **Definition of Done:** Fixtures cover a 4,503-file generation, stale fixed export path, incomplete language trees, synthetic-only UI data, actual downloaded payload mismatch, and clean-checkout reproduction; promotion is atomic/recoverable and no unrelated generated family is swept in.
+
+- [ ] **0038-14** PREREQ: 0038-14:0038-03, 0038-14:0038-10 Classify every tracked mutating chore tool by side-effect, retry, and lifecycle contract.
+  - **Acceptance criteria:** Inventory tools as read-only, atomic, per-item resumable, destructive, migration-only, reusable, or retired; declare exact write sets, commit points, idempotency keys, journals, cleanup, failure aggregation, and ownership. Apply first to review ingestion, publication, migrations/fixes, and duplicated graph/report helpers; partial-success tools exit nonzero while preserving completed-item evidence and exact resume state.
+  - **Definition of Done:** Fault injection at each declared commit point proves retries neither duplicate nor erase work; one-off scripts have tests/docs and a retention/retirement reason; semantic twins have one owner/core.
+
+- [ ] **0038-15** PREREQ: 0038-15:0038-03 Productize approval-readiness checks without mutating live policy by default.
+  - **Acceptance criteria:** Test and catalog `_src/tools/manage_approval_readiness.py`; require policy schema versions; make read-only JSON check the default; replace in-place authority patching with reviewed candidates/diffs; distinguish metadata presence from verified signer/remote/service/credential capability; and never expose private key paths or claim readiness from prose-only records.
+  - **Definition of Done:** Ready, missing role, wrong fingerprint, stale policy, unavailable handle, absent service control, revoke, and malformed policy fixtures pass with stable rules; Task `0037-07` consumes verified readiness rather than rediscovering setup manually.
+
+### Campaign E — Adopt once, then hand off cleanly
+
+- [ ] **0038-16** PREREQ: 0038-16:0038-02, 0038-16:0038-03, 0038-16:0038-05, 0038-16:0038-06, 0038-16:0038-07, 0038-16:0038-08, 0038-16:0038-09, 0038-16:0038-10, 0038-16:0038-11, 0038-16:0038-12, 0038-16:0038-13, 0038-16:0038-14, 0038-16:0038-15, 0038-16:0037-46 Roll out the chore layer, reconcile current drift, and execute the queue handoff/retirement.
+  - **Acceptance criteria:** Update canonical agent/tool guidance when foreign policy claims are reconciled; nudge legacy grunts through canonical templates, machine claim fields, doctor output, and validation rejection of ad hoc destructive closure; reconcile current marker/claim/REF/bootstrap/artifact findings without appropriating owners; map every retained action/schema/result/recovery primitive to `0037-46.01` or an explicit retirement trigger; and prove the activated queue rejects legacy mutation while preserving evidence/recovery access.
+  - **Definition of Done:** Historical incident suite and two concurrent disjoint sandboxed-agent fixtures pass; zero undispositioned critical chore findings remain; no user/privileged execution is required; legacy `run.sh` accepts no mutation after queue activation; docs/catalogs point to one active mechanism; and this Feature closes with a retained before/after safety, time, retry, context, and evidence-volume comparison.
+
 ## Feature: 0037 — Git-Native Issue Store, Provenance Graph, and Backlog Migration
 
 **PREREQ:** 0037:0002, 0037:0006
