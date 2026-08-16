@@ -22,6 +22,7 @@ CURATION_ITEM_SCHEMA = "curation-item@v1"
 VALID_ITEM_KINDS = (
     "record-field",
     "record",
+    "review-request",
     "ai-amendment",
     "ai-hypothesis",
     "scrape-observation",
@@ -77,13 +78,19 @@ def _status_from_curation_flag(payload: dict[str, Any]) -> str:
     if payload.get("completed_at"):
         return "applied"
     outcome = payload.get("outcome")
+    if outcome == "requested":
+        if payload.get("claimed_by"):
+            return "claimed"
+        # 0021 website review-request items enter the queue at discovered->queued;
+        # they are OPEN requests for re-curation, not AI-proposed changes.
+        return "open"
     if outcome in ("accepted", "rejected"):
         return str(outcome)
     if outcome in ("proposed", "proposed_change"):
         return "proposed"
     if payload.get("claimed_by"):
         return "claimed"
-    # A curation flag is a proposal even before a curator claims it.
+    # A generic curation flag is a proposal even before a curator claims it.
     return "proposed"
 
 

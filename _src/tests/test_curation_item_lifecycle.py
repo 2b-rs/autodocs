@@ -44,6 +44,30 @@ class CurationItemLifecycleTests(unittest.TestCase):
         self.assertEqual(cilc.item_lifecycle_state(rejected), "rejected")
         self.assertEqual(cilc.item_lifecycle_state(proposed), "proposed")
 
+    def test_from_curation_flag_requested_maps_to_open_not_proposed(self):
+        """0021-06: a freshly-ingested website review-request (outcome='requested',
+        per review_request_ingest.py) is a QUEUED request awaiting AI-agent
+        research, per docs/pipeline/website-review-flag.md's
+        discovered->queued->claimed->proposed->accepted/rejected lifecycle.
+        It must not be conflated with 'proposed' (an AI-agent's already-
+        researched change)."""
+        requested = ci.from_curation_flag({
+            "id": "req-1", "outcome": "requested", "item_kind": "review-request",
+        })
+        self.assertEqual(requested["status"], "open")
+        self.assertEqual(cilc.item_lifecycle_state(requested), "queued")
+
+    def test_from_curation_flag_requested_claimed_maps_to_claimed(self):
+        claimed = ci.from_curation_flag({
+            "id": "req-1", "outcome": "requested", "item_kind": "review-request",
+            "claimed_by": "agent-1",
+        })
+        self.assertEqual(claimed["status"], "claimed")
+        self.assertEqual(cilc.item_lifecycle_state(claimed), "claimed")
+
+    def test_review_request_is_a_valid_item_kind(self):
+        self.assertIn("review-request", ci.VALID_ITEM_KINDS)
+
     def test_is_conformant_rejects_unknown_status(self):
         item = ci.from_review_flag({"id": "SWS_LOG_00201"})
         item["status"] = "not-a-real-status"

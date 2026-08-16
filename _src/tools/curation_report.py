@@ -134,6 +134,12 @@ def generate_curation_report_page(items):
 .cr-badge-open{color:#9a3412;background:#ffedd5;border-radius:999px;padding:.12rem .5rem;font-weight:600}
 .cr-badge-claimed{color:#1e40af;background:#dbeafe;border-radius:999px;padding:.12rem .5rem;font-weight:600}
 .cr-badge-applied{color:#166534;background:#dcfce7;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-badge-proposed{color:#7e22ce;background:#f3e8ff;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-badge-accepted{color:#166534;background:#dcfce7;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-badge-rejected{color:#991b1b;background:#fee2e2;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-badge-superseded{color:#4b5563;background:#f3f4f6;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-trust-self_declared{color:#92400e;background:#fef3c7;border-radius:999px;padding:.08rem .45rem;font-size:.78rem}
+.cr-trust-github_authenticated{color:#166534;background:#dcfce7;border-radius:999px;padding:.08rem .45rem;font-size:.78rem}
 </style>""")
 
     html_parts.append(f"""<h1>Zentraler Kurations- & Review-Bericht</h1>
@@ -160,8 +166,26 @@ def generate_curation_report_page(items):
 <summary><strong>Offene Kurations- & Review-Items ({open_count})</strong></summary>
 <div class="cr-table-wrap">
 <table class="cr-table">
-<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Feld</th><th>Status</th><th>Quelle / Seite</th><th>Vorschlag / Rationale</th></tr></thead>
+<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Feld</th><th>Status</th><th>Anfragende(r)</th><th>Quelle / Seite</th><th>Vorschlag / Rationale</th></tr></thead>
 <tbody>""")
+
+    def _requester_cell(it):
+        """0021-06: for item_kind=review-request, show identity/trust and
+        transport/target-version, mirroring the record-page queue-state
+        panel (lib_docmodel._render_review_request_panel) rather than
+        showing the generic 'curator' field, which is meaningless for a
+        not-yet-decided request."""
+        if it.get("item_kind") != "review-request":
+            return _esc(it.get("curator", "-"))
+        basis = it.get("decision_basis") or {}
+        identity = _esc(it.get("current_state") or "-")
+        trust_badge = f'<span class="cr-trust-{identity}">{identity}</span>' if identity in ("self_declared", "github_authenticated") else identity
+        actor = _esc(basis.get("authoritative_actor") or it.get("decided_by") or "")
+        transport = _esc(basis.get("transport") or "-")
+        target_version = _esc(basis.get("target_version_id") or "-")
+        return (f'{trust_badge}{" (" + actor + ")" if actor else ""}<br>'
+                f'<small>Transport: <code>{transport}</code></small><br>'
+                f'<small>Target version: <code>{target_version}</code></small>')
 
     open_items = [x for x in items if x.get("status") == "open"]
     if open_items:
@@ -180,13 +204,18 @@ def generate_curation_report_page(items):
                 prop_val = prop_val[:117] + "..."
             raw_rid = it.get("canonical_id", "").split("/")[-1]
             row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''
-            html_parts.append(f"<tr{row_id_attr}><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
+            requester_html = _requester_cell(it)
+            html_parts.append(f"<tr{row_id_attr}><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td>{requester_html}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
     else:
-        html_parts.append("<tr><td colspan=\"7\">Keine offenen Kurations-Items vorhanden.</td></tr>")
+        html_parts.append("<tr><td colspan=\"8\">Keine offenen Kurations-Items vorhanden.</td></tr>")
     html_parts.append("</tbody></table></div></details>")
 
-    # Claimed & applied items summary
-    other_items = [x for x in items if x.get("status") in ("claimed", "applied")]
+    # 0021-06: previously only status in (claimed, applied) was shown here,
+    # silently dropping proposed/accepted/rejected/superseded items -- which
+    # meant a review-request's accepted or rejected lifecycle outcome (the
+    # Definition of Done's central assertion) never appeared on this report
+    # at all. Show every non-open status.
+    other_items = [x for x in items if x.get("status") != "open"]
     html_parts.append(f"""<details class="cr-section">
 <summary><strong>In Bearbeitung & Abgeschlossen ({len(other_items)})</strong></summary>
 <div class="cr-table-wrap">
@@ -200,7 +229,7 @@ def generate_curation_report_page(items):
             kind = _esc(it.get("item_kind", "-"))
             st = it.get("status", "-")
             badge = f'<span class="cr-badge-{st}">{_esc(st)}</span>'
-            curator = _esc(it.get("curator", "-"))
+            curator = _requester_cell(it) if it.get("item_kind") == "review-request" else _esc(it.get("curator", "-"))
             src_file = _esc(it.get("source_file", "-"))
             raw_rid = it.get("canonical_id", "").split("/")[-1]
             row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''

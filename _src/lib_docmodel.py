@@ -397,6 +397,68 @@ def _review_page_enhancements(main, notice_ui=None):
 
 
 _KNOWN_CURATION_IDS = None
+_REVIEW_REQUEST_INDEX = None
+
+
+def _load_open_review_request_index(srcdir=SRC):
+    """0021-06: Scan curation-queue/open+claimed for website review-request items,
+    keyed by target canonical_id (and its short leaf alias).
+
+    Exported JSON packages and submitted-but-not-ingested GitHub issues are
+    intentionally invisible here: only trusted ingestion creates queue files,
+    and only queue presence should affect record history/report views.
+    """
+    global _REVIEW_REQUEST_INDEX
+    if _REVIEW_REQUEST_INDEX is None:
+        _REVIEW_REQUEST_INDEX = {}
+        queue_base = os.path.join(srcdir, "spec", "curation-queue")
+        for state_dir in ("open", "claimed"):
+            p = os.path.join(queue_base, state_dir)
+            if not os.path.isdir(p):
+                continue
+            for name in sorted(os.listdir(p)):
+                if not name.endswith(".json"):
+                    continue
+                path = os.path.join(p, name)
+                try:
+                    with open(path, "r", encoding="utf-8") as f:
+                        payload = json.load(f)
+                except Exception:
+                    continue
+                if payload.get("item_kind") != "review-request":
+                    continue
+                basis = payload.get("decision_basis") or {}
+                canonical_id = basis.get("target_canonical_id") or payload.get("canonical_id") or payload.get("id")
+                if not canonical_id:
+                    continue
+                entry = {
+                    "queue_state": "claimed" if state_dir == "claimed" else "open",
+                    "queue_path": path,
+                    "request_id": basis.get("request_id") or payload.get("id") or "",
+                    "target_version_id": basis.get("target_version_id") or "",
+                    "target_content_hash": basis.get("target_content_hash") or "",
+                    "target_status_snapshot": basis.get("target_status_snapshot") or "",
+                    "transport": basis.get("transport") or "",
+                    "category": basis.get("category") or "",
+                    "authoritative_actor": basis.get("authoritative_actor") or "",
+                    "identity": payload.get("identity") or "",
+                    "decided_by": payload.get("decided_by") or "",
+                    "created": payload.get("created") or payload.get("created_at") or payload.get("decided_at") or "",
+                    "source_url": basis.get("source_url") or "",
+                }
+                for key in (canonical_id, str(canonical_id).split("/")[-1]):
+                    _REVIEW_REQUEST_INDEX[key] = entry
+    return _REVIEW_REQUEST_INDEX
+
+
+def _review_request_state_for_record(record_id, rec_meta=None, srcdir=SRC):
+    if not record_id:
+        return None
+    rec_meta = dict(rec_meta or {})
+    canonical_id = rec_meta.get("canonical_id") or record_id
+    index = _load_open_review_request_index(srcdir)
+    return index.get(canonical_id) or index.get(str(canonical_id).split("/")[-1])
+
 
 def _get_known_curation_ids(srcdir=SRC):
     global _KNOWN_CURATION_IDS
@@ -416,7 +478,7 @@ def _get_known_curation_ids(srcdir=SRC):
                 pass
     return _KNOWN_CURATION_IDS
 
-def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
+def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, srcdir=SRC):
     """0021-05: Render the record-page re-review trigger + bound payload data.
 
     Pure server-side HTML/JSON emission; client JS in review_request.js owns all
@@ -427,6 +489,11 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
     rec_meta = dict(rec_meta or {})
     if not record_id:
         return ""
+
+    queue_state = _review_request_state_for_record(record_id, rec_meta, srcdir)
+    if queue_state:
+        rec_meta["has_open_review_request"] = True
+        rec_meta.setdefault("existing_request_url", "")
 
     canonical_id = rec_meta.get("canonical_id") or record_id
     release = rec_meta.get("release")
@@ -453,6 +520,23 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
     btn = ('<p class="review-request-duplicate" data-review-request-duplicate><strong>Review request already open.</strong> ' +
            ('<a href="%s">View request &rarr;</a>' % esc_attr(payload["existing_request_url"]) if payload["existing_request_url"] else 'A second request cannot be opened until the current one is resolved.') +
            '</p>') if has_open_request else ('<button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Flag for review</button>' if str(current_state).startswith('valid/') else '<button type="button" class="review-request-trigger" data-review-request-open aria-haspopup="dialog" aria-expanded="false">Add supporting evidence</button>')
+    queue_summary = ''
+    if queue_state:
+        queue_summary = (
+            '<div class="review-request-queue-state"><p><strong>Open review request in queue.</strong> '
+            'Current queue state: <code>%s</code>. Request ID: <code>%s</code>.</p>'
+            '<dl class="review-request-bound">'
+            '%s%s%s%s'
+            '</dl></div>'
+            % (
+                esc(queue_state.get("queue_state") or "open"),
+                esc(queue_state.get("request_id") or "-"),
+                ('<dt>Target version</dt><dd><code>%s</code></dd>' % esc(queue_state.get("target_version_id"))) if queue_state.get("target_version_id") else '',
+                ('<dt>Status snapshot</dt><dd><code>%s</code></dd>' % esc(queue_state.get("target_status_snapshot"))) if queue_state.get("target_status_snapshot") else '',
+                ('<dt>Requester trust</dt><dd><code>%s</code>%s</dd>' % (esc(queue_state.get("identity") or '-'), (' / ' + esc(queue_state.get("authoritative_actor"))) if queue_state.get("authoritative_actor") else '')),
+                ('<dt>Queue file</dt><dd><code>%s</code></dd>' % esc(os.path.relpath(queue_state.get("queue_path"), ROOT))) if queue_state.get("queue_path") else '',
+            )
+        )
 
     return ('<section class="review-request-panel" data-review-request-root>'
             '<script type="application/json" class="review-request-data">%s</script>'
@@ -460,7 +544,7 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
             '<p class="review-request-lead">Request a governed re-review of this record. The record is not changed immediately.</p>'
             '<dl class="review-request-bound"><dt>Record</dt><dd><code>%s</code></dd>'
             '<dt>Status</dt><dd>%s</dd>'
-            '%s%s%s</dl>%s'
+            '%s%s%s</dl>%s%s'
             '<p class="review-request-state" data-review-request-state hidden></p>'
             '</div></section>'
             % (json.dumps(payload, ensure_ascii=False).replace('</', '<\/'),
@@ -468,7 +552,7 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0):
                ('<dt>Version</dt><dd><code>%s</code></dd>' % esc(version_id)) if version_id else '',
                ('<dt>Content hash</dt><dd><code>%s</code></dd>' % esc(content_hash)) if content_hash else '',
                ('<dt>Source</dt><dd><a href="%s">%s</a></dd>' % (esc_attr(source_url), esc(source_url))) if source_url else '',
-               btn))
+               btn, queue_summary))
 
 def _render_rec_history_html(record_id, status, history, page_dir_depth=0, srcdir=SRC):
     """0006-11: Render curator-visible history timeline and status badge for a record."""
@@ -550,7 +634,7 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requiremen
         elif t == "rec":
             rec_requirement_meta = b.get("requirement_meta") or requirement_meta
             rec_id = dict(b.get("attrs", [])).get("id") or record_id
-            review_request_html = _render_review_request_panel(rec_id, b.get("review_request") or {}, b.get("status"), page_dir_depth)
+            review_request_html = _render_review_request_panel(rec_id, b.get("review_request") or {}, b.get("status"), page_dir_depth, srcdir)
             history_html = _render_rec_history_html(rec_id, b.get("status"), b.get("history"), page_dir_depth, srcdir)
             out.append(open_tag("article", b["attrs"]))
             out.append(esc(b.get("lead", "")))
