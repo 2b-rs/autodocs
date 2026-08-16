@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/migration-state-v1.schema.json",
+  "title": "migration-state@v1",
+  "description": "Immutable legacy-source watermark and disposable shadow-import state. Schema validation is supplemented by the semantic rules in issue-migration-shadow-import.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "run_id", "source", "importer", "watermarks", "candidate", "status"],
+  "properties": {
+    "schema": {"const": "migration-state@v1"},
+    "run_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{7,63}$"},
+    "source": {"$ref": "#/$defs/source"},
+    "importer": {"$ref": "#/$defs/importer"},
+    "watermarks": {"$ref": "#/$defs/watermarks"},
+    "candidate": {"$ref": "#/$defs/candidate"},
+    "status": {"enum": ["created", "imported", "validated", "rejected", "interrupted", "promoted"]},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "source": {"type": "object", "additionalProperties": false, "required": ["commit", "tree", "tree_digest", "files", "working_tree_clean"], "properties": {"commit": {"$ref": "#/$defs/commit"}, "tree": {"$ref": "#/$defs/commit"}, "tree_digest": {"$ref": "#/$defs/sha256"}, "files": {"type": "array", "minItems": 2, "uniqueItems": true, "items": {"enum": ["TODO.md", "DONE.md", "claim-blobs"]}}, "working_tree_clean": {"const": true}}},
+    "importer": {"type": "object", "additionalProperties": false, "required": ["commit", "digest", "schema_versions"], "properties": {"commit": {"$ref": "#/$defs/commit"}, "digest": {"$ref": "#/$defs/sha256"}, "schema_versions": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}}}},
+    "watermarks": {"type": "object", "additionalProperties": false, "required": ["baseline", "latest_source", "candidate"], "properties": {"baseline": {"$ref": "#/$defs/commit"}, "latest_source": {"$ref": "#/$defs/commit"}, "candidate": {"$ref": "#/$defs/commit"}}},
+    "candidate": {"type": "object", "additionalProperties": false, "required": ["root", "issues_root", "reports_root", "tree", "tree_digest", "promotable"], "properties": {"root": {"type": "string", "pattern": "^_src/output/issue-migration/[a-z0-9][a-z0-9-]{7,63}/$"}, "issues_root": {"type": "string", "pattern": "^_src/output/issue-migration/[a-z0-9][a-z0-9-]{7,63}/issues/$"}, "reports_root": {"type": "string", "pattern": "^_src/output/issue-migration/[a-z0-9][a-z0-9-]{7,63}/reports/$"}, "tree": {"$ref": "#/$defs/commit"}, "tree_digest": {"$ref": "#/$defs/sha256"}, "promotable": {"type": "boolean"}}},
+    "finding": {"type": "object", "additionalProperties": false, "required": ["code", "severity", "message"], "properties": {"code": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"}, "severity": {"enum": ["info", "warning", "error", "blocking"]}, "message": {"type": "string", "minLength": 1}}}
+  }
+}
