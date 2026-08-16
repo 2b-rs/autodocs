@@ -1,0 +1,57 @@
+{
+  "package": "issue-item@v1",
+  "task": "0037-02",
+  "generated_at": "2026-08-16T09:40:00+02:00",
+  "base_commit": "8c3e8625ff3018a103f956dffa1ed9896ebd0d4f",
+  "documents": [
+    {
+      "path": "docs/pipeline/issue-yaml-profile.md",
+      "sha256": "00bc9301c98e39d4358239d2b7fdbf7050fdda3c097d295a8e61d3dd0ca8058f",
+      "producing_task": "0037-02.01",
+      "ref": "5b93372971c7eda5455f323f0c9a59d46db2f5a4"
+    },
+    {
+      "path": "docs/pipeline/issue-store.md",
+      "sha256": "c033260766f606fadbf6264d7929684081bfef81c1281dd26471b4046d5bda17",
+      "producing_task": "0037-02.02",
+      "ref": "55abebbb5a4f251da5dc07c6077082d0c5e03fa3"
+    },
+    {
+      "path": "issues/_schema/issue-item-v1.schema.json",
+      "sha256": "d67e9abb6d40568440878ac4f39aaf33863dd116f43c5509d999e475602c5c83",
+      "producing_task": "0037-02.03",
+      "ref": "70bfe4aee2bf4d0a33711c1d42b743a62c4f1ace"
+    }
+  ],
+  "fixture_sets": [
+    {
+      "name": "yaml-profile",
+      "path": "issues/_schema/fixtures/yaml-profile",
+      "producing_task": "0037-02.01"
+    },
+    {
+      "name": "markdown-profile",
+      "path": "issues/_schema/fixtures/markdown-profile",
+      "producing_task": "0037-02.02"
+    },
+    {
+      "name": "issue-item-v1",
+      "path": "issues/_schema/fixtures/issue-item-v1",
+      "producing_task": "0037-02.03",
+      "validator": "issues/_schema/fixtures/issue-item-v1/run_fixtures.py",
+      "manifest": "issues/_schema/fixtures/issue-item-v1/manifest.json"
+    }
+  ],
+  "cross_contract_consistency_checks": [
+    {
+      "check": "Schema-fixture runner executes cleanly against committed schema and fixtures",
+      "command": "python3 issues/_schema/fixtures/issue-item-v1/run_fixtures.py",
+      "result": "OK: 3 valid + 14 invalid fixtures behaved as expected"
+    },
+    {
+      "check": "YAML profile (0037-02.01) and Markdown profile (0037-02.02) both target the same front-matter/body split assumed by the normalized-object schema (0037-02.03)",
+      "result": "pass — no conflicting field/serialization assumptions found across the three documents"
+    }
+  ],
+  "notes": "Digests computed over committed artifact bytes at base_commit above. This is the local intermediate deliverable that Task 0037-37 (architecture review package) verifies and incorporates, per the 0037-02 backlog-repair note in TODO.md."
+}
