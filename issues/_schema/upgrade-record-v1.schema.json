@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "upgrade-record@v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "upgrade_run_id", "source_version", "target_version", "source_tree_digest", "status", "blocking_findings"],
+  "properties": {
+    "schema": {"const": "upgrade-record@v1"},
+    "upgrade_run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "source_version": {"type": "string", "pattern": "^v[0-9]+$"},
+    "target_version": {"type": "string", "pattern": "^v[0-9]+$"},
+    "source_tree_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "output_tree_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "status": {"enum": ["validated", "blocked"]},
+    "blocking_findings": {"type": "array", "items": {"enum": ["upgrade-overwrite-conflict", "upgrade-stale-base", "upgrade-target-deleted", "upgrade-representation-drift", "event-replay-duplicate"]}, "uniqueItems": true},
+    "reconciled_events": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["event_id", "reconciliation_authorized_by"], "properties": {"event_id": {"type": "string", "pattern": "^[0-9a-fA-F-]{36}$"}, "reconciliation_authorized_by": {"type": "string", "minLength": 1}}}}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "validated"}}}, "then": {"required": ["output_tree_digest"], "properties": {"blocking_findings": {"maxItems": 0}}}},
+    {"if": {"properties": {"status": {"const": "blocked"}}}, "then": {"properties": {"blocking_findings": {"minItems": 1}}, "not": {"required": ["output_tree_digest"]}}}
+  ]
+}
