@@ -119,3 +119,6 @@ such digests itself from committed content, not merely copy this note.
   `base_commit` above updated from the earlier stale/pending value to this resolved commit.
   Request `f4e0c8b1a935` consumed; slot free. Proceeding to the mutating closure-note
   request under a new request ID `1a9e4d7c2b60`.
+- 2026-08-16 -- Mutating request `1a9e4d7c2b60` (run.sh) executed successfully.
+  Commit 1 (substantive): `91a4b99fb07948cdea4c71d18ada49f4d661ea42`. Committed docs/pipeline/issue-item-v1-package.json
+  and the TODO.md 0037-02 [x] closure note.
