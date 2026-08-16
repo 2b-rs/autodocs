@@ -13,6 +13,7 @@ python3 _src/generate.py && python3 _src/validate.py
 - Arbeitsregeln für Automatisierung und KI-Agenten: [`AGENTS.md`](AGENTS.md)
 
 Einstieg in die Dokumentation: [`index.html`](index.html)
+Issues und offene Punkte: TODO.md
 
 ## Veröffentlichung
 

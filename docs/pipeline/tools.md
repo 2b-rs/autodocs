@@ -35,6 +35,11 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `review_flags.py` | Flag-Dateien für KI-Review-Jobs, kollisionsfrei via `os.rename` (atomar) | Bibliothek: `write_review_flag`, `complete_flag`, `build_instruction` |
 | `curation_ingest.py` | Kurationsentscheidungen aus dem Extraktionsbericht übernehmen | `--check`/`--apply paket.json`, `--issue-body issue-42.md` |
 | `curation_flags.py` | Warteschlange für KI-gestützte Kurations-Anfragen, kollisionsfrei | Bibliothek: `write_curation_flag`, `complete_flag` |
+| `review_request_ingest.py` | Nimmt website-initiierte Re-Review-Anfragen (`review-request-package@v1`) entgegen, prüft Schema/Version/Hash/Duplikate und schreibt bei Erfolg ein `open`-Curation-Queue-Item vom `item_kind: "review-request"` (0021-03) | Bibliothek: `ingest(pkg, apply=..., current_content_hash=..., current_version_id=..., authoritative_actor=...)` |
+| `curation_item.py` | Normalisiert Items aus `curation-queue/` und `review-queue/` in das gemeinsame `curation-item@v1`-Schema, inkl. Lifecycle-Status-Mapping für `review-request`-Items (`open`/`claimed`/`accepted`/`rejected`, nie mit `proposed` verwechselt) | Bibliothek, importiert von `curation_report.py` |
+| `curation_report.py` | Baut den vereinheitlichten Kurationsbericht (0006-09/0006-10, erweitert 0021-06) inkl. Requester-Trust/Transport/Zielversion für `review-request`-Items; zeigt alle Terminalstatus, nicht nur `open` | `python3 _src/tools/curation_report.py build` (siehe `reports.md`) |
+| `open_reviews_report.py` | Baut die reine "offene Reviews"-Sicht als eigenes Seitenmodell | `python3 _src/tools/open_reviews_report.py build` |
+| `check_review_request_ui.cjs` | Playwright/WebKit-Kopfloser Smoke-Test des "Flag for review"-Dialogs auf einer gerenderten Record-Seite (Kategorie wählen, Begründung eingeben, Bestätigungstext prüfen) | `node _src/tools/check_review_request_ui.cjs <html-datei>` |
 | `extraction_report.py` | Extraktionsbericht mit vollständiger Abweichungsliste (vier Fehlerklassen), zeigt Kurationsanfragen | Subkommandos u. a. `category`, `output`, `document`, `page` |
 | `spec_extraction_campaign.py` | Reproduzierbare Side-by-Side-Extraktionskampagnenberichte; führt selbst keine Extraktion aus | `create`, `report` |
 | `spec_extraction_benchmark.py` | Baut deterministischen, review-first 200-Record-Benchmark-Entwurf | — |

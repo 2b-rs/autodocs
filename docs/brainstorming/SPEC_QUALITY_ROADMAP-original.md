@@ -951,9 +951,20 @@ These ideas complement the backend geometry plan and should be introduced as iso
 - [x] Add a document-structure pass that labels appendix/annex regions once
   (history tables, change log, TOC, bibliography) and reuse it for extraction,
   segmentation and the benchmark instead of re-detecting per phase.
-- [ ] Treat the dense definition lists (heading inline, no spec-item marker, e.g.
-  RS_PHM_00001..00003 on page 21) as an explicit record shape with its own
-  fixtures; it is currently the main source of false negatives.
+- [x] ~~Treat the dense definition lists (heading inline, no spec-item marker, e.g.~~
+  ~~RS_PHM_00001..00003 on page 21) as an explicit record shape with its own~~
+  ~~fixtures; it is currently the main source of false negatives.~~ **Retired
+  2026-08-15 (0007-02)**: verified against
+  `AUTOSAR_AP_RS_PlatformHealthManagement.pdf` (R25-11) page 21 —
+  `RS_PHM_00001..00003` are not live requirement definitions at all. They
+  appear only in Appendix "A.3.3 Deleted Requirements in R24-11", i.e. they
+  were removed from the specification in the R24-11 release and exist solely
+  as historical deletion-log rows under a `Number Heading` table header,
+  identical in structure to every other Added/Changed/Deleted appendix table
+  in this document (A.1.1 through A.4.3). This is the already-handled
+  `number_heading` extraction category (`extraction_report.py`), not a
+  distinct "dense definition list, heading inline, no marker" shape. No new
+  fixture is warranted; the claim is unsupported by source evidence.
 - [ ] Report precision/recall deltas against the previous campaign automatically
   and refuse to check in a change whose recall drops without an accompanying
   per-ID justification.

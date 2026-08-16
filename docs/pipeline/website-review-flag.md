@@ -89,15 +89,91 @@ target value — matching the distinction already drawn in `roles.md`'s
 Rollenbeziehungen diagram between the `Autor` (browser) path and the
 queue-based curation path.
 
-## Open questions carried into 0021-02
+## Open questions carried into 0021-02 (resolved)
 
-- Whether `curation-item@v1`'s `item_kind` enum needs a new value (e.g.
-  `review-request`) distinct from `record`/`ai-amendment`, or whether
-  existing `item_kind="record"` with `origin="browser"` and a `category`
-  field inside `decision_basis` is sufficient. `0021-02` must decide and
-  document this before schema work begins.
-- Exact retention/redaction rules for `self_declared` requester identity,
-  to be defined alongside the schema in `0021-02`.
+- Resolved in `curation-item-schema.md` and `curation_item.py`:
+  `item_kind` has a dedicated `"review-request"` value, distinct from
+  `record`/`ai-amendment`; `decision_basis` carries `transport` and
+  `authoritative_actor` for this kind (see `review-request-package-schema.md`).
+- Retention/redaction for `self_declared` requester identity: no additional
+  redaction beyond the existing lower-trust warning (rule 5 above) is
+  applied; the self-declared name/handle is retained verbatim in the queue
+  item and report views, exactly as `review.js` already retains
+  self-declared identity for requirement-text reviews.
+
+## Operator guidance: submit, triage, decide, follow (0021-08)
+
+This section is the single end-to-end walkthrough for a Kurator handling a
+website-originated re-review request, tying together the process rules
+above with the concrete tools/reports that implement them.
+
+1. **Submit** (requester, no Kurator action). A reader uses "Flag for
+   review" on any record page (`review-request-ux.md`). Depending on
+   identity path and network access, the result is either a created GitHub
+   issue (`submitted`) or a downloaded JSON package the requester must
+   hand-deliver (`exported` — explicitly *not* yet submitted; see
+   `review-request-ux.md`, Success/error/stale states).
+2. **Discover** (Kurator). Open items surface in two places, kept
+   consistent by `curation_item.py`'s shared normalization:
+   record pages show an open request inline in the history/provenance area
+   (0021-06 rendering), and `curation-report.html` /
+   `open-reviews.html` list every open and recently decided item across
+   both queues (`reports.md`, Kurationsbericht / Offene-Reviews-Bericht).
+3. **Ingest** (Kurator or automation, via `review_request_ingest.py`). Run
+   `review_request_ingest.py --apply <paket.json>` for a JSON export, or
+   feed a GitHub issue body through the same ingestion path for a
+   `submitted` request. This step validates schema, target
+   version/content-hash freshness, and duplicate status per Non-bypass
+   rule 4 above — a stale or duplicate submission is rejected here and
+   never reaches the queue (verified end-to-end by
+   `_src/tests/test_review_request_ingest.py`).
+4. **Triage/weigh trust** (Kurator). Before acting on the request, check
+   `decision_basis.authoritative_actor` and the identity-kind badge
+   (`github_authenticated` vs. `self_declared`) surfaced on both the record
+   page and in the report. A `self_declared` request is a valid input to
+   consider, never a directive — Non-bypass rule 5 and this document's
+   Actors table make clear the requester cannot approve, reject, or change
+   record status themselves.
+5. **Decide** (Kurator, exclusive authority). Exactly as for any other
+   curation item: review the linked record/version/rationale/evidence,
+   then accept or reject. Accepting still requires the normal
+   apply-then-`complete_flag()` step (Actors table, Kurator row); rejecting
+   requires only `complete_flag()` with the rejected outcome. Neither the
+   requester nor any AI agent may perform this step (Non-bypass rule 2).
+6. **Follow** (requester and Kurator). The requester has no push
+   notification; they follow progress by revisiting the record page (open
+   request state is visible until decided) or the linked GitHub issue if
+   `submitted` via that transport. The Kurator's decision is durably
+   recorded in `history[]` (status-model.md) and remains visible in
+   `curation-report.html` after closure, including `rejected` outcomes,
+   which are shown rather than dropped from the report.
+
+### Authority and confidence framing (report views)
+
+Reports must describe *what was submitted and by whom*, never imply that a
+submission alone changes anything: `curation-report.html` labels
+web-originated items with their `origin: "browser"` and identity-kind badge
+precisely so a reader of the report cannot mistake an open, undecided
+request for an accepted change. This is the same principle as Non-bypass
+rule 3 (a flag is a request, never an implicit rejection/retraction),
+applied to the reporting surface rather than the record surface.
+
+### Known limitations (for release notes)
+
+- **No authentication strength guarantee**: `github_authenticated` proves
+  only that the requester is signed in to *some* GitHub account at
+  submission time, not that the account has any standing relationship to
+  the affected specification area; it is a phishing-resistant identity
+  signal, not an authorization signal.
+- **`self_declared` identity is unverified** by construction; it is a
+  free-text name/handle with no cryptographic or account-based backing.
+- **No SLA on triage latency**: an open request has no automatic escalation
+  or expiry; it remains `open`/`claimed` until a Kurator acts. Long-lived
+  open requests are visible in `open-reviews.html` for manual follow-up.
+- **Export-not-submitted requests are invisible to the pipeline** until a
+  human re-delivers the JSON file; the system cannot know a download
+  happened, only that a file was produced (`review-request-ux.md`,
+  `exported` state).
 
 ## Traceability
 
@@ -106,4 +182,6 @@ internally consistent with `workflow-lifecycle.md`, `roles.md`,
 `actions.md`, `status-model.md`, and `curation-item-schema.md`, and states
 explicitly that the website never mutates records directly (Non-bypass rule
 1). It supersedes no existing document; it is a new, additive specialization
-for Feature `0021`.
+for Feature `0021`. The Operator guidance section above additionally
+satisfies task **0021-08**'s acceptance criteria (submit/triage/decide/follow
+guidance, non-overstated report authority, documented limitations).

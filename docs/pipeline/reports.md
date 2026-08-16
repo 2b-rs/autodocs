@@ -120,16 +120,38 @@ nächsten kommt:
   "KI-Analyse", aber pro Feld/Record, nicht als eigenständiger
   Gesamtbericht.
 
-## Zukünftiger Kurationsbericht (0006-14 / Ausblick auf 0006-09)
+## Kurationsbericht (`curation_report.py`, implemented 0006-09/0006-10, extended 0021-06)
 
-Die hier dokumentierten Berichte (Build-, Übersetzungs-, QA-Berichte) decken
-bislang keinen zusammenfassenden Überblick über offene Kurations-/Review-
-Items ab. **0006-09** (noch offen) soll aus genau den in
-[`curation-item-schema.md`](curation-item-schema.md) normalisierten Items
-einen statischen HTML-"Kurationsbericht" erzeugen, der alle offenen und
-kürzlich entschiedenen Items über beide Warteschlangen hinweg einheitlich
-darstellt — dieser Abschnitt dient als Verweisstelle, sobald **0006-09**
-implementiert ist.
+- **Inhalt**: Vereinheitlichter Überblick über alle Kurations-/Review-Items
+  aus beiden Warteschlangen (`curation-queue/` und `review-queue/`),
+  normalisiert nach [`curation-item-schema.md`](curation-item-schema.md).
+  Enthält offene Items sowie zuletzt entschiedene Items in jedem
+  Terminalstatus (`accepted`, `rejected`, `proposed`, `superseded`) — kein
+  Status wird aus der Anzeige gefiltert.
+- **Website-originated Requests (0021)**: Items mit `item_kind:
+  "review-request"` zeigen zusätzlich Requester-Identität und -Trust
+  (`github_authenticated` vs. `self_declared`), Transport
+  (`decision_basis.transport`: `github_issue` oder `json_export`) und
+  Ziel-Version (`decision_basis.target_version_id`). **Wichtig**: Diese
+  Felder dokumentieren nur, *wer die Anfrage gestellt hat und wie*, nie eine
+  Entscheidung über den Record — ein `self_declared`-Requester erscheint
+  explizit mit niedrigerem Vertrauensstatus, ohne dass daraus eine Autorität
+  über Record-Inhalt oder -Status abgeleitet wird. Die Kurator-Entscheidung
+  bleibt allein maßgeblich (`website-review-flag.md`, Non-bypass rule 2/3).
+- **Output**: `_src/tools/curation_report.py build` erzeugt/aktualisiert nur
+  das Seitenmodell (`_src/sources/pages/curation-report.json`) und den
+  Exportdatensatz (`_src/data/curation-items.json`); es schreibt **kein**
+  sichtbares HTML. Ein anschließender `python3 _src/generate.py` rendert
+  `curation-report.html`. Beide Schritte gehören in **ein** `run.sh`
+  (`curation_report.py build && python3 _src/generate.py`), analog zum
+  Extraktionsbericht.
+- **Sprache**: Nur Deutsch (`nolang`), analog zum Traceability-Bericht.
+
+## Offene-Reviews-Bericht (`open_reviews_report.py`)
+
+- Ergänzt den Kurationsbericht um eine reine "was ist gerade offen"-Sicht;
+  gleiches Bau-vs.-Publizieren-Muster (`build` erzeugt nur das
+  Seitenmodell, `generate.py` rendert `open-reviews.html`).
 
 
 ## Build- und Publikations-Bericht (`build_report.py`)
