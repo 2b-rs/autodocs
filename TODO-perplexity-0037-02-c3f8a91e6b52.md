@@ -122,3 +122,5 @@ such digests itself from committed content, not merely copy this note.
 - 2026-08-16 -- Mutating request `1a9e4d7c2b60` (run.sh) executed successfully.
   Commit 1 (substantive): `91a4b99fb07948cdea4c71d18ada49f4d661ea42`. Committed docs/pipeline/issue-item-v1-package.json
   and the TODO.md 0037-02 [x] closure note.
+- 2026-08-16 -- REF bookkeeping commit `610a324208bcb85bd847c219d60315b8c924614c` recorded. Task 0037-02
+  CLOSED. Claim complete; request `1a9e4d7c2b60` consumed.
