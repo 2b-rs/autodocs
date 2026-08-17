@@ -89,7 +89,39 @@ When asked to inspect or improve instructions while a grunt claim is active:
 4. Never publish or execute the grunt's next runner request.
 5. After instruction-only changes, tell the user and owning grunt exactly what changed; do not imply that the grunt's Task advanced.
 
-Emergency intervention is limited to preventing clear damage or security exposure. Preserve evidence, make the smallest safe intervention, and record why normal ownership could not be respected.
+Emergency intervention is limited to preventing clear damage or security exposure. Preserve evidence, make the smallest safe intervention, and record why normal ownership could not be respected. Emergency action never creates Task or Feature acceptance.
+
+## Privileged Task and Feature acceptance review
+
+Privilege permits direct execution but does not grant acceptance authority. A privileged session may begin an acceptance review only when the current user or a registered authority explicitly assigns the exact Task, prerequisite-closure batch, or Feature baseline. Do not autonomously select work merely because it is `[x]`/`[w]` and awaiting acceptance.
+
+Before review, verify and record:
+
+- current privilege and exact assignment/authority reference;
+- reviewer competence, independence, and conflicts;
+- exact Task/Feature contract and candidate baseline;
+- complete acceptance-package identity and evidence accessibility;
+- absence of a competing review assignment;
+- required specialist authorities that remain separate from work-product acceptance.
+
+The reviewer must normally be independent of the claim owner, principal implementer, decisive technical author, and sole validation producer. A current user or registered authority may grant a bounded exception that names the conflict, scope, reason, duration, and compensating controls; never infer a waiver from urgency, staffing, or privilege.
+
+Follow [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md) in full. At minimum:
+
+1. pin the exact normative contract, commits/tree, manifests, validation profiles/results, authority epoch, and review scope;
+2. compute the transitive prerequisite closure and stop only at current, reachable, non-invalidated acceptance records;
+3. topologically review every non-accepted prerequisite before the target;
+4. inspect all criteria, meaningful work-product changes, direct/derived/external/evidence scopes, findings, security/privacy/safety/authority interfaces, migration and recovery behavior;
+5. independently evaluate and rerun focused, policy, negative/canary, failure/recovery, and risk-based broader validation in an isolated exact candidate where feasible;
+6. use deterministic whole-population checks where possible and record any justified sampling method, seed, strata, size, boundaries, and escalation;
+7. record exactly `accepted`, `rejected`, or `inconclusive`, preserving findings and prior attempts append-only;
+8. commit review evidence first, then use a separate path-isolated bookkeeping commit for `Acceptance: ✓` with the real review REF and required digests.
+
+Critical/major findings, unmet criteria, non-accepted prerequisites, missing authority, stale/mixed evidence, or unbounded scope prohibit acceptance. `Rejected` normally routes actionable corrective work back to `[p]`; `inconclusive` retains `[x]`/`[w]` unless substantive rework is required. Neither outcome is `[u]` unless the sole next action is a genuine human decision.
+
+Acceptance binds exact contract, work products, validation, prerequisites, reviewer assignment, and authority epoch. A relevant change or new material finding creates an additive invalidation and impact analysis; it never deletes history. Invalidation propagates to affected dependent acceptance and Feature aggregate acceptance.
+
+A Feature moves to `DONE.md` only after a separately assigned aggregate review verifies every active Task/Subtask has current accepted disposition, the Feature goal and Definition of Done are met, integration and Feature-level negative/recovery checks pass, findings/risks and specialist decisions are dispositioned, and an exact aggregate manifest/review record is committed. Privileged implementation capability or child checkbox totals are insufficient.
 
 ## Commits and completion
 
@@ -105,7 +137,7 @@ Before committing:
 
 For substantive Task completion, create the substantive commit before recording its real hash in authoritative bookkeeping. Commit bookkeeping separately unless an approved transaction safely creates both commits without self-reference or partial-state ambiguity.
 
-Do not mark work complete merely because direct execution succeeded. Acceptance criteria, Definition of Done, validation, evidence, claim reconciliation, and required approvals must all be satisfied.
+Do not mark implementation complete merely because direct execution succeeded. Acceptance criteria, Definition of Done, validation, evidence, claim reconciliation, and required approvals must all be satisfied for `[x]`/`[w]`. Do not mark work-product acceptance merely because implementation completed; acceptance requires the separate assigned review above.
 
 ## Handoff
 

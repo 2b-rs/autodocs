@@ -8,7 +8,7 @@ You are an AGENT and must follow the current operating contract below.
 - `SANDBOX.md` is the stable bootstrap for agent capability, tool use, authority discovery, and instruction precedence.
 - `AGENTS.md` is authoritative for collaboration, claims, Task bookkeeping, commits, interruptions, and handoffs.
 - `PRIVILEGED.md` supplements this bundle for agents explicitly identified as privileged; it never grants privilege by itself.
-- `TODO.md` is authoritative for the current Feature/Task backlog, identifiers, markers, prerequisites, acceptance criteria, and Definition of Done. `DONE.md` contains terminal Features and retained history.
+- `TODO.md` is authoritative for the current Feature/Task backlog, identifiers, implementation markers, prerequisites, acceptance criteria, Definition of Done, and current `Acceptance: ✓` records. `DONE.md` contains aggregate-accepted Features plus retained pre-policy history.
 - `docs/pipeline/` is authoritative for implemented operational processes in its documented scope.
 - If applicable instructions conflict and precedence does not resolve the conflict safely, stop mutating the repository, identify the exact conflict, and request clarification.
 
@@ -16,7 +16,7 @@ You are an AGENT and must follow the current operating contract below.
 
 There are two agent classes:
 
-- **Sandboxed/grunt agent:** performs routine project work but must not execute scripts, shell commands, tests, generators, browsers, package managers, network clients, or Git commands directly. It may use available non-execution file/editor/search tools and may request execution through the less-restricted runner.
+- **Sandboxed/grunt agent:** performs routine project work but must not execute scripts, shell commands, tests, generators, browsers, package managers, network clients, or Git commands directly. It may use available non-execution file/editor/search tools and may request execution through the less-restricted runner. It may complete implementation at `[x]`/`[w]` and prepare review evidence, but must never create/change/invalidate `Acceptance: ✓`, act as acceptance reviewer, or move a Feature to `DONE.md`.
 - **Privileged agent:** may execute available tools directly within the runtime's actual security and approval controls.
 
 An agent is privileged only when the current runtime or user explicitly says so. If the class is absent or ambiguous, act as a sandboxed agent. Never infer privilege from the presence of a terminal-like tool.
@@ -81,6 +81,12 @@ Feature `0037` Campaign A and runner installation use one designated sandboxed b
 
 The prohibition on network clients applies to the sandboxed agent's direct tools, not categorically to the less-restricted runner. The runner supports outbound network operations, and a sandboxed agent may include them in a parameterless `run.sh` when the active Task and claim declare the external-resource scope and applicable authorization already exists. The request must name exact hosts/endpoints, purpose, data sent and received, privacy classification, credential handles without secret values, time/size/rate bounds, expected side effects, validation, and retry/recovery behavior. A public read-only fetch within an already authorized Task scope does not require a new user checkpoint merely because it uses the network. New credentials, non-public data disclosure, external mutation, unapproved hosts, material cost, or policy/risk acceptance still require the applicable human authorization. The fixed pending-discovery request is a special network-free profile and must never be generalized into a network prohibition for later Task requests. Never place secrets in `run.sh`, logs, claims, or tracked files.
 
+### Implementation completion and acceptance boundary
+
+A sandboxed agent and its runner request may complete implementation only through `[x]`/`[w]`, a real `REF`, required validation/findings, and implementation-claim finalization. They may prepare a bounded acceptance package, but must reject any manifest or generated change that adds, modifies, invalidates, or removes Task/Feature acceptance credit or moves a Feature to `DONE.md`.
+
+Acceptance is a separately and explicitly assigned privileged action under `docs/pipeline/task-acceptance.md`; it is never inferred from runner success or requested through generic shell/bookkeeping actions. Final implementation status and commit reachability are not `Acceptance: ✓`.
+
 Privileged agents may use direct execution, but must preserve the same scope, validation, traceability, and mutation-safety requirements.
 
 ## Agent startup
@@ -88,7 +94,7 @@ Privileged agents may use direct execution, but must preserve the same scope, va
 Before changing the repository:
 
 1. Determine and record the agent capability class; default to sandboxed.
-2. Read this file and `AGENTS.md`. If explicitly privileged, also read `PRIVILEGED.md` before acting.
+2. Read this file, `AGENTS.md`, and the Task-acceptance boundary in `docs/pipeline/task-acceptance.md`. If explicitly privileged, also read `PRIVILEGED.md` before acting.
 3. Read `TODO.md` and active claims. First resume any incomplete claim whose immutable `owner_token` belongs to this session; a response, runner-result, or context boundary does not end ownership or authorize selecting replacement work. If no Task was assigned and no owned claim exists, deterministically scan the entire backlog under `AGENTS.md` instead of asking the user to choose. Skip blocked items and foreign active claims while scanning; one occupied dependency chain never blocks disjoint eligible work elsewhere.
 4. Read the complete selected Feature/Task and prerequisites. Substantial scope, unfamiliarity, movement to another Campaign/Feature, or a blocked preceding textual item does not require confirmation when another Task is eligible. Only after a complete global scan finds no eligible work may the agent use the short `SENTINTEL.md` retrigger reminder for the owning session of a blocking foreign claim; never use `run.sh` for that notification.
 5. Inspect relevant claims and working-tree information using permitted tools or the claimed read-only discovery request.

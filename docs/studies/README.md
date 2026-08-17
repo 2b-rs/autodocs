@@ -24,18 +24,30 @@ These documents are **not** approved processes, implementation authorization, Au
 
 The two topics intentionally remain distinct: the Feature process defines authorized outcomes and executable work; the tool process governs how recurring mechanics become qualified reusable capabilities after the outcome is known.
 
+### Task acceptance and privileged review governance
+
+- DOCX: [`task-acceptance-governance-dossier.docx`](task-acceptance-governance-dossier.docx)
+- DOCX SHA-256: `d4ce3a1d5081ce9422518698607c2054cd798478351fc440e9f1e859f36321d6`
+- PDF: [`task-acceptance-governance-dossier.pdf`](task-acceptance-governance-dossier.pdf)
+- PDF SHA-256: `cde72d962d4ad6c3f814a66a636b9688f40657529faa6aa6eb4b2a8d8af016c4`
+- Extracted text size at creation: approximately 5,600 words
+- Owner: user-assigned privileged Task `0039-04`; implementation awaits independent acceptance
+- Scope: separation of `[x]`/`[w]` implementation completion from `Acceptance: ✓`; grunt prohibition; privileged reviewer assignment, independence, prerequisite-closure inspection, validation, findings, invalidation, Feature aggregate review, daily workflow, affected document/tool migration, benefits/risks, and careful Automotive SPICE relationships.
+
 ## Imported pilot suggestion
 
 Reserved Task `0039-03` carries the previously unassigned Feature `0036` page-i18n completeness-validator suggestion into the authoritative backlog as a possible first tool-process pilot. Existing runner-transaction and approval-readiness suggestions already have authoritative coverage in Feature `0038` and are not duplicated.
 
 ## Creation and validation
 
-The studies were authored as task-scoped HTML sources under ignored `output/logs/0039-studies/20260817-f3c9a7d2/`, converted with macOS `/usr/bin/textutil`, and validated by:
+The first two studies were authored as task-scoped HTML under ignored `output/logs/0039-studies/20260817-f3c9a7d2/`. The acceptance dossier was rendered from clean Markdown plus the normative `docs/pipeline/task-acceptance.md` source under ignored `output/logs/0039-04/20260817-131714-a3facd2d095e/`. DOCX conversion used macOS `/usr/bin/textutil`; because browser PDF rendering was unavailable within the process resource limit, the PDF was produced from the validated DOCX UTF-8 extraction through the native macOS `cgtexttopdf` print path. Validation included:
 
 - source HTML parsing, unique IDs, internal-link targets, and no script/external-resource checks;
 - `unzip -t` integrity checks;
 - parsing every DOCX XML and relationship part;
 - extraction back to UTF-8 text with `textutil`;
-- required-section, disclaimer, topic-boundary, emergency-path, pilot, ASPICE-caution, and no-leaked-markup canaries.
+- required-section, disclaimer, topic-boundary, emergency-path, pilot, review, ASPICE-caution, and no-leaked-markup canaries;
+- PDF structure/page/font inspection and fresh PDF text extraction;
+- whitespace-insensitive DOCX/PDF extracted-text equivalence.
 
 The HTML conversion sources are generation evidence, not tracked authority. The DOCX files and this index are the retained study package.

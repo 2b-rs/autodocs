@@ -1,15 +1,20 @@
 # DONE — Completed Features
 
-Completed *Features* moved here from `TODO.md` once all of their *Tasks* are
-marked `[x]`. Each entry keeps its original task text and completion
-evidence; a completion date and `REF:` (git hash) are added at move time.
+Features recorded here before the Task-acceptance convention retain the
+completion semantics and evidence status in force when they were moved; their
+historical `[x]` markers are not retroactively represented as privileged
+acceptance. For later moves, every active Task/Subtask must retain `[x]` or
+`[w]` plus a current `Acceptance: ✓` record, all Feature prerequisites must
+pass, and a separately assigned privileged reviewer must accept the integrated
+Feature outcome before recording the completion time and real `REF:`.
 
 Exceptionally, an unsuccessful implementation iteration may be retained here as
 a historical archive only when it is headed **ARCHIVED — NOT ACCEPTED**, names
 its open successor Feature(s), and makes clear that historical checkboxes or
 non-Git references are not completion, release, or acceptance evidence. All
-unresolved work must remain represented by open tasks in `TODO.md`. Such an
-archive records provenance; it does not satisfy a Feature Definition of Done.
+unresolved work must remain represented by open Tasks in `TODO.md`. Such an
+archive records provenance; it does not satisfy a Feature Definition of Done
+and must never receive `Acceptance: ✓` credit.
 
 ## Feature: Performance
 
