@@ -239,7 +239,7 @@ const PROCESS_WORKING_DIRECTORY = String(ObjC.unwrap(
 const DEFAULT_RUN_SCRIPT_PATH = String(ObjC.unwrap(
     $(PROCESS_WORKING_DIRECTORY).stringByAppendingPathComponent("run.sh")
 ));
-const RUNNER_PATH = SCRIPT_DIRECTORY + "/autodocs/_src/run-loop.sh";
+const RUNNER_PATH = SCRIPT_DIRECTORY + "/run-loop.sh";
 const temporaryDirectoryValue = $.NSProcessInfo.processInfo.environment.objectForKey("TMPDIR");
 const TEMPORARY_DIRECTORY = temporaryDirectoryValue
     ? String(ObjC.unwrap(temporaryDirectoryValue))
@@ -5240,13 +5240,16 @@ ObjC.registerSubclass({
                 }
                 runnerAutoTriggeredForPresence = false;
                 const required = runnerSelfTestRequired();
-                if (required && !runnerExecutionAllowed() && runnerAutoModeEnabled()) {
-                    monitorState.ui.runnerAutoButton.setState($.NSControlStateValueOff);
+                if (required) {
+                    runnerSelfTestStatus = "unverified";
+                    runnerValidatedConfiguration = null;
+                    runnerAcknowledgedSelfTestConfiguration = null;
+                    if (runnerAutoModeEnabled()) {
+                        monitorState.ui.runnerAutoButton.setState($.NSControlStateValueOff);
+                    }
                 }
                 runnerStatusDetail = required
-                    ? (runnerExecutionAllowed()
-                        ? "Environment self-test is required and the current validation remains valid."
-                        : "Environment self-test is required before sandboxed execution.")
+                    ? "Environment self-test requirement enabled; runner returned to uninitialized state."
                     : "Environment self-test is optional; sandboxed execution may proceed without it.";
                 scheduleConfigurationSave();
                 refreshRunnerPresence(Date.now(), true);
