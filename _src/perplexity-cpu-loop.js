@@ -12,10 +12,14 @@ ObjC.bindFunction("kill", ["int", ["int", "int"]]);
 
 const CPU_THRESHOLD_DEFAULT_PERCENT = 0.25;
 const CPU_THRESHOLD_MIN_PERCENT = 0;
-const CPU_THRESHOLD_MAX_PERCENT = 1;
+const CPU_THRESHOLD_MAX_PERCENT = 20;
+const CPU_GRAPH_RANGE_DEFAULT_PERCENT = 1;
+const CPU_GRAPH_RANGE_MIN_PERCENT = 0.02;
+const CPU_GRAPH_RANGE_MAX_PERCENT = 20;
+const CPU_GRAPH_RANGE_SCROLL_SENSITIVITY = 0.25;
 const CPU_TIMEOUT_DEFAULT_SECONDS = 10;
 const CPU_TIMEOUT_MIN_SECONDS = 0;
-const CPU_TIMEOUT_MAX_SECONDS = 20;
+const CPU_TIMEOUT_MAX_SECONDS = 120;
 const AVERAGE_WINDOW_DEFAULT_SECONDS = 0.5;
 const AVERAGE_WINDOW_MIN_SECONDS = 0.1;
 const AVERAGE_WINDOW_MAX_SECONDS = 5;
@@ -26,6 +30,12 @@ const PERPLEXITY_RESTART_QUIT_TIMEOUT_MILLISECONDS = 5000;
 const PERPLEXITY_RESTART_FORCE_TIMEOUT_MILLISECONDS = 3000;
 const PERPLEXITY_RESTART_LAUNCH_TIMEOUT_MILLISECONDS = 10000;
 const PERPLEXITY_RESTART_POLL_MILLISECONDS = 100;
+const RESTART_PROMPT_DELAY_MILLISECONDS = 5000;
+const RESTART_PROMPT_RETRY_MILLISECONDS = 1000;
+const RESTART_PROMPT_MAX_ATTEMPTS = 3;
+const WAIT_RESTART_PROMPT_DEFAULT =
+    "Perplexity was restarted. Continue with your task. If you're stuck or finished, " +
+    "write \"{sentinel}\" into run.sh.";
 const RUNNER_NOTIFY_WAIT_DEFAULT_SECONDS = 2;
 const RUNNER_NOTIFY_WAIT_MIN_SECONDS = 0;
 const RUNNER_NOTIFY_WAIT_MAX_SECONDS = 20;
@@ -34,6 +44,13 @@ const PULSE_INTERVAL_MILLISECONDS = 300;
 const MONITOR_TICK_SECONDS = 0.05;
 const CPU_SAMPLE_SECONDS = 0.1;
 const PID_REFRESH_SECONDS = 1;
+const MESSAGES_COMMAND_POLL_MILLISECONDS = 1000;
+const MESSAGES_CHAT_RESOLVE_MILLISECONDS = 5000;
+const IMESSAGE_CHUNK_CHARACTERS = 7000;
+const MESSAGES_PROCESSED_GUID_LIMIT = 2000;
+const MESSAGE_LOG_COLLAPSED_HEIGHT = 52;
+const MESSAGE_LOG_EXPANDED_HEIGHT = 220;
+const MESSAGE_LOG_ENTRY_LIMIT = 500;
 const RUNNER_PRESENCE_POLL_SECONDS = 1;
 const ORPHAN_RUNNER_POLL_SECONDS = 1;
 const ORPHAN_RUNNER_KILL_FALLBACK_MILLISECONDS = 1200;
@@ -43,6 +60,8 @@ const EXECUTION_SNAPSHOT_NAME_PATTERN =
     /^\.perplexity-cpu-loop-execution-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.sh$/;
 const PROCESS_NAME = "Perplexity";
 const PERPLEXITY_BUNDLE_IDENTIFIER = "ai.perplexity.macv3";
+const SENTINEL_IMESSAGE_RECIPIENT = "+4915121191462";
+const MESSAGES_COMMAND_HANDLE = "+4915121191462";
 const RUSAGE_INFO_V2 = 2;
 const RUSAGE_BUFFER_SIZE = 256;
 const PROCESS_NAME_BUFFER_SIZE = 1024;
@@ -55,11 +74,19 @@ const PROMPT_ROLL_MILLISECONDS = 3000;
 const PROMPT_ROLL_SETTLE_MILLISECONDS = 300;
 const PROMPT_ROLL_MIN_DWELL_MILLISECONDS = 55;
 const ACTIVE_SENTINEL_PATTERN = /^[A-Za-z0-9+/]{21}[AQgw]==$/;
+const CPU_GRAPH_TOOLTIP =
+    "Press to capture the current smoothing width and set absolute CPU threshold from pointer y; " +
+    "horizontal movement adjusts smoothing relatively, scaled by low-CPU duration divided by the smoothing-width range. " +
+    "While pressed, filled bars use the captured width and a black upper-envelope surface traces the live width using bar tops and their connections. " +
+    "Releasing outside restores the captured width. Trackpad scrolling changes low-CPU duration logarithmically " +
+    "(horizontal, up to 120 s) and the 0.02–20% displayed CPU-load range (vertical).";
+const GRAPH_TOOLTIP_RESTORE_SECONDS = 0.35;
 const PROMPT_SENTINEL_TOOLTIP =
-    "Each time this UI injects a prompt, it generates and remembers a fresh cryptographically random " +
-    "128-bit Base64 token. Every {sentinel} occurrence expands to that token only at injection time; " +
-    "the stored field text is unchanged. Before starting the watched run.sh, this UI checks for the " +
-    "remembered token. If found, it disables Auto Mode, leaves run.sh untouched, and skips execution.";
+    "The UI remembers one cryptographically random 128-bit Base64 token and rotates it only after a " +
+    "successful Perplexity restart. If the watched run.sh still contains the active token, the restart " +
+    "preserves it for safety. Every {sentinel} occurrence expands to the active token only at injection " +
+    "time; the stored field text is unchanged. Before starting run.sh, the UI checks for that token. " +
+    "If found, it disables Auto Mode, leaves run.sh untouched, and skips execution.";
 const RUNNER_SUCCESS_TEMPLATE_DEFAULT =
     "run.sh finished with exit code 0. Find output in {output}";
 const RUNNER_FAILURE_TEMPLATE_DEFAULT =
@@ -91,12 +118,24 @@ let lastPIDRefreshTime = 0;
 let monitorState = null;
 let monitorController = null;
 let monitorTimer = null;
-let waitClickRecognizer = null;
-let graphClickStart = null;
-let graphGestureMode = null;
+let graphMousePressed = false;
+let graphWindowBeforeMouseDown = null;
+let graphMouseDownX = null;
+let graphToolTipRestoreTimer = null;
+let cpuSliderPreview = null;
+let cpuGraphTransition = null;
+let cpuGraphTransitionTimer = null;
 let promptRows = [];
+let promptEditorEntries = [];
+let promptEditorLayout = null;
+let promptEditorResize = null;
+let promptEditorEditSession = null;
+let promptCollapseMenuItem = null;
 let signalAnimation = null;
 let perplexityRestart = null;
+let restartPromptDelivery = null;
+let perplexityClientRunning = false;
+let perplexityPresenceLastCheckedAt = 0;
 let activePromptSentinel = "";
 let promptWeightGestureSnapshot = null;
 let configurationSaveTimer = null;
@@ -106,11 +145,16 @@ let configurationLastError = "";
 let runnerTask = null;
 let runnerTaskMode = null;
 let runnerTaskStartedAt = 0;
+let runnerLastCompletedAt = null;
 let runnerReady = false;
 let runnerPathDirectoryAvailable = false;
 let runnerSelfTestStatus = "unverified";
+let runnerAcknowledgedSelfTestConfiguration = null;
+let runnerCommandLineSkipSelfTest = false;
+let runnerCommandLineNoSelfTest = false;
 let runnerLastExitStatus = null;
 let runnerSelectedScriptPath = null;
+let runnerSelectedLogPath = null;
 let runnerKillRequested = false;
 let runnerKillDeadline = null;
 let runnerStatusDetail = "";
@@ -118,16 +162,44 @@ let runnerValidatedConfiguration = null;
 let runnerTaskConfiguration = null;
 let runnerExecutionSnapshotPath = null;
 let runnerExecutionOriginalPath = null;
+let runnerExecutionPreviewPath = null;
+let runnerExecutionPreviewText = null;
+let runnerExecutionDiagnosticName = null;
 let runnerOutputLastPollAt = 0;
 let runnerOutputLastText = "";
 let runnerScriptPreviewLastPollAt = 0;
 let runnerScriptPreviewLastText = null;
 let runnerOutputPresentationMode = null;
 let runnerOutputTextView = null;
+let runnerViewMode = "signals";
+let runnerContentMode = "script";
+let runnerOutputJumpMarker = null;
+let runnerOutputLastMarkerKey = null;
+let runnerOutputReturnTimer = null;
+let runnerOutputReturnMouseDownGeneration = null;
+let runnerMouseDownGeneration = 0;
+let runnerLastObservedMouseDownEventNumber = null;
+let runnerOutputButtonImageMode = null;
+let cpuPauseButtonImageMode = null;
+let waitPauseButtonImageMode = null;
+let runnerAutoButtonAppearanceMode = null;
 let runnerStatusImageMode = null;
 let runnerSentinelDetected = false;
 let runnerLEDHovering = false;
 let lastRunnerSentinelCheckAt = 0;
+let messagesCommandCursorRowID = null;
+let messagesCommandChatID = null;
+let lastMessagesCommandPollAt = 0;
+let messagesCommandLastError = "";
+let messagesCommandProcessedGUIDs = [];
+let lastMessagesChatResolveAt = 0;
+let recentUIMessageTexts = [];
+let messageDetectionLogEntries = [];
+let messageDetectionLogUI = null;
+let messageDetectionLogMainViews = [];
+let messageDetectionLogExpanded = false;
+let messageDetectionLogActiveHeight = 0;
+let messageDetectionLogCollapsedWindowFrame = null;
 const RUNNER_SENTINEL_POLL_SECONDS = 1;
 let runnerExistingScriptNotice = false;
 let runnerAutoTriggeredForPresence = false;
@@ -167,7 +239,7 @@ const PROCESS_WORKING_DIRECTORY = String(ObjC.unwrap(
 const DEFAULT_RUN_SCRIPT_PATH = String(ObjC.unwrap(
     $(PROCESS_WORKING_DIRECTORY).stringByAppendingPathComponent("run.sh")
 ));
-const RUNNER_PATH = SCRIPT_DIRECTORY + "/run-loop.sh";
+const RUNNER_PATH = SCRIPT_DIRECTORY + "/autodocs/_src/run-loop.sh";
 const temporaryDirectoryValue = $.NSProcessInfo.processInfo.environment.objectForKey("TMPDIR");
 const TEMPORARY_DIRECTORY = temporaryDirectoryValue
     ? String(ObjC.unwrap(temporaryDirectoryValue))
@@ -183,6 +255,7 @@ const CONFIG_DIRECTORY = HOME_DIRECTORY +
     "/Library/Application Support/Perplexity CPU Loop";
 const CONFIG_PATH = CONFIG_DIRECTORY + "/config.json";
 const ACTIVE_RUN_RECORD_PATH = CONFIG_DIRECTORY + "/active-run.json";
+const MESSAGES_DATABASE_PATH = HOME_DIRECTORY + "/Library/Messages/chat.db";
 runnerSelectedScriptPath = DEFAULT_RUN_SCRIPT_PATH;
 
 function stringValue(control) {
@@ -223,10 +296,13 @@ function defaultConfiguration() {
         schemaVersion: CONFIG_SCHEMA_VERSION,
         smoothingWindowSeconds: AVERAGE_WINDOW_DEFAULT_SECONDS,
         cpuThresholdPercent: CPU_THRESHOLD_DEFAULT_PERCENT,
+        cpuGraphRangePercent: CPU_GRAPH_RANGE_DEFAULT_PERCENT,
         lowCPUCountdownSeconds: CPU_TIMEOUT_DEFAULT_SECONDS,
         waitSignalTimeoutSeconds: WAIT_TIMEOUT_DEFAULT_SECONDS,
         cpuSignalActive: false,
         waitSignalActive: false,
+        waitRestartPrompt: WAIT_RESTART_PROMPT_DEFAULT,
+        processedMessageGUIDs: [],
         postExecutionWaitSeconds: RUNNER_NOTIFY_WAIT_DEFAULT_SECONDS,
         activePromptSentinel: "",
         successPrompt: {
@@ -243,10 +319,19 @@ function defaultConfiguration() {
         })),
         runner: {
             selectedScriptPath: DEFAULT_RUN_SCRIPT_PATH,
+            selectedLogPath: defaultRunnerLogPath(DEFAULT_RUN_SCRIPT_PATH),
             sandbox: true,
+            selfTestRequired: true,
             autoMode: false
         }
     };
+}
+
+function defaultRunnerLogPath(scriptPath) {
+    const directory = String(ObjC.unwrap($(scriptPath).stringByDeletingLastPathComponent));
+    return String(ObjC.unwrap(
+        $(directory + "/output/run-current.log").stringByStandardizingPath
+    ));
 }
 
 function validatedNumber(value, minimum, maximum, fallback) {
@@ -320,6 +405,15 @@ function validateConfiguration(rawConfiguration) {
         CPU_THRESHOLD_MAX_PERCENT,
         configuration.cpuThresholdPercent
     );
+    configuration.cpuGraphRangePercent = Math.max(
+        configuration.cpuThresholdPercent,
+        validatedNumber(
+            rawConfiguration.cpuGraphRangePercent,
+            CPU_GRAPH_RANGE_MIN_PERCENT,
+            CPU_GRAPH_RANGE_MAX_PERCENT,
+            configuration.cpuGraphRangePercent
+        )
+    );
     configuration.lowCPUCountdownSeconds = validatedNumber(
         rawConfiguration.lowCPUCountdownSeconds,
         CPU_TIMEOUT_MIN_SECONDS,
@@ -346,9 +440,20 @@ function validateConfiguration(rawConfiguration) {
         rawConfiguration.waitSignalActive,
         configuration.waitSignalActive
     );
+    configuration.waitRestartPrompt = validatedString(
+        rawConfiguration.waitRestartPrompt,
+        configuration.waitRestartPrompt,
+        100000,
+        false
+    );
     configuration.activePromptSentinel = validatedActivePromptSentinel(
         rawConfiguration.activePromptSentinel
     );
+    if (Array.isArray(rawConfiguration.processedMessageGUIDs)) {
+        configuration.processedMessageGUIDs = rawConfiguration.processedMessageGUIDs
+            .filter(value => typeof value === "string" && value.length <= 200)
+            .slice(-MESSAGES_PROCESSED_GUID_LIMIT);
+    }
 
     const successPrompt = rawConfiguration.successPrompt;
     if (successPrompt && typeof successPrompt === "object" && !Array.isArray(successPrompt)) {
@@ -417,9 +522,19 @@ function validateConfiguration(rawConfiguration) {
             4096,
             false
         );
+        configuration.runner.selectedLogPath = validatedString(
+            runner.selectedLogPath,
+            defaultRunnerLogPath(configuration.runner.selectedScriptPath),
+            4096,
+            false
+        );
         configuration.runner.sandbox = validatedBoolean(
             runner.sandbox,
             configuration.runner.sandbox
+        );
+        configuration.runner.selfTestRequired = validatedBoolean(
+            runner.selfTestRequired,
+            configuration.runner.selfTestRequired
         );
         configuration.runner.autoMode = validatedBoolean(
             runner.autoMode,
@@ -544,14 +659,23 @@ function configurationFromUI() {
     const ui = monitorState.ui;
     return {
         schemaVersion: CONFIG_SCHEMA_VERSION,
-        smoothingWindowSeconds: Number(ui.averageWindowSlider.doubleValue),
-        cpuThresholdPercent: Number(ui.cpuThresholdSlider.doubleValue),
+        smoothingWindowSeconds: cpuSliderPreview
+            ? Number(monitorState.committedSmoothingWindowSeconds)
+            : Number(ui.averageWindowSlider.doubleValue),
+        cpuThresholdPercent: cpuSliderPreview
+            ? Number(monitorState.committedCPUThresholdPercent)
+            : Number(ui.cpuThresholdSlider.doubleValue),
+        cpuGraphRangePercent: Number(monitorState.cpuGraphRangePercent),
         lowCPUCountdownSeconds: Number(ui.cpuDurationSlider.doubleValue),
         waitSignalTimeoutSeconds: Number(ui.waitSlider.doubleValue),
-        cpuSignalActive: Number(ui.cpuActiveButton.state) === Number($.NSControlStateValueOn),
-        waitSignalActive: Number(ui.waitActiveButton.state) === Number($.NSControlStateValueOn),
+        cpuSignalActive: cpuSignalIsEnabled(),
+        waitSignalActive: waitSignalIsEnabled(),
+        waitRestartPrompt: stringValue(ui.waitRestartPromptField),
         postExecutionWaitSeconds: Number(ui.runnerWaitSlider.doubleValue),
         activePromptSentinel,
+        processedMessageGUIDs: messagesCommandProcessedGUIDs.slice(
+            -MESSAGES_PROCESSED_GUID_LIMIT
+        ),
         successPrompt: {
             enabled: Number(ui.runnerSuccessPromptButton.state) ===
                 Number($.NSControlStateValueOn),
@@ -568,7 +692,10 @@ function configurationFromUI() {
         })),
         runner: {
             selectedScriptPath: runnerSelectedScriptPath,
+            selectedLogPath: runnerSelectedLogPath,
             sandbox: Number(ui.runnerSandboxButton.state) === Number($.NSControlStateValueOn),
+            selfTestRequired: Number(ui.runnerSelfTestRequiredButton.state) ===
+                Number($.NSControlStateValueOn),
             autoMode: Number(ui.runnerAutoButton.state) === Number($.NSControlStateValueOn)
         }
     };
@@ -645,7 +772,8 @@ function scheduleConfigurationSave() {
 }
 
 function applyConfigurationToUI(rawConfiguration) {
-    if (!monitorState || runnerOperationInProgress() || signalAnimation || perplexityRestart) {
+    if (!monitorState || runnerOperationInProgress() || signalAnimation ||
+        perplexityRestart || restartPromptDelivery) {
         return false;
     }
 
@@ -653,20 +781,23 @@ function applyConfigurationToUI(rawConfiguration) {
     const previousValidatedConfiguration = runnerValidatedConfiguration;
     const configuration = validateConfiguration(rawConfiguration);
     const ui = monitorState.ui;
+    const autoModeWasEnabled = Number(ui.runnerAutoButton.state) ===
+        Number($.NSControlStateValueOn);
+    const graphRange = clamp(
+        Math.max(configuration.cpuGraphRangePercent, configuration.cpuThresholdPercent),
+        CPU_GRAPH_RANGE_MIN_PERCENT,
+        CPU_GRAPH_RANGE_MAX_PERCENT
+    );
+    monitorState.cpuGraphRangePercent = graphRange;
+    ui.cpuThresholdSlider.setMaxValue(graphRange);
+    ui.thresholdMaximumLabel.setStringValue(`${Number(graphRange.toFixed(2))}%`);
     ui.averageWindowSlider.setDoubleValue(configuration.smoothingWindowSeconds);
     ui.cpuThresholdSlider.setDoubleValue(configuration.cpuThresholdPercent);
     ui.cpuDurationSlider.setDoubleValue(configuration.lowCPUCountdownSeconds);
     ui.waitSlider.setDoubleValue(configuration.waitSignalTimeoutSeconds);
-    ui.cpuActiveButton.setState(
-        configuration.cpuSignalActive
-            ? $.NSControlStateValueOn
-            : $.NSControlStateValueOff
-    );
-    ui.waitActiveButton.setState(
-        configuration.waitSignalActive
-            ? $.NSControlStateValueOn
-            : $.NSControlStateValueOff
-    );
+    setCPUSignalEnabled(configuration.cpuSignalActive);
+    setWaitSignalEnabled(configuration.waitSignalActive);
+    ui.waitRestartPromptField.setStringValue(configuration.waitRestartPrompt);
     ui.runnerWaitSlider.setDoubleValue(configuration.postExecutionWaitSeconds);
     ui.runnerSuccessPromptButton.setState(
         configuration.successPrompt.enabled
@@ -690,8 +821,16 @@ function applyConfigurationToUI(rawConfiguration) {
     normalizePromptWeights();
 
     runnerSelectedScriptPath = configuration.runner.selectedScriptPath;
+    runnerSelectedLogPath = configuration.runner.selectedLogPath;
+    ui.runnerSelectedLogPathLabel.setStringValue(runnerSelectedLogPath);
+    clearRunnerExecutionPreview();
     ui.runnerSandboxButton.setState(
         configuration.runner.sandbox
+            ? $.NSControlStateValueOn
+            : $.NSControlStateValueOff
+    );
+    ui.runnerSelfTestRequiredButton.setState(
+        configuration.runner.selfTestRequired
             ? $.NSControlStateValueOn
             : $.NSControlStateValueOff
     );
@@ -700,11 +839,21 @@ function applyConfigurationToUI(rawConfiguration) {
             ? $.NSControlStateValueOn
             : $.NSControlStateValueOff
     );
-    activePromptSentinel = configuration.activePromptSentinel;
+    for (const guid of configuration.processedMessageGUIDs) {
+        if (messagesCommandProcessedGUIDs.indexOf(guid) < 0) {
+            messagesCommandProcessedGUIDs.push(guid);
+        }
+    }
+    messagesCommandProcessedGUIDs = messagesCommandProcessedGUIDs.slice(
+        -MESSAGES_PROCESSED_GUID_LIMIT
+    );
     runnerPathDirectoryAvailable = runnerPathDirectoryExists();
     runnerReady = runnerPathDirectoryAvailable && runnerFileExists();
     runnerAutoTriggeredForPresence = false;
     const fingerprint = runnerConfigurationFingerprint();
+    if (runnerAcknowledgedSelfTestConfiguration !== fingerprint) {
+        runnerAcknowledgedSelfTestConfiguration = null;
+    }
     const validationRemainsCurrent = previousSelfTestStatus === "passed" &&
         previousValidatedConfiguration === fingerprint;
     runnerSelfTestStatus = validationRemainsCurrent ? "passed" : "unverified";
@@ -712,10 +861,20 @@ function applyConfigurationToUI(rawConfiguration) {
     runnerTaskConfiguration = null;
     setRunnerOutputVisible(false);
     resetAllProgress();
+    cpuSliderPreview = null;
+    stopCPUGraphTransition();
+    graphMousePressed = false;
+    graphWindowBeforeMouseDown = null;
+    graphMouseDownX = null;
+    commitCPUControlValues();
 
+    const autoModeTransitionedOff = autoModeWasEnabled &&
+        !configuration.runner.autoMode;
+    if (autoModeTransitionedOff) {
+        disableSignalSources(ui);
+    }
     const autoDisabled = disableAutoModeForExistingRunScript(ui, true);
-    const signalsDisabled = !runnerAutoModeEnabled() && disableSignalSources(ui);
-    if (autoDisabled || signalsDisabled) {
+    if (autoDisabled || autoModeTransitionedOff) {
         scheduleConfigurationSave();
     }
     runnerStatusDetail = !runnerPathDirectoryAvailable
@@ -753,14 +912,16 @@ function showConfigurationSaveFailure() {
 }
 
 function loadSavedConfiguration() {
-    if (runnerOperationInProgress() || signalAnimation) {
+    if (runnerOperationInProgress() || signalAnimation || perplexityRestart ||
+        restartPromptDelivery) {
         return;
     }
     applyConfigurationToUI(loadConfiguration());
 }
 
 function resetDefaultConfiguration() {
-    if (runnerOperationInProgress() || signalAnimation) {
+    if (runnerOperationInProgress() || signalAnimation || perplexityRestart ||
+        restartPromptDelivery) {
         return;
     }
     const configuration = defaultConfiguration();
@@ -785,6 +946,32 @@ function generateRandomPromptSentinel() {
         throw new Error("Generated prompt sentinel was not valid 128-bit Base64.");
     }
     return encoded;
+}
+
+function cyclePromptSentinelAfterPerplexityRestart() {
+    const scriptText = readTextFile(runnerSelectedScriptPath, true);
+    if (scriptContainsPromptSentinel(scriptText, activePromptSentinel)) {
+        return {
+            cycled: false,
+            message: "Sentinel token preserved because the watched script still contains it."
+        };
+    }
+
+    const previousSentinel = activePromptSentinel;
+    let nextSentinel = generateRandomPromptSentinel();
+    while (nextSentinel === previousSentinel) {
+        nextSentinel = generateRandomPromptSentinel();
+    }
+    activePromptSentinel = nextSentinel;
+    if (!saveConfigurationNow()) {
+        activePromptSentinel = previousSentinel;
+        configurationDirty = true;
+        throw new Error(configurationSaveFailureMessage());
+    }
+    return {
+        cycled: true,
+        message: "Sentinel token rotated after the successful Perplexity restart."
+    };
 }
 
 function expandPromptSentinel(text, sentinel) {
@@ -880,6 +1067,117 @@ function commandOutput(launchPath, argumentsList) {
     }
     const text = $.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding);
     return objcObjectIsNil(text) ? null : String(ObjC.unwrap(text));
+}
+
+function capturedCommandResult(launchPath, argumentsList) {
+    const task = $.NSTask.alloc.init;
+    const outputPipe = $.NSPipe.pipe;
+    const errorPipe = $.NSPipe.pipe;
+    task.setLaunchPath(launchPath);
+    task.setArguments(argumentsList);
+    task.setStandardOutput(outputPipe);
+    task.setStandardError(errorPipe);
+    task.launch;
+    const outputData = outputPipe.fileHandleForReading.readDataToEndOfFile;
+    const errorData = errorPipe.fileHandleForReading.readDataToEndOfFile;
+    task.waitUntilExit;
+    function decode(data) {
+        if (objcObjectIsNil(data)) {
+            return "";
+        }
+        const text = $.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding);
+        return objcObjectIsNil(text) ? "" : String(ObjC.unwrap(text));
+    }
+    return {
+        status: Number(task.terminationStatus),
+        output: decode(outputData),
+        error: decode(errorData).trim()
+    };
+}
+
+function messagesDatabaseRows(query) {
+    const result = capturedCommandResult("/usr/bin/sqlite3", [
+        "-readonly",
+        MESSAGES_DATABASE_PATH,
+        "-json",
+        query
+    ]);
+    if (result.status !== 0) {
+        throw new Error(
+            result.error ||
+            "Could not read the Messages database. Full Disk Access may be required."
+        );
+    }
+    try {
+        return result.output.trim() ? JSON.parse(result.output) : [];
+    } catch (error) {
+        throw new Error(`Could not parse Messages database output: ${error}`);
+    }
+}
+
+function latestMessagesRowID() {
+    const rows = messagesDatabaseRows(
+        "SELECT COALESCE(MAX(ROWID), 0) AS row_id FROM message;"
+    );
+    return rows.length > 0 ? Number(rows[0].row_id) : 0;
+}
+
+function dataFromHexString(hex) {
+    const length = Math.floor(String(hex).length / 2);
+    if (length <= 0) {
+        return null;
+    }
+    const pointer = $.malloc(length);
+    try {
+        for (let index = 0; index < length; index += 1) {
+            pointer[index] = parseInt(String(hex).slice(index * 2, index * 2 + 2), 16);
+        }
+        return $.NSData.dataWithBytesLength(pointer, length);
+    } finally {
+        $.free(pointer);
+    }
+}
+
+function unarchiveMessageAttributedBody(hex) {
+    const data = dataFromHexString(hex);
+    if (objcObjectIsNil(data)) {
+        return null;
+    }
+    for (const unarchive of [
+        value => $.NSUnarchiver.unarchiveObjectWithData(value),
+        value => $.NSKeyedUnarchiver.unarchiveObjectWithData(value)
+    ]) {
+        try {
+            const object = unarchive(data);
+            if (objcObjectIsNil(object)) {
+                continue;
+            }
+            if (!objcObjectIsNil(object.string)) {
+                return String(ObjC.unwrap(object.string));
+            }
+            const value = ObjC.unwrap(object);
+            if (typeof value === "string") {
+                return value;
+            }
+        } catch (error) {
+            // Try the next archive decoder, then the conservative ASCII fallback.
+        }
+    }
+
+    return null;
+}
+
+function messageTextFromDatabaseRow(row) {
+    if (typeof row.text === "string" && row.text.length > 0) {
+        return row.text;
+    }
+    const attributedText = typeof row.attributed_hex === "string" &&
+        row.attributed_hex.length > 0
+        ? unarchiveMessageAttributedBody(row.attributed_hex)
+        : null;
+    return attributedText !== null
+        ? attributedText
+        : typeof row.text === "string" ? row.text : null;
 }
 
 function runnerProcessRows() {
@@ -1014,6 +1312,15 @@ function matchingOwnedRunnerProcesses(ownership, includeAttached) {
 
 function setDetectedOrphanedRunner(orphan) {
     orphanedRunner = orphan;
+    const snapshotText = readTextFile(orphan.snapshotPath, true);
+    if (snapshotText !== null) {
+        runnerExecutionPreviewPath = orphan.snapshotPath;
+        runnerExecutionPreviewText = snapshotText;
+        runnerExecutionDiagnosticName = String(ObjC.unwrap(
+            $(orphan.snapshotPath).lastPathComponent
+        ));
+        runnerScriptPreviewLastText = null;
+    }
     runnerExistingScriptNotice = false;
     if (monitorState) {
         disableRunnerAutoMode(monitorState.ui);
@@ -1175,11 +1482,39 @@ function sandboxIsEnabled() {
     return sandboxArgument() === "--sandbox";
 }
 
+function configuredRunnerSelfTestRequired() {
+    return !monitorState || !monitorState.ui.runnerSelfTestRequiredButton ||
+        Number(monitorState.ui.runnerSelfTestRequiredButton.state) ===
+            Number($.NSControlStateValueOn);
+}
+
+function runnerStartupSelfTestEnabled() {
+    return !runnerCommandLineNoSelfTest &&
+        (runnerCommandLineSkipSelfTest || configuredRunnerSelfTestRequired());
+}
+
+function runnerSelfTestRequired() {
+    return !runnerCommandLineNoSelfTest && !runnerCommandLineSkipSelfTest &&
+        configuredRunnerSelfTestRequired();
+}
+
+function runnerSelfTestPolicyForStatus() {
+    if (runnerCommandLineNoSelfTest) {
+        return "DISABLED BY --no-self-test";
+    }
+    if (runnerCommandLineSkipSelfTest) {
+        return "STARTUP ONLY · --skip-self-test";
+    }
+    return configuredRunnerSelfTestRequired() ? "REQUIRED" : "OPTIONAL";
+}
+
 function runnerExecutionAllowed() {
-    return !sandboxIsEnabled() || (
-        runnerSelfTestStatus === "passed" &&
-        runnerValidatedConfiguration === runnerConfigurationFingerprint()
-    );
+    const fingerprint = runnerConfigurationFingerprint();
+    return !sandboxIsEnabled() || !runnerSelfTestRequired() ||
+        runnerAcknowledgedSelfTestConfiguration === fingerprint || (
+            runnerSelfTestStatus === "passed" &&
+            runnerValidatedConfiguration === fingerprint
+        );
 }
 
 function runnerAutoModeEnabled() {
@@ -1272,23 +1607,24 @@ function disableSignalSources(ui) {
     if (!ui) {
         return false;
     }
-    const changed = Number(ui.cpuActiveButton.state) === Number($.NSControlStateValueOn) ||
-        Number(ui.waitActiveButton.state) === Number($.NSControlStateValueOn);
-    ui.cpuActiveButton.setState($.NSControlStateValueOff);
-    ui.waitActiveButton.setState($.NSControlStateValueOff);
+    const changed = cpuSignalIsEnabled() || waitSignalIsEnabled();
     if (monitorState) {
+        setCPUSignalEnabled(false);
+        setWaitSignalEnabled(false);
         monitorState.trailingLowCPUSeconds = 0;
-        monitorState.cpuWarning = false;
-        monitorState.ui.cpuGraph.setAlphaValue(1.0);
-        resetWaitProgress();
     }
     return changed;
 }
 
 function disableRunnerAutoMode(ui) {
+    const autoModeWasEnabled = Number(ui.runnerAutoButton.state) ===
+        Number($.NSControlStateValueOn);
     ui.runnerAutoButton.setState($.NSControlStateValueOff);
     runnerAutoTriggeredForPresence = false;
-    disableSignalSources(ui);
+    if (autoModeWasEnabled) {
+        disableSignalSources(ui);
+    }
+    return autoModeWasEnabled;
 }
 
 function disableAutoModeForExistingRunScript(ui, showNotice) {
@@ -1303,33 +1639,88 @@ function disableAutoModeForExistingRunScript(ui, showNotice) {
 }
 
 function runnerOutputIsVisible() {
-    return Boolean(
-        monitorState &&
-        monitorState.ui.runnerOutputCard &&
-        !Boolean(monitorState.ui.runnerOutputCard.hidden)
+    return runnerViewMode === "runner";
+}
+
+function runnerDisplayedLogPath() {
+    return runnerTaskMode === "selftest"
+        ? RUNNER_OUTPUT_PATH
+        : runnerSelectedLogPath;
+}
+
+function cancelRunnerOutputReturn() {
+    if (runnerOutputReturnTimer) {
+        runnerOutputReturnTimer.invalidate;
+        runnerOutputReturnTimer = null;
+    }
+    runnerOutputReturnMouseDownGeneration = null;
+}
+
+function scheduleRunnerOutputReturn() {
+    cancelRunnerOutputReturn();
+    runnerOutputReturnMouseDownGeneration = runnerMouseDownGeneration;
+    runnerOutputReturnTimer = $.NSTimer.timerWithTimeIntervalTargetSelectorUserInfoRepeats(
+        2,
+        monitorController,
+        "returnToRunnerOutput:",
+        null,
+        false
+    );
+    $.NSRunLoop.mainRunLoop.addTimerForMode(
+        runnerOutputReturnTimer,
+        $.NSRunLoopCommonModes
     );
 }
 
-function runnerScriptPreviewAvailable() {
-    return Boolean(
-        monitorState &&
-        runnerDisplayState() === "ready" &&
-        !runnerAutoModeEnabled()
-    );
+function observeCurrentMouseDownEvent() {
+    const event = $.NSApplication.sharedApplication.currentEvent;
+    if (objcObjectIsNil(event)) {
+        return;
+    }
+    const type = Number(event.type);
+    if ([
+        Number($.NSEventTypeLeftMouseDown),
+        Number($.NSEventTypeRightMouseDown),
+        Number($.NSEventTypeOtherMouseDown)
+    ].indexOf(type) < 0) {
+        return;
+    }
+    const eventNumber = Number(event.eventNumber);
+    if (eventNumber !== runnerLastObservedMouseDownEventNumber) {
+        runnerLastObservedMouseDownEventNumber = eventNumber;
+        runnerMouseDownGeneration += 1;
+    }
 }
 
-function runnerOutputDesiredMode() {
-    return runnerScriptPreviewAvailable() ? "script" : "output";
-}
-
-function setRunnerOutputText(text, scrollToEnd) {
+function setRunnerOutputText(text, scrollToEnd, targetRange) {
     if (!runnerOutputTextView) {
         return;
     }
     runnerOutputTextView.setString(text);
+    if (targetRange) {
+        runnerOutputTextView.setSelectedRange(targetRange);
+        runnerOutputTextView.scrollRangeToVisible(
+            $.NSMakeRange(Number(targetRange.location), 0)
+        );
+        scheduleRunnerOutputReturn();
+        return;
+    }
+    cancelRunnerOutputReturn();
+    runnerOutputTextView.setSelectedRange($.NSMakeRange(0, 0));
     runnerOutputTextView.scrollRangeToVisible(
         $.NSMakeRange(scrollToEnd ? text.length : 0, 0)
     );
+}
+
+function clearRunnerExecutionPreview() {
+    runnerExecutionPreviewPath = null;
+    runnerExecutionPreviewText = null;
+    runnerExecutionDiagnosticName = null;
+    runnerScriptPreviewLastText = null;
+}
+
+function runnerScriptPreviewPath() {
+    return runnerExecutionPreviewPath || runnerSelectedScriptPath;
 }
 
 function pollRunnerScriptPreview(now, force) {
@@ -1338,70 +1729,176 @@ function pollRunnerScriptPreview(now, force) {
     }
     runnerScriptPreviewLastPollAt = now;
 
-    const script = readTextFile(runnerSelectedScriptPath, true);
+    const previewPath = runnerScriptPreviewPath();
+    const script = runnerExecutionPreviewText !== null
+        ? runnerExecutionPreviewText
+        : readTextFile(previewPath, true);
     const displayText = script === null
-        ? `[Could not read watched script: ${runnerSelectedScriptPath}]`
+        ? `[Could not read watched script: ${previewPath}]`
         : script;
-    if (displayText === runnerScriptPreviewLastText &&
+    if (!force && displayText === runnerScriptPreviewLastText &&
         runnerOutputPresentationMode === "script") {
         return;
     }
     runnerScriptPreviewLastText = displayText;
     runnerOutputPresentationMode = "script";
-    setRunnerOutputText(displayText, false);
+    const sourceRange = runnerOutputJumpMarker
+        ? textRangeForLineNumber(displayText, runnerOutputJumpMarker.sourceLine)
+        : null;
+    setRunnerOutputText(displayText, false, sourceRange);
+}
+
+function updateRunnerViewChrome() {
+    if (!monitorState || !monitorState.ui.runnerOutputCard) {
+        return;
+    }
+    const ui = monitorState.ui;
+    setRunnerOutputButtonPresentation(ui.runnerOutputButton, runnerViewMode);
+    ui.runnerOutputSectionTitle.setStringValue(
+        runnerContentMode === "script"
+            ? runnerExecutionPreviewText !== null
+                ? "EXECUTION SCRIPT COPY"
+                : "WATCHED RUN SCRIPT"
+            : "RUN LOG"
+    );
+    ui.runnerOutputSectionTitle.setToolTip(
+        runnerContentMode === "script" ? runnerScriptPreviewPath() : runnerDisplayedLogPath()
+    );
+    ui.runnerContentToggleButton.setTitle(
+        runnerContentMode === "script" ? "Show log" : "Show script"
+    );
+    ui.runnerContentToggleButton.setToolTip(
+        runnerContentMode === "script"
+            ? `Show the run log at ${runnerDisplayedLogPath()}.`
+            : `Show the script at ${runnerScriptPreviewPath()}.`
+    );
 }
 
 function updateRunnerOutputPresentation(now, force) {
     if (!monitorState || !monitorState.ui.runnerOutputCard) {
         return;
     }
-    const ui = monitorState.ui;
-    const mode = runnerOutputDesiredMode();
-    const visible = runnerOutputIsVisible();
-    ui.runnerOutputButton.setTitle(visible
-        ? "Signals"
-        : mode === "script" ? "Script" : "Output");
-    ui.runnerOutputButton.setToolTip(mode === "script"
-        ? `Show the exact watched script at ${runnerSelectedScriptPath}.`
-        : "Show the latest embedded runner output.");
-    ui.runnerOutputSectionTitle.setStringValue(
-        mode === "script" ? "WATCHED RUN SCRIPT" : "RUNNER OUTPUT"
-    );
-    ui.runnerOutputSectionTitle.setToolTip(
-        mode === "script" ? runnerSelectedScriptPath : RUNNER_OUTPUT_PATH
-    );
-
-    if (!visible && !force) {
+    updateRunnerViewChrome();
+    if (!runnerOutputIsVisible()) {
         return;
     }
-    if (mode === "script") {
+    if (runnerContentMode === "script") {
         pollRunnerScriptPreview(now, force);
     } else {
         pollRunnerOutput(now, force);
     }
 }
 
-function setRunnerOutputVisible(visible) {
+function applyRunnerViewVisibility() {
     if (!monitorState || !monitorState.ui.runnerOutputCard) {
         return;
     }
-
-    const ui = monitorState.ui;
-    for (const view of ui.signalViews) {
-        view.setHidden(visible);
+    const contentVisible = runnerOutputIsVisible();
+    for (const view of monitorState.ui.signalViews) {
+        view.setHidden(contentVisible);
     }
-    for (const view of ui.runnerOutputViews) {
-        view.setHidden(!visible);
+    for (const view of monitorState.ui.runnerOutputViews) {
+        view.setHidden(!contentVisible);
     }
-    updateRunnerOutputPresentation(Date.now(), visible);
 }
 
-function toggleRunnerOutput() {
-    const willShowOutput = !runnerOutputIsVisible();
-    if (willShowOutput && signalAnimation) {
+function setRunnerViewMode(mode, refresh) {
+    if (["signals", "runner"].indexOf(mode) < 0) {
+        return;
+    }
+    if (mode !== "signals" && signalAnimation) {
         cancelSignalAnimation();
     }
-    setRunnerOutputVisible(willShowOutput);
+    runnerViewMode = mode;
+    applyRunnerViewVisibility();
+    updateRunnerViewChrome();
+    if (refresh !== false) {
+        updateRunnerOutputPresentation(Date.now(), true);
+    }
+}
+
+function setRunnerOutputVisible(visible) {
+    if (visible) {
+        runnerContentMode = "log";
+    }
+    setRunnerViewMode(visible ? "runner" : "signals", true);
+}
+
+function cycleRunnerViewMode() {
+    setRunnerViewMode(runnerViewMode === "signals" ? "runner" : "signals", true);
+}
+
+function toggleRunnerContentMode() {
+    runnerContentMode = runnerContentMode === "script" ? "log" : "script";
+    runnerOutputLastPollAt = 0;
+    runnerScriptPreviewLastPollAt = 0;
+    updateRunnerOutputPresentation(Date.now(), true);
+}
+
+function escapeRegularExpression(text) {
+    return String(text).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function runnerDiagnosticScriptNames() {
+    return [runnerExecutionDiagnosticName || runnerScriptName()];
+}
+
+function latestRunnerOutputLineMarker(output, searchStart) {
+    const diagnosticNames = runnerDiagnosticScriptNames();
+    const scriptNames = diagnosticNames.map(escapeRegularExpression).join("|");
+    const pattern = new RegExp(
+        `(^|[^A-Za-z0-9_.-])(?:${scriptNames}):(?:[ \\t]+line[ \\t]+)?([0-9]+)(?=[:\\s]|$)`,
+        "gm"
+    );
+    pattern.lastIndex = Math.max(0, Number(searchStart) || 0);
+    let latest = null;
+    let match;
+    while ((match = pattern.exec(output)) !== null) {
+        const diagnosticStart = match.index + match[1].length;
+        const lineStart = output.lastIndexOf("\n", diagnosticStart) + 1;
+        const lineEndIndex = output.indexOf("\n", diagnosticStart);
+        const lineEnd = lineEndIndex < 0 ? output.length : lineEndIndex;
+        latest = {
+            start: lineStart,
+            end: lineEnd,
+            matchStart: diagnosticStart,
+            matchEnd: match.index + match[0].length,
+            sourceLine: Number(match[2]),
+            key: `${diagnosticStart}:${match[2]}`
+        };
+    }
+    return latest;
+}
+
+function runnerOutputDisplay(output) {
+    const maximumCharacters = 500000;
+    if (output.length <= maximumCharacters) {
+        return { text: output, omittedCharacters: 0, prefixLength: 0 };
+    }
+    const prefix = "[… earlier output omitted …]\n";
+    return {
+        text: prefix + output.slice(-maximumCharacters),
+        omittedCharacters: output.length - maximumCharacters,
+        prefixLength: prefix.length
+    };
+}
+
+function textRangeForLineNumber(text, lineNumber) {
+    const targetLine = Math.max(1, Math.floor(Number(lineNumber) || 1));
+    let lineStart = 0;
+    for (let line = 1; line < targetLine; line += 1) {
+        const newline = text.indexOf("\n", lineStart);
+        if (newline < 0) {
+            return null;
+        }
+        lineStart = newline + 1;
+    }
+    const newline = text.indexOf("\n", lineStart);
+    let lineEnd = newline < 0 ? text.length : newline;
+    if (lineEnd > lineStart && text.charAt(lineEnd - 1) === "\r") {
+        lineEnd -= 1;
+    }
+    return $.NSMakeRange(lineStart, Math.max(0, lineEnd - lineStart));
 }
 
 function pollRunnerOutput(now, force) {
@@ -1410,18 +1907,48 @@ function pollRunnerOutput(now, force) {
     }
     runnerOutputLastPollAt = now;
 
-    const output = readTextFile(RUNNER_OUTPUT_PATH, true) || "";
-    if (output === runnerOutputLastText && runnerOutputPresentationMode === "output") {
+    const displayedLogPath = runnerDisplayedLogPath();
+    const output = readTextFile(displayedLogPath, true) ||
+        readTextFile(RUNNER_OUTPUT_PATH, true) || "";
+    const previousOutput = runnerOutputLastText;
+    const previousOutputLength = previousOutput.length;
+    const outputChanged = output !== previousOutput;
+    if (outputChanged) {
+        const outputWasAppended = output.length >= previousOutputLength &&
+            output.indexOf(previousOutput) === 0;
+        if (!outputWasAppended) {
+            runnerOutputJumpMarker = null;
+            runnerOutputLastMarkerKey = null;
+        }
+        const longestNameLength = runnerDiagnosticScriptNames().reduce(
+            (maximum, name) => Math.max(maximum, name.length),
+            0
+        );
+        const searchStart = outputWasAppended
+            ? Math.max(0, previousOutputLength - longestNameLength - 32)
+            : 0;
+        runnerOutputLastText = output;
+        const marker = latestRunnerOutputLineMarker(output, searchStart);
+        if (marker) {
+            const markerIsNew = marker.key !== runnerOutputLastMarkerKey;
+            runnerOutputJumpMarker = marker;
+            runnerOutputLastMarkerKey = marker.key;
+            if (markerIsNew && runnerTask) {
+                runnerContentMode = "script";
+                setRunnerViewMode("runner", false);
+                pollRunnerScriptPreview(now, true);
+            }
+        }
+    }
+
+    if (!runnerOutputIsVisible() || runnerContentMode !== "log" ||
+        (!force && !outputChanged && runnerOutputPresentationMode === "output")) {
         return;
     }
-    runnerOutputLastText = output;
 
-    const maximumCharacters = 500000;
-    const displayText = output.length > maximumCharacters
-        ? "[… earlier output omitted …]\n" + output.slice(-maximumCharacters)
-        : output;
+    const display = runnerOutputDisplay(output);
     runnerOutputPresentationMode = "output";
-    setRunnerOutputText(displayText, true);
+    setRunnerOutputText(display.text, true);
 }
 
 function launchRunnerTask(mode, argumentsList) {
@@ -1441,6 +1968,14 @@ function launchRunnerTask(mode, argumentsList) {
     }
 
     try {
+        if (!Boolean($("").writeToFileAtomicallyEncodingError(
+            RUNNER_OUTPUT_PATH,
+            true,
+            $.NSUTF8StringEncoding,
+            undefined
+        ))) {
+            throw new Error(`Could not clear runner output at ${RUNNER_OUTPUT_PATH}.`);
+        }
         const outputPath = shellQuote(RUNNER_OUTPUT_PATH);
         const command = `: > ${outputPath}; exec \"$@\" >> ${outputPath} 2>&1`;
         const task = $.NSTask.alloc.init;
@@ -1469,6 +2004,8 @@ function launchRunnerTask(mode, argumentsList) {
         runnerStatusDetail = "";
         runnerOutputLastText = "";
         runnerOutputLastPollAt = 0;
+        runnerOutputJumpMarker = null;
+        runnerOutputLastMarkerKey = null;
         runnerOutputPresentationMode = null;
         setRunnerOutputText("", true);
         if (mode === "run") {
@@ -1513,6 +2050,15 @@ function startRunnerSelfTest() {
     if (runnerOperationInProgress() || perplexityRestart) {
         return;
     }
+    if (runnerCommandLineNoSelfTest) {
+        runnerSelfTestStatus = "unverified";
+        runnerValidatedConfiguration = null;
+        runnerAcknowledgedSelfTestConfiguration = null;
+        runnerStatusDetail = "All environment self-tests are disabled by --no-self-test.";
+        updateRunnerUI(Date.now());
+        return;
+    }
+    runnerAcknowledgedSelfTestConfiguration = null;
     refreshRunnerPresence(Date.now(), true);
     if (!runnerPathDirectoryAvailable) {
         runnerSelfTestStatus = "unverified";
@@ -1536,6 +2082,90 @@ function startRunnerSelfTest() {
 
 function scriptContainsPromptSentinel(scriptText, sentinel) {
     return Boolean(sentinel) && String(scriptText).indexOf(sentinel) >= 0;
+}
+
+function removeSentinelRunScript() {
+    const originalPath = runnerSelectedScriptPath;
+    const scriptName = runnerScriptName();
+    const claimPath = uniqueRunnerStagingPath("sentinel-removal");
+    const claimed = $.NSFileManager.defaultManager.moveItemAtPathToPathError(
+        originalPath,
+        claimPath,
+        undefined
+    );
+    if (!Boolean(claimed)) {
+        disableRunnerAutoMode(monitorState.ui);
+        runnerStatusDetail = `Could not atomically claim sentinel ${scriptName}; ` +
+            "it was left untouched and Auto Mode was disabled.";
+        scheduleConfigurationSave();
+        return { removed: false, message: runnerStatusDetail };
+    }
+
+    const claimedText = readTextFile(claimPath, true);
+    if (!scriptContainsPromptSentinel(claimedText, activePromptSentinel)) {
+        const recovery = restoreStagedScript(
+            claimPath,
+            originalPath,
+            "The atomically claimed script did not contain the active sentinel."
+        );
+        disableRunnerAutoMode(monitorState.ui);
+        runnerReady = runnerFileExists();
+        runnerSentinelDetected = false;
+        runnerStatusDetail = recovery.message;
+        scheduleConfigurationSave();
+        return { removed: false, message: runnerStatusDetail };
+    }
+
+    const removed = Boolean(
+        $.NSFileManager.defaultManager.removeItemAtPathError(claimPath, undefined)
+    );
+    if (!removed) {
+        const recovery = restoreStagedScript(
+            claimPath,
+            originalPath,
+            `Failed to delete atomically claimed sentinel ${scriptName}.`
+        );
+        disableRunnerAutoMode(monitorState.ui);
+        runnerReady = runnerFileExists();
+        runnerStatusDetail = recovery.message;
+        scheduleConfigurationSave();
+        return { removed: false, message: runnerStatusDetail };
+    }
+
+    const replacementExists = runnerFileExists();
+    if (replacementExists) {
+        disableRunnerAutoMode(monitorState.ui);
+    }
+    runnerSentinelDetected = false;
+    runnerLEDHovering = false;
+    runnerReady = replacementExists;
+    runnerExistingScriptNotice = false;
+    runnerStatusDetail = replacementExists
+        ? `Sentinel ${scriptName} deleted; newer work at the watched path was preserved and Auto Mode was disabled.`
+        : `Sentinel ${scriptName} deleted; the sentinel token remains unchanged until Perplexity restarts.`;
+    scheduleConfigurationSave();
+    return { removed: true, message: runnerStatusDetail };
+}
+
+function continueFromSentinel(now) {
+    if (signalAnimation || perplexityRestart || restartPromptDelivery ||
+        runnerTaskIsRunning()) {
+        return {
+            removed: false,
+            message: "Prompt Mixer is currently unavailable; the sentinel was left untouched."
+        };
+    }
+    const removal = removeSentinelRunScript();
+    if (!removal.removed) {
+        return removal;
+    }
+    const mixerStarted = startManualPromptAnimation(now);
+    return {
+        removed: true,
+        message: mixerStarted
+            ? `${removal.message} Prompt Mixer activated.`
+            : `${removal.message} Prompt Mixer could not be activated.`
+    };
 }
 
 function disableAutoModeForRunnerSafety(message) {
@@ -1923,10 +2553,23 @@ function startOneShotRunner() {
         return;
     }
 
+    runnerExecutionPreviewPath = prepared.snapshotPath;
+    runnerExecutionPreviewText = prepared.inspectedText;
+    runnerExecutionDiagnosticName = String(ObjC.unwrap(
+        $(prepared.snapshotPath).lastPathComponent
+    ));
+    runnerScriptPreviewLastText = null;
     runnerActiveOwnershipToken = ownershipToken;
     runnerAutoTriggeredForPresence = true;
-    if (launchRunnerTask("run", [
-        sandboxArgument(),
+    const runnerArguments = [sandboxArgument()];
+    if (runnerCommandLineNoSelfTest) {
+        runnerArguments.push("--no-self-test");
+    } else if (runnerCommandLineSkipSelfTest) {
+        runnerArguments.push("--skip-self-test");
+    } else if (!configuredRunnerSelfTestRequired()) {
+        runnerArguments.push("--no-self-test");
+    }
+    runnerArguments.push(
         "--sentinel",
         runnerGuardSentinel,
         "--ui-owner-token",
@@ -1934,12 +2577,18 @@ function startOneShotRunner() {
         "--once",
         "--notify-wait",
         runnerNotifyWait().toFixed(1),
+        "--run-log",
+        runnerSelectedLogPath,
         "--notifier",
         "/usr/bin/true",
         prepared.snapshotPath
-    ])) {
+    );
+    if (launchRunnerTask("run", runnerArguments)) {
         runnerExecutionOriginalPath = prepared.originalPath;
         runnerExecutionSnapshotPath = prepared.snapshotPath;
+        runnerOutputLastText = "";
+        runnerOutputLastPollAt = 0;
+        pollRunnerOutput(Date.now(), true);
         const pid = Number(runnerTask.processIdentifier);
         ownershipRecord.pid = pid;
         ownershipRecord.pgid = pid;
@@ -1951,6 +2600,7 @@ function startOneShotRunner() {
     } else {
         clearActiveRunRecord(ownershipToken);
         runnerActiveOwnershipToken = null;
+        clearRunnerExecutionPreview();
         recoverSnapshotBeforeOwnershipTransfer(
             prepared.snapshotPath,
             prepared.originalPath,
@@ -1986,7 +2636,7 @@ function runnerPromptForExitStatus(status) {
         .replace(/\{exit\}/g, String(status))
         .replace(/\{code\}/g, String(status))
         .replace(/\{script\}/g, runnerScriptName())
-        .replace(/\{output\}/g, RUNNER_OUTPUT_PATH);
+        .replace(/\{output\}/g, runnerSelectedLogPath || RUNNER_OUTPUT_PATH);
 }
 
 function finishRunnerTask(now) {
@@ -1994,12 +2644,18 @@ function finishRunnerTask(now) {
     const completedConfiguration = runnerTaskConfiguration;
     const status = Number(runnerTask.terminationStatus);
     const wasKilledByUser = runnerKillRequested;
+    pollRunnerOutput(now, true);
+    const preserveDiagnosticView = Boolean(
+        runnerOutputJumpMarker && runnerOutputIsVisible() && runnerContentMode === "script"
+    );
     runnerLastExitStatus = status;
+    runnerLastCompletedAt = now;
     runnerTask = null;
     runnerTaskMode = null;
 
-    setRunnerOutputVisible(false);
-    pollRunnerOutput(now, true);
+    if (!preserveDiagnosticView) {
+        setRunnerOutputVisible(false);
+    }
     if (completedMode === "selftest") {
         runnerValidatedConfiguration = null;
         if (wasKilledByUser) {
@@ -2014,7 +2670,9 @@ function finishRunnerTask(now) {
                 ? (runnerReady
                     ? `Environment self-test passed; ${runnerScriptName()} is ready.`
                     : `Environment self-test passed; waiting for ${runnerScriptName()}.`)
-                : `Environment self-test failed with exit code ${status}; see output/run-sandbox-selftest.log.`;
+                : runnerCommandLineSkipSelfTest
+                    ? `Environment startup self-test failed with exit code ${status}, but --skip-self-test bypasses the failed intermediate state; see output/run-sandbox-selftest.log.`
+                    : `Environment self-test failed with exit code ${status}; click the runner LED to acknowledge and continue, or run Self-test again. See output/run-sandbox-selftest.log.`;
         }
     } else if (completedMode === "run") {
         let recoveryDetail = "";
@@ -2066,13 +2724,816 @@ function finishRunnerTask(now) {
     runnerKillDeadline = null;
 }
 
+function rememberUIMessageText(text) {
+    const value = String(text);
+    recentUIMessageTexts.push(value);
+    if (recentUIMessageTexts.length > 200) {
+        recentUIMessageTexts = recentUIMessageTexts.slice(-200);
+    }
+}
+
+function messageWasSentByUI(text) {
+    return recentUIMessageTexts.indexOf(String(text)) >= 0;
+}
+
+function messageLooksLikeUIOutput(text) {
+    const value = String(text).trim();
+    return value.indexOf("Sentinel detected in ") === 0 ||
+        value.indexOf("Test from Perplexity signal monitor:") === 0 ||
+        value === "(empty)" ||
+        /^\[(?:\d+\/\d+|help|status|log|script|prompt|continue|restart|enable (?:cpu|wait|all|both|signals|both signals|auto|automode|auto mode)|disable (?:cpu|wait|all|both|signals|both signals|auto|automode|auto mode)|error)\]/i.test(value);
+}
+
+function messageGUIDWasProcessed(guid) {
+    return messagesCommandProcessedGUIDs.indexOf(String(guid)) >= 0;
+}
+
+function recordProcessedMessageGUID(guid) {
+    messagesCommandProcessedGUIDs.push(String(guid));
+    if (messagesCommandProcessedGUIDs.length > MESSAGES_PROCESSED_GUID_LIMIT) {
+        messagesCommandProcessedGUIDs = messagesCommandProcessedGUIDs.slice(
+            -MESSAGES_PROCESSED_GUID_LIMIT
+        );
+    }
+    configurationDirty = true;
+    return saveConfigurationNow();
+}
+
+function sendIMessageText(messageText) {
+    const script = [
+        "on run argv",
+        "set recipientHandle to item 1 of argv",
+        "set messageText to item 2 of argv",
+        "tell application \"Messages\"",
+        "set targetService to first service whose service type = iMessage",
+        "set targetBuddy to buddy recipientHandle of targetService",
+        "send messageText to targetBuddy",
+        "end tell",
+        "end run"
+    ].join("\n");
+    const errorPipe = $.NSPipe.pipe;
+    const task = $.NSTask.alloc.init;
+    task.setLaunchPath("/usr/bin/osascript");
+    task.setArguments([
+        "-e",
+        script,
+        SENTINEL_IMESSAGE_RECIPIENT,
+        String(messageText)
+    ]);
+    task.setStandardOutput($.NSFileHandle.fileHandleWithNullDevice);
+    task.setStandardError(errorPipe);
+    task.launch;
+    task.waitUntilExit;
+    if (Number(task.terminationStatus) !== 0) {
+        const data = errorPipe.fileHandleForReading.readDataToEndOfFile;
+        const errorText = objcObjectIsNil(data)
+            ? null
+            : $.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding);
+        const text = objcObjectIsNil(errorText)
+            ? "unknown Messages error"
+            : String(ObjC.unwrap(errorText)).trim();
+        throw new Error(text || "Messages rejected the message.");
+    }
+    rememberUIMessageText(messageText);
+}
+
+function utf16SafePrefix(value, maximumLength) {
+    let end = Math.min(String(value).length, Math.max(0, Math.floor(maximumLength)));
+    if (end > 0 && end < value.length) {
+        const finalCodeUnit = value.charCodeAt(end - 1);
+        const nextCodeUnit = value.charCodeAt(end);
+        if (finalCodeUnit >= 0xd800 && finalCodeUnit <= 0xdbff &&
+            nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+            end -= 1;
+        }
+    }
+    return value.slice(0, end);
+}
+
+function utf16SafeSuffix(value, maximumLength) {
+    const text = String(value);
+    let start = Math.max(0, text.length - Math.max(0, Math.floor(maximumLength)));
+    if (start > 0 && start < text.length) {
+        const previousCodeUnit = text.charCodeAt(start - 1);
+        const firstCodeUnit = text.charCodeAt(start);
+        if (previousCodeUnit >= 0xd800 && previousCodeUnit <= 0xdbff &&
+            firstCodeUnit >= 0xdc00 && firstCodeUnit <= 0xdfff) {
+            start += 1;
+        }
+    }
+    return text.slice(start);
+}
+
+function middleElidedText(value, maximumLength) {
+    const text = String(value);
+    const limit = Math.max(0, Math.floor(maximumLength));
+    if (text.length <= limit) {
+        return text;
+    }
+    const marker = "\n\n… middle omitted …\n\n";
+    if (limit <= marker.length) {
+        return utf16SafePrefix(text, limit);
+    }
+
+    const availableLength = limit - marker.length;
+    const prefixBudget = Math.ceil(availableLength / 2);
+    const suffixBudget = availableLength - prefixBudget;
+    let prefix = utf16SafePrefix(text, prefixBudget);
+    let suffix = utf16SafeSuffix(text, suffixBudget);
+
+    const prefixLineEnd = prefix.lastIndexOf("\n");
+    if (prefixLineEnd >= Math.floor(prefix.length * 0.7)) {
+        prefix = prefix.slice(0, prefixLineEnd);
+    }
+    const suffixLineStart = suffix.indexOf("\n");
+    if (suffixLineStart >= 0 && suffixLineStart <= Math.ceil(suffix.length * 0.3)) {
+        suffix = suffix.slice(suffixLineStart + 1);
+    }
+    return prefix + marker + suffix;
+}
+
+function sendIMessageChunks(text) {
+    const value = String(text);
+    if (!value) {
+        sendIMessageText("(empty)");
+        return;
+    }
+    const chunks = [];
+    const bodyLimit = IMESSAGE_CHUNK_CHARACTERS - 32;
+    let offset = 0;
+    while (offset < value.length) {
+        let end = Math.min(value.length, offset + bodyLimit);
+        if (end < value.length) {
+            const finalCodeUnit = value.charCodeAt(end - 1);
+            const nextCodeUnit = value.charCodeAt(end);
+            if (finalCodeUnit >= 0xd800 && finalCodeUnit <= 0xdbff &&
+                nextCodeUnit >= 0xdc00 && nextCodeUnit <= 0xdfff) {
+                end -= 1;
+            }
+        }
+        chunks.push(value.slice(offset, end));
+        offset = end;
+    }
+    for (let index = 0; index < chunks.length; index += 1) {
+        const prefix = chunks.length > 1 ? `[${index + 1}/${chunks.length}]\n` : "";
+        sendIMessageText(prefix + chunks[index]);
+    }
+}
+
+function sentinelNotificationText() {
+    return `Sentinel detected in ${runnerScriptName()} at ${runnerSelectedScriptPath}.\n` +
+        "Auto Mode will not execute it. Reply with one command per line:\n" +
+        "help\nstatus\nlog\nscript\nprompt <text>\ncontinue\nrestart\n" +
+        "enable cpu [signal]\ndisable cpu [signal]\n" +
+        "enable wait [signal]\ndisable wait [signal]\n" +
+        "enable|disable both|signals\n" +
+        "enable|disable auto|automode|auto mode\n" +
+        "enable|disable all";
+}
+
+function notifySentinelTransition() {
+    try {
+        sendIMessageText(sentinelNotificationText());
+        runnerStatusDetail += ` iMessage sent to ${SENTINEL_IMESSAGE_RECIPIENT}.`;
+    } catch (error) {
+        runnerStatusDetail += ` Sentinel iMessage failed: ${error}`;
+    }
+}
+
+function sqlStringLiteral(value) {
+    return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function messagesChatIDForRecipient() {
+    const recipient = sqlStringLiteral(MESSAGES_COMMAND_HANDLE);
+    const rows = messagesDatabaseRows(
+        "SELECT chj.chat_id AS chat_id FROM handle AS h " +
+        "JOIN chat_handle_join AS chj ON chj.handle_id = h.ROWID " +
+        "JOIN chat AS c ON c.ROWID = chj.chat_id " +
+        `WHERE h.id = ${recipient} AND c.chat_identifier = ${recipient} ` +
+        "AND c.service_name = 'iMessage' " +
+        "AND (SELECT COUNT(*) FROM chat_handle_join AS members " +
+        "WHERE members.chat_id = c.ROWID) = 1 " +
+        "ORDER BY c.ROWID DESC LIMIT 1;"
+    );
+    return rows.length > 0 ? Number(rows[0].chat_id) : null;
+}
+
+function messagesRowsAfter(rowID, chatID) {
+    const safeRowID = Math.max(0, Math.floor(Number(rowID) || 0));
+    const chatFilter = chatID === null || chatID === undefined
+        ? ""
+        : ` AND cmj.chat_id = ${Math.max(0, Math.floor(Number(chatID) || 0))}`;
+    return messagesDatabaseRows(
+        "SELECT m.ROWID AS row_id, m.guid AS guid, cmj.chat_id AS chat_id, " +
+        "m.text AS text, hex(m.attributedBody) AS attributed_hex, m.is_from_me AS is_from_me, " +
+        "m.item_type AS item_type, m.associated_message_type AS associated_message_type, " +
+        "m.associated_message_guid AS associated_message_guid, m.service AS service " +
+        "FROM message AS m JOIN chat_message_join AS cmj ON cmj.message_id = m.ROWID " +
+        `WHERE m.ROWID > ${safeRowID}${chatFilter} ` +
+        "ORDER BY m.ROWID ASC LIMIT 500;"
+    );
+}
+
+function sendCommandReply(command, body) {
+    sendIMessageChunks(`[${command}]\n${String(body)}`);
+}
+
+function sendBoundedCommandReply(command, body) {
+    const prefix = `[${command}]\n`;
+    const bodyLimit = Math.max(0, IMESSAGE_CHUNK_CHARACTERS - prefix.length);
+    sendIMessageText(prefix + middleElidedText(body, bodyLimit));
+}
+
+function latestRunnerScriptLogText() {
+    return readTextFile(runnerSelectedLogPath, true) ||
+        readTextFile(RUNNER_OUTPUT_PATH, true) ||
+        runnerOutputLastText ||
+        "";
+}
+
+function latestRunnerLogLines(limit) {
+    return latestRunnerScriptLogText()
+        .replace(/\r\n?/g, "\n")
+        .split("\n")
+        .filter(line => line.trim() !== "")
+        .slice(-limit);
+}
+
+function runnerScriptSummaryLines(scriptText, maximumLines) {
+    if (typeof scriptText !== "string" || !scriptText.trim()) {
+        return [];
+    }
+    const lines = scriptText.replace(/\r\n?/g, "\n").split("\n");
+    const limit = Math.max(0, Math.floor(maximumLines));
+    if (limit === 0) {
+        return [];
+    }
+    for (let index = 0; index < Math.min(lines.length, 40); index += 1) {
+        const match = lines[index].match(
+            /^\s*cat(?:\s+[^<\s]+)*\s+<<-?\s*['"]?([A-Za-z_][A-Za-z0-9_]*)['"]?/
+        );
+        if (!match) {
+            continue;
+        }
+        const delimiter = match[1];
+        const summary = [];
+        for (let lineIndex = index + 1; lineIndex < lines.length; lineIndex += 1) {
+            if (lines[lineIndex].trim() === delimiter) {
+                break;
+            }
+            if (lines[lineIndex].trim()) {
+                summary.push(lines[lineIndex].trim());
+                if (summary.length >= limit) {
+                    return summary;
+                }
+            }
+        }
+        if (summary.length > 0) {
+            return summary;
+        }
+    }
+
+    const labeledLine = lines.findIndex((line, index) =>
+        index < 80 && /^(?:\s*#\s*)?(?:TITLE|SUMMARY|STRUCTURE|GOAL|OBJECTIVE|PURPOSE|ESTIMATE)\s*:/i.test(line)
+    );
+    if (labeledLine >= 0) {
+        return lines.slice(labeledLine, labeledLine + limit)
+            .map(line => line.replace(/^\s*#\s?/, "").trim())
+            .filter(Boolean)
+            .slice(0, limit);
+    }
+
+    const echoedSummary = lines.slice(1, 40)
+        .map(line => line.match(/^\s*echo\s+(["'])(.*)\1\s*$/))
+        .filter(Boolean)
+        .map(match => match[2].trim())
+        .filter(Boolean);
+    if (echoedSummary.length >= 2) {
+        return echoedSummary.slice(0, limit);
+    }
+
+    return lines.slice(1, 30)
+        .filter(line => /^\s*#(?!\!)/.test(line))
+        .map(line => line.replace(/^\s*#\s?/, "").trim())
+        .filter(Boolean)
+        .slice(0, limit);
+}
+
+function latestRunnerScriptTextForMessage() {
+    const currentScript = readTextFile(runnerSelectedScriptPath, true);
+    return currentScript !== null ? currentScript : runnerExecutionPreviewText;
+}
+
+function runnerStatusForMessage() {
+    const autoMode = runnerAutoModeEnabled() ? "ON" : "OFF";
+    const state = runnerDisplayState().toUpperCase();
+    const selfTestMode = runnerSelfTestPolicyForStatus();
+    const acknowledged = runnerAcknowledgedSelfTestConfiguration ===
+        runnerConfigurationFingerprint();
+    const selfTestState = runnerSelfTestStatus.toUpperCase() +
+        (acknowledged ? " · ACKNOWLEDGED" : "");
+    const running = runnerTaskIsRunning();
+    const executionTime = running ? runnerTaskStartedAt : runnerLastCompletedAt;
+    const timeText = executionTime ? new Date(executionTime).toISOString() : "unavailable";
+    const returnCode = running
+        ? "running"
+        : runnerLastExitStatus === null
+            ? "unavailable"
+            : String(runnerLastExitStatus);
+    const summaryLines = runnerScriptSummaryLines(
+        latestRunnerScriptTextForMessage(),
+        3
+    );
+    const summaryText = summaryLines.length > 0
+        ? summaryLines.join("\n")
+        : "unavailable";
+    const logLines = latestRunnerLogLines(2);
+    const logText = logLines.length > 0 ? logLines.join("\n") : "unavailable";
+    const detail = runnerStatusDetail ? `\n${runnerStatusDetail}` : "";
+    return `Auto Mode: ${autoMode}\nRunner state: ${state}\n` +
+        `Self-test: ${selfTestMode} · ${selfTestState}\n` +
+        `Script summary:\n${summaryText}\n` +
+        `Latest run time: ${timeText}\nReturn code: ${returnCode}\n` +
+        `Latest log:\n${logText}${detail}`;
+}
+
+function latestRunnerLogForMessage() {
+    const output = latestRunnerScriptLogText().replace(/\r\n?/g, "\n");
+    return output
+        ? output
+        : "No runner output is available.";
+}
+
+function latestRunnerScriptForMessage() {
+    const script = latestRunnerScriptTextForMessage();
+    return script === null || script === ""
+        ? `No run script is available at ${runnerSelectedScriptPath}.`
+        : script;
+}
+
+function enableCPUSignalFromMessage() {
+    if (perplexityRestart || restartPromptDelivery || signalAnimation) {
+        return "CPU signal activation is currently unavailable.";
+    }
+    const wasEnabled = cpuSignalIsEnabled();
+    setCPUSignalEnabled(true);
+    scheduleConfigurationSave();
+    updateSignalAnimationControls();
+    return wasEnabled ? "CPU signal was already enabled." : "CPU signal enabled.";
+}
+
+function disableCPUSignalFromMessage() {
+    if (perplexityRestart || restartPromptDelivery || signalAnimation) {
+        return "CPU signal deactivation is currently unavailable.";
+    }
+    const wasEnabled = cpuSignalIsEnabled();
+    setCPUSignalEnabled(false);
+    monitorState.trailingLowCPUSeconds = 0;
+    scheduleConfigurationSave();
+    return wasEnabled ? "CPU signal disabled." : "CPU signal was already disabled.";
+}
+
+function enableWaitSignalFromMessage() {
+    if (perplexityRestart || restartPromptDelivery || signalAnimation) {
+        return "Wait signal activation is currently unavailable.";
+    }
+    const wasEnabled = waitSignalIsEnabled();
+    if (!wasEnabled) {
+        setWaitSignalEnabled(true);
+        scheduleConfigurationSave();
+    }
+    return wasEnabled ? "Wait signal was already enabled." : "Wait signal enabled.";
+}
+
+function disableWaitSignalFromMessage() {
+    if (perplexityRestart || restartPromptDelivery || signalAnimation) {
+        return "Wait signal deactivation is currently unavailable.";
+    }
+    const wasEnabled = waitSignalIsEnabled();
+    if (wasEnabled) {
+        setWaitSignalEnabled(false);
+        scheduleConfigurationSave();
+    }
+    return wasEnabled ? "Wait signal disabled." : "Wait signal was already disabled.";
+}
+
+function setBothSignalsFromMessage(enabled) {
+    const cpuResult = enabled
+        ? enableCPUSignalFromMessage()
+        : disableCPUSignalFromMessage();
+    const waitResult = enabled
+        ? enableWaitSignalFromMessage()
+        : disableWaitSignalFromMessage();
+    return `${cpuResult}\n${waitResult}`;
+}
+
+function setRunnerAutoModeFromMessage(enabled) {
+    if (perplexityRestart || restartPromptDelivery || signalAnimation || orphanedRunner) {
+        return "Runner Auto Mode change is currently unavailable.";
+    }
+    const ui = monitorState.ui;
+    const wasEnabled = runnerAutoModeEnabled();
+    ui.runnerAutoButton.setState(
+        enabled ? $.NSControlStateValueOn : $.NSControlStateValueOff
+    );
+    runnerAutoTriggeredForPresence = false;
+    refreshRunnerPresence(Date.now(), true);
+    scheduleConfigurationSave();
+    updateRunnerUI(Date.now());
+    if (enabled && !runnerTaskIsRunning() && runnerExecutionAllowed() && runnerReady) {
+        startOneShotRunner();
+    }
+    if (wasEnabled === enabled) {
+        return `Runner Auto Mode was already ${enabled ? "enabled" : "disabled"}.`;
+    }
+    return `Runner Auto Mode ${enabled ? "enabled" : "disabled"}.`;
+}
+
+function messagesCommandHelp() {
+    return [
+        "help",
+        "status",
+        "log",
+        "script",
+        "prompt <text>",
+        "continue",
+        "restart",
+        "enable|disable cpu [signal]",
+        "enable|disable wait [signal]",
+        "enable|disable both|signals",
+        "enable|disable auto|automode|auto mode",
+        "enable|disable all"
+    ].join("\n");
+}
+
+function executeMessagesCommand(line, now) {
+    const trimmed = String(line).trim();
+    if (!trimmed) {
+        return;
+    }
+    const separator = trimmed.search(/[\s:]/);
+    const command = (separator < 0 ? trimmed : trimmed.slice(0, separator)).toLowerCase();
+    const argument = separator < 0
+        ? ""
+        : trimmed.slice(separator + 1).replace(/^\s+/, "");
+    try {
+        if (command === "help" && !argument) {
+            sendCommandReply("help", messagesCommandHelp());
+        } else if (command === "status" && !argument) {
+            sendCommandReply("status", runnerStatusForMessage());
+        } else if (command === "log" && !argument) {
+            sendBoundedCommandReply("log", latestRunnerLogForMessage());
+        } else if (command === "script" && !argument) {
+            sendBoundedCommandReply("script", latestRunnerScriptForMessage());
+        } else if (command === "prompt" && argument) {
+            if (perplexityRestart || restartPromptDelivery || signalAnimation) {
+                sendCommandReply("prompt", "Prompting is currently unavailable.");
+            } else {
+                sendPrompt(argument);
+                sendCommandReply("prompt", "Prompt submitted to Perplexity.");
+            }
+        } else if (command === "continue" && !argument) {
+            const result = continueFromSentinel(now);
+            sendCommandReply("continue", result.message);
+        } else if (command === "restart" && !argument) {
+            if (perplexityRestart || restartPromptDelivery) {
+                sendCommandReply("restart", "A restart transaction is already active.");
+            } else {
+                if (signalAnimation) {
+                    cancelSignalAnimation();
+                }
+                resetWaitProgress();
+                const started = startPerplexityClientRestart(now);
+                sendCommandReply(
+                    "restart",
+                    started ? "Perplexity restart requested." : "Restart request was rejected."
+                );
+            }
+        } else if (command === "enable" || command === "disable") {
+            const target = argument.toLowerCase().trim().replace(/\s+/g, " ");
+            const enabling = command === "enable";
+            if (/^cpu(?: (?:signal|\[signal\]))?$/.test(target)) {
+                sendCommandReply(
+                    `${command} cpu`,
+                    enabling
+                        ? enableCPUSignalFromMessage()
+                        : disableCPUSignalFromMessage()
+                );
+            } else if (/^wait(?: (?:signal|\[signal\]))?$/.test(target)) {
+                sendCommandReply(
+                    `${command} wait`,
+                    enabling
+                        ? enableWaitSignalFromMessage()
+                        : disableWaitSignalFromMessage()
+                );
+            } else if (/^(?:both|signals|both signals)$/.test(target)) {
+                sendCommandReply(
+                    `${command} ${target}`,
+                    setBothSignalsFromMessage(enabling)
+                );
+            } else if (/^(?:auto|automode|auto mode)$/.test(target)) {
+                sendCommandReply(
+                    `${command} ${target}`,
+                    setRunnerAutoModeFromMessage(enabling)
+                );
+            } else if (target === "all") {
+                const signalsResult = setBothSignalsFromMessage(enabling);
+                const autoResult = setRunnerAutoModeFromMessage(enabling);
+                sendCommandReply(
+                    `${command} all`,
+                    `${signalsResult}\n${autoResult}`
+                );
+            } else {
+                sendCommandReply(
+                    "error",
+                    `Use ${command} cpu, wait, both, signals, auto, automode, auto mode, or all.`
+                );
+            }
+        } else {
+            sendCommandReply(
+                "error",
+                `Unknown or malformed command: ${trimmed}\n` +
+                    "Send help for the supported command list."
+            );
+        }
+    } catch (error) {
+        try {
+            sendCommandReply(command || "error", `Command failed: ${error}`);
+        } catch (replyError) {
+            runnerStatusDetail += ` iMessage command/reply failed: ${error}; ${replyError}`;
+        }
+    }
+}
+
+function consumeMessagesCommands(text, now) {
+    const lines = String(text).replace(/\r\n?/g, "\n").split("\n");
+    for (const line of lines) {
+        executeMessagesCommand(line, now);
+    }
+}
+
+function messageDetectionTextPreview(text) {
+    if (typeof text !== "string") {
+        return "(message body unavailable)";
+    }
+    const normalized = text.replace(/\r\n?/g, "\n");
+    return normalized.length <= 1200
+        ? normalized
+        : normalized.slice(0, 1200) + "\n… (preview truncated)";
+}
+
+function messageDetectionLogText() {
+    return messageDetectionLogEntries.join("\n\n");
+}
+
+function updateMessageDetectionLogUI() {
+    if (!messageDetectionLogUI) {
+        return;
+    }
+    const count = messageDetectionLogEntries.length;
+    const latest = count > 0
+        ? messageDetectionLogEntries[count - 1].split(" ")[1]
+        : "EMPTY";
+    messageDetectionLogUI.title.setStringValue(
+        `MESSAGE DETECTION LOG · ${count} · ${latest}`
+    );
+    const text = messageDetectionLogText();
+    messageDetectionLogUI.textView.setString(text);
+    if (messageDetectionLogExpanded) {
+        messageDetectionLogUI.textView.scrollRangeToVisible(
+            $.NSMakeRange(text.length, 0)
+        );
+    }
+}
+
+function appendMessageDetectionLogEntry(row, accepted, reason, text) {
+    const timestamp = new Date().toISOString();
+    const entry = `${timestamp} ${accepted ? "ACCEPTED" : "REJECTED"}\n` +
+        `Reason: ${reason}\n` +
+        `Row: ${Number(row.row_id)}\n` +
+        `GUID: ${typeof row.guid === "string" ? row.guid : "(none)"}\n` +
+        `Service: ${typeof row.service === "string" ? row.service : "(none)"}\n` +
+        messageDetectionTextPreview(text);
+    messageDetectionLogEntries.push(entry);
+    if (messageDetectionLogEntries.length > MESSAGE_LOG_ENTRY_LIMIT) {
+        messageDetectionLogEntries = messageDetectionLogEntries.slice(
+            -MESSAGE_LOG_ENTRY_LIMIT
+        );
+    }
+    updateMessageDetectionLogUI();
+}
+
+function rejectDetectedMessage(row, reason, text) {
+    appendMessageDetectionLogEntry(row, false, reason, text);
+}
+
+function shiftMessageLogMainViews(delta) {
+    for (const view of messageDetectionLogMainViews) {
+        const frame = view.frame;
+        view.setFrame($.NSMakeRect(
+            Number(frame.origin.x),
+            Number(frame.origin.y) + delta,
+            Number(frame.size.width),
+            Number(frame.size.height)
+        ));
+    }
+}
+
+function layoutMessageDetectionLog() {
+    if (!messageDetectionLogUI) {
+        return;
+    }
+    const cardY = 10;
+    const cardHeight = 42 + (messageDetectionLogExpanded
+        ? messageDetectionLogActiveHeight
+        : 0);
+    messageDetectionLogUI.card.setFrame(
+        $.NSMakeRect(20, cardY, 1200, cardHeight)
+    );
+    const headerY = cardY + cardHeight - 31;
+    messageDetectionLogUI.title.setFrame($.NSMakeRect(40, headerY + 4, 700, 20));
+    messageDetectionLogUI.button.setFrame($.NSMakeRect(1102, headerY, 96, 28));
+    messageDetectionLogUI.button.setTitle(
+        messageDetectionLogExpanded ? "Hide log" : "Show log"
+    );
+    messageDetectionLogUI.scrollView.setFrame(
+        $.NSMakeRect(40, 24, 1158, Math.max(32, messageDetectionLogActiveHeight - 16))
+    );
+    messageDetectionLogUI.scrollView.setHidden(!messageDetectionLogExpanded);
+}
+
+function setMessageDetectionLogExpanded(expanded) {
+    const target = Boolean(expanded);
+    if (!messageDetectionLogUI || target === messageDetectionLogExpanded) {
+        return;
+    }
+    if (target && promptEditorLayout && promptEditorLayout.expandedIndex !== null) {
+        setPromptEditorExpansion(null, 0);
+    }
+    const window = messageDetectionLogUI.window;
+    if (target) {
+        const frame = window.frame;
+        const screen = objcObjectIsNil(window.screen)
+            ? $.NSScreen.mainScreen
+            : window.screen;
+        const visibleFrame = screen.visibleFrame;
+        const availableHeight = Math.max(
+            0,
+            Number(visibleFrame.size.height) - Number(frame.size.height)
+        );
+        messageDetectionLogActiveHeight = Math.min(
+            MESSAGE_LOG_EXPANDED_HEIGHT,
+            availableHeight
+        );
+        if (messageDetectionLogActiveHeight < 32) {
+            return;
+        }
+        messageDetectionLogCollapsedWindowFrame = frame;
+        messageDetectionLogExpanded = true;
+        shiftMessageLogMainViews(messageDetectionLogActiveHeight);
+        const expandedHeight = Number(frame.size.height) +
+            messageDetectionLogActiveHeight;
+        const minimumY = Number(visibleFrame.origin.y);
+        const maximumY = minimumY + Number(visibleFrame.size.height) - expandedHeight;
+        const desiredY = Number(frame.origin.y) - messageDetectionLogActiveHeight;
+        window.setFrameDisplay(
+            $.NSMakeRect(
+                Number(frame.origin.x),
+                clamp(desiredY, minimumY, maximumY),
+                Number(frame.size.width),
+                expandedHeight
+            ),
+            true
+        );
+    } else {
+        const delta = -messageDetectionLogActiveHeight;
+        messageDetectionLogExpanded = false;
+        shiftMessageLogMainViews(delta);
+        if (messageDetectionLogCollapsedWindowFrame) {
+            window.setFrameDisplay(messageDetectionLogCollapsedWindowFrame, true);
+        }
+        messageDetectionLogCollapsedWindowFrame = null;
+        messageDetectionLogActiveHeight = 0;
+    }
+    layoutMessageDetectionLog();
+    updateMessageDetectionLogUI();
+}
+
+function pollMessagesCommands(now) {
+    if (now - lastMessagesCommandPollAt < MESSAGES_COMMAND_POLL_MILLISECONDS) {
+        return;
+    }
+    lastMessagesCommandPollAt = now;
+    try {
+        if (messagesCommandCursorRowID === null) {
+            messagesCommandCursorRowID = latestMessagesRowID();
+            messagesCommandChatID = messagesChatIDForRecipient();
+            lastMessagesChatResolveAt = now;
+            messagesCommandLastError = "";
+            return;
+        }
+        if (messagesCommandChatID === null ||
+            now - lastMessagesChatResolveAt >= MESSAGES_CHAT_RESOLVE_MILLISECONDS) {
+            messagesCommandChatID = messagesChatIDForRecipient();
+            lastMessagesChatResolveAt = now;
+            if (messagesCommandChatID === null) {
+                return;
+            }
+        }
+
+        const rows = messagesRowsAfter(
+            messagesCommandCursorRowID,
+            messagesCommandChatID
+        );
+        for (const row of rows) {
+            messagesCommandCursorRowID = Number(row.row_id);
+            const text = messageTextFromDatabaseRow(row);
+            const itemType = Number(row.item_type) || 0;
+            if (Number(row.is_from_me) !== 0) {
+                rejectDetectedMessage(row, "outgoing copy of the self-chat message", text);
+                continue;
+            }
+            const associatedType = Number(row.associated_message_type) || 0;
+            if (itemType !== 0) {
+                rejectDetectedMessage(row, `item_type ${itemType} is not a command message`, text);
+                continue;
+            }
+            if (associatedType !== 0 ||
+                (typeof row.associated_message_guid === "string" &&
+                    row.associated_message_guid.length > 0)) {
+                rejectDetectedMessage(row, "tapback or associated-message record", text);
+                continue;
+            }
+            if (row.service !== "iMessage") {
+                rejectDetectedMessage(row, "message service is not iMessage", text);
+                continue;
+            }
+            if (typeof text !== "string") {
+                rejectDetectedMessage(row, "message body could not be decoded", text);
+                runnerStatusDetail += " A new iMessage command could not be decoded.";
+                continue;
+            }
+            if (!text.trim()) {
+                rejectDetectedMessage(row, "message body is empty", text);
+                continue;
+            }
+            if (messageWasSentByUI(text) || messageLooksLikeUIOutput(text)) {
+                rejectDetectedMessage(row, "message was generated by this UI", text);
+                continue;
+            }
+            const guid = typeof row.guid === "string" ? row.guid : "";
+            if (!guid) {
+                rejectDetectedMessage(row, "message has no stable GUID", text);
+                runnerStatusDetail += " An iMessage command without a GUID was ignored.";
+                continue;
+            }
+            if (messageGUIDWasProcessed(guid)) {
+                rejectDetectedMessage(row, "message GUID was already processed", text);
+                continue;
+            }
+            if (!recordProcessedMessageGUID(guid)) {
+                rejectDetectedMessage(row, "message GUID could not be persisted", text);
+                runnerStatusDetail += " An iMessage command was ignored because its GUID could not be persisted.";
+                continue;
+            }
+            appendMessageDetectionLogEntry(
+                row,
+                true,
+                "new command message; processing lines in order",
+                text
+            );
+            consumeMessagesCommands(text, now);
+        }
+        messagesCommandLastError = "";
+    } catch (error) {
+        const message = String(error);
+        if (message !== messagesCommandLastError) {
+            messagesCommandLastError = message;
+            runnerStatusDetail += ` iMessage commands unavailable: ${message}`;
+        }
+    }
+}
+
 function runnerTick(now) {
+    pollMessagesCommands(now);
     refreshRunnerPresence(now, false);
+    if (!runnerReady) {
+        runnerSentinelDetected = false;
+        runnerLEDHovering = false;
+    }
     if (runnerReady && !runnerTaskIsRunning() &&
         now - lastRunnerSentinelCheckAt >= RUNNER_SENTINEL_POLL_SECONDS * 1000) {
         lastRunnerSentinelCheckAt = now;
         const scriptText = readTextFile(runnerSelectedScriptPath, true);
-        runnerSentinelDetected = scriptContainsPromptSentinel(scriptText, activePromptSentinel);
+        const sentinelWasDetected = runnerSentinelDetected;
+        runnerSentinelDetected = scriptContainsPromptSentinel(
+            scriptText,
+            activePromptSentinel
+        );
+        if (runnerSentinelDetected && !sentinelWasDetected) {
+            notifySentinelTransition();
+        }
     }
     orphanedRunnerTick(now, false);
     if (orphanedRunner) {
@@ -2116,8 +3577,13 @@ function runnerTick(now) {
     }
 }
 
+function runnerStateSuppressesWaitSignal(state) {
+    return state === "ready" || state === "sentinel";
+}
+
 function waitSignalIsDueAt(now) {
-    if (!monitorState || !waitSignalIsEnabled() || monitorState.waitSignalLatched) {
+    if (!monitorState || !waitSignalIsEnabled() || monitorState.waitSignalLatched ||
+        runnerTaskIsRunning() || runnerStateSuppressesWaitSignal(runnerDisplayState())) {
         return false;
     }
     const elapsed = Math.max(0, (now - monitorState.lastTick) / 1000);
@@ -2173,17 +3639,29 @@ function updateRunnerUI(now) {
     }
     const displayState = runnerDisplayState();
     updateRunnerOutputPresentation(now, false);
+    updateWaitRestartButtonPresentation(now);
 
     ui.runnerWaitValue.setStringValue(`${runnerNotifyWait().toFixed(1)} s`);
     ui.runnerSelectedPathLabel.setStringValue(runnerSelectedScriptPath);
-    ui.runnerSelfTestButton.setEnabled(
-        !runnerBusy && !perplexityRestart && runnerPathDirectoryAvailable
-    );
+    ui.runnerSelectedLogPathLabel.setStringValue(runnerSelectedLogPath);
     ui.runnerChooseButton.setEnabled(!runnerBusy && !perplexityRestart);
-    ui.runnerOutputButton.setEnabled(
-        runnerScriptPreviewAvailable() || taskRunning || Boolean(runnerOutputLastText)
-    );
+    ui.runnerChooseLogButton.setEnabled(!runnerBusy && !perplexityRestart);
+    ui.runnerOutputButton.setEnabled(true);
+    ui.runnerContentToggleButton.setEnabled(true);
     ui.runnerSandboxButton.setEnabled(!runnerBusy && !perplexityRestart);
+    ui.runnerSelfTestRequiredButton.setEnabled(
+        !runnerBusy && !perplexityRestart &&
+        !runnerCommandLineNoSelfTest && !runnerCommandLineSkipSelfTest
+    );
+    if (runnerCommandLineNoSelfTest) {
+        ui.runnerSelfTestRequiredButton.setToolTip(
+            "The saved UI policy is overridden for this launch: --no-self-test suppresses startup, manual, and execution-time self-tests."
+        );
+    } else if (runnerCommandLineSkipSelfTest) {
+        ui.runnerSelfTestRequiredButton.setToolTip(
+            "The saved UI policy is overridden for this launch: startup and manual self-tests remain available, but execution-time self-tests and the failed startup state are bypassed."
+        );
+    }
     ui.runnerAutoButton.setEnabled(
         !orphanBusy && (runnerTaskMode === "run" || (!taskRunning && autoAvailable))
     );
@@ -2193,18 +3671,26 @@ function updateRunnerUI(now) {
             : "When enabled, an eligible watched run.sh starts automatically."
     );
     ui.runnerWaitSlider.setEnabled(!runnerBusy);
+    ui.waitPauseButton.setEnabled(
+        !signalAnimation && !perplexityRestart && !restartPromptDelivery
+    );
     ui.runnerSuccessPromptButton.setEnabled(!runnerBusy);
     ui.runnerSuccessPromptField.setEnabled(!runnerBusy);
     ui.runnerFailurePromptButton.setEnabled(!runnerBusy);
     ui.runnerFailurePromptField.setEnabled(!runnerBusy);
+    ui.promptInjectButton.setTitle(signalAnimation ? "Cancel" : "Prompt now");
     ui.promptInjectButton.setEnabled(
-        !taskRunning && !signalAnimation && !perplexityRestart
+        Boolean(signalAnimation) ||
+        (!taskRunning && !perplexityRestart && !restartPromptDelivery)
     );
+    updatePromptSentinelLabel(ui.promptHint);
     ui.configurationSaveButton.setEnabled(
-        !runnerBusy && !signalAnimation && !perplexityRestart
+        !runnerBusy && !signalAnimation && !perplexityRestart &&
+        !restartPromptDelivery
     );
     ui.configurationMenu.setEnabled(
-        !runnerBusy && !signalAnimation && !perplexityRestart
+        !runnerBusy && !signalAnimation && !perplexityRestart &&
+        !restartPromptDelivery
     );
     const orphanActionAvailable = Boolean(orphanedRunner && (
         orphanedRunner.phase === "running" || orphanedRunner.phase === "recoverable"
@@ -2272,10 +3758,14 @@ function updateRunnerUI(now) {
             : runnerStatusDetail || "Environment self-test required.";
         ui.runnerLEDButton.setContentTintColor($.NSColor.systemOrangeColor);
         ui.runnerActivityLabel.setTextColor($.NSColor.systemOrangeColor);
-        ui.runnerLEDButton.setToolTip("The current path and sandbox configuration require a self-test.");
+        ui.runnerLEDButton.setToolTip(
+            runnerSelfTestStatus === "failed"
+                ? "Acknowledge the failed startup self-test and unlock execution for the current path and sandbox configuration."
+                : "Click to run the environment self-test for the current path and sandbox configuration."
+        );
     } else if (displayState === "sentinel") {
         statusText = runnerLEDHovering
-            ? `Click to delete ${runnerScriptName()} and rotate the sentinel.`
+            ? `Click to delete ${runnerScriptName()}; the sentinel remains active until Perplexity restarts.`
             : `Sentinel token found in ${runnerScriptName()}; runner halted for safety.`;
         ui.runnerLEDButton.setContentTintColor($.NSColor.systemRedColor);
         ui.runnerActivityLabel.setTextColor($.NSColor.systemRedColor);
@@ -2286,7 +3776,11 @@ function updateRunnerUI(now) {
             $.NSColor.systemGrayColor.colorWithAlphaComponent(0.72)
         );
         ui.runnerActivityLabel.setTextColor($.NSColor.secondaryLabelColor);
-        ui.runnerLEDButton.setToolTip("Runner is initialized and waiting for the run script.");
+        ui.runnerLEDButton.setToolTip(
+            runnerCommandLineNoSelfTest
+                ? "Runner is waiting for the run script; self-tests are disabled by --no-self-test."
+                : "Runner is waiting for the run script. Click to rerun the environment self-test."
+        );
     } else {
         statusText = runnerStatusDetail || (autoEnabled
             ? `${runnerScriptName()} is ready; Auto Mode will start it.`
@@ -2320,7 +3814,11 @@ function updateRunnerUI(now) {
         ui.runnerStatusLabel.setToolTip("");
     }
 
-    ui.runnerActivityLabel.setStringValue(displayState);
+    setRunnerActivityLabel(
+        ui.runnerActivityLabel,
+        ui.runnerLEDButton,
+        displayState
+    );
     ui.runnerStatusLabel.setStringValue(statusText);
 }
 
@@ -2361,6 +3859,7 @@ function resetWaitProgress() {
     monitorState.waitSeconds = 0;
     monitorState.waitSignalLatched = false;
     monitorState.waitRestartDetail = "";
+    monitorState.waitPromptDetail = "";
     monitorState.lastTick = Date.now();
     monitorState.waitWarning = false;
     monitorState.ui.waitProgress.setDoubleValue(0);
@@ -2425,6 +3924,124 @@ function makeCPUGraphData(samples, endTime, historySeconds, averageWindowSeconds
     return data;
 }
 
+function currentCPUGraphComputationContext() {
+    if (!monitorState) {
+        return null;
+    }
+    const samples = monitorState.cpuSamples;
+    const latestSample = samples.length > 0 ? samples[samples.length - 1] : null;
+    return {
+        samples,
+        latestSample,
+        endTime: latestSample
+            ? latestSample.endTime
+            : monitorState.graphEndTime || Date.now(),
+        historySeconds: Number(monitorState.ui.cpuDurationSlider.doubleValue)
+    };
+}
+
+function graphDataForSmoothingWindow(context, windowSeconds) {
+    return makeCPUGraphData(
+        context.samples,
+        context.endTime,
+        context.historySeconds,
+        windowSeconds
+    );
+}
+
+function maximumAverageInGraphData(graphData) {
+    if (graphData.length === 0) {
+        return null;
+    }
+    let maximum = -Infinity;
+    for (const segment of graphData) {
+        maximum = Math.max(maximum, Number(segment.average));
+    }
+    return Number.isFinite(maximum) ? maximum : null;
+}
+
+function maximumGraphAverageForWindow(context, windowSeconds) {
+    return maximumAverageInGraphData(
+        graphDataForSmoothingWindow(context, windowSeconds)
+    );
+}
+
+function applySmoothingWindowToGraph(context, windowSeconds) {
+    const graphData = graphDataForSmoothingWindow(context, windowSeconds);
+    monitorState.graphEndTime = context.endTime;
+    monitorState.cpuGraphData = graphData;
+    monitorState.currentAverageCPU = context.latestSample
+        ? averageCPUAt(context.samples, context.latestSample.endTime, windowSeconds)
+        : 0;
+    monitorState.ui.averageWindowValue.setStringValue(`${windowSeconds.toFixed(1)} s`);
+    monitorState.ui.cpuGraph.setNeedsDisplay(true);
+    return graphData;
+}
+
+function adaptThresholdToSmoothingWindow(windowSeconds) {
+    const context = currentCPUGraphComputationContext();
+    if (!context) {
+        return;
+    }
+    const graphData = applySmoothingWindowToGraph(context, windowSeconds);
+    const maximum = maximumAverageInGraphData(graphData);
+    if (maximum !== null) {
+        monitorState.ui.cpuThresholdSlider.setDoubleValue(clamp(
+            maximum,
+            CPU_THRESHOLD_MIN_PERCENT,
+            Number(monitorState.cpuGraphRangePercent)
+        ));
+    }
+}
+
+function smoothingWindowForThreshold(threshold) {
+    const context = currentCPUGraphComputationContext();
+    if (!context || context.samples.length === 0) {
+        return null;
+    }
+
+    const minimumMaximum = maximumGraphAverageForWindow(
+        context,
+        AVERAGE_WINDOW_MIN_SECONDS
+    );
+    if (minimumMaximum === null || minimumMaximum <= threshold) {
+        return AVERAGE_WINDOW_MIN_SECONDS;
+    }
+
+    const maximumMaximum = maximumGraphAverageForWindow(
+        context,
+        AVERAGE_WINDOW_MAX_SECONDS
+    );
+    if (maximumMaximum === null || maximumMaximum > threshold) {
+        return null;
+    }
+
+    let lowerBound = AVERAGE_WINDOW_MIN_SECONDS;
+    let upperBound = AVERAGE_WINDOW_MAX_SECONDS;
+    for (let iteration = 0; iteration < 18; iteration += 1) {
+        const candidate = (lowerBound + upperBound) / 2;
+        const candidateMaximum = maximumGraphAverageForWindow(context, candidate);
+        if (candidateMaximum !== null && candidateMaximum <= threshold) {
+            upperBound = candidate;
+        } else {
+            lowerBound = candidate;
+        }
+    }
+    return upperBound;
+}
+
+function adaptSmoothingWindowToThreshold(threshold) {
+    const windowSeconds = smoothingWindowForThreshold(threshold);
+    if (windowSeconds === null) {
+        return;
+    }
+    monitorState.ui.averageWindowSlider.setDoubleValue(windowSeconds);
+    const context = currentCPUGraphComputationContext();
+    if (context) {
+        applySmoothingWindowToGraph(context, windowSeconds);
+    }
+}
+
 function trailingLowDuration(graphData, threshold, endTime) {
     let cursor = endTime;
 
@@ -2471,27 +4088,68 @@ function drawCPUGraph(view) {
     const state = monitorState;
     const ui = state.ui;
     const threshold = Number(ui.cpuThresholdSlider.doubleValue);
+    const displayRange = clamp(
+        Number(state.cpuGraphRangePercent),
+        CPU_GRAPH_RANGE_MIN_PERCENT,
+        CPU_GRAPH_RANGE_MAX_PERCENT
+    );
     const historySeconds = Math.max(Number(ui.cpuDurationSlider.doubleValue), CPU_SAMPLE_SECONDS);
     const graphEndTime = state.graphEndTime || Date.now();
     const graphStartTime = graphEndTime - historySeconds * 1000;
     const graphData = state.cpuGraphData;
+    let filledGraphData = graphData;
+    let overlayGraphData = [];
+    let overlayAlpha = 1;
+    const context = graphMousePressed || cpuGraphTransition
+        ? currentCPUGraphComputationContext()
+        : null;
+    if (graphMousePressed && graphWindowBeforeMouseDown !== null && context) {
+        filledGraphData = graphDataForSmoothingWindow(
+            context,
+            graphWindowBeforeMouseDown
+        );
+        overlayGraphData = graphData;
+    } else if (cpuGraphTransition && context) {
+        const progress = clamp(
+            (Date.now() - cpuGraphTransition.startedAt) /
+                cpuGraphTransition.durationMilliseconds,
+            0,
+            1
+        );
+        const easedProgress = progress * progress * (3 - 2 * progress);
+        const transition = cpuGraphTransition;
+        const filledWindow = transition.aborted
+            ? transition.fromWindowSeconds
+            : transition.fromWindowSeconds +
+                (transition.toWindowSeconds - transition.fromWindowSeconds) *
+                    easedProgress;
+        const overlayWindow = transition.aborted
+            ? transition.previewWindowSeconds
+            : transition.toWindowSeconds;
+        filledGraphData = graphDataForSmoothingWindow(context, filledWindow);
+        overlayGraphData = graphDataForSmoothingWindow(context, overlayWindow);
+        overlayAlpha = 1 - easedProgress;
+    }
 
-    let latestAboveThresholdIndex = -1;
-    for (let index = 0; index < graphData.length; index += 1) {
-        if (graphData[index].average > threshold) {
-            latestAboveThresholdIndex = index;
+    const filledValue = segment => segment.average;
+    let latestFilledAboveThresholdIndex = -1;
+    for (let index = 0; index < filledGraphData.length; index += 1) {
+        if (filledValue(filledGraphData[index]) > threshold) {
+            latestFilledAboveThresholdIndex = index;
         }
+
     }
 
     let activeColor = null;
-    for (let index = 0; index < graphData.length; index += 1) {
-        const segment = graphData[index];
+    for (let index = 0; index < filledGraphData.length; index += 1) {
+        const segment = filledGraphData[index];
+        const value = filledValue(segment);
         const x = clamp((segment.startTime - graphStartTime) / (historySeconds * 1000) * width, 0, width);
         const nextX = clamp((segment.endTime - graphStartTime) / (historySeconds * 1000) * width, x, width);
         const barWidth = Math.max(1, nextX - x);
-        const barHeight = clamp(segment.average / CPU_THRESHOLD_MAX_PERCENT, 0, 1) * height;
-        const belowThreshold = segment.average <= threshold;
-        const isLatestAboveThreshold = index === latestAboveThresholdIndex;
+        const barHeight = clamp(value / displayRange, 0, 1) * height;
+        const belowThreshold = value <= threshold;
+        const isLatestAboveThreshold = index === latestFilledAboveThresholdIndex;
         const colorName = isLatestAboveThreshold ? "blue" : belowThreshold ? "red" : "green";
 
         if (colorName !== activeColor) {
@@ -2509,8 +4167,9 @@ function drawCPUGraph(view) {
         }
     }
 
+
     const thresholdY = clamp(
-        threshold / CPU_THRESHOLD_MAX_PERCENT * height,
+        threshold / displayRange * height,
         0,
         Math.max(0, height - 2)
     );
@@ -2521,13 +4180,76 @@ function drawCPUGraph(view) {
     fillRect(borderColor, $.NSMakeRect(0, Math.max(0, height - 1), width, 1));
     fillRect(borderColor, $.NSMakeRect(0, 0, 1, height));
     fillRect(borderColor, $.NSMakeRect(Math.max(0, width - 1), 0, 1, height));
+
+    if ((graphMousePressed || cpuGraphTransition) && overlayGraphData.length > 0 &&
+        overlayAlpha > 0) {
+        const surface = $.NSBezierPath.bezierPath;
+        let previousEndTime = null;
+        let hasSurface = false;
+        for (const segment of overlayGraphData) {
+            const x = clamp((segment.startTime - graphStartTime) / (historySeconds * 1000) * width, 0, width);
+            const nextX = clamp((segment.endTime - graphStartTime) / (historySeconds * 1000) * width, x, width);
+            const topY = clamp(
+                segment.average / displayRange * height,
+                0.5,
+                Math.max(0.5, height - 0.5)
+            );
+            const startsNewSurface = previousEndTime === null ||
+                segment.startTime - previousEndTime > CPU_SAMPLE_SECONDS * 2000;
+            if (startsNewSurface) {
+                surface.moveToPoint($.NSMakePoint(x, topY));
+            } else {
+                surface.lineToPoint($.NSMakePoint(x, topY));
+            }
+            surface.lineToPoint($.NSMakePoint(nextX, topY));
+            previousEndTime = segment.endTime;
+            hasSurface = true;
+        }
+        if (hasSurface) {
+            $.NSColor.blackColor.colorWithAlphaComponent(overlayAlpha).setStroke;
+            surface.setLineWidth(1);
+            surface.stroke;
+        }
+    }
+}
+
+function setCPUSignalEnabled(enabled) {
+    const active = Boolean(enabled);
+    const wasPaused = Boolean(monitorState.cpuMonitoringPaused);
+    monitorState.cpuMonitoringPaused = !active;
+    monitorState.ui.cpuActiveButton.setState(
+        active ? $.NSControlStateValueOn : $.NSControlStateValueOff
+    );
+    if (active && wasPaused) {
+        previousProcessCPUTimes = {};
+        previousCPUSampleTime = null;
+        sampleCPUPercent();
+        monitorState.lastCPUSample = Date.now();
+    }
+    monitorState.cpuWarning = false;
+    monitorState.ui.cpuGraph.setAlphaValue(1.0);
+    setSignalPauseButtonPresentation(
+        monitorState.ui.cpuPauseButton,
+        active,
+        "CPU"
+    );
+}
+
+function setWaitSignalEnabled(enabled) {
+    const active = Boolean(enabled);
+    monitorState.ui.waitActiveButton.setState(
+        active ? $.NSControlStateValueOn : $.NSControlStateValueOff
+    );
+    resetWaitProgress();
+    setSignalPauseButtonPresentation(
+        monitorState.ui.waitPauseButton,
+        active,
+        "Wait"
+    );
 }
 
 function cpuSignalIsEnabled() {
-    return Boolean(
-        monitorState &&
-        Number(monitorState.ui.cpuActiveButton.state) === Number($.NSControlStateValueOn)
-    );
+    return Boolean(monitorState && !monitorState.cpuMonitoringPaused);
 }
 
 function waitSignalIsEnabled() {
@@ -2633,6 +4355,37 @@ function drawSignalConnectors() {
     }
 }
 
+function refreshPerplexityClientPresence(now, force) {
+    if (!force && now - perplexityPresenceLastCheckedAt < 500) {
+        return perplexityClientRunning;
+    }
+    perplexityPresenceLastCheckedAt = now;
+    try {
+        perplexityClientRunning = runningPerplexityApplications().length > 0;
+    } catch (error) {
+        // Preserve the last known state when NSWorkspace cannot be queried.
+    }
+    return perplexityClientRunning;
+}
+
+function updateWaitRestartButtonPresentation(now) {
+    if (!monitorState) {
+        return;
+    }
+    const pending = Boolean(restartPromptDelivery);
+    const running = refreshPerplexityClientPresence(now, false);
+    monitorState.ui.waitResetButton.setTitle(
+        pending ? "Cancel prompt" : "restart Perplexity"
+    );
+    monitorState.ui.waitResetButton.setToolTip(
+        pending
+            ? "Cancel the prompt scheduled after this restart."
+            : running
+                ? "Restart the Perplexity client immediately."
+                : "Start Perplexity and initialize the agent immediately."
+    );
+}
+
 function updateSignalAnimationControls() {
     if (!monitorState) {
         return;
@@ -2640,10 +4393,17 @@ function updateSignalAnimationControls() {
     const ui = monitorState.ui;
     const active = Boolean(signalAnimation);
     const clientRestarting = Boolean(perplexityRestart);
-    ui.cpuActiveButton.setEnabled(!active);
-    ui.waitActiveButton.setEnabled(!active);
+    const restartPromptPending = Boolean(restartPromptDelivery);
+    ui.cpuPauseButton.setEnabled(!active);
+    ui.waitPauseButton.setEnabled(
+        !active && !clientRestarting && !restartPromptPending
+    );
+    updateWaitRestartButtonPresentation(Date.now());
+    ui.waitResetButton.setEnabled(restartPromptPending || !clientRestarting);
+    ui.waitRestartPromptField.setEnabled(!active && !restartPromptPending);
+    ui.promptInjectButton.setTitle(active ? "Cancel" : "Prompt now");
     ui.promptInjectButton.setEnabled(
-        !active && !clientRestarting && !runnerTaskIsRunning()
+        active || (!clientRestarting && !runnerTaskIsRunning())
     );
     ui.signalCancellationOverlay.setHidden(!active);
     for (const row of promptRows) {
@@ -2651,11 +4411,18 @@ function updateSignalAnimationControls() {
         row.slider.setEnabled(!active && row.eligible);
         row.slider.setAlphaValue(row.eligible ? (active ? 0.5 : 1.0) : 0.4);
     }
+    for (const entry of promptEditorEntries) {
+        entry.resizeHandle.setHidden(
+            active || (entry.kind === "initialization" && restartPromptPending)
+        );
+    }
     ui.configurationSaveButton.setEnabled(
-        !active && !clientRestarting && !runnerTaskIsRunning()
+        !active && !clientRestarting && !restartPromptPending &&
+        !runnerTaskIsRunning()
     );
     ui.configurationMenu.setEnabled(
-        !active && !clientRestarting && !runnerTaskIsRunning()
+        !active && !clientRestarting && !restartPromptPending &&
+        !runnerTaskIsRunning()
     );
 }
 
@@ -2770,7 +4537,8 @@ function cancelSignalAnimation() {
 }
 
 function startManualPromptAnimation(now) {
-    if (signalAnimation || perplexityRestart || runnerTaskIsRunning()) {
+    if (signalAnimation || perplexityRestart || restartPromptDelivery ||
+        runnerTaskIsRunning()) {
         return false;
     }
     if (runnerOutputIsVisible()) {
@@ -2791,7 +4559,8 @@ function startManualPromptAnimation(now) {
 }
 
 function startSignalAnimation(source, now) {
-    if (signalAnimation || perplexityRestart || runnerTaskIsRunning()) {
+    if (signalAnimation || perplexityRestart || restartPromptDelivery ||
+        runnerTaskIsRunning()) {
         return false;
     }
     if (runnerOutputIsVisible()) {
@@ -2864,13 +4633,28 @@ function monitorTick() {
     const state = monitorState;
     const ui = state.ui;
     const now = Date.now();
-    const mouseButtonIsReleased = Number($.NSEvent.pressedMouseButtons) === 0;
+    observeCurrentMouseDownEvent();
+    const pressedMouseButtons = Number($.NSEvent.pressedMouseButtons);
+    const primaryMouseButtonIsReleased = (pressedMouseButtons & 1) === 0;
+    const mouseButtonIsReleased = pressedMouseButtons === 0;
+    if (primaryMouseButtonIsReleased && cpuSliderPreview) {
+        finishCPUSliderPreview();
+    }
     if (mouseButtonIsReleased) {
         promptWeightGestureSnapshot = null;
+        if (!cpuSliderPreview && !graphMousePressed) {
+            commitCPUControlValues();
+        }
     }
 
+    const runnerBlockedWaitAtStart = runnerTaskIsRunning() ||
+        runnerStateSuppressesWaitSignal(runnerDisplayState());
     runnerTick(now);
+    const runnerBlocksWaitDuringTick = runnerBlockedWaitAtStart ||
+        runnerTaskIsRunning() ||
+        runnerStateSuppressesWaitSignal(runnerDisplayState());
     updatePerplexityClientRestart(now);
+    updateRestartPrompt(now);
     updateRunnerUI(now);
 
     if (deliverPendingRunnerPrompt(now, mouseButtonIsReleased)) {
@@ -2881,13 +4665,15 @@ function monitorTick() {
     state.lastTick = now;
 
     const cpuEnabled = cpuSignalIsEnabled();
+    const cpuPaused = Boolean(state.cpuMonitoringPaused);
+    const cpuControlPreviewing = Boolean(cpuSliderPreview);
     const waitEnabled = waitSignalIsEnabled();
     const cpuThreshold = Number(ui.cpuThresholdSlider.doubleValue);
     const cpuDuration = Number(ui.cpuDurationSlider.doubleValue);
     const averageWindow = Number(ui.averageWindowSlider.doubleValue);
     const waitTimeout = Number(ui.waitSlider.doubleValue);
 
-    if (now - state.lastCPUSample >= CPU_SAMPLE_SECONDS * 1000) {
+    if (!cpuPaused && now - state.lastCPUSample >= CPU_SAMPLE_SECONDS * 1000) {
         const sample = sampleCPUPercent();
         state.lastCPUSample = now;
 
@@ -2917,32 +4703,37 @@ function monitorTick() {
     state.currentAverageCPU = latestSample
         ? averageCPUAt(state.cpuSamples, latestSample.endTime, averageWindow)
         : 0;
-    if (waitEnabled) {
+    if (waitEnabled && !runnerBlocksWaitDuringTick &&
+        !state.waitSignalLatched) {
         state.waitSeconds += elapsed;
-    } else {
+    } else if (!waitEnabled) {
         state.waitSeconds = 0;
     }
 
     const hasCPUData = state.cpuGraphData.length > 0;
     const currentCPUIsLow = hasCPUData && state.currentAverageCPU <= cpuThreshold;
-    if (cpuEnabled && currentCPUIsLow) {
-        state.trailingLowCPUSeconds += elapsed;
-    } else {
-        state.trailingLowCPUSeconds = 0;
+    if (!cpuPaused && !cpuControlPreviewing) {
+        if (cpuEnabled && currentCPUIsLow) {
+            state.trailingLowCPUSeconds += elapsed;
+        } else {
+            state.trailingLowCPUSeconds = 0;
+        }
     }
-    const cpuFired = cpuEnabled && currentCPUIsLow &&
+    const cpuFired = cpuEnabled && !cpuPaused && !cpuControlPreviewing &&
+        currentCPUIsLow &&
         state.trailingLowCPUSeconds >= cpuDuration;
     const cpuWarningStart = Math.max(0, cpuDuration - WARNING_SECONDS);
-    state.cpuWarning = cpuEnabled && !signalAnimation && currentCPUIsLow &&
+    state.cpuWarning = cpuEnabled && !cpuPaused && !cpuControlPreviewing &&
+        !signalAnimation && currentCPUIsLow &&
         state.trailingLowCPUSeconds >= cpuWarningStart;
 
-    const waitFired = waitEnabled && !state.waitSignalLatched &&
-        state.waitSeconds >= waitTimeout;
-    state.waitWarning = waitEnabled && !state.waitSignalLatched &&
-        !signalAnimation && !perplexityRestart &&
+    const waitFired = waitEnabled && !runnerBlocksWaitDuringTick &&
+        !state.waitSignalLatched && state.waitSeconds >= waitTimeout;
+    state.waitWarning = waitEnabled && !runnerBlocksWaitDuringTick &&
+        !state.waitSignalLatched && !signalAnimation && !perplexityRestart &&
         state.waitSeconds >= Math.max(0, waitTimeout - WARNING_SECONDS);
 
-    const cpuRemainingSeconds = cpuEnabled
+    const cpuRemainingSeconds = cpuEnabled || cpuPaused
         ? Math.max(0, cpuDuration - state.trailingLowCPUSeconds)
         : cpuDuration;
     ui.cpuProgress.setMaxValue(Math.max(cpuDuration, 0.001));
@@ -2951,9 +4742,13 @@ function monitorTick() {
         waitEnabled ? Math.min(state.waitSeconds, WAIT_TIMEOUT_MAX_SECONDS) : 0
     );
 
-    const cpuCondition = !cpuEnabled
-        ? "DISABLED"
-        : signalAnimation && signalAnimation.source === "cpu"
+    const cpuCondition = cpuPaused
+        ? "PAUSED"
+        : cpuControlPreviewing
+            ? "PREVIEW"
+            : !cpuEnabled
+            ? "DISABLED"
+            : signalAnimation && signalAnimation.source === "cpu"
             ? "SIGNALING"
             : cpuFired
                 ? "ACTIVE"
@@ -2963,18 +4758,28 @@ function monitorTick() {
     );
     ui.averageWindowValue.setStringValue(`${averageWindow.toFixed(1)} s`);
     ui.cpuDurationValue.setStringValue(`${cpuDuration.toFixed(1)} s`);
+    ui.cpuPauseButton.setEnabled(!signalAnimation);
+    setSignalPauseButtonPresentation(ui.cpuPauseButton, cpuEnabled, "CPU");
+    setSignalPauseButtonPresentation(ui.waitPauseButton, waitEnabled, "Wait");
     ui.cpuProgressValue.setStringValue(
-        cpuEnabled
-            ? `${cpuRemainingSeconds.toFixed(1)} s remaining  ·  ${state.trailingLowCPUSeconds.toFixed(1)} s qualified`
-            : "DISABLED · use the toggle switch to begin monitoring"
+        cpuPaused
+            ? `PAUSED · ${cpuRemainingSeconds.toFixed(1)} s remaining  ·  ${state.trailingLowCPUSeconds.toFixed(1)} s qualified`
+            : cpuEnabled
+                ? `${cpuRemainingSeconds.toFixed(1)} s remaining  ·  ${state.trailingLowCPUSeconds.toFixed(1)} s qualified`
+                : "PAUSED · press play to begin monitoring"
     );
+    const waitStatusDetail = [
+        state.waitRestartDetail,
+        restartPromptStatusDetail(now)
+    ].filter(Boolean).join(" · ");
     ui.waitValue.setStringValue(
         waitEnabled
             ? `${state.waitSeconds.toFixed(1)} s / ${waitTimeout.toFixed(1)} s` +
-                (state.waitRestartDetail ? ` · ${state.waitRestartDetail}` : "")
-            : `DISABLED  ·  threshold ${waitTimeout.toFixed(1)} s`
+                (waitStatusDetail ? ` · ${waitStatusDetail}` : "")
+            : `PAUSED  ·  threshold ${waitTimeout.toFixed(1)} s` +
+                (waitStatusDetail ? ` · ${waitStatusDetail}` : "")
     );
-    ui.waitValue.setToolTip(state.waitRestartDetail || "");
+    ui.waitValue.setToolTip(waitStatusDetail);
 
     if (state.waitWarning && now - state.lastPulse >= PULSE_INTERVAL_MILLISECONDS) {
         state.pulsePhase = !state.pulsePhase;
@@ -2994,7 +4799,7 @@ function monitorTick() {
     if (perplexityRestart) {
         return;
     }
-    if (!runnerTaskIsRunning() && mouseButtonIsReleased && waitFired) {
+    if (!runnerBlocksWaitDuringTick && mouseButtonIsReleased && waitFired) {
         ui.cpuGraph.setAlphaValue(1.0);
         ui.waitProgress.setAlphaValue(1.0);
         startPerplexityClientRestart(now);
@@ -3015,6 +4820,43 @@ ObjC.registerSubclass({
                 monitorTick();
             }
         },
+        "cpuGraphTransitionTick:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                if (!cpuGraphTransition || !monitorState) {
+                    stopCPUGraphTransition();
+                    return;
+                }
+                const elapsed = Date.now() - cpuGraphTransition.startedAt;
+                if (elapsed >= cpuGraphTransition.durationMilliseconds) {
+                    stopCPUGraphTransition();
+                }
+                monitorState.ui.cpuGraph.setNeedsDisplay(true);
+            }
+        },
+
+        "returnToRunnerOutput:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                runnerOutputReturnTimer = null;
+                const expectedGeneration = runnerOutputReturnMouseDownGeneration;
+                runnerOutputReturnMouseDownGeneration = null;
+                if (runnerOutputIsVisible() && runnerContentMode === "script" &&
+                    runnerMouseDownGeneration === expectedGeneration) {
+                    runnerContentMode = "log";
+                    updateRunnerOutputPresentation(Date.now(), true);
+                }
+            }
+        },
+        "restoreGraphToolTip:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                graphToolTipRestoreTimer = null;
+                if (monitorState && monitorState.ui.cpuGraph) {
+                    monitorState.ui.cpuGraph.setToolTip(CPU_GRAPH_TOOLTIP);
+                }
+            }
+        },
         "saveConfiguration:": {
             types: ["void", ["id"]],
             implementation: function () {
@@ -3025,6 +4867,59 @@ ObjC.registerSubclass({
         "configurationChanged:": {
             types: ["void", ["id"]],
             implementation: function () {
+                scheduleConfigurationSave();
+            }
+        },
+        "smoothingWindowChanged:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                const trackingEvent = currentCPUSliderTrackingEvent();
+                if (trackingEvent) {
+                    beginCPUSliderPreview("smoothing");
+                    updateCPUSliderPreviewPointer(sender, trackingEvent);
+                }
+                adaptThresholdToSmoothingWindow(Number(sender.doubleValue));
+                if (trackingEvent && Number(trackingEvent.type) ===
+                    Number($.NSEventTypeLeftMouseUp)) {
+                    finishCPUSliderPreview(cpuSliderPreview.pointerInside);
+                } else if (!trackingEvent) {
+                    commitCPUControlValues();
+                    scheduleConfigurationSave();
+                }
+            }
+        },
+        "cpuThresholdChanged:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                const trackingEvent = currentCPUSliderTrackingEvent();
+                if (trackingEvent) {
+                    beginCPUSliderPreview("threshold");
+                    updateCPUSliderPreviewPointer(sender, trackingEvent);
+                }
+                adaptSmoothingWindowToThreshold(Number(sender.doubleValue));
+                monitorState.cpuWarning = false;
+                monitorState.ui.cpuGraph.setAlphaValue(1.0);
+                if (trackingEvent && Number(trackingEvent.type) ===
+                    Number($.NSEventTypeLeftMouseUp)) {
+                    finishCPUSliderPreview(cpuSliderPreview.pointerInside);
+                } else if (!trackingEvent) {
+                    commitCPUControlValues();
+                    scheduleConfigurationSave();
+                }
+            }
+        },
+        "waitTimeoutChanged:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                const timeout = Number(sender.doubleValue);
+                if (monitorState.waitSeconds > timeout) {
+                    monitorState.waitSeconds = timeout;
+                    monitorState.waitWarning = false;
+                    monitorState.pulsePhase = false;
+                    monitorState.lastPulse = 0;
+                    monitorState.ui.waitProgress.setDoubleValue(timeout);
+                    monitorState.ui.waitProgress.setAlphaValue(1.0);
+                }
                 scheduleConfigurationSave();
             }
         },
@@ -3049,24 +4944,81 @@ ObjC.registerSubclass({
                 resetDefaultConfiguration();
             }
         },
-        "cpuSignalActiveChanged:": {
+        "cpuPause:": {
             types: ["void", ["id"]],
             implementation: function () {
-                monitorState.cpuWarning = false;
-                monitorState.ui.cpuGraph.setAlphaValue(1.0);
+                setCPUSignalEnabled(!cpuSignalIsEnabled());
+                if (!cpuSignalIsEnabled()) {
+                    monitorState.trailingLowCPUSeconds = 0;
+                }
                 scheduleConfigurationSave();
                 monitorTick();
             }
         },
-        "waitSignalActiveChanged:": {
+        "waitPause:": {
             types: ["void", ["id"]],
             implementation: function () {
-                resetWaitProgress();
+                setWaitSignalEnabled(!waitSignalIsEnabled());
                 scheduleConfigurationSave();
                 monitorTick();
             }
         },
 
+        "textUndo:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "undo:");
+            }
+        },
+        "textRedo:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "redo:");
+            }
+        },
+        "textCut:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "cut:");
+            }
+        },
+        "textCopy:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "copy:");
+            }
+        },
+        "textPaste:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "paste:");
+            }
+        },
+        "textSelectAll:": {
+            types: ["void", ["id"]],
+            implementation: function (sender) {
+                performTextEditingCommand(sender, "selectAll:");
+            }
+        },
+        "collapsePromptEditor:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                collapseExpandedPromptEditor();
+            }
+        },
+        "control:textView:doCommandBySelector:": {
+            types: ["bool", ["id", "id", "SEL"]],
+            implementation: function (control, textView, commandSelector) {
+                const command = String(commandSelector);
+                if (command === "cancelOperation:") {
+                    return collapseExpandedPromptEditor();
+                }
+                if (command === "insertNewline:") {
+                    return acceptExpandedPromptEditor();
+                }
+                return false;
+            }
+        },
         "controlTextDidChange:": {
             types: ["void", ["id"]],
             implementation: function (notification) {
@@ -3079,27 +5031,22 @@ ObjC.registerSubclass({
                 }
             }
         },
-        "resetWaitButton:": {
+        "restartPerplexityNow:": {
             types: ["void", ["id"]],
             implementation: function () {
-                resetWaitProgress();
-            }
-        },
-        "resetWait:": {
-            types: ["void", ["id"]],
-            implementation: function (recognizer) {
-                const slider = recognizer.view;
-                const point = recognizer.locationInView(slider);
-                const width = Number(slider.bounds.size.width);
-                const knobRadius = 10;
-                const timeout = Number(slider.doubleValue);
-                const knobCenterX = knobRadius +
-                    timeout / WAIT_TIMEOUT_MAX_SECONDS * Math.max(0, width - knobRadius * 2);
-                const knobLeftX = knobCenterX - knobRadius;
-
-                if (Number(point.x) < knobLeftX) {
-                    resetWaitProgress();
+                if (cancelRestartPrompt()) {
+                    monitorTick();
+                    return;
                 }
+                if (perplexityRestart) {
+                    return;
+                }
+                if (signalAnimation) {
+                    cancelSignalAnimation();
+                }
+                resetWaitProgress();
+                startPerplexityClientRestart(Date.now());
+                updateRunnerUI(Date.now());
             }
         },
         "promptWeightChanged:": {
@@ -3111,13 +5058,11 @@ ObjC.registerSubclass({
         "promptInjectNow:": {
             types: ["void", ["id"]],
             implementation: function () {
-                startManualPromptAnimation(Date.now());
-            }
-        },
-        "runnerSelfTest:": {
-            types: ["void", ["id"]],
-            implementation: function () {
-                startRunnerSelfTest();
+                if (signalAnimation) {
+                    cancelSignalAnimation();
+                } else {
+                    startManualPromptAnimation(Date.now());
+                }
             }
         },
         "runnerChoose:": {
@@ -3141,19 +5086,70 @@ ObjC.registerSubclass({
                     return;
                 }
 
+                const previousScriptPath = runnerSelectedScriptPath;
+                const previousDefaultLogPath = defaultRunnerLogPath(previousScriptPath);
                 runnerSelectedScriptPath = String(ObjC.unwrap(
                     panel.URL.path.stringByStandardizingPath
                 ));
+                if (runnerSelectedLogPath === previousDefaultLogPath) {
+                    runnerSelectedLogPath = defaultRunnerLogPath(runnerSelectedScriptPath);
+                }
+                clearRunnerExecutionPreview();
                 refreshRunnerPresence(Date.now(), true);
                 runnerAutoTriggeredForPresence = false;
                 runnerSelfTestStatus = "unverified";
                 runnerValidatedConfiguration = null;
+                runnerAcknowledgedSelfTestConfiguration = null;
                 disableAutoModeForExistingRunScript(monitorState.ui, true);
                 runnerStatusDetail = runnerPathDirectoryAvailable
-                    ? "Run script path changed; environment self-test required."
+                    ? (runnerSelfTestRequired()
+                        ? "Run script path changed; environment self-test required."
+                        : "Run script path changed; self-test is optional.")
                     : `Project directory does not exist: ${runnerRootDirectory()}.`;
                 scheduleConfigurationSave();
                 updateRunnerUI(Date.now());
+            }
+        },
+        "runnerChooseLog:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                if (runnerOperationInProgress() || perplexityRestart) {
+                    return;
+                }
+                const panel = $.NSSavePanel.savePanel;
+                panel.setTitle("Select current run log path");
+                panel.setMessage(
+                    "Choose where run-loop.sh publishes the active/latest run log. The file may be created later."
+                );
+                panel.setPrompt("Select Log");
+                panel.setNameFieldLabel("Log:");
+                panel.setNameFieldStringValue(
+                    String(ObjC.unwrap($(runnerSelectedLogPath).lastPathComponent))
+                );
+                panel.setCanCreateDirectories(true);
+                panel.setDirectoryURL($.NSURL.fileURLWithPath(
+                    String(ObjC.unwrap($(runnerSelectedLogPath).stringByDeletingLastPathComponent))
+                ));
+                if (Number(panel.runModal) !== Number($.NSModalResponseOK)) {
+                    return;
+                }
+                const selectedPath = String(ObjC.unwrap(
+                    panel.URL.path.stringByStandardizingPath
+                ));
+                if (selectedPath === runnerSelectedScriptPath) {
+                    runnerStatusDetail = "Run log path must differ from the watched run script.";
+                    updateRunnerUI(Date.now());
+                    return;
+                }
+                runnerSelectedLogPath = selectedPath;
+                runnerOutputLastPollAt = 0;
+                runnerOutputLastText = "";
+                runnerStatusDetail = `Run log path changed to ${runnerSelectedLogPath}.`;
+                scheduleConfigurationSave();
+                updateRunnerUI(Date.now());
+                if (runnerOutputIsVisible() && runnerContentMode === "log") {
+                    updateRunnerOutputPresentation(Date.now(), true);
+                }
             }
         },
         "runnerAuto:": {
@@ -3170,6 +5166,7 @@ ObjC.registerSubclass({
                 } else if (runnerReady && runnerExecutionAllowed()) {
                     startOneShotRunner();
                 }
+                updateSignalAnimationControls();
                 scheduleConfigurationSave();
                 monitorTick();
             }
@@ -3177,13 +5174,19 @@ ObjC.registerSubclass({
         "runnerShowOutput:": {
             types: ["void", ["id"]],
             implementation: function () {
-                toggleRunnerOutput();
+                cycleRunnerViewMode();
             }
         },
-        "runnerHideOutput:": {
+        "runnerToggleScriptLog:": {
             types: ["void", ["id"]],
             implementation: function () {
-                setRunnerOutputVisible(false);
+                toggleRunnerContentMode();
+            }
+        },
+        "toggleMessageDetectionLog:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                setMessageDetectionLogExpanded(!messageDetectionLogExpanded);
             }
         },
         "runnerLED:": {
@@ -3191,31 +5194,19 @@ ObjC.registerSubclass({
             implementation: function () {
                 const state = runnerDisplayState();
                 if (state === "sentinel") {
-                    const removeSucceeded = Boolean(
-                        $.NSFileManager.defaultManager.removeItemAtPathError(
-                            runnerSelectedScriptPath,
-                            undefined
-                        )
-                    );
-                    const previousSentinel = activePromptSentinel;
-                    try {
-                        activePromptSentinel = generateRandomPromptSentinel();
-                    } catch (error) {
-                        activePromptSentinel = previousSentinel;
-                    }
-                    runnerSentinelDetected = false;
-                    runnerLEDHovering = false;
-                    runnerReady = false;
-                    runnerExistingScriptNotice = false;
-                    runnerStatusDetail = removeSucceeded
-                        ? `Sentinel ${runnerScriptName()} deleted and sentinel token rotated.`
-                        : `Failed to delete sentinel ${runnerScriptName()}, but sentinel token was rotated.`;
-                    scheduleConfigurationSave();
+                    removeSentinelRunScript();
                     monitorTick();
                 } else if (state === "running") {
                     requestRunnerStop(true);
                 } else if (state === "orphaned" || state === "orphan recovery") {
                     requestOrphanedRunnerStop();
+                } else if (state === "uninitialized" && runnerSelfTestStatus === "failed") {
+                    runnerAcknowledgedSelfTestConfiguration = runnerConfigurationFingerprint();
+                    runnerAutoTriggeredForPresence = false;
+                    runnerStatusDetail = "Failed startup self-test acknowledged; execution is unlocked for the current path and sandbox configuration.";
+                    updateRunnerUI(Date.now());
+                } else if (state === "uninitialized" || state === "idle") {
+                    startRunnerSelfTest();
                 } else if (state === "ready") {
                     startOneShotRunner();
                 }
@@ -3231,9 +5222,37 @@ ObjC.registerSubclass({
                 scheduleConfigurationSave();
                 runnerSelfTestStatus = "unverified";
                 runnerValidatedConfiguration = null;
+                runnerAcknowledgedSelfTestConfiguration = null;
                 runnerStatusDetail = sandboxIsEnabled()
-                    ? "Sandbox enabled; environment self-test required."
+                    ? (runnerSelfTestRequired()
+                        ? "Sandbox enabled; environment self-test required."
+                        : "Sandbox enabled; self-test is optional.")
                     : "Sandbox disabled; execution is available without self-test.";
+                updateRunnerUI(Date.now());
+            }
+        },
+        "runnerSelfTestRequiredChanged:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                if (runnerOperationInProgress() || perplexityRestart ||
+                    runnerCommandLineNoSelfTest || runnerCommandLineSkipSelfTest) {
+                    return;
+                }
+                runnerAutoTriggeredForPresence = false;
+                const required = runnerSelfTestRequired();
+                if (required && !runnerExecutionAllowed() && runnerAutoModeEnabled()) {
+                    monitorState.ui.runnerAutoButton.setState($.NSControlStateValueOff);
+                }
+                runnerStatusDetail = required
+                    ? (runnerExecutionAllowed()
+                        ? "Environment self-test is required and the current validation remains valid."
+                        : "Environment self-test is required before sandboxed execution.")
+                    : "Environment self-test is optional; sandboxed execution may proceed without it.";
+                scheduleConfigurationSave();
+                refreshRunnerPresence(Date.now(), true);
+                if (!required && runnerAutoModeEnabled() && runnerReady) {
+                    startOneShotRunner();
+                }
                 updateRunnerUI(Date.now());
             }
         },
@@ -3257,6 +5276,10 @@ ObjC.registerSubclass({
                 if (monitorTimer) {
                     monitorTimer.invalidate;
                 }
+                if (graphToolTipRestoreTimer) {
+                    graphToolTipRestoreTimer.invalidate;
+                    graphToolTipRestoreTimer = null;
+                }
                 $.NSFileManager.defaultManager.removeItemAtPathError(
                     RUNNER_OUTPUT_PATH,
                     undefined
@@ -3270,88 +5293,594 @@ ObjC.registerSubclass({
 
 function graphThresholdForY(y, height) {
     const ratio = height > 0 ? clamp(Number(y) / Number(height), 0, 1) : 0;
+    const displayRange = monitorState
+        ? clamp(
+            Number(monitorState.cpuGraphRangePercent),
+            CPU_GRAPH_RANGE_MIN_PERCENT,
+            CPU_GRAPH_RANGE_MAX_PERCENT
+        )
+        : CPU_GRAPH_RANGE_DEFAULT_PERCENT;
     return CPU_THRESHOLD_MIN_PERCENT +
-        ratio * (CPU_THRESHOLD_MAX_PERCENT - CPU_THRESHOLD_MIN_PERCENT);
+        ratio * (displayRange - CPU_THRESHOLD_MIN_PERCENT);
 }
 
-function graphWindowForHorizontalDelta(deltaX, width, initialWindow) {
-    const range = AVERAGE_WINDOW_MAX_SECONDS - AVERAGE_WINDOW_MIN_SECONDS;
-    const adjustment = width > 0 ? Number(deltaX) / Number(width) * range : 0;
+
+function graphValueForRelativeDelta(value, delta, dimension, minimum, maximum) {
+    const range = maximum - minimum;
+    const adjustment = dimension > 0 ? Number(delta) / Number(dimension) * range : 0;
+    return clamp(Number(value) + adjustment, minimum, maximum);
+}
+
+function graphSmoothingDragZoomFactor() {
+    if (!monitorState) {
+        return 1;
+    }
+    const smoothingRange = AVERAGE_WINDOW_MAX_SECONDS -
+        AVERAGE_WINDOW_MIN_SECONDS;
+    return smoothingRange > 0
+        ? Number(monitorState.ui.cpuDurationSlider.doubleValue) / smoothingRange
+        : 1;
+}
+
+function graphDurationForHorizontalScroll(value, delta, dimension) {
+    if (dimension <= 0) {
+        return clamp(
+            Number(value),
+            CPU_TIMEOUT_MIN_SECONDS,
+            CPU_TIMEOUT_MAX_SECONDS
+        );
+    }
+    const offset = CPU_SAMPLE_SECONDS;
+    const logarithmicSpan = Math.log(
+        (CPU_TIMEOUT_MAX_SECONDS + offset) /
+            (CPU_TIMEOUT_MIN_SECONDS + offset)
+    );
     return clamp(
-        Number(initialWindow) + adjustment,
-        AVERAGE_WINDOW_MIN_SECONDS,
-        AVERAGE_WINDOW_MAX_SECONDS
+        (Number(value) + offset) * Math.exp(
+            Number(delta) / Number(dimension) * logarithmicSpan
+        ) - offset,
+        CPU_TIMEOUT_MIN_SECONDS,
+        CPU_TIMEOUT_MAX_SECONDS
     );
 }
+
+function graphRangeForRelativeDelta(value, delta, dimension) {
+    if (dimension <= 0) {
+        return clamp(
+            Number(value),
+            CPU_GRAPH_RANGE_MIN_PERCENT,
+            CPU_GRAPH_RANGE_MAX_PERCENT
+        );
+    }
+    const logarithmicSpan = Math.log(
+        CPU_GRAPH_RANGE_MAX_PERCENT / CPU_GRAPH_RANGE_MIN_PERCENT
+    );
+    return clamp(
+        Number(value) * Math.exp(
+            Number(delta) / Number(dimension) * logarithmicSpan *
+                CPU_GRAPH_RANGE_SCROLL_SENSITIVITY
+        ),
+        CPU_GRAPH_RANGE_MIN_PERCENT,
+        CPU_GRAPH_RANGE_MAX_PERCENT
+    );
+}
+
 
 function graphEventPoint(view, event) {
     const point = view.convertPointFromView(event.locationInWindow, undefined);
     return { x: Number(point.x), y: Number(point.y) };
 }
 
-function injectSyntheticThresholdSample() {
+function hideCPUGraphToolTip(view) {
+    if (graphToolTipRestoreTimer) {
+        graphToolTipRestoreTimer.invalidate;
+        graphToolTipRestoreTimer = null;
+    }
+    view.setToolTip(null);
+}
+
+function commitCPUControlValues() {
     if (!monitorState) {
         return;
     }
-    const state = monitorState;
-    const threshold = Number(state.ui.cpuThresholdSlider.doubleValue);
-    const endTime = Date.now();
-    const nominalStartTime = endTime - CPU_SAMPLE_SECONDS * 1000;
-    const lastSample = state.cpuSamples.length > 0
-        ? state.cpuSamples[state.cpuSamples.length - 1]
-        : null;
-    const previousEndTime = lastSample
-        ? Math.min(Number(lastSample.endTime), endTime - 1)
-        : nominalStartTime;
-    state.cpuSamples.push({
-        startTime: Math.max(nominalStartTime, previousEndTime),
-        endTime,
-        percent: threshold
-    });
-    state.currentRawCPU = threshold;
-    state.graphEndTime = endTime;
-    state.lastCPUSample = endTime;
-    const duration = Number(state.ui.cpuDurationSlider.doubleValue);
-    const smoothing = Number(state.ui.averageWindowSlider.doubleValue);
-    state.cpuGraphData = makeCPUGraphData(
-        state.cpuSamples,
-        endTime,
-        duration,
-        smoothing
+    monitorState.committedSmoothingWindowSeconds = Number(
+        monitorState.ui.averageWindowSlider.doubleValue
     );
-    state.currentAverageCPU = averageCPUAt(state.cpuSamples, endTime, smoothing);
-    state.trailingLowCPUSeconds = trailingLowDuration(
-        state.cpuGraphData,
-        threshold,
-        endTime
+    monitorState.committedCPUThresholdPercent = Number(
+        monitorState.ui.cpuThresholdSlider.doubleValue
     );
-    state.ui.cpuGraph.setNeedsDisplay(true);
 }
 
-function updateGraphDrag(view, point) {
-    if (!monitorState || !graphGestureMode) {
+function beginCPUSliderPreview(kind) {
+    if (!monitorState || cpuSliderPreview) {
+        return;
+    }
+    stopCPUGraphTransition();
+    cpuSliderPreview = {
+        kind,
+        smoothingWindowSeconds: Number(
+            monitorState.committedSmoothingWindowSeconds
+        ),
+        cpuThresholdPercent: Number(
+            monitorState.committedCPUThresholdPercent
+        ),
+        pointerInside: true
+    };
+    graphWindowBeforeMouseDown = cpuSliderPreview.smoothingWindowSeconds;
+    graphMouseDownX = null;
+    graphMousePressed = true;
+    monitorState.ui.cpuGraph.setNeedsDisplay(true);
+}
+
+function currentCPUSliderTrackingEvent() {
+    const event = $.NSApplication.sharedApplication.currentEvent;
+    if (objcObjectIsNil(event)) {
+        return null;
+    }
+    const type = Number(event.type);
+    const mouseTrackingTypes = [
+        Number($.NSEventTypeLeftMouseDown),
+        Number($.NSEventTypeLeftMouseUp),
+        Number($.NSEventTypeLeftMouseDragged)
+    ];
+    return mouseTrackingTypes.indexOf(type) >= 0 ? event : null;
+}
+
+function eventIsInsideView(view, event) {
+    const point = view.convertPointFromView(event.locationInWindow, undefined);
+    const width = Number(view.bounds.size.width);
+    const height = Number(view.bounds.size.height);
+    return Number(point.x) >= 0 && Number(point.x) < width &&
+        Number(point.y) >= 0 && Number(point.y) < height;
+}
+
+function updateCPUSliderPreviewPointer(control, event) {
+    if (!cpuSliderPreview || !event) {
+        return;
+    }
+    cpuSliderPreview.pointerInside = eventIsInsideView(control, event) ||
+        eventIsInsideView(monitorState.ui.cpuGraph, event);
+}
+
+function stopCPUGraphTransition() {
+    if (cpuGraphTransitionTimer) {
+        cpuGraphTransitionTimer.invalidate;
+        cpuGraphTransitionTimer = null;
+    }
+    cpuGraphTransition = null;
+}
+
+function startCPUGraphTransition(preview, acceptedWindowSeconds, aborted) {
+    stopCPUGraphTransition();
+    const oldWindowSeconds = Number(preview.smoothingWindowSeconds);
+    const liveWindowSeconds = Number(acceptedWindowSeconds);
+    if (Math.abs(liveWindowSeconds - oldWindowSeconds) < 0.0001) {
+        return;
+    }
+    cpuGraphTransition = {
+        aborted: Boolean(aborted),
+        fromWindowSeconds: oldWindowSeconds,
+        previewWindowSeconds: liveWindowSeconds,
+        toWindowSeconds: aborted ? oldWindowSeconds : liveWindowSeconds,
+        startedAt: Date.now(),
+        durationMilliseconds: 320
+    };
+    cpuGraphTransitionTimer = $.NSTimer.timerWithTimeIntervalTargetSelectorUserInfoRepeats(
+        1 / 60,
+        monitorController,
+        "cpuGraphTransitionTick:",
+        null,
+        true
+    );
+    $.NSRunLoop.mainRunLoop.addTimerForMode(
+        cpuGraphTransitionTimer,
+        $.NSRunLoopCommonModes
+    );
+}
+
+function finishCPUSliderPreview(releasedInsideOverride) {
+    if (!monitorState || !cpuSliderPreview) {
+        return;
+    }
+    const preview = cpuSliderPreview;
+    const releasedInside = typeof releasedInsideOverride === "boolean"
+        ? releasedInsideOverride
+        : Boolean(preview.pointerInside);
+    const liveWindowSeconds = Number(
+        monitorState.ui.averageWindowSlider.doubleValue
+    );
+    cpuSliderPreview = null;
+    graphMousePressed = false;
+    graphWindowBeforeMouseDown = null;
+    graphMouseDownX = null;
+
+    if (!releasedInside) {
+        monitorState.ui.averageWindowSlider.setDoubleValue(
+            preview.smoothingWindowSeconds
+        );
+        monitorState.ui.cpuThresholdSlider.setDoubleValue(
+            preview.cpuThresholdPercent
+        );
+        const context = currentCPUGraphComputationContext();
+        if (context) {
+            applySmoothingWindowToGraph(
+                context,
+                preview.smoothingWindowSeconds
+            );
+        }
+    }
+    commitCPUControlValues();
+    scheduleConfigurationSave();
+    startCPUGraphTransition(preview, liveWindowSeconds, !releasedInside);
+    monitorState.ui.cpuGraph.setNeedsDisplay(true);
+}
+
+function restoreCPUGraphToolTip(view) {
+    if (graphToolTipRestoreTimer) {
+        graphToolTipRestoreTimer.invalidate;
+        graphToolTipRestoreTimer = null;
+    }
+    view.setToolTip(CPU_GRAPH_TOOLTIP);
+}
+
+function scheduleCPUGraphToolTipRestore() {
+    if (!monitorController) {
+        return;
+    }
+    if (graphToolTipRestoreTimer) {
+        graphToolTipRestoreTimer.invalidate;
+    }
+    graphToolTipRestoreTimer = $.NSTimer.timerWithTimeIntervalTargetSelectorUserInfoRepeats(
+        GRAPH_TOOLTIP_RESTORE_SECONDS,
+        monitorController,
+        "restoreGraphToolTip:",
+        null,
+        false
+    );
+    $.NSRunLoop.mainRunLoop.addTimerForMode(
+        graphToolTipRestoreTimer,
+        $.NSRunLoopCommonModes
+    );
+}
+
+
+function applyGraphPoint(view, point) {
+    if (!monitorState) {
         return;
     }
     const width = Number(view.bounds.size.width);
     const height = Number(view.bounds.size.height);
-    if (graphGestureMode === "threshold") {
-        const threshold = graphThresholdForY(point.y, height);
-        monitorState.ui.cpuThresholdSlider.setDoubleValue(threshold);
-        monitorState.ui.graphStatus.setStringValue(
-            `RAW ${monitorState.currentRawCPU.toFixed(4)}%    AVG ${monitorState.currentAverageCPU.toFixed(4)}%    THRESHOLD ${threshold.toFixed(3)}%    ${cpuSignalIsEnabled() ? "ADJUSTING" : "DISABLED"}`
-        );
-    } else {
-        const smoothing = graphWindowForHorizontalDelta(
-            point.x - graphClickStart.x,
+    const threshold = graphThresholdForY(point.y, height);
+    const smoothing = graphMousePressed && graphWindowBeforeMouseDown !== null &&
+        graphMouseDownX !== null
+        ? graphValueForRelativeDelta(
+            graphWindowBeforeMouseDown,
+            (point.x - graphMouseDownX) * graphSmoothingDragZoomFactor(),
             width,
-            graphClickStart.smoothingWindowSeconds
-        );
-        monitorState.ui.averageWindowSlider.setDoubleValue(smoothing);
-        monitorState.ui.averageWindowValue.setStringValue(`${smoothing.toFixed(1)} s`);
+            AVERAGE_WINDOW_MIN_SECONDS,
+            AVERAGE_WINDOW_MAX_SECONDS
+        )
+        : Number(monitorState.ui.averageWindowSlider.doubleValue);
+    monitorState.ui.cpuThresholdSlider.setDoubleValue(threshold);
+    monitorState.ui.averageWindowSlider.setDoubleValue(smoothing);
+    const context = currentCPUGraphComputationContext();
+    if (context) {
+        applySmoothingWindowToGraph(context, smoothing);
     }
+    monitorState.ui.graphStatus.setStringValue(
+        `RAW ${monitorState.currentRawCPU.toFixed(4)}%    AVG ${monitorState.currentAverageCPU.toFixed(4)}%    THRESHOLD ${threshold.toFixed(3)}%    ${cpuSignalIsEnabled() ? "ADJUSTING" : "DISABLED"}`
+    );
     monitorState.ui.cpuGraph.setNeedsDisplay(true);
     scheduleConfigurationSave();
 }
+
+function promptEditorFrameSnapshot(view) {
+    const frame = view.frame;
+    return {
+        x: Number(frame.origin.x),
+        y: Number(frame.origin.y),
+        width: Number(frame.size.width),
+        height: Number(frame.size.height)
+    };
+}
+
+function setPromptEditorFrame(view, frame) {
+    view.setFrame($.NSMakeRect(frame.x, frame.y, frame.width, frame.height));
+}
+
+function capturePromptEditorLayout(content) {
+    promptEditorLayout = {
+        content,
+        entries: promptEditorEntries.map(entry => ({
+            textField: promptEditorFrameSnapshot(entry.textField),
+            resizeHandle: promptEditorFrameSnapshot(entry.resizeHandle)
+        })),
+        expandedIndex: null,
+        extraHeight: 0
+    };
+}
+
+function positionPromptEditorResizeHandle(index, floating) {
+    if (!promptEditorLayout || index === null || index < 0 ||
+        index >= promptEditorEntries.length) {
+        return;
+    }
+    const layout = promptEditorLayout;
+    const handle = promptEditorEntries[index].resizeHandle;
+    handle.removeFromSuperviewWithoutNeedingDisplay;
+    if (floating || !monitorState || !monitorState.ui.signalCancellationOverlay) {
+        layout.content.addSubviewPositionedRelativeTo(
+            handle,
+            $.NSWindowAbove,
+            null
+        );
+    } else {
+        layout.content.addSubviewPositionedRelativeTo(
+            handle,
+            $.NSWindowBelow,
+            monitorState.ui.signalCancellationOverlay
+        );
+    }
+}
+
+function setPromptEditorExpansion(index, requestedHeight) {
+    if (!promptEditorLayout) {
+        return;
+    }
+    const layout = promptEditorLayout;
+    const previousExpandedIndex = layout.expandedIndex;
+    const validIndex = index !== null && index >= 0 && index < layout.entries.length;
+    const extraHeight = validIndex
+        ? clamp(Number(requestedHeight), 0, 280)
+        : 0;
+    const expandedIndex = extraHeight > 0 ? index : null;
+
+    for (let entryIndex = 0; entryIndex < layout.entries.length; entryIndex += 1) {
+        const entry = promptEditorEntries[entryIndex];
+        const base = layout.entries[entryIndex];
+        setPromptEditorFrame(entry.textField, base.textField);
+        setPromptEditorFrame(entry.resizeHandle, base.resizeHandle);
+    }
+
+    if (previousExpandedIndex !== null && expandedIndex === null && monitorState &&
+        monitorState.ui.signalCancellationOverlay) {
+        const previousEntry = promptEditorEntries[previousExpandedIndex];
+        previousEntry.textField.removeFromSuperviewWithoutNeedingDisplay;
+        layout.content.addSubviewPositionedRelativeTo(
+            previousEntry.textField,
+            $.NSWindowBelow,
+            monitorState.ui.signalCancellationOverlay
+        );
+        if (!promptEditorResize) {
+            positionPromptEditorResizeHandle(previousExpandedIndex, false);
+        }
+    }
+
+    if (expandedIndex !== null) {
+        const entry = promptEditorEntries[expandedIndex];
+        const base = layout.entries[expandedIndex];
+        const newHeight = base.textField.height + extraHeight;
+        const desiredTop = base.textField.y + newHeight;
+        const contentTop = Number(layout.content.bounds.size.height) - 8;
+        const top = Math.min(desiredTop, contentTop);
+        entry.textField.setFrame($.NSMakeRect(
+            base.textField.x,
+            top - newHeight,
+            base.textField.width,
+            newHeight
+        ));
+        const handleTopInset = base.textField.y + base.textField.height -
+            base.resizeHandle.y;
+        entry.resizeHandle.setFrame($.NSMakeRect(
+            base.resizeHandle.x,
+            top - handleTopInset,
+            base.resizeHandle.width,
+            base.resizeHandle.height
+        ));
+        if (previousExpandedIndex !== expandedIndex) {
+            entry.textField.removeFromSuperviewWithoutNeedingDisplay;
+            layout.content.addSubviewPositionedRelativeTo(
+                entry.textField,
+                $.NSWindowAbove,
+                null
+            );
+
+        }
+        entry.resizeHandle.setNeedsDisplay(true);
+    }
+
+    layout.expandedIndex = expandedIndex;
+    layout.extraHeight = extraHeight;
+    if (promptCollapseMenuItem) {
+        promptCollapseMenuItem.setEnabled(expandedIndex !== null);
+    }
+}
+
+function finishPromptEditorEditing(restoreOriginal) {
+    if (!promptEditorLayout || promptEditorLayout.expandedIndex === null) {
+        return false;
+    }
+    const index = promptEditorLayout.expandedIndex;
+    const entry = promptEditorEntries[index];
+    const window = entry.textField.window;
+    if (!objcObjectIsNil(window)) {
+        window.endEditingFor(entry.textField);
+    }
+    if (restoreOriginal && promptEditorEditSession &&
+        promptEditorEditSession.index === index) {
+        entry.textField.setStringValue(promptEditorEditSession.originalText);
+        const tag = Number(entry.textField.tag);
+        if (tag >= PROMPT_TEXT_TAG_BASE &&
+            tag < PROMPT_TEXT_TAG_BASE + promptRows.length) {
+            promptTextChanged(tag - PROMPT_TEXT_TAG_BASE);
+        } else {
+            scheduleConfigurationSave();
+        }
+    }
+    promptEditorEditSession = null;
+    setPromptEditorExpansion(null, 0);
+    return true;
+}
+
+function collapseExpandedPromptEditor() {
+    return finishPromptEditorEditing(true);
+}
+
+function acceptExpandedPromptEditor() {
+    return finishPromptEditorEditing(false);
+}
+
+function promptEditorIndexForResizeHandle(handle) {
+    for (let index = 0; index < promptEditorEntries.length; index += 1) {
+        if (Boolean(promptEditorEntries[index].resizeHandle.isEqual(handle))) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+function beginPromptEditorResize(index, screenY) {
+    if (!promptEditorLayout || signalAnimation || index < 0 ||
+        index >= promptEditorEntries.length ||
+        !Boolean(promptEditorEntries[index].textField.enabled)) {
+        return;
+    }
+    if (messageDetectionLogExpanded) {
+        setMessageDetectionLogExpanded(false);
+    }
+    if (promptEditorLayout.expandedIndex !== null &&
+        promptEditorLayout.expandedIndex !== index) {
+        acceptExpandedPromptEditor();
+    }
+    if (!promptEditorEditSession || promptEditorEditSession.index !== index) {
+        promptEditorEditSession = {
+            index,
+            originalText: stringValue(promptEditorEntries[index].textField)
+        };
+    }
+    promptEditorResize = {
+        index,
+        startScreenY: Number(screenY),
+        startHeight: promptEditorLayout.expandedIndex === index
+            ? promptEditorLayout.extraHeight
+            : 0
+    };
+}
+
+function updatePromptEditorResize(screenY) {
+    if (!promptEditorResize) {
+        return;
+    }
+    const delta = Number(screenY) - promptEditorResize.startScreenY;
+    setPromptEditorExpansion(
+        promptEditorResize.index,
+        promptEditorResize.startHeight + delta
+    );
+}
+
+function finishPromptEditorResize(screenY) {
+    if (!promptEditorResize) {
+        return;
+    }
+    const index = promptEditorResize.index;
+    updatePromptEditorResize(screenY);
+    promptEditorResize = null;
+    positionPromptEditorResizeHandle(
+        index,
+        Boolean(promptEditorLayout && promptEditorLayout.expandedIndex === index)
+    );
+    const entry = promptEditorEntries[index];
+    const window = entry.textField.window;
+    if (promptEditorLayout.expandedIndex === index && !objcObjectIsNil(window)) {
+        window.makeFirstResponder(entry.textField);
+    } else {
+        promptEditorEditSession = null;
+    }
+}
+
+function drawPromptEditorResizeHandle(view) {
+    const bounds = view.bounds;
+    $.NSColor.tertiaryLabelColor.setStroke;
+    const path = $.NSBezierPath.bezierPath;
+    path.setLineWidth(1.25);
+    for (let offset = 0; offset < 3; offset += 1) {
+        const inset = 2 + offset * 3;
+        path.moveToPoint($.NSMakePoint(
+            Number(bounds.size.width) - inset,
+            Number(bounds.size.height) - 2
+        ));
+        path.lineToPoint($.NSMakePoint(
+            Number(bounds.size.width) - 2,
+            Number(bounds.size.height) - inset
+        ));
+    }
+    path.stroke;
+}
+
+ObjC.registerSubclass({
+    name: "PromptEditorResizeHandle",
+    superclass: "NSView",
+    methods: {
+        "drawRect:": {
+            implementation: function () {
+                drawPromptEditorResizeHandle(this);
+            }
+        },
+        "acceptsFirstMouse:": {
+            types: ["bool", ["id"]],
+            implementation: function () {
+                return true;
+            }
+        },
+        "acceptsFirstResponder": {
+            types: ["bool", []],
+            implementation: function () {
+                return true;
+            }
+        },
+        "keyDown:": {
+            types: ["void", ["id"]],
+            implementation: function (event) {
+                if (Number(event.keyCode) === 53) {
+                    collapseExpandedPromptEditor();
+                }
+            }
+        },
+        "mouseDown:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                const window = this.window;
+                if (!objcObjectIsNil(window)) {
+                    window.makeKeyAndOrderFront(null);
+                    window.makeFirstResponder(this);
+                }
+                $.NSApplication.sharedApplication.activateIgnoringOtherApps(true);
+                beginPromptEditorResize(
+                    promptEditorIndexForResizeHandle(this),
+                    Number($.NSEvent.mouseLocation.y)
+                );
+            }
+        },
+        "mouseDragged:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                updatePromptEditorResize(Number($.NSEvent.mouseLocation.y));
+            }
+        },
+        "mouseUp:": {
+            types: ["void", ["id"]],
+            implementation: function () {
+                finishPromptEditorResize(Number($.NSEvent.mouseLocation.y));
+            }
+        },
+        "resetCursorRects": {
+            types: ["void", []],
+            implementation: function () {
+                this.addCursorRectCursor(this.bounds, $.NSCursor.resizeUpDownCursor);
+            }
+        }
+    }
+});
 
 ObjC.registerSubclass({
     name: "CPUGraphView",
@@ -3362,43 +5891,66 @@ ObjC.registerSubclass({
                 drawCPUGraph(this);
             }
         },
+        "acceptsFirstMouse:": {
+            types: ["bool", ["id"]],
+            implementation: function () {
+                return true;
+            }
+        },
         "mouseDown:": {
             types: ["void", ["id"]],
             implementation: function (event) {
-                graphClickStart = graphEventPoint(this, event);
-                graphClickStart.smoothingWindowSeconds = Number(
+                hideCPUGraphToolTip(this);
+                stopCPUGraphTransition();
+                const point = graphEventPoint(this, event);
+                graphWindowBeforeMouseDown = Number(
                     monitorState.ui.averageWindowSlider.doubleValue
                 );
-                graphGestureMode = null;
+                graphMouseDownX = point.x;
+                graphMousePressed = true;
+                applyGraphPoint(this, point);
             }
         },
         "mouseDragged:": {
             types: ["void", ["id"]],
             implementation: function (event) {
-                if (!graphClickStart) {
-                    return;
-                }
-                const point = graphEventPoint(this, event);
-                const deltaX = point.x - graphClickStart.x;
-                const deltaY = point.y - graphClickStart.y;
-                if (!graphGestureMode && Math.sqrt(deltaX * deltaX + deltaY * deltaY) > 3) {
-                    graphGestureMode = Math.abs(deltaY) >= Math.abs(deltaX)
-                        ? "threshold"
-                        : "smoothing";
-                }
-                updateGraphDrag(this, point);
+                hideCPUGraphToolTip(this);
+                applyGraphPoint(this, graphEventPoint(this, event));
             }
         },
         "mouseUp:": {
             types: ["void", ["id"]],
             implementation: function (event) {
-                if (graphClickStart && graphGestureMode) {
-                    updateGraphDrag(this, graphEventPoint(this, event));
-                } else if (graphClickStart) {
-                    injectSyntheticThresholdSample();
+                const point = graphEventPoint(this, event);
+                const width = Number(this.bounds.size.width);
+                const height = Number(this.bounds.size.height);
+                const releasedOutside = point.x < 0 || point.x >= width ||
+                    point.y < 0 || point.y >= height;
+                const previousWindow = graphWindowBeforeMouseDown;
+                const liveWindow = Number(
+                    monitorState.ui.averageWindowSlider.doubleValue
+                );
+                graphMousePressed = false;
+                graphWindowBeforeMouseDown = null;
+                graphMouseDownX = null;
+                if (releasedOutside && previousWindow !== null) {
+                    monitorState.ui.averageWindowSlider.setDoubleValue(previousWindow);
+                    const context = currentCPUGraphComputationContext();
+                    if (context) {
+                        applySmoothingWindowToGraph(context, previousWindow);
+                    }
+                    scheduleConfigurationSave();
                 }
-                graphClickStart = null;
-                graphGestureMode = null;
+                commitCPUControlValues();
+                if (previousWindow !== null) {
+                    startCPUGraphTransition(
+                        { smoothingWindowSeconds: previousWindow },
+                        liveWindow,
+                        releasedOutside
+                    );
+                }
+                this.setNeedsDisplay(true);
+                restoreCPUGraphToolTip(this);
             }
         },
         "scrollWheel:": {
@@ -3407,24 +5959,47 @@ ObjC.registerSubclass({
                 if (!monitorState) {
                     return;
                 }
-                const deltaX = Number(event.scrollingDeltaX);
-                const deltaY = Number(event.scrollingDeltaY);
-                const momentumPhase = Number(event.momentumPhase);
-                if (momentumPhase !== 0 ||
-                    Math.abs(deltaX) <= Math.abs(deltaY) || deltaX === 0) {
+                hideCPUGraphToolTip(this);
+                scheduleCPUGraphToolTipRestore();
+                if (Number(event.momentumPhase) !== 0) {
                     return;
                 }
-                const normalizedDeltaX = Boolean(event.hasPreciseScrollingDeltas)
-                    ? deltaX
-                    : deltaX * 12;
-                const smoothing = graphWindowForHorizontalDelta(
-                    normalizedDeltaX,
-                    Number(this.bounds.size.width),
-                    Number(monitorState.ui.averageWindowSlider.doubleValue)
+                const precise = Boolean(event.hasPreciseScrollingDeltas);
+                const deltaX = Number(event.scrollingDeltaX) * (precise ? 1 : 12);
+                const deltaY = Number(event.scrollingDeltaY) * (precise ? 1 : 12);
+                if (deltaX === 0 && deltaY === 0) {
+                    return;
+                }
+                const width = Number(this.bounds.size.width);
+                const height = Number(this.bounds.size.height);
+                const duration = graphDurationForHorizontalScroll(
+                    monitorState.ui.cpuDurationSlider.doubleValue,
+                    deltaX,
+                    width
                 );
-                monitorState.ui.averageWindowSlider.setDoubleValue(smoothing);
-                monitorState.ui.averageWindowValue.setStringValue(`${smoothing.toFixed(1)} s`);
-                this.setNeedsDisplay(true);
+                const displayRange = graphRangeForRelativeDelta(
+                    monitorState.cpuGraphRangePercent,
+                    deltaY,
+                    height
+                );
+                monitorState.cpuGraphRangePercent = displayRange;
+                monitorState.ui.cpuDurationSlider.setDoubleValue(duration);
+                monitorState.ui.cpuThresholdSlider.setMaxValue(displayRange);
+                if (Number(monitorState.ui.cpuThresholdSlider.doubleValue) > displayRange) {
+                    monitorState.ui.cpuThresholdSlider.setDoubleValue(displayRange);
+                }
+                monitorState.ui.thresholdMaximumLabel.setStringValue(
+                    `${Number(displayRange.toFixed(2))}%`
+                );
+                monitorState.ui.cpuDurationValue.setStringValue(`${duration.toFixed(1)} s`);
+                monitorState.ui.cpuProgress.setMaxValue(Math.max(duration, 0.001));
+                const context = currentCPUGraphComputationContext();
+                if (context) {
+                    applySmoothingWindowToGraph(
+                        context,
+                        Number(monitorState.ui.averageWindowSlider.doubleValue)
+                    );
+                }
                 scheduleConfigurationSave();
             }
         }
@@ -3669,17 +6244,107 @@ function restoreFrontmostProcess(processName) {
     }
 }
 
+function restartPromptStatusDetail(now) {
+    if (!restartPromptDelivery) {
+        return monitorState ? monitorState.waitPromptDetail : "";
+    }
+    const remainingSeconds = Math.max(
+        0,
+        (restartPromptDelivery.sendAt - now) / 1000
+    );
+    if (remainingSeconds <= 0 && perplexityRestart) {
+        return "PROMPT READY · WAITING FOR RESTART";
+    }
+    return restartPromptDelivery.attempts > 0
+        ? `PROMPT RETRY IN ${remainingSeconds.toFixed(1)} s`
+        : `PROMPT IN ${remainingSeconds.toFixed(1)} s`;
+}
+
+function scheduleRestartPrompt(now) {
+    if (!monitorState) {
+        return;
+    }
+    const configuredPrompt = stringValue(
+        monitorState.ui.waitRestartPromptField
+    );
+    restartPromptDelivery = {
+        rawPrompt: configuredPrompt.trim()
+            ? configuredPrompt
+            : WAIT_RESTART_PROMPT_DEFAULT,
+        sendAt: now + RESTART_PROMPT_DELAY_MILLISECONDS,
+        attempts: 0
+    };
+    monitorState.waitPromptDetail = "";
+    updateSignalAnimationControls();
+}
+
+function cancelRestartPrompt() {
+    if (!restartPromptDelivery) {
+        return false;
+    }
+    restartPromptDelivery = null;
+    if (monitorState) {
+        monitorState.waitPromptDetail = "PROMPT CANCELLED";
+    }
+    updateSignalAnimationControls();
+    return true;
+}
+
+function updateRestartPrompt(now) {
+    if (!restartPromptDelivery || now < restartPromptDelivery.sendAt ||
+        perplexityRestart || signalAnimation) {
+        return;
+    }
+    const delivery = restartPromptDelivery;
+    try {
+        sendPrompt(delivery.rawPrompt);
+        restartPromptDelivery = null;
+        monitorState.waitPromptDetail = "PROMPT SENT";
+    } catch (error) {
+        delivery.attempts += 1;
+        if (delivery.attempts >= RESTART_PROMPT_MAX_ATTEMPTS) {
+            restartPromptDelivery = null;
+            monitorState.waitPromptDetail = `PROMPT FAILED · ${error}`;
+        } else {
+            delivery.sendAt = Date.now() + RESTART_PROMPT_RETRY_MILLISECONDS;
+            monitorState.waitPromptDetail = `PROMPT ATTEMPT ${delivery.attempts} FAILED`;
+        }
+    }
+    updateSignalAnimationControls();
+}
+
 function finishPerplexityClientRestart(success, detail) {
     if (!perplexityRestart) {
         return;
     }
     const previousFrontmostName = perplexityRestart.previousFrontmostName;
+    let sentinelDetail = "";
+    if (success) {
+        try {
+            const sentinelResult = cyclePromptSentinelAfterPerplexityRestart();
+            sentinelDetail = sentinelResult.cycled
+                ? " · sentinel rotated"
+                : " · sentinel preserved";
+            runnerStatusDetail = sentinelResult.message;
+        } catch (error) {
+            sentinelDetail = " · SENTINEL ROTATION FAILED";
+            runnerStatusDetail = `Perplexity restarted, but sentinel rotation failed: ${error}`;
+            if (restartPromptDelivery) {
+                restartPromptDelivery = null;
+                monitorState.waitPromptDetail = "PROMPT CANCELLED · SENTINEL ROTATION FAILED";
+            }
+        }
+    }
     perplexityRestart = null;
     if (monitorState) {
         monitorState.waitWarning = false;
+        if (!success && restartPromptDelivery) {
+            restartPromptDelivery = null;
+            monitorState.waitPromptDetail = "PROMPT CANCELLED · RESTART FAILED";
+        }
         monitorState.waitRestartDetail = success
-            ? "RESTARTED · waiting for runner"
-            : `RESTART FAILED · ${detail} · reset to retry`;
+            ? `RESTARTED · waiting for runner${sentinelDetail}`
+            : `RESTART FAILED · ${detail} · use Restart now to retry`;
         monitorState.ui.waitProgress.setAlphaValue(1.0);
         monitorState.ui.signalConnectorView.setNeedsDisplay(true);
     }
@@ -3740,9 +6405,14 @@ function startPerplexityClientRestart(now) {
         previousFrontmostName = null;
     }
 
+    monitorState.waitSeconds = 0;
     monitorState.waitSignalLatched = true;
     monitorState.waitWarning = false;
+    monitorState.lastTick = now;
+    monitorState.ui.waitProgress.setDoubleValue(0);
+    monitorState.ui.waitProgress.setAlphaValue(1.0);
     monitorState.waitRestartDetail = "RESTARTING · quitting Perplexity";
+    scheduleRestartPrompt(now);
     perplexityRestart = {
         phase: "quitting",
         phaseStartedAt: now,
@@ -3829,22 +6499,12 @@ function sendPrompt(promptOverride) {
         throw new Error("Perplexity did not become frontmost.");
     }
 
-    const previousPromptSentinel = activePromptSentinel;
-    activePromptSentinel = generateRandomPromptSentinel();
-    if (!saveConfigurationNow()) {
-        const message = configurationSaveFailureMessage() +
-            " Prompt injection was cancelled so an untracked sentinel cannot be emitted.";
-        activePromptSentinel = previousPromptSentinel;
-        configurationDirty = true;
-        runnerStatusDetail = message;
-        updateRunnerUI(Date.now());
-        if (previousFrontmostName && previousFrontmostName !== "Perplexity") {
-            const previousProcesses = systemEvents.processes.whose({ name: previousFrontmostName });
-            if (previousProcesses.length > 0) {
-                previousProcesses[0].frontmost = true;
-            }
-        }
-        throw new Error(message);
+    if (rawPromptText.indexOf("{sentinel}") >= 0 &&
+        !ACTIVE_SENTINEL_PATTERN.test(activePromptSentinel)) {
+        restoreFrontmostProcess(previousFrontmostName);
+        throw new Error(
+            "No active sentinel token is available. Restart Perplexity before sending this prompt."
+        );
     }
     const promptText = expandPromptSentinel(rawPromptText, activePromptSentinel);
 
@@ -3856,12 +6516,7 @@ function sendPrompt(promptOverride) {
     systemEvents.keystroke(promptText);
     systemEvents.keyCode(36);
 
-    if (previousFrontmostName && previousFrontmostName !== "Perplexity") {
-        const previousProcesses = systemEvents.processes.whose({ name: previousFrontmostName });
-        if (previousProcesses.length > 0) {
-            previousProcesses[0].frontmost = true;
-        }
-    }
+    restoreFrontmostProcess(previousFrontmostName);
 }
 
 function makeLabel(frame, text, fontSize) {
@@ -3888,11 +6543,189 @@ function makeCaptionLabel(frame, text) {
     return label;
 }
 
+function updatePromptSentinelLabel(label) {
+    const placeholder = "{sentinel}";
+    const text = `Current ${placeholder}: ${activePromptSentinel || "none generated yet"}`;
+    if (stringValue(label) === text) {
+        return;
+    }
+
+    label.setStringValue(text);
+    const attributedText = label.attributedStringValue.mutableCopy;
+    attributedText.addAttributeValueRange(
+        $.NSFontAttributeName,
+        $.NSFont.systemFontOfSize(11),
+        $.NSMakeRange(0, text.length)
+    );
+    attributedText.addAttributeValueRange(
+        $.NSForegroundColorAttributeName,
+        $.NSColor.secondaryLabelColor,
+        $.NSMakeRange(0, text.length)
+    );
+    attributedText.addAttributeValueRange(
+        $.NSFontAttributeName,
+        $.NSFont.boldSystemFontOfSize(11),
+        $.NSMakeRange("Current ".length, placeholder.length)
+    );
+    label.setAttributedStringValue(attributedText);
+}
+
 function makeValueLabel(frame, text) {
     const label = makeLabel(frame, text, 12);
     label.setFont($.NSFont.monospacedDigitSystemFontOfSizeWeight(12, $.NSFontWeightMedium));
     label.setAlignment($.NSTextAlignmentRight);
     return label;
+}
+
+function makeEditMenuItem(title, action, keyEquivalent, modifierMask) {
+    const item = $.NSMenuItem.alloc.initWithTitleActionKeyEquivalent(
+        title,
+        action,
+        keyEquivalent || ""
+    );
+    item.setTarget(null);
+    if (modifierMask !== undefined && modifierMask !== null) {
+        item.setKeyEquivalentModifierMask(modifierMask);
+    }
+    return item;
+}
+
+function makeTextEditingContextMenu() {
+    const menu = $.NSMenu.alloc.initWithTitle("Text editing");
+    for (const spec of [
+        ["Cut", "textCut:"],
+        ["Copy", "textCopy:"],
+        ["Paste", "textPaste:"],
+        ["Select All", "textSelectAll:"]
+    ]) {
+        menu.addItem(makeEditMenuItem(spec[0], spec[1], "", null));
+    }
+    return menu;
+}
+
+function installApplicationEditMenu(nsApp) {
+    const command = $.NSEventModifierFlagCommand;
+    const commandShift = command | $.NSEventModifierFlagShift;
+    const mainMenu = $.NSMenu.alloc.initWithTitle("Main menu");
+    const editRoot = $.NSMenuItem.alloc.initWithTitleActionKeyEquivalent(
+        "Edit",
+        null,
+        ""
+    );
+    const editMenu = $.NSMenu.alloc.initWithTitle("Edit");
+    editMenu.addItem(makeEditMenuItem("Undo", "textUndo:", "z", command));
+    editMenu.addItem(makeEditMenuItem("Redo", "textRedo:", "Z", commandShift));
+    editMenu.addItem($.NSMenuItem.separatorItem);
+    editMenu.addItem(makeEditMenuItem("Cut", "textCut:", "x", command));
+    editMenu.addItem(makeEditMenuItem("Copy", "textCopy:", "c", command));
+    editMenu.addItem(makeEditMenuItem("Paste", "textPaste:", "v", command));
+    editMenu.addItem(makeEditMenuItem("Select All", "textSelectAll:", "a", command));
+    editMenu.addItem($.NSMenuItem.separatorItem);
+    promptCollapseMenuItem = makeEditMenuItem(
+        "Cancel Editor",
+        "collapsePromptEditor:",
+        "\u001b",
+        0
+    );
+    promptCollapseMenuItem.setEnabled(false);
+    editMenu.addItem(promptCollapseMenuItem);
+    editRoot.setSubmenu(editMenu);
+    mainMenu.addItem(editRoot);
+    nsApp.setMainMenu(mainMenu);
+}
+
+function performTextEditingCommand(sender, action) {
+    const nsApp = $.NSApplication.sharedApplication;
+    let control = null;
+    try {
+        const representedObject = sender ? sender.representedObject : null;
+        if (!objcObjectIsNil(representedObject)) {
+            control = representedObject;
+        }
+    } catch (error) {
+        control = null;
+    }
+
+    let window = control && !objcObjectIsNil(control.window)
+        ? control.window
+        : nsApp.keyWindow;
+    if (objcObjectIsNil(window)) {
+        window = nsApp.mainWindow;
+    }
+    if (objcObjectIsNil(window)) {
+        return false;
+    }
+    let responder;
+    if (control) {
+        responder = window.fieldEditorForObject(false, control);
+        if (objcObjectIsNil(responder)) {
+            window.makeFirstResponder(control);
+            responder = window.fieldEditorForObject(true, control);
+        }
+    } else {
+        responder = window.firstResponder;
+    }
+    if (objcObjectIsNil(responder)) {
+        return false;
+    }
+    try {
+        if (action === "undo:") {
+            const undoManager = responder.undoManager;
+            if (!objcObjectIsNil(undoManager) && Boolean(undoManager.canUndo)) {
+                undoManager.undo;
+                return true;
+            }
+            return false;
+        }
+        if (action === "redo:") {
+            const undoManager = responder.undoManager;
+            if (!objcObjectIsNil(undoManager) && Boolean(undoManager.canRedo)) {
+                undoManager.redo;
+                return true;
+            }
+            return false;
+        }
+        if (action === "cut:") {
+            responder.cut(null);
+        } else if (action === "copy:") {
+            responder.copy(null);
+        } else if (action === "paste:") {
+            responder.paste(null);
+        } else if (action === "selectAll:") {
+            responder.selectAll(null);
+        } else {
+            return false;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+function configureTextEditingMenuTargets(nsApp, controller) {
+    const mainMenu = nsApp.mainMenu;
+    if (!objcObjectIsNil(mainMenu) && Number(mainMenu.numberOfItems) > 0) {
+        const editMenu = mainMenu.itemAtIndex(0).submenu;
+        if (!objcObjectIsNil(editMenu)) {
+            for (let index = 0; index < Number(editMenu.numberOfItems); index += 1) {
+                const item = editMenu.itemAtIndex(index);
+                if (!Boolean(item.separatorItem)) {
+                    item.setTarget(controller);
+                }
+            }
+        }
+    }
+    for (const entry of promptEditorEntries) {
+        const menu = entry.textField.menu;
+        if (objcObjectIsNil(menu)) {
+            continue;
+        }
+        for (let index = 0; index < Number(menu.numberOfItems); index += 1) {
+            const item = menu.itemAtIndex(index);
+            item.setTarget(controller);
+            item.setRepresentedObject(entry.textField);
+        }
+    }
 }
 
 function makeMultilineEditor(frame, text) {
@@ -3902,12 +6735,14 @@ function makeMultilineEditor(frame, text) {
     field.setSelectable(true);
     field.setBezeled(true);
     field.setDrawsBackground(true);
+    field.setBackgroundColor($.NSColor.textBackgroundColor);
     field.setUsesSingleLineMode(false);
     field.setLineBreakMode($.NSLineBreakByWordWrapping);
-    field.setMaximumNumberOfLines(3);
+    field.setMaximumNumberOfLines(0);
     field.cell.setWraps(true);
     field.cell.setScrollable(false);
     field.setFont($.NSFont.systemFontOfSize(11));
+    field.setMenu(makeTextEditingContextMenu());
     return field;
 }
 
@@ -3931,6 +6766,90 @@ function makeToggleSwitch(frame, enabled, toolTip) {
     toggle.setState(enabled ? $.NSControlStateValueOn : $.NSControlStateValueOff);
     toggle.setToolTip(toolTip);
     return toggle;
+}
+
+function configuredSystemSymbolImage(symbolNames, description, pointSize, weight, color) {
+    for (const symbolName of symbolNames) {
+        const image = $.NSImage.imageWithSystemSymbolNameAccessibilityDescription(
+            symbolName,
+            description
+        );
+        if (!objcObjectIsNil(image)) {
+            let configuration =
+                $.NSImageSymbolConfiguration.configurationWithPointSizeWeight(
+                    pointSize,
+                    weight
+                );
+            if (color) {
+                const colorConfiguration =
+                    $.NSImageSymbolConfiguration.configurationWithHierarchicalColor(color);
+                configuration = configuration.configurationByApplyingConfiguration(
+                    colorConfiguration
+                );
+            }
+            return image.imageWithSymbolConfiguration(configuration) || image;
+        }
+    }
+    return null;
+}
+
+function setSignalPauseButtonPresentation(button, active, signalName) {
+    const mode = active ? "pause" : "play";
+    const isCPU = signalName === "CPU";
+    if ((isCPU ? cpuPauseButtonImageMode : waitPauseButtonImageMode) === mode) {
+        return;
+    }
+    const action = active ? "Pause" : "Resume";
+    button.setTitle("");
+    button.setImage(configuredSystemSymbolImage(
+        active ? ["pause.fill", "pause"] : ["play.fill", "play"],
+        `${action} ${signalName} monitoring`,
+        16,
+        $.NSFontWeightSemibold
+    ));
+    button.setImagePosition($.NSImageOnly);
+    button.setImageScaling($.NSImageScaleProportionallyDown);
+    button.setAccessibilityLabel(`${action} ${signalName} monitoring`);
+    button.setToolTip(
+        active
+            ? `Pause ${signalName} monitoring. Paused means inactive.`
+            : `Resume ${signalName} monitoring and activate its signal.`
+    );
+    if (isCPU) {
+        cpuPauseButtonImageMode = mode;
+    } else {
+        waitPauseButtonImageMode = mode;
+    }
+}
+
+function setRunnerOutputButtonPresentation(button, presentationMode) {
+    if (runnerOutputButtonImageMode === presentationMode) {
+        return;
+    }
+
+    const presentations = {
+        signals: {
+            symbols: ["terminal", "chevron.right.square"],
+            description: "Open script card",
+            toolTip: "Showing CPU and wait signals. Click to open the script card."
+        },
+        runner: {
+            symbols: ["waveform.path.ecg.rectangle", "waveform.path.ecg"],
+            description: "Return to signals",
+            toolTip: "Showing the script card. Click to return to CPU and wait signals."
+        }
+    };
+    const presentation = presentations[presentationMode] || presentations.signals;
+    button.setTitle("");
+    button.setImage(configuredSystemSymbolImage(
+        presentation.symbols,
+        presentation.description,
+        18,
+        $.NSFontWeightMedium
+    ));
+    button.setToolTip(presentation.toolTip);
+    button.setAccessibilityLabel(presentation.description);
+    runnerOutputButtonImageMode = presentationMode;
 }
 
 function runnerReadyStatusImage() {
@@ -3963,15 +6882,47 @@ function runnerReadyStatusImage() {
     return image;
 }
 
-function runnerStatusSymbolImage(state) {
+function runnerIdleStatusImage(autoModeEnabled) {
+    const size = 36;
+    const image = $.NSImage.alloc.initWithSize($.NSMakeSize(size, size));
+    const documentImage = configuredSystemSymbolImage(
+        ["doc.text.fill", "doc.fill"],
+        autoModeEnabled
+            ? "Runner idle in Auto Mode"
+            : "Runner idle in manual mode",
+        30,
+        $.NSFontWeightRegular,
+        $.NSColor.systemGrayColor
+    );
+    image.lockFocus;
+    documentImage.drawInRect($.NSMakeRect(3, 3, 27, 30));
+    if (autoModeEnabled) {
+        const repeatImage = configuredSystemSymbolImage(
+            ["arrow.counterclockwise.circle.fill", "arrow.counterclockwise.circle"],
+            "Auto Mode enabled",
+            16,
+            $.NSFontWeightSemibold,
+            $.NSColor.systemGreenColor
+        );
+        repeatImage.drawInRect($.NSMakeRect(20, 0, 16, 16));
+    }
+    image.unlockFocus;
+    image.setTemplate(false);
+    return image;
+}
+
+function runnerStatusSymbolImage(state, autoModeEnabled) {
     if (state === "ready") {
         return runnerReadyStatusImage();
+    }
+    if (state === "idle") {
+        return runnerIdleStatusImage(autoModeEnabled);
     }
     if (state === "sentinel") {
         const image = $.NSImage.imageWithSystemSymbolNameAccessibilityDescription(
             runnerLEDHovering ? "trash.circle.fill" : "nosign",
             runnerLEDHovering
-                ? "Delete run.sh and rotate sentinel"
+                ? "Delete run.sh; preserve sentinel until restart"
                 : "Sentinel detected; runner halted"
         );
         const configuration = $.NSImageSymbolConfiguration.configurationWithPointSizeWeight(
@@ -3999,7 +6950,6 @@ function runnerStatusSymbolImage(state) {
         "orphan stopping": "xmark.circle.fill",
         "orphan recovery": "arrow.counterclockwise.circle.fill",
         "orphan conflict": "exclamationmark.triangle.fill",
-        idle: "arrow.counterclockwise.circle.fill",
         uninitialized: "questionmark.circle.fill",
         "path error": "exclamationmark.triangle.fill"
     };
@@ -4009,7 +6959,6 @@ function runnerStatusSymbolImage(state) {
         "orphan stopping": "Orphaned runner stopping",
         "orphan recovery": "Recover orphaned runner snapshot",
         "orphan conflict": "Orphaned runner ownership conflict",
-        idle: "Runner idle",
         uninitialized: "Runner self-test required",
         "path error": "Runner path error"
     };
@@ -4027,11 +6976,28 @@ function runnerStatusSymbolImage(state) {
 }
 
 function setRunnerStatusButtonImage(button, state) {
-    if (runnerStatusImageMode === state) {
+    const autoModeEnabled = state === "idle" && runnerAutoModeEnabled();
+    const imageMode = autoModeEnabled ? "idle:auto" : state;
+    if (runnerStatusImageMode === imageMode) {
         return;
     }
-    runnerStatusImageMode = state;
-    button.setImage(runnerStatusSymbolImage(state));
+    runnerStatusImageMode = imageMode;
+    button.setImage(runnerStatusSymbolImage(state, autoModeEnabled));
+}
+
+function setRunnerActivityLabel(label, statusButton, text) {
+    label.setStringValue(text);
+    label.sizeToFit;
+    const fittedWidth = Math.ceil(Number(label.frame.size.width)) + 2;
+    const buttonFrame = statusButton.frame;
+    label.setFrame($.NSMakeRect(
+        Number(buttonFrame.origin.x) +
+            (Number(buttonFrame.size.width) - fittedWidth) / 2,
+        Number(buttonFrame.origin.y) - 17,
+        fittedWidth,
+        14
+    ));
+    label.setAlignment($.NSTextAlignmentCenter);
 }
 
 function makeRunnerStatusButton(frame) {
@@ -4049,24 +7015,49 @@ function makeRunnerStatusButton(frame) {
 
 function updateAutoModeButtonAppearance(button) {
     const autoEnabled = Number(button.state) === Number($.NSControlStateValueOn);
-    button.setTitle(autoEnabled ? "AUTO · ON" : "AUTO · OFF");
-    button.setContentTintColor(
-        autoEnabled ? $.NSColor.labelColor : $.NSColor.secondaryLabelColor
-    );
-    if (Boolean(button.respondsToSelector("setBezelColor:"))) {
-        button.setBezelColor(
-            autoEnabled
-                ? $.NSColor.systemGreenColor.colorWithAlphaComponent(0.72)
-                : $.NSColor.controlColor
-        );
+    const buttonEnabled = Boolean(button.enabled);
+    const appearanceMode = `${autoEnabled ? "on" : "off"}:${buttonEnabled ? "enabled" : "disabled"}`;
+    if (runnerAutoButtonAppearanceMode === appearanceMode) {
+        return;
     }
-    button.setAlphaValue(Boolean(button.enabled) ? 1.0 : 0.55);
+
+    const title = autoEnabled ? "AUTO · ON" : "AUTO · OFF";
+    const titleColor = autoEnabled
+        ? $.NSColor.whiteColor
+        : $.NSColor.secondaryLabelColor;
+    const backgroundColor = autoEnabled
+        ? $.NSColor.systemGreenColor.colorWithAlphaComponent(0.82)
+        : $.NSColor.controlColor;
+    const borderColor = autoEnabled
+        ? $.NSColor.systemGreenColor
+        : $.NSColor.separatorColor;
+
+    button.setTitle(title);
+    const attributedTitle = button.attributedTitle.mutableCopy;
+    attributedTitle.addAttributeValueRange(
+        $.NSFontAttributeName,
+        $.NSFont.systemFontOfSizeWeight(14, $.NSFontWeightBold),
+        $.NSMakeRange(0, title.length)
+    );
+    attributedTitle.addAttributeValueRange(
+        $.NSForegroundColorAttributeName,
+        titleColor,
+        $.NSMakeRange(0, title.length)
+    );
+    button.setAttributedTitle(attributedTitle);
+    button.layer.setBackgroundColor(backgroundColor.CGColor);
+    button.layer.setBorderColor(borderColor.CGColor);
+    button.setAlphaValue(buttonEnabled ? 1.0 : 0.55);
+    runnerAutoButtonAppearanceMode = appearanceMode;
 }
 
 function makeAutoModeButton(frame, enabled) {
     const button = $.NSButton.alloc.initWithFrame(frame);
     button.setButtonType($.NSButtonTypePushOnPushOff);
-    button.setBezelStyle($.NSBezelStyleTexturedRounded);
+    button.setBordered(false);
+    button.setWantsLayer(true);
+    button.layer.setCornerRadius(8);
+    button.layer.setBorderWidth(1);
     button.setFont($.NSFont.systemFontOfSizeWeight(14, $.NSFontWeightBold));
     button.setState(enabled ? $.NSControlStateValueOn : $.NSControlStateValueOff);
     button.setToolTip(
@@ -4117,6 +7108,7 @@ function createWindow(configuration) {
     const nsApp = $.NSApplication.sharedApplication;
     nsApp.setActivationPolicy($.NSApplicationActivationPolicyAccessory);
     nsApp.finishLaunching;
+    installApplicationEditMenu(nsApp);
 
     const windowWidth = 1240;
     const windowHeight = 720;
@@ -4160,7 +7152,7 @@ function createWindow(configuration) {
     title.setFont($.NSFont.systemFontOfSizeWeight(16, $.NSFontWeightSemibold));
     const subtitle = makeCaptionLabel(
         $.NSMakeRect(24, 657, 610, 18),
-        "Graph: click adds a threshold sample · drag vertically for threshold · horizontally for smoothing"
+        "Graph: drag Δx = duration-scaled smoothing · y = absolute threshold · trackpad Δx = log span"
     );
     const configurationSaveButton = makePushButton(
         $.NSMakeRect(468, 676, 96, 28),
@@ -4178,9 +7170,12 @@ function createWindow(configuration) {
     ]);
     configurationMenu.setToolTip("Load saved configuration or reset defaults.");
     const runnerOutputButton = makePushButton(
-        $.NSMakeRect(650, 676, 86, 28),
-        "Output"
+        $.NSMakeRect(694, 676, 42, 28),
+        ""
     );
+    runnerOutputButton.setImagePosition($.NSImageOnly);
+    runnerOutputButton.setImageScaling($.NSImageScaleProportionallyDown);
+    setRunnerOutputButtonPresentation(runnerOutputButton, "signals");
 
     const cpuCard = makeCard($.NSMakeRect(cardX, 195, cardWidth, 445));
     const waitCard = makeCard($.NSMakeRect(cardX, 25, cardWidth, 150));
@@ -4190,15 +7185,19 @@ function createWindow(configuration) {
         $.NSMakeRect(contentX, 608, contentWidth - 100, 20),
         "CPU SIGNAL"
     );
-    const cpuActiveLabel = makeCaptionLabel(
-        $.NSMakeRect(612, 607, 48, 18),
-        "Active"
+    const cpuPauseButton = makePushButton(
+        $.NSMakeRect(672, 600, 40, 28),
+        ""
     );
-    cpuActiveLabel.setAlignment($.NSTextAlignmentRight);
     const cpuActiveButton = makeToggleSwitch(
-        $.NSMakeRect(670, 602, 42, 24),
+        $.NSMakeRect(0, 0, 0, 0),
         configuration.cpuSignalActive,
-        "Enable or disable the CPU Signal."
+        "Internal CPU signal state"
+    );
+    setSignalPauseButtonPresentation(
+        cpuPauseButton,
+        configuration.cpuSignalActive,
+        "CPU"
     );
     const averageWindowLabel = makeCaptionLabel(
         $.NSMakeRect(contentX, 577, 220, 18),
@@ -4213,6 +7212,9 @@ function createWindow(configuration) {
         AVERAGE_WINDOW_MIN_SECONDS,
         AVERAGE_WINDOW_MAX_SECONDS,
         configuration.smoothingWindowSeconds
+    );
+    averageWindowSlider.setToolTip(
+        "Set smoothing-window width; moving this knob previews the live result as a black envelope over the captured reference and sets threshold to the displayed maximum. Release over this slider or the CPU graph to commit; release elsewhere to restore the captured window and threshold."
     );
 
     const graphTitle = makeSectionTitle(
@@ -4238,19 +7240,24 @@ function createWindow(configuration) {
     const cpuGraph = $.CPUGraphView.alloc.initWithFrame(
         $.NSMakeRect(graphX, graphY, graphWidth, graphHeight)
     );
-    cpuGraph.setToolTip(
-        "Click to add one synthetic sample at the current threshold without clearing history. " +
-        "Drag vertically to adjust CPU threshold; drag horizontally to adjust smoothing."
+    cpuGraph.setToolTip(CPU_GRAPH_TOOLTIP);
+    const initialCPUGraphRange = clamp(
+        Math.max(configuration.cpuGraphRangePercent, configuration.cpuThresholdPercent),
+        CPU_GRAPH_RANGE_MIN_PERCENT,
+        CPU_GRAPH_RANGE_MAX_PERCENT
     );
     const cpuThresholdSlider = makeVerticalSlider(
         $.NSMakeRect(50, graphY, 30, graphHeight),
         CPU_THRESHOLD_MIN_PERCENT,
-        CPU_THRESHOLD_MAX_PERCENT,
+        initialCPUGraphRange,
         configuration.cpuThresholdPercent
+    );
+    cpuThresholdSlider.setToolTip(
+        "Set CPU threshold; moving this knob previews the live result and selects the smallest feasible smoothing window. If the threshold is below the maximum-smoothed water level, smoothing width remains unchanged. Release over this slider or the CPU graph to commit; release elsewhere to restore the captured threshold and window."
     );
     const thresholdMaximumLabel = makeCaptionLabel(
         $.NSMakeRect(34, graphY + graphHeight - 8, 44, 16),
-        "1%"
+        `${Number(initialCPUGraphRange.toFixed(2))}%`
     );
     const thresholdMinimumLabel = makeCaptionLabel(
         $.NSMakeRect(34, graphY - 8, 44, 16),
@@ -4293,28 +7300,33 @@ function createWindow(configuration) {
 
     const waitSectionTitle = makeSectionTitle(
         $.NSMakeRect(contentX, 143, contentWidth - 190, 20),
-        "WAIT SIGNAL · RESTART PERPLEXITY"
+        "WAIT SIGNAL"
     );
-    const waitActiveLabel = makeCaptionLabel(
-        $.NSMakeRect(540, 142, 48, 18),
-        "Active"
-    );
-    waitActiveLabel.setAlignment($.NSTextAlignmentRight);
     const waitActiveButton = makeToggleSwitch(
-        $.NSMakeRect(594, 137, 42, 24),
+        $.NSMakeRect(0, 0, 0, 0),
         configuration.waitSignalActive,
-        "Restart Perplexity once when the timeout is reached; a runner execution rearms the signal."
+        "Internal wait signal state"
+    );
+    const waitPauseButton = makePushButton(
+        $.NSMakeRect(548, 135, 40, 28),
+        ""
+    );
+    setSignalPauseButtonPresentation(
+        waitPauseButton,
+        configuration.waitSignalActive,
+        "Wait"
     );
     const waitResetButton = makePushButton(
-        $.NSMakeRect(646, 135, 74, 28),
-        "Reset"
+        $.NSMakeRect(598, 135, 122, 28),
+        "restart Perplexity"
     );
+    waitResetButton.setToolTip("Restart the Perplexity client immediately.");
     const waitLabel = makeCaptionLabel(
         $.NSMakeRect(contentX, 113, 220, 18),
         "Elapsed / restart threshold"
     );
     const waitValue = makeValueLabel(
-        $.NSMakeRect(500, 113, 220, 18),
+        $.NSMakeRect(280, 113, 440, 18),
         ""
     );
     const waitProgress = makeProgressBar(
@@ -4329,14 +7341,44 @@ function createWindow(configuration) {
     );
     waitSlider.setTrackFillColor($.NSColor.clearColor);
     const waitMinimumLabel = makeCaptionLabel(
-        $.NSMakeRect(contentX, 49, 80, 16),
+        $.NSMakeRect(contentX, 52, 80, 16),
         "0 s"
     );
     const waitMaximumLabel = makeCaptionLabel(
-        $.NSMakeRect(640, 49, 80, 16),
+        $.NSMakeRect(640, 52, 80, 16),
         "900 s"
     );
     waitMaximumLabel.setAlignment($.NSTextAlignmentRight);
+    const waitRestartPromptLabel = makeCaptionLabel(
+        $.NSMakeRect(contentX, 30, 112, 18),
+        "Post-restart prompt"
+    );
+    const waitRestartPromptField = $.NSTextField.alloc.initWithFrame(
+        $.NSMakeRect(154, 26, 566, 24)
+    );
+    waitRestartPromptField.setStringValue(configuration.waitRestartPrompt);
+    waitRestartPromptField.setEditable(true);
+    waitRestartPromptField.setSelectable(true);
+    waitRestartPromptField.setBezeled(true);
+    waitRestartPromptField.setDrawsBackground(true);
+    waitRestartPromptField.setBackgroundColor($.NSColor.textBackgroundColor);
+    waitRestartPromptField.setUsesSingleLineMode(false);
+    waitRestartPromptField.setLineBreakMode($.NSLineBreakByWordWrapping);
+    waitRestartPromptField.setMaximumNumberOfLines(0);
+    waitRestartPromptField.cell.setWraps(true);
+    waitRestartPromptField.cell.setScrollable(false);
+    waitRestartPromptField.setMenu(makeTextEditingContextMenu());
+    waitRestartPromptField.setToolTip(
+        "Prompt sent five seconds after the restart signal fires. Supports {sentinel} expansion like Prompt Mixer entries."
+    );
+    waitRestartPromptField.setAccessibilityLabel("Post-restart prompt");
+    const waitRestartPromptResizeHandle =
+        $.PromptEditorResizeHandle.alloc.initWithFrame(
+            $.NSMakeRect(720, 36, 12, 12)
+        );
+    waitRestartPromptResizeHandle.setToolTip(
+        "Drag upward to edit. Escape restores the old text; Enter accepts the edit."
+    );
 
     const promptSectionTitle = makeSectionTitle(
         $.NSMakeRect(780, 668, 180, 20),
@@ -4344,15 +7386,16 @@ function createWindow(configuration) {
     );
     const promptInjectButton = makePushButton(
         $.NSMakeRect(1064, 660, 134, 28),
-        "prompt now"
+        "Prompt now"
     );
     promptInjectButton.setToolTip(
-        "Start the weighted Prompt Mixer animation now. Click anywhere during the roll to cancel."
+        "Start the weighted Prompt Mixer animation. Click anywhere during a roll to cancel it."
     );
     const promptHint = makeCaptionLabel(
         $.NSMakeRect(780, 646, 418, 18),
-        "Fresh 128-bit {sentinel}; empty rows off; click anywhere to cancel a roll."
+        ""
     );
+    updatePromptSentinelLabel(promptHint);
     promptHint.setToolTip(PROMPT_SENTINEL_TOOLTIP);
 
     promptRows = [];
@@ -4381,12 +7424,24 @@ function createWindow(configuration) {
         );
         textField.setTag(PROMPT_TEXT_TAG_BASE + index);
         textField.setToolTip(PROMPT_SENTINEL_TOOLTIP);
-        const row = { highlightView, slider, valueLabel, textField, eligible: true };
+        const resizeHandle = $.PromptEditorResizeHandle.alloc.initWithFrame(
+            $.NSMakeRect(1200, rowY + 38, 12, 12)
+        );
+        resizeHandle.setToolTip(
+            "Drag upward to edit. Escape restores the old text; Enter accepts the edit."
+        );
+        const row = {
+            highlightView,
+            slider,
+            valueLabel,
+            textField,
+            resizeHandle,
+            eligible: true
+        };
         promptRows.push(row);
         setPromptRowEligibility(row, Boolean(configuration.prompts[index].text.trim()));
-        promptControls.push(highlightView, slider, valueLabel, textField);
+        promptControls.push(highlightView, slider, valueLabel, textField, resizeHandle);
     }
-
     const runnerSectionTitle = makeSectionTitle(
         $.NSMakeRect(780, 328, 190, 20),
         "LOCAL RUNNER"
@@ -4398,16 +7453,19 @@ function createWindow(configuration) {
         $.NSMakeRect(1012, 312, 118, 38),
         configuration.runner.autoMode
     );
-    const runnerLEDButton = makeRunnerStatusButton(
-        $.NSMakeRect(1142, 322, 44, 44)
-    );
+    const runnerLEDFrame = $.NSMakeRect(1142, 310, 44, 44);
+    const runnerLEDButton = makeRunnerStatusButton(runnerLEDFrame);
     const runnerActivityLabel = makeCaptionLabel(
-        $.NSMakeRect(1116, 306, 96, 14),
+        $.NSMakeRect(1142, 293, 44, 14),
         "uninitialized"
     );
-    runnerActivityLabel.setAlignment($.NSTextAlignmentCenter);
     runnerActivityLabel.setFont(
         $.NSFont.systemFontOfSizeWeight(9, $.NSFontWeightSemibold)
+    );
+    setRunnerActivityLabel(
+        runnerActivityLabel,
+        runnerLEDButton,
+        "uninitialized"
     );
     const runnerStatusLabel = makeCaptionLabel(
         $.NSMakeRect(780, 276, 338, 32),
@@ -4416,84 +7474,155 @@ function createWindow(configuration) {
     runnerStatusLabel.setMaximumNumberOfLines(2);
     runnerStatusLabel.setLineBreakMode($.NSLineBreakByWordWrapping);
 
-    const runnerSelfTestButton = makePushButton(
-        $.NSMakeRect(780, 238, 90, 30),
-        "Self-test"
+    const runnerSelfTestRequiredButton = makeSwitch(
+        $.NSMakeRect(780, 241, 176, 24),
+        "Require self-test",
+        configuration.runner.selfTestRequired
     );
-    const runnerChooseButton = makePushButton(
-        $.NSMakeRect(878, 238, 126, 30),
-        "Choose path…"
-    );
-
-    const runnerScriptLabel = makeCaptionLabel(
-        $.NSMakeRect(780, 210, 90, 18),
-        "Run script"
-    );
-    const runnerSelectedPathLabel = makeCaptionLabel(
-        $.NSMakeRect(870, 210, 160, 18),
-        runnerSelectedScriptPath
+    runnerSelfTestRequiredButton.setToolTip(
+        "When enabled, sandboxed execution requires a passing self-test for the current path and sandbox configuration. Click the runner LED in uninitialized or idle state to run the self-test."
     );
     const runnerSandboxButton = makeSwitch(
-        $.NSMakeRect(1040, 207, 138, 24),
+        $.NSMakeRect(1020, 241, 158, 24),
         "Use sandbox",
         configuration.runner.sandbox
     );
+
+    const runnerLogLabel = makeCaptionLabel(
+        $.NSMakeRect(780, 214, 70, 18),
+        "Run log"
+    );
+    const runnerSelectedLogPathLabel = makeCaptionLabel(
+        $.NSMakeRect(850, 214, 248, 18),
+        runnerSelectedLogPath
+    );
+    runnerSelectedLogPathLabel.setLineBreakMode($.NSLineBreakByTruncatingMiddle);
+    const runnerChooseLogButton = makePushButton(
+        $.NSMakeRect(1106, 208, 72, 28),
+        "Choose…"
+    );
+
+    const runnerScriptLabel = makeCaptionLabel(
+        $.NSMakeRect(780, 184, 70, 18),
+        "Run script"
+    );
+    const runnerSelectedPathLabel = makeCaptionLabel(
+        $.NSMakeRect(850, 184, 248, 18),
+        runnerSelectedScriptPath
+    );
     runnerSelectedPathLabel.setLineBreakMode($.NSLineBreakByTruncatingMiddle);
+    const runnerChooseButton = makePushButton(
+        $.NSMakeRect(1106, 178, 72, 28),
+        "Choose…"
+    );
 
     const runnerWaitLabel = makeCaptionLabel(
-        $.NSMakeRect(780, 184, 190, 18),
+        $.NSMakeRect(780, 157, 190, 18),
         "Post-execution wait (0–20 s)"
     );
     const runnerWaitValue = makeValueLabel(
-        $.NSMakeRect(1112, 184, 66, 18),
+        $.NSMakeRect(1112, 157, 66, 18),
         `${configuration.postExecutionWaitSeconds.toFixed(1)} s`
     );
     const runnerWaitSlider = makeSlider(
-        $.NSMakeRect(780, 158, 398, 24),
+        $.NSMakeRect(780, 131, 398, 24),
         RUNNER_NOTIFY_WAIT_MIN_SECONDS,
         RUNNER_NOTIFY_WAIT_MAX_SECONDS,
         configuration.postExecutionWaitSeconds
     );
 
     const runnerSuccessPromptButton = makeSwitch(
-        $.NSMakeRect(780, 126, 98, 24),
+        $.NSMakeRect(780, 99, 98, 24),
         "On success",
         configuration.successPrompt.enabled
     );
     const runnerSuccessPromptField = $.NSTextField.alloc.initWithFrame(
-        $.NSMakeRect(882, 123, 296, 27)
+        $.NSMakeRect(882, 96, 296, 27)
     );
     runnerSuccessPromptField.setStringValue(configuration.successPrompt.template);
     runnerSuccessPromptField.setEditable(true);
     runnerSuccessPromptField.setSelectable(true);
     runnerSuccessPromptField.setBezeled(true);
+    runnerSuccessPromptField.setDrawsBackground(true);
+    runnerSuccessPromptField.setBackgroundColor($.NSColor.textBackgroundColor);
+    runnerSuccessPromptField.setUsesSingleLineMode(false);
+    runnerSuccessPromptField.setLineBreakMode($.NSLineBreakByWordWrapping);
+    runnerSuccessPromptField.setMaximumNumberOfLines(0);
+    runnerSuccessPromptField.cell.setWraps(true);
+    runnerSuccessPromptField.cell.setScrollable(false);
+    runnerSuccessPromptField.setMenu(makeTextEditingContextMenu());
+    const runnerSuccessPromptResizeHandle =
+        $.PromptEditorResizeHandle.alloc.initWithFrame(
+            $.NSMakeRect(1180, 109, 12, 12)
+        );
+    runnerSuccessPromptResizeHandle.setToolTip(
+        "Drag upward to edit. Escape restores the old text; Enter accepts the edit."
+    );
 
     const runnerFailurePromptButton = makeSwitch(
-        $.NSMakeRect(780, 92, 98, 24),
+        $.NSMakeRect(780, 65, 98, 24),
         "On failure",
         configuration.failurePrompt.enabled
     );
     const runnerFailurePromptField = $.NSTextField.alloc.initWithFrame(
-        $.NSMakeRect(882, 89, 296, 27)
+        $.NSMakeRect(882, 62, 296, 27)
     );
     runnerFailurePromptField.setStringValue(configuration.failurePrompt.template);
     runnerFailurePromptField.setEditable(true);
     runnerFailurePromptField.setSelectable(true);
     runnerFailurePromptField.setBezeled(true);
+    runnerFailurePromptField.setDrawsBackground(true);
+    runnerFailurePromptField.setBackgroundColor($.NSColor.textBackgroundColor);
+    runnerFailurePromptField.setUsesSingleLineMode(false);
+    runnerFailurePromptField.setLineBreakMode($.NSLineBreakByWordWrapping);
+    runnerFailurePromptField.setMaximumNumberOfLines(0);
+    runnerFailurePromptField.cell.setWraps(true);
+    runnerFailurePromptField.cell.setScrollable(false);
+    runnerFailurePromptField.setMenu(makeTextEditingContextMenu());
+    const runnerFailurePromptResizeHandle =
+        $.PromptEditorResizeHandle.alloc.initWithFrame(
+            $.NSMakeRect(1180, 75, 12, 12)
+        );
+    runnerFailurePromptResizeHandle.setToolTip(
+        "Drag upward to edit. Escape restores the old text; Enter accepts the edit."
+    );
+
+    promptEditorEntries = [
+        {
+            textField: waitRestartPromptField,
+            resizeHandle: waitRestartPromptResizeHandle,
+            kind: "initialization"
+        },
+        {
+            textField: runnerSuccessPromptField,
+            resizeHandle: runnerSuccessPromptResizeHandle,
+            kind: "runner"
+        },
+        {
+            textField: runnerFailurePromptField,
+            resizeHandle: runnerFailurePromptResizeHandle,
+            kind: "runner"
+        },
+        ...promptRows.map(row => ({
+            textField: row.textField,
+            resizeHandle: row.resizeHandle,
+            kind: "mixer"
+        }))
+    ];
 
     const runnerModeHint = makeCaptionLabel(
-        $.NSMakeRect(780, 62, 398, 18),
+        $.NSMakeRect(780, 38, 398, 18),
         "Templates support {exit}, {code}, {script}, and {output}."
     );
 
     const runnerOutputCard = makeCard($.NSMakeRect(cardX, 25, cardWidth, 615));
     const runnerOutputSectionTitle = makeSectionTitle(
-        $.NSMakeRect(contentX, 608, contentWidth - 100, 20),
-        "RUNNER OUTPUT"
+        $.NSMakeRect(contentX, 608, contentWidth - 110, 20),
+        "WATCHED RUN SCRIPT"
     );
-    const runnerOutputHideButton = makePushButton(
-        $.NSMakeRect(646, 600, 74, 28),
-        "Hide"
+    const runnerContentToggleButton = makePushButton(
+        $.NSMakeRect(624, 600, 96, 28),
+        "Show log"
     );
     const runnerOutputScrollView = $.NSScrollView.alloc.initWithFrame(
         $.NSMakeRect(contentX, 50, contentWidth, 535)
@@ -4529,8 +7658,7 @@ function createWindow(configuration) {
         waitCard,
         signalConnectorView,
         cpuSectionTitle,
-        cpuActiveLabel,
-        cpuActiveButton,
+        cpuPauseButton,
         averageWindowLabel,
         averageWindowValue,
         averageWindowSlider,
@@ -4550,20 +7678,22 @@ function createWindow(configuration) {
         cpuProgressValue,
         cpuProgress,
         waitSectionTitle,
-        waitActiveLabel,
-        waitActiveButton,
+        waitPauseButton,
         waitResetButton,
         waitLabel,
         waitValue,
         waitProgress,
         waitSlider,
         waitMinimumLabel,
-        waitMaximumLabel
+        waitMaximumLabel,
+        waitRestartPromptLabel,
+        waitRestartPromptField,
+        waitRestartPromptResizeHandle
     ];
     const runnerOutputViews = [
         runnerOutputCard,
         runnerOutputSectionTitle,
-        runnerOutputHideButton,
+        runnerContentToggleButton,
         runnerOutputScrollView
     ];
     for (const view of runnerOutputViews) {
@@ -4587,19 +7717,24 @@ function createWindow(configuration) {
         runnerLEDButton,
         runnerActivityLabel,
         runnerStatusLabel,
-        runnerSelfTestButton,
-        runnerChooseButton,
+        runnerSelfTestRequiredButton,
         runnerSandboxButton,
         runnerAutoButton,
+        runnerLogLabel,
+        runnerSelectedLogPathLabel,
+        runnerChooseLogButton,
         runnerScriptLabel,
         runnerSelectedPathLabel,
+        runnerChooseButton,
         runnerWaitLabel,
         runnerWaitValue,
         runnerWaitSlider,
         runnerSuccessPromptButton,
         runnerSuccessPromptField,
+        runnerSuccessPromptResizeHandle,
         runnerFailurePromptButton,
         runnerFailurePromptField,
+        runnerFailurePromptResizeHandle,
         runnerModeHint,
         ...runnerOutputViews
     ]) {
@@ -4610,6 +7745,99 @@ function createWindow(configuration) {
     signalCancellationOverlay.setHidden(true);
     signalCancellationOverlay.setToolTip("Click anywhere to cancel prompt selection and sending.");
     content.addSubview(signalCancellationOverlay);
+    content.addSubviewPositionedRelativeTo(
+        waitResetButton,
+        $.NSWindowAbove,
+        signalCancellationOverlay
+    );
+
+    messageDetectionLogMainViews = [];
+    const existingSubviews = content.subviews;
+    for (let index = 0; index < Number(existingSubviews.count); index += 1) {
+        messageDetectionLogMainViews.push(existingSubviews.objectAtIndex(index));
+    }
+    shiftMessageLogMainViews(MESSAGE_LOG_COLLAPSED_HEIGHT);
+    const initialWindowFrame = window.frame;
+    const initialScreen = objcObjectIsNil(window.screen)
+        ? $.NSScreen.mainScreen
+        : window.screen;
+    const initialVisibleFrame = initialScreen.visibleFrame;
+    const collapsedWindowHeight = Number(initialWindowFrame.size.height) +
+        MESSAGE_LOG_COLLAPSED_HEIGHT;
+    const initialMinimumY = Number(initialVisibleFrame.origin.y);
+    const initialMaximumY = initialMinimumY + Number(initialVisibleFrame.size.height) -
+        collapsedWindowHeight;
+    window.setFrameDisplay(
+        $.NSMakeRect(
+            Number(initialWindowFrame.origin.x),
+            clamp(
+                Number(initialWindowFrame.origin.y) - MESSAGE_LOG_COLLAPSED_HEIGHT,
+                initialMinimumY,
+                Math.max(initialMinimumY, initialMaximumY)
+            ),
+            Number(initialWindowFrame.size.width),
+            collapsedWindowHeight
+        ),
+        false
+    );
+    capturePromptEditorLayout(content);
+
+    const messageLogCard = makeCard($.NSMakeRect(20, 10, 1200, 42));
+    const messageLogTitle = makeSectionTitle(
+        $.NSMakeRect(40, 25, 700, 20),
+        "MESSAGE DETECTION LOG · 0 · EMPTY"
+    );
+    const messageLogButton = makePushButton(
+        $.NSMakeRect(1102, 21, 96, 28),
+        "Show log"
+    );
+    const messageLogScrollView = $.NSScrollView.alloc.initWithFrame(
+        $.NSMakeRect(40, 24, 1158, MESSAGE_LOG_EXPANDED_HEIGHT - 16)
+    );
+    messageLogScrollView.setHasVerticalScroller(true);
+    messageLogScrollView.setHasHorizontalScroller(false);
+    messageLogScrollView.setAutohidesScrollers(true);
+    messageLogScrollView.setBorderType($.NSBezelBorder);
+    const messageLogTextView = $.NSTextView.alloc.initWithFrame(
+        $.NSMakeRect(0, 0, 1158, MESSAGE_LOG_EXPANDED_HEIGHT - 16)
+    );
+    messageLogTextView.setEditable(false);
+    messageLogTextView.setSelectable(true);
+    messageLogTextView.setRichText(false);
+    messageLogTextView.setHorizontallyResizable(false);
+    messageLogTextView.setVerticallyResizable(true);
+    messageLogTextView.setAutoresizingMask($.NSViewWidthSizable);
+    messageLogTextView.textContainer.setContainerSize(
+        $.NSMakeSize(1158, 10000000)
+    );
+    messageLogTextView.textContainer.setWidthTracksTextView(true);
+    messageLogTextView.setFont(
+        $.NSFont.monospacedSystemFontOfSizeWeight(11, $.NSFontWeightRegular)
+    );
+    messageLogTextView.setString("");
+    messageLogScrollView.setDocumentView(messageLogTextView);
+    messageLogScrollView.setHidden(true);
+    for (const control of [
+        messageLogCard,
+        messageLogTitle,
+        messageLogButton,
+        messageLogScrollView
+    ]) {
+        content.addSubview(control);
+    }
+    messageDetectionLogExpanded = false;
+    messageDetectionLogActiveHeight = 0;
+    messageDetectionLogCollapsedWindowFrame = null;
+    messageDetectionLogUI = {
+        window,
+        card: messageLogCard,
+        title: messageLogTitle,
+        button: messageLogButton,
+        scrollView: messageLogScrollView,
+        textView: messageLogTextView
+    };
+    layoutMessageDetectionLog();
+    updateMessageDetectionLogUI();
 
     window.makeKeyAndOrderFront(null);
     nsApp.activateIgnoringOtherApps(true);
@@ -4622,6 +7850,7 @@ function createWindow(configuration) {
         cpuGraph,
         graphStatus,
         cpuThresholdSlider,
+        thresholdMaximumLabel,
         cpuDurationSlider,
         cpuDurationValue,
         averageWindowSlider,
@@ -4629,31 +7858,38 @@ function createWindow(configuration) {
         cpuProgressValue,
         cpuProgress,
         cpuActiveButton,
+        cpuPauseButton,
         waitValue,
         waitProgress,
         waitSlider,
         waitActiveButton,
+        waitPauseButton,
         waitResetButton,
+        waitRestartPromptField,
+        messageLogButton,
         signalViews,
         signalConnectorView,
         runnerOutputCard,
         runnerOutputViews,
         runnerOutputSectionTitle,
-        runnerOutputHideButton,
+        runnerContentToggleButton,
         configurationSaveButton,
         configurationMenu,
         signalCancellationOverlay,
         promptCard,
         promptInjectButton,
+        promptHint,
         runnerLEDButton,
         runnerActivityLabel,
         runnerStatusLabel,
-        runnerSelfTestButton,
         runnerChooseButton,
+        runnerChooseLogButton,
+        runnerSelfTestRequiredButton,
         runnerOutputButton,
         runnerSandboxButton,
         runnerAutoButton,
         runnerSelectedPathLabel,
+        runnerSelectedLogPathLabel,
         runnerWaitSlider,
         runnerWaitValue,
         runnerSuccessPromptButton,
@@ -4663,24 +7899,64 @@ function createWindow(configuration) {
     };
 }
 
-function run(argv) {
-    if (argv.length > 1) {
-        throw new Error(
-            "Usage: perplexity-cpu-loop.js [PROJECT_DIRECTORY] — expected at most one positional argument."
-        );
+function monitorCommandLineOptions(argv) {
+    const options = {
+        projectDirectory: null,
+        skipSelfTest: false,
+        noSelfTest: false
+    };
+    for (const argumentValue of argv) {
+        const argument = String(argumentValue);
+        if (argument === "--skip-self-test") {
+            options.skipSelfTest = true;
+        } else if (argument === "--no-self-test") {
+            options.noSelfTest = true;
+        } else if (argument.indexOf("-") === 0) {
+            throw new Error(
+                `Unknown option: ${argument}. Usage: perplexity-cpu-loop.js ` +
+                "[--skip-self-test|--no-self-test] [PROJECT_DIRECTORY]"
+            );
+        } else if (options.projectDirectory !== null) {
+            throw new Error(
+                "Usage: perplexity-cpu-loop.js [--skip-self-test|--no-self-test] " +
+                "[PROJECT_DIRECTORY] — expected at most one positional argument."
+            );
+        } else {
+            options.projectDirectory = argument;
+        }
     }
+    return options;
+}
+
+function run(argv) {
+    const commandLine = monitorCommandLineOptions(argv);
+    runnerCommandLineSkipSelfTest = commandLine.skipSelfTest;
+    runnerCommandLineNoSelfTest = commandLine.noSelfTest;
 
     const configuration = loadConfiguration();
-    if (argv.length === 1) {
-        const projectDirectory = resolveProjectDirectory(argv[0]);
+    if (commandLine.projectDirectory !== null) {
+        const projectDirectory = resolveProjectDirectory(commandLine.projectDirectory);
         configuration.runner.selectedScriptPath = String(ObjC.unwrap(
             $(projectDirectory).stringByAppendingPathComponent("run.sh")
                 .stringByStandardizingPath
         ));
+        configuration.runner.selectedLogPath = defaultRunnerLogPath(
+            configuration.runner.selectedScriptPath
+        );
     }
 
     runnerSelectedScriptPath = configuration.runner.selectedScriptPath;
+    runnerSelectedLogPath = configuration.runner.selectedLogPath;
     activePromptSentinel = configuration.activePromptSentinel;
+    let promptSentinelInitialized = false;
+    if (!ACTIVE_SENTINEL_PATTERN.test(activePromptSentinel)) {
+        activePromptSentinel = generateRandomPromptSentinel();
+        configuration.activePromptSentinel = activePromptSentinel;
+        promptSentinelInitialized = true;
+    }
+    messagesCommandProcessedGUIDs = configuration.processedMessageGUIDs.slice(
+        -MESSAGES_PROCESSED_GUID_LIMIT
+    );
     const ui = createWindow(configuration);
     runnerPathDirectoryAvailable = runnerPathDirectoryExists();
     runnerReady = runnerPathDirectoryAvailable && runnerFileExists();
@@ -4698,10 +7974,15 @@ function run(argv) {
         graphEndTime: now,
         currentRawCPU: 0,
         currentAverageCPU: 0,
+        cpuGraphRangePercent: Number(ui.cpuThresholdSlider.maxValue),
+        cpuMonitoringPaused: !configuration.cpuSignalActive,
+        committedSmoothingWindowSeconds: Number(ui.averageWindowSlider.doubleValue),
+        committedCPUThresholdPercent: Number(ui.cpuThresholdSlider.doubleValue),
         trailingLowCPUSeconds: 0,
         waitSeconds: 0,
         waitSignalLatched: false,
         waitRestartDetail: "",
+        waitPromptDetail: "",
         lastTick: now,
         lastCPUSample: now,
         pulsePhase: false,
@@ -4712,6 +7993,7 @@ function run(argv) {
 
     monitorController = $.MonitorController.alloc.init;
     ui.window.setDelegate(monitorController);
+    configureTextEditingMenuTargets(ui.nsApp, monitorController);
 
     for (let index = 0; index < promptRows.length; index += 1) {
         promptRows[index].slider.setTarget(monitorController);
@@ -4721,10 +8003,7 @@ function run(argv) {
     normalizePromptWeights();
 
     for (const control of [
-        ui.averageWindowSlider,
-        ui.cpuThresholdSlider,
         ui.cpuDurationSlider,
-        ui.waitSlider,
         ui.runnerWaitSlider,
         ui.runnerSuccessPromptButton,
         ui.runnerFailurePromptButton
@@ -4732,13 +8011,22 @@ function run(argv) {
         control.setTarget(monitorController);
         control.setAction("configurationChanged:");
     }
+    ui.averageWindowSlider.setTarget(monitorController);
+    ui.averageWindowSlider.setAction("smoothingWindowChanged:");
+    ui.cpuThresholdSlider.setTarget(monitorController);
+    ui.cpuThresholdSlider.setAction("cpuThresholdChanged:");
     ui.runnerSuccessPromptField.setDelegate(monitorController);
     ui.runnerFailurePromptField.setDelegate(monitorController);
+    ui.waitRestartPromptField.setDelegate(monitorController);
 
-    ui.cpuActiveButton.setTarget(monitorController);
-    ui.cpuActiveButton.setAction("cpuSignalActiveChanged:");
-    ui.waitActiveButton.setTarget(monitorController);
-    ui.waitActiveButton.setAction("waitSignalActiveChanged:");
+    ui.cpuPauseButton.setTarget(monitorController);
+    ui.cpuPauseButton.setAction("cpuPause:");
+    ui.waitPauseButton.setTarget(monitorController);
+    ui.waitPauseButton.setAction("waitPause:");
+    ui.waitSlider.setTarget(monitorController);
+    ui.waitSlider.setAction("waitTimeoutChanged:");
+    ui.waitRestartPromptField.setTarget(monitorController);
+    ui.waitRestartPromptField.setAction("configurationChanged:");
     ui.configurationSaveButton.setTarget(monitorController);
     ui.configurationSaveButton.setAction("saveConfigurationNow:");
     ui.configurationMenu.itemAtIndex(1).setTarget(monitorController);
@@ -4748,40 +8036,42 @@ function run(argv) {
     ui.promptInjectButton.setTarget(monitorController);
     ui.promptInjectButton.setAction("promptInjectNow:");
     ui.waitResetButton.setTarget(monitorController);
-    ui.waitResetButton.setAction("resetWaitButton:");
-    ui.runnerOutputHideButton.setTarget(monitorController);
-    ui.runnerOutputHideButton.setAction("runnerHideOutput:");
-    ui.runnerSelfTestButton.setTarget(monitorController);
-    ui.runnerSelfTestButton.setAction("runnerSelfTest:");
+    ui.waitResetButton.setAction("restartPerplexityNow:");
     ui.runnerChooseButton.setTarget(monitorController);
     ui.runnerChooseButton.setAction("runnerChoose:");
+    ui.runnerChooseLogButton.setTarget(monitorController);
+    ui.runnerChooseLogButton.setAction("runnerChooseLog:");
     ui.runnerOutputButton.setTarget(monitorController);
     ui.runnerOutputButton.setAction("runnerShowOutput:");
+    ui.runnerContentToggleButton.setTarget(monitorController);
+    ui.runnerContentToggleButton.setAction("runnerToggleScriptLog:");
+    ui.messageLogButton.setTarget(monitorController);
+    ui.messageLogButton.setAction("toggleMessageDetectionLog:");
     ui.runnerLEDButton.setTarget(monitorController);
     ui.runnerLEDButton.setAction("runnerLED:");
     ui.runnerSandboxButton.setTarget(monitorController);
     ui.runnerSandboxButton.setAction("runnerSandboxChanged:");
+    ui.runnerSelfTestRequiredButton.setTarget(monitorController);
+    ui.runnerSelfTestRequiredButton.setAction("runnerSelfTestRequiredChanged:");
     ui.runnerAutoButton.setTarget(monitorController);
     ui.runnerAutoButton.setAction("runnerAuto:");
 
-    const signalsDisabledWithAuto = !runnerAutoModeEnabled() && disableSignalSources(ui);
-    if (autoModeDisabledForExistingScript || signalsDisabledWithAuto) {
+    if (promptSentinelInitialized) {
+        if (!saveConfigurationNow()) {
+            throw new Error(
+                configurationSaveFailureMessage() +
+                " The initial sentinel token could not be persisted."
+            );
+        }
+    } else if (autoModeDisabledForExistingScript) {
         scheduleConfigurationSave();
     }
     updateSignalAnimationControls();
     updateSignalAnimationVisuals();
 
-    waitClickRecognizer = $.NSClickGestureRecognizer.alloc.initWithTargetAction(
-        monitorController,
-        "resetWait:"
-    );
-    waitClickRecognizer.setNumberOfClicksRequired(1);
-    waitClickRecognizer.setDelaysPrimaryMouseButtonEvents(true);
-    ui.waitSlider.addGestureRecognizer(waitClickRecognizer);
-
-    runnerStartupSelfTestPending = true;
+    runnerStartupSelfTestPending = runnerStartupSelfTestEnabled();
     orphanedRunnerTick(Date.now(), true);
-    if (!orphanedRunner) {
+    if (!orphanedRunner && runnerStartupSelfTestPending) {
         runnerStartupSelfTestPending = false;
         startRunnerSelfTest();
     }
