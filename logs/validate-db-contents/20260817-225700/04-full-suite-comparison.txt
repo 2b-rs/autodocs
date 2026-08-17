@@ -1,0 +1,27 @@
+Full-suite comparison: with change vs. stashed baseline
+Recorded: 2026-08-17T22:58:13Z
+
+Two suites fail in BOTH states; both are unrelated to spec_scrape.py:
+  test_automation_safety.py   FAILED (failures=1) -- AUTO010 in _src/tools/runner_transaction.py
+  test_legacy_task_editor.py  FAILED (failures=1, errors=16)
+
+WITH CHANGE:
+  test_automation_safety.py: Ran 121 tests in 1.414s FAILED (failures=1) 
+  test_legacy_task_editor.py: Ran 39 tests in 0.213s FAILED (failures=1, errors=16) 
+  test_spec_scrape_fields.py: Ran 50 tests in 0.004s OK 
+
+BASELINE (change stashed), captured in the same session:
+  test_automation_safety.py: Ran 121 tests FAILED (failures=1)
+  test_legacy_task_editor.py: Ran 39 tests FAILED (failures=1, errors=16)
+  test_spec_scrape_fields.py: Ran 45 tests OK
+
+Delta: spec_scrape_fields 45 -> 50 (five new regression tests), all passing.
+No suite regressed.
+
+Not runnable as 'python3 <file>' in this interpreter (no unittest output,
+require a built HTML tree or absent optional deps such as pypdf/playwright):
+  test_client_rendered_german.py, test_generate_parallel_languages.py,
+  test_i18n_page_content.py, test_rec_history.py, test_review_request_browser.py,
+  test_review_request_rendering.py, test_validate_parallel_links.py,
+  test_validate_workflow_lifecycle.py
+These are unaffected by the scraper change and were equally unrunnable at baseline.

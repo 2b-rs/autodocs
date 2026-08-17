@@ -158,9 +158,31 @@ LABELS = [
     "Additional Information",
     "Type", "Default value", "Errors",
 ]
-LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))
+
+
+def _label_pattern(label: str) -> str:
+    parts = [re.escape(p) for p in label.split(" ")]
+    return r"\s+".join(parts)
+
+
+def _normalize_wrapped_labels(text: str) -> str:
+    """Join known property labels split across physical PDF extraction lines."""
+    for label in sorted(LABELS, key=len, reverse=True):
+        parts = [re.escape(part) for part in label.split()]
+        if len(parts) < 2:
+            continue
+        full_pat = r"\b" + r"\s+".join(parts) + r"\b"
+        def _repl(m: re.Match, l: str = label) -> str:
+            if "\n" in m.group(0):
+                return l
+            return m.group(0)
+        text = re.sub(full_pat, _repl, text, flags=re.IGNORECASE)
+    return text
+
+
+LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(_label_pattern(x) for x in sorted(LABELS, key=len, reverse=True)))
 HEADING_LABEL_RE = re.compile(r"^(?:%s)\s*:\s*.*$|^(?:%s)$" %
-                              tuple(["|".join(re.escape(x) for x in LABELS)] * 2))
+                              tuple(["|".join(_label_pattern(x) for x in sorted(LABELS, key=len, reverse=True))] * 2))
 UPSTREAM_RE = re.compile(r"Upstream requirements?:\s*(.+)")
 
 # Some documents (e.g. AUTOSAR_FO_RS_LogAndTrace) carry the actual heading not
@@ -1389,8 +1411,8 @@ API_LABELS = [label for label in LABELS if label not in NORMATIVE_LABELS]
 NORM_RE = re.compile(
     r"(?<!^)(?=(?:(?:%s)\s*:|(?:%s)(?:\s*:|(?=\s|[–—-]))|"
     r"Upstream requirements?\s*:))" % (
-        "|".join(re.escape(x) for x in API_LABELS),
-        "|".join(re.escape(x) for x in NORMATIVE_LABELS),
+        "|".join(_label_pattern(x) for x in sorted(API_LABELS, key=len, reverse=True)),
+        "|".join(_label_pattern(x) for x in sorted(NORMATIVE_LABELS, key=len, reverse=True)),
     )
 )
 
@@ -1402,6 +1424,10 @@ def _lose(wort: str) -> str:
 
 
 NOISE_RES = [
+    # Page markers and headers: e.g. "--- Page 15 ---", "Requirements on Persistency"
+    re.compile(r"---\s*Page\s*\d+\s*---", re.I),
+    re.compile(r"Requirements\s+on\s+[A-Za-z]+(?:\s+[A-Za-z]{1,15}){0,5}", re.I),
+    re.compile(r"General\s+Requirements\s+specific\s+to\s+Adaptive\s+Platform", re.I),
     # Vollstaendige Fusszeile: Titel (ggf. mit Ligaturrest) + Release + Seite.
     re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}?"
                r"\s*AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
@@ -1462,10 +1488,16 @@ def strip_noise(text: str) -> str:
 
 def _clean_value(value: str) -> str:
     """Zellwert von Seitenzahl-/Fusszeilenresten befreien."""
+    raw_stripped = value.strip()
     value = strip_noise(value).strip()
+    if value in ("–", "—", "-"):
+        return value
     value = re.sub(r"\s{2,}", " ", value)
     value = re.sub(r"\s+(race|emplate|ime|hread|able|ype)\s*$", "", value)
-    return TAIL_RE.sub("", value).strip()
+    cleaned = TAIL_RE.sub("", value).strip()
+    if not cleaned and (value in ("–", "—", "-") or raw_stripped in ("–", "—", "-")):
+        return raw_stripped if raw_stripped in ("–", "—", "-") else "–"
+    return cleaned
 
 
 def normalize_layout(text: str) -> str:
@@ -1477,6 +1509,7 @@ def normalize_layout(text: str) -> str:
     Klammern stehenden ID hart umbrochen — danach ist die Auswertung
     backend-unabhaengig.
     """
+    text = _normalize_wrapped_labels(text)
     text = re.sub(r"[ \t]+", " ", strip_noise(text))
     text = DEF_RE.sub(lambda m: "\n[%s]\n" % m.group(1), text)
     return NORM_RE.sub("\n", text)

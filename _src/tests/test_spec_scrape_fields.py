@@ -432,7 +432,7 @@ class RequirementFieldTests(unittest.TestCase):
         text = "[RS_X_00001] Heading ⌈Description Alpha Rationale – Dependencies RS_X_00002 Use Case Startup AppliesTo AP Supporting Material [1]⌋"
         rec = scrape.parse_record(text, "RS_X_00001")
         self.assertEqual(rec["props"]["Description"], "Alpha")
-        self.assertEqual(rec["props"]["Rationale"], "")
+        self.assertEqual(rec["props"]["Rationale"], "–")
         self.assertEqual(rec["props"]["Dependencies"], "RS_X_00002")
         self.assertEqual(rec["props"]["Use Case"], "Startup")
         self.assertEqual(rec["props"]["AppliesTo"], "AP")
@@ -516,6 +516,67 @@ Files are accessed via an accessor object.
         rec = scrape.parse_record(text, "RS_X_00001")
         self.assertEqual(rec["requirement_text"], "The platform shall preserve this prose")
         self.assertEqual(rec["props"], {})
+
+    def test_wrapped_supporting_material_label_is_recognized(self):
+        text = """[RS_SM_00001] Provide interface to influence State Managements internal states ⌈
+Description: State Management shall provide an interface to request state changes.
+Use Case: Provide interface to influence State Managements internal states.
+Supporting
+Material: –
+⌋"""
+        rec = scrape.parse_record(text, "RS_SM_00001")
+        self.assertEqual(rec["props"]["Use Case"],
+                         "Provide interface to influence State Managements internal states")
+        self.assertEqual(rec["props"]["Supporting Material"], "–")
+
+    def test_wrapped_supporting_material_without_colon_is_recognized(self):
+        text = """[RS_SHWA_00001] Safe Hardware Acceleration ⌈
+Description: Hardware acceleration shall be safe.
+Use Case: Accelerate neural network execution.
+Supporting
+Material –
+⌋"""
+        rec = scrape.parse_record(text, "RS_SHWA_00001")
+        self.assertEqual(rec["props"]["Use Case"],
+                         "Accelerate neural network execution")
+        self.assertEqual(rec["props"]["Supporting Material"], "–")
+
+    def test_wrapped_multiword_label_forwarding_header_file(self):
+        text = """[SWS_LOG_00999] Heading ⌈
+Kind: function
+Forwarding
+header file: ara/log/logger.h
+Description: Some description
+⌋"""
+        rec = scrape.parse_record(text, "SWS_LOG_00999")
+        self.assertEqual(rec["props"]["Forwarding header file"], "ara/log/logger.h")
+        self.assertEqual(rec["props"]["Description"], "Some description")
+
+    def test_value_legitimately_ending_with_material_not_split(self):
+        text = """[RS_X_00002] Heading ⌈
+Description: Ensure safe handling of radioactive Material.
+Rationale: Regulatory requirement for hazardous Material.
+Use Case: Disposal of contaminated Material.
+Supporting Material: –
+⌋"""
+        rec = scrape.parse_record(text, "RS_X_00002")
+        self.assertEqual(rec["props"]["Description"],
+                         "Ensure safe handling of radioactive Material")
+        self.assertEqual(rec["props"]["Rationale"],
+                         "Regulatory requirement for hazardous Material")
+        self.assertEqual(rec["props"]["Use Case"],
+                         "Disposal of contaminated Material")
+        self.assertEqual(rec["props"]["Supporting Material"], "–")
+
+    def test_page_marker_and_running_header_stripped_from_props(self):
+        text = """[RS_AP_00120] Heading ⌈
+Description: First part of description.
+Use Case: – --- Page 15 --- General Requirements specific to Adaptive Platform
+Supporting Material: [2]
+⌋"""
+        rec = scrape.parse_record(text, "RS_AP_00120")
+        self.assertEqual(rec["props"]["Use Case"], "–")
+        self.assertEqual(rec["props"]["Supporting Material"], "[2]")
 
 
 if __name__ == "__main__":
