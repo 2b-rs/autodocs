@@ -144,9 +144,10 @@ HOW TO USE:
 
 ### Campaign C — Make validation and environments trustworthy
 
-- [ ] **0038-08** PREREQ: 0038-08:0038-01, 0038-08:0038-04, 0038-08:0038-09 Implement Task validation profiles with coverage canaries and aggregate verdicts.
+- [x] **0038-08** PREREQ: 0038-08:0038-01, 0038-08:0038-04, 0038-08:0038-09 Implement Task validation profiles with coverage canaries and aggregate verdicts. REF: `fb78fde07`.
   - **Acceptance criteria:** Profiles declare required stages, exact inputs/outputs, freshness/run identity, expected counts/invariants, allowed mutations, time/resources, structured findings, and known-bad canaries proving each detector ran. Required failure, missing stage, mixed/stale runs, baseline-only checks, unexpected zero coverage, or error findings fail even when child processes exit zero; statuses are PASS/FAIL/SKIP/INCONCLUSIVE, never ambiguous success.
   - **Definition of Done:** Fixtures cover the four-URL probe, baseline-only determinism PASS, stale i18n register reporting zero open work, mtime-mixed reports, and Feature `0021`-style synthetic-only green validation; project profiles produce one bounded aggregate verdict.
+  - **Completion evidence (2026-08-17):** Added `task-validation-profile@v1` and `task-validation-report@v1` schemas, deterministic evaluator, seven named fixtures, and operator documentation in `fb78fde07`; focused Task-validation plus environment-doctor regression suite passed 33 tests; compilation and both schema JSON parses passed; automation-safety scan returned `verdict: PASS` with zero findings/policy errors.
 
 - [x] **0038-09** PREREQ: 0038-09:0037-41 Build a portable environment/capability doctor and reusable prepared-environment fingerprint. REF: `b9fc9167a`.
   - **Acceptance criteria:** Check writable project-local caches, Python/Node modules, browser launch/navigation, Graphviz/fonts, locale/timezone, platform-safe watchdog support, Git identity/operation state, disk/resource bounds, and approved network/credential handles without exposing secrets. Cache the validated dependency fingerprint; unchanged missing prerequisites fail immediately instead of retrying install/test phases.
