@@ -1,0 +1,117 @@
+{
+  "schema": "legacy-task-doctor-fixtures@v1",
+  "common_files": {
+    "AGENTS.md": "# Agents\n\nSee [sandbox policy](SANDBOX.md).\n",
+    "DONE.md": "# DONE — Completed Features\n",
+    "PRIVILEGED.md": "# Privileged\n\nSee [sandbox policy](SANDBOX.md).\n",
+    "SANDBOX.md": "# Sandbox\n\nSee [collaboration policy](AGENTS.md).\n",
+    "agent-workflow.json": "{\"schema\":\"agent-workflow-bootstrap@v1\",\"workflow_version\":\"1.0.0\",\"authority_epoch\":\"legacy-writable\",\"authority_profile\":\"legacy-lists\",\"write_phase\":\"legacy-writable\",\"required_capability\":\"sandboxed-grunt\",\"runner_protocol\":\"runner-request@v1\",\"selector_digest\":\"sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef\",\"instruction_bundle\":\"docs/pipeline/agent-instructions/legacy/index.md\"}\n",
+    "docs/pipeline/agent-instructions/legacy/index.md": "# Legacy instructions\n\nUse the authoritative legacy lists and exact claims.\n"
+  },
+  "cases": [
+    {
+      "name": "clean",
+      "files": {
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Clean fixture\n\n- [p] **1000-01** Implement a clean fixture.\n  - **Claim:** Claimed via `TODO-fixture-1000-01-clean-claim.md`, `owner_token: agent:fixture:1000-01:clean-claim`, base `pending-discovery`.\n  - **Acceptance criteria:** Stay deterministic.\n  - **Definition of Done:** Tests pass.\n",
+        "TODO-fixture-1000-01-clean-claim.md": "# Active claim\n\n## Claim identity\n\ntask_id: 1000-01\nrequest_id: clean-claim\nowner_token: agent:fixture:1000-01:clean-claim\nbase_commit: pending-discovery\ncapability_class: sandboxed/grunt\nstate: [p]\n\n## Intended write scope\n\n- `src/clean.py`\n\n## Next step\n\nImplement the fixture.\n"
+      },
+      "reachable_commits": [],
+      "expected_rules": []
+    },
+    {
+      "name": "marker-and-refs",
+      "files": {
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Reference drift\n\n- [d] **1000-01** Undefined marker.\n- [x] **1000-02** Hidden closure. <!-- REF: 1111111111111111111111111111111111111111 -->\n- [x] **1000-03** Placeholder closure. REF: verified\n- [x] **1000-04** Unreachable closure. REF: 1111111111111111111111111111111111111111\n- [x] **1000-05** Duplicate closure. REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n  - REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n- [ ] **1000-06** Premature closure REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n- [x] **1000-07** Multiline hidden closure.\n<!--\n  - REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n-->\n- [x] **1000-08** Pending closure. REF: pending commit\n- [x] **1000-09** Local closure. REF: local-20260817-fixture\n",
+        "DONE.md": "# DONE — Completed Features\n\n## Feature: 0999 — Short historical REF\nCompleted: 2026-08-16 — REF: abcdef1\n"
+      },
+      "reachable_commits": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "expected_rules": [
+        "LTD-MARKER-UNDEFINED",
+        "LTD-REF-DUPLICATE",
+        "LTD-REF-HIDDEN",
+        "LTD-REF-MALFORMED",
+        "LTD-REF-MISSING",
+        "LTD-REF-PLACEHOLDER",
+        "LTD-REF-STATE-DIVERGED",
+        "LTD-REF-UNREACHABLE"
+      ]
+    },
+    {
+      "name": "claim-drift",
+      "files": {
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Claim drift\n\n- [ ] **1000-01** Open Task with active claim.\n- [x] **1000-02** Terminal Task with retained claim. REF: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n- [p] **1000-03** Active Task without a claim.\n- [p] **1000-04** Active Task with stale identity.\n  - **Claim:** Claimed via `TODO-fixture-1000-04-wrong-name.md`, `owner_token: agent:fixture:1000-04:task-note-four`, base `cccccccccccccccccccccccccccccccccccccccc`.\n",
+        "TODO-fixture-1000-01-claim-one.md": "# Claim one\n\n## Claim identity\n\ntask_id: 1000-01\nrequest_id: claim-one\nowner_token: agent:fixture:1000-01:claim-one\nbase_commit: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\ncapability_class: sandboxed/grunt\nstate: [p]\n\n## Intended write scope\n\n- `src/one.py`\n\n## Next step\n\nContinue Task one.\n",
+        "TODO-fixture-1000-02-claim-two.md": "# Claim two\n\n## Claim identity\n\ntask_id: 1000-02\nrequest_id: claim-two\nowner_token: agent:fixture:1000-02:claim-two\nbase_commit: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\ncapability_class: sandboxed/grunt\nstate: [p]\n\n## Intended write scope\n\n- `src/two.py`\n\n## Next step\n\nContinue Task two.\n",
+        "TODO-fixture-1000-04-wrong-name.md": "# Claim four\n\n## Claim identity\n\ntask_id: 1000-04\nrequest_id: claim-four\nowner_token: agent:fixture:1000-04:other-four\nbase_commit: abcdef1\ncapability_class: sandboxed/grunt\nwrite_scope: ../outside.py\nstate: [p]\n",
+        "TODO-fixture-1000-99-orphan-claim.md": "# Orphan claim\n\n## Claim identity\n\ntask_id: 1000-99\nrequest_id: orphan-claim\nowner_token: agent:fixture:1000-99:orphan-claim\nbase_commit: pending-discovery\ncapability_class: sandboxed/grunt\nstate: [p]\n\n## Intended write scope\n\n- `src/orphan.py`\n\n## Next step\n\nReconcile the missing Task.\n"
+      },
+      "reachable_commits": [
+        "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "cccccccccccccccccccccccccccccccccccccccc"
+      ],
+      "expected_rules": [
+        "LTD-CLAIM-BASE-ABBREVIATED",
+        "LTD-CLAIM-IDENTITY-MISMATCH",
+        "LTD-CLAIM-NEXT-STEP-MISSING",
+        "LTD-CLAIM-SCOPE-INVALID",
+        "LTD-CLAIM-SCOPE-MISMATCH",
+        "LTD-CLAIM-SCOPE-MISSING",
+        "LTD-CLAIM-STATE-DIVERGED",
+        "LTD-CLAIM-TASK-MISSING",
+        "LTD-CLAIM-TERMINAL-RETAINED",
+        "LTD-TASK-CLAIM-MISSING",
+        "LTD-TASK-CLAIM-POINTER-MISMATCH"
+      ]
+    },
+    {
+      "name": "prerequisites-and-parent",
+      "files": {
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Graph drift\n\n**PREREQ:** 1000:9998, garbage\n**PREREQ:** 9999:1000-01\n\n- [ ] **1000-01** PREREQ: 1000-01:1000-99 Missing endpoint.\n- [ ] **1000-02** PREREQ: 1000-02:1000-03 Cycle A.\n- [ ] **1000-03** PREREQ: 1000-03:1000-02 Cycle B.\n- [ ] **1000-04** PREREQ: 9999-01:1000-01 Wrong left side.\n- [ ] **1000-05** Parent ready for package closure.\n- [x] **1000-05.01** Child one. REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n- [w] **1000-05.02** Child two. REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n  - **Reason:** Fixture disposition.\n- [x] **1000-06** PREREQ: 1000-06:1000-01 Terminal before prerequisite. REF: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n- [ ] **1000-07** PREREQ: malformed relation.\n- [ ] **1000-08** PREREQ: 1000-08:1000-01, garbage\n- [ ] **1000-09** PREREQ: 1000-09:1000-01 1000-09:1000-02 Missing comma.\n"
+      },
+      "reachable_commits": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ],
+      "expected_rules": [
+        "LTD-PARENT-CLOSURE-ELIGIBLE",
+        "LTD-PREREQ-CYCLE",
+        "LTD-PREREQ-ENDPOINT-MISSING",
+        "LTD-PREREQ-LHS",
+        "LTD-PREREQ-MALFORMED",
+        "LTD-TERMINAL-UNSATISFIED-PREREQ"
+      ]
+    },
+    {
+      "name": "bootstrap-policy",
+      "files": {
+        "AGENTS.md": "# Agents\n\nWhen globally idle, read [the retrigger policy](SENTINTEL.md). Do not follow [escaping policy](../outside.md).\n",
+        "SANDBOX.md": "# Sandbox\n\nRoot `run.sh` is never an escalation token or notification. See [agents](AGENTS.md).\n",
+        "SENTINEL.md": "# Human escalation sentinel\n\nCreate a new sentinel atomically at `run.sh`.\n",
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Bootstrap drift\n\n- [ ] **1000-01** Open Task.\n",
+        "agent-workflow.json": "{\"schema\":\"agent-workflow-bootstrap@v1\",\"workflow_version\":\"1.0.0\",\"authority_epoch\":\"legacy-writable\",\"authority_profile\":\"legacy-lists\",\"write_phase\":\"legacy-writable\",\"required_capability\":\"sandboxed-grunt\",\"runner_protocol\":\"runner-request@v1\",\"selector_digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"instruction_bundle\":\"docs/pipeline/agent-instructions/legacy/index.md\"}\n",
+        "docs/pipeline/agent-instructions/legacy/index.md": "# Legacy instructions\n\nOn mismatch, run `issuectl bootstrap --refresh`.\n"
+      },
+      "reachable_commits": [],
+      "expected_rules": [
+        "LTD-BOOT-COMMAND-MISSING",
+        "LTD-BOOT-DIGEST-PLACEHOLDER",
+        "LTD-INSTRUCTION-LINK-MISSING",
+        "LTD-INSTRUCTION-NEAR-NAME",
+        "LTD-POLICY-CONTRADICTION"
+      ]
+    },
+    {
+      "name": "aligned-policy",
+      "files": {
+        "AGENTS.md": "# Agents\n\nUse [the retrigger policy](SENTINTEL.md).\n",
+        "SANDBOX.md": "# Sandbox\n\nRoot `run.sh` is never an escalation token or notification. See [agents](AGENTS.md).\n",
+        "SENTINEL.md": "# Historical sentinel note\n\nNever use `run.sh` for escalation.\n",
+        "SENTINTEL.md": "# Retrigger policy\n\nRetrigger only the owning session.\n",
+        "TODO.md": "# TODO — Open Point List\n\n## Feature: 1000 — Aligned policy\n\n- [ ] **1000-01** Open Task.\n"
+      },
+      "reachable_commits": [],
+      "expected_rules": []
+    }
+  ]
+}

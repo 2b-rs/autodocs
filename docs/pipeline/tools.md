@@ -92,6 +92,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 |---|---|
 | `run.sh` | Einmalige, parameterlose Runner-Hülle; bei Task-Abschluss nur noch als dünner Aufruf des Transaktionswerkzeugs zulässig |
 | `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization`; feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; siehe [`runner-transaction.md`](runner-transaction.md) |
+| `_src/tools/legacy_task_doctor.py` | Rein lesende, deterministische Diagnose für Legacy-`TODO.md`/`DONE.md`, Claims, REFs, Prerequisites und Agent-Bootstrap; Aufruf: `python3 _src/tools/legacy_task_doctor.py [--json]`; gibt höchstens zehn Zusammenfassungszeilen oder `legacy-task-doctor-report@v1`-JSON aus und repariert/übernimmt/löscht nichts; siehe [`legacy-task-doctor.md`](legacy-task-doctor.md) |
 | `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz |
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
