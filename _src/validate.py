@@ -26,6 +26,7 @@ import sys
 import time
 import urllib.parse
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from pathlib import Path
 
 from lxml import html as LH
 
@@ -592,8 +593,51 @@ def check_record_status():
             record_finding("missing-record-status", "error", f"Record ohne 'status': {rid}", ref=rid)
 
 
+def check_automation_safety():
+    checks_performed.append("check_automation_safety")
+    tools_dir = os.path.join(SRC, "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    try:
+        import automation_safety
+        report = automation_safety.scan_repository(
+            Path(ROOT),
+            policy_path=Path(ROOT) / automation_safety.DEFAULT_POLICY,
+        )
+    except Exception as exc:
+        record_finding(
+            "automation-safety-error",
+            "error",
+            f"Automation-safety checker could not run: {exc}",
+        )
+        return
+
+    for error in report.get("policy_errors", []):
+        record_finding(
+            "automation-safety-policy",
+            "error",
+            f"Automation-safety policy error {error.get('code', 'POLICY')}: {error.get('message', '')}",
+        )
+    for finding in report.get("findings", []):
+        if finding.get("severity") != "critical" or finding.get("status") != "unresolved":
+            continue
+        record_finding(
+            "automation-safety-critical",
+            "error",
+            "%s %s:%s %s: %s" % (
+                finding.get("rule"),
+                finding.get("path"),
+                finding.get("line"),
+                finding.get("symbol"),
+                finding.get("evidence"),
+            ),
+            ref="%s:%s" % (finding.get("path"), finding.get("line")),
+        )
+
+
 def main():
     _t0 = time.time()
+    check_automation_safety()
     check_build()
     check_links()
     check_langs()

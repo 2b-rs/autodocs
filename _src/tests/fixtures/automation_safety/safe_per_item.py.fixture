@@ -1,0 +1,12 @@
+import subprocess
+
+
+def stage_each(paths):
+    failures = []
+    outcomes = []
+    for path in paths:
+        result = subprocess.run(["git", "add", "--", path], capture_output=True, text=True)
+        outcomes.append({"path": path, "exit_code": result.returncode})
+        if result.returncode != 0:
+            failures.append(path)
+    return outcomes, (1 if failures else 0)

@@ -15,9 +15,11 @@ CLI:
     python3 _src/tools/build_report.py combine [--run-archive-ref=<ref>]
     python3 _src/tools/build_report.py publish [--run-archive-ref=<ref>]
 """
+import datetime
 import glob
 import html
 import json
+import math
 import os
 import sys
 import time
@@ -27,16 +29,128 @@ SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
 REPORTS_DIR = os.path.join(ROOT, "output", "build-reports")
 PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
+REQUIRED_STAGES = ("i18n_merge", "i18n_diagrams", "html_generate", "validate")
+ALLOWED_FINDING_SEVERITIES = frozenset(("info", "warning", "error"))
+SCHEMA_VERSION = "1.0"
 
 
 def _esc(s):
     return html.escape(str(s if s is not None else ""), quote=True)
 
 
-def load_latest_subreports(since_ts=None):
-    """Load the latest reports for each producer kind."""
+def _has_run_archive_ref(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _parse_utc_timestamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return None
+    if parsed.strftime("%Y-%m-%dT%H:%M:%SZ") != value:
+        return None
+    return parsed.replace(tzinfo=datetime.timezone.utc)
+
+
+def _is_string_list(value):
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _validate_subreport(data, selected_ref):
+    errors = []
+
+    if data.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version must equal {SCHEMA_VERSION!r}")
+
+    kind = data.get("report_kind")
+    if kind not in REQUIRED_STAGES:
+        errors.append(f"report_kind must be one of {REQUIRED_STAGES!r}")
+
+    for field in ("tool", "command"):
+        value = data.get(field)
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{field} must be a non-empty string")
+
+    for field in ("inputs", "changed_artifacts"):
+        if not _is_string_list(data.get(field)):
+            errors.append(f"{field} must be an array of strings")
+
+    started_at = _parse_utc_timestamp(data.get("started_at"))
+    finished_at = _parse_utc_timestamp(data.get("finished_at"))
+    if started_at is None:
+        errors.append("started_at must be a strict UTC timestamp (YYYY-MM-DDTHH:MM:SSZ)")
+    if finished_at is None:
+        errors.append("finished_at must be a strict UTC timestamp (YYYY-MM-DDTHH:MM:SSZ)")
+    if started_at is not None and finished_at is not None and finished_at < started_at:
+        errors.append("finished_at must not precede started_at")
+
+    duration_s = data.get("duration_s")
+    valid_duration = (
+        isinstance(duration_s, (int, float))
+        and not isinstance(duration_s, bool)
+        and (not isinstance(duration_s, float) or math.isfinite(duration_s))
+        and duration_s >= 0
+    )
+    if not valid_duration:
+        errors.append("duration_s must be a finite non-negative number")
+
+    exit_code = data.get("exit_code")
+    valid_exit_code = (
+        isinstance(exit_code, int)
+        and not isinstance(exit_code, bool)
+        and 0 <= exit_code <= 255
+    )
+    if not valid_exit_code:
+        errors.append("exit_code must be an integer from 0 through 255")
+
+    if not isinstance(data.get("counts"), dict):
+        errors.append("counts must be an object")
+
+    findings = data.get("findings")
+    has_error_finding = False
+    if not isinstance(findings, list):
+        errors.append("findings must be an array of structured findings")
+    else:
+        for index, finding in enumerate(findings):
+            prefix = f"findings[{index}]"
+            if not isinstance(finding, dict):
+                errors.append(f"{prefix} must be an object")
+                continue
+            category = finding.get("category")
+            severity = finding.get("severity")
+            message = finding.get("message")
+            if not isinstance(category, str) or not category.strip():
+                errors.append(f"{prefix}.category must be a non-empty string")
+            if not isinstance(severity, str) or severity not in ALLOWED_FINDING_SEVERITIES:
+                errors.append(
+                    f"{prefix}.severity must be one of {tuple(sorted(ALLOWED_FINDING_SEVERITIES))!r}"
+                )
+            if not isinstance(message, str) or not message.strip():
+                errors.append(f"{prefix}.message must be a non-empty string")
+            if "ref" in finding and not isinstance(finding["ref"], str):
+                errors.append(f"{prefix}.ref must be a string when present")
+            if severity == "error" and isinstance(message, str) and message.strip():
+                has_error_finding = True
+
+    report_ref = data.get("run_archive_ref")
+    if not _has_run_archive_ref(report_ref):
+        errors.append("run_archive_ref must be a non-empty string for a correlated producer report")
+    elif report_ref != selected_ref:
+        errors.append(f"run_archive_ref must exactly match the selected cohort {selected_ref!r}")
+
+    if valid_exit_code and exit_code != 0 and not has_error_finding:
+        errors.append("nonzero exit_code requires at least one error finding with a message")
+
+    return errors
+
+
+def load_latest_subreports(since_ts=None, run_archive_ref=None):
+    """Load schema-valid producer reports from one exact non-empty run cohort."""
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    by_kind = {}
+    candidates = []
+    findings = []
     pattern = os.path.join(REPORTS_DIR, "*.json")
     for f in sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True):
         if os.path.basename(f).startswith("combined-"):
@@ -44,50 +158,157 @@ def load_latest_subreports(since_ts=None):
         try:
             with open(f, encoding="utf-8") as fp:
                 data = json.load(fp)
-            kind = data.get("report_kind")
-            if kind and kind not in by_kind:
-                if since_ts is None or data.get("started_at", "") >= since_ts:
-                    by_kind[kind] = data
-        except Exception:
+            if not isinstance(data, dict):
+                raise ValueError("top-level JSON value must be an object")
+        except (OSError, UnicodeError, ValueError) as exc:
+            findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"{os.path.basename(f)} is not a readable report: {exc}",
+                "ref": os.path.relpath(f, ROOT),
+            })
             continue
-    return by_kind
+        candidates.append((f, data))
+
+    selected_ref = run_archive_ref
+    if selected_ref is None:
+        selected_ref = next(
+            (data.get("run_archive_ref") for _, data in candidates
+             if _has_run_archive_ref(data.get("run_archive_ref"))),
+            None,
+        )
+    elif not _has_run_archive_ref(selected_ref):
+        findings.append({
+            "category": "malformed-build-report",
+            "severity": "error",
+            "message": "Requested run_archive_ref must be a non-empty string; no reports were selected.",
+            "ref": "run_archive_ref",
+        })
+        return {}, findings
+
+    if selected_ref is None:
+        findings.append({
+            "category": "malformed-build-report",
+            "severity": "error",
+            "message": (
+                "No producer report has a non-empty run_archive_ref; identity-less reports "
+                "cannot form a correlated build."
+            ),
+            "ref": os.path.relpath(REPORTS_DIR, ROOT),
+        })
+        return {}, findings
+
+    by_kind = {}
+    for f, data in candidates:
+        if data.get("run_archive_ref") != selected_ref:
+            continue
+        validation_errors = _validate_subreport(data, selected_ref)
+        if validation_errors:
+            findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": (
+                    f"{os.path.basename(f)} violates the build-report schema: "
+                    + "; ".join(validation_errors)
+                ),
+                "ref": os.path.relpath(f, ROOT),
+            })
+            continue
+        if since_ts is not None and data["started_at"] < since_ts:
+            continue
+        kind = data["report_kind"]
+        if kind not in by_kind:
+            by_kind[kind] = data
+    return by_kind, findings
 
 
 def combine_reports(run_archive_ref=None):
-    """Combine latest producer subreports into a unified canonical build-report."""
-    subreports = load_latest_subreports()
+    """Combine one correlated producer-report cohort into a canonical report."""
+    requested_ref = run_archive_ref if run_archive_ref is not None else os.environ.get("RUN_ARCHIVE_REF")
+    subreports, load_findings = load_latest_subreports(run_archive_ref=requested_ref)
+    if _has_run_archive_ref(requested_ref):
+        ref = requested_ref
+    else:
+        ref = next(
+            (sub.get("run_archive_ref") for sub in subreports.values()
+             if _has_run_archive_ref(sub.get("run_archive_ref"))),
+            None,
+        )
     now = time.time()
-    started_at = min((r.get("started_at") for r in subreports.values() if r.get("started_at")),
-                     default=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now)))
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
+    valid_started_at = []
+    for report in subreports.values():
+        value = report.get("started_at")
+        try:
+            time.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        except (TypeError, ValueError):
+            continue
+        valid_started_at.append(value)
+    started_at = min(valid_started_at, default=now_iso)
     finished_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
 
     all_inputs = []
     all_changed = []
-    all_findings = []
+    all_findings = list(load_findings)
     by_stage = {}
-    overall_exit_code = 0
+    overall_exit_code = 1 if load_findings else 0
 
-    for kind in ("i18n_merge", "i18n_diagrams", "html_generate", "validate"):
-        sub = subreports.get(kind, {})
-        counts = sub.get("counts", {})
+    for kind in REQUIRED_STAGES:
+        sub = subreports.get(kind)
+        if sub is None:
+            by_stage[kind] = {}
+            cohort = f" for run_archive_ref {ref!r}" if ref is not None else " in a correlated run cohort"
+            all_findings.append({
+                "category": "missing-build-stage",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has no report{cohort}.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+            continue
+
+        counts = sub.get("counts")
+        if not isinstance(counts, dict):
+            counts = {}
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has missing or invalid counts.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
         by_stage[kind] = counts
-        for inp in sub.get("inputs", []):
+
+        for inp in sub.get("inputs", []) if isinstance(sub.get("inputs", []), list) else []:
             if inp not in all_inputs:
                 all_inputs.append(inp)
-        for art in sub.get("changed_artifacts", []):
+        for art in sub.get("changed_artifacts", []) if isinstance(sub.get("changed_artifacts", []), list) else []:
             if art not in all_changed:
                 all_changed.append(art)
-        all_findings.extend(sub.get("findings", []))
-        if sub.get("exit_code", 0) != 0:
-            overall_exit_code = max(overall_exit_code, sub.get("exit_code", 1))
 
-    ref = run_archive_ref or os.environ.get("RUN_ARCHIVE_REF")
-    if not ref:
-        # Check if subreports provided a run_archive_ref
-        for sub in subreports.values():
-            if sub.get("run_archive_ref"):
-                ref = sub.get("run_archive_ref")
-                break
+        stage_findings = sub.get("findings", [])
+        if not isinstance(stage_findings, list):
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has invalid findings.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+        else:
+            all_findings.extend(stage_findings)
+
+        exit_code = sub.get("exit_code")
+        if isinstance(exit_code, bool) or not isinstance(exit_code, int) or not 0 <= exit_code <= 255:
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has missing or invalid exit_code.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+        elif exit_code != 0:
+            overall_exit_code = max(overall_exit_code, exit_code)
 
     combined = {
         "schema_version": "1.0",
@@ -128,7 +349,9 @@ def generate_report_page(combined_report=None, run_archive_ref=None):
             combined_report, _ = combine_reports(run_archive_ref)
 
     stage_counts = (combined_report.get("counts") or {}).get("by_stage", {})
-    overall_success = (combined_report.get("counts") or {}).get("overall_success", True)
+    overall_success = (combined_report.get("counts") or {}).get("overall_success", False)
+    if not isinstance(overall_success, bool):
+        overall_success = False
     ref = combined_report.get("run_archive_ref") or "N/A"
     started = combined_report.get("started_at", "")
     finished = combined_report.get("finished_at", "")
@@ -244,8 +467,8 @@ def generate_report_page(combined_report=None, run_archive_ref=None):
     return PAGE_MODEL
 
 
-def main():
-    args = sys.argv[1:]
+def main(argv=None):
+    args = list(sys.argv[1:] if argv is None else argv)
     cmd = args[0] if args else "combine"
     ref = None
     for a in args:
@@ -255,14 +478,15 @@ def main():
     if cmd == "combine":
         combined, out = combine_reports(ref)
         print(f"Aggregierter Build-Report geschrieben: {out} (Exit-Code {combined['exit_code']})")
-    elif cmd in ("publish", "page"):
+        return combined["exit_code"]
+    if cmd in ("publish", "page"):
         combined, _ = combine_reports(ref)
         page_path = generate_report_page(combined, ref)
-        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path}")
-    else:
-        print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish")
-        sys.exit(1)
+        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
+        return combined["exit_code"]
+    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish")
+    return 2
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

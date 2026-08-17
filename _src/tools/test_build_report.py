@@ -10,6 +10,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import build_report
 
@@ -27,6 +28,33 @@ class TestBuildReport(unittest.TestCase):
         shutil.rmtree(self.test_dir)
         build_report.REPORTS_DIR = self.orig_reports_dir
         build_report.PAGE_MODEL = self.orig_page_model
+
+    def _write_report(
+        self, kind, run_archive_ref, suffix, mtime, counts=None, overrides=None, missing=()
+    ):
+        report = {
+            "schema_version": "1.0",
+            "report_kind": kind,
+            "tool": f"{kind}.py",
+            "command": kind,
+            "inputs": [f"input-{suffix}"],
+            "started_at": "2026-08-14T15:00:00Z",
+            "finished_at": "2026-08-14T15:00:01Z",
+            "duration_s": 1.0,
+            "exit_code": 0,
+            "changed_artifacts": [],
+            "counts": {} if counts is None else counts,
+            "findings": [],
+            "run_archive_ref": run_archive_ref,
+        }
+        if overrides is not None:
+            report.update(overrides)
+        for field in missing:
+            report.pop(field, None)
+        path = Path(build_report.REPORTS_DIR) / f"{kind}-{suffix}.json"
+        path.write_text(json.dumps(report), encoding="utf-8")
+        os.utime(path, (mtime, mtime))
+        return path
 
     def test_combine_reports_schema_stability(self):
         # Create subreports
@@ -67,6 +95,28 @@ class TestBuildReport(unittest.TestCase):
         with open(os.path.join(build_report.REPORTS_DIR, f"validate-{ts}.json"), "w", encoding="utf-8") as f:
             json.dump(val_rep, f)
 
+        for kind, counts in (
+            ("i18n_diagrams", {"sources_considered": 2}),
+            ("html_generate", {"pages_generated_per_lang": {"de": 4}}),
+        ):
+            report = {
+                "schema_version": "1.0",
+                "report_kind": kind,
+                "tool": f"{kind}.py",
+                "command": kind,
+                "inputs": [],
+                "started_at": "2026-08-14T15:00:06Z",
+                "finished_at": "2026-08-14T15:00:09Z",
+                "duration_s": 3.0,
+                "exit_code": 0,
+                "changed_artifacts": [],
+                "counts": counts,
+                "findings": [],
+                "run_archive_ref": "output/run-archive/run-test.sh",
+            }
+            with open(os.path.join(build_report.REPORTS_DIR, f"{kind}-{ts}.json"), "w", encoding="utf-8") as f:
+                json.dump(report, f)
+
         combined, out_path = build_report.combine_reports("output/run-archive/run-test.sh")
         self.assertEqual(combined["schema_version"], "1.0")
         self.assertEqual(combined["report_kind"], "combined")
@@ -84,6 +134,187 @@ class TestBuildReport(unittest.TestCase):
         self.assertEqual(pdata["file"], "build-reports.html")
         self.assertTrue(pdata["nolang"])
         self.assertIn("Traceable Build- &amp; Publikations-Report", pdata["main"][0]["html"].replace("& ", "&amp; "))
+
+    def test_valid_exact_cohort_passes_strict_envelope_validation(self):
+        run_ref = "output/run-archive/valid-run"
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            self._write_report(kind, run_ref, f"valid-{offset}", 1_700_000_000 + offset)
+
+        combined, _ = build_report.combine_reports(run_ref)
+
+        self.assertEqual(combined["exit_code"], 0)
+        self.assertTrue(combined["counts"]["overall_success"])
+        self.assertEqual(combined["run_archive_ref"], run_ref)
+        self.assertEqual(set(combined["counts"]["by_stage"]), set(build_report.REQUIRED_STAGES))
+        self.assertFalse(
+            any(item["category"] in {"malformed-build-report", "missing-build-stage"}
+                for item in combined["findings"])
+        )
+
+    def test_malformed_exact_cohort_members_are_excluded_and_fail_closed(self):
+        run_ref = "output/run-archive/malformed-run"
+        base_mtime = 1_700_000_000
+        self._write_report(
+            "i18n_merge",
+            run_ref,
+            "malformed-merge",
+            base_mtime,
+            overrides={
+                "tool": " ",
+                "started_at": "2026-08-14 15:00:00Z",
+                "finished_at": "2026-08-14T15:00:01+00:00",
+            },
+            missing=("schema_version",),
+        )
+        self._write_report(
+            "i18n_diagrams",
+            run_ref,
+            "malformed-diagrams",
+            base_mtime + 1,
+            overrides={
+                "command": "",
+                "inputs": ["valid", 7],
+                "changed_artifacts": [None],
+                "finished_at": "2026-08-14T14:59:59Z",
+            },
+        )
+        self._write_report(
+            "html_generate",
+            run_ref,
+            "malformed-generate",
+            base_mtime + 2,
+            overrides={
+                "duration_s": -1,
+                "exit_code": 256,
+                "counts": [],
+                "findings": "not-a-list",
+            },
+        )
+        self._write_report(
+            "validate",
+            run_ref,
+            "malformed-validate",
+            base_mtime + 3,
+            overrides={
+                "report_kind": "unknown",
+                "exit_code": 3,
+                "findings": [
+                    {"category": "", "severity": "fatal", "message": "", "ref": 7}
+                ],
+            },
+        )
+
+        combined, _ = build_report.combine_reports(run_ref)
+
+        self.assertEqual(combined["run_archive_ref"], run_ref)
+        self.assertNotEqual(combined["exit_code"], 0)
+        self.assertFalse(combined["counts"]["overall_success"])
+        self.assertEqual(combined["inputs"], [])
+        malformed = [
+            item for item in combined["findings"]
+            if item["category"] == "malformed-build-report"
+        ]
+        self.assertEqual(len(malformed), len(build_report.REQUIRED_STAGES))
+        details = "\n".join(item["message"] for item in malformed)
+        for field in (
+            "schema_version",
+            "report_kind",
+            "tool",
+            "command",
+            "inputs",
+            "started_at",
+            "finished_at",
+            "duration_s",
+            "exit_code",
+            "changed_artifacts",
+            "counts",
+            "findings",
+            "nonzero exit_code",
+        ):
+            with self.subTest(field=field):
+                self.assertIn(field, details)
+        self.assertEqual(
+            {item["ref"] for item in combined["findings"]
+             if item["category"] == "missing-build-stage"},
+            set(build_report.REQUIRED_STAGES),
+        )
+        self.assertTrue(all(not counts for counts in combined["counts"]["by_stage"].values()))
+
+    def test_explicit_ref_does_not_relabel_stale_successful_reports(self):
+        old_ref = "output/run-archive/old-run"
+        current_ref = "output/run-archive/current-run"
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+
+        with mock.patch.dict(os.environ, {"RUN_ARCHIVE_REF": old_ref}):
+            combined, _ = build_report.combine_reports(current_ref)
+
+        self.assertEqual(combined["run_archive_ref"], current_ref)
+        self.assertNotEqual(combined["exit_code"], 0)
+        self.assertFalse(combined["counts"]["overall_success"])
+        self.assertEqual(combined["inputs"], [])
+        missing = [item for item in combined["findings"] if item["category"] == "missing-build-stage"]
+        self.assertEqual({item["ref"] for item in missing}, set(build_report.REQUIRED_STAGES))
+        self.assertTrue(all(current_ref in item["message"] for item in missing))
+
+    def test_environment_ref_filters_exact_matches(self):
+        old_ref = "output/run-archive/old-run"
+        current_ref = "output/run-archive/current-run"
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+
+        with mock.patch.dict(os.environ, {"RUN_ARCHIVE_REF": current_ref}):
+            combined, _ = build_report.combine_reports()
+
+        self.assertEqual(combined["run_archive_ref"], current_ref)
+        self.assertNotEqual(combined["exit_code"], 0)
+        self.assertEqual(
+            {item["ref"] for item in combined["findings"] if item["category"] == "missing-build-stage"},
+            set(build_report.REQUIRED_STAGES),
+        )
+
+    def test_infers_newest_nonempty_cohort_without_mixing_stages(self):
+        old_ref = "output/run-archive/old-run"
+        current_ref = "output/run-archive/current-run"
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+        self._write_report(
+            "validate",
+            current_ref,
+            "current",
+            1_700_000_100,
+            counts={"cohort": "current"},
+        )
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            combined, _ = build_report.combine_reports()
+
+        self.assertEqual(combined["run_archive_ref"], current_ref)
+        self.assertNotEqual(combined["exit_code"], 0)
+        self.assertEqual(combined["counts"]["by_stage"]["validate"], {"cohort": "current"})
+        missing = {item["ref"] for item in combined["findings"] if item["category"] == "missing-build-stage"}
+        self.assertEqual(missing, set(build_report.REQUIRED_STAGES) - {"validate"})
+        for kind in missing:
+            self.assertEqual(combined["counts"]["by_stage"][kind], {})
+
+    def test_identityless_reports_cannot_form_a_successful_cohort(self):
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            self._write_report(kind, None, f"identityless-{offset}", 1_700_000_000 + offset)
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            combined, _ = build_report.combine_reports()
+
+        self.assertIsNone(combined["run_archive_ref"])
+        self.assertNotEqual(combined["exit_code"], 0)
+        self.assertFalse(combined["counts"]["overall_success"])
+        self.assertTrue(
+            any("identity-less reports cannot form a correlated build" in item["message"]
+                for item in combined["findings"])
+        )
+        self.assertEqual(
+            {item["ref"] for item in combined["findings"] if item["category"] == "missing-build-stage"},
+            set(build_report.REQUIRED_STAGES),
+        )
 
 
 if __name__ == "__main__":

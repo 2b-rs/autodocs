@@ -1,120 +1,141 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""link_verification_evidence.py — Clean scratchpads, validate, and commit evidence logs."""
+"""Audit link-verification evidence without mutating sources, claims, or Git.
 
-import glob
+This helper deliberately does not clean scratch paths, repair page models,
+generate tracked output, stage files, or create commits.  It reports those
+states and returns nonzero when a required validation stage fails.
+"""
 import json
-import os
-import shutil
 import subprocess
 import sys
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-def cleanup_ephemeral():
-    print("--- 1. Cleaning ephemeral scratchpads ---")
-    ephemeral_dirs = [
-        os.path.join(ROOT, "_review_request_bisect_tmp"),
-        os.path.join(ROOT, "_review_request_four_url_probe"),
-    ]
-    for d in ephemeral_dirs:
-        if os.path.exists(d):
-            shutil.rmtree(d, ignore_errors=True)
-            print(f"Removed directory: {os.path.relpath(d, ROOT)}")
+ROOT = Path(__file__).resolve().parents[2]
+_EPHEMERAL_DIRS = (
+    "_review_request_bisect_tmp",
+    "_review_request_four_url_probe",
+)
 
-    for f in glob.glob(os.path.join(ROOT, ".perplexity-cpu-loop-recovery*")):
-        if os.path.isfile(f):
-            try:
-                os.remove(f)
-                print(f"Removed file: {os.path.basename(f)}")
-            except Exception as e:
-                print(f"Could not remove {f}: {e}")
 
-def sanitize_and_check_models():
-    print("--- 2. Validating page models ---")
-    process_json_path = os.path.join(ROOT, "_src", "sources", "pages", "process.json")
-    try:
-        with open(process_json_path, "r", encoding="utf-8") as f:
-            raw = f.read()
-        data = json.loads(raw)
-        print("process.json: Valid JSON structure.")
-    except Exception as e:
-        print(f"Fixing process.json formatting: {e}")
-        # Repair unescaped backslashes or invalid escapes
-        fixed = raw.replace('\\"', '"').replace('\\\\', '\\')
-        # Re-encode standard
+def find_ephemeral_paths(root: Path = ROOT) -> List[str]:
+    """Return scratch paths that an operator may review; never delete them."""
+    found = []
+    for relative in _EPHEMERAL_DIRS:
+        if (root / relative).exists():
+            found.append(relative)
+    for candidate in sorted(root.glob(".perplexity-cpu-loop-recovery*")):
+        found.append(candidate.relative_to(root).as_posix())
+    return sorted(set(found))
+
+
+def page_model_paths(root: Path = ROOT) -> List[Path]:
+    """Return all current source page-model JSON files."""
+    return sorted((root / "_src" / "sources" / "pages").glob("*.json"))
+
+
+def validate_page_models(paths: Optional[Iterable[Path]] = None) -> List[Dict[str, object]]:
+    """Read and validate page-model JSON, returning findings without repair."""
+    findings = []
+    for path in paths if paths is not None else page_model_paths():
         try:
-            data = json.loads(fixed)
-            with open(process_json_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=1, ensure_ascii=False)
-            print("process.json repaired.")
-        except Exception as e2:
-            print(f"Could not automatically repair: {e2}")
+            with path.open("r", encoding="utf-8") as handle:
+                value = json.load(handle)
+            if not isinstance(value, dict):
+                raise ValueError("top-level JSON value must be an object")
+        except (OSError, UnicodeError, ValueError) as exc:
+            findings.append(
+                {
+                    "path": str(path),
+                    "category": "invalid-page-model",
+                    "message": str(exc),
+                }
+            )
+    return findings
 
-def run_build_and_validate():
-    print("--- 3. Running site generation and validation ---")
-    res_gen = subprocess.run([sys.executable, "_src/generate.py"], cwd=ROOT, capture_output=True, text=True)
-    if res_gen.returncode != 0:
-        print("ERROR in generate.py:\n", res_gen.stderr)
-        print("stdout:\n", res_gen.stdout)
-        sys.exit(res_gen.returncode)
-    print("generate.py: OK")
 
-    res_val = subprocess.run([sys.executable, "_src/validate.py"], cwd=ROOT, capture_output=True, text=True)
-    if res_val.returncode != 0:
-        print("ERROR in validate.py:\n", res_val.stderr)
-        print("stdout:\n", res_val.stdout)
-        sys.exit(res_val.returncode)
-    print("validate.py: OK (all link & schema checks passed)")
+def _bounded_lines(value: str, limit: int = 20) -> str:
+    lines = value.splitlines()
+    return "\n".join(lines[-limit:])
 
-def execute_commits():
-    print("--- 4. Performing structured Git commits ---")
-    # Commit 1: Evidence logs
-    subprocess.run(["git", "add", "logs/", "_src/logs/"], cwd=ROOT, check=False)
-    diff_cached = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=ROOT, capture_output=True, text=True)
-    if diff_cached.stdout.strip():
-        c1 = subprocess.run(
-            ["git", "commit", "-m", "evidence: record verification logs, qualification runs, and audit trails"],
-            cwd=ROOT, capture_output=True, text=True
+
+def run_required(argv: Sequence[str], label: str, root: Path = ROOT) -> int:
+    """Run one required read-only/checking command and report its exact result."""
+    try:
+        result = subprocess.run(
+            list(argv),
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
         )
-        print("Commit 1 (Evidence Logs):", c1.stdout.strip().split("\n")[0])
-    else:
-        print("Commit 1: Nothing to commit for evidence logs.")
+    except OSError as exc:
+        print("ERROR %s: %s" % (label, exc))
+        return 1
+    if result.returncode != 0:
+        print("ERROR %s: exit %d" % (label, result.returncode))
+        detail = _bounded_lines(result.stderr or result.stdout)
+        if detail:
+            print(detail)
+        return result.returncode or 1
+    print("OK %s" % label)
+    return 0
 
-    # Commit 2: Task Claims
-    subprocess.run(["git", "add", "TODO-perplexity-*.md"], cwd=ROOT, check=False)
-    diff_claims = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=ROOT, capture_output=True, text=True)
-    if diff_claims.stdout.strip():
-        c2 = subprocess.run(
-            ["git", "commit", "-m", "claims: record task coordination logs and session closure files"],
-            cwd=ROOT, capture_output=True, text=True
+
+def git_status(root: Path = ROOT) -> Dict[str, Any]:
+    """Return read-only Git status with an explicit command outcome."""
+    try:
+        result = subprocess.run(
+            ["git", "--no-optional-locks", "status", "--short"],
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
         )
-        print("Commit 2 (Claims):", c2.stdout.strip().split("\n")[0])
-    else:
-        print("Commit 2: Nothing to commit for claims.")
+    except OSError as exc:
+        return {"exit_code": 1, "error": str(exc), "paths": []}
+    return {
+        "exit_code": result.returncode,
+        "error": _bounded_lines(result.stderr) if result.returncode else "",
+        "paths": result.stdout.splitlines(),
+    }
 
-    # Commit 3: Tooling, page model updates, and generated html
-    subprocess.run(["git", "add", "_src/tools/link_verification_evidence.py", "_src/sources/pages/", "*.html"], cwd=ROOT, check=False)
-    diff_cached3 = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=ROOT, capture_output=True, text=True)
-    if diff_cached3.stdout.strip():
-        c3 = subprocess.run(
-            ["git", "commit", "-m", "tools, docs: automate evidence linking in report page models and rebuild site"],
-            cwd=ROOT, capture_output=True, text=True
-        )
-        print("Commit 3 (Tools & Models):", c3.stdout.strip().split("\n")[0])
-    else:
-        print("Commit 3: Nothing to commit for tools/models.")
 
-def main():
-    cleanup_ephemeral()
-    sanitize_and_check_models()
-    run_build_and_validate()
-    execute_commits()
-    print("\n=== SUMMARY VERDICT ===")
-    status = subprocess.run(["git", "status", "--short"], cwd=ROOT, capture_output=True, text=True)
-    print("Git Short Status:")
-    print(status.stdout if status.stdout.strip() else "Working tree clean!")
-    print("\nPASS: link_verification_evidence completed successfully.")
+def main() -> int:
+    scratch = find_ephemeral_paths()
+    if scratch:
+        print("Scratch paths retained for owner review: %s" % ", ".join(scratch))
+    else:
+        print("No known scratch paths found.")
+
+    model_findings = validate_page_models()
+    if model_findings:
+        for finding in model_findings:
+            print("ERROR page model %s: %s" % (finding["path"], finding["message"]))
+        return 1
+    print("OK page-model JSON (%d files)" % len(page_model_paths()))
+
+    stages = (
+        ([sys.executable, "_src/generate.py", "--check"], "generation check"),
+        ([sys.executable, "_src/validate.py"], "project validation"),
+    )
+    for argv, label in stages:
+        returncode = run_required(argv, label)
+        if returncode != 0:
+            return returncode
+
+    status = git_status()
+    if status["exit_code"] != 0:
+        print("ERROR git status: %s" % status["error"])
+        return int(status["exit_code"])
+    print("Git status paths observed (read-only): %d" % len(status["paths"]))
+    print("OK link-verification evidence audit completed without source or Git mutation.")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
