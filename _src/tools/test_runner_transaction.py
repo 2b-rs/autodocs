@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -384,6 +385,24 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertEqual((self.fixture.root / "generated.txt").read_text(encoding="utf-8"), "generated:accepted\n")
         self.assertIn("User-Prompt-Provenance:", self.fixture.git_text("show", "-s", "--format=%B", substantive))
 
+    def test_prepublication_injection_boundaries_roll_back_and_retain_claim(self) -> None:
+        for point in ("after-promote", "after-substantive-commit", "after-bookkeeping-commit", "before-cas"):
+            with self.subTest(point=point):
+                fixture = FixtureRepo()
+                self.addCleanup(fixture.close)
+                base = fixture.base
+                original_generated = (fixture.root / "generated.txt").read_bytes()
+                (fixture.root / "source.txt").write_text(f"boundary:{point}\n", encoding="utf-8")
+                status, output = fixture.execute(inject_failure=point)
+                self.assertEqual(status, runner.EXIT_INTERNAL, output)
+                self.assertIn("RTX-INJECTED-FAILURE", output)
+                self.assertEqual(fixture.base, base)
+                self.assertEqual((fixture.root / "generated.txt").read_bytes(), original_generated)
+                self.assertTrue((fixture.root / CLAIM_PATH).exists())
+                result_path = fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+                result = json.loads(result_path.read_text(encoding="utf-8"))
+                self.assertNotEqual(result["verdict"], "passed")
+
     def test_failure_after_atomic_publication_retains_claim_for_recovery(self) -> None:
         base = self.fixture.base
         self._change_source("published-recovery")
@@ -592,6 +611,105 @@ class RunnerTransactionTests(unittest.TestCase):
         path = self.fixture.store_manifest(value)
         with self.assertRaisesRegex(runner.TransactionError, "requires at least one generated output"):
             runner.load_manifest(path)
+
+    def test_doctor_reports_stale_lock_without_mutating_it(self) -> None:
+        git_dir = Path(self.fixture.git_text("rev-parse", "--git-dir"))
+        if not git_dir.is_absolute():
+            git_dir = self.fixture.root / git_dir
+        lock = git_dir / "autodocs-runner-transaction.lock"
+        stale = {"pid": 99999999, "start_time": 0.0, "request_id": "stale-request"}
+        lock.write_text(json.dumps(stale), encoding="utf-8")
+        report = runner.doctor(self.fixture.root)
+        self.assertTrue(report["lock"]["exists"])
+        self.assertTrue(report["lock"]["stale"])
+        self.assertEqual(json.loads(lock.read_text(encoding="utf-8")), stale)
+
+    def test_acquire_lock_replaces_verified_stale_holder(self) -> None:
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+        git_dir = Path(self.fixture.git_text("rev-parse", "--git-dir"))
+        if not git_dir.is_absolute():
+            git_dir = self.fixture.root / git_dir
+        lock = git_dir / "autodocs-runner-transaction.lock"
+        lock.write_text(json.dumps({"pid": 99999999, "start_time": 0.0}), encoding="utf-8")
+        transaction.acquire_lock()
+        self.addCleanup(transaction.release_lock)
+        self.assertEqual(json.loads(lock.read_text(encoding="utf-8")), transaction.lock_dict)
+
+    def test_live_lock_and_missing_recovery_journal_fail_closed(self) -> None:
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+        git_dir = Path(self.fixture.git_text("rev-parse", "--git-dir"))
+        if not git_dir.is_absolute():
+            git_dir = self.fixture.root / git_dir
+        lock = git_dir / "autodocs-runner-transaction.lock"
+        lock.write_text(json.dumps({"pid": os.getpid(), "start_time": time.time()}), encoding="utf-8")
+        with self.assertRaisesRegex(runner.TransactionError, "transaction lock is held"):
+            transaction.acquire_lock()
+        with self.assertRaisesRegex(runner.TransactionError, "no transaction journal found"):
+            runner.recover_transaction(self.fixture.root, "no-such-request")
+
+    def test_sigterm_persists_failure_journal_result_and_releases_lock(self) -> None:
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+        handlers: Dict[int, Any] = {}
+        with mock.patch.object(runner.signal, "signal", side_effect=lambda sig, handler: handlers.__setitem__(sig, handler)):
+            transaction.acquire_lock()
+        assert transaction.lock_path is not None
+        lock = transaction.lock_path
+        with self.assertRaises(SystemExit) as exited:
+            handlers[runner.signal.SIGTERM](runner.signal.SIGTERM, None)
+        self.assertEqual(exited.exception.code, runner.EXIT_INTERNAL)
+        self.assertFalse(lock.exists())
+        journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
+        result = json.loads(transaction.result_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["state"], "killed-by-signal-SIGTERM")
+        self.assertEqual(journal["error"], "RTX-TERMINATED-SIGNAL")
+        self.assertEqual(result["verdict"], "failed")
+        self.assertEqual(result["error"]["rule"], "RTX-TERMINATED-SIGNAL")
+
+    def test_rollback_drift_retains_backup_and_recovery_journals(self) -> None:
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+        destination = self.fixture.root / "generated.txt"
+        previous = runner._read_state(destination)
+        backup_root = transaction.log_dir / "promotion-backups"
+        backup_root.mkdir(parents=True)
+        backup = backup_root / "0000.backup"
+        shutil.copyfile(destination, backup)
+        destination.write_text("promoted output\n", encoding="utf-8")
+        promoted = runner._read_state(destination)
+        transaction.promotion_backup_root = backup_root
+        transaction.promotion_journal = [runner.PromotionRecord("generated.txt", previous, backup, promoted)]
+        destination.write_text("newer external edit\n", encoding="utf-8")
+        with self.assertRaisesRegex(runner.TransactionError, "refusing to overwrite a newer edit"):
+            transaction.rollback_outputs()
+        self.assertEqual(destination.read_text(encoding="utf-8"), "newer external edit\n")
+        self.assertTrue(backup.exists())
+        promotion = json.loads((transaction.log_dir / "promotion-journal.json").read_text(encoding="utf-8"))
+        journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(promotion["status"], "rollback-blocked-by-drift")
+        self.assertEqual(journal["state"], "rollback-blocked-by-drift")
+
+    def test_recover_reports_interrupted_journal_state(self) -> None:
+        log_dir = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID
+        log_dir.mkdir(parents=True)
+        (log_dir / "transaction-journal.json").write_text(
+            json.dumps({"state": "outputs-promoted", "request_id": REQUEST_ID}),
+            encoding="utf-8",
+        )
+        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
+        self.assertEqual(recovery["status"], "reconciled")
+        self.assertEqual(recovery["prior_state"], "outputs-promoted")
+        self.assertIn("finalize claim", recovery["recommendation"])
+
+    def test_finalize_claim_standalone_archives_matching_claim(self) -> None:
+        claim = self.fixture.root / CLAIM_PATH
+        self.assertTrue(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
+        archive = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "finalized-claim.md"
+        self.assertFalse(claim.exists())
+        self.assertTrue(archive.exists())
+        self.assertFalse(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
 
     def test_envelope_renderer_rejects_shell_metacharacters(self) -> None:
         for hostile in (

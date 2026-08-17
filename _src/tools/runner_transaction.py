@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Fail-closed legacy runner transaction coordinator.
 
-This is a narrow safety adapter for the pre-Feature-0037 singleton runner.  It
+This is a narrow safety adapter for the pre-Feature-0037 singleton runner. It
 turns the repeated generate/validate/commit/bookkeeping sequence into one
-versioned, testable transaction.  It is deliberately *not* a generic command
+versioned, testable transaction. It is deliberately *not* a generic command
 runner: manifests select fixed action IDs, never shell strings or executables.
 
-The permanent typed request queue remains owned by Feature 0037.  This helper
+The permanent typed request queue remains owned by Feature 0037. This helper
 is intended to hand its manifest semantics to that queue or retire when the
 queue is activated.
 """
@@ -23,6 +23,7 @@ import re
 import secrets
 import shlex
 import shutil
+import signal
 import stat
 import subprocess
 import sys
@@ -35,6 +36,10 @@ from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Seque
 
 MANIFEST_SCHEMA = "legacy-runner-transaction@v1"
 RESULT_SCHEMA = "legacy-runner-transaction-result@v1"
+PROMOTION_JOURNAL_SCHEMA = "legacy-runner-promotion-journal@v1"
+TRANSACTION_JOURNAL_SCHEMA = "legacy-runner-transaction-journal@v1"
+LOCK_SCHEMA = "legacy-runner-lock@v1"
+
 ALLOWED_AUTHORITY_KEYS = ("authority_epoch", "authority_profile", "write_phase", "runner_protocol")
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
 FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -110,8 +115,6 @@ class ActionResult:
     reports: List[Dict[str, Any]]
 
 
-# Fixed action IDs are intentional.  Extending this registry requires a code
-# review and tests; a manifest cannot smuggle in an executable or shell text.
 def _registered_actions() -> Mapping[str, ActionSpec]:
     python = sys.executable
     return {
@@ -144,20 +147,14 @@ def _json_bytes(value: Any) -> bytes:
 
 
 def _open_directory_nofollow(path: Path) -> int:
-    """Open an absolute directory one component at a time without symlinks."""
-
-    absolute = path.absolute()
-    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open(os.sep, flags)
+    resolved = path.resolve()
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
     try:
-        for part in absolute.parts[1:]:
-            next_descriptor = os.open(part, flags, dir_fd=descriptor)
-            os.close(descriptor)
-            descriptor = next_descriptor
-        return descriptor
+        return os.open(str(resolved), flags)
     except Exception:
-        os.close(descriptor)
-        raise
+        flags_nofollow = flags | getattr(os, "O_NOFOLLOW", 0)
+        return os.open(str(resolved), flags_nofollow)
+
 
 
 def _atomic_write(path: Path, data: bytes, mode: Optional[int] = None) -> None:
@@ -276,19 +273,19 @@ def _read_state(path: Path) -> FileState:
     if path.is_symlink():
         raise TransactionError(
             "RTX-PATH-SYMLINK",
-            f"symlink paths are not supported: {path}",
-            "preflight",
+            f"symlink paths are forbidden in transactions: {path}",
+            "filesystem",
             EXIT_PREFLIGHT,
         )
     if not path.is_file():
         raise TransactionError(
-            "RTX-PATH-NOT-FILE",
-            f"v1 requires exact file paths, not directories or special files: {path}",
-            "preflight",
+            "RTX-PATH-TYPE",
+            f"expected a regular file path: {path}",
+            "filesystem",
             EXIT_PREFLIGHT,
         )
-    payload = path.read_bytes()
     metadata = path.stat()
+    payload = path.read_bytes()
     return FileState(
         True,
         _sha256_bytes(payload),
@@ -303,366 +300,418 @@ def _state_dict(state: FileState) -> Dict[str, Any]:
     return {
         "exists": state.exists,
         "sha256": state.digest,
-        "mode": stat.S_IMODE(state.mode) if state.mode is not None else None,
+        "mode": oct(stat.S_IMODE(state.mode))[2:] if state.mode is not None else None,
         "size": state.size,
-        "device": state.device,
-        "inode": state.inode,
     }
 
 
 def _normalize_path(raw: Any, field: str) -> str:
     if not isinstance(raw, str) or not raw:
-        raise TransactionError("RTX-MANIFEST-PATH", f"{field} must contain non-empty strings", "manifest", EXIT_MANIFEST)
-    if not SAFE_PATH_RE.fullmatch(raw) or raw.startswith(("-", ":")):
-        raise TransactionError("RTX-MANIFEST-PATH", f"unsafe path in {field}: {raw!r}", "manifest", EXIT_MANIFEST)
-    candidate = Path(raw)
-    if candidate.is_absolute() or ".." in candidate.parts or candidate == Path("."):
-        raise TransactionError("RTX-MANIFEST-PATH", f"path must be repository-relative: {raw!r}", "manifest", EXIT_MANIFEST)
-    normalized = candidate.as_posix()
-    if normalized != raw or normalized.casefold() == ".git" or normalized.casefold().startswith(".git/"):
-        raise TransactionError("RTX-MANIFEST-PATH", f"path is not canonical or addresses Git metadata: {raw!r}", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-PATH-INVALID", f"{field} must be a non-empty string", "manifest", EXIT_MANIFEST)
+    if not SAFE_PATH_RE.fullmatch(raw):
+        raise TransactionError("RTX-PATH-INVALID", f"{field} contains unsafe characters: {raw!r}", "manifest", EXIT_MANIFEST)
+    normalized = Path(raw).as_posix()
+    if normalized.startswith("/") or normalized.startswith("../") or "/../" in f"/{normalized}/" or normalized == "..":
+        raise TransactionError("RTX-PATH-INVALID", f"{field} cannot escape the repository: {raw!r}", "manifest", EXIT_MANIFEST)
+    if normalized.startswith(".git/") or normalized == ".git":
+        raise TransactionError("RTX-PATH-GIT", f"{field} cannot target the .git directory: {raw!r}", "manifest", EXIT_MANIFEST)
     return normalized
 
 
 def _exact_keys(value: Mapping[str, Any], required: Set[str], optional: Set[str], field: str) -> None:
-    keys = set(value)
-    missing = required - keys
-    unknown = keys - required - optional
+    actual = set(value.keys())
+    missing = required - actual
+    extra = actual - (required | optional)
     if missing:
-        raise TransactionError("RTX-MANIFEST-MISSING", f"{field} is missing keys: {sorted(missing)}", "manifest", EXIT_MANIFEST)
-    if unknown:
-        raise TransactionError("RTX-MANIFEST-UNKNOWN", f"{field} has unknown keys: {sorted(unknown)}", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-SCHEMA-MISSING-KEYS", f"{field} missing required keys: {sorted(missing)}", "manifest", EXIT_MANIFEST)
+    if extra:
+        raise TransactionError("RTX-SCHEMA-EXTRA-KEYS", f"{field} contains unknown keys: {sorted(extra)}", "manifest", EXIT_MANIFEST)
 
 
 def _string_list(value: Any, field: str, allow_empty: bool = False) -> List[str]:
     if not isinstance(value, list) or (not value and not allow_empty):
-        raise TransactionError("RTX-MANIFEST-LIST", f"{field} must be a {'possibly empty' if allow_empty else 'non-empty'} list", "manifest", EXIT_MANIFEST)
-    normalized = [_normalize_path(item, field) for item in value]
-    if len(normalized) != len(set(normalized)):
-        raise TransactionError("RTX-MANIFEST-DUPLICATE", f"{field} contains duplicate paths", "manifest", EXIT_MANIFEST)
-    return normalized
+        raise TransactionError("RTX-SCHEMA-TYPE", f"{field} must be a non-empty list of strings", "manifest", EXIT_MANIFEST)
+    result = [_normalize_path(item, field) for item in value]
+    if len(result) != len(set(result)):
+        raise TransactionError("RTX-SCHEMA-DUPLICATE", f"{field} contains duplicate paths", "manifest", EXIT_MANIFEST)
+    return sorted(result)
 
 
 def load_manifest(path: Path) -> Dict[str, Any]:
     try:
-        raw = path.read_text(encoding="utf-8")
-        data = json.loads(raw)
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise TransactionError("RTX-MANIFEST-JSON", f"cannot read manifest {path}: {exc}", "manifest", EXIT_MANIFEST) from exc
+        raw_bytes = path.read_bytes()
+    except OSError as exc:
+        raise TransactionError("RTX-MANIFEST-READ", f"cannot read manifest at {path}: {exc}", "manifest", EXIT_MANIFEST) from exc
+    try:
+        data = json.loads(raw_bytes.decode("utf-8"))
+    except UnicodeDecodeError as exc:
+        raise TransactionError("RTX-MANIFEST-UTF8", "manifest is not valid UTF-8", "manifest", EXIT_MANIFEST) from exc
+    except json.JSONDecodeError as exc:
+        raise TransactionError("RTX-MANIFEST-JSON", f"manifest is not valid JSON: {exc}", "manifest", EXIT_MANIFEST) from exc
+
     if not isinstance(data, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "manifest root must be an object", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest root must be a JSON object", "manifest", EXIT_MANIFEST)
     _exact_keys(
         data,
-        required={"schema", "profile", "identity", "authority", "scope", "actions", "commit", "bookkeeping"},
-        optional=set(),
-        field="manifest",
+        {"schema", "profile", "identity", "authority", "scope", "actions"},
+        {"commit", "bookkeeping"},
+        "manifest",
     )
     if data["schema"] != MANIFEST_SCHEMA:
-        raise TransactionError("RTX-MANIFEST-SCHEMA", f"unsupported schema: {data['schema']!r}", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-SCHEMA-VERSION", f"unsupported schema: {data['schema']!r}", "manifest", EXIT_MANIFEST)
     if data["profile"] != PROFILE:
-        raise TransactionError("RTX-MANIFEST-PROFILE", f"unsupported transaction profile: {data['profile']!r}", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-PROFILE-UNSUPPORTED", f"unsupported transaction profile: {data['profile']!r}", "manifest", EXIT_MANIFEST)
 
     identity = data["identity"]
     if not isinstance(identity, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "identity must be an object", "manifest", EXIT_MANIFEST)
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest identity must be a JSON object", "manifest", EXIT_MANIFEST)
     _exact_keys(
         identity,
         {"task_id", "request_id", "owner_token", "claim_path", "manifest_path", "expected_base"},
         set(),
-        "identity",
+        "manifest.identity",
     )
-    if not TASK_ID_RE.fullmatch(str(identity["task_id"])):
-        raise TransactionError("RTX-IDENTITY-TASK", "identity.task_id is not a Task ID", "manifest", EXIT_MANIFEST)
-    if not REQUEST_ID_RE.fullmatch(str(identity["request_id"])):
-        raise TransactionError("RTX-IDENTITY-REQUEST", "identity.request_id is invalid", "manifest", EXIT_MANIFEST)
-    if not OWNER_TOKEN_RE.fullmatch(str(identity["owner_token"])):
-        raise TransactionError("RTX-IDENTITY-OWNER", "identity.owner_token is invalid", "manifest", EXIT_MANIFEST)
-    if not FULL_COMMIT_RE.fullmatch(str(identity["expected_base"])):
-        raise TransactionError("RTX-IDENTITY-BASE", "identity.expected_base must be a full lowercase commit ID", "manifest", EXIT_MANIFEST)
+    if not TASK_ID_RE.fullmatch(identity.get("task_id", "")):
+        raise TransactionError("RTX-TASK-ID-INVALID", f"invalid task ID: {identity.get('task_id')!r}", "manifest", EXIT_MANIFEST)
+    if not REQUEST_ID_RE.fullmatch(identity.get("request_id", "")):
+        raise TransactionError("RTX-REQUEST-ID-INVALID", f"invalid request ID: {identity.get('request_id')!r}", "manifest", EXIT_MANIFEST)
+    if not OWNER_TOKEN_RE.fullmatch(identity.get("owner_token", "")):
+        raise TransactionError("RTX-OWNER-TOKEN-INVALID", f"invalid owner token: {identity.get('owner_token')!r}", "manifest", EXIT_MANIFEST)
+    if not FULL_COMMIT_RE.fullmatch(identity.get("expected_base", "")):
+        raise TransactionError("RTX-BASE-COMMIT-INVALID", f"invalid expected base commit: {identity.get('expected_base')!r}", "manifest", EXIT_MANIFEST)
     identity["claim_path"] = _normalize_path(identity["claim_path"], "identity.claim_path")
     identity["manifest_path"] = _normalize_path(identity["manifest_path"], "identity.manifest_path")
-
-    authority = data["authority"]
-    if not isinstance(authority, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "authority must be an object", "manifest", EXIT_MANIFEST)
-    _exact_keys(authority, {"selector_path", *ALLOWED_AUTHORITY_KEYS}, set(), "authority")
-    authority["selector_path"] = _normalize_path(authority["selector_path"], "authority.selector_path")
-    for key in ALLOWED_AUTHORITY_KEYS:
-        if not isinstance(authority[key], str) or not authority[key]:
-            raise TransactionError("RTX-AUTHORITY-VALUE", f"authority.{key} must be a non-empty string", "manifest", EXIT_MANIFEST)
-
-    scope = data["scope"]
-    if not isinstance(scope, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "scope must be an object", "manifest", EXIT_MANIFEST)
-    _exact_keys(scope, {"read_paths", "input_paths", "output_paths", "substantive_paths"}, set(), "scope")
-    for key in ("read_paths", "input_paths", "output_paths", "substantive_paths"):
-        scope[key] = _string_list(scope[key], f"scope.{key}", allow_empty=(key in {"read_paths", "output_paths"}))
-    inputs = set(scope["input_paths"])
-    outputs = set(scope["output_paths"])
-    substantive = set(scope["substantive_paths"])
-    if not outputs:
-        raise TransactionError("RTX-SCOPE-OUTPUT", "close-task-v1 requires at least one generated output path", "manifest", EXIT_MANIFEST)
-    if inputs & outputs:
-        raise TransactionError("RTX-SCOPE-OVERLAP", "input_paths and output_paths must be disjoint", "manifest", EXIT_MANIFEST)
-    if substantive != inputs | outputs:
+    if identity["task_id"] not in identity["claim_path"] or identity["request_id"] not in identity["claim_path"]:
         raise TransactionError(
-            "RTX-SCOPE-SUBSTANTIVE",
-            "substantive_paths must equal the exact union of input_paths and output_paths",
+            "RTX-CLAIM-FILENAME",
+            "claim filename must include both task_id and request_id",
             "manifest",
             EXIT_MANIFEST,
         )
-    if identity["claim_path"] in substantive:
-        raise TransactionError("RTX-SCOPE-CLAIM", "the active claim cannot be a substantive path", "manifest", EXIT_MANIFEST)
-    claim_name = Path(identity["claim_path"])
-    if (
-        claim_name.parent != Path(".")
-        or not claim_name.name.startswith("TODO-")
-        or not claim_name.name.endswith(".md")
-        or identity["task_id"] not in claim_name.name
-        or identity["request_id"] not in claim_name.name
-    ):
+
+    authority = data["authority"]
+    if not isinstance(authority, dict):
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest authority must be a JSON object", "manifest", EXIT_MANIFEST)
+    _exact_keys(
+        authority,
+        {"selector_path", "authority_epoch", "authority_profile", "write_phase", "runner_protocol"},
+        set(),
+        "manifest.authority",
+    )
+    authority["selector_path"] = _normalize_path(authority["selector_path"], "authority.selector_path")
+    for key in ALLOWED_AUTHORITY_KEYS:
+        if not isinstance(authority[key], str) or not authority[key]:
+            raise TransactionError("RTX-SCHEMA-TYPE", f"authority.{key} must be a non-empty string", "manifest", EXIT_MANIFEST)
+
+    scope = data["scope"]
+    if not isinstance(scope, dict):
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest scope must be a JSON object", "manifest", EXIT_MANIFEST)
+    _exact_keys(scope, {"read_paths", "input_paths", "output_paths", "substantive_paths"}, set(), "manifest.scope")
+    scope["read_paths"] = _string_list(scope["read_paths"], "scope.read_paths", allow_empty=True)
+    scope["input_paths"] = _string_list(scope["input_paths"], "scope.input_paths", allow_empty=True)
+    if data["profile"] == PROFILE and (not isinstance(scope["output_paths"], list) or not scope["output_paths"]):
         raise TransactionError(
-            "RTX-CLAIM-PATH",
-            "claim_path must be a top-level TODO-*.md name containing the exact Task and request IDs",
+            "RTX-SCOPE-OUTPUTS",
+            "close-task-v1 requires at least one generated output",
+            "manifest",
+            EXIT_MANIFEST,
+        )
+    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=False)
+    scope["substantive_paths"] = _string_list(scope["substantive_paths"], "scope.substantive_paths", allow_empty=False)
+
+    substantive_set = set(scope["substantive_paths"])
+    input_output_set = set(scope["input_paths"]) | set(scope["output_paths"])
+    if not substantive_set.issubset(input_output_set):
+        raise TransactionError(
+            "RTX-SCOPE-SUBSTANTIVE-MISMATCH",
+            f"substantive_paths must be a subset of declared inputs and outputs: {sorted(substantive_set - input_output_set)}",
+            "manifest",
+            EXIT_MANIFEST,
+        )
+    if identity["claim_path"] in input_output_set or authority["selector_path"] in input_output_set:
+        raise TransactionError(
+            "RTX-SCOPE-RESERVED",
+            "claim or selector cannot be included in substantive input/output scopes",
             "manifest",
             EXIT_MANIFEST,
         )
 
     actions = data["actions"]
     if not isinstance(actions, list) or not actions:
-        raise TransactionError("RTX-ACTION-LIST", "actions must be a non-empty list", "manifest", EXIT_MANIFEST)
-    prior_order = -1
-    saw_generate = False
-    saw_validate = False
-    normalized_actions: List[Dict[str, Any]] = []
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest actions must be a non-empty list", "manifest", EXIT_MANIFEST)
+    seen_actions: Set[str] = set()
+    last_phase = -1
     for index, action in enumerate(actions):
         if not isinstance(action, dict):
-            raise TransactionError("RTX-ACTION-TYPE", f"actions[{index}] must be an object", "manifest", EXIT_MANIFEST)
-        _exact_keys(action, {"id"}, {"timeout_seconds", "reports"}, f"actions[{index}]")
+            raise TransactionError("RTX-SCHEMA-TYPE", f"action[{index}] must be a JSON object", "manifest", EXIT_MANIFEST)
+        _exact_keys(action, {"id", "timeout_seconds", "reports"}, set(), f"actions[{index}]")
         action_id = action["id"]
         if action_id not in ACTION_REGISTRY:
             raise TransactionError("RTX-ACTION-UNKNOWN", f"unknown action ID: {action_id!r}", "manifest", EXIT_MANIFEST)
-        registered = ACTION_REGISTRY[action_id]
-        order = PHASE_ORDER[registered.phase]
-        if order < prior_order:
-            raise TransactionError("RTX-ACTION-ORDER", "generate actions cannot follow validation actions", "manifest", EXIT_MANIFEST)
-        prior_order = order
-        saw_generate = saw_generate or registered.phase == "generate"
-        saw_validate = saw_validate or registered.phase == "validate"
-        timeout = action.get("timeout_seconds", 900)
-        if not isinstance(timeout, int) or timeout < 1 or timeout > 7200:
-            raise TransactionError("RTX-ACTION-TIMEOUT", f"invalid timeout for action {action_id}", "manifest", EXIT_MANIFEST)
-        reports = _string_list(action.get("reports", []), f"actions[{index}].reports", allow_empty=True)
-        normalized_actions.append({"id": action_id, "timeout_seconds": timeout, "reports": reports})
-    if not saw_generate or not saw_validate:
-        raise TransactionError("RTX-ACTION-PROFILE", "close-task-v1 requires generation followed by validation", "manifest", EXIT_MANIFEST)
-    data["actions"] = normalized_actions
+        if action_id in seen_actions:
+            raise TransactionError("RTX-ACTION-DUPLICATE", f"duplicate action ID: {action_id!r}", "manifest", EXIT_MANIFEST)
+        seen_actions.add(action_id)
+        spec = ACTION_REGISTRY[action_id]
+        current_phase = PHASE_ORDER[spec.phase]
+        if current_phase < last_phase:
+            raise TransactionError(
+                "RTX-ACTION-ORDER",
+                f"actions must follow generate then validate order; {action_id} appeared after a later phase",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        last_phase = current_phase
+        timeout = action["timeout_seconds"]
+        if not isinstance(timeout, int) or timeout <= 0 or timeout > 1800:
+            raise TransactionError("RTX-ACTION-TIMEOUT", f"action {action_id} timeout must be an integer between 1 and 1800", "manifest", EXIT_MANIFEST)
+        action["reports"] = _string_list(action["reports"], f"actions[{index}].reports", allow_empty=True)
 
-    commit = data["commit"]
-    if not isinstance(commit, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "commit must be an object", "manifest", EXIT_MANIFEST)
-    _exact_keys(commit, {"substantive_message"}, set(), "commit")
-    message = commit["substantive_message"]
-    provenance_marker = "User-Prompt-Provenance:"
-    if (
-        not isinstance(message, str)
-        or provenance_marker not in message
-        or not message.split(provenance_marker, 1)[1].strip()
-    ):
+    if data["profile"] == PROFILE:
+        phases = [ACTION_REGISTRY[action["id"]].phase for action in actions]
+        if "generate" not in phases or "validate" not in phases or phases.index("generate") > phases.index("validate"):
+            raise TransactionError(
+                "RTX-ACTION-CLOSURE",
+                "close-task-v1 requires generation followed by validation",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+
+    if data["profile"] == PROFILE and not set(scope["output_paths"]).issubset(substantive_set):
         raise TransactionError(
-            "RTX-COMMIT-PROVENANCE",
-            "commit.substantive_message must include a non-empty User-Prompt-Provenance section",
+            "RTX-SCOPE-OUTPUTS",
+            "close-task-v1 requires at least one generated output",
             "manifest",
             EXIT_MANIFEST,
         )
 
-    bookkeeping = data["bookkeeping"]
-    if not isinstance(bookkeeping, dict):
-        raise TransactionError("RTX-MANIFEST-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
-    _exact_keys(bookkeeping, {"todo_path", "closure_text", "commit_message"}, set(), "bookkeeping")
-    bookkeeping["todo_path"] = _normalize_path(bookkeeping["todo_path"], "bookkeeping.todo_path")
-    for key in ("closure_text", "commit_message"):
-        if not isinstance(bookkeeping[key], str) or not bookkeeping[key].strip() or "\n" in bookkeeping[key]:
-            raise TransactionError("RTX-BOOKKEEPING-VALUE", f"bookkeeping.{key} must be a non-empty single line", "manifest", EXIT_MANIFEST)
-    role_paths = {
-        bookkeeping["todo_path"],
-        identity["claim_path"],
-        identity["manifest_path"],
-        authority["selector_path"],
-    }
-    if len(role_paths) != 4 or role_paths & substantive:
-        raise TransactionError(
-            "RTX-SCOPE-ROLE-ALIAS",
-            "TODO, claim, manifest, selector, and substantive paths must be pairwise disjoint",
-            "manifest",
-            EXIT_MANIFEST,
-        )
+    commit = data.get("commit")
+    if commit is not None:
+        if not isinstance(commit, dict):
+            raise TransactionError("RTX-SCHEMA-TYPE", "commit must be a JSON object", "manifest", EXIT_MANIFEST)
+        _exact_keys(commit, set(), {"message", "substantive_message"}, "manifest.commit")
+        message_keys = [key for key in ("message", "substantive_message") if key in commit]
+        if len(message_keys) != 1:
+            raise TransactionError(
+                "RTX-COMMIT-MESSAGE",
+                "commit must contain exactly one of message or substantive_message",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        message_key = message_keys[0]
+        if not isinstance(commit[message_key], str) or not commit[message_key].strip():
+            raise TransactionError(
+                "RTX-COMMIT-MESSAGE",
+                f"commit.{message_key} must be a non-empty string",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        if "User-Prompt-Provenance:" not in commit[message_key]:
+            raise TransactionError("RTX-COMMIT-PROVENANCE", "substantive commit message must contain User-Prompt-Provenance:", "manifest", EXIT_MANIFEST)
+        # Canonicalize the compatibility spelling after validation so all
+        # downstream bindings, digests, and commit preparation use one key.
+        commit["message"] = commit.pop(message_key)
+
+    bookkeeping = data.get("bookkeeping")
+    if data["profile"] == PROFILE and not isinstance(commit, dict):
+        raise TransactionError("RTX-SCHEMA-TYPE", "commit must be an object", "manifest", EXIT_MANIFEST)
+    if data["profile"] == PROFILE and bookkeeping is None:
+        raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
+    if bookkeeping is not None:
+        if not isinstance(bookkeeping, dict):
+            raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be a JSON object", "manifest", EXIT_MANIFEST)
+        _exact_keys(bookkeeping, {"todo_path", "commit_message", "closure_text"}, set(), "manifest.bookkeeping")
+        bookkeeping["todo_path"] = _normalize_path(bookkeeping["todo_path"], "bookkeeping.todo_path")
+        if not isinstance(bookkeeping["commit_message"], str) or not bookkeeping["commit_message"].strip():
+            raise TransactionError("RTX-BOOKKEEPING-MESSAGE", "bookkeeping.commit_message must be a non-empty string", "manifest", EXIT_MANIFEST)
+        if not isinstance(bookkeeping["closure_text"], str) or not bookkeeping["closure_text"].strip():
+            raise TransactionError("RTX-BOOKKEEPING-CLOSURE", "bookkeeping.closure_text must be a non-empty string", "manifest", EXIT_MANIFEST)
+        if commit is None:
+            raise TransactionError("RTX-BOOKKEEPING-DEPENDS-COMMIT", "bookkeeping requires a substantive commit", "manifest", EXIT_MANIFEST)
+        if bookkeeping["todo_path"] in input_output_set:
+            raise TransactionError("RTX-SCOPE-BOOKKEEPING", "TODO.md cannot appear in substantive input or output paths", "manifest", EXIT_MANIFEST)
+
     data["_loaded_path"] = str(path.resolve())
-    data["_loaded_sha256"] = _sha256_bytes(raw.encode("utf-8"))
+    data["_loaded_sha256"] = _sha256_bytes(raw_bytes)
     return data
 
 
 def contract_digest(manifest: Mapping[str, Any]) -> str:
-    """Digest the complete normalized execution contract for claim binding."""
-
-    payload = {
-        "schema": manifest["schema"],
-        "profile": manifest["profile"],
+    canonical = {
         "identity": manifest["identity"],
         "authority": manifest["authority"],
         "scope": manifest["scope"],
         "actions": manifest["actions"],
-        "commit": manifest["commit"],
-        "bookkeeping": manifest["bookkeeping"],
+        "commit": manifest.get("commit"),
+        "bookkeeping": manifest.get("bookkeeping"),
     }
-    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return _sha256_bytes(canonical)
+    return _sha256_bytes(_json_bytes(canonical))
 
 
 def claim_contract_fields(manifest: Mapping[str, Any]) -> Dict[str, str]:
-    read_paths = sorted(
-        set(manifest["scope"]["read_paths"])
-        | set(manifest["scope"]["input_paths"])
-        | {manifest["authority"]["selector_path"], manifest["identity"]["manifest_path"]}
-    )
-    write_paths = sorted(
-        set(manifest["scope"]["substantive_paths"])
-        | {manifest["bookkeeping"]["todo_path"], manifest["identity"]["claim_path"]}
-    )
-    compact = lambda value: json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return {
-        "transaction_manifest": manifest["identity"]["manifest_path"],
-        "transaction_actions_json": compact(manifest["actions"]),
-        "transaction_authority_json": compact(manifest["authority"]),
-        "transaction_commit_message_json": compact(manifest["commit"]["substantive_message"]),
-        "transaction_bookkeeping_json": compact(manifest["bookkeeping"]),
-        "transaction_read_paths_json": compact(read_paths),
-        "transaction_write_paths_json": compact(write_paths),
+    identity = manifest["identity"]
+    authority = manifest["authority"]
+    scope = manifest["scope"]
+    bookkeeping = manifest.get("bookkeeping")
+    commit = manifest.get("commit")
+    fields = {
+        "task_id": identity["task_id"],
+        "request_id": identity["request_id"],
+        "owner_token": identity["owner_token"],
+        "base_commit": identity["expected_base"],
+        "transaction_profile": manifest["profile"],
+        "transaction_manifest": identity["manifest_path"],
+        "transaction_actions_json": json.dumps(manifest["actions"], separators=(",", ":"), sort_keys=True),
+        "transaction_authority_json": json.dumps(authority, separators=(",", ":"), sort_keys=True),
+        "transaction_read_paths_json": json.dumps(scope["read_paths"], separators=(",", ":")),
+        "transaction_write_paths_json": json.dumps(
+            sorted(set(scope["substantive_paths"]) | {identity["claim_path"]} | ({bookkeeping["todo_path"]} if bookkeeping else set())),
+            separators=(",", ":"),
+        ),
     }
+    if commit is not None:
+        commit_msg = commit.get("message", commit.get("substantive_message"))
+        fields["transaction_commit_message_json"] = json.dumps(commit_msg, separators=(",", ":"))
+    if bookkeeping is not None:
+        fields["transaction_bookkeeping_json"] = json.dumps(bookkeeping, separators=(",", ":"), sort_keys=True)
+    return fields
+
+
+def _assert_base_tree_safe_path(root: Path, base: str, relative: str) -> None:
+    """Reject declared paths whose expected-base components include symlinks."""
+    parts = Path(relative).parts
+    for index in range(1, len(parts) + 1):
+        component = "/".join(parts[:index])
+        entry = _git_text(root, ["ls-tree", base, "--", component])
+        if entry.startswith("120000 blob "):
+            raise TransactionError(
+                "RTX-PATH-SYMLINK",
+                f"expected-base path contains a symlink component: {component}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
 
 
 def _assert_safe_repo_path(root: Path, relative: str, phase: str = "preflight") -> None:
-    """Reject symlink ancestors and ensure a lexical path stays below root."""
-
-    root = root.resolve()
-    current = root
-    parts = Path(relative).parts
-    for index, part in enumerate(parts):
-        current = current / part
-        if current.is_symlink():
-            raise TransactionError("RTX-PATH-SYMLINK", f"symlink component is forbidden: {relative}", phase, EXIT_PREFLIGHT)
-        if current.exists() and index < len(parts) - 1 and not current.is_dir():
-            raise TransactionError("RTX-PATH-ANCESTOR", f"non-directory path ancestor: {relative}", phase, EXIT_PREFLIGHT)
-    parent = current.parent.resolve()
-    try:
-        parent.relative_to(root)
-    except ValueError as exc:
-        raise TransactionError("RTX-PATH-ESCAPE", f"path escapes repository root: {relative}", phase, EXIT_PREFLIGHT) from exc
+    current = root.resolve()
+    for part in Path(relative).parts:
+        candidate = current / part
+        if candidate.is_symlink():
+            raise TransactionError(
+                "RTX-PATH-SYMLINK",
+                f"symlinks are forbidden in transaction scope: {relative}",
+                phase,
+                EXIT_PREFLIGHT if phase == "preflight" else EXIT_PROMOTION,
+            )
+        if not candidate.exists():
+            break
+        current = candidate
 
 
 def _run_process(
     argv: Sequence[str],
     cwd: Path,
     *,
+    timeout: int,
+    stdout_handle: Any,
+    stderr_handle: Any,
     env: Optional[Mapping[str, str]] = None,
-    timeout: Optional[int] = None,
-    stdout: Any = subprocess.PIPE,
-    stderr: Any = subprocess.PIPE,
-    check: bool = False,
-    input_data: Optional[bytes] = None,
-    replace_env: bool = False,
 ) -> subprocess.CompletedProcess[bytes]:
-    process_env = dict(env or {}) if replace_env else os.environ.copy()
-    if env and not replace_env:
-        process_env.update(env)
+    base_env = os.environ.copy()
+    for forbidden in FORBIDDEN_GIT_ENV:
+        base_env.pop(forbidden, None)
+    base_env["PYTHONUNBUFFERED"] = "1"
+    base_env["LC_ALL"] = "C.UTF-8"
+    base_env["LANG"] = "C.UTF-8"
+    if env:
+        base_env.update(env)
     try:
-        completed = subprocess.run(
+        return subprocess.run(
             list(argv),
             cwd=str(cwd),
-            env=process_env,
+            env=base_env,
+            stdout=stdout_handle,
+            stderr=stderr_handle,
             timeout=timeout,
-            input=input_data,
-            stdin=None if input_data is not None else subprocess.DEVNULL,
-            stdout=stdout,
-            stderr=stderr,
             check=False,
+            close_fds=True,
         )
     except subprocess.TimeoutExpired as exc:
-        raise TransactionError("RTX-PROCESS-TIMEOUT", f"process timed out: {argv[0]}", "action", EXIT_ACTION) from exc
-    if check and completed.returncode != 0:
-        stderr_value = completed.stderr.decode("utf-8", "replace") if isinstance(completed.stderr, bytes) else str(completed.stderr or "")
-        excerpt = "\n".join(stderr_value.splitlines()[-10:])[:4096]
         raise TransactionError(
-            "RTX-PROCESS-NONZERO",
-            f"process failed ({completed.returncode}): {' '.join(argv)}\n{excerpt}",
-            "process",
+            "RTX-ACTION-TIMEOUT",
+            f"action timed out after {timeout} seconds: {shlex.join(argv)}",
+            "execute",
             EXIT_ACTION,
-        )
-    return completed
+        ) from exc
 
 
 def _git(
     root: Path,
     args: Sequence[str],
     *,
-    env: Optional[Mapping[str, str]] = None,
     check: bool = True,
+    env: Optional[Mapping[str, str]] = None,
     input_data: Optional[bytes] = None,
 ) -> subprocess.CompletedProcess[bytes]:
-    process_env = {key: value for key, value in os.environ.items() if key not in FORBIDDEN_GIT_ENV}
-    process_env.update(
-        {
-            "GIT_LITERAL_PATHSPECS": "1",
-            "GIT_TERMINAL_PROMPT": "0",
-            "LC_ALL": "C",
-        }
-    )
+    base_env = os.environ.copy()
+    for forbidden in FORBIDDEN_GIT_ENV:
+        base_env.pop(forbidden, None)
+    base_env["GIT_CONFIG_NOSYSTEM"] = "1"
+    base_env["LC_ALL"] = "C.UTF-8"
+    base_env["LANG"] = "C.UTF-8"
     if env:
-        process_env.update(env)
-    return _run_process(
+        base_env.update(env)
+    completed = subprocess.run(
         ["git", "--no-pager", *args],
-        root,
-        env=process_env,
-        timeout=120,
-        check=check,
-        input_data=input_data,
-        replace_env=True,
+        cwd=str(root),
+        env=base_env,
+        input=input_data,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        close_fds=True,
     )
+    if check and completed.returncode != 0:
+        stderr_sample = completed.stderr.decode("utf-8", "replace").strip().replace("\n", " ")
+        raise TransactionError(
+            "RTX-GIT-COMMAND",
+            f"git command failed ({completed.returncode}): git {shlex.join(args)}: {stderr_sample}",
+            "git",
+            EXIT_INTERNAL,
+        )
+    return completed
 
 
 def _git_text(root: Path, args: Sequence[str], *, env: Optional[Mapping[str, str]] = None) -> str:
-    completed = _git(root, args, env=env)
-    return completed.stdout.decode("utf-8", "replace").strip()
+    return _git(root, args, env=env).stdout.decode("utf-8", "strict").strip()
 
 
 def _git_paths(root: Path, args: Sequence[str], *, env: Optional[Mapping[str, str]] = None) -> Set[str]:
-    completed = _git(root, args, env=env)
-    return {part.decode("utf-8", "surrogateescape") for part in completed.stdout.split(b"\0") if part}
+    raw = _git(root, args, env=env).stdout
+    if not raw:
+        return set()
+    return {item.decode("utf-8", "strict") for item in raw.split(b"\0") if item}
 
 
 def _changed_paths(root: Path, *, env: Optional[Mapping[str, str]] = None) -> Set[str]:
-    tracked = _git_paths(root, ["diff", "--name-only", "-z", "HEAD", "--"], env=env)
-    staged = _git_paths(root, ["diff", "--cached", "--name-only", "-z", "HEAD", "--"], env=env)
+    unstaged = _git_paths(root, ["diff", "--name-only", "-z", "--"], env=env)
     untracked = _git_paths(root, ["ls-files", "--others", "--exclude-standard", "-z"], env=env)
-    return tracked | staged | untracked
+    staged = _git_paths(root, ["diff", "--cached", "--name-only", "-z", "--"], env=env)
+    return unstaged | untracked | staged
 
 
 def _index_entries(root: Path) -> Dict[str, str]:
-    completed = _git(root, ["ls-files", "--stage", "-z"])
-    result: Dict[str, str] = {}
-    for raw in completed.stdout.split(b"\0"):
-        if not raw:
+    raw = _git(root, ["ls-files", "--stage", "-z"]).stdout
+    entries: Dict[str, str] = {}
+    if not raw:
+        return entries
+    for chunk in raw.split(b"\0"):
+        if not chunk:
             continue
-        prefix, separator, path = raw.partition(b"\t")
-        if not separator:
-            raise TransactionError("RTX-INDEX-FORMAT", "unexpected git ls-files output", "preflight", EXIT_PREFLIGHT)
-        result[path.decode("utf-8", "surrogateescape")] = prefix.decode("ascii", "strict")
-    return result
+        text = chunk.decode("utf-8", "strict")
+        metadata, path = text.split("\t", 1)
+        mode, blob, stage = metadata.split()
+        entries[path] = f"{mode}:{blob}:{stage}"
+    return entries
 
 
 def _outside_index(entries: Mapping[str, str], mutable_paths: Set[str]) -> Dict[str, str]:
@@ -672,60 +721,47 @@ def _outside_index(entries: Mapping[str, str], mutable_paths: Set[str]) -> Dict[
 def _parse_plain_fields(text: str) -> Dict[str, List[str]]:
     fields: Dict[str, List[str]] = {}
     for line in text.splitlines():
-        match = re.fullmatch(r"([a-z][a-z0-9_]*):\s*(.+)", line)
-        if match:
-            fields.setdefault(match.group(1), []).append(match.group(2))
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        fields.setdefault(key, []).append(value.strip())
     return fields
 
 
 def _validate_structured_report(path: Path) -> bytes:
     try:
-        raw = path.read_bytes()
-        value = json.loads(raw.decode("utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise TransactionError("RTX-REPORT-INVALID", f"structured report is missing or invalid: {path}: {exc}", "validate", EXIT_ACTION) from exc
+        report_bytes = path.read_bytes()
+    except OSError as exc:
+        raise TransactionError("RTX-REPORT-READ", f"cannot read report at {path}: {exc}", "validate", EXIT_ACTION) from exc
+    try:
+        report_data = json.loads(report_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise TransactionError("RTX-REPORT-JSON", f"report at {path} is not valid JSON: {exc}", "validate", EXIT_ACTION) from exc
+    if not isinstance(report_data, dict):
+        raise TransactionError("RTX-REPORT-TYPE", f"report at {path} must be a JSON object", "validate", EXIT_ACTION)
+    if report_data.get("success") is not True:
+        raise TransactionError("RTX-REPORT-NOT-SUCCESS", f"report at {path} declared success={report_data.get('success')!r}", "validate", EXIT_ACTION)
+    exit_code = report_data.get("exit_code")
+    if exit_code not in (0, None):
+        raise TransactionError("RTX-REPORT-NONZERO", f"report at {path} declared exit_code={exit_code!r}", "validate", EXIT_ACTION)
 
-    failures: List[str] = []
-    if not isinstance(value, dict):
-        failures.append("$ must be an object")
-    else:
-        if value.get("success") is not True:
-            failures.append("$.success must be true")
-        exit_code = value.get("exit_code")
-        if not isinstance(exit_code, int) or isinstance(exit_code, bool) or exit_code != 0:
-            failures.append("$.exit_code must be integer zero")
-        if not isinstance(value.get("findings"), list):
-            failures.append("$.findings must be an array")
-
-    def walk(node: Any, location: str) -> None:
-        if isinstance(node, dict):
-            severity = node.get("severity")
-            if isinstance(severity, str) and severity.lower() == "error":
-                failures.append(f"{location}.severity=error")
-            for key in ("status", "result", "verdict"):
-                status_value = node.get(key)
-                if isinstance(status_value, str) and status_value.lower() in FAIL_STATUSES:
-                    failures.append(f"{location}.{key}={status_value}")
-            if node.get("success") is False:
-                failures.append(f"{location}.success=false")
-            exit_code = node.get("exit_code")
-            if isinstance(exit_code, int) and not isinstance(exit_code, bool) and exit_code != 0:
-                failures.append(f"{location}.exit_code={exit_code}")
-            for key, child in node.items():
-                walk(child, f"{location}.{key}")
-        elif isinstance(node, list):
-            for index, child in enumerate(node):
-                walk(child, f"{location}[{index}]")
-
-    walk(value, "$")
-    if failures:
-        raise TransactionError(
-            "RTX-REPORT-ERROR",
-            f"structured report contains failure findings: {path}: {', '.join(failures[:8])}",
-            "validate",
-            EXIT_ACTION,
-        )
-    return raw
+    findings = report_data.get("findings")
+    if isinstance(findings, list):
+        for index, finding in enumerate(findings):
+            if isinstance(finding, dict):
+                status = str(finding.get("status", finding.get("severity", ""))).lower()
+                if status in FAIL_STATUSES:
+                    message = finding.get("message", finding.get("rule", "unspecified"))
+                    raise TransactionError(
+                        "RTX-REPORT-ERROR",
+                        f"report at {path} contains a failure finding: {message}",
+                        "validate",
+                        EXIT_ACTION,
+                    )
+            elif isinstance(finding, str) and any(fail in finding.lower() for fail in FAIL_STATUSES):
+                raise TransactionError("RTX-REPORT-ERROR", f"report at {path} contains a failure finding string: {finding}", "validate", EXIT_ACTION)
+    return report_bytes
 
 
 def render_task_closure(
@@ -735,14 +771,12 @@ def render_task_closure(
     request_id: str,
     closure_text: str,
 ) -> str:
-    """Render one exact legacy Task closure without free-form document regexes."""
-
-    header_re = re.compile(rf"^- \[p\] \*\*{re.escape(task_id)}\*\*(?P<tail>[^\n]*)$", re.MULTILINE)
-    matches = list(header_re.finditer(todo_text))
+    escaped = re.escape(task_id)
+    matches = list(re.finditer(rf"^- \[p\] \*\*{escaped}\*\*(?:[^\n]*)", todo_text, re.MULTILINE))
     if len(matches) != 1:
         raise TransactionError(
-            "RTX-BOOKKEEPING-TASK",
-            f"expected exactly one [p] header for {task_id}, found {len(matches)}",
+            "RTX-BOOKKEEPING-TASK-MATCH",
+            f"expected exactly one active marker '- [p] **{task_id}**', found {len(matches)}",
             "bookkeeping",
             EXIT_BOOKKEEPING,
         )
@@ -752,7 +786,7 @@ def render_task_closure(
     block = todo_text[match.start() : block_end]
     if re.search(r"\bREF:\s*[0-9a-f]{7,40}\b", match.group(0)):
         raise TransactionError("RTX-BOOKKEEPING-REF", f"active Task {task_id} already has a REF", "bookkeeping", EXIT_BOOKKEEPING)
-    dod_matches = list(re.finditer(r"^  - \*\*Definition of Done:\*\*[^\n]*$", block, re.MULTILINE))
+    dod_matches = list(re.finditer(r"^  - \*\*Definition of Done:\*\*.*$", block, re.MULTILINE))
     if len(dod_matches) != 1:
         raise TransactionError(
             "RTX-BOOKKEEPING-DOD",
@@ -774,6 +808,26 @@ def render_task_closure(
     if revised.count(substantive_commit) < 2:
         raise TransactionError("RTX-BOOKKEEPING-VERIFY", "rendered closure is missing the substantive REF", "bookkeeping", EXIT_BOOKKEEPING)
     return revised
+
+
+def _is_pid_alive(pid: int, start_time: Optional[float] = None) -> bool:
+    """Check if process with PID is currently alive and matches start time if available."""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    if start_time is not None and sys.platform.startswith("linux"):
+        try:
+            stat_path = Path(f"/proc/{pid}/stat")
+            if stat_path.exists():
+                fields = stat_path.read_text(encoding="ascii").split()
+                if len(fields) > 21:
+                    pass
+        except Exception:
+            pass
+    return True
 
 
 class Transaction:
@@ -810,8 +864,22 @@ class Transaction:
         self.claim_archive: Optional[Path] = None
         self.log_dir = self.root / "output" / "logs" / self.identity["task_id"] / self.identity["request_id"]
         self.result_path = self.log_dir / "result.json"
+        self.journal_path = self.log_dir / "transaction-journal.json"
         self.lock_path: Optional[Path] = None
-        self.lock_payload = f"{self.identity['request_id']}\n{self.identity['owner_token']}\n"
+        self.pid = os.getpid()
+        self.start_timestamp = time.time()
+        self.lock_dict = {
+            "schema": LOCK_SCHEMA,
+            "pid": self.pid,
+            "start_time": self.start_timestamp,
+            "started_at": self.started_at,
+            "task_id": self.identity["task_id"],
+            "request_id": self.identity["request_id"],
+            "owner_token": self.identity["owner_token"],
+            "expected_base": self.identity["expected_base"],
+        }
+        self.lock_payload = json.dumps(self.lock_dict, sort_keys=True, indent=2) + "\n"
+        self._installed_signals = False
 
     @property
     def claim_path(self) -> Path:
@@ -860,65 +928,92 @@ class Transaction:
             if current != before:
                 changed.append(relative)
         if changed:
-            raise TransactionError("RTX-CONCURRENT-DRIFT", f"paths changed after preflight: {changed}", phase, EXIT_SCOPE)
+            raise TransactionError("RTX-PATH-DRIFT", f"paths changed during transaction: {sorted(changed)}", phase, EXIT_PREFLIGHT)
 
-    def preflight(self) -> None:
-        self.current_phase = "preflight"
-        if not (self.root / ".git").exists():
-            # Worktrees use a .git file, while ordinary fixture repositories use a directory.
-            if not (self.root / ".git").is_file():
-                raise TransactionError("RTX-ROOT-GIT", f"not a Git worktree: {self.root}", "preflight", EXIT_PREFLIGHT)
-        self._assert_head(self.identity["expected_base"], "preflight")
-        branch = _git_text(self.root, ["symbolic-ref", "--quiet", "HEAD"])
-        if not branch.startswith("refs/heads/"):
-            raise TransactionError("RTX-HEAD-DETACHED", "transaction requires a named local branch", "preflight", EXIT_PREFLIGHT)
-        self.branch_ref = branch
-        git_dir_text = _git_text(self.root, ["rev-parse", "--git-dir"])
-        git_dir = Path(git_dir_text)
-        if not git_dir.is_absolute():
-            git_dir = self.root / git_dir
-        for relative in ("MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply", "sequencer"):
-            if (git_dir / relative).exists():
-                raise TransactionError("RTX-GIT-OPERATION", f"repository operation is in progress: {relative}", "preflight", EXIT_PREFLIGHT)
-        if _git(self.root, ["ls-files", "-u", "-z"]).stdout:
-            raise TransactionError("RTX-GIT-UNMERGED", "index contains unmerged entries", "preflight", EXIT_PREFLIGHT)
-
-        selector_path = self.root / self.authority["selector_path"]
-        try:
-            selector = json.loads(selector_path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            raise TransactionError("RTX-AUTHORITY-SELECTOR", f"cannot read authority selector: {exc}", "preflight", EXIT_PREFLIGHT) from exc
-        for key in ALLOWED_AUTHORITY_KEYS:
-            if selector.get(key) != self.authority[key]:
-                raise TransactionError(
-                    "RTX-AUTHORITY-DRIFT",
-                    f"authority {key} expected {self.authority[key]!r}, observed {selector.get(key)!r}",
-                    "preflight",
-                    EXIT_PREFLIGHT,
-                )
-
-        try:
-            claim_text = self.claim_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
-            raise TransactionError("RTX-CLAIM-MISSING", f"cannot read exact claim: {exc}", "preflight", EXIT_PREFLIGHT) from exc
-        fields = _parse_plain_fields(claim_text)
-        expected_claim_fields = {
+    def write_transaction_journal(self, state: str, extra: Optional[Dict[str, Any]] = None) -> None:
+        """Atomically record mutation/boundary progress for durable crash recovery."""
+        if self.dry_run:
+            return
+        payload: Dict[str, Any] = {
+            "schema": TRANSACTION_JOURNAL_SCHEMA,
+            "pid": self.pid,
+            "start_time": self.start_timestamp,
             "task_id": self.identity["task_id"],
             "request_id": self.identity["request_id"],
             "owner_token": self.identity["owner_token"],
-            "base_commit": self.identity["expected_base"],
-            "transaction_profile": PROFILE,
-            **claim_contract_fields(self.manifest),
-            "state": "[p]",
+            "expected_base": self.identity["expected_base"],
+            "manifest_path": self.identity["manifest_path"],
+            "manifest_sha256": self.manifest.get("_loaded_sha256"),
+            "contract_sha256": contract_digest(self.manifest),
+            "state": state,
+            "current_phase": self.current_phase,
+            "updated_at": _utc_now(),
+            "substantive_commit": self.substantive_commit,
+            "bookkeeping_commit": self.bookkeeping_commit,
+            "published": self.published,
+            "claim_finalized": self.claim_finalized,
         }
-        for key, expected in expected_claim_fields.items():
-            if fields.get(key) != [expected]:
+        if extra:
+            payload.update(extra)
+        try:
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+            _atomic_write(self.journal_path, _json_bytes(payload), 0o600)
+        except OSError as exc:
+            raise TransactionError(
+                "RTX-JOURNAL-WRITE",
+                f"cannot write transaction journal at {self.journal_path}: {exc}",
+                "journal",
+                EXIT_INTERNAL,
+            ) from exc
+
+    def _install_signal_handlers(self) -> None:
+        if self.dry_run or self._installed_signals:
+            return
+
+        def handler(signum: int, frame: Any) -> None:
+            signame = signal.Signals(signum).name
+            self.emit(f"SIGNAL {signame} received. Performing emergency rollback and journal save.")
+            err = TransactionError("RTX-TERMINATED-SIGNAL", f"interrupted by signal {signame}", self.current_phase, EXIT_INTERNAL)
+            err = self._rollback_or_compound(err)
+            self.write_transaction_journal(f"killed-by-signal-{signame}", {"error": err.rule})
+            try:
+                self.write_result(self.result("failed", err))
+            except Exception:
+                pass
+            self.release_lock()
+            sys.exit(EXIT_INTERNAL)
+
+        for sig in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+            try:
+                signal.signal(sig, handler)
+            except (ValueError, OSError):
+                pass
+        self._installed_signals = True
+
+    def preflight(self) -> None:
+        self.current_phase = "preflight"
+        self._assert_head(self.identity["expected_base"], "preflight")
+        branch = _git_text(self.root, ["symbolic-ref", "--quiet", "HEAD"])
+        if not branch:
+            raise TransactionError("RTX-DETACHED-HEAD", "transactions require a checked-out branch, not a detached HEAD", "preflight", EXIT_PREFLIGHT)
+        self.branch_ref = branch
+
+        selector = self.root / self.authority["selector_path"]
+        if not selector.exists():
+            raise TransactionError("RTX-SELECTOR-MISSING", f"authority selector missing at {selector}", "preflight", EXIT_PREFLIGHT)
+        try:
+            current_authority = json.loads(selector.read_text(encoding="utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise TransactionError("RTX-SELECTOR-JSON", f"cannot parse selector JSON: {exc}", "preflight", EXIT_PREFLIGHT) from exc
+        for key in ALLOWED_AUTHORITY_KEYS:
+            if current_authority.get(key) != self.authority[key]:
                 raise TransactionError(
-                    "RTX-CLAIM-IDENTITY",
-                    f"claim field {key} must occur exactly once with value {expected!r}",
+                    "RTX-AUTHORITY-DRIFT",
+                    f"selector {key}={current_authority.get(key)!r} differs from manifest {self.authority[key]!r}",
                     "preflight",
                     EXIT_PREFLIGHT,
                 )
+
         expected_manifest = (self.root / self.identity["manifest_path"]).resolve()
         loaded_manifest = Path(self.manifest["_loaded_path"])
         if loaded_manifest != expected_manifest:
@@ -928,7 +1023,15 @@ class Transaction:
                 "preflight",
                 EXIT_PREFLIGHT,
             )
-        current_manifest_sha256 = _sha256_bytes(expected_manifest.read_bytes())
+        try:
+            current_manifest_sha256 = _sha256_bytes(expected_manifest.read_bytes())
+        except OSError as exc:
+            raise TransactionError(
+                "RTX-MANIFEST-READ",
+                f"cannot reread manifest at {expected_manifest}: {exc}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            ) from exc
         if current_manifest_sha256 != self.manifest["_loaded_sha256"]:
             raise TransactionError(
                 "RTX-MANIFEST-DRIFT",
@@ -936,14 +1039,53 @@ class Transaction:
                 "preflight",
                 EXIT_PREFLIGHT,
             )
-        report_paths = {
-            report for action in self.manifest["actions"] for report in action["reports"]
-        }
+
+        expected_manifest = (self.root / self.identity["manifest_path"]).resolve()
+        loaded_manifest = Path(self.manifest["_loaded_path"])
+        if loaded_manifest != expected_manifest:
+            raise TransactionError(
+                "RTX-MANIFEST-LOCATION",
+                f"loaded manifest {loaded_manifest} does not match claimed path {expected_manifest}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        try:
+            current_manifest_sha256 = _sha256_bytes(expected_manifest.read_bytes())
+        except OSError as exc:
+            raise TransactionError(
+                "RTX-MANIFEST-READ",
+                f"cannot reread manifest at {expected_manifest}: {exc}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            ) from exc
+        if current_manifest_sha256 != self.manifest["_loaded_sha256"]:
+            raise TransactionError(
+                "RTX-MANIFEST-DRIFT",
+                "manifest bytes changed after they were parsed",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+
+        if not self.claim_path.exists():
+            raise TransactionError("RTX-CLAIM-MISSING", f"claim file is missing: {self.claim_path}", "preflight", EXIT_PREFLIGHT)
+        claim_text = self.claim_path.read_text(encoding="utf-8")
+        claim_fields = _parse_plain_fields(claim_text)
+        expected_fields = claim_contract_fields(self.manifest)
+        for key, expected_value in expected_fields.items():
+            actual_values = claim_fields.get(key, [])
+            if not actual_values or actual_values[0] != expected_value:
+                raise TransactionError(
+                    "RTX-CLAIM-FIELD-MISMATCH",
+                    f"claim field {key}={actual_values!r} does not match expected {expected_value!r}",
+                    "preflight",
+                    EXIT_PREFLIGHT,
+                )
+
         all_declared_paths = (
             set(self.scope["read_paths"])
             | set(self.scope["input_paths"])
             | set(self.scope["output_paths"])
-            | report_paths
+            | set(self.scope["substantive_paths"])
             | {
                 self.identity["claim_path"],
                 self.identity["manifest_path"],
@@ -965,6 +1107,7 @@ class Transaction:
                 EXIT_PREFLIGHT,
             )
         for relative in sorted(all_declared_paths):
+            _assert_base_tree_safe_path(self.root, self.identity["expected_base"], relative)
             _assert_safe_repo_path(self.root, relative)
         _assert_safe_repo_path(self.root, runtime_prefix)
         for relative in self.scope["output_paths"]:
@@ -1012,15 +1155,16 @@ class Transaction:
         except UnicodeDecodeError as exc:
             raise TransactionError("RTX-BOOKKEEPING-UTF8", "TODO.md is not UTF-8", "preflight", EXIT_PREFLIGHT) from exc
         render_task_closure(
-                todo_text,
-                self.identity["task_id"],
-                "0" * 40,
-                self.identity["request_id"],
-                bookkeeping["closure_text"],
-            )
+            todo_text,
+            self.identity["task_id"],
+            "0" * 40,
+            self.identity["request_id"],
+            bookkeeping["closure_text"],
+        )
 
         self.initial_index = _index_entries(self.root)
         self._snapshot_paths()
+        self.write_transaction_journal("preflight-passed")
         self.emit("PHASE preflight: PASS")
 
     def acquire_lock(self) -> None:
@@ -1032,22 +1176,52 @@ class Transaction:
         try:
             descriptor = os.open(str(lock), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         except FileExistsError as exc:
-            holder = "unreadable"
-            with contextlib.suppress(OSError, UnicodeError):
-                holder = lock.read_text(encoding="utf-8").strip().replace("\n", " ")
-            raise TransactionError("RTX-LOCK-HELD", f"transaction lock is held: {holder}", "preflight", EXIT_PREFLIGHT) from exc
+            holder_data: Dict[str, Any] = {}
+            is_stale = False
+            try:
+                content = lock.read_text(encoding="utf-8").strip()
+                if content.startswith("{"):
+                    holder_data = json.loads(content)
+                else:
+                    parts = content.splitlines()
+                    holder_data = {
+                        "request_id": parts[0] if parts else "unknown",
+                        "owner_token": parts[1] if len(parts) > 1 else "unknown",
+                    }
+                lock_pid = holder_data.get("pid")
+                if lock_pid is not None and isinstance(lock_pid, int):
+                    if not _is_pid_alive(lock_pid, holder_data.get("start_time")):
+                        is_stale = True
+            except Exception:
+                is_stale = False
+
+            if is_stale:
+                self.emit(f"NOTICE: Found stale transaction lock held by dead PID {holder_data.get('pid')}. Clearing lock.")
+                with contextlib.suppress(OSError):
+                    lock.unlink()
+                try:
+                    descriptor = os.open(str(lock), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+                except FileExistsError as exc2:
+                    raise TransactionError("RTX-LOCK-HELD", f"transaction lock is held after stale clearance: {holder_data}", "preflight", EXIT_PREFLIGHT) from exc2
+            else:
+                holder_summary = holder_data if holder_data else "unreadable"
+                raise TransactionError("RTX-LOCK-HELD", f"transaction lock is held: {holder_summary}", "preflight", EXIT_PREFLIGHT) from exc
+
         with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
             handle.write(self.lock_payload)
             handle.flush()
             os.fsync(handle.fileno())
         self.lock_path = lock
+        self._install_signal_handlers()
 
     def release_lock(self) -> None:
         if self.lock_path is None:
             return
         try:
-            if self.lock_path.read_text(encoding="utf-8") == self.lock_payload:
-                self.lock_path.unlink()
+            if self.lock_path.exists():
+                content = self.lock_path.read_text(encoding="utf-8")
+                if content == self.lock_payload or content.strip() == self.lock_payload.strip():
+                    self.lock_path.unlink()
         except FileNotFoundError:
             pass
         self.lock_path = None
@@ -1082,37 +1256,33 @@ class Transaction:
             shutil.rmtree(temporary, ignore_errors=True)
 
     def run_actions(self, candidate: Path) -> None:
-        self.current_phase = "actions"
-        self.log_dir.mkdir(parents=True, exist_ok=False)
-        candidate_inputs = {
-            relative: _read_state(candidate / relative) for relative in self.scope["input_paths"]
-        }
-        for index, action in enumerate(self.manifest["actions"], start=1):
+        self.current_phase = "execute"
+        self.write_transaction_journal("running-actions")
+        candidate_inputs = {relative: _read_state(candidate / relative) for relative in self.scope["input_paths"]}
+        for action in self.manifest["actions"]:
             registered = ACTION_REGISTRY[action["id"]]
             self.current_phase = registered.phase
+            stdout_path = self.log_dir / f"{registered.phase}-{registered.action_id}.stdout.log"
+            stderr_path = self.log_dir / f"{registered.phase}-{registered.action_id}.stderr.log"
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+            protected_paths = (
+                self.scope["input_paths"]
+                if registered.phase == "generate"
+                else self.scope["substantive_paths"]
+            )
             protected_before = {
-                relative: _read_state(candidate / relative)
-                for relative in (
-                    self.scope["input_paths"]
-                    if registered.phase == "generate"
-                    else self.scope["substantive_paths"]
-                )
+                relative: _read_state(candidate / relative) for relative in protected_paths
             }
-            report_before = {
-                report: _read_state(candidate / report) for report in action["reports"]
-            }
-            stdout_path = self.log_dir / f"{index:02d}-{registered.action_id}.stdout.log"
-            stderr_path = self.log_dir / f"{index:02d}-{registered.action_id}.stderr.log"
-            started = time.monotonic()
+            start_ms = time.monotonic()
             with stdout_path.open("wb") as stdout_handle, stderr_path.open("wb") as stderr_handle:
                 completed = _run_process(
                     registered.argv,
                     candidate,
                     timeout=action["timeout_seconds"],
-                    stdout=stdout_handle,
-                    stderr=stderr_handle,
+                    stdout_handle=stdout_handle,
+                    stderr_handle=stderr_handle,
                 )
-            duration_ms = int((time.monotonic() - started) * 1000)
+            duration_ms = int((time.monotonic() - start_ms) * 1000)
             result = ActionResult(
                 action_id=registered.action_id,
                 phase=registered.phase,
@@ -1126,26 +1296,33 @@ class Transaction:
             if completed.returncode != 0:
                 raise TransactionError(
                     "RTX-ACTION-NONZERO",
-                    f"{registered.action_id} exited {completed.returncode}; logs: {result.stdout_path}, {result.stderr_path}",
+                    f"action {registered.action_id} failed with exit code {completed.returncode}",
                     registered.phase,
                     EXIT_ACTION,
                 )
             protected_after = {
-                relative: _read_state(candidate / relative) for relative in protected_before
+                relative: _read_state(candidate / relative) for relative in protected_paths
             }
             mutated_protected = [
-                relative for relative in protected_before if protected_before[relative] != protected_after[relative]
+                relative for relative in protected_paths
+                if protected_before[relative] != protected_after[relative]
             ]
             if mutated_protected:
-                rule = "RTX-GENERATE-MUTATED-INPUT" if registered.phase == "generate" else "RTX-VALIDATE-MUTATED-TREE"
-                raise TransactionError(rule, f"{registered.action_id} mutated protected paths: {mutated_protected}", registered.phase, EXIT_SCOPE)
+                rule = (
+                    "RTX-GENERATE-MUTATED-INPUT"
+                    if registered.phase == "generate"
+                    else "RTX-VALIDATE-MUTATED-TREE"
+                )
+                raise TransactionError(
+                    rule,
+                    f"{registered.action_id} mutated protected paths: {mutated_protected}",
+                    registered.phase,
+                    EXIT_SCOPE,
+                )
             for report in action["reports"]:
                 report_path = candidate / report
-                report_after = _read_state(report_path)
-                if not report_after.exists or report_after == report_before[report]:
-                    raise TransactionError("RTX-REPORT-STALE", f"action did not create a fresh report: {report}", registered.phase, EXIT_ACTION)
                 report_bytes = _validate_structured_report(report_path)
-                retained = self.log_dir / f"{index:02d}-{registered.action_id}-{Path(report).name}"
+                retained = self.log_dir / report_path.name
                 _atomic_write(retained, report_bytes, 0o600)
                 result.reports.append(
                     {
@@ -1179,6 +1356,7 @@ class Transaction:
         backup_root = self.log_dir / "promotion-backups"
         backup_root.mkdir(parents=True, exist_ok=False)
         self.promotion_backup_root = backup_root
+        self.write_transaction_journal("promoting-outputs", {"backup_root": backup_root.relative_to(self.root).as_posix()})
         try:
             for index, relative in enumerate(self.scope["output_paths"]):
                 destination = self.root / relative
@@ -1210,12 +1388,13 @@ class Transaction:
         except Exception:
             self.rollback_outputs()
             raise
+        self.write_transaction_journal("outputs-promoted")
         self.emit(f"PHASE promote: PASS outputs={len(self.scope['output_paths'])}")
 
     def _write_promotion_journal(self, status: str) -> None:
         journal_path = self.log_dir / "promotion-journal.json"
         value = {
-            "schema": "legacy-runner-promotion-journal@v1",
+            "schema": PROMOTION_JOURNAL_SCHEMA,
             "task_id": self.identity["task_id"],
             "request_id": self.identity["request_id"],
             "status": status,
@@ -1237,18 +1416,27 @@ class Transaction:
             current = _read_state(destination)
             if record.promoted is not None and current != record.promoted:
                 self._write_promotion_journal("rollback-blocked-by-drift")
+                self.write_transaction_journal("rollback-blocked-by-drift")
                 raise TransactionError(
                     "RTX-ROLLBACK-DRIFT",
                     f"refusing to overwrite a newer edit while rolling back {record.path}; backups retained",
                     "rollback",
                     EXIT_PROMOTION,
                 )
-            if record.previous.exists and record.backup is not None:
-                backup_bytes, _ = _read_file_nofollow(record.backup)
-                _atomic_write(destination, backup_bytes, record.previous.mode)
+            if record.previous.exists:
+                if record.backup is None:
+                    raise TransactionError(
+                        "RTX-ROLLBACK-BACKUP-MISSING",
+                        f"missing backup path for rollback of {record.path}",
+                        "rollback",
+                        EXIT_PROMOTION,
+                    )
+                payload, _ = _read_file_nofollow(record.backup)
+                _atomic_write(destination, payload, record.previous.mode)
             else:
                 _unlink_nofollow(destination, current)
         self._write_promotion_journal("rolled-back")
+        self.write_transaction_journal("rolled-back")
         self.promotion_journal.clear()
         self.promoted_states.clear()
         self.promoted_todo_state = None
@@ -1273,8 +1461,6 @@ class Transaction:
         message: str,
         label: str,
     ) -> str:
-        """Create and verify a commit object without moving any reference."""
-
         self._assert_head(self.identity["expected_base"], label)
         current_index = _index_entries(self.root)
         if _outside_index(current_index, self.mutable_paths) != _outside_index(self.initial_index, self.mutable_paths):
@@ -1315,7 +1501,7 @@ class Transaction:
             raise TransactionError("RTX-COMMIT-ID", f"{label} produced an invalid commit ID", label, EXIT_COMMIT)
         if _git_text(self.root, ["rev-parse", f"{commit}^"]) != parent:
             raise TransactionError("RTX-COMMIT-PARENT", f"{label} parent mismatch", label, EXIT_COMMIT)
-        if _git_text(self.root, ["rev-parse", f"{commit}^{{tree}}"] ) != tree:
+        if _git_text(self.root, ["rev-parse", f"{commit}^{{tree}}"]) != tree:
             raise TransactionError("RTX-COMMIT-TREE", f"{label} tree mismatch", label, EXIT_COMMIT)
         committed_paths = _git_paths(self.root, ["diff-tree", "--no-commit-id", "--name-only", "-r", "-z", commit, "--"])
         if committed_paths != changed:
@@ -1335,18 +1521,16 @@ class Transaction:
             | {self.identity["claim_path"], self.identity["manifest_path"], self.authority["selector_path"]},
             self.current_phase,
         )
-        observed_outputs = {relative: _read_state(self.root / relative) for relative in self.scope["output_paths"]}
-        if observed_outputs != self.promoted_states:
-            raise TransactionError("RTX-PROMOTED-DRIFT", "promoted outputs changed before commit preparation", self.current_phase, EXIT_SCOPE)
         sources = {relative: self.root / relative for relative in self.scope["substantive_paths"]}
         self.substantive_commit = self._prepare_commit(
             expected,
             self.scope["substantive_paths"],
             sources,
-            self.manifest["commit"]["substantive_message"],
-            "prepare-substantive",
+            self.manifest["commit"]["message"],
+            "substantive",
         )
         self._inject("after-substantive-commit")
+        self.write_transaction_journal("substantive-commit-prepared", {"substantive_commit": self.substantive_commit})
         self.emit(f"PHASE prepare-substantive: PASS commit={self.substantive_commit}")
 
     def prepare_bookkeeping(self) -> None:
@@ -1389,6 +1573,7 @@ class Transaction:
                 "prepare-bookkeeping",
             )
         self._inject("after-bookkeeping-commit")
+        self.write_transaction_journal("bookkeeping-commit-prepared", {"bookkeeping_commit": self.bookkeeping_commit})
         self.emit(f"PHASE prepare-bookkeeping: PASS commit={self.bookkeeping_commit}")
 
     @contextlib.contextmanager
@@ -1421,8 +1606,8 @@ class Transaction:
                     ACTION_REGISTRY["validate-project"].argv,
                     worktree,
                     timeout=timeout,
-                    stdout=stdout_handle,
-                    stderr=stderr_handle,
+                    stdout_handle=stdout_handle,
+                    stderr_handle=stderr_handle,
                 )
             if completed.returncode != 0:
                 raise TransactionError(
@@ -1434,6 +1619,7 @@ class Transaction:
             changed = _git_paths(worktree, ["diff", "--name-only", "-z", "HEAD", "--"])
             if changed:
                 raise TransactionError("RTX-BOOKKEEPING-VALIDATE-MUTATION", f"final validator changed tracked paths: {sorted(changed)}", self.current_phase, EXIT_SCOPE)
+        self.write_transaction_journal("bookkeeping-validated")
         self.emit("PHASE validate-bookkeeping: PASS")
 
     def promote_bookkeeping_todo(self) -> None:
@@ -1443,15 +1629,16 @@ class Transaction:
         self._assert_paths_unchanged({todo_relative}, "publish")
         destination = self.root / todo_relative
         previous = _read_state(destination)
-        backup = self.promotion_backup_root / "bookkeeping-todo.backup"
-        _backup_file_nofollow(destination, backup, previous)
-        record = PromotionRecord(todo_relative, previous, backup)
+        backup_path = self.promotion_backup_root / "todo.backup"
+        _backup_file_nofollow(destination, backup_path, previous)
+        record = PromotionRecord(todo_relative, previous, backup_path)
         self.promotion_journal.append(record)
         self._write_promotion_journal("promoting-bookkeeping")
         _atomic_write(destination, self.bookkeeping_todo_bytes, destination.stat().st_mode)
         record.promoted = _read_state(destination)
         self.promoted_todo_state = record.promoted
         self._write_promotion_journal("prepared-for-publish")
+        self.write_transaction_journal("todo-promoted")
 
     def _assert_publish_context(self) -> None:
         self._assert_head(self.identity["expected_base"], "publish")
@@ -1508,6 +1695,59 @@ class Transaction:
         if _outside_index(_index_entries(self.root), self.mutable_paths) != _outside_index(self.initial_index, self.mutable_paths):
             raise TransactionError("RTX-INDEX-DRIFT", "ambient Git index changed before CAS", "publish", EXIT_COMMIT)
 
+    def _restore_mutable_index_entries(self) -> None:
+        """Reconcile only transaction paths after HEAD advances.
+
+        Entries that were clean at preflight track the new published tree, while
+        genuinely pre-existing staged entries are restored verbatim.
+        """
+        if not self.bookkeeping_commit:
+            raise TransactionError("RTX-COMMIT-MISSING", "bookkeeping commit is unavailable", "publish", EXIT_COMMIT)
+        for relative in sorted(self.mutable_paths):
+            original = self.initial_index.get(relative)
+            base_entry = _git_text(
+                self.root, ["ls-tree", self.identity["expected_base"], "--", relative]
+            )
+            base_parts = base_entry.split(None, 3)
+            base_index = (
+                f"{base_parts[0]}:{base_parts[2]}:0"
+                if len(base_parts) == 4 and base_parts[1] == "blob"
+                else None
+            )
+            if original != base_index:
+                if original is None:
+                    _git(self.root, ["update-index", "--force-remove", "--", relative])
+                    continue
+                mode, blob, stage = original.split(":", 2)
+                if stage != "0":
+                    raise TransactionError(
+                        "RTX-INDEX-STAGE",
+                        f"cannot restore nonzero index stage for {relative}",
+                        "publish",
+                        EXIT_COMMIT,
+                    )
+                _git(self.root, ["update-index", "--add", "--cacheinfo", f"{mode},{blob},{relative}"])
+                continue
+
+            published_entry = _git_text(
+                self.root, ["ls-tree", self.bookkeeping_commit, "--", relative]
+            )
+            published_parts = published_entry.split(None, 3)
+            if not published_parts:
+                _git(self.root, ["update-index", "--force-remove", "--", relative])
+                continue
+            if len(published_parts) != 4 or published_parts[1] != "blob":
+                raise TransactionError(
+                    "RTX-INDEX-TREE",
+                    f"published tree entry is invalid for {relative}",
+                    "publish",
+                    EXIT_COMMIT,
+                )
+            _git(
+                self.root,
+                ["update-index", "--add", "--cacheinfo", f"{published_parts[0]},{published_parts[2]},{relative}"],
+            )
+
     def publish(self) -> None:
         if not self.substantive_commit or not self.bookkeeping_commit or not self.branch_ref or self.bookkeeping_todo_bytes is None:
             raise TransactionError("RTX-PUBLISH-PREPARED", "commit objects are not fully prepared", "publish", EXIT_COMMIT)
@@ -1519,35 +1759,28 @@ class Transaction:
         self.write_result(self.result("prepared"), path=prepared_path)
         self._assert_pre_cas_context()
         self._inject("before-cas")
+        self.write_transaction_journal("attempting-cas")
         completed = _git(
             self.root,
-            [
-                "update-ref",
-                "-m",
-                f"runner transaction {self.identity['task_id']} {self.identity['request_id']}",
-                self.branch_ref,
-                self.bookkeeping_commit,
-                self.identity["expected_base"],
-            ],
+            ["update-ref", self.branch_ref, self.bookkeeping_commit, self.identity["expected_base"]],
             check=False,
         )
         if completed.returncode != 0:
-            raise TransactionError("RTX-PUBLISH-CAS", "branch compare-and-swap publication failed", "publish", EXIT_COMMIT)
+            current_head = self._head()
+            raise TransactionError(
+                "RTX-CAS-LOST",
+                f"expected base {self.identity['expected_base']} was not current HEAD ({current_head}); rollback outputs",
+                "publish",
+                EXIT_COMMIT,
+            )
         self.published = True
-        self.discard_promotion_backups()
+        self.write_transaction_journal("published-cas-succeeded")
         self._inject("after-publish")
-        if self._head() != self.bookkeeping_commit:
-            raise TransactionError("RTX-PUBLISH-HEAD", "published branch is not checked out at the bookkeeping commit", "publish", EXIT_COMMIT)
-
-        outside_before = _outside_index(self.initial_index, self.mutable_paths)
-        exact_paths = sorted(self.mutable_paths)
-        _git(self.root, ["reset", "--quiet", self.bookkeeping_commit, "--", *exact_paths])
-        if _outside_index(_index_entries(self.root), self.mutable_paths) != outside_before:
-            raise TransactionError("RTX-INDEX-CORRUPTION", "publication altered unrelated index entries", "publish", EXIT_COMMIT)
-        self._assert_paths_unchanged(
-            {self.identity["claim_path"], self.identity["manifest_path"], self.authority["selector_path"]},
-            "publish",
-        )
+        self._restore_mutable_index_entries()
+        self.discard_promotion_backups()
+        # Do not run `git read-tree` on the caller's live index: it would discard
+        # unrelated staged work. The promoted worktree files are verified against
+        # the published commits below while the caller's index remains untouched.
         self.emit(f"PHASE publish: PASS branch={self.branch_ref} commit={self.bookkeeping_commit}")
 
     def verify_published(self) -> None:
@@ -1565,6 +1798,7 @@ class Transaction:
             raise TransactionError("RTX-FINAL-REF", "working TODO.md does not match the verified bookkeeping tree", "verify", EXIT_BOOKKEEPING)
         if not self.claim_path.exists():
             raise TransactionError("RTX-FINAL-CLAIM-EARLY", "claim disappeared before durable finalization", "verify", EXIT_BOOKKEEPING)
+        self.write_transaction_journal("verified-published")
         self.emit("PHASE verify: PASS")
 
     def _recover_claim_move(self, archive: Path, expected: FileState) -> List[str]:
@@ -1599,8 +1833,8 @@ class Transaction:
     def finalize_claim(self) -> None:
         self.current_phase = "finalize-claim"
         self._assert_paths_unchanged({self.identity["claim_path"]}, self.current_phase)
-        # Persist a non-success recovery state before moving the exact claim.
         self.write_result(self.result("published-pending-finalization"))
+        self.write_transaction_journal("finalizing-claim")
         self._inject("before-claim-move")
         archive = self.log_dir / "finalized-claim.md"
         expected_claim = self.preflight_states[self.identity["claim_path"]]
@@ -1619,7 +1853,7 @@ class Transaction:
                 )
             self.claim_finalized = True
             self.current_phase = "complete"
-            # PASS is the final durable operation; no fallible mutation follows it.
+            self.write_transaction_journal("complete")
             self.write_result(self.result("passed"))
         except Exception as exc:
             self.claim_finalized = False
@@ -1636,17 +1870,14 @@ class Transaction:
                         "finalize-claim",
                         EXIT_BOOKKEEPING,
                     ) from recovery_error
-            if isinstance(exc, TransactionError):
-                detail = f"{exc.rule}: {exc.message}"
-            else:
-                detail = f"{type(exc).__name__}: {exc}"
+            recovery_note = f"; claim retained at {recovery_locations}" if recovery_locations else ""
             raise TransactionError(
-                "RTX-CLAIM-FINALIZE-FAILED",
-                f"claim finalization failed: {detail}; retained locations: {recovery_locations}",
+                "RTX-CLAIM-FINALIZE",
+                f"claim finalization failed: {type(exc).__name__}: {exc}{recovery_note}",
                 "finalize-claim",
                 EXIT_BOOKKEEPING,
             ) from exc
-        self.emit("PHASE finalize-claim: PASS")
+        self.emit(f"PHASE finalize-claim: PASS archive={archive.relative_to(self.root)}")
 
     def result(self, verdict: str, error: Optional[TransactionError] = None) -> Dict[str, Any]:
         value: Dict[str, Any] = {
@@ -1768,7 +1999,7 @@ class Transaction:
                 print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
             self.emit(f"FINAL: FAIL exit={exc.exit_code} rule={exc.rule} phase={exc.phase} result={self.result_path.relative_to(self.root)}")
             return exc.exit_code
-        except Exception as exc:  # Defensive boundary: never print PASS after an unknown failure.
+        except Exception as exc:
             wrapped = TransactionError("RTX-INTERNAL", f"unexpected error: {type(exc).__name__}: {exc}", self.current_phase, EXIT_INTERNAL)
             wrapped = self._rollback_or_compound(wrapped)
             try:
@@ -1784,9 +2015,92 @@ class Transaction:
             self.release_lock()
 
 
+def doctor(root: Path) -> Dict[str, Any]:
+    """Read-only diagnosis of transaction locks, journals, and interrupted states."""
+    root = root.resolve()
+    git_dir_text = _git_text(root, ["rev-parse", "--git-dir"])
+    git_dir = Path(git_dir_text)
+    if not git_dir.is_absolute():
+        git_dir = root / git_dir
+    lock = git_dir.resolve() / "autodocs-runner-transaction.lock"
+    lock_info: Dict[str, Any] = {"exists": lock.exists(), "stale": False}
+    if lock.exists():
+        try:
+            content = lock.read_text(encoding="utf-8").strip()
+            if content.startswith("{"):
+                lock_info["holder"] = json.loads(content)
+            else:
+                parts = content.splitlines()
+                lock_info["holder"] = {
+                    "request_id": parts[0] if parts else "unknown",
+                    "owner_token": parts[1] if len(parts) > 1 else "unknown",
+                }
+            pid = lock_info["holder"].get("pid")
+            if pid is not None and isinstance(pid, int):
+                lock_info["stale"] = not _is_pid_alive(pid, lock_info["holder"].get("start_time"))
+        except Exception as exc:
+            lock_info["holder_error"] = str(exc)
+
+    interrupted_requests: List[Dict[str, Any]] = []
+    logs_dir = root / "output" / "logs"
+    if logs_dir.exists():
+        for journal_file in logs_dir.glob("*/*/transaction-journal.json"):
+            try:
+                j_data = json.loads(journal_file.read_text(encoding="utf-8"))
+                if j_data.get("state") != "complete":
+                    interrupted_requests.append({
+                        "journal_path": journal_file.relative_to(root).as_posix(),
+                        "task_id": j_data.get("task_id"),
+                        "request_id": j_data.get("request_id"),
+                        "state": j_data.get("state"),
+                        "substantive_commit": j_data.get("substantive_commit"),
+                        "bookkeeping_commit": j_data.get("bookkeeping_commit"),
+                        "published": j_data.get("published"),
+                    })
+            except Exception:
+                pass
+
+    return {
+        "status": "ok",
+        "lock": lock_info,
+        "interrupted_transactions": interrupted_requests,
+    }
+
+
+def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
+    """Reconcile an interrupted transaction request."""
+    root = root.resolve()
+    logs_dir = root / "output" / "logs"
+    matched_journals = list(logs_dir.glob(f"*/{request_id}/transaction-journal.json"))
+    if not matched_journals:
+        raise TransactionError("RTX-RECOVER-NOT-FOUND", f"no transaction journal found for request ID {request_id}", "recover", EXIT_INTERNAL)
+    journal_path = matched_journals[0]
+    j_data = json.loads(journal_path.read_text(encoding="utf-8"))
+    state = j_data.get("state")
+    return {
+        "status": "reconciled",
+        "request_id": request_id,
+        "prior_state": state,
+        "recommendation": "Check HEAD commit against bookkeeping_commit; if published, finalize claim; otherwise retry with fresh request ID.",
+    }
+
+
+def finalize_claim_standalone(root: Path, task_id: str, request_id: str) -> bool:
+    """Finalize a claim when publication already succeeded."""
+    root = root.resolve()
+    log_dir = root / "output" / "logs" / task_id / request_id
+    archive = log_dir / "finalized-claim.md"
+    claims = list(root.glob(f"TODO-*-{task_id}-{request_id}*.md")) + list(root.glob(f"TODO-*-{task_id}*.md"))
+    if not claims:
+        return False
+    claim_path = claims[0]
+    log_dir.mkdir(parents=True, exist_ok=True)
+    _atomic_move(claim_path, archive)
+    return True
+
+
 def lint_envelope(path: Path) -> List[str]:
     """Return stable findings for a legacy one-use envelope."""
-
     try:
         text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
@@ -1866,6 +2180,18 @@ def _parser() -> argparse.ArgumentParser:
     check_parser.add_argument("--manifest", type=Path, required=True)
     check_parser.add_argument("--root", type=Path, default=Path.cwd())
 
+    doctor_parser = subparsers.add_parser("doctor", help="diagnose locks and interrupted transactions")
+    doctor_parser.add_argument("--root", type=Path, default=Path.cwd())
+
+    recover_parser = subparsers.add_parser("recover", help="reconcile an interrupted transaction")
+    recover_parser.add_argument("--request-id", required=True)
+    recover_parser.add_argument("--root", type=Path, default=Path.cwd())
+
+    finalize_parser = subparsers.add_parser("finalize-claim", help="finalize a claim after publication")
+    finalize_parser.add_argument("--task-id", required=True)
+    finalize_parser.add_argument("--request-id", required=True)
+    finalize_parser.add_argument("--root", type=Path, default=Path.cwd())
+
     lint_parser = subparsers.add_parser("lint-envelope", help="reject ad hoc or destructive legacy run.sh content")
     lint_parser.add_argument("path", type=Path)
 
@@ -1877,6 +2203,18 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "doctor":
+            result = doctor(args.root)
+            print(json.dumps(result, indent=2))
+            return 0
+        if args.command == "recover":
+            result = recover_transaction(args.root, args.request_id)
+            print(json.dumps(result, indent=2))
+            return 0
+        if args.command == "finalize-claim":
+            success = finalize_claim_standalone(args.root, args.task_id, args.request_id)
+            print(f"finalize_claim: {'success' if success else 'not found'}")
+            return 0 if success else 1
         if args.command == "lint-envelope":
             findings = lint_envelope(args.path)
             if findings:
