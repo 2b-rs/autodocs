@@ -8,6 +8,8 @@ ONCE=false
 SELF_TEST_ONLY=false
 SKIP_EXECUTION_SELF_TEST=false
 NO_SELF_TEST=false
+INIT_REQUESTED=false
+BATCH_MODE=false
 SANDBOX_ENABLED=true
 RUN_SCRIPT_OPTION="run.sh"
 RUN_SCRIPT_OPTION_SET=false
@@ -32,6 +34,10 @@ usage() {
     "                           seconds (default: $SLEEP_SECONDS). It may also be" \
     '                           supplied separately, for example: --cyclic 5.' \
     '      --once               Wait for one run script, execute it, then exit.' \
+    '      --init               Install missing runner dependencies, run the' \
+    '                           environment self-test, then exit. Prompts before' \
+    '                           every installation by default.' \
+    '  -b, --batch              With --init, install without prompting.' \
     '  -t, --self-test-only     Run only the environment self-test, then exit.' \
     '      --skip-self-test     Skip the execution-time self-test; --self-test-only still runs.' \
     '      --no-self-test       Suppress every self-test, including --self-test-only.' \
@@ -133,6 +139,12 @@ while (( $# > 0 )); do
       ;;
     --once)
       ONCE=true
+      ;;
+    --init)
+      INIT_REQUESTED=true
+      ;;
+    -b|--batch)
+      BATCH_MODE=true
       ;;
     -t|--self-test|--self-test-only)
       SELF_TEST_ONLY=true
@@ -286,6 +298,23 @@ if [[ "$ONCE" == true && "$CYCLIC" == true ]]; then
   exit 2
 fi
 
+if [[ "$BATCH_MODE" == true && "$INIT_REQUESTED" == false ]]; then
+  printf 'error: --batch requires --init\n' >&2
+  exit 2
+fi
+
+if [[ "$INIT_REQUESTED" == true ]]; then
+  if [[ "$ONCE" == true || "$CYCLIC" == true || "$CHECK_RUN_SCRIPT" == true ]]; then
+    printf 'error: --init cannot be combined with --once, --cyclic, or --check-run-script\n' >&2
+    exit 2
+  fi
+  SELF_TEST_ONLY=true
+  if [[ "$BATCH_MODE" == false && ! -t 0 ]]; then
+    printf 'error: --init requires an interactive terminal; use --init --batch for non-interactive installation\n' >&2
+    exit 2
+  fi
+fi
+
 if [[ -n "$NOTIFIER_OPTION" && -n "$SIGNAL_PID" ]]; then
   printf 'error: --notifier and --signal-pid are mutually exclusive\n' >&2
   exit 2
@@ -357,14 +386,52 @@ GITHUB_SSH_DIR="${GITHUB_SSH_DIR:-$HOME/devel}"
 GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-commit-key/id_ed25519_agent_commit}"
 GITHUB_ID_FILE="$OUTPUT_DIR/github-user.txt"
 NPM_CACHE_DIR="$OUTPUT_DIR/npm-cache"
+NPM_INSTALL_PREFIX="$OUTPUT_DIR/npm-prefix"
+PYTHON_PACKAGE_DIR="$OUTPUT_DIR/python-packages"
+PIP_CACHE_DIR="$OUTPUT_DIR/pip-cache"
+RUNNER_TMP_BASE="$OUTPUT_DIR/tmp"
+RUNNER_TMP_DIR="$RUNNER_TMP_BASE/run-loop-$$"
+PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"
+PLAYWRIGHT_VERSION="1.62.1"
+MINIMUM_NODE_MAJOR=20
 
 mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
+  "$PYTHON_PACKAGE_DIR" "$PIP_CACHE_DIR" "$RUNNER_TMP_BASE" \
   "$(dirname "$CURRENT_LOG_LINK")"
+mkdir -p "$RUNNER_TMP_DIR"
+chmod 700 "$RUNNER_TMP_DIR"
+
+prepend_tool_path() {
+  local directory="$1"
+  [[ -d "$directory" ]] || return 0
+  case ":${PATH:-}:" in
+    *":$directory:"*) ;;
+    *) PATH="$directory${PATH:+:$PATH}" ;;
+  esac
+}
+
+prepend_tool_path "/usr/local/bin"
+prepend_tool_path "/opt/homebrew/bin"
+export PATH
+hash -r 2>/dev/null || true
+
 export NPM_CONFIG_CACHE="$NPM_CACHE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
+export NPM_INSTALL_PREFIX PLAYWRIGHT_VERSION PYTHON_PACKAGE_DIR
+export NODE_PATH="$NPM_INSTALL_PREFIX/node_modules"
+export PYTHONPATH="$PYTHON_PACKAGE_DIR"
+export PYTHONNOUSERSITE=1
+export PIP_CACHE_DIR
+export PIP_DISABLE_PIP_VERSION_CHECK=1
+export PLAYWRIGHT_BROWSERS_PATH
+export TMPDIR="$RUNNER_TMP_DIR/"
+export TMP="$RUNNER_TMP_DIR"
+export TEMP="$RUNNER_TMP_DIR"
 
 if [[ -f "$STATE_FILE" ]]; then
-  read -r NUM < "$STATE_FILE"
+  if ! read -r NUM < "$STATE_FILE"; then
+    NUM=0
+  fi
   [[ "$NUM" =~ ^[0-9]+$ ]] || NUM=0
 else
   NUM=0
@@ -423,7 +490,12 @@ send_completion_notification() {
   fi
 }
 
-trap 'resume_applescript' EXIT INT TERM
+cleanup_runner_state() {
+  resume_applescript
+  rm -rf "$RUNNER_TMP_DIR"
+}
+
+trap 'cleanup_runner_state' EXIT INT TERM
 
 write_sandbox_profile() {
   cat > "$SANDBOX_PROFILE_PATH" <<EOF
@@ -583,6 +655,330 @@ write_sandbox_profile() {
 EOF
 }
 
+confirm_init_action() {
+  local prompt="$1"
+  local reply
+
+  if [[ "$BATCH_MODE" == true ]]; then
+    return 0
+  fi
+
+  printf '%s [y/N] ' "$prompt"
+  if ! IFS= read -r reply; then
+    printf '\n' >&2
+    return 1
+  fi
+  case "$reply" in
+    y|Y|yes|YES|Yes) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+run_init_action() {
+  local description="$1"
+  shift
+
+  if ! confirm_init_action "$description"; then
+    printf '  [SKIP] %s\n' "$description"
+    return 1
+  fi
+
+  printf '  [RUN]  %s\n' "$description"
+  if "$@"; then
+    printf '  [OK]   %s\n' "$description"
+    return 0
+  fi
+
+  printf '  [FAIL] %s\n' "$description" >&2
+  return 1
+}
+
+install_homebrew() {
+  local installer="$OUTPUT_DIR/homebrew-install.sh"
+  local install_status
+
+  if ! command -v curl >/dev/null 2>&1; then
+    printf 'error: curl is required to install Homebrew\n' >&2
+    return 1
+  fi
+  if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$installer"; then
+    rm -f "$installer"
+    return 1
+  fi
+
+  if [[ "$BATCH_MODE" == true ]]; then
+    if env NONINTERACTIVE=1 /bin/bash "$installer"; then
+      install_status=0
+    else
+      install_status=$?
+    fi
+  elif /bin/bash "$installer"; then
+    install_status=0
+  else
+    install_status=$?
+  fi
+  rm -f "$installer"
+
+  prepend_tool_path "/usr/local/bin"
+  prepend_tool_path "/opt/homebrew/bin"
+  export PATH
+  hash -r 2>/dev/null || true
+  return "$install_status"
+}
+
+ensure_homebrew() {
+  if command -v brew >/dev/null 2>&1; then
+    return 0
+  fi
+  run_init_action \
+    "Install Homebrew from the official Homebrew installer (network access and administrator approval may be required)" \
+    install_homebrew
+}
+
+apple_developer_tools_are_usable() {
+  xcode-select -p >/dev/null 2>&1
+}
+
+python_runtime_is_usable() {
+  local executable
+  executable="$(command -v python3 2>/dev/null || true)"
+  [[ -n "$executable" ]] || return 1
+  if [[ "$executable" == "/usr/bin/python3" ]] && ! apple_developer_tools_are_usable; then
+    return 1
+  fi
+  python3 -c 'import sys' >/dev/null 2>&1 && \
+    python3 -m pip --version >/dev/null 2>&1
+}
+
+python_lxml_is_installed() {
+  python_runtime_is_usable || return 1
+  python3 -c '
+import os
+import lxml
+root = os.path.realpath(os.environ["PYTHON_PACKAGE_DIR"])
+module = os.path.realpath(lxml.__file__)
+if os.path.commonpath([root, module]) != root:
+    raise SystemExit(1)
+' >/dev/null 2>&1
+}
+
+git_runtime_is_usable() {
+  local executable
+  executable="$(command -v git 2>/dev/null || true)"
+  [[ -n "$executable" ]] || return 1
+  if [[ "$executable" == "/usr/bin/git" ]] && ! apple_developer_tools_are_usable; then
+    return 1
+  fi
+  git --version >/dev/null 2>&1
+}
+
+node_runtime_is_usable() {
+  command -v node >/dev/null 2>&1 || return 1
+  command -v npm >/dev/null 2>&1 || return 1
+  node -e '
+const minimum = Number(process.argv[1]);
+const actual = Number(process.versions.node.split(".")[0]);
+process.exit(Number.isFinite(actual) && actual >= minimum ? 0 : 1);
+' "$MINIMUM_NODE_MAJOR" >/dev/null 2>&1 && npm --version >/dev/null 2>&1
+}
+
+brew_install_or_upgrade() {
+  local formula="$1"
+  if brew list --versions "$formula" >/dev/null 2>&1; then
+    brew upgrade "$formula"
+  else
+    brew install "$formula"
+  fi
+}
+
+install_python_package() {
+  local package="$1"
+  python3 -m pip install --upgrade --target "$PYTHON_PACKAGE_DIR" "$package"
+}
+
+initialize_github_key() {
+  local key_directory
+  key_directory="$(dirname "$GITHUB_SSH_KEY_PATH")"
+  mkdir -p "$key_directory" || return 1
+
+  if [[ -f "$GITHUB_SSH_KEY_PATH" ]]; then
+    chmod 600 "$GITHUB_SSH_KEY_PATH" || return 1
+  else
+    ssh-keygen -q -t ed25519 -N '' -C 'autodocs-runner' \
+      -f "$GITHUB_SSH_KEY_PATH" || return 1
+  fi
+  if [[ ! -f "$GITHUB_SSH_KEY_PATH.pub" ]]; then
+    ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" \
+      > "$GITHUB_SSH_KEY_PATH.pub" || return 1
+  fi
+  chmod 644 "$GITHUB_SSH_KEY_PATH.pub" || return 1
+  ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" >/dev/null 2>&1 || return 1
+
+  printf '  Register this public key with the required GitHub account or repository:\n'
+  printf '    %s\n' "$GITHUB_SSH_KEY_PATH.pub"
+}
+
+playwright_module_is_installed() {
+  node_runtime_is_usable || return 1
+  node -e '
+const fs = require("node:fs");
+const root = process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright";
+const packageJson = require(root + "/package.json");
+if (packageJson.version !== process.env.PLAYWRIGHT_VERSION) process.exit(1);
+require(root);
+fs.accessSync(process.env.NPM_INSTALL_PREFIX + "/node_modules/.bin/playwright", fs.constants.X_OK);
+' >/dev/null 2>&1
+}
+
+playwright_webkit_is_installed() {
+  node_runtime_is_usable || return 1
+  node -e '
+const fs = require("node:fs");
+const { webkit } = require(process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright");
+fs.accessSync(webkit.executablePath(), fs.constants.R_OK | fs.constants.X_OK);
+' >/dev/null 2>&1
+}
+
+install_playwright_module() {
+  npm install --prefix "$NPM_INSTALL_PREFIX" "playwright@$PLAYWRIGHT_VERSION"
+}
+
+install_playwright_webkit() {
+  "$NPM_INSTALL_PREFIX/node_modules/.bin/playwright" install webkit
+}
+
+verify_initialized_dependencies() {
+  local failed=0
+
+  if ! python_runtime_is_usable; then
+    printf '  [MISSING] usable Python 3 with pip\n' >&2
+    failed=1
+  elif ! python_lxml_is_installed; then
+    printf '  [MISSING] isolated Python package lxml under %s\n' "$PYTHON_PACKAGE_DIR" >&2
+    failed=1
+  fi
+
+  if ! git_runtime_is_usable; then
+    printf '  [MISSING] usable git\n' >&2
+    failed=1
+  fi
+  if ! ssh -V >/dev/null 2>&1; then
+    printf '  [MISSING] usable ssh\n' >&2
+    failed=1
+  fi
+  if ! node_runtime_is_usable; then
+    printf '  [MISSING] Node.js %s or newer with npm\n' "$MINIMUM_NODE_MAJOR" >&2
+    failed=1
+  fi
+  if ! playwright_module_is_installed; then
+    printf '  [MISSING] Playwright %s under %s\n' \
+      "$PLAYWRIGHT_VERSION" "$NPM_INSTALL_PREFIX" >&2
+    failed=1
+  elif ! playwright_webkit_is_installed; then
+    printf '  [MISSING] Playwright WebKit browser\n' >&2
+    failed=1
+  fi
+
+  if [[ ! -r "$GITHUB_SSH_KEY_PATH" ]] || \
+      ! ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" >/dev/null 2>&1; then
+    printf '  [MISSING] valid GitHub SSH key at %s\n' "$GITHUB_SSH_KEY_PATH" >&2
+    failed=1
+  fi
+
+  return "$failed"
+}
+
+initialize_runner_dependencies() {
+  local failed=0
+  local homebrew_ready=true
+
+  printf '╔══════════════════════════════════════════════╗\n'
+  printf '║ Runner dependency initialization             ║\n'
+  printf '╚══════════════════════════════════════════════╝\n'
+  printf '  Project output: %s\n' "$OUTPUT_DIR"
+  printf '  npm cache:     %s\n' "$NPM_CACHE_DIR"
+  printf '  Python target: %s\n' "$PYTHON_PACKAGE_DIR"
+  printf '  Playwright:    %s\n' "$NPM_INSTALL_PREFIX"
+  if [[ "$BATCH_MODE" == true ]]; then
+    printf '  Mode:          batch (missing dependencies install automatically)\n'
+  else
+    printf '  Mode:          interactive (every installation requires confirmation)\n'
+  fi
+  echo
+
+  if ! python_runtime_is_usable || ! git_runtime_is_usable || ! node_runtime_is_usable || \
+      ! ssh -V >/dev/null 2>&1; then
+    if ! ensure_homebrew; then
+      homebrew_ready=false
+      failed=1
+    fi
+  fi
+
+  if ! git_runtime_is_usable && [[ "$homebrew_ready" == true ]]; then
+    run_init_action "Install or upgrade Git with Homebrew" \
+      brew_install_or_upgrade git || failed=1
+  fi
+  if ! python_runtime_is_usable && [[ "$homebrew_ready" == true ]]; then
+    run_init_action "Install or upgrade Python with Homebrew" \
+      brew_install_or_upgrade python || failed=1
+  fi
+  if ! node_runtime_is_usable && [[ "$homebrew_ready" == true ]]; then
+    run_init_action "Install or upgrade Node.js $MINIMUM_NODE_MAJOR+ and npm with Homebrew" \
+      brew_install_or_upgrade node || failed=1
+  fi
+  if ! ssh -V >/dev/null 2>&1 && [[ "$homebrew_ready" == true ]]; then
+    run_init_action "Install or upgrade OpenSSH with Homebrew" \
+      brew_install_or_upgrade openssh || failed=1
+  fi
+
+  prepend_tool_path "/usr/local/bin"
+  prepend_tool_path "/opt/homebrew/bin"
+  export PATH
+  hash -r 2>/dev/null || true
+
+  if python_runtime_is_usable && ! python_lxml_is_installed; then
+    run_init_action "Install Python package lxml into $PYTHON_PACKAGE_DIR" \
+      install_python_package lxml || failed=1
+  fi
+
+  if [[ ! -r "$GITHUB_SSH_KEY_PATH" ]] || \
+      ! ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" >/dev/null 2>&1; then
+    run_init_action "Generate the runner GitHub SSH key at $GITHUB_SSH_KEY_PATH" \
+      initialize_github_key || failed=1
+  fi
+
+  if node_runtime_is_usable && ! playwright_module_is_installed; then
+    run_init_action "Install Playwright $PLAYWRIGHT_VERSION into $NPM_INSTALL_PREFIX" \
+      install_playwright_module || failed=1
+  fi
+
+  if node_runtime_is_usable && playwright_module_is_installed && ! playwright_webkit_is_installed; then
+    run_init_action "Install the Playwright WebKit browser into $PLAYWRIGHT_BROWSERS_PATH" \
+      install_playwright_webkit || failed=1
+  fi
+
+  echo
+  if ! verify_initialized_dependencies; then
+    failed=1
+  fi
+  if (( failed != 0 )); then
+    printf 'Initialization incomplete. Resolve the missing items above and rerun --init.\n' >&2
+    return 1
+  fi
+
+  printf 'Initialization complete. Running the environment self-test next.\n'
+  return 0
+}
+
+if [[ "$INIT_REQUESTED" == true ]]; then
+  if initialize_runner_dependencies; then
+    :
+  else
+    init_status=$?
+    exit "$init_status"
+  fi
+fi
+
 if [[ "$SANDBOX_ENABLED" == true ]]; then
   write_sandbox_profile
 fi
@@ -598,10 +994,16 @@ else
   echo "Running environment self-test..."
 SELFTEST_SCRIPT="$OUTPUT_DIR/run-sandbox-selftest.sh"
 SELFTEST_LOG="$OUTPUT_DIR/run-sandbox-selftest.log"
-export SELFTEST_LOG OUTPUT_DIR GITHUB_SSH_KEY_PATH RUN_SCRIPT_PATH NPM_CONFIG_CACHE npm_config_cache
+export SELFTEST_LOG OUTPUT_DIR GITHUB_SSH_KEY_PATH RUN_SCRIPT_PATH \
+  NPM_CONFIG_CACHE npm_config_cache NPM_INSTALL_PREFIX NODE_PATH \
+  PYTHON_PACKAGE_DIR PYTHONPATH PYTHONNOUSERSITE PIP_CACHE_DIR \
+  PIP_DISABLE_PIP_VERSION_CHECK \
+  PLAYWRIGHT_BROWSERS_PATH PLAYWRIGHT_VERSION TMPDIR TMP TEMP
 cat > "$SELFTEST_SCRIPT" <<'EOF'
 #!/usr/bin/env bash
 set -uo pipefail
+
+SELFTEST_FAILURES=0
 
 print_selftest_result() {
   local name="$1"
@@ -613,6 +1015,10 @@ print_selftest_result() {
     python_lxml_probe) label="Python import lxml" ;;
     python3_path) label="python3 path" ;;
     pip_path) label="pip path" ;;
+    node_path) label="node path" ;;
+    npm_path) label="npm path" ;;
+    node_version_probe) label="Node.js 20+" ;;
+    npm_version_probe) label="npm --version" ;;
     git_path) label="git path" ;;
     ssh_path) label="ssh path" ;;
     python_version_probe) label="python3 --version" ;;
@@ -625,9 +1031,7 @@ print_selftest_result() {
     github_key_read_probe) label="GitHub SSH key readable" ;;
     npm_cache_path_probe) label="npm cache path" ;;
     npm_cache_write_probe) label="npm cache writable" ;;
-    npm_install_probe) label="npm install into output prefix" ;;
-    playwright_node_path_probe) label="playwright_node_path_probe" ;;
-    playwright_node_bin_probe) label="playwright_node_bin_probe" ;;
+    playwright_package_probe) label="Playwright package installed" ;;
     playwright_require_resolve_probe) label="Playwright require.resolve" ;;
     playwright_module_probe) label="Playwright Node module" ;;
     playwright_cache_read_probe) label="Playwright cache readable" ;;
@@ -646,7 +1050,13 @@ print_selftest_result() {
 append_selftest_log() {
   local name="$1"
   local value="$2"
-  printf '%s=%s\n' "$name" "$value" >> "$SELFTEST_LOG"
+  if [[ "$value" != ok* ]]; then
+    SELFTEST_FAILURES=$((SELFTEST_FAILURES + 1))
+  fi
+  if ! printf '%s=%s\n' "$name" "$value" >> "$SELFTEST_LOG"; then
+    SELFTEST_FAILURES=$((SELFTEST_FAILURES + 1))
+    printf '  [FAIL] Could not append self-test log: %s\n' "$SELFTEST_LOG" >&2
+  fi
   print_selftest_result "$name" "$value"
 }
 
@@ -694,13 +1104,27 @@ printf '╔═══════════════════════
 printf '║ Environment self-test                        ║\n'
 printf '╚══════════════════════════════════════════════╝\n'
 
-TMP_PROBE="/var/folders/50/mnp917ks6_zgm_pz0v3prqjw0000gn/T/run-loop-selftest.$$"
+TMP_PROBE="${TMPDIR%/}/run-loop-selftest.$$"
 record tmp_write_probe "Temp write access" touch "$TMP_PROBE"
 rm -f "$TMP_PROBE"
 
 record python_tempfile_probe "Python tempfile" python3 -c 'import os, tempfile; fd, path = tempfile.mkstemp(prefix="run-loop-selftest-"); os.close(fd); os.unlink(path)'
-record python_lxml_probe "Python import lxml" python3 -c 'import lxml'
+record python_lxml_probe "Python import lxml" python3 -c '
+import os
+import lxml
+root = os.path.realpath(os.environ["PYTHON_PACKAGE_DIR"])
+module = os.path.realpath(lxml.__file__)
+if os.path.commonpath([root, module]) != root:
+    raise SystemExit(1)
+'
 record_command python3_path "python3 path" python3
+record_command node_path "node path" node
+record_command npm_path "npm path" npm
+record node_version_probe "Node.js 20+" node -e '
+const actual = Number(process.versions.node.split(".")[0]);
+process.exit(Number.isFinite(actual) && actual >= 20 ? 0 : 1);
+'
+record npm_version_probe "npm --version" npm --version
 record_command git_path "git path" git
 record_command ssh_path "ssh path" ssh
 record python_version_probe "python3 --version" python3 --version
@@ -723,35 +1147,34 @@ record npm_cache_write_probe "npm cache writable" \
 record github_key_read_probe "GitHub SSH key readable" test -r "$GITHUB_SSH_KEY_PATH"
 
 # Regression checks for the Playwright/WebKit conditions that previously failed.
-PLAYWRIGHT_WEBKIT_RUNNER="$HOME/Library/Caches/ms-playwright/webkit-2336/pw_run.sh"
+# Installation is intentionally handled only by --init; dependency probes never install.
+PLAYWRIGHT_WEBKIT_RUNNER="$(node -e '
+const { webkit } = require(process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright");
+process.stdout.write(webkit.executablePath());
+' 2>/dev/null || true)"
 
-# Local node_modules can be lost across reboots since only $OUTPUT_DIR is
-# writable per the sandbox profile above. Install missing deps there (npm
-# --prefix) rather than into the default (blocked) location, and point
-# NODE_PATH at the resulting lib/node_modules so require("playwright")
-# resolves. Only runs when the prefix directory is missing, to avoid
-# reinstalling on every loop iteration.
-NPM_INSTALL_PREFIX="$OUTPUT_DIR/npm-prefix"
-if [[ -d "$OUTPUT_DIR" ]]; then
-  if [[ ! -d "$NPM_INSTALL_PREFIX/node_modules/playwright" ]]; then
-    record npm_install_probe "npm install into output prefix" \
-      npm install --prefix "$NPM_INSTALL_PREFIX" playwright@^1.62.1
-  fi
-  export NODE_PATH="$NPM_INSTALL_PREFIX/node_modules${NODE_PATH:+:$NODE_PATH}"
-  printf 'playwright_node_path_probe=ok (%s)\n' "$NODE_PATH" >> "$SELFTEST_LOG"
-  printf 'playwright_node_bin_probe=ok (%s)\n' "$(command -v node 2>/dev/null || echo missing)" >> "$SELFTEST_LOG"
-  record playwright_require_resolve_probe "Playwright require.resolve" \
-    node -e 'console.log(process.env.NODE_PATH); console.log(require.resolve("playwright"))'
-fi
-
-record playwright_module_probe "Playwright Node module" node -e 'require("playwright")'
+record playwright_package_probe "Playwright package installed" node -e '
+const fs = require("node:fs");
+const root = process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright";
+const packageJson = require(root + "/package.json");
+if (packageJson.version !== process.env.PLAYWRIGHT_VERSION) process.exit(1);
+require(root);
+fs.accessSync(process.env.NPM_INSTALL_PREFIX + "/node_modules/.bin/playwright", fs.constants.X_OK);
+'
+record playwright_require_resolve_probe "Playwright require.resolve" node -e '
+const root = process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright";
+console.log(require.resolve(root));
+'
+record playwright_module_probe "Playwright Node module" node -e '
+require(process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright");
+'
 record playwright_cache_read_probe "Playwright cache readable" test -r "$PLAYWRIGHT_WEBKIT_RUNNER"
 record playwright_runner_exec_probe "WebKit runner executable" test -x "$PLAYWRIGHT_WEBKIT_RUNNER"
 WEBKIT_FILE_PROBE="$OUTPUT_DIR/run-loop-selftest-webkit-file.$$.html"
 printf '%s\n' '<!doctype html><title>self-test</title><h1>ok</h1>' > "$WEBKIT_FILE_PROBE"
 export WEBKIT_FILE_PROBE
 record playwright_webkit_page_probe "WebKit loads file:// page" perl -e 'alarm shift; exec @ARGV' 15 env DEBUG="pw:browser,pw:protocol" PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" node -e '
-const { webkit } = require("playwright");
+const { webkit } = require(process.env.NPM_INSTALL_PREFIX + "/node_modules/playwright");
 const { pathToFileURL } = require("node:url");
 (async () => {
   const browser = await webkit.launch({ headless: true });
@@ -770,10 +1193,16 @@ unset WEBKIT_FILE_PROBE
 # zsh reserves `status`; ensure generated run scripts are checked for this
 # recurring portability issue before execution.
 if [[ -f "$RUN_SCRIPT_PATH" ]] && grep -Eq '(^|[[:space:]])status=' "$RUN_SCRIPT_PATH"; then
-  printf '%s\n' 'run_sh_zsh_status_probe=fail (run script assigns the zsh read-only variable status)' >> "$SELFTEST_LOG"
+  append_selftest_log run_sh_zsh_status_probe \
+    'fail (run script assigns the zsh read-only variable status)'
 else
-  printf '%s\n' 'run_sh_zsh_status_probe=ok' >> "$SELFTEST_LOG"
+  append_selftest_log run_sh_zsh_status_probe ok
 fi
+
+if (( SELFTEST_FAILURES > 0 )); then
+  exit 1
+fi
+exit 0
 EOF
 chmod u+x "$SELFTEST_SCRIPT"
 : > "$SELFTEST_LOG"

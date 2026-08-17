@@ -91,6 +91,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | Mechanismus | Zweck |
 |---|---|
 | `run.sh` | Einmalige, parameterlose Runner-Hülle; bei Task-Abschluss nur noch als dünner Aufruf des Transaktionswerkzeugs zulässig |
+| `_src/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
 | `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization`; feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; siehe [`runner-transaction.md`](runner-transaction.md) |
 | `_src/tools/environment_doctor.py` | Rein lesende, portable Diagnose der Ausführungsumgebung; erzeugt ein digest-gebundenes `prepared-environment@v1` mit Capability-/Protokoll-Gates und optional verifiziertem Cache; Aufruf: `python3 _src/tools/environment_doctor.py --root <root> --requirements <requirements.json> --profile <profile.json> [--observations <observations.json>] [--cache-root <dir>] [--write-cache]`; siehe [`environment-doctor.md`](environment-doctor.md) |
 | `_src/tools/task_validation.py` | Wertet einen unveränderlichen Validierungslauf gegen ein `task-validation-profile@v1` aus; erzwingt Freshness, Stage-/Input-/Output-Verträge, Coverage-Canaries und strukturierte Fehler statt blindem Vertrauen in Exit 0; Aufruf: `python3 _src/tools/task_validation.py --profile <profile.json> --run <result.json>`; siehe [`task-validation.md`](task-validation.md) | 
@@ -102,6 +103,36 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Veränderlicher Zeiger/Log des jeweils letzten (oder laufenden) Legacy-Aufrufs; nie als alleiniger Abschlussnachweis verwenden |
+
+### Erstinitialisierung des Legacy-Runners
+
+Auf einer neuen macOS-Installation wird die mutierende Einrichtung ausschließlich
+explizit gestartet. Standardmäßig fragt der Runner vor jeder fehlenden Installation
+nach Bestätigung:
+
+```sh
+_src/run-loop.sh --init /tmp/autodocs/run.sh
+```
+
+Für unbeaufsichtigte Provisionierung muss zusätzlich `--batch` beziehungsweise `-b`
+angegeben werden; `--batch` ohne `--init` wird abgewiesen:
+
+```sh
+_src/run-loop.sh --init --batch /tmp/autodocs/run.sh
+```
+
+Die Initialisierung prüft funktionsfähig statt nur nach Pfad-Präsenz: Python 3 mit
+`pip`, Git, SSH sowie Node.js 20+ mit npm. Fehlende Systemwerkzeuge werden über
+Homebrew eingerichtet beziehungsweise aktualisiert; fehlt Homebrew selbst, wird der
+offizielle Installer verwendet. Projektlokal unter `output/` werden `lxml`, der
+npm-Cache, Playwright 1.62.1 und temporäre Laufdaten isoliert. Der WebKit-Browser
+liegt im Playwright-Cache unter `~/Library/Caches/ms-playwright`. Ein fehlender
+Runner-SSH-Schlüssel wird erzeugt; sein öffentlicher Schlüssel muss anschließend
+manuell beim benötigten GitHub-Konto oder Repository registriert werden.
+
+`--init` führt nach erfolgreicher Einrichtung den Sandbox-Selbsttest aus und beendet
+sich. Ohne `--batch` ist ein interaktives Terminal erforderlich. Normale Aufrufe und
+`--self-test-only` führen keine Paket- oder Browserinstallation aus.
 
 ## Werkzeuge des vereinheitlichten Kurations-/Review-Modells (0006-14)
 
