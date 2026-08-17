@@ -323,7 +323,7 @@ APPLESCRIPT_PATTERN='perplexity-loop[.]applescript'
 SUSPENDED_APPLESCRIPT_PIDS=()
 SANDBOX_PROFILE_PATH="$OUTPUT_DIR/run.sandbox.sb"
 GITHUB_SSH_DIR="${GITHUB_SSH_DIR:-$HOME/devel}"
-GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/aradocs-runner-key/id_ed25519}"
+GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-commit-key/id_ed25519_agent_commit}"
 GITHUB_ID_FILE="$OUTPUT_DIR/github-user.txt"
 NPM_CACHE_DIR="$OUTPUT_DIR/npm-cache"
 
@@ -550,7 +550,7 @@ write_sandbox_profile() {
   (global-name "com.apple.ocspd"))
 EOF
 }
-    
+
 if [[ "$SANDBOX_ENABLED" == true ]]; then
   write_sandbox_profile
 fi
