@@ -53,6 +53,14 @@ HOW TO USE:
 
   Prerequisites are noted inline in the task/feature text after `PREREQ:`.
 
+## Branch model and integration
+
+- Feature/Task/Subtask work is carried on Git branches named after the item ID (`0038`, `0038-01`, `0038-01.01`) and merged upward; the full procedure is [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md).
+- Claim files are committed on the item's branch alongside work products and travel with every merge; they are not deleted at `[x]`/`[w]` but reconciled and removed by the privileged integrator at Feature integration.
+- A worker bases its branch off the parent (Task off the Feature branch, Subtask off the Task branch) and, as its first mutating step, merges in every done-but-unintegrated (`[x]`/`[w]`) prerequisite branch so predecessor work products and claim files are present.
+- **Subtask→Task** merges may be performed by a sandboxed/grunt agent; **Task→Feature** integration and **Feature→`main`** closure are privileged-only.
+- When a privileged integrator cannot approve a Feature's tasks, it records a Feature-level `[u]` **integration verdict** beneath the Feature heading and hands resolution to an explicit user interaction; this reuses the `[u]` meaning at Feature granularity.
+
 ## Feature: 0039 — Process improvement
 
 **Reservation — reserved for privileged agents, tbd.:** No agent may autonomously claim or start this Feature or any of its Tasks. A current user must explicitly select the Task and designate the owning session as privileged before its marker may leave `[u]`. The existence of this Feature, a terminal prerequisite, or an available terminal tool is not assignment or authorization.

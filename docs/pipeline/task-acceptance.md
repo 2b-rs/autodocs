@@ -155,6 +155,8 @@ All current Task and Subtask acceptance records are necessary but not sufficient
 
 Only after aggregate acceptance may a privileged reviewer authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
 
+Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, adds the per-Task and Feature acceptance records and findings there, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `[u]` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, rejected tasks, reason, integration-branch tip) and hands resolution to an explicit user interaction. The `[u]` verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
+
 ## Interim legacy enforcement and required migration
 
 The human/agent authority rules in this document apply immediately. Existing legacy tools still encode `[x]`/`[w]` as terminal and therefore cannot be trusted to decide Feature closure or acceptance eligibility. Until machine enforcement is implemented:

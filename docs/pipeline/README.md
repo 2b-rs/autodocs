@@ -20,6 +20,7 @@ beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
 - [`tools.md`](./tools.md) — jedes Werkzeug/Skript, Zweck, Aufruf
 - [`status-model.md`](./status-model.md) — Statuswerte, Übergänge, Regeln
 - [`task-acceptance.md`](./task-acceptance.md) — privilegierte Task-Abnahme, Vorgängerprüfung, Invalidierung und Feature-Gesamtabnahme
+- [`branch-workflow.md`](./branch-workflow.md) — Branch-Topologie pro Backlog-Item, Basis-und-Merge-Startregel, Merge-Autorität, Feature-Integration und `[u]`-Integrationsverdikt
 - [`data-model.md`](./data-model.md) — Record-Felder, Queues, Verzeichnisse
 
 ## Kernquellen
