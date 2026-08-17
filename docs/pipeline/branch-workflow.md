@@ -113,29 +113,38 @@ Notes and consequences:
 ## Merge authority and direction
 
 Merges only ever move work **up** the tree (Subtask→Task→Feature). Authority
-depends on the level:
+follows the **integration checkpoints** the architect declared, not the hierarchy
+level (see the `TODO.md` header and [`task-acceptance.md`](task-acceptance.md)):
 
-- **Subtask → Task** may be performed by a **sandboxed/grunt** agent. Ordinarily
-  it is the agent that implemented the subtask, but when a Task is parallelized
-  across several agents, the Task owner may merge subtask branches authored by
-  **different** agents into the Task branch. The merger preserves each subtask's
-  claim file and does not alter another agent's `owner_token` or acceptance
-  state.
-- **Task → Feature** requires a **privileged** agent — the *integrator*. A
-  sandboxed/grunt agent must never merge a Task branch into a Feature branch.
-- **Feature → `main`** is performed only by the privileged integrator as part of
-  Feature closure, after Feature aggregate acceptance
-  ([`task-acceptance.md`](task-acceptance.md)).
+- **A merge that crosses no checkpoint** may be performed by a **sandboxed/grunt**
+  agent — typically Subtask→Task, including subtask branches authored by
+  **different** agents when a Task is parallelized. The merger preserves each
+  merged branch's claim file and never alters another agent's `owner_token` or
+  acceptance state.
+- **A merge that crosses a node marked `Integration review: mandatory`** requires
+  the **privileged integrator**. Crossing that boundary upward *is* the
+  integration checkpoint: the integrator reviews the node's work, records the
+  finding, and only then is it integrated. This holds whether the checkpoint is a
+  Subtask, a Task, or the Feature — the attribute, not the level, decides. A
+  sandboxed/grunt agent must never cross a checkpoint boundary and never sets,
+  clears, or moves the attribute (architect-only).
+- **Feature → `main`** and the `DONE.md` move are performed only by a privileged
+  agent (the closure authority). Whether a mandatory integration *review* happens
+  at the Feature depends on whether the Feature node itself is flagged; either
+  way, the Feature closes only once every integration checkpoint within it has a
+  current passing review ([`task-acceptance.md`](task-acceptance.md)).
 
 **Not every Task is individually merged into the Feature.** In the simplest case
 a single grunt works the Tasks one after another, each new Task branch based off
 the Feature branch and merging in the previous Task branch (which already carries
 all earlier done work). The Feature branch itself is not advanced by the grunt.
-The privileged integrator later takes the **last** Task branch — which
-transitively contains the whole chain — and integrates it into the Feature
-branch in one step. When Tasks were genuinely parallel and do not form a single
-chain, the integrator merges each independent Task branch that is required for
-the Feature.
+The **last** Task branch — which transitively contains the whole chain — is
+integrated into the Feature branch by a privileged agent at closure; any
+intermediate node the architect marked `Integration review: mandatory` is
+reviewed by the integrator as its boundary is crossed. When Tasks were genuinely
+parallel and do not form a single chain, the integrator merges each independent
+Task branch that is required for the Feature. Merges that cross no checkpoint may
+be chained up by a grunt without privileged review.
 
 ## Feature integration and sign-off
 
@@ -147,10 +156,13 @@ Feature branch and performs the Feature-level review. The integrator:
    [`task-acceptance.md`](task-acceptance.md)).
 2. Merges the required Task branch(es) into the Feature branch, resolving
    conflicts without discarding any owner's work and carrying up all claim files.
-3. Performs the per-Task and Feature aggregate acceptance review defined in
+3. Performs the integration review at each node the architect marked
+   `Integration review: mandatory` — and the Feature aggregate review if the
+   Feature itself is flagged — as defined in
    [`task-acceptance.md`](task-acceptance.md), **adding the review findings and
-   acceptance records** on the Feature branch. Task-acceptance `✓` records are
-   created here, bottom-up and prerequisite-closed.
+   acceptance records** on the Feature branch. `Acceptance: ✓` records are created
+   at those checkpoints, bottom-up and prerequisite-closed. Unflagged work carries
+   no such record.
 4. Reconciles and removes the predecessor claim files whose information is now
    captured in acceptance records and check-in provenance
    ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).
@@ -158,16 +170,18 @@ Feature branch and performs the Feature-level review. The integrator:
    Feature to `DONE.md` via the path-isolated bookkeeping commit that
    [`task-acceptance.md`](task-acceptance.md) requires.
 
-## Feature integration rejection: the `[u]` verdict
+## Integration rejection: the `[u]` verdict
 
-If the integrator does **not** approve a row of Tasks — the evidence shows a
-material nonconformity or a decision the integrator may not make alone — the
-integrator does not silently fix or force the Feature through. Instead it records
-a **Feature-level `[u]` integration verdict** and hands resolution to the user.
+If the integrator **cannot** approve the work at an integration checkpoint — the
+evidence shows a material nonconformity or a decision the integrator may not make
+alone — it does not silently fix or force it through. Instead it records a `[u]`
+integration verdict at that checkpoint and hands resolution to the user. This
+applies at any checkpoint the architect declared, not only at the Feature; the
+Feature is simply the checkpoint of last resort.
 
-Because a Feature heading (`## Feature: XXXX — …`) carries no checkbox marker, the
-`[u]` verdict is rendered as a structured record placed directly beneath the
-Feature heading:
+The `[u]` verdict is a structured record placed directly beneath the checkpoint
+node (beneath the Feature heading when the checkpoint is the Feature, since a
+Feature heading carries no checkbox marker):
 
 ```markdown
 **Integration verdict:** [u] — pending user approval
@@ -191,7 +205,14 @@ While a Feature carries an `[u]` integration verdict:
   own `[u]` verdict without the user's decision.
 
 This uses the existing `[u]` meaning ("a human decision is the sole next action")
-at Feature granularity; it does not introduce a new marker.
+at checkpoint granularity; it does not introduce a new marker.
+
+Resolution of a `[u]` verdict — including waiving the mandatory integrating task
+or overriding the verdict outright — is a **management** decision (the current
+user or a registered authority above the process), recorded as an explicit
+append-only authorization naming authority, scope, reason, and any compensating
+controls. This is the sanctioned path for real-world surprises; the integrator
+never clears its own verdict, and no agent circumvents a checkpoint silently.
 
 ## Capability-class execution of branch operations
 
@@ -228,6 +249,39 @@ explicit downstream work and is not implied to exist yet:
   authority rules above, and any tool that cannot preserve claim files,
   acceptance records, or unrelated work must fail closed rather than rewrite the
   branch.
+
+## Forward compatibility with the Feature `0037` issue store
+
+This is a **legacy-authority** process: it is layered on the current merge-prone
+authoritative `TODO.md`/`DONE.md` database and the `TODO-<agent-id>.md` claim
+files. Feature `0037` replaces that database with one schema-enforced Markdown
+item per Feature/Task/Subtask at `issues/XXXX/…/index.md`, each with its own
+`claim.json` and terminal `closure.json`. This workflow is designed to map onto
+that future store rather than compete with it:
+
+- **Claim files → per-item `claim.json`.** "Claim files travel on the item's
+  branch and merge upward" becomes "each item's `claim.json` travels with its own
+  file." Because every item owns an isolated path, upward merges become far less
+  conflict-prone than merging a shared `TODO.md`, which is part of why Feature
+  `0037` exists.
+- **Branch/merge/integration actions → typed queue actions.** The base-branch,
+  merge-prerequisite, and Task→Feature integration operations are *surviving
+  legacy primitives*: they must be specified once against the frozen
+  request/result contract (`0037-45`), carried into the pre-activation handoff
+  manifest (`0038-16.01`), and implemented in the permanent typed-action registry
+  (`0037-46.01`) — not re-invented as a second permanent protocol. The legacy
+  `runner_transaction` implementation is a bridge that retires at `0037-46.02`.
+- **Integration authority → machine-enforced gate.** The privileged-only
+  Task→Feature / Feature→`main` boundary and the Feature-level `[u]` integration
+  verdict are enforced manually here; their machine-enforced form is owned by the
+  non-bypassable integration-policy gate (`0037-43`) and the acceptance
+  machine-enforcement/migration Task (`0039-05`), across both the legacy queue and
+  the future issue-store lifecycle.
+
+In short: the branch topology and the base-and-merge rule are the *behavior*; the
+carriers (`TODO.md`/claim files today, `issues/…/claim.json` after cutover) and
+the executors (`runner_transaction` today, the `0037-46.01` queue after cutover)
+change beneath it without changing the workflow.
 
 ## Worked examples
 

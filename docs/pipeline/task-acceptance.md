@@ -10,6 +10,19 @@ Task acceptance means that the exact reviewed work-product baseline satisfies th
 
 The word `accepted` in this document is namespaced to **Task/Feature work-product acceptance**. It is distinct from curation-item decisions, review-request acceptance, publication, or external approval processes elsewhere in `docs/pipeline/`.
 
+## Integration checkpoints and the architect
+
+Privileged review is **not** required uniformly. It is required exactly at the nodes an **architect** marks as integration checkpoints. This keeps review — the most expensive step — proportional to declared risk instead of implied by hierarchy, and it is decided up front.
+
+- **Architect.** An authority **instantiated by management** whose job is to subdivide a Feature into bounded, context-rich work packages so implementers need minimal reasoning, and to review the resulting tasks and flag the most critical ones `Integration review: mandatory`. The architect is a recorded designation distinct from both the implementer and the integrator who performs the review — a separation of *who scopes*, *who builds*, and *who reviews*.
+- **The attribute.** A node (Task, Subtask, or Feature) carries `**Integration review:** mandatory` when it is an integration checkpoint. The attribute is the **requirement** that a privileged integration review occur before the node's work is integrated across its boundary; the `Acceptance: ✓` record defined below is that requirement's **fulfillment**. It is orthogonal to the checkbox marker and set only by the architect, with recorded rationale.
+- **Opt-in, both directions audited.** A node without the attribute is integrated by ordinary grunt-eligible merges with no privileged review. So an omission is never silent, a node that touches an irreversible migration, external effect, credential/security boundary, or public release and is left unflagged must record an explicit **no-checkpoint justification** by the architect.
+- **Gate scope.** A checkpoint gates *upward integration*, not implementation start: dependents may build on its `[x]`/`[w]` and merge it, but crossing its boundary and treating it as integrated waits for a passing review. An architect may additionally impose the stricter *acceptance-before-start* edge gate for a high-risk predecessor.
+- **Mandatory integrating task (the floor).** The feature-breakdown process requires the architect to create exactly one integration task per Feature that integrates the whole Feature's work, flagged `Integration review: mandatory`. It is the Feature's terminal checkpoint and effective review floor; further intermediate checkpoints are added at the architect's discretion. Absent an override, no Feature closes without this review.
+- **Management override.** Management — the current user or a registered authority above the process — may waive the mandatory integrating task, override an integrator's `[u]` verdict, or authorize closure without a required review. An override is valid only as an explicit, recorded authorization naming authority, scope, reason, and compensating controls; it is append-only, deletes no history, and is never performed autonomously by an architect, integrator, implementer, or grunt. It is the sanctioned path for the surprises real work produces — distinct from an agent silently skipping a gate, which remains prohibited.
+
+The independence, competence, procedure, invalidation, and recording rules in the rest of this document apply to every review a checkpoint requires. Sandboxed/grunt agents never set, clear, or move the `Integration review` attribute; that is architect authority.
+
 ## State and rendering model
 
 Acceptance is orthogonal to the legacy checkbox marker so that the executed disposition remains visible and current parsers are not silently broken.
@@ -47,6 +60,7 @@ Sandboxed/grunt agents may implement, investigate, validate, commit, prepare acc
 - representing themselves as the acceptance reviewer;
 - asking a generic runner action to perform acceptance promotion;
 - moving a Feature to `DONE.md`;
+- setting, clearing, or moving the `Integration review: mandatory` attribute (architect authority);
 - treating privilege, a green command, or a Task `REF` as acceptance.
 
 Only a session that is both currently privileged **and explicitly assigned by the current user or registered acceptance authority to the exact review scope** may decide Task or Feature acceptance. Privilege alone is not acceptance authority. A model name, Git author, claim filename, terminal access, or role self-assertion is not proof.
@@ -142,7 +156,7 @@ An unrelated repository `HEAD` advance does not invalidate acceptance. Impact is
 
 ## Feature aggregate acceptance and `DONE.md`
 
-All current Task and Subtask acceptance records are necessary but not sufficient. A separately assigned independent privileged reviewer performs Feature aggregate review after every in-scope child has a current accepted disposition. The reviewer verifies:
+A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`) and **every integration checkpoint within it has a current passing integration review**. If the architect marked the Feature node itself `Integration review: mandatory`, a separately assigned independent privileged reviewer performs the Feature aggregate review below before closure; an unflagged Feature whose internal checkpoints all pass is closed by the privileged closure authority without an additional aggregate review. The `DONE.md` move is always a privileged act, never a grunt or checkbox-counter action. When a Feature aggregate review is required, the reviewer verifies:
 
 1. complete, acyclic, current Task/Subtask and Feature-prerequisite closure;
 2. satisfaction of the Feature goal and Feature Definition of Done;
@@ -153,7 +167,7 @@ All current Task and Subtask acceptance records are necessary but not sufficient
 7. one digest-bound aggregate manifest of Task acceptance records and work products;
 8. one immutable Feature-acceptance review record.
 
-Only after aggregate acceptance may a privileged reviewer authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
+Only after every required integration checkpoint has passed — and the Feature aggregate review too, when the Feature node is flagged — may a privileged agent authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
 
 Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, adds the per-Task and Feature acceptance records and findings there, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `[u]` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, rejected tasks, reason, integration-branch tip) and hands resolution to an explicit user interaction. The `[u]` verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
 
