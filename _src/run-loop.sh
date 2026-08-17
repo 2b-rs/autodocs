@@ -11,6 +11,8 @@ NO_SELF_TEST=false
 SANDBOX_ENABLED=true
 RUN_SCRIPT_OPTION="run.sh"
 RUN_SCRIPT_OPTION_SET=false
+RUN_LOG_OPTION=""
+RUN_LOG_OPTION_SET=false
 CHECK_RUN_SCRIPT=false
 NOTIFY_WAIT_SECONDS=2
 NOTIFIER_OPTION=""
@@ -37,6 +39,8 @@ usage() {
     '      --no-sandbox         Execute the run script without the sandbox.' \
     '      --sandbox=MODE       Set sandbox mode: enabled or disabled.' \
     '  -r, --run-script PATH    Use PATH instead of the positional FILE.' \
+    '      --run-log PATH       Publish the active/latest run log at PATH.' \
+    '                           Relative paths use the watched script directory.' \
     '  -e, --check-run-script   Check whether the watched file exists, then exit.' \
     '  -w, --notify-wait SEC    Wait SEC seconds after a run before notifying' \
     '                           (default: 2; decimals are accepted).' \
@@ -170,6 +174,17 @@ while (( $# > 0 )); do
     -r?*)
       RUN_SCRIPT_OPTION="${1#-r}"
       RUN_SCRIPT_OPTION_SET=true
+      ;;
+    --run-log)
+      require_option_value "$1" "${2:-}"
+      RUN_LOG_OPTION="$2"
+      RUN_LOG_OPTION_SET=true
+      shift
+      ;;
+    --run-log=*)
+      RUN_LOG_OPTION="${1#*=}"
+      require_option_value "--run-log" "$RUN_LOG_OPTION"
+      RUN_LOG_OPTION_SET=true
       ;;
     -e|--check-run-script)
       CHECK_RUN_SCRIPT=true
@@ -316,7 +331,23 @@ fi
 OUTPUT_DIR="$ROOT_DIR/output"
 ARCHIVE_DIR="$OUTPUT_DIR/run-archive"
 STATE_FILE="$OUTPUT_DIR/run-counter.state"
-CURRENT_LOG_LINK="$OUTPUT_DIR/run-current.log"
+if [[ "$RUN_LOG_OPTION_SET" == true ]]; then
+  if [[ "$RUN_LOG_OPTION" == /* ]]; then
+    CURRENT_LOG_LINK="$RUN_LOG_OPTION"
+  else
+    CURRENT_LOG_LINK="$ROOT_DIR/$RUN_LOG_OPTION"
+  fi
+else
+  CURRENT_LOG_LINK="$OUTPUT_DIR/run-current.log"
+fi
+if [[ "$CURRENT_LOG_LINK" == "$RUN_SCRIPT_PATH" ]]; then
+  printf 'error: run log path must differ from the watched script: %s\n' "$CURRENT_LOG_LINK" >&2
+  exit 2
+fi
+if [[ -d "$CURRENT_LOG_LINK" ]]; then
+  printf 'error: run log path is a directory: %s\n' "$CURRENT_LOG_LINK" >&2
+  exit 2
+fi
 CURRENT_SCRIPT_LINK="$OUTPUT_DIR/run-current.sh"
 GUARD_SECONDS=300
 APPLESCRIPT_PATTERN='perplexity-loop[.]applescript'
@@ -327,7 +358,8 @@ GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-com
 GITHUB_ID_FILE="$OUTPUT_DIR/github-user.txt"
 NPM_CACHE_DIR="$OUTPUT_DIR/npm-cache"
 
-mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR"
+mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
+  "$(dirname "$CURRENT_LOG_LINK")"
 export NPM_CONFIG_CACHE="$NPM_CACHE_DIR"
 export npm_config_cache="$NPM_CACHE_DIR"
 
@@ -792,6 +824,7 @@ echo "GitHub SSH key path: $GITHUB_SSH_KEY_PATH"
 echo "GitHub user file: $GITHUB_ID_FILE"
 echo "npm cache: $NPM_CONFIG_CACHE"
 echo "Post-run notification wait: ${NOTIFY_WAIT_SECONDS}s"
+echo "Current run log: $CURRENT_LOG_LINK"
 printf 'Run-script sentinel: %s\n' "$SENTINEL_TEXT"
 if [[ -n "$SIGNAL_PID" ]]; then
   echo "Completion notification: SIGUSR1 to PID $SIGNAL_PID"
@@ -866,7 +899,7 @@ while true; do
   printf '\n[%s] finished %s (#%s) with exit code %s\n' "$finished_at_human" "$RUN_SCRIPT_NAME" "$NUM" "$status"
   printf '[%s] exit_code=%s\n' "$finished_at_human" "$status" >> "$log_path"
 
-  completion_message="$RUN_SCRIPT_NAME (#$NUM) finished with exit code $status. Find the output under $ROOT_DIR/output/run-current.log"
+  completion_message="$RUN_SCRIPT_NAME (#$NUM) finished with exit code $status. Find the output under $CURRENT_LOG_LINK"
   send_completion_notification "$completion_message" "$finished_at_human" "$log_path"
 
   if [[ "$CYCLIC" == true ]]; then
