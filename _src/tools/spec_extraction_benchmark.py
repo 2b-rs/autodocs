@@ -47,6 +47,22 @@ def pages(record: dict) -> list[int]:
     return [int(x) for x in raw if isinstance(x, (int, float))]
 
 
+def has_definition_anchor(record: dict) -> bool:
+    """Return whether extraction found a definition block around the ID.
+
+    Citation-only mentions have neither completion boundary. A populated
+    heading/field payload remains accepted for older campaign records that do
+    not persist the boundary flags.
+    """
+    if record.get("complete_start") is True or record.get("complete_end") is True:
+        return True
+    for key in ("definition_start", "definition_end", "anchor_before", "anchor_after"):
+        if record.get(key) is True:
+            return True
+    props = record.get("props") or record.get("fields") or {}
+    return bool(record.get("heading") and isinstance(props, dict) and props)
+
+
 def classify(rid: str, record: dict, page_count: dict[int, int]) -> list[str]:
     value, pgs = text(record), pages(record)
     props = record.get("props") or record.get("fields") or {}
@@ -77,6 +93,7 @@ def main() -> int:
         match = re.match(r"(.+)\.(pypdf|builtin)\.json$", path.name)
         if match: pairs[match.group(1)][match.group(2)] = path
     candidates = []
+    skipped = []
     for document, files in sorted(pairs.items()):
         by_backend = {b: load_records(p) for b, p in files.items()}
         ids = sorted(set().union(*(set(v) for v in by_backend.values())))
@@ -85,7 +102,16 @@ def main() -> int:
         for rid in ids:
             for p in set(pages(preferred.get(rid, {}))): page_count[p] += 1
         for rid in ids:
-            record = preferred.get(rid) or by_backend.get("builtin", {}).get(rid, {})
+            records = [by_backend[backend][rid] for backend in ("pypdf", "builtin")
+                       if rid in by_backend.get(backend, {})]
+            record = preferred.get(rid) or (records[0] if records else {})
+            anchored = next((item for item in records if has_definition_anchor(item)), None)
+            if anchored is None:
+                skipped.append({"id": rid, "document": document, "reason": "no_definition_anchor",
+                                "backend_presence": sorted(b for b, records_by_id in by_backend.items() if rid in records_by_id)})
+                continue
+            if not has_definition_anchor(record):
+                record = anchored
             candidates.append({
                 "id": rid, "document": document, "categories": classify(rid, record, page_count),
                 "backend_presence": sorted(b for b, records in by_backend.items() if rid in records),
@@ -109,11 +135,12 @@ def main() -> int:
     args.output.mkdir(parents=True, exist_ok=True)
     fixture = {"schema": 1, "status": "draft-needs-manual-review", "campaign": args.campaign.name,
                "selection_policy": {"target_size": args.size, "minimum_per_difficult_shape": 25,
-                                    "categories": list(CATEGORIES)}, "records": selected}
+                                    "categories": list(CATEGORIES), "requires_definition_anchor": True},
+               "records": selected, "skipped": sorted(skipped, key=lambda item: (item["document"], item["id"]))}
     (args.output / "benchmark-draft.json").write_text(json.dumps(fixture, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     counts = {k: sum(k in c["categories"] for c in selected) for k in CATEGORIES}
     docs = {d: sum(c["document"] == d for c in selected) for d in sorted(pairs)}
-    report = ["# Extraction benchmark draft", "", f"Selected: {len(selected)} / {args.size}", "",
+    report = ["# Extraction benchmark draft", "", f"Selected: {len(selected)} / {args.size}", f"Skipped: {len(skipped)} (no definition anchor)", "",
               "This is a review queue, not a frozen truth set. Every record must be checked manually.", "",
               "## Shape coverage", ""] + [f"- {k}: {v}" for k, v in counts.items()] + ["", "## Document coverage", ""] + [f"- {k}: {v}" for k, v in docs.items()]
     (args.output / "README.md").write_text("\n".join(report) + "\n", encoding="utf-8")
