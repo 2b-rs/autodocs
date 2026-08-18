@@ -104,7 +104,8 @@ HOW TO USE:
   - **Definition of Done:** Committed; no authority document still demands a separate bookkeeping commit for `[p]` → `[x]`/`[w]`; the trailer format is documented with at least one worked example; existing terminal Tasks are not retroactively invalidated.
   - **Integration review:** **mandatory.** **Rationale (architect):** this changes the binding closure procedure that every agent follows. An error here either leaves two contradictory closure procedures in force or silently drops the traceability the trailer is meant to carry.
 
-- [ ] **0041-03** PREREQ: 0041-03:0041-02 Move `REF` tagging from implementation completion to the acceptance transition.
+- [p] **0041-03** PREREQ: 0041-03:0041-02 Move `REF` tagging from implementation completion to the acceptance transition.
+  - **Claim (2026-08-18):** `TODO-zed-0041-03-20260818T124710Z-e962f7261309.md`; owner_token `agent:zed:0041-03:20260818T124710Z-e962f7261309`; canonical branch `0041-03`.
   - **Requirements covered:** `RQ-REF-01` … `RQ-REF-03`.
   - **Context (finding K):** The `TODO.md` header currently defines `[x]` as requiring a "real substantive `REF`", and `AGENTS.md` and `task-acceptance.md` repeat it. Changing one and not the others reproduces `T8` — documentation and binding instruction disagreeing, with the instruction winning.
   - **Acceptance criteria:** `[x]`/`[w]` no longer require a `REF`. The `[x]` → `✓` transition owns it, and the documents state explicitly in which cases it stays mandatory and in which it is optional, rather than leaving "often optional" to interpretation. `TODO.md` header, `AGENTS.md` and `task-acceptance.md` agree word for word on the new gate.
