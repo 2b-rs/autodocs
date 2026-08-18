@@ -233,12 +233,20 @@ Conversation-facing output is one line per phase plus one final verdict. Complet
 
 The Git lock `.git/autodocs-runner-transaction.lock` is fail-closed. A stale lock is not permission to delete it. Verify the recorded request/owner, active process state, claim, branch, result, and promotion journal first. A future Feature `0038` Task will productize this recovery/garbage-collection check.
 
+## Supported Profiles
+
+The transaction runner supports two declared execution profiles:
+
+1. `close-task-v1`: Full Task closure profile requiring a generator phase, a validator phase, generated outputs, a substantive commit, and a parented REF bookkeeping commit that closes the Task in `TODO.md`.
+2. `verify-and-commit-v1`: Scoped validation and path-limited commit profile. Allows validation-only action sequences without invoking unrelated site generators, permits empty `output_paths`, requires a substantive commit with provenance, and makes `bookkeeping` optional so focused substantive work can be safely published without forcing `TODO.md` closure.
+
 ## Current fixed actions
 
 | Action ID | Phase | Command owned by the registry |
 |---|---|---|
 | `generate-site` | generate | current Python interpreter + `_src/generate.py` |
 | `validate-project` | validate | current Python interpreter + `_src/validate.py` |
+| `test-runner-transaction` | validate | current Python interpreter + `-m unittest _src.tools.test_runner_transaction -v` |
 
 Adding an action requires a source change, tests, documentation, and review. A manifest cannot define one.
 

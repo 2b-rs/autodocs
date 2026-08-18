@@ -47,6 +47,8 @@ REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{5,127}$")
 OWNER_TOKEN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9:._-]{7,255}$")
 SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_./-]*$")
 PROFILE = "close-task-v1"
+VERIFY_AND_COMMIT_PROFILE = "verify-and-commit-v1"
+PROFILES = (PROFILE, VERIFY_AND_COMMIT_PROFILE)
 FORBIDDEN_GIT_ENV = {
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -127,6 +129,11 @@ def _registered_actions() -> Mapping[str, ActionSpec]:
             action_id="validate-project",
             phase="validate",
             argv=(python, "_src/validate.py"),
+        ),
+        "test-runner-transaction": ActionSpec(
+            action_id="test-runner-transaction",
+            phase="validate",
+            argv=(python, "-m", "unittest", "_src.tools.test_runner_transaction", "-v"),
         ),
     }
 
@@ -359,7 +366,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     )
     if data["schema"] != MANIFEST_SCHEMA:
         raise TransactionError("RTX-SCHEMA-VERSION", f"unsupported schema: {data['schema']!r}", "manifest", EXIT_MANIFEST)
-    if data["profile"] != PROFILE:
+    if data["profile"] not in PROFILES:
         raise TransactionError("RTX-PROFILE-UNSUPPORTED", f"unsupported transaction profile: {data['profile']!r}", "manifest", EXIT_MANIFEST)
 
     identity = data["identity"]
@@ -416,7 +423,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
             "manifest",
             EXIT_MANIFEST,
         )
-    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=False)
+    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=(data["profile"] != PROFILE))
     scope["substantive_paths"] = _string_list(scope["substantive_paths"], "scope.substantive_paths", allow_empty=False)
 
     substantive_set = set(scope["substantive_paths"])
@@ -512,7 +519,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         commit["message"] = commit.pop(message_key)
 
     bookkeeping = data.get("bookkeeping")
-    if data["profile"] == PROFILE and not isinstance(commit, dict):
+    if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE) and not isinstance(commit, dict):
         raise TransactionError("RTX-SCHEMA-TYPE", "commit must be an object", "manifest", EXIT_MANIFEST)
     if data["profile"] == PROFILE and bookkeeping is None:
         raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
@@ -894,6 +901,10 @@ class Transaction:
             paths.add(self.identity["claim_path"])
         return paths
 
+    @property
+    def final_commit(self) -> Optional[str]:
+        return self.bookkeeping_commit or self.substantive_commit
+
     def emit(self, message: str) -> None:
         print(message, flush=True)
 
@@ -1081,6 +1092,7 @@ class Transaction:
                     EXIT_PREFLIGHT,
                 )
 
+        _bookkeeping = self.manifest.get("bookkeeping")
         all_declared_paths = (
             set(self.scope["read_paths"])
             | set(self.scope["input_paths"])
@@ -1090,8 +1102,8 @@ class Transaction:
                 self.identity["claim_path"],
                 self.identity["manifest_path"],
                 self.authority["selector_path"],
-                self.manifest["bookkeeping"]["todo_path"],
             }
+            | ({_bookkeeping["todo_path"]} if _bookkeeping else set())
         )
         runtime_prefix = self.log_dir.relative_to(self.root).as_posix()
         aliases = sorted(
@@ -1136,31 +1148,32 @@ class Transaction:
         if self.manifest.get("commit") and (not user_name or not user_email):
             raise TransactionError("RTX-GIT-IDENTITY", "Git user.name and user.email are required", "preflight", EXIT_PREFLIGHT)
 
-        bookkeeping = self.manifest["bookkeeping"]
-        todo = self.root / bookkeeping["todo_path"]
-        todo_bytes = todo.read_bytes()
-        parent_todo = _git(
-            self.root,
-            ["show", f"{self.identity['expected_base']}:{bookkeeping['todo_path']}"],
-        ).stdout
-        if todo_bytes != parent_todo:
-            raise TransactionError(
-                "RTX-BOOKKEEPING-DIRTY",
-                "TODO.md must match the expected-base blob; commit coordination state before closure",
-                "preflight",
-                EXIT_PREFLIGHT,
+        bookkeeping = self.manifest.get("bookkeeping")
+        if bookkeeping:
+            todo = self.root / bookkeeping["todo_path"]
+            todo_bytes = todo.read_bytes()
+            parent_todo = _git(
+                self.root,
+                ["show", f"{self.identity['expected_base']}:{bookkeeping['todo_path']}"],
+            ).stdout
+            if todo_bytes != parent_todo:
+                raise TransactionError(
+                    "RTX-BOOKKEEPING-DIRTY",
+                    "TODO.md must match the expected-base blob; commit coordination state before closure",
+                    "preflight",
+                    EXIT_PREFLIGHT,
+                )
+            try:
+                todo_text = todo_bytes.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise TransactionError("RTX-BOOKKEEPING-UTF8", "TODO.md is not UTF-8", "preflight", EXIT_PREFLIGHT) from exc
+            render_task_closure(
+                todo_text,
+                self.identity["task_id"],
+                "0" * 40,
+                self.identity["request_id"],
+                bookkeeping["closure_text"],
             )
-        try:
-            todo_text = todo_bytes.decode("utf-8")
-        except UnicodeDecodeError as exc:
-            raise TransactionError("RTX-BOOKKEEPING-UTF8", "TODO.md is not UTF-8", "preflight", EXIT_PREFLIGHT) from exc
-        render_task_closure(
-            todo_text,
-            self.identity["task_id"],
-            "0" * 40,
-            self.identity["request_id"],
-            bookkeeping["closure_text"],
-        )
 
         self.initial_index = _index_entries(self.root)
         self._snapshot_paths()
@@ -1343,7 +1356,7 @@ class Transaction:
         unexpected = changed - allowed
         if unexpected:
             raise TransactionError("RTX-CANDIDATE-SCOPE", f"candidate changed undeclared paths: {sorted(unexpected)}", "validate", EXIT_SCOPE)
-        if not changed:
+        if not changed and self.scope["output_paths"]:
             raise TransactionError("RTX-CANDIDATE-NOOP", "candidate has no substantive changes", "validate", EXIT_SCOPE)
         self.emit(f"PHASE candidate-scope: PASS changed={len(changed)}")
 
@@ -1460,6 +1473,8 @@ class Transaction:
         sources: Mapping[str, Optional[Path]],
         message: str,
         label: str,
+        *,
+        allow_noop: bool = False,
     ) -> str:
         self._assert_head(self.identity["expected_base"], label)
         current_index = _index_entries(self.root)
@@ -1485,7 +1500,7 @@ class Transaction:
                 expected_blobs[relative] = (mode, blob)
 
             changed = _git_paths(self.root, ["diff", "--cached", "--name-only", "-z", parent, "--"], env=env)
-            if not changed:
+            if not changed and not allow_noop:
                 raise TransactionError("RTX-COMMIT-NOOP", f"{label} commit has no changes", label, EXIT_COMMIT)
             if changed - set(paths):
                 raise TransactionError("RTX-COMMIT-SCOPE", f"{label} commit contains undeclared paths: {sorted(changed)}", label, EXIT_COMMIT)
@@ -1528,6 +1543,7 @@ class Transaction:
             sources,
             self.manifest["commit"]["message"],
             "substantive",
+            allow_noop=not bool(self.scope["output_paths"]),
         )
         self._inject("after-substantive-commit")
         self.write_transaction_journal("substantive-commit-prepared", {"substantive_commit": self.substantive_commit})
@@ -1644,14 +1660,15 @@ class Transaction:
         self._assert_head(self.identity["expected_base"], "publish")
         if _git_text(self.root, ["symbolic-ref", "--quiet", "HEAD"]) != self.branch_ref:
             raise TransactionError("RTX-BRANCH-DRIFT", "checked-out branch changed after preflight", "publish", EXIT_COMMIT)
+        _pub_bookkeeping = self.manifest.get("bookkeeping")
         self._assert_paths_unchanged(
             set(self.scope["input_paths"])
             | {
                 self.identity["claim_path"],
                 self.identity["manifest_path"],
                 self.authority["selector_path"],
-                self.manifest["bookkeeping"]["todo_path"],
-            },
+            }
+            | ({_pub_bookkeeping["todo_path"]} if _pub_bookkeeping else set()),
             "publish",
         )
         if {relative: _read_state(self.root / relative) for relative in self.scope["output_paths"]} != self.promoted_states:
@@ -1688,9 +1705,11 @@ class Transaction:
         )
         if {relative: _read_state(self.root / relative) for relative in self.scope["output_paths"]} != self.promoted_states:
             raise TransactionError("RTX-PROMOTED-DRIFT", "promoted outputs changed before CAS", "publish", EXIT_SCOPE)
-        todo_path = self.root / self.manifest["bookkeeping"]["todo_path"]
-        if self.promoted_todo_state is None or _read_state(todo_path) != self.promoted_todo_state:
-            raise TransactionError("RTX-BOOKKEEPING-DRIFT", "prepared TODO.md changed before CAS", "publish", EXIT_SCOPE)
+        _cas_bookkeeping = self.manifest.get("bookkeeping")
+        if _cas_bookkeeping:
+            todo_path = self.root / _cas_bookkeeping["todo_path"]
+            if self.promoted_todo_state is None or _read_state(todo_path) != self.promoted_todo_state:
+                raise TransactionError("RTX-BOOKKEEPING-DRIFT", "prepared TODO.md changed before CAS", "publish", EXIT_SCOPE)
         self._assert_worktree_matches_commit(self.substantive_commit, self.scope["substantive_paths"], "publish")
         if _outside_index(_index_entries(self.root), self.mutable_paths) != _outside_index(self.initial_index, self.mutable_paths):
             raise TransactionError("RTX-INDEX-DRIFT", "ambient Git index changed before CAS", "publish", EXIT_COMMIT)
@@ -1701,8 +1720,9 @@ class Transaction:
         Entries that were clean at preflight track the new published tree, while
         genuinely pre-existing staged entries are restored verbatim.
         """
-        if not self.bookkeeping_commit:
-            raise TransactionError("RTX-COMMIT-MISSING", "bookkeeping commit is unavailable", "publish", EXIT_COMMIT)
+        _final = self.final_commit
+        if not _final:
+            raise TransactionError("RTX-COMMIT-MISSING", "final commit is unavailable", "publish", EXIT_COMMIT)
         for relative in sorted(self.mutable_paths):
             original = self.initial_index.get(relative)
             base_entry = _git_text(
@@ -1730,7 +1750,7 @@ class Transaction:
                 continue
 
             published_entry = _git_text(
-                self.root, ["ls-tree", self.bookkeeping_commit, "--", relative]
+                self.root, ["ls-tree", _final, "--", relative]
             )
             published_parts = published_entry.split(None, 3)
             if not published_parts:
@@ -1749,11 +1769,14 @@ class Transaction:
             )
 
     def publish(self) -> None:
-        if not self.substantive_commit or not self.bookkeeping_commit or not self.branch_ref or self.bookkeeping_todo_bytes is None:
+        has_bookkeeping = bool(self.manifest.get("bookkeeping"))
+        final_commit = self.final_commit
+        if not self.substantive_commit or not self.branch_ref or (has_bookkeeping and (not self.bookkeeping_commit or self.bookkeeping_todo_bytes is None)):
             raise TransactionError("RTX-PUBLISH-PREPARED", "commit objects are not fully prepared", "publish", EXIT_COMMIT)
         self.current_phase = "publish"
         self._assert_publish_context()
-        self.promote_bookkeeping_todo()
+        if has_bookkeeping:
+            self.promote_bookkeeping_todo()
         self._assert_pre_cas_context()
         prepared_path = self.log_dir / "prepared-result.json"
         self.write_result(self.result("prepared"), path=prepared_path)
@@ -1762,7 +1785,7 @@ class Transaction:
         self.write_transaction_journal("attempting-cas")
         completed = _git(
             self.root,
-            ["update-ref", self.branch_ref, self.bookkeeping_commit, self.identity["expected_base"]],
+            ["update-ref", self.branch_ref, final_commit, self.identity["expected_base"]],
             check=False,
         )
         if completed.returncode != 0:
@@ -1781,21 +1804,27 @@ class Transaction:
         # Do not run `git read-tree` on the caller's live index: it would discard
         # unrelated staged work. The promoted worktree files are verified against
         # the published commits below while the caller's index remains untouched.
-        self.emit(f"PHASE publish: PASS branch={self.branch_ref} commit={self.bookkeeping_commit}")
+        self.emit(f"PHASE publish: PASS branch={self.branch_ref} commit={final_commit}")
 
     def verify_published(self) -> None:
         self.current_phase = "verify"
-        if not self.published or not self.substantive_commit or not self.bookkeeping_commit:
+        has_bookkeeping = bool(self.manifest.get("bookkeeping"))
+        final_commit = self.final_commit
+        if not self.published or not self.substantive_commit or not final_commit:
             raise TransactionError("RTX-FINAL-PUBLISH", "transaction was not published", "verify", EXIT_COMMIT)
-        self._assert_head(self.bookkeeping_commit, "verify")
-        if _git_text(self.root, ["rev-parse", f"{self.bookkeeping_commit}^"]) != self.substantive_commit:
-            raise TransactionError("RTX-FINAL-PARENT", "bookkeeping parent is not the substantive commit", "verify", EXIT_BOOKKEEPING)
-        for commit in (self.substantive_commit, self.bookkeeping_commit):
-            _git(self.root, ["cat-file", "-e", f"{commit}^{{commit}}"])
+        self._assert_head(final_commit, "verify")
+        if has_bookkeeping:
+            if _git_text(self.root, ["rev-parse", f"{final_commit}^"]) != self.substantive_commit:
+                raise TransactionError("RTX-FINAL-PARENT", "bookkeeping parent is not the substantive commit", "verify", EXIT_BOOKKEEPING)
+            for commit in (self.substantive_commit, final_commit):
+                _git(self.root, ["cat-file", "-e", f"{commit}^{{commit}}"])
+        else:
+            _git(self.root, ["cat-file", "-e", f"{final_commit}^{{commit}}"])
         self._assert_worktree_matches_commit(self.substantive_commit, self.scope["substantive_paths"], "verify")
-        todo_path = self.root / self.manifest["bookkeeping"]["todo_path"]
-        if todo_path.read_bytes() != self.bookkeeping_todo_bytes or self.substantive_commit not in todo_path.read_text(encoding="utf-8"):
-            raise TransactionError("RTX-FINAL-REF", "working TODO.md does not match the verified bookkeeping tree", "verify", EXIT_BOOKKEEPING)
+        if has_bookkeeping:
+            todo_path = self.root / self.manifest["bookkeeping"]["todo_path"]
+            if todo_path.read_bytes() != self.bookkeeping_todo_bytes or self.substantive_commit not in todo_path.read_text(encoding="utf-8"):
+                raise TransactionError("RTX-FINAL-REF", "working TODO.md does not match the verified bookkeeping tree", "verify", EXIT_BOOKKEEPING)
         if not self.claim_path.exists():
             raise TransactionError("RTX-FINAL-CLAIM-EARLY", "claim disappeared before durable finalization", "verify", EXIT_BOOKKEEPING)
         self.write_transaction_journal("verified-published")
@@ -1978,8 +2007,9 @@ class Transaction:
                 self.run_actions(candidate)
                 self.promote_outputs(candidate)
             self.prepare_substantive()
-            self.prepare_bookkeeping()
-            self.validate_prepared_bookkeeping()
+            if self.manifest.get("bookkeeping"):
+                self.prepare_bookkeeping()
+                self.validate_prepared_bookkeeping()
             self.publish()
             self.verify_published()
             self.finalize_claim()

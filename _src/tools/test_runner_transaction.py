@@ -747,6 +747,125 @@ class RunnerTransactionTests(unittest.TestCase):
                 "No closure.",
             )
 
+    # ------------------------------------------------------------------
+    # verify-and-commit-v1 profile tests
+    # ------------------------------------------------------------------
+
+    def _verify_and_commit_manifest(self) -> Path:
+        """Minimal verify-and-commit-v1 manifest: validates source.txt in-place, no bookkeeping."""
+        base = self.fixture.base
+        value: Dict[str, Any] = {
+            "schema": runner.MANIFEST_SCHEMA,
+            "profile": runner.VERIFY_AND_COMMIT_PROFILE,
+            "identity": {
+                "task_id": "0038-01",
+                "request_id": REQUEST_ID,
+                "owner_token": OWNER_TOKEN,
+                "claim_path": CLAIM_PATH,
+                "manifest_path": "request.json",
+                "expected_base": base,
+            },
+            "authority": {
+                "selector_path": "agent-workflow.json",
+                "authority_epoch": AUTHORITY["authority_epoch"],
+                "authority_profile": AUTHORITY["authority_profile"],
+                "write_phase": AUTHORITY["write_phase"],
+                "runner_protocol": AUTHORITY["runner_protocol"],
+            },
+            "scope": {
+                "read_paths": ["_src/generate.py", "_src/validate.py", "agent-workflow.json"],
+                "input_paths": ["source.txt"],
+                "output_paths": [],
+                "substantive_paths": ["source.txt"],
+            },
+            "actions": [
+                {"id": "validate-project", "timeout_seconds": 30, "reports": []},
+            ],
+            "commit": {
+                "substantive_message": (
+                    "feat(0038-01): verify-and-commit fixture\n\n"
+                    "User-Prompt-Provenance:\n"
+                    "Exercise the verify-and-commit-v1 profile."
+                )
+            },
+        }
+        # Also update the claim file's profile field to the new profile so
+        # claim_contract_fields matches what's written to disk.
+        claim_path = self.fixture.root / CLAIM_PATH
+        claim_text = claim_path.read_text(encoding="utf-8")
+        claim_text = claim_text.replace(
+            f"transaction_profile: {runner.PROFILE}",
+            f"transaction_profile: {runner.VERIFY_AND_COMMIT_PROFILE}",
+        )
+        claim_path.write_text(claim_text, encoding="utf-8")
+        return self.fixture.store_manifest(value)
+
+    def test_verify_and_commit_produces_single_substantive_commit(self) -> None:
+        """verify-and-commit-v1 must land exactly one commit with no TODO.md changes."""
+        base = self.fixture.base
+        path = self._verify_and_commit_manifest()
+        manifest = runner.load_manifest(path)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            status = runner.Transaction(self.fixture.root, manifest).execute()
+        self.assertEqual(status, 0, output.getvalue())
+        new_head = self.fixture.base
+        self.assertNotEqual(new_head, base)
+        # Only one commit must have been added (substantive only, no bookkeeping).
+        commit_count = int(
+            self.fixture.git_text("rev-list", "--count", f"{base}..{new_head}")
+        )
+        self.assertEqual(commit_count, 1)
+        # TODO.md must be unchanged.
+        todo_after = (self.fixture.root / "TODO.md").read_text(encoding="utf-8")
+        self.assertIn("- [p] **0038-01**", todo_after)
+        # Claim must have been finalized (moved to log dir, not in worktree).
+        self.assertFalse((self.fixture.root / CLAIM_PATH).exists())
+        result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertEqual(result["verdict"], "passed")
+        self.assertIsNotNone(result["substantive_commit"])
+        self.assertIsNone(result["bookkeeping_commit"])
+
+    def test_verify_and_commit_profile_rejects_missing_commit(self) -> None:
+        """verify-and-commit-v1 without a commit block must fail manifest validation."""
+        base = self.fixture.base
+        value: Dict[str, Any] = {
+            "schema": runner.MANIFEST_SCHEMA,
+            "profile": runner.VERIFY_AND_COMMIT_PROFILE,
+            "identity": {
+                "task_id": "0038-01",
+                "request_id": REQUEST_ID,
+                "owner_token": OWNER_TOKEN,
+                "claim_path": CLAIM_PATH,
+                "manifest_path": "request.json",
+                "expected_base": base,
+            },
+            "authority": {
+                "selector_path": "agent-workflow.json",
+                "authority_epoch": AUTHORITY["authority_epoch"],
+                "authority_profile": AUTHORITY["authority_profile"],
+                "write_phase": AUTHORITY["write_phase"],
+                "runner_protocol": AUTHORITY["runner_protocol"],
+            },
+            "scope": {
+                "read_paths": [],
+                "input_paths": ["source.txt"],
+                "output_paths": [],
+                "substantive_paths": ["source.txt"],
+            },
+            "actions": [
+                {"id": "validate-project", "timeout_seconds": 30, "reports": []},
+            ],
+            # No "commit" key — must be rejected.
+        }
+        path = self.fixture.root / "request.json"
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-SCHEMA-TYPE")
+        self.assertIn("commit must be an object", cm.exception.message)
+
 
 if __name__ == "__main__":
     unittest.main()
