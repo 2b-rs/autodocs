@@ -1,4 +1,18 @@
 #!/usr/bin/env bash
+# SUPERSEDED — do not use for new work. Kept only for historical reference;
+# see docs/pipeline/worker-clone-provisioning.md and
+# _src/tools/provision_worker_clone.sh for the replacement.
+#
+# This script's `git worktree` checkout shares object store, refs, HEAD *and
+# index* with the canonical repo at ~/devel/autodocs. The header below used
+# to advertise that sharing as a benefit ("instantly durable in the shared
+# object store") — that coupling is exactly what let a commit made in the
+# /tmp worktree silently move the canonical tree's HEAD while its working
+# tree stayed put, producing a false "task never started" reading and a
+# since-withdrawn accusation against a grunt session. See
+# docs/dossiers/re-intake-worker-isolation-and-checkin.md, findings G and J,
+# and Feature 0041 / Task 0041-01.
+#
 # Provision / re-heal the disposable /tmp working checkout of this repo.
 #
 # The canonical repo lives durably in ~/devel/autodocs. Sandboxed agents can
