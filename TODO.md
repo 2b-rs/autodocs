@@ -111,7 +111,8 @@ HOW TO USE:
   - **Definition of Done:** Committed; a grep for the old requirement across the authority documents returns nothing that still binds; existing `REF` records stay valid and are not rewritten.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the change relaxes a gate rather than granting capability, and its consistency is mechanically checkable by the grep named in the Definition of Done. Re-examined at `0041-05`.
 
-- [ ] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0041-02 Give the runner tooling a push path with an item-scoped guard.
+- [p] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0041-02 Give the runner tooling a push path with an item-scoped guard.
+  - **Claim (2026-08-18):** `TODO-zed-0041-04-20260818T125428Z-be7929d33e40.md`; owner_token `agent:zed:0041-04:20260818T125428Z-be7929d33e40`; canonical branch `0041-04`.
   - **Requirements covered:** `RQ-WT-03`, `RQ-WT-06`; resolves the open point of section 5 of the requirements baseline.
   - **Context:** Publication by push is the only way work leaves the clone, and no tool implements it today. The guard needs the assigned item ID; whether `perplexity-cpu-loop.js` already carries that value is to be determined during implementation, and if it does not, it becomes a new provisioner input.
   - **Acceptance criteria:** The host side can push the worker branch to the canonical repository. A push whose target branch does not match the assigned item ID is refused with a clear message and a non-zero exit. The refusal is covered by a test or a documented reproducible check. No force-push to a protected ref is possible through this path.
