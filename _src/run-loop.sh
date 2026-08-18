@@ -394,12 +394,51 @@ RUNNER_TMP_DIR="$RUNNER_TMP_BASE/run-loop-$$"
 PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"
 PLAYWRIGHT_VERSION="1.62.1"
 MINIMUM_NODE_MAJOR=20
+RUNNER_TMP_DIR_CREATED=false
 
-mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
-  "$PYTHON_PACKAGE_DIR" "$PIP_CACHE_DIR" "$RUNNER_TMP_BASE" \
-  "$(dirname "$CURRENT_LOG_LINK")"
-mkdir -p "$RUNNER_TMP_DIR"
-chmod 700 "$RUNNER_TMP_DIR"
+cleanup_runner_state() {
+  local original_status="${1:-0}"
+  local cleanup_status=0
+
+  trap - EXIT INT TERM
+
+  if declare -F resume_applescript >/dev/null 2>&1; then
+    if ! resume_applescript; then
+      printf 'error: failed to resume suspended AppleScript processes\n' >&2
+      cleanup_status=1
+    fi
+  fi
+
+  if [[ "$RUNNER_TMP_DIR_CREATED" == true ]]; then
+    if ! rm -rf "$RUNNER_TMP_DIR"; then
+      printf 'error: failed to remove runner temporary directory: %s\n' "$RUNNER_TMP_DIR" >&2
+      cleanup_status=1
+    fi
+  fi
+
+  if (( original_status != 0 )); then
+    exit "$original_status"
+  fi
+  exit "$cleanup_status"
+}
+
+if ! mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
+    "$PYTHON_PACKAGE_DIR" "$PIP_CACHE_DIR" "$RUNNER_TMP_BASE" \
+    "$(dirname "$CURRENT_LOG_LINK")"; then
+  printf 'error: failed to create runner output directories\n' >&2
+  exit 1
+fi
+if ! mkdir -p "$RUNNER_TMP_DIR"; then
+  printf 'error: failed to create runner temporary directory: %s\n' "$RUNNER_TMP_DIR" >&2
+  exit 1
+fi
+RUNNER_TMP_DIR_CREATED=true
+trap 'cleanup_runner_state "$?"' EXIT
+trap 'exit 130' INT TERM
+if ! chmod 700 "$RUNNER_TMP_DIR"; then
+  printf 'error: failed to secure runner temporary directory: %s\n' "$RUNNER_TMP_DIR" >&2
+  exit 1
+fi
 
 prepend_tool_path() {
   local directory="$1"
@@ -489,13 +528,6 @@ send_completion_notification() {
       "$timestamp" "$NOTIFIER_COMMAND" "$status" >> "$log_path"
   fi
 }
-
-cleanup_runner_state() {
-  resume_applescript
-  rm -rf "$RUNNER_TMP_DIR"
-}
-
-trap 'cleanup_runner_state' EXIT INT TERM
 
 write_sandbox_profile() {
   cat > "$SANDBOX_PROFILE_PATH" <<EOF
@@ -702,7 +734,9 @@ install_homebrew() {
     return 1
   fi
   if ! curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$installer"; then
-    rm -f "$installer"
+    if ! rm -f "$installer"; then
+      printf 'error: failed to remove incomplete Homebrew installer: %s\n' "$installer" >&2
+    fi
     return 1
   fi
 
@@ -717,7 +751,10 @@ install_homebrew() {
   else
     install_status=$?
   fi
-  rm -f "$installer"
+  if ! rm -f "$installer"; then
+    printf 'error: failed to remove Homebrew installer: %s\n' "$installer" >&2
+    install_status=1
+  fi
 
   prepend_tool_path "/usr/local/bin"
   prepend_tool_path "/opt/homebrew/bin"
@@ -785,24 +822,34 @@ process.exit(Number.isFinite(actual) && actual >= minimum ? 0 : 1);
 brew_install_or_upgrade() {
   local formula="$1"
   if brew list --versions "$formula" >/dev/null 2>&1; then
-    brew upgrade "$formula"
-  else
-    brew install "$formula"
+    if ! brew upgrade "$formula"; then
+      return 1
+    fi
+  elif ! brew install "$formula"; then
+    return 1
   fi
+  return 0
 }
 
 install_python_package() {
   local package="$1"
-  python3 -m pip install --upgrade --target "$PYTHON_PACKAGE_DIR" "$package"
+  if ! python3 -m pip install --upgrade --target "$PYTHON_PACKAGE_DIR" "$package"; then
+    return 1
+  fi
+  return 0
 }
 
 initialize_github_key() {
   local key_directory
   key_directory="$(dirname "$GITHUB_SSH_KEY_PATH")"
-  mkdir -p "$key_directory" || return 1
+  if ! mkdir -p "$key_directory"; then
+    return 1
+  fi
 
   if [[ -f "$GITHUB_SSH_KEY_PATH" ]]; then
-    chmod 600 "$GITHUB_SSH_KEY_PATH" || return 1
+    if ! chmod 600 "$GITHUB_SSH_KEY_PATH"; then
+      return 1
+    fi
   else
     ssh-keygen -q -t ed25519 -N '' -C 'autodocs-runner' \
       -f "$GITHUB_SSH_KEY_PATH" || return 1
@@ -811,8 +858,12 @@ initialize_github_key() {
     ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" \
       > "$GITHUB_SSH_KEY_PATH.pub" || return 1
   fi
-  chmod 644 "$GITHUB_SSH_KEY_PATH.pub" || return 1
-  ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" >/dev/null 2>&1 || return 1
+  if ! chmod 644 "$GITHUB_SSH_KEY_PATH.pub"; then
+    return 1
+  fi
+  if ! ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" >/dev/null 2>&1; then
+    return 1
+  fi
 
   printf '  Register this public key with the required GitHub account or repository:\n'
   printf '    %s\n' "$GITHUB_SSH_KEY_PATH.pub"
@@ -840,11 +891,17 @@ fs.accessSync(webkit.executablePath(), fs.constants.R_OK | fs.constants.X_OK);
 }
 
 install_playwright_module() {
-  npm install --prefix "$NPM_INSTALL_PREFIX" "playwright@$PLAYWRIGHT_VERSION"
+  if ! npm install --prefix "$NPM_INSTALL_PREFIX" "playwright@$PLAYWRIGHT_VERSION"; then
+    return 1
+  fi
+  return 0
 }
 
 install_playwright_webkit() {
-  "$NPM_INSTALL_PREFIX/node_modules/.bin/playwright" install webkit
+  if ! "$NPM_INSTALL_PREFIX/node_modules/.bin/playwright" install webkit; then
+    return 1
+  fi
+  return 0
 }
 
 verify_initialized_dependencies() {
@@ -980,7 +1037,10 @@ if [[ "$INIT_REQUESTED" == true ]]; then
 fi
 
 if [[ "$SANDBOX_ENABLED" == true ]]; then
-  write_sandbox_profile
+  if ! write_sandbox_profile; then
+    printf 'error: failed to write sandbox profile: %s\n' "$SANDBOX_PROFILE_PATH" >&2
+    exit 1
+  fi
 fi
 
 if [[ "$NO_SELF_TEST" == true ]]; then
@@ -1067,7 +1127,10 @@ record() {
   local detail_file="$OUTPUT_DIR/run-sandbox-selftest-${name}.err"
   if "$@" >/dev/null 2>"$detail_file"; then
     append_selftest_log "$name" "ok"
-    rm -f "$detail_file"
+    if ! rm -f "$detail_file"; then
+      append_selftest_log "${name}_detail_cleanup" \
+        "fail (could not remove $detail_file)"
+    fi
   else
     local detail
     if [[ "$name" == "playwright_webkit_page_probe" ]]; then
@@ -1081,9 +1144,15 @@ record() {
       append_selftest_log "$name" "fail"
     fi
     if [[ "$name" == "playwright_webkit_page_probe" ]]; then
-      cp "$detail_file" "$OUTPUT_DIR/run-sandbox-selftest-${name}-full.log"
+      if ! cp "$detail_file" "$OUTPUT_DIR/run-sandbox-selftest-${name}-full.log"; then
+        append_selftest_log "${name}_detail_copy" \
+          "fail (could not retain full probe detail)"
+      fi
     fi
-    rm -f "$detail_file"
+    if ! rm -f "$detail_file"; then
+      append_selftest_log "${name}_detail_cleanup" \
+        "fail (could not remove $detail_file)"
+    fi
   fi
 }
 
@@ -1105,8 +1174,12 @@ printf '║ Environment self-test                        ║\n'
 printf '╚══════════════════════════════════════════════╝\n'
 
 TMP_PROBE="${TMPDIR%/}/run-loop-selftest.$$"
-record tmp_write_probe "Temp write access" touch "$TMP_PROBE"
-rm -f "$TMP_PROBE"
+if ! record tmp_write_probe "Temp write access" touch "$TMP_PROBE"; then
+  append_selftest_log tmp_write_probe_wrapper 'fail (probe wrapper failed)'
+fi
+if ! rm -f "$TMP_PROBE"; then
+  append_selftest_log tmp_write_probe_cleanup "fail (could not remove $TMP_PROBE)"
+fi
 
 record python_tempfile_probe "Python tempfile" python3 -c 'import os, tempfile; fd, path = tempfile.mkstemp(prefix="run-loop-selftest-"); os.close(fd); os.unlink(path)'
 record python_lxml_probe "Python import lxml" python3 -c '
@@ -1136,9 +1209,14 @@ OUTPUT_PROBE="$OUTPUT_DIR/run-loop-selftest.$$"
 OUTPUT_LINK="$OUTPUT_DIR/run-loop-selftest-link.$$"
 record output_write_probe "Output write" sh -c 'printf selftest > "$1"' sh "$OUTPUT_PROBE"
 record output_read_probe "Output read" test -s "$OUTPUT_PROBE"
-record output_symlink_probe "Output symlink create" ln -sf "$OUTPUT_PROBE" "$OUTPUT_LINK"
+if ! record output_symlink_probe "Output symlink create" ln -sf "$OUTPUT_PROBE" "$OUTPUT_LINK"; then
+  append_selftest_log output_symlink_probe_wrapper 'fail (probe wrapper failed)'
+fi
 record output_symlink_target_probe "Output symlink resolve" test "$(readlink "$OUTPUT_LINK" 2>/dev/null || true)" = "$OUTPUT_PROBE"
-rm -f "$OUTPUT_LINK" "$OUTPUT_PROBE"
+if ! rm -f "$OUTPUT_LINK" "$OUTPUT_PROBE"; then
+  append_selftest_log output_probe_cleanup \
+    "fail (could not remove $OUTPUT_LINK and $OUTPUT_PROBE)"
+fi
 
 record npm_cache_path_probe "npm cache path" \
   sh -c 'test "$(npm config get cache)" = "$NPM_CONFIG_CACHE"'
@@ -1187,7 +1265,10 @@ const { pathToFileURL } = require("node:url");
   await browser.close();
 })().catch(error => { console.error(error.stack || error); process.exit(1); });
 '
-rm -f "$WEBKIT_FILE_PROBE"
+if ! rm -f "$WEBKIT_FILE_PROBE"; then
+  append_selftest_log playwright_webkit_page_probe_cleanup \
+    "fail (could not remove $WEBKIT_FILE_PROBE)"
+fi
 unset WEBKIT_FILE_PROBE
 
 # zsh reserves `status`; ensure generated run scripts are checked for this
@@ -1204,35 +1285,69 @@ if (( SELFTEST_FAILURES > 0 )); then
 fi
 exit 0
 EOF
-chmod u+x "$SELFTEST_SCRIPT"
-: > "$SELFTEST_LOG"
-set +e
-if [[ "$SANDBOX_ENABLED" == true ]]; then
-  /usr/bin/sandbox-exec -f "$SANDBOX_PROFILE_PATH" "$SELFTEST_SCRIPT"
-else
-  "$SELFTEST_SCRIPT"
+if ! chmod u+x "$SELFTEST_SCRIPT"; then
+  printf 'error: failed to make self-test executable: %s\n' "$SELFTEST_SCRIPT" >&2
+  exit 1
 fi
-SELFTEST_STATUS=$?
-set -e
-rm -f "$SELFTEST_SCRIPT"
+if ! : > "$SELFTEST_LOG"; then
+  printf 'error: failed to initialize self-test log: %s\n' "$SELFTEST_LOG" >&2
+  exit 1
+fi
+if [[ "$SANDBOX_ENABLED" == true ]]; then
+  if /usr/bin/sandbox-exec -f "$SANDBOX_PROFILE_PATH" "$SELFTEST_SCRIPT"; then
+    SELFTEST_PROCESS_STATUS=0
+  else
+    SELFTEST_PROCESS_STATUS=$?
+  fi
+elif "$SELFTEST_SCRIPT"; then
+  SELFTEST_PROCESS_STATUS=0
+else
+  SELFTEST_PROCESS_STATUS=$?
+fi
+if grep -q '=fail' "$SELFTEST_LOG"; then
+  SELFTEST_LOG_STATUS=1
+elif grep -q '=' "$SELFTEST_LOG"; then
+  SELFTEST_LOG_STATUS=0
+else
+  SELFTEST_LOG_STATUS=1
+  printf 'error: self-test log is unreadable or contains no probe results: %s\n' \
+    "$SELFTEST_LOG" >&2
+fi
+if rm -f "$SELFTEST_SCRIPT"; then
+  SELFTEST_CLEANUP_STATUS=0
+else
+  SELFTEST_CLEANUP_STATUS=1
+  printf 'error: failed to remove self-test script: %s\n' "$SELFTEST_SCRIPT" >&2
+fi
+if (( SELFTEST_PROCESS_STATUS != 0 || SELFTEST_LOG_STATUS != 0 || SELFTEST_CLEANUP_STATUS != 0 )); then
+  SELFTEST_STATUS=1
+else
+  SELFTEST_STATUS=0
+fi
 echo
 printf '  Log file: %s\n' "$SELFTEST_LOG"
-if (( SELFTEST_STATUS != 0 )) || grep -q '=fail' "$SELFTEST_LOG"; then
-  SELFTEST_STATUS=1
-  printf '  Result: FAILED\n' >&2
-else
-  printf '  Result: PASSED\n'
-fi
-
-if [[ "$SELF_TEST_ONLY" == true ]]; then
+if (( SELFTEST_STATUS != 0 )); then
+  printf '  Result: FAILED (process=%s log=%s cleanup=%s)\n' \
+    "$SELFTEST_PROCESS_STATUS" "$SELFTEST_LOG_STATUS" "$SELFTEST_CLEANUP_STATUS" >&2
   exit "$SELFTEST_STATUS"
 fi
+printf '  Result: PASSED\n'
+
+if [[ "$SELF_TEST_ONLY" == true ]]; then
+  exit 0
+fi
 fi
 
-save_counter
+if ! save_counter; then
+  printf 'error: failed to save runner counter: %s\n' "$STATE_FILE" >&2
+  exit 1
+fi
 
 if [[ ! -f "$GITHUB_ID_FILE" ]]; then
-  printf '%s\n' 'REPLACE_WITH_GITHUB_USERNAME' > "$GITHUB_ID_FILE"
+  if ! printf '%s\n' 'REPLACE_WITH_GITHUB_USERNAME' > "$GITHUB_ID_FILE"; then
+    printf 'error: failed to initialize GitHub user file: %s\n' "$GITHUB_ID_FILE" >&2
+    exit 1
+  fi
 fi
 
 echo "Watching $RUN_SCRIPT_PATH"
@@ -1267,9 +1382,15 @@ while true; do
     continue
   fi
 
-  chmod u+x "$RUN_SCRIPT_PATH"
+  if ! chmod u+x "$RUN_SCRIPT_PATH"; then
+    printf 'error: failed to make watched script executable: %s\n' "$RUN_SCRIPT_PATH" >&2
+    exit 1
+  fi
   if [[ "$SANDBOX_ENABLED" == true ]]; then
-    write_sandbox_profile
+    if ! write_sandbox_profile; then
+      printf 'error: failed to refresh sandbox profile: %s\n' "$SANDBOX_PROFILE_PATH" >&2
+      exit 1
+    fi
   fi
 
   if [[ -f "$GITHUB_ID_FILE" ]]; then
@@ -1289,9 +1410,18 @@ while true; do
   log_path="$ARCHIVE_DIR/${archive_base}.log"
   script_path="$ARCHIVE_DIR/${archive_base}.sh"
 
-  : > "$log_path"
-  ln -sf "$log_path" "$CURRENT_LOG_LINK"
-  ln -sf "$RUN_SCRIPT_PATH" "$CURRENT_SCRIPT_LINK"
+  if ! : > "$log_path"; then
+    printf 'error: failed to initialize run log: %s\n' "$log_path" >&2
+    exit 1
+  fi
+  if ! ln -sf "$log_path" "$CURRENT_LOG_LINK"; then
+    printf 'error: failed to publish current run log link: %s\n' "$CURRENT_LOG_LINK" >&2
+    exit 1
+  fi
+  if ! ln -sf "$RUN_SCRIPT_PATH" "$CURRENT_SCRIPT_LINK"; then
+    printf 'error: failed to publish current script link: %s\n' "$CURRENT_SCRIPT_LINK" >&2
+    exit 1
+  fi
 
   echo
   echo "[$started_at_human] starting $RUN_SCRIPT_NAME (#$NUM)"
@@ -1306,21 +1436,34 @@ while true; do
   echo "[$started_at_human] npm cache: $NPM_CONFIG_CACHE"
 
   if kill_applescript_if_requested; then
-    status=0
-    printf '%s\n' "Sentinel found in $RUN_SCRIPT_NAME; killed the AppleScript without executing the run script." | tee -a "$log_path"
+    if printf '%s\n' "Sentinel found in $RUN_SCRIPT_NAME; killed the AppleScript without executing the run script." | tee -a "$log_path"; then
+      status=0
+    else
+      status=1
+      printf 'error: failed to retain sentinel outcome in run log: %s\n' "$log_path" >&2
+    fi
   else
     suspend_applescript
     set +e
     if [[ "$SANDBOX_ENABLED" == true ]]; then
       /usr/bin/perl -e 'alarm shift; exec @ARGV' "$GUARD_SECONDS" \
         /usr/bin/sandbox-exec -f "$SANDBOX_PROFILE_PATH" "$RUN_SCRIPT_PATH" 2>&1 | tee -a "$log_path"
-      status=${PIPESTATUS[0]}
+      pipeline_status=("${PIPESTATUS[@]}")
     else
       /usr/bin/perl -e 'alarm shift; exec @ARGV' "$GUARD_SECONDS" \
         "$RUN_SCRIPT_PATH" 2>&1 | tee -a "$log_path"
-      status=${PIPESTATUS[0]}
+      pipeline_status=("${PIPESTATUS[@]}")
     fi
     set -e
+    status="${pipeline_status[0]}"
+    tee_status="${pipeline_status[1]}"
+    if (( tee_status != 0 )); then
+      printf 'error: run log writer failed with exit code %s: %s\n' \
+        "$tee_status" "$log_path" >&2
+      if (( status == 0 )); then
+        status="$tee_status"
+      fi
+    fi
     resume_applescript
   fi
 
@@ -1332,14 +1475,24 @@ while true; do
   send_completion_notification "$completion_message" "$finished_at_human" "$log_path"
 
   if [[ "$CYCLIC" == true ]]; then
-    cp -p "$RUN_SCRIPT_PATH" "$script_path"
-  else
-    mv "$RUN_SCRIPT_PATH" "$script_path"
+    if ! cp -p "$RUN_SCRIPT_PATH" "$script_path"; then
+      printf 'error: failed to archive cyclic run script: %s\n' "$script_path" >&2
+      exit 1
+    fi
+  elif ! mv "$RUN_SCRIPT_PATH" "$script_path"; then
+    printf 'error: failed to archive consumed run script: %s\n' "$script_path" >&2
+    exit 1
   fi
-  ln -sf "$script_path" "$CURRENT_SCRIPT_LINK"
+  if ! ln -sf "$script_path" "$CURRENT_SCRIPT_LINK"; then
+    printf 'error: failed to publish archived script link: %s\n' "$CURRENT_SCRIPT_LINK" >&2
+    exit 1
+  fi
 
   NUM=$((NUM + 1))
-  save_counter
+  if ! save_counter; then
+    printf 'error: failed to save runner counter: %s\n' "$STATE_FILE" >&2
+    exit 1
+  fi
 
   if [[ "$ONCE" == true ]]; then
     exit "$status"
