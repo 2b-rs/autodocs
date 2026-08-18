@@ -10,6 +10,7 @@ implementation is committed.
 - **Integrator/facilitator:** `agent:zed:0040-09:20260818T180401Z-760531d011eb`
 - **Feature input tip:** `86e285435e305a1e5c98fbb7aa1634bb3d9d8563`
 - **Task start/claim commit:** `5d5388a53`
+- **Task substantive REF:** `201017db524a1740919d02bbfcde217d46ee589c`
 - **Independent aggregate audit:** session `dba7a212-14b4-4ffc-a0fe-c52f416d6b4a`
 - **Audit result before remediation:** FAIL for aggregate acceptance readiness;
   PASS to continue bounded remediation and package preparation.
@@ -47,7 +48,7 @@ support only and remain separate from the ECU assessment in Features
 | `0040-06` | `[w]` | `7437905a6a6c0b7987ab6870f19cc5fc45ff774b` | no | Unbounded reference campaign rejected; the durable terminology and no-capability-claim rule are retained where they carry weight. |
 | `0040-07` | `[w]` | `7437905a6a6c0b7987ab6870f19cc5fc45ff774b` | no | Effectiveness proof explicitly deferred by customer; `DEC-0040-006` binds the deterministic 20-Task measurement/evidence contract to still-reserved `0039-01`. |
 | `0040-08` | `[x]` | `7d0c78f35522739e0b1550efd3ed5eb13fc431a1` | no | Pilot disposition `effective-for-declared-0038-03-scope-with-recorded-residuals`; six residuals retained. |
-| `0040-09` | `[p]` | assigned after substantive commit | **mandatory** | This package; current user review pending. |
+| `0040-09` | `[x]` | `201017db524a1740919d02bbfcde217d46ee589c` | **mandatory** | Implementation complete; current user aggregate review pending. |
 
 All listed commit objects were resolved in Git. The completed Task REFs are
 ancestors of the integrated Feature input tip through the branch sequence.
