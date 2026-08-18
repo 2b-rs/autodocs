@@ -1,8 +1,9 @@
 # Worker Clone Provisioning
 
-**Status:** Normative for Feature `0041` / Task `0041-01`. Replaces the
-shared-checkout provisioner `_src/tools/provision_tmp_worktree.sh` (now
-SUPERSEDED, kept only for historical reference) with a clone-based one.
+**Status:** Normative for Feature `0041` / Tasks `0041-01` and `0041-04`.
+Replaces the shared-checkout provisioner
+`_src/tools/provision_tmp_worktree.sh` (now SUPERSEDED, kept only for
+historical reference) with clone-based provisioning and guarded publication.
 Requirements: `RQ-WT-01` … `RQ-WT-05` in
 [`../dossiers/re-intake-worker-isolation-and-checkin.md`](../dossiers/re-intake-worker-isolation-and-checkin.md).
 Branch naming and parent-branch derivation follow
@@ -102,8 +103,54 @@ does carry unpushed local work, that falls under the refusal above instead.
 
 ## Publication
 
-This script only provisions the checkout; it does not push. Publication of
-worker results by `git push`, and the item-scoped push guard that refuses a
-push whose target branch does not match the assigned item ID, are the
-subject of Task `0041-04` (`RQ-WT-03`, `RQ-WT-06`) and are not yet
-implemented as of this document.
+Provisioning and publication are separate privileged-host operations. The
+sandboxed worker receives the already-provisioned clone and edits files there,
+but **never runs Git**. After the worker phase has produced the required
+self-describing commit, the privileged host publishes it with
+[`_src/tools/publish_worker_clone.sh`](../../_src/tools/publish_worker_clone.sh).
+
+Exact operator sequence for a Task or Subtask:
+
+```sh
+AUTODOCS_DEVEL="$HOME/devel/autodocs" \
+AUTODOCS_WORKER_TARGET="/private/tmp/autodocs-0041-04" \
+  _src/tools/provision_worker_clone.sh 0041-04
+
+# Hand the provisioned path to the sandboxed worker. The worker edits files;
+# privileged-host check-in handling creates the commit. The worker runs no Git.
+
+AUTODOCS_DEVEL="$HOME/devel/autodocs" \
+  _src/tools/publish_worker_clone.sh \
+  0041-04 /private/tmp/autodocs-0041-04 0041-04
+```
+
+The third publication argument is optional and defaults to the assigned item
+ID. Supplying it is recommended for host automation because it states the push
+destination explicitly; any value other than the assigned item ID is refused.
+The command accepts only Task (`XXXX-YY`) and Subtask (`XXXX-YY.ZZ`) IDs. It
+never publishes `main` or a bare Feature (`XXXX`) branch.
+
+Before pushing, the publisher verifies all of these conditions and exits
+non-zero with a refusal message if any fails:
+
+- the checkout has its own real `.git` directory and common directory, not a
+  symlink, linked worktree, or alternate/shared object store;
+- `HEAD` is attached and its source branch is exactly the assigned item ID;
+- the explicit/default target branch is exactly that same item ID and is not a
+  protected ref;
+- the worktree and index are clean, including untracked files;
+- `origin` has exactly one fetch URL and one push URL, both resolving to the
+  canonical local repository named by `AUTODOCS_DEVEL`;
+- the canonical item branch is an ancestor of the worker `HEAD`, when it
+  already exists.
+
+The final command uses a fully qualified source/destination refspec and a
+normal `git push`; it never requests force and never retries a rejected push
+with force semantics. Git's receive-side fast-forward check remains the final
+race-safe guard after the explicit preflight.
+
+This implements the standalone privileged-host publication boundary only.
+Wiring it into `_src/perplexity-cpu-loop.js`, `_src/run-loop.sh`, or other
+active host loops is deliberately deferred: those paths are concurrently
+owned and Task `0041-04` does not claim integration into them. Task `0041-05`
+performs the end-to-end integration examination.
