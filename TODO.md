@@ -144,7 +144,8 @@ HOW TO USE:
 
 ### Campaign A — Roles and briefings
 
-- [ ] **0040-10** Repair the live automation-safety blocker before further process work begins.
+- [p] **0040-10** Repair the live automation-safety blocker before further process work begins.
+  - **Claim (2026-08-18):** Project-managed implementation via `TODO-zed-0040-10-20260818T141307Z-894c3cd8b63b.md`; owner_token `agent:zed:0040-10:20260818T141307Z-894c3cd8b63b`; branch `0040-10`; isolated worktree `.worktrees/0040-10`.
   - **Origin:** trilateral agreement, round 5, on project management's insistence — its K.-o. criterion A2. Architect and QA manager concurred.
   - **Context:** Since 2026-08-17 the automation-safety gate reports ten unresolved critical findings plus three stale policy entries, all in `_src/run-loop.sh`, and `_src/validate.py` treats critical findings as errors. `validate-project` is the mandatory second action of every `close-task-v1` transaction, so the closure path of **every** Task is affected. This is the damage of record from `T1`–`T5`, and no other Task in this Feature repairs it — `0040-08` explicitly does not re-open `0038-03`.
   - **Acceptance criteria:** Each of the ten findings is dispositioned individually: genuinely unchecked mutating calls are fixed, false positives are recorded as such with reasoning, and the three stale policy entries are refreshed against current `_src/run-loop.sh`. Where the finding is an artifact of scope rather than of the code — the privileged host bootstrapper judged by the yardstick built for sandbox-internal automation — the disposition says so and the scope decision is recorded per `TK-2`. The evidence of a full pass is retained.
@@ -169,7 +170,7 @@ HOW TO USE:
 
 ### Campaign B — Decision records and traceability
 
-- [ ] **0040-03** Define the mandatory decision record — time, deciding identity, technical justification — and the criterion that determines which decisions require one.
+- [ ] **0040-03** PREREQ: 0040-03:0040-01, 0040-03:0040-10 Define the mandatory decision record — time, deciding identity, technical justification — and the criterion that determines which decisions require one.
   - **Requirements covered:** `RQ-DEC-01`, `RQ-DEC-02`, `RQ-DEC-03`, `RQ-DEC-04`, `RQ-DEC-05`.
   - **Context:** This is the direct answer to `T6`. The scoping decision behind `0038-03` is nowhere recorded, so it could neither be reviewed nor found afterwards. The **blast-radius criterion** of `RQ-DEC-05` is the load-bearing part: difficulty and unfamiliarity are explicitly *not* triggers — reach is. A decision that can block other work units is always recordable, whether or not it looked hard at the time.
   - **Acceptance criteria:** A normative `docs/pipeline/decision-record.md` defines a record with stable ID, ISO-8601 timestamp including timezone, deciding identity as a session/role identity rather than a display name, subject, decision, technical justification, considered alternatives, and consequences. Records are append-only; corrections add rather than replace, consistent with `task-acceptance.md`. The document states which decisions are mandatory, with the blast-radius criterion normative and at least three worked positive and two negative examples. The provisional records `DEC-0040-001` … `DEC-0040-004` are migrated into the final format, or the deviation is explicitly recorded. Where a decision is a bounded authority waiver, the record must carry scope and compensating control, as `DEC-0040-001` does.
@@ -219,7 +220,7 @@ HOW TO USE:
 
 ### Campaign D — Integration
 
-- [ ] **0040-09** PREREQ: 0040-09:0040-01, 0040-09:0040-02, 0040-09:0040-03, 0040-09:0040-04, 0040-09:0040-05, 0040-09:0040-06, 0040-09:0040-07, 0040-09:0040-08 Integrate the whole Feature, review it as a coherent process change, and record the integration verdict.
+- [ ] **0040-09** PREREQ: 0040-09:0040-10, 0040-09:0040-01, 0040-09:0040-02, 0040-09:0040-03, 0040-09:0040-04, 0040-09:0040-05, 0040-09:0040-06, 0040-09:0040-07, 0040-09:0040-08 Integrate the whole Feature, review it as a coherent process change, and record the integration verdict.
   - **Integration review: mandatory.** **Rationale (architect):** this is the Feature's mandatory integrating task and its review floor, as required by the `TODO.md` header. It is the only point at which the role model, the briefings, the decision record, the traceability tool, the amended breakdown process, the standard references and the effectiveness proof are examined as **one** process rather than eight documents — and that is exactly the level at which the `T1` defect was invisible.
   - **Acceptance criteria:** The integrator merges the required work, verifies that no authority document contradicts another, that every requirement ID from the baseline has a disposition (implemented, deliberately deferred with reason, or rejected with reason), and that the bounded authority waiver `DEC-0040-001` and its compensating control are visible and were honoured — specifically, that every acceptance this Feature's owner granted to its own work is marked as such and names `DEC-0040-001`. It confirms that no Task introduced a new blocking gate without a recorded `RQ-DEC-05` decision. It records findings and `Acceptance: ✓` at this checkpoint and at `0040-05`.
   - **Definition of Done:** Committed with real `REF`; both mandatory checkpoints carry a current passing review or an explicit `[u]` integration verdict; the predecessor claim files are reconciled and removed; the Feature moves to `DONE.md` only when `0040:0039-01` is also satisfied.
