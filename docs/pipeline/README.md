@@ -10,7 +10,9 @@ beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
 
 ## Inhalt
 
-- [`roles.md`](./roles.md) — alle Rollen (Mensch, KI, Werkzeug/Validator)
+- [`roles.md`](./roles.md) — Produktdomänenrollen (Mensch, KI, Werkzeug/Validator)
+- [`process-roles.md`](./process-roles.md) — Prozessrollen, Fähigkeitsklassen-Mapping und Trennungskerne TK-1/TK-2
+- [`decision-record.md`](./decision-record.md) — normativer Markdown-Vertrag `decision-record@v1`, Pflichttrigger, Waiver und append-only Korrekturen
 - [`processes.md`](./processes.md) — die Kampagnen-Prozessphasen (0–6)
 - [`campaigns.md`](./campaigns.md) — Kampagnentypen, die im Repo tatsächlich vorkommen
 - [`actions.md`](./actions.md) — alle Einzelaktionen (ingest review, ingest

@@ -141,6 +141,16 @@ auf TK-1 allein verlässt, wiederholt den Vorfall.
 > Ist eine zweite Instanz verfügbar, wird sie beteiligt; ist keine verfügbar,
 > vermerkt der Datensatz das offen.
 
+Der Datensatz MUSS dem normativen Vertrag
+[`decision-record@v1`](decision-record.md) entsprechen. Dort sind die
+Pflichttrigger, darunter die Wirkung auf fremde Arbeitseinheiten und Tore,
+Autoritätszuschnitt/Waiver, materiell verschiedene Architekturen oder
+repository-weites Verhalten sowie irreversible, externe, Sicherheits-,
+Credential-, Release- und materielle Risikoentscheidungen, abschließend
+definiert. Abnahmeprotokolle und Integrationsverdikte bleiben spezialisierte
+Formate; eine darin vorausgesetzte TK-2-Entscheidung erhält einen separaten
+`DEC-…`-Datensatz.
+
 Schlüssel ist die **Reichweite**, nicht die Knotenmarkierung. Ein Task ohne
 `Integration review: mandatory` kann trotzdem das ganze Repository blockieren —
 `0038-03` trug keinen Knoten und tat genau das.
@@ -153,9 +163,24 @@ gewöhnlichen Redaktionsmangel.
 | Trennung | Regelfall | Zusammenlegung |
 |---|---|---|
 | RE ≠ Architekt | getrennt empfohlen | erlaubt, mit Datensatz. Praktisch üblich, risikoarm |
-| Architekt ≠ Implementierer | getrennt | erlaubt, mit Datensatz — **außer** TK-2 greift |
+| Architekt ≠ Implementierer | getrennt | erlaubt mit `decision-record@v1`, **nur wenn** die zugrundeliegende Sachentscheidung nach der unten definierten triggerbereinigten Prüfung keinen Trennungstrigger trägt |
 | QA ≠ Implementierer desselben Gegenstands | getrennt | **nie** für denselben Gegenstand |
 | Integrator ≠ Implementierer | siehe TK-1 | nur über den Waiver-Vertrag |
+
+Für die Zeile **Architekt ≠ Implementierer** wird die Zulässigkeit
+nicht-selbstreferenziell bestimmt: Zuerst wird die zugrundeliegende fachliche
+Zuschnitts-, Architektur- oder Umsetzungsentscheidung so bewertet, als wären
+Architekt und Implementierer bereits getrennt; der durch die beabsichtigte
+Rollenzusammenlegung selbst entstehende Trigger
+`authority-tailoring-or-waiver` bleibt bei genau dieser Vorprüfung außer
+Betracht. Trifft die Sachentscheidung dabei `cross-item-blast-radius` oder einen
+der Trennungstrigger `material-architecture-or-repository-behavior`,
+`irreversible-or-external-effect`, `security-or-credential-boundary`,
+`public-release` oder `material-risk-decision`, ist die Zusammenlegung nicht
+zulässig. Trifft keiner davon zu, darf sie stattfinden, muss aber wegen des
+anschließenden Autoritäts-Tailorings weiterhin in einem `decision-record@v1`
+festgehalten werden. Der Datensatz macht die Zusammenlegung nachvollziehbar; er
+hebt keinen sachlich ausgelösten Trennungsgrund auf.
 
 Tailoring ohne Datensatz ist ein Prozessverstoß: es löscht die Spur, an der
 später erkennbar wäre, wessen Urteil wie unabhängig war.
