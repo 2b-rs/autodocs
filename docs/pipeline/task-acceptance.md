@@ -4,7 +4,7 @@
 
 ## Purpose and boundary
 
-Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a real `REF` while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
+Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable and successful implementer validation while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. Implementation completion itself has no `REF`; the review commit becomes the Review REF only when an acceptance record is created. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
 
 Task acceptance means that the exact reviewed work-product baseline satisfies the Task contract under the recorded review scope. It does **not** grant or imply product approval, architecture approval, release authorization, safety acceptance, cybersecurity/privacy residual-risk acceptance, external-service authorization, process-baseline approval, or an Automotive SPICE capability rating. The reviewer verifies that any separately required decision exists and is correctly bound; the reviewer does not manufacture that authority.
 
@@ -50,7 +50,9 @@ The minimum legacy rendering is:
     - **Review REF:** `<full reachable 40-hex commit>`
 ```
 
-A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process.
+A `Review REF` is mandatory exactly when an `Acceptance: ✓` record is created at an architect-declared integration checkpoint; unflagged `[x]`/`[w]` work has no acceptance record and needs no `REF`. The field binds the structured decision to the reachable review evidence commit; this checkpoint-only rule is the ordinary optional case for all other terminal work. A management override that authorizes closure without a required review is retained as its own authority record and does not fabricate `Acceptance: ✓` or a Review REF.
+
+A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process. Existing implementation/disposition REF fields remain historical evidence but are no longer prerequisites for `[x]`/`[w]`.
 
 ## Authority and separation of duties
 
@@ -61,7 +63,7 @@ Sandboxed/grunt agents may implement, investigate, validate, commit, prepare acc
 - asking a generic runner action to perform acceptance promotion;
 - moving a Feature to `DONE.md`;
 - setting, clearing, or moving the `Integration review: mandatory` attribute (architect authority);
-- treating privilege, a green command, or a Task `REF` as acceptance.
+- treating privilege, a green command, or an implementation check-in as acceptance.
 
 Only a session that is both currently privileged **and explicitly assigned by the current user or registered acceptance authority to the exact review scope** may decide Task or Feature acceptance. Privilege alone is not acceptance authority. A model name, Git author, claim filename, terminal access, or role self-assertion is not proof.
 
