@@ -22,14 +22,14 @@ Feature, Task, and Subtask work is carried on Git branches named after the item 
 6. Create a collision-resistant `TODO-<agent-id>.md`; when no immutable runtime ID is supplied, mint a collision-resistant request ID, derive `owner_token: agent:<normalized-name>:<task-id>:<request-id>`, and use the same components in the filename (for example `TODO-perplexity-0037-48-<request-id>.md`). That newly recorded token is the current session's immutable ownership token for this claim and must not be reused for another Task/session. Copy the exact Task, enough Feature context to detect drift, capability class, intended write scope, applicable execution scope, external-resource needs, and assumptions. Record base/status discovery according to the capability-specific procedure in `SANDBOX.md`.
 7. Recompare the claim with current `TODO.md`, mark the Task `[p]`, and add the claim reference. Do not overwrite another marker, Task text, claim, or execution request.
 8. Complete any capability-specific discovery required by `SANDBOX.md` before mutation.
-9. Start mutating work only when the goal is clear, implementation start prerequisites remain satisfied (including any explicit acceptance-before-start gate), and file, execution, external-resource, and integration scopes are disjoint. Multiple simultaneous Tasks must each satisfy these conditions and be listed explicitly in the claim.
+9. Start mutating work only when the goal is clear, implementation start prerequisites remain satisfied (including any explicit acceptance-before-start gate), and file, execution, external-resource, and integration scopes are disjoint. Multiple simultaneous Tasks must each satisfy these conditions and be listed explicitly in the claim. Before the first mutation of any qualifying cross-item gate scope, also satisfy the **Cross-item gate-scope review exception** below; backlog-repair authority does not bypass that startup mutation gate.
 10. Before the first mutating change, establish the item's branch per [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md): base the Task branch off its Feature branch, or the Subtask branch off its Task branch; then merge in every done-but-unintegrated (`[x]`/`[w]`) prerequisite branch so its work products **and** claim files are present, and record each merged branch tip in the claim. Commit the claim file on the item's branch alongside the deliverables; it travels upward with every merge and is not deleted at `[x]`/`[w]`.
 
 A user-directed activity that is not an existing Task may use `TODO-<agent-id>.md` as a temporary coordination record, but must not falsely mark an unrelated Task `[p]`.
 
 ## Autonomous backlog repair
 
-Agents are authorized and expected to repair backlog defects encountered during assigned or autonomously selected work when the intended result is determinable from the Feature goal, recorded decisions, neighboring Tasks, prerequisites, acceptance criteria, repository evidence, and established architecture.
+Agents are authorized and expected to repair backlog defects encountered during assigned or autonomously selected work when the intended result is determinable from the Feature goal, recorded decisions, neighboring Tasks, prerequisites, acceptance criteria, repository evidence, and established architecture, subject to the cross-item gate-scope review exception below.
 
 Agentically repairable defects include:
 
@@ -41,6 +41,19 @@ Agentically repairable defects include:
 - an internally contradictory or operationally impossible criterion caused by an evident drafting defect;
 - a Task that must be split to remain bounded, independently verifiable, and executable under the available capability class.
 
+### Cross-item gate-scope review exception
+
+Use the canonical `cross-item-blast-radius` predicate from [`decision-record@v1`](docs/pipeline/decision-record.md#2-wann-ein-datensatz-verpflichtend-ist): the exception applies when the **actual declared behavior** of a gate can block the start, validation, acceptance, integration, publication, or closure of another work unit, or can change that other unit's contract. A shared path, technical difficulty, unfamiliarity, green validation, or a merely hypothetical cross-item effect of an ordinary bug is not enough.
+
+Before the first mutation that implements, activates, widens, narrows, affirmatively retains, or removes a gate scope meeting that predicate, both of the following must already exist:
+
+1. a conforming `decision-record@v1` naming and justifying the affected work units and gates; and
+2. a supporting scope review by a management-instantiated **Architect** whose identity is distinct from the Implementer's identity.
+
+Affirmative retention is an in-scope decision to preserve existing, already-contested gate behavior; passive inheritance is not affirmative retention. The Architect's scope review tests the proposed reach and authority before mutation. It is not Task acceptance, an integration review, an integration verdict, or `Acceptance: ✓`, and a green validation result does not prove that the scope is correct, complete, or authorized.
+
+Keep the Task `[p]` while bounded preparation remains, including identifying affected units and gates, preparing the decision record, or obtaining the assigned Architect's review. Use `[u]` only when the Architect assignment, authority decision, dissent resolution, or management exception is the sole next action; never mutate the qualifying scope while that gate is unmet.
+
 For such a defect, the owning agent must:
 
 1. retain or create the appropriate active claim and keep the affected item `[p]` while repairing it;
@@ -49,13 +62,13 @@ For such a defect, the owning agent must:
 4. amend `TODO.md`, including adding/splitting Tasks or correcting prerequisites when necessary, without overwriting another active claim or concurrent material change;
 5. replace premature downstream-artifact requirements with explicit local intermediate deliverables—such as a contract, candidate, manifest, digest list, or evidence bundle—that the downstream Task later verifies and incorporates;
 6. validate identifiers, prerequisite endpoints and direction, cycles, markers, affected criteria, and the repaired execution order;
-7. continue the repaired Task without requesting confirmation.
+7. continue the repaired Task without requesting confirmation whenever the cross-item gate-scope review exception is either inapplicable or already satisfied; otherwise continue all bounded preparation under `[p]` and stop before the qualifying mutation.
 
 When all children of a parent Task are `[x]`/`[w]`, the parent is itself the next eligible package-completion item if its declared implementation start prerequisites are satisfied. It does not complete or become accepted automatically and must not be skipped; perform its own consistency, aggregation, validation, evidence, and bookkeeping criteria, then route the parent and any unaccepted children through privileged acceptance.
 
 An open parent with implementation-complete children is not, by itself, a prerequisite defect. Do not remove dependencies on the parent, bypass its start-gate role, or mark it `[x]`/`[w]` or accepted merely by aggregating child states. Claim the parent, read its complete current acceptance criteria and Definition of Done, perform its declared package-level work, and complete its implementation only with the required committed deliverables, validation, evidence, and real REF. Acceptance remains a separate privileged review. Amend the backlog only when the parent's own requirements are contradictory, impossible, incomplete, or semantically deadlocked; record the specific defect and preserve the intended parent gate.
 
-This authority does not permit an agent to choose between materially different valid product architectures, weaken acceptance to make work pass, invent approval, accept security/privacy/release risk, expose credentials, change externally controlled configuration, or appropriate another session's claim. Use `[u]` only when such a human decision or authorization is the sole next action. Technical difficulty, unfamiliarity, a drafting defect, an open parent, or an agentically repairable dependency deadlock is not `[u]`.
+This authority does not permit an agent to choose between materially different valid product architectures, weaken acceptance to make work pass, invent approval, accept security/privacy/release risk, expose credentials, change externally controlled configuration, or appropriate another session's claim. Use `[u]` only when such a human decision or authorization is the sole next action. Technical difficulty, unfamiliarity, an ordinary drafting defect that does not meet the canonical cross-item predicate, an open parent, or an agentically repairable dependency deadlock is not `[u]`. A qualifying latent gate-scope defect is also not `[u]` while bounded preparation remains; it becomes `[u]` only when the authority assignment, decision, dissent resolution, or management exception described above is the sole next action.
 
 
 If a complete global scan finds no eligible Task solely because remaining work is gated by one or more foreign active claims, do not appropriate those claims and do not set `[u]`. Recheck that no disjoint work exists, then write the short retrigger reminder defined by `SENTINTEL.md`, naming the blocking Task/claim and telling the user which owning session must be retriggered. This reminder is the notification path for an otherwise idle agent; it is not permission to alter the foreign claim or remain idle when globally eligible work exists.

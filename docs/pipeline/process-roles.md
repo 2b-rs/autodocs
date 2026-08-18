@@ -5,7 +5,9 @@ Repositories**, beschlossen am 2026-08-18 in der trilateralen Einigung zu
 `0040-01`.
 
 **Autorität:** Kundenauftrag `RQ-SRC-01`; Zuschnitt und Privileg nach
-`DEC-0040-001` … `DEC-0040-004`.
+`DEC-0040-001` … `DEC-0040-004`; enger Vorabprüfungsentscheid
+`DEC-0040-005` in
+[`0040-05-cross-item-scope-review.md`](../dossiers/0040-05-cross-item-scope-review.md).
 
 **Abgrenzungen:**
 
@@ -138,8 +140,6 @@ auf TK-1 allein verlässt, wiederholt den Vorfall.
 
 > Wer eine Zuschnitts- oder Torentscheidung mit Wirkung **über die eigene
 > Arbeitseinheit hinaus** trifft, hält sie als Entscheidungsdatensatz fest.
-> Ist eine zweite Instanz verfügbar, wird sie beteiligt; ist keine verfügbar,
-> vermerkt der Datensatz das offen.
 
 Der Datensatz MUSS dem normativen Vertrag
 [`decision-record@v1`](decision-record.md) entsprechen. Dort sind die
@@ -151,12 +151,56 @@ definiert. Abnahmeprotokolle und Integrationsverdikte bleiben spezialisierte
 Formate; eine darin vorausgesetzte TK-2-Entscheidung erhält einen separaten
 `DEC-…`-Datensatz.
 
+Für die Vorabprüfung von Torzuschnitten gilt ausschließlich der kanonische
+Trigger
+[`cross-item-blast-radius`](decision-record.md#2-wann-ein-datensatz-verpflichtend-ist):
+Das **tatsächlich deklarierte Torverhalten** kann Start, Validierung, Abnahme,
+Integration, Veröffentlichung oder Abschluss mindestens einer **anderen**
+Arbeitseinheit blockieren oder deren Vertrag ändern. Gemeinsamer Pfad,
+Schwierigkeit, Unvertrautheit, grüne Validierung oder nur die hypothetische
+Fremdwirkung eines gewöhnlichen Fehlers reichen nicht.
+
+#### Operative Vorabregel für einen qualifizierenden Torzuschnitt
+
+Vor der **ersten Mutation**, die einen qualifizierenden Torzuschnitt
+implementiert, aktiviert, erweitert, verengt, affirmativ beibehält oder
+entfernt, MÜSSEN beide Voraussetzungen erfüllt sein:
+
+1. Ein konformer `decision-record@v1` benennt und begründet die betroffenen
+   Arbeitseinheiten und Tore.
+2. Ein vom Management instanziierter **Architekt**, dessen Identität von der
+   Identität des Implementierers verschieden ist, hat den Zuschnitt geprüft und
+   unterstützt ihn im Datensatz.
+
+Affirmative Beibehaltung ist eine ausdrückliche, gegenständliche Entscheidung,
+einen bestehenden, bereits strittigen Torzuschnitt zu erhalten; bloßes passives
+Erben ist keine affirmative Beibehaltung. Bei Ablehnung oder Dissens bleibt die
+Mutation gesperrt, bis Management oder die zuständige registrierte Autorität den
+Dissens auflöst
+oder eine konforme Ausnahme entscheidet. Die Prüfung bewertet Reichweite,
+benannte Fremdeinheiten, Tore und Autorität **vor** der Mutation. Sie ist weder
+Task-Abnahme noch Integrationsreview oder Integrationsverdikt und erzeugt kein
+`Acceptance: ✓`.
+
+Die Arbeitseinheit bleibt `[p]`, solange begrenzte Vorbereitung möglich ist:
+betroffene Einheiten und Tore ermitteln, Datensatz vorbereiten, zugewiesene
+Architektenprüfung einholen. `[u]` gilt nur, wenn Rollenzuweisung,
+Autoritätsentscheidung, Dissensauflösung oder Managementausnahme die allein
+verbleibende Aktion ist. Ein grünes Validierungsergebnis beweist weder
+Richtigkeit noch Vollständigkeit oder Autorität des Zuschnitts.
+
+#### Vier-Fälle-Entscheidungstabelle
+
+| Fall | Deklariertes Verhalten | Vorab-Datensatz und unterstützende Architektenprüfung? | Begründung |
+|---|---|---|---|
+| `0038-03` als Positivfall | Der über alle versionierten Skripte laufende Prüfer ist hart in `_src/validate.py` verdrahtet und kann dadurch Validierung und Abschluss anderer Tasks blockieren. | **Ja, vor der ersten Mutation.** | Tatsächlich deklarierte Fremdblockade; `cross-item-blast-radius`. Das damals grüne Ergebnis ändert die Reichweite nicht. |
+| Routinemäßiger lokaler Validator | Ein Task-lokaler Prüfer kann nur die Validierung seiner eigenen Arbeitseinheit blockieren und ändert keinen fremden Vertrag. | **Nein.** | Keine andere Arbeitseinheit und damit kein Treffer des kanonischen Prädikats. |
+| Tippfehlerkorrektur in gemeinsamem Pfad | Eine reine Textkorrektur lässt das deklarierte Torverhalten und alle Verträge unverändert. | **Nein.** | Ein gemeinsamer Pfad ist kein Reichweitennachweis. |
+| Hypothetischer gewöhnlicher Fehler | Eine lokale Änderung hat kein deklariertes Fremdtorverhalten; nur ein noch nicht festgestellter gewöhnlicher Bug könnte theoretisch fremd wirken. | **Nein.** | Hypothetische Bugwirkung ist kein tatsächlich deklarierter Torzuschnitt. Ein später festgestellter qualifizierender Zuschnitt wird dann vor seiner Änderung geprüft. |
+
 Schlüssel ist die **Reichweite**, nicht die Knotenmarkierung. Ein Task ohne
 `Integration review: mandatory` kann trotzdem das ganze Repository blockieren —
 `0038-03` trug keinen Knoten und tat genau das.
-
-Nicht ausgelöst wird TK-2 durch Schwierigkeit, Unvertrautheit oder einen
-gewöhnlichen Redaktionsmangel.
 
 ### Zusammenlegbare Trennungen
 
@@ -297,14 +341,19 @@ Kettenabdeckung**.
 | `RQ-ROLE-02` | Abschnitt 3 |
 | `RQ-ROLE-03` | Abschnitt 6 (Personas statt separater Briefings) |
 | `RQ-ROLE-04` | Abschnitt 5 (TK-1, TK-2, zusammenlegbare Trennungen) |
-| `RQ-DEC-05` (Reichweitenkriterium) | TK-2 |
+| `RQ-DEC-05` (Reichweitenkriterium) | TK-2 und dessen Link auf das kanonische `cross-item-blast-radius`-Prädikat |
+| `RQ-PROC-01` | TK-2, operative Vorabregel und Vier-Fälle-Entscheidungstabelle |
+| `RQ-PROC-02` | TK-2: konformer Datensatz mit benannten betroffenen Einheiten und Toren vor Mutation |
+| `RQ-PROC-03` | TK-2: unterstützende Vorabprüfung durch einen vom Management instanziierten, vom Implementierer verschiedenen Architekten |
+| `RQ-PROC-04` | TK-2: `[p]` während begrenzter Vorbereitung; `[u]` nur bei allein verbleibender Autoritätsaktion |
+| `DEC-0040-005` / ausgewählte `ALT-01` | TK-2: enge Pflichtprüfung nach kanonischem Prädikat; keine allgemeine Shared-Path- oder Redaktionsprüfung |
 | Befund C (zwei Achsen) | Abschnitt 1 |
 | Befund D (Privileg ≠ Unabhängigkeit) | Abschnitt 1 und QA-Zeile in Abschnitt 4 |
-| `T1`, `T2` (Zuschnitt, latent, grün) | TK-2; Persona 6.3 „typisches Versagen" |
+| `T1`, `T2` (Zuschnitt, latent, grün) | TK-2 Positivfall und ausdrückliche Grenze grüner Validierung; Persona 6.3 „typisches Versagen" |
 | `T4` (Datei ohne Task) | Abschnitt 7, Zeile 3 |
 | `T6` (Entscheidung nicht dokumentiert) | TK-2 |
-| `T7` (Rolle 14 h zu spät) | Abschnitt 3.1, Architekt als normative Rolle |
-| `T8` (Eskalation unterdrückt) | Meldepflicht in 3.2; vollständige Auflösung durch `0040-05` |
+| `T7` (Rolle 14 h zu spät) | Abschnitt 3.1 und TK-2-Vorabregel: Architekt existiert und unterstützt vor Mutation |
+| `T8` (Eskalation unterdrückt) | Meldepflicht in 3.2; TK-2-Zustandsregel; bindende Ausnahme in `AGENTS.md` |
 | `SANDBOX.md:17-22` | Abschnitt 2 — Korrektur von drei auf zwei Klassen |
 | `task-acceptance.md` (vier Identitäten) | TK-1 |
 | `PRIVILEGED.md` (Waiver-Vertrag inkl. Dauer) | TK-1, Verzichtbarkeit |
