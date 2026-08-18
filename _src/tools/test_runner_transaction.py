@@ -691,25 +691,77 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertEqual(promotion["status"], "rollback-blocked-by-drift")
         self.assertEqual(journal["state"], "rollback-blocked-by-drift")
 
-    def test_recover_reports_interrupted_journal_state(self) -> None:
+    def _write_recovery_journal(self, *, published: bool, state: str = "outputs-promoted") -> Path:
         log_dir = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID
-        log_dir.mkdir(parents=True)
-        (log_dir / "transaction-journal.json").write_text(
-            json.dumps({"state": "outputs-promoted", "request_id": REQUEST_ID}),
+        log_dir.mkdir(parents=True, exist_ok=True)
+        path = log_dir / "transaction-journal.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "schema": runner.TRANSACTION_JOURNAL_SCHEMA,
+                    "state": state,
+                    "task_id": "0038-01",
+                    "request_id": REQUEST_ID,
+                    "owner_token": OWNER_TOKEN,
+                    "claim_path": CLAIM_PATH,
+                    "manifest_path": "request.json",
+                    "branch_ref": "refs/heads/main",
+                    "substantive_commit": self.fixture.base,
+                    "bookkeeping_commit": None,
+                    "published": published,
+                    "claim_finalized": False,
+                }
+            ),
             encoding="utf-8",
         )
-        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
-        self.assertEqual(recovery["status"], "reconciled")
-        self.assertEqual(recovery["prior_state"], "outputs-promoted")
-        self.assertIn("finalize claim", recovery["recommendation"])
+        return path
 
-    def test_finalize_claim_standalone_archives_matching_claim(self) -> None:
+    def test_recover_reports_deterministic_unpublished_plan(self) -> None:
+        self._write_recovery_journal(published=False)
+        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
+        self.assertEqual(recovery["status"], "retry-required")
+        self.assertEqual(recovery["prior_state"], "outputs-promoted")
+        self.assertEqual(recovery["claim_path"], CLAIM_PATH)
+        self.assertIn("fresh request ID", recovery["recommendation"])
+
+    def test_recover_rejects_ambiguous_request_journals(self) -> None:
+        journal = self._write_recovery_journal(published=False)
+        duplicate = self.fixture.root / "output" / "logs" / "0038-99" / REQUEST_ID / "transaction-journal.json"
+        duplicate.parent.mkdir(parents=True)
+        shutil.copyfile(journal, duplicate)
+        with self.assertRaisesRegex(runner.TransactionError, "multiple transaction journals"):
+            runner.recover_transaction(self.fixture.root, REQUEST_ID)
+
+    def test_finalize_claim_standalone_archives_only_exact_published_claim(self) -> None:
+        journal = self._write_recovery_journal(published=True, state="published-pending-finalization")
         claim = self.fixture.root / CLAIM_PATH
+        competing = self.fixture.root / "TODO-other-0038-01-other-request.md"
+        competing.write_text(
+            "task_id: 0038-01\nrequest_id: other-request\nowner_token: other-owner\n",
+            encoding="utf-8",
+        )
         self.assertTrue(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
-        archive = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "finalized-claim.md"
+        archive = journal.parent / "finalized-claim.md"
         self.assertFalse(claim.exists())
         self.assertTrue(archive.exists())
+        self.assertTrue(competing.exists())
+        updated = json.loads(journal.read_text(encoding="utf-8"))
+        self.assertTrue(updated["claim_finalized"])
+        self.assertEqual(updated["state"], "complete")
         self.assertFalse(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
+
+    def test_finalize_claim_refuses_unpublished_or_locked_request(self) -> None:
+        self._write_recovery_journal(published=False)
+        with self.assertRaisesRegex(runner.TransactionError, "does not prove successful"):
+            runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID)
+        self._write_recovery_journal(published=True)
+        git_dir = Path(self.fixture.git_text("rev-parse", "--git-dir"))
+        if not git_dir.is_absolute():
+            git_dir = self.fixture.root / git_dir
+        lock = git_dir / "autodocs-runner-transaction.lock"
+        lock.write_text(json.dumps({"pid": os.getpid(), "request_id": REQUEST_ID}), encoding="utf-8")
+        with self.assertRaisesRegex(runner.TransactionError, "never deletes or bypasses"):
+            runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID)
 
     def test_envelope_renderer_rejects_shell_metacharacters(self) -> None:
         for hostile in (

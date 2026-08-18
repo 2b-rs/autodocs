@@ -221,17 +221,58 @@ Conversation-facing output is one line per phase plus one final verdict. Complet
 
 ## Recovery semantics
 
-| Result state | Meaning | Safe next action |
-|---|---|---|
-| No result, claim present | Preflight may not have started, or process stopped before evidence creation | Inspect the exact claim, lock, HEAD, and request-scoped directory; do not rerun blindly |
-| `failed`, `published: false` | No transaction commit was published | Inspect the rule and promotion journal; outputs were rolled back unless a newer edit blocked rollback |
-| `prepared` | Commit objects and TODO candidate existed, but branch publication was not yet confirmed | Check current branch/ref and claim; dangling objects are not completion evidence |
-| `failed`, `published: true` | Both commits are reachable from the branch, but working-tree or claim finalization is incomplete | Keep the claim, reconcile exact commits/result/journal, and complete recovery rather than repeating generation |
-| `published-pending-finalization` | Commits and working TODO are verified; exact claim archival/final result is still pending | Preserve the claim and finish finalization; do not create another Task claim |
-| `passed`, `claim_finalized: true` | Both commits, REF, working files, result, and exact claim archival passed | No recovery required |
-| `rollback-blocked-by-drift` journal | A newer file edit appeared after promotion | Never overwrite it; retain backups and reconcile the two versions explicitly |
+Every mutation boundary is recorded in
+`output/logs/<task-id>/<request-id>/transaction-journal.json`. The journal binds
+PID plus process-start identity, Task/request/owner, expected base, manifest and
+contract digests, the **exact claim path**, branch ref, prepared commit objects,
+publication state, and claim-finalization state. Signal handlers for `SIGTERM`,
+`SIGHUP`, and `SIGINT` persist failure/journal evidence, attempt only drift-safe
+rollback, release their own lock, and exit non-zero.
 
-The Git lock `.git/autodocs-runner-transaction.lock` is fail-closed. A stale lock is not permission to delete it. Verify the recorded request/owner, active process state, claim, branch, result, and promotion journal first. A future Feature `0038` Task will productize this recovery/garbage-collection check.
+| Result/journal state | Meaning | Safe next action |
+|---|---|---|
+| No journal, claim present | Preflight did not establish durable transaction state | Inspect the exact claim, lock, HEAD, and request directory; do not rerun blindly |
+| `failed`, `published: false` | No transaction commit was published | Run `recover`; preserve the claim/journal/backups, resolve any rollback drift, then issue a fresh request ID against the current base |
+| `prepared` | Commit objects and TODO candidate existed, but branch publication was not confirmed | Run `recover`; dangling objects are evidence, not completion |
+| `failed`, `published: true` | The final commit is reachable but working-tree or claim finalization is incomplete | Run `recover`; if all bindings pass it returns the exact `finalize-claim` command rather than repeating generation |
+| `published-pending-finalization` | Commits and working TODO are verified; exact claim archival/final result is pending | Execute only the exact `finalize-claim` command returned by `recover` |
+| `passed`/`complete`, `claim_finalized: true` | Commits, working files, result, and exact journal-bound claim archival passed | No recovery required |
+| `rollback-blocked-by-drift` | A newer file edit appeared after promotion | Never overwrite it; retain backups and reconcile the two versions explicitly before a fresh request |
+
+The privileged/read-only diagnostic command is:
+
+```text
+python3 _src/tools/runner_transaction.py doctor --root <repo>
+```
+
+It reports the lock holder/staleness and every non-complete transaction journal;
+it never deletes a lock or changes repository state. A transaction may replace a
+lock only during normal acquisition after PID **and process-start identity** prove
+that the recorded holder is dead.
+
+The read-only recovery planner is:
+
+```text
+python3 _src/tools/runner_transaction.py recover \
+  --root <repo> --request-id <exact-request-id>
+```
+
+It requires exactly one matching journal. Zero matches fail `RTX-RECOVER-NOT-FOUND`;
+multiple matches fail `RTX-RECOVER-AMBIGUOUS` rather than choosing one. It reports
+the exact claim and state. For a proven published-but-unfinalized transaction it
+returns this deterministic command:
+
+```text
+python3 _src/tools/runner_transaction.py finalize-claim \
+  --root <repo> --task-id <task-id> --request-id <request-id>
+```
+
+`finalize-claim` refuses any existing live **or stale** lock, unpublished or
+unreachable commit, Task mismatch, branch/commit mismatch, claim whose
+Task/request/owner differs from the journal, ambiguous journal, or pre-existing
+archive. It moves only the exact journal-bound claim and leaves competing claims
+untouched. It then marks the journal `complete`; it never glob-selects an
+arbitrary claim, deletes a lock, or overwrites newer edits.
 
 ## Supported Profiles
 
@@ -259,10 +300,14 @@ Version 1 intentionally:
 - requires committed `[p]` TODO coordination state;
 - does not provision dependencies, use credentials, access networks, or publish remotes;
 - does not replace the future typed queue, issue-store closure, evidence store, task doctor, artifact garbage collector, or environment doctor;
-- leaves stale-lock diagnosis and hard-kill recovery as explicit follow-up work;
+- does not automatically resolve `rollback-blocked-by-drift`; it retains exact backups and journals and requires explicit reconciliation rather than overwriting newer bytes;
+- does not retry an unpublished interrupted transaction under the same request ID; recovery preserves evidence and requires a fresh request bound to the current base;
 - relies on the repository-wide coordination rules to avoid non-cooperating editors changing the same exact file during a short publication boundary. It detects resulting drift and retains recovery state rather than claiming success.
 
-These limitations are represented as separate Tasks in Feature `0038`, not hidden as completed behavior.
+Stale-lock diagnosis, signal-safe hard-kill evidence, deterministic recovery
+planning, and exact post-publication claim finalization are implemented. Future
+queue/issue-store work may replace this legacy adapter, but must preserve these
+fail-closed guarantees.
 
 ## Validation
 
@@ -272,4 +317,4 @@ The hermetic suite is:
 python3 -m unittest _src/tools/test_runner_transaction.py
 ```
 
-It creates temporary Git repositories and covers manifest rejection, material claim-binding changes, parsed-manifest byte drift, generator failure, validator failure, exit-zero structured errors, generator/input mutation, validator/tree mutation, promotion rollback, surfaced rollback failure, dirty shared TODO rejection, unrelated staged-index preservation, two-commit REF closure, exact and conflicting claim archival, post-publication recovery, branch CAS loss, durable-result failure without stale PASS, runtime-path alias rejection, candidate symlink escape, dry-run behavior, closure-profile enforcement, hostile envelope paths, and structural Task-boundary rejection.
+It creates temporary Git repositories and covers manifest rejection, material claim-binding changes, parsed-manifest byte drift, generator failure, validator failure, exit-zero structured errors, generator/input mutation, validator/tree mutation, promotion rollback, surfaced rollback failure, rollback blocked by newer bytes, dirty shared TODO rejection, unrelated staged-index preservation, two-commit REF closure, exact and competing claim archival, unpublished/locked finalization refusal, ambiguous recovery-journal refusal, deterministic interrupted-state planning, signal termination, verified stale-lock replacement, post-publication recovery, branch CAS loss, durable-result failure without stale PASS, runtime-path alias rejection, candidate symlink escape, dry-run behavior, closure-profile enforcement, hostile envelope paths, and structural Task-boundary rejection.

@@ -954,6 +954,8 @@ class Transaction:
             "owner_token": self.identity["owner_token"],
             "expected_base": self.identity["expected_base"],
             "manifest_path": self.identity["manifest_path"],
+            "claim_path": self.identity["claim_path"],
+            "branch_ref": self.branch_ref,
             "manifest_sha256": self.manifest.get("_loaded_sha256"),
             "contract_sha256": contract_digest(self.manifest),
             "state": state,
@@ -2097,35 +2099,183 @@ def doctor(root: Path) -> Dict[str, Any]:
     }
 
 
-def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
-    """Reconcile an interrupted transaction request."""
-    root = root.resolve()
+def _transaction_journal(root: Path, request_id: str) -> Tuple[Path, Dict[str, Any]]:
+    """Load exactly one journal for a request; ambiguity is never guessed away."""
     logs_dir = root / "output" / "logs"
-    matched_journals = list(logs_dir.glob(f"*/{request_id}/transaction-journal.json"))
-    if not matched_journals:
-        raise TransactionError("RTX-RECOVER-NOT-FOUND", f"no transaction journal found for request ID {request_id}", "recover", EXIT_INTERNAL)
-    journal_path = matched_journals[0]
-    j_data = json.loads(journal_path.read_text(encoding="utf-8"))
-    state = j_data.get("state")
-    return {
-        "status": "reconciled",
+    matched = sorted(logs_dir.glob(f"*/{request_id}/transaction-journal.json"))
+    if not matched:
+        raise TransactionError(
+            "RTX-RECOVER-NOT-FOUND",
+            f"no transaction journal found for request ID {request_id}",
+            "recover",
+            EXIT_INTERNAL,
+        )
+    if len(matched) != 1:
+        paths = [path.relative_to(root).as_posix() for path in matched]
+        raise TransactionError(
+            "RTX-RECOVER-AMBIGUOUS",
+            f"multiple transaction journals match request ID {request_id}: {paths}",
+            "recover",
+            EXIT_INTERNAL,
+        )
+    path = matched[0]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise TransactionError(
+            "RTX-RECOVER-JOURNAL",
+            f"cannot read transaction journal {path.relative_to(root)}: {exc}",
+            "recover",
+            EXIT_INTERNAL,
+        ) from exc
+    if data.get("schema") != TRANSACTION_JOURNAL_SCHEMA or data.get("request_id") != request_id:
+        raise TransactionError(
+            "RTX-RECOVER-JOURNAL",
+            f"journal identity/schema mismatch at {path.relative_to(root)}",
+            "recover",
+            EXIT_INTERNAL,
+        )
+    return path, data
+
+
+def _journal_claim_path(root: Path, journal: Dict[str, Any]) -> str:
+    """Resolve the exact claim bound by a journal, including older journals."""
+    value = journal.get("claim_path")
+    if isinstance(value, str) and value:
+        return _normalize_path(value, "journal claim_path")
+    manifest_value = journal.get("manifest_path")
+    if not isinstance(manifest_value, str) or not manifest_value:
+        raise TransactionError(
+            "RTX-RECOVER-CLAIM",
+            "journal has neither claim_path nor a usable manifest_path",
+            "recover",
+            EXIT_INTERNAL,
+        )
+    manifest_path = root / _normalize_path(manifest_value, "journal manifest_path")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        claim_path = manifest["identity"]["claim_path"]
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise TransactionError(
+            "RTX-RECOVER-CLAIM",
+            f"cannot recover exact claim identity from {manifest_value}: {exc}",
+            "recover",
+            EXIT_INTERNAL,
+        ) from exc
+    return _normalize_path(claim_path, "manifest identity.claim_path")
+
+
+def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
+    """Return a deterministic, read-only recovery plan for one exact request."""
+    root = root.resolve()
+    journal_path, journal = _transaction_journal(root, request_id)
+    task_id = journal.get("task_id")
+    claim_path = _journal_claim_path(root, journal)
+    report: Dict[str, Any] = {
+        "status": "action-required",
         "request_id": request_id,
-        "prior_state": state,
-        "recommendation": "Check HEAD commit against bookkeeping_commit; if published, finalize claim; otherwise retry with fresh request ID.",
+        "task_id": task_id,
+        "prior_state": journal.get("state"),
+        "journal_path": journal_path.relative_to(root).as_posix(),
+        "claim_path": claim_path,
+        "published": bool(journal.get("published")),
+        "claim_finalized": bool(journal.get("claim_finalized")),
     }
+    lock = doctor(root)["lock"]
+    if lock.get("exists"):
+        report["status"] = "blocked-by-lock"
+        report["recommendation"] = "Inspect the reported lock holder; recover never deletes a live or stale lock."
+    elif journal.get("claim_finalized"):
+        report["status"] = "complete"
+        report["recommendation"] = "No recovery action required."
+    elif journal.get("published"):
+        report["recommendation"] = (
+            "python3 _src/tools/runner_transaction.py finalize-claim "
+            f"--task-id {task_id} --request-id {request_id}"
+        )
+    else:
+        report["status"] = "retry-required"
+        report["recommendation"] = (
+            "Preserve the exact claim, journal, result, and promotion backups; resolve any "
+            "rollback-blocked-by-drift finding, then submit a fresh request ID against the current base."
+        )
+    return report
 
 
 def finalize_claim_standalone(root: Path, task_id: str, request_id: str) -> bool:
-    """Finalize a claim when publication already succeeded."""
+    """Finalize only the exact journal-bound claim after verified publication."""
     root = root.resolve()
-    log_dir = root / "output" / "logs" / task_id / request_id
-    archive = log_dir / "finalized-claim.md"
-    claims = list(root.glob(f"TODO-*-{task_id}-{request_id}*.md")) + list(root.glob(f"TODO-*-{task_id}*.md"))
-    if not claims:
+    journal_path, journal = _transaction_journal(root, request_id)
+    if journal.get("task_id") != task_id:
+        raise TransactionError(
+            "RTX-FINALIZE-TASK",
+            f"journal Task {journal.get('task_id')!r} does not match requested Task {task_id!r}",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
+    lock = doctor(root)["lock"]
+    if lock.get("exists"):
+        raise TransactionError(
+            "RTX-FINALIZE-LOCK",
+            "transaction lock exists; finalize-claim never deletes or bypasses a live or stale lock",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
+    if not journal.get("published"):
+        raise TransactionError(
+            "RTX-FINALIZE-UNPUBLISHED",
+            "journal does not prove successful branch publication",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
+    final_commit = journal.get("bookkeeping_commit") or journal.get("substantive_commit")
+    if not isinstance(final_commit, str) or not FULL_COMMIT_RE.fullmatch(final_commit):
+        raise TransactionError(
+            "RTX-FINALIZE-COMMIT",
+            "journal has no valid published commit identity",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
+    _git(root, ["cat-file", "-e", f"{final_commit}^{{commit}}"])
+    branch_ref = journal.get("branch_ref")
+    if isinstance(branch_ref, str) and branch_ref:
+        if _git_text(root, ["rev-parse", branch_ref]) != final_commit:
+            raise TransactionError(
+                "RTX-FINALIZE-BRANCH",
+                f"branch {branch_ref} does not point to journal commit {final_commit}",
+                "finalize-claim",
+                EXIT_INTERNAL,
+            )
+    claim_relative = _journal_claim_path(root, journal)
+    claim_path = root / claim_relative
+    if not claim_path.exists():
         return False
-    claim_path = claims[0]
-    log_dir.mkdir(parents=True, exist_ok=True)
+    claim_text = claim_path.read_text(encoding="utf-8")
+    for field, value in (
+        ("task_id", task_id),
+        ("request_id", request_id),
+        ("owner_token", journal.get("owner_token")),
+    ):
+        if not isinstance(value, str) or value not in claim_text:
+            raise TransactionError(
+                "RTX-FINALIZE-CLAIM",
+                f"exact claim {claim_relative} does not contain journal-bound {field}",
+                "finalize-claim",
+                EXIT_INTERNAL,
+            )
+    archive = journal_path.parent / "finalized-claim.md"
+    if archive.exists():
+        raise TransactionError(
+            "RTX-FINALIZE-ARCHIVE",
+            f"claim archive already exists at {archive.relative_to(root)}",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
     _atomic_move(claim_path, archive)
+    journal["claim_finalized"] = True
+    journal["state"] = "complete"
+    journal["updated_at"] = _utc_now()
+    _atomic_write(journal_path, _json_bytes(journal), 0o600)
     return True
 
 
