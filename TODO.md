@@ -72,6 +72,53 @@ HOW TO USE:
 - **Authority follows the attribute, not the level.** Merging a checkpoint node's work across its boundary requires the privileged integrator; merges that cross no checkpoint stay grunt-eligible. The attribute is orthogonal to the `[ ]/[p]/[x]/[w]` marker and to `Acceptance: ✓`: the attribute is the *requirement* that a review occur, and `Acceptance: ✓` is its *fulfillment*.
 - A Feature moves to `DONE.md` once its work is terminal and every integration checkpoint within it — including the Feature node itself, if flagged — has a current passing integration review; the `DONE.md` move is always a privileged act. See [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md) and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md).
 
+## Feature: 0041 — Worker Isolation by Clone/Push and Simplified Check-in Semantics
+
+**Authority:** Three explicit customer decisions of 2026-08-18, recorded verbatim as `RQ-SRC-02` in [`docs/dossiers/re-intake-worker-isolation-and-checkin.md`](docs/dossiers/re-intake-worker-isolation-and-checkin.md).
+
+**Goal:** Get the development pipeline moving again. Worker checkouts become real clones that publish by push, the fragile two-commit closure is replaced by a single self-describing check-in, and `REF` tagging moves downstream into acceptance.
+
+**Trigger of record:** `/tmp/autodocs/.git` was a **symlink** onto the canonical `.git`, so the worker checkout shared object store, refs, `HEAD` **and index** with `~/devel/autodocs`. A commit in one moved the other's `HEAD` while its working tree stayed put. That alone produced the appearance that `0038-18` had never been started, and it briefly produced a false accusation of misreporting against the implementing session — withdrawn in finding G of the requirements baseline. The implementer had worked correctly throughout.
+
+**Capability constraint (finding I):** Sandboxed agents may not execute Git (`SANDBOX.md`), and none of the three workflow tools contains any branch, merge, clone or push function — zero matches across 9527 lines of `_src/perplexity-cpu-loop.js`, `_src/run-loop.sh` and `_src/tools/provision_tmp_worktree.sh`. Creation of the branch and the checkout therefore falls to the privileged host side. This is the only option that does not violate the capability classes, not a matter of preference.
+
+**Note:** The branch naming convention is **already settled** — bare item IDs, Task branched off its Feature branch ([`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md)). What is missing is ownership and implementation, not the convention.
+
+**Feature Definition of Done:** A worker receives a pre-provisioned clone on the branch of its assigned item, works there without any effect on the canonical working tree, and publishes by push; a single substantive check-in carries ticket ID and base-ref in a machine-readable form; the separate bookkeeping commit is gone from the authority documents; `REF` is required at acceptance rather than at `[x]`/`[w]`; and `TODO.md`, `AGENTS.md`, `SANDBOX.md`, `branch-workflow.md` and `task-acceptance.md` agree.
+
+- [ ] **0041-01** Replace the shared-checkout provisioner with a clone-based one that the privileged host runs per assigned item.
+  - **Requirements covered:** `RQ-WT-01` … `RQ-WT-05`.
+  - **Context:** `_src/tools/provision_tmp_worktree.sh` currently calls `git worktree add` on a hard-wired `tmp-work` branch, and its header advertises as a benefit that commits are "instantly durable" in the shared object store. That coupling is precisely the cause of the trigger (finding J). The clone deliberately gives it up: durability now begins at push.
+  - **Acceptance criteria:** The provisioner takes the item ID as input, creates the branch from its correct parent per `branch-workflow.md` when absent, and provisions the worker checkout by `git clone` with its own object store, refs, `HEAD` and index. Running it leaves `git status` in the canonical tree unchanged — proven by a before/after comparison retained as evidence. It refuses to run when the target path is a `.git` symlink or a registered worktree of the canonical repository, and says which it found. It stays idempotent and must not discard uncommitted worker edits that survived a `/tmp` reap.
+  - **Definition of Done:** Committed; the old shared-checkout path is removed or explicitly refused rather than left as a silent second mechanism; the header comment no longer advertises shared-object-store durability; `docs/pipeline/` documents who runs it and when.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the change is confined to provisioning of a disposable checkout and is objectively checkable (canonical tree unaffected); it is re-examined at `0041-05`.
+
+- [ ] **0041-02** PREREQ: 0041-02:0041-01 Establish the self-describing check-in and remove the separate bookkeeping commit from the authority documents.
+  - **Requirements covered:** `RQ-CI-01` … `RQ-CI-05`.
+  - **Context (finding H):** The two-commit closure is structurally fragile — the second commit depends on the first one's hash, so it can only be written afterwards, and nothing forces it. Four Tasks sit in exactly that state today: `0007-01`, `0037-37`, `0038-02` and `0038-18`. This removes the cause rather than monitoring it.
+  - **Acceptance criteria:** A defined, machine-readable trailer in the substantive commit message carries the ticket ID and the base-ref the change was made against; the format is specified once and used everywhere. `AGENTS.md` ("Completing implementation work"), the `TODO.md` header and `branch-workflow.md` no longer require a separate bookkeeping commit and no longer describe the hash-injection dance. Where a document previously required the two-step, it states the replacement instead of merely deleting the requirement.
+  - **Definition of Done:** Committed; no authority document still demands a separate bookkeeping commit for `[p]` → `[x]`/`[w]`; the trailer format is documented with at least one worked example; existing terminal Tasks are not retroactively invalidated.
+  - **Integration review:** **mandatory.** **Rationale (architect):** this changes the binding closure procedure that every agent follows. An error here either leaves two contradictory closure procedures in force or silently drops the traceability the trailer is meant to carry.
+
+- [ ] **0041-03** PREREQ: 0041-03:0041-02 Move `REF` tagging from implementation completion to the acceptance transition.
+  - **Requirements covered:** `RQ-REF-01` … `RQ-REF-03`.
+  - **Context (finding K):** The `TODO.md` header currently defines `[x]` as requiring a "real substantive `REF`", and `AGENTS.md` and `task-acceptance.md` repeat it. Changing one and not the others reproduces `T8` — documentation and binding instruction disagreeing, with the instruction winning.
+  - **Acceptance criteria:** `[x]`/`[w]` no longer require a `REF`. The `[x]` → `✓` transition owns it, and the documents state explicitly in which cases it stays mandatory and in which it is optional, rather than leaving "often optional" to interpretation. `TODO.md` header, `AGENTS.md` and `task-acceptance.md` agree word for word on the new gate.
+  - **Definition of Done:** Committed; a grep for the old requirement across the authority documents returns nothing that still binds; existing `REF` records stay valid and are not rewritten.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the change relaxes a gate rather than granting capability, and its consistency is mechanically checkable by the grep named in the Definition of Done. Re-examined at `0041-05`.
+
+- [ ] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0041-02 Give the runner tooling a push path with an item-scoped guard.
+  - **Requirements covered:** `RQ-WT-03`, `RQ-WT-06`; resolves the open point of section 5 of the requirements baseline.
+  - **Context:** Publication by push is the only way work leaves the clone, and no tool implements it today. The guard needs the assigned item ID; whether `perplexity-cpu-loop.js` already carries that value is to be determined during implementation, and if it does not, it becomes a new provisioner input.
+  - **Acceptance criteria:** The host side can push the worker branch to the canonical repository. A push whose target branch does not match the assigned item ID is refused with a clear message and a non-zero exit. The refusal is covered by a test or a documented reproducible check. No force-push to a protected ref is possible through this path.
+  - **Definition of Done:** Committed; the guard demonstrably refuses a mismatched target; where the item ID had to become a new input, the change is documented at the provisioner and its caller.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the Task adds a narrowly scoped publication path with a refusing guard and no acceptance authority; its failure mode is a refused push, which is loud rather than silent. Re-examined at `0041-05`.
+
+- [ ] **0041-05** PREREQ: 0041-05:0041-01, 0041-05:0041-02, 0041-05:0041-03, 0041-05:0041-04 Integrate the Feature and confirm the pipeline actually runs end to end.
+  - **Integration review: mandatory.** **Rationale (architect):** the Feature's integrating task and its review floor. It is the only point at which provisioning, check-in semantics, `REF` gating and the push path are examined as one workflow — and a workflow that is correct in four documents and broken in composition is exactly the failure this Feature exists to end.
+  - **Acceptance criteria:** One real item is carried end to end: branch and clone provisioned by the host, work performed in the clone, published by push, marker advanced without a separate bookkeeping commit, and the canonical working tree demonstrably untouched throughout. Every requirement ID from the baseline has a disposition. Contradictions between authority documents are reported, not smoothed over.
+  - **Definition of Done:** Committed; the end-to-end run is retained as evidence; no leftover `.git` symlink or stray non-conforming branch remains.
+
 ## Feature: 0040 — Evidence Traceability, Decision Records, and Process Roles
 
 **PREREQ:** 0040:0039-01
