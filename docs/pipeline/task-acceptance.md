@@ -71,12 +71,12 @@ Specialist competence is part of assignment. One reviewer need not possess every
 
 ## Implementation completion and review handoff
 
-The implementation owner completes the existing claim at `[x]` or `[w]`, commits the substantive result and bookkeeping, finalizes the implementation claim, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
+The implementation owner completes the existing claim at `[x]` or `[w]` in one self-describing implementation check-in: deliverables/disposition, finalized claim, terminal marker, validation/findings, and the `Task-ID`/`Base-Ref` trailers share one committed baseline. No separate implementation-bookkeeping commit follows. The owner then returns to ordinary queue work; waiting for acceptance must not hold the implementation write scope or become `[u]`.
 
 The acceptance package must identify:
 
 1. Task and Feature identity, exact normative Task text, acceptance criteria, Definition of Done, and contract digest;
-2. exact substantive and bookkeeping commits, candidate tree, expected parent/base, and authority epoch;
+2. the exact implementation check-in, its candidate tree, `Task-ID` and `Base-Ref` trailers, expected parent/base, and authority epoch;
 3. a complete authoritative work-product manifest with paths, roles, source/generated classification, media types, and digests;
 4. declared and observed direct, derived, external, and evidence scopes, including proof that unrelated work was excluded;
 5. a criterion matrix mapping every normative condition to implementation, validation, evidence, findings, and disposition;
