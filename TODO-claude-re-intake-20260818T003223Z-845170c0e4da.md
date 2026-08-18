@@ -13,16 +13,27 @@ Dieser Satz markiert daher **keinen** Task-Marker in `TODO.md`. Insbesondere
 bleibt `0039-01` unverändert `[u]`, solange die Reservierungssperre von Feature
 `0039` nicht durch den Benutzer ausdrücklich aufgehoben ist.
 
-## Identität
+## Claim identity
 
-- `owner_token`: agent:claude:re-intake:20260818T003223Z-845170c0e4da
-- `request_id`: 20260818T003223Z-845170c0e4da
-- `capability_class`: lokal, nicht privilegiert (keine Abnahmebefugnis,
-  keine `Acceptance: ✓`-Promotion, kein `DONE.md`-Verschieben)
-- `process_role`: Requirements Engineer (vom Benutzer ausdrücklich zugewiesen)
-- `base_commit`: 3e8be817a
+Kanonische Schreibweise (`key: value`, ohne Aufzählungszeichen und Backticks),
+wie sie `_src/tools/legacy_task_doctor.py` erwartet:
+
+owner_token: agent:claude:re-intake:20260818T003223Z-845170c0e4da
+request_id: 20260818T003223Z-845170c0e4da
+base_commit: 3e8be817ace3387cf35abd355c7da302cd807cd8
+capability_class: privileged
+state: [p]
+
+Ergänzende, nicht-kanonische Angaben:
+
+- `process_role`: Requirements Engineer, danach Architekt, danach QA-Manager
+  (vom Benutzer ausdrücklich zugewiesen)
+- `authority`: vollprivilegierte Eignersession laut `DEC-0040-001`
+  (Benutzerentscheidung 2026-08-18, begrenzter Autoritätsverzicht mit
+  kompensierender Maßnahme — siehe Arbeitsprodukt Abschnitt 6a)
 - `opened`: 2026-08-18T00:32:23Z
-- `state`: [p] — Requirements-Aufnahme abgeschlossen, Review offen
+- **Kein `task_id`:** Dieser Satz koordiniert eine benutzergeführte Tätigkeit,
+  nicht eine einzelne bestehende Task. Er beansprucht keine fremde Task.
 
 ## Auftrag
 
@@ -34,13 +45,18 @@ analysieren, im Review hinterfragen, Ergebnis dokumentieren, Rückverfolgbarkeit
 sicherstellen), anschließend QA-Manager (gelebten Prozess als allgemeine Regel
 festhalten).
 
-## Schreibbereich
+## Intended write scope
 
-- `docs/dossiers/re-intake-evidence-traceability-and-roles.md` (angelegt)
-- dieser Koordinationssatz
+- `docs/dossiers/re-intake-evidence-traceability-and-roles.md`
+- `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md`
+- `TODO.md` (ausschließlich der neue Abschnitt Feature `0040`)
 
-Bewusst **nicht** angefasst, weil Autorität bzw. Kundenentscheidung fehlt:
-`TODO.md`, `AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, `docs/pipeline/*`.
+## Ausserhalb des Schreibbereichs
+
+Bewusst **nicht** angefasst, weil dafür die Umsetzung der Tasks von Feature
+`0040` zuständig ist: die Autoritätsdokumente `AGENTS.md`, `SANDBOX.md` und
+`PRIVILEGED.md` sowie sämtliche Prozessdokumente unterhalb des Verzeichnisses
+`docs/pipeline`.
 
 ## Fremde Arbeit im Baum (unberührt zu erhalten)
 
@@ -81,8 +97,31 @@ Arbeitsprodukt: `docs/dossiers/re-intake-evidence-traceability-and-roles.md`
 nicht die Bookkeeping-Entscheidung, wohl aber den Entwurf des Rollenmodells
 und des Traceability-Formats.
 
-## Nächster Schritt
+## Bekannte Abweichung: `owner_token` ohne Task-ID
 
-Review mit dem Kunden zu `OQ-1` … `OQ-5`; danach Bookkeeping gemäß `OQ-2`
-anlegen und die in Abschnitt 7 des Arbeitsprodukts genannten Schritte
-abarbeiten.
+`legacy_task_doctor.py` meldet `LTD-CLAIM-IDENTITY-MISMATCH`, weil
+`owner_token` an der Task-Position `re-intake` statt einer Task-ID trägt.
+
+Die Abweichung wird **bewusst nicht korrigiert**: `AGENTS.md` erklärt den
+einmal geprägten Token für unveränderlich („that token remains this session's
+ownership proof"). Ihn nachträglich umzuschreiben wäre ein schwererer
+Regelverstoß als der Befund selbst. Zum Zeitpunkt der Prägung existierte
+Feature `0040` noch nicht, und es gibt bis heute keine Task, die das Anlegen
+dieses Features abdeckt.
+
+Der eigentliche Mangel liegt im Werkzeug: Der Doctor kennt nur Task-Claims,
+während `AGENTS.md` den temporären Koordinationssatz für benutzergeführte
+Tätigkeiten ausdrücklich erlaubt. Dieses Format ist im Schema nicht abgebildet.
+Der Befund ist als Arbeitsposten in Feature `0040` vermerkt (siehe dortige
+Anmerkung zu `0040-03`) und nicht stillschweigend unterdrückt.
+
+## Next step
+
+Umsetzung von Feature `0040` beginnen. Reihenfolge nach Vorbedingungen:
+`0040-01` (Rollenmodell) und `0040-03` (Entscheidungsdatensatz) sind ohne
+Vorbedingung startbar und bilden die Grundlage für alles Weitere. `0040-05`
+(Prozesserweiterung, Integrationsprüfung verpflichtend) folgt auf beide.
+
+Vor jeder Abnahme an eigener Arbeit ist die kompensierende Maßnahme aus
+`DEC-0040-001` anzuwenden: Kennzeichnung als Selbstabnahme mit Nennung von
+`DEC-0040-001` als Autoritätsreferenz.

@@ -267,6 +267,63 @@ umgekehrt.
 | `OQ-4` | Sollen die neuen Rollen als **zusätzliche Achse** neben den Fähigkeitsklassen geführt werden (Befund C), oder wünscht der Kunde ausdrücklich neue Agentenprofile als eigene Klassen? | Bestimmt die Grundstruktur des Rollenmodells und damit alle Folgedokumente. |
 | `OQ-5` | Soll der Vorfall aus Abschnitt 2 (`0038-03`) als **Pilot** rückwirkend mit dem neuen Prozess bewertet werden? | `0039-01` verlangt ohnehin zwei Pilotanwendungen; der Vorfall wäre ein belastbarer, bereits belegter Kandidat. |
 
+## 6a. Review-Ergebnis und Entscheidungsdatensätze
+
+Das Review mit dem Kunden fand am 2026-08-18 statt. Die vier Entscheidungen
+sind unten im **vorläufigen** Entscheidungsdatensatz-Format festgehalten. Dieses
+Format ist bewusst die erste Anwendung von `RQ-DEC-01/02/03` auf den eigenen
+Vorgang; Task `0040-03` formalisiert es normativ und darf es dabei ändern.
+Bestandsschutz hat der Inhalt, nicht die Form.
+
+---
+
+### `DEC-0040-001` — Autoritätsbenennung für Feature `0039`/`0040`
+
+- **Zeitpunkt:** 2026-08-18T00:32:23Z (Reviewzeitpunkt; Aufnahme unmittelbar danach)
+- **Entscheidende Instanz:** aktueller Benutzer (Managementautorität im Sinne des `TODO.md`-Headers)
+- **Gegenstand:** `OQ-1` — Reservierungssperre Feature `0039`
+- **Entscheidung:** Die Session `agent:claude:re-intake:20260818T003223Z-845170c0e4da` wird **vollprivilegiert** als Eignersession benannt, einschließlich Abnahmebefugnis.
+- **Fachliche Rechtfertigung (Benutzer):** ausdrückliche Auswahl der Option „Vollprivilegiert benennen" im Review.
+- **Abweichung und Kompensation:** Der RE hat vorab darauf hingewiesen, dass damit Entwurf und Abnahme in einer Hand liegen und dies der in `AGENTS.md` geforderten Unabhängigkeit (`normally independent of the claim owner, principal implementer, decisive technical author`) sowie der SUP.1-Unabhängigkeit widerspricht. Der Kunde hat die Option in Kenntnis dieses Hinweises gewählt. Dies ist damit ein **ausdrücklicher, begrenzter Autoritätsverzicht** („bounded authority waiver") im Sinne von `AGENTS.md`, nicht eine stillschweigende Selbstermächtigung.
+  - **Geltungsbereich des Verzichts:** Feature `0040` und die zu seiner Umsetzung nötigen Änderungen; **nicht** Feature `0039` selbst, dessen Tasks `0039-01/02/03/05` `[u]` bleiben.
+  - **Kompensierende Maßnahme:** Jede Abnahme, die diese Session an eigener Arbeit vornimmt, wird als solche gekennzeichnet und benennt `DEC-0040-001` als Autoritätsreferenz, sodass eine spätere unabhängige Instanz sie gezielt nachprüfen kann.
+
+### `DEC-0040-002` — Zuschnitt: eigenes Feature `0040`
+
+- **Zeitpunkt:** 2026-08-18T00:32:23Z
+- **Entscheidende Instanz:** aktueller Benutzer
+- **Gegenstand:** `OQ-2` — Aufnahme in `0039-01` oder eigenes Feature
+- **Entscheidung:** Eigenes **Feature `0040`**; die Arbeit wird dort als mehrere Tasks geführt („Die Arbeit soll als weitere Tasks zu Feature 40 hinzukommen").
+- **Fachliche Rechtfertigung:** `0039-01` ist bereits sehr umfangreich und trägt die Reservierungssperre; eine Aufnahme dort würde die neue Anforderung mitsperren und erst mit dem Gesamtpaket fertig werden lassen. Ein eigenes Feature macht sie eigenständig planbar und sichtbar.
+- **Architekturfolge (RE/Architekt):** `0040:0039-01` wird als **Feature-Abschluss-Vorbedingung** geführt, nicht als Startsperre. Damit kann `0040` sofort beginnen, kann aber nicht nach `DONE.md`, bevor die Basisprozessdefinition aus `0039-01` steht — das verhindert zwei konkurrierende Prozessdefinitionen.
+
+### `DEC-0040-003` — Rollenmodell: zwei Achsen **mit** Mapping
+
+- **Zeitpunkt:** 2026-08-18T00:32:23Z
+- **Entscheidende Instanz:** aktueller Benutzer
+- **Gegenstand:** `OQ-4` — Rollen als eigene Achse oder als neue Agentenprofile
+- **Entscheidung:** Zwei getrennte Achsen (Fähigkeitsklasse × Prozessrolle), **zusätzlich** eine verbindliche Mapping-Tabelle von Prozessrollen auf Agentenprofile („Trotzdem soll es natürlich ein Mapping geben von Rollen auf Agentenprofile").
+- **Fachliche Rechtfertigung:** Die Achsentrennung bildet ASPICE korrekt ab und erklärt, warum „privilegiert" nicht „unabhängig" bedeutet (Befund C/D). Das geforderte Mapping verhindert zugleich, dass die Trennung praktisch folgenlos bleibt: Ohne Zuordnung wüsste keine Session, welches Profil sie für eine Rolle braucht.
+- **Präzisierung durch den RE:** Das Mapping ist keine 1:1-Zuordnung, sondern legt je Rolle die **Mindest-Fähigkeitsklasse** und etwaige **Unvereinbarkeiten** fest (z. B. QA-Manager darf nicht zugleich Implementierer desselben Gegenstands sein).
+
+### `DEC-0040-004` — Rückverfolgbarkeitstiefe: Datei- und Commit-Ebene
+
+- **Zeitpunkt:** 2026-08-18T00:32:23Z
+- **Entscheidende Instanz:** aktueller Benutzer
+- **Gegenstand:** `OQ-3` — Tiefe der Evidenz-zu-Code-Verknüpfung
+- **Entscheidung:** **Datei- und Commit-Ebene.**
+- **Fachliche Rechtfertigung:** Mit Git-Bordmitteln und einem Prüfskript umsetzbar, bleibt bei Refactorings stabil und erfüllt die ASPICE-Praktik in der Regel. Zeilen-/Symbolebene wurde ausdrücklich verworfen, weil sie dieselbe Sprengfalle erzeugt wie die digest-gebundenen Freigaben aus Befund T5.
+- **Folge für `RQ-TRACE-03`:** Die Anforderung ist auf Datei- und Commit-Auflösung zu präzisieren; Zeilen-/Symbolgenauigkeit ist ausdrücklich **kein** Abnahmekriterium.
+
+---
+
+**Offen geblieben:** `OQ-5` (Rückwirkende Pilotbewertung des Vorfalls `0038-03`)
+wurde im Review nicht beantwortet. Der Architekt nimmt sie als Task `0040-08`
+auf, weil `0039-01` ohnehin zwei Pilotanwendungen verlangt und der Vorfall ein
+bereits vollständig belegter Kandidat ist. Diese Aufnahme ist eine
+Architektenentscheidung, keine Kundenentscheidung; sie ist als solche in
+`TODO.md` gekennzeichnet und kann folgenlos gestrichen werden.
+
 ## 7. Nächste Schritte nach Klärung
 
 1. Bookkeeping gemäß `OQ-2` anlegen (Task-Änderung oder neues Feature), mit
