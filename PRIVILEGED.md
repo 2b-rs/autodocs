@@ -135,7 +135,7 @@ Before committing:
 - use the configured repository identity;
 - write a comprehensive Feature/Task-oriented commit message.
 
-For substantive Task completion, create the substantive commit before recording its real hash in authoritative bookkeeping. Commit bookkeeping separately unless an approved transaction safely creates both commits without self-reference or partial-state ambiguity.
+For substantive Task completion, create one path-limited implementation check-in containing the deliverables, finalized claim, and `[x]`/`[w]` transition. Its message must carry the `Task-ID` and `Base-Ref` trailers defined by `docs/pipeline/branch-workflow.md`, and `Base-Ref` must be an ancestor of the check-in. Do not create a separate implementation-bookkeeping commit or amend the check-in to inject its own hash. Acceptance and Feature-closure evidence/bookkeeping remain separate privileged lifecycles.
 
 Do not mark implementation complete merely because direct execution succeeded. Acceptance criteria, Definition of Done, validation, evidence, claim reconciliation, and required approvals must all be satisfied for `[x]`/`[w]`. Do not mark work-product acceptance merely because implementation completed; acceptance requires the separate assigned review above.
 

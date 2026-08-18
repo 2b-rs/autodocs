@@ -110,6 +110,48 @@ Notes and consequences:
   dropping one side; the point of carrying them is to retain every predecessor's
   provenance.
 
+## Self-describing implementation check-in
+
+The item branch records the exact start of substantive work without a
+hash-dependent second commit. Immediately after branch creation and prerequisite
+preintegration—and after any claim-only start commit—the implementer records the
+current item-branch tip. That commit is the **Base-Ref**: the item-branch commit
+immediately before the first substantive change. It is not necessarily the
+fork-point, a prerequisite tip, or an acceptance-review commit.
+
+Implementation completion is one path-limited check-in containing:
+
+1. the substantive deliverables or committed non-implementation disposition;
+2. the finalized claim and validation/findings evidence;
+3. the authoritative `[x]` or `[w]` marker transition; and
+4. these Git trailers at the end of the commit message:
+
+```text
+Task-ID: 0041-02
+Base-Ref: 75a76f001c4936860afd6c5297b7a80540c3de16
+```
+
+`Task-ID` is exactly one canonical Task/Subtask ID matching the terminal marker
+in the committed tree. `Base-Ref` is a full 40-lowercase-hex reachable commit.
+The carrying check-in must satisfy:
+
+```sh
+git merge-base --is-ancestor <Base-Ref> <implementation-check-in>
+```
+
+The prerequisite branch tips remain listed separately in the claim. They do not
+replace `Base-Ref`: even one prerequisite can require a real preintegration
+merge when the parent branch has advanced, and Git's merge-base/fork-point
+queries reveal merge inputs rather than the resulting pre-substantive state.
+See [`../dossiers/0041-entscheidungen-und-base-ref-analyse.md`](../dossiers/0041-entscheidungen-und-base-ref-analyse.md).
+
+A separate implementation-bookkeeping commit is prohibited. The authoritative
+implementation state is derived from the check-in's committed tree and trailers;
+the commit never attempts to contain its own hash. Existing historical terminal
+items retain their recorded two-commit form. Acceptance-review and Feature-
+closure commits are separate privileged lifecycles and are not removed by this
+rule.
+
 ## Merge authority and direction
 
 Merges only ever move work **up** the tree (Subtask→Task→Feature). Authority
