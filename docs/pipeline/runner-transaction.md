@@ -279,7 +279,7 @@ arbitrary claim, deletes a lock, or overwrites newer edits.
 The transaction runner supports two declared execution profiles:
 
 1. `close-task-v1`: Full Task closure profile requiring a generator phase, a validator phase, generated outputs, a substantive commit, and a parented REF bookkeeping commit that closes the Task in `TODO.md`.
-2. `verify-and-commit-v1`: Scoped validation and path-limited commit profile. Allows validation-only action sequences without invoking unrelated site generators, permits empty `output_paths`, requires a substantive commit with provenance, and makes `bookkeeping` optional so focused substantive work can be safely published without forcing `TODO.md` closure.
+2. `verify-and-commit-v1`: Scoped validation and path-limited commit profile. Allows validation-only action sequences without invoking unrelated site generators, permits empty `output_paths`, requires a substantive commit with provenance and a parented bookkeeping commit, and rejects omitted `bookkeeping` before any transaction work begins; a Task-closing transaction never reports success while the authoritative marker remains untouched.
 
 ## Current fixed actions
 

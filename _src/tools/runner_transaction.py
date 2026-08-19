@@ -521,7 +521,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     bookkeeping = data.get("bookkeeping")
     if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE) and not isinstance(commit, dict):
         raise TransactionError("RTX-SCHEMA-TYPE", "commit must be an object", "manifest", EXIT_MANIFEST)
-    if data["profile"] == PROFILE and bookkeeping is None:
+    if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE) and bookkeeping is None:
         raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
     if bookkeeping is not None:
         if not isinstance(bookkeeping, dict):
