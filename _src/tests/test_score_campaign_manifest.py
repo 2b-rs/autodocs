@@ -27,6 +27,15 @@ class ScoreCampaignManifestTests(unittest.TestCase):
         self.assertEqual(manifest.validate_bom(self.fixture("valid-complete.json")), [])
         self.assertEqual(manifest.validate_bom(self.fixture("valid-complete.json"), require_complete=True), [])
 
+    def test_complete_manifest_requires_retained_snapshot_links(self):
+        broken = self.fixture("valid-complete.json")
+        del broken["snapshot"]
+        self.assertError(broken, "complete BOMs require a snapshot object")
+
+        broken = self.fixture("valid-complete.json")
+        broken["sources"][0]["snapshot_archive"] = "outside/communication.tar"
+        self.assertError(broken, "snapshot_archive must be under")
+
     def test_draft_fixture_is_structurally_valid_but_cannot_pass_completion_gate(self):
         draft = self.fixture("draft-blocked.json")
         self.assertEqual(manifest.validate_bom(draft), [])

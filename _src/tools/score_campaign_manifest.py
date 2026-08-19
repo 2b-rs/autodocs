@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-SCHEMA = "score-source-bom@v1"
+SCHEMA = "score-source-bom@v2"
 PROJECT = "ECLIPSE/S-CORE"
 SCRAPER_PATH = "_src/tools/score_scrape.py"
 STATES = {"draft-blocked", "complete"}
@@ -34,6 +34,7 @@ ROOT_KEYS = {
     "sources",
     "exclusions",
     "scraper",
+    "snapshot",
     "blocker",
 }
 SOURCE_KEYS = {
@@ -45,10 +46,14 @@ SOURCE_KEYS = {
     "source_paths",
     "archive",
     "license_notice",
+    "snapshot_archive",
 }
 ARCHIVE_KEYS = {"algorithm", "sha256"}
 EXCLUSION_KEYS = {"repository", "rationale"}
 SCRAPER_KEYS = {"path", "commit"}
+SNAPSHOT_KEYS = {"schema", "root", "inventory", "inventory_sha256", "verification_tool"}
+SNAPSHOT_SCHEMA = "score-source-snapshot@v1"
+SNAPSHOT_TOOL_PATH = "_src/tools/score_source_snapshot.py"
 BLOCKER_KEYS = {"reason", "evidence"}
 
 
@@ -133,6 +138,7 @@ def _validate_source(source: Any, index: int, errors: list[str]) -> str | None:
             errors.append(f"{label}.archive.sha256 must be a lowercase 64-character SHA-256")
 
     _validate_relative_path(source.get("license_notice"), f"{label}.license_notice", errors)
+    _validate_relative_path(source.get("snapshot_archive"), f"{label}.snapshot_archive", errors)
     return repository
 
 
@@ -161,6 +167,29 @@ def _validate_scraper(scraper: Any, errors: list[str]) -> None:
     commit = scraper.get("commit")
     if not isinstance(commit, str) or not GIT_SHA_RE.fullmatch(commit):
         errors.append("scraper.commit must be a lowercase full 40-character Git SHA")
+
+
+def _validate_snapshot(snapshot: Any, state: Any, errors: list[str]) -> None:
+    if state == "complete":
+        if not _is_mapping(snapshot):
+            errors.append("complete BOMs require a snapshot object")
+            return
+        _validate_exact_keys(snapshot, SNAPSHOT_KEYS, "snapshot", errors)
+        if snapshot.get("schema") != SNAPSHOT_SCHEMA:
+            errors.append(f"snapshot.schema must be {SNAPSHOT_SCHEMA!r}")
+        root = snapshot.get("root")
+        _validate_relative_path(root, "snapshot.root", errors)
+        inventory = snapshot.get("inventory")
+        _validate_relative_path(inventory, "snapshot.inventory", errors)
+        if isinstance(root, str) and isinstance(inventory, str) and inventory != f"{root}/inventory.json":
+            errors.append("snapshot.inventory must be snapshot.root plus '/inventory.json'")
+        digest = snapshot.get("inventory_sha256")
+        if not isinstance(digest, str) or not SHA256_RE.fullmatch(digest):
+            errors.append("snapshot.inventory_sha256 must be a lowercase 64-character SHA-256")
+        if snapshot.get("verification_tool") != SNAPSHOT_TOOL_PATH:
+            errors.append(f"snapshot.verification_tool must be {SNAPSHOT_TOOL_PATH!r}")
+    elif snapshot is not None:
+        errors.append("draft-blocked BOMs must not claim a retained snapshot")
 
 
 def _validate_blocker(blocker: Any, state: Any, errors: list[str]) -> None:
@@ -237,7 +266,15 @@ def validate_bom(value: Any, *, require_complete: bool = False) -> list[str]:
                     errors.append(f"repository {repository!r} cannot be both a source and an exclusion")
                 exclusion_repositories.add(repository)
 
+    snapshot = value.get("snapshot")
     _validate_scraper(value.get("scraper"), errors)
+    _validate_snapshot(snapshot, state, errors)
+    if _is_mapping(snapshot) and isinstance(snapshot.get("root"), str) and isinstance(sources, list):
+        archive_prefix = f"{snapshot['root']}/archives/"
+        for index, source in enumerate(sources):
+            if _is_mapping(source) and source.get("snapshot_archive") != "" and isinstance(source.get("snapshot_archive"), str):
+                if not source["snapshot_archive"].startswith(archive_prefix):
+                    errors.append(f"sources[{index}].snapshot_archive must be under {archive_prefix!r}")
     _validate_blocker(value.get("blocker"), state, errors)
     return errors
 
