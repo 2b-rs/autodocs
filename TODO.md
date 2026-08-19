@@ -309,7 +309,7 @@ HOW TO USE:
 
 ### Campaign B — Imported improvement pilot
 
-- [x] **0039-03** PREREQ: 0039-03:0039-02 Productize or explicitly reject the retained page-i18n completeness validator proposal from completed Feature `0036` as the first controlled tool-process pilot. REF: `054e658bbe53057ad504a772b3d1fc6c4de68fcd`.
+- [p] **0039-03** PREREQ: 0039-03:0039-02 Productize or explicitly reject the retained page-i18n completeness validator proposal from completed Feature `0036` as the first controlled tool-process pilot. REF: `054e658bbe53057ad504a772b3d1fc6c4de68fcd`.
   - **Claim (2026-08-19):** Explicitly assigned by the current user to unprivileged Tim Riker 20260819T125003Z via `TODO-riker-0039-03-20260819T125003Z-6f3c8a1d.md`; owner_token `agent:riker:0039-03:20260819T125003Z-6f3c8a1d`. `0039-02` is accepted at `a12bb85fe89520bf9026fe975fdd5e3edbd90102`; this Task's canonical branch is `0039-03`.
   - **Implementation completion (2026-08-19):** Productized a read-only, explicitly opted-in `page-i18n-families@v1` validator. Focused fixtures and the existing page-content suite passed; the live process-documentation family passed with zero findings. The evidence-backed disposition is `docs/pipeline/evidence/0039-03/page-i18n-disposition.md`. No `_src/validate.py` integration, registration, acceptance, or external effect occurred.
   - **Reservation gate:** Satisfied by the explicit current-user assignment above after `0039-02` acceptance; historical prototype availability alone remains insufficient permission.
