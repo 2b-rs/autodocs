@@ -309,8 +309,9 @@ HOW TO USE:
 
 ### Campaign B — Imported improvement pilot
 
-- [u] **0039-03** PREREQ: 0039-03:0039-02 Productize or explicitly reject the retained page-i18n completeness validator proposal from completed Feature `0036` as the first controlled tool-process pilot.
-  - **Reservation gate:** The sole next action is a current-user decision naming an explicitly privileged owning session after `0039-02` is approved; historical prototype availability is not permission to execute or promote it.
+- [p] **0039-03** PREREQ: 0039-03:0039-02 Productize or explicitly reject the retained page-i18n completeness validator proposal from completed Feature `0036` as the first controlled tool-process pilot.
+  - **Claim (2026-08-19):** Explicitly assigned by the current user to unprivileged Tim Riker 20260819T125003Z via `TODO-riker-0039-03-20260819T125003Z-6f3c8a1d.md`; owner_token `agent:riker:0039-03:20260819T125003Z-6f3c8a1d`. `0039-02` is accepted at `a12bb85fe89520bf9026fe975fdd5e3edbd90102`; this Task's canonical branch is `0039-03`.
+  - **Reservation gate:** Satisfied by the explicit current-user assignment above after `0039-02` acceptance; historical prototype availability alone remains insufficient permission.
   - **Acceptance criteria:** Recover the retained `validate_process_i18n.py` prototype/evidence without treating ignored output as authoritative source; assess overlap with current i18n and Feature `0038` validation tooling; then either create a tested, cataloged `_src/tools/validate_page_i18n.py` with explicit opt-in page families, source-to-register and rendered-output coverage, fallback/leak, stable-anchor, ARIA, inline-SVG, bounded JSON, false-positive, and retirement semantics, or record an evidence-backed rejection/supersession. Any integration into `_src/validate.py` must be fail-closed, deterministic, and separately reviewed.
   - **Definition of Done:** The suggestion has exactly one authoritative disposition and owner; representative positive, missing-extraction, fallback/leak, protected-identifier, anchor, ARIA, inline-SVG, and stale-output fixtures pass or justify rejection; catalogs and historical suggestion references point to the disposition; and the `0039-02` pilot report measures whether the tool process improved reuse and assurance without duplicating an existing validator.
 

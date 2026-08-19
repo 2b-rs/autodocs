@@ -18,6 +18,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `i18n_extract.py` | Baut deutsches Quellregister der Mehrsprachigkeit (`segments.de.json`) | — |
 | `i18n_translate.py` | Erzeugt/mergt Übersetzungs-Arbeitspakete | `split <lang> [--kb=40]` |
 | `i18n_diagrams.py` | Materialisiert übersetzte Diagramme (rendert neu bei Abweichung von Label-Register) | — |
+| `validate_page_i18n.py` | Read-only completeness validator for explicitly opted-in page families: source-to-register coverage, rendered locale output, fallback/leak markers, stable anchors, ARIA labels, and inline-SVG labels. Retired families remain historical and are not checked. | `python3 _src/tools/validate_page_i18n.py --root . --config _src/i18n/page_families.json --json` |
 | `lib_docmodel.py` | Bibliothek: Dokumentmodell-Grundfunktionen (importiert von `ai_workflow.py` u. a.) | Bibliothek, kein CLI |
 | `lib_i18n.py` | Bibliothek: i18n-Grundfunktionen | Bibliothek, kein CLI |
 | `lib_svgdiag.py` | Bibliothek: SVG-Diagramm-Grundfunktionen | Bibliothek, kein CLI |
