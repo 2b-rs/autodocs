@@ -31,7 +31,7 @@ The package commit and completion-evidence commit are reachable but did not pass
 | Independent owner confirmation | Current user identified GitHub username `2b-rs`; `https://github.com/2b-rs.keys` returned the registered owner key with matching fingerprint `SHA256:ciGUV68+0uuJGw+HsDQmur/ZO0INAtZbg5M0A+zydl4` | `OWNER VERIFIED`; non-owner role/key bindings remain `BLOCKED` |
 | Required roles | Candidate policy assigns `process` to the confirmed `agent-commit-key` and assigns `independent-quality` plus `translation-review` to qualified credential `agent-qa`; actual future independent reviewer-session assignment/availability is still recorded at review time | `ROLE POLICY PREPARED` |
 | Signing operation | Canonical local config can verify the signed policy commit; the isolated worker clone does not inherit `gpg.format`, `user.signingkey`, or `gpg.ssh.allowedSignersFile`; no approved runner-visible signing operation was exercised | `BLOCKED` |
-| Credential handles | One deploy-key metadata entry exists, but runner visibility/use is unproven and it does not establish hosting-policy, runner-supervisor/configuration or protocol-selector authority | `BLOCKED` |
+| Credential handles | Trusted runner execution authenticated to `git@github.com:2b-rs/autodocs.git` with exact handle fingerprint, completed `push --dry-run`, and proved the target approval ref unchanged | `DEPLOY HANDLE VERIFIED`; hosting-policy and runner-control handles remain `BLOCKED` |
 | Runner service | Metadata names manual health/restart/rollback commands, but the configured `pgrep` health probe found no running process; persistence, restart, rollback, service-config authority and protocol switching remain unqualified | `BLOCKED` |
 | Signed readiness record | No independently authenticated, digest-bound signed readiness report exists | `BLOCKED` |
 
@@ -128,3 +128,12 @@ Until all five actions succeed, `0037-07` must not begin and no architecture app
 `_src/run-loop.sh` resolves the allowlisted handle `autodocs-deploy-key` to the existing runner credential `~/devel/identities/runner-deploy-key/id_ed25519_autodocs`; installations with a different runner-private location may set `AUTODOCS_DEPLOY_KEY_PATH`. No new credential registry or key copy is introduced. The runner requires a non-symlink mode-`0600` key, verifies fixed public fingerprint `SHA256:wtCFvdCIurWZj2NT4deL9Rg9uwqsL5nj17jlaoTW7a0` before execution, loads it into a task-scoped SSH agent outside the sandbox, exposes only `SSH_AUTH_SOCK` plus a public selector to the work order, and destroys the agent after every run. Unknown, unavailable and wrong-fingerprint handles fail before network access; logs identify only the handle and never the private path or key material.
 
 The mode is selected by setting `GITHUB_SSH_CREDENTIAL_HANDLE=autodocs-deploy-key` on the runner process. The existing credential was verified locally at the expected fingerprint and mode; the live GitHub capability probe remains separate.
+
+
+## Executed deploy-key capability probe
+
+Trusted runner execution request `0037-49-deploy-key-probe-20260819T015922Z-01` completed on 2026-08-19 with exit code `0` and verdict `passed`. Immutable retained result: `docs/pipeline/0037-49-deploy-key-probe-result.json`, SHA-256 `2d019bc4a6288fcbd7f4ebdb0109140c8d4ddb79349249dd6bbf149f1de95eeb`.
+
+The runner exposed exact credential fingerprint `SHA256:wtCFvdCIurWZj2NT4deL9Rg9uwqsL5nj17jlaoTW7a0` through a task-scoped SSH agent, authenticated `ls-remote` before and after, completed `git push --dry-run --porcelain` for `refs/autodocs/approval/0037-architecture`, and observed the target ref absent and byte-identical before/after. `remote_mutation` is `false`. This resolves runner visibility, SSH authentication and dry-run negotiation for the deploy handle. It does not replace the later authorized expected-ref CAS publication or establish unrelated hosting-policy, service-control or signing handles.
+
+Process boundary: the sandboxed/grunt agent correctly refused direct execution. The package was executed by the explicitly privileged Task owner through the trusted handle-enabled runner environment. No grunt execution privilege is inferred.
