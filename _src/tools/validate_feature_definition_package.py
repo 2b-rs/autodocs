@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Read-only structural validator for feature-definition-evidence@v1."""
+"""Read-only structural validator for feature-definition-evidence@v2."""
 import argparse
+import hashlib
 import json
 import re
 import sys
 from pathlib import Path
 
-SCHEMA = "feature-definition-evidence@v1"
+SCHEMA = "feature-definition-evidence@v2"
+RECONCILIATION_SCHEMA = "feature-definition-study-reconciliation@v1"
+STUDY_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+RECOMMENDATION_RE = re.compile(r"^REC-\d{2}$")
+DISPOSITIONS = {"selected", "rejected", "deferred", "superseded"}
 TASK_RE = re.compile(r"^\d{4}-\d{2}(?:\.\d{2})?$")
 CRITERION_RE = re.compile(r"^FD-\d{4}-AC-\d{3}$")
 EVIDENCE_RE = re.compile(r"^E-\d{3}$")
@@ -46,10 +51,56 @@ def cycle(edges):
 
 def validate(data, root):
     findings = []
-    if not isinstance(data, dict) or set(data) != {"schema", "feature", "criteria", "tasks", "prerequisites", "evidence", "integration_task"}:
+    if not isinstance(data, dict) or set(data) != {"schema", "feature", "reconciliation", "criteria", "tasks", "prerequisites", "evidence", "integration_task"}:
         return [error("FDB-001", "manifest has an unexpected top-level shape")]
     if data["schema"] != SCHEMA or not re.fullmatch(r"\d{4}", data["feature"]):
         findings.append(error("FDB-001", "schema or Feature ID is invalid"))
+    reconciliation = data.get("reconciliation")
+    if not isinstance(reconciliation, dict) or set(reconciliation) != {"path", "study_path", "study_sha256"}:
+        return findings + [error("FDB-008", "reconciliation locator is invalid")]
+    reconciliation_path = reconciliation.get("path")
+    study_path = reconciliation.get("study_path")
+    expected_digest = reconciliation.get("study_sha256")
+    if (not isinstance(reconciliation_path, str) or not isinstance(study_path, str)
+            or Path(reconciliation_path).is_absolute() or Path(study_path).is_absolute()
+            or ".." in Path(reconciliation_path).parts or ".." in Path(study_path).parts
+            or not isinstance(expected_digest, str) or not STUDY_SHA256_RE.fullmatch(expected_digest)):
+        return findings + [error("FDB-008", "reconciliation paths or study digest are invalid")]
+    try:
+        actual_digest = hashlib.sha256((root / study_path).read_bytes()).hexdigest()
+        reconciliation_data = json.loads((root / reconciliation_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return findings + [error("FDB-008", f"cannot read reconciliation: {exc}")]
+    if actual_digest != expected_digest:
+        findings.append(error("FDB-008", "study digest does not match the reconciled input"))
+    expected_study = {"path": study_path, "sha256": expected_digest}
+    if (not isinstance(reconciliation_data, dict)
+            or set(reconciliation_data) != {"schema", "study", "recommendations"}
+            or reconciliation_data.get("schema") != RECONCILIATION_SCHEMA
+            or not isinstance(reconciliation_data.get("study"), dict)
+            or not expected_study.items() <= reconciliation_data["study"].items()
+            or not isinstance(reconciliation_data.get("recommendations"), list)):
+        findings.append(error("FDB-008", "reconciliation shape, identity, or study binding is invalid"))
+    else:
+        recommendation_ids = []
+        for item in reconciliation_data["recommendations"]:
+            if (not isinstance(item, dict) or not isinstance(item.get("id"), str)
+                    or not RECOMMENDATION_RE.fullmatch(item["id"])
+                    or not isinstance(item.get("recommendation"), str) or not item["recommendation"].strip()
+                    or item.get("disposition") not in DISPOSITIONS
+                    or not isinstance(item.get("authority"), str) or not item["authority"].strip()
+                    or not isinstance(item.get("post_0037_owner"), str) or not item["post_0037_owner"].strip()
+                    or not isinstance(item.get("artifacts"), list) or not item["artifacts"]):
+                findings.append(error("FDB-008", "recommendation disposition is incomplete"))
+                continue
+            recommendation_ids.append(item["id"])
+            for artifact in item["artifacts"]:
+                artifact_path = artifact.split("#", 1)[0] if isinstance(artifact, str) else ""
+                if not artifact_path or not (root / artifact_path).is_file():
+                    findings.append(error("FDB-008", f"recommendation {item['id']} has an invalid artifact"))
+        if recommendation_ids != [f"REC-{number:02d}" for number in range(1, 21)]:
+            findings.append(error("FDB-008", "reconciliation must contain REC-01 through REC-20 in order"))
+
     collections = ("criteria", "tasks", "prerequisites", "evidence")
     if any(not isinstance(data[name], list) for name in collections):
         return findings + [error("FDB-001", "collections must be arrays")]

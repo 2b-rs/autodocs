@@ -8,8 +8,9 @@ A contract evidence manifest is JSON with this closed shape:
 
 ```json
 {
-  "schema": "feature-definition-evidence@v1",
+  "schema": "feature-definition-evidence@v2",
   "feature": "0039",
+  "reconciliation": {"path":"docs/pipeline/evidence/0039-01/study-reconciliation.json","study_path":"docs/dossiers/feature-definition-process-study.docx","study_sha256":"<64 lowercase hexadecimal characters>"},
   "criteria": [{"id":"FD-0039-AC-001","implemented_by":["0039-01"],"verified_by":["E-001"]}],
   "tasks": [{"id":"0039-01","primary_result":"process package","capability":"privileged","evidence":["E-001"]}],
   "prerequisites": [{"consumer":"0039-01","producer":"0039-04","type":"producer"}],
@@ -22,12 +23,13 @@ A contract evidence manifest is JSON with this closed shape:
 
 | ID | Rule | Failure |
 |---|---|---|
-| FDB-001 | Schema is exactly `feature-definition-evidence@v1`; IDs are unique and match their grammar. | malformed or ambiguous identity |
+| FDB-001 | Schema is exactly `feature-definition-evidence@v2`; IDs are unique and match their grammar. | malformed or ambiguous identity |
 | FDB-002 | Every active criterion has non-empty `implemented_by` and `verified_by`; all references resolve. | missing outcome coverage |
 | FDB-003 | Every Task has a non-empty primary result, capability, and evidence; evidence paths are repository-relative and exist. | non-executable or unverifiable Task |
 | FDB-004 | Prerequisite endpoints resolve, have no self-edge, duplicate edge, or directed cycle. | invalid execution graph |
 | FDB-005 | Every prerequisite has an allowed type: `producer`, `decision`, `readiness`, `integration`, or `closure`. | prose-only/unclear dependency |
 | FDB-006 | Exactly one declared integration Task resolves to a Task. | missing or ambiguous parent integration |
 | FDB-007 | The validator reports, but cannot decide, semantic-deadlock prompts: later-artifact completion, pre-package approval, downstream aggregate, or successor-provided capability. | reviewer action required; no automatic approval |
+| FDB-008 | The reconciliation locator binds the informative study by its SHA-256. The English reconciliation has every `REC-01` through `REC-20` study recommendation in order, a selected/rejected/deferred/superseded disposition, accountable authority, existing authority/process artifacts, and a non-empty post-`0037` owner. | study input, disposition, authority, or cutover ownership is untraceable |
 
 A passing structural result does not prove architecture correctness, authority, risk acceptance, or semantic feasibility. Those remain human review duties under the main process.

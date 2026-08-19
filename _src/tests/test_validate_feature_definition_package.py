@@ -15,6 +15,29 @@ class FeatureDefinitionValidatorTests(unittest.TestCase):
     def test_current_manifest_passes(self):
         self.assertEqual([], validator.validate(MANIFEST, ROOT))
 
+    def test_missing_reconciliation_fails(self):
+        data = copy.deepcopy(MANIFEST)
+        del data["reconciliation"]
+        self.assertIn("FDB-001", {item["code"] for item in validator.validate(data, ROOT)})
+
+    def test_altered_study_digest_fails(self):
+        data = copy.deepcopy(MANIFEST)
+        data["reconciliation"]["study_sha256"] = "0" * 64
+        self.assertIn("FDB-008", {item["code"] for item in validator.validate(data, ROOT)})
+
+    def test_incomplete_reconciliation_fails(self):
+        reconciliation_path = ROOT / MANIFEST["reconciliation"]["path"]
+        reconciliation = json.loads(reconciliation_path.read_text())
+        reconciliation["recommendations"].pop()
+        temporary = ROOT / "docs/pipeline/evidence/0039-01/.test-study-reconciliation.json"
+        try:
+            temporary.write_text(json.dumps(reconciliation))
+            data = copy.deepcopy(MANIFEST)
+            data["reconciliation"]["path"] = str(temporary.relative_to(ROOT))
+            self.assertIn("FDB-008", {item["code"] for item in validator.validate(data, ROOT)})
+        finally:
+            temporary.unlink(missing_ok=True)
+
     def test_cycle_fails(self):
         data = copy.deepcopy(MANIFEST)
         data["prerequisites"].append({"consumer": "0039-04", "producer": "0039-01", "type": "producer"})
