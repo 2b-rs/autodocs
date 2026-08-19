@@ -2,9 +2,9 @@
 
 owner_token: agent:data-deanna:0039-03-review:20260819T201432Z-4f6b9c2a
 capability_class: privileged
-state: [p]
-review_outcome: pending-renewed-review
-review_evidence_ref: 99a90b8e036aa0b6f1c50412b5ec73069b36eede
+state: complete
+review_outcome: inconclusive
+review_evidence_ref: 65dbaf784677b52f34bdc7c9eb0ee7834032bd49
 branch: 0039-03
 review_baseline: 1a9911e8ada660f610fe38284d03a4296c9a913e
 substantive_ref: 054e658bbe53057ad504a772b3d1fc6c4de68fcd
@@ -29,7 +29,8 @@ Exact review write scope: `docs/pipeline/evidence/0039-03/` for a new review rec
 - **Outcome:** `inconclusive`; no `Acceptance: ✓` record was created.
 - **Evidence commit:** `99a90b8e036aa0b6f1c50412b5ec73069b36eede`.
 - **Findings:** `0039-03-AR-001` (incomplete `0039-02` prerequisite acceptance record) and `0039-03-AR-002` (invalid substantive `Base-Ref` provenance), retained in the evidence record.
-- **Required continuation:** separately authorized correction of `0039-02` acceptance digest fields and additive correction binding the actual substantive parent, followed by a new independent `0039-03` acceptance review.
+- **Required continuation:** the corrections were independently verified on re-review, but the corrected `0039-02` acceptance commit is not reachable from the current candidate. An authorized baseline update must make it reachable, followed by a new independent `0039-03` acceptance review.
+- **Renewed review evidence:** `65dbaf784677b52f34bdc7c9eb0ee7834032bd49`; outcome remains `inconclusive` as finding `0039-03-AR-003`.
 
 ## Continuation authorization (verbatim)
 
