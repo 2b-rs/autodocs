@@ -9,7 +9,7 @@ task_id: 0039-01
 feature_id: 0039
 base_commit: dfd4bf2717df48700b10adc6f16a65425656b731
 capability_class: privileged
-state: [p]
+state: [x]
 branch: 0039-01
 parent_branch: 0039
 
@@ -56,5 +56,13 @@ runner requests are needed.
   implementation claim, and Linus rejection evidence.
 - Confirmed the only actionable finding is `AR-0039-01-001`; no existing
   acceptance record for `0039-01` will be created or changed.
-- Next: add the digest-bound, machine-validated study reconciliation and
-  focused regression coverage.
+- Delivered `docs/pipeline/evidence/0039-01/study-reconciliation.json`, bound
+  to the source DOCX SHA-256 and containing `REC-01` through `REC-20` with
+  selected/rejected/deferred dispositions, authority, artifact, and post-`0037`
+  ownership mappings.
+- Updated the evidence manifest, structural rules, validator, and tests so an
+  absent, altered-digest, or incomplete reconciliation fails.
+- Substantive commit: `18778e46c`. Validation passed: seven focused tests,
+  manifest validation, Python compilation, JSON parsing, and `git diff --check`.
+- Implementation is complete. Independent corrective acceptance is unassigned;
+  no acceptance record was created.
