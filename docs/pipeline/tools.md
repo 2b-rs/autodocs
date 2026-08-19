@@ -67,7 +67,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 
 | Werkzeug | Zweck |
 |---|---|
-| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: tote relative Links, Index-Abdeckung, Prozessdokumente ohne Anker in einem Autoritätsdokument, verwaiste Dokumente, und Entscheidungsdatensätze, die nirgends zitiert werden |
+| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: `DOC001` tote relative Links, `DOC002` Index-Abdeckung, `DOC003` zitiertes Prozessdokument ohne Rückanker, `DOC004` unverlinkte Dokumente (aggregiert, informativ), `DOC005` unzitierte Entscheidungsdatensätze, `DOC006` unerreichbares Task-gebundenes Kontraktdokument |
 
 Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
 
@@ -75,6 +75,14 @@ Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
 definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
 gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
 ([`process-roles.md`](process-roles.md)).
+
+Unverlinkt zu sein ist bei **Nachschlagewerken kein Mangel** — niemand navigiert
+zu einem Schema, man schlägt es nach. `DOC004` fasst diese Fälle deshalb zu
+einem informativen Befund zusammen. Aussagekräftig ist allein `DOC006`: ein
+Dokument, das sich selbst über eine `Status:`-Zeile als Kontrakt oder
+Spezifikation eines Backlog-Items ausweist und trotzdem von nirgends erreichbar
+ist. Es bindet entweder noch und niemand findet es, oder es bindet nicht mehr
+und sagt das nirgends.
 
 Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
 `--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,

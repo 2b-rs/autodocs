@@ -38,12 +38,17 @@ INDEX = PIPELINE_DIR / "README.md"
 LINK_RE = re.compile(r"\[[^\]]*\]\(([^)#\s]+)(?:#[^)]*)?\)")
 DEC_DEF_RE = re.compile(r"^#{1,6}\s+`?(DEC-[A-Z0-9]+-\d+)`?", re.M)
 DEC_REF_RE = re.compile(r"`?(DEC-[A-Z0-9]+-\d+)`?")
+# A document that declares itself the contract/specification of a backlog item.
+# Backlog IDs carry a leading zero per the TODO.md ID scheme; the anchor keeps
+# dates such as "2026-08" from being read as item IDs.
+STATUS_TASK_RE = re.compile(r"^\*{0,2}Status:?\*{0,2}[^\n]*?\b(0\d{3}-\d\d(?:\.\d\d)?)", re.M | re.I)
 
 RULES = {
     "DOC001": ("error", "Relative link target does not exist"),
     "DOC002": ("info", "Pipeline index does not list every process document"),
     "DOC003": ("warning", "Process document is cited by authority text but anchors itself in none"),
-    "DOC004": ("warning", "Process document is referenced by nothing"),
+    "DOC004": ("info", "Process documents that nothing links to"),
+    "DOC006": ("warning", "Task-bound contract document is unreachable"),
     "DOC005": ("warning", "Decision record is defined but referenced nowhere else"),
 }
 
@@ -118,17 +123,37 @@ def scan(root: Path = ROOT) -> dict:
                 "DOC003", d,
                 f"cited by {', '.join(citers)} but links to no authority document"))
 
-    # DOC004: process documents nothing points at
+    # DOC004 / DOC006: documents nothing points at.
+    #
+    # Being unlinked is NOT a defect for reference material -- nobody navigates to
+    # a schema, they look it up. Reporting all of them buries the signal, so the
+    # bulk is one informational finding. What does have teeth is a document that
+    # declares itself the contract or specification of a backlog item and is
+    # nonetheless unreachable: it either still binds and nobody can find it, or it
+    # stopped binding and says so nowhere. Those are reported individually.
     referenced = set()
     for src, targets in links.items():
-        for t in targets:
-            if t != src:
-                referenced.add(t)
-    for d in docs:
-        if d.parent != PIPELINE_DIR or d == INDEX:
-            continue
-        if d not in referenced:
-            findings.append(_finding("DOC004", d, "no document links to it"))
+        for tgt in targets:
+            if tgt != src:
+                referenced.add(tgt)
+    orphans = [d for d in docs
+               if d.parent == PIPELINE_DIR and d != INDEX and d not in referenced]
+    plain = []
+    for d in orphans:
+        m = STATUS_TASK_RE.search(text[d])
+        if m:
+            findings.append(_finding(
+                "DOC006", d,
+                f"declares itself the contract/specification for item {m.group(1)} "
+                f"but no document links to it"))
+        else:
+            plain.append(d.name)
+    if plain:
+        shown = ", ".join(sorted(plain)[:5]) + (f", … (+{len(plain) - 5})" if len(plain) > 5 else "")
+        findings.append(_finding(
+            "DOC004", PIPELINE_DIR,
+            f"{len(plain)} document(s) are linked from nowhere; expected for reference "
+            f"material, review only if one should be navigable: {shown}"))
 
     # DOC005: decision records defined but never cited elsewhere
     defined = {}
