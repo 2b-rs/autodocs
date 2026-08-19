@@ -63,6 +63,26 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
 | `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
 
+## Prozessdokumentations-Prüfung
+
+| Werkzeug | Zweck |
+|---|---|
+| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: tote relative Links, Index-Abdeckung, Prozessdokumente ohne Anker in einem Autoritätsdokument, verwaiste Dokumente, und Entscheidungsdatensätze, die nirgends zitiert werden |
+
+Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
+
+Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
+definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
+gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
+([`process-roles.md`](process-roles.md)).
+
+Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
+`--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,
+ist eine Entscheidung mit Reichweite über die eigene Arbeitseinheit hinaus und
+verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
+ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
+soll.
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |
