@@ -105,6 +105,8 @@ RULE_SEVERITY = {
     "LTD-REF-UNREACHABLE": "error",
     "LTD-REF-STATE-DIVERGED": "error",
     "LTD-CLAIM-FIELDS-MISSING": "error",
+    "LTD-CLAIM-EXECUTION-AUTHORITY-INVALID": "error",
+    "LTD-CLAIM-STARTUP-REVIEW-INVALID": "error",
     "LTD-CLAIM-FIELD-DUPLICATE": "error",
     "LTD-CLAIM-FIELD-NONCANONICAL": "warning",
     "LTD-CLAIM-STATE-DIVERGED": "error",
@@ -251,6 +253,8 @@ class ClaimRecord:
     owner_token: Optional[str]
     base_commit: Optional[str]
     capability_class: Optional[str]
+    execution_authority: Optional[str]
+    startup_review: Optional[str]
     state: Optional[str]
     scopes: Tuple[str, ...]
     next_step_present: bool
@@ -265,6 +269,8 @@ class ClaimRecord:
             "owner_token": self.owner_token,
             "base_commit": self.base_commit,
             "capability_class": self.capability_class,
+            "execution_authority": self.execution_authority,
+            "startup_review": self.startup_review,
             "state": self.state,
             "scopes": list(self.scopes),
             "next_step_present": self.next_step_present,
@@ -920,6 +926,8 @@ def _parse_claim(blob: InputBlob) -> Tuple[ClaimRecord, List[FieldOccurrence]]:
             owner_token=owner,
             base_commit=one("base_commit"),
             capability_class=one("capability_class"),
+            execution_authority=one("execution_authority"),
+            startup_review=one("startup_review"),
             state=state,
             scopes=_claim_scopes(blob),
             next_step_present=_claim_next_step(blob),
@@ -1093,6 +1101,8 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         for item in items:
             grouped.setdefault(item.key, []).append(item)
         required = {"request_id", "owner_token", "base_commit", "capability_class", "state"}
+        if claim.state == "p":
+            required.update({"execution_authority", "startup_review"})
         if claim.task_id:
             required.add("task_id")
         missing = sorted(key for key in required if key not in grouped)
@@ -1136,6 +1146,15 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         if mismatches:
             line = claim.field_lines.get("owner_token", (1,))[0]
             findings.append(_make_finding("LTD-CLAIM-IDENTITY-MISMATCH", "claim", claim.path, line, claim.task_id or claim.path, "; ".join(mismatches), blobs))
+
+        if claim.state == "p" and claim.capability_class:
+            expected_authority = "runner-only" if claim.capability_class in {"sandboxed/grunt", "sandboxed-grunt"} else "direct" if claim.capability_class == "privileged" else None
+            if expected_authority and claim.execution_authority != expected_authority:
+                findings.append(_make_finding("LTD-CLAIM-EXECUTION-AUTHORITY-INVALID", "claim", claim.path, claim.field_lines.get("execution_authority", (1,))[0], claim.task_id or claim.path, f"{claim.capability_class} claims require execution_authority {expected_authority!r}, observed {claim.execution_authority!r}", blobs))
+            review = (claim.startup_review or "").lower()
+            missing_reviews = [name for name in ("SANDBOX.md", "AGENTS.md") if name.lower() not in review]
+            if missing_reviews:
+                findings.append(_make_finding("LTD-CLAIM-STARTUP-REVIEW-INVALID", "claim", claim.path, claim.field_lines.get("startup_review", (1,))[0], claim.task_id or claim.path, "startup_review must record review of SANDBOX.md and AGENTS.md; missing " + ", ".join(missing_reviews), blobs))
 
         base = claim.base_commit
         if base:
