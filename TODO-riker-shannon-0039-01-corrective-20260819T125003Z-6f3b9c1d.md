@@ -9,7 +9,7 @@ task_id: 0039-01
 feature_id: 0039
 base_commit: d7c758075fa5ce9eeda517f5d11b2293018f37e1
 capability_class: privileged
-state: [p]
+state: [x]
 branch: 0039-01
 parent_branch: 0039
 
@@ -61,5 +61,6 @@ needed.
   validator fails it with `FDB-008`.
 - Focused validation passed: 8 tests, manifest validator, Python compilation,
   reconciliation JSON parsing, and `git diff --check`.
-- Next: create the substantive corrective commit, then record implementation
-  completion in separate authoritative bookkeeping.
+- Substantive corrective commit: `11415cbc5fb87602cd3c9f85632bfbfce7327081`.
+- Implementation is complete. The Task returns to `[x]`; independent
+  acceptance remains unassigned, and no acceptance record was created.
