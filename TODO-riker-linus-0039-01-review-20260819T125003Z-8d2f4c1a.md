@@ -11,7 +11,7 @@ candidate_branch: 0039-01
 candidate_commit: 0aef8c78ea2c94c68a10ebd6701792683817fbc6
 substantive_commit: 451a05cad307e0ce8cac312e411e096aa4e81bee
 review_batch: [0039-04, 0039-01]
-state: active
+state: finalized
 ```
 
 ## Independence and authority
@@ -36,4 +36,7 @@ Inspect contracts, claims, provenance, study reconciliation, normative process/t
 ## Progress
 
 - Reviewer claim created on the isolated candidate worktree. No Task marker or Acceptance record has been changed.
-- Next: inspect exact candidate and `0039-04` work products, manifests, validation, and authority records; then run focused independent checks.
+- Inspected both work-product baselines, claims, authority, provenance, dossier integrity, English candidate documentation, templates, structural validator, migration plan, manifest, and both pilots.
+- Independently reran focused validator tests (4), manifest validation, compilation, diff checks, baseline reachability, and prerequisite/dossier integrity checks.
+- Evidence commit `c5aa797054c745df54fbcd6c8d40cfff58377e33` accepts `0039-04` and rejects `0039-01` for major finding `AR-0039-01-001` (missing study reconciliation).
+- Final bookkeeping: add the immutable `0039-04` Acceptance record; return `0039-01` to `[p]` with the append-only rejection record. No existing acceptance is altered.
