@@ -1436,7 +1436,7 @@ HOW TO USE:
 
 ### Campaign B — Extraction and Normalization
 
-- [ ] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter.
+- [p] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter.
   - **Acceptance criteria:** The adapter accepts only a manifest-pinned source set, extracts the profile’s supported artifacts, and emits deterministic raw extraction output; it does not fall back to moving refs such as `main`; failures identify repo/ref/path/locator and leave no partial canonical corpus presented as complete.
   - **Definition of Done:** Unit and integration tests cover successful extraction, missing source, invalid ref/hash, malformed Sphinx-needs item, duplicate identity, and unsupported artifact; repeated extraction from the same snapshot produces identical normalized raw output.
 
