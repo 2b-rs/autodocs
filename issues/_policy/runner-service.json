@@ -1,16 +1,73 @@
 {
-  "schema": "runner-service@v1",
-  "repo_path": "/tmp/autodocs",
-  "run_slot": "/tmp/autodocs/run.sh",
-  "runner_executable": "/tmp/autodocs/_src/run-loop.sh",
-  "invocation": "run-loop.sh run.sh",
-  "launch_mechanism": "manual",
-  "launch_notes": "Operator launches run-loop.sh manually from the repo working directory. No launchd/systemd service. Process is not automatically restarted by the OS.",
-  "health_check": "pgrep -f 'run-loop.sh run.sh'",
-  "restart_path": "cd /tmp/autodocs && _src/run-loop.sh run.sh",
-  "rollback_path": "git checkout HEAD -- _src/run-loop.sh",
-  "revocation_path": "kill $(pgrep -f 'run-loop.sh run.sh') && truncate -s 0 /tmp/autodocs/run.sh",
-  "operator": "tobias.anton <tobias.anton@accenture.com>",
-  "restart_notes": "Manual restart — operator restarts as soon as crash is observed by re-running the invocation above.",
-  "rollback_notes": "Restore run-loop.sh from its original location in the tracked repository tree. Canonical source is _src/run-loop.sh at HEAD."
+  "schema": "runner-service@v2",
+  "service_id": "less-restricted-legacy-singleton",
+  "repository": "git@github.com:2b-rs/autodocs.git",
+  "supervisor": {
+    "kind": "interactive-macos-ui-supervisor",
+    "source_path": "_src/perplexity-cpu-loop.js",
+    "source_sha256": "sha256:66d9e2432be8db4c1a52aec1222b5e3de95a0f792fa4852d34cb9dfbfe7a0b17",
+    "runtime_process_match": "/usr/bin/osascript -l JavaScript ./perplexity-cpu-loop.js",
+    "launch_model": "The running UI starts one process-group-isolated runner on demand for one checked execution snapshot; no always-running run-loop daemon exists.",
+    "health_interface": "UI status plus the exact active-run ownership record under ~/Library/Application Support/Perplexity CPU Loop/active-run.json; process identity must match runner path, snapshot, owner token, PID and process group.",
+    "persistence": "Supervisor remains available for the lifetime of the interactive UI process. It is not registered as an automatically restarting launchd service."
+  },
+  "execution": {
+    "source_path": "_src/run-loop.sh",
+    "source_sha256": "sha256:64e499db86a2c552bcb465f0d575a401a0b220fa3e29b6c41cafa4d744488998",
+    "runtime_checkout": "/private/tmp/autodocs",
+    "run_slot": "/private/tmp/autodocs/run.sh",
+    "invocation_profile": "--once --sandbox --ui-owner-token <uuid> --run-script <checked-snapshot>",
+    "lifecycle": "One process per request; the supervisor creates an atomic ownership record before launch, updates PID/PGID after launch, and clears it only after the matching process finishes.",
+    "credential_handles": [
+      "autodocs-deploy-key",
+      "agent-commit-key"
+    ]
+  },
+  "protocol": {
+    "authority_profile": "legacy-lists",
+    "authority_epoch": "legacy-writable",
+    "request_schema": "runner-request@v1",
+    "selector_path": "agent-workflow.json",
+    "switch_authority": "Task 0037-46.02 privileged activation transaction only",
+    "switch_safety": "The future activation must atomically change the selector and reject legacy mutation; this readiness record proves only that the current selector and rollback boundary are identifiable."
+  },
+  "restart_and_recovery": {
+    "normal_restart": "The supervisor launches a fresh one-shot runner for the retained checked snapshot.",
+    "crash_detection": "An ownership record without a matching live process is recoverable; a matching detached process is monitored; multiple or mismatched owners fail closed.",
+    "request_recovery": "If launch fails before ownership transfer or the runner exits before consuming the snapshot, the exact snapshot is restored and Auto Mode is disabled.",
+    "supervisor_restart": "Restart the UI from the tracked `_src/perplexity-cpu-loop.js` source and recover only the exact token/path-bound active-run record; do not use broad process-name killing."
+  },
+  "rollback": {
+    "source": "Stop the exact token/PID/PGID-bound runner, restore the previously pinned runner and supervisor source digests on an isolated branch, requalify, then promote by expected-base compare-and-swap.",
+    "protocol": "Before queue activation, keep `legacy-writable` plus `runner-request@v1`. A failed 0037-46.02 activation restores the prior selector epoch and singleton source before another mutating request is accepted.",
+    "prohibitions": [
+      "no git reset --hard in a shared or dirty checkout",
+      "no broad pgrep/kill by process name",
+      "no simultaneous legacy and queue mutation acceptance"
+    ]
+  },
+  "configuration_authority": {
+    "operator": "tobias.anton <tobias.anton@accenture.com>",
+    "current_user_authority": "May configure the host supervisor, credential handles and protocol selector subject to the Task contracts and signed decision records.",
+    "sandboxed_agent_boundary": "May publish bounded requests only; cannot control the supervisor, private credential paths or protocol selector directly.",
+    "revocation": "Disable Auto Mode, stop only the exact ownership-bound process group, retain/restore any checked snapshot, revoke affected credential handles, and record the selector/policy change."
+  },
+  "host_checkout_provisioning": {
+    "launch_agent_label": "de.autodocs.provision-tmp",
+    "purpose": "Recreate the historical /private/tmp/autodocs checkout after temporary-storage reaping.",
+    "qualification_boundary": "The tracked provision_tmp_worktree.sh is marked superseded and is not a safe worker-clone mechanism. It is not counted as runner persistence or future queue deployment capability."
+  },
+  "qualification": {
+    "validator": "docs/pipeline/fixtures/0037-49/validate_runner_service.py",
+    "result": "docs/pipeline/0037-49-runner-service-qualification-result.json",
+    "covered_controls": [
+      "source and supervisor digest identity",
+      "current protocol selector",
+      "no-op isolated deployment copy",
+      "waiting-runner health",
+      "process termination and clean one-shot restart",
+      "single request consumption",
+      "exact-byte rollback fixture"
+    ]
+  }
 }

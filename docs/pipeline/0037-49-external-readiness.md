@@ -4,7 +4,7 @@
 
 This package records the current, read-only readiness assessment for Task `0037-49`. It does not create an architecture approval, sign a commit, publish an approval ref, mutate hosting configuration, expose credentials, deploy or restart the runner, or claim that metadata presence proves capability.
 
-**Current verdict (2026-08-19T02:05:24Z): `BLOCKED`.** Architecture approval remains forbidden. Local policy metadata is populated, but the required independently authenticated external capabilities and signed readiness record are not available.
+**Current verdict (2026-08-19): `BLOCKED` on two exact external control handles.** Architecture approval remains forbidden. Deploy-key authentication, canonical plural-ref dry-run negotiation, owner/key/role registration, runner-visible signing, and isolated service controls are qualified; GitHub branch-policy administration and runner-visible supervisor/configuration control are not provisioned.
 
 ## Pinned baseline
 
@@ -26,13 +26,13 @@ The package commit and completion-evidence commit are reachable but did not pass
 
 | Requirement | Probe/result | Verdict |
 |---|---|---|
-| Repository identity and read access | `origin` is `git@github.com:2b-rs/autodocs.git`, but `git ls-remote --heads origin` failed with `Permission denied (publickey)` | `BLOCKED` |
-| Approval-ref publication | No `refs/autodocs/approval/*` refs exist; no expected-ref CAS publication was attempted | `BLOCKED` |
-| Independent owner confirmation | Current user identified GitHub username `2b-rs`; `https://github.com/2b-rs.keys` returned the registered owner key with matching fingerprint `SHA256:ciGUV68+0uuJGw+HsDQmur/ZO0INAtZbg5M0A+zydl4` | `OWNER VERIFIED`; non-owner role/key bindings remain `BLOCKED` |
-| Required roles | Candidate policy assigns `process` to the confirmed `agent-commit-key` and assigns `independent-quality` plus `translation-review` to qualified credential `agent-qa`; actual future independent reviewer-session assignment/availability is still recorded at review time | `ROLE POLICY PREPARED` |
-| Signing operation | Canonical local config can verify the signed policy commit; the isolated worker clone does not inherit `gpg.format`, `user.signingkey`, or `gpg.ssh.allowedSignersFile`; no approved runner-visible signing operation was exercised | `BLOCKED` |
-| Credential handles | Trusted runner execution authenticated to `git@github.com:2b-rs/autodocs.git` with exact handle fingerprint, completed `push --dry-run`, and proved the target approval ref unchanged | `DEPLOY HANDLE VERIFIED`; hosting-policy and runner-control handles remain `BLOCKED` |
-| Runner service | Metadata names manual health/restart/rollback commands, but the configured `pgrep` health probe found no running process; persistence, restart, rollback, service-config authority and protocol switching remain unqualified | `BLOCKED` |
+| Repository identity and read access | Trusted runner authenticated to `git@github.com:2b-rs/autodocs.git` with the exact deploy handle | `VERIFIED` |
+| Approval-ref publication | Canonical `refs/autodocs/approvals/0037-architecture` authenticated dry-run passed and remained absent/unchanged; final expected-ref CAS awaits the complete signed record | `NEGOTIATION VERIFIED`; final CAS pending |
+| Independent owner confirmation | `https://github.com/2b-rs.keys` matches owner fingerprint; current user separately confirmed the agent signing key and assigned its process role | `VERIFIED` |
+| Required roles | Process/security/privacy/release plus independent-quality/translation-review roles are registered; future reviews still require fresh explicit assignment and independence checks | `VERIFIED POLICY`; per-review assignment remains mandatory |
+| Signing operation | Handle `agent-commit-key` signed namespace `autodocs-readiness` through a task-scoped SSH agent; verification passed and the private path was absent from the child environment | `VERIFIED` |
+| Credential handles | Deploy and signing handles are verified. No GitHub Admin/API handle exists for branch-policy operations, and no runner-visible handle exists for supervisor/configuration control | `BLOCKED: hosting-admin, runner-control` |
+| Runner service | Exact UI-supervisor/one-shot-runner identities and digests, selector, no-op deploy, health, crash/restart, single consumption and rollback pass isolated qualification. The current UI is on-demand, not a daemon; no runner-visible supervisor/configuration handle is provisioned | `LOCAL CONTROLS VERIFIED`; external control handle blocked |
 | Signed readiness record | No independently authenticated, digest-bound signed readiness report exists | `BLOCKED` |
 
 ## Repository-owner deployment-key attestation
@@ -114,13 +114,25 @@ The 2026-08-16 discovery correctly reported that the then-current policy was pla
 
 Local discovery, policy pinning, digest capture, negative fixture inventory and read-only capability probes are complete. Task `0037-49` is `[p]`: the runner-side handle resolver is implemented and awaiting runner-private registry provisioning plus the independently authenticated operations below:
 
-1. provide a working, narrowly scoped remote credential handle and prove repository plus approval-ref permissions without exposing key material;
-2. register and independently confirm every required role, including process, independent-quality and translation-review, with current reviewer availability;
-3. replace or correct the 404 owner-confirmation channel and retain its authenticated fingerprint result;
-4. qualify a runner-visible signing operation and the runner-service health/restart/rollback/configuration/protocol controls;
-5. after `0038-15` supplies a non-false-positive evaluator, construct, sign, verify and expected-ref-CAS-publish the exact digest-bound readiness record.
+Completed capability evidence is retained in the canonical plural deploy probe, signing-handle probe, runner-service qualification and nine executable readiness cases. Two requirements remain:
 
-Until all five actions succeed, `0037-07` must not begin and no architecture approval may be inferred.
+1. provision a runner-visible GitHub hosting-administration/API handle authorized to read and configure the exact non-bypassable branch policy later exercised by `0037-43`;
+2. provision a runner-visible service-control handle/action for the exact supervisor/configuration/protocol-selector operations, bounded by the ownership-token and rollback contract.
+
+After both are qualified, construct, sign, verify and expected-ref-CAS-publish the exact digest-bound readiness record. Task `0038-15` remains a direct prerequisite of `0037-07`; it productizes the evaluator but is not used to pretend these missing external capabilities exist.
+
+### Downstream external-dependency classification
+
+| Task | External dependency disposition |
+|---|---|
+| `0037-07` | Deploy/signing/roles/service evidence prepared; blocked by both missing handles and by open `0038-15` |
+| `0037-38` | Independent QA/translation credential and role prepared; each review still needs a fresh independent assignment |
+| `0037-43` | **Blocked:** GitHub hosting-administration/API credential handle and external-policy action absent |
+| `0037-32` | Independent-quality signer credential prepared; exact future candidate/audit evidence remains task-local |
+| `0037-33` | Process/security/privacy/release signing role prepared; exact future cutover decision remains separately authorized |
+| `0037-36` | Independent-quality signer credential prepared; exact post-cutover review remains separately assigned |
+
+Until the two missing handles pass real negative/positive qualification, `0037-07` must not begin and no architecture approval may be inferred.
 
 
 ## Runner-private deploy credential contract
@@ -134,6 +146,10 @@ The mode is selected by setting `GITHUB_SSH_CREDENTIAL_HANDLE=autodocs-deploy-ke
 
 Trusted runner execution request `0037-49-deploy-key-probe-20260819T015922Z-01` completed on 2026-08-19 with exit code `0` and verdict `passed`. Immutable retained result: `docs/pipeline/0037-49-deploy-key-probe-result.json`, SHA-256 `2d019bc4a6288fcbd7f4ebdb0109140c8d4ddb79349249dd6bbf149f1de95eeb`.
 
-The runner exposed exact credential fingerprint `SHA256:wtCFvdCIurWZj2NT4deL9Rg9uwqsL5nj17jlaoTW7a0` through a task-scoped SSH agent, authenticated `ls-remote` before and after, completed `git push --dry-run --porcelain` for `refs/autodocs/approval/0037-architecture`, and observed the target ref absent and byte-identical before/after. `remote_mutation` is `false`. This resolves runner visibility, SSH authentication and dry-run negotiation for the deploy handle. It does not replace the later authorized expected-ref CAS publication or establish unrelated hosting-policy, service-control or signing handles.
+The runner exposed exact credential fingerprint `SHA256:wtCFvdCIurWZj2NT4deL9Rg9uwqsL5nj17jlaoTW7a0` through a task-scoped SSH agent, authenticated `ls-remote` before and after, completed `git push --dry-run --porcelain` for the then-selected but non-canonical `refs/autodocs/approval/0037-architecture`, and observed that target absent and byte-identical before/after. `remote_mutation` is `false`. This resolves runner visibility and SSH authentication only; canonical plural ref negotiation was later rerun successfully in `docs/pipeline/0037-49-deploy-key-probe-plural-result.json`. This historical result alone does not replace the later authorized expected-ref CAS publication or establish unrelated hosting-policy, service-control or signing handles.
 
 Process boundary: the sandboxed/grunt agent correctly refused direct execution. The package was executed by the explicitly privileged Task owner through the trusted handle-enabled runner environment. No grunt execution privilege is inferred.
+
+## Canonical plural deploy and signing qualification
+
+`docs/pipeline/0037-49-deploy-key-probe-plural-result.json` records a passed authenticated dry-run for `refs/autodocs/approvals/0037-architecture`, with exact deploy fingerprint and unchanged remote target. `docs/pipeline/0037-49-signing-handle-probe.json` plus its SSH signature and result record prove the separate signing handle. Neither result is an architecture approval or a final CAS publication.

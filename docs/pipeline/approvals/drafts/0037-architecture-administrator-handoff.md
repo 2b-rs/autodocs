@@ -7,7 +7,7 @@
 - **Public SSH fingerprint:** `SHA256:ciGUV68+0uuJGw+HsDQmur/ZO0INAtZbg5M0A+zydl4`.
 - **Exact package commit:** `e3a176aeb8e10a0d08a977e08db1aaec6d69cb4f`.
 - **Exact package digest:** `sha256:bf98dffe33da51c29e8952e7cfe10e0bb172d1d50ddb191282ea5c3330909a5f`.
-- **Proposed approval ref:** `refs/autodocs/approval/0037-architecture`.
+- **Proposed approval ref:** `refs/autodocs/approvals/0037-architecture`.
 
 ## Administrator checklist
 
@@ -27,7 +27,7 @@
 - Independent owner and reviewer-role confirmation.
 - Public signer-policy entry for the verified fingerprint.
 - Signed approval commit and successful `git verify-commit` output.
-- Published `refs/autodocs/approval/0037-architecture` pointing to that commit.
+- Published `refs/autodocs/approvals/0037-architecture` pointing to that commit.
 - Verified credential-handle metadata and runner-service control authorization.
 
 ## Stop conditions

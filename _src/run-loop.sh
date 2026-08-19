@@ -385,9 +385,13 @@ SANDBOX_PROFILE_PATH="$OUTPUT_DIR/run.sandbox.sb"
 GITHUB_SSH_DIR="${GITHUB_SSH_DIR:-$HOME/devel}"
 GITHUB_SSH_CREDENTIAL_HANDLE="${GITHUB_SSH_CREDENTIAL_HANDLE:-}"
 AUTODOCS_DEPLOY_KEY_PATH="${AUTODOCS_DEPLOY_KEY_PATH:-$HOME/devel/identities/runner-deploy-key/id_ed25519_autodocs}"
+AUTODOCS_SIGNING_CREDENTIAL_HANDLE="${AUTODOCS_SIGNING_CREDENTIAL_HANDLE:-}"
+AUTODOCS_SIGNING_KEY_PATH="${AUTODOCS_SIGNING_KEY_PATH:-$HOME/devel/identities/agent-commit-key/id_ed25519_agent_commit}"
 GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-commit-key/id_ed25519_agent_commit}"
 GITHUB_SSH_EXPECTED_FINGERPRINT=""
 GITHUB_SSH_PUBLIC_KEY_PATH=""
+AUTODOCS_SIGNING_EXPECTED_FINGERPRINT=""
+AUTODOCS_SIGNING_PUBLIC_KEY_PATH=""
 RUNNER_SSH_AGENT_PID=""
 RUNNER_SSH_AUTH_SOCK=""
 GITHUB_ID_FILE="$OUTPUT_DIR/github-user.txt"
@@ -434,8 +438,33 @@ resolve_github_credential_handle() {
   fi
 }
 
+resolve_signing_credential_handle() {
+  [[ -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]] || return 0
+  if [[ "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" != agent-commit-key ]]; then
+    printf 'error: unsupported signing credential handle: %s\n' "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" >&2
+    exit 2
+  fi
+  AUTODOCS_SIGNING_EXPECTED_FINGERPRINT='SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU'
+  if [[ -L "$AUTODOCS_SIGNING_KEY_PATH" || ! -f "$AUTODOCS_SIGNING_KEY_PATH" || ! -r "$AUTODOCS_SIGNING_KEY_PATH" ]]; then
+    printf 'error: runner-private signing credential is unavailable for handle: %s\n' "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+  if [[ "$(stat -f '%Lp' "$AUTODOCS_SIGNING_KEY_PATH")" != 600 ]]; then
+    printf 'error: insecure runner-private signing credential permissions for handle: %s\n' "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+  local actual_fingerprint
+  actual_fingerprint="$(ssh-keygen -lf "$AUTODOCS_SIGNING_KEY_PATH" -E sha256 2>/dev/null | awk 'NR == 1 { print $2 }')"
+  if [[ "$actual_fingerprint" != "$AUTODOCS_SIGNING_EXPECTED_FINGERPRINT" ]]; then
+    printf 'error: runner-private signing credential fingerprint mismatch for handle: %s\n' "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+}
+
 resolve_github_credential_handle
+resolve_signing_credential_handle
 GITHUB_SSH_PUBLIC_KEY_PATH="$OUTPUT_DIR/github-credential.pub"
+AUTODOCS_SIGNING_PUBLIC_KEY_PATH="$OUTPUT_DIR/signing-credential.pub"
 
 mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
   "$PYTHON_PACKAGE_DIR" "$PIP_CACHE_DIR" "$RUNNER_TMP_BASE" \
@@ -447,6 +476,10 @@ if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
   chmod 600 "$GITHUB_SSH_PUBLIC_KEY_PATH"
 else
   GITHUB_SSH_PUBLIC_KEY_PATH="$GITHUB_SSH_KEY_PATH"
+fi
+if [[ -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]]; then
+  ssh-keygen -y -f "$AUTODOCS_SIGNING_KEY_PATH" > "$AUTODOCS_SIGNING_PUBLIC_KEY_PATH"
+  chmod 600 "$AUTODOCS_SIGNING_PUBLIC_KEY_PATH"
 fi
 
 prepend_tool_path() {
@@ -549,7 +582,7 @@ stop_runner_ssh_agent() {
 }
 
 start_runner_ssh_agent() {
-  [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]] || return 0
+  [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" || -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]] || return 0
   stop_runner_ssh_agent
   RUNNER_SSH_AUTH_SOCK="/tmp/autodocs-ssh-agent-$$.sock"
   if [[ -e "$RUNNER_SSH_AUTH_SOCK" ]]; then
@@ -571,8 +604,13 @@ start_runner_ssh_agent() {
   SSH_AUTH_SOCK="$RUNNER_SSH_AUTH_SOCK"
   SSH_AGENT_PID="$RUNNER_SSH_AGENT_PID"
   export SSH_AUTH_SOCK SSH_AGENT_PID
-  if ! ssh-add "$GITHUB_SSH_KEY_PATH" </dev/null >/dev/null 2>&1; then
+  if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]] && ! ssh-add "$GITHUB_SSH_KEY_PATH" </dev/null >/dev/null 2>&1; then
     printf 'error: failed to load runner-private credential handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+    stop_runner_ssh_agent
+    return 1
+  fi
+  if [[ -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]] && ! ssh-add "$AUTODOCS_SIGNING_KEY_PATH" </dev/null >/dev/null 2>&1; then
+    printf 'error: failed to load runner-private signing credential handle: %s\n' "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" >&2
     stop_runner_ssh_agent
     return 1
   fi
@@ -700,6 +738,7 @@ write_sandbox_profile() {
   (literal "$HOME/.gitconfig")
   (literal "$HOME/.config/git/config")
   (literal "$GITHUB_SSH_PUBLIC_KEY_PATH")
+  (literal "$AUTODOCS_SIGNING_PUBLIC_KEY_PATH")
   (subpath "$HOME/Library/Python")
   (subpath "$HOME/Library/Caches/ms-playwright")
   (subpath "/private/tmp")
@@ -1347,6 +1386,9 @@ if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
 else
   echo "GitHub SSH credential mode: legacy direct path"
 fi
+if [[ -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]]; then
+  echo "Signing credential handle: $AUTODOCS_SIGNING_CREDENTIAL_HANDLE"
+fi
 echo "GitHub user file: $GITHUB_ID_FILE"
 echo "npm cache: $NPM_CONFIG_CACHE"
 echo "Post-run notification wait: ${NOTIFY_WAIT_SECONDS}s"
@@ -1376,14 +1418,19 @@ while true; do
   fi
 
   export GITHUB_SSH_CREDENTIAL_HANDLE
+  export AUTODOCS_SIGNING_CREDENTIAL_HANDLE AUTODOCS_SIGNING_PUBLIC_KEY_PATH
   export GITHUB_SSH_DIR
   export GITHUB_USER
-  if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+  if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" || -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]]; then
     if ! start_runner_ssh_agent; then
       exit 1
     fi
-    export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_PUBLIC_KEY_PATH\" -o IdentityAgent=\"$SSH_AUTH_SOCK\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
-    unset GITHUB_SSH_KEY_PATH
+    unset GITHUB_SSH_KEY_PATH AUTODOCS_SIGNING_KEY_PATH
+    if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+      export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_PUBLIC_KEY_PATH\" -o IdentityAgent=\"$SSH_AUTH_SOCK\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
+    else
+      unset GIT_SSH_COMMAND
+    fi
   else
     export GITHUB_SSH_KEY_PATH
     export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_KEY_PATH\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
@@ -1411,6 +1458,9 @@ while true; do
     echo "[$started_at_human] github ssh credential handle: $GITHUB_SSH_CREDENTIAL_HANDLE"
   else
     echo "[$started_at_human] github ssh credential mode: legacy direct path"
+  fi
+  if [[ -n "$AUTODOCS_SIGNING_CREDENTIAL_HANDLE" ]]; then
+    echo "[$started_at_human] signing credential handle: $AUTODOCS_SIGNING_CREDENTIAL_HANDLE"
   fi
   echo "[$started_at_human] github user: ${GITHUB_USER:-<unset>}"
   echo "[$started_at_human] npm cache: $NPM_CONFIG_CACHE"
