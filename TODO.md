@@ -272,6 +272,15 @@ HOW TO USE:
   - **Corrective implementation (2026-08-19):** Margaret Riker resolved `AR-0039-01-001` in `18778e46c` with SHA-256-bound English reconciliation evidence (`REC-01` through `REC-20`), updated manifest/rules, and regressions that reject absent, altered-digest, and incomplete reconciliation. Focused tests (7), manifest validation, Python compilation, JSON parsing, and `git diff --check` passed. This restores implementation completion only; independent acceptance remains unassigned and no `Acceptance: ✓` credit is asserted.
   - **Independent corrective review (2026-08-19):** Rejected by Ken Riker `20260819T125003Z`; evidence `docs/pipeline/evidence/0039-01/acceptance-review-ken-riker-20260819T125003Z.md`. Major finding `AR-0039-01-002`: `REC-20` records the source study's recommendation against immediate adoption as `rejected`, contradicting the source and the cited candidate controls. Return to `[p]` for a bounded semantic-disposition correction and a negative regression. No `Acceptance: ✓` credit was created.
   - **Corrective implementation (2026-08-19):** Shannon Riker resolved `AR-0039-01-002` in `11415cbc5`: `REC-20` selects the non-adoption safeguard and cites the candidate process and migration controls that require independent review and an explicit authority decision. A focused negative regression rejects the former `rejected` disposition. Focused tests (8), manifest validation, Python compilation, reconciliation JSON parsing, and `git diff --check` passed. This restores implementation completion only; independent acceptance remains unassigned and no `Acceptance: ✓` credit is asserted.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `Niklaus Riker 20260819T125003Z`
+    - **Authority reference:** `current-user assignment, 2026-08-19, exact rereview 0039-01 after AR-0039-01-002`
+    - **Accepted at:** `2026-08-19T14:30:54Z`
+    - **Contract SHA-256:** `b47a84f71b6a40425668c5136e5f542aa1f221b3cc338f8f16fa7caa3518ae1e`
+    - **Work-product manifest SHA-256:** `6379020bb096b4c941157f65ac039f063bc7b5fa590fe7f68ac2ec863230eaf8`
+    - **Prerequisite-acceptance SHA-256:** `ae1da059b8b15d11e1e9c6fd9851211d95f8ba6c59eaa3ca2f1c156cd40df132`
+    - **Review REF:** `5c758937977606a6172d97814234412856f16ed0`
 
 - [u] **0039-02** Define, pilot, and baseline the reusable tool-creation and continuous-improvement process from `docs/dossiers/tool-creation-improvement-process-study.docx`.
   - **Reservation gate:** The sole next action is a current-user decision naming an explicitly privileged owning session; until then no claim, implementation, approval, registry change, or tool promotion is authorized.
