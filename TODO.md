@@ -298,7 +298,14 @@ HOW TO USE:
   - **Reservation gate:** Satisfied only for this explicitly assigned unprivileged implementation scope. No acceptance, integration-checkpoint crossing, Feature integration, registry change, tool promotion, external effect, or self-acceptance is authorized.
   - **Acceptance criteria:** Reconcile the study with Feature `0038` and the `0037-46.01` typed-action queue; define reuse-before-creation discovery, productization triggers, candidate isolation, standard tool/action contracts, side-effect and retry classes, tests/failure injection, security/privacy/network/credential limits, configuration and semantic ownership, qualification, review/registration, pilot/deployment, metrics, duplicate detection, exceptions, compatibility, deprecation, and retirement. Preserve a strict boundary between agent-authored candidate code and allowlisted production execution; generic shell or arbitrary repository-script execution is not an acceptable reuse mechanism.
   - **Definition of Done:** Pilot the process on one new reusable tool and one extension or consolidation of an existing tool; retained evidence compares the prior workflow and qualified result for safety, first-attempt success, duration, retries, context, maintenance, and evidence volume. Independent review confirms deterministic interfaces, bounded side effects, recovery, one semantic owner, catalog/action integration, and an explicit deployment or rejection decision; process performance and innovation claims use measured baselines rather than automation counts.
-  - **Implementation completion (2026-08-19):** Candidate English process, templates, role/action/decision boundaries, study reconciliation, structural validator, and paired documentary pilots are committed in `fe3515285c4225f0f124f572dbe78d026a7a07de`. The manifest validator passed; six focused tests, Python compilation, and `git diff --check` passed. The pilots are candidate-only: no action registration, deployment, external effect, acceptance, or Feature integration occurred. Independent review remains required and no `Acceptance: ✓` credit is asserted.
+  - **Implementation completion (2026-08-19):** Candidate English process, templates, role/action/decision boundaries, study reconciliation, structural validator, and paired documentary pilots are committed in `fe3515285c4225f0f124f572dbe78d026a7a07de`. The manifest validator passed; six focused tests, Python compilation, and `git diff --check` passed. The pilots are candidate-only: no action registration, deployment, external effect, acceptance, or Feature integration occurred.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `Riker, independent privileged reviewer`
+    - **Authority reference:** `current-user continuation direction, exact review of 0039-02`
+    - **Accepted at:** `2026-08-19T12:50:03Z`
+    - **Work-product manifest SHA-256:** `e67435cb54ea0d5a614a04adb2d25d4ec03f622895a815a4231f64541a46f730`
+    - **Review REF:** `d9043b9bf3cb8b89cf48c51e719d1bdf2d715bab`
 
 ### Campaign B — Imported improvement pilot
 
