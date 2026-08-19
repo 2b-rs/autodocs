@@ -235,10 +235,12 @@ therefore follow the capability rules in [`../../SANDBOX.md`](../../SANDBOX.md):
 This document is immediately binding as instruction. Full machine enforcement is
 explicit downstream work and is not implied to exist yet:
 
-- The disposable `/tmp` worktree provisioner
-  (`_src/tools/provision_tmp_worktree.sh`) currently pins sandboxed work to a
-  single `tmp-work` branch. Per-item branches require it to provision the item's
-  canonical branch (base off the parent, merge the prerequisite closure) instead.
+- The old disposable `/tmp` worktree provisioner
+  (`_src/tools/provision_tmp_worktree.sh`) now refuses every invocation. The
+  privileged host uses `_src/tools/provision_worker_clone.sh <item-id>` to
+  create the item branch from its exact parent and then an isolated clone of
+  that item branch before a sandboxed worker receives it; see
+  `worker-clone-provisioning.md`.
 - The runner transaction engine
   ([`runner-transaction.md`](runner-transaction.md),
   `_src/tools/runner_transaction.py`) must gain allowlisted, fail-closed

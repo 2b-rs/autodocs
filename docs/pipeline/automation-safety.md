@@ -120,7 +120,7 @@ The remaining live critical findings are not accepted as safe. Exact entries blo
 | `_src/run-loop.sh`: mutable self-test/runner result handling and false PASS output | `0038-10` immutable aggregate results |
 
 Task `0038-05.01` retired `_src/tools/task_bookkeeping_closure.py` as a mutation-free fail-closed compatibility shim and removed its two exact blocking dispositions. `_src/tools/legacy_task_editor.py` writes only review candidates; every authoritative promotion returns `LTE-PROMOTE-COORDINATOR-REQUIRED` until `0038-05.02` integrates the verified candidate contract with the durable transaction coordinator.
-| `_src/tools/provision_tmp_worktree.sh`: privileged destructive re-heal without an explicit retry/recovery lifecycle contract | `0038-14` mutator lifecycle and classification |
+| `_src/tools/provision_worker_clone.sh`: privileged exact-parent branch creation and clone provisioning pending durable lifecycle classification | `0038-14` mutator lifecycle and classification |
 | `_src/tools/sync_to_devel.sh`: destructive backup sync with implicit lock/cleanup/result lifecycle | `0038-14` mutator lifecycle and classification |
 
 Other high findings—such as destructive extraction, legacy shell execution, and missing durable state—remain machine-visible advisories for `0038-14` and related lifecycle Tasks. They are not hidden by the critical blocking policy.
