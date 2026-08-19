@@ -58,6 +58,12 @@ Bei fehlender, mehrdeutiger oder **nicht erkannter** Angabe gilt
 `sandboxed-grunt`; die erhaltene Bezeichnung wird im Claim vermerkt und die
 Arbeit fortgesetzt, statt anzuhalten.
 
+**Zuweisung an Subagenten.** Wer einen Subagenten beauftragt, muss dessen
+Fähigkeitsklasse ausdrücklich nennen; der Default ersetzt keine unterlassene
+Zuweisung. Die verbindlichen Pflichtangaben eines Auftrags stehen in
+[`../../AGENTS.md`](../../AGENTS.md), Abschnitt *Dispatching a subagent*
+(`DEC-CAP-002`).
+
 **Korrektur (2026-08-18):** Eine frühere Fassung dieses Dokuments behauptete,
 es gebe „genau zwei" Klassen und eine Zwischenstufe existiere nicht. Das war
 eine Übernahme aus `SANDBOX.md`, das seinerseits Ausführung und Autorität in

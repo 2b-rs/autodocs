@@ -33,6 +33,14 @@ A session that spawns another agent is its **dispatcher** and is answerable for
 the briefing being complete. A subagent never inherits the dispatcher's
 capability class, authority, claim, or write scope implicitly.
 
+Capability classes are defined in [`SANDBOX.md`](SANDBOX.md); which class a
+process role requires, and which authority it does **not** confer, is defined in
+[`docs/pipeline/process-roles.md`](docs/pipeline/process-roles.md). The branch
+and worktree a briefing must name follow
+[`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md). This rule
+was established by decision `DEC-CAP-002` in
+[`docs/dossiers/dec-capability-classes.md`](docs/dossiers/dec-capability-classes.md).
+
 Every briefing must state, explicitly:
 
 1. the **capability class**, as one of the exact names in `SANDBOX.md`

@@ -10,7 +10,7 @@ beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
 
 ## Inhalt
 
-- [`roles.md`](./roles.md) — alle Rollen (Mensch, KI, Werkzeug/Validator)
+- [`roles.md`](./roles.md) — **Produktdomänen**rollen (Mensch, KI, Werkzeug/Validator) — nicht zu verwechseln mit [`process-roles.md`](./process-roles.md)
 - [`processes.md`](./processes.md) — die Kampagnen-Prozessphasen (0–6)
 - [`campaigns.md`](./campaigns.md) — Kampagnentypen, die im Repo tatsächlich vorkommen
 - [`actions.md`](./actions.md) — alle Einzelaktionen (ingest review, ingest
@@ -21,6 +21,8 @@ beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
 - [`status-model.md`](./status-model.md) — Statuswerte, Übergänge, Regeln
 - [`task-acceptance.md`](./task-acceptance.md) — privilegierte Task-Abnahme, Vorgängerprüfung, Invalidierung und Feature-Gesamtabnahme
 - [`branch-workflow.md`](./branch-workflow.md) — Branch-Topologie pro Backlog-Item, Basis-und-Merge-Startregel, Merge-Autorität, Feature-Integration und `[u]`-Integrationsverdikt
+- [`process-roles.md`](./process-roles.md) — Prozessrollen und Fähigkeitsklassen als zwei Achsen, Rolle-zu-Klasse-Mapping, Trennungen `TK-1`/`TK-2`, Personas
+- [`worker-clone-provisioning.md`](./worker-clone-provisioning.md) — klonbasierte Bereitstellung der Worker-Arbeitsbäume, Zuständigkeit und Verweigerungsfälle
 - [`data-model.md`](./data-model.md) — Record-Felder, Queues, Verzeichnisse
 
 ## Kernquellen
