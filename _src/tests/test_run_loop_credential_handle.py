@@ -34,7 +34,7 @@ class RunLoopCredentialHandleTests(unittest.TestCase):
         env.update(
             {
                 "HOME": str(self.home),
-                "RUNNER_CREDENTIAL_DIR": str(self.credentials),
+                "AUTODOCS_DEPLOY_KEY_PATH": str(self.credentials / "autodocs-deploy-key"),
                 "GITHUB_SSH_CREDENTIAL_HANDLE": handle,
             }
         )
@@ -113,7 +113,7 @@ class RunLoopCredentialHandleTests(unittest.TestCase):
         env = os.environ.copy()
         env.update({
             "HOME": str(self.home),
-            "RUNNER_CREDENTIAL_DIR": str(self.credentials),
+            "AUTODOCS_DEPLOY_KEY_PATH": str(self.credentials / "autodocs-deploy-key"),
             "GITHUB_SSH_CREDENTIAL_HANDLE": "autodocs-deploy-key",
         })
         result = subprocess.run(

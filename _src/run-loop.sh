@@ -384,7 +384,7 @@ SUSPENDED_APPLESCRIPT_PIDS=()
 SANDBOX_PROFILE_PATH="$OUTPUT_DIR/run.sandbox.sb"
 GITHUB_SSH_DIR="${GITHUB_SSH_DIR:-$HOME/devel}"
 GITHUB_SSH_CREDENTIAL_HANDLE="${GITHUB_SSH_CREDENTIAL_HANDLE:-}"
-RUNNER_CREDENTIAL_DIR="${RUNNER_CREDENTIAL_DIR:-$HOME/.config/autodocs/credentials}"
+AUTODOCS_DEPLOY_KEY_PATH="${AUTODOCS_DEPLOY_KEY_PATH:-$HOME/devel/identities/runner-deploy-key/id_ed25519_autodocs}"
 GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-commit-key/id_ed25519_agent_commit}"
 GITHUB_SSH_EXPECTED_FINGERPRINT=""
 GITHUB_SSH_PUBLIC_KEY_PATH=""
@@ -416,14 +416,13 @@ resolve_github_credential_handle() {
       exit 2
       ;;
   esac
-  GITHUB_SSH_KEY_PATH="$RUNNER_CREDENTIAL_DIR/$GITHUB_SSH_CREDENTIAL_HANDLE"
+  GITHUB_SSH_KEY_PATH="$AUTODOCS_DEPLOY_KEY_PATH"
   GITHUB_SSH_DIR="$OUTPUT_DIR/credential-isolated"
   if [[ -L "$GITHUB_SSH_KEY_PATH" || ! -f "$GITHUB_SSH_KEY_PATH" || ! -r "$GITHUB_SSH_KEY_PATH" ]]; then
     printf 'error: runner-private GitHub credential is unavailable for handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
     exit 1
   fi
-  if [[ "$(stat -f '%Lp' "$RUNNER_CREDENTIAL_DIR")" != 700 || \
-        "$(stat -f '%Lp' "$GITHUB_SSH_KEY_PATH")" != 600 ]]; then
+  if [[ "$(stat -f '%Lp' "$GITHUB_SSH_KEY_PATH")" != 600 ]]; then
     printf 'error: insecure runner-private credential permissions for handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
     exit 1
   fi
