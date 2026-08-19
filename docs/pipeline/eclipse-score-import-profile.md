@@ -79,6 +79,32 @@ commit, path, line range, anchor, and source digest. The materializing importer
 must add a real append-only history entry (including the import date) from the
 profile’s history template; it must not replace historical entries.
 
+## Canonical normalization (0019-05)
+
+`_src/tools/score_normalization.py` transforms a complete
+`score-raw-extraction@v1` result into `score-normalized-corpus@v1` without
+reading the network or writing the record store. It takes an explicit
+`--import-date YYYY-MM-DD`; this makes the mandatory initial history date a
+reviewable input rather than an ambient clock value, so repeated runs with the
+same raw result and date are byte-identical.
+
+Each `score-normalized-record@v1` carries the registered canonical identity,
+the release-bearing version identity
+`ECLIPSE/S-CORE/<kind>/<id>@rel:<release>#<content-hash8>`, the full SHA-256
+content hash, profile/manifest hashes, all source provenance fields, and a
+source-locator traceability entry. The content hash is computed over canonical
+JSON of the normalized semantic content; derived hash/version fields and the
+append-only import-history date are excluded to avoid a re-import producing a
+spurious content version.
+
+The normalizer preserves duplicate canonical identities and contradictory
+source content/provenance as deterministic
+`score-normalization-exception-candidate@v1` entries. They remain
+`discovered`, state `physical_queue_writer: "0019-07"`, and set
+`queue_written: false`; the normalizer neither creates a `curation-item@v1`
+file nor advances any lifecycle state. Task `0019-07` is solely responsible
+for deciding whether and how to write those candidates to the unified queue.
+
 A non-rejected evaluation returns a `curation-item@v1` **draft** at lifecycle
 state `discovered`. It is not a physical queue file and does not claim that an
 item is already `queued`: Task `0019-07` owns the canonical writer and the
@@ -156,4 +182,5 @@ python3 _src/tools/score_import_profile.py \
   _src/spec/import-profiles/eclipse-score-v0.6.0.json \
   --bom _src/spec/campaigns/eclipse-score-v0.6.0.json
 python3 _src/tests/test_score_import_profile.py
+python3 -m unittest _src.tests.test_score_normalization
 ```
