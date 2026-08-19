@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import contextlib
+import copy
+import hashlib
 import io
 import json
 import os
@@ -291,6 +293,36 @@ class RunnerTransactionTests(unittest.TestCase):
         result = self._result()
         self.assertEqual(result["verdict"], "failed")
         self.assertEqual([item["id"] for item in result["actions"]], ["generate-site"])
+        pointer = json.loads((self.fixture.root / "output" / "logs" / "0038-01" / "current.json").read_text(encoding="utf-8"))
+        self.assertEqual(pointer["verdict"], "failed")
+        self.assertEqual(pointer["request_id"], REQUEST_ID)
+        self.assertEqual(runner._current_pointer_status(self.fixture.root, "0038-01")["status"], "valid")
+
+        fresh_request_id = "fixture-runner-transaction-fresh-001"
+        fresh_owner_token = "agent:test:0038-01:fixture-runner-transaction-fresh-001"
+        fresh_claim_path = "TODO-test-0038-01-fixture-runner-transaction-fresh-001.md"
+        fresh_manifest_path = "fresh-request.json"
+        next_manifest = json.loads(self.fixture.manifest().read_text(encoding="utf-8"))
+        next_manifest["identity"].update({
+            "request_id": fresh_request_id,
+            "owner_token": fresh_owner_token,
+            "claim_path": fresh_claim_path,
+            "manifest_path": fresh_manifest_path,
+        })
+        fresh_claim = (self.fixture.root / CLAIM_PATH).read_text(encoding="utf-8")
+        fresh_claim = fresh_claim.replace(REQUEST_ID, fresh_request_id).replace(OWNER_TOKEN, fresh_owner_token)
+        for key, expected in runner.claim_contract_fields(next_manifest).items():
+            fresh_claim = re.sub(
+                rf"^{re.escape(key)}: .+$",
+                lambda _match, key=key, expected=expected: f"{key}: {expected}",
+                fresh_claim,
+                flags=re.MULTILINE,
+            )
+        (self.fixture.root / fresh_claim_path).write_text(fresh_claim, encoding="utf-8")
+        fresh_path = self.fixture.root / fresh_manifest_path
+        fresh_path.write_text(json.dumps(next_manifest, indent=2), encoding="utf-8")
+        fresh_manifest = runner.load_manifest(fresh_path)
+        runner.Transaction(self.fixture.root, fresh_manifest).preflight()
 
     def test_validator_failure_does_not_promote_generated_output(self) -> None:
         base = self.fixture.base
@@ -384,6 +416,13 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertEqual(self.fixture.git_text("diff", "--cached", "--name-only"), "unrelated.txt")
         self.assertEqual((self.fixture.root / "generated.txt").read_text(encoding="utf-8"), "generated:accepted\n")
         self.assertIn("User-Prompt-Provenance:", self.fixture.git_text("show", "-s", "--format=%B", substantive))
+        result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        pointer_path = self.fixture.root / "output" / "logs" / "0038-01" / "current.json"
+        pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
+        self.assertEqual(pointer["result_path"], result_path.relative_to(self.fixture.root).as_posix())
+        self.assertEqual(pointer["result_sha256"], hashlib.sha256(result_path.read_bytes()).hexdigest())
+        self.assertEqual(pointer["verdict"], "passed")
+        self.assertEqual(runner._current_pointer_status(self.fixture.root, "0038-01")["status"], "valid")
 
     def test_prepublication_injection_boundaries_roll_back_and_retain_claim(self) -> None:
         for point in ("after-promote", "after-substantive-commit", "after-bookkeeping-commit", "before-cas"):
@@ -415,6 +454,208 @@ class RunnerTransactionTests(unittest.TestCase):
         result = self._result()
         self.assertTrue(result["published"])
         self.assertFalse(result["claim_finalized"])
+        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
+        self.assertEqual(recovery["status"], "terminal-failure-recorded")
+
+    def test_result_precedes_current_pointer_and_crash_keeps_pointer_unmoved(self) -> None:
+        self._change_source("pointer-order")
+        status, output = self.fixture.execute(inject_failure="before-current-pointer")
+        self.assertEqual(status, runner.EXIT_INTERNAL, output)
+        result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        pointer_path = self.fixture.root / "output" / "logs" / "0038-01" / "current.json"
+        self.assertTrue(result_path.exists())
+        self.assertFalse(pointer_path.exists())
+        self.assertEqual(json.loads(result_path.read_text(encoding="utf-8"))["verdict"], "passed")
+        journal = json.loads((result_path.parent / "transaction-journal.json").read_text(encoding="utf-8"))
+        self.assertEqual(journal["state"], "result-persisted-pointer-pending")
+        doctor = runner.doctor(self.fixture.root)
+        self.assertEqual(doctor["current_pointers"], [{"path": "output/logs/0038-01/current.json", "status": "missing"}])
+
+    def test_current_pointer_rejects_tampered_immutable_result(self) -> None:
+        self._change_source("tamper-pointer")
+        status, output = self.fixture.execute()
+        self.assertEqual(status, 0, output)
+        result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        result_path.write_text('{"tampered":true}\n', encoding="utf-8")
+        status = runner._current_pointer_status(self.fixture.root, "0038-01")
+        self.assertEqual(status["status"], "invalid")
+        self.assertIn("digest", status["error"])
+        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
+        self.assertEqual(recovery["status"], "pointer-invalid")
+
+    def test_immutable_results_survive_fresh_retry_pointer_update(self) -> None:
+        retry_manifest = copy.deepcopy(runner.load_manifest(self.fixture.manifest()))
+        self._change_source("first-attempt")
+        status, output = self.fixture.execute()
+        self.assertEqual(status, 0, output)
+        first_result = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        first_bytes = first_result.read_bytes()
+        retry_id = "fixture-runner-transaction-retry-002"
+        retry_manifest["identity"]["request_id"] = retry_id
+        retry = runner.Transaction(self.fixture.root, retry_manifest)
+        retry.observed_base = self.fixture.base
+        retry.observed_authority = dict(AUTHORITY)
+        retry.substantive_commit = self.fixture.base
+        retry.published = True
+        retry.claim_finalized = True
+        retry._begin_phase("recovery")
+        retry._finish_phase("failed", runner.EXIT_ACTION, detail="RTX-RETRY-FIXTURE")
+        retry_error = runner.TransactionError("RTX-RETRY-FIXTURE", "fixture retry failure", "recovery", runner.EXIT_ACTION)
+        retry.persist_terminal_result(retry.result("failed", retry_error))
+        self.assertEqual(first_result.read_bytes(), first_bytes)
+        pointer = json.loads((self.fixture.root / "output" / "logs" / "0038-01" / "current.json").read_text(encoding="utf-8"))
+        self.assertEqual(pointer["request_id"], retry_id)
+        self.assertEqual(pointer["result_path"], f"output/logs/0038-01/{retry_id}/result.json")
+        self.assertTrue((self.fixture.root / pointer["result_path"]).exists())
+        recovery = runner.recover_transaction(self.fixture.root, REQUEST_ID)
+        self.assertEqual(recovery["status"], "pointer-journal-mismatch")
+
+    def test_timeout_persists_failed_result_and_current_pointer(self) -> None:
+        manifest_path = self.fixture.manifest()
+        manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest_data["actions"][0]["timeout_seconds"] = 1
+        manifest = runner.load_manifest(self.fixture.store_manifest(manifest_data))
+        sleeper = runner.ActionSpec(
+            action_id="generate-site",
+            phase="generate",
+            argv=(sys.executable, "-c", "import time; time.sleep(2)"),
+        )
+        output = io.StringIO()
+        with mock.patch.dict(runner.ACTION_REGISTRY, {"generate-site": sleeper}), contextlib.redirect_stdout(output):
+            status = runner.Transaction(self.fixture.root, manifest).execute()
+        self.assertEqual(status, runner.EXIT_ACTION, output.getvalue())
+        result = self._result()
+        self.assertEqual(result["error"]["rule"], "RTX-ACTION-TIMEOUT")
+        self.assertEqual(result["actions"], [
+            {
+                "id": "generate-site",
+                "phase": "generate",
+                "status": "timed_out",
+                "exit_code": None,
+                "duration_ms": result["actions"][0]["duration_ms"],
+                "stdout": result["actions"][0]["stdout"],
+                "stderr": result["actions"][0]["stderr"],
+                "reports": [],
+            }
+        ])
+        self.assertGreaterEqual(result["actions"][0]["duration_ms"], 1000)
+        pointer = json.loads((self.fixture.root / "output" / "logs" / "0038-01" / "current.json").read_text(encoding="utf-8"))
+        self.assertEqual(pointer["verdict"], "failed")
+
+    def test_post_publication_crash_recovers_claim_result_and_pointer(self) -> None:
+        self._change_source("post-cas-crash")
+        transaction = runner.Transaction(self.fixture.root, runner.load_manifest(self.fixture.manifest()))
+
+        def crash(point: str) -> None:
+            if point == "after-publish":
+                raise KeyboardInterrupt("simulated hard crash")
+
+        transaction._inject = crash
+        with self.assertRaises(KeyboardInterrupt):
+            transaction.execute()
+        self.assertTrue((self.fixture.root / CLAIM_PATH).exists())
+        self.assertFalse(transaction.result_path.exists())
+        self.assertTrue(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
+        self.assertFalse((self.fixture.root / CLAIM_PATH).exists())
+        self.assertEqual(runner._current_pointer_status(self.fixture.root, "0038-01")["status"], "valid")
+        journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["state"], "complete")
+
+    def test_same_request_rerun_preserves_interrupted_attempt_evidence(self) -> None:
+        self._change_source("same-request-rerun")
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+
+        def crash(point: str) -> None:
+            if point == "after-publish":
+                raise KeyboardInterrupt("simulated hard crash")
+
+        transaction._inject = crash
+        with self.assertRaises(KeyboardInterrupt):
+            transaction.execute()
+        journal_before = transaction.journal_path.read_bytes()
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(transaction.current_pointer_path.exists())
+
+        rerun = runner.Transaction(self.fixture.root, manifest)
+        status = rerun.execute()
+        self.assertEqual(status, runner.EXIT_PREFLIGHT)
+        self.assertEqual(transaction.journal_path.read_bytes(), journal_before)
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(transaction.current_pointer_path.exists())
+        self.assertTrue(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
+
+    def test_claim_archival_crash_recovers_result_and_pointer(self) -> None:
+        self._change_source("claim-archive-crash")
+        transaction = runner.Transaction(self.fixture.root, runner.load_manifest(self.fixture.manifest()))
+        with mock.patch.object(transaction, "persist_terminal_result", side_effect=KeyboardInterrupt("simulated hard crash")):
+            with self.assertRaises(KeyboardInterrupt):
+                transaction.execute()
+        self.assertFalse((self.fixture.root / CLAIM_PATH).exists())
+        self.assertTrue((transaction.log_dir / "finalized-claim.md").exists())
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID))
+        self.assertEqual(runner._current_pointer_status(self.fixture.root, "0038-01")["status"], "valid")
+        journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["state"], "complete")
+
+    def test_tampered_prepared_result_blocks_recovery_before_claim_move(self) -> None:
+        self._change_source("prepared-tamper")
+        transaction = runner.Transaction(self.fixture.root, runner.load_manifest(self.fixture.manifest()))
+
+        def crash(point: str) -> None:
+            if point == "after-publish":
+                raise KeyboardInterrupt("simulated hard crash")
+
+        transaction._inject = crash
+        with self.assertRaises(KeyboardInterrupt):
+            transaction.execute()
+        prepared_path = transaction.log_dir / "prepared-result.json"
+        prepared = json.loads(prepared_path.read_text(encoding="utf-8"))
+        del prepared["phases"]
+        prepared_path.write_text(json.dumps(prepared), encoding="utf-8")
+        with self.assertRaisesRegex(runner.TransactionError, "missing required fields"):
+            runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID)
+        self.assertTrue((self.fixture.root / CLAIM_PATH).exists())
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(transaction.current_pointer_path.exists())
+
+    def test_tampered_claim_archive_blocks_recovery_before_result_write(self) -> None:
+        self._change_source("archive-tamper")
+        transaction = runner.Transaction(self.fixture.root, runner.load_manifest(self.fixture.manifest()))
+        with mock.patch.object(transaction, "persist_terminal_result", side_effect=KeyboardInterrupt("simulated hard crash")):
+            with self.assertRaises(KeyboardInterrupt):
+                transaction.execute()
+        archive = transaction.log_dir / "finalized-claim.md"
+        archive.write_text(archive.read_text(encoding="utf-8") + "\ntampered\n", encoding="utf-8")
+        with self.assertRaisesRegex(runner.TransactionError, "preimage digest"):
+            runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID)
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(transaction.current_pointer_path.exists())
+
+    def test_invalid_current_pointer_blocks_a_fresh_attempt(self) -> None:
+        next_manifest = copy.deepcopy(runner.load_manifest(self.fixture.manifest()))
+        self._change_source("pointer-preflight")
+        status, output = self.fixture.execute()
+        self.assertEqual(status, 0, output)
+        result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
+        result_path.write_text('{"tampered":true}\n', encoding="utf-8")
+        next_manifest["identity"]["request_id"] = "fixture-runner-transaction-fresh-003"
+        next_manifest["identity"]["expected_base"] = self.fixture.base
+        with self.assertRaisesRegex(runner.TransactionError, "current pointer"):
+            runner.Transaction(self.fixture.root, next_manifest).preflight()
+
+    def test_result_write_refuses_symlinked_runtime_parent(self) -> None:
+        manifest = runner.load_manifest(self.fixture.manifest())
+        transaction = runner.Transaction(self.fixture.root, manifest)
+        external = self.fixture.root.parent / f"{self.fixture.root.name}-runtime-escape"
+        external.mkdir()
+        self.addCleanup(lambda: shutil.rmtree(external, ignore_errors=True))
+        (self.fixture.root / "output").symlink_to(external, target_is_directory=True)
+        error = runner.TransactionError("RTX-FIXTURE", "fixture", "result", runner.EXIT_INTERNAL)
+        with self.assertRaisesRegex(runner.TransactionError, "symlinks are forbidden"):
+            transaction.write_result(transaction.result("failed", error))
+        self.assertEqual(list(external.iterdir()), [])
 
     def test_competing_branch_update_wins_and_transaction_rolls_back(self) -> None:
         base = self.fixture.base
@@ -517,23 +758,24 @@ class RunnerTransactionTests(unittest.TestCase):
         self._change_source("result-write-failure")
         manifest = runner.load_manifest(self.fixture.manifest())
         transaction = runner.Transaction(self.fixture.root, manifest)
-        original_write = runner._atomic_write
+        original_create = runner._atomic_create
 
-        def flaky_write(path: Path, data: bytes, mode: Optional[int] = None) -> None:
+        def flaky_create(path: Path, data: bytes, mode: Optional[int] = None) -> None:
             if path.name == "result.json":
                 value = json.loads(data.decode("utf-8"))
                 if value["verdict"] in {"passed", "failed"}:
                     raise OSError("injected result storage failure")
-            original_write(path, data, mode)
+            original_create(path, data, mode)
 
         output = io.StringIO()
-        with mock.patch.object(runner, "_atomic_write", side_effect=flaky_write), contextlib.redirect_stdout(output):
+        with mock.patch.object(runner, "_atomic_create", side_effect=flaky_create), contextlib.redirect_stdout(output):
             status = transaction.execute()
         self.assertEqual(status, runner.EXIT_BOOKKEEPING)
         self.assertTrue((self.fixture.root / CLAIM_PATH).exists())
-        result = self._result()
-        self.assertEqual(result["verdict"], "published-pending-finalization")
-        self.assertFalse(result["claim_finalized"])
+        self.assertFalse(transaction.result_path.exists())
+        journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["state"], "writing-terminal-result")
+        self.assertFalse(journal["claim_finalized"])
 
     def test_committed_candidate_symlink_is_rejected_before_input_copy(self) -> None:
         external = self.fixture.root.parent / f"{self.fixture.root.name}-escape-target"
@@ -646,6 +888,10 @@ class RunnerTransactionTests(unittest.TestCase):
         lock.write_text(json.dumps({"pid": os.getpid(), "start_time": time.time()}), encoding="utf-8")
         with self.assertRaisesRegex(runner.TransactionError, "transaction lock is held"):
             transaction.acquire_lock()
+        self.assertEqual(transaction.execute(), runner.EXIT_PREFLIGHT)
+        self.assertFalse(transaction.journal_path.exists())
+        self.assertFalse(transaction.result_path.exists())
+        self.assertFalse(transaction.current_pointer_path.exists())
         with self.assertRaisesRegex(runner.TransactionError, "no transaction journal found"):
             runner.recover_transaction(self.fixture.root, "no-such-request")
 
@@ -663,10 +909,12 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertFalse(lock.exists())
         journal = json.loads(transaction.journal_path.read_text(encoding="utf-8"))
         result = json.loads(transaction.result_path.read_text(encoding="utf-8"))
-        self.assertEqual(journal["state"], "killed-by-signal-SIGTERM")
-        self.assertEqual(journal["error"], "RTX-TERMINATED-SIGNAL")
+        self.assertEqual(journal["state"], "complete")
         self.assertEqual(result["verdict"], "failed")
         self.assertEqual(result["error"]["rule"], "RTX-TERMINATED-SIGNAL")
+        pointer = json.loads(transaction.current_pointer_path.read_text(encoding="utf-8"))
+        self.assertEqual(pointer["request_id"], REQUEST_ID)
+        self.assertEqual(pointer["verdict"], "failed")
 
     def test_rollback_drift_retains_backup_and_recovery_journals(self) -> None:
         manifest = runner.load_manifest(self.fixture.manifest())
@@ -705,6 +953,10 @@ class RunnerTransactionTests(unittest.TestCase):
                     "owner_token": OWNER_TOKEN,
                     "claim_path": CLAIM_PATH,
                     "manifest_path": "request.json",
+                    "manifest_sha256": "1" * 64,
+                    "contract_sha256": "2" * 64,
+                    "claim_preimage_sha256": hashlib.sha256((self.fixture.root / CLAIM_PATH).read_bytes()).hexdigest(),
+                    "expected_base": self.fixture.base,
                     "branch_ref": "refs/heads/main",
                     "substantive_commit": self.fixture.base,
                     "bookkeeping_commit": None,
@@ -714,6 +966,53 @@ class RunnerTransactionTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        if published:
+            result_path = log_dir / "result.json"
+            result = {
+                "schema": runner.RESULT_SCHEMA,
+                "task_id": "0038-01",
+                "request_id": REQUEST_ID,
+                "owner_token": OWNER_TOKEN,
+                "expected_base": self.fixture.base,
+                "base_observed": self.fixture.base,
+                "authority_observed": dict(AUTHORITY),
+                "manifest_path": "request.json",
+                "manifest_sha256": "1" * 64,
+                "contract_sha256": "2" * 64,
+                "started_at": "2026-08-19T00:00:00Z",
+                "finished_at": "2026-08-19T00:00:01Z",
+                "verdict": "passed",
+                "lifecycle_state": "complete",
+                "phase": "complete",
+                "phases": [],
+                "actions": [],
+                "findings": [],
+                "substantive_commit": self.fixture.base,
+                "bookkeeping_commit": None,
+                "published": True,
+                "claim_finalized": True,
+                "paths": {"counts": {}, "preflight": {}, "promoted": {}},
+                "commits": {"substantive": self.fixture.base, "bookkeeping": None, "final": self.fixture.base},
+                "cleanup": {"claim_finalized": True, "journal_state": "complete"},
+                "evidence": {"journal": "output/logs/0038-01/fixture-runner-transaction-001/transaction-journal.json"},
+                "changed_path_count": 0,
+                "promotion_backups_retained": False,
+                "error": None,
+                "recovery": "none",
+            }
+            result_bytes = runner._json_bytes(result)
+            runner._atomic_write(result_path, result_bytes, 0o600)
+            pointer = {
+                "schema": runner.CURRENT_POINTER_SCHEMA,
+                "task_id": "0038-01",
+                "request_id": REQUEST_ID,
+                "result_path": result_path.relative_to(self.fixture.root).as_posix(),
+                "result_sha256": hashlib.sha256(result_bytes).hexdigest(),
+                "verdict": "passed",
+                "lifecycle_state": "complete",
+                "updated_at": "2026-08-19T00:00:00Z",
+            }
+            runner._atomic_write(log_dir.parent / "current.json", runner._json_bytes(pointer), 0o600)
         return path
 
     def test_recover_reports_deterministic_unpublished_plan(self) -> None:
@@ -759,9 +1058,15 @@ class RunnerTransactionTests(unittest.TestCase):
         if not git_dir.is_absolute():
             git_dir = self.fixture.root / git_dir
         lock = git_dir / "autodocs-runner-transaction.lock"
+        claim_before = (self.fixture.root / CLAIM_PATH).read_bytes()
+        journal_before = (self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "transaction-journal.json").read_bytes()
+        pointer_before = (self.fixture.root / "output" / "logs" / "0038-01" / "current.json").read_bytes()
         lock.write_text(json.dumps({"pid": os.getpid(), "request_id": REQUEST_ID}), encoding="utf-8")
         with self.assertRaisesRegex(runner.TransactionError, "never deletes or bypasses"):
             runner.finalize_claim_standalone(self.fixture.root, "0038-01", REQUEST_ID)
+        self.assertEqual((self.fixture.root / CLAIM_PATH).read_bytes(), claim_before)
+        self.assertEqual((self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "transaction-journal.json").read_bytes(), journal_before)
+        self.assertEqual((self.fixture.root / "output" / "logs" / "0038-01" / "current.json").read_bytes(), pointer_before)
 
     def test_envelope_renderer_rejects_shell_metacharacters(self) -> None:
         for hostile in (
