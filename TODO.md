@@ -1436,9 +1436,10 @@ HOW TO USE:
 
 ### Campaign B — Extraction and Normalization
 
-- [p] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter.
+- [x] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter. REF: `6f1007fbb549f762cb90b95cefcc9c3d4b9e5f3c`
   - **Acceptance criteria:** The adapter accepts only a manifest-pinned source set, extracts the profile’s supported artifacts, and emits deterministic raw extraction output; it does not fall back to moving refs such as `main`; failures identify repo/ref/path/locator and leave no partial canonical corpus presented as complete.
   - **Definition of Done:** Unit and integration tests cover successful extraction, missing source, invalid ref/hash, malformed Sphinx-needs item, duplicate identity, and unsupported artifact; repeated extraction from the same snapshot produces identical normalized raw output.
+  - **Implementation completion (2026-08-19):** `python3 -m unittest _src.tests.test_score_extraction_adapter _src.tests.test_score_campaign_manifest _src.tests.test_score_source_snapshot _src.tests.test_score_import_profile` passed (26 tests), including byte-identical repeated extraction from the retained v0.6.0 snapshot. `python3 -m py_compile _src/tools/score_extraction_adapter.py _src/tests/test_score_extraction_adapter.py` and `git diff --check` passed. The raw output is explicitly non-canonical; no curation item, canonical record corpus, acceptance record, integration action, moving-ref fallback, or network operation was performed.
 
 - [ ] **0019-05** PREREQ: 0019-05:0019-04 Normalize raw S-Core extraction output into canonical versioned records.
   - **Acceptance criteria:** Every emitted record conforms to `ECLIPSE/S-CORE/<kind>/<id>@rel:<release>#<content-hash8>`, carries all non-canonical provenance required by `score-identity-scheme.md`, contains source-backed traceability, has an initial status/reason and history entry, and records content hashes deterministically; identity collisions and source contradictions emit deterministic structured exception candidates for `0019-07` rather than being overwritten or prematurely queued.
