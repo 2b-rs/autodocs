@@ -27,6 +27,39 @@ Feature, Task, and Subtask work is carried on Git branches named after the item 
 
 A user-directed activity that is not an existing Task may use `TODO-<agent-id>.md` as a temporary coordination record, but must not falsely mark an unrelated Task `[p]`.
 
+## Dispatching a subagent
+
+A session that spawns another agent is its **dispatcher** and is answerable for
+the briefing being complete. A subagent never inherits the dispatcher's
+capability class, authority, claim, or write scope implicitly.
+
+Every briefing must state, explicitly:
+
+1. the **capability class**, as one of the exact names in `SANDBOX.md`
+   (`sandboxed-grunt`, `unprivileged`, `privileged`);
+2. the **item ID** and the branch/worktree to work in;
+3. the **write scope** as exact paths;
+4. what the subagent must **not** do — at minimum whether it may accept work,
+   cross an integration checkpoint, or move a Feature to `DONE.md`.
+
+The capability-class default in `SANDBOX.md` exists for a runtime that cannot
+report its class. It is **not** a substitute for an assignment the dispatcher
+failed to make. Omitting the class silently downgrades the subagent to
+`sandboxed-grunt` and routes it onto the runner protocol, where it will queue on
+the singleton `run.sh` slot it does not need — serializing agents that could
+have run in parallel.
+
+A briefing that orders direct execution — Git, branch, merge, commit, tests — but
+states or defaults to `sandboxed-grunt` is **internally contradictory**. The
+receiving session does not silently resolve it: it applies the safe default,
+records the contradiction and the received briefing verbatim in its claim, and
+reports the contradiction back to its dispatcher. It does not upgrade its own
+class to make the order executable.
+
+Route work through the runner **only** when the capability class actually
+requires it. An `unprivileged` or `privileged` session never waits on the
+`run.sh` singleton and never treats a foreign request in that slot as a blocker.
+
 ## Autonomous backlog repair
 
 Agents are authorized and expected to repair backlog defects encountered during assigned or autonomously selected work when the intended result is determinable from the Feature goal, recorded decisions, neighboring Tasks, prerequisites, acceptance criteria, repository evidence, and established architecture.
