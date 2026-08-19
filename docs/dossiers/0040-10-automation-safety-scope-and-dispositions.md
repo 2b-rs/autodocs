@@ -63,6 +63,31 @@ dispositions, zero unresolved critical findings, and zero policy errors.
 - `0038-10` completion expires all 21 entries; that Task must remove or re-authorize them against its immutable result implementation.
 - A later `0038-24` move updates paths and exact identities only after rescanning final moved bytes; this Task does not move files or claim that scope.
 
+#### `DEC-0040-10-001-LM001`
+
+- **Map format:** `decision-record-legacy-map@v1`
+- **Target record:** `DEC-0040-10-001`
+- **Source path:** `docs/dossiers/0040-10-automation-safety-scope-and-dispositions.md#dec-0040-10-001`
+- **Map recorded at:** `2026-08-18T18:19:25Z`
+- **Mapping identity:** `agent:zed:0040-09:20260818T180401Z-760531d011eb`
+- **Mapping role:** `Implementierer`
+- **Mapping authority reference:** `task:0040-09`
+- **Structural disposition:** `legacy-structurally-nonconforming`
+- **Semantic disposition:** `incomplete`
+- **Missing semantic fields:** `Role, Review.Participation`
+- **Deviation:** The record predates `decision-record@v1`, uses prose sections instead of the exact field order, describes the deciding agent as Project Manager even though Management is never an agent role, and records an implementation peer review but no review of the scope decision itself. This map preserves those gaps instead of inventing authority or review participation.
+- **Semantic projection JSON:**
+  ```json
+  {"recorded_at":"2026-08-18T14:13:07Z","deciding_identity":"agent:zed:0040-10:20260818T141307Z-894c3cd8b63b","role":null,"authority_reference":"task:0040-10","subject":"Whether the privileged host bootstrapper remains within static automation-safety scan coverage","decision":"Keep the privileged host bootstrapper in tracked Python and shell scan coverage regardless of directory; repair actual status gaps and use exact finding dispositions without exclusions or scanner weakening.","technical_justification":"Host privilege increases the impact of unchecked mutation and false PASS output; relocation does not change those effects, while exact evidence digests make later source or path changes visible.","triggers":["cross-item-blast-radius"],"considered_alternatives":[{"id":"ALT-01","text":"Exclude privileged host code or a future runner-host subtree","disposition":"rejected","reason":"A move would silently erase coverage of the highest-impact automation."},{"id":"ALT-02","text":"Weaken function handling globally","disposition":"rejected","reason":"This would create false negatives in unrelated automation."},{"id":"ALT-03","text":"Rewrite the complete host runner transaction architecture","disposition":"rejected","reason":"This exceeds the bounded repair and duplicates open Task 0038-10."},{"id":"ALT-04","text":"Repair real status gaps and bind remaining findings exactly","disposition":"selected","reason":"This restores checkable coverage without hiding lifecycle debt."}],"consequences":[{"id":"CON-01","text":"The host bootstrapper remains scan-visible at any tracked shell path."},{"id":"CON-02","text":"Source, path, line, symbol, or aggregate evidence changes make exact dispositions stale."},{"id":"CON-03","text":"Open Task 0038-10 retains the immutable lifecycle-result debt and expires the temporary dispositions."}],"affected_work_units":["task:0040-10","task:0038-10","task:0038-24","repository:autodocs"],"affected_gates":["validation:_src/tools/automation_safety.py"],"review_participation":null,"no_review_reason":"The legacy record documents implementation peer review, not review of this cross-item scope decision.","waiver":{"type":"none"}}
+  ```
+- **Source bindings JSON:**
+  ```json
+  {"recorded_at":["legacy:Decision timestamp"],"deciding_identity":["legacy:Deciding identity"],"role":["legacy:Deciding identity","additive:no-valid-agent-management-role"],"authority_reference":["additive:task-contract-requires-scope-decision"],"subject":["legacy:Subject"],"decision":["legacy:Decision"],"technical_justification":["legacy:Technical justification"],"triggers":["legacy:Trigger"],"considered_alternatives":["legacy:Alternatives considered"],"consequences":["legacy:Consequences"],"affected_work_units":["legacy:Consequences","additive:declared-cross-item-scope"],"affected_gates":["legacy:Subject"],"review_participation":["legacy:Peer review","additive:decision-scope-review-not-recorded"],"no_review_reason":["legacy:Peer review","additive:decision-scope-review-not-recorded"],"waiver":["additive:none"]}
+  ```
+
+This map is a structural and semantic disposition only. It neither upgrades the
+legacy record to `decision-record@v1` nor grants the missing role/review authority.
+
 ## Individual finding dispositions
 
 `Pre` identifies the finding captured before this Task. `Final` identifies the exact

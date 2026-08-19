@@ -141,15 +141,14 @@ auf TK-1 allein verlässt, wiederholt den Vorfall.
 > Wer eine Zuschnitts- oder Torentscheidung mit Wirkung **über die eigene
 > Arbeitseinheit hinaus** trifft, hält sie als Entscheidungsdatensatz fest.
 
-Der Datensatz MUSS dem normativen Vertrag
-[`decision-record@v1`](decision-record.md) entsprechen. Dort sind die
-Pflichttrigger, darunter die Wirkung auf fremde Arbeitseinheiten und Tore,
-Autoritätszuschnitt/Waiver, materiell verschiedene Architekturen oder
-repository-weites Verhalten sowie irreversible, externe, Sicherheits-,
-Credential-, Release- und materielle Risikoentscheidungen, abschließend
-definiert. Abnahmeprotokolle und Integrationsverdikte bleiben spezialisierte
-Formate; eine darin vorausgesetzte TK-2-Entscheidung erhält einen separaten
-`DEC-…`-Datensatz.
+The record MUST conform to the normative
+[`decision-record@v1`](decision-record.md) contract. That contract completely
+defines the mandatory triggers, including effects on other work units and
+gates, authority tailoring/waivers, materially different architectures or
+repository-wide behavior, and irreversible, external, security, credential,
+release, and material-risk decisions. Acceptance records and integration
+verdicts remain specialized formats; a TK-2 decision on which either depends
+receives a separate `DEC-…` record.
 
 Für die Vorabprüfung von Torzuschnitten gilt ausschließlich der kanonische
 Trigger
@@ -211,20 +210,19 @@ Schlüssel ist die **Reichweite**, nicht die Knotenmarkierung. Ein Task ohne
 | QA ≠ Implementierer desselben Gegenstands | getrennt | **nie** für denselben Gegenstand |
 | Integrator ≠ Implementierer | siehe TK-1 | nur über den Waiver-Vertrag |
 
-Für die Zeile **Architekt ≠ Implementierer** wird die Zulässigkeit
-nicht-selbstreferenziell bestimmt: Zuerst wird die zugrundeliegende fachliche
-Zuschnitts-, Architektur- oder Umsetzungsentscheidung so bewertet, als wären
-Architekt und Implementierer bereits getrennt; der durch die beabsichtigte
-Rollenzusammenlegung selbst entstehende Trigger
-`authority-tailoring-or-waiver` bleibt bei genau dieser Vorprüfung außer
-Betracht. Trifft die Sachentscheidung dabei `cross-item-blast-radius` oder einen
-der Trennungstrigger `material-architecture-or-repository-behavior`,
+For the **Architekt ≠ Implementierer** row, permissibility is determined
+without self-reference: first assess the underlying domain scoping,
+architecture, or implementation decision as though Architekt and Implementierer
+were already separate; exclude the `authority-tailoring-or-waiver` trigger that
+is caused solely by the intended role combination from this specific pre-check.
+If the substantive decision meets `cross-item-blast-radius` or a separation
+trigger — `material-architecture-or-repository-behavior`,
 `irreversible-or-external-effect`, `security-or-credential-boundary`,
-`public-release` oder `material-risk-decision`, ist die Zusammenlegung nicht
-zulässig. Trifft keiner davon zu, darf sie stattfinden, muss aber wegen des
-anschließenden Autoritäts-Tailorings weiterhin in einem `decision-record@v1`
-festgehalten werden. Der Datensatz macht die Zusammenlegung nachvollziehbar; er
-hebt keinen sachlich ausgelösten Trennungsgrund auf.
+`public-release`, or `material-risk-decision` — combining the roles is not
+permitted. If none applies, the combination MAY occur, but the subsequent
+authority tailoring must still be recorded in a `decision-record@v1`. The
+record makes the combination traceable; it does not override a substantively
+triggered reason for separation.
 
 Tailoring ohne Datensatz ist ein Prozessverstoß: es löscht die Spur, an der
 später erkennbar wäre, wessen Urteil wie unabhängig war.
