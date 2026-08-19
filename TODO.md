@@ -281,6 +281,16 @@ HOW TO USE:
     - **Work-product manifest SHA-256:** `6379020bb096b4c941157f65ac039f063bc7b5fa590fe7f68ac2ec863230eaf8`
     - **Prerequisite-acceptance SHA-256:** `ae1da059b8b15d11e1e9c6fd9851211d95f8ba6c59eaa3ca2f1c156cd40df132`
     - **Review REF:** `5c758937977606a6172d97814234412856f16ed0`
+  - **Acceptance invalidation (2026-08-19T14:30:54Z):** The preceding record's Review REF was an invalid manual expansion of abbreviated hash `5c7589379`; it does not name a reachable evidence commit and carries no current credit. Evidence: `docs/pipeline/evidence/0039-01/acceptance-review-niklaus-riker-20260819T125003Z.md`, commit `5c75893795ab7d8a7edd1a8583c26f627ace3662`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `Niklaus Riker 20260819T125003Z`
+    - **Authority reference:** `current-user assignment, 2026-08-19, exact rereview 0039-01 after AR-0039-01-002`
+    - **Accepted at:** `2026-08-19T14:30:54Z`
+    - **Contract SHA-256:** `b47a84f71b6a40425668c5136e5f542aa1f221b3cc338f8f16fa7caa3518ae1e`
+    - **Work-product manifest SHA-256:** `6379020bb096b4c941157f65ac039f063bc7b5fa590fe7f68ac2ec863230eaf8`
+    - **Prerequisite-acceptance SHA-256:** `ae1da059b8b15d11e1e9c6fd9851211d95f8ba6c59eaa3ca2f1c156cd40df132`
+    - **Review REF:** `5c75893795ab7d8a7edd1a8583c26f627ace3662`
 
 - [u] **0039-02** Define, pilot, and baseline the reusable tool-creation and continuous-improvement process from `docs/dossiers/tool-creation-improvement-process-study.docx`.
   - **Reservation gate:** The sole next action is a current-user decision naming an explicitly privileged owning session; until then no claim, implementation, approval, registry change, or tool promotion is authorized.
