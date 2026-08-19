@@ -2,8 +2,8 @@
 
 owner_token: agent:data-deanna:0039-03-review:20260819T201432Z-4f6b9c2a
 capability_class: privileged
-state: complete
-review_outcome: inconclusive
+state: [p]
+review_outcome: pending-renewed-review
 review_evidence_ref: 99a90b8e036aa0b6f1c50412b5ec73069b36eede
 branch: 0039-03
 review_baseline: 1a9911e8ada660f610fe38284d03a4296c9a913e
@@ -30,6 +30,10 @@ Exact review write scope: `docs/pipeline/evidence/0039-03/` for a new review rec
 - **Evidence commit:** `99a90b8e036aa0b6f1c50412b5ec73069b36eede`.
 - **Findings:** `0039-03-AR-001` (incomplete `0039-02` prerequisite acceptance record) and `0039-03-AR-002` (invalid substantive `Base-Ref` provenance), retained in the evidence record.
 - **Required continuation:** separately authorized correction of `0039-02` acceptance digest fields and additive correction binding the actual substantive parent, followed by a new independent `0039-03` acceptance review.
+
+## Continuation authorization (verbatim)
+
+Continue the exact 0039-03 acceptance review assignment. The two previous blockers are now corrected: 0039-02 has a complete current acceptance record at `960594917f429c492d9bf0c94e5796b144029ffe`, and 0039-03 has additive provenance correction `569eb4140eb7a6af781aac46f899ea86abd9f255` / bookkeeping `f1dede0bfc2ab7743db7d1cfa2dfdfa3f99c9686` binding the substantive commit to its actual parent. Re-pin the current baseline, independently verify both corrections plus relevant focused validation. If all criteria/closure gates pass, commit new review evidence then separate path-isolated complete `Acceptance: ✓` bookkeeping on branch `0039-03`; otherwise append inconclusive/rejected evidence. Do not merge/integrate/publish/move DONE or touch non-review scope. Report concise result.
 
 ## User authorization (verbatim)
 
