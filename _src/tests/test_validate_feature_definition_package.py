@@ -38,6 +38,21 @@ class FeatureDefinitionValidatorTests(unittest.TestCase):
         finally:
             temporary.unlink(missing_ok=True)
 
+    def test_reversed_immediate_adoption_safeguard_fails(self):
+        reconciliation_path = ROOT / MANIFEST["reconciliation"]["path"]
+        reconciliation = json.loads(reconciliation_path.read_text())
+        reconciliation["recommendations"][-1]["disposition"] = "rejected"
+        temporary = ROOT / "docs/pipeline/evidence/0039-01/.test-study-reconciliation.json"
+        try:
+            temporary.write_text(json.dumps(reconciliation))
+            data = copy.deepcopy(MANIFEST)
+            data["reconciliation"]["path"] = str(temporary.relative_to(ROOT))
+            findings = validator.validate(data, ROOT)
+            self.assertIn("FDB-008", {item["code"] for item in findings})
+            self.assertTrue(any("REC-20" in item["detail"] for item in findings))
+        finally:
+            temporary.unlink(missing_ok=True)
+
     def test_cycle_fails(self):
         data = copy.deepcopy(MANIFEST)
         data["prerequisites"].append({"consumer": "0039-04", "producer": "0039-01", "type": "producer"})

@@ -100,6 +100,19 @@ def validate(data, root):
                     findings.append(error("FDB-008", f"recommendation {item['id']} has an invalid artifact"))
         if recommendation_ids != [f"REC-{number:02d}" for number in range(1, 21)]:
             findings.append(error("FDB-008", "reconciliation must contain REC-01 through REC-20 in order"))
+        else:
+            adoption_safeguard = reconciliation_data["recommendations"][-1]
+            required_artifacts = {
+                "docs/pipeline/feature-definition-and-breakdown.md#1-purpose-and-boundary",
+                "docs/pipeline/feature-definition-migration.md#1-controlled-adoption",
+            }
+            reason = adoption_safeguard.get("reason", "")
+            if (adoption_safeguard.get("disposition") != "selected"
+                    or not required_artifacts.issubset(set(adoption_safeguard.get("artifacts", [])))
+                    or not isinstance(reason, str)
+                    or "independent review" not in reason.lower()
+                    or "explicit authority decision" not in reason.lower()):
+                findings.append(error("FDB-008", "REC-20 must select the non-adoption safeguard with independent review and explicit authority controls"))
 
     collections = ("criteria", "tasks", "prerequisites", "evidence")
     if any(not isinstance(data[name], list) for name in collections):
