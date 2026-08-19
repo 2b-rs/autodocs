@@ -383,7 +383,13 @@ APPLESCRIPT_PATTERN='perplexity-loop[.]applescript'
 SUSPENDED_APPLESCRIPT_PIDS=()
 SANDBOX_PROFILE_PATH="$OUTPUT_DIR/run.sandbox.sb"
 GITHUB_SSH_DIR="${GITHUB_SSH_DIR:-$HOME/devel}"
+GITHUB_SSH_CREDENTIAL_HANDLE="${GITHUB_SSH_CREDENTIAL_HANDLE:-}"
+RUNNER_CREDENTIAL_DIR="${RUNNER_CREDENTIAL_DIR:-$HOME/.config/autodocs/credentials}"
 GITHUB_SSH_KEY_PATH="${GITHUB_SSH_KEY_PATH:-$GITHUB_SSH_DIR/identities/agent-commit-key/id_ed25519_agent_commit}"
+GITHUB_SSH_EXPECTED_FINGERPRINT=""
+GITHUB_SSH_PUBLIC_KEY_PATH=""
+RUNNER_SSH_AGENT_PID=""
+RUNNER_SSH_AUTH_SOCK=""
 GITHUB_ID_FILE="$OUTPUT_DIR/github-user.txt"
 NPM_CACHE_DIR="$OUTPUT_DIR/npm-cache"
 NPM_INSTALL_PREFIX="$OUTPUT_DIR/npm-prefix"
@@ -395,11 +401,54 @@ PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright"
 PLAYWRIGHT_VERSION="1.62.1"
 MINIMUM_NODE_MAJOR=20
 
+resolve_github_credential_handle() {
+  [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]] || return 0
+  if [[ ! "$GITHUB_SSH_CREDENTIAL_HANDLE" =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
+    printf 'error: invalid GitHub SSH credential handle\n' >&2
+    exit 2
+  fi
+  case "$GITHUB_SSH_CREDENTIAL_HANDLE" in
+    autodocs-deploy-key)
+      GITHUB_SSH_EXPECTED_FINGERPRINT='SHA256:wtCFvdCIurWZj2NT4deL9Rg9uwqsL5nj17jlaoTW7a0'
+      ;;
+    *)
+      printf 'error: unsupported GitHub SSH credential handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+      exit 2
+      ;;
+  esac
+  GITHUB_SSH_KEY_PATH="$RUNNER_CREDENTIAL_DIR/$GITHUB_SSH_CREDENTIAL_HANDLE"
+  GITHUB_SSH_DIR="$OUTPUT_DIR/credential-isolated"
+  if [[ -L "$GITHUB_SSH_KEY_PATH" || ! -f "$GITHUB_SSH_KEY_PATH" || ! -r "$GITHUB_SSH_KEY_PATH" ]]; then
+    printf 'error: runner-private GitHub credential is unavailable for handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+  if [[ "$(stat -f '%Lp' "$RUNNER_CREDENTIAL_DIR")" != 700 || \
+        "$(stat -f '%Lp' "$GITHUB_SSH_KEY_PATH")" != 600 ]]; then
+    printf 'error: insecure runner-private credential permissions for handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+  local actual_fingerprint
+  actual_fingerprint="$(ssh-keygen -lf "$GITHUB_SSH_KEY_PATH" -E sha256 2>/dev/null | awk 'NR == 1 { print $2 }')"
+  if [[ "$actual_fingerprint" != "$GITHUB_SSH_EXPECTED_FINGERPRINT" ]]; then
+    printf 'error: runner-private GitHub credential fingerprint mismatch for handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+    exit 1
+  fi
+}
+
+resolve_github_credential_handle
+GITHUB_SSH_PUBLIC_KEY_PATH="$OUTPUT_DIR/github-credential.pub"
+
 mkdir -p "$OUTPUT_DIR" "$ARCHIVE_DIR" "$GITHUB_SSH_DIR" "$NPM_CACHE_DIR" \
   "$PYTHON_PACKAGE_DIR" "$PIP_CACHE_DIR" "$RUNNER_TMP_BASE" \
   "$(dirname "$CURRENT_LOG_LINK")"
 mkdir -p "$RUNNER_TMP_DIR"
 chmod 700 "$RUNNER_TMP_DIR"
+if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+  ssh-keygen -y -f "$GITHUB_SSH_KEY_PATH" > "$GITHUB_SSH_PUBLIC_KEY_PATH"
+  chmod 600 "$GITHUB_SSH_PUBLIC_KEY_PATH"
+else
+  GITHUB_SSH_PUBLIC_KEY_PATH="$GITHUB_SSH_KEY_PATH"
+fi
 
 prepend_tool_path() {
   local directory="$1"
@@ -490,7 +539,48 @@ send_completion_notification() {
   fi
 }
 
+stop_runner_ssh_agent() {
+  if [[ -n "$RUNNER_SSH_AGENT_PID" ]]; then
+    kill "$RUNNER_SSH_AGENT_PID" 2>/dev/null || true
+    wait "$RUNNER_SSH_AGENT_PID" 2>/dev/null || true
+  fi
+  RUNNER_SSH_AGENT_PID=""
+  RUNNER_SSH_AUTH_SOCK=""
+  unset SSH_AUTH_SOCK SSH_AGENT_PID
+}
+
+start_runner_ssh_agent() {
+  [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]] || return 0
+  stop_runner_ssh_agent
+  RUNNER_SSH_AUTH_SOCK="/tmp/autodocs-ssh-agent-$$.sock"
+  if [[ -e "$RUNNER_SSH_AUTH_SOCK" ]]; then
+    printf 'error: task-scoped SSH agent socket already exists\n' >&2
+    return 1
+  fi
+  ssh-agent -D -a "$RUNNER_SSH_AUTH_SOCK" </dev/null >/dev/null 2>&1 &
+  RUNNER_SSH_AGENT_PID=$!
+  local attempt
+  for attempt in {1..50}; do
+    [[ -S "$RUNNER_SSH_AUTH_SOCK" ]] && break
+    sleep 0.02
+  done
+  if [[ ! -S "$RUNNER_SSH_AUTH_SOCK" ]]; then
+    printf 'error: failed to start task-scoped SSH agent\n' >&2
+    stop_runner_ssh_agent
+    return 1
+  fi
+  SSH_AUTH_SOCK="$RUNNER_SSH_AUTH_SOCK"
+  SSH_AGENT_PID="$RUNNER_SSH_AGENT_PID"
+  export SSH_AUTH_SOCK SSH_AGENT_PID
+  if ! ssh-add "$GITHUB_SSH_KEY_PATH" </dev/null >/dev/null 2>&1; then
+    printf 'error: failed to load runner-private credential handle: %s\n' "$GITHUB_SSH_CREDENTIAL_HANDLE" >&2
+    stop_runner_ssh_agent
+    return 1
+  fi
+}
+
 cleanup_runner_state() {
+  stop_runner_ssh_agent
   resume_applescript
   rm -rf "$RUNNER_TMP_DIR"
 }
@@ -610,8 +700,7 @@ write_sandbox_profile() {
   (subpath "$GITHUB_SSH_DIR")
   (literal "$HOME/.gitconfig")
   (literal "$HOME/.config/git/config")
-  (literal "$GITHUB_SSH_KEY_PATH")
-  (literal "$GITHUB_SSH_KEY_PATH.pub")
+  (literal "$GITHUB_SSH_PUBLIC_KEY_PATH")
   (subpath "$HOME/Library/Python")
   (subpath "$HOME/Library/Caches/ms-playwright")
   (subpath "/private/tmp")
@@ -994,7 +1083,8 @@ else
   echo "Running environment self-test..."
 SELFTEST_SCRIPT="$OUTPUT_DIR/run-sandbox-selftest.sh"
 SELFTEST_LOG="$OUTPUT_DIR/run-sandbox-selftest.log"
-export SELFTEST_LOG OUTPUT_DIR GITHUB_SSH_KEY_PATH RUN_SCRIPT_PATH \
+export SELFTEST_LOG OUTPUT_DIR GITHUB_SSH_KEY_PATH GITHUB_SSH_CREDENTIAL_HANDLE \
+  GITHUB_SSH_PUBLIC_KEY_PATH RUN_SCRIPT_PATH \
   NPM_CONFIG_CACHE npm_config_cache NPM_INSTALL_PREFIX NODE_PATH \
   PYTHON_PACKAGE_DIR PYTHONPATH PYTHONNOUSERSITE PIP_CACHE_DIR \
   PIP_DISABLE_PIP_VERSION_CHECK \
@@ -1144,7 +1234,11 @@ record npm_cache_path_probe "npm cache path" \
   sh -c 'test "$(npm config get cache)" = "$NPM_CONFIG_CACHE"'
 record npm_cache_write_probe "npm cache writable" \
   sh -c 'probe="$NPM_CONFIG_CACHE/run-loop-selftest.$$"; : > "$probe" && rm -f "$probe"'
-record github_key_read_probe "GitHub SSH key readable" test -r "$GITHUB_SSH_KEY_PATH"
+if [[ -n "${GITHUB_SSH_CREDENTIAL_HANDLE:-}" ]]; then
+  record github_key_read_probe "GitHub SSH public selector readable" test -r "$GITHUB_SSH_PUBLIC_KEY_PATH"
+else
+  record github_key_read_probe "GitHub SSH key readable" test -r "$GITHUB_SSH_KEY_PATH"
+fi
 
 # Regression checks for the Playwright/WebKit conditions that previously failed.
 # Installation is intentionally handled only by --init; dependency probes never install.
@@ -1249,7 +1343,11 @@ if [[ "$SANDBOX_ENABLED" == true ]]; then
 else
   echo "Run sandbox: DISABLED"
 fi
-echo "GitHub SSH key path: $GITHUB_SSH_KEY_PATH"
+if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+  echo "GitHub SSH credential handle: $GITHUB_SSH_CREDENTIAL_HANDLE"
+else
+  echo "GitHub SSH credential mode: legacy direct path"
+fi
 echo "GitHub user file: $GITHUB_ID_FILE"
 echo "npm cache: $NPM_CONFIG_CACHE"
 echo "Post-run notification wait: ${NOTIFY_WAIT_SECONDS}s"
@@ -1278,10 +1376,19 @@ while true; do
     GITHUB_USER=""
   fi
 
-  export GITHUB_SSH_KEY_PATH
+  export GITHUB_SSH_CREDENTIAL_HANDLE
   export GITHUB_SSH_DIR
   export GITHUB_USER
-  export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_KEY_PATH\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
+  if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+    if ! start_runner_ssh_agent; then
+      exit 1
+    fi
+    export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_PUBLIC_KEY_PATH\" -o IdentityAgent=\"$SSH_AUTH_SOCK\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
+    unset GITHUB_SSH_KEY_PATH
+  else
+    export GITHUB_SSH_KEY_PATH
+    export GIT_SSH_COMMAND="ssh -i \"$GITHUB_SSH_KEY_PATH\" -o IdentitiesOnly=yes -o UserKnownHostsFile=\"$OUTPUT_DIR/github-known_hosts\""
+  fi
 
   started_at_human="$(date '+%Y-%m-%d %H:%M:%S %Z')"
   started_at_stamp="$(date '+%Y-%m-%d_%H-%M-%S')"
@@ -1301,7 +1408,11 @@ while true; do
   else
     echo "[$started_at_human] run sandbox: DISABLED"
   fi
-  echo "[$started_at_human] github ssh key path: $GITHUB_SSH_KEY_PATH"
+  if [[ -n "$GITHUB_SSH_CREDENTIAL_HANDLE" ]]; then
+    echo "[$started_at_human] github ssh credential handle: $GITHUB_SSH_CREDENTIAL_HANDLE"
+  else
+    echo "[$started_at_human] github ssh credential mode: legacy direct path"
+  fi
   echo "[$started_at_human] github user: ${GITHUB_USER:-<unset>}"
   echo "[$started_at_human] npm cache: $NPM_CONFIG_CACHE"
 
@@ -1323,6 +1434,7 @@ while true; do
     set -e
     resume_applescript
   fi
+  stop_runner_ssh_agent
 
   finished_at_human="$(date '+%Y-%m-%d %H:%M:%S %Z')"
   printf '\n[%s] finished %s (#%s) with exit code %s\n' "$finished_at_human" "$RUN_SCRIPT_NAME" "$NUM" "$status"
