@@ -1419,7 +1419,7 @@ HOW TO USE:
 
 ### Campaign A — Source Baseline and Import Contract
 
-- [ ] **0019-01** Establish the v0.6.0 source bill of materials and release-pinning policy.
+- [p] **0019-01** Establish the v0.6.0 source bill of materials and release-pinning policy. Claim: `TODO-terra-1-0019-01-20260819T130000Z-b19c61d4.md`; owner_token: `agent:terra-1:0019-01:20260819T130000Z-b19c61d4`.
   - **Acceptance criteria:** A reviewed `_src/spec/campaigns/eclipse-score-v0.6.0.json` exists and lists every in-scope repository/component, upstream release label/ref, resolved immutable commit SHA, source URL, source-tree path(s), content/archive hash, license/source notice, and `score_scrape.py` revision; exclusions and their rationale are recorded; the manifest validates against the campaign schema.
   - **Definition of Done:** Manifest/schema validation and a reproducibility check pass; the manifest is committed; the source set is sufficient to re-fetch or verify every imported artifact without referring to `main`.
 
