@@ -1,0 +1,1116 @@
+{
+ "schema_version": 1,
+ "task": "0038-14",
+ "generated_note": "Lifecycle-contract inventory of tracked mutating chore tools. First-pass scope (fully classified, with declared write sets/commit points/idempotency keys and, where the tool has a real commit point, fault-injection test evidence) covers exactly the four categories named in Task 0038-14's acceptance criteria: review ingestion, publication, migrations/fixes, and duplicated graph/report helpers. Everything else tracked by automation_safety.tracked_automation_paths() is listed under 'enumerated' with a heuristic category guess only -- NOT classified.",
+ "categories": [
+  "read-only",
+  "atomic",
+  "per-item-resumable",
+  "destructive",
+  "migration-only",
+  "reusable",
+  "retired"
+ ],
+ "classified": [
+  {
+   "path": "_src/tools/review_flags.py",
+   "category": "atomic",
+   "summary": "Review-job queue (spec/review-queue/{open,claimed,done}); one flag file per requirement id.",
+   "write_set": [
+    "_src/spec/review-queue/open/<rid>.json",
+    "_src/spec/review-queue/claimed/<rid>.<agent>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "write_review_flag",
+     "mechanism": "tmp-write+os.replace (_atomic_write)",
+     "line": 90,
+     "idempotency_key": "rid (target path existence check at line 88 short-circuits duplicate creation)",
+     "idempotent": true
+    },
+    {
+     "function": "claim_flag",
+     "mechanism": "os.rename (atomic take-over)",
+     "line": 119,
+     "idempotency_key": "source path existence; OSError on race -> returns None, no partial state",
+     "idempotent": true
+    },
+    {
+     "function": "complete_flag",
+     "mechanism": "path.unlink()",
+     "line": 138,
+     "idempotency_key": "none; unlink of an already-removed path raises (FileNotFoundError), so a caller-level retry is not silently absorbed",
+     "idempotent": false
+    }
+   ],
+   "journal": "none; the queue directory itself is the durable state (no separate recovery journal)",
+   "cleanup": "complete_flag() deletes the flag; DONE_DIR is declared (line 19) but never written by this module -- dead intent, see findings",
+   "failure_aggregation": "n/a at this layer (single-file primitive); aggregation is the caller's responsibility",
+   "ownership": "Requirement review-queue producer/consumer library; imported by review_ingest.py callers and KI review agents",
+   "retention": "reusable",
+   "twin_of": "_src/tools/curation_flags.py (near-identical atomic take-over pattern incl. a byte-identical _atomic_write helper)",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_review_flags_claim_flag_retry_is_race_safe, ::test_review_flags_write_review_flag_retry_does_not_duplicate",
+   "findings": [
+    "DONE_DIR is defined but unused by complete_flag() (dead code / drifted intent vs. curation_flags.py, which does archive to DONE_DIR). Not a safety defect; a documentation/consistency gap worth a follow-up.",
+    "complete_flag()'s unlink is not itself idempotent on retry (second call raises FileNotFoundError); safe in practice because callers only call it once after a successful decision write, but a blind at-least-once retry wrapper around complete_flag() would need to tolerate that exception."
+   ]
+  },
+  {
+   "path": "_src/tools/curation_flags.py",
+   "category": "atomic",
+   "summary": "Curation-request queue (spec/curation-queue/{open,claimed,done}); one flag file per requirement id.",
+   "write_set": [
+    "_src/spec/curation-queue/open/<rid>.json",
+    "_src/spec/curation-queue/claimed/<rid>.<agent>.json",
+    "_src/spec/curation-queue/done/<rid>.<agent>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "write_curation_flag",
+     "mechanism": "tmp-write+os.replace (_atomic_write)",
+     "line": 76,
+     "idempotency_key": "rid (target path existence check at line 74 short-circuits duplicate creation)",
+     "idempotent": true
+    },
+    {
+     "function": "claim_flag",
+     "mechanism": "os.rename (atomic take-over)",
+     "line": 117,
+     "idempotency_key": "source path existence; OSError on race -> returns None",
+     "idempotent": true
+    },
+    {
+     "function": "complete_flag",
+     "mechanism": "tmp-write+os.replace into DONE_DIR, then unlink source",
+     "line": 160,
+     "idempotency_key": "none directly, but archiving to DONE_DIR before unlink means a crash between the two leaves the flag recoverable in either open/claimed or done, never lost",
+     "idempotent": false
+    }
+   ],
+   "journal": "DONE_DIR functions as an append-only completion journal (unlike review_flags.py, see twin note)",
+   "cleanup": "complete_flag() writes the archived copy to DONE_DIR before removing the source; outcome hooks (decision_outcome.run_hooks) run against the archived payload and their exceptions are captured onto the record rather than raised",
+   "failure_aggregation": "hook errors are collected into payload['_outcome_hook_errors'] rather than raised, so one broken hook cannot block completing a decision",
+   "ownership": "Curation-request queue producer/consumer library; imported by curation_ingest.py",
+   "retention": "reusable",
+   "twin_of": "_src/tools/review_flags.py",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_curation_flags_complete_flag_crash_between_archive_and_unlink_is_recoverable",
+   "findings": [
+    "Genuine semantic twin of review_flags.py: same schema shape, same _atomic_write body duplicated verbatim, same open/claimed directory dance. curation_flags.py additionally archives to DONE_DIR and runs outcome hooks; review_flags.py does not. Recommend one shared core (e.g. a small queue_flags.py library parameterized by QUEUE root and an optional archive-on-complete flag) with review_flags.py/curation_flags.py becoming thin schema-specific wrappers -- out of 0038-14's write scope, recorded as a consolidation candidate."
+   ]
+  },
+  {
+   "path": "_src/tools/review_ingest.py",
+   "category": "per-item-resumable",
+   "summary": "Applies a review-package@v1 of accept/reject decisions onto requirement records; --apply writes, default is dry-run.",
+   "write_set": [
+    "_src/spec/records/**/<rid>.json (requirement_text.review_flags[], status, history[])",
+    "_src/spec/review-queue/{open,claimed}/<rid>*.json (deleted on success)"
+   ],
+   "commit_points": [
+    {
+     "function": "apply_decision",
+     "mechanism": "tmp-write (.json.tmp) + Path.replace, one commit per decision in the package loop",
+     "line": 291,
+     "idempotency_key": "text_hash(text_raw, repairs) must match the decision's declared text_hash, else status=conflict and nothing is written",
+     "idempotent": false
+    }
+   ],
+   "journal": "none; the requirement record's own history[] array is the only durable trail",
+   "cleanup": "on success, deletes matching open/claimed queue files for the id (glob by rid, tolerant of zero matches)",
+   "failure_aggregation": "ingest_package() wraps each decision in try/except so one record's exception is captured as status=error without aborting the remaining decisions in the package; main() exits 1 if any bericht has fehler/konflikte/fehlgeschlagen",
+   "ownership": "Sole writing path for requirement-text review decisions (per module docstring)",
+   "retention": "reusable",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_review_ingest_apply_decision_history_duplicates_on_retry_KNOWN_DEFECT, ::test_review_ingest_apply_decision_review_flags_entry_is_idempotent",
+   "findings": [
+    "REAL DEFECT (verified by fault injection, not just static reading): apply_decision()'s commit point is idempotent for the block['review_flags'] entry (matched/updated by flag_id, so a retry does not add a second entry) but NOT idempotent for record['history']: every call -- including a caller-side retry of an already-applied decision (e.g. after a network timeout on the caller side, or the same GitHub issue re-ingested) -- appends a new history entry, because text_hash is computed only from text_raw/repairs and is unaffected by the review outcome being recorded. Net effect: at-least-once redelivery of the same accept/reject decision silently duplicates audit-log entries in the permanent requirement record. This does not corrupt the substantive review outcome (review_flags stays correct) but does pollute history, which is documentation-of-record. Flagged prominently; not fixed here (review_ingest.py is outside 0038-14's declared write scope)."
+   ]
+  },
+  {
+   "path": "_src/tools/curation_ingest.py",
+   "category": "per-item-resumable",
+   "summary": "Applies a review-package@v1 of curation_request decisions by writing one curation_flags.py flag per id; --apply writes, default is dry-run.",
+   "write_set": [
+    "_src/spec/curation-queue/open/<id>.json (delegated to curation_flags.write_curation_flag)"
+   ],
+   "commit_points": [
+    {
+     "function": "ingest (per-decision loop calling cf.write_curation_flag)",
+     "mechanism": "delegated atomic tmp-write+os.replace (curation_flags._atomic_write)",
+     "line": 107,
+     "idempotency_key": "id (write_curation_flag returns None and the loop records status=skipped when a flag for that id is already open)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none beyond the curation-queue directory state itself",
+   "cleanup": "none needed; skip-on-exists is the whole idempotency contract",
+   "failure_aggregation": "per-decision result list (bericht['ergebnisse']); main() exits 1 only on package-level format errors (bericht['fehler']), not on individual 'skipped' results",
+   "ownership": "Curation-request ingestion boundary (module docstring); never applies the underlying code/RESIDUAL change itself",
+   "retention": "reusable",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_curation_ingest_retry_is_idempotent_via_write_curation_flag_guard",
+   "findings": [
+    "Correctly idempotent by construction: unlike review_ingest.py, curation_ingest.py's only commit point is curation_flags.write_curation_flag(), which is guarded by a plain existence check before any write. A verified positive control for the per-item-resumable contract the review-ingestion family is supposed to have."
+   ]
+  },
+  {
+   "path": "_src/tools/review_request_ingest.py",
+   "category": "per-item-resumable",
+   "summary": "Ingestion boundary for review-request-package@v1 (0021-03): validates a website-initiated re-review request and writes one open curation-queue item.",
+   "write_set": [
+    "_src/spec/curation-queue/open/<item>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "ingest",
+     "mechanism": "direct Path.write_text (non-atomic single write)",
+     "line": 184,
+     "idempotency_key": "declared duplicate/hash checks against current_content_hash/current_version_id per module docstring (see existing test suite)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none",
+   "cleanup": "n/a",
+   "failure_aggregation": "single-item API (ingest(pkg, apply=...)); no batch loop at this layer",
+   "ownership": "Website re-curation request boundary (0021-03), distinct from curation_ingest.py by design (module docstring: 'delegated adapter ... rather than a modification of curation_ingest.py')",
+   "retention": "reusable",
+   "test_ref": "_src/tests/test_review_request_ingest.py (pre-existing, not duplicated here)",
+   "findings": [
+    "Already has dedicated test coverage (_src/tests/test_review_request_ingest.py, _src/tests/test_review_request_package.py); classified here for completeness of the review-ingestion family but no new fault-injection test added -- would duplicate existing coverage.",
+    "Commit point is a direct write_text, not the tmp+replace pattern used elsewhere in this family; low risk because it is a single JSON write of a single new queue item (no read-modify-write race on shared state), but inconsistent with the atomic pattern used by review_flags.py/curation_flags.py -- noted as a minor consolidation opportunity, not a defect."
+   ]
+  },
+  {
+   "path": "_src/tools/publish_public_site.sh",
+   "category": "destructive",
+   "summary": "Builds a filtered export of public paths under output/publish-export and force-pushes it to origin/main as the published site.",
+   "write_set": [
+    "output/publish-export/** (rm -rf then rebuilt every run)",
+    "remote ref refs/heads/main on git@github.com:2b-rs/autodocs.git (force-pushed)"
+   ],
+   "commit_points": [
+    {
+     "function": "<module> (script body)",
+     "mechanism": "git push --force origin publish-main:main",
+     "line": 105,
+     "idempotency_key": "none in the git-push sense; the export tree is rebuilt deterministically from REVISION each run, so re-running with the same REVISION force-pushes an identical tree (net-idempotent), but force-push is inherently history-discarding for the remote",
+     "idempotent": true
+    }
+   ],
+   "journal": "none; --dry-run retains the export dir locally for inspection without pushing",
+   "cleanup": "rm -rf of the previous export at the top of every run (line 38); classified separately by automation_safety.py as AUTO008/AUTO010/AUTO003 under 0038-13's candidate-isolation disposition",
+   "failure_aggregation": "single all-or-nothing operation; set -euo pipefail aborts on first error",
+   "ownership": "Sole publication path from repo state to the public GitHub Pages deploy repo",
+   "retention": "destructive; currently in active use",
+   "test_ref": "none added by 0038-14 (see findings -- remediation is out of this Task's declared write scope)",
+   "findings": [
+    "ESCALATION-WORTHY, already recorded (not newly introduced by this classification): _src/tools/automation_safety_policy.json pins 4 disposition entries for this file's AUTO005 (hard-coded identity, line 92 and line 104) and AUTO004 (force update of a protected ref, line 105) findings to owner_task/expires_after_task = 0038-14. Those dispositions' own rationale text asks for actual code remediation (removing the embedded publish-bot identity and the hard-coded origin/main destination, and eliminating or policy-gating the force push) -- work that is outside 0038-14's classification-only Task text and outside this session's declared write scope. Per automation_safety.py's _validate_dispositions(), an owner_task/expires_after_task becoming terminal (x/w) makes the disposition invalid regardless of whether the underlying code changed; since this script is unmodified, the 4 findings will resurface as unresolved critical/high the moment 0038-14 is marked [x], which will fail _src/validate.py's automation-safety gate for every subsequent Task closure repo-wide -- reproducing the exact blast-radius failure mode documented as the 0038-03 incident in TODO.md (Feature 0040, T1-T8). See this Task's completion note and claim for the recommended next step."
+   ]
+  },
+  {
+   "path": "_src/tools/sync_to_devel.sh",
+   "category": "destructive",
+   "summary": "One-way mirror of the volatile /tmp working copy to a durable ~/devel backup via rsync --delete, lock-guarded against overlap.",
+   "write_set": [
+    "$HOME/devel/autodocs.bak/** (rsync --delete target; DESTRUCTIVE -- deletes files absent from source)",
+    "$HOME/devel/autodocs-sync.log (append)",
+    "$HOME/devel/.autodocs-sync.lock (mkdir lock dir)"
+   ],
+   "commit_points": [
+    {
+     "function": "<module> (script body)",
+     "mechanism": "rsync -a --delete SRC/ DST/",
+     "line": 51,
+     "idempotency_key": "mkdir-based lock at $HOME/devel/.autodocs-sync.lock (line 16) makes concurrent invocations mutually exclusive; three fail-closed guards (missing .git, missing expected project files, source file count < 1000) abort before touching DST at all",
+     "idempotent": true
+    }
+   ],
+   "journal": "$HOME/devel/autodocs-sync.log records one line per run (timestamp, duration, size, HEAD, dirty count) or an ABORT/SKIP reason; this is a plain append log, not a structured recovery journal",
+   "cleanup": "trap 'rmdir \"$LOCK\"' EXIT releases the lock on every exit path, including guard aborts",
+   "failure_aggregation": "n/a; single rsync invocation per run, whole-run success/failure only",
+   "ownership": "Scheduled backup mirror (per header comment, an hourly job); not part of the interactive publication or review pipeline",
+   "retention": "reusable; currently in active use",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_sync_to_devel_lock_prevents_concurrent_run, ::test_sync_to_devel_guards_abort_before_destructive_rsync, ::test_sync_to_devel_retry_after_success_is_a_no_op",
+   "findings": [
+    "ESCALATION-WORTHY, already recorded (not newly introduced by this classification): automation_safety_policy.json pins 1 disposition (AUTO001, 'unchecked mutating subprocess', line 16) to owner_task/expires_after_task = 0038-14, with rationale explicitly asking this Task to 'prove explicit lock, failure aggregation, retry, cleanup, and recovery behavior'. Unlike publish_public_site.sh's disposition, this one is classification/proof work and IS satisfied by the fault-injection tests added here (see test_ref) -- but _validate_dispositions() still expires the disposition purely because owner_task 0038-14 becomes terminal, regardless of the proof performed, so the AUTO001 finding will still resurface as unresolved on the next full automation_safety.py scan after 0038-14 closes. The proof exists (this Task's tests); only the policy pointer needs updating, but automation_safety_policy.json is outside 0038-14's declared write scope.",
+    "Fault injection (this Task) confirms: (1) the mkdir lock is genuinely exclusive -- a second invocation while the lock directory exists exits 0 with a SKIP log line and touches nothing under DST; (2) all three pre-rsync guards (no .git, missing project files, source file count under 1000) abort before rsync runs, so a purged/half-populated /tmp source cannot propagate a destructive delete into the backup; (3) rsync -a --delete is naturally idempotent -- a second successful run against an unchanged source produces zero further changes."
+   ]
+  },
+  {
+   "path": "_src/tools/migriere_status_backfill.py",
+   "category": "migration-only",
+   "summary": "Backfills a minimal honest status/history block onto every spec record lacking one (0006-04); --apply writes, default is report-only.",
+   "write_set": [
+    "_src/spec/records/**/<id>.json (status, history[])"
+   ],
+   "commit_points": [
+    {
+     "function": "main (per-record loop)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 66,
+     "idempotency_key": "'status' key already present on the record (line 60: skip+continue)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none; Counter-based summary printed to stdout only, not persisted",
+   "cleanup": "none",
+   "failure_aggregation": "none -- a single record's json.loads()/write_text() exception aborts the whole run (no per-record try/except); already-migrated records are unaffected on the next run because of the idempotency-key skip",
+   "ownership": "Historical one-time backfill for module pre-0006-04 records; module docstring self-describes as 'Idempotent'",
+   "retention": "migration-only, one-off; recommend the same 'kept as documentation, not deleted' disposition already applied by _src/tools/README.md's Einmalwerkzeuge table to its siblings (fix_dopplungen.py, migriere_spec_db.py, backfill_traces.py) -- this file is not currently listed there, which is a minor documentation gap (see findings), not a code defect",
+   "test_ref": "_src/tests/test_chore_tool_inventory.py::test_migriere_status_backfill_retry_skips_completed_records, ::test_migriere_status_backfill_corrupted_record_fails_loud_without_touching_others",
+   "findings": [
+    "Representative of a 6-script family with an unshared but structurally identical skeleton (argparse --apply/--limit, RECORDS.rglob('*.json') loop, idempotency-key skip, direct write_text): migriere_dienst_namespace.py, migriere_ns_enclosing.py, migriere_schema_language.py, namespace_migrate.py follow the same shape. Not consolidated into a shared core; recommend a shared 'per-record migration runner' helper as a future consolidation, out of 0038-14's write scope.",
+    "Commit point is a direct (non-atomic) write_text, not tmp+replace. Fault injection (this Task) confirms the practical consequence: a crash mid-write leaves exactly the one in-flight record truncated/invalid; on retry, json.loads() raises loudly on that record (no silent corruption acceptance) while every other already-migrated record is correctly skipped and left untouched (no duplication, no erasure of completed work) -- this matches the DoD's 'retries neither duplicate nor erase work' bar for the *other* records, though the crash-affected record itself needs a manual git-checkout style recovery (not self-healing)."
+   ]
+  },
+  {
+   "path": "_src/tools/migriere_dienst_namespace.py",
+   "category": "migration-only",
+   "summary": "Backfills the service-interface-method namespace onto spec records (0008-07, correcting a never-written 0004-02 backfill).",
+   "write_set": [
+    "_src/spec/records/**/<id>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "main (per-record loop)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 87,
+     "idempotency_key": "presence of the target namespace field (skip if already set, per module docstring pattern shared with migriere_status_backfill.py)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none",
+   "cleanup": "none",
+   "failure_aggregation": "none (whole-run abort on first exception, same family shape as migriere_status_backfill.py)",
+   "ownership": "Historical one-time backfill for 0008-07",
+   "retention": "migration-only, one-off; same disposition as migriere_status_backfill.py",
+   "test_ref": "covered by family-level reasoning in migriere_status_backfill.py's fault-injection tests; not independently re-tested (see 0038-14 scoping note)",
+   "findings": [
+    "Twin of migriere_status_backfill.py's skeleton; see that entry's consolidation note."
+   ]
+  },
+  {
+   "path": "_src/tools/migriere_ns_enclosing.py",
+   "category": "migration-only",
+   "summary": "Splits the spec-DB ns block's namespace field into the two facts the new schema requires (enclosing type vs. namespace).",
+   "write_set": [
+    "_src/spec/records/**/<id>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "main (per-record loop)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 75,
+     "idempotency_key": "new-schema field presence (family pattern)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none",
+   "cleanup": "none",
+   "failure_aggregation": "none (family shape)",
+   "ownership": "Historical one-time schema-split migration",
+   "retention": "migration-only, one-off; same disposition as migriere_status_backfill.py",
+   "test_ref": "covered by family-level reasoning in migriere_status_backfill.py's fault-injection tests",
+   "findings": [
+    "Twin of migriere_status_backfill.py's skeleton."
+   ]
+  },
+  {
+   "path": "_src/tools/migriere_schema_language.py",
+   "category": "migration-only",
+   "summary": "Unifies the machine-readable schema language, replacing legacy German-keyed ns fields (modul/quelle/generiert/abweichung) with canonical keys.",
+   "write_set": [
+    "_src/spec/records/**/<id>.json"
+   ],
+   "commit_points": [
+    {
+     "function": "main (per-record loop)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 74,
+     "idempotency_key": "canonical-key presence (family pattern)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none",
+   "cleanup": "none",
+   "failure_aggregation": "none (family shape)",
+   "ownership": "Historical one-time schema-language migration",
+   "retention": "migration-only, one-off; same disposition as migriere_status_backfill.py",
+   "test_ref": "covered by family-level reasoning in migriere_status_backfill.py's fault-injection tests",
+   "findings": [
+    "Twin of migriere_status_backfill.py's skeleton."
+   ]
+  },
+  {
+   "path": "_src/tools/namespace_migrate.py",
+   "category": "migration-only",
+   "summary": "Writes explicit namespace membership into every spec record instead of leaving it implicit in the storage path / free-text Scope line.",
+   "write_set": [
+    "_src/spec/records/**/<id>.json",
+    "a namespace-mapping report file (MAP_FILE)"
+   ],
+   "commit_points": [
+    {
+     "function": "main (per-record loop)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 205,
+     "idempotent": true,
+     "idempotency_key": "explicit namespace field presence (family pattern)"
+    },
+    {
+     "function": "main (map-file write)",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 213,
+     "idempotent": false,
+     "idempotency_key": "none; MAP_FILE is overwritten wholesale each run, which is fine because it is a derived report, not source of truth"
+    }
+   ],
+   "journal": "MAP_FILE doubles as a human-readable report of what was inferred",
+   "cleanup": "none",
+   "failure_aggregation": "none (family shape)",
+   "ownership": "Historical one-time namespace-explicitness migration",
+   "retention": "migration-only, one-off; same disposition as migriere_status_backfill.py",
+   "test_ref": "covered by family-level reasoning in migriere_status_backfill.py's fault-injection tests",
+   "findings": [
+    "Twin of migriere_status_backfill.py's skeleton, plus a second non-atomic derived-report write."
+   ]
+  },
+  {
+   "path": "_src/tools/migriere_spec_db.py",
+   "category": "migration-only",
+   "summary": "EINMALWERKZEUG (self-declared, August 2026): migrates spec records out of page models into the standalone spec-records DB.",
+   "write_set": [
+    "_src/spec/records/<GRUPPE>/<ID>.json (new)",
+    "page model JSON files (rec blocks replaced by rec-ref blocks)"
+   ],
+   "commit_points": [
+    {
+     "function": "main",
+     "mechanism": "json.dump into an open file handle (non-atomic)",
+     "line": 36,
+     "idempotency_key": "none observed; self-declared one-time tool, not designed for repeat invocation",
+     "idempotent": false
+    }
+   ],
+   "journal": "none",
+   "cleanup": "none",
+   "failure_aggregation": "none",
+   "ownership": "Historical one-time migration, already executed",
+   "retention": "already formally retained: listed in _src/tools/README.md's 'Einmalwerkzeuge (erledigt, als Dokumentation aufbewahrt)' table with the project's standing rationale ('documents how today's source state came to be, and serves as a template for similar migrations'); no further action needed",
+   "test_ref": "none; not independently tested by 0038-14 -- its migration already ran and the repo's own convention (README.md) documents retention, satisfying the DoD's 'tests/docs and a retention/retirement reason' at the documentation/reason level rather than the pytest level",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/fix_dopplungen.py",
+   "category": "migration-only",
+   "summary": "One-time cleanup script removing duplicated diagrams/explanatory text between module and namespace guides.",
+   "write_set": [
+    "_src/sources/pages/**/*.json (module/namespace guide page models)"
+   ],
+   "commit_points": [
+    {
+     "function": "main (unread in full; see scoping note)",
+     "mechanism": "not independently re-verified by 0038-14",
+     "idempotency_key": "unknown; not independently re-verified",
+     "idempotent": null
+    }
+   ],
+   "journal": "none observed",
+   "cleanup": "none observed",
+   "failure_aggregation": "unknown; not independently re-verified",
+   "ownership": "Historical one-time deduplication cleanup, already executed",
+   "retention": "already formally retained: listed in _src/tools/README.md's Einmalwerkzeuge table with the same standing rationale as migriere_spec_db.py; no further action needed",
+   "test_ref": "none; not independently tested by 0038-14 (already-retained one-off, out of first-pass depth budget -- see scoping note)",
+   "findings": [
+    "Classified at inventory (write-set/ownership/retention) level only; full commit-point/idempotency detail was not re-derived from source because the tool is already a documented, retained, executed one-off with no further action implied. Recorded honestly as a shallower entry rather than silently upgraded to the same depth as the actively-used tools above."
+   ]
+  },
+  {
+   "path": "_src/tools/fix_process_nolang.py",
+   "category": "migration-only",
+   "summary": "Undocumented (no docstring) one-off fix flipping 'nolang': true on specific process.json blocks that link to repo-root files, so the i18n tree does not render broken relative links.",
+   "write_set": [
+    "_src/sources/pages/process.json"
+   ],
+   "commit_points": [
+    {
+     "function": "<module> (script body)",
+     "mechanism": "direct open()/json.dump() (non-atomic; reads and rewrites the same file in one process, no tmp+rename)",
+     "line": 17,
+     "idempotency_key": "content-based: only blocks matching specific substrings get nolang=True set, and setting it again on an already-flagged block is a no-op (dict key overwrite with the same value)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none",
+   "cleanup": "none",
+   "failure_aggregation": "none; whole-file read/mutate/write, single failure point",
+   "ownership": "Historical one-off fix, not listed in README.md's Einmalwerkzeuge table (documentation gap) or in this or any other module's docstring",
+   "retention": "RECOMMEND RETIRE: no docstring, no test, no catalog entry, hardcoded path, non-atomic same-file rewrite (a crash mid-write truncates process.json, which is load-bearing for the whole i18n pipeline -- higher blast radius than the migriere_*.py family for no offsetting benefit); its effect is already committed into tracked process.json, so re-running it is redundant. Recommend either deleting it or moving it into _src/tools/README.md's Einmalwerkzeuge table with an explicit 'superseded, do not rerun' note -- both are backlog items, not resolved by 0038-14 (deleting/moving is outside this Task's declared write scope).",
+   "test_ref": "none",
+   "findings": [
+    "Non-atomic read-modify-write of a single shared, load-bearing JSON file (process.json) with no tmp+rename guard, unlike every other migration script surveyed here that at least writes into per-record files where a truncation is localized. Concrete, verifiable retirement candidate."
+   ]
+  },
+  {
+   "path": "_src/tools/backfill_traces.py",
+   "category": "migration-only",
+   "summary": "EINMALWERKZEUG (self-declared, August 2026): retroactively creates trace files and the source register for the existing AI-generated content stock.",
+   "write_set": [
+    "_src/ai/traces/** (new trace files)",
+    "_src/ai/quellen.json (source register)"
+   ],
+   "commit_points": [
+    {
+     "function": "main",
+     "mechanism": "json.dump into open file handles (non-atomic)",
+     "line": 113,
+     "idempotency_key": "module docstring/README.md both note it is 'wiederholbar für neue Fragmente ohne Trace' (repeatable for new fragments lacking a trace) -- i.e. designed to be safely rerun",
+     "idempotent": true
+    }
+   ],
+   "journal": "_src/ai/quellen.json doubles as the durable source-of-truth register",
+   "cleanup": "none",
+   "failure_aggregation": "not independently re-verified (see scoping note)",
+   "ownership": "Historical backfill, explicitly designed for repeat use on new untraced fragments",
+   "retention": "already formally retained: listed in README.md's Einmalwerkzeuge table, explicitly marked repeatable; no further action needed",
+   "test_ref": "none; not independently tested by 0038-14",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/dependency_graph.py",
+   "category": "read-only",
+   "summary": "Evidence/dependency graph library (Feature 0006-18): typed nodes (requirement-version, curation-decision, evidence-snippet, artifact, human-comment) and typed edges over the append-only version/evidence stores.",
+   "write_set": [],
+   "commit_points": [],
+   "journal": "n/a",
+   "cleanup": "n/a",
+   "failure_aggregation": "n/a",
+   "ownership": "Library module; no __main__ entrypoint, imported by delta_view.py/asof_view.py and cascade consumers",
+   "retention": "reusable",
+   "test_ref": "none added; genuinely read-only (no write_text/subprocess calls found), so no fault-injection commit point exists to test",
+   "findings": [
+    "Not independently executable as a CLI chore tool -- it is pure query/graph-construction logic over already-durable append-only stores (version_store.py, evidence_snippet.py). Verified false-twin candidate against the unrelated tools/todo-dependency-graph.html + tools/todo-graph-core.js + tools/todo-graph-embed.js: those visualize TODO.md Task prerequisites, a completely different domain (backlog graph, not requirement/evidence graph); ruled out as a duplicate despite the superficially similar name."
+   ]
+  },
+  {
+   "path": "_src/tools/delta_view.py",
+   "category": "read-only",
+   "summary": "Delta view (Feature 0006-24): query over dependency_graph/confidence/supersession_trigger results showing everything changed/superseded/invalidated since a release or date. Explicitly a read-side query, adds no new storage per its own docstring.",
+   "write_set": [],
+   "commit_points": [],
+   "journal": "n/a",
+   "cleanup": "n/a",
+   "failure_aggregation": "n/a",
+   "ownership": "Library module; no __main__ entrypoint",
+   "retention": "reusable",
+   "test_ref": "_src/tests/test_delta_view.py (pre-existing)",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/asof_view.py",
+   "category": "read-only",
+   "summary": "Point-in-time view (Feature 0006-23): reconstructs 'as of release/date' state purely by querying existing append-only stores. Zero new storage per its own docstring.",
+   "write_set": [],
+   "commit_points": [],
+   "journal": "n/a",
+   "cleanup": "n/a",
+   "failure_aggregation": "n/a",
+   "ownership": "Library module; no __main__ entrypoint",
+   "retention": "reusable",
+   "test_ref": "_src/tests/test_asof_view.py (pre-existing)",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/traceability_report.py",
+   "category": "reusable",
+   "summary": "Builds the traceability report page model from a spec_scrape.py 'crosscheck --json' run plus its log.",
+   "write_set": [
+    "a generated page-model JSON under _src/sources/pages/ (exact target not independently re-derived, see scoping note)"
+   ],
+   "commit_points": [
+    {
+     "function": "main",
+     "mechanism": "not independently re-verified (no write_text/os.replace matched by a targeted grep of this file; likely delegates to a shared page-write helper)",
+     "idempotency_key": "unknown",
+     "idempotent": null,
+     "line": 216
+    }
+   ],
+   "journal": "unknown",
+   "cleanup": "unknown",
+   "failure_aggregation": "unknown",
+   "ownership": "Report generator for scrape-crosscheck traceability results",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "Ruled out as a duplicate of build_report.py/curation_report.py/extraction_report.py/open_reviews_report.py: each covers a functionally distinct report domain (traceability-crosscheck vs. publication-build vs. curation-queue vs. extraction-deviation vs. open-reviews) despite the shared '_report.py' naming convention. Recorded as a false-twin check, not a defect."
+   ]
+  },
+  {
+   "path": "_src/tools/build_report.py",
+   "category": "reusable",
+   "summary": "Orchestrates and publishes traceable publication build reports (combine + publish subcommands).",
+   "write_set": [
+    "a combined build-report artifact and its page-model rendering (exact target not independently re-derived, see scoping note)"
+   ],
+   "commit_points": [
+    {
+     "function": "combine_reports / main",
+     "mechanism": "not independently re-verified",
+     "idempotency_key": "unknown",
+     "idempotent": null,
+     "line": 225
+    }
+   ],
+   "journal": "unknown",
+   "cleanup": "unknown",
+   "failure_aggregation": "unknown",
+   "ownership": "Build-report orchestrator/publisher",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "False-twin check against the other *_report.py tools: ruled out, see traceability_report.py's finding."
+   ]
+  },
+  {
+   "path": "_src/tools/open_reviews_report.py",
+   "category": "reusable",
+   "summary": "Overview page for all open reviews across the whole tree; scans requirement records with open review need.",
+   "write_set": [
+    "a page-model JSON (PAGE constant) -- open-reviews.json"
+   ],
+   "commit_points": [
+    {
+     "function": "build_page/main",
+     "mechanism": "direct Path.write_text (non-atomic)",
+     "line": 196,
+     "idempotency_key": "n/a; whole-file overwrite of a derived read-side report each run (no partial/keyed state to protect)",
+     "idempotent": true
+    }
+   ],
+   "journal": "none needed (derived report)",
+   "cleanup": "none",
+   "failure_aggregation": "whole-run; single write at the end",
+   "ownership": "Report generator for the open-reviews overview page",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "Direct (non-atomic) write_text of a derived report file: low risk because the file is fully regenerated from source records each run (idempotent by reconstruction, not by a guard), but a crash mid-write would leave a truncated open-reviews.json until the next successful run overwrites it. False-twin check against the other *_report.py tools: ruled out."
+   ]
+  },
+  {
+   "path": "_src/tools/extraction_report.py",
+   "category": "reusable",
+   "summary": "Extraction report with the complete deviation list across the four extraction error classes fixed 2026-08-11 in spec_scrape.py.",
+   "write_set": [
+    "a generated extraction-report page model",
+    "ARCHIVE_DATA_JS"
+   ],
+   "commit_points": [
+    {
+     "function": "<module> (report-page writer)",
+     "mechanism": "tmp-write (.tmp-<pid>) + os.replace",
+     "line": 607,
+     "idempotent": true,
+     "idempotency_key": "n/a; whole-file regeneration from source records each run"
+    },
+    {
+     "function": "<module> (archive-data writer)",
+     "mechanism": "tmp-write (.tmp-<pid>) + os.replace",
+     "line": 700,
+     "idempotent": true,
+     "idempotency_key": "n/a; whole-file regeneration"
+    }
+   ],
+   "journal": "ARCHIVE_DATA_JS is itself an append-style archive of past report snapshots",
+   "cleanup": "none",
+   "failure_aggregation": "whole-run",
+   "ownership": "Report generator for extraction-deviation tracking; also the entry point that shows curation-request queue items at the top",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "Best-built of the *_report.py family for this pass: uses the proper tmp+os.replace atomic pattern (unlike open_reviews_report.py's direct write_text), for both its main report and its archive-data sidecar. False-twin check against the other *_report.py tools: ruled out."
+   ]
+  },
+  {
+   "path": "_src/tools/curation_report.py",
+   "category": "reusable",
+   "summary": "Unified static curation report (0006-09/0006-10, extended 0021-06): open/claimed/recent curation and review items, including review-request requester trust/transport/target-version.",
+   "write_set": [
+    "a generated curation-report page model (exact writer not independently re-derived, see scoping note)"
+   ],
+   "commit_points": [
+    {
+     "function": "main",
+     "mechanism": "not independently re-verified",
+     "idempotency_key": "unknown",
+     "idempotent": null,
+     "line": 264
+    }
+   ],
+   "journal": "unknown",
+   "cleanup": "unknown",
+   "failure_aggregation": "unknown",
+   "ownership": "Unified curation/review report generator",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "False-twin check against the other *_report.py tools: ruled out."
+   ]
+  },
+  {
+   "path": "_src/tools/summarize_trace_all.py",
+   "category": "read-only",
+   "summary": "Tiny stdin-JSON-in, stdout-summary-out filter over a traceability write-report (documents/rows/written/updated counts). No docstring, no argparse, no file writes.",
+   "write_set": [],
+   "commit_points": [],
+   "journal": "n/a",
+   "cleanup": "n/a",
+   "failure_aggregation": "n/a",
+   "ownership": "Ad hoc diagnostic one-liner",
+   "retention": "RECOMMEND RETIRE or fold into a documented diagnostics catalog entry: zero side effects (safe to keep either way) but no docstring/tests/catalog row and trivially reproducible from its ~9 lines; low value as a standalone tracked script versus documenting the two-line jq/python idiom inline in a doc.",
+   "test_ref": "none (no commit points to fault-inject; read-only)",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/summarize_trace_check.py",
+   "category": "read-only",
+   "summary": "Slightly larger stdin-JSON-in, stdout-summary-out filter over a trace-check result (flagged-issue breakdowns by type/reason/signature). No docstring, no argparse, no file writes.",
+   "write_set": [],
+   "commit_points": [],
+   "journal": "n/a",
+   "cleanup": "n/a",
+   "failure_aggregation": "n/a",
+   "ownership": "Ad hoc diagnostic one-liner",
+   "retention": "RECOMMEND RETIRE or document: zero side effects, but no docstring/tests/catalog row despite being referenced from docs/pipeline/tools.md's existing row ('liest von stdin'). Lower urgency than fix_process_nolang.py because it has no destructive write at all.",
+   "test_ref": "none (no commit points to fault-inject; read-only)",
+   "findings": []
+  },
+  {
+   "path": "_src/tools/merge_trace_parts.py",
+   "category": "reusable",
+   "summary": "Merges per-document trace JSON parts (produced by parallel workers) and writes the combined traceability records once, sequentially, specifically to avoid concurrent writers racing on the same output directory.",
+   "write_set": [
+    "delegated: _src/spec/records/** via spec_scrape.write_traceability_records (commit-point ownership boundary, see findings)"
+   ],
+   "commit_points": [
+    {
+     "function": "<module> (calls s.write_traceability_records)",
+     "mechanism": "delegated to spec_scrape.py; not independently re-derived",
+     "idempotency_key": "unknown; owned by spec_scrape.py",
+     "idempotent": null,
+     "line": 20
+    }
+   ],
+   "journal": "unknown (owned by spec_scrape.py)",
+   "cleanup": "none observed",
+   "failure_aggregation": "none observed; positional argv (parts_dir, campaign) with no validation of argv length beyond a default",
+   "ownership": "Sequential single-writer merge step for parallel trace-extraction workers",
+   "retention": "reusable",
+   "test_ref": "none added by 0038-14",
+   "findings": [
+    "Deliberately draws a scope boundary at spec_scrape.write_traceability_records(): that function is spec_scrape.py's (a large, separately-owned extraction tool, ~outside this Task's four named categories) commit-point implementation, not merge_trace_parts.py's own. Recorded as an explicit boundary so a later pass classifying spec_scrape.py does not have to rediscover that merge_trace_parts.py is a thin, otherwise-unprotected (no argv validation) caller."
+   ]
+  }
+ ],
+ "enumerated": [
+  {
+   "path": "_src/ai_workflow.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/build_component_graph.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/build_indexes.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/extract.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/generate.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/ar/complete_batch17_fallback.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/ar/translate_ar_batches.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/ar/validate_ar_batches.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_07.append.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_08.append.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_09.append.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_13.write.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_14.write.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/hi/batch_15.write.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/zh/write_batch_01_heredocs.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/zh/write_batch_02_heredocs.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n/work/zh/write_batch_03_heredocs.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n_diagrams.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n_extract.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/i18n_translate.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/lib_docmodel.py",
+   "category_guess": "read-only-guess (library)",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/lib_i18n.py",
+   "category_guess": "read-only-guess (library)",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/lib_svgdiag.py",
+   "category_guess": "read-only-guess (library)",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/publish.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/render_diagrams.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/run-loop.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/seqgen.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/artifact_retention.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/automation_safety.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/bootstrap_instance.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/bootstrap_ssh_known_hosts.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/campaign_manifest.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/canonical_id.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/confidence.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/curation_inventory.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/curation_item.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/curation_item_lifecycle_check.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/decision_outcome.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/environment_doctor.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/evidence_snippet.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/font_inventory.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/geometry_audit.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/geometry_schema.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/hypothesis_store.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/legacy_scope_planner.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/legacy_task_doctor.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/legacy_task_editor.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/link_verification_evidence.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/manage_approval_readiness.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/orphan-state-diagram/make_icons.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/provision_tmp_worktree.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/provision_worker_clone.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/review_request_baseline_audit.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/review_request_package.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/runner_transaction.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/scan_bezeichner.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/scan_lazycopy.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/scan_restdeutsch.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/score_scrape.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/spec_extraction_benchmark.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/spec_extraction_campaign.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/spec_scrape.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/spec_upstream.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/supersession_trigger.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/svg2dot.py",
+   "category_guess": "migration-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/svg2seq.py",
+   "category_guess": "migration-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/task_bookkeeping_closure.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/task_evidence_pack.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/task_validation.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/text_repair.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/typed_claim.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/upstream_evidence.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/validate_score.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/validate_workflow_validator.py",
+   "category_guess": "read-only-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/verify_issue_approval_bootstrap.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/version_id.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/version_store.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/tools/workflow_lifecycle.py",
+   "category_guess": "unclassified",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "_src/validate.py",
+   "category_guess": "reusable-guess",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  },
+  {
+   "path": "tools/fetch_graphviz_wasm.sh",
+   "category_guess": "unclassified-shell",
+   "note": "not yet classified; scope explicitly deferred by Task 0038-14's first pass (review ingestion, publication, migrations/fixes, duplicated graph/report helpers)"
+  }
+ ]
+}
