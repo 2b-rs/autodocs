@@ -63,6 +63,34 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
 | `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
 
+## Prozessdokumentations-Prüfung
+
+| Werkzeug | Zweck |
+|---|---|
+| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: `DOC001` tote relative Links, `DOC002` Index-Abdeckung, `DOC003` zitiertes Prozessdokument ohne Rückanker, `DOC004` unverlinkte Dokumente (aggregiert, informativ), `DOC005` unzitierte Entscheidungsdatensätze, `DOC006` unerreichbares Task-gebundenes Kontraktdokument |
+
+Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
+
+Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
+definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
+gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
+([`process-roles.md`](process-roles.md)).
+
+Unverlinkt zu sein ist bei **Nachschlagewerken kein Mangel** — niemand navigiert
+zu einem Schema, man schlägt es nach. `DOC004` fasst diese Fälle deshalb zu
+einem informativen Befund zusammen. Aussagekräftig ist allein `DOC006`: ein
+Dokument, das sich selbst über eine `Status:`-Zeile als Kontrakt oder
+Spezifikation eines Backlog-Items ausweist und trotzdem von nirgends erreichbar
+ist. Es bindet entweder noch und niemand findet es, oder es bindet nicht mehr
+und sagt das nirgends.
+
+Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
+`--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,
+ist eine Entscheidung mit Reichweite über die eigene Arbeitseinheit hinaus und
+verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
+ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
+soll.
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |

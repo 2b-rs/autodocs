@@ -27,6 +27,47 @@ Feature, Task, and Subtask work is carried on Git branches named after the item 
 
 A user-directed activity that is not an existing Task may use `TODO-<agent-id>.md` as a temporary coordination record, but must not falsely mark an unrelated Task `[p]`.
 
+## Dispatching a subagent
+
+A session that spawns another agent is its **dispatcher** and is answerable for
+the briefing being complete. A subagent never inherits the dispatcher's
+capability class, authority, claim, or write scope implicitly.
+
+Capability classes are defined in [`SANDBOX.md`](SANDBOX.md); which class a
+process role requires, and which authority it does **not** confer, is defined in
+[`docs/pipeline/process-roles.md`](docs/pipeline/process-roles.md). The branch
+and worktree a briefing must name follow
+[`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md). This rule
+was established by decision `DEC-CAP-002` in
+[`docs/dossiers/dec-capability-classes.md`](docs/dossiers/dec-capability-classes.md).
+
+Every briefing must state, explicitly:
+
+1. the **capability class**, as one of the exact names in `SANDBOX.md`
+   (`sandboxed-grunt`, `unprivileged`, `privileged`);
+2. the **item ID** and the branch/worktree to work in;
+3. the **write scope** as exact paths;
+4. what the subagent must **not** do — at minimum whether it may accept work,
+   cross an integration checkpoint, or move a Feature to `DONE.md`.
+
+The capability-class default in `SANDBOX.md` exists for a runtime that cannot
+report its class. It is **not** a substitute for an assignment the dispatcher
+failed to make. Omitting the class silently downgrades the subagent to
+`sandboxed-grunt` and routes it onto the runner protocol, where it will queue on
+the singleton `run.sh` slot it does not need — serializing agents that could
+have run in parallel.
+
+A briefing that orders direct execution — Git, branch, merge, commit, tests — but
+states or defaults to `sandboxed-grunt` is **internally contradictory**. The
+receiving session does not silently resolve it: it applies the safe default,
+records the contradiction and the received briefing verbatim in its claim, and
+reports the contradiction back to its dispatcher. It does not upgrade its own
+class to make the order executable.
+
+Route work through the runner **only** when the capability class actually
+requires it. An `unprivileged` or `privileged` session never waits on the
+`run.sh` singleton and never treats a foreign request in that slot as a blocker.
+
 ## Autonomous backlog repair
 
 Agents are authorized and expected to repair backlog defects encountered during assigned or autonomously selected work when the intended result is determinable from the Feature goal, recorded decisions, neighboring Tasks, prerequisites, acceptance criteria, repository evidence, and established architecture, subject to the cross-item gate-scope review exception below.
@@ -71,7 +112,7 @@ An open parent with implementation-complete children is not, by itself, a prereq
 This authority does not permit an agent to choose between materially different valid product architectures, weaken acceptance to make work pass, invent approval, accept security/privacy/release risk, expose credentials, change externally controlled configuration, or appropriate another session's claim. Use `[u]` only when such a human decision or authorization is the sole next action. Technical difficulty, unfamiliarity, an ordinary drafting defect that does not meet the canonical cross-item predicate, an open parent, or an agentically repairable dependency deadlock is not `[u]`. A qualifying latent gate-scope defect is also not `[u]` while bounded preparation remains; it becomes `[u]` only when the authority assignment, decision, dissent resolution, or management exception described above is the sole next action.
 
 
-If a complete global scan finds no eligible Task solely because remaining work is gated by one or more foreign active claims, do not appropriate those claims and do not set `[u]`. Recheck that no disjoint work exists, then write the short retrigger reminder defined by `SENTINTEL.md`, naming the blocking Task/claim and telling the user which owning session must be retriggered. This reminder is the notification path for an otherwise idle agent; it is not permission to alter the foreign claim or remain idle when globally eligible work exists.
+If a complete global scan finds no eligible Task solely because remaining work is gated by one or more foreign active claims, do not appropriate those claims and do not set `[u]`. Recheck that no disjoint work exists, then write the short retrigger reminder defined by `SENTINEL.md`, naming the blocking Task/claim and telling the user which owning session must be retriggered. This reminder is the notification path for an otherwise idle agent; it is not permission to alter the foreign claim or remain idle when globally eligible work exists.
 
 ## Performing work
 

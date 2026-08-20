@@ -45,10 +45,33 @@ manche Klassen schließen Rollen aus.
 
 ## 2. Fähigkeitsklassen
 
-Es gibt genau **zwei**: `sandboxed/grunt` und `privileged`
-([`../../SANDBOX.md`](../../SANDBOX.md)). Eine Zwischenstufe existiert nicht;
-bei fehlender oder mehrdeutiger Angabe gilt `sandboxed/grunt`. Dieses Dokument
-schafft keine neue Klasse.
+Es gibt **drei**: `sandboxed-grunt`, `unprivileged` und `privileged`
+([`../../SANDBOX.md`](../../SANDBOX.md)). Eine Klasse beantwortet zwei
+unabhängige Fragen — **Ausführung** (Runner oder direkt) und **Autorität**
+(Abnahme, Integration über einen Pflichtknoten, `DONE.md`):
+
+| Klasse | Ausführung | Autorität |
+|---|---|---|
+| `sandboxed-grunt` | nur Runner | keine |
+| `unprivileged` | direkt | keine |
+| `privileged` | direkt | voll |
+
+Bei fehlender, mehrdeutiger oder **nicht erkannter** Angabe gilt
+`sandboxed-grunt`; die erhaltene Bezeichnung wird im Claim vermerkt und die
+Arbeit fortgesetzt, statt anzuhalten.
+
+**Zuweisung an Subagenten.** Wer einen Subagenten beauftragt, muss dessen
+Fähigkeitsklasse ausdrücklich nennen; der Default ersetzt keine unterlassene
+Zuweisung. Die verbindlichen Pflichtangaben eines Auftrags stehen in
+[`../../AGENTS.md`](../../AGENTS.md), Abschnitt *Dispatching a subagent*
+(`DEC-CAP-002`).
+
+**Korrektur (2026-08-18):** Eine frühere Fassung dieses Dokuments behauptete,
+es gebe „genau zwei" Klassen und eine Zwischenstufe existiere nicht. Das war
+eine Übernahme aus `SANDBOX.md`, das seinerseits Ausführung und Autorität in
+einem Enum vermischte. Der Betrieb kennt seit jeher direkt ausführende Agenten
+ohne Abnahmebefugnis; sie hatten nur keinen Namen und blockierten deshalb beim
+Start. Siehe `DEC-CAP-001` in [`../dossiers/dec-capability-classes.md`](../dossiers/dec-capability-classes.md).
 
 ## 3. Rollen und Funktionen
 
@@ -95,11 +118,11 @@ Benutzer oder eine registrierte Autorität — **nie ein Agent**
 
 | Rolle / Funktion | Mindestklasse | Einschränkung |
 |---|---|---|
-| Architekt | `sandboxed/grunt` | — |
-| Implementierer | `sandboxed/grunt`; höher nur, wenn der Schreib-/Ausführungsbereich der Task es verlangt | — |
-| Integrator | **`privileged`** | Ein `sandboxed/grunt`-Agent darf **nie** Integrator sein |
-| Requirements Engineer | `sandboxed/grunt` | — |
-| QA-Manager | `sandboxed/grunt` genügt | Mehr Rechte erhöhen die Unabhängigkeit **nicht**; sie schaffen die Versuchung, Befunde selbst zu beheben statt zu melden |
+| Architekt | `sandboxed-grunt` | — |
+| Implementierer | `sandboxed-grunt`; `unprivileged` nur, wenn der Ausführungsbereich der Task direkte Ausführung verlangt | Die Klasse folgt dem Bedarf der Task, nicht dem Wunsch der Session |
+| Integrator | **`privileged`** | Weder `sandboxed-grunt` noch `unprivileged` dürfen **je** Integrator sein — beiden fehlt die Autorität, nicht die Fähigkeit |
+| Requirements Engineer | `sandboxed-grunt` | — |
+| QA-Manager | `sandboxed-grunt` genügt | Mehr Rechte erhöhen die Unabhängigkeit **nicht**; sie schaffen die Versuchung, Befunde selbst zu beheben statt zu melden. `unprivileged` ist zulässig, wenn Prüfläufe direkt auszuführen sind |
 | Management | außerhalb | menschliche Autorität |
 
 Die Kopplungen sind der Grund, warum die Achsen nicht orthogonal heißen.

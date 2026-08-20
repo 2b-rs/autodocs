@@ -1,56 +1,43 @@
-# AUTOSAR-Spec-Pipeline — Übersicht
+# Pipeline documentation
 
-Dieser Ordner dokumentiert **alle Rollen, Prozesse, Kampagnentypen, Aktionen,
-Berichte und Werkzeuge**, die in diesem Repository zur Pflege der
-Spezifikations-Datenbank (`_src/spec/records/`) und des generierten
-HTML-Baums verwendet werden — unabhängig davon, ob sie vollständig
-implementiert, teilweise implementiert, oder nur in Dokumentation/Docstrings
-beschrieben sind. Jede Aussage ist mit ihrer Quelle im Code oder in einer
-`.md`-Datei belegt.
+This directory contains the documentation of the project’s operating and
+maintenance processes. Each statement is linked to an authoritative source and,
+where possible, to the associated implementation or evidence.
 
-## Inhalt
+## Contents
 
-- [`roles.md`](./roles.md) — product-domain roles (human, AI, tool/validator)
-- [`process-roles.md`](./process-roles.md) — process roles, capability-class mapping, and separation cores TK-1/TK-2
-- [`decision-record.md`](./decision-record.md) — normative `decision-record@v1` Markdown contract, mandatory triggers, waivers, and append-only corrections
-- [`processes.md`](./processes.md) — die Kampagnen-Prozessphasen (0–6)
-- [`campaigns.md`](./campaigns.md) — Kampagnentypen, die im Repo tatsächlich vorkommen
-- [`actions.md`](./actions.md) — alle Einzelaktionen (ingest review, ingest
-  feedback, add evidence, infer evidence, make decision, rebuild html,
-  rebuild i18n, …)
-- [`reports.md`](./reports.md) — Berichtstypen und ihr Inhalt
-- [`tools.md`](./tools.md) — jedes Werkzeug/Skript, Zweck, Aufruf
-- [`status-model.md`](./status-model.md) — Statuswerte, Übergänge, Regeln
-- [`task-acceptance.md`](./task-acceptance.md) — privilegierte Task-Abnahme, Vorgängerprüfung, Invalidierung und Feature-Gesamtabnahme
-- [`branch-workflow.md`](./branch-workflow.md) — Branch-Topologie pro Backlog-Item, Basis-und-Merge-Startregel, Merge-Autorität, Feature-Integration und `[u]`-Integrationsverdikt
-- [`data-model.md`](./data-model.md) — Record-Felder, Queues, Verzeichnisse
+- [`roles.md`](./roles.md) — **product-domain** roles (human, AI,
+  tool/validator), distinct from [`process-roles.md`](./process-roles.md)
+- [`process-roles.md`](./process-roles.md) — process roles, capability-class
+  mapping, and separation controls TK-1/TK-2
+- [`decision-record.md`](./decision-record.md) — normative
+  `decision-record@v1` Markdown contract, mandatory triggers, waivers, and
+  append-only corrections
+- [`processes.md`](./processes.md) — campaign process phases (0–6)
+- [`campaigns.md`](./campaigns.md) — campaign types used in this repository
+- [`actions.md`](./actions.md) — individual actions (ingest review, ingest
+  evidence, generate source, validate, publish, archive)
+- [`tools.md`](./tools.md) — catalog of project tools and their contracts
+- [`reports.md`](./reports.md) — report types, locations, and retention rules
+- [`agent-execution.md`](./agent-execution.md) — capability classes and the
+  sandboxed runner contract
+- [`agent-workflow.md`](./agent-workflow.md) — authority discovery,
+  bootstrap, stale-client, and cutover contract
+- [`branch-workflow.md`](./branch-workflow.md) — branch topology, Task/Feature
+  integration, claim carriage, and integration verdicts
+- [`task-acceptance.md`](./task-acceptance.md) — privileged Task acceptance
+  and Feature closure
+- [`automation-safety.md`](./automation-safety.md) — automation-safety policy
+  and findings workflow
+- [`environment-doctor.md`](./environment-doctor.md) — environment and
+  capability diagnosis
+- [`issue-store.md`](./issue-store.md) — planned issue-store canonical paths,
+  source/derived boundary, and privacy model
+- [`issue-lifecycle.md`](./issue-lifecycle.md) — planned issue lifecycle,
+  claims, closure, and migration behavior
+- [`issue-derived-artifacts.md`](./issue-derived-artifacts.md) — planned
+  regeneration DAG and source/derived matrix
 
-## Kernquellen
-
-| Dokument | Rolle |
-|---|---|
-| `docs/pipeline/*.md` | **Maßgebliche** Prozess- und Modell-Dokumentation für dieses Repository. Änderungen an Rollen, Statusmodell, Kampagnenphasen, Queues, Aktionen, Berichten, Identitätsschemata oder Werkzeugzuständigkeiten müssen hier zuerst oder gleichzeitig dokumentiert werden. |
-| `_src/SPEC_BUILD_PROCESS.md` | Historisches, informelles Ursprungsdokument und Design-Herkunft für den ursprünglichen Kampagnenablauf; nicht mehr normativ, wenn Aussagen von `docs/pipeline/` präzisiert, erweitert oder ersetzt wurden. |
-| `SPEC_QUALITY_ROADMAP.md` | Offene Punkte, Ebenen-Fortschritt, Working-Tree-Triage |
-| `NEXTSTEPS.md` (jetzt in `SPEC_QUALITY_ROADMAP.md` umbenannt) | Ursprungsanalyse der Traceability-Arbeit |
-| `AGENTS.md` | Betriebsregeln für Agenten/Werkzeuge in diesem Repo |
-| Docstrings in `_src/tools/*.py` und `_src/*.py` | Zweck und Aufruf jedes einzelnen Werkzeugs |
-
-## Normative Geltung
-
-`docs/pipeline/` ist die autoritative Dokumentationsschicht für Prozess,
-Datenmodell, Statusmodell, Kampagnen, Rollen, Reports, Identity/Versioning und
-Workflow-Regeln dieses Repositories. `_src/SPEC_BUILD_PROCESS.md` bleibt als
-historisches Überblicksdokument erhalten, dient aber nur noch der Herkunft und
-Einordnung des ursprünglichen Modells. Bei Abweichungen, Präzisierungen oder
-später hinzugekommenen Regeln gilt **immer** die Fassung unter `docs/pipeline/`.
-
-## Wichtigster Grundsatz (aus `SPEC_BUILD_PROCESS.md`)
-
-> Extraktion schlägt Darstellung, Evidenz schlägt Meinung, Entscheidung
-> schlägt Stillschweigen. Kein Wert wird still korrigiert, kein Zweifel wird
-> still aufgelöst.
-
-Dieser Satz begründet praktisch jede Design-Entscheidung unten: warum es
-getrennte Rollen für Werkzeug/KI/Kurator gibt, warum jeder Statuswechsel
-protokolliert wird, und warum Evidenz nie direkt einen Faktwert überschreibt.
+The documentation reflects the legacy-authority workflow until the explicitly
+approved Feature `0037` cutover. `TODO.md`, `DONE.md`, and active
+`TODO-<agent-id>.md` claim files remain authoritative until that cutover.
