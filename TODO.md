@@ -306,6 +306,16 @@ HOW TO USE:
     - **Accepted at:** `2026-08-19T12:50:03Z`
     - **Work-product manifest SHA-256:** `e67435cb54ea0d5a614a04adb2d25d4ec03f622895a815a4231f64541a46f730`
     - **Review REF:** `d9043b9bf3cb8b89cf48c51e719d1bdf2d715bab`
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `Data-Geordi-20260819T201432Z`
+    - **Authority reference:** `current-user assignment, 2026-08-19, exact 0039-02 acceptance-boundary review`
+    - **Accepted at:** `2026-08-19T21:09:38Z`
+    - **Contract SHA-256:** `efccae65c5fbfae878bcbd782d133b108237130a80975b9b0916ee9cd90833ca`
+    - **Work-product manifest SHA-256:** `e67435cb54ea0d5a614a04adb2d25d4ec03f622895a815a4231f64541a46f730`
+    - **Prerequisite-acceptance SHA-256:** `4aa7d6c6c152accf5eca02ba03010c6b08944f8b5b2a66d3404db75884344bb1`
+    - **Review REF:** `826cde4efc4854c6b9f2cae50ec6c7c46c711992`
+    - **Current acceptance correction:** This complete record supersedes the incomplete record immediately above; the earlier review and acceptance history remain retained unchanged.
 
 ### Campaign B — Imported improvement pilot
 
