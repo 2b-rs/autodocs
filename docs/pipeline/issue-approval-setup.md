@@ -189,9 +189,21 @@ Get your fingerprint:
 ssh-keygen -lf ~/.ssh/autodocs_signing.pub
 ```
 
-Commit when complete:
+Optionally, generate a reviewed *candidate* with the placeholders filled in
+instead of editing the file by hand — this never touches the tracked
+`authorities.json`, it only writes a candidate copy and a unified diff under
+the git-ignored `output/` tree for you to review:
 
 ```bash
+python3 _src/tools/manage_approval_readiness.py --propose-authorities-patch
+# review: output/approval-readiness/authorities.candidate.json
+#         output/approval-readiness/authorities.candidate.diff
+```
+
+After reviewing the candidate/diff, apply it manually and commit:
+
+```bash
+cp output/approval-readiness/authorities.candidate.json issues/_policy/authorities.json
 git add issues/_policy/authorities.json
 git commit -m "policy: populate authorities.json with real principals"
 ```
@@ -286,9 +298,24 @@ Run the readiness manager script:
 
 ```bash
 python3 _src/tools/manage_approval_readiness.py --check
+# or, for machine-readable output (also the safe default with no flags):
+python3 _src/tools/manage_approval_readiness.py --check --json
 ```
 
 All six prerequisite categories must report `OK` before proceeding to `0037-07`.
+Each result also carries a `capability` field: `"metadata"` means only
+presence/format was checked, `"verified"` means the value was independently
+cross-checked against real key material (e.g. a recorded fingerprint was
+recomputed from the corresponding public key and/or matched against
+`allowed_signers`), and `"unavailable"` means the metadata alone is not
+sufficient to prove the capability actually works. The script never mutates
+`issues/_policy/*` — it only ever reads policy files, git config, and (for
+`--propose-authorities-patch`) writes a reviewed candidate under
+`output/approval-readiness/`. Every policy JSON file's `schema` field is
+checked against the version this script expects; a missing or mismatched
+value is reported as a stale-policy failure rather than silently accepted.
+Task `0037-07` treats a passing `--check --json` run (not this document's
+prose) as the evidence that `0038-15`'s readiness prerequisite is satisfied.
 
 ---
 
