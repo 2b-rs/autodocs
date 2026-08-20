@@ -57,7 +57,29 @@ CANDIDATE_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PROFILE = "close-task-v1"
 VERIFY_AND_COMMIT_PROFILE = "verify-and-commit-v1"
 EDITOR_PROFILE = "legacy-editor-candidate-v1"
-PROFILES = (PROFILE, VERIFY_AND_COMMIT_PROFILE, EDITOR_PROFILE)
+BRANCH_MERGE_PROFILE = "branch-merge-v1"
+PROFILES = (PROFILE, VERIFY_AND_COMMIT_PROFILE, EDITOR_PROFILE, BRANCH_MERGE_PROFILE)
+
+# Typed branch/merge sub-protocol (docs/pipeline/branch-merge-actions.md, Task 0038-19).
+TYPED_ACTION_BASE_BRANCH = "base-branch"
+TYPED_ACTION_MERGE_PREREQS = "merge-prereqs"
+TYPED_ACTION_INTEGRATE_CHECKPOINT = "integrate-checkpoint"
+CONTRACT_TYPED_ACTIONS = (
+    TYPED_ACTION_BASE_BRANCH,
+    TYPED_ACTION_MERGE_PREREQS,
+    TYPED_ACTION_INTEGRATE_CHECKPOINT,
+)
+# The legacy bridge implements exactly the two non-checkpoint-crossing actions.
+IMPLEMENTED_TYPED_ACTIONS = (TYPED_ACTION_BASE_BRANCH, TYPED_ACTION_MERGE_PREREQS)
+CAPABILITY_CLASSES = ("sandboxed-grunt", "unprivileged", "privileged")
+NON_PRIVILEGED_CLASSES = ("sandboxed-grunt", "unprivileged")
+ITEM_ID_RE = re.compile(r"^[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?$")
+FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
+BRANCH_NAME_RE = re.compile(r"^(?:main|[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?)$")
+# Feature closure bookkeeping never routes through this bridge.
+FORBIDDEN_BRANCH_WRITE_PATHS = frozenset({"DONE.md"})
+CLAIM_FILENAME_RE = re.compile(r"(?:^|/)TODO-[^/]+\.md$")
+CLAIM_OWNER_TOKEN_LINE_RE = re.compile(r"^owner_token:[ \t]*(\S.*)$", re.MULTILINE)
 FORBIDDEN_GIT_ENV = {
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -76,6 +98,7 @@ EXIT_SCOPE = 40
 EXIT_PROMOTION = 50
 EXIT_COMMIT = 60
 EXIT_BOOKKEEPING = 70
+EXIT_BRANCH = 80
 EXIT_INTERNAL = 90
 
 
@@ -416,6 +439,175 @@ def _string_list(value: Any, field: str, allow_empty: bool = False) -> List[str]
     return sorted(result)
 
 
+def _branch_error(rule: str, message: str) -> TransactionError:
+    return TransactionError(rule, message, "manifest", EXIT_MANIFEST)
+
+
+def _normalize_branch_name(raw: Any, field: str) -> str:
+    if not isinstance(raw, str) or not raw:
+        raise _branch_error("BMA-BRANCH-NAME-INVALID", f"{field} must be a non-empty string")
+    if not BRANCH_NAME_RE.fullmatch(raw):
+        raise _branch_error(
+            "BMA-BRANCH-NAME-INVALID",
+            f"{field} must be 'main' or an item-ID branch name, not {raw!r}",
+        )
+    return raw
+
+
+def _expected_parent_branch(item_id: str) -> str:
+    """Derive the parent branch from the topology in docs/pipeline/branch-workflow.md."""
+    if "." in item_id:
+        return item_id.split(".", 1)[0]
+    if "-" in item_id:
+        return item_id.split("-", 1)[0]
+    return "main"
+
+
+def _is_checkpoint_target(target_branch: str, item_id: str) -> bool:
+    """A target that is not the item's own branch advances an integration boundary."""
+    return target_branch == "main" or bool(FEATURE_ID_RE.fullmatch(target_branch)) or target_branch != item_id
+
+
+def load_branch_block(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate the typed branch/merge sub-protocol block, fail-closed.
+
+    Implements the request-shape rules of ``docs/pipeline/branch-merge-actions.md``
+    (Task ``0038-19``) that are checkable without touching the repository. Repository
+    facts (parent tip, source tips, claim owner token) are checked in preflight.
+    """
+    identity = data["identity"]
+    scope = data["scope"]
+    branch = data["branch"]
+    if not isinstance(branch, dict):
+        raise _branch_error("RTX-SCHEMA-TYPE", "manifest branch must be a JSON object")
+    _exact_keys(
+        branch,
+        {"typed_action", "item_id", "target_branch", "capability_class", "idempotence_key"},
+        {"parent_branch", "sources"},
+        "manifest.branch",
+    )
+
+    typed_action = branch["typed_action"]
+    if typed_action not in CONTRACT_TYPED_ACTIONS:
+        raise _branch_error(
+            "BMA-ACTION-UNKNOWN",
+            f"unknown typed action: {typed_action!r}; expected one of {list(CONTRACT_TYPED_ACTIONS)}",
+        )
+    capability_class = branch["capability_class"]
+    if capability_class not in CAPABILITY_CLASSES:
+        raise _branch_error(
+            "BMA-CAPABILITY-UNKNOWN",
+            f"unknown capability class: {capability_class!r}; expected one of {list(CAPABILITY_CLASSES)}",
+        )
+    item_id = branch["item_id"]
+    if not isinstance(item_id, str) or not ITEM_ID_RE.fullmatch(item_id):
+        raise _branch_error("BMA-ITEM-ID-INVALID", f"invalid branch.item_id: {item_id!r}")
+    if item_id != identity["task_id"]:
+        raise _branch_error(
+            "BMA-ITEM-IDENTITY",
+            f"branch.item_id {item_id!r} must equal identity.task_id {identity['task_id']!r}",
+        )
+    target_branch = _normalize_branch_name(branch["target_branch"], "branch.target_branch")
+
+    # Authority split (contract §6): a request may only advance the item's own
+    # branch. Advancing a Feature branch or `main` is `integrate-checkpoint`,
+    # which is privileged-only and is not implemented by this legacy bridge.
+    crosses_checkpoint = (
+        typed_action == TYPED_ACTION_INTEGRATE_CHECKPOINT
+        or _is_checkpoint_target(target_branch, item_id)
+    )
+    if crosses_checkpoint:
+        if capability_class in NON_PRIVILEGED_CLASSES:
+            raise _branch_error(
+                "BMA-AUTHORITY-VIOLATION",
+                f"capability class {capability_class!r} may not advance integration target "
+                f"{target_branch!r} for item {item_id!r}; Task->Feature, Feature->main, acceptance "
+                "records and Feature [u] verdicts are privileged-integrator actions",
+            )
+        raise _branch_error(
+            "BMA-ACTION-UNSUPPORTED",
+            "integrate-checkpoint is not implemented by the legacy branch-merge bridge; "
+            "the privileged integrator performs it per docs/pipeline/branch-workflow.md",
+        )
+    if typed_action not in IMPLEMENTED_TYPED_ACTIONS:  # pragma: no cover - defensive
+        raise _branch_error("BMA-ACTION-UNSUPPORTED", f"typed action {typed_action!r} is not implemented")
+
+    idempotence_key = branch["idempotence_key"]
+    prefix = f"{typed_action}:{item_id}:"
+    if not isinstance(idempotence_key, str) or not idempotence_key.startswith(prefix) or len(idempotence_key) <= len(prefix):
+        raise _branch_error(
+            "BMA-IDEMPOTENCE-KEY",
+            f"branch.idempotence_key must start with {prefix!r} and carry a disambiguator",
+        )
+
+    expected_parent = _expected_parent_branch(item_id)
+    if typed_action == TYPED_ACTION_BASE_BRANCH:
+        if "parent_branch" not in branch:
+            raise _branch_error("BMA-PARENT-BRANCH-MISSING", "base-branch requires branch.parent_branch")
+        parent_branch = _normalize_branch_name(branch["parent_branch"], "branch.parent_branch")
+        if parent_branch != expected_parent:
+            raise _branch_error(
+                "BMA-PARENT-BRANCH-INVALID",
+                f"branch.parent_branch {parent_branch!r} is not the topology parent {expected_parent!r} of {item_id!r}",
+            )
+        if branch.get("sources"):
+            raise _branch_error("BMA-SOURCES-FORBIDDEN", "base-branch declares no merge sources")
+        branch["sources"] = []
+        if scope["substantive_paths"]:
+            raise _branch_error(
+                "BMA-SCOPE-VIOLATION",
+                "base-branch produces an identical tree and must declare no substantive paths",
+            )
+    else:
+        if "parent_branch" in branch:
+            raise _branch_error("BMA-PARENT-BRANCH-FORBIDDEN", "merge-prereqs does not declare a parent branch")
+        branch["parent_branch"] = None
+        sources = branch.get("sources")
+        if not isinstance(sources, list) or not sources:
+            raise _branch_error("BMA-SOURCES-MISSING", "merge-prereqs requires at least one declared source branch")
+        seen: Set[str] = set()
+        for index, source in enumerate(sources):
+            if not isinstance(source, dict):
+                raise _branch_error("RTX-SCHEMA-TYPE", f"branch.sources[{index}] must be a JSON object")
+            _exact_keys(source, {"dependency", "branch", "tip"}, set(), f"branch.sources[{index}]")
+            dependency = source["dependency"]
+            if not isinstance(dependency, str) or not ITEM_ID_RE.fullmatch(dependency):
+                raise _branch_error("BMA-ITEM-ID-INVALID", f"invalid branch.sources[{index}].dependency: {dependency!r}")
+            source_branch = _normalize_branch_name(source["branch"], f"branch.sources[{index}].branch")
+            if source_branch != dependency:
+                raise _branch_error(
+                    "BMA-UNDECLARED-SOURCE",
+                    f"branch.sources[{index}] dependency {dependency!r} has no matching pinned branch "
+                    f"reference (declared {source_branch!r})",
+                )
+            if source_branch == target_branch:
+                raise _branch_error("BMA-UNDECLARED-SOURCE", "a merge source may not be the target branch")
+            if source_branch in seen:
+                raise _branch_error("BMA-SOURCES-DUPLICATE", f"duplicate merge source: {source_branch!r}")
+            seen.add(source_branch)
+            if not isinstance(source["tip"], str) or not FULL_COMMIT_RE.fullmatch(source["tip"]):
+                raise _branch_error("BMA-STALE-SOURCE-TIP", f"branch.sources[{index}].tip must be a full 40-hex commit")
+        if not scope["substantive_paths"]:
+            raise _branch_error(
+                "BMA-SCOPE-VIOLATION",
+                "merge-prereqs must declare the exact tracked paths the merge changes",
+            )
+
+    forbidden = FORBIDDEN_BRANCH_WRITE_PATHS & set(scope["substantive_paths"])
+    if forbidden:
+        raise _branch_error(
+            "BMA-ACCEPTANCE-RECORD-FORBIDDEN",
+            f"branch/merge actions never author Feature closure bookkeeping: {sorted(forbidden)}",
+        )
+    reserved = {identity["claim_path"], data["authority"]["selector_path"]} & set(scope["substantive_paths"])
+    if reserved:
+        raise _branch_error(
+            "BMA-SCOPE-RESERVED",
+            f"the item's own claim and the authority selector are never merge outputs: {sorted(reserved)}",
+        )
+    return branch
+
+
 def load_manifest(path: Path) -> Dict[str, Any]:
     try:
         raw_bytes = path.read_bytes()
@@ -433,7 +625,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     _exact_keys(
         data,
         {"schema", "profile", "identity", "authority", "scope", "actions"},
-        {"commit", "bookkeeping", "editor"},
+        {"commit", "bookkeeping", "editor", "branch"},
         "manifest",
     )
     if data["schema"] != MANIFEST_SCHEMA:
@@ -485,6 +677,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     scope = data["scope"]
     if not isinstance(scope, dict):
         raise TransactionError("RTX-SCHEMA-TYPE", "manifest scope must be a JSON object", "manifest", EXIT_MANIFEST)
+    is_branch_profile = data["profile"] == BRANCH_MERGE_PROFILE
     _exact_keys(scope, {"read_paths", "input_paths", "output_paths", "substantive_paths"}, set(), "manifest.scope")
     scope["read_paths"] = _string_list(scope["read_paths"], "scope.read_paths", allow_empty=True)
     scope["input_paths"] = _string_list(scope["input_paths"], "scope.input_paths", allow_empty=True)
@@ -495,12 +688,28 @@ def load_manifest(path: Path) -> Dict[str, Any]:
             "manifest",
             EXIT_MANIFEST,
         )
-    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=(data["profile"] not in (PROFILE, EDITOR_PROFILE)))
-    scope["substantive_paths"] = _string_list(scope["substantive_paths"], "scope.substantive_paths", allow_empty=False)
+    scope["output_paths"] = _string_list(
+        scope["output_paths"],
+        "scope.output_paths",
+        allow_empty=(data["profile"] not in (PROFILE, EDITOR_PROFILE)),
+    )
+    scope["substantive_paths"] = _string_list(
+        scope["substantive_paths"], "scope.substantive_paths", allow_empty=is_branch_profile
+    )
 
     substantive_set = set(scope["substantive_paths"])
     input_output_set = set(scope["input_paths"]) | set(scope["output_paths"])
-    if not substantive_set.issubset(input_output_set):
+    if is_branch_profile and (scope["input_paths"] or scope["output_paths"]):
+        raise TransactionError(
+            "BMA-SCOPE-VIOLATION",
+            "branch-merge-v1 runs no generator: input_paths and output_paths must be empty",
+            "manifest",
+            EXIT_MANIFEST,
+        )
+    # A merge's substantive paths come from the merged source trees, not from a
+    # declared generator input/output pair, so the close-profile subset rule
+    # does not apply to branch-merge-v1.
+    if not is_branch_profile and not substantive_set.issubset(input_output_set):
         raise TransactionError(
             "RTX-SCOPE-SUBSTANTIVE-MISMATCH",
             f"substantive_paths must be a subset of declared inputs and outputs: {sorted(substantive_set - input_output_set)}",
@@ -530,6 +739,14 @@ def load_manifest(path: Path) -> Dict[str, Any]:
             raise TransactionError(
                 "RTX-EDITOR-ACTIONS",
                 "legacy-editor-candidate-v1 does not run generate/validate actions; actions must be empty",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+    elif is_branch_profile:
+        if actions != []:
+            raise TransactionError(
+                "BMA-ACTIONS-FORBIDDEN",
+                "branch-merge-v1 runs no registry actions; actions must be an empty list",
                 "manifest",
                 EXIT_MANIFEST,
             )
@@ -576,6 +793,42 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         raise TransactionError(
             "RTX-SCOPE-OUTPUTS",
             "close-task-v1 requires at least one generated output",
+            "manifest",
+            EXIT_MANIFEST,
+        )
+
+    if is_branch_profile:
+        if "branch" not in data:
+            raise TransactionError(
+                "RTX-SCHEMA-MISSING-KEYS", "branch-merge-v1 requires a branch block", "manifest", EXIT_MANIFEST
+            )
+        # Acceptance records, `[u]` integration verdicts and the `DONE.md` move are
+        # bookkeeping_commit shapes (contract §6). Making them structurally
+        # unexpressible here is how this bridge rejects them.
+        if data.get("bookkeeping") is not None:
+            raise TransactionError(
+                "BMA-ACCEPTANCE-RECORD-FORBIDDEN",
+                "branch-merge-v1 never carries a bookkeeping commit; acceptance records, "
+                "Feature [u] verdicts and DONE.md moves are privileged-integrator actions",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        if data.get("commit") is not None:
+            raise TransactionError(
+                "BMA-COMMIT-FORBIDDEN",
+                "branch-merge-v1 derives its merge commit messages deterministically; "
+                "no free-form commit message is accepted",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        data["branch"] = load_branch_block(data)
+        data["_loaded_path"] = str(path.resolve())
+        data["_loaded_sha256"] = _sha256_bytes(raw_bytes)
+        return data
+    if "branch" in data:
+        raise TransactionError(
+            "BMA-BRANCH-BLOCK-FORBIDDEN",
+            f"profile {data['profile']!r} does not accept a branch block",
             "manifest",
             EXIT_MANIFEST,
         )
@@ -677,6 +930,7 @@ def contract_digest(manifest: Mapping[str, Any]) -> str:
         "actions": manifest["actions"],
         "commit": manifest.get("commit"),
         "bookkeeping": manifest.get("bookkeeping"),
+        "branch": manifest.get("branch"),
     }
     return _sha256_bytes(_json_bytes(canonical))
 
@@ -707,6 +961,9 @@ def claim_contract_fields(manifest: Mapping[str, Any]) -> Dict[str, str]:
         fields["transaction_commit_message_json"] = json.dumps(commit_msg, separators=(",", ":"))
     if bookkeeping is not None:
         fields["transaction_bookkeeping_json"] = json.dumps(bookkeeping, separators=(",", ":"), sort_keys=True)
+    branch = manifest.get("branch")
+    if branch is not None:
+        fields["transaction_branch_json"] = json.dumps(branch, separators=(",", ":"), sort_keys=True)
     return fields
 
 
@@ -2592,6 +2849,595 @@ class Transaction:
             self.release_lock()
 
 
+class BranchMergeTransaction(Transaction):
+    """Typed `base-branch` / `merge-prereqs` actions for the legacy runner bridge.
+
+    Implements ``docs/pipeline/branch-merge-actions.md`` (Task ``0038-19``) on top of
+    the ``0038-02`` lock/journal/signal/resume guarantees and the ``0038-18``
+    validation/commit profile machinery. It performs only merges whose destination
+    is the item's own branch, so it never crosses an integration checkpoint.
+    """
+
+    def __init__(
+        self,
+        root: Path,
+        manifest: Dict[str, Any],
+        *,
+        dry_run: bool = False,
+        inject_failure: Optional[str] = None,
+    ) -> None:
+        super().__init__(root, manifest, dry_run=dry_run, inject_failure=inject_failure)
+        self.branch = manifest["branch"]
+        self.typed_action: str = self.branch["typed_action"]
+        self.item_id: str = self.branch["item_id"]
+        self.target_ref = f"refs/heads/{self.branch['target_branch']}"
+        self.preflight_entries: List[str] = []
+        self.merge_steps: List[Dict[str, str]] = []
+        self.claim_unions: List[str] = []
+        self.branch_outputs: List[str] = []
+        self.final_branch_tip: Optional[str] = None
+        self.branch_ref_created = False
+        self.worktree_synchronized = False
+        self.claim_record_appended = False
+        self._git_identity: Tuple[str, str] = ("", "")
+
+    # ------------------------------------------------------------------ scope
+
+    @property
+    def mutable_paths(self) -> Set[str]:
+        return set(self.scope["substantive_paths"]) | {self.identity["claim_path"]}
+
+    def _snapshot_paths(self) -> None:
+        super()._snapshot_paths()
+        for relative in sorted(set(self.scope["substantive_paths"])):
+            if relative not in self.preflight_states:
+                self.preflight_states[relative] = _read_state(self.root / relative)
+
+    def write_transaction_journal(self, state: str, extra: Optional[Dict[str, Any]] = None) -> None:
+        payload: Dict[str, Any] = {
+            "typed_action": self.typed_action,
+            "item_id": self.item_id,
+            "target_ref": self.target_ref,
+            "idempotence_key": self.branch["idempotence_key"],
+            "capability_class": self.branch["capability_class"],
+            "declared_sources": [
+                f"refs/heads/{source['branch']}@{source['tip']}" for source in self.branch["sources"]
+            ],
+            "merged_tips": list(self.branch_outputs),
+            "final_branch_tip": self.final_branch_tip,
+            "claim_unions": list(self.claim_unions),
+            "worktree_synchronized": self.worktree_synchronized,
+        }
+        if extra:
+            payload.update(extra)
+        super().write_transaction_journal(state, payload)
+
+    # -------------------------------------------------------------- preflight
+
+    def preflight(self) -> None:
+        super().preflight()
+        self._branch_preflight()
+
+    def _resolve_ref(self, ref: str) -> Optional[str]:
+        completed = _git(self.root, ["rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"], check=False)
+        if completed.returncode != 0:
+            return None
+        return completed.stdout.decode("ascii", "strict").strip() or None
+
+    def _branch_preflight(self) -> None:
+        self._begin_phase("branch-preflight")
+        entries = [
+            f"target-branch:{self.target_ref}",
+            f"owner-token-matches-claim:{self.identity['owner_token']}",
+            f"idempotence-key:{self.branch['idempotence_key']}",
+            f"capability-class:{self.branch['capability_class']}",
+        ]
+        user_name = _git_text(self.root, ["config", "--get", "user.name"])
+        user_email = _git_text(self.root, ["config", "--get", "user.email"])
+        self._git_identity = (user_name, user_email)
+
+        if self.typed_action == TYPED_ACTION_BASE_BRANCH:
+            parent_branch = self.branch["parent_branch"]
+            parent_ref = f"refs/heads/{parent_branch}"
+            parent_tip = self._resolve_ref(parent_ref)
+            if parent_tip is None:
+                raise TransactionError(
+                    "BMA-PARENT-BRANCH-MISSING",
+                    f"parent branch does not exist: {parent_ref}",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+            if parent_tip != self.identity["expected_base"]:
+                raise TransactionError(
+                    "BMA-STALE-BASE",
+                    f"expected parent tip {self.identity['expected_base']} at {parent_ref}, observed {parent_tip}",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+            existing = self._resolve_ref(self.target_ref)
+            if existing is not None and existing != self.identity["expected_base"]:
+                raise TransactionError(
+                    "BMA-BRANCH-EXISTS",
+                    f"{self.target_ref} already exists at {existing} and is not the declared base "
+                    f"{self.identity['expected_base']}; never fast-forward another writer's branch",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+            entries.extend(
+                [
+                    f"parent-branch-exists:{parent_branch}",
+                    f"expected-parent-tip:{parent_ref}@{self.identity['expected_base']}",
+                    f"item-branch-absent-or-fast-forwardable:{self.target_ref}",
+                ]
+            )
+        else:
+            if not user_name or not user_email:
+                raise TransactionError(
+                    "RTX-GIT-IDENTITY",
+                    "Git user.name and user.email are required to author merge commits",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+            checked_out = _git_text(self.root, ["symbolic-ref", "--quiet", "HEAD"])
+            if checked_out != self.target_ref:
+                raise TransactionError(
+                    "BMA-TARGET-NOT-CHECKED-OUT",
+                    f"merge-prereqs advances the checked-out item branch; HEAD is {checked_out!r}, "
+                    f"declared target is {self.target_ref!r}",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+            for source in self.branch["sources"]:
+                source_ref = f"refs/heads/{source['branch']}"
+                observed = self._resolve_ref(source_ref)
+                if observed is None:
+                    raise TransactionError(
+                        "BMA-UNDECLARED-SOURCE",
+                        f"declared prerequisite branch does not exist: {source_ref}",
+                        "branch-preflight",
+                        EXIT_BRANCH,
+                    )
+                if observed != source["tip"]:
+                    raise TransactionError(
+                        "BMA-STALE-SOURCE-TIP",
+                        f"expected {source_ref}@{source['tip']}, observed {observed}",
+                        "branch-preflight",
+                        EXIT_BRANCH,
+                    )
+                entries.append(f"expected-source-tip:{source_ref}@{source['tip']}")
+            entries.append("claim-union-no-foreign-rewrite")
+            dirty = _changed_paths(self.root) & set(self.scope["substantive_paths"])
+            if dirty:
+                raise TransactionError(
+                    "BMA-WORKTREE-DIRTY",
+                    f"declared merge paths carry uncommitted work: {sorted(dirty)}",
+                    "branch-preflight",
+                    EXIT_BRANCH,
+                )
+
+        self.preflight_entries = entries
+        self.write_transaction_journal("branch-preflight-passed", {"preflight_entries": entries})
+        self._finish_phase("passed")
+        self.emit(f"PHASE branch-preflight: PASS action={self.typed_action} target={self.target_ref}")
+
+    # ----------------------------------------------------------- base-branch
+
+    def run_base_branch(self) -> None:
+        self._begin_phase("base-branch")
+        expected = self.identity["expected_base"]
+        existing = self._resolve_ref(self.target_ref)
+        if existing == expected:
+            # Idempotent replay of an already-created identical ref.
+            self.emit(f"NOTICE: {self.target_ref} already points at the declared base; no ref change required.")
+        else:
+            self.write_transaction_journal("branch-creating")
+            self._inject("before-branch-cas")
+            completed = _git(
+                self.root,
+                ["update-ref", "--create-reflog", self.target_ref, expected, ""],
+                check=False,
+            )
+            if completed.returncode != 0:
+                raise TransactionError(
+                    "BMA-BRANCH-CAS-LOST",
+                    f"{self.target_ref} was created concurrently; refusing to overwrite it",
+                    "base-branch",
+                    EXIT_BRANCH,
+                )
+            self.branch_ref_created = True
+        observed = self._resolve_ref(self.target_ref)
+        if observed != expected:
+            raise TransactionError(
+                "BMA-BRANCH-VERIFY",
+                f"{self.target_ref} is {observed!r} after creation, expected {expected}",
+                "base-branch",
+                EXIT_BRANCH,
+            )
+        if _git_text(self.root, ["rev-parse", f"{self.target_ref}^{{tree}}"]) != _git_text(
+            self.root, ["rev-parse", f"{expected}^{{tree}}"]
+        ):
+            raise TransactionError(
+                "BMA-BRANCH-VERIFY",
+                "base-branch must produce a tree identical to its parent tip",
+                "base-branch",
+                EXIT_BRANCH,
+            )
+        self.final_branch_tip = expected
+        self.published = True
+        self.branch_outputs = [f"ref:{self.target_ref}@{expected}"]
+        self.write_transaction_journal("branch-published")
+        self._inject("after-branch-publish")
+        self._finish_phase("passed")
+        self.emit(f"PHASE base-branch: PASS ref={self.target_ref} tip={expected}")
+
+    # --------------------------------------------------------- merge-prereqs
+
+    @contextlib.contextmanager
+    def _merge_worktree(self) -> Iterator[Path]:
+        temporary = Path(tempfile.mkdtemp(prefix=f"autodocs-merge-{self.identity['request_id']}-"))
+        added = False
+        try:
+            _git(self.root, ["worktree", "add", "--detach", str(temporary), self.identity["expected_base"]])
+            added = True
+            yield temporary
+        finally:
+            if added:
+                _git(self.root, ["worktree", "remove", "--force", str(temporary)], check=False)
+            shutil.rmtree(temporary, ignore_errors=True)
+
+    def _merge_message(self, source: Mapping[str, str]) -> str:
+        return (
+            f"merge({self.item_id}): integrate prerequisite {source['dependency']}\n"
+            "\n"
+            f"Typed-Action: {TYPED_ACTION_MERGE_PREREQS}\n"
+            f"Idempotence-Key: {self.branch['idempotence_key']}\n"
+            f"Owner-Token: {self.identity['owner_token']}\n"
+            f"Merged-Branch-Tip: refs/heads/{source['branch']}@{source['tip']}\n"
+            "Contract: docs/pipeline/branch-merge-actions.md\n"
+        )
+
+    def _merge_git(self, work: Path, args: Sequence[str], *, check: bool = True) -> subprocess.CompletedProcess[bytes]:
+        name, email = self._git_identity
+        prefix = [
+            "-c",
+            "commit.gpgsign=false",
+            "-c",
+            "merge.autoStash=false",
+            "-c",
+            f"user.name={name}",
+            "-c",
+            f"user.email={email}",
+        ]
+        return _git(work, [*prefix, *args], check=check)
+
+    @staticmethod
+    def _owner_token(text: str) -> Optional[str]:
+        match = CLAIM_OWNER_TOKEN_LINE_RE.search(text)
+        return match.group(1).strip() if match else None
+
+    @staticmethod
+    def _append_only_union(destination: str, source: str) -> str:
+        """Append every source line absent from the destination, order preserved."""
+        destination_lines = destination.splitlines()
+        present = set(destination_lines)
+        appended = [line for line in source.splitlines() if line not in present]
+        if not appended:
+            return destination
+        merged = list(destination_lines)
+        if merged and merged[-1].strip():
+            merged.append("")
+        merged.extend(appended)
+        return "\n".join(merged) + "\n"
+
+    def _stage_blob(self, work: Path, stage: int, relative: str) -> Optional[bytes]:
+        completed = _git(work, ["show", f":{stage}:{relative}"], check=False)
+        if completed.returncode != 0:
+            return None
+        return completed.stdout
+
+    def _resolve_claim_conflicts(self, work: Path, conflicts: Sequence[str]) -> None:
+        """Append-only auto-union of same-token claim records (contract §5)."""
+        for relative in sorted(conflicts):
+            ours = self._stage_blob(work, 2, relative)
+            theirs = self._stage_blob(work, 3, relative)
+            if ours is None or theirs is None:
+                raise TransactionError(
+                    "BMA-MERGE-CONFLICT",
+                    f"claim conflict at {relative} is not a same-path append conflict; resolve it manually",
+                    "merge-prereqs",
+                    EXIT_BRANCH,
+                )
+            try:
+                ours_text = ours.decode("utf-8")
+                theirs_text = theirs.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise TransactionError(
+                    "BMA-CLAIM-UTF8",
+                    f"claim record is not valid UTF-8 and cannot be unioned: {relative}",
+                    "merge-prereqs",
+                    EXIT_BRANCH,
+                ) from exc
+            ours_token = self._owner_token(ours_text)
+            theirs_token = self._owner_token(theirs_text)
+            if ours_token is None or theirs_token is None or ours_token != theirs_token:
+                raise TransactionError(
+                    "BMA-CLAIM-FOREIGN-TOKEN",
+                    f"claim {relative} carries different owner tokens ({ours_token!r} vs {theirs_token!r}); "
+                    "never rewrite, rename, or discard another session's claim",
+                    "merge-prereqs",
+                    EXIT_BRANCH,
+                )
+            unioned = self._append_only_union(ours_text, theirs_text)
+            if self._owner_token(unioned) != ours_token:  # pragma: no cover - defensive
+                raise TransactionError(
+                    "BMA-CLAIM-FOREIGN-TOKEN",
+                    f"auto-union altered the owner_token of {relative}",
+                    "merge-prereqs",
+                    EXIT_BRANCH,
+                )
+            (work / relative).write_text(unioned, encoding="utf-8")
+            _git(work, ["add", "--", relative])
+            self.claim_unions.append(f"claim-union:{relative}")
+
+    def _merge_one(self, work: Path, current_tip: str, source: Mapping[str, str]) -> str:
+        self._merge_git(work, ["checkout", "--detach", "--force", current_tip])
+        self._merge_git(work, ["clean", "-fdq"], check=False)
+        message = self._merge_message(source)
+        completed = self._merge_git(
+            work,
+            ["merge", "--no-ff", "--no-edit", "-m", message, source["tip"]],
+            check=False,
+        )
+        if completed.returncode != 0:
+            conflicts = sorted(_git_paths(work, ["diff", "--name-only", "--diff-filter=U", "-z"]))
+            claim_conflicts = [item for item in conflicts if CLAIM_FILENAME_RE.search(item)]
+            if not conflicts or len(claim_conflicts) != len(conflicts):
+                self._merge_git(work, ["merge", "--abort"], check=False)
+                detail = sorted(conflicts) if conflicts else "unknown"
+                raise TransactionError(
+                    "BMA-MERGE-CONFLICT",
+                    f"merging refs/heads/{source['branch']} conflicts on {detail}; resolve manually "
+                    "under a fresh request; no partial merge is published",
+                    "merge-prereqs",
+                    EXIT_BRANCH,
+                )
+            try:
+                self._resolve_claim_conflicts(work, claim_conflicts)
+            except TransactionError:
+                self._merge_git(work, ["merge", "--abort"], check=False)
+                raise
+            self._merge_git(work, ["commit", "--no-edit", "-m", message])
+
+        tip = _git_text(work, ["rev-parse", "HEAD"])
+        parents = _git_text(work, ["rev-list", "--parents", "-n", "1", tip]).split()
+        if len(parents) != 3:
+            raise TransactionError(
+                "BMA-MERGE-PARENTS",
+                f"merge step produced {len(parents) - 1} parents; only sequential 2-parent merges are allowed",
+                "merge-prereqs",
+                EXIT_BRANCH,
+            )
+        if parents[1] != current_tip or parents[2] != source["tip"]:
+            raise TransactionError(
+                "BMA-MERGE-PARENTS",
+                f"merge step parents {parents[1:]} do not match ({current_tip}, {source['tip']})",
+                "merge-prereqs",
+                EXIT_BRANCH,
+            )
+        self.merge_steps.append(
+            {
+                "dependency": source["dependency"],
+                "source_ref": f"refs/heads/{source['branch']}",
+                "source_tip": source["tip"],
+                "merge_commit": tip,
+                "first_parent": current_tip,
+            }
+        )
+        self.branch_outputs.extend(
+            [f"merged-branch-tip:refs/heads/{source['branch']}@{source['tip']}", f"merge-commit:{tip}"]
+        )
+        self.emit(f"PHASE merge-step: PASS source=refs/heads/{source['branch']} commit={tip}")
+        return tip
+
+    def run_merge_prereqs(self) -> None:
+        self._begin_phase("merge-prereqs")
+        self.write_transaction_journal("merging-prereqs")
+        expected = self.identity["expected_base"]
+        declared = set(self.scope["substantive_paths"])
+        with self._merge_worktree() as work:
+            current = expected
+            for source in self.branch["sources"]:
+                current = self._merge_one(work, current, source)
+            final_tip = current
+        if final_tip == expected:  # pragma: no cover - defensive
+            raise TransactionError("BMA-MERGE-NOOP", "merge produced no new commit", "merge-prereqs", EXIT_BRANCH)
+        changed = _git_paths(self.root, ["diff", "--name-only", "-z", expected, final_tip, "--"])
+        if changed != declared:
+            raise TransactionError(
+                "BMA-SCOPE-VIOLATION",
+                f"merge changed {sorted(changed)} but the request declared {sorted(declared)}",
+                "merge-prereqs",
+                EXIT_BRANCH,
+            )
+        self.final_branch_tip = final_tip
+        self.substantive_commit = final_tip
+        self.write_transaction_journal(
+            "merge-prepared", {"merge_steps": list(self.merge_steps), "final_branch_tip": final_tip}
+        )
+        self._inject("before-branch-cas")
+        self.write_transaction_journal("attempting-branch-cas")
+        completed = _git(self.root, ["update-ref", self.target_ref, final_tip, expected], check=False)
+        if completed.returncode != 0:
+            raise TransactionError(
+                "BMA-CAS-LOST",
+                f"{self.target_ref} advanced past {expected} while merging; no merge was published",
+                "merge-prereqs",
+                EXIT_BRANCH,
+            )
+        self.published = True
+        self.write_transaction_journal("branch-published")
+        self._inject("after-branch-publish")
+        self._synchronize_worktree(final_tip, sorted(declared))
+        self._finish_phase("passed")
+        self.emit(
+            f"PHASE merge-prereqs: PASS ref={self.target_ref} tip={final_tip} "
+            f"sources={len(self.merge_steps)} unions={len(self.claim_unions)}"
+        )
+
+    def _synchronize_worktree(self, commit: str, paths: Sequence[str]) -> None:
+        """Materialize exactly the declared merged paths, preserving unrelated bytes."""
+        for relative in paths:
+            entry = _git_text(self.root, ["ls-tree", commit, "--", relative])
+            destination = self.root / relative
+            match = re.fullmatch(r"([0-9]{6}) blob ([0-9a-f]{40})\t(.+)", entry)
+            if not match:
+                with contextlib.suppress(FileNotFoundError):
+                    destination.unlink()
+                continue
+            _ensure_directory_nofollow(self.root, destination.parent)
+            blob = _git(self.root, ["cat-file", "blob", match.group(2)]).stdout
+            mode = 0o755 if match.group(1) == "100755" else 0o644
+            _atomic_write(destination, blob, mode)
+        self._restore_mutable_index_entries()
+        self.worktree_synchronized = True
+        self.write_transaction_journal("worktree-synchronized")
+
+    # ------------------------------------------------------ claim + evidence
+
+    def record_merged_tips_in_claim(self) -> None:
+        """Append-only merged-tip evidence in the item's own active claim."""
+        if self.typed_action != TYPED_ACTION_MERGE_PREREQS or not self.merge_steps:
+            return
+        self._begin_phase("claim-record")
+        claim = self.claim_path
+        if not claim.exists():
+            raise TransactionError(
+                "BMA-CLAIM-MISSING",
+                f"active claim disappeared before merged-tip recording: {claim}",
+                "claim-record",
+                EXIT_BRANCH,
+            )
+        existing = claim.read_text(encoding="utf-8")
+        lines = [
+            "",
+            f"### Merged prerequisite branches ({self.branch['idempotence_key']})",
+            "",
+            f"- target: {self.target_ref}@{self.final_branch_tip}",
+        ]
+        for step in self.merge_steps:
+            lines.append(
+                f"- merged: {step['source_ref']}@{step['source_tip']} -> merge-commit {step['merge_commit']}"
+            )
+        for union in self.claim_unions:
+            lines.append(f"- {union}")
+        lines.append("")
+        addition = "\n".join(lines)
+        payload = (existing if existing.endswith("\n") else existing + "\n") + addition
+        _atomic_write(claim, payload.encode("utf-8"), stat.S_IMODE(claim.stat().st_mode))
+        self.claim_record_appended = True
+        self.write_transaction_journal("claim-record-appended")
+        self._finish_phase("passed")
+        self.emit(f"PHASE claim-record: PASS entries={len(self.merge_steps)}")
+
+    def result(self, verdict: str, error: Optional[TransactionError] = None) -> Dict[str, Any]:
+        value = super().result(verdict, error)
+        findings = [union for union in self.claim_unions]
+        if error:
+            findings.append(error.rule)
+        value["branch"] = {
+            "typed_action": self.typed_action,
+            "item_id": self.item_id,
+            "target_ref": self.target_ref,
+            "capability_class": self.branch["capability_class"],
+            "idempotence_key": self.branch["idempotence_key"],
+            "preflight": list(self.preflight_entries),
+            "declared_sources": [
+                f"refs/heads/{source['branch']}@{source['tip']}" for source in self.branch["sources"]
+            ],
+            "outputs": list(self.branch_outputs),
+            "findings": findings,
+            "merge_steps": list(self.merge_steps),
+            "final_branch_tip": self.final_branch_tip,
+            "branch_ref_created": self.branch_ref_created,
+            "worktree_synchronized": self.worktree_synchronized,
+            "claim_record_appended": self.claim_record_appended,
+        }
+        for union in self.claim_unions:
+            value["findings"].append({"rule": "BMA-CLAIM-UNION", "message": union, "exit_code": 0})
+        value["changed_path_count"] = len(self.scope["substantive_paths"])
+        return value
+
+    # ----------------------------------------------------------------- driver
+
+    def execute(self) -> int:
+        if self.dry_run:
+            self.preflight()
+            self.emit(
+                f"FINAL: PASS dry-run=true mutation=none action={self.typed_action} "
+                f"target={self.target_ref} sources={len(self.branch['sources'])}"
+            )
+            return 0
+        try:
+            self.acquire_lock()
+            self.preflight()
+            if self.typed_action == TYPED_ACTION_BASE_BRANCH:
+                self.run_base_branch()
+            else:
+                self.run_merge_prereqs()
+            self.record_merged_tips_in_claim()
+            self._begin_phase("complete")
+            self._finish_phase("passed")
+            self.persist_terminal_result(self.result("passed"))
+            self.emit(
+                f"FINAL: PASS exit=0 action={self.typed_action} ref={self.target_ref} "
+                f"tip={self.final_branch_tip or 'none'} result={self.result_path.relative_to(self.root)}"
+            )
+            return 0
+        except TransactionError as exc:
+            self.current_phase = exc.phase
+            self._finish_failure_phase(exc)
+            if self._may_persist_terminal_result() and not self.terminal_result_persisted:
+                try:
+                    self.persist_terminal_result(self.result("failed", exc))
+                except TransactionError as result_exc:
+                    print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            self.emit(
+                f"FINAL: FAIL exit={exc.exit_code} rule={exc.rule} phase={exc.phase} "
+                f"result={self.result_path.relative_to(self.root)}"
+            )
+            return exc.exit_code
+        except Exception as exc:
+            wrapped = TransactionError(
+                "RTX-INTERNAL", f"unexpected error: {type(exc).__name__}: {exc}", self.current_phase, EXIT_INTERNAL
+            )
+            self._finish_failure_phase(wrapped)
+            if self._may_persist_terminal_result() and not self.terminal_result_persisted:
+                try:
+                    self.persist_terminal_result(self.result("failed", wrapped))
+                except TransactionError as result_exc:
+                    print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            self.emit(
+                f"FINAL: FAIL exit={EXIT_INTERNAL} rule=RTX-INTERNAL phase={self.current_phase} "
+                f"result={self.result_path.relative_to(self.root)}"
+            )
+            return EXIT_INTERNAL
+        finally:
+            self.release_lock()
+
+
+def build_transaction(
+    root: Path,
+    manifest: Dict[str, Any],
+    *,
+    dry_run: bool = False,
+    inject_failure: Optional[str] = None,
+) -> Transaction:
+    """Select the transaction implementation declared by the manifest profile."""
+    if manifest["profile"] == BRANCH_MERGE_PROFILE:
+        return BranchMergeTransaction(root, manifest, dry_run=dry_run, inject_failure=inject_failure)
+    return Transaction(root, manifest, dry_run=dry_run, inject_failure=inject_failure)
+
+
 def _current_pointer_status(root: Path, task_id: str) -> Dict[str, Any]:
     """Validate one mutable current pointer against its immutable result bytes."""
     pointer_path = root / "output" / "logs" / task_id / "current.json"
@@ -2976,10 +3822,40 @@ def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
         "current_pointer": pointer,
         "pointer_matches_journal": pointer_matches,
     }
+    typed_action = journal.get("typed_action")
+    if typed_action in IMPLEMENTED_TYPED_ACTIONS:
+        report["typed_action"] = typed_action
+        report["target_ref"] = journal.get("target_ref")
+        report["merged_tips"] = journal.get("merged_tips") or []
+        report["final_branch_tip"] = journal.get("final_branch_tip")
+        report["worktree_synchronized"] = bool(journal.get("worktree_synchronized"))
     lock = doctor(root)["lock"]
     if lock.get("exists"):
         report["status"] = "blocked-by-lock"
         report["recommendation"] = "Inspect the reported lock holder; recover never deletes a live or stale lock."
+    elif typed_action in IMPLEMENTED_TYPED_ACTIONS:
+        # Branch/merge actions never archive the claim: it travels on the branch
+        # (docs/pipeline/branch-workflow.md), so `finalize-claim` never applies.
+        if pointer["status"] == "invalid":
+            report["status"] = "pointer-invalid"
+            report["recommendation"] = (
+                "Preserve the immutable result and repair the digest-bound pointer explicitly; "
+                "never infer branch publication from logs."
+            )
+        elif journal.get("published"):
+            report["status"] = "branch-published"
+            report["recommendation"] = (
+                f"The ref {journal.get('target_ref')} was advanced to {journal.get('final_branch_tip')}. "
+                "Verify the ref and the declared merged paths in the working tree, record the merged tips "
+                "in the claim if the journal shows that step did not complete, then continue under a fresh "
+                "request ID. Never re-run this request ID."
+            )
+        else:
+            report["status"] = "branch-unpublished"
+            report["recommendation"] = (
+                "No ref was advanced; the merge was performed only in a discarded temporary worktree. "
+                "Retain the claim, journal and result, then submit a fresh request ID against the current tips."
+            )
     elif pointer["status"] == "invalid":
         report["status"] = "pointer-invalid"
         report["recommendation"] = "Do not infer completion from logs or journals; preserve the immutable result and repair the digest-bound pointer explicitly."
@@ -3315,7 +4191,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return 0
         manifest = load_manifest(args.manifest)
         dry_run = args.command == "check" or bool(getattr(args, "dry_run", False))
-        transaction = Transaction(
+        transaction = build_transaction(
             args.root,
             manifest,
             dry_run=dry_run,
