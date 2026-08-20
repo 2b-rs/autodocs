@@ -305,10 +305,80 @@ lock, or overwrites a changed pointer.
 
 ## Supported Profiles
 
-The transaction runner supports two declared execution profiles:
+The transaction runner supports three declared execution profiles:
 
 1. `close-task-v1`: Full Task closure profile requiring a generator phase, a validator phase, generated outputs, a substantive commit, and a parented REF bookkeeping commit that closes the Task in `TODO.md`.
 2. `verify-and-commit-v1`: Scoped validation and path-limited commit profile. Allows validation-only action sequences without invoking unrelated site generators, permits empty `output_paths`, requires a substantive commit with provenance, and makes `bookkeeping` optional so focused substantive work can be safely published without forcing `TODO.md` closure.
+3. `legacy-editor-candidate-v1`: Promotes an already-planned `legacy_task_editor.py` (Task `0038-05.01`) candidate — see [`legacy-task-editor.md`](legacy-task-editor.md) — through this coordinator's journal/lock/promote/rollback machinery. See "The editor-candidate profile" below.
+
+## The editor-candidate profile (Task `0038-05.02`)
+
+`legacy_task_editor.py plan` produces a content-addressed candidate directory
+(`candidate.json` plus `blobs/`) and its own `promote` subcommand only
+re-verifies that candidate and returns `LTE-PROMOTE-COORDINATOR-REQUIRED`
+evidence — it never writes, because portable stdlib cannot make several
+independent file paths atomically visible or provide race-safe rollback. The
+`legacy-editor-candidate-v1` profile is that missing authoritative writer: it
+consumes the candidate as a single typed action instead of a second parser or
+a second promotion mechanism.
+
+A manifest using this profile carries no `actions` (empty list — no
+generate/validate subprocess runs) and no `bookkeeping` (the candidate's own
+`TODO.md` change, if any, is already part of the single substantive commit;
+there is no separate REF-closure commit). It adds one new top-level object:
+
+```json
+"editor": {
+  "operation_path": "output/editor-candidates/0038-01-finalize.operation.json",
+  "candidate_dir": "output/editor-candidates/0038-01-finalize",
+  "candidate_manifest_path": "output/editor-candidates/0038-01-finalize/candidate.json",
+  "expected_candidate_sha256": "<64-hex sha256 of candidate.json>"
+}
+```
+
+`scope.output_paths` must equal `scope.substantive_paths` and must equal —
+exactly, as a set — the paths named by the candidate's own `changes` array
+(computed by `legacy_task_editor.plan_operation`, e.g. a `closure`/`wontfix`
+Task-marker flip, or the three paths a `claim-finalization`/`claim-handoff`
+touches: `TODO.md`, the original claim, and its archive).
+
+Preflight calls `legacy_task_editor.verify_candidate_for_promotion` — the
+exact same re-verification `legacy_task_editor.py promote` performs — which
+rechecks the candidate manifest digest, every blob digest/size, the diff, the
+full `read_set` (including every sibling `TODO-*.md` claim file, via
+`_load_sources`), every `absent_paths` entry, and a complete fresh
+re-plan/re-render of the embedded operation contract against the *current*
+repository state. Any drift in any of those — a stale candidate, a concurrent
+edit to `TODO.md` or a claim, or a declared `output_paths` set that disagrees
+with the verified candidate — fails closed with an `RTX-EDITOR-*` rule before
+any mutation. This recheck runs a second time, immediately before promotion,
+inside `materialize_editor_candidate`.
+
+Materialization writes each verified `after` blob into the detached candidate
+worktree (or leaves the path absent for a `delete` change) and lets the
+existing `promote_outputs`/`rollback_outputs`/promotion-journal machinery —
+unchanged, and shared with every other profile — copy those files into the
+real repository with per-file atomic replacement, journaled backups, and
+fail-closed rollback on any injected or real failure. A single `prepare_substantive`
+commit then lands all of the candidate's paths together; there is no second
+bookkeeping commit for this profile.
+
+### Retiring the duplicate closure renderer
+
+`render_task_closure()` (used by `close-task-v1`'s `bookkeeping.closure_text`
+step) is no longer an independent regex-based Task-boundary detector. It now
+delegates Task/Feature/section-boundary structural parsing to
+`legacy_task_editor.parse_backlog` — the same digest-bound parser
+`legacy_task_editor.py` uses for every typed operation — so there is exactly
+one Task-structure parser in this codebase, not two. It intentionally keeps
+its own narrower precondition set (active `[p]` marker, no visible REF,
+exactly one `Definition of Done` line) rather than also requiring
+`legacy_task_editor`'s `**Claim (...):**` pointer/base-commit cross-check:
+this coordinator's own coordination claim binds `base_commit` to the
+*current* transaction's `expected_base` (see "Required claim fields" above),
+not the Task's original pickup base, so the two are not generally equal and
+`legacy_task_editor`'s closure operation's `_assert_pointer` invariant does
+not apply to this unrelated, already-accepted convention.
 
 ## Current fixed actions
 

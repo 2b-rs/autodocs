@@ -26,6 +26,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from _src.tools import runner_transaction as runner
+from _src.tools import legacy_task_editor as lte
 
 
 AUTHORITY = {
@@ -851,7 +852,7 @@ class RunnerTransactionTests(unittest.TestCase):
         value["scope"]["output_paths"] = []
         value["scope"]["substantive_paths"] = ["source.txt"]
         path = self.fixture.store_manifest(value)
-        with self.assertRaisesRegex(runner.TransactionError, "requires at least one generated output"):
+        with self.assertRaisesRegex(runner.TransactionError, "requires at least one output path"):
             runner.load_manifest(path)
 
     def test_doctor_reports_stale_lock_without_mutating_it(self) -> None:
@@ -1095,14 +1096,48 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertTrue({"RTX-ENV-EXEC", "RTX-ENV-DELETE", "RTX-ENV-GIT", "RTX-ENV-DIRECT-PHASE"} <= rules)
 
     def test_structural_closure_rejects_missing_or_duplicate_task(self) -> None:
-        with self.assertRaisesRegex(runner.TransactionError, "exactly one"):
+        with self.assertRaisesRegex(runner.TransactionError, "found 1 match"):
             runner.render_task_closure(
+                "## Feature: 0038 — Fixture\n\n"
                 "- [ ] **0038-01** Not active.\n  - **Definition of Done:** No.\n",
                 "0038-01",
                 "1" * 40,
                 REQUEST_ID,
                 "No closure.",
             )
+
+    def test_structural_closure_rejects_duplicate_task_id(self) -> None:
+        with self.assertRaisesRegex(runner.TransactionError, "found 2 match"):
+            runner.render_task_closure(
+                "## Feature: 0038 — Fixture\n\n"
+                "- [p] **0038-01** First copy.\n  - **Definition of Done:** One.\n\n"
+                "- [p] **0038-01** Second copy.\n  - **Definition of Done:** Two.\n",
+                "0038-01",
+                "1" * 40,
+                REQUEST_ID,
+                "No closure.",
+            )
+
+    def test_structural_closure_uses_backlog_parser_not_a_second_regex(self) -> None:
+        # The renderer now delegates Task/Feature/section boundary detection
+        # to legacy_task_editor.parse_backlog (Task 0038-05.01) instead of a
+        # duplicate ad hoc regex Task-boundary detector.
+        revised = runner.render_task_closure(
+            "## Feature: 0038 — Fixture\n\n"
+            "- [p] **0038-01** Exercise the transaction.\n"
+            "  - **Acceptance criteria:** Fail closed.\n"
+            "  - **Definition of Done:** Two commits and exact cleanup.\n\n"
+            "- [ ] **0038-02** Preserve this neighboring Task.\n"
+            "  - **Definition of Done:** It remains separate.\n",
+            "0038-01",
+            "2" * 40,
+            REQUEST_ID,
+            "The fixture transaction completed all fail-closed gates.",
+        )
+        self.assertIn("- [x] **0038-01**", revised)
+        self.assertIn(f"REF: {'2' * 40}", revised)
+        self.assertIn("- [ ] **0038-02**", revised)
+        self.assertNotIn("- [p] **0038-01**", revised)
 
     # ------------------------------------------------------------------
     # verify-and-commit-v1 profile tests
@@ -1222,6 +1257,480 @@ class RunnerTransactionTests(unittest.TestCase):
             runner.load_manifest(path)
         self.assertEqual(cm.exception.rule, "RTX-SCHEMA-TYPE")
         self.assertIn("commit must be an object", cm.exception.message)
+
+
+EDITOR_TASK_ID = "0038-01"
+EDITOR_FEATURE_ID = "0038"
+EDITOR_REQUEST_ID = "fixture-editor-transaction-001"
+EDITOR_OWNER_TOKEN = f"agent:test:{EDITOR_TASK_ID}:{EDITOR_REQUEST_ID}"
+EDITOR_RUNNER_CLAIM_PATH = f"TODO-test-{EDITOR_TASK_ID}-{EDITOR_REQUEST_ID}.md"
+TARGET_CLAIM_PATH = f"TODO-alpha-{EDITOR_TASK_ID}-req-alpha-001.md"
+TARGET_CLAIM_OWNER = f"agent:alpha:{EDITOR_TASK_ID}:req-alpha-001"
+TARGET_CLAIM_BASE = "b" * 40
+TARGET_TASK_REF = "a" * 40
+ARCHIVE_PATH = "logs/claims/0038-01-final.md"
+
+
+class EditorFixtureRepo:
+    """A second, independent fixture Git repository exercising the new
+    ``legacy-editor-candidate-v1`` profile: a real ``claim-finalization``
+    operation planned and written to a candidate directory by the actual
+    ``legacy_task_editor.py`` (Task 0038-05.01) code, then promoted by
+    ``runner_transaction.py`` (Task 0038-05.02) through the same
+    journal/lock/promote/rollback machinery as every other profile.
+    """
+
+    def __init__(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(prefix="runner-transaction-editor-test-")
+        # Resolved once, here, outside any adversarial context: on macOS the
+        # OS temp root itself (/var) is a symlink to /private/var, and
+        # legacy_task_editor's nofollow directory walk (by design) refuses to
+        # traverse *any* symlink component, including that benign OS mount
+        # alias. Resolving our own fixture root once is exactly what
+        # Transaction.__init__ already does for the real repository root.
+        self.root = Path(self.temporary.name).resolve()
+        self._create_repository()
+
+    def close(self) -> None:
+        self.temporary.cleanup()
+
+    def git(self, *args: str, check: bool = True, env: Optional[Dict[str, str]] = None) -> subprocess.CompletedProcess[bytes]:
+        process_env = os.environ.copy()
+        process_env["GIT_EDITOR"] = "true"
+        if env:
+            process_env.update(env)
+        return subprocess.run(
+            ["git", "--no-pager", *args],
+            cwd=str(self.root),
+            env=process_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=check,
+        )
+
+    def git_text(self, *args: str) -> str:
+        return self.git(*args).stdout.decode("utf-8", "replace").strip()
+
+    @property
+    def base(self) -> str:
+        return self.git_text("rev-parse", "HEAD")
+
+    def _create_repository(self) -> None:
+        self.git("init", "-b", "main")
+        self.git("config", "user.name", "Editor Transaction Test")
+        self.git("config", "user.email", "editor-transaction@example.invalid")
+        (self.root / ".gitignore").write_text("output/\n", encoding="utf-8")
+        (self.root / "agent-workflow.json").write_text(json.dumps(AUTHORITY), encoding="utf-8")
+        self.todo_text = (
+            "# TODO\n\n"
+            "## Feature: 0038 — Fixture\n\n"
+            f"- [x] **{EDITOR_TASK_ID}** Exercise the editor transaction. REF: {TARGET_TASK_REF}\n"
+            "  - **Acceptance criteria:** Fail closed.\n"
+            "  - **Definition of Done:** Two commits and exact cleanup.\n"
+            f"  - **Claim (2026-08-17):** Claimed via `{TARGET_CLAIM_PATH}`, "
+            f"`owner_token: {TARGET_CLAIM_OWNER}`, base `{TARGET_CLAIM_BASE}`.\n\n"
+            "- [ ] **0038-02** Preserve this neighboring Task.\n"
+            "  - **Definition of Done:** It remains separate.\n"
+        )
+        (self.root / "TODO.md").write_text(self.todo_text, encoding="utf-8")
+        self.target_claim_text = (
+            f"# {TARGET_CLAIM_PATH} — active claim\n\n"
+            f"task_id: {EDITOR_TASK_ID}\n"
+            "request_id: req-alpha-001\n"
+            f"owner_token: {TARGET_CLAIM_OWNER}\n"
+            f"base_commit: {TARGET_CLAIM_BASE}\n"
+            "capability_class: sandboxed/grunt\n"
+            "state: [p]\n"
+        )
+        (self.root / TARGET_CLAIM_PATH).write_text(self.target_claim_text, encoding="utf-8")
+        (self.root / EDITOR_RUNNER_CLAIM_PATH).write_text(
+            "# Fixture runner claim\n\n"
+            f"task_id: {EDITOR_TASK_ID}\n"
+            f"request_id: {EDITOR_REQUEST_ID}\n"
+            f"owner_token: {EDITOR_OWNER_TOKEN}\n"
+            "base_commit: PLACEHOLDER\n"
+            f"transaction_profile: {runner.EDITOR_PROFILE}\n"
+            "transaction_manifest: PLACEHOLDER_MANIFEST\n"
+            "transaction_actions_json: PLACEHOLDER_ACTIONS\n"
+            "transaction_authority_json: PLACEHOLDER_AUTHORITY\n"
+            "transaction_commit_message_json: PLACEHOLDER_COMMIT_MESSAGE\n"
+            "transaction_read_paths_json: PLACEHOLDER_READS\n"
+            "transaction_write_paths_json: PLACEHOLDER_WRITES\n"
+            "capability_class: sandboxed/grunt\n"
+            "state: [p]\n",
+            encoding="utf-8",
+        )
+        self.git(
+            "add", "--",
+            ".gitignore", "agent-workflow.json", "TODO.md", TARGET_CLAIM_PATH, EDITOR_RUNNER_CLAIM_PATH,
+        )
+        self.git("commit", "-m", "fixture: initial editor state")
+        base = self.base
+        claim = (self.root / EDITOR_RUNNER_CLAIM_PATH).read_text(encoding="utf-8").replace("PLACEHOLDER", base)
+        (self.root / EDITOR_RUNNER_CLAIM_PATH).write_text(claim, encoding="utf-8")
+        # Left uncommitted deliberately, matching FixtureRepo: the runner's own
+        # coordination claim is live working-tree state, not a committed blob.
+
+    def build_candidate(self, *, archive_path: str = ARCHIVE_PATH, tamper_todo: bool = False, tamper_claim: bool = False) -> Dict[str, Any]:
+        """Plan and write a real claim-finalization candidate via legacy_task_editor."""
+        sources = {
+            "TODO.md": self.todo_text.encode("utf-8"),
+            TARGET_CLAIM_PATH: self.target_claim_text.encode("utf-8"),
+        }
+        document = lte.parse_backlog("TODO.md", sources["TODO.md"])
+        feature, task = lte._unique_task(document, EDITOR_FEATURE_ID, EDITOR_TASK_ID)
+        feature_bytes = document.text[feature.span.start:feature.span.end].encode("utf-8")
+        task_bytes = document.text[task.span.start:task.span.end].encode("utf-8")
+        claim = lte.parse_claim(TARGET_CLAIM_PATH, sources[TARGET_CLAIM_PATH])
+        operation_data = {
+            "schema": lte.OPERATION_SCHEMA,
+            "operation_id": "fixture-editor-finalize-001",
+            "kind": "claim-finalization",
+            "recorded_at": "2026-08-20T00:00:00Z",
+            "subject": {"feature_id": EDITOR_FEATURE_ID, "task_id": EDITOR_TASK_ID},
+            "actor": {"request_id": "req-alpha-001", "owner_token": TARGET_CLAIM_OWNER},
+            "backlog": {
+                "path": "TODO.md",
+                "expected_document_sha256": lte._sha256(sources["TODO.md"]),
+                "expected_feature_sha256": lte._sha256(feature_bytes),
+                "expected_task_sha256": lte._sha256(task_bytes),
+                "expected_marker": "x",
+            },
+            "claim": {
+                "path": TARGET_CLAIM_PATH,
+                "expected_document_sha256": lte._sha256(sources[TARGET_CLAIM_PATH]),
+                "expected_task_id": claim.task_id,
+                "expected_request_id": claim.request_id,
+                "expected_owner_token": claim.owner_token,
+                "expected_state": claim.state,
+            },
+            "payload": {"archive_path": archive_path},
+        }
+        raw = (json.dumps(operation_data, sort_keys=True) + "\n").encode("utf-8")
+        operation = lte.load_operation(raw)
+        # Use the exact same source-gathering primitive verify_candidate_for_promotion
+        # will use on re-plan (it globs every TODO-*.md, including the runner's
+        # own coordination claim), so the candidate's embedded read_set matches
+        # byte-for-byte what a fresh re-verification will observe.
+        sources = lte._load_sources(self.root, operation)
+        plan = lte.plan_operation(operation, sources)
+        candidate_dir = self.root / "output" / "editor-candidates" / "fixture-editor-finalize-001"
+        receipt = lte.write_candidate(plan, candidate_dir)
+        operation_path = self.root / "output" / "editor-candidates" / "fixture-editor-finalize-001.operation.json"
+        operation_path.write_bytes(raw)
+        if tamper_todo:
+            (self.root / "TODO.md").write_text(self.todo_text + "\nUnrelated concurrent note.\n", encoding="utf-8")
+        if tamper_claim:
+            (self.root / TARGET_CLAIM_PATH).write_text(self.target_claim_text + "\nUnrelated concurrent note.\n", encoding="utf-8")
+        return {
+            "operation_path": operation_path.relative_to(self.root).as_posix(),
+            "candidate_dir": candidate_dir.relative_to(self.root).as_posix(),
+            "candidate_manifest_path": (candidate_dir / receipt.manifest_path).relative_to(self.root).as_posix(),
+            "expected_candidate_sha256": receipt.manifest_sha256,
+            "output_paths": sorted({change.path for change in plan.changes}),
+        }
+
+    def _manifest_value(self, editor_info: Dict[str, Any], *, output_paths: Optional[List[str]] = None) -> Dict[str, Any]:
+        resolved_output_paths = output_paths if output_paths is not None else editor_info["output_paths"]
+        return {
+            "schema": runner.MANIFEST_SCHEMA,
+            "profile": runner.EDITOR_PROFILE,
+            "identity": {
+                "task_id": EDITOR_TASK_ID,
+                "request_id": EDITOR_REQUEST_ID,
+                "owner_token": EDITOR_OWNER_TOKEN,
+                "claim_path": EDITOR_RUNNER_CLAIM_PATH,
+                "manifest_path": "request.json",
+                "expected_base": self.base,
+            },
+            "authority": {
+                "selector_path": "agent-workflow.json",
+                "authority_epoch": AUTHORITY["authority_epoch"],
+                "authority_profile": AUTHORITY["authority_profile"],
+                "write_phase": AUTHORITY["write_phase"],
+                "runner_protocol": AUTHORITY["runner_protocol"],
+            },
+            "scope": {
+                "read_paths": [],
+                "input_paths": [],
+                "output_paths": resolved_output_paths,
+                "substantive_paths": resolved_output_paths,
+            },
+            "actions": [],
+            "commit": {
+                "substantive_message": (
+                    f"chore({EDITOR_TASK_ID}): fixture editor-candidate promotion\n\n"
+                    "User-Prompt-Provenance:\n"
+                    "Exercise the legacy-editor-candidate-v1 transaction fixture verbatim."
+                )
+            },
+            "editor": {
+                "operation_path": editor_info["operation_path"],
+                "candidate_dir": editor_info["candidate_dir"],
+                "candidate_manifest_path": editor_info["candidate_manifest_path"],
+                "expected_candidate_sha256": editor_info["expected_candidate_sha256"],
+            },
+        }
+
+    def _sync_runner_claim(self, value: Dict[str, Any]) -> None:
+        """Sync the runner's own coordination claim's contract fields.
+
+        This must happen before ``build_candidate`` plans anything, because
+        the candidate's embedded read_set is checked byte-for-byte against a
+        fresh ``legacy_task_editor._load_sources`` glob of every ``TODO-*.md``
+        file — including this repo's own coordination claim.
+        ``claim_contract_fields`` never reads the manifest's ``editor`` block,
+        so this sync only needs identity/authority/scope/commit to already be
+        final; a structurally-correct placeholder ``editor`` block is enough.
+        """
+        claim_path = self.root / EDITOR_RUNNER_CLAIM_PATH
+        claim = claim_path.read_text(encoding="utf-8")
+        for key, expected in runner.claim_contract_fields(value).items():
+            claim = re.sub(
+                rf"^{re.escape(key)}: .+$",
+                lambda _match, key=key, expected=expected: f"{key}: {expected}",
+                claim,
+                flags=re.MULTILINE,
+            )
+        claim_path.write_text(claim, encoding="utf-8")
+
+    def write_manifest(self, editor_info: Dict[str, Any]) -> Path:
+        """Write a request.json for schema-only tests that never execute a
+        real Transaction (so the runner claim need not be pre-synced)."""
+        path = self.root / "request.json"
+        path.write_text(json.dumps(self._manifest_value(editor_info), indent=2), encoding="utf-8")
+        return path
+
+    def prepare(self, *, output_paths: Optional[List[str]] = None, **build_kwargs: Any) -> Dict[str, Any]:
+        """Sync the runner's own claim to its final contract fields for the
+        given declared output_paths, THEN plan the candidate -- so the
+        candidate's embedded read_set matches exactly what a fresh
+        re-verification will observe. Order matters here: see
+        ``_sync_runner_claim``.
+        """
+        resolved_output_paths = output_paths if output_paths is not None else sorted({"TODO.md", TARGET_CLAIM_PATH, ARCHIVE_PATH})
+        placeholder_editor_info = {
+            "operation_path": "output/editor-candidates/fixture-editor-finalize-001.operation.json",
+            "candidate_dir": "output/editor-candidates/fixture-editor-finalize-001",
+            "candidate_manifest_path": "output/editor-candidates/fixture-editor-finalize-001/candidate.json",
+            "expected_candidate_sha256": "0" * 64,
+            "output_paths": resolved_output_paths,
+        }
+        self._sync_runner_claim(self._manifest_value(placeholder_editor_info, output_paths=output_paths))
+        return self.build_candidate(**build_kwargs)
+
+    def execute(
+        self,
+        *,
+        editor_info: Optional[Dict[str, Any]] = None,
+        output_paths: Optional[List[str]] = None,
+        inject_failure: Optional[str] = None,
+    ) -> tuple[int, str, Dict[str, Any]]:
+        if editor_info is None:
+            editor_info = self.prepare(output_paths=output_paths)
+        path = self.root / "request.json"
+        path.write_text(json.dumps(self._manifest_value(editor_info, output_paths=output_paths), indent=2), encoding="utf-8")
+        manifest = runner.load_manifest(path)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            status = runner.Transaction(self.root, manifest, inject_failure=inject_failure).execute()
+        return status, output.getvalue(), editor_info
+
+
+class EditorCandidateTransactionTests(unittest.TestCase):
+    """Failure-injection coverage for the legacy-editor-candidate-v1 profile:
+    the fixed typed action/contract that integrates 0038-05.01's structural
+    editor candidate promotion into the 0038-02 durable transaction
+    coordinator's journal/lock/promote/rollback guarantees.
+    """
+
+    _fixture: Optional[EditorFixtureRepo] = None
+
+    @property
+    def fixture(self) -> EditorFixtureRepo:
+        assert self._fixture is not None
+        return self._fixture
+
+    def setUp(self) -> None:
+        self._fixture = EditorFixtureRepo()
+        self.addCleanup(self.fixture.close)
+
+    def _result(self) -> Dict[str, Any]:
+        path = self.fixture.root / "output" / "logs" / EDITOR_TASK_ID / EDITOR_REQUEST_ID / "result.json"
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def test_success_promotes_todo_and_claim_archive_delete_in_one_commit(self) -> None:
+        base = self.fixture.base
+        status, output, _info = self.fixture.execute()
+        self.assertEqual(status, 0, output)
+        new_head = self.fixture.base
+        self.assertNotEqual(new_head, base)
+        commit_count = int(self.fixture.git_text("rev-list", "--count", f"{base}..{new_head}"))
+        self.assertEqual(commit_count, 1, "editor-candidate transactions land exactly one substantive commit")
+
+        todo_after = (self.fixture.root / "TODO.md").read_text(encoding="utf-8")
+        self.assertNotIn(f"Claimed via `{TARGET_CLAIM_PATH}`", todo_after)
+        self.assertIn("Claim finalized", todo_after)
+        self.assertIn(f"- [x] **{EDITOR_TASK_ID}**", todo_after)
+        self.assertFalse((self.fixture.root / TARGET_CLAIM_PATH).exists(), "the finalized claim must be deleted")
+        self.assertTrue((self.fixture.root / ARCHIVE_PATH).exists(), "the archive copy must be created")
+        self.assertEqual(
+            (self.fixture.root / ARCHIVE_PATH).read_bytes(),
+            self.fixture.target_claim_text.encode("utf-8"),
+        )
+        # The runner's own coordination claim is archived after success too.
+        self.assertFalse((self.fixture.root / EDITOR_RUNNER_CLAIM_PATH).exists())
+
+        result = self._result()
+        self.assertEqual(result["verdict"], "passed")
+        self.assertIsNotNone(result["substantive_commit"])
+        self.assertIsNone(result["bookkeeping_commit"])
+        # The CAS-guarded current pointer must validate against the immutable result.
+        pointer = json.loads((self.fixture.root / "output" / "logs" / EDITOR_TASK_ID / "current.json").read_text(encoding="utf-8"))
+        self.assertEqual(pointer["verdict"], "passed")
+        self.assertEqual(runner._current_pointer_status(self.fixture.root, EDITOR_TASK_ID)["status"], "valid")
+
+    def test_manifest_rejects_actions_for_editor_profile(self) -> None:
+        editor_info = self.fixture.build_candidate()
+        path = self.fixture.write_manifest(editor_info)
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value["actions"] = [{"id": "validate-project", "timeout_seconds": 30, "reports": []}]
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-EDITOR-ACTIONS")
+
+    def test_manifest_rejects_bookkeeping_for_editor_profile(self) -> None:
+        editor_info = self.fixture.build_candidate()
+        path = self.fixture.write_manifest(editor_info)
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value["bookkeeping"] = {
+            "todo_path": "TODO.md",
+            "commit_message": "docs(todo): close",
+            "closure_text": "Closed.",
+        }
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-EDITOR-BOOKKEEPING")
+
+    def test_manifest_rejects_substantive_output_mismatch(self) -> None:
+        editor_info = self.fixture.build_candidate()
+        path = self.fixture.write_manifest(editor_info)
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value["scope"]["substantive_paths"] = value["scope"]["substantive_paths"][:-1]
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-SCOPE-SUBSTANTIVE-MISMATCH")
+
+    def test_editor_field_rejected_for_other_profiles(self) -> None:
+        editor_info = self.fixture.build_candidate()
+        path = self.fixture.write_manifest(editor_info)
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value["profile"] = runner.VERIFY_AND_COMMIT_PROFILE
+        value["actions"] = [{"id": "validate-project", "timeout_seconds": 30, "reports": []}]
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-EDITOR-UNEXPECTED")
+
+    def test_preflight_rejects_tampered_candidate_digest(self) -> None:
+        editor_info = self.fixture.prepare()
+        editor_info["expected_candidate_sha256"] = "1" * 64
+        status, output, _info = self.fixture.execute(editor_info=editor_info)
+        self.assertEqual(status, runner.EXIT_PREFLIGHT)
+        self.assertIn("RTX-EDITOR-LTE-CANDIDATE-TAMPERED", output)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists(), "no candidate file may be touched before a rejected preflight")
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists())
+
+    def test_preflight_rejects_todo_drift_after_candidate_was_planned(self) -> None:
+        editor_info = self.fixture.prepare(tamper_todo=True)
+        status, output, _info = self.fixture.execute(editor_info=editor_info)
+        self.assertEqual(status, runner.EXIT_PREFLIGHT)
+        self.assertIn("RTX-EDITOR-LTE-", output)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists())
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists())
+
+    def test_preflight_rejects_claim_drift_after_candidate_was_planned(self) -> None:
+        editor_info = self.fixture.prepare(tamper_claim=True)
+        status, output, _info = self.fixture.execute(editor_info=editor_info)
+        self.assertEqual(status, runner.EXIT_PREFLIGHT)
+        self.assertIn("RTX-EDITOR-LTE-", output)
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists())
+
+    def test_preflight_rejects_declared_scope_narrower_than_candidate(self) -> None:
+        narrowed = sorted({"TODO.md", TARGET_CLAIM_PATH, ARCHIVE_PATH} - {ARCHIVE_PATH})
+        editor_info = self.fixture.prepare(output_paths=narrowed)
+        status, output, _info = self.fixture.execute(editor_info=editor_info, output_paths=narrowed)
+        self.assertEqual(status, runner.EXIT_PREFLIGHT)
+        self.assertIn("RTX-EDITOR-SCOPE-MISMATCH", output)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists())
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists())
+
+    def test_injected_failure_before_materialize_leaves_root_untouched(self) -> None:
+        status, output, _info = self.fixture.execute(inject_failure="before-editor-materialize")
+        self.assertEqual(status, runner.EXIT_INTERNAL)
+        self.assertIn("RTX-INJECTED-FAILURE", output)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists())
+        self.assertEqual((self.fixture.root / TARGET_CLAIM_PATH).read_bytes(), self.fixture.target_claim_text.encode("utf-8"))
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists())
+        self.assertEqual((self.fixture.root / "TODO.md").read_text(encoding="utf-8"), self.fixture.todo_text)
+        self.assertTrue((self.fixture.root / EDITOR_RUNNER_CLAIM_PATH).exists(), "the runner's own claim must survive an unpublished failure")
+
+    def test_injected_failure_during_promote_rolls_back_the_files_promoted_so_far(self) -> None:
+        # "during-promote" fires right after the first (alphabetically
+        # earliest) output is written, before the rest of the loop runs.
+        status, output, _info = self.fixture.execute(inject_failure="during-promote")
+        self.assertEqual(status, runner.EXIT_INTERNAL)
+        self.assertIn("RTX-INJECTED-FAILURE", output)
+        self.assertEqual((self.fixture.root / "TODO.md").read_text(encoding="utf-8"), self.fixture.todo_text)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists())
+        self.assertEqual((self.fixture.root / TARGET_CLAIM_PATH).read_bytes(), self.fixture.target_claim_text.encode("utf-8"))
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists(), "a partially promoted create must be rolled back")
+        self.assertTrue((self.fixture.root / EDITOR_RUNNER_CLAIM_PATH).exists(), "no partial claim state may be exposed on rollback")
+        journal_path = (
+            self.fixture.root / "output" / "logs" / EDITOR_TASK_ID / EDITOR_REQUEST_ID / "promotion-journal.json"
+        )
+        journal = json.loads(journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["status"], "rolled-back")
+
+    def test_injected_failure_after_promote_rolls_back_every_file(self) -> None:
+        # "after-promote" fires once ALL three outputs (TODO.md replace, the
+        # target claim delete, the archive create) have already been written
+        # to the root worktree but before the substantive commit exists, so
+        # this proves the multi-file rollback covers every touched path, not
+        # just the first one.
+        status, output, _info = self.fixture.execute(inject_failure="after-promote")
+        self.assertEqual(status, runner.EXIT_INTERNAL)
+        self.assertIn("RTX-INJECTED-FAILURE", output)
+        self.assertEqual((self.fixture.root / "TODO.md").read_text(encoding="utf-8"), self.fixture.todo_text)
+        self.assertTrue((self.fixture.root / TARGET_CLAIM_PATH).exists())
+        self.assertEqual((self.fixture.root / TARGET_CLAIM_PATH).read_bytes(), self.fixture.target_claim_text.encode("utf-8"))
+        self.assertFalse((self.fixture.root / ARCHIVE_PATH).exists(), "the fully-promoted create must still be rolled back")
+        self.assertTrue((self.fixture.root / EDITOR_RUNNER_CLAIM_PATH).exists(), "no partial claim state may be exposed on rollback")
+        journal_path = (
+            self.fixture.root / "output" / "logs" / EDITOR_TASK_ID / EDITOR_REQUEST_ID / "promotion-journal.json"
+        )
+        journal = json.loads(journal_path.read_text(encoding="utf-8"))
+        self.assertEqual(journal["status"], "rolled-back")
+        self.assertEqual({entry["path"] for entry in journal["entries"]}, {"TODO.md", TARGET_CLAIM_PATH, ARCHIVE_PATH})
+        result_path = self.fixture.root / "output" / "logs" / EDITOR_TASK_ID / EDITOR_REQUEST_ID / "result.json"
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertNotEqual(result["verdict"], "passed")
+
+    def test_injected_failure_after_publish_retains_claim_for_recovery(self) -> None:
+        # "after-publish" fires once the substantive commit is already the
+        # exact CAS-guarded branch tip: files are not rolled back (the
+        # commit is real), but the runner's own claim must survive for
+        # deterministic recovery instead of being finalized/archived.
+        base = self.fixture.base
+        status, output, _info = self.fixture.execute(inject_failure="after-publish")
+        self.assertEqual(status, runner.EXIT_INTERNAL)
+        self.assertIn("RTX-INJECTED-FAILURE", output)
+        self.assertNotEqual(self.fixture.base, base)
+        self.assertTrue((self.fixture.root / EDITOR_RUNNER_CLAIM_PATH).exists())
+        self.assertFalse((self.fixture.root / TARGET_CLAIM_PATH).exists(), "the promoted claim-finalization itself is already committed")
 
 
 if __name__ == "__main__":

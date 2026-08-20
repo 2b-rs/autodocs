@@ -33,6 +33,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
+try:  # pragma: no cover - exercised implicitly by both import modes
+    from _src.tools import legacy_task_editor as lte
+except ImportError:  # pragma: no cover - direct script execution from _src/tools
+    import legacy_task_editor as lte  # type: ignore[no-redef]
+
 
 MANIFEST_SCHEMA = "legacy-runner-transaction@v1"
 RESULT_SCHEMA = "legacy-runner-transaction-result@v1"
@@ -48,9 +53,11 @@ FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{5,127}$")
 OWNER_TOKEN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9:._-]{7,255}$")
 SAFE_PATH_RE = re.compile(r"^[A-Za-z0-9_.][A-Za-z0-9_./-]*$")
+CANDIDATE_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 PROFILE = "close-task-v1"
 VERIFY_AND_COMMIT_PROFILE = "verify-and-commit-v1"
-PROFILES = (PROFILE, VERIFY_AND_COMMIT_PROFILE)
+EDITOR_PROFILE = "legacy-editor-candidate-v1"
+PROFILES = (PROFILE, VERIFY_AND_COMMIT_PROFILE, EDITOR_PROFILE)
 FORBIDDEN_GIT_ENV = {
     "GIT_DIR",
     "GIT_WORK_TREE",
@@ -426,7 +433,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     _exact_keys(
         data,
         {"schema", "profile", "identity", "authority", "scope", "actions"},
-        {"commit", "bookkeeping"},
+        {"commit", "bookkeeping", "editor"},
         "manifest",
     )
     if data["schema"] != MANIFEST_SCHEMA:
@@ -481,14 +488,14 @@ def load_manifest(path: Path) -> Dict[str, Any]:
     _exact_keys(scope, {"read_paths", "input_paths", "output_paths", "substantive_paths"}, set(), "manifest.scope")
     scope["read_paths"] = _string_list(scope["read_paths"], "scope.read_paths", allow_empty=True)
     scope["input_paths"] = _string_list(scope["input_paths"], "scope.input_paths", allow_empty=True)
-    if data["profile"] == PROFILE and (not isinstance(scope["output_paths"], list) or not scope["output_paths"]):
+    if data["profile"] in (PROFILE, EDITOR_PROFILE) and (not isinstance(scope["output_paths"], list) or not scope["output_paths"]):
         raise TransactionError(
             "RTX-SCOPE-OUTPUTS",
-            "close-task-v1 requires at least one generated output",
+            f"{data['profile']} requires at least one output path",
             "manifest",
             EXIT_MANIFEST,
         )
-    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=(data["profile"] != PROFILE))
+    scope["output_paths"] = _string_list(scope["output_paths"], "scope.output_paths", allow_empty=(data["profile"] not in (PROFILE, EDITOR_PROFILE)))
     scope["substantive_paths"] = _string_list(scope["substantive_paths"], "scope.substantive_paths", allow_empty=False)
 
     substantive_set = set(scope["substantive_paths"])
@@ -497,6 +504,13 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         raise TransactionError(
             "RTX-SCOPE-SUBSTANTIVE-MISMATCH",
             f"substantive_paths must be a subset of declared inputs and outputs: {sorted(substantive_set - input_output_set)}",
+            "manifest",
+            EXIT_MANIFEST,
+        )
+    if data["profile"] == EDITOR_PROFILE and substantive_set != set(scope["output_paths"]):
+        raise TransactionError(
+            "RTX-SCOPE-SUBSTANTIVE-MISMATCH",
+            "legacy-editor-candidate-v1 requires substantive_paths to equal output_paths exactly",
             "manifest",
             EXIT_MANIFEST,
         )
@@ -509,7 +523,17 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         )
 
     actions = data["actions"]
-    if not isinstance(actions, list) or not actions:
+    if not isinstance(actions, list):
+        raise TransactionError("RTX-SCHEMA-TYPE", "manifest actions must be a list", "manifest", EXIT_MANIFEST)
+    if data["profile"] == EDITOR_PROFILE:
+        if actions:
+            raise TransactionError(
+                "RTX-EDITOR-ACTIONS",
+                "legacy-editor-candidate-v1 does not run generate/validate actions; actions must be empty",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+    elif not actions:
         raise TransactionError("RTX-SCHEMA-TYPE", "manifest actions must be a non-empty list", "manifest", EXIT_MANIFEST)
     seen_actions: Set[str] = set()
     last_phase = -1
@@ -584,8 +608,15 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         commit["message"] = commit.pop(message_key)
 
     bookkeeping = data.get("bookkeeping")
-    if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE) and not isinstance(commit, dict):
+    if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE, EDITOR_PROFILE) and not isinstance(commit, dict):
         raise TransactionError("RTX-SCHEMA-TYPE", "commit must be an object", "manifest", EXIT_MANIFEST)
+    if data["profile"] == EDITOR_PROFILE and bookkeeping is not None:
+        raise TransactionError(
+            "RTX-EDITOR-BOOKKEEPING",
+            "legacy-editor-candidate-v1 has no separate bookkeeping commit; the candidate carries its own TODO.md change",
+            "manifest",
+            EXIT_MANIFEST,
+        )
     if data["profile"] == PROFILE and bookkeeping is None:
         raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
     if bookkeeping is not None:
@@ -601,6 +632,37 @@ def load_manifest(path: Path) -> Dict[str, Any]:
             raise TransactionError("RTX-BOOKKEEPING-DEPENDS-COMMIT", "bookkeeping requires a substantive commit", "manifest", EXIT_MANIFEST)
         if bookkeeping["todo_path"] in input_output_set:
             raise TransactionError("RTX-SCOPE-BOOKKEEPING", "TODO.md cannot appear in substantive input or output paths", "manifest", EXIT_MANIFEST)
+
+    editor = data.get("editor")
+    if data["profile"] == EDITOR_PROFILE:
+        if not isinstance(editor, dict):
+            raise TransactionError("RTX-SCHEMA-TYPE", "editor must be a JSON object for legacy-editor-candidate-v1", "manifest", EXIT_MANIFEST)
+        _exact_keys(
+            editor,
+            {"operation_path", "candidate_dir", "candidate_manifest_path", "expected_candidate_sha256"},
+            set(),
+            "manifest.editor",
+        )
+        editor["operation_path"] = _normalize_path(editor["operation_path"], "editor.operation_path")
+        editor["candidate_dir"] = _normalize_path(editor["candidate_dir"], "editor.candidate_dir")
+        editor["candidate_manifest_path"] = _normalize_path(editor["candidate_manifest_path"], "editor.candidate_manifest_path")
+        if editor["candidate_manifest_path"] != f"{editor['candidate_dir']}/candidate.json":
+            raise TransactionError(
+                "RTX-EDITOR-CANDIDATE-LAYOUT",
+                "editor.candidate_manifest_path must be editor.candidate_dir/candidate.json",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+        digest = editor["expected_candidate_sha256"]
+        if not isinstance(digest, str) or not CANDIDATE_SHA256_RE.fullmatch(digest):
+            raise TransactionError(
+                "RTX-EDITOR-CANDIDATE-DIGEST",
+                "editor.expected_candidate_sha256 must be 64 lowercase hex characters",
+                "manifest",
+                EXIT_MANIFEST,
+            )
+    elif editor is not None:
+        raise TransactionError("RTX-EDITOR-UNEXPECTED", "editor is only valid for legacy-editor-candidate-v1", "manifest", EXIT_MANIFEST)
 
     data["_loaded_path"] = str(path.resolve())
     data["_loaded_sha256"] = _sha256_bytes(raw_bytes)
@@ -843,43 +905,65 @@ def render_task_closure(
     request_id: str,
     closure_text: str,
 ) -> str:
-    escaped = re.escape(task_id)
-    matches = list(re.finditer(rf"^- \[p\] \*\*{escaped}\*\*(?:[^\n]*)", todo_text, re.MULTILINE))
-    if len(matches) != 1:
+    """Render a close-task-v1 bookkeeping closure.
+
+    This is a thin adapter over the ``legacy_task_editor`` (Task 0038-05.01)
+    digest-bound structural backlog parser: it locates the exact Task block,
+    its ``Definition of Done`` line, and header REF-absence using the same
+    ``parse_backlog`` primitive the editor uses for pickup/progress/closure
+    operations, instead of maintaining a second, independent regex-based
+    Task-boundary detector. It intentionally does not require a
+    ``**Claim (...):**`` pointer/base-commit cross-check the way the editor's
+    own ``closure`` operation kind does: this profile's own coordination
+    claim (see ``claim_contract_fields``) binds its ``base_commit`` field to
+    the *current* transaction's ``expected_base`` rather than the Task's
+    original pickup base, so the two are not generally the same value and
+    the editor's stricter ``_assert_pointer`` invariant does not apply here
+    without changing that unrelated, already-accepted convention.
+    """
+    try:
+        document = lte.parse_backlog("<close-task-v1 bookkeeping>", todo_text.encode("utf-8"))
+    except lte.EditorError as exc:
+        raise TransactionError(f"RTX-BOOKKEEPING-{exc.rule}", exc.message, "bookkeeping", EXIT_BOOKKEEPING) from exc
+    matches = [task for task in document.tasks if task.id == task_id]
+    if len(matches) != 1 or matches[0].marker != "p":
+        active = len(matches) == 1 and matches[0].marker == "p"
         raise TransactionError(
             "RTX-BOOKKEEPING-TASK-MATCH",
-            f"expected exactly one active marker '- [p] **{task_id}**', found {len(matches)}",
+            f"expected exactly one active marker '- [p] **{task_id}**', found {len(matches)} match(es) (active={active})",
             "bookkeeping",
             EXIT_BOOKKEEPING,
         )
-    match = matches[0]
-    next_task = re.search(r"^(?:- \[[^\]]+\] \*\*[0-9]{4}-[0-9]{2}|## )", todo_text[match.end() :], re.MULTILINE)
-    block_end = match.end() + (next_task.start() if next_task else len(todo_text[match.end() :]))
-    block = todo_text[match.start() : block_end]
-    if re.search(r"\bREF:\s*[0-9a-f]{7,40}\b", match.group(0)):
+    task = matches[0]
+    header = document.text[task.header.start : task.header.end]
+    if lte.AUTHORITATIVE_REF_RE.search(header):
         raise TransactionError("RTX-BOOKKEEPING-REF", f"active Task {task_id} already has a REF", "bookkeeping", EXIT_BOOKKEEPING)
-    dod_matches = list(re.finditer(r"^  - \*\*Definition of Done:\*\*.*$", block, re.MULTILINE))
-    if len(dod_matches) != 1:
+    dod_spans = task.sections.get("Definition of Done", ())
+    if len(dod_spans) != 1:
         raise TransactionError(
             "RTX-BOOKKEEPING-DOD",
-            f"expected exactly one Definition of Done line for {task_id}, found {len(dod_matches)}",
+            f"expected exactly one Definition of Done line for {task_id}, found {len(dod_spans)}",
             "bookkeeping",
             EXIT_BOOKKEEPING,
         )
 
-    header = match.group(0).replace("- [p]", "- [x]", 1).rstrip()
-    header = f"{header} REF: {substantive_commit}"
+    block = document.text[task.span.start : task.span.end]
+    header_relative_end = task.header.end - task.span.start
+    new_header = header.replace("- [p]", "- [x]", 1).rstrip() + f" REF: {substantive_commit}"
     closure = (
         f"\n  - **Closure ({dt.date.today().isoformat()}):** {closure_text.strip()} "
         f"Validation passed in request `{request_id}`. REF: `{substantive_commit}`."
     )
-    dod = dod_matches[0]
-    revised_block = block[: dod.end()] + closure + block[dod.end() :]
-    revised_block = revised_block.replace(match.group(0), header, 1)
-    revised = todo_text[: match.start()] + revised_block + todo_text[block_end:]
-    if revised.count(substantive_commit) < 2:
+    dod = dod_spans[0]
+    insert = dod.end - task.span.start
+    new_block = block[:insert] + closure + block[insert:]
+    new_block = new_header + new_block[header_relative_end:]
+    after_text = document.text[: task.span.start] + new_block + document.text[task.span.end :]
+    if not after_text.startswith(document.text[: task.span.start]) or not after_text.endswith(document.text[task.span.end :]):
+        raise TransactionError("RTX-BOOKKEEPING-UNRELATED-BYTES", "closure rendering changed bytes outside the Task span", "bookkeeping", EXIT_BOOKKEEPING)
+    if after_text.count(substantive_commit) < 2:
         raise TransactionError("RTX-BOOKKEEPING-VERIFY", "rendered closure is missing the substantive REF", "bookkeeping", EXIT_BOOKKEEPING)
-    return revised
+    return after_text
 
 
 def _is_pid_alive(pid: int, start_time: Optional[float] = None) -> bool:
@@ -931,6 +1015,7 @@ class Transaction:
         self.published = False
         self.bookkeeping_todo_bytes: Optional[bytes] = None
         self.claim_finalized = False
+        self.editor_candidate: Optional[Mapping[str, Any]] = None
         self.preflight_states: Dict[str, FileState] = {}
         self.initial_index: Dict[str, str] = {}
         self.promotion_journal: List[PromotionRecord] = []
@@ -1255,7 +1340,14 @@ class Transaction:
         _assert_safe_repo_path(self.root, runtime_prefix)
         for relative in self.scope["output_paths"]:
             parent = (self.root / relative).parent
-            if not parent.exists() or not parent.is_dir():
+            if parent.exists() and not parent.is_dir():
+                raise TransactionError(
+                    "RTX-OUTPUT-PARENT",
+                    f"v1 requires an existing output parent directory: {relative}",
+                    "preflight",
+                    EXIT_PREFLIGHT,
+                )
+            if not parent.exists() and self.manifest["profile"] != EDITOR_PROFILE:
                 raise TransactionError(
                     "RTX-OUTPUT-PARENT",
                     f"v1 requires an existing output parent directory: {relative}",
@@ -1305,6 +1397,9 @@ class Transaction:
                 self.identity["request_id"],
                 bookkeeping["closure_text"],
             )
+
+        if self.manifest["profile"] == EDITOR_PROFILE:
+            self.editor_candidate = self._verify_editor_candidate()
 
         self.initial_index = _index_entries(self.root)
         self._snapshot_paths()
@@ -1399,6 +1494,131 @@ class Transaction:
             if added:
                 _git(self.root, ["worktree", "remove", "--force", str(temporary)], check=False)
             shutil.rmtree(temporary, ignore_errors=True)
+
+    def _verify_editor_candidate(self) -> Mapping[str, Any]:
+        """Recheck every legacy_task_editor (0038-05.01) candidate preimage.
+
+        This binds the manifest's declared ``editor`` contract to the exact
+        candidate/operation/read-set/member digests and rechecks them against
+        the live repository, exactly as ``legacy_task_editor.py promote``
+        would, without performing any write. It is called once at preflight
+        and again immediately before promotion in ``materialize_editor_candidate``
+        so drift between planning and publication is rejected fail-closed.
+        """
+        editor = self.manifest["editor"]
+        candidate_manifest_path = self.root / editor["candidate_manifest_path"]
+        _assert_safe_repo_path(self.root, editor["operation_path"])
+        _assert_safe_repo_path(self.root, editor["candidate_dir"])
+        _assert_safe_repo_path(self.root, editor["candidate_manifest_path"])
+        if candidate_manifest_path.is_symlink() or not candidate_manifest_path.is_file():
+            raise TransactionError(
+                "RTX-EDITOR-CANDIDATE-MISSING",
+                f"candidate manifest is missing or not a regular file: {editor['candidate_manifest_path']}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        try:
+            candidate = lte.verify_candidate_for_promotion(
+                self.root,
+                candidate_manifest_path,
+                editor["expected_candidate_sha256"],
+            )
+        except lte.EditorError as exc:
+            raise TransactionError(f"RTX-EDITOR-{exc.rule}", exc.message, "preflight", EXIT_PREFLIGHT) from exc
+        changes = candidate["changes"]
+        assert isinstance(changes, list)
+        derived_paths = sorted({str(change["path"]) for change in changes})
+        if derived_paths != list(self.scope["output_paths"]):
+            raise TransactionError(
+                "RTX-EDITOR-SCOPE-MISMATCH",
+                f"declared output_paths {self.scope['output_paths']} differ from verified candidate paths {derived_paths}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        operation_entry = candidate["operation"]
+        assert isinstance(operation_entry, dict)
+        subject = operation_entry["subject"]
+        assert isinstance(subject, dict)
+        if str(subject.get("task_id")) != self.identity["task_id"]:
+            raise TransactionError(
+                "RTX-EDITOR-SUBJECT-MISMATCH",
+                f"candidate subject {subject.get('task_id')!r} does not match transaction task_id {self.identity['task_id']!r}",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        return candidate
+
+    def materialize_editor_candidate(self, candidate: Path) -> None:
+        """Recheck preimages immediately before publication, then write the
+        verified legacy_task_editor changes into the candidate worktree so
+        the existing promote/rollback/journal machinery promotes them
+        atomically, exactly like any other declared output path.
+        """
+        self._begin_phase("execute")
+        # Resolve the candidate worktree path once: it lives under the
+        # platform temp root, which on macOS contains a symlink component
+        # (/var -> /private/var) that the nofollow atomic-write helpers
+        # correctly refuse to traverse. This mirrors Transaction.__init__'s
+        # own `self.root = root.resolve()` for the real repository root.
+        candidate = candidate.resolve()
+        self.write_transaction_journal("materializing-editor-candidate")
+        self.editor_candidate = self._verify_editor_candidate()
+        self._inject("before-editor-materialize")
+        editor = self.manifest["editor"]
+        candidate_source_dir = self.root / editor["candidate_dir"]
+        for change in self.editor_candidate["changes"]:
+            assert isinstance(change, dict)
+            relative = str(change["path"])
+            destination = candidate / relative
+            if change["action"] == "delete":
+                if destination.exists() or destination.is_symlink():
+                    if destination.is_symlink() or not destination.is_file():
+                        raise TransactionError(
+                            "RTX-EDITOR-CANDIDATE-TYPE",
+                            f"editor delete target is not a regular file: {relative}",
+                            "execute",
+                            EXIT_ACTION,
+                        )
+                    destination.unlink()
+                continue
+            after_blob = change.get("after_blob")
+            if not after_blob:
+                raise TransactionError(
+                    "RTX-EDITOR-CANDIDATE-SHAPE",
+                    f"editor change for {relative} is missing an after blob",
+                    "execute",
+                    EXIT_ACTION,
+                )
+            blob_path = candidate_source_dir / str(after_blob)
+            if blob_path.is_symlink() or not blob_path.is_file():
+                raise TransactionError(
+                    "RTX-EDITOR-CANDIDATE-TYPE",
+                    f"editor candidate blob is not a regular file: {after_blob}",
+                    "execute",
+                    EXIT_ACTION,
+                )
+            payload = blob_path.read_bytes()
+            if _sha256_bytes(payload) != change["after_sha256"] or len(payload) != change["bytes_after"]:
+                raise TransactionError(
+                    "RTX-EDITOR-CANDIDATE-DIGEST",
+                    f"editor candidate blob digest/size differs for {relative}",
+                    "execute",
+                    EXIT_ACTION,
+                )
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            _atomic_write(destination, payload)
+        self._inject("after-editor-materialize")
+
+        self._begin_phase("candidate-scope")
+        allowed = set(self.scope["input_paths"]) | set(self.scope["output_paths"])
+        changed = _changed_paths(candidate)
+        unexpected = changed - allowed
+        if unexpected:
+            raise TransactionError("RTX-CANDIDATE-SCOPE", f"candidate changed undeclared paths: {sorted(unexpected)}", "validate", EXIT_SCOPE)
+        if not changed:
+            raise TransactionError("RTX-CANDIDATE-NOOP", "candidate has no substantive changes", "validate", EXIT_SCOPE)
+        self._finish_phase("passed")
+        self.emit(f"PHASE candidate-scope: PASS changed={len(changed)}")
 
     def run_actions(self, candidate: Path) -> None:
         self._begin_phase("execute")
@@ -1542,6 +1762,8 @@ class Transaction:
                 if source.exists():
                     if source.is_symlink() or not source.is_file():
                         raise TransactionError("RTX-PROMOTE-TYPE", f"candidate output is not a regular file: {relative}", "promote", EXIT_PROMOTION)
+                    if self.manifest["profile"] == EDITOR_PROFILE and not destination.parent.exists():
+                        _ensure_directory_nofollow(self.root, destination.parent)
                     _atomic_write(destination, source.read_bytes(), source.stat().st_mode)
                 else:
                     _unlink_nofollow(destination, previous)
@@ -1655,7 +1877,12 @@ class Transaction:
                 _git(self.root, ["update-index", "--add", "--cacheinfo", f"{mode},{blob},{relative}"], env=env)
                 expected_blobs[relative] = (mode, blob)
 
-            changed = _git_paths(self.root, ["diff", "--cached", "--name-only", "-z", parent, "--"], env=env)
+            # --no-renames: a delete plus a byte-identical create (e.g. an
+            # editor-candidate claim finalization archiving a claim file
+            # verbatim) is otherwise collapsed by git's rename heuristic
+            # into a single R100 entry, silently dropping one declared path
+            # from `changed` and triggering a spurious scope mismatch below.
+            changed = _git_paths(self.root, ["diff", "--cached", "--no-renames", "--name-only", "-z", parent, "--"], env=env)
             if not changed and not allow_noop:
                 raise TransactionError("RTX-COMMIT-NOOP", f"{label} commit has no changes", label, EXIT_COMMIT)
             if changed - set(paths):
@@ -2278,7 +2505,10 @@ class Transaction:
             self.preflight()
             with self.candidate_worktree() as candidate_path:
                 candidate = candidate_path
-                self.run_actions(candidate)
+                if self.manifest["profile"] == EDITOR_PROFILE:
+                    self.materialize_editor_candidate(candidate)
+                else:
+                    self.run_actions(candidate)
                 self.promote_outputs(candidate)
             self.prepare_substantive()
             if self.manifest.get("bookkeeping"):
