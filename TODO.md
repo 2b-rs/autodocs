@@ -1455,9 +1455,11 @@ HOW TO USE:
 
 ### Campaign C — Curation, Publication, and Acceptance
 
-- [ ] **0019-07** PREREQ: 0019-07:0019-05, 0019-07:0019-06 Integrate validated S-Core exception candidates with the unified review and curation lifecycle.
+- [x] **0019-07** PREREQ: 0019-07:0019-05, 0019-07:0019-06 Integrate validated S-Core exception candidates with the unified review and curation lifecycle.
+  - **Claim (2026-08-20):** `TODO-worf-kehleyr-0019-07-20260819T001300Z.md`; owner_token: `agent:worf-kehleyr:0019-07:20260819T001300Z`. The prior purported output has no recoverable canonical branch, commit reference, or worktree and receives no credit. This implementation is unprivileged and direct-execution only; no curator decision, acceptance, integration, push, or `DONE.md` action is authorized.
   - **Acceptance criteria:** Unsupported, ambiguous, conflicting, missing-provenance, and non-auto-verifiable S-Core records create canonical `curation-item@v1` or review items with source/version evidence; queue states and allowed actors follow `workflow-lifecycle.md` and `roles.md`; user-facing reports link from each queue item to its record/version/source locator.
   - **Definition of Done:** End-to-end tests demonstrate both `discovered → queued → claimed → proposed → accepted → applied → published` and `discovered → queued → claimed → proposed → rejected → retained/closed without application or publication` for S-Core samples; no tool or AI path can silently perform an `accepted`/`rejected` content decision.
+  - **Implementation completion (2026-08-20):** Canonical queue adapter and report integration committed at `71fa107fa1786a0ee7b0538fc952684fb6b1d44c`. Validation passed: 62 focused S-Core/curation tests, `py_compile` for changed tools, and `git diff --check`. No content decision, acceptance, integration, push, publication, or `DONE.md` change was performed.
 
 - [ ] **0019-08** PREREQ: 0019-08:0019-06, 0019-08:0019-07 Perform the Phase-6 validation and curator release-readiness review before generated-tree publication.
   - **Acceptance criteria:** The persisted validation report passes; record/status and exception/queue counts reconcile; unresolved items, exclusions, low-confidence decisions, and hypotheses are quantified and linked; the curator reviews every required class and records accept, reject, or explicitly bounded conditional acceptance for the exact corpus/report versions. A rejection or blocking condition leaves this task open and creates linked remediation/re-run work.
