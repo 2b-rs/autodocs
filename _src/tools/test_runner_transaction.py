@@ -1144,7 +1144,7 @@ class RunnerTransactionTests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     def _verify_and_commit_manifest(self) -> Path:
-        """Minimal verify-and-commit-v1 manifest: validates source.txt in-place, no bookkeeping."""
+        """Minimal verify-and-commit-v1 manifest with required Task bookkeeping."""
         base = self.fixture.base
         value: Dict[str, Any] = {
             "schema": runner.MANIFEST_SCHEMA,
@@ -1180,6 +1180,11 @@ class RunnerTransactionTests(unittest.TestCase):
                     "Exercise the verify-and-commit-v1 profile."
                 )
             },
+            "bookkeeping": {
+                "todo_path": "TODO.md",
+                "closure_text": "The verify-and-commit fixture completed all fail-closed gates.",
+                "commit_message": "docs(todo): close verify-and-commit fixture Task 0038-01",
+            },
         }
         # Also update the claim file's profile field to the new profile so
         # claim_contract_fields matches what's written to disk.
@@ -1192,8 +1197,8 @@ class RunnerTransactionTests(unittest.TestCase):
         claim_path.write_text(claim_text, encoding="utf-8")
         return self.fixture.store_manifest(value)
 
-    def test_verify_and_commit_produces_single_substantive_commit(self) -> None:
-        """verify-and-commit-v1 must land exactly one commit with no TODO.md changes."""
+    def test_verify_and_commit_requires_bookkeeping_and_synchronizes_worktree(self) -> None:
+        """verify-and-commit-v1 closes the Task and matches declared paths to published commits."""
         base = self.fixture.base
         path = self._verify_and_commit_manifest()
         manifest = runner.load_manifest(path)
@@ -1203,21 +1208,39 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertEqual(status, 0, output.getvalue())
         new_head = self.fixture.base
         self.assertNotEqual(new_head, base)
-        # Only one commit must have been added (substantive only, no bookkeeping).
+        # A substantive commit and parented bookkeeping commit must be published.
         commit_count = int(
             self.fixture.git_text("rev-list", "--count", f"{base}..{new_head}")
         )
-        self.assertEqual(commit_count, 1)
-        # TODO.md must be unchanged.
+        self.assertEqual(commit_count, 2)
         todo_after = (self.fixture.root / "TODO.md").read_text(encoding="utf-8")
-        self.assertIn("- [p] **0038-01**", todo_after)
+        self.assertIn("- [x] **0038-01**", todo_after)
+        self.assertEqual(
+            self.fixture.git_text("show", f"{new_head}:source.txt"),
+            (self.fixture.root / "source.txt").read_text(encoding="utf-8").rstrip("\n"),
+        )
+        self.assertEqual(
+            self.fixture.git_text("show", f"{new_head}:TODO.md"),
+            todo_after.rstrip("\n"),
+        )
         # Claim must have been finalized (moved to log dir, not in worktree).
         self.assertFalse((self.fixture.root / CLAIM_PATH).exists())
         result_path = self.fixture.root / "output" / "logs" / "0038-01" / REQUEST_ID / "result.json"
         result = json.loads(result_path.read_text(encoding="utf-8"))
         self.assertEqual(result["verdict"], "passed")
         self.assertIsNotNone(result["substantive_commit"])
-        self.assertIsNone(result["bookkeeping_commit"])
+        self.assertRegex(result["bookkeeping_commit"], r"^[0-9a-f]{40}$")
+
+    def test_verify_and_commit_profile_rejects_omitted_bookkeeping(self) -> None:
+        """A Task-closing verify profile must never publish without marker bookkeeping."""
+        path = self._verify_and_commit_manifest()
+        value = json.loads(path.read_text(encoding="utf-8"))
+        value.pop("bookkeeping")
+        path.write_text(json.dumps(value), encoding="utf-8")
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "RTX-SCHEMA-TYPE")
+        self.assertIn("bookkeeping must be an object", cm.exception.message)
 
     def test_verify_and_commit_profile_rejects_missing_commit(self) -> None:
         """verify-and-commit-v1 without a commit block must fail manifest validation."""

@@ -870,7 +870,9 @@ def load_manifest(path: Path) -> Dict[str, Any]:
             "manifest",
             EXIT_MANIFEST,
         )
-    if data["profile"] == PROFILE and bookkeeping is None:
+    if data["profile"] != EDITOR_PROFILE and data.get("editor") is not None:
+        raise TransactionError("RTX-EDITOR-UNEXPECTED", "editor is only valid for legacy-editor-candidate-v1", "manifest", EXIT_MANIFEST)
+    if data["profile"] in (PROFILE, VERIFY_AND_COMMIT_PROFILE) and bookkeeping is None:
         raise TransactionError("RTX-SCHEMA-TYPE", "bookkeeping must be an object", "manifest", EXIT_MANIFEST)
     if bookkeeping is not None:
         if not isinstance(bookkeeping, dict):
@@ -914,8 +916,6 @@ def load_manifest(path: Path) -> Dict[str, Any]:
                 "manifest",
                 EXIT_MANIFEST,
             )
-    elif editor is not None:
-        raise TransactionError("RTX-EDITOR-UNEXPECTED", "editor is only valid for legacy-editor-candidate-v1", "manifest", EXIT_MANIFEST)
 
     data["_loaded_path"] = str(path.resolve())
     data["_loaded_sha256"] = _sha256_bytes(raw_bytes)
