@@ -235,10 +235,21 @@ therefore follow the capability rules in [`../../SANDBOX.md`](../../SANDBOX.md):
 This document is immediately binding as instruction. Full machine enforcement is
 explicit downstream work and is not implied to exist yet:
 
-- The disposable `/tmp` worktree provisioner
-  (`_src/tools/provision_tmp_worktree.sh`) currently pins sandboxed work to a
-  single `tmp-work` branch. Per-item branches require it to provision the item's
-  canonical branch (base off the parent, merge the prerequisite closure) instead.
+- `_src/tools/provision_tmp_worktree.sh` (Task `0038-22`) is a **self-service**
+  per-item `git worktree` provisioner for an `unprivileged`/`privileged` agent
+  that runs Git directly: given a caller-supplied item branch, it bases a new
+  branch off its derived parent when the branch does not exist yet, provisions
+  or idempotently heals a worktree at the caller's chosen location (defaulting
+  to the existing `.worktrees/<item>` convention), and reaps orphaned scratch
+  worktrees under that root that carry neither an active claim file nor
+  uncommitted content — surfacing, never deleting, one that does. It has
+  **worktree lifecycle only**: it does not merge the prerequisite closure or
+  make any other branch/authority policy decision; that remains the runner
+  transaction engine's job below. This is a different tool from
+  `_src/tools/provision_worker_clone.sh` (Feature `0041` Task `0041-01`), which
+  a privileged host uses to hand a sandboxed grunt — who cannot run Git at all
+  — an isolated `git clone` before it receives work
+  ([`worker-clone-provisioning.md`](worker-clone-provisioning.md)).
 - The runner transaction engine
   ([`runner-transaction.md`](runner-transaction.md),
   `_src/tools/runner_transaction.py`) must gain allowlisted, fail-closed
