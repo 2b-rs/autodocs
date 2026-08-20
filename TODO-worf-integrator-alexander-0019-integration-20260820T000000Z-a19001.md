@@ -9,7 +9,8 @@ base_commit: 993ceffbcea4fa8f0cca16de07ac91cf88fae619
 capability_class: privileged
 process_role: integrator
 execution_authority: direct; run.sh is not used or awaited
-state: [p]
+state: [x]
+integration_ref: 7596682d2646ea755b7e3c37c7b9632fc2a5a8b6
 
 ## Exact assignment
 
@@ -41,6 +42,13 @@ You are Worf Privileged Integrator Alexander-20260819T001100Z. Keep final report
 ok then go ahead. use the correct key next time. Reopen the completed task/branch and let subagents perform the corrective action(s). After these things have been resolved, check again whether the 0039-01 blocker is resolved. if so, proceed to integration. A privileged integrator subagent shall be started to review & merge back the features that are ready.
 ```
 
-## Next step
+## Integration result
 
-Merge the verified transitive terminal tip `refs/heads/0019-05` into `refs/heads/0019`, preserving every claim file; then add an additive integration record and validate the integrated candidate.
+- `refs/heads/0019-05` was merged cleanly into `refs/heads/0019` as `7596682d2646ea755b7e3c37c7b9632fc2a5a8b6`, with first parent `993ceffbcea4fa8f0cca16de07ac91cf88fae619` and second parent `47f5e76f95cf7c3a7ae6db583d46e2056cfbae6a`.
+- All terminal source branches `0019-01` through `0019-05` are ancestors of that integration commit. The campaign manifest, retained snapshot inventory, import profile, extraction adapter, normalizer, and focused tests are present on the integrated tree; all six implementation claims remain present.
+- Focused validation on the exact pre-commit candidate passed: `python3 -m unittest _src.tests.test_score_campaign_manifest _src.tests.test_score_source_snapshot _src.tests.test_score_import_profile _src.tests.test_score_extraction_adapter _src.tests.test_score_normalization` (31 tests); manifest completion and offline snapshot verification (787 artifacts); and `git diff --check`.
+- `0019-06` and `0019-07` remain open and have no local candidate refs. `0019-08` remains excluded. No acceptance, curator decision, remote publication, Feature acceptance, `main` integration, or `DONE.md` action occurred.
+
+## Final disposition
+
+This bounded integration activity is complete (`[x]`). This bookkeeping update references the substantive integration commit and its already committed prompt-provenance receipt; it creates no acceptance credit.
