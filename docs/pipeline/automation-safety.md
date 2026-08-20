@@ -115,7 +115,7 @@ The remaining live critical findings are not accepted as safe. Exact entries blo
 | `_src/tools/manage_approval_readiness.py`: in-place authority-policy write without durable recovery | `0038-15` |
 
 | `_src/i18n/work/{hi,zh}/*write*.sh`: unchecked one-off absolute-path writers | `0038-14` classification/retirement |
-| `_src/run-loop.sh`: mutable self-test/runner result handling and false PASS output | `0038-10` immutable aggregate results |
+| `runner-host/run-loop.sh`: mutable self-test/runner result handling and false PASS output | `0038-10` immutable aggregate results |
 
 Task `0038-26` removed the embedded publication identity/destination and the unconditional force-push from both `_src/publish.sh` and `_src/tools/publish_public_site.sh`, and removed the six now-resolved dispositions those two scripts previously carried (re-pointed there from expired `0038-14`). Both scripts now require the caller to supply `PUBLISH_REMOTE`/`PUBLISH_IDENTITY_NAME`/`PUBLISH_IDENTITY_EMAIL` explicitly (no default resolves to the public repository), and `publish_public_site.sh`'s history-rewriting force-update is gated behind explicit `PUBLISH_ALLOW_FORCE_PUSH=1` plus a named `PUBLISH_FORCE_APPROVAL_REF`, recording the pre-update remote SHA as a recovery point. The remaining `publish_public_site.sh` row above (fixed export cleanup / broad staging, `0038-13`) is untouched by this Task and still open.
 

@@ -91,7 +91,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | Mechanismus | Zweck |
 |---|---|
 | `run.sh` | Einmalige, parameterlose Runner-Hülle; bei Task-Abschluss nur noch als dünner Aufruf des Transaktionswerkzeugs zulässig |
-| `_src/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
+| `runner-host/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
 | `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization` (`close-task-v1`, `verify-and-commit-v1`); feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; seit `0038-05.02` zusätzlich das feste `legacy-editor-candidate-v1`-Profil, das einen bereits geplanten `legacy_task_editor.py`-Kandidaten (Pickup/Progress/Closure/Wontfix/Parent-Aggregation/REF-Injection/Claim-Handoff/-Finalisierung) über dieselbe Journal-/Lock-/Promote-/Rollback-Maschinerie autoritativ mehrdateiig promotet, statt einer zweiten Schreiboberfläche; sowie, als `branch-merge-v1` (`0038-20`, implementiert den `0038-19`-Vertrag), die typisierten `base-branch`/`merge-prereqs`-Aktionen: sequentielle Nicht-Oktopus-2-Parent-Merges in einem Wegwerf-Worktree, CAS-Publikation nur auf die eigene, noch nicht integrierte Item-Branch, Append-only-Claim-Union bei identischem `owner_token`, strukturelle Ablehnung jedes Task→Feature-/Feature→`main`-/`integrate-checkpoint`-Versuchs; siehe [`runner-transaction.md`](runner-transaction.md) |
 | `_src/tools/environment_doctor.py` | Rein lesende, portable Diagnose der Ausführungsumgebung; erzeugt ein digest-gebundenes `prepared-environment@v1` mit Capability-/Protokoll-Gates und optional verifiziertem Cache; Aufruf: `python3 _src/tools/environment_doctor.py --root <root> --requirements <requirements.json> --profile <profile.json> [--observations <observations.json>] [--cache-root <dir>] [--write-cache]`; siehe [`environment-doctor.md`](environment-doctor.md) |
 | `_src/tools/task_evidence_pack.py` | Baut ein kompaktes, content-addressed `task-evidence-pack@v1`-Manifest je Task-Versuch: dedupliziert Blob-Store für Beleg-Bytes, `tracked-ref`-Verweise auf committete Quell-/Probe-Skripte statt Kopien in Zeitstempel-Logs, gebundenes Excerpt, Kriterien-Mapping; weist Geheimnisse, Wildcard-Pfade, fremde Task-Evidenz und ignorierte Scratch-Pfade als alleinigen Abschlussnachweis fail-closed zurück; Aufruf: `python3 _src/tools/task_evidence_pack.py build --root <root> --blob-root <dir> --out-manifest <pack.json> --task-id <id> --action <name> --base-commit <sha> --tool-name <name> --exit-status <n> --items-json <json>` / `verify --manifest <pack.json>`; siehe [`task-evidence-pack.md`](task-evidence-pack.md) |
@@ -116,14 +116,14 @@ explizit gestartet. Standardmäßig fragt der Runner vor jeder fehlenden Install
 nach Bestätigung:
 
 ```sh
-_src/run-loop.sh --init /tmp/autodocs/run.sh
+runner-host/run-loop.sh --init /tmp/autodocs/run.sh
 ```
 
 Für unbeaufsichtigte Provisionierung muss zusätzlich `--batch` beziehungsweise `-b`
 angegeben werden; `--batch` ohne `--init` wird abgewiesen:
 
 ```sh
-_src/run-loop.sh --init --batch /tmp/autodocs/run.sh
+runner-host/run-loop.sh --init --batch /tmp/autodocs/run.sh
 ```
 
 Die Initialisierung prüft funktionsfähig statt nur nach Pfad-Präsenz: Python 3 mit

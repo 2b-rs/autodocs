@@ -258,7 +258,7 @@ Verantwortungen hat heute einen Träger:
 |---|---|---|
 | Eigentümer der Evidence Baseline | SUP.8 / `RQ-TRACE-01` | Konfigurationsmanagement hat keine Rolle |
 | Unabhängige Qualifikation getrennt von der Verifikation des Herstellers | SWE.4 gegen SWE.6 / SYS.5 | Der Implementierer validiert heute selbst |
-| Dauerhaft gepflegte Infrastruktur außerhalb des Task-Flusses | — | Belegfall `_src/run-loop.sh`: keine Task, kein Eigentümer. Adressiert von `0040-10`, nicht vom Rollenmodell |
+| Dauerhaft gepflegte Infrastruktur außerhalb des Task-Flusses | — | Belegfall `runner-host/run-loop.sh`: keine Task, kein Eigentümer. Adressiert von `0040-10`, nicht vom Rollenmodell |
 
 Die ASPICE-Verweise in diesem Dokument behaupten daher **keine
 Kettenabdeckung**.

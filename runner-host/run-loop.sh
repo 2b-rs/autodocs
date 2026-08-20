@@ -341,7 +341,7 @@ ROOT_DIR_PHYSICAL="$(pwd -P)"
 RUN_SCRIPT_PATH="$ROOT_DIR/$RUN_SCRIPT_NAME"
 
 if [[ -z "$NOTIFIER_OPTION" ]]; then
-  NOTIFIER_COMMAND="$ROOT_DIR/_src/perplexity-echo.as"
+  NOTIFIER_COMMAND="$ROOT_DIR/runner-host/perplexity-echo.as"
 elif [[ "$NOTIFIER_OPTION" == /* || "$NOTIFIER_OPTION" != */* ]]; then
   NOTIFIER_COMMAND="$NOTIFIER_OPTION"
 else
