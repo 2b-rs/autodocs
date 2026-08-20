@@ -14,6 +14,30 @@ Status: implemented legacy safety adapter for Feature `0038`, Task `0038-04`.
 
 The tool is limited to the `legacy-lists` era. It neither creates a second issue store nor becomes the permanent bootstrap authority. Task `0037-42` owns the future `agent-doctor` implementation; Task `0038-16` maps or retires this legacy adapter during queue/issue-store handoff.
 
+### Deliberate legacy limitation: one authorized non-Task coordination record
+
+`AGENTS.md` authorizes a temporary `TODO-<agent-id>.md` coordination record for
+a user-directed activity that is not an existing Task, provided it does not
+falsely mark an unrelated Task `[p]`. The legacy doctor nevertheless models all
+top-level `TODO-*.md` records as Task claims. The exact known false positive is:
+
+- path: `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md`;
+- immutable token:
+  `agent:claude:re-intake:20260818T003223Z-845170c0e4da`;
+- deliberate shape: no `task_id`, because Feature `0040` did not yet exist and
+  the record coordinated the user-directed requirements-intake activity rather
+  than claiming a Task;
+- expected finding: `LTD-CLAIM-IDENTITY-MISMATCH`, because the token component
+  `re-intake` is not a canonical Task ID.
+
+The token MUST remain byte-for-byte unchanged: retrofitting a Task ID would
+break the stronger immutable-owner-token rule and falsify the historical
+coordination scope. This is a documented limitation of the retiring legacy
+adapter, not a general exception for malformed Task claims. There is no
+filename-, token-, or rule-wide suppression; all Task claims remain subject to
+the normal checks, and the known finding remains visible. No code, tool, or
+schema change is made for this single historical record.
+
 The doctor does **not**:
 
 - edit, rename, create, or delete repository files;
