@@ -445,6 +445,158 @@ class OperationValidationTests(unittest.TestCase):
                 self.assertEqual(raised.exception.rule, "LTE-OP-UNSAFE-VALUE")
 
 
+class CheckpointAuthorityTests(unittest.TestCase):
+    """Task 0038-23: the digest-bound editor must refuse any change to an
+    ``- **Integration review: ...`` attribute bullet unless the operation
+    carries an explicit ``architect_authority`` assertion, and the resulting
+    bullet must itself be a well-formed, (architect)-tagged declaration.
+    """
+
+    WELL_FORMED_MANDATORY = "  - **Integration review:** mandatory. **Rationale (architect):** fixture checkpoint."
+    WELL_FORMED_NOT_MANDATORY = (
+        "  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** fixture exemption."
+    )
+    UNTAGGED_MANDATORY = "  - **Integration review:** mandatory. **Rationale:** missing the architect tag."
+    MALFORMED_POLARITY = "  - **Integration review:** unclear. **Rationale (architect):** ambiguous."
+
+    def _operation_with_authority(self, role="architect", rationale="fixture rationale"):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Unrelated status update."},
+        )
+        value = dict(operation.data)
+        value["architect_authority"] = {"role": role, "rationale": rationale}
+        raw = (json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        return editor.load_operation(raw)
+
+    def test_checkpoint_attribute_line_recognizes_both_polarities(self):
+        mandatory = editor._checkpoint_attribute_line(self.WELL_FORMED_MANDATORY)
+        self.assertEqual(mandatory["mandatory"], True)
+        self.assertTrue(mandatory["architect_tagged"])
+        not_mandatory = editor._checkpoint_attribute_line(self.WELL_FORMED_NOT_MANDATORY)
+        self.assertEqual(not_mandatory["mandatory"], False)
+        self.assertTrue(not_mandatory["architect_tagged"])
+
+    def test_checkpoint_attribute_line_ignores_prose_mentions(self):
+        prose = "  - **Acceptance criteria:** discusses the `Integration review: mandatory` attribute in passing."
+        self.assertIsNone(editor._checkpoint_attribute_line(prose))
+
+    def test_unchanged_checkpoint_bullet_is_not_gated(self):
+        before = f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n"
+        after = f"block\n{self.WELL_FORMED_MANDATORY}\nmore text changed\n"
+        editor._enforce_checkpoint_authority(
+            editor.Operation({"architect_authority": None}, "raw", "contract"),
+            before,
+            after,
+            "1000-01",
+            "TODO.md",
+        )  # no exception: the attribute bullet itself did not change
+
+    def test_new_checkpoint_bullet_without_authority_is_rejected(self):
+        operation = editor.Operation({}, "raw", "contract")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_removed_checkpoint_bullet_without_authority_is_rejected(self):
+        operation = editor.Operation({}, "raw", "contract")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+                "block\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_authorized_but_untagged_result_is_still_rejected(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.UNTAGGED_MANDATORY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-MALFORMED")
+
+    def test_authorized_but_malformed_polarity_is_still_rejected(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.MALFORMED_POLARITY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-MALFORMED")
+
+    def test_authorized_well_formed_change_is_accepted(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        editor._enforce_checkpoint_authority(
+            operation,
+            "block\nmore text\n",
+            f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+            "1000-01",
+            "TODO.md",
+        )  # no exception
+
+    def test_load_operation_accepts_valid_architect_authority(self):
+        operation = self._operation_with_authority()
+        self.assertEqual(operation.data["architect_authority"], {"role": "architect", "rationale": "fixture rationale"})
+
+    def test_load_operation_rejects_non_architect_role(self):
+        with self.assertRaises(editor.EditorError) as raised:
+            self._operation_with_authority(role="grunt")
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_load_operation_rejects_empty_rationale(self):
+        with self.assertRaises(editor.EditorError):
+            self._operation_with_authority(rationale="")
+
+    def test_load_operation_rejects_unknown_architect_authority_field(self):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Unrelated status update."},
+        )
+        value = dict(operation.data)
+        value["architect_authority"] = {"role": "architect", "rationale": "fixture", "extra": True}
+        raw = (json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor.load_operation(raw)
+        self.assertEqual(raised.exception.rule, "LTE-OP-UNKNOWN-FIELD")
+
+    def test_ordinary_operation_without_architect_authority_is_unaffected(self):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Phase one passed."},
+        )
+        plan = editor.plan_operation(operation, sources)
+        after = planned_change(plan, "TODO.md").after.decode()
+        self.assertIn("Phase one passed.", after)
+
+
 class RenderingTests(unittest.TestCase):
     def test_pickup_creates_exact_claim_and_preserves_neighbor(self):
         sources = source_bytes("open")
