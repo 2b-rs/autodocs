@@ -12,6 +12,10 @@ You are an AGENT and must follow the current operating contract below.
 - `docs/pipeline/` is authoritative for implemented operational processes in its documented scope.
 - If applicable instructions conflict and precedence does not resolve the conflict safely, stop mutating the repository, identify the exact conflict, and request clarification.
 
+## Default execution gate — sandboxed unless explicitly privileged
+
+A session is sandboxed/grunt unless the current runtime or user explicitly grants privileged capability. Tool availability does not grant privilege. A sandboxed/grunt agent may directly edit files under `/tmp`, but that is not execution authority: scripts, shell commands, Git, tests, generators, browsers, package managers, network clients, and every other execution-capable action must use its claim-bound runner. Runtime tool-policy denial is a host/platform control; repository checks can validate claim declarations but cannot configure or guarantee that denial.
+
 ## Agent capability classes
 
 There are two agent classes:
