@@ -63,6 +63,34 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
 | `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
 
+## Prozessdokumentations-Prüfung
+
+| Werkzeug | Zweck |
+|---|---|
+| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: `DOC001` tote relative Links, `DOC002` Index-Abdeckung, `DOC003` zitiertes Prozessdokument ohne Rückanker, `DOC004` unverlinkte Dokumente (aggregiert, informativ), `DOC005` unzitierte Entscheidungsdatensätze, `DOC006` unerreichbares Task-gebundenes Kontraktdokument |
+
+Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
+
+Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
+definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
+gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
+([`process-roles.md`](process-roles.md)).
+
+Unverlinkt zu sein ist bei **Nachschlagewerken kein Mangel** — niemand navigiert
+zu einem Schema, man schlägt es nach. `DOC004` fasst diese Fälle deshalb zu
+einem informativen Befund zusammen. Aussagekräftig ist allein `DOC006`: ein
+Dokument, das sich selbst über eine `Status:`-Zeile als Kontrakt oder
+Spezifikation eines Backlog-Items ausweist und trotzdem von nirgends erreichbar
+ist. Es bindet entweder noch und niemand findet es, oder es bindet nicht mehr
+und sagt das nirgends.
+
+Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
+`--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,
+ist eine Entscheidung mit Reichweite über die eigene Arbeitseinheit hinaus und
+verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
+ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
+soll.
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |
@@ -91,15 +119,20 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | Mechanismus | Zweck |
 |---|---|
 | `run.sh` | Einmalige, parameterlose Runner-Hülle; bei Task-Abschluss nur noch als dünner Aufruf des Transaktionswerkzeugs zulässig |
-| `_src/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
-| `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization`; feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; siehe [`runner-transaction.md`](runner-transaction.md) |
+| `runner-host/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
+| `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization` (`close-task-v1`, `verify-and-commit-v1`); feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; seit `0038-05.02` zusätzlich das feste `legacy-editor-candidate-v1`-Profil, das einen bereits geplanten `legacy_task_editor.py`-Kandidaten (Pickup/Progress/Closure/Wontfix/Parent-Aggregation/REF-Injection/Claim-Handoff/-Finalisierung) über dieselbe Journal-/Lock-/Promote-/Rollback-Maschinerie autoritativ mehrdateiig promotet, statt einer zweiten Schreiboberfläche; sowie, als `branch-merge-v1` (`0038-20`, implementiert den `0038-19`-Vertrag), die typisierten `base-branch`/`merge-prereqs`-Aktionen: sequentielle Nicht-Oktopus-2-Parent-Merges in einem Wegwerf-Worktree, CAS-Publikation nur auf die eigene, noch nicht integrierte Item-Branch, Append-only-Claim-Union bei identischem `owner_token`, strukturelle Ablehnung jedes Task→Feature-/Feature→`main`-/`integrate-checkpoint`-Versuchs; siehe [`runner-transaction.md`](runner-transaction.md) |
 | `_src/tools/environment_doctor.py` | Rein lesende, portable Diagnose der Ausführungsumgebung; erzeugt ein digest-gebundenes `prepared-environment@v1` mit Capability-/Protokoll-Gates und optional verifiziertem Cache; Aufruf: `python3 _src/tools/environment_doctor.py --root <root> --requirements <requirements.json> --profile <profile.json> [--observations <observations.json>] [--cache-root <dir>] [--write-cache]`; siehe [`environment-doctor.md`](environment-doctor.md) |
+| `_src/tools/task_evidence_pack.py` | Baut ein kompaktes, content-addressed `task-evidence-pack@v1`-Manifest je Task-Versuch: dedupliziert Blob-Store für Beleg-Bytes, `tracked-ref`-Verweise auf committete Quell-/Probe-Skripte statt Kopien in Zeitstempel-Logs, gebundenes Excerpt, Kriterien-Mapping; weist Geheimnisse, Wildcard-Pfade, fremde Task-Evidenz und ignorierte Scratch-Pfade als alleinigen Abschlussnachweis fail-closed zurück; Aufruf: `python3 _src/tools/task_evidence_pack.py build --root <root> --blob-root <dir> --out-manifest <pack.json> --task-id <id> --action <name> --base-commit <sha> --tool-name <name> --exit-status <n> --items-json <json>` / `verify --manifest <pack.json>`; siehe [`task-evidence-pack.md`](task-evidence-pack.md) |
+| `_src/tools/artifact_retention.py` | Claim-bewusste Quarantäne, Aufbewahrung und Dry-run-first Garbage Collection für Task-Artefakte (`0038-11`): `quarantine` verschiebt einen partiellen/fehlgeschlagenen Export/Report/Scratch-Versuch mit strukturiertem Zustand/Fehler/Digest/Retry-Flag unter einen laufversuchseigenen `.partial`-Wurzelpfad; `plan`/`gc` klassifizieren jeden `output/logs/<task-id>/<request-id>`-Versuch in eine Aufbewahrungsstufe (`successful-log`/`failed-trace`/`cache`/`scratch`/`permanent-manifest`) und schlagen Löschungen nur für terminale, unbeanspruchte, TTL-abgelaufene Artefakte vor; verweigert aktive Claims, nicht abgeschlossene Transaktions-Journale (`0038-10`), unbekannte Zustände und den `current.json`-Zeiger, respektiert `task-evidence-pack@v1`-Referenzen (`0038-12`) und schützt vor Uhr-Drift; echte Löschung nur mit explizitem `--apply`; Aufruf: `python3 _src/tools/artifact_retention.py quarantine --root <root> --task-id <id> --request-id <id> --source <pfad> --kind <art> --state {partial,failed,interrupted,superseded}` / `gc --root <root> [--apply] [--json]` |
 | `_src/tools/task_validation.py` | Wertet einen unveränderlichen Validierungslauf gegen ein `task-validation-profile@v1` aus; erzwingt Freshness, Stage-/Input-/Output-Verträge, Coverage-Canaries und strukturierte Fehler statt blindem Vertrauen in Exit 0; Aufruf: `python3 _src/tools/task_validation.py --profile <profile.json> --run <result.json>`; siehe [`task-validation.md`](task-validation.md) | 
-| `_src/tools/legacy_task_doctor.py` | Rein lesende, deterministische Diagnose für Legacy-`TODO.md`/`DONE.md`, Claims, REFs, Prerequisites und Agent-Bootstrap; Aufruf: `python3 _src/tools/legacy_task_doctor.py [--json]`; gibt höchstens zehn Zusammenfassungszeilen oder `legacy-task-doctor-report@v1`-JSON aus und repariert/übernimmt/löscht nichts; siehe [`legacy-task-doctor.md`](legacy-task-doctor.md) |
+| `_src/tools/candidate_budget.py` | Isoliert generierte Kandidaten und erzwingt Ausgabe-/Diff-/Realismus-Budgets (`0038-13`): generiert ausschließlich in laufversuchseigene `output/logs/<task-id>/<request-id>/.candidates/`-Wurzeln (wie `0038-11`s `.partial`-Muster); ein `candidate-budget@v1`-Vertrag deklariert `sole_writer`, erlaubte Pfadmuster, Datei-/Byte-Budgets, erforderliche Teilbäume (z. B. Sprachbäume), Realismus-Byte-Untergrenzen je Kategorie (gerendert/heruntergeladen/übermittelt), optionale Negativ-Pfad-Pflicht, ein Duplikat-Digest-Verhältnis gegen synthetisches Platzhalter-Material sowie eine Soll-Manifest-Diff-Toleranz; `evaluate()` liefert PASS/FAIL/INCONCLUSIVE wie `0038-08`; `promote()` blockiert bei Nicht-PASS, verweigert Überschreiben eines fremden `sole_writer` an einem festen Exportpfad, kopiert nie eine nicht deklarierte Dateifamilie und ist über einen atomaren `current.json`-Zeiger (Muster wie `0038-10`) atomar/recoverable; Aufruf: `python3 _src/tools/candidate_budget.py manifest --root <root> --task-id <id> --request-id <id>` / `evaluate --budget <budget.json> --task-id <id> --request-id <id> --out-report <report.json>` / `promote --budget <budget.json> --task-id <id> --request-id <id> --destination <pfad> --report <report.json> [--apply]` |
+| `_src/tools/chore_tool_inventory.py` | Lifecycle-Vertrags-Klassifikation der getrackten mutierenden Chore-Werkzeuge (`0038-14`): wiederverwendet `automation_safety.tracked_automation_paths()` als lebende Enumeration statt eigenen Git-Scans; lädt `chore_tool_inventory_data.json` und trennt strikt `classified` (Kategorie, Write-Set, Commit-Points, Idempotenz-Schlüssel, Journal, Cleanup, Failure-Aggregation, Ownership, Retention, Test-Referenz) von `enumerated` (nur Heuristik-Kategorie, ausdrücklich nicht klassifiziert); `--check` validiert Schema plus Abgleich gegen die lebende Skript-Liste (meldet fehlende/veraltete Einträge) und ist exit-0 nur bei null Fehlern; Aufruf: `python3 _src/tools/chore_tool_inventory.py --check [--json] [--list {classified,enumerated,missing,stale}] [--category <kategorie>]` |
+| `_src/tools/legacy_task_doctor.py` | Read-only, deterministic diagnosis for legacy `TODO.md`/`DONE.md`, claims, REFs, prerequisites, and agent bootstrap; invoke with `python3 _src/tools/legacy_task_doctor.py [--json]`; emits at most ten summary lines or `legacy-task-doctor-report@v1` JSON and never repairs, takes over, or deletes anything; see [`legacy-task-doctor.md`](legacy-task-doctor.md) |
 | `_src/tools/legacy_scope_planner.py` | Rein lesender, fail-closed Kollisionsplaner für direkte und abgeleitete Schreibbereiche; kombiniert normalisierte aktive Claims, den autoritativen `issue-regeneration-dag@v1` und exakt gebundene Git-/Runner-/Generator-/i18n-/Publikations-Snapshots, erklärt Producer-Ketten und liefert `PARALLEL`, `SERIALIZE`, `BLOCK` oder `INCOMPLETE`; siehe [`legacy-scope-planner.md`](legacy-scope-planner.md) |
+| `_src/tools/task_context_capsule.py` | Rein lesender, größenbudgetierter Task-Kontext-/Resume-Capsule-Generator; komponiert `legacy_task_doctor.py`, `legacy_scope_planner.py` und die unveränderlichen `runner_transaction.py`-Attempt-Ergebnisse (`0038-10`) zu kompaktem `task-context-capsule@v1`-JSON plus Zehn-Zeilen-Zusammenfassung, damit ein Agent nach Kontext-/Tool-Budget-Grenzen ohne Wiederholung erledigter Arbeit fortsetzen kann; Aufruf: `python3 _src/tools/task_context_capsule.py --root . --task-id <id> [--claim-path <pfad>] [--max-bytes <n>] [--json]`; siehe [`task-context-capsule.md`](task-context-capsule.md) |
 | `_src/tools/legacy_task_editor.py` | Digest-gebundener struktureller Planer für Pickup, Fortschritt, Closure/Wontfix, Parent-Aggregation, REF-Korrektur und Claim-Handoff/-Finalisierung; erzeugt immer content-addressed Candidate+Diff, verifiziert Promotion-Preimages erneut und liefert bis `0038-05.02` ausschließlich `verified-coordinator-required` ohne autoritative Mutation; siehe [`legacy-task-editor.md`](legacy-task-editor.md) |
 | `_src/tools/task_bookkeeping_closure.py` | **Stillgelegt:** frühere freie TODO-/Claim-Direktschreiboberfläche; APIs/CLI schlagen ohne Dateizugriff fehl und verweisen auf `legacy_task_editor.py`. |
-| `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz |
+| `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz; `BranchMergeTransactionTests` (`0038-20`) deckt zusätzlich `base-branch`/`merge-prereqs` ab: Basis-off-Parent, sequentielle Mehrquellen-Merges, Claim-Union bei gleichem `owner_token`, Ablehnung bei fremdem `owner_token`/veraltetem Source-Tip/nicht deklarierter Quelle/Sandboxed-Task→Feature-Versuch, sowie Publish-dann-Crash-Recovery |
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Veränderlicher Zeiger/Log des jeweils letzten (oder laufenden) Legacy-Aufrufs; nie als alleiniger Abschlussnachweis verwenden |
@@ -111,14 +144,14 @@ explizit gestartet. Standardmäßig fragt der Runner vor jeder fehlenden Install
 nach Bestätigung:
 
 ```sh
-_src/run-loop.sh --init /tmp/autodocs/run.sh
+runner-host/run-loop.sh --init /tmp/autodocs/run.sh
 ```
 
 Für unbeaufsichtigte Provisionierung muss zusätzlich `--batch` beziehungsweise `-b`
 angegeben werden; `--batch` ohne `--init` wird abgewiesen:
 
 ```sh
-_src/run-loop.sh --init --batch /tmp/autodocs/run.sh
+runner-host/run-loop.sh --init --batch /tmp/autodocs/run.sh
 ```
 
 Die Initialisierung prüft funktionsfähig statt nur nach Pfad-Präsenz: Python 3 mit

@@ -110,6 +110,43 @@ Notes and consequences:
   dropping one side; the point of carrying them is to retain every predecessor's
   provenance.
 
+## Integration policy precedence
+
+Established by user decision of 2026-08-20 (`DEC-0044-001..003`,
+[`docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`](../dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md)),
+effective immediately. Elaboration, the planning-error prevention at breakdown
+time, and the mechanical provenance checks are Feature `0044` work
+(`0044-01`/`0044-02`); until they land, these rules bind as written:
+
+- **The policy of the target branch governs every integration.** When work moves
+  from `B` onto `A`, the policy in force on `A` decides whether the merge is
+  permitted — not the policy `B` was implemented under.
+- **Non-integrability is triaged, not improvised.** If `A`'s policy would
+  already have forbidden integrating `B` at branch-out time, or the block exists
+  because implementation happened in a different order than the architect
+  planned, that is a **planning error** — it is reported against the breakdown,
+  not worked around. If `A`'s policy changed because a feature was added later
+  or a deviation permit was granted, it is **not** a planning error, and the
+  integrator may proceed under the replacement rule below.
+- **Policy replacement (integrator only):** for the non-planning-error case, the
+  integrator may substitute, for this integration, any policy version that was
+  valid at some point since branch-out on **either** of the two branches being
+  integrated. Which version was chosen and why is a decision with reach beyond
+  the integrator's own work unit and therefore requires a recorded decision
+  (`TK-2`, [`process-roles.md`](process-roles.md)).
+- **Policy provenance is protected:** no agent commits onto a branch policy
+  changes that originated on any branch other than the branch being integrated
+  or the integration target. Consequently, pulling the **target branch's**
+  policy changes into the branch to be integrated is permitted — that is the
+  one policy flow that keeps provenance checkable.
+- **Risk integration:** if integration remains impossible even under
+  replacement and pull-in, it is a *Risikointegration*. The integrator may
+  approve it — and temporarily suspend policies for it — only after a review
+  with two further agents (QA and Architect) that reaches **unanimity**, with
+  the suspension's scope, duration, and participants recorded. Without
+  unanimity, the integration escalates to the user for decision; this composes
+  with, and does not replace, the `[u]` integration verdict below.
+
 ## Merge authority and direction
 
 Merges only ever move work **up** the tree (Subtask→Task→Feature). Authority
@@ -235,10 +272,21 @@ therefore follow the capability rules in [`../../SANDBOX.md`](../../SANDBOX.md):
 This document is immediately binding as instruction. Full machine enforcement is
 explicit downstream work and is not implied to exist yet:
 
-- The disposable `/tmp` worktree provisioner
-  (`_src/tools/provision_tmp_worktree.sh`) currently pins sandboxed work to a
-  single `tmp-work` branch. Per-item branches require it to provision the item's
-  canonical branch (base off the parent, merge the prerequisite closure) instead.
+- `_src/tools/provision_tmp_worktree.sh` (Task `0038-22`) is a **self-service**
+  per-item `git worktree` provisioner for an `unprivileged`/`privileged` agent
+  that runs Git directly: given a caller-supplied item branch, it bases a new
+  branch off its derived parent when the branch does not exist yet, provisions
+  or idempotently heals a worktree at the caller's chosen location (defaulting
+  to the existing `.worktrees/<item>` convention), and reaps orphaned scratch
+  worktrees under that root that carry neither an active claim file nor
+  uncommitted content — surfacing, never deleting, one that does. It has
+  **worktree lifecycle only**: it does not merge the prerequisite closure or
+  make any other branch/authority policy decision; that remains the runner
+  transaction engine's job below. This is a different tool from
+  `_src/tools/provision_worker_clone.sh` (Feature `0041` Task `0041-01`), which
+  a privileged host uses to hand a sandboxed grunt — who cannot run Git at all
+  — an isolated `git clone` before it receives work
+  ([`worker-clone-provisioning.md`](worker-clone-provisioning.md)).
 - The runner transaction engine
   ([`runner-transaction.md`](runner-transaction.md),
   `_src/tools/runner_transaction.py`) must gain allowlisted, fail-closed

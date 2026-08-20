@@ -317,6 +317,119 @@ Bestandsschutz hat der Inhalt, nicht die Form.
 
 ---
 
+### Additive Legacy-Map-/Abweichungsdisposition
+
+Alle vier vorstehenden historischen Datensätze bleiben bytegetreu erhalten und
+sind **strukturell nicht konform** zur exakten Grammatik von
+[`decision-record@v1`](../pipeline/decision-record.md). Weder ihre Originalform
+noch Original plus folgende Map sind als `decision-record@v1` parsebar oder so
+zu bezeichnen. Die Maps verwenden stattdessen das getrennte, normative Format
+`decision-record-legacy-map@v1`: Sie dokumentieren die Abweichung und projizieren
+die rekonstruierbare Semantik, ohne Geschichte zu ersetzen oder eine neue
+Managemententscheidung zu erfinden.
+
+Der additive Identitätsanker
+`legacy-authority:re-intake-review:RQ-SRC-01:2026-08-18T00:32:23Z` bezeichnet
+stabil das bereits protokollierte historische Kundenreview. Er erfindet keine
+persönliche Identität. Map-Autor ist die bestehende Task-Koordination
+`agent:zed:0040-03:20260818T154851Z-1d9d90dcf61d`; dadurch wird keine
+Entscheidungsautorität über den historischen Inhalt beansprucht.
+
+#### `DEC-0040-001-LM001`
+
+- **Map format:** `decision-record-legacy-map@v1`
+- **Target record:** `DEC-0040-001`
+- **Source path:** `docs/dossiers/re-intake-evidence-traceability-and-roles.md#dec-0040-001`
+- **Map recorded at:** `2026-08-18T18:09:02+02:00`
+- **Mapping identity:** `agent:zed:0040-03:20260818T154851Z-1d9d90dcf61d`
+- **Mapping role:** `Implementierer`
+- **Mapping authority reference:** `task:0040-03`
+- **Structural disposition:** `legacy-structurally-nonconforming`
+- **Semantic disposition:** `incomplete`
+- **Missing semantic fields:** `Waiver.Duration`
+- **Deviation:** Der historische Block verwendet deutsche, unvollständige Legacy-Felder statt der geschlossenen v1-Feldfolge; zusätzlich fehlt die ausschließlich von Management festzulegende Waiver-Dauer.
+- **Semantic projection JSON:**
+  ```json
+  {"recorded_at":"2026-08-18T00:32:23Z","deciding_identity":"legacy-authority:re-intake-review:RQ-SRC-01:2026-08-18T00:32:23Z","role":"Management","authority_reference":"RQ-SRC-01;section-6a-customer-review","subject":"OQ-1 — Reservierungssperre Feature 0039","decision":"Die benannte RE-Session wird für Feature 0040 vollprivilegierte Eignersession einschließlich Abnahmebefugnis.","technical_justification":"Management wählte im Review ausdrücklich die Option Vollprivilegiert benennen, nachdem der Unabhängigkeitskonflikt offengelegt worden war.","triggers":["authority-tailoring-or-waiver","cross-item-blast-radius"],"considered_alternatives":[{"id":"ALT-01","text":"Vollprivileg einschließlich Abnahmebefugnis","disposition":"selected","reason":"Ausdrückliche Managementauswahl im Review."},{"id":"ALT-02","text":"Keine privilegierte Benennung","disposition":"rejected","reason":"Nicht vom Management ausgewählte binäre Gegenoption."}],"consequences":[{"id":"CON-01","text":"Selbstabnahmen im Scope sind als solche zu kennzeichnen und später unabhängig nachzuprüfen."}],"affected_work_units":["feature:0040"],"affected_gates":["integration:0040","feature-closure:0040"],"review_participation":[{"id":"PART-01","identity":"agent:claude:re-intake:20260818T003223Z-845170c0e4da","role":"Requirements Engineer","participation":"reviewed","position":"no-position","note":"Legte den Unabhängigkeitskonflikt vor der Managementauswahl offen."}],"no_review_reason":null,"waiver":{"type":"bounded","conflict":"Entwurf und Abnahme liegen innerhalb des Scopes in derselben Session.","reason":"Ausdrückliche Managementauswahl der vollprivilegierten Option.","scope":"Feature 0040 und nötige Änderungen; nicht Feature 0039.","duration":null,"compensating_controls":[{"id":"CTRL-01","text":"Jede Selbstabnahme nennt DEC-0040-001 und einen gezielten unabhängigen Nachprüfauftrag."}]}}
+  ```
+- **Source bindings JSON:**
+  ```json
+  {"recorded_at":["legacy:Zeitpunkt"],"deciding_identity":["additive:historical-authority-anchor"],"role":["legacy:Entscheidende Instanz"],"authority_reference":["legacy:review-context"],"subject":["legacy:Gegenstand"],"decision":["legacy:Entscheidung"],"technical_justification":["legacy:Fachliche Rechtfertigung (Benutzer)","legacy:Abweichung und Kompensation"],"triggers":["legacy:Abweichung und Kompensation","additive:trigger-classification"],"considered_alternatives":["legacy:Gegenstand","legacy:Fachliche Rechtfertigung (Benutzer)"],"consequences":["legacy:Kompensierende Maßnahme"],"affected_work_units":["legacy:Geltungsbereich des Verzichts"],"affected_gates":["additive:gate-classification"],"review_participation":["legacy:Abweichung und Kompensation"],"no_review_reason":["additive:not-applicable"],"waiver":["legacy:Abweichung und Kompensation","legacy:Geltungsbereich des Verzichts","legacy:Kompensierende Maßnahme","additive:missing-management-owned-duration"]}
+  ```
+
+#### `DEC-0040-002-LM001`
+
+- **Map format:** `decision-record-legacy-map@v1`
+- **Target record:** `DEC-0040-002`
+- **Source path:** `docs/dossiers/re-intake-evidence-traceability-and-roles.md#dec-0040-002`
+- **Map recorded at:** `2026-08-18T18:09:02+02:00`
+- **Mapping identity:** `agent:zed:0040-03:20260818T154851Z-1d9d90dcf61d`
+- **Mapping role:** `Implementierer`
+- **Mapping authority reference:** `task:0040-03`
+- **Structural disposition:** `legacy-structurally-nonconforming`
+- **Semantic disposition:** `complete`
+- **Missing semantic fields:** `none`
+- **Deviation:** Der historische Block ist semantisch vollständig rekonstruierbar, verwendet aber deutsche Legacy-Felder statt der geschlossenen v1-Feldfolge und bleibt deshalb strukturell nicht konform.
+- **Semantic projection JSON:**
+  ```json
+  {"recorded_at":"2026-08-18T00:32:23Z","deciding_identity":"legacy-authority:re-intake-review:RQ-SRC-01:2026-08-18T00:32:23Z","role":"Management","authority_reference":"RQ-SRC-01;section-6a-customer-review","subject":"OQ-2 — Aufnahme in 0039-01 oder eigenes Feature","decision":"Die Arbeit wird als eigenes Feature 0040 mit mehreren Tasks geführt.","technical_justification":"0039-01 ist umfangreich und reserviert; ein eigenes Feature macht die neue Anforderung eigenständig planbar, während die Abschlussvorbedingung konkurrierende Prozessdefinitionen verhindert.","triggers":["material-architecture-or-repository-behavior","cross-item-blast-radius"],"considered_alternatives":[{"id":"ALT-01","text":"Eigenes Feature 0040","disposition":"selected","reason":"Eigenständig planbar und sichtbar bei erhaltener Abschlusskopplung."},{"id":"ALT-02","text":"Aufnahme in 0039-01","disposition":"rejected","reason":"Würde die neue Anforderung mit der umfangreichen reservierten Task mitsperren."}],"consequences":[{"id":"CON-01","text":"0040 kann beginnen, aber erst nach 0039-01 abschließen."}],"affected_work_units":["feature:0039","task:0039-01","feature:0040"],"affected_gates":["feature-closure:0040"],"review_participation":[{"id":"PART-01","identity":"agent:claude:re-intake:20260818T003223Z-845170c0e4da","role":"Requirements Engineer","participation":"consulted","position":"supports","note":"Analysierte die Reservierung und leitete die Abschlusskopplung ab."}],"no_review_reason":null,"waiver":{"type":"none"}}
+  ```
+- **Source bindings JSON:**
+  ```json
+  {"recorded_at":["legacy:Zeitpunkt"],"deciding_identity":["additive:historical-authority-anchor"],"role":["legacy:Entscheidende Instanz"],"authority_reference":["legacy:review-context"],"subject":["legacy:Gegenstand"],"decision":["legacy:Entscheidung"],"technical_justification":["legacy:Fachliche Rechtfertigung","legacy:Architekturfolge (RE/Architekt)"],"triggers":["legacy:Architekturfolge (RE/Architekt)","additive:trigger-classification"],"considered_alternatives":["legacy:Gegenstand","legacy:Fachliche Rechtfertigung"],"consequences":["legacy:Architekturfolge (RE/Architekt)"],"affected_work_units":["legacy:Entscheidung","legacy:Architekturfolge (RE/Architekt)"],"affected_gates":["legacy:Architekturfolge (RE/Architekt)"],"review_participation":["legacy:Architekturfolge (RE/Architekt)"],"no_review_reason":["additive:not-applicable"],"waiver":["additive:no-waiver-required"]}
+  ```
+
+#### `DEC-0040-003-LM001`
+
+- **Map format:** `decision-record-legacy-map@v1`
+- **Target record:** `DEC-0040-003`
+- **Source path:** `docs/dossiers/re-intake-evidence-traceability-and-roles.md#dec-0040-003`
+- **Map recorded at:** `2026-08-18T18:09:02+02:00`
+- **Mapping identity:** `agent:zed:0040-03:20260818T154851Z-1d9d90dcf61d`
+- **Mapping role:** `Implementierer`
+- **Mapping authority reference:** `task:0040-03`
+- **Structural disposition:** `legacy-structurally-nonconforming`
+- **Semantic disposition:** `complete`
+- **Missing semantic fields:** `none`
+- **Deviation:** Der historische Block ist semantisch vollständig rekonstruierbar, verwendet aber deutsche Legacy-Felder statt der geschlossenen v1-Feldfolge und bleibt deshalb strukturell nicht konform.
+- **Semantic projection JSON:**
+  ```json
+  {"recorded_at":"2026-08-18T00:32:23Z","deciding_identity":"legacy-authority:re-intake-review:RQ-SRC-01:2026-08-18T00:32:23Z","role":"Management","authority_reference":"RQ-SRC-01;section-6a-customer-review","subject":"OQ-4 — Rollenachse oder neue Agentenprofile","decision":"Fähigkeitsklasse und Prozessrolle bleiben getrennte Achsen mit verbindlichem Mapping.","technical_justification":"Die Achsentrennung bildet Verantwortung und technische Befugnis korrekt getrennt ab; das Mapping macht die Trennung praktisch handlungsleitend.","triggers":["material-architecture-or-repository-behavior"],"considered_alternatives":[{"id":"ALT-01","text":"Getrennte Achsen mit verbindlichem Mapping","disposition":"selected","reason":"Trennt Privileg von Verantwortung und bleibt operativ eindeutig."},{"id":"ALT-02","text":"Neue Agentenprofile als Rollenklassen","disposition":"rejected","reason":"Vermischt technische Fähigkeit und fachliche Verantwortung."}],"consequences":[{"id":"CON-01","text":"Jede Prozessrolle erhält Mindestklasse und Unvereinbarkeiten."}],"affected_work_units":["feature:0040","task:0040-01","path:docs/pipeline/process-roles.md"],"affected_gates":["none"],"review_participation":[{"id":"PART-01","identity":"agent:claude:re-intake:20260818T003223Z-845170c0e4da","role":"Requirements Engineer","participation":"consulted","position":"supports","note":"Präzisierte das Mapping als Mindestklasse plus Unvereinbarkeiten."}],"no_review_reason":null,"waiver":{"type":"none"}}
+  ```
+- **Source bindings JSON:**
+  ```json
+  {"recorded_at":["legacy:Zeitpunkt"],"deciding_identity":["additive:historical-authority-anchor"],"role":["legacy:Entscheidende Instanz"],"authority_reference":["legacy:review-context"],"subject":["legacy:Gegenstand"],"decision":["legacy:Entscheidung"],"technical_justification":["legacy:Fachliche Rechtfertigung","legacy:Präzisierung durch den RE"],"triggers":["legacy:Entscheidung","additive:trigger-classification"],"considered_alternatives":["legacy:Gegenstand","legacy:Fachliche Rechtfertigung"],"consequences":["legacy:Präzisierung durch den RE"],"affected_work_units":["legacy:Entscheidung","additive:scope-classification"],"affected_gates":["additive:no-affected-gate"],"review_participation":["legacy:Präzisierung durch den RE"],"no_review_reason":["additive:not-applicable"],"waiver":["additive:no-waiver-required"]}
+  ```
+
+#### `DEC-0040-004-LM001`
+
+- **Map format:** `decision-record-legacy-map@v1`
+- **Target record:** `DEC-0040-004`
+- **Source path:** `docs/dossiers/re-intake-evidence-traceability-and-roles.md#dec-0040-004`
+- **Map recorded at:** `2026-08-18T18:09:02+02:00`
+- **Mapping identity:** `agent:zed:0040-03:20260818T154851Z-1d9d90dcf61d`
+- **Mapping role:** `Implementierer`
+- **Mapping authority reference:** `task:0040-03`
+- **Structural disposition:** `legacy-structurally-nonconforming`
+- **Semantic disposition:** `complete`
+- **Missing semantic fields:** `none`
+- **Deviation:** Der historische Block ist semantisch vollständig rekonstruierbar, verwendet aber deutsche Legacy-Felder statt der geschlossenen v1-Feldfolge und bleibt deshalb strukturell nicht konform.
+- **Semantic projection JSON:**
+  ```json
+  {"recorded_at":"2026-08-18T00:32:23Z","deciding_identity":"legacy-authority:re-intake-review:RQ-SRC-01:2026-08-18T00:32:23Z","role":"Management","authority_reference":"RQ-SRC-01;section-6a-customer-review","subject":"OQ-3 — Tiefe der Evidenz-zu-Code-Verknüpfung","decision":"Rückverfolgbarkeit wird auf Datei- und Commit-Ebene geführt.","technical_justification":"Diese Tiefe ist mit vorhandenen Mitteln umsetzbar und refactoringstabil; Zeilen- oder Symbolbindung würde spröde Freigabekopplungen wiederholen.","triggers":["material-architecture-or-repository-behavior"],"considered_alternatives":[{"id":"ALT-01","text":"Datei- und Commit-Ebene","disposition":"selected","reason":"Umsetzbar, stabil und für die geforderte Rückverfolgbarkeit ausreichend."},{"id":"ALT-02","text":"Zeilen- und Symbolebene","disposition":"rejected","reason":"Zu spröde bei Refactorings und vergleichbar mit den problematischen digest-gebundenen Freigaben."}],"consequences":[{"id":"CON-01","text":"RQ-TRACE-03 verlangt keine Zeilen- oder Symbolgenauigkeit."}],"affected_work_units":["feature:0040","task:0040-04"],"affected_gates":["none"],"review_participation":[{"id":"PART-01","identity":"agent:claude:re-intake:20260818T003223Z-845170c0e4da","role":"Requirements Engineer","participation":"consulted","position":"supports","note":"Präzisierte RQ-TRACE-03 entsprechend der ausgewählten Tiefe."}],"no_review_reason":null,"waiver":{"type":"none"}}
+  ```
+- **Source bindings JSON:**
+  ```json
+  {"recorded_at":["legacy:Zeitpunkt"],"deciding_identity":["additive:historical-authority-anchor"],"role":["legacy:Entscheidende Instanz"],"authority_reference":["legacy:review-context"],"subject":["legacy:Gegenstand"],"decision":["legacy:Entscheidung"],"technical_justification":["legacy:Fachliche Rechtfertigung"],"triggers":["legacy:Fachliche Rechtfertigung","additive:trigger-classification"],"considered_alternatives":["legacy:Gegenstand","legacy:Fachliche Rechtfertigung"],"consequences":["legacy:Folge für RQ-TRACE-03"],"affected_work_units":["legacy:Folge für RQ-TRACE-03","additive:scope-classification"],"affected_gates":["additive:no-affected-gate"],"review_participation":["legacy:Folge für RQ-TRACE-03"],"no_review_reason":["additive:not-applicable"],"waiver":["additive:no-waiver-required"]}
+  ```
+
+Damit bleiben `DEC-0040-001` … `DEC-0040-004` sämtlich strukturell
+nicht konform zu `decision-record@v1`. Die Legacy-Maps weisen
+`DEC-0040-002` … `DEC-0040-004` als **semantisch vollständig** aus, ohne
+Formatkonformität zu behaupten. `DEC-0040-001` ist zusätzlich semantisch
+unvollständig, ausschließlich weil `Waiver.Duration` fehlt; nur Management darf
+diese Dauer in einem neuen append-only Autoritätsereignis festlegen.
+
 **Offen geblieben:** `OQ-5` (Rückwirkende Pilotbewertung des Vorfalls `0038-03`)
 wurde im Review nicht beantwortet. Der Architekt nimmt sie als Task `0040-08`
 auf, weil `0039-01` ohnehin zwei Pilotanwendungen verlangt und der Vorfall ein
@@ -346,4 +459,63 @@ Architektenentscheidung, keine Kundenentscheidung; sie ist als solche in
 | Anforderung → Norm | Abschnitt 5 |
 | Anforderung → Bestand | Befund E (`0039-01`), Befund F (Reservierung) |
 | Dokument → Koordination | `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md` |
-| Dokument → Prozess | offen bis `OQ-2` geklärt ist |
+| Dokument → Prozess | `RQ-DEC-01` … `RQ-DEC-05` sind in [`decision-record@v1`](../pipeline/decision-record.md) umgesetzt; TK-2 und die Rollentrennung verweisen darauf in [`process-roles.md`](../pipeline/process-roles.md). |
+
+---
+
+## Nachgetragene Waiver-Dauer zu `DEC-0040-001` (append-only)
+
+`DEC-0040-001` und seine Legacy-Projektion `DEC-0040-001-LM001` bleiben unverändert;
+`DEC-0040-001-LM001` weist `Waiver.Duration` weiterhin wahrheitsgemäß als fehlend aus.
+Der folgende Record ergänzt die fehlende Angabe additiv durch die gewährende
+Autorität. Er ersetzt und korrigiert den historischen Record nicht.
+
+### `DEC-0040-008` — Endpunkt des begrenzten Autoritätsverzichts aus `DEC-0040-001`
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-20T08:02:27Z`
+- **Deciding identity:** `authority:current-user:0040-closure-decisions:20260820T080227Z`
+- **Role:** `Management`
+- **Authority reference:** `docs/dossiers/0040-management-closure-provenance.md#dec-0040-008`
+- **Subject:** Fehlende, nach `PRIVILEGED.md` und `decision-record@v1` zwingende Dauer des mit `DEC-0040-001` gewährten begrenzten Autoritätsverzichts
+- **Decision:** Der mit `DEC-0040-001` gewährte begrenzte Autoritätsverzicht erhält als Endpunkt das stabile Ereignis `feature-closure:0040`. Er gilt damit vom ursprünglichen Gewährungszeitpunkt `2026-08-18T00:32:23Z` bis zum Abschluss von Feature `0040` und endet mit dessen Verschiebung nach `DONE.md` automatisch. Geltungsbereich und kompensierende Maßnahme aus `DEC-0040-001` bleiben unverändert; insbesondere erstreckt sich der Verzicht weiterhin nicht auf Feature `0039`. Eine Verlängerung über den Feature-Abschluss hinaus wird nicht erteilt; späterer Nacharbeitsbedarf erfordert eine neue Autoritätsentscheidung.
+- **Technical justification:** `PRIVILEGED.md` und Abschnitt 4 von `decision-record@v1` verlangen eine unzweideutige Dauer; ein fehlendes Ende ist ausdrücklich ungültig, und nur die gewährende Autorität darf es nachtragen. Das Ereignis `feature-closure:0040` deckt exakt den Zweck ab, für den der Verzicht erteilt wurde, ist im Repository eindeutig beobachtbar und verhindert ein stilles Überlaufen auf andere Features. Ein rückwirkender Widerruf wurde erwogen und verworfen, weil er unter dem Verzicht erteilte Abnahmen angreifbar machen würde, ohne dass ein inhaltlicher Mangel belegt ist.
+- **Triggers:**
+  - `authority-tailoring-or-waiver`
+- **Considered alternatives:**
+  - **ALT-01:** Endpunkt `event:feature-closure:0040`
+    - **Disposition:** `selected`
+    - **Reason:** Deckt genau den Gewährungszweck ab, endet automatisch und beobachtbar und kann nicht auf andere Features überlaufen.
+  - **ALT-02:** Festes ISO-Enddatum
+    - **Disposition:** `rejected`
+    - **Reason:** Ein kalendarisches Datum ist vom Arbeitsfortschritt entkoppelt und liefe entweder zu früh ab oder gewährte Autorität über den Zweck hinaus.
+  - **ALT-03:** Rückwirkender Widerruf des Verzichts
+    - **Disposition:** `rejected`
+    - **Reason:** Würde die unter dem Verzicht erteilten Abnahmen ohne belegten inhaltlichen Mangel angreifbar machen und Nachprüfungen ohne Erkenntnisgewinn erzwingen.
+- **Consequences:**
+  - **CON-01:** `DEC-0040-001` ist ab diesem Record hinsichtlich `Waiver.Duration` vollständig; die zugehörige semantische Unvollständigkeit in `DEC-0040-001-LM001` ist damit durch eine Autoritätsentscheidung aufgelöst und nicht länger ein offener Managementpunkt.
+  - **CON-02:** Mit dem `DONE.md`-Move von Feature `0040` erlischt die Abnahmebefugnis der benannten Eignersession automatisch; weitere Selbstabnahmen sind danach ohne neue Entscheidung unzulässig.
+  - **CON-03:** Die kompensierende Maßnahme bleibt bestehen: Jede unter dem Verzicht erteilte Selbstabnahme muss `DEC-0040-001` als Autoritätsreferenz nennen und bleibt gezielt nachprüfbar.
+  - **CON-04:** Der historische Record und seine Legacy-Projektion bleiben unverändert sichtbar; die Unvollständigkeit wird nicht aus der Historie entfernt, sondern additiv geschlossen.
+- **Affected work units:**
+  - `feature:0040`
+  - `task:0040-09`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0040-09`
+  - `feature-closure:0040`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:picard:0040-closure:20260820T080227Z`
+    - **Role:** `Integrator`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Legte die Formatanforderung aus `decision-record@v1` Abschnitt 4 und `PRIVILEGED.md` dar und stellte Ereignis-Endpunkt, festes Datum und rückwirkenden Widerruf als Optionen samt Folgen zur Wahl. Traf die Entscheidung nicht.
+- **Waiver:** `bounded`
+  - **Conflict:** Entwurf und Abnahme liegen innerhalb des Geltungsbereichs in derselben Session; das widerspricht der in `AGENTS.md` geforderten Unabhängigkeit und der SUP.1-Unabhängigkeit.
+  - **Reason:** Ausdrückliche Managementauswahl der vollprivilegierten Option in Kenntnis des vom RE offengelegten Unabhängigkeitskonflikts.
+  - **Scope:** Feature `0040` und die zu seiner Umsetzung nötigen Änderungen; ausdrücklich nicht Feature `0039` und nicht dessen Tasks.
+  - **Duration:** `from 2026-08-18T00:32:23Z until event:feature-closure:0040`
+  - **Compensating controls:**
+    - **CTRL-01:** Jede Selbstabnahme im Geltungsbereich nennt `DEC-0040-001` als Autoritätsreferenz und bleibt damit gezielt unabhängig nachprüfbar.
+    - **CTRL-02:** Mit `feature-closure:0040` erlischt der Verzicht automatisch; jede spätere Nacharbeit erfordert eine neue Autoritätsentscheidung.

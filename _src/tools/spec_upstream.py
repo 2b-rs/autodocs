@@ -17,7 +17,7 @@ from concurrent.futures import ProcessPoolExecutor
 # NOTE: real OS processes. This previously failed under the MCP sandbox
 # because ProcessPoolExecutor's inter-process queue needs POSIX semaphores
 # (multiprocessing.synchronize.SemLock raised PermissionError: [Errno 1]
-# Operation not permitted). The sandbox profile in _src/run-loop.sh now
+# Operation not permitted). The sandbox profile in runner-host/run-loop.sh now
 # explicitly allows ipc-posix-sem-*/ipc-posix-shm-*, so process-based
 # parallelism works again and gives true multi-core scaling (unlike threads,
 # which are capped by the GIL for the CPU-bound regex/JSON work here).
@@ -211,7 +211,7 @@ def _init_worker(index: UpstreamIndex, write: bool) -> None:
     worker ever sees it. Binding it once via the pool's ``initializer``
     fixes that: pickling now happens exactly ``worker_count`` times instead
     of ``len(paths)`` times. Requires the sandbox profile's ipc-posix-sem-*/
-    ipc-posix-shm-* allow rules (see _src/run-loop.sh) for SemLock creation.
+    ipc-posix-shm-* allow rules (see runner-host/run-loop.sh) for SemLock creation.
     """
     global _WORKER_INDEX, _WORKER_WRITE
     _WORKER_INDEX = index
