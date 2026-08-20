@@ -89,7 +89,15 @@ if git diff --cached --quiet; then
   exit 1
 fi
 
-git -c user.name='publish-bot' -c user.email='tobias.anton@accenture.com' commit -q -m "publish: public site from ${REVISION}"
+# No publication identity is embedded here: the reviewed operator/service
+# commit identity must be supplied explicitly. There is no default identity.
+: "${PUBLISH_IDENTITY_NAME:?PUBLISH_IDENTITY_NAME is required: the reviewed operator/service commit author/committer name.}"
+: "${PUBLISH_IDENTITY_EMAIL:?PUBLISH_IDENTITY_EMAIL is required: the reviewed operator/service commit author/committer email.}"
+export GIT_AUTHOR_NAME="$PUBLISH_IDENTITY_NAME"
+export GIT_AUTHOR_EMAIL="$PUBLISH_IDENTITY_EMAIL"
+export GIT_COMMITTER_NAME="$PUBLISH_IDENTITY_NAME"
+export GIT_COMMITTER_EMAIL="$PUBLISH_IDENTITY_EMAIL"
+git commit -q -m "publish: public site from ${REVISION}"
 
 echo "=== Prepared filtered publish tree at: $EXPORT_DIR ==="
 echo "Top-level contents to publish:"
@@ -101,7 +109,27 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
   exit 0
 fi
 
-git remote add origin git@github.com:2b-rs/autodocs.git
-git push --force origin publish-main:main
+# No publication destination is embedded here: the exact reviewed remote
+# must be supplied explicitly. There is no default that resolves to the
+# public repository.
+: "${PUBLISH_REMOTE:?PUBLISH_REMOTE is required: the exact reviewed publish destination URL. There is no default; it must never silently resolve to the public repository.}"
+: "${PUBLISH_TARGET_BRANCH:=main}"
+PUBLISH_LOCAL_BRANCH="publish-main"
 
-echo "Publish push complete: origin main now contains only the filtered public tree."
+git remote add origin "$PUBLISH_REMOTE"
+
+# This history-rewriting update overwrites the destination branch outright
+# (an orphan export, not a fast-forward). It is not performed unconditionally:
+# an operator/service caller must opt in explicitly and name the recorded
+# approval evidence authorizing this specific force-update. The pre-update
+# remote tip is captured first as the recovery point.
+if [[ "${PUBLISH_ALLOW_FORCE_PUSH:-0}" == "1" ]]; then
+  : "${PUBLISH_FORCE_APPROVAL_REF:?PUBLISH_FORCE_APPROVAL_REF is required when PUBLISH_ALLOW_FORCE_PUSH=1: name the recorded approval evidence authorizing this force-update.}"
+  PRE_FORCE_REMOTE_SHA="$(git ls-remote "$PUBLISH_REMOTE" "refs/heads/$PUBLISH_TARGET_BRANCH" 2>/dev/null | cut -f1)"
+  echo "publish_public_site.sh: force-updating refs/heads/$PUBLISH_TARGET_BRANCH; approval=$PUBLISH_FORCE_APPROVAL_REF pre_force_sha=${PRE_FORCE_REMOTE_SHA:-<none>} (recovery: reset refs/heads/$PUBLISH_TARGET_BRANCH to pre_force_sha if this update must be reverted)" >&2
+  git push --force origin "$PUBLISH_LOCAL_BRANCH:$PUBLISH_TARGET_BRANCH"
+else
+  git push origin "$PUBLISH_LOCAL_BRANCH:$PUBLISH_TARGET_BRANCH"
+fi
+
+echo "Publish push complete: $PUBLISH_TARGET_BRANCH now contains only the filtered public tree (destination from explicit configuration)."

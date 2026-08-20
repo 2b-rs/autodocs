@@ -110,14 +110,14 @@ The remaining live critical findings are not accepted as safe. Exact entries blo
 | Paths/risk | Blocking Task |
 |---|---|
 | `_src/tools/publish_public_site.sh`: fixed export cleanup, no durable recovery, broad staging | `0038-13` candidate isolation and promotion |
-| `_src/tools/publish_public_site.sh`: embedded identity/remote, force push to `main` | `0038-14` mutator lifecycle and publication contract |
-| `_src/publish.sh`: embedded publication remote plus aggregate checkout/copy/stage/commit/push lifecycle without durable attempt or recovery state | `0038-14` |
 | `_src/tools/bootstrap_ssh_known_hosts.sh`: AND-list setup failure and trust-store append before fingerprint gate | `0038-14` |
 | `_src/tools/bootstrap_instance.sh`: embedded remote, ignored remote removal, mutation before readiness gates | `0038-15` approval-readiness productization |
 | `_src/tools/manage_approval_readiness.py`: in-place authority-policy write without durable recovery | `0038-15` |
 
 | `_src/i18n/work/{hi,zh}/*write*.sh`: unchecked one-off absolute-path writers | `0038-14` classification/retirement |
 | `_src/run-loop.sh`: mutable self-test/runner result handling and false PASS output | `0038-10` immutable aggregate results |
+
+Task `0038-26` removed the embedded publication identity/destination and the unconditional force-push from both `_src/publish.sh` and `_src/tools/publish_public_site.sh`, and removed the six now-resolved dispositions those two scripts previously carried (re-pointed there from expired `0038-14`). Both scripts now require the caller to supply `PUBLISH_REMOTE`/`PUBLISH_IDENTITY_NAME`/`PUBLISH_IDENTITY_EMAIL` explicitly (no default resolves to the public repository), and `publish_public_site.sh`'s history-rewriting force-update is gated behind explicit `PUBLISH_ALLOW_FORCE_PUSH=1` plus a named `PUBLISH_FORCE_APPROVAL_REF`, recording the pre-update remote SHA as a recovery point. The remaining `publish_public_site.sh` row above (fixed export cleanup / broad staging, `0038-13`) is untouched by this Task and still open.
 
 Task `0038-05.01` retired `_src/tools/task_bookkeeping_closure.py` as a mutation-free fail-closed compatibility shim and removed its two exact blocking dispositions. `_src/tools/legacy_task_editor.py` writes only review candidates; every authoritative promotion returns `LTE-PROMOTE-COORDINATOR-REQUIRED` until `0038-05.02` integrates the verified candidate contract with the durable transaction coordinator.
 | `_src/tools/provision_tmp_worktree.sh`: privileged destructive re-heal without an explicit retry/recovery lifecycle contract | `0038-14` mutator lifecycle and classification |
