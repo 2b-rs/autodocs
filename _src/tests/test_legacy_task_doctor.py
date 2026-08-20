@@ -197,9 +197,30 @@ class LegacyTaskDoctorDeterminismTests(unittest.TestCase):
         self.assertEqual(evidence["reports"][0]["bytes"], evidence["reports"][1]["bytes"])
         self.assertLessEqual(evidence["summary_lines"], 10)
         self.assertTrue(all(value == 0 for value in evidence["plan_safety"].values()))
+        # This evidence is a historical snapshot bound to Task 0038-04's own
+        # closure commit, not to whatever the tool currently contains: later
+        # prerequisite-approved Tasks (e.g. 0038-21) extend the same tool, so
+        # comparing against live worktree bytes would make this assertion
+        # fail for every subsequent tool change regardless of 0038-04's own
+        # correctness. Recover 0038-04's recorded REF from TODO.md and
+        # compare the evidence digest against the tool blob at that
+        # historical commit instead, which is what the evidence actually
+        # attests to and decouples it from later tool evolution.
+        todo_text = (ROOT / "TODO.md").read_text(encoding="utf-8")
+        ref_match = re.search(r"\*\*0038-04\*\*[^\n]*REF:\s*([0-9a-f]{40})", todo_text)
+        self.assertIsNotNone(ref_match, "0038-04 REF not found in TODO.md")
+        historical_ref = ref_match.group(1)
+        historical_tool = subprocess.run(
+            ["git", "show", f"{historical_ref}:_src/tools/legacy_task_doctor.py"],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=15,
+        ).stdout
         self.assertEqual(
             evidence["tool"]["sha256"],
-            doctor.hashlib.sha256((TOOLS / "legacy_task_doctor.py").read_bytes()).hexdigest(),
+            doctor.hashlib.sha256(historical_tool).hexdigest(),
         )
         required_current_rules = {
             "LTD-MARKER-UNDEFINED",
@@ -239,6 +260,7 @@ class LegacyTaskDoctorDeterminismTests(unittest.TestCase):
             "verify-or-reconcile-reference": "backlog-owner-or-authorized-maintainer",
             "review-and-reconcile-prerequisite": "backlog-owner-or-authorized-maintainer",
             "review-and-reconcile-exact-entry": "backlog-owner-or-authorized-maintainer",
+            "assign-privileged-integrator": "privileged-integrator",
         }
         for name, case in sorted(CASES.items()):
             with self.subTest(case=name):
@@ -541,6 +563,115 @@ class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
             )
         )
 
+    def test_integration_readiness_not_ready_reports_nonterminal_task(self):
+        ref_value = "a" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Not ready\n- [x] **1000-01** Done. REF: {ref_value}\n- [ ] **1000-02** Open.\n",
+            reachable={ref_value},
+        )
+        report = repo.scan()
+        self.assertNotIn("LTD-FEATURE-INTEGRATION-READY", rules(report))
+        entries = {item["feature"]: item for item in report["integration_readiness"]}
+        self.assertIn("1000", entries)
+        entry = entries["1000"]
+        self.assertFalse(entry["ready"])
+        self.assertEqual(entry["nonterminal_tasks"], ["1000-02"])
+        self.assertEqual(entry["nonterminal_prerequisites"], [])
+        self.assertEqual(entry["unaccepted_checkpoints"], [])
+        self.assertEqual(entry["in_scope_tasks"], ["1000-01", "1000-02"])
+
+    def test_integration_readiness_ready_linear_chain_emits_notice(self):
+        ref_a = "a" * 40
+        ref_b = "b" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Ready linear\n"
+            f"- [x] **1000-01** First. REF: {ref_a}\n"
+            f"- [x] **1000-02** PREREQ: 1000-02:1000-01 Second. REF: {ref_b}\n",
+            reachable={ref_a, ref_b},
+        )
+        report = repo.scan()
+        self.assertIn("LTD-FEATURE-INTEGRATION-READY", rules(report))
+        notice = next(
+            finding
+            for finding in report["findings"]
+            if finding["rule"] == "LTD-FEATURE-INTEGRATION-READY"
+        )
+        self.assertEqual(notice["subject"], "1000")
+        self.assertIn("privileged integrator", notice["message"])
+        self.assertIn("1000", notice["message"])
+        plan = next(
+            plan
+            for plan in report["plans"]
+            if plan["rule"] == "LTD-FEATURE-INTEGRATION-READY"
+        )
+        self.assertEqual(plan["action"], "assign-privileged-integrator")
+        self.assertEqual(plan["required_actor"], "privileged-integrator")
+        self.assertFalse(plan["automatic"])
+        self.assertFalse(plan["destructive"])
+        entries = {item["feature"]: item for item in report["integration_readiness"]}
+        self.assertTrue(entries["1000"]["ready"])
+
+    def test_integration_readiness_ready_parallel_subtasks_includes_subtask_scope(self):
+        ref_a, ref_b, ref_c = "a" * 40, "b" * 40, "c" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Ready parallel\n"
+            f"- [x] **1000-01** Parent. REF: {ref_a}\n"
+            f"- [x] **1000-01.01** Child one. REF: {ref_b}\n"
+            f"- [x] **1000-01.02** Child two. REF: {ref_c}\n",
+            reachable={ref_a, ref_b, ref_c},
+        )
+        report = repo.scan()
+        self.assertIn("LTD-FEATURE-INTEGRATION-READY", rules(report))
+        entries = {item["feature"]: item for item in report["integration_readiness"]}
+        entry = entries["1000"]
+        self.assertTrue(entry["ready"])
+        self.assertEqual(entry["in_scope_tasks"], ["1000-01", "1000-01.01", "1000-01.02"])
+
+    def test_integration_readiness_blocked_by_unaccepted_mandatory_checkpoint(self):
+        ref_a = "a" * 40
+        ref_b = "b" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Blocked\n"
+            f"- [x] **1000-01** Checkpoint. REF: {ref_a}\n"
+            "  - **Integration review:** mandatory. **Rationale (architect):** fixture.\n"
+            f"- [x] **1000-02** PREREQ: 1000-02:1000-01 Dependent. REF: {ref_b}\n",
+            reachable={ref_a, ref_b},
+        )
+        report = repo.scan()
+        self.assertNotIn("LTD-FEATURE-INTEGRATION-READY", rules(report))
+        entries = {item["feature"]: item for item in report["integration_readiness"]}
+        entry = entries["1000"]
+        self.assertFalse(entry["ready"])
+        self.assertEqual(entry["unaccepted_checkpoints"], ["1000-01"])
+        self.assertEqual(entry["nonterminal_tasks"], [])
+
+    def test_integration_readiness_accepted_mandatory_checkpoint_is_ready(self):
+        ref_a = "a" * 40
+        ref_b = "b" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Accepted checkpoint\n"
+            f"- [x] **1000-01** Checkpoint. REF: {ref_a}\n"
+            "  - **Integration review:** mandatory. **Rationale (architect):** fixture.\n"
+            "  - **Acceptance:** ✓ reviewed by fixture-integrator on 2026-08-20T00:00:00Z.\n"
+            f"- [x] **1000-02** PREREQ: 1000-02:1000-01 Dependent. REF: {ref_b}\n",
+            reachable={ref_a, ref_b},
+        )
+        report = repo.scan()
+        self.assertIn("LTD-FEATURE-INTEGRATION-READY", rules(report))
+        entries = {item["feature"]: item for item in report["integration_readiness"]}
+        entry = entries["1000"]
+        self.assertTrue(entry["ready"])
+        self.assertEqual(entry["unaccepted_checkpoints"], [])
+
+    def test_integration_readiness_ignores_done_features_and_empty_scope(self):
+        repo = self.make_repo(
+            "# TODO\n\n## Feature: 1000 — No tasks yet\n",
+            done="# DONE\n\n## Feature: 0999 — Historical\nCompleted: now — REF: " + "a" * 40 + "\n- [x] **0999-01** Done. REF: " + "a" * 40 + "\n",
+            reachable={"a" * 40},
+        )
+        report = repo.scan()
+        self.assertEqual(report["integration_readiness"], [])
+
     def test_feature_and_partial_task_prerequisite_grammar_is_strict(self):
         repo = FixtureRepository(CASES["prerequisites-and-parent"])
         self.addCleanup(repo.close)
@@ -689,7 +820,19 @@ class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
         self.assertEqual(report["schema"], "legacy-task-doctor-report@v1")
         self.assertEqual(
             set(report),
-            {"schema", "verdict", "inputs", "authority", "inventory", "normalized", "counts", "findings", "plans", "summary"},
+            {
+                "schema",
+                "verdict",
+                "inputs",
+                "authority",
+                "inventory",
+                "normalized",
+                "counts",
+                "findings",
+                "plans",
+                "integration_readiness",
+                "summary",
+            },
         )
         self.assertEqual(
             set(report["normalized"]),
