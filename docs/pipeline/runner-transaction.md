@@ -41,8 +41,8 @@ The transaction follows these rules:
 - **Never use the ambient index:** exact blobs and trees are prepared through a temporary index. Existing unrelated staged entries are checked before and after publication.
 - **Never amend:** the substantive and bookkeeping commits are created as separate objects. The bookkeeping commit records the real substantive hash.
 - **Publish once:** both commits are validated first; then the captured branch advances once with `git update-ref <branch> <bookkeeping> <expected-base>`. If another writer wins, compare-and-swap fails and the transaction rolls its files back without replacing the winner.
-- **Keep recovery state:** the exact claim remains present through final-tree validation and durable result publication. It is moved to retained request evidence only at the final successful step.
-- **Never print a false PASS:** failure to persist the result is a failed transaction. Before claim finalization the durable verdict is `published-pending-finalization`, never `passed`.
+- **Keep recovery state:** the exact claim remains present through final-tree validation and branch publication. It is moved to retained request evidence only at the final successful archival step.
+- **Never print a false PASS:** failure to persist the result is a failed transaction. Before claim archival, only the non-terminal `prepared-result.json` recovery artifact is durable; a terminal `passed` result is written only after successful archival.
 
 ## Required claim fields
 
@@ -192,9 +192,9 @@ flowchart TD
     H --> I[Prepare TODO working copy]
     I --> J[Branch compare-and-swap]
     J --> K[Verify commits, files, index, authority]
-    K --> L[Persist pending-finalization result]
-    L --> M[Archive exact claim]
-    M --> N[Persist PASS result]
+    K --> L[Archive exact claim]
+    L --> M[Persist one immutable terminal result]
+    M --> N[Atomically replace digest-bound current pointer]
 ```
 
 No later node runs after a failed earlier node.
@@ -213,9 +213,28 @@ It includes:
 - retained and digested structured reports;
 - `promotion-journal.json`;
 - `prepared-result.json` before branch publication;
-- `result.json` with final or recoverable state;
+- exactly one immutable terminal `result.json` for that Task/request attempt;
 - `claim-before-finalize.md` and, on success, `finalized-claim.md`;
 - final-tree validation logs.
+
+The Task-level `output/logs/<task-id>/current.json` is the only mutable result
+pointer. It is atomically replaced **only after** the target `result.json` has
+been durably written. The pointer names Task/request identity, the exact
+relative result path, the SHA-256 of the immutable result bytes, terminal
+verdict and lifecycle state. Readers verify all of those fields against the
+referenced bytes; malformed, stale, missing, or digest-mismatched pointers are
+invalid, never a fallback to a log. A valid `failed`, unpublished pointer proves
+only a retained unsuccessful attempt, never completion. Retrying requires a
+fresh request ID, so a later attempt moves this pointer without overwriting
+earlier attempt evidence; a same-request rerun fails without changing its
+journal, result, or pointer.
+
+`output/run-current.log`, `output/run-current.sh`, a retained runner script,
+and a journal on their own are operational traces only. They are never
+interpreted as Task pending/completed state and cannot replace a valid
+`current.json` plus immutable result. Partial attempts retain an explicit
+transaction-journal lifecycle marker, such as `result-persisted` or
+`result-persisted-pointer-pending`.
 
 Conversation-facing output is one line per phase plus one final verdict. Complete child-process output stays in files.
 
@@ -234,9 +253,12 @@ rollback, release their own lock, and exit non-zero.
 | No journal, claim present | Preflight did not establish durable transaction state | Inspect the exact claim, lock, HEAD, and request directory; do not rerun blindly |
 | `failed`, `published: false` | No transaction commit was published | Run `recover`; preserve the claim/journal/backups, resolve any rollback drift, then issue a fresh request ID against the current base |
 | `prepared` | Commit objects and TODO candidate existed, but branch publication was not confirmed | Run `recover`; dangling objects are evidence, not completion |
-| `failed`, `published: true` | The final commit is reachable but working-tree or claim finalization is incomplete | Run `recover`; if all bindings pass it returns the exact `finalize-claim` command rather than repeating generation |
-| `published-pending-finalization` | Commits and working TODO are verified; exact claim archival/final result is pending | Execute only the exact `finalize-claim` command returned by `recover` |
-| `passed`/`complete`, `claim_finalized: true` | Commits, working files, result, and exact journal-bound claim archival passed | No recovery required |
+| `failed`, `published: true` plus a `failed` current pointer | The final commit may be reachable, but the immutable attempt records a failure | Retain claim/result and reconcile the recorded failure; `finalize-claim` refuses a failed or mismatched pointer |
+| `published`, no pointer or a valid exact `passed` pointer, claim retained | A hard stop occurred after CAS before terminal recovery completed | Run `recover`; its exact `finalize-claim` action validates the journal, archives the claim, then materializes the missing immutable result/pointer from `prepared-result.json` when necessary |
+| `claim-finalized` | Exact claim archival completed but terminal-result persistence was interrupted | Run the exact `finalize-claim` recovery action; it preserves the archive and reconstructs only the missing journal-bound result/pointer |
+| `result-persisted` / `result-persisted-pointer-pending` | Immutable terminal result exists but the current-pointer change is not proven | Preserve the result; inspect/reconcile the exact pointer rather than rerunning the request ID |
+| `complete` plus a valid `passed` `current.json` | Commits, cleanup, immutable result, and digest-bound pointer passed | No recovery required |
+| `complete` plus a valid `failed` `current.json` | An immutable terminal failure was retained; publication and claim state remain explicit in that result | Retain the claim and result; resolve the recorded finding, then use a fresh request ID |
 | `rollback-blocked-by-drift` | A newer file edit appeared after promotion | Never overwrite it; retain backups and reconcile the two versions explicitly before a fresh request |
 
 The privileged/read-only diagnostic command is:
@@ -245,10 +267,11 @@ The privileged/read-only diagnostic command is:
 python3 _src/tools/runner_transaction.py doctor --root <repo>
 ```
 
-It reports the lock holder/staleness and every non-complete transaction journal;
-it never deletes a lock or changes repository state. A transaction may replace a
-lock only during normal acquisition after PID **and process-start identity** prove
-that the recorded holder is dead.
+It reports the lock holder/staleness, every non-complete transaction journal,
+and every Task-level current-pointer validation result; it never deletes a lock
+or changes repository state. A transaction may replace a lock only during normal
+acquisition after PID **and process-start identity** prove that the recorded
+holder is dead.
 
 The read-only recovery planner is:
 
@@ -259,8 +282,10 @@ python3 _src/tools/runner_transaction.py recover \
 
 It requires exactly one matching journal. Zero matches fail `RTX-RECOVER-NOT-FOUND`;
 multiple matches fail `RTX-RECOVER-AMBIGUOUS` rather than choosing one. It reports
-the exact claim and state. For a proven published-but-unfinalized transaction it
-returns this deterministic command:
+the exact claim, state, and current-pointer validation. A proven
+published-but-unfinalized transaction returns this deterministic command when
+the pointer is absent or is a valid, journal-bound `passed` record; a malformed,
+failed, or different-request pointer fails closed instead:
 
 ```text
 python3 _src/tools/runner_transaction.py finalize-claim \
@@ -268,11 +293,15 @@ python3 _src/tools/runner_transaction.py finalize-claim \
 ```
 
 `finalize-claim` refuses any existing live **or stale** lock, unpublished or
-unreachable commit, Task mismatch, branch/commit mismatch, claim whose
-Task/request/owner differs from the journal, ambiguous journal, or pre-existing
-archive. It moves only the exact journal-bound claim and leaves competing claims
-untouched. It then marks the journal `complete`; it never glob-selects an
-arbitrary claim, deletes a lock, or overwrites newer edits.
+unreachable commit, malformed/non-passing/different-request pointer, Task
+mismatch, branch/commit mismatch, claim whose Task/request/owner differs from
+the journal, ambiguous journal, or conflicting archive. It moves only the exact
+journal-bound claim and leaves competing claims untouched. When a hard stop left
+no terminal result or pointer, it reconstructs one immutable `result.json` from
+the already retained `prepared-result.json`, binds it to the verified journal
+commit/base/manifest/contract, and only then atomically installs `current.json`.
+It never replaces an existing result, glob-selects an arbitrary claim, deletes a
+lock, or overwrites a changed pointer.
 
 ## Supported Profiles
 
@@ -317,4 +346,4 @@ The hermetic suite is:
 python3 -m unittest _src/tools/test_runner_transaction.py
 ```
 
-It creates temporary Git repositories and covers manifest rejection, material claim-binding changes, parsed-manifest byte drift, generator failure, validator failure, exit-zero structured errors, generator/input mutation, validator/tree mutation, promotion rollback, surfaced rollback failure, rollback blocked by newer bytes, dirty shared TODO rejection, unrelated staged-index preservation, two-commit REF closure, exact and competing claim archival, unpublished/locked finalization refusal, ambiguous recovery-journal refusal, deterministic interrupted-state planning, signal termination, verified stale-lock replacement, post-publication recovery, branch CAS loss, durable-result failure without stale PASS, runtime-path alias rejection, candidate symlink escape, dry-run behavior, closure-profile enforcement, hostile envelope paths, and structural Task-boundary rejection.
+It creates temporary Git repositories and covers manifest rejection, material claim-binding changes, parsed-manifest byte drift, generator failure, validator failure, timeout with per-action status/duration, signal cancellation, exit-zero structured errors, generator/input mutation, validator/tree mutation, promotion rollback, surfaced rollback failure, rollback blocked by newer bytes, dirty shared TODO rejection, unrelated staged-index preservation, two-commit REF closure, exact and competing claim archival, unpublished/locked finalization refusal, ambiguous recovery-journal refusal, deterministic interrupted-state planning, verified stale-lock replacement, post-CAS and post-claim-archive crash recovery, branch CAS loss, immutable terminal-result persistence, result-before-pointer crash boundaries, fresh-retry preservation, pointer/request/result digest tampering, runtime-parent symlink rejection, candidate symlink escape, dry-run behavior, closure-profile enforcement, hostile envelope paths, and structural Task-boundary rejection.

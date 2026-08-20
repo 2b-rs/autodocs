@@ -38,7 +38,9 @@ MANIFEST_SCHEMA = "legacy-runner-transaction@v1"
 RESULT_SCHEMA = "legacy-runner-transaction-result@v1"
 PROMOTION_JOURNAL_SCHEMA = "legacy-runner-promotion-journal@v1"
 TRANSACTION_JOURNAL_SCHEMA = "legacy-runner-transaction-journal@v1"
+CURRENT_POINTER_SCHEMA = "legacy-runner-current-pointer@v1"
 LOCK_SCHEMA = "legacy-runner-lock@v1"
+TERMINAL_RESULT_VERDICTS = {"passed", "failed"}
 
 ALLOWED_AUTHORITY_KEYS = ("authority_epoch", "authority_profile", "write_phase", "runner_protocol")
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
@@ -110,7 +112,8 @@ class ActionSpec:
 class ActionResult:
     action_id: str
     phase: str
-    exit_code: int
+    status: str
+    exit_code: Optional[int]
     duration_ms: int
     stdout_path: str
     stderr_path: str
@@ -154,14 +157,76 @@ def _json_bytes(value: Any) -> bytes:
 
 
 def _open_directory_nofollow(path: Path) -> int:
-    resolved = path.resolve()
-    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    """Open an existing directory without resolving or traversing symlinks."""
+    absolute = path.absolute()
+    if not absolute.is_absolute():
+        raise OSError(f"directory path is not absolute: {path}")
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open("/", flags)
     try:
-        return os.open(str(resolved), flags)
+        for component in absolute.parts[1:]:
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
     except Exception:
-        flags_nofollow = flags | getattr(os, "O_NOFOLLOW", 0)
-        return os.open(str(resolved), flags_nofollow)
+        os.close(descriptor)
+        raise
 
+
+def _atomic_create(path: Path, data: bytes, mode: Optional[int] = None) -> None:
+    """Atomically create one immutable file, failing rather than replacing it."""
+    directory_fd = _open_directory_nofollow(path.parent)
+    temporary_name = f".{path.name}.runner-{secrets.token_hex(8)}"
+    descriptor: Optional[int] = None
+    try:
+        descriptor = os.open(
+            temporary_name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+            dir_fd=directory_fd,
+        )
+        with os.fdopen(descriptor, "wb") as handle:
+            descriptor = None
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+            if mode is not None:
+                os.fchmod(handle.fileno(), stat.S_IMODE(mode))
+        try:
+            os.link(temporary_name, path.name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
+        except FileExistsError as exc:
+            raise TransactionError(
+                "RTX-RESULT-IMMUTABLE",
+                f"immutable file already exists at {path}",
+                "result",
+                EXIT_INTERNAL,
+            ) from exc
+        os.fsync(directory_fd)
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(temporary_name, dir_fd=directory_fd)
+        os.close(directory_fd)
+
+
+def _ensure_directory_nofollow(root: Path, directory: Path) -> None:
+    """Create a repository-relative directory chain without traversing symlinks."""
+    relative = directory.absolute().relative_to(root.absolute())
+    descriptor = _open_directory_nofollow(root)
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        for component in relative.parts:
+            try:
+                os.mkdir(component, 0o700, dir_fd=descriptor)
+            except FileExistsError:
+                pass
+            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+    finally:
+        os.close(descriptor)
 
 
 def _atomic_write(path: Path, data: bytes, mode: Optional[int] = None) -> None:
@@ -855,6 +920,10 @@ class Transaction:
         self.inject_failure = inject_failure
         self.started_at = _utc_now()
         self.current_phase = "manifest"
+        self._phase_started_at = time.monotonic()
+        self.phase_results: List[Dict[str, Any]] = []
+        self.observed_base: Optional[str] = None
+        self.observed_authority: Optional[Dict[str, str]] = None
         self.action_results: List[ActionResult] = []
         self.substantive_commit: Optional[str] = None
         self.bookkeeping_commit: Optional[str] = None
@@ -870,8 +939,14 @@ class Transaction:
         self.promoted_todo_state: Optional[FileState] = None
         self.claim_archive: Optional[Path] = None
         self.log_dir = self.root / "output" / "logs" / self.identity["task_id"] / self.identity["request_id"]
+        self.task_log_dir = self.log_dir.parent
         self.result_path = self.log_dir / "result.json"
+        self.current_pointer_path = self.task_log_dir / "current.json"
         self.journal_path = self.log_dir / "transaction-journal.json"
+        self.terminal_result_persisted = False
+        self.attempt_evidence_preexisted = False
+        self.current_pointer_persisted = False
+        self.preflight_current_pointer_state: Optional[FileState] = None
         self.lock_path: Optional[Path] = None
         self.pid = os.getpid()
         self.start_timestamp = time.time()
@@ -887,6 +962,39 @@ class Transaction:
         }
         self.lock_payload = json.dumps(self.lock_dict, sort_keys=True, indent=2) + "\n"
         self._installed_signals = False
+
+    def _begin_phase(self, phase: str) -> None:
+        self.current_phase = phase
+        self._phase_started_at = time.monotonic()
+
+    def _finish_phase(
+        self,
+        status: str,
+        exit_code: int = 0,
+        *,
+        detail: Optional[str] = None,
+    ) -> None:
+        duration_ms = int((time.monotonic() - self._phase_started_at) * 1000)
+        record: Dict[str, Any] = {
+            "name": self.current_phase,
+            "status": status,
+            "exit_code": exit_code,
+            "duration_ms": duration_ms,
+        }
+        if detail:
+            record["detail"] = detail
+        self.phase_results.append(record)
+
+    def _finish_failure_phase(self, error: TransactionError) -> None:
+        if (
+            not self.phase_results
+            or self.phase_results[-1]["name"] != self.current_phase
+            or self.phase_results[-1]["status"] != "failed"
+        ):
+            self._finish_phase("failed", error.exit_code, detail=error.rule)
+
+    def _ensure_log_dir(self) -> None:
+        _ensure_directory_nofollow(self.root, self.log_dir)
 
     @property
     def claim_path(self) -> Path:
@@ -958,6 +1066,7 @@ class Transaction:
             "branch_ref": self.branch_ref,
             "manifest_sha256": self.manifest.get("_loaded_sha256"),
             "contract_sha256": contract_digest(self.manifest),
+            "claim_preimage_sha256": self.preflight_states.get(self.identity["claim_path"], FileState(False, None, None, 0, None, None)).digest,
             "state": state,
             "current_phase": self.current_phase,
             "updated_at": _utc_now(),
@@ -969,7 +1078,7 @@ class Transaction:
         if extra:
             payload.update(extra)
         try:
-            self.log_dir.mkdir(parents=True, exist_ok=True)
+            self._ensure_log_dir()
             _atomic_write(self.journal_path, _json_bytes(payload), 0o600)
         except OSError as exc:
             raise TransactionError(
@@ -988,9 +1097,10 @@ class Transaction:
             self.emit(f"SIGNAL {signame} received. Performing emergency rollback and journal save.")
             err = TransactionError("RTX-TERMINATED-SIGNAL", f"interrupted by signal {signame}", self.current_phase, EXIT_INTERNAL)
             err = self._rollback_or_compound(err)
+            self._finish_failure_phase(err)
             self.write_transaction_journal(f"killed-by-signal-{signame}", {"error": err.rule})
             try:
-                self.write_result(self.result("failed", err))
+                self.persist_terminal_result(self.result("failed", err))
             except Exception:
                 pass
             self.release_lock()
@@ -1004,8 +1114,26 @@ class Transaction:
         self._installed_signals = True
 
     def preflight(self) -> None:
-        self.current_phase = "preflight"
+        self._begin_phase("preflight")
+        if self.result_path.exists() or self.result_path.is_symlink() or self.journal_path.exists() or self.journal_path.is_symlink():
+            self.attempt_evidence_preexisted = True
+            raise TransactionError(
+                "RTX-ATTEMPT-EXISTS",
+                "request ID already has retained result or journal evidence; retries require a fresh request ID",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        pointer = _current_pointer_status(self.root, self.identity["task_id"])
+        if pointer["status"] == "invalid":
+            raise TransactionError(
+                "RTX-CURRENT-POINTER-INVALID",
+                "Task current pointer is malformed or does not match immutable result bytes; preserve it for reconciliation",
+                "preflight",
+                EXIT_PREFLIGHT,
+            )
+        self.preflight_current_pointer_state = _read_state(self.current_pointer_path)
         self._assert_head(self.identity["expected_base"], "preflight")
+        self.observed_base = self._head()
         branch = _git_text(self.root, ["symbolic-ref", "--quiet", "HEAD"])
         if not branch:
             raise TransactionError("RTX-DETACHED-HEAD", "transactions require a checked-out branch, not a detached HEAD", "preflight", EXIT_PREFLIGHT)
@@ -1026,6 +1154,7 @@ class Transaction:
                     "preflight",
                     EXIT_PREFLIGHT,
                 )
+        self.observed_authority = {key: current_authority[key] for key in ALLOWED_AUTHORITY_KEYS}
 
         expected_manifest = (self.root / self.identity["manifest_path"]).resolve()
         loaded_manifest = Path(self.manifest["_loaded_path"])
@@ -1180,6 +1309,7 @@ class Transaction:
         self.initial_index = _index_entries(self.root)
         self._snapshot_paths()
         self.write_transaction_journal("preflight-passed")
+        self._finish_phase("passed")
         self.emit("PHASE preflight: PASS")
 
     def acquire_lock(self) -> None:
@@ -1271,15 +1401,15 @@ class Transaction:
             shutil.rmtree(temporary, ignore_errors=True)
 
     def run_actions(self, candidate: Path) -> None:
-        self.current_phase = "execute"
+        self._begin_phase("execute")
         self.write_transaction_journal("running-actions")
         candidate_inputs = {relative: _read_state(candidate / relative) for relative in self.scope["input_paths"]}
         for action in self.manifest["actions"]:
             registered = ACTION_REGISTRY[action["id"]]
-            self.current_phase = registered.phase
+            self._begin_phase(registered.phase)
             stdout_path = self.log_dir / f"{registered.phase}-{registered.action_id}.stdout.log"
             stderr_path = self.log_dir / f"{registered.phase}-{registered.action_id}.stderr.log"
-            self.log_dir.mkdir(parents=True, exist_ok=True)
+            self._ensure_log_dir()
             protected_paths = (
                 self.scope["input_paths"]
                 if registered.phase == "generate"
@@ -1289,18 +1419,37 @@ class Transaction:
                 relative: _read_state(candidate / relative) for relative in protected_paths
             }
             start_ms = time.monotonic()
-            with stdout_path.open("wb") as stdout_handle, stderr_path.open("wb") as stderr_handle:
-                completed = _run_process(
-                    registered.argv,
-                    candidate,
-                    timeout=action["timeout_seconds"],
-                    stdout_handle=stdout_handle,
-                    stderr_handle=stderr_handle,
+            try:
+                with stdout_path.open("wb") as stdout_handle, stderr_path.open("wb") as stderr_handle:
+                    completed = _run_process(
+                        registered.argv,
+                        candidate,
+                        timeout=action["timeout_seconds"],
+                        stdout_handle=stdout_handle,
+                        stderr_handle=stderr_handle,
+                    )
+            except TransactionError as exc:
+                duration_ms = int((time.monotonic() - start_ms) * 1000)
+                status = "timed_out" if exc.rule == "RTX-ACTION-TIMEOUT" else "failed"
+                self.action_results.append(
+                    ActionResult(
+                        action_id=registered.action_id,
+                        phase=registered.phase,
+                        status=status,
+                        exit_code=None,
+                        duration_ms=duration_ms,
+                        stdout_path=stdout_path.relative_to(self.root).as_posix(),
+                        stderr_path=stderr_path.relative_to(self.root).as_posix(),
+                        reports=[],
+                    )
                 )
+                self._finish_phase(status, exc.exit_code, detail=exc.rule)
+                raise
             duration_ms = int((time.monotonic() - start_ms) * 1000)
             result = ActionResult(
                 action_id=registered.action_id,
                 phase=registered.phase,
+                status="passed" if completed.returncode == 0 else "failed",
                 exit_code=completed.returncode,
                 duration_ms=duration_ms,
                 stdout_path=stdout_path.relative_to(self.root).as_posix(),
@@ -1309,6 +1458,7 @@ class Transaction:
             )
             self.action_results.append(result)
             if completed.returncode != 0:
+                self._finish_phase("failed", completed.returncode, detail="RTX-ACTION-NONZERO")
                 raise TransactionError(
                     "RTX-ACTION-NONZERO",
                     f"action {registered.action_id} failed with exit code {completed.returncode}",
@@ -1347,9 +1497,11 @@ class Transaction:
                         "size": len(report_bytes),
                     }
                 )
+            self._finish_phase("passed")
             self.emit(f"PHASE {registered.phase}:{registered.action_id}: PASS exit=0")
             self._inject(f"after-action:{registered.action_id}")
 
+        self._begin_phase("candidate-scope")
         final_inputs = {relative: _read_state(candidate / relative) for relative in candidate_inputs}
         if final_inputs != candidate_inputs:
             raise TransactionError("RTX-CANDIDATE-INPUT-DRIFT", "candidate inputs changed during actions", "validate", EXIT_SCOPE)
@@ -1360,10 +1512,11 @@ class Transaction:
             raise TransactionError("RTX-CANDIDATE-SCOPE", f"candidate changed undeclared paths: {sorted(unexpected)}", "validate", EXIT_SCOPE)
         if not changed and self.scope["output_paths"]:
             raise TransactionError("RTX-CANDIDATE-NOOP", "candidate has no substantive changes", "validate", EXIT_SCOPE)
+        self._finish_phase("passed")
         self.emit(f"PHASE candidate-scope: PASS changed={len(changed)}")
 
     def promote_outputs(self, candidate: Path) -> None:
-        self.current_phase = "promote"
+        self._begin_phase("promote")
         self._assert_paths_unchanged(
             set(self.scope["input_paths"]) | set(self.scope["output_paths"]) | {self.identity["claim_path"]},
             "promote",
@@ -1404,6 +1557,7 @@ class Transaction:
             self.rollback_outputs()
             raise
         self.write_transaction_journal("outputs-promoted")
+        self._finish_phase("passed")
         self.emit(f"PHASE promote: PASS outputs={len(self.scope['output_paths'])}")
 
     def _write_promotion_journal(self, status: str) -> None:
@@ -1531,7 +1685,7 @@ class Transaction:
         return commit
 
     def prepare_substantive(self) -> None:
-        self.current_phase = "prepare-substantive"
+        self._begin_phase("prepare-substantive")
         expected = self.identity["expected_base"]
         self._assert_paths_unchanged(
             set(self.scope["input_paths"])
@@ -1549,12 +1703,13 @@ class Transaction:
         )
         self._inject("after-substantive-commit")
         self.write_transaction_journal("substantive-commit-prepared", {"substantive_commit": self.substantive_commit})
+        self._finish_phase("passed")
         self.emit(f"PHASE prepare-substantive: PASS commit={self.substantive_commit}")
 
     def prepare_bookkeeping(self) -> None:
         if not self.substantive_commit:
             raise TransactionError("RTX-BOOKKEEPING-REF", "substantive commit is unavailable", "bookkeeping", EXIT_BOOKKEEPING)
-        self.current_phase = "prepare-bookkeeping"
+        self._begin_phase("prepare-bookkeeping")
         bookkeeping = self.manifest["bookkeeping"]
         todo_relative = bookkeeping["todo_path"]
         claim_relative = self.identity["claim_path"]
@@ -1592,6 +1747,7 @@ class Transaction:
             )
         self._inject("after-bookkeeping-commit")
         self.write_transaction_journal("bookkeeping-commit-prepared", {"bookkeeping_commit": self.bookkeeping_commit})
+        self._finish_phase("passed")
         self.emit(f"PHASE prepare-bookkeeping: PASS commit={self.bookkeeping_commit}")
 
     @contextlib.contextmanager
@@ -1610,7 +1766,7 @@ class Transaction:
     def validate_prepared_bookkeeping(self) -> None:
         if not self.bookkeeping_commit:
             raise TransactionError("RTX-BOOKKEEPING-COMMIT", "bookkeeping commit is unavailable", "validate-bookkeeping", EXIT_BOOKKEEPING)
-        self.current_phase = "validate-bookkeeping"
+        self._begin_phase("validate-bookkeeping")
         timeout = max(
             action["timeout_seconds"]
             for action in self.manifest["actions"]
@@ -1638,6 +1794,7 @@ class Transaction:
             if changed:
                 raise TransactionError("RTX-BOOKKEEPING-VALIDATE-MUTATION", f"final validator changed tracked paths: {sorted(changed)}", self.current_phase, EXIT_SCOPE)
         self.write_transaction_journal("bookkeeping-validated")
+        self._finish_phase("passed")
         self.emit("PHASE validate-bookkeeping: PASS")
 
     def promote_bookkeeping_todo(self) -> None:
@@ -1775,7 +1932,7 @@ class Transaction:
         final_commit = self.final_commit
         if not self.substantive_commit or not self.branch_ref or (has_bookkeeping and (not self.bookkeeping_commit or self.bookkeeping_todo_bytes is None)):
             raise TransactionError("RTX-PUBLISH-PREPARED", "commit objects are not fully prepared", "publish", EXIT_COMMIT)
-        self.current_phase = "publish"
+        self._begin_phase("publish")
         self._assert_publish_context()
         if has_bookkeeping:
             self.promote_bookkeeping_todo()
@@ -1806,10 +1963,11 @@ class Transaction:
         # Do not run `git read-tree` on the caller's live index: it would discard
         # unrelated staged work. The promoted worktree files are verified against
         # the published commits below while the caller's index remains untouched.
+        self._finish_phase("passed")
         self.emit(f"PHASE publish: PASS branch={self.branch_ref} commit={final_commit}")
 
     def verify_published(self) -> None:
-        self.current_phase = "verify"
+        self._begin_phase("verify")
         has_bookkeeping = bool(self.manifest.get("bookkeeping"))
         final_commit = self.final_commit
         if not self.published or not self.substantive_commit or not final_commit:
@@ -1830,6 +1988,7 @@ class Transaction:
         if not self.claim_path.exists():
             raise TransactionError("RTX-FINAL-CLAIM-EARLY", "claim disappeared before durable finalization", "verify", EXIT_BOOKKEEPING)
         self.write_transaction_journal("verified-published")
+        self._finish_phase("passed")
         self.emit("PHASE verify: PASS")
 
     def _recover_claim_move(self, archive: Path, expected: FileState) -> List[str]:
@@ -1862,9 +2021,8 @@ class Transaction:
         return retained
 
     def finalize_claim(self) -> None:
-        self.current_phase = "finalize-claim"
+        self._begin_phase("finalize-claim")
         self._assert_paths_unchanged({self.identity["claim_path"]}, self.current_phase)
-        self.write_result(self.result("published-pending-finalization"))
         self.write_transaction_journal("finalizing-claim")
         self._inject("before-claim-move")
         archive = self.log_dir / "finalized-claim.md"
@@ -1883,9 +2041,8 @@ class Transaction:
                     EXIT_BOOKKEEPING,
                 )
             self.claim_finalized = True
-            self.current_phase = "complete"
-            self.write_transaction_journal("complete")
-            self.write_result(self.result("passed"))
+            self.write_transaction_journal("claim-finalized")
+            self._finish_phase("passed")
         except Exception as exc:
             self.claim_finalized = False
             self.claim_archive = None
@@ -1911,23 +2068,33 @@ class Transaction:
         self.emit(f"PHASE finalize-claim: PASS archive={archive.relative_to(self.root)}")
 
     def result(self, verdict: str, error: Optional[TransactionError] = None) -> Dict[str, Any]:
+        if verdict not in TERMINAL_RESULT_VERDICTS and verdict != "prepared":
+            raise TransactionError("RTX-RESULT-VERDICT", f"unsupported result verdict: {verdict}", "result", EXIT_INTERNAL)
+        findings: List[Dict[str, Any]] = []
+        if error:
+            findings.append({"rule": error.rule, "message": error.message, "exit_code": error.exit_code})
         value: Dict[str, Any] = {
             "schema": RESULT_SCHEMA,
             "task_id": self.identity["task_id"],
             "request_id": self.identity["request_id"],
             "owner_token": self.identity["owner_token"],
             "expected_base": self.identity["expected_base"],
+            "base_observed": self.observed_base,
+            "authority_observed": self.observed_authority,
             "manifest_path": self.identity["manifest_path"],
             "manifest_sha256": self.manifest.get("_loaded_sha256"),
             "contract_sha256": contract_digest(self.manifest),
             "started_at": self.started_at,
             "finished_at": _utc_now(),
             "verdict": verdict,
+            "lifecycle_state": "complete" if verdict == "passed" else ("failed" if verdict == "failed" else "prepared"),
             "phase": self.current_phase,
+            "phases": list(self.phase_results),
             "actions": [
                 {
                     "id": item.action_id,
                     "phase": item.phase,
+                    "status": item.status,
                     "exit_code": item.exit_code,
                     "duration_ms": item.duration_ms,
                     "stdout": item.stdout_path,
@@ -1936,34 +2103,70 @@ class Transaction:
                 }
                 for item in self.action_results
             ],
+            "findings": findings,
             "substantive_commit": self.substantive_commit,
             "bookkeeping_commit": self.bookkeeping_commit,
             "published": self.published,
             "claim_finalized": self.claim_finalized,
+            "paths": {
+                "counts": {
+                    "read": len(self.scope["read_paths"]),
+                    "input": len(self.scope["input_paths"]),
+                    "output": len(self.scope["output_paths"]),
+                    "substantive": len(self.scope["substantive_paths"]),
+                },
+                "preflight": {relative: _state_dict(state) for relative, state in sorted(self.preflight_states.items())},
+                "promoted": {relative: _state_dict(state) for relative, state in sorted(self.promoted_states.items())},
+            },
+            "commits": {
+                "substantive": self.substantive_commit,
+                "bookkeeping": self.bookkeeping_commit,
+                "final": self.final_commit,
+            },
+            "cleanup": {
+                "claim_finalized": self.claim_finalized,
+                "promotion_backups_retained": bool(self.promotion_journal),
+                "journal_state": "complete" if verdict == "passed" else "failed",
+            },
+            "evidence": {
+                "journal": self.journal_path.relative_to(self.root).as_posix(),
+                "prepared_result": (self.log_dir / "prepared-result.json").relative_to(self.root).as_posix(),
+                "promotion_journal": (self.log_dir / "promotion-journal.json").relative_to(self.root).as_posix(),
+            },
             "changed_path_count": len(self.scope["substantive_paths"]),
-            "promotion_journal": (self.log_dir / "promotion-journal.json").relative_to(self.root).as_posix(),
             "promotion_backups_retained": bool(self.promotion_journal),
         }
         if error:
-            value["error"] = {"rule": error.rule, "message": error.message, "exit_code": error.exit_code}
+            value["error"] = findings[0]
             value["recovery"] = (
-                "Claim retained. Inspect the named phase logs and current HEAD. "
-                "If HEAD advanced, reconcile that commit before retrying; otherwise fix the gate and use a fresh request ID."
+                "Claim retained unless the journal says claim_finalized. Inspect the digest-bound current pointer, "
+                "journal, and exact phase logs; use a fresh request ID for a retry."
             )
         else:
             value["error"] = None
             value["recovery"] = "none"
         return value
 
-    def write_result(self, value: Dict[str, Any], *, path: Optional[Path] = None) -> None:
+    def write_result(self, value: Dict[str, Any], *, path: Optional[Path] = None) -> bytes:
         if self.dry_run:
-            return
+            return b""
         destination = path or self.result_path
         relative_destination = destination.relative_to(self.root).as_posix()
         _assert_safe_repo_path(self.root, relative_destination, "result")
+        if destination == self.result_path and (destination.exists() or destination.is_symlink()):
+            raise TransactionError(
+                "RTX-RESULT-IMMUTABLE",
+                f"immutable attempt result already exists at {relative_destination}",
+                "result",
+                EXIT_INTERNAL,
+            )
+        payload = _json_bytes(value)
         try:
-            self.log_dir.mkdir(parents=True, exist_ok=True)
-            _atomic_write(destination, _json_bytes(value), 0o600)
+            self._ensure_log_dir()
+            if destination == self.result_path:
+                _atomic_create(destination, payload, 0o600)
+            else:
+                _atomic_write(destination, payload, 0o600)
         except OSError as exc:
             raise TransactionError(
                 "RTX-RESULT-WRITE",
@@ -1971,6 +2174,75 @@ class Transaction:
                 "result",
                 EXIT_INTERNAL,
             ) from exc
+        if destination == self.result_path:
+            self.terminal_result_persisted = True
+        return payload
+
+    def write_current_pointer(self, result_payload: bytes, value: Dict[str, Any]) -> None:
+        result_relative = self.result_path.relative_to(self.root).as_posix()
+        pointer_relative = self.current_pointer_path.relative_to(self.root).as_posix()
+        _assert_safe_repo_path(self.root, pointer_relative, "current-pointer")
+        if self.current_pointer_path.exists() and not self.current_pointer_path.is_file():
+            raise TransactionError(
+                "RTX-CURRENT-POINTER-TYPE",
+                f"current pointer is not a regular file: {pointer_relative}",
+                "current-pointer",
+                EXIT_INTERNAL,
+            )
+        pointer = {
+            "schema": CURRENT_POINTER_SCHEMA,
+            "task_id": self.identity["task_id"],
+            "request_id": self.identity["request_id"],
+            "result_path": result_relative,
+            "result_sha256": _sha256_bytes(result_payload),
+            "verdict": value["verdict"],
+            "lifecycle_state": value["lifecycle_state"],
+            "updated_at": _utc_now(),
+        }
+        if self.preflight_current_pointer_state is not None:
+            current_state = _read_state(self.current_pointer_path)
+            if current_state != self.preflight_current_pointer_state:
+                raise TransactionError(
+                    "RTX-CURRENT-POINTER-DRIFT",
+                    "current pointer changed after preflight; refusing to overwrite it",
+                    "current-pointer",
+                    EXIT_INTERNAL,
+                )
+        try:
+            self._ensure_log_dir()
+            _atomic_write(self.current_pointer_path, _json_bytes(pointer), 0o600)
+        except OSError as exc:
+            raise TransactionError(
+                "RTX-CURRENT-POINTER-WRITE",
+                f"cannot atomically update current pointer at {pointer_relative}: {exc}",
+                "current-pointer",
+                EXIT_INTERNAL,
+            ) from exc
+        self.current_pointer_persisted = True
+
+    def persist_terminal_result(self, value: Dict[str, Any]) -> None:
+        if value["verdict"] not in TERMINAL_RESULT_VERDICTS:
+            raise TransactionError("RTX-RESULT-VERDICT", "only terminal results can become current", "result", EXIT_INTERNAL)
+        self.write_transaction_journal("writing-terminal-result")
+        payload = self.write_result(value)
+        result_relative = self.result_path.relative_to(self.root).as_posix()
+        pointer_relative = self.current_pointer_path.relative_to(self.root).as_posix()
+        self.write_transaction_journal(
+            "result-persisted",
+            {"result_path": result_relative, "result_sha256": _sha256_bytes(payload), "current_pointer_path": pointer_relative},
+        )
+        self._inject("after-result-write")
+        self._inject("before-current-pointer")
+        self.write_current_pointer(payload, value)
+        self._inject("after-current-pointer")
+        self.write_transaction_journal(
+            "complete",
+            {"result_path": result_relative, "result_sha256": _sha256_bytes(payload), "current_pointer_path": pointer_relative},
+        )
+
+    def _may_persist_terminal_result(self) -> bool:
+        """Only write attempt evidence while this transaction owns an unused request ID."""
+        return self.lock_path is not None and not self.attempt_evidence_preexisted
 
     def _rollback_or_compound(self, primary: TransactionError) -> TransactionError:
         if self.published or not self.promotion_journal:
@@ -2015,6 +2287,9 @@ class Transaction:
             self.publish()
             self.verify_published()
             self.finalize_claim()
+            self._begin_phase("complete")
+            self._finish_phase("passed")
+            self.persist_terminal_result(self.result("passed"))
             self.emit(
                 "FINAL: PASS exit=0 "
                 f"substantive={self.substantive_commit or 'none'} "
@@ -2023,21 +2298,61 @@ class Transaction:
             return 0
         except TransactionError as exc:
             exc = self._rollback_or_compound(exc)
+            if self.claim_finalized and not self.terminal_result_persisted:
+                archive = self.log_dir / "finalized-claim.md"
+                expected_claim = self.preflight_states.get(self.identity["claim_path"])
+                try:
+                    if expected_claim is None:
+                        raise TransactionError("RTX-CLAIM-STATE", "claim preimage is unavailable", "finalize-claim", EXIT_BOOKKEEPING)
+                    self._recover_claim_move(archive, expected_claim)
+                    self.claim_finalized = False
+                    self.claim_archive = None
+                    self.write_transaction_journal("claim-restored-after-result-write-failure", {"error": exc.rule})
+                except Exception as recovery_error:
+                    message = recovery_error.message if isinstance(recovery_error, TransactionError) else f"{type(recovery_error).__name__}: {recovery_error}"
+                    exc = TransactionError(
+                        "RTX-RESULT-WRITE-CLAIM-RECOVERY",
+                        f"terminal result persistence failed ({exc.rule}); claim recovery failed: {message}",
+                        "finalize-claim",
+                        EXIT_BOOKKEEPING,
+                    )
+                else:
+                    exc = TransactionError(
+                        "RTX-RESULT-WRITE-CLAIM-RESTORED",
+                        f"terminal result persistence failed ({exc.rule}); claim restored for deterministic recovery",
+                        "finalize-claim",
+                        EXIT_BOOKKEEPING,
+                    )
             self.current_phase = exc.phase
-            result = self.result("failed", exc)
-            try:
-                self.write_result(result)
-            except TransactionError as result_exc:
-                print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            self._finish_failure_phase(exc)
+            if self._may_persist_terminal_result() and not self.terminal_result_persisted:
+                try:
+                    self.persist_terminal_result(self.result("failed", exc))
+                except TransactionError as result_exc:
+                    print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            elif self._may_persist_terminal_result():
+                state = "complete" if self.current_pointer_persisted else "result-persisted-pointer-pending"
+                try:
+                    self.write_transaction_journal(state, {"error": exc.rule})
+                except TransactionError as journal_exc:
+                    print(f"RESULT-JOURNAL-ERROR: {journal_exc.message}", file=sys.stderr)
             self.emit(f"FINAL: FAIL exit={exc.exit_code} rule={exc.rule} phase={exc.phase} result={self.result_path.relative_to(self.root)}")
             return exc.exit_code
         except Exception as exc:
             wrapped = TransactionError("RTX-INTERNAL", f"unexpected error: {type(exc).__name__}: {exc}", self.current_phase, EXIT_INTERNAL)
             wrapped = self._rollback_or_compound(wrapped)
-            try:
-                self.write_result(self.result("failed", wrapped))
-            except TransactionError as result_exc:
-                print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            self._finish_failure_phase(wrapped)
+            if self._may_persist_terminal_result() and not self.terminal_result_persisted:
+                try:
+                    self.persist_terminal_result(self.result("failed", wrapped))
+                except TransactionError as result_exc:
+                    print(f"RESULT-WRITE-ERROR: {result_exc.message}", file=sys.stderr)
+            elif self._may_persist_terminal_result():
+                state = "complete" if self.current_pointer_persisted else "result-persisted-pointer-pending"
+                try:
+                    self.write_transaction_journal(state, {"error": wrapped.rule})
+                except TransactionError as journal_exc:
+                    print(f"RESULT-JOURNAL-ERROR: {journal_exc.message}", file=sys.stderr)
             self.emit(f"FINAL: FAIL exit={EXIT_INTERNAL} rule=RTX-INTERNAL phase={self.current_phase} result={self.result_path.relative_to(self.root)}")
             return EXIT_INTERNAL
         finally:
@@ -2045,6 +2360,248 @@ class Transaction:
                 shutil.rmtree(self.promotion_backup_root, ignore_errors=True)
                 self.promotion_backup_root = None
             self.release_lock()
+
+
+def _current_pointer_status(root: Path, task_id: str) -> Dict[str, Any]:
+    """Validate one mutable current pointer against its immutable result bytes."""
+    pointer_path = root / "output" / "logs" / task_id / "current.json"
+    relative_pointer = pointer_path.relative_to(root).as_posix()
+    if not pointer_path.exists() and not pointer_path.is_symlink():
+        return {"path": relative_pointer, "status": "missing"}
+    try:
+        pointer_bytes, _ = _read_file_nofollow(pointer_path)
+        pointer = json.loads(pointer_bytes.decode("utf-8"))
+        if not isinstance(pointer, dict):
+            raise ValueError("pointer must be a JSON object")
+        expected_keys = {
+            "schema", "task_id", "request_id", "result_path", "result_sha256", "verdict", "lifecycle_state", "updated_at"
+        }
+        if set(pointer) != expected_keys:
+            raise ValueError("pointer keys do not match the current-pointer contract")
+        if pointer["schema"] != CURRENT_POINTER_SCHEMA or pointer["task_id"] != task_id:
+            raise ValueError("pointer schema or task identity does not match its directory")
+        request_id = pointer["request_id"]
+        if not isinstance(request_id, str) or not REQUEST_ID_RE.fullmatch(request_id):
+            raise ValueError("pointer request ID is invalid")
+        result_relative = _normalize_path(pointer["result_path"], "current result_path")
+        expected_result = f"output/logs/{task_id}/{request_id}/result.json"
+        if result_relative != expected_result:
+            raise ValueError("pointer result path does not match task/request identity")
+        result_path = root / result_relative
+        result_bytes, _ = _read_file_nofollow(result_path)
+        if pointer["result_sha256"] != _sha256_bytes(result_bytes):
+            raise ValueError("pointer result digest does not match immutable result bytes")
+        result = json.loads(result_bytes.decode("utf-8"))
+        if not isinstance(result, dict):
+            raise ValueError("result must be a JSON object")
+        _validate_result_shape(result)
+        if result.get("schema") != RESULT_SCHEMA:
+            raise ValueError("result schema is not the legacy transaction result schema")
+        if result.get("task_id") != task_id or result.get("request_id") != request_id:
+            raise ValueError("result identity does not match pointer identity")
+        if result.get("verdict") != pointer["verdict"] or result.get("lifecycle_state") != pointer["lifecycle_state"]:
+            raise ValueError("result verdict/lifecycle does not match pointer")
+        if result.get("verdict") not in TERMINAL_RESULT_VERDICTS:
+            raise ValueError("pointer may reference only a terminal result")
+        commits = result.get("commits")
+        required_result = ("expected_base", "manifest_path", "contract_sha256", "published", "claim_finalized")
+        if not all(key in result for key in required_result) or not isinstance(commits, dict):
+            raise ValueError("result lacks journal-binding fields")
+        final_commit = commits.get("final")
+        if result.get("published") not in (True, False) or result.get("claim_finalized") not in (True, False):
+            raise ValueError("result publication or claim-finalization state is invalid")
+        if result["verdict"] == "passed" and result["published"] is not True:
+            raise ValueError("passed pointer result does not prove publication")
+        if result["published"] is True:
+            if not isinstance(final_commit, str) or not FULL_COMMIT_RE.fullmatch(final_commit):
+                raise ValueError("published result final commit is invalid")
+        elif final_commit is not None and (not isinstance(final_commit, str) or not FULL_COMMIT_RE.fullmatch(final_commit)):
+            raise ValueError("unpublished result final commit is invalid")
+        if not isinstance(result["expected_base"], str) or not FULL_COMMIT_RE.fullmatch(result["expected_base"]):
+            raise ValueError("result expected base is invalid")
+        if not isinstance(result["manifest_path"], str) or not isinstance(result["contract_sha256"], str):
+            raise ValueError("result manifest or contract binding is invalid")
+        return {
+            "path": relative_pointer,
+            "status": "valid",
+            "request_id": request_id,
+            "result_path": result_relative,
+            "verdict": pointer["verdict"],
+            "expected_base": result["expected_base"],
+            "manifest_path": result["manifest_path"],
+            "contract_sha256": result["contract_sha256"],
+            "final_commit": commits["final"],
+            "claim_finalized": result["claim_finalized"],
+        }
+    except (OSError, UnicodeError, json.JSONDecodeError, TransactionError, ValueError) as exc:
+        return {"path": relative_pointer, "status": "invalid", "error": str(exc)}
+
+
+def _pointer_matches_journal(pointer: Mapping[str, Any], journal: Mapping[str, Any], request_id: str) -> bool:
+    """Require a passed pointer to bind to the exact journal being recovered."""
+    final_commit = journal.get("bookkeeping_commit") or journal.get("substantive_commit")
+    return (
+        pointer.get("status") == "valid"
+        and pointer.get("request_id") == request_id
+        and pointer.get("expected_base") == journal.get("expected_base")
+        and pointer.get("manifest_path") == journal.get("manifest_path")
+        and pointer.get("contract_sha256") == journal.get("contract_sha256")
+        and pointer.get("final_commit") == final_commit
+    )
+
+
+def _write_current_pointer_for_result(
+    root: Path,
+    *,
+    task_id: str,
+    request_id: str,
+    result_path: Path,
+    result_payload: bytes,
+    result: Mapping[str, Any],
+    expected_pointer_state: FileState,
+) -> None:
+    pointer_path = root / "output" / "logs" / task_id / "current.json"
+    if _read_state(pointer_path) != expected_pointer_state:
+        raise TransactionError(
+            "RTX-CURRENT-POINTER-DRIFT",
+            "current pointer changed during recovery; refusing to overwrite it",
+            "recover",
+            EXIT_INTERNAL,
+        )
+    _ensure_directory_nofollow(root, result_path.parent)
+    pointer = {
+        "schema": CURRENT_POINTER_SCHEMA,
+        "task_id": task_id,
+        "request_id": request_id,
+        "result_path": result_path.relative_to(root).as_posix(),
+        "result_sha256": _sha256_bytes(result_payload),
+        "verdict": result["verdict"],
+        "lifecycle_state": result["lifecycle_state"],
+        "updated_at": _utc_now(),
+    }
+    _atomic_write(pointer_path, _json_bytes(pointer), 0o600)
+
+
+def _validate_result_shape(result: Mapping[str, Any]) -> None:
+    required = {
+        "schema", "task_id", "request_id", "owner_token", "expected_base", "base_observed", "authority_observed",
+        "manifest_path", "manifest_sha256", "contract_sha256", "started_at", "finished_at", "verdict", "lifecycle_state",
+        "phase", "phases", "actions", "findings", "substantive_commit", "bookkeeping_commit", "published", "claim_finalized",
+        "paths", "commits", "cleanup", "evidence", "changed_path_count", "promotion_backups_retained", "error", "recovery",
+    }
+    missing = required - set(result)
+    if missing:
+        raise TransactionError("RTX-RECOVER-RESULT", f"result is missing required fields: {sorted(missing)}", "recover", EXIT_INTERNAL)
+    if result.get("schema") != RESULT_SCHEMA:
+        raise TransactionError("RTX-RECOVER-RESULT", "result schema is invalid", "recover", EXIT_INTERNAL)
+    if not isinstance(result["phases"], list) or not isinstance(result["actions"], list) or not isinstance(result["findings"], list):
+        raise TransactionError("RTX-RECOVER-RESULT", "result phase/action/finding fields are invalid", "recover", EXIT_INTERNAL)
+    if not isinstance(result["authority_observed"], dict) or not isinstance(result["paths"], dict):
+        raise TransactionError("RTX-RECOVER-RESULT", "result authority/path fields are invalid", "recover", EXIT_INTERNAL)
+    if not isinstance(result["commits"], dict) or not isinstance(result["cleanup"], dict) or not isinstance(result["evidence"], dict):
+        raise TransactionError("RTX-RECOVER-RESULT", "result commit/cleanup/evidence fields are invalid", "recover", EXIT_INTERNAL)
+
+
+def _validate_result_journal_binding(
+    result: Mapping[str, Any],
+    journal: Mapping[str, Any],
+    *,
+    expected_verdict: str,
+    expected_claim_finalized: bool,
+    expected_published: bool,
+) -> None:
+    _validate_result_shape(result)
+    final_commit = journal.get("bookkeeping_commit") or journal.get("substantive_commit")
+    expected = {
+        "task_id": journal.get("task_id"),
+        "request_id": journal.get("request_id"),
+        "owner_token": journal.get("owner_token"),
+        "expected_base": journal.get("expected_base"),
+        "manifest_path": journal.get("manifest_path"),
+        "manifest_sha256": journal.get("manifest_sha256"),
+        "contract_sha256": journal.get("contract_sha256"),
+    }
+    for key, value in expected.items():
+        if not isinstance(value, str) or result.get(key) != value:
+            raise TransactionError("RTX-RECOVER-RESULT-BINDING", f"result {key} does not match journal", "recover", EXIT_INTERNAL)
+    commits = result["commits"]
+    if result.get("substantive_commit") != journal.get("substantive_commit") or result.get("bookkeeping_commit") != journal.get("bookkeeping_commit"):
+        raise TransactionError("RTX-RECOVER-RESULT-BINDING", "result commit fields do not match journal", "recover", EXIT_INTERNAL)
+    if commits.get("final") != final_commit:
+        raise TransactionError("RTX-RECOVER-RESULT-BINDING", "result final commit does not match journal", "recover", EXIT_INTERNAL)
+    if (
+        result.get("verdict") != expected_verdict
+        or result.get("claim_finalized") is not expected_claim_finalized
+        or result.get("published") is not expected_published
+    ):
+        raise TransactionError("RTX-RECOVER-RESULT-BINDING", "result verdict, publication, or claim-finalization state is invalid", "recover", EXIT_INTERNAL)
+
+
+def _validate_claim_payload(payload: bytes, journal: Mapping[str, Any], task_id: str, request_id: str) -> None:
+    expected_digest = journal.get("claim_preimage_sha256")
+    if not isinstance(expected_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", expected_digest):
+        raise TransactionError("RTX-FINALIZE-CLAIM", "journal lacks a valid claim preimage digest", "finalize-claim", EXIT_INTERNAL)
+    if _sha256_bytes(payload) != expected_digest:
+        raise TransactionError("RTX-FINALIZE-CLAIM", "claim bytes do not match the journaled preimage digest", "finalize-claim", EXIT_INTERNAL)
+    try:
+        claim_text = payload.decode("utf-8")
+    except UnicodeError as exc:
+        raise TransactionError("RTX-FINALIZE-CLAIM", "claim is not UTF-8", "finalize-claim", EXIT_INTERNAL) from exc
+    for field, value in (("task_id", task_id), ("request_id", request_id), ("owner_token", journal.get("owner_token"))):
+        if not isinstance(value, str) or value not in claim_text:
+            raise TransactionError("RTX-FINALIZE-CLAIM", f"claim does not contain journal-bound {field}", "finalize-claim", EXIT_INTERNAL)
+
+
+def _recovery_result_candidate(root: Path, journal_path: Path, journal: Dict[str, Any]) -> Tuple[Path, bytes, Dict[str, Any], bool]:
+    """Validate a complete result candidate before any recovery mutation occurs."""
+    result_path = journal_path.parent / "result.json"
+    if result_path.exists() or result_path.is_symlink():
+        payload, _ = _read_file_nofollow(result_path)
+        try:
+            result = json.loads(payload.decode("utf-8"))
+        except (UnicodeError, json.JSONDecodeError) as exc:
+            raise TransactionError("RTX-RECOVER-RESULT", f"cannot parse retained result: {exc}", "recover", EXIT_INTERNAL) from exc
+        if not isinstance(result, dict):
+            raise TransactionError("RTX-RECOVER-RESULT", "retained result is not a JSON object", "recover", EXIT_INTERNAL)
+        _validate_result_journal_binding(result, journal, expected_verdict="passed", expected_claim_finalized=True, expected_published=True)
+        return result_path, payload, result, False
+
+    prepared_path = journal_path.parent / "prepared-result.json"
+    try:
+        prepared_bytes, _ = _read_file_nofollow(prepared_path)
+        result = json.loads(prepared_bytes.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, TransactionError) as exc:
+        raise TransactionError(
+            "RTX-RECOVER-PREPARED-RESULT",
+            f"cannot reconstruct terminal result from {prepared_path.relative_to(root)}: {exc}",
+            "recover",
+            EXIT_INTERNAL,
+        ) from exc
+    if not isinstance(result, dict):
+        raise TransactionError("RTX-RECOVER-PREPARED-RESULT", "prepared result is not a JSON object", "recover", EXIT_INTERNAL)
+    _validate_result_journal_binding(result, journal, expected_verdict="prepared", expected_claim_finalized=False, expected_published=False)
+    final_commit = journal.get("bookkeeping_commit") or journal.get("substantive_commit")
+    result.update(
+        {
+            "finished_at": _utc_now(),
+            "verdict": "passed",
+            "lifecycle_state": "complete",
+            "phase": "complete",
+            "published": True,
+            "claim_finalized": True,
+            "error": None,
+            "recovery": "recovered from prepared-result.json after verified publication",
+        }
+    )
+    result["commits"]["substantive"] = journal.get("substantive_commit")
+    result["commits"]["bookkeeping"] = journal.get("bookkeeping_commit")
+    result["commits"]["final"] = final_commit
+    result["cleanup"]["claim_finalized"] = True
+    result["cleanup"]["journal_state"] = "complete"
+    result["phases"].append({"name": "recovery-finalize", "status": "passed", "exit_code": 0, "duration_ms": 0})
+    _validate_result_journal_binding(result, journal, expected_verdict="passed", expected_claim_finalized=True, expected_published=True)
+    payload = _json_bytes(result)
+    return result_path, payload, result, True
 
 
 def doctor(root: Path) -> Dict[str, Any]:
@@ -2074,8 +2631,11 @@ def doctor(root: Path) -> Dict[str, Any]:
             lock_info["holder_error"] = str(exc)
 
     interrupted_requests: List[Dict[str, Any]] = []
+    current_pointers: List[Dict[str, Any]] = []
     logs_dir = root / "output" / "logs"
     if logs_dir.exists():
+        for task_dir in sorted(path for path in logs_dir.iterdir() if path.is_dir()):
+            current_pointers.append(_current_pointer_status(root, task_dir.name))
         for journal_file in logs_dir.glob("*/*/transaction-journal.json"):
             try:
                 j_data = json.loads(journal_file.read_text(encoding="utf-8"))
@@ -2095,6 +2655,7 @@ def doctor(root: Path) -> Dict[str, Any]:
     return {
         "status": "ok",
         "lock": lock_info,
+        "current_pointers": current_pointers,
         "interrupted_transactions": interrupted_requests,
     }
 
@@ -2171,6 +2732,8 @@ def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
     journal_path, journal = _transaction_journal(root, request_id)
     task_id = journal.get("task_id")
     claim_path = _journal_claim_path(root, journal)
+    pointer = _current_pointer_status(root, str(task_id)) if isinstance(task_id, str) else {"status": "invalid", "error": "missing Task ID"}
+    pointer_matches = _pointer_matches_journal(pointer, journal, request_id)
     report: Dict[str, Any] = {
         "status": "action-required",
         "request_id": request_id,
@@ -2180,12 +2743,23 @@ def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
         "claim_path": claim_path,
         "published": bool(journal.get("published")),
         "claim_finalized": bool(journal.get("claim_finalized")),
+        "current_pointer": pointer,
+        "pointer_matches_journal": pointer_matches,
     }
     lock = doctor(root)["lock"]
     if lock.get("exists"):
         report["status"] = "blocked-by-lock"
         report["recommendation"] = "Inspect the reported lock holder; recover never deletes a live or stale lock."
-    elif journal.get("claim_finalized"):
+    elif pointer["status"] == "invalid":
+        report["status"] = "pointer-invalid"
+        report["recommendation"] = "Do not infer completion from logs or journals; preserve the immutable result and repair the digest-bound pointer explicitly."
+    elif pointer["status"] == "valid" and not pointer_matches:
+        report["status"] = "pointer-journal-mismatch"
+        report["recommendation"] = "Current pointer belongs to a different request or commit contract; retain both records and do not finalize this claim."
+    elif pointer["status"] == "valid" and pointer.get("verdict") != "passed":
+        report["status"] = "terminal-failure-recorded"
+        report["recommendation"] = "The current pointer records a terminal failure; retain the claim and immutable result, then reconcile the failure rather than finalizing or rerunning this request ID."
+    elif journal.get("published") and journal.get("claim_finalized") and pointer_matches and pointer.get("claim_finalized") is True:
         report["status"] = "complete"
         report["recommendation"] = "No recovery action required."
     elif journal.get("published"):
@@ -2202,22 +2776,67 @@ def recover_transaction(root: Path, request_id: str) -> Dict[str, Any]:
     return report
 
 
+@contextlib.contextmanager
+def _recovery_lease(root: Path, journal: Mapping[str, Any]) -> Iterator[None]:
+    """Serialize standalone recovery; no caller may bypass another lock holder."""
+    git_dir_text = _git_text(root, ["rev-parse", "--git-dir"])
+    git_dir = Path(git_dir_text)
+    if not git_dir.is_absolute():
+        git_dir = root / git_dir
+    lock_path = git_dir.resolve() / "autodocs-runner-transaction.lock"
+    payload = _json_bytes(
+        {
+            "schema": LOCK_SCHEMA,
+            "pid": os.getpid(),
+            "start_time": time.time(),
+            "recovery": True,
+            "task_id": journal.get("task_id"),
+            "request_id": journal.get("request_id"),
+            "owner_token": journal.get("owner_token"),
+        }
+    )
+    try:
+        descriptor = os.open(str(lock_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise TransactionError(
+            "RTX-FINALIZE-LOCK",
+            "transaction lock exists; finalize-claim never deletes or bypasses a live or stale lock",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        ) from exc
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        yield
+    finally:
+        try:
+            if lock_path.read_bytes() == payload:
+                lock_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def finalize_claim_standalone(root: Path, task_id: str, request_id: str) -> bool:
-    """Finalize only the exact journal-bound claim after verified publication."""
+    """Idempotently complete exact post-CAS recovery without trusting mutable logs."""
     root = root.resolve()
     journal_path, journal = _transaction_journal(root, request_id)
+    with _recovery_lease(root, journal):
+        return _finalize_claim_locked(root, task_id, request_id, journal_path, journal)
+
+
+def _finalize_claim_locked(
+    root: Path,
+    task_id: str,
+    request_id: str,
+    journal_path: Path,
+    journal: Dict[str, Any],
+) -> bool:
     if journal.get("task_id") != task_id:
         raise TransactionError(
             "RTX-FINALIZE-TASK",
             f"journal Task {journal.get('task_id')!r} does not match requested Task {task_id!r}",
-            "finalize-claim",
-            EXIT_INTERNAL,
-        )
-    lock = doctor(root)["lock"]
-    if lock.get("exists"):
-        raise TransactionError(
-            "RTX-FINALIZE-LOCK",
-            "transaction lock exists; finalize-claim never deletes or bypasses a live or stale lock",
             "finalize-claim",
             EXIT_INTERNAL,
         )
@@ -2246,37 +2865,94 @@ def finalize_claim_standalone(root: Path, task_id: str, request_id: str) -> bool
                 "finalize-claim",
                 EXIT_INTERNAL,
             )
-    claim_relative = _journal_claim_path(root, journal)
-    claim_path = root / claim_relative
-    if not claim_path.exists():
-        return False
-    claim_text = claim_path.read_text(encoding="utf-8")
-    for field, value in (
-        ("task_id", task_id),
-        ("request_id", request_id),
-        ("owner_token", journal.get("owner_token")),
-    ):
-        if not isinstance(value, str) or value not in claim_text:
-            raise TransactionError(
-                "RTX-FINALIZE-CLAIM",
-                f"exact claim {claim_relative} does not contain journal-bound {field}",
-                "finalize-claim",
-                EXIT_INTERNAL,
-            )
-    archive = journal_path.parent / "finalized-claim.md"
-    if archive.exists():
+
+    pointer_before = _current_pointer_status(root, task_id)
+    if pointer_before["status"] == "invalid":
         raise TransactionError(
-            "RTX-FINALIZE-ARCHIVE",
-            f"claim archive already exists at {archive.relative_to(root)}",
+            "RTX-FINALIZE-RESULT",
+            "finalize-claim refuses a malformed or tampered current pointer",
             "finalize-claim",
             EXIT_INTERNAL,
         )
-    _atomic_move(claim_path, archive)
+    if pointer_before["status"] == "valid":
+        if not _pointer_matches_journal(pointer_before, journal, request_id) or pointer_before.get("verdict") != "passed":
+            raise TransactionError(
+                "RTX-FINALIZE-RESULT",
+                "finalize-claim requires a passed pointer bound to this exact journal",
+                "finalize-claim",
+                EXIT_INTERNAL,
+            )
+        if pointer_before.get("claim_finalized") is not True:
+            raise TransactionError(
+                "RTX-FINALIZE-RESULT",
+                "existing immutable result does not prove claim finalization",
+                "finalize-claim",
+                EXIT_INTERNAL,
+            )
+    pointer_state = _read_state(root / "output" / "logs" / task_id / "current.json")
+    recovery_candidate: Optional[Tuple[Path, bytes, Dict[str, Any], bool]] = None
+    if pointer_before["status"] == "missing":
+        recovery_candidate = _recovery_result_candidate(root, journal_path, journal)
+
+    claim_relative = _journal_claim_path(root, journal)
+    claim_path = root / claim_relative
+    archive = journal_path.parent / "finalized-claim.md"
+    changed = False
+    if claim_path.exists() or claim_path.is_symlink():
+        claim_payload, _ = _read_file_nofollow(claim_path)
+        _validate_claim_payload(claim_payload, journal, task_id, request_id)
+        if archive.exists() or archive.is_symlink():
+            raise TransactionError(
+                "RTX-FINALIZE-ARCHIVE",
+                f"claim archive already exists at {archive.relative_to(root)}",
+                "finalize-claim",
+                EXIT_INTERNAL,
+            )
+        _atomic_move(claim_path, archive)
+        archive_payload, _ = _read_file_nofollow(archive)
+        _validate_claim_payload(archive_payload, journal, task_id, request_id)
+        changed = True
+    elif archive.exists() and not archive.is_symlink():
+        archive_payload, _ = _read_file_nofollow(archive)
+        _validate_claim_payload(archive_payload, journal, task_id, request_id)
+    else:
+        return False
+
     journal["claim_finalized"] = True
+    journal["state"] = "claim-finalized"
+    journal["updated_at"] = _utc_now()
+    _atomic_write(journal_path, _json_bytes(journal), 0o600)
+
+    if recovery_candidate is not None:
+        result_path, result_payload, result, create_result = recovery_candidate
+        if create_result:
+            _atomic_create(result_path, result_payload, 0o600)
+        _write_current_pointer_for_result(
+            root,
+            task_id=task_id,
+            request_id=request_id,
+            result_path=result_path,
+            result_payload=result_payload,
+            result=result,
+            expected_pointer_state=pointer_state,
+        )
+
+    pointer_after = _current_pointer_status(root, task_id)
+    if (
+        not _pointer_matches_journal(pointer_after, journal, request_id)
+        or pointer_after.get("verdict") != "passed"
+        or pointer_after.get("claim_finalized") is not True
+    ):
+        raise TransactionError(
+            "RTX-FINALIZE-RESULT",
+            "claim archival completed but no exact passed immutable result/current pointer is available",
+            "finalize-claim",
+            EXIT_INTERNAL,
+        )
     journal["state"] = "complete"
     journal["updated_at"] = _utc_now()
     _atomic_write(journal_path, _json_bytes(journal), 0o600)
-    return True
+    return changed
 
 
 def lint_envelope(path: Path) -> List[str]:
