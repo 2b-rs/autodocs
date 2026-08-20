@@ -1224,5 +1224,663 @@ class RunnerTransactionTests(unittest.TestCase):
         self.assertIn("commit must be an object", cm.exception.message)
 
 
+# ---------------------------------------------------------------------------
+# branch-merge-v1: base-branch / merge-prereqs typed actions (Task 0038-20,
+# implementing the docs/pipeline/branch-merge-actions.md contract from Task
+# 0038-19 on top of this file's existing lock/journal/commit machinery).
+# ---------------------------------------------------------------------------
+
+
+class BranchMergeFixtureRepo:
+    """A real Git repository with a Feature branch and two prerequisite branches.
+
+    Topology: ``main`` == Feature branch ``9000`` == commit R. Two prerequisite
+    branches, ``9000-02`` (adds ``work-02.txt``) and ``9000-03`` (adds
+    ``work-03.txt``), are branched off ``9000``. Individual tests create their
+    own item branch (typically ``9000-01``) off ``9000`` and exercise
+    ``base-branch``/``merge-prereqs`` against it.
+    """
+
+    def __init__(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(prefix="runner-transaction-bma-test-")
+        self.root = Path(self.temporary.name)
+        self._create_repository()
+
+    def close(self) -> None:
+        self.temporary.cleanup()
+
+    def git(self, *args: str, check: bool = True) -> subprocess.CompletedProcess[bytes]:
+        env = os.environ.copy()
+        env["GIT_EDITOR"] = "true"
+        return subprocess.run(
+            ["git", "--no-pager", *args],
+            cwd=str(self.root),
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=check,
+        )
+
+    def git_text(self, *args: str) -> str:
+        return self.git(*args).stdout.decode("utf-8", "replace").strip()
+
+    def tip(self, branch: str) -> str:
+        return self.git_text("rev-parse", f"refs/heads/{branch}")
+
+    def current_branch(self) -> str:
+        return self.git_text("symbolic-ref", "--quiet", "HEAD")
+
+    def sha256(self, relative: str) -> str:
+        return hashlib.sha256((self.root / relative).read_bytes()).hexdigest()
+
+    def _write(self, relative: str, content: str) -> None:
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    def _create_repository(self) -> None:
+        self.git("init", "-b", "main")
+        self.git("config", "user.name", "Runner Transaction Branch Test")
+        self.git("config", "user.email", "runner-transaction-branch@example.invalid")
+        self._write(".gitignore", "output/\n")
+        self._write("agent-workflow.json", json.dumps(AUTHORITY))
+        self._write(
+            "TODO.md",
+            "# TODO\n\n"
+            "## Feature: 9000 — BMA fixture\n\n"
+            "- [ ] **9000** BMA fixture Feature.\n\n"
+            "- [p] **9000-01** BMA fixture Task.\n\n"
+            "- [x] **9000-02** BMA fixture prerequisite one.\n\n"
+            "- [x] **9000-03** BMA fixture prerequisite two.\n",
+        )
+        self._write("unrelated.txt", "unrelated-base\n")
+        self.git(
+            "add", "--",
+            ".gitignore", "agent-workflow.json", "TODO.md", "unrelated.txt",
+        )
+        self.git("commit", "-m", "fixture: initial state")
+        self.root_tip = self.git_text("rev-parse", "HEAD")
+
+        self.git("branch", "9000")
+
+        self.git("checkout", "-b", "9000-02", "9000")
+        self._write("work-02.txt", "work-02\n")
+        self.git("add", "--", "work-02.txt")
+        self.git("commit", "-m", "fixture: prerequisite 9000-02 work product")
+
+        self.git("checkout", "9000")
+        self.git("checkout", "-b", "9000-03", "9000")
+        self._write("work-03.txt", "work-03\n")
+        self.git("add", "--", "work-03.txt")
+        self.git("commit", "-m", "fixture: prerequisite 9000-03 work product")
+
+        self.git("checkout", "9000")
+
+    # -- manifest/claim helpers -------------------------------------------------
+
+    @staticmethod
+    def claim_template() -> str:
+        return (
+            "# Fixture claim\n\n"
+            "task_id: PLACEHOLDER\n"
+            "request_id: PLACEHOLDER\n"
+            "owner_token: PLACEHOLDER\n"
+            "base_commit: PLACEHOLDER\n"
+            "transaction_profile: PLACEHOLDER\n"
+            "transaction_manifest: PLACEHOLDER\n"
+            "transaction_actions_json: PLACEHOLDER\n"
+            "transaction_authority_json: PLACEHOLDER\n"
+            "transaction_read_paths_json: PLACEHOLDER\n"
+            "transaction_write_paths_json: PLACEHOLDER\n"
+            "transaction_branch_json: PLACEHOLDER\n"
+            "capability_class: unprivileged\n"
+            "state: [p]\n"
+        )
+
+    def write_claim(self, claim_path: str, manifest: Dict[str, Any]) -> None:
+        lines = []
+        expected_fields = runner.claim_contract_fields(manifest)
+        for line in self.claim_template().splitlines():
+            match = re.match(r"^([A-Za-z0-9_]+): ", line)
+            if match and match.group(1) in expected_fields:
+                lines.append(f"{match.group(1)}: {expected_fields[match.group(1)]}")
+            else:
+                lines.append(line)
+        (self.root / claim_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def base_branch_manifest(
+        self,
+        *,
+        item_id: str,
+        parent_branch: str,
+        expected_base: str,
+        request_id: str,
+        claim_path: str,
+    ) -> Dict[str, Any]:
+        return {
+            "schema": runner.MANIFEST_SCHEMA,
+            "profile": runner.BRANCH_MERGE_PROFILE,
+            "identity": {
+                "task_id": item_id,
+                "request_id": request_id,
+                "owner_token": f"agent:test:{item_id}:{request_id}",
+                "claim_path": claim_path,
+                "manifest_path": f"branch-request-{request_id}.json",
+                "expected_base": expected_base,
+            },
+            "authority": {
+                "selector_path": "agent-workflow.json",
+                "authority_epoch": AUTHORITY["authority_epoch"],
+                "authority_profile": AUTHORITY["authority_profile"],
+                "write_phase": AUTHORITY["write_phase"],
+                "runner_protocol": AUTHORITY["runner_protocol"],
+            },
+            "scope": {"read_paths": [], "input_paths": [], "output_paths": [], "substantive_paths": []},
+            "actions": [],
+            "branch": {
+                "typed_action": runner.TYPED_ACTION_BASE_BRANCH,
+                "item_id": item_id,
+                "target_branch": item_id,
+                "capability_class": "unprivileged",
+                "idempotence_key": f"base-branch:{item_id}:{expected_base[:12]}",
+                "parent_branch": parent_branch,
+                "sources": [],
+            },
+        }
+
+    def merge_prereqs_manifest(
+        self,
+        *,
+        item_id: str,
+        expected_base: str,
+        request_id: str,
+        claim_path: str,
+        sources: list,
+        substantive_paths: list,
+        capability_class: str = "unprivileged",
+        target_branch: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        suffix = "-".join(source["dependency"] for source in sources) or "none"
+        return {
+            "schema": runner.MANIFEST_SCHEMA,
+            "profile": runner.BRANCH_MERGE_PROFILE,
+            "identity": {
+                "task_id": item_id,
+                "request_id": request_id,
+                "owner_token": f"agent:test:{item_id}:{request_id}",
+                "claim_path": claim_path,
+                "manifest_path": f"branch-request-{request_id}.json",
+                "expected_base": expected_base,
+            },
+            "authority": {
+                "selector_path": "agent-workflow.json",
+                "authority_epoch": AUTHORITY["authority_epoch"],
+                "authority_profile": AUTHORITY["authority_profile"],
+                "write_phase": AUTHORITY["write_phase"],
+                "runner_protocol": AUTHORITY["runner_protocol"],
+            },
+            "scope": {
+                "read_paths": [],
+                "input_paths": [],
+                "output_paths": [],
+                "substantive_paths": sorted(substantive_paths),
+            },
+            "actions": [],
+            "branch": {
+                "typed_action": runner.TYPED_ACTION_MERGE_PREREQS,
+                "item_id": item_id,
+                "target_branch": target_branch or item_id,
+                "capability_class": capability_class,
+                "idempotence_key": f"merge-prereqs:{item_id}:{suffix}",
+                "sources": [
+                    {"dependency": s["dependency"], "branch": s["branch"], "tip": s["tip"]} for s in sources
+                ],
+            },
+        }
+
+    def write_manifest(self, manifest: Dict[str, Any]) -> Path:
+        path = self.root / manifest["identity"]["manifest_path"]
+        path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return path
+
+    def prepare(self, manifest: Dict[str, Any]) -> Path:
+        """Write both the manifest and a matching claim file, return the manifest path.
+
+        The claim's contract fields must match what ``load_manifest`` actually
+        produces (e.g. it adds an explicit ``parent_branch: null`` to a
+        normalized ``merge-prereqs`` branch block, which must never appear in
+        the *written* manifest since its presence there is itself rejected).
+        Load the manifest once here to compute the claim from the normalized
+        shape, exactly as the real transaction's preflight will.
+        """
+        path = self.write_manifest(manifest)
+        normalized = runner.load_manifest(path)
+        self.write_claim(manifest["identity"]["claim_path"], normalized)
+        return path
+
+
+class BranchMergeTransactionTests(unittest.TestCase):
+    _fixture: Optional[BranchMergeFixtureRepo] = None
+
+    @property
+    def fixture(self) -> BranchMergeFixtureRepo:
+        assert self._fixture is not None
+        return self._fixture
+
+    def setUp(self) -> None:
+        self._fixture = BranchMergeFixtureRepo()
+        self.addCleanup(self.fixture.close)
+
+    def _execute(self, manifest_path: Path, *, inject_failure: Optional[str] = None) -> tuple[int, str]:
+        loaded = runner.load_manifest(manifest_path)
+        transaction = runner.build_transaction(self.fixture.root, loaded, inject_failure=inject_failure)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            status = transaction.execute()
+        return status, output.getvalue()
+
+    def _result(self, task_id: str, request_id: str) -> Dict[str, Any]:
+        path = self.fixture.root / "output" / "logs" / task_id / request_id / "result.json"
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    # -- base-branch ------------------------------------------------------------
+
+    def test_base_branch_off_parent(self) -> None:
+        fixture = self.fixture
+        self.assertEqual(fixture.current_branch(), "refs/heads/9000")
+        expected_base = fixture.tip("9000")
+        request_id = "bma-base-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.base_branch_manifest(
+            item_id="9000-01",
+            parent_branch="9000",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertEqual(status, 0, output)
+        self.assertEqual(fixture.tip("9000-01"), expected_base)
+        # base-branch never moves HEAD off the checked-out parent branch.
+        self.assertEqual(fixture.current_branch(), "refs/heads/9000")
+        result = self._result("9000-01", request_id)
+        self.assertEqual(result["verdict"], "passed")
+        self.assertEqual(result["branch"]["typed_action"], "base-branch")
+        self.assertIn(f"ref:refs/heads/9000-01@{expected_base}", result["branch"]["outputs"])
+
+    def test_base_branch_rejects_stale_parent_tip(self) -> None:
+        fixture = self.fixture
+        real_base = fixture.tip("9000")
+        stale_base = "a" * 40
+        request_id = "bma-base-stale-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.base_branch_manifest(
+            item_id="9000-01",
+            parent_branch="9000",
+            expected_base=stale_base,
+            request_id=request_id,
+            claim_path=claim_path,
+        )
+        path = fixture.prepare(manifest)
+        # expected_base is checked against HEAD before branch-specific logic
+        # (the base Transaction requires HEAD == identity.expected_base), so a
+        # stale value is rejected as a generic base mismatch, never published.
+        status, output = self._execute(path)
+        self.assertNotEqual(status, 0)
+        self.assertFalse((fixture.root / "refs" / "heads" / "9000-01").exists())
+        completed = fixture.git("rev-parse", "--verify", "--quiet", "refs/heads/9000-01", check=False)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual(fixture.tip("9000"), real_base)
+
+    # -- merge-prereqs: positive -------------------------------------------------
+
+    def test_merge_prereqs_single_source(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        unrelated_before = fixture.sha256("unrelated.txt")
+        request_id = "bma-merge-single-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-02", "tip": fixture.tip("9000-02")}],
+            substantive_paths=["work-02.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertEqual(status, 0, output)
+        self.assertEqual((fixture.root / "work-02.txt").read_text(encoding="utf-8"), "work-02\n")
+        new_tip = fixture.tip("9000-01")
+        self.assertNotEqual(new_tip, expected_base)
+        parents = fixture.git_text("rev-list", "--parents", "-n", "1", new_tip).split()
+        self.assertEqual(len(parents), 3)
+        self.assertEqual(parents[1], expected_base)
+        self.assertEqual(parents[2], fixture.tip("9000-02"))
+        # Unrelated tracked bytes are preserved exactly.
+        self.assertEqual(fixture.sha256("unrelated.txt"), unrelated_before)
+        # The claim carries append-only merged-tip evidence.
+        claim_text = (fixture.root / claim_path).read_text(encoding="utf-8")
+        self.assertIn("Merged prerequisite branches", claim_text)
+        self.assertIn(f"merge-commit {new_tip}", claim_text)
+        result = self._result("9000-01", request_id)
+        self.assertEqual(len(result["branch"]["merge_steps"]), 1)
+        self.assertEqual(result["branch"]["final_branch_tip"], new_tip)
+
+    def test_merge_prereqs_sequential_two_sources(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        source_tip_02 = fixture.tip("9000-02")
+        source_tip_03 = fixture.tip("9000-03")
+        request_id = "bma-merge-multi-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[
+                {"dependency": "9000-02", "branch": "9000-02", "tip": source_tip_02},
+                {"dependency": "9000-03", "branch": "9000-03", "tip": source_tip_03},
+            ],
+            substantive_paths=["work-02.txt", "work-03.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertEqual(status, 0, output)
+        self.assertTrue((fixture.root / "work-02.txt").exists())
+        self.assertTrue((fixture.root / "work-03.txt").exists())
+        final_tip = fixture.tip("9000-01")
+        # Never an octopus merge: exactly two sequential 2-parent commits.
+        log = fixture.git_text("log", "--first-parent", "--pretty=%H %P", f"{expected_base}..{final_tip}")
+        commit_lines = [line for line in log.splitlines() if line.strip()]
+        self.assertEqual(len(commit_lines), 2)
+        for line in commit_lines:
+            fields = line.split()
+            self.assertEqual(len(fields), 3, f"expected a 2-parent merge commit, got: {line}")
+        second_commit_fields = commit_lines[0].split()  # `git log` is newest-first
+        first_commit_fields = commit_lines[1].split()
+        self.assertEqual(first_commit_fields[1], expected_base)
+        self.assertEqual(first_commit_fields[2], source_tip_02)
+        self.assertEqual(second_commit_fields[1], first_commit_fields[0])
+        self.assertEqual(second_commit_fields[2], source_tip_03)
+        result = self._result("9000-01", request_id)
+        self.assertEqual(
+            result["branch"]["outputs"],
+            [
+                f"merged-branch-tip:refs/heads/9000-02@{source_tip_02}",
+                f"merge-commit:{first_commit_fields[0]}",
+                f"merged-branch-tip:refs/heads/9000-03@{source_tip_03}",
+                f"merge-commit:{second_commit_fields[0]}",
+            ],
+        )
+
+    def test_merge_prereqs_claim_union_same_owner_token(self) -> None:
+        fixture = self.fixture
+        shared_claim = "TODO-agent-shared-9000-04.md"
+        fixture.git("checkout", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:shared:9000-04:token\nstatus: initial\n",
+            encoding="utf-8",
+        )
+        fixture.git("add", "--", shared_claim)
+        fixture.git("commit", "-m", "fixture: shared claim ancestor")
+
+        fixture.git("checkout", "-b", "9000-04", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:shared:9000-04:token\nstatus: target-updated\n",
+            encoding="utf-8",
+        )
+        fixture.git("add", "--", shared_claim)
+        fixture.git("commit", "-m", "fixture: target self-update")
+        expected_base = fixture.tip("9000-04")
+
+        fixture.git("checkout", "-b", "9000-05", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:shared:9000-04:token\nstatus: source-updated\n",
+            encoding="utf-8",
+        )
+        (fixture.root / "work-05.txt").write_text("work-05\n", encoding="utf-8")
+        fixture.git("add", "--", shared_claim, "work-05.txt")
+        fixture.git("commit", "-m", "fixture: source update plus new work product")
+        source_tip = fixture.tip("9000-05")
+
+        fixture.git("checkout", "9000-04")
+        self.assertEqual(fixture.current_branch(), "refs/heads/9000-04")
+
+        request_id = "bma-merge-union-01"
+        claim_path = f"TODO-agent-9000-04-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-04",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-05", "branch": "9000-05", "tip": source_tip}],
+            substantive_paths=[shared_claim, "work-05.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertEqual(status, 0, output)
+        merged_text = (fixture.root / shared_claim).read_text(encoding="utf-8")
+        self.assertIn("owner_token: agent:shared:9000-04:token", merged_text)
+        self.assertIn("status: target-updated", merged_text)
+        self.assertIn("status: source-updated", merged_text)
+        result = self._result("9000-04", request_id)
+        self.assertIn(f"claim-union:{shared_claim}", result["branch"]["findings"])
+
+    # -- merge-prereqs: negative --------------------------------------------------
+
+    def test_merge_prereqs_rejects_foreign_owner_token_claim_conflict(self) -> None:
+        fixture = self.fixture
+        shared_claim = "TODO-agent-shared-9000-06.md"
+        fixture.git("checkout", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:owner-a:9000-06:token\nstatus: initial\n",
+            encoding="utf-8",
+        )
+        fixture.git("add", "--", shared_claim)
+        fixture.git("commit", "-m", "fixture: shared claim ancestor")
+
+        fixture.git("checkout", "-b", "9000-06", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:owner-a:9000-06:token\nstatus: target-updated\n",
+            encoding="utf-8",
+        )
+        fixture.git("add", "--", shared_claim)
+        fixture.git("commit", "-m", "fixture: target self-update")
+        expected_base = fixture.tip("9000-06")
+
+        fixture.git("checkout", "-b", "9000-07", "9000")
+        (fixture.root / shared_claim).write_text(
+            "# shared claim\n\nowner_token: agent:owner-b-foreign:9000-07:token\nstatus: source-updated\n",
+            encoding="utf-8",
+        )
+        fixture.git("add", "--", shared_claim)
+        fixture.git("commit", "-m", "fixture: foreign-owned source update")
+        source_tip = fixture.tip("9000-07")
+
+        fixture.git("checkout", "9000-06")
+        request_id = "bma-merge-foreign-01"
+        claim_path = f"TODO-agent-9000-06-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-06",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-07", "branch": "9000-07", "tip": source_tip}],
+            substantive_paths=[shared_claim],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertNotEqual(status, 0)
+        self.assertIn("BMA-CLAIM-FOREIGN-TOKEN", output)
+        # No partial merge: the target branch and working tree are untouched.
+        self.assertEqual(fixture.tip("9000-06"), expected_base)
+        self.assertEqual(
+            (fixture.root / shared_claim).read_text(encoding="utf-8"),
+            "# shared claim\n\nowner_token: agent:owner-a:9000-06:token\nstatus: target-updated\n",
+        )
+        result = self._result("9000-06", request_id)
+        self.assertEqual(result["verdict"], "failed")
+
+    def test_merge_prereqs_rejects_generic_content_conflict(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "9000")
+        (fixture.root / "contested.txt").write_text("base\n", encoding="utf-8")
+        fixture.git("add", "--", "contested.txt")
+        fixture.git("commit", "-m", "fixture: contested file ancestor")
+
+        fixture.git("checkout", "-b", "9000-08", "9000")
+        (fixture.root / "contested.txt").write_text("target-version\n", encoding="utf-8")
+        fixture.git("add", "--", "contested.txt")
+        fixture.git("commit", "-m", "fixture: target edits contested file")
+        expected_base = fixture.tip("9000-08")
+
+        fixture.git("checkout", "-b", "9000-09", "9000")
+        (fixture.root / "contested.txt").write_text("source-version\n", encoding="utf-8")
+        fixture.git("add", "--", "contested.txt")
+        fixture.git("commit", "-m", "fixture: source edits contested file")
+        source_tip = fixture.tip("9000-09")
+
+        fixture.git("checkout", "9000-08")
+        request_id = "bma-merge-conflict-01"
+        claim_path = f"TODO-agent-9000-08-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-08",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-09", "branch": "9000-09", "tip": source_tip}],
+            substantive_paths=["contested.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertNotEqual(status, 0)
+        self.assertIn("BMA-MERGE-CONFLICT", output)
+        self.assertEqual(fixture.tip("9000-08"), expected_base)
+        self.assertEqual((fixture.root / "contested.txt").read_text(encoding="utf-8"), "target-version\n")
+        # No stray worktree left behind by the aborted merge.
+        worktree_list = fixture.git_text("worktree", "list", "--porcelain")
+        self.assertEqual(worktree_list.count("worktree "), 1)
+
+    def test_merge_prereqs_rejects_stale_source_tip(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        request_id = "bma-merge-stale-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-02", "tip": "f" * 40}],
+            substantive_paths=["work-02.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path)
+        self.assertNotEqual(status, 0)
+        self.assertIn("BMA-STALE-SOURCE-TIP", output)
+        self.assertEqual(fixture.tip("9000-01"), expected_base)
+
+    def test_merge_prereqs_rejects_undeclared_source_at_manifest_load(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        request_id = "bma-merge-undeclared-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-99", "tip": "a" * 40}],
+            substantive_paths=["work-02.txt"],
+        )
+        path = fixture.write_manifest(manifest)
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "BMA-UNDECLARED-SOURCE")
+
+    def test_merge_prereqs_rejects_sandboxed_task_to_feature_authority(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        request_id = "bma-merge-authority-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-02", "tip": fixture.tip("9000-02")}],
+            substantive_paths=["work-02.txt"],
+            capability_class="sandboxed-grunt",
+            target_branch="9000",
+        )
+        path = fixture.write_manifest(manifest)
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "BMA-AUTHORITY-VIOLATION")
+
+    def test_integrate_checkpoint_is_not_implemented_by_the_legacy_bridge(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        request_id = "bma-integrate-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-02", "tip": fixture.tip("9000-02")}],
+            substantive_paths=["work-02.txt"],
+            capability_class="privileged",
+            target_branch="9000",
+        )
+        manifest["branch"]["typed_action"] = runner.TYPED_ACTION_INTEGRATE_CHECKPOINT
+        path = fixture.write_manifest(manifest)
+        with self.assertRaises(runner.TransactionError) as cm:
+            runner.load_manifest(path)
+        self.assertEqual(cm.exception.rule, "BMA-ACTION-UNSUPPORTED")
+
+    # -- crash-resume --------------------------------------------------------------
+
+    def test_merge_prereqs_crash_after_publish_is_recoverable(self) -> None:
+        fixture = self.fixture
+        fixture.git("checkout", "-b", "9000-01", "9000")
+        expected_base = fixture.tip("9000-01")
+        request_id = "bma-merge-crash-01"
+        claim_path = f"TODO-agent-9000-01-{request_id}.md"
+        manifest = fixture.merge_prereqs_manifest(
+            item_id="9000-01",
+            expected_base=expected_base,
+            request_id=request_id,
+            claim_path=claim_path,
+            sources=[{"dependency": "9000-02", "branch": "9000-02", "tip": fixture.tip("9000-02")}],
+            substantive_paths=["work-02.txt"],
+        )
+        path = fixture.prepare(manifest)
+        status, output = self._execute(path, inject_failure="after-branch-publish")
+        self.assertNotEqual(status, 0)
+        self.assertIn("RTX-INJECTED-FAILURE", output)
+        # The ref was genuinely advanced before the injected crash: the branch
+        # is at-least-once published even though the transaction ultimately
+        # reports failure (claim-record/worktree-sync steps never completed).
+        new_tip = fixture.tip("9000-01")
+        self.assertNotEqual(new_tip, expected_base)
+
+        report = runner.recover_transaction(fixture.root, request_id)
+        self.assertEqual(report["status"], "branch-published")
+        self.assertEqual(report["typed_action"], "merge-prereqs")
+        self.assertEqual(report["final_branch_tip"], new_tip)
+        self.assertEqual(report["target_ref"], "refs/heads/9000-01")
+
+
 if __name__ == "__main__":
     unittest.main()

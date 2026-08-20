@@ -305,10 +305,107 @@ lock, or overwrites a changed pointer.
 
 ## Supported Profiles
 
-The transaction runner supports two declared execution profiles:
+The transaction runner supports three declared execution profiles:
 
 1. `close-task-v1`: Full Task closure profile requiring a generator phase, a validator phase, generated outputs, a substantive commit, and a parented REF bookkeeping commit that closes the Task in `TODO.md`.
 2. `verify-and-commit-v1`: Scoped validation and path-limited commit profile. Allows validation-only action sequences without invoking unrelated site generators, permits empty `output_paths`, requires a substantive commit with provenance, and makes `bookkeeping` optional so focused substantive work can be safely published without forcing `TODO.md` closure.
+3. `branch-merge-v1`: Typed `base-branch`/`merge-prereqs` bridge (Task `0038-20`), described in the next section.
+
+## `branch-merge-v1`: the typed branch/merge bridge
+
+`branch-merge-v1` implements the **`base-branch`** and **`merge-prereqs`** typed
+actions specified by [`branch-merge-actions.md`](branch-merge-actions.md) (Task
+`0038-19`) on top of this file's existing lock/journal/signal/resume/rollback
+machinery (Task `0038-02`) and its validation/commit profile conventions (Task
+`0038-18`). It never runs a generator/validator action (`actions` must be `[]`
+and `input_paths`/`output_paths` must be empty) and never carries a `commit` or
+`bookkeeping` block — a request that tries to smuggle either through this
+profile fails closed with `BMA-COMMIT-FORBIDDEN` or
+`BMA-ACCEPTANCE-RECORD-FORBIDDEN` at manifest-load time, before any Git
+mutation is attempted.
+
+A manifest using this profile carries an additional top-level `branch` object:
+
+```json
+{
+  "schema": "legacy-runner-transaction@v1",
+  "profile": "branch-merge-v1",
+  "identity": { "...": "as above" },
+  "authority": { "...": "as above" },
+  "scope": {
+    "read_paths": [],
+    "input_paths": [],
+    "output_paths": [],
+    "substantive_paths": ["work-02.txt"]
+  },
+  "actions": [],
+  "branch": {
+    "typed_action": "merge-prereqs",
+    "item_id": "0038-20",
+    "target_branch": "0038-20",
+    "capability_class": "unprivileged",
+    "idempotence_key": "merge-prereqs:0038-20:0038-19",
+    "sources": [
+      { "dependency": "0038-19", "branch": "0038-19", "tip": "1111111111111111111111111111111111111a" }
+    ]
+  }
+}
+```
+
+For `base-branch`, `branch.sources` is `[]` and `branch.parent_branch` names
+the topology parent (`branch-workflow.md`); the loader rejects a
+`base-branch` manifest that also declares non-empty `substantive_paths` (the
+new ref's tree is always identical to the parent's), and rejects a
+`merge-prereqs` manifest that declares a `parent_branch` at all (the loader
+itself adds `"parent_branch": null` to the normalized in-memory shape, but
+that key must never appear in the manifest bytes on disk — its presence there
+is exactly what the loader's `BMA-PARENT-BRANCH-FORBIDDEN` rejects). The
+claim's `transaction_branch_json` field must match the **normalized** branch
+object `load_manifest` produces (including that `parent_branch: null`), not
+the raw bytes written to the manifest file.
+
+Authority is enforced structurally, not just by convention: the item's own
+branch is the only legal `target_branch` for both typed actions implemented
+here. A request whose `target_branch` differs from `branch.item_id` (a
+Feature branch or `main`) is treated as crossing an integration checkpoint —
+`integrate-checkpoint` — which this legacy bridge does not implement at all
+(`BMA-ACTION-UNSUPPORTED`); if the bound `capability_class` is
+`sandboxed-grunt` or `unprivileged`, the checkpoint-crossing attempt is
+rejected first and more specifically as `BMA-AUTHORITY-VIOLATION`. Both
+rejections happen during `load_manifest`, before Git is touched.
+
+`merge-prereqs` performs one standard 2-parent merge commit per declared
+source, strictly in sequence (never an octopus merge), inside a disposable
+detached worktree; only after every source merges cleanly does it attempt a
+single compare-and-swap `git update-ref <target> <final-tip> <expected-base>`
+against the caller's own already-checked-out branch, then synchronizes exactly
+the declared `substantive_paths` into the real working tree and appends
+append-only "merged prerequisite branches" evidence — including every
+`merged-branch-tip:.../merge-commit:...` pair — to the item's own active
+claim. A content conflict aborts that merge step exactly like `git merge
+--abort` (`BMA-MERGE-CONFLICT`); the destination branch and working tree are
+left untouched and no partial merge is ever published. A conflict confined to
+a `TODO-<agent-id>.md` claim path whose `owner_token:` line is byte-identical
+on both sides is instead auto-unioned append-only (never rewriting the
+`owner_token:` line); a claim conflict with **different** `owner_token:`
+values fails closed as `BMA-CLAIM-FOREIGN-TOKEN` instead, exactly like a
+generic conflict, but under a distinct rule ID.
+
+`recover_transaction` recognizes an interrupted `branch-merge-v1` attempt
+(`typed_action` in its journal) and reports `branch-published` /
+`branch-unpublished` instead of the close-profile's finalize-claim states,
+since branch/merge actions never archive the claim — it always travels
+forward on the branch per `branch-workflow.md`, not into retained request
+evidence.
+
+Hermetic coverage lives in `BranchMergeTransactionTests` in
+`_src/tools/test_runner_transaction.py`: base-off-parent, stale-parent-tip
+rejection, single- and multi-source (sequential, non-octopus) merges,
+same-owner-token claim-record auto-union, foreign-owner-token claim rejection,
+a generic content conflict with full rollback, stale/undeclared source
+rejection, sandboxed Task→Feature authority rejection, `integrate-checkpoint`
+non-implementation, unrelated tracked-byte preservation, and a
+publish-then-crash scenario recovered via `recover_transaction`.
 
 ## Current fixed actions
 
