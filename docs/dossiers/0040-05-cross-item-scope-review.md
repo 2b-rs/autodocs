@@ -57,3 +57,57 @@ The selected alternative therefore opens only the bounded normative implementati
 of `0040-05`. The Task remains `[p]`; its mandatory integration review remains
 reserved for the current user's participation after implementation evidence is
 complete.
+
+## Management ratification of `DEC-0040-005` (append-only)
+
+The record above is preserved unchanged, including its historically false
+`Role: Management` entry for an agent identity. It is retained as evidence of the
+exact defect this Feature exists to make visible. The following record supplies
+the Management authority that `DEC-0040-005` lacked; it does not rewrite,
+correct, or replace it.
+
+### `DEC-0040-007` — Ratify the cross-item gate-scope review rule as a Management decision
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-20T08:02:27Z`
+- **Deciding identity:** `authority:current-user:0040-closure-decisions:20260820T080227Z`
+- **Role:** `Management`
+- **Authority reference:** `docs/dossiers/0040-management-closure-provenance.md#dec-0040-007`
+- **Subject:** Management authority for the substantive cross-item gate-scope review rule recorded without Management authority in `DEC-0040-005`
+- **Decision:** The substantive rule of `DEC-0040-005` is ratified verbatim as a Management decision, effective from this record: a conforming decision record and a supporting review by a distinct management-instantiated Architect are required before the first mutation that implements, activates, widens, narrows, affirmatively retains, or removes a gate scope whose declared behavior can block another work unit or change its contract. The historical `DEC-0040-005` entry and its false agent-as-Management role remain visible and uncorrected as history; it carries no authority of its own. Work already performed under the rule, in particular Task `0040-05` and its `Acceptance: ✓`, retains its existing disposition and is not reopened by this ratification.
+- **Technical justification:** The rule's content was independently reviewed and found sound, and Task `0040-05` implementing it is already accepted; rejecting the rule would invalidate accepted work without any technical defect being demonstrated. The defect is exclusively one of authority identity: an agent asserted the Management role that `process-roles.md` reserves to the current user or a registered authority, and no later acceptance silently repairs that. Ratification supplies the missing authority additively while leaving the recorded defect intact as the primary evidence for requirement `RQ-DEC-02`.
+- **Triggers:**
+  - `authority-tailoring-or-waiver`
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Ratify the substantive rule as a Management decision, preserving the original false entry as history
+    - **Disposition:** `selected`
+    - **Reason:** Supplies the missing authority without rewriting history, keeps the accepted `0040-05` baseline valid, and retains the defect as visible evidence.
+  - **ALT-02:** Reject the rule and withdraw its authority
+    - **Disposition:** `rejected`
+    - **Reason:** Would unwind implemented and accepted work (`0040-05`) although no technical defect in the rule was demonstrated, and would require a further successor Task to roll it back.
+  - **ALT-03:** Ratify with substantive amendments to the predicate or review scope
+    - **Disposition:** `rejected`
+    - **Reason:** Management reviewed the exact rule text and identified no substantive change; an amendment would create a second, divergent rule version without cause.
+- **Consequences:**
+  - **CON-01:** The cross-item gate-scope review rule holds valid Management authority from `2026-08-20T08:02:27Z`; agents may rely on it.
+  - **CON-02:** `DEC-0040-005` remains a permanently visible instance of an agent asserting Management authority, and stays available as evidence for the effectiveness argument of this Feature.
+  - **CON-03:** The period between `2026-08-18T16:50:25Z` and this ratification remains a phase in which the rule was applied without valid authority; this is deliberately not repaired retroactively.
+  - **CON-04:** Blocking finding `0040-09-AR` regarding `DEC-0040-005` is thereby resolved for the aggregate integration review; the remaining verdict conditions are assessed independently.
+- **Affected work units:**
+  - `task:0040-05`
+  - `task:0040-09`
+  - `feature:0040`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0040-09`
+  - `feature-closure:0040`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:picard:0040-closure:20260820T080227Z`
+    - **Role:** `Integrator`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Read `DEC-0040-005` in full, confirmed that the defect is confined to the authority identity and that the rule content was independently reviewed, and presented Management with ratification, rejection, and amendment as the three available dispositions before the decision was taken. Did not decide.
+- **Waiver:** `none`

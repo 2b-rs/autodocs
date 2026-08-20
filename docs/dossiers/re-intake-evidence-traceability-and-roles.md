@@ -460,3 +460,62 @@ Architektenentscheidung, keine Kundenentscheidung; sie ist als solche in
 | Anforderung → Bestand | Befund E (`0039-01`), Befund F (Reservierung) |
 | Dokument → Koordination | `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md` |
 | Dokument → Prozess | `RQ-DEC-01` … `RQ-DEC-05` sind in [`decision-record@v1`](../pipeline/decision-record.md) umgesetzt; TK-2 und die Rollentrennung verweisen darauf in [`process-roles.md`](../pipeline/process-roles.md). |
+
+---
+
+## Nachgetragene Waiver-Dauer zu `DEC-0040-001` (append-only)
+
+`DEC-0040-001` und seine Legacy-Projektion `DEC-0040-001-LM001` bleiben unverändert;
+`DEC-0040-001-LM001` weist `Waiver.Duration` weiterhin wahrheitsgemäß als fehlend aus.
+Der folgende Record ergänzt die fehlende Angabe additiv durch die gewährende
+Autorität. Er ersetzt und korrigiert den historischen Record nicht.
+
+### `DEC-0040-008` — Endpunkt des begrenzten Autoritätsverzichts aus `DEC-0040-001`
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-20T08:02:27Z`
+- **Deciding identity:** `authority:current-user:0040-closure-decisions:20260820T080227Z`
+- **Role:** `Management`
+- **Authority reference:** `docs/dossiers/0040-management-closure-provenance.md#dec-0040-008`
+- **Subject:** Fehlende, nach `PRIVILEGED.md` und `decision-record@v1` zwingende Dauer des mit `DEC-0040-001` gewährten begrenzten Autoritätsverzichts
+- **Decision:** Der mit `DEC-0040-001` gewährte begrenzte Autoritätsverzicht erhält als Endpunkt das stabile Ereignis `feature-closure:0040`. Er gilt damit vom ursprünglichen Gewährungszeitpunkt `2026-08-18T00:32:23Z` bis zum Abschluss von Feature `0040` und endet mit dessen Verschiebung nach `DONE.md` automatisch. Geltungsbereich und kompensierende Maßnahme aus `DEC-0040-001` bleiben unverändert; insbesondere erstreckt sich der Verzicht weiterhin nicht auf Feature `0039`. Eine Verlängerung über den Feature-Abschluss hinaus wird nicht erteilt; späterer Nacharbeitsbedarf erfordert eine neue Autoritätsentscheidung.
+- **Technical justification:** `PRIVILEGED.md` und Abschnitt 4 von `decision-record@v1` verlangen eine unzweideutige Dauer; ein fehlendes Ende ist ausdrücklich ungültig, und nur die gewährende Autorität darf es nachtragen. Das Ereignis `feature-closure:0040` deckt exakt den Zweck ab, für den der Verzicht erteilt wurde, ist im Repository eindeutig beobachtbar und verhindert ein stilles Überlaufen auf andere Features. Ein rückwirkender Widerruf wurde erwogen und verworfen, weil er unter dem Verzicht erteilte Abnahmen angreifbar machen würde, ohne dass ein inhaltlicher Mangel belegt ist.
+- **Triggers:**
+  - `authority-tailoring-or-waiver`
+- **Considered alternatives:**
+  - **ALT-01:** Endpunkt `event:feature-closure:0040`
+    - **Disposition:** `selected`
+    - **Reason:** Deckt genau den Gewährungszweck ab, endet automatisch und beobachtbar und kann nicht auf andere Features überlaufen.
+  - **ALT-02:** Festes ISO-Enddatum
+    - **Disposition:** `rejected`
+    - **Reason:** Ein kalendarisches Datum ist vom Arbeitsfortschritt entkoppelt und liefe entweder zu früh ab oder gewährte Autorität über den Zweck hinaus.
+  - **ALT-03:** Rückwirkender Widerruf des Verzichts
+    - **Disposition:** `rejected`
+    - **Reason:** Würde die unter dem Verzicht erteilten Abnahmen ohne belegten inhaltlichen Mangel angreifbar machen und Nachprüfungen ohne Erkenntnisgewinn erzwingen.
+- **Consequences:**
+  - **CON-01:** `DEC-0040-001` ist ab diesem Record hinsichtlich `Waiver.Duration` vollständig; die zugehörige semantische Unvollständigkeit in `DEC-0040-001-LM001` ist damit durch eine Autoritätsentscheidung aufgelöst und nicht länger ein offener Managementpunkt.
+  - **CON-02:** Mit dem `DONE.md`-Move von Feature `0040` erlischt die Abnahmebefugnis der benannten Eignersession automatisch; weitere Selbstabnahmen sind danach ohne neue Entscheidung unzulässig.
+  - **CON-03:** Die kompensierende Maßnahme bleibt bestehen: Jede unter dem Verzicht erteilte Selbstabnahme muss `DEC-0040-001` als Autoritätsreferenz nennen und bleibt gezielt nachprüfbar.
+  - **CON-04:** Der historische Record und seine Legacy-Projektion bleiben unverändert sichtbar; die Unvollständigkeit wird nicht aus der Historie entfernt, sondern additiv geschlossen.
+- **Affected work units:**
+  - `feature:0040`
+  - `task:0040-09`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0040-09`
+  - `feature-closure:0040`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:picard:0040-closure:20260820T080227Z`
+    - **Role:** `Integrator`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Legte die Formatanforderung aus `decision-record@v1` Abschnitt 4 und `PRIVILEGED.md` dar und stellte Ereignis-Endpunkt, festes Datum und rückwirkenden Widerruf als Optionen samt Folgen zur Wahl. Traf die Entscheidung nicht.
+- **Waiver:** `bounded`
+  - **Conflict:** Entwurf und Abnahme liegen innerhalb des Geltungsbereichs in derselben Session; das widerspricht der in `AGENTS.md` geforderten Unabhängigkeit und der SUP.1-Unabhängigkeit.
+  - **Reason:** Ausdrückliche Managementauswahl der vollprivilegierten Option in Kenntnis des vom RE offengelegten Unabhängigkeitskonflikts.
+  - **Scope:** Feature `0040` und die zu seiner Umsetzung nötigen Änderungen; ausdrücklich nicht Feature `0039` und nicht dessen Tasks.
+  - **Duration:** `from 2026-08-18T00:32:23Z until event:feature-closure:0040`
+  - **Compensating controls:**
+    - **CTRL-01:** Jede Selbstabnahme im Geltungsbereich nennt `DEC-0040-001` als Autoritätsreferenz und bleibt damit gezielt unabhängig nachprüfbar.
+    - **CTRL-02:** Mit `feature-closure:0040` erlischt der Verzicht automatisch; jede spätere Nacharbeit erfordert eine neue Autoritätsentscheidung.
