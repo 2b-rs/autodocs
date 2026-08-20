@@ -609,3 +609,40 @@ Verbatim authority for items 2 and 3: [`docs/dossiers/0040-management-closure-pr
   - **Acceptance criteria:** The integrator merges the required work, verifies that no authority document contradicts another, that every requirement ID from the baseline has a disposition (implemented, deliberately deferred with reason, or rejected with reason), and that the bounded authority waiver `DEC-0040-001` and its compensating control are visible and were honoured — specifically, that every acceptance this Feature's owner granted to its own work is marked as such and names `DEC-0040-001`. It confirms that no Task introduced a new blocking gate without a recorded `RQ-DEC-05` decision. It records findings and `Acceptance: ✓` at this checkpoint and at `0040-05`.
   - **Definition of Done:** Committed with real `REF`; both mandatory checkpoints carry a current passing review or an explicit `[u]` integration verdict; the predecessor claim files are reconciled and removed; the Feature moves to `DONE.md` only when `0040:0039-01` is also satisfied.
   - **Note on independence:** under `DEC-0040-001` the Feature owner may perform this integration. Where the integrator would be reviewing its own decisive authorship, the review must say so plainly and name what a later independent reviewer should re-examine first.
+
+### Corrective target-policy re-integration (2026-08-20)
+
+The original closure, acceptance, rejected main-integration review, and all
+Management decisions above remain immutable historical evidence. The candidate
+was then reopened solely to reconcile it with target `main` policy. The completed
+corrective Task `0040-11` has substantive REF
+`74dbdac90b421128352bfc8afc7bb4b580a4c054`; it merged target `main`
+`c0a274e66fd36516e748a0d309bcd35fa5b7e561` at
+`c560fbc2fdc5bf39811a545894560f648364f49a` and corrected the current normative
+role model to English and the three capability classes.
+
+A new independent privileged review accepted exact candidate
+`8f6d42b48fa24fbd07d1e165131cdf663cfdc9bb`: review evidence commit
+`eca92b81d4ee98bb2e2225a7816bcbe9f4c1141a`,
+[`0040-feature-main-integration-review-worf-martok-20260820T121500Z.md`](docs/pipeline/approvals/0040-feature-main-integration-review-worf-martok-20260820T121500Z.md).
+It re-verified target-policy provenance, English/current three-class authority,
+checkpoint history, focused validation, and the actual `0040:0039-01` closure
+prerequisite. The task's stale `[u]` projection in the legacy `TODO.md` was not
+used as decisive: its current accepted record is reachable on canonical Feature
+branch `0039` at `cdeb9a1324370ed1de7a22af527600d1e78e522b`. As a Feature closure
+gate rather than a merge edge, it need not be an ancestor of `0040` or `main`.
+
+The reviewed Feature descendant was non-force merged onto the pinned target at
+`cf91c8698aa23b80e80f98051b3ee667b8b84c20`. This corrective closure creates no
+new `Acceptance: ✓` record and does not rewrite historical acceptance; the fresh
+review satisfies the independent-review condition of `0040-11`. The carried
+terminal repair and review claims were reconciled only after their information was
+captured in the corrective implementation and review records:
+
+| Removed claim | SHA-256 | Retained authority/evidence |
+| --- | --- | --- |
+| `TODO-worf-k-ehleyr-0040-repair-20260820T001000Z-5c2bc79f.md` | `b86ccfb1b00b9c54b4d7e69e79160c6fead8bc8eacd24e9cce6ce6e9b864655f` | `0040-11` history and `docs/dossiers/0040-main-integration-repair-20260820T001000Z.md` |
+| `TODO-worf-integrator-martok-0040-integration-20260820T121500Z.md` | `0b84cb0428b415c8e67eaebf584c9109cc043c0adfa7a1b0227d8ece24252359` | accepted review record above |
+
+No Feature `0019` work, external publication, remote, SSH configuration, or
+`run.sh` action was performed by this re-integration.

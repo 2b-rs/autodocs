@@ -239,17 +239,6 @@ HOW TO USE:
   - **Acceptance criteria:** One real item is carried end to end: branch and clone provisioned by the host, work performed in the clone, published by push, marker advanced without a separate bookkeeping commit, and the canonical working tree demonstrably untouched throughout. Every requirement ID from the baseline has a disposition. Contradictions between authority documents are reported, not smoothed over.
   - **Definition of Done:** Committed; the end-to-end run is retained as evidence; no leftover `.git` symlink or stray non-conforming branch remains.
 
-## Feature: 0040 — Evidence Traceability, Decision Records, and Process Roles (corrective reopening)
-
-**Historical state:** The prior Feature record, closure act, acceptance records, and rejected `0040` → `main` integration review remain in `DONE.md` and `docs/pipeline/approvals/` as append-only evidence. The current target-branch policy superseded the historical two-class assumption. This corrective reopening does not remove acceptance, create new acceptance, or imply that the Feature is approved for integration.
-
-**Corrective scope:** Reconcile candidate branch `0040` with current target `main` policy under `docs/pipeline/branch-workflow.md` *Integration policy precedence*, correct current Feature-owned normative documentation to English and the three-capability-class model, and prepare the candidate for fresh independent review. Only target-branch policy may be pulled into this candidate; foreign-branch policy must not be imported.
-
-- [x] **0040-11** Reconcile the rejected Feature `0040` candidate with current target-branch capability and integration policy, preserving historical closure/review evidence. REF: `74dbdac90b421128352bfc8afc7bb4b580a4c054`.
-  - **Claim (2026-08-20):** `TODO-worf-k-ehleyr-0040-repair-20260820T001000Z-5c2bc79f.md`; owner token `agent:worf-k-ehleyr-20260820t001000z:0040-repair:20260820T001000Z-5c2bc79f`; capability class `unprivileged`; canonical branch `0040`.
-  - **Acceptance criteria:** Merge only the target `main` policy needed to reconcile the candidate; current normative `0040` documentation states all three target capability classes and is English except preserved verbatim provenance; the rejected review and all closure/acceptance history remain append-only; focused policy/documentation checks identify no current normative two-class assertion in the corrected scope.
-  - **Definition of Done:** The corrective implementation and evidence are committed with a real `REF`; a fresh independent privileged review remains explicitly required before any Feature-to-`main` integration. This Task creates no `Acceptance: ✓`, does not cross a mandatory integration checkpoint, and does not move any Feature to `DONE.md`.
-  - **Implementation completion (2026-08-20):** Target policy `main` at `c0a274e66fd36516e748a0d309bcd35fa5b7e561` was merged into candidate `0040` at `c560fbc2fdc5bf39811a545894560f648364f49a`; the English three-class reconciliation and append-only repair evidence are committed at the REF above. Focused policy assertions passed; `process_doc_doctor.py` reported 0 errors and 33 advisory warnings; `git diff --check` passed. Historical closure/review evidence is retained. The earlier aggregate acceptance is not current for this changed candidate; fresh independently assigned privileged review remains required.
 
 ## Feature: 0039 — Process improvement
 
