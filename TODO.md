@@ -72,6 +72,123 @@ HOW TO USE:
 - **Authority follows the attribute, not the level.** Merging a checkpoint node's work across its boundary requires the privileged integrator; merges that cross no checkpoint stay grunt-eligible. The attribute is orthogonal to the `[ ]/[p]/[x]/[w]` marker and to `Acceptance: ✓`: the attribute is the *requirement* that a review occur, and `Acceptance: ✓` is its *fulfillment*.
 - A Feature moves to `DONE.md` once its work is terminal and every integration checkpoint within it — including the Feature node itself, if flagged — has a current passing integration review; the `DONE.md` move is always a privileged act. See [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md) and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md).
 
+## Feature: 0044 — Process Improvement: Integration Policy, Architecture Process, and Capability-Based Task Matching
+
+**Authority:** Customer brainstorming essay of 2026-08-20, recorded verbatim as `RQ-SRC-04` with decisions `DEC-0044-001..004` in [`docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`](docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md).
+
+**Goal:** Make the architecture, RE, and integration processes traceable and mechanically checkable: a binding integration-policy semantics (target-branch policy governs; planning errors prevented; risk integration gated by unanimity or user decision), a breakdown process instruction that states *what architecture decisions, task dependencies, and test cases are derived from*, and a machine-readable capability model so the orchestrator — not the architect — selects the right agent per task without needing AI for the matching itself.
+
+**Effective immediately (already anchored at intake):** Per `DEC-0044-001..003`, the target-branch policy governs every integration, policy changes may be pulled in from the integration target, no agent commits policy changes that originated on a foreign branch, and risk integrations require Integrator+QA+Architect unanimity or user escalation. See the "Integration policy precedence" section of [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md); Tasks `0044-01`/`0044-02` complete the elaboration and machine checks.
+
+**Role assignment (customer directive):** RE and architecture elaboration belongs to the specialist personas of [`docs/pipeline/process-roles.md`](docs/pipeline/process-roles.md); the tasks below marked *architect-elaboration* are to be claimed by sessions acting in that role, not by generalist implementers.
+
+**Feature Definition of Done:** The policy-precedence semantics, planning-error prevention, and risk-integration procedure are anchored in the authority documents with at least one mechanical check; the breakdown process instruction exists and names its derivation sources; task requirement profiles and agent capability descriptors have machine-readable schemas plus a deterministic matcher; the cognitive-demand estimation question has a documented, calibratable answer; and the role catalog has been reviewed against the new model with recorded outcomes.
+
+- [ ] **0044-01** Anchor the full integration-policy semantics in the process model and make policy provenance mechanically checkable.
+  - **Requirements covered:** `RQ-IP-01` … `RQ-IP-05`; implements `DEC-0044-001`/`DEC-0044-002`.
+  - **Context:** The intake anchored the rules in prose (`branch-workflow.md`, "Integration policy precedence"). This Task completes them: the planning-error cases A1/A2 of the intake dossier §2.1 must become preventable at breakdown/branch time, the integrator's policy-replacement choice (`RQ-IP-03`) must be recorded as a `TK-2` decision, and the foreign-branch prohibition needs a check a tool can run, not only a sentence agents must remember.
+  - **Acceptance criteria:** `branch-workflow.md` states the precedence rule, the A1–A4 case distinction, the replacement rule with its `TK-2` record duty, the foreign-branch prohibition, and the pull-in permission consistently with `AGENTS.md` and `task-acceptance.md`; a stdlib-only check (standalone tool or `legacy_task_doctor`/`process_doc_doctor` rule) can, given a merge candidate, report which branch a policy change originated on and flag a foreign-branch policy commit; the breakdown instruction of `0044-04` is referenced as the prevention point for A1/A2.
+  - **Definition of Done:** Committed; authority documents agree; the check runs read-only against real branches and is registered in `docs/pipeline/tools.md`; no contradiction with `DEC-CAP-001`/`DEC-0041-002` is introduced.
+  - **Integration review:** **mandatory.** **Rationale (architect):** this changes the binding merge semantics every integrator follows; an error here silently changes which policy governs integrations.
+
+- [ ] **0044-02** PREREQ: 0044-02:0044-01 Define the risk-integration procedure (three-role review, unanimity, temporary policy suspension, escalation).
+  - **Requirements covered:** `RQ-IP-06`; implements `DEC-0044-003`.
+  - **Acceptance criteria:** A documented procedure defines when an integration is a risk integration (case A4), the three-role review (Integrator, QA, Architect — distinct sessions, `TK-1` independence applies), the unanimity requirement, what a temporary policy suspension may and may not cover, its mandatory record (participants, scope, duration, restoration), and the escalation path to the user on non-unanimity, connected to the existing `[u]` integration verdict rather than replacing it.
+  - **Definition of Done:** Committed in `docs/pipeline/`; the record format is specified; `branch-workflow.md` and `task-acceptance.md` reference it; a worked example exists.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the Task documents a procedure that itself requires three-party unanimity or user decision at use time; misuse is caught at that gate. Re-examined at `0044-08`.
+
+- [ ] **0044-03** PREREQ: 0044-03:0044-01 Answer "Integrationstests?": define which integration tests checkpoints require and how their scope and kind are derived from the architecture. *(architect-elaboration)*
+  - **Requirements covered:** `RQ-IP-07`.
+  - **Acceptance criteria:** A documented rule states what an integrator must execute (not only read) at a checkpoint, how the test obligation is derived from the architecture and interface contracts of the integrated items, what evidence the run leaves, and what happens when no automated test exists; the rule is applied to at least one real pending integration as a worked example.
+  - **Definition of Done:** Committed; `task-acceptance.md` and `branch-workflow.md` reference the rule; the worked example is retained as evidence.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** adds a review obligation rather than a capability; failure mode is a documented gap, caught at `0044-08`.
+
+- [ ] **0044-04** Write the feature-breakdown process instruction: derivation sources for architecture decisions, task dependencies, and test cases, plus the per-task capability requirement profile and branch instruction. *(architect-elaboration)*
+  - **Requirements covered:** `RQ-AP-01` … `RQ-AP-03`, `RQ-AP-02`'s data dimension (e.g. PGP keys, non-git data).
+  - **Context:** `process-roles.md` defines *who* decides but not *from what*; the customer cannot currently trace where architecture decisions, dependencies, or test scope come from. This is the prevention point for planning-error cases A1/A2 of `0044-01`.
+  - **Acceptance criteria:** A process instruction for the breakdown owner requires each task to record: the inputs its architecture decisions derive from (requirements, decision records, existing architecture, repository evidence), the derivation of its prerequisites (with the planned implementation order where order matters), the derivation of test scope and kind, the capability requirement profile (rights, data, tools, execution needs, cognitive demand class), and how the implementer is to create the branch; the instruction states how integrability under the target policy is verified at branch time (A1) and how order deviations are recorded (A2).
+  - **Definition of Done:** Committed in `docs/pipeline/`; linked from `process-roles.md` and `AGENTS.md`; applied to one new real feature breakdown as a worked example (Feature `0043` or later).
+  - **Integration review:** **mandatory.** **Rationale (architect):** this instruction shapes every future breakdown; a defect here propagates into every feature planned under it.
+
+- [ ] **0044-05** PREREQ: 0044-05:0044-04 Define machine-readable schemas for task requirement profiles and agent capability descriptors, plus a deterministic no-AI matcher. *(architect-elaboration)*
+  - **Requirements covered:** `RQ-CB-01` … `RQ-CB-03`; implements `DEC-0044-004`.
+  - **Acceptance criteria:** JSON schemas exist for (a) the per-task requirement profile produced by the breakdown and (b) an agent capability descriptor (capability class per `SANDBOX.md`, rights, data-access handles, tool/execution capabilities, token/context budget class, cognitive demand classes served); a stdlib-only deterministic matcher maps a profile to the set of eligible roles/agents and explains rejections; the implementer self-check (`RQ-CB-03`) is a defined matcher invocation; the mapping to the existing roles and the three capability classes is explicit and does not weaken `SANDBOX.md` authority rules.
+  - **Definition of Done:** Committed with focused tests and fixtures (eligible, ineligible, ambiguous); registered in `docs/pipeline/tools.md`; the subagent-briefing rule in `AGENTS.md` references the profile as briefing input.
+  - **Integration review:** **mandatory.** **Rationale (architect):** the matcher decides which agent may receive which authority-relevant work; a false positive here routes work past the capability-class boundary.
+
+- [ ] **0044-06** PREREQ: 0044-06:0044-04 Develop and calibrate a method for estimating the cognitive demands of a work package on an AI agent, including handling of nondeterministic capability. *(architect-elaboration)*
+  - **Requirements covered:** `RQ-CB-05`, `RQ-CB-06`.
+  - **Context:** No established state of the art exists; the project's own history (reworked tasks, failed runs, token consumption, `[u]`/defect records in `TODO.md`/`DONE.md`) is the available ground truth for calibration.
+  - **Acceptance criteria:** A documented estimation method assigns each work package a demand class from observable properties (scope breadth, required reasoning depth, context volume, ambiguity, verification hardness); the method is calibrated against at least ten historical tasks with known outcomes and its misprediction cases are analyzed; the nondeterminism protocol defines how an overwhelmed agent flags its own job, and which orchestrator-side quality gate catches the case where it does not; predictions are recorded so future outcomes keep improving the calibration.
+  - **Definition of Done:** Committed as a study plus a normative section consumed by `0044-04`'s instruction and `0044-05`'s schema (demand class field); the flagging protocol is anchored in `AGENTS.md`.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** an estimation model with recorded mispredictions; wrong estimates degrade scheduling, not authority or data integrity. Re-examined at `0044-08`.
+
+- [ ] **0044-07** PREREQ: 0044-07:0044-05 Review the role catalog against the capability model and propose new roles at a workable granularity. *(architect-elaboration)*
+  - **Requirements covered:** `RQ-CB-04`, `RQ-CB-07`.
+  - **Acceptance criteria:** Each existing role/persona is expressed as a capability descriptor; gaps between task profiles and available roles are enumerated; proposed new roles (e.g. a text-only sandboxed role without the runner protocol for edits that execute nothing) state their capability descriptor, what they save (tokens, runner-slot serialization) and what they must not do; the interim preference of `RQ-CB-07` (sandboxed agents only for non-executing work) is either confirmed as policy or replaced by the matcher's verdicts; every proposal preserving/altering runner-protocol obligations is checked against `SANDBOX.md` and recorded as a decision, not silently adopted.
+  - **Definition of Done:** Committed as an update to `process-roles.md` plus decision records for each adopted role; rejected proposals retained with reasons.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** role adoption itself is decision-record-gated; this Task produces reviewed proposals, not live authority changes. Re-examined at `0044-08`.
+
+- [ ] **0044-08** PREREQ: 0044-08:0044-01, 0044-08:0044-02, 0044-08:0044-03, 0044-08:0044-04, 0044-08:0044-05, 0044-08:0044-06, 0044-08:0044-07 Integrate the Feature and prove the improved process on one real feature end to end.
+  - **Integration review: mandatory.** **Rationale (architect):** the Feature's integrating task and review floor. Process rules that are individually correct but contradictory in composition are exactly the defect this Feature exists to remove.
+  - **Acceptance criteria:** One real feature is broken down under the new instruction, its tasks matched to agents by the deterministic matcher, at least one integration performed under the policy-precedence rules, and every requirement ID of `RQ-SRC-04`'s derivation has a disposition; contradictions between authority documents are reported, not smoothed over; the two customer-confirmation points flagged in the intake dossier (`RQ-CB-06`/`RQ-CB-07` interpretation) are resolved with the user.
+  - **Definition of Done:** Committed; the end-to-end evidence is retained; `AGENTS.md`, `SANDBOX.md`, `process-roles.md`, `branch-workflow.md`, and `task-acceptance.md` agree.
+
+## Feature: 0043 — Reporting: Continuous Build Evidence and Current Reports
+
+**Authority:** Customer report of 2026-08-19 and decision of 2026-08-20, recorded verbatim as `RQ-SRC-03` with `DEC-0043-001` (tracked ledger) in [`docs/dossiers/re-intake-berichtswesen-build-evidenz.md`](docs/dossiers/re-intake-berichtswesen-build-evidenz.md).
+
+**Goal:** The published report pages become current, complete, self-explanatory, and assessment-ready: every publication run is correlated, listed in a configuration-managed build ledger, rendered on `build-reports.html` as the full history the customer expected, and mechanically protected against going stale again.
+
+**Trigger of record (findings B1–B6 of the intake dossier):** `build-reports.html` is a frozen snapshot of the 2026-08-13/14 run because the correlation chain is broken: all four producers read `RUN_ARCHIVE_REF` from an environment variable nothing sets (128/129 subreports carry `null`), and `build_report.py combine` was hardened fail-closed afterwards, so it can never succeed against real data — the same "gate hardened, producers not migrated, nothing notices" pattern that stalled the automation-safety gate. A build *list* was never designed; the data for it (737 run-archive pairs, 129 subreports) sits git-ignored under `output/` and is not baseline-capable. The other report pages show no generation timestamp at all, and the S-Core campaign (`0019`) appears in no report despite `0019-06` requiring campaign evidence.
+
+**Feature Definition of Done:** A publication run produces correlated subreports, a successful `combine`, one appended tracked ledger entry, and a regenerated `build-reports.html` listing all runs; `validate.py` flags a stale report page; all five report pages carry a uniform explanatory header with their generation timestamp; and a documented map ties each report to the ASPICE process outcome it evidences.
+
+- [ ] **0043-01** Repair run correlation: every publication run sets `RUN_ARCHIVE_REF`, and `combine` cannot starve on missing cohorts.
+  - **Requirements covered:** `RQ-BR-02`.
+  - **Context (finding B2):** `generate.py:176`, `validate.py:679`, `i18n_translate.py:60`, and `i18n_diagrams.py:49` already emit the field; only the setter is missing. The hardened fail-closed `combine` is correct and stays — the producers are brought up to it, not the gate loosened.
+  - **Acceptance criteria:** The runner lifecycle and the documented manual build path (`WARTUNG.md`) both export a valid `RUN_ARCHIVE_REF` naming the run-archive pair; a defined fallback mints a cohort ID for builds outside the runner so `combine` still correlates them (distinguishably marked); a real full build yields subreports with one shared non-null ref and a successful `combine` against real data.
+  - **Definition of Done:** Committed; a real run's combined report exists with `run_archive_ref` set; `WARTUNG.md` documents the variable; no producer schema change breaks `docs/pipeline/build-report-schema.md` (extend it if needed).
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** wiring an existing field's setter; success is objectively checkable by one real combined report. Re-examined at `0043-07`.
+
+- [ ] **0043-02** PREREQ: 0043-02:0043-01 Introduce the tracked append-only build ledger.
+  - **Requirements covered:** `RQ-BR-03`; implements `DEC-0043-001`.
+  - **Acceptance criteria:** A tracked, append-only ledger (one machine-readable entry per publication run: timestamp, `run_archive_ref`, repository commit, exit status, per-stage counters, findings count, combined-report digest) is written by `build_report.py` at `combine`/`publish` time; its schema is documented; entries are never rewritten; raw logs stay git-ignored (`DEC-0043-001` boundary); the historical 2026-08-13/14 run is backfilled as the first entry, marked as backfilled.
+  - **Definition of Done:** Committed with schema documentation and focused tests (append, no-rewrite, malformed-entry detection); the ledger location is named in `WARTUNG.md` and `docs/pipeline/`.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** an append-only data file with tests; the CM-policy decision it rests on is already recorded as `DEC-0043-001`. Re-examined at `0043-07`.
+
+- [ ] **0043-03** PREREQ: 0043-03:0043-02 Render the full build history on `build-reports.html`.
+  - **Requirements covered:** `RQ-BR-01`.
+  - **Context (finding B3):** `publish` renders only the latest run; the list the customer expected was never designed.
+  - **Acceptance criteria:** `build-reports.html` shows the complete ledger as a build list (newest first: time, result badge, ref, key counters, link to details) plus the latest run's detail section as today; the page states its data source and generation time; rendering is driven by the ledger, not by hand-edited HTML in the page model.
+  - **Definition of Done:** Committed; regenerating after a new run adds the run to the list without manual editing; layout follows `KONVENTIONEN.md`.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** presentation over an authoritative ledger; errors are visible on the page itself. Re-examined at `0043-07`.
+
+- [ ] **0043-04** PREREQ: 0043-04:0043-01 Make report staleness mechanically impossible to miss.
+  - **Requirements covered:** `RQ-BR-04`.
+  - **Context (finding B6):** No check notices a frozen report page today; the canonical build sequence does not include `publish`.
+  - **Acceptance criteria:** The canonical build sequence includes `combine`+`publish`; `validate.py` emits a finding when the published page model is older than the newest subreport cohort or when a run produced no ledger entry; the check has focused tests including the frozen-page case that motivated this Feature.
+  - **Definition of Done:** Committed; the check demonstrably fires on the pre-Feature state and passes on the post-Feature state; `WARTUNG.md` documents the extended sequence.
+  - **Integration review:** **mandatory.** **Rationale (architect):** this adds a gate to the canonical validation every future build runs through; an error is either a silent no-op (staleness returns) or a false-positive build blocker.
+
+- [ ] **0043-05** Overhaul the five report pages: uniform explanatory header, visible freshness, S-Core campaign included.
+  - **Requirements covered:** `RQ-BR-05`, `RQ-BR-06`.
+  - **Context (finding B5):** Curation, traceability, and open-reviews pages carry no visible generation timestamp; the newest extraction state is 2026-08-12; the S-Core campaign appears nowhere.
+  - **Acceptance criteria:** `build-reports.html`, `curation-report.html`, `extraction-reports.html`, `traceability.html`, and `open-reviews.html` each carry a uniform header naming generation timestamp, generating tool, data source, and a short "what this report shows and how to read it" paragraph; the S-Core campaign evidence (`0019-06`) is reachable from the report landscape; visual presentation is aligned across the five pages per `KONVENTIONEN.md`; all changes go through the page-model generators (`curation_report.py`, `extraction_report.py`, `open_reviews_report.py`, …), never hand-edited HTML.
+  - **Definition of Done:** Committed; regeneration reproduces the headers; i18n segments for new user-visible text are extracted; validation passes.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** presentation and explanatory text through existing generators; no authority or data semantics change. Re-examined at `0043-07`.
+
+- [ ] **0043-06** PREREQ: 0043-06:0043-02, 0043-06:0043-05 Document the ASPICE evidence map for the report landscape.
+  - **Requirements covered:** `RQ-BR-07`.
+  - **Acceptance criteria:** A `docs/pipeline/` document maps each report page and the ledger to the ASPICE process outcome it evidences (at minimum SUP.8 baselines/CM for the ledger, MAN.3 status reporting, SWE.6-adjacent verification evidence), states what an assessor should be shown for each claim, and names the known gaps honestly (e.g. evidence that remains git-ignored by design) rather than overclaiming.
+  - **Definition of Done:** Committed and linked from `docs/pipeline/README.md`; no capability-level claim is made (consistent with the `0011-03`/`0019-10` wording constraints).
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** documentation whose honesty constraints are themselves acceptance criteria; reviewed at `0043-07`. 
+
+- [ ] **0043-07** PREREQ: 0043-07:0043-01, 0043-07:0043-02, 0043-07:0043-03, 0043-07:0043-04, 0043-07:0043-05, 0043-07:0043-06 Integrate the Feature and prove one publication run end to end.
+  - **Integration review: mandatory.** **Rationale (architect):** the Feature's integrating task and review floor. The trigger defect was a composition failure — every part worked, the chain did not — so the chain itself is what must be reviewed.
+  - **Acceptance criteria:** One real publication run is carried end to end: correlated subreports, successful `combine`, appended ledger entry, regenerated pages showing the run in the history list, `validate.py` green including the new staleness check; every `RQ-BR-*` requirement has a disposition; the run evidence is retained.
+  - **Definition of Done:** Committed; the end-to-end evidence is retained; no report page is older than the run that built it.
+
 ## Feature: 0041 — Worker Isolation by Clone/Push and Simplified Check-in Semantics
 
 **Authority:** Three explicit customer decisions of 2026-08-18, recorded verbatim as `RQ-SRC-02` in [`docs/dossiers/re-intake-worker-isolation-and-checkin.md`](docs/dossiers/re-intake-worker-isolation-and-checkin.md).
