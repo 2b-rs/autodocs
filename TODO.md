@@ -329,6 +329,15 @@ HOW TO USE:
   - **Provenance correction (2026-08-20):** Additive correction `569eb4140eb7a6af781aac46f899ea86abd9f255` retains `docs/pipeline/evidence/0039-03/provenance-correction-20260819T201432Z.md` (SHA-256 `69fd17b9bab80685ae77739b23bf3f47f9e2198251898b4b7c7e318f05b9403b`). It binds immutable substantive commit `054e658bbe53057ad504a772b3d1fc6c4de68fcd` to actual parent `4e34650aa896dbad8a77dfadd8e43d80a1ffe227`; the originally declared Base-Ref remains absent. Git object, ancestry, tree, binary-diff digest, and scope checks passed. No acceptance is asserted; a fresh independent privileged review remains required.
   - **Acceptance re-review (2026-08-20):** `inconclusive` — review evidence `65dbaf784677b52f34bdc7c9eb0ee7834032bd49`, `docs/pipeline/evidence/0039-03/acceptance-rereview-data-deanna-20260820.md`. The corrected `0039-02` acceptance record at `960594917f429c492d9bf0c94e5796b144029ffe` and the provenance correction both independently verified, and focused validation passed. However, the corrected prerequisite commit is not an ancestor of this candidate baseline; its `TODO.md` retains only the malformed earlier prerequisite record. Finding `0039-03-AR-003` blocks current acceptance. An authorized baseline update making the corrected prerequisite reachable and a new independent review are required; no `Acceptance: ✓` credit is asserted.
   - **Review-reference correction (2026-08-20):** The preceding re-review entry mistakenly rendered review REF `65dbaf784677b52f34bdc7c9eb0ee7834032bd49`. The actual reachable evidence commit is `65dbaf7844ea97aee066be3cde827ef497db0baa`; all findings and disposition above are otherwise unchanged.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `Picard-20260820T013219Z`
+    - **Authority reference:** `current-user assignment, 2026-08-20, reviews delegated to this privileged session with integration reserved to another session; verbatim in TODO-picard-0039-03-review-20260820T013219Z-9e5a3c7f.md`
+    - **Accepted at:** `2026-08-20T01:32:19Z`
+    - **Contract SHA-256:** `766603cfcf2637d0df6faad5621fba3bc2bb287f24857148b58ec1a1b182166b`
+    - **Work-product manifest SHA-256:** `cb554e7f5150992989813063bad32292cde7a9ae5dc43cddde465d441ea7514f`
+    - **Prerequisite-acceptance SHA-256:** `4920a997c01c1ae82ba76a37fa19debd6c5f9dc0d690c82003e58f2b306b6fb1`
+    - **Review REF:** `d2afd0d43a35f2510167c563563d197e6a3f481e`
 
 ## Feature: 0038 — Transactional Task Work, Reliable Evidence, and Chore Automation
 
