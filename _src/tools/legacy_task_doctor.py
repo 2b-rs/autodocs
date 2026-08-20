@@ -42,6 +42,7 @@ LEGACY_TASK_RE = re.compile(r"^- \[(?P<marker>[^]]*)\](?P<tail>.*)$")
 FEATURE_HEADER_RE = re.compile(
     r"^## Feature:\s*(?:(?P<id>[0-9]{4})\s+[—-]\s+)?(?P<title>.+?)\s*$"
 )
+ACCEPTANCE_MARK_RE = re.compile(r"\*\*Acceptance:\*\*\s*✓")
 PREREQ_PAIR_RE = re.compile(
     r"(?P<left>[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?):"
     r"(?P<right>[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?)"
@@ -130,6 +131,7 @@ RULE_SEVERITY = {
     "LTD-TERMINAL-UNSATISFIED-PREREQ": "error",
     "LTD-PARENT-CLOSURE-ELIGIBLE": "warning",
     "LTD-FEATURE-CLOSURE-ELIGIBLE": "warning",
+    "LTD-FEATURE-INTEGRATION-READY": "info",
     "LTD-BOOT-INVALID": "error",
     "LTD-BOOT-UNKNOWN-FIELD": "error",
     "LTD-BOOT-CROSS-FIELD": "error",
@@ -204,6 +206,30 @@ class PrerequisiteEdge:
 
     def to_dict(self) -> Dict[str, object]:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class FeatureReadiness:
+    feature: str
+    path: str
+    line: int
+    ready: bool
+    in_scope_tasks: Tuple[str, ...]
+    nonterminal_tasks: Tuple[str, ...]
+    nonterminal_prerequisites: Tuple[str, ...]
+    unaccepted_checkpoints: Tuple[str, ...]
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "feature": self.feature,
+            "path": self.path,
+            "line": self.line,
+            "ready": self.ready,
+            "in_scope_tasks": list(self.in_scope_tasks),
+            "nonterminal_tasks": list(self.nonterminal_tasks),
+            "nonterminal_prerequisites": list(self.nonterminal_prerequisites),
+            "unaccepted_checkpoints": list(self.unaccepted_checkpoints),
+        }
 
 
 @dataclass(frozen=True)
@@ -1425,6 +1451,163 @@ def _prerequisite_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBl
     return findings
 
 
+def _is_mandatory_checkpoint_line(line: str) -> bool:
+    """Detect a per-node ``**Integration review:** mandatory`` attribute line.
+
+    This is a minimal, forward-compatible heuristic: it recognizes the plain
+    and bold-markdown spellings already used in ``TODO.md`` and rejects an
+    explicit ``not`` in the same clause (``not mandatory`` / ``mandatory ...
+    is not set``). Full attribute validation (architect authority, rationale,
+    no-checkpoint justification) is Task ``0038-23``'s scope; this function
+    only needs to know whether a node is a checkpoint for the Task ``0038-21``
+    readiness predicate.
+    """
+
+    if "integration review" not in line.lower():
+        return False
+    stripped = re.sub(r"[*`]", "", line)
+    match = re.search(r"integration review:?\s*(?P<rest>.+)", stripped, re.IGNORECASE)
+    if not match:
+        return False
+    first_clause = match.group("rest").split(".")[0]
+    if not re.match(r"\s*mandatory\b", first_clause, re.IGNORECASE):
+        return False
+    if re.search(r"\bnot\b", first_clause, re.IGNORECASE):
+        return False
+    return True
+
+
+def _task_is_mandatory_checkpoint(blob: InputBlob, task: TaskRecord) -> bool:
+    return any(
+        _is_mandatory_checkpoint_line(blob.lines[line_number - 1])
+        for line_number in range(task.line, task.end_line + 1)
+    )
+
+
+def _task_has_acceptance_mark(blob: InputBlob, task: TaskRecord) -> bool:
+    return any(
+        ACCEPTANCE_MARK_RE.search(blob.lines[line_number - 1])
+        for line_number in range(task.line, task.end_line + 1)
+    )
+
+
+def _prerequisite_closure(start_ids: Iterable[str], edges: Iterable[PrerequisiteEdge]) -> Set[str]:
+    graph: Dict[str, Set[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.dependent, set()).add(edge.prerequisite)
+    visited: Set[str] = set()
+    stack = list(start_ids)
+    while stack:
+        node = stack.pop()
+        for neighbor in graph.get(node, ()):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                stack.append(neighbor)
+    return visited
+
+
+def _readiness_findings(
+    parsed: ParsedRepository, blobs: Mapping[str, InputBlob]
+) -> Tuple[List[FeatureReadiness], List[Finding]]:
+    """Compute the deterministic per-Feature ``integration-ready`` predicate.
+
+    A Feature is integration-ready when every in-scope Task/Subtask (direct
+    children of the Feature, at any nesting) is terminal (``[x]``/``[w]``),
+    every Task/Subtask its in-scope items transitively depend on via an
+    explicit ``PREREQ`` is also terminal, and no node in that closure that
+    carries an unfulfilled ``**Integration review:** mandatory`` checkpoint
+    lacks a current ``**Acceptance:** ✓`` record. Only open (``TODO.md``,
+    non-archived) Features with at least one in-scope Task are evaluated;
+    Features already in ``DONE.md`` are already integrated.
+
+    On genuine readiness this emits one bounded ``LTD-FEATURE-INTEGRATION-READY``
+    finding naming the ready Feature and stating it needs an explicitly
+    assigned privileged integrator — realized through the doctor's existing
+    non-mutating findings/plans/summary pipeline, which is the concrete
+    notification channel this read-only tool can implement (see
+    ``docs/pipeline/legacy-task-doctor.md`` for why this stands in for the
+    ``SENTINEL`` retrigger channel). The doctor never self-assigns,
+    integrates, or mutates acceptance. The tool has no persisted state across
+    invocations, so every scan is treated as satisfying the "otherwise-idle
+    global scan" condition rather than trying to detect a stateful
+    ready-transition edge.
+    """
+
+    task_by_id = {task.id: task for task in parsed.tasks}
+    task_markers = {task.id: task.marker for task in parsed.tasks}
+    done_features = {
+        feature.id
+        for feature in parsed.features
+        if feature.id and feature.path == "DONE.md" and not feature.archived_not_accepted
+    }
+
+    readiness: List[FeatureReadiness] = []
+    findings: List[Finding] = []
+    for feature in sorted(parsed.features, key=lambda value: (value.path, value.line, value.id or "")):
+        if feature.path != "TODO.md" or not feature.id or feature.archived_not_accepted:
+            continue
+        in_scope = sorted({task.id for task in parsed.tasks if task.feature_id == feature.id})
+        if not in_scope:
+            continue
+        in_scope_set = set(in_scope)
+        nonterminal_tasks = tuple(
+            sorted(task_id for task_id in in_scope if task_markers.get(task_id) not in TERMINAL_MARKERS)
+        )
+        closure = _prerequisite_closure(in_scope_set, parsed.edges)
+        nonterminal_prerequisites = tuple(
+            sorted(
+                node
+                for node in closure - in_scope_set
+                if not _terminal_id(node, task_markers, done_features)
+            )
+        )
+        unaccepted: List[str] = []
+        for node_id in sorted(in_scope_set | closure):
+            checkpoint_task = task_by_id.get(node_id)
+            if checkpoint_task is None or checkpoint_task.marker not in TERMINAL_MARKERS:
+                continue
+            checkpoint_blob = blobs.get(checkpoint_task.path)
+            if checkpoint_blob is None:
+                continue
+            if _task_is_mandatory_checkpoint(checkpoint_blob, checkpoint_task) and not _task_has_acceptance_mark(
+                checkpoint_blob, checkpoint_task
+            ):
+                unaccepted.append(node_id)
+        unaccepted_checkpoints = tuple(sorted(unaccepted))
+        ready = not nonterminal_tasks and not nonterminal_prerequisites and not unaccepted_checkpoints
+        readiness.append(
+            FeatureReadiness(
+                feature=feature.id,
+                path=feature.path,
+                line=feature.line,
+                ready=ready,
+                in_scope_tasks=tuple(in_scope),
+                nonterminal_tasks=nonterminal_tasks,
+                nonterminal_prerequisites=nonterminal_prerequisites,
+                unaccepted_checkpoints=unaccepted_checkpoints,
+            )
+        )
+        if ready:
+            findings.append(
+                _make_finding(
+                    "LTD-FEATURE-INTEGRATION-READY",
+                    "integration",
+                    feature.path,
+                    feature.line,
+                    feature.id,
+                    (
+                        f"Feature {feature.id} is integration-ready (SENTINEL retrigger channel "
+                        "notice): every in-scope Task/Subtask is terminal with a satisfied, "
+                        "acceptance-consistent prerequisite closure. It needs an explicitly assigned "
+                        "privileged integrator; this doctor performs no self-assignment, integration, "
+                        "or acceptance mutation."
+                    ),
+                    blobs,
+                )
+            )
+    return readiness, findings
+
+
 def _resolve_doc_target(
     source: str,
     target: str,
@@ -1693,6 +1876,8 @@ def _git_reachable_commits(root: Path) -> Set[str]:
 
 
 def _plan_action(finding: Finding) -> Tuple[str, str]:
+    if finding.rule == "LTD-FEATURE-INTEGRATION-READY":
+        return "assign-privileged-integrator", "privileged-integrator"
     if finding.category == "claim":
         return "owner-reconcile-claim", "claim-owner-or-authorized-maintainer"
     if finding.rule in {"LTD-PARENT-CLOSURE-ELIGIBLE", "LTD-FEATURE-CLOSURE-ELIGIBLE"}:
@@ -1769,6 +1954,7 @@ def _empty_report(error: DoctorInputError) -> Dict[str, object]:
         "counts": {"error": 1, "warning": 0, "info": 0, "total": 1},
         "findings": [finding.to_dict()],
         "plans": [],
+        "integration_readiness": [],
         "summary": [f"legacy-task-doctor INCOMPLETE: {error.rule} {error.path}: {evidence}"],
     }
 
@@ -1819,6 +2005,8 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
     parsed.findings.extend(_ref_findings(parsed, blobs, reachable))
     parsed.findings.extend(_claim_findings(parsed, blobs, claim_occurrences, reachable))
     parsed.findings.extend(_prerequisite_findings(parsed, blobs))
+    readiness, readiness_findings = _readiness_findings(parsed, blobs)
+    parsed.findings.extend(readiness_findings)
     parsed.findings.extend(_instruction_findings(root, parsed, blobs))
     findings = _dedupe_findings(parsed.findings)
 
@@ -1850,6 +2038,7 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
             )
         findings = _dedupe_findings(findings)
         plans = []
+        readiness = []
         verdict = "INCOMPLETE"
 
     counts = {severity: sum(item.severity == severity for item in findings) for severity in ("error", "warning", "info")}
@@ -1885,6 +2074,7 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
         "counts": counts,
         "findings": [value.to_dict() for value in findings],
         "plans": [value.to_dict() for value in plans],
+        "integration_readiness": [value.to_dict() for value in readiness],
     }
     report["summary"] = _summary(verdict, findings, parsed)
     return report

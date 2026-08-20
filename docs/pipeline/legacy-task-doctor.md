@@ -1,6 +1,6 @@
 # Legacy Task/Claim/Bootstrap Doctor
 
-Status: implemented legacy safety adapter for Feature `0038`, Task `0038-04`.
+Status: implemented legacy safety adapter for Feature `0038`, Tasks `0038-04` and `0038-21`.
 
 ## Purpose and authority boundary
 
@@ -22,7 +22,8 @@ The doctor does **not**:
 - execute, inspect, create, remove, restore, or consume root `run.sh`;
 - inspect transaction locks, recovery journals, or backups owned by `0038-02`;
 - calculate derived write-scope collisions owned by `0038-06`;
-- infer approval, authority, ownership, or human decisions from display names or filenames.
+- infer approval, authority, ownership, or human decisions from display names or filenames;
+- self-assign, integrate, or create/change/invalidate acceptance credit when it reports Feature-integration readiness (see **Feature-integration readiness** below).
 
 ## Invocation and exit codes
 
@@ -70,7 +71,8 @@ The report schema is `legacy-task-doctor-report@v1`. It contains:
 - claim identity, exact scope paths, and resume-state presence;
 - REF visibility (`visible` or HTML-comment `hidden`) and role (`authoritative-task`, `authoritative-feature`, or `narrative`);
 - prerequisite edges with their declared dependent and prerequisite;
-- stable findings and non-destructive exact-path reconciliation plans.
+- stable findings and non-destructive exact-path reconciliation plans;
+- per-Feature integration-readiness records (`integration_readiness`; see **Feature-integration readiness** below).
 
 Object keys are sorted. Features and Tasks retain document order (`TODO.md` before `DONE.md`); claims and inputs sort by repository-relative path; REFs sort by path/line/column/value; findings sort by severity, rule, path, line, subject, and evidence digest.
 
@@ -172,6 +174,41 @@ The parser validates complete comma-separated Task and Feature declarations befo
 
 The doctor detects syntactic graph errors. General semantic-deadlock repair remains an agent/backlog-authority responsibility because arbitrary prose intent cannot be inferred safely.
 
+## Feature-integration readiness
+
+Task `0038-21` adds a deterministic per-Feature `integration-ready` predicate, distinct from the pre-existing `LTD-FEATURE-CLOSURE-ELIGIBLE` package-closure advisory (below). A Feature's **in-scope Task/Subtask set** is every Task or Subtask whose Feature is that Feature (any nesting depth). For each open (`TODO.md`, non-archived) Feature with at least one in-scope item, the doctor computes:
+
+1. every in-scope Task/Subtask is terminal (`[x]`/`[w]`);
+2. the transitive `PREREQ` closure of the in-scope set — following explicit `dependent:prerequisite` edges outward, including across Feature boundaries — is also entirely terminal;
+3. no terminal node in the in-scope set or its closure that carries a `**Integration review:** mandatory` checkpoint attribute is missing a `**Acceptance:** ✓` record.
+
+The Feature is `ready` only when all three hold. This is a Task `0038-21`-scoped Feature-level view; Task `0038-23` later extends per-checkpoint attribute validation (architect authority, rationale, no-checkpoint justification) and exposes readiness per checkpoint rather than only per Feature — this predicate does not attempt that finer-grained work and uses a minimal, forward-compatible attribute-line heuristic sufficient for its own fixtures.
+
+Every evaluated Feature (ready or not) is reported in the top-level `integration_readiness` array, independent of `findings`, so a not-ready Feature is still visible in deterministic JSON:
+
+```json
+{
+  "feature": "1000",
+  "path": "TODO.md",
+  "line": 3,
+  "ready": false,
+  "in_scope_tasks": ["1000-01", "1000-02"],
+  "nonterminal_tasks": ["1000-02"],
+  "nonterminal_prerequisites": [],
+  "unaccepted_checkpoints": []
+}
+```
+
+On genuine readiness only, the doctor additionally emits one info-severity `LTD-FEATURE-INTEGRATION-READY` finding (and its advisory plan, actor `privileged-integrator`, action `assign-privileged-integrator`) naming the ready Feature and stating it needs an explicitly assigned privileged integrator. This finding carries no acceptance action and triggers no mutation, matching every other doctor finding.
+
+**Why the finding/plan/summary pipeline realizes the "SENTINEL retrigger channel."** Task `0038-21`'s text asks for the notice to go "through the canonical `SENTINEL` retrigger channel." `SENTINEL.md`'s only concrete mechanism is "create a new sentinel atomically at `run.sh`," which `SANDBOX.md` explicitly forbids as an escalation/notification channel — the doctor itself already reports this exact contradiction as `LTD-POLICY-CONTRADICTION`. The doctor is also contractually read-only and never touches `run.sh`. The determinable, intent-preserving resolution is that the doctor's existing non-mutating findings/plans/summary output *is* the channel it can implement: every other reconciliation notice already reaches its "required actor" this same way. No file is created or written to realize this notice.
+
+**Why every scan is treated as an idle scan.** The Task text also allows emitting "on transition to ready or during an otherwise-idle global scan." The doctor is a stateless single-pass scanner with no persisted prior-run state, so it cannot itself observe a *transition* edge without adding hidden mutable state to a read-only tool. It instead treats every invocation as satisfying the "otherwise-idle global scan" arm: the notice fires deterministically whenever a Feature is currently ready. A caller that wants the transition edge specifically can diff two successive report runs.
+
+| Rule | Meaning |
+|---|---|
+| `LTD-FEATURE-INTEGRATION-READY` | An open Feature's complete in-scope Task/Subtask set is terminal, its transitive prerequisite closure is terminal, and no in-closure mandatory checkpoint is missing its acceptance record. |
+
 ## Bootstrap and instruction rules
 
 `agent-workflow.json` is decoded with duplicate-key rejection and checked against the closed `agent-workflow-bootstrap@v1` field set, enums, lexical forms, profile/epoch/phase combinations, and selected bundle path. Local instruction links must remain in-root and resolve without symlinks to the expected regular Markdown file (or declared directory target). The targeted sentinel contradiction requires a positive write/create directive and has aligned-policy negative controls.
@@ -199,7 +236,7 @@ The selector's digest syntax and obvious placeholder are checkable, but the curr
 | `LTD-INPUT-CHANGED` | Input names or bytes changed during the scan. |
 | `LTD-GIT-PROBE` | The bounded read-only reachability command failed or returned malformed output. |
 
-These rules produce `INCOMPLETE`, and stale reconciliation plans are suppressed.
+These rules produce `INCOMPLETE`, and stale reconciliation plans and integration-readiness records are suppressed (`integration_readiness` is emptied the same way `plans` is).
 
 ## Fixtures and validation
 
@@ -210,7 +247,11 @@ Hermetic cases live under `_src/tests/fixtures/legacy_task_doctor/`:
 - `marker-and-refs` freezes `[d]`, inline/multiline hidden, verified/pending/local, short, duplicate, unreachable, and premature REFs;
 - `claim-drift` freezes orphan/state/terminal-retention/exact immutable filename/base/unsafe scope/final-next-step/Task-pointer failures;
 - `prerequisites-and-parent` freezes Task and Feature missing/wrong/partial/malformed/cyclic edges, terminality drift, and safe eligible parent closure;
-- `bootstrap-policy` freezes escaping links and the current `SENTINTEL.md`/`SENTINEL.md`/`run.sh`/unavailable-command contradictions.
+- `bootstrap-policy` freezes escaping links and the current `SENTINTEL.md`/`SENTINEL.md`/`run.sh`/unavailable-command contradictions;
+- `integration-not-ready` freezes a Feature with one nonterminal in-scope Task (no readiness finding);
+- `integration-ready-linear` freezes a two-Task terminal `PREREQ` chain that is integration-ready;
+- `integration-ready-parallel` freezes a terminal parent Task with two terminal parallel Subtasks that is integration-ready;
+- `integration-blocked-high-risk` freezes a terminal in-scope prerequisite carrying an unfulfilled mandatory checkpoint, which blocks readiness even though the Feature is still closure-eligible in the pre-existing sense.
 
 Run focused validation with:
 
