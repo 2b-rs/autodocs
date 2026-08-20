@@ -1,6 +1,6 @@
 # Legacy Task/Claim/Bootstrap Doctor
 
-Status: implemented legacy safety adapter for Feature `0038`, Tasks `0038-04` and `0038-21`.
+Status: implemented legacy safety adapter for Feature `0038`, Tasks `0038-04`, `0038-21`, and `0038-23`.
 
 ## Purpose and authority boundary
 
@@ -72,7 +72,8 @@ The report schema is `legacy-task-doctor-report@v1`. It contains:
 - REF visibility (`visible` or HTML-comment `hidden`) and role (`authoritative-task`, `authoritative-feature`, or `narrative`);
 - prerequisite edges with their declared dependent and prerequisite;
 - stable findings and non-destructive exact-path reconciliation plans;
-- per-Feature integration-readiness records (`integration_readiness`; see **Feature-integration readiness** below).
+- per-Feature integration-readiness records (`integration_readiness`; see **Feature-integration readiness** below);
+- per-node checkpoint-attribute states (`checkpoint_states`; see **Checkpoint-attribute rules** below).
 
 Object keys are sorted. Features and Tasks retain document order (`TODO.md` before `DONE.md`); claims and inputs sort by repository-relative path; REFs sort by path/line/column/value; findings sort by severity, rule, path, line, subject, and evidence digest.
 
@@ -182,7 +183,7 @@ Task `0038-21` adds a deterministic per-Feature `integration-ready` predicate, d
 2. the transitive `PREREQ` closure of the in-scope set — following explicit `dependent:prerequisite` edges outward, including across Feature boundaries — is also entirely terminal;
 3. no terminal node in the in-scope set or its closure that carries a `**Integration review:** mandatory` checkpoint attribute is missing a `**Acceptance:** ✓` record.
 
-The Feature is `ready` only when all three hold. This is a Task `0038-21`-scoped Feature-level view; Task `0038-23` later extends per-checkpoint attribute validation (architect authority, rationale, no-checkpoint justification) and exposes readiness per checkpoint rather than only per Feature — this predicate does not attempt that finer-grained work and uses a minimal, forward-compatible attribute-line heuristic sufficient for its own fixtures.
+The Feature is `ready` only when all three hold. This remains the Task `0038-21` Feature-level view; Task `0038-23` (below) adds the finer per-checkpoint attribute validation (architect authority, rationale, no-checkpoint justification) and per-node readiness without changing this predicate's semantics — both share the same structural attribute-bullet detector so a checkpoint is recognized identically by both views.
 
 Every evaluated Feature (ready or not) is reported in the top-level `integration_readiness` array, independent of `findings`, so a not-ready Feature is still visible in deterministic JSON:
 
@@ -208,6 +209,41 @@ On genuine readiness only, the doctor additionally emits one info-severity `LTD-
 | Rule | Meaning |
 |---|---|
 | `LTD-FEATURE-INTEGRATION-READY` | An open Feature's complete in-scope Task/Subtask set is terminal, its transitive prerequisite closure is terminal, and no in-closure mandatory checkpoint is missing its acceptance record. |
+
+## Checkpoint-attribute rules
+
+Task `0038-23` extends the `**Integration review:** mandatory`/`not mandatory` attribute recognition from Task `0038-21`'s per-Feature predicate to a per-node, per-checkpoint view over every Task/Subtask, and validates the attribute's own well-formedness — not only whether a node counts as a checkpoint.
+
+**Structural anchor, not prose matching.** A node's attribute is recognized only from its own literal bullet line — one whose content (after stripping leading whitespace) begins `- **Integration review...`. Prose that merely *discusses* or *quotes* the attribute (acceptance criteria describing this very rule, a closure note stating a node "has no `Integration review: mandatory` attribute") is not mistaken for a declaration. This anchor is shared verbatim by `_is_mandatory_checkpoint_line` (the `0038-21` predicate) and the new checkpoint parser, so both views agree on which nodes are checkpoints.
+
+**Textual authority marker, not capability class.** Real checkpoints in this repository always pair their polarity clause with an `(architect)`-tagged `**Rationale (architect):**` (mandatory) or `**No-checkpoint justification (architect):**` (not-mandatory) label on the same line (see the Feature `0041`/`0044` entries). `docs/pipeline/process-roles.md` fixes the architect's *minimum* capability class at `sandboxed/grunt`, so architect authority is necessarily a self-declared role assertion recorded in the text, not a capability-class fact a read-only tool could check instead. The doctor validates the presence of that tagged label; it never infers authorship from capability class, claim owner, or display name.
+
+For every Task/Subtask (excluding archived-not-accepted entries), the doctor reports one `checkpoint_states` entry:
+
+```json
+{
+  "task": "1000-01",
+  "path": "TODO.md",
+  "line": 5,
+  "marker": "x",
+  "attribute": "mandatory",
+  "architect_tagged": true,
+  "rationale_present": true,
+  "accepted": false,
+  "required_integration_state": "pending",
+  "high_risk_unflagged": false
+}
+```
+
+`attribute` is `"mandatory"`, `"not-mandatory"`, `"malformed"` (a clause present but its polarity could not be recognized), or `null` (no attribute at all). `required_integration_state` is `"none"` (not a checkpoint), `"pending"` (a checkpoint — including a malformed one, treated conservatively — awaiting a current `**Acceptance:** ✓`), or `"passed"` (a checkpoint with a current acceptance mark).
+
+| Rule | Severity | Meaning |
+|---|---|---|
+| `LTD-CHECKPOINT-MISSING-AUTHORITY` | error | A `mandatory`/`not-mandatory` attribute bullet lacks a `Rationale`/`No-checkpoint justification` label, or the label is not `(architect)`-tagged. |
+| `LTD-CHECKPOINT-MALFORMED` | error | An attribute bullet's polarity clause is present but did not parse as either `mandatory` or `not mandatory`. |
+| `LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK` | warning | A node carries no attribute at all, but its own text matches a high-risk keyword (`irreversible migration`, `external effect`, `credential`, `security boundary`, `public release`) that `AGENTS.md` names as requiring an explicit architect no-checkpoint justification when left unflagged. Advisory only — the keyword match is a heuristic, not proof that the node is actually high-risk. |
+
+The doctor never mutates the attribute, self-assigns, or integrates; refusing an unauthorized *write* to the attribute is the digest-bound editor's responsibility (`docs/pipeline/legacy-task-editor.md`, "Checkpoint-attribute authority").
 
 ## Bootstrap and instruction rules
 
@@ -251,7 +287,10 @@ Hermetic cases live under `_src/tests/fixtures/legacy_task_doctor/`:
 - `integration-not-ready` freezes a Feature with one nonterminal in-scope Task (no readiness finding);
 - `integration-ready-linear` freezes a two-Task terminal `PREREQ` chain that is integration-ready;
 - `integration-ready-parallel` freezes a terminal parent Task with two terminal parallel Subtasks that is integration-ready;
-- `integration-blocked-high-risk` freezes a terminal in-scope prerequisite carrying an unfulfilled mandatory checkpoint, which blocks readiness even though the Feature is still closure-eligible in the pre-existing sense.
+- `integration-blocked-high-risk` freezes a terminal in-scope prerequisite carrying an unfulfilled mandatory checkpoint, which blocks readiness even though the Feature is still closure-eligible in the pre-existing sense;
+- `checkpoint-well-formed` freezes a mandatory and a not-mandatory checkpoint that both carry a properly `(architect)`-tagged rationale/justification (zero checkpoint findings);
+- `checkpoint-missing-authority` freezes a mandatory checkpoint whose `Rationale` label lacks the `(architect)` tag;
+- `checkpoint-unflagged-high-risk` freezes a node with no attribute at all whose text names an irreversible migration.
 
 Run focused validation with:
 

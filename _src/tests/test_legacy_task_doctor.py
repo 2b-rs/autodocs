@@ -672,6 +672,84 @@ class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
         report = repo.scan()
         self.assertEqual(report["integration_readiness"], [])
 
+    def test_checkpoint_well_formed_produces_no_findings_and_exposes_both_polarities(self):
+        repo = FixtureRepository(CASES["checkpoint-well-formed"])
+        self.addCleanup(repo.close)
+        report = repo.scan()
+        self.assertNotIn("LTD-CHECKPOINT-MISSING-AUTHORITY", rules(report))
+        self.assertNotIn("LTD-CHECKPOINT-MALFORMED", rules(report))
+        self.assertNotIn("LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK", rules(report))
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertEqual(states["1000-01"]["attribute"], "mandatory")
+        self.assertTrue(states["1000-01"]["architect_tagged"])
+        self.assertEqual(states["1000-01"]["marker"], "x")
+        self.assertEqual(states["1000-01"]["required_integration_state"], "pending")
+        self.assertEqual(states["1000-02"]["attribute"], "not-mandatory")
+        self.assertTrue(states["1000-02"]["architect_tagged"])
+        self.assertEqual(states["1000-02"]["required_integration_state"], "none")
+
+    def test_checkpoint_missing_architect_tag_is_flagged(self):
+        repo = FixtureRepository(CASES["checkpoint-missing-authority"])
+        self.addCleanup(repo.close)
+        report = repo.scan()
+        self.assertIn("LTD-CHECKPOINT-MISSING-AUTHORITY", rules(report))
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertEqual(states["1000-01"]["attribute"], "mandatory")
+        self.assertFalse(states["1000-01"]["architect_tagged"])
+        self.assertTrue(states["1000-01"]["rationale_present"])
+
+    def test_checkpoint_unflagged_high_risk_node_is_flagged(self):
+        repo = FixtureRepository(CASES["checkpoint-unflagged-high-risk"])
+        self.addCleanup(repo.close)
+        report = repo.scan()
+        self.assertIn("LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK", rules(report))
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertIsNone(states["1000-01"]["attribute"])
+        self.assertTrue(states["1000-01"]["high_risk_unflagged"])
+        self.assertEqual(states["1000-01"]["required_integration_state"], "none")
+
+    def test_checkpoint_malformed_polarity_is_flagged_and_treated_as_pending(self):
+        ref_value = "a" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Malformed checkpoint\n"
+            f"- [x] **1000-01** Checkpoint task. REF: {ref_value}\n"
+            "  - **Integration review:** unclear. **Rationale (architect):** ambiguous polarity fixture.\n",
+            reachable={ref_value},
+        )
+        report = repo.scan()
+        self.assertIn("LTD-CHECKPOINT-MALFORMED", rules(report))
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertEqual(states["1000-01"]["attribute"], "malformed")
+        self.assertEqual(states["1000-01"]["required_integration_state"], "pending")
+
+    def test_checkpoint_accepted_mandatory_node_reports_passed(self):
+        ref_value = "a" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Accepted checkpoint state\n"
+            f"- [x] **1000-01** Checkpoint task. REF: {ref_value}\n"
+            "  - **Integration review:** mandatory. **Rationale (architect):** fixture.\n"
+            "  - **Acceptance:** ✓ reviewed by fixture-integrator on 2026-08-20T00:00:00Z.\n",
+            reachable={ref_value},
+        )
+        report = repo.scan()
+        self.assertEqual(rules(report), {"LTD-FEATURE-CLOSURE-ELIGIBLE", "LTD-FEATURE-INTEGRATION-READY"})
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertEqual(states["1000-01"]["required_integration_state"], "passed")
+
+    def test_checkpoint_states_cover_subtasks_too(self):
+        ref_value = "a" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Subtask checkpoint\n"
+            f"- [x] **1000-01** Parent. REF: {ref_value}\n"
+            f"- [x] **1000-01.01** Child checkpoint. REF: {ref_value}\n"
+            "  - **Integration review:** mandatory. **Rationale (architect):** fixture subtask checkpoint.\n",
+            reachable={ref_value},
+        )
+        report = repo.scan()
+        states = {item["task"]: item for item in report["checkpoint_states"]}
+        self.assertIn("1000-01.01", states)
+        self.assertEqual(states["1000-01.01"]["attribute"], "mandatory")
+
     def test_feature_and_partial_task_prerequisite_grammar_is_strict(self):
         repo = FixtureRepository(CASES["prerequisites-and-parent"])
         self.addCleanup(repo.close)
@@ -831,6 +909,7 @@ class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
                 "findings",
                 "plans",
                 "integration_readiness",
+                "checkpoint_states",
                 "summary",
             },
         )
