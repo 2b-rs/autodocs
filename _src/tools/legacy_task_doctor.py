@@ -100,7 +100,7 @@ WORKFLOW_ENUMS = {
         "write-frozen",
         "legacy-restored",
     },
-    "required_capability": {"sandboxed-grunt", "privileged"},
+    "required_capability": {"sandboxed-grunt", "unprivileged", "privileged"},
 }
 RULE_SEVERITY = {
     "LTD-INPUT-CHANGED": "error",
@@ -1214,6 +1214,7 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         if claim.capability_class and claim.capability_class not in {
             "sandboxed/grunt",
             "sandboxed-grunt",
+            "unprivileged",
             "privileged",
         }:
             mismatches.append(f"unsupported capability_class {claim.capability_class!r}")

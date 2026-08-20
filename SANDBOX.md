@@ -18,12 +18,44 @@ A session is sandboxed/grunt unless the current runtime or user explicitly grant
 
 ## Agent capability classes
 
-There are two agent classes:
+A capability class answers **two independent questions**, and both must be
+answered before work starts:
 
-- **Sandboxed/grunt agent:** performs routine project work but must not execute scripts, shell commands, tests, generators, browsers, package managers, network clients, or Git commands directly. It may use available non-execution file/editor/search tools and may request execution through the less-restricted runner. It may complete implementation at `[x]`/`[w]` and prepare review evidence, but must never create/change/invalidate `Acceptance: ✓`, act as acceptance reviewer, or move a Feature to `DONE.md`.
-- **Privileged agent:** may execute available tools directly within the runtime's actual security and approval controls.
+1. **Execution** — may this session run scripts, shell commands, tests,
+   generators, browsers, package managers, network clients and Git **directly**,
+   or must it route them through the runner?
+2. **Authority** — may this session create, change or invalidate
+   `Acceptance: ✓`, act as acceptance reviewer, perform an integration that
+   crosses a node marked `Integration review: mandatory`, or move a Feature to
+   `DONE.md`?
 
-An agent is privileged only when the current runtime or user explicitly says so. If the class is absent or ambiguous, act as a sandboxed agent. Never infer privilege from the presence of a terminal-like tool.
+The two are orthogonal. Being able to run a command says nothing about being
+allowed to decide. There are three classes:
+
+| Class | Execution | Authority |
+|---|---|---|
+| `sandboxed-grunt` | runner only | none |
+| `unprivileged` | direct | none |
+| `privileged` | direct | full |
+
+- **Sandboxed/grunt agent** (`sandboxed-grunt`, legacy spelling `sandboxed/grunt`): performs routine project work but must not execute scripts, shell commands, tests, generators, browsers, package managers, network clients, or Git commands directly. It may use available non-execution file/editor/search tools and may request execution through the less-restricted runner. It may complete implementation at `[x]`/`[w]` and prepare review evidence, but must never create/change/invalidate `Acceptance: ✓`, act as acceptance reviewer, or move a Feature to `DONE.md`.
+- **Unprivileged agent** (`unprivileged`): may execute available tools directly within the runtime's actual security and approval controls, and therefore does **not** use the runner protocol. Its authority is exactly that of a sandboxed/grunt agent: it may complete implementation at `[x]`/`[w]` and prepare review evidence, and must never create/change/invalidate `Acceptance: ✓`, act as acceptance reviewer, cross a mandatory integration checkpoint, or move a Feature to `DONE.md`. Direct execution is a capability, never a grant of authority.
+- **Privileged agent** (`privileged`): may execute available tools directly **and** holds the acceptance and integration authority the other two classes lack, subject to [`PRIVILEGED.md`](PRIVILEGED.md) and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md).
+
+An agent is privileged, and an agent is unprivileged rather than sandboxed, only
+when the current runtime or user explicitly says so. If the class is **absent,
+ambiguous, unrecognized, or contradicts these definitions** — for example a
+designation that is neither of the three names, or one that claims direct
+execution while also claiming acceptance authority is withheld in a way these
+definitions do not model — do **not** stop and do not ask before starting: act
+as a sandboxed agent, record the received designation and the conflict verbatim
+in the claim, and continue. Falling back is always safe, because the sandboxed
+class is the most restricted one. Never infer privilege from the presence of a
+terminal-like tool.
+
+Because execution and authority are separate, a class is never sufficient on its
+own to decide who may review or accept work; that is governed by the process
+roles in [`docs/pipeline/process-roles.md`](docs/pipeline/process-roles.md).
 
 Feature `0037` is designed to be implemented entirely by sandboxed/grunt agents. A Task that cannot be completed through non-execution tools plus the runner is not execution-ready.
 
@@ -112,7 +144,7 @@ Before changing the repository:
 1. Determine and record the agent capability class; default to sandboxed.
 2. Read this file, `AGENTS.md`, and the Task-acceptance boundary in `docs/pipeline/task-acceptance.md`. If explicitly privileged, also read `PRIVILEGED.md` before acting.
 3. Read `TODO.md` and active claims. First resume any incomplete claim whose immutable `owner_token` belongs to this session; a response, runner-result, or context boundary does not end ownership or authorize selecting replacement work. If no Task was assigned and no owned claim exists, deterministically scan the entire backlog under `AGENTS.md` instead of asking the user to choose. Skip blocked items and foreign active claims while scanning; one occupied dependency chain never blocks disjoint eligible work elsewhere.
-4. Read the complete selected Feature/Task and prerequisites. Substantial scope, unfamiliarity, movement to another Campaign/Feature, or a blocked preceding textual item does not require confirmation when another Task is eligible. Only after a complete global scan finds no eligible work may the agent use the short `SENTINTEL.md` retrigger reminder for the owning session of a blocking foreign claim; never use `run.sh` for that notification.
+4. Read the complete selected Feature/Task and prerequisites. Substantial scope, unfamiliarity, movement to another Campaign/Feature, or a blocked preceding textual item does not require confirmation when another Task is eligible. Only after a complete global scan finds no eligible work may the agent use the short `SENTINEL.md` retrigger reminder for the owning session of a blocking foreign claim; never use `run.sh` for that notification.
 5. Inspect relevant claims and working-tree information using permitted tools or the claimed read-only discovery request.
 6. Follow the claim and state-transition procedure in `AGENTS.md`.
 

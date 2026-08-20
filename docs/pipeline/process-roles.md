@@ -1,314 +1,367 @@
-# Prozessrollen
+# Process roles
 
-**Status:** Normativ für den **eigenen Entwicklungsprozess dieses
-Repositories**, beschlossen am 2026-08-18 in der trilateralen Einigung zu
-`0040-01`.
+**Status:** Normative for this repository's **own engineering process**, adopted on
+2026-08-18 in the trilateral agreement for `0040-01` and reconciled with the
+current target-branch capability policy on 2026-08-20.
 
-**Autorität:** Kundenauftrag `RQ-SRC-01`; Zuschnitt und Privileg nach
-`DEC-0040-001` … `DEC-0040-004`.
+**Authority:** Customer request `RQ-SRC-01`; scope and privilege under
+`DEC-0040-001` … `DEC-0040-004`; the narrow pre-mutation scope decision
+`DEC-0040-005` in
+[`0040-05-cross-item-scope-review.md`](../dossiers/0040-05-cross-item-scope-review.md);
+and `DEC-CAP-001` for the capability-class model.
 
-**Abgrenzungen:**
+**Boundaries:**
 
-- Nicht zu verwechseln mit [`roles.md`](roles.md) — dort geht es um
-  **Produktdomänenrollen** (Kurator, KI-Entscheider, Validator) bei der
-  Requirement-Extraktion. Andere Achse, anderer Gegenstand.
-- Nicht zu verwechseln mit der ASPICE-Bewertung eines **ECU-Produkts** in den
-  Features `0011`–`0032`. Alle Normverweise hier sind
-  **Prozessunterstützung, keine bewertete Capability**.
+- This must not be confused with [`roles.md`](roles.md), which describes
+  **product-domain roles** (curator, AI decision-maker, validator) for
+  requirement extraction.
+- This must not be confused with the ASPICE assessment of an **ECU product** in
+  Features `0011`–`0032`. References here are **process support, not assessed
+  capability**.
 
-**Herleitung:** [`../dossiers/re-intake-evidence-traceability-and-roles.md`](../dossiers/re-intake-evidence-traceability-and-roles.md)
-(Anforderungen) → [`../dossiers/0040-01-qa-vorschlag-prozessrollen.md`](../dossiers/0040-01-qa-vorschlag-prozessrollen.md)
-(Vorschlag) → [`../dossiers/0040-01-bewertungen-architekt-und-projektmanagement.md`](../dossiers/0040-01-bewertungen-architekt-und-projektmanagement.md)
-(Bewertungen) → [`../dossiers/0040-01-protokoll-trilaterale-einigung.md`](../dossiers/0040-01-protokoll-trilaterale-einigung.md)
-(Einigung) → dieses Dokument. Feinabbildung in Abschnitt 8.
+**Derivation:**
+[`../dossiers/re-intake-evidence-traceability-and-roles.md`](../dossiers/re-intake-evidence-traceability-and-roles.md)
+(requirements) →
+[`../dossiers/0040-01-qa-vorschlag-prozessrollen.md`](../dossiers/0040-01-qa-vorschlag-prozessrollen.md)
+(proposal) →
+[`../dossiers/0040-01-bewertungen-architekt-und-projektmanagement.md`](../dossiers/0040-01-bewertungen-architekt-und-projektmanagement.md)
+(reviews) →
+[`../dossiers/0040-01-protokoll-trilaterale-einigung.md`](../dossiers/0040-01-protokoll-trilaterale-einigung.md)
+(agreement) → this document. The historical source documents remain evidence;
+they are not the current capability authority.
 
 ---
 
-## 1. Grundsatz
+## 1. Principle
 
-> **Privileg ist nicht Unabhängigkeit.**
-> Befugnis sagt, was jemand *tun* kann. Unabhängigkeit sagt, wessen Arbeit
-> jemand *beurteilen* darf.
+> **Privilege is not independence.**
+> Authority says what a person may *do*. Independence says whose work that
+> person may *assess*.
 
-Daraus folgen zwei Achsen:
+Two axes follow:
 
-- **Fähigkeitsklasse** — was eine Session ausführen darf. Definiert in
+- **Capability class** — what a session may execute; defined in
   [`../../SANDBOX.md`](../../SANDBOX.md).
-- **Prozessrolle** — wofür eine Session fachlich verantwortlich ist. Definiert
-  hier.
+- **Process role** — what a session is accountable for; defined here.
 
-Die Achsen sind **nicht orthogonal**, sondern durch ein **einschränkendes
-Mapping** verbunden (Abschnitt 4): manche Rollen setzen eine Klasse voraus,
-manche Klassen schließen Rollen aus.
+The axes are **not orthogonal**. A restrictive mapping (section 4) means that
+some roles require a class and some classes exclude roles.
 
-## 2. Fähigkeitsklassen
+## 2. Capability classes
 
-Es gibt genau **zwei**: `sandboxed/grunt` und `privileged`
-([`../../SANDBOX.md`](../../SANDBOX.md)). Eine Zwischenstufe existiert nicht;
-bei fehlender oder mehrdeutiger Angabe gilt `sandboxed/grunt`. Dieses Dokument
-schafft keine neue Klasse.
+There are **three** classes: `sandboxed-grunt`, `unprivileged`, and
+`privileged` ([`../../SANDBOX.md`](../../SANDBOX.md)). A class answers two
+independent questions: **execution** (runner or direct) and **authority**
+(acceptance, integration across a mandatory checkpoint, and `DONE.md`).
 
-## 3. Rollen und Funktionen
+| Class | Execution | Authority |
+|---|---|---|
+| `sandboxed-grunt` | runner only | none |
+| `unprivileged` | direct | none |
+| `privileged` | direct | full, subject to explicit assignment |
 
-### 3.1 Die drei normativen Rollen
+When the supplied class is absent, ambiguous, unrecognized, or contradictory,
+the session acts as `sandboxed-grunt`, records the received designation and
+conflict in its claim, and continues rather than stopping.
 
-| Rolle | Zweck | Arbeitsprodukte | Darf allein entscheiden | Darf nicht allein entscheiden |
+**Subagent assignment.** A dispatcher must explicitly name a subagent's
+capability class. The default is not a substitute for an omitted assignment;
+the required briefing fields are defined in
+[`../../AGENTS.md`](../../AGENTS.md), *Dispatching a subagent* (`DEC-CAP-002`).
+
+**Historical correction.** An earlier version of this document asserted that
+there were exactly two classes and that no intermediate class existed. That was
+true only of the superseded two-class policy and conflated execution with
+authority. `DEC-CAP-001` records the additive correction: direct-execution
+sessions without acceptance/integration authority are `unprivileged`. The
+historical two-class statements remain evidence and are not current normative
+claims.
+
+## 3. Roles and functions
+
+### 3.1 Three normative roles
+
+| Role | Purpose | Work products | May decide alone | Must not decide alone |
 |---|---|---|---|---|
-| **Architekt** | Ein Feature so zerlegen, dass Implementierer mit minimalem Eigenreasoning arbeiten; Abnahmekriterien setzen; Integrationsknoten benennen | Feature-Zerlegung, Abnahmekriterien, Definition of Done, Vorbedingungsgraph, Integrationsknoten mit Begründung, No-Checkpoint-Begründung | Arbeitszuschnitt, Reihenfolge, Abnahmekriterien, Lage der Integrationsknoten | Zuschnitt mit Reichweite über das Feature hinaus ohne Entscheidungsdatensatz (TK-2); Abnahme der eigenen Zerlegung |
-| **Implementierer** | Das Arbeitsprodukt herstellen und validieren | Deliverable, Tests, Validierungsevidenz, Claim, `REF` | Technische Umsetzung im deklarierten Schreibbereich; Backlog-Reparatur nach Bestandsregeln | Abnahme eigener Arbeit (TK-1); Erweiterung des Schreibbereichs; Einbau eines blockierenden Tors ohne Datensatz (TK-2) |
-| **Integrator** | Arbeit über **Integrationsknoten** hinweg zusammenführen und dort prüfen | Merge über Knotengrenze, Reviewbefunde, `Acceptance: ✓` oder `[u]`-Integrationsverdikt, Reconciliation der Claims | Ob ein Knoten die Prüfung besteht | Ein eigenes `[u]`-Verdikt auflösen; einen Integrationsknoten überspringen |
+| **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement | A scope decision reaching beyond the Feature without a TK-2 record; acceptance of its own breakdown |
+| **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
+| **Integrator** | Merge work across **integration checkpoints** and review it there | Boundary merge, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes | Resolve its own `[u]` verdict; skip a checkpoint |
 
-**Wichtig zum Integrator:** Nur **knotenkreuzende** Merges sind Integratorarbeit.
-Merges, die keinen Integrationsknoten überschreiten — typisch Subtask→Task —
-sind grunt-fähig und damit Implementiererarbeit
-([`branch-workflow.md`](branch-workflow.md), [`../../SANDBOX.md`](../../SANDBOX.md)).
-Der in [`task-acceptance.md`](task-acceptance.md) geführte **Abnahmeprüfer** ist
-dieselbe Rolle wie der Integrator.
+Only a merge that crosses an integration checkpoint is Integrator work.
+Checkpoint-free merges, typically Subtask→Task, are implementer work and may be
+performed by a sandboxed-grunt agent through the runner. The acceptance reviewer
+in [`task-acceptance.md`](task-acceptance.md) is the Integrator role.
 
-### 3.2 Die zwei Funktionen
+### 3.2 Two functions
 
-Funktionen sind **Hüte**, keine gegatterten Rollen: Eine Session darf sie ohne
-Managementzuweisung aufsetzen. Sie haben Personas (Abschnitt 6), aber keine
-eigenen Briefing-Dokumente und keine eigene Zuweisungsmechanik.
+Functions are **hats**, not gated roles. A session may adopt one without a
+Management assignment. They have personas (section 6), but no separate
+briefing documents or assignment mechanism.
 
-| Funktion | Zweck | Arbeitsprodukte | Besonderheit |
+| Function | Purpose | Work products | Distinctive duty |
 |---|---|---|---|
-| **Requirements Engineer** | Eingehende Anforderungen aufnehmen, **prüfen**, analysieren, zerlegen | Anforderungsdokument mit verbatim übernommener Quelle, stabile IDs, Analysebefunde, offene Fragen | Kernpflicht ist das **Hinterfragen der Prämisse**, nicht das Aufnehmen |
-| **QA-Manager** | Prozessqualität: wurde **nach dem Prozess** gearbeitet? | Prozessbefunde, Eskalationen, Prozessdefinitionen | Meldet, **behebt nicht**. Schreibrecht am eigenen Befundregister, Schreibverbot am beurteilten Artefakt |
+| **Requirements Engineer** | Receive, test, analyse, and decompose incoming requirements | Requirement document with verbatim source, stable IDs, analysis findings, open questions | Challenge the premise rather than merely transcribe it |
+| **QA Manager** | Evaluate process quality: was the process followed? | Process findings, escalations, process definitions | Report; do **not** repair the assessed artifact. It may write its append-only finding register but not the assessed artifact |
 
-**Meldepflicht statt Berufung:** Die förmliche QA-Funktion braucht keine
-Zuweisung. Jede Rolle ist ohnehin verpflichtet, einen erkannten Prozessbefund
-zu melden. Eine Prüfinstanz, die erst berufen werden muss, findet keinen
-latenten Mangel — im Belegfall `0038-03` hätte niemand sie berufen, weil niemand
-wusste, dass ein Problem existiert.
+**Duty to report rather than await appointment.** Formal QA does not need an
+assignment before a role reports a discovered process finding. A review body that
+must first be appointed cannot find an unknown latent defect; no one would have
+appointed it for incident `0038-03` because no one knew the defect existed.
 
 ### 3.3 Management
 
-Management ist **Umgebung des Modells, keine Rolle darin**: es weist Rollen zu,
-erteilt Verzichte, löst `[u]` auf, ändert den Prozess. Träger ist der aktuelle
-Benutzer oder eine registrierte Autorität — **nie ein Agent**
-([`../../TODO.md`](../../TODO.md) Header, [`task-acceptance.md`](task-acceptance.md)).
+Management is **outside the role model**: it assigns roles, grants waivers,
+resolves `[u]`, and changes the process. It is the current user or a registered
+authority, **never an agent role**.
 
-## 4. Mapping: Rolle → Fähigkeitsklasse
+## 4. Mapping: role → capability class
 
-| Rolle / Funktion | Mindestklasse | Einschränkung |
+| Role / function | Minimum class | Constraint |
 |---|---|---|
-| Architekt | `sandboxed/grunt` | — |
-| Implementierer | `sandboxed/grunt`; höher nur, wenn der Schreib-/Ausführungsbereich der Task es verlangt | — |
-| Integrator | **`privileged`** | Ein `sandboxed/grunt`-Agent darf **nie** Integrator sein |
-| Requirements Engineer | `sandboxed/grunt` | — |
-| QA-Manager | `sandboxed/grunt` genügt | Mehr Rechte erhöhen die Unabhängigkeit **nicht**; sie schaffen die Versuchung, Befunde selbst zu beheben statt zu melden |
-| Management | außerhalb | menschliche Autorität |
+| Architect | `sandboxed-grunt` | — |
+| Implementer | `sandboxed-grunt`; `unprivileged` where the Task's execution scope requires direct execution | The class follows the Task's need, not the session's preference |
+| Integrator | **`privileged`** | Neither `sandboxed-grunt` nor `unprivileged` may be Integrator; both lack authority, not capability |
+| Requirements Engineer | `sandboxed-grunt` | — |
+| QA Manager | `sandboxed-grunt` is sufficient | More rights do **not** increase independence. `unprivileged` is permitted when direct verification runs are required |
+| Management | outside the model | human authority |
 
-Die Kopplungen sind der Grund, warum die Achsen nicht orthogonal heißen.
+The restrictions explain why the axes are not orthogonal.
 
-## 5. Trennungen
+## 5. Separations
 
-### TK-1 — Wer herstellt, nimmt nicht ab
+### TK-1 — the producer does not accept
 
-Für ein Arbeitsprodukt darf an einem Integrationsknoten **nicht** abnehmen, wer
-für dieses Produkt eine der vier Identitäten aus
-[`task-acceptance.md`](task-acceptance.md) trägt:
+At an integration checkpoint, a person may not accept a work product for which
+that person has any of the four identities listed in
+[`task-acceptance.md`](task-acceptance.md):
 
-1. Claim-Eigner
-2. Hauptimplementierer
-3. **Autor der entscheidenden technischen Disposition**
-4. **Alleiniger Produzent der Validierungsevidenz**
+1. claim owner;
+2. principal implementer;
+3. **author of the decisive technical disposition**; or
+4. **sole producer of validation evidence**.
 
-Identität 3 ist die im Belegfall relevante: Wer den Zuschnitt entscheidet,
-„stellt" nichts her — und war genau deshalb im Fall `0038-03` unsichtbar.
+The third identity matters to the recorded incident: the person who decides
+scope may not build code, yet remains decisive authorship.
 
-**Verzichtbarkeit.** TK-1 ist über den **bestehenden** Waiver-Vertrag
-verzichtbar: ausdrückliche Erteilung durch Management mit Konflikt,
-Geltungsbereich, Grund, **Dauer** und kompensierender Maßnahme
-([`../../PRIVILEGED.md`](../../PRIVILEGED.md),
-[`task-acceptance.md`](task-acceptance.md)).
+**Waiver.** TK-1 may be waived only through the established waiver contract:
+Management explicitly records the conflict, scope, reason, **duration**, and
+compensating control.
 
-**Keine-zweite-Instanz-Klausel.** Steht keine zweite Instanz zur Verfügung, wird
-die Abnahme als `self-accepted under <Datensatz-ID>` gekennzeichnet und benennt,
-was eine spätere unabhängige Instanz zuerst nachzusehen hat. Eine Regel ohne
-regelkonformen Ausführungspfad würde umgangen und erzeugte falsche Sicherheit.
+**No-second-reviewer clause.** If no second reviewer is available, the record
+states `self-accepted under <record-ID>` and identifies what a later independent
+reviewer must inspect first. A rule without a conforming execution path would be
+circumvented and create false assurance.
 
-**Grenze der Wirksamkeit — ausdrücklich festgehalten.** Im Belegfall `0038-03`
-war TK-1 **erfüllt** („Independent blocker/high review was clean") und hat den
-Mangel **nicht** gefunden. TK-1 ist notwendig, aber nicht hinreichend. Wer sich
-auf TK-1 allein verlässt, wiederholt den Vorfall.
+**Limit of effectiveness.** In incident `0038-03`, TK-1 was satisfied
+(`Independent blocker/high review was clean`) and did **not** find the defect.
+TK-1 is necessary but not sufficient.
 
-### TK-2 — Reichweite erzwingt einen Datensatz
+### TK-2 — reach requires a record
 
-> Wer eine Zuschnitts- oder Torentscheidung mit Wirkung **über die eigene
-> Arbeitseinheit hinaus** trifft, hält sie als Entscheidungsdatensatz fest.
-> Ist eine zweite Instanz verfügbar, wird sie beteiligt; ist keine verfügbar,
-> vermerkt der Datensatz das offen.
+> Anyone making a scoping or gate decision that affects **beyond their own work
+> unit** records it as a decision record.
 
-Schlüssel ist die **Reichweite**, nicht die Knotenmarkierung. Ein Task ohne
-`Integration review: mandatory` kann trotzdem das ganze Repository blockieren —
-`0038-03` trug keinen Knoten und tat genau das.
+The record MUST conform to [`decision-record@v1`](decision-record.md). Its
+mandatory triggers cover effects on other work units and gates, authority
+tailoring/waivers, materially different architecture or repository behavior,
+and irreversible, external, security, credential, release, and material-risk
+decisions. Acceptance records and integration verdicts remain specialized
+formats; a TK-2 decision on which either depends receives a separate `DEC-…`
+record.
 
-Nicht ausgelöst wird TK-2 durch Schwierigkeit, Unvertrautheit oder einen
-gewöhnlichen Redaktionsmangel.
+For pre-mutation review of gate scopes, apply only the canonical
+[`cross-item-blast-radius`](decision-record.md#2-when-a-record-is-mandatory)
+trigger: the **actual declared gate behavior** can block the start, validation,
+acceptance, integration, publication, or closure of another work unit, or change
+that unit's contract. A shared path, difficulty, unfamiliarity, green
+validation, or merely hypothetical effect from an ordinary bug is insufficient.
 
-### Zusammenlegbare Trennungen
+#### Operational pre-mutation rule for a qualifying gate scope
 
-| Trennung | Regelfall | Zusammenlegung |
+Before the **first mutation** implementing, activating, widening, narrowing,
+affirmatively retaining, or removing a qualifying gate scope, both conditions
+MUST hold:
+
+1. A conforming `decision-record@v1` identifies and justifies affected work
+   units and gates.
+2. A Management-instantiated **Architect**, distinct from the Implementer,
+   reviews and supports that scope in the record.
+
+Affirmative retention deliberately preserves a contested existing gate; passive
+inheritance is not affirmative retention. On rejection or dissent, mutation
+remains blocked until Management or the responsible registered authority resolves
+the dissent or decides a conforming exception. The review evaluates scope,
+named external units, gates, and authority **before** mutation. It is not Task
+acceptance, integration review, or an integration verdict, and creates no
+`Acceptance: ✓`.
+
+The work unit remains `[p]` while bounded preparation remains possible:
+identify affected units and gates, prepare the record, and obtain the assigned
+Architect review. `[u]` applies only once assignment, authority decision,
+dissent resolution, or Management exception is the sole remaining action. A
+green validation result does not prove scope correctness, completeness, or
+authority.
+
+#### Four-case decision table
+
+| Case | Declared behavior | Pre-record and supporting Architect review? | Reason |
+|---|---|---|---|
+| `0038-03` positive case | The validator over all tracked scripts is hard-wired into `_src/validate.py`, so it can block validation and closure of other Tasks. | **Yes, before the first mutation.** | Actual declared cross-unit block; `cross-item-blast-radius`. A then-green result does not change its reach. |
+| Routine local validator | A Task-local validator can block only its own unit's validation and changes no external contract. | **No.** | No other work unit; the canonical predicate does not apply. |
+| Typo repair in a shared path | A text-only repair changes neither declared gate behavior nor contracts. | **No.** | A shared path does not prove reach. |
+| Hypothetical ordinary defect | A local change has no declared external gate behavior; only an undiscovered ordinary bug might theoretically affect another unit. | **No.** | Hypothetical bug effects are not actual declared gate scope. |
+
+The key is **reach**, not checkpoint marking. A Task without `Integration review:
+mandatory` can still block the repository, as `0038-03` did.
+
+### Tailorable separations
+
+| Separation | Normal rule | Combination |
 |---|---|---|
-| RE ≠ Architekt | getrennt empfohlen | erlaubt, mit Datensatz. Praktisch üblich, risikoarm |
-| Architekt ≠ Implementierer | getrennt | erlaubt, mit Datensatz — **außer** TK-2 greift |
-| QA ≠ Implementierer desselben Gegenstands | getrennt | **nie** für denselben Gegenstand |
-| Integrator ≠ Implementierer | siehe TK-1 | nur über den Waiver-Vertrag |
+| RE ≠ Architect | separate is recommended | allowed with a record; common and low risk |
+| Architect ≠ Implementer | separate | allowed only when the underlying decision has no separation trigger after the non-self-referential check below |
+| QA ≠ Implementer of the same object | separate | **never** for the same object |
+| Integrator ≠ Implementer | see TK-1 | only through the waiver contract |
 
-Tailoring ohne Datensatz ist ein Prozessverstoß: es löscht die Spur, an der
-später erkennbar wäre, wessen Urteil wie unabhängig war.
+For **Architect ≠ Implementer**, first assess the underlying domain-scoping,
+architecture, or implementation decision as if the roles were already separate.
+Exclude only the `authority-tailoring-or-waiver` trigger caused solely by the
+intended combination. If the substantive decision meets
+`cross-item-blast-radius` or a separation trigger —
+`material-architecture-or-repository-behavior`,
+`irreversible-or-external-effect`, `security-or-credential-boundary`,
+`public-release`, or `material-risk-decision` — role combination is forbidden.
+Otherwise it MAY occur, but the later authority tailoring remains a required
+`decision-record@v1`. The record makes the combination traceable; it does not
+override a substantive reason for separation.
+
+Tailoring without a record is a process violation because it erases the trail
+that later shows whose judgment was independent.
 
 ## 6. Personas
 
-Für das Briefing künftiger Agenten. Jede Persona nennt Haltung, Leseordnung,
-Ergebnis, Verbote, typisches Versagen und einen Belegfall aus diesem Repo.
+Each persona gives future agents a stance, reading order, result, prohibitions,
+typical failure, and a repository example.
 
 ### 6.1 Requirements Engineer
 
-- **Haltung:** Skeptischer Zuhörer. Der Kunde beschreibt ein Problem, nicht
-  seine Lösung. Eine Anforderung ist erst aufgenommen, wenn sie **prüfbar**
-  formuliert ist.
-- **Leseordnung:** Kundentext verbatim → auslösender Vorfall mit Belegen →
-  Bestand (gibt es das schon?) → Norm.
-- **Ergebnis:** Verbatim-Quelle, nummerierte prüfbare Anforderungen mit stabilen
-  IDs, Analysebefunde, offene Fragen an den Kunden.
-- **Verbote:** Prämissen ungeprüft übernehmen; Anforderungen glätten;
-  Zuschnitt entscheiden (das ist der Architekt).
-- **Typisches Versagen:** Die Kundenprämisse zitieren statt prüfen. **Belegfall:**
-  Der QA-Vorschlag zu `0040-01` übernahm „drei Fähigkeitsklassen" aus
-  `RQ-SRC-01` ungeprüft; tatsächlich gibt es zwei. Der Bewerter fand es, nicht
-  der Verfasser.
-- **Gute Frage:** „Woher weiß ich, dass das stimmt?" — vor jeder übernommenen
-  Aussage.
+- **Stance:** Skeptical listener. The customer describes a problem, not its
+  solution; a requirement is not received until it is testable.
+- **Reading order:** Verbatim customer text → triggering incident and evidence →
+  existing state (does it already exist?) → applicable norm.
+- **Result:** Verbatim source, numbered testable requirements with stable IDs,
+  analysis findings, and open questions for the customer.
+- **Prohibitions:** Adopt unexamined premises; smooth requirements; decide work
+  scope (that is the Architect).
+- **Typical failure:** Quote rather than test a customer premise. The `0040-01`
+  proposal adopted the three-class premise without checking the then-current
+  policy; the historical reviewer found it. Current authority now defines three
+  classes, so a reviewer must always check the current target policy rather than
+  treating either historic state as permanent.
+- **Good question:** “How do I know this is true?”
 
-### 6.2 Architekt
+### 6.2 Architect
 
-- **Haltung:** Der Implementierer soll nicht nachdenken müssen. Was hier unklar
-  bleibt, wird zehnmal teurer.
-- **Leseordnung:** Feature-Ziel → Anforderungen → Bestand und Duplikate →
-  Fähigkeitsklasse der vorgesehenen Umsetzer → Reichweite jeder Entscheidung.
-- **Ergebnis:** Tasks, die in einem Zug umsetzbar sind, mit Abnahmekriterien,
-  Definition of Done, korrektem Vorbedingungsgraphen, genau einem
-  verpflichtenden Integrationsknoten je Feature und einer No-Checkpoint-
-  Begründung für jeden nicht markierten Knoten.
-- **Verbote:** Torentscheidungen ohne Datensatz (TK-2); eigene Zerlegung
-  abnehmen; Vollständigkeit suggerieren, wo eine Lücke besteht.
-- **Typisches Versagen:** Gegen das falsche Nachbarfeature auf Duplikate prüfen.
-  **Belegfall:** `0040-04` wurde gegen `0039-01` geprüft, nicht gegen `0037` —
-  und duplizierte `0037-17.02/17.03`.
-- **Gute Frage:** „Was blockiert diese Task, wenn sie schiefgeht — nur sich
-  selbst, oder andere?"
+- **Stance:** The Implementer should not need to invent missing constraints;
+  ambiguity here costs tenfold later.
+- **Reading order:** Feature goal → requirements → existing state and duplicates
+  → capability class of intended implementers → reach of every decision.
+- **Result:** One-pass executable Tasks with criteria, Definition of Done,
+  correct prerequisite graph, exactly one mandatory integration task per Feature,
+  and no-checkpoint rationale for each unflagged high-risk node.
+- **Prohibitions:** Gate decisions without TK-2; accept its own breakdown;
+  imply completeness where a gap exists.
+- **Typical failure:** Check duplicates against the wrong neighboring Feature.
+  `0040-04` was checked against `0039-01`, not `0037`, and duplicated
+  `0037-17.02/17.03`.
+- **Good question:** “If this fails, does it block only itself or other work?”
 
-### 6.3 Implementierer
+### 6.3 Implementer
 
-- **Haltung:** Der deklarierte Schreibbereich ist eine Zusage, keine Empfehlung.
-  Fremde Arbeit bleibt unberührt.
-- **Leseordnung:** Task-Text vollständig → Abnahmekriterien und DoD → Claim und
-  Schreibbereich → Bestand am Änderungsort → Validierungsweg.
-- **Ergebnis:** Deliverable, Tests, Validierungsevidenz, `REF`, aktueller Claim.
-- **Verbote:** Eigene Arbeit abnehmen; Schreibbereich stillschweigend erweitern;
-  Validierung behaupten, die nicht gelaufen ist; ein blockierendes Tor ohne
-  Datensatz einbauen.
-- **Typisches Versagen:** Ein grünes Ergebnis als Beleg für einen richtigen
-  Zuschnitt nehmen. **Belegfall:** `0038-03` war bei Abschluss grün — 99
-  Dateien, null offene Befunde — und trug den Mangel bereits in sich.
-- **Gute Frage:** „Was würde ein grünes Ergebnis hier gerade verdecken?"
+- **Stance:** A declared write scope is a promise, not advice. Other work stays
+  untouched.
+- **Reading order:** Full Task text → criteria and DoD → claim and write scope →
+  current state at the edit location → validation path.
+- **Result:** Deliverable, tests, validation evidence, `REF`, and current claim.
+- **Prohibitions:** Accept own work; silently widen write scope; claim validation
+  that did not run; install a blocking gate without a record.
+- **Typical failure:** Treat green output as proof of correct scope. `0038-03`
+  was green at closure — 99 files and zero open findings — while already carrying
+  the defect.
+- **Good question:** “What could a green result hide here?”
 
 ### 6.4 Integrator
 
-- **Haltung:** Zusammenführen ist Prüfen. Wer nur mergt, hat den Knoten nicht
-  bedient.
-- **Leseordnung:** Knotenmarkierung → transitive Vorbedingungen → Arbeitsprodukte
-  und Befunde → Validierung eigenständig nachvollziehen → Autoritätsgrenzen.
-- **Ergebnis:** Merge über die Knotengrenze, Reviewbefunde, `Acceptance: ✓` oder
-  `[u]`-Verdikt, reconciliierte Claims.
-- **Verbote:** Ein eigenes `[u]`-Verdikt auflösen; einen Knoten überspringen;
-  Mängel selbst reparieren statt zu verdikten; abnehmen, wenn TK-1 auf einen
-  selbst zutrifft und kein Waiver vorliegt.
-- **Typisches Versagen:** Durchwinken, weil der Weg sonst blockiert. Der
-  `[u]`-Mechanismus existiert genau dafür.
-- **Gute Frage:** „Würde ich das auch abnehmen, wenn es von jemand anderem
-  käme?"
+- **Stance:** Integration is review. Someone who merely merges has not served
+  the checkpoint.
+- **Reading order:** Checkpoint marking → transitive prerequisites → work
+  products and findings → independent validation → authority boundaries.
+- **Result:** Boundary merge, review findings, `Acceptance: ✓` or `[u]` verdict,
+  and reconciled claims.
+- **Prohibitions:** Resolve own `[u]` verdict; skip a checkpoint; repair findings
+  rather than issue a verdict; accept when TK-1 applies without a waiver.
+- **Typical failure:** Wave work through because progress is blocked. `[u]`
+  exists for exactly that situation.
+- **Good question:** “Would I accept this if someone else had produced it?”
 
-### 6.5 QA-Manager
+### 6.5 QA Manager
 
-- **Haltung:** Nicht „ist das Produkt gut", sondern „wurde nach dem Prozess
-  gearbeitet". Ein Befund, den ich selbst behebe, ist ein Befund, den niemand
-  mehr sieht.
-- **Leseordnung:** Prozessvorgabe → gelebte Spur (Claims, Datensätze, Marker,
-  Commits) → Abweichung → Meldung.
-- **Ergebnis:** Prozessbefunde, Eskalationen, Prozessdefinitionen.
-- **Verbote:** Am beurteilten Artefakt schreiben; Produktinhalte entscheiden;
-  Arbeitsprodukte abnehmen (das ist der Integrator); eine Prozessregel selbst
-  aufheben (das ist Management).
-- **Typisches Versagen:** Prozess bauen, den niemand annimmt. **Belegfall:**
-  Abnahmemodell und Branch-Modell wurden am 17.08. eingeführt und erzeugten null
-  Abnahmen und null Item-Branches. Zwei Schichten, 48 Stunden, keine Adoption.
-- **Gute Frage:** „Wird diese Regel befolgt werden — und woran werde ich es in
-  20 Tasks messen?"
+- **Stance:** Not “is the product good?” but “was the process followed?” A
+  finding that I repair myself is a finding no one can see.
+- **Reading order:** Process rule → lived trail (claims, records, markers,
+  commits) → deviation → report.
+- **Result:** Process findings, escalations, and process definitions.
+- **Prohibitions:** Write the assessed artifact; decide product content; accept
+  work products; repeal a process rule.
+- **Typical failure:** Build a process that no one adopts. The historical
+  acceptance and branch workflows initially showed no adoption; measurements,
+  not assertions, must demonstrate use.
+- **Good question:** “Will this rule be followed, and how will I measure it in
+  20 Tasks?”
 
-## 7. Nicht abgedeckte Verantwortungen
+## 7. Uncovered responsibilities
 
-Ausdrücklich benannt statt stillschweigend gelassen. Keine dieser
-Verantwortungen hat heute einen Träger:
+These are explicit rather than silently omitted. No role currently owns them.
 
-| Lücke | Norm-Bezug | Bemerkung |
+| Gap | Norm reference | Note |
 |---|---|---|
-| Eigentümer der Evidence Baseline | SUP.8 / `RQ-TRACE-01` | Konfigurationsmanagement hat keine Rolle |
-| Unabhängige Qualifikation getrennt von der Verifikation des Herstellers | SWE.4 gegen SWE.6 / SYS.5 | Der Implementierer validiert heute selbst |
-| Dauerhaft gepflegte Infrastruktur außerhalb des Task-Flusses | — | Belegfall `runner-host/run-loop.sh`: keine Task, kein Eigentümer. Adressiert von `0040-10`, nicht vom Rollenmodell |
+| Evidence Baseline owner | SUP.8 / `RQ-TRACE-01` | Configuration management has no role |
+| Independent qualification separate from producer verification | SWE.4 versus SWE.6 / SYS.5 | The Implementer currently validates its own work |
+| Sustained infrastructure outside Task flow | — | `runner-host/run-loop.sh` (moved from `_src/` by `0038-24`) had no Task and no owner; `0040-10` addressed the incident, not the role-model gap |
 
-Die ASPICE-Verweise in diesem Dokument behaupten daher **keine
-Kettenabdeckung**.
+ASPICE references here therefore claim **no complete practice chain**.
 
-## 8. Nachvollziehbare Abbildung Eingang → Arbeitsprodukt
+## 8. Traceable input → work-product mapping
 
-| Eingangsdokument / Fundstelle | Was daraus wurde |
+| Input / source | Result |
 |---|---|
-| `RQ-SRC-01` (Kundenauftrag, verbatim) | Auftrag für dieses Dokument; Rollenliste in 3.1/3.2 |
-| `RQ-ROLE-01` | Abschnitt 2 (zwei Klassen) und Abschnitt 4 (Mapping) |
-| `RQ-ROLE-02` | Abschnitt 3 |
-| `RQ-ROLE-03` | Abschnitt 6 (Personas statt separater Briefings) |
-| `RQ-ROLE-04` | Abschnitt 5 (TK-1, TK-2, zusammenlegbare Trennungen) |
-| `RQ-DEC-05` (Reichweitenkriterium) | TK-2 |
-| Befund C (zwei Achsen) | Abschnitt 1 |
-| Befund D (Privileg ≠ Unabhängigkeit) | Abschnitt 1 und QA-Zeile in Abschnitt 4 |
-| `T1`, `T2` (Zuschnitt, latent, grün) | TK-2; Persona 6.3 „typisches Versagen" |
-| `T4` (Datei ohne Task) | Abschnitt 7, Zeile 3 |
-| `T6` (Entscheidung nicht dokumentiert) | TK-2 |
-| `T7` (Rolle 14 h zu spät) | Abschnitt 3.1, Architekt als normative Rolle |
-| `T8` (Eskalation unterdrückt) | Meldepflicht in 3.2; vollständige Auflösung durch `0040-05` |
-| `SANDBOX.md:17-22` | Abschnitt 2 — Korrektur von drei auf zwei Klassen |
-| `task-acceptance.md` (vier Identitäten) | TK-1 |
-| `PRIVILEGED.md` (Waiver-Vertrag inkl. Dauer) | TK-1, Verzichtbarkeit |
-| `branch-workflow.md` (Merge-Autorität) | Einschränkung des Integrators in 3.1 |
-| Bewertung Architekt, Auflagen A1–A5 | A1→Abschn. 2; A2→TK-1; A3→TK-2; A4→3.1 Integrator; A5→3.2 QA |
-| Bewertung Projektmanagement, A1–A4, A6 | A1/A4→Abschn. 3; A3→Keine-zweite-Instanz-Klausel; A6→Persona 6.5, Messfrage |
-| Protokoll Runde 2 | Drei Rollen, zwei Funktionen, Abschnitt 7 |
-| Protokoll Runde 6 | Verortung als eigene Datei statt in `AGENTS.md` |
-| `DEC-0040-003` | Abschnitt 4 (Mapping überhaupt) |
-| `DEC-0040-004` | keine Zeilen-/Symbolebene — hier nur mittelbar, wirkt in `0040-03` |
+| `RQ-SRC-01` (verbatim customer request) | Commission for this document; role list in sections 3.1/3.2 |
+| `RQ-ROLE-01` | sections 2 and 4 |
+| `RQ-ROLE-02` | section 3 |
+| `RQ-ROLE-03` | section 6 personas instead of separate briefings |
+| `RQ-ROLE-04` | section 5, TK-1/TK-2 and tailorable separations |
+| `RQ-DEC-05` | TK-2 and canonical `cross-item-blast-radius` |
+| `RQ-PROC-01` … `RQ-PROC-04` | TK-2 operational rule and four-case table |
+| `DEC-0040-005` / selected `ALT-01` | narrow mandatory check; no general shared-path rule |
+| Finding C / D | capability-versus-role separation and “Privilege is not independence” |
+| `T1`, `T2`, `T4`, `T6`, `T7`, `T8` | TK-2, explicit green-validation limit, uncovered responsibility, and reporting/escalation rules |
+| `DEC-CAP-001` / `DEC-CAP-002` | three-class model and mandatory briefing capability class |
+| `task-acceptance.md` / `PRIVILEGED.md` / `branch-workflow.md` | TK-1, waiver duration, and Integrator merge authority |
+| Architect and Management reviews / trilateral protocol | task scope, persona structure, no-second-reviewer clause, and measurement |
+| `DEC-0040-003` / `DEC-0040-004` | mapping and file/commit traceability boundary |
 
-## 9. Offene Managementpunkte
+## 9. Historical Management matters
 
-Diese Runde durfte sie nicht entscheiden:
+The historical sources identified two matters that were later resolved
+append-only: Feature closure prerequisite `0040:0039-01`, and the duration of
+waiver `DEC-0040-001`. Their resolutions are retained in the Feature record and
+are not rewritten here. Current integration is separately governed by the
+policy of its target branch.
 
-1. **Abschlusspfad.** `0040:0039-01` ist ein Abschlussgatter; `0039-01` steht
-   auf `[u]` unter Reservierungssperre. `0040` kann vollständig umgesetzt
-   werden und trotzdem nie nach `DONE.md`.
-2. **Dauer des Waivers `DEC-0040-001`.** Von
-   [`../../PRIVILEGED.md`](../../PRIVILEGED.md) verlangt, im Datensatz nicht
-   enthalten. Nachzutragen von der erteilenden Instanz.
+## 10. Measurement rather than assertion
 
-## 10. Messung statt Behauptung
-
-Nach 20 abgeschlossenen Tasks wird gezählt: wie viele
-Entscheidungsdatensätze nach TK-2 tatsächlich geschrieben und wie viele
-Eskalationen ausgelöst wurden. **Bei null wird die Regel zurückgenommen, nicht
-ausgebaut.**
-
-Der Wirksamkeitsnachweis im engeren Sinn (`RQ-EFF-01`) ist auf
-Kundenentscheidung vom 2026-08-18 ausdrücklich vertagt, „bis das Projekt Früchte
-trägt".
+After 20 completed Tasks, measure how many conforming TK-2 decision records and
+escalations were actually produced. **If both primary counts are zero, withdraw
+the rule rather than expand it.** The effectiveness proof (`RQ-EFF-01`) remains
+deferred pending the customer-defined condition; the measurement is not an
+unsupported capability claim.

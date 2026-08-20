@@ -63,6 +63,34 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
 | `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
 
+## Prozessdokumentations-Prüfung
+
+| Werkzeug | Zweck |
+|---|---|
+| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: `DOC001` tote relative Links, `DOC002` Index-Abdeckung, `DOC003` zitiertes Prozessdokument ohne Rückanker, `DOC004` unverlinkte Dokumente (aggregiert, informativ), `DOC005` unzitierte Entscheidungsdatensätze, `DOC006` unerreichbares Task-gebundenes Kontraktdokument |
+
+Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
+
+Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
+definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
+gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
+([`process-roles.md`](process-roles.md)).
+
+Unverlinkt zu sein ist bei **Nachschlagewerken kein Mangel** — niemand navigiert
+zu einem Schema, man schlägt es nach. `DOC004` fasst diese Fälle deshalb zu
+einem informativen Befund zusammen. Aussagekräftig ist allein `DOC006`: ein
+Dokument, das sich selbst über eine `Status:`-Zeile als Kontrakt oder
+Spezifikation eines Backlog-Items ausweist und trotzdem von nirgends erreichbar
+ist. Es bindet entweder noch und niemand findet es, oder es bindet nicht mehr
+und sagt das nirgends.
+
+Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
+`--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,
+ist eine Entscheidung mit Reichweite über die eigene Arbeitseinheit hinaus und
+verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
+ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
+soll.
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |
@@ -99,7 +127,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `_src/tools/task_validation.py` | Wertet einen unveränderlichen Validierungslauf gegen ein `task-validation-profile@v1` aus; erzwingt Freshness, Stage-/Input-/Output-Verträge, Coverage-Canaries und strukturierte Fehler statt blindem Vertrauen in Exit 0; Aufruf: `python3 _src/tools/task_validation.py --profile <profile.json> --run <result.json>`; siehe [`task-validation.md`](task-validation.md) | 
 | `_src/tools/candidate_budget.py` | Isoliert generierte Kandidaten und erzwingt Ausgabe-/Diff-/Realismus-Budgets (`0038-13`): generiert ausschließlich in laufversuchseigene `output/logs/<task-id>/<request-id>/.candidates/`-Wurzeln (wie `0038-11`s `.partial`-Muster); ein `candidate-budget@v1`-Vertrag deklariert `sole_writer`, erlaubte Pfadmuster, Datei-/Byte-Budgets, erforderliche Teilbäume (z. B. Sprachbäume), Realismus-Byte-Untergrenzen je Kategorie (gerendert/heruntergeladen/übermittelt), optionale Negativ-Pfad-Pflicht, ein Duplikat-Digest-Verhältnis gegen synthetisches Platzhalter-Material sowie eine Soll-Manifest-Diff-Toleranz; `evaluate()` liefert PASS/FAIL/INCONCLUSIVE wie `0038-08`; `promote()` blockiert bei Nicht-PASS, verweigert Überschreiben eines fremden `sole_writer` an einem festen Exportpfad, kopiert nie eine nicht deklarierte Dateifamilie und ist über einen atomaren `current.json`-Zeiger (Muster wie `0038-10`) atomar/recoverable; Aufruf: `python3 _src/tools/candidate_budget.py manifest --root <root> --task-id <id> --request-id <id>` / `evaluate --budget <budget.json> --task-id <id> --request-id <id> --out-report <report.json>` / `promote --budget <budget.json> --task-id <id> --request-id <id> --destination <pfad> --report <report.json> [--apply]` |
 | `_src/tools/chore_tool_inventory.py` | Lifecycle-Vertrags-Klassifikation der getrackten mutierenden Chore-Werkzeuge (`0038-14`): wiederverwendet `automation_safety.tracked_automation_paths()` als lebende Enumeration statt eigenen Git-Scans; lädt `chore_tool_inventory_data.json` und trennt strikt `classified` (Kategorie, Write-Set, Commit-Points, Idempotenz-Schlüssel, Journal, Cleanup, Failure-Aggregation, Ownership, Retention, Test-Referenz) von `enumerated` (nur Heuristik-Kategorie, ausdrücklich nicht klassifiziert); `--check` validiert Schema plus Abgleich gegen die lebende Skript-Liste (meldet fehlende/veraltete Einträge) und ist exit-0 nur bei null Fehlern; Aufruf: `python3 _src/tools/chore_tool_inventory.py --check [--json] [--list {classified,enumerated,missing,stale}] [--category <kategorie>]` |
-| `_src/tools/legacy_task_doctor.py` | Rein lesende, deterministische Diagnose für Legacy-`TODO.md`/`DONE.md`, Claims, REFs, Prerequisites und Agent-Bootstrap; Aufruf: `python3 _src/tools/legacy_task_doctor.py [--json]`; gibt höchstens zehn Zusammenfassungszeilen oder `legacy-task-doctor-report@v1`-JSON aus und repariert/übernimmt/löscht nichts; siehe [`legacy-task-doctor.md`](legacy-task-doctor.md) |
+| `_src/tools/legacy_task_doctor.py` | Read-only, deterministic diagnosis for legacy `TODO.md`/`DONE.md`, claims, REFs, prerequisites, and agent bootstrap; invoke with `python3 _src/tools/legacy_task_doctor.py [--json]`; emits at most ten summary lines or `legacy-task-doctor-report@v1` JSON and never repairs, takes over, or deletes anything; see [`legacy-task-doctor.md`](legacy-task-doctor.md) |
 | `_src/tools/legacy_scope_planner.py` | Rein lesender, fail-closed Kollisionsplaner für direkte und abgeleitete Schreibbereiche; kombiniert normalisierte aktive Claims, den autoritativen `issue-regeneration-dag@v1` und exakt gebundene Git-/Runner-/Generator-/i18n-/Publikations-Snapshots, erklärt Producer-Ketten und liefert `PARALLEL`, `SERIALIZE`, `BLOCK` oder `INCOMPLETE`; siehe [`legacy-scope-planner.md`](legacy-scope-planner.md) |
 | `_src/tools/task_context_capsule.py` | Rein lesender, größenbudgetierter Task-Kontext-/Resume-Capsule-Generator; komponiert `legacy_task_doctor.py`, `legacy_scope_planner.py` und die unveränderlichen `runner_transaction.py`-Attempt-Ergebnisse (`0038-10`) zu kompaktem `task-context-capsule@v1`-JSON plus Zehn-Zeilen-Zusammenfassung, damit ein Agent nach Kontext-/Tool-Budget-Grenzen ohne Wiederholung erledigter Arbeit fortsetzen kann; Aufruf: `python3 _src/tools/task_context_capsule.py --root . --task-id <id> [--claim-path <pfad>] [--max-bytes <n>] [--json]`; siehe [`task-context-capsule.md`](task-context-capsule.md) |
 | `_src/tools/legacy_task_editor.py` | Digest-gebundener struktureller Planer für Pickup, Fortschritt, Closure/Wontfix, Parent-Aggregation, REF-Korrektur und Claim-Handoff/-Finalisierung; erzeugt immer content-addressed Candidate+Diff, verifiziert Promotion-Preimages erneut und liefert bis `0038-05.02` ausschließlich `verified-coordinator-required` ohne autoritative Mutation; siehe [`legacy-task-editor.md`](legacy-task-editor.md) |

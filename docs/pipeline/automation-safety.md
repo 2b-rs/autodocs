@@ -75,7 +75,7 @@ Every finding contains:
 - `status`: `unresolved`, `disposed`, or `advisory`;
 - an exact disposition object when status is `disposed`.
 
-JSON output is stable and includes scanned paths, counts, policy errors, and `PASS`/`FAIL`. The process exits nonzero only when at least one critical finding is unresolved or policy evaluation fails. High advisories remain visible for lifecycle classification but do not silently become accepted behavior.
+JSON output is stable and includes scanned paths, counts, policy errors, and `PASS`/`FAIL`. The process exits nonzero only when at least one critical finding is unresolved or policy evaluation fails. Undispositioned high advisories remain visible for lifecycle classification and do not silently become accepted behavior. An exact policy entry may classify a high finding, but the JSON retains the finding, rationale, owner, expiry, and independently testable invariant.
 
 ## Narrow dispositions
 
@@ -115,13 +115,18 @@ The remaining live critical findings are not accepted as safe. Exact entries blo
 | `_src/tools/manage_approval_readiness.py`: in-place authority-policy write without durable recovery | `0038-15` |
 
 | `_src/i18n/work/{hi,zh}/*write*.sh`: unchecked one-off absolute-path writers | `0038-14` classification/retirement |
-| `runner-host/run-loop.sh`: mutable self-test/runner result handling and false PASS output | `0038-10` immutable aggregate results |
+| Privileged host bootstrapper (`runner-host/run-loop.sh`, moved from `_src/` by `0038-24`): exact high lifecycle debt for setup, cleanup, installers, self-test artifacts, and mutable runner outcomes | `0038-10` immutable aggregate results; the 21 exact dispositions are re-pointed to open Task `0038-28` (see below) |
+
+Task `0040-10` repaired the privileged host bootstrapper's genuine status gaps without weakening the scanner: setup and archival mutations have explicit fatal paths; the status-preserving cleanup trap is armed immediately after successful `RUNNER_TMP_DIR` creation and safely tolerates `resume_applescript` not yet being defined; installer wrappers propagate failure; both runner/log pipeline statuses are aggregated; self-test process, fail-log, and cleanup statuses gate PASS and execution. The shell scanner intentionally retains findings across its sticky function-declaration boundary. Each retained finding therefore has one exact path/rule/line/symbol/evidence-hash disposition owned by open Task `0038-28`; the two exact `AUTO006` entries document the confirmation-gated official Homebrew installer, while each `AUTO010` entry remains explicit immutable-result debt. The TK-2 scope decision, alternatives, consequences, and all 21 individual dispositions are recorded in [`docs/dossiers/0040-10-automation-safety-scope-and-dispositions.md`](../dossiers/0040-10-automation-safety-scope-and-dispositions.md). Moving the bootstrapper into `runner-host/` under Task `0038-24` must rebind exact paths after scanning final bytes; it must not add a host-code or directory exclusion.
 
 Task `0038-26` removed the embedded publication identity/destination and the unconditional force-push from both `_src/publish.sh` and `_src/tools/publish_public_site.sh`, and removed the six now-resolved dispositions those two scripts previously carried (re-pointed there from expired `0038-14`). Both scripts now require the caller to supply `PUBLISH_REMOTE`/`PUBLISH_IDENTITY_NAME`/`PUBLISH_IDENTITY_EMAIL` explicitly (no default resolves to the public repository), and `publish_public_site.sh`'s history-rewriting force-update is gated behind explicit `PUBLISH_ALLOW_FORCE_PUSH=1` plus a named `PUBLISH_FORCE_APPROVAL_REF`, recording the pre-update remote SHA as a recovery point. The remaining `publish_public_site.sh` row above (fixed export cleanup / broad staging, `0038-13`) is untouched by this Task and still open.
 
 Task `0038-05.01` retired `_src/tools/task_bookkeeping_closure.py` as a mutation-free fail-closed compatibility shim and removed its two exact blocking dispositions. `_src/tools/legacy_task_editor.py` writes only review candidates; every authoritative promotion returns `LTE-PROMOTE-COORDINATOR-REQUIRED` until `0038-05.02` integrates the verified candidate contract with the durable transaction coordinator.
-| `_src/tools/provision_tmp_worktree.sh`: privileged destructive re-heal without an explicit retry/recovery lifecycle contract | `0038-14` mutator lifecycle and classification |
+| `_src/tools/provision_tmp_worktree.sh`: explicitly superseded privileged worktree provisioner; exact retained legacy branch/prune/repair/delete/add aggregate | `0038-14` mutator lifecycle classification or retirement; refreshed exact `AUTO001` blocker |
+| `_src/tools/provision_worker_clone.sh`: current privileged clone provisioner; exact branch creation and guarded destructive target-rebuild aggregate lacks a durable lifecycle result | `0041-05` Feature integration/e2e; exact `AUTO001` narrow and `AUTO010` blocking dispositions |
 | `_src/tools/sync_to_devel.sh`: destructive backup sync with implicit lock/cleanup/result lifecycle | `0038-14` mutator lifecycle and classification |
+
+The full-scan baseline findings added during `0040-10` peer-review remediation are recorded separately from its 21 run-loop findings in [`docs/dossiers/0040-10-automation-safety-scope-and-dispositions.md`](../dossiers/0040-10-automation-safety-scope-and-dispositions.md). The stale superseded-worktree entry is rebound to current line `41` and owner `0038-14`; the clone provisioner's exact line-`86` `AUTO001`/`AUTO010` findings expire with `0041-05`. Neither provisioner source was changed by this remediation.
 
 Other high findings—such as destructive extraction, legacy shell execution, and missing durable state—remain machine-visible advisories for `0038-14` and related lifecycle Tasks. They are not hidden by the critical blocking policy.
 
