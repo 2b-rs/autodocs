@@ -168,7 +168,7 @@ HOW TO USE:
   - **Definition of Done:** Committed; regenerating after a new run adds the run to the list without manual editing; layout follows `KONVENTIONEN.md`.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** presentation over an authoritative ledger; errors are visible on the page itself. Re-examined at `0043-07`.
 
-- [ ] **0043-04** PREREQ: 0043-04:0043-01 Make report staleness mechanically impossible to miss.
+- [p] **0043-04** PREREQ: 0043-04:0043-01 Make report staleness mechanically impossible to miss. Claim: `TODO-Data-Aria-0043-04-20260821T093000Z.md`; owner_token: `agent:data-aria-20260821t093000z:0043-04:20260821T093000Z`.
   - **Requirements covered:** `RQ-BR-04`.
   - **Context (finding B6):** No check notices a frozen report page today; the canonical build sequence does not include `publish`.
   - **Acceptance criteria:** The canonical build sequence includes `combine`+`publish`; `validate.py` emits a finding when the published page model is older than the newest subreport cohort or when a run produced no ledger entry; the check has focused tests including the frozen-page case that motivated this Feature.
