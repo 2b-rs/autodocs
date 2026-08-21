@@ -54,6 +54,35 @@ nothing about that SHA's own history links it to a foreign branch anymore.
 It is a mechanical aid for an integrator/reviewer, not a substitute for
 review, and it makes no accept/reject decision itself.
 
+Residual known limitation — fast-forward absorption blind spot (`DEC-0044-007`):
+this tool's `source-origin` classification cannot distinguish a commit that
+was genuinely authored directly on the source branch from a commit that was
+authored on an entirely different, foreign branch and then absorbed onto
+source's tip via a **fast-forward** (`git merge --ff-only` or `git
+update-ref`, i.e. any operation that advances a branch pointer without
+creating a merge commit). Both cases produce a plain, single-parent commit
+sitting on `source_commit`'s own first-parent chain — topologically there is
+nothing left to distinguish them; Git itself does not record "which branch a
+commit was first authored on" once no merge commit marks the join. This is
+not a hypothetical edge case: fast-forward absorption is a routine, everyday
+git operation (this project's own integrator workflow advances `main` this
+way), so a foreign commit could in principle enter a source branch through
+exactly this path and be silently classified `source-origin` instead of
+`foreign-branch`. No purely local-history signal closes this gap; see
+`docs/dossiers/0044-01-branch-workflow-prose-scope-review.md` §5 (the third
+`[u]` integration-review verdict beneath Task `0044-01` in `TODO.md`, and the
+Architect's `DEC-0044-007` disposition of it) for the full reproduction and
+analysis. `DEC-0044-007` accepts this as a documented residual limitation of
+the mechanical check rather than a defect to code around, and pairs it with a
+binding process control instead: `docs/pipeline/branch-workflow.md`
+("Integration policy precedence" section) now requires an explicit `--no-ff`
+merge commit for any absorption of content from a branch other than an
+item's own direct predecessor/successor chain or its own prior tip — so that
+when foreign content genuinely is pulled in, it leaves the merge-commit
+topology this tool's `target-pull-in-eligible`/`foreign-branch`
+classification already relies on, and the blind spot cannot silently fire in
+a policy-sanctioned workflow.
+
 This module is deliberately read-only: it never mutates the repository, never
 writes files, and only shells out to `git` in ways that cannot mutate refs or
 the working tree (`rev-parse`, `merge-base`, `log`, `rev-list --first-parent`,
