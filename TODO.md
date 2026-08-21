@@ -158,7 +158,7 @@ HOW TO USE:
     - **Contract SHA-256:** `4f2da3c6f1f5083074ea6f50cd6df7c3d481de4841f588e05892be4bbae85514`
     - **Work-product manifest SHA-256:** `a3d30099902d543a9283f6244fe20e05a45943c0525f50795330b306cb4c1d84`
     - **Prerequisite-acceptance SHA-256:** `67a041553bf478b24c6e953da39b691d6235240226758fc9b7cc312022c457ae` (empty set — Task `0044-01` declares no `PREREQ`)
-    - **Review REF:** `PENDING_REVIEW_REF` — filled with the review-evidence commit hash on the `0044-01` branch immediately below this record, before the separate bookkeeping commit
+    - **Review REF:** `4deec319fdb72bee3d6ffaedb63b453b4b704cca`
 
 - [ ] **0044-02** PREREQ: 0044-02:0044-01 Define the risk-integration procedure (three-role review, unanimity, temporary policy suspension, escalation).
   - **Requirements covered:** `RQ-IP-06`; implements `DEC-0044-003`.
