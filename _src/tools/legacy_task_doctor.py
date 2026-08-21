@@ -23,7 +23,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 
 REPORT_SCHEMA = "legacy-task-doctor-report@v1"
-VALID_MARKERS = {" ", "u", "p", "?", "w", "x"}
+VALID_MARKERS = {" ", "u", "p", "?", "w", "x", "d"}
 TERMINAL_MARKERS = {"w", "x"}
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
 FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
