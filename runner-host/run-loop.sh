@@ -1410,6 +1410,16 @@ while true; do
   log_path="$ARCHIVE_DIR/${archive_base}.log"
   script_path="$ARCHIVE_DIR/${archive_base}.sh"
 
+  # 0043-01: name this run's archived script+log pair so every publication-run
+  # producer (generate.py, validate.py, i18n_translate.py, i18n_diagrams.py)
+  # that reads RUN_ARCHIVE_REF from the environment correlates into one
+  # cohort that `build_report.py combine` can aggregate. The ref is the
+  # run-archive-relative path stem shared by "${archive_base}.log" and
+  # "${archive_base}.sh"; it is exported before the watched script executes
+  # so any subprocess it spawns inherits it.
+  RUN_ARCHIVE_REF="run-archive/${archive_base}"
+  export RUN_ARCHIVE_REF
+
   if ! : > "$log_path"; then
     printf 'error: failed to initialize run log: %s\n' "$log_path" >&2
     exit 1
