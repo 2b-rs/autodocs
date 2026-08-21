@@ -19,6 +19,8 @@ where possible, to the associated implementation or evidence.
   evidence, generate source, validate, publish, archive)
 - [`tools.md`](./tools.md) — catalog of project tools and their contracts
 - [`reports.md`](./reports.md) — report types, locations, and retention rules
+- [`build-ledger.md`](./build-ledger.md) — schema and append-only contract of
+  the tracked build ledger `docs/evidence/build-ledger.jsonl` (`DEC-0043-001`)
 - [`agent-execution.md`](./agent-execution.md) — capability classes and the
   sandboxed runner contract
 - [`agent-workflow.md`](./agent-workflow.md) — authority discovery,

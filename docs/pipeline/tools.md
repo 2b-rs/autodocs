@@ -43,7 +43,8 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `extraction_report.py` | Extraktionsbericht mit vollständiger Abweichungsliste (vier Fehlerklassen), zeigt Kurationsanfragen | Subkommandos u. a. `category`, `output`, `document`, `page` |
 | `spec_extraction_campaign.py` | Reproduzierbare Side-by-Side-Extraktionskampagnenberichte; führt selbst keine Extraktion aus | `create`, `report` |
 | `spec_extraction_benchmark.py` | Baut deterministischen, review-first 200-Record-Benchmark-Entwurf | — |
-| `build_report.py` | Aggregiert Subreports zu kanonischem Gesamtbericht und erzeugt statisches HTML-Seitenmodell `build-reports.html` | `python3 _src/tools/build_report.py combine` / `publish` |
+| `build_report.py` | Aggregiert Subreports zu kanonischem Gesamtbericht, erzeugt statisches HTML-Seitenmodell `build-reports.html` und trägt den Lauf ins getrackte Build-Ledger ein | `python3 _src/tools/build_report.py combine` / `publish` / `mint-ref` / `--no-ledger` |
+| `build_ledger.py` | Getracktes, append-only Build-Ledger `docs/evidence/build-ledger.jsonl` (ein Eintrag je Veröffentlichungslauf; `DEC-0043-001`); prüft Schema, Duplikate und — gegen eine Git-Baseline — die Append-only-Eigenschaft byte-genau (siehe `build-ledger.md`) | `python3 _src/tools/build_ledger.py verify [--baseline=HEAD]` / `list` / `backfill-historic` |
 | `traceability_report.py` | Baut Traceability-Seitenmodell aus `crosscheck --json` + Log | `--json <crosscheck.json> --log <crosscheck.log>` |
 | `upstream_evidence.py` | Persistiert rohe Backend-Beobachtungen je Dokument/ID/Backend ("Preserve raw evidence") | schreibt `_src/spec/upstream/evidence/<doc>/<id>/<backend>.json` |
 | `text_repair.py` | Repariert PDF-Extraktionsartefakte mit belegter Herkunft; jede Änderung ist eine versionierte, protokollierte Regel; unbeweisbare Fälle werden als `suspects` gemeldet, nicht geraten | Bibliothek |
