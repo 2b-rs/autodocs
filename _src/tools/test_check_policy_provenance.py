@@ -22,6 +22,7 @@ previously reported broken one at a time.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 import unittest
@@ -30,13 +31,14 @@ from pathlib import Path
 import check_policy_provenance as cpp
 
 
-def _git(repo: Path, *args: str) -> str:
+def _git(repo: Path, *args: str, env: dict | None = None) -> str:
     proc = subprocess.run(
         ["git", "-C", str(repo), *args],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
         check=True,
+        env={**os.environ, **(env or {})},
     )
     return proc.stdout
 
@@ -48,12 +50,12 @@ def _init_repo(repo: Path) -> None:
     _git(repo, "config", "user.name", "Test")
 
 
-def _commit(repo: Path, path: str, content: str, message: str) -> str:
+def _commit(repo: Path, path: str, content: str, message: str, env: dict | None = None) -> str:
     full = repo / path
     full.parent.mkdir(parents=True, exist_ok=True)
     full.write_text(content)
     _git(repo, "add", path)
-    _git(repo, "commit", "-q", "-m", message)
+    _git(repo, "commit", "-q", "-m", message, env=env)
     return _git(repo, "rev-parse", "HEAD").strip()
 
 
@@ -95,6 +97,56 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
         finding = report.findings[0]
         self.assertEqual(finding.classification, "source-origin")
         self.assertFalse(report.has_foreign_branch_policy_commit)
+
+    def test_required_policy_origin_trailer_is_reported(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2\n",
+            "revise policy\n\nPolicy-Origin-Branch: 0001-01",
+        )
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        finding = report.findings[0]
+        self.assertEqual(finding.policy_origin_branch, "0001-01")
+        self.assertFalse(finding.missing_policy_origin_trailer)
+        self.assertFalse(report.has_missing_policy_origin_trailer)
+
+    def test_missing_required_policy_origin_trailer_is_a_finding_and_fails_cli(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(self.repo, "docs/pipeline/branch-workflow.md", "policy v2\n", "revise policy")
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertTrue(report.has_missing_policy_origin_trailer)
+        self.assertTrue(report.findings[0].missing_policy_origin_trailer)
+        self.assertEqual(
+            cpp.main(["--source-branch", "0001-01", "--target-branch", "main", "--repo", str(self.repo)]),
+            1,
+        )
+
+    def test_pre_decision_policy_commit_does_not_require_a_trailer(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2\n",
+            "legacy policy",
+            env={"GIT_AUTHOR_DATE": "2026-08-20T12:00:00+00:00", "GIT_COMMITTER_DATE": "2026-08-20T12:00:00+00:00"},
+        )
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertFalse(report.has_missing_policy_origin_trailer)
+        self.assertFalse(report.findings[0].missing_policy_origin_trailer)
+
+    def test_malformed_policy_origin_trailer_is_a_finding(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2\n",
+            "revise policy\n\nPolicy-Origin-Branch: bad..branch",
+        )
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertTrue(report.has_missing_policy_origin_trailer)
+        self.assertIsNone(report.findings[0].policy_origin_branch)
 
     def test_policy_commit_reachable_from_target_is_pull_in_eligible(self):
         # Target branch changes policy after branch-out; source pulls it in

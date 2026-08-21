@@ -10,6 +10,15 @@ as having originated on the source branch itself or as a legitimate pull-in
 from the target branch (`DEC-0044-001`: pulling the target's own policy
 changes into the source is permitted).
 
+Since the 2026-08-21 management decision recorded at
+`2026-08-21T11:20:51+02:00` for `DEC-0044-008`/`DEC-0044-011`, each later
+policy-path commit must carry exactly one `Policy-Origin-Branch:` trailer with
+a non-empty valid Git branch name naming the branch where the commit originated.
+The checker reports a missing or malformed required trailer as a finding and
+exits nonzero; it does not require or judge trailers on earlier history. The
+trailer records introducer evidence; it does not make an otherwise foreign merge
+eligible.
+
 Scope and honesty note (read this before trusting a verdict): Git does not
 record a commit's "originating branch" as a first-class fact. Earlier
 revisions of this tool tried to approximate provenance from branch
@@ -106,13 +115,16 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import datetime
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Sequence
 
 DEFAULT_POLICY_PATHS = ("docs/pipeline/branch-workflow.md",)
 
-REPORT_SCHEMA = "policy-provenance-report@v1"
+REPORT_SCHEMA = "policy-provenance-report@v2"
+POLICY_ORIGIN_TRAILER = "Policy-Origin-Branch"
+POLICY_PROVENANCE_EFFECTIVE_AT = datetime.fromisoformat("2026-08-21T11:20:51+02:00")
 
 
 class GitError(RuntimeError):
@@ -196,6 +208,39 @@ def _parent_count(repo: Path, sha: str) -> int:
     return max(len(tokens) - 1, 0)
 
 
+def _commit_timestamp(repo: Path, sha: str) -> datetime:
+    """Return the commit timestamp used for the non-retroactive trailer rule."""
+    value = _run_git(repo, ["show", "-s", "--format=%cI", sha]).strip()
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise GitError(f"could not parse commit date for {sha}: {value!r}") from exc
+
+
+def _policy_origin_trailers(repo: Path, sha: str) -> List[str]:
+    """Return non-empty Policy-Origin-Branch trailer values, preserving order."""
+    out = _run_git(
+        repo, ["show", "-s", f"--format=%(trailers:key={POLICY_ORIGIN_TRAILER},valueonly)", sha]
+    )
+    return [line.strip() for line in out.splitlines() if line.strip()]
+
+
+def _has_valid_policy_origin_trailer(repo: Path, sha: str) -> tuple[bool, Optional[str]]:
+    """Validate the exactly-one, non-empty branch-name trailer convention."""
+    trailers = _policy_origin_trailers(repo, sha)
+    if len(trailers) != 1:
+        return False, None
+    value = trailers[0]
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "check-ref-format", "--branch", value],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    return (True, value) if proc.returncode == 0 else (False, None)
+
+
 def _blob_at(repo: Path, commit: str, path: str) -> Optional[str]:
     proc = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "--verify", f"{commit}:{path}"],
@@ -245,6 +290,8 @@ class PolicyCommitFinding:
     changed_policy_paths: List[str]
     containing_branches: List[str]
     classification: str  # "source-origin" | "target-pull-in-eligible" | "foreign-branch"
+    policy_origin_branch: Optional[str]
+    missing_policy_origin_trailer: bool
     note: str
 
     def to_dict(self) -> dict:
@@ -253,6 +300,8 @@ class PolicyCommitFinding:
             "changed_policy_paths": self.changed_policy_paths,
             "containing_branches": self.containing_branches,
             "classification": self.classification,
+            "policy_origin_branch": self.policy_origin_branch,
+            "missing_policy_origin_trailer": self.missing_policy_origin_trailer,
             "note": self.note,
         }
 
@@ -276,6 +325,14 @@ class ProvenanceReport:
     def has_foreign_branch_policy_commit(self) -> bool:
         return bool(self.foreign_branch_findings)
 
+    @property
+    def missing_policy_origin_trailer_findings(self) -> List[PolicyCommitFinding]:
+        return [f for f in self.findings if f.missing_policy_origin_trailer]
+
+    @property
+    def has_missing_policy_origin_trailer(self) -> bool:
+        return bool(self.missing_policy_origin_trailer_findings)
+
     def to_dict(self) -> dict:
         return {
             "schema": self.schema,
@@ -287,6 +344,7 @@ class ProvenanceReport:
             "policy_paths": self.policy_paths,
             "findings": [f.to_dict() for f in self.findings],
             "has_foreign_branch_policy_commit": self.has_foreign_branch_policy_commit,
+            "has_missing_policy_origin_trailer": self.has_missing_policy_origin_trailer,
         }
 
 
@@ -396,12 +454,24 @@ def check_policy_provenance(
                     "the one they originated on or the integration target)."
                 )
 
+        trailer_required = _commit_timestamp(repo, sha) > POLICY_PROVENANCE_EFFECTIVE_AT
+        trailer_valid, policy_origin_branch = _has_valid_policy_origin_trailer(repo, sha)
+        missing_policy_origin_trailer = trailer_required and not trailer_valid
+        if missing_policy_origin_trailer:
+            note += (
+                f" Missing required {POLICY_ORIGIN_TRAILER}: trailer: policy-path commits "
+                f"after {POLICY_PROVENANCE_EFFECTIVE_AT.isoformat()} must carry exactly "
+                "one non-empty, valid branch-name value."
+            )
+
         findings.append(
             PolicyCommitFinding(
                 sha=sha,
                 changed_policy_paths=changed,
                 containing_branches=containing,
                 classification=classification,
+                policy_origin_branch=policy_origin_branch,
+                missing_policy_origin_trailer=missing_policy_origin_trailer,
                 note=note,
             )
         )
@@ -431,11 +501,18 @@ def _format_text(report: ProvenanceReport) -> str:
         marker = "!!" if f.classification == "foreign-branch" else "--"
         lines.append(f"  {marker} {f.sha[:12]} [{f.classification}] {f.changed_policy_paths}")
         lines.append(f"       branches: {f.containing_branches}")
+        trailer = f.policy_origin_branch or "MISSING OR MALFORMED"
+        lines.append(f"       {POLICY_ORIGIN_TRAILER}: {trailer}")
         lines.append(f"       {f.note}")
-    if report.has_foreign_branch_policy_commit:
-        lines.append("VERDICT: foreign-branch policy commit(s) found — review required.")
+    if report.has_foreign_branch_policy_commit or report.has_missing_policy_origin_trailer:
+        reasons = []
+        if report.has_foreign_branch_policy_commit:
+            reasons.append("foreign-branch policy commit(s)")
+        if report.has_missing_policy_origin_trailer:
+            reasons.append("missing or malformed Policy-Origin-Branch trailer(s)")
+        lines.append("VERDICT: " + "; ".join(reasons) + " found — review required.")
     else:
-        lines.append("VERDICT: no foreign-branch policy commits found.")
+        lines.append("VERDICT: no foreign-branch policy commits or missing required trailers found.")
     return "\n".join(lines)
 
 
@@ -468,7 +545,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     else:
         print(_format_text(report))
 
-    return 1 if report.has_foreign_branch_policy_commit else 0
+    return 1 if (report.has_foreign_branch_policy_commit or report.has_missing_policy_origin_trailer) else 0
 
 
 if __name__ == "__main__":
