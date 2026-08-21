@@ -14,12 +14,19 @@ Tasks:
 CLI:
     python3 _src/tools/build_report.py combine [--run-archive-ref=<ref>]
     python3 _src/tools/build_report.py publish [--run-archive-ref=<ref>]
+    python3 _src/tools/build_report.py combine --no-ledger
     python3 _src/tools/build_report.py mint-ref
         Mints and prints a distinguishably marked fallback RUN_ARCHIVE_REF
         (see mint_manual_run_archive_ref) for a manual/out-of-runner build
         (0043-01), so `combine` can still correlate its cohort. Export it
         before invoking the producers, e.g.:
             export RUN_ARCHIVE_REF="$(python3 _src/tools/build_report.py mint-ref)"
+
+  - 0043-02: `combine` and `publish` append exactly one entry per publication
+    run to the tracked append-only build ledger `docs/evidence/build-ledger.jsonl`
+    (see build_ledger.py and docs/pipeline/build-ledger.md). `--no-ledger`
+    suppresses the append for a diagnostic re-run that must not enter the
+    permanent build history.
 """
 import datetime
 import glob
@@ -31,6 +38,9 @@ import secrets
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import build_ledger  # noqa: E402  (same-directory sibling module)
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
@@ -497,10 +507,35 @@ def generate_report_page(combined_report=None, run_archive_ref=None):
     return PAGE_MODEL
 
 
+def record_in_ledger(combined, combined_path, ledger_path=None):
+    """Append this run to the tracked build ledger (0043-02).
+
+    Returns ``(ok, message)``. A failure is never swallowed: the ledger is the
+    configuration-managed build evidence required by `DEC-0043-001`, and
+    `0043-04` will treat a run without a ledger entry as a finding, so a failed
+    append must be visible in the exit code of the run that caused it.
+    """
+    try:
+        status, entry = build_ledger.record_run(combined, combined_path, path=ledger_path)
+    except (build_ledger.LedgerError, OSError, ValueError) as exc:
+        return False, f"Build-Ledger NICHT aktualisiert: {exc}"
+    target = ledger_path or build_ledger.LEDGER_PATH
+    rel = os.path.relpath(target, ROOT)
+    if rel.startswith(os.pardir):  # a ledger outside the repository (tests, diagnostics)
+        rel = target
+    if status == "duplicate":
+        return True, (
+            f"Build-Ledger unveraendert: Lauf {entry['run_archive_ref']!r} ist in {rel} "
+            "bereits verzeichnet (ein Eintrag je Lauf)."
+        )
+    return True, f"Build-Ledger ergaenzt: {rel} (+1 Eintrag, Lauf {entry['run_archive_ref']!r})"
+
+
 def main(argv=None):
     args = list(sys.argv[1:] if argv is None else argv)
     cmd = args[0] if args else "combine"
     ref = None
+    use_ledger = "--no-ledger" not in args
     for a in args:
         if a.startswith("--run-archive-ref="):
             ref = a.split("=", 1)[1]
@@ -508,12 +543,24 @@ def main(argv=None):
     if cmd == "combine":
         combined, out = combine_reports(ref)
         print(f"Aggregierter Build-Report geschrieben: {out} (Exit-Code {combined['exit_code']})")
-        return combined["exit_code"]
+        exit_code = combined["exit_code"]
+        if use_ledger:
+            ok, message = record_in_ledger(combined, out)
+            print(message, file=sys.stdout if ok else sys.stderr)
+            if not ok:
+                exit_code = max(exit_code, 1)
+        return exit_code
     if cmd in ("publish", "page"):
-        combined, _ = combine_reports(ref)
+        combined, out = combine_reports(ref)
         page_path = generate_report_page(combined, ref)
         print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
-        return combined["exit_code"]
+        exit_code = combined["exit_code"]
+        if use_ledger:
+            ok, message = record_in_ledger(combined, out)
+            print(message, file=sys.stdout if ok else sys.stderr)
+            if not ok:
+                exit_code = max(exit_code, 1)
+        return exit_code
     if cmd == "mint-ref":
         print(mint_manual_run_archive_ref())
         return 0
