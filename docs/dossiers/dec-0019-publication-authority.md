@@ -105,3 +105,100 @@ privileged orchestrator role for Feature `0019` is `worf` (lower case); the
 capitalized `Worf` is not a registered mailbox. Mailbox addresses in this
 project are case-sensitive and have caused lost mail twice. The grantee is the
 `worf` roster identity, unambiguous from the escalation this answers.
+
+---
+
+## `DEC-0019-002` — Integrationscheckpoints von Feature `0019` gewaivt; enge Ausschlussprüfung und Freigabevorschau treten an ihre Stelle
+
+- **Recorded at:** 2026-08-22T00:00:00Z
+- **Deciding identity:** Management (aktueller User / Repository-Eigentümer)
+- **Recording identity:** `agent:kathryn:projektleiter:0019-checkpoint-waiver:20260822T000000Z`
+- **Role of the recorder:** Projektleiter unter `DEC-ROLE-001` — zeichnet auf,
+  entscheidet nicht
+- **Authority reference:** wörtliche Managemententscheidung, siehe *Provenance*
+  und [`dec-0019-002-provenance.txt`](dec-0019-002-provenance.txt)
+- **Art des Datensatzes:** ausdrückliche Management-**Waiver** des vom
+  Architekten gesetzten Review-Bodens. `AGENTS.md` erlaubt das ausschließlich
+  dem Management und ausschließlich mit benannter Autorität, Geltungsbereich,
+  Grund und kompensierenden Kontrollen. Alle vier sind unten benannt.
+
+### Geltungsbereich
+
+Die beiden Knoten in Feature `0019`, die `Integration review: mandatory`
+tragen — `0019-12` (Public-Export-/Deployment-Grenze) und `0019-10` (die eine
+integrierende Aufgabe des Features, sein Review-Boden) — verlieren die
+Pflicht zum **vollen** unabhängigen Checkpoint-Review.
+
+Der Waiver gilt **nur für Feature `0019`**. Er ändert die Checkpoint-Semantik
+für kein anderes Feature, hebt `Integration review: mandatory` nirgendwo sonst
+auf und ist kein Präzedenzfall für künftige Features.
+
+### Grund
+
+Feature `0019` hat über mehrere Tage sechs parallele Reviewer-Sessions
+beschäftigt, ohne zu einem einzigen aktuellen Verdikt zu konvergieren. Der
+Review-Boden hat in diesem Feature nachweislich nicht als Qualitätssicherung
+gewirkt, sondern als Endlosschleife. Das Management hat den Zustand
+ausdrücklich beendet.
+
+### Kompensierende Kontrollen — verbindlich, kein Verzicht
+
+Der volle Checkpoint wird ersetzt, **nicht gestrichen**. An seine Stelle treten
+drei Kontrollen, die alle drei erfüllt sein müssen:
+
+1. **Enge Ausschlussprüfung durch einen unabhängigen Agenten.** Ein Agent, der
+   nicht an `0019` implementiert hat, beantwortet **genau eine** Frage: *Ist im
+   Exportbaum versehentlich etwas enthalten, das nicht veröffentlicht werden
+   darf?* Maßgeblich ist die Kuratorentscheidung `CUR-0019-08-20260820`: die
+   2.239 als `invalid`/`to-be-confirmed` geführten Records bleiben von
+   faktischer Publikation ausgeschlossen. Der Prüfer bewertet **nicht** Design,
+   Codequalität, Testabdeckung oder Vollständigkeit des Features. Ergebnis ist
+   `sauber` oder `Fund` mit Pfadliste, append-only aufgezeichnet.
+2. **Freigabevorschau vor der Veröffentlichung.** Vor dem Push legt der
+   Publizierende dem Management vor:
+   - einen **anklickbaren lokalen Link** (`file://`) auf den fertig gebauten
+     Exportbaum, damit er im Browser begehbar ist;
+   - eine **Änderungsübersicht** in Prosa: was neu ist, was sich geändert hat,
+     was bewusst fehlt — mit je einem Link auf die betroffene Seite.
+   Die Übersicht darf mit veröffentlicht werden (Changelog auf der Website).
+3. **Ausdrückliche Freigabe.** Erst nach einem ausdrücklichen „ja, das kann
+   raus" des Managements erfolgt der Push. Die Publikationsautorität aus
+   `DEC-0019-001` bleibt an diese Freigabe gebunden.
+
+### Was der Waiver *nicht* tut
+
+- Er hebt die **Inhaltsschranke nicht auf**. Die Kuratorentscheidung
+  `CUR-0019-08-20260820` bindet unverändert; genau ihre Einhaltung ist der
+  Gegenstand von Kontrolle 1.
+- Er erlaubt **keine Selbstprüfung**. Der Prüfer aus Kontrolle 1 muss von der
+  Implementierung unabhängig sein.
+- Er ersetzt **nicht** die Feature-Integration nach `main` und den
+  `DONE.md`-Umzug; die bleiben privilegierte Akte. Das Management hat die
+  Feature-Integration `0019` → `main` der Projektleitung zugewiesen.
+- Er ist **keine** Aussage darüber, dass die Arbeit fehlerfrei ist. Er ist eine
+  bewusste Verschiebung von Prüftiefe zu Prüfgeschwindigkeit, deren Restrisiko
+  das Management ausdrücklich trägt.
+
+### Verfahrensanweisung an die Beteiligten
+
+Die Blockadehaltung gegenüber der Fertigstellung von `0019` endet mit diesem
+Datensatz. Weitere Reviewrunden über den Umfang von Kontrolle 1 hinaus werden
+**nicht** angesetzt. Wer einen konkreten, benannten Fund hat, meldet ihn; ein
+allgemeiner Wunsch nach mehr Prüfung ist ab hier kein Blocker mehr.
+
+### Provenance
+
+Managemententscheidung, wörtlich, 2026-08-22 — Antwort auf die Erläuterung der
+drei Optionen (Bremse drin lassen / Bremse lösen / Mittelweg mit enger
+Ausschlussprüfung):
+
+> Ich möchte in solchen Fällen einen klickbaren Link ins lokale Dateisystem,
+> zusammen mit einer übersicht über die durchgeführten änderungen, auch jeweils
+> mit einem Link auf die Seiten, die sie betreffen. Ihr könnt das Changelog
+> meinetwegen auch mit auf die Website stellen. Und dann könnt ihr mich fragen,
+> ob das so raus kann. Aber die Art und Weise, in der Worf sich hier querstellt,
+> das möchte ich nicht mehr. Die Frage "ist versehentlich etwas ungeprüftes
+> dabei" kann von mir unabhängig ein Agent machen. Also 3.
+
+Vollständige Prompt-Kette in
+[`dec-0019-002-provenance.txt`](dec-0019-002-provenance.txt).
