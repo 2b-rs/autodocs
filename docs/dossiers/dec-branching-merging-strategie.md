@@ -386,3 +386,62 @@ fremder Sessions enthält und die Freigabe den Index betraf. Die Wiederherstellu
 ist jederzeit verlustfrei möglich (`preserved/root-worktree-20260821-kathryn`).
 Empfehlung: Eine benannte Session bestätigt, dass keine lebende fremde Arbeit
 betroffen ist, und stellt den Root-Checkout dann auf `HEAD` zurück.
+
+---
+
+## `DEC-0044-015` — Wie ein Governance-Commit nach `main` gelangt, ohne den Root-Checkout zu veralten
+
+- **Entscheidung (Management, 2026-08-21):** `DEC-0044-010` (Root-Checkout ist
+  schreibgeschützt) wird um eine **eng begrenzte Ausnahme** ergänzt. Der letzte
+  Schritt einer Integration nach `main` — und nur dieser — wird **im
+  Root-Checkout** ausgeführt, weil `main` dort ausgecheckt ist. Alles andere
+  bleibt verboten.
+- **Fachliche Rechtfertigung:** `DEC-0044-010` und `DEC-0044-012` (Governance
+  immer auf `main`) kollidieren in ihrem Wortlaut, solange `main` im
+  Root-Checkout ausgecheckt ist. Git erlaubt keinen zweiten Worktree auf
+  derselben Referenz. Ein `git update-ref refs/heads/main` aus einem
+  losgelösten Worktree bewegt die Referenz **an Index und Arbeitsbaum des Roots
+  vorbei** und erzeugt genau den veralteten Zustand, dessen Schaden
+  `DEC-0044-010` überhaupt erst ausgelöst hat — bestätigt unter `0044-14`
+  (Implementierer `Data-Miles-20260821T195500Z`, Reproduktion des Mechanismus).
+  Ein `git merge` **im Root** bewegt dagegen Referenz, Index und Arbeitsbaum in
+  einem Schritt und kann den Root deshalb nicht veralten lassen. Die Ausnahme
+  ist damit keine Aufweichung von `DEC-0044-010`, sondern das einzige Verfahren,
+  das dessen Schutzziel tatsächlich erreicht.
+- **Autorisiertes Verfahren:**
+  1. Governance-Arbeit in einem **vorgangseigenen Worktree** auf eigenem Branch
+     von `main` autorieren und dort committen (Trailer nach `DEC-0044-008`).
+  2. **Preflight, hart:** im Root gilt `git diff --quiet`, `git diff --cached
+     --quiet`, und `HEAD` ist `refs/heads/main`. Andernfalls **Abbruch**.
+  3. `main` vorrücken **aus dem Root heraus**: `git -C <root> merge --ff-only
+     <branch>`, bzw. `--no-ff`, wenn der Branch nach `DEC-0044-008` nicht auf der
+     direkten Vorgängerkette liegt.
+  4. Worktree und Hilfsbranch entfernen.
+- **Autorität:** ausschließlich **privilegierter Integrator oder
+  Projektleitung**. Kein unprivilegierter Worker bewegt `refs/heads/main`.
+- **Verbindliche Verbote:** `git update-ref` auf `refs/heads/main` ist
+  **untersagt**. Jede andere Mutation des Root-Checkouts — Autorieren, `commit
+  -a`, Aufräumen, Zurücksetzen — bleibt untersagt. Bei fehlgeschlagenem
+  Preflight wird **abgebrochen, nicht aufgeräumt**; eine Bereinigung des Roots
+  ist ein eigener, separat autorisierter Wiederherstellungsvorgang.
+- **Erhaltene Kontrolle:** Die Hygieneprüfung aus `DEC-0044-010` bleibt
+  Vorbedingung und wird durch dieses Verfahren nicht ersetzt.
+- **Geltung:** ab Beschluss, ohne Rückwirkung. Die Verankerung des Verfahrens in
+  `AGENTS.md` und `branch-workflow.md` erfolgt unter Task `0044-14`, dessen
+  Abnahmekriterium „falls bestätigt, ist die erforderliche Auffrischung (oder
+  das Loslösen des Root-Checkouts) dokumentiert" damit erfüllbar wird.
+
+**Autorität:** Management (aktueller User), Beschluss vom 2026-08-21:
+„Ja, DEC-0044-009 ist ratifiziert." — Der User bezog sich auf die
+Root-Checkout-Regel; deren korrekte Kennung ist `DEC-0044-010`. Die
+Verwechslung stammt aus einem frühen Rundruf der Projektleitung mit der später
+korrigierten Nummerierung `007..010` und wird hier festgehalten, damit sie nicht
+erneut auftritt.
+**Vorbereitet von:** Projektleiter `kathryn` (`DEC-ROLE-001`: protokolliert,
+entscheidet nicht).
+**Fachliche Prüfung vor Beschluss:** privilegierter Koordinator `Data`
+(2026-08-21T20:49Z, agent-inbox, Thread `work-dispatch`) — „no technical flaw in
+the branch-to-root `git merge --ff-only/--no-ff` sequence"; die von `Data`
+verlangten Auflagen (benannte Autorität, Preflight, Abbruch statt Aufräumen,
+`update-ref`-Verbot, Prüfer bleibt Vorbedingung) sind oben vollständig
+übernommen.
