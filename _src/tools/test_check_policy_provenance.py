@@ -122,6 +122,84 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
         foreign = report.foreign_branch_findings[0]
         self.assertIn("0002-99", foreign.containing_branches)
 
+    def test_detached_head_worktree_at_source_tip_does_not_cause_false_foreign(self):
+        # Regression test for the integration-review finding (Seven-Tom,
+        # 2026-08-21): `git branch --all --contains <sha>` emits a synthetic
+        # "(no branch)" line whenever <sha> is a detached-HEAD checkout in
+        # *any* worktree of this repository -- including the reviewer's own
+        # isolated worktree, which is exactly how this tool's documented
+        # usage (and this repository's branch-workflow) is normally
+        # exercised. That placeholder must never be treated as an
+        # unrecognized third/foreign branch.
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        tip = _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2 (from 0001-01)\n",
+            "revise policy on 0001-01",
+        )
+
+        with tempfile.TemporaryDirectory() as extra_worktree_parent:
+            worktree_path = Path(extra_worktree_parent) / "detached-review-worktree"
+            _git(self.repo, "worktree", "add", "--detach", str(worktree_path), tip)
+            try:
+                # Sanity: `git branch --all --contains` really does emit the
+                # synthetic "(no branch)" artifact the review reported --
+                # but only when queried *from within* the detached worktree
+                # itself (its own current-HEAD marker line), which is
+                # exactly how an independent reviewer's isolated worktree
+                # setup invokes this tool.
+                raw_from_primary = _git(
+                    self.repo, "branch", "--all", "--contains", tip, "--format=%(refname:short)"
+                )
+                self.assertNotIn("(no branch)", raw_from_primary)
+                raw_from_worktree = _git(
+                    worktree_path, "branch", "--all", "--contains", tip, "--format=%(refname:short)"
+                )
+                self.assertIn("(no branch)", raw_from_worktree)
+
+                # The tool must classify identically regardless of which of
+                # the two locations it is invoked from.
+                report_from_primary = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+                report_from_worktree = cpp.check_policy_provenance(
+                    worktree_path, "0001-01", "main"
+                )
+                for report in (report_from_primary, report_from_worktree):
+                    self.assertEqual(len(report.findings), 1)
+                    finding = report.findings[0]
+                    self.assertEqual(finding.sha, tip)
+                    self.assertNotIn("(no branch)", finding.containing_branches)
+                    self.assertEqual(finding.classification, "source-origin")
+                    self.assertFalse(report.has_foreign_branch_policy_commit)
+            finally:
+                _git(self.repo, "worktree", "remove", "--force", str(worktree_path))
+
+    def test_downstream_review_branch_on_top_of_source_is_not_foreign(self):
+        # Second half of the same integration-review finding: even with the
+        # "(no branch)" placeholder filtered, a branch created *on top of*
+        # source_branch (e.g. a reviewer's audit branch, or a later Task
+        # branch chained onto this one -- both routine here per
+        # branch-workflow.md) trivially contains every source commit through
+        # plain ancestry. That must not be treated as foreign-origin
+        # evidence either.
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        tip = _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2 (from 0001-01)\n",
+            "revise policy on 0001-01",
+        )
+        _git(self.repo, "checkout", "-q", "-b", "0001-01-review-someone", "0001-01")
+        _commit(self.repo, "review-notes.md", "notes\n", "review notes, no policy change")
+
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertEqual(len(report.findings), 1)
+        finding = report.findings[0]
+        self.assertEqual(finding.sha, tip)
+        self.assertIn("0001-01-review-someone", finding.containing_branches)
+        self.assertEqual(finding.classification, "source-origin")
+        self.assertFalse(report.has_foreign_branch_policy_commit)
+
     def test_cli_exit_code_reflects_verdict(self):
         _git(self.repo, "checkout", "-q", "-b", "0001-01")
         _commit(self.repo, "unrelated.txt", "x\n", "unrelated change")

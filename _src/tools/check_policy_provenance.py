@@ -15,18 +15,33 @@ record a commit's "originating branch" as a first-class fact. This tool
 approximates provenance from branch *containment* (`git branch --contains
 <sha>`) and topology relative to the merge-base of source and target. That
 approximation is exact for the common case this Task's acceptance criteria
-target (a policy-path commit reachable from some branch other than the
-source/target pair) but can be fooled by history rewrites, orphan branches
-sharing no ancestor, or a foreign commit that happens to be cherry-picked
-with an identical tree onto the source branch itself (same content, new
-SHA — such a commit is, correctly, not flagged, since nothing links it to a
-foreign branch anymore). It is a mechanical aid for an integrator/reviewer,
-not a substitute for review, and it makes no accept/reject decision itself.
+target (a policy-path commit reachable from some *genuinely independent*
+branch other than the source/target pair) but can be fooled by history
+rewrites, orphan branches sharing no ancestor, or a foreign commit that
+happens to be cherry-picked with an identical tree onto the source branch
+itself (same content, new SHA — such a commit is, correctly, not flagged,
+since nothing links it to a foreign branch anymore). It is a mechanical aid
+for an integrator/reviewer, not a substitute for review, and it makes no
+accept/reject decision itself.
+
+Two classes of branch containment are deliberately **not** treated as
+foreign-origin evidence, both confirmed by real independent-review reproduction
+(2026-08-21): (1) the synthetic `(no branch)` line `git branch --all
+--contains` emits when the commit is a detached-HEAD checkout in the querying
+worktree or any other worktree of the same repository — a routine artifact of
+this project's worktree-per-item workflow, not a branch; and (2) a real named
+branch whose tip is `source_commit` itself or a descendant of it (a review/
+audit branch or a later Task branch chained on top of the source branch,
+per branch-workflow.md's normal up-the-tree chaining) — such a branch
+trivially contains every source commit through plain ancestry, not because
+the commit originated there. A branch whose own tip is instead an *ancestor*
+of `source_commit` (a commit authored elsewhere and later merged into
+source) remains flagged — that is exactly the `DEC-0044-002` violation shape.
 
 This module is deliberately read-only: it never mutates the repository, never
 writes files, and only shells out to `git` in ways that cannot mutate refs or
-the working tree (`rev-parse`, `merge-base`, `log`, `branch --contains`,
-`diff --name-only`, `cat-file`).
+the working tree (`rev-parse`, `merge-base`, `merge-base --is-ancestor`,
+`log`, `branch --contains`, `diff`).
 
 Stdlib-only. No third-party dependencies.
 
@@ -114,6 +129,22 @@ def _touches_policy_path(repo: Path, sha: str, policy_paths: Sequence[str]) -> L
     return sorted(p for p in policy_paths if p in changed)
 
 
+def _is_ancestor(repo: Path, ancestor: str, descendant: str) -> bool:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "merge-base", "--is-ancestor", ancestor, descendant],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if proc.returncode in (0, 1):
+        return proc.returncode == 0
+    raise GitError(
+        f"git merge-base --is-ancestor {ancestor} {descendant} failed "
+        f"(exit {proc.returncode}): {proc.stderr.strip()}"
+    )
+
+
 def _blob_at(repo: Path, commit: str, path: str) -> Optional[str]:
     proc = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "--verify", f"{commit}:{path}"],
@@ -128,11 +159,28 @@ def _blob_at(repo: Path, commit: str, path: str) -> Optional[str]:
 
 
 def _branches_containing(repo: Path, sha: str) -> List[str]:
+    """Real branch names (local and remote-tracking) containing `sha`.
+
+    `git branch --all --contains` also lists a synthetic `(no branch)` entry
+    whenever `sha` is (or is an ancestor of) a **detached HEAD** somewhere —
+    including any other local worktree of this same repository checked out
+    at or below that commit. That is not a branch, has no name, and proves
+    nothing about a foreign branch of origin: a reviewer's own isolated
+    worktree, or any other detached checkout of the very same commit, is
+    exactly this shape and is routine, policy-sanctioned repository state
+    (worktrees/branches are retained, not deleted, after merge). Filter it
+    out here so callers never see it as a branch candidate.
+    """
     out = _run_git(repo, ["branch", "--all", "--contains", sha, "--format=%(refname:short)"])
     names = []
     for line in out.splitlines():
         name = line.strip()
         if not name:
+            continue
+        if name == "(no branch)" or (name.startswith("(") and name.endswith(")")):
+            # Synthetic git-branch placeholder for a detached HEAD (this
+            # repo's or another worktree's), never a real ref. Also guards
+            # future synonymous placeholders git may emit in this shape.
             continue
         # Normalize "remotes/origin/x" duplicates of local "x" out of scope;
         # keep as-is, callers can filter further if they track remotes.
@@ -225,13 +273,34 @@ def check_policy_provenance(
         if not changed:
             continue
         containing = _branches_containing(repo, sha)
-        others = [
+        candidate_others = [
             b
             for b in containing
             if b not in (source_branch, target_branch)
             and not b.endswith(f"/{source_branch}")
             and not b.endswith(f"/{target_branch}")
         ]
+        # A branch containing `sha` is only evidence of a *foreign* origin
+        # when it is a genuinely independent lineage from the source branch.
+        # A branch built ON TOP of source (a review/audit branch, or a later
+        # Task branch chained onto it, per branch-workflow.md's normal
+        # up-the-tree chaining) is at or downstream of source_commit and
+        # trivially contains every source commit through plain ancestry, not
+        # because the commit originated there. A branch whose own tip is an
+        # *ancestor* of source_commit, by contrast, is exactly the DEC-0044-002
+        # violation shape: a commit authored on that other branch and later
+        # merged into source — that stays foreign evidence.
+        others = []
+        for b in candidate_others:
+            try:
+                branch_tip = _rev_parse(repo, b)
+            except GitError:
+                continue
+            if branch_tip == source_commit or _is_ancestor(repo, source_commit, branch_tip):
+                # b is source_commit itself or downstream of it (built on top
+                # of source, e.g. a chained review/Task branch): not foreign.
+                continue
+            others.append(b)
         # Content-based pull-in check: a merge commit that pulls target's
         # current policy content in is not reachable-from-target itself (the
         # merge commit only exists on source), so compare the changed path's
