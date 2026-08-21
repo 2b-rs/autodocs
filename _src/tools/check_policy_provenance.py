@@ -11,37 +11,53 @@ from the target branch (`DEC-0044-001`: pulling the target's own policy
 changes into the source is permitted).
 
 Scope and honesty note (read this before trusting a verdict): Git does not
-record a commit's "originating branch" as a first-class fact. This tool
-approximates provenance from branch *containment* (`git branch --contains
-<sha>`) and topology relative to the merge-base of source and target. That
-approximation is exact for the common case this Task's acceptance criteria
-target (a policy-path commit reachable from some *genuinely independent*
-branch other than the source/target pair) but can be fooled by history
-rewrites, orphan branches sharing no ancestor, or a foreign commit that
-happens to be cherry-picked with an identical tree onto the source branch
-itself (same content, new SHA — such a commit is, correctly, not flagged,
-since nothing links it to a foreign branch anymore). It is a mechanical aid
-for an integrator/reviewer, not a substitute for review, and it makes no
-accept/reject decision itself.
+record a commit's "originating branch" as a first-class fact. Earlier
+revisions of this tool tried to approximate provenance from branch
+*containment* (`git branch --contains <sha>`) and were repeatedly fooled by
+routine repository states this project actually produces (a reviewer's own
+detached-HEAD worktree; an old, retained review/Task branch built on top of
+source; an old, retained branch sitting at an earlier point on source's own
+line) — see `docs/dossiers/0044-01-branch-workflow-prose-scope-review.md` and
+the two `[u]` integration-review verdicts beneath Task `0044-01` in
+`TODO.md` for the reproduction history. Branch *names* are therefore used
+only as an informational annotation in each finding's `containing_branches`
+field, never as the classification signal.
 
-Two classes of branch containment are deliberately **not** treated as
-foreign-origin evidence, both confirmed by real independent-review reproduction
-(2026-08-21): (1) the synthetic `(no branch)` line `git branch --all
---contains` emits when the commit is a detached-HEAD checkout in the querying
-worktree or any other worktree of the same repository — a routine artifact of
-this project's worktree-per-item workflow, not a branch; and (2) a real named
-branch whose tip is `source_commit` itself or a descendant of it (a review/
-audit branch or a later Task branch chained on top of the source branch,
-per branch-workflow.md's normal up-the-tree chaining) — such a branch
-trivially contains every source commit through plain ancestry, not because
-the commit originated there. A branch whose own tip is instead an *ancestor*
-of `source_commit` (a commit authored elsewhere and later merged into
-source) remains flagged — that is exactly the `DEC-0044-002` violation shape.
+**Classification is instead driven purely by the topology of the commit
+itself relative to `source_commit`'s own first-parent ("mainline") history**
+— the actual, exhaustively enumerated set of relationships a policy-path
+commit `sha` (already known, by construction, to be an ancestor-or-equal of
+`source_commit` and not reachable from `target_commit`) can have to
+`source_commit`:
+
+| Relationship of `sha` to `source_commit` | Classification | Why |
+|---|---|---|
+| `sha` reachable via `source_commit`'s first-parent chain (authored directly on source, including `sha == source_commit`) | `source-origin` | It is source's own mainline history. Which *other* branches also happen to contain `sha` — a detached worktree, an old review branch built on top, an old branch sitting at an earlier mainline point, or nothing at all if those refs were deleted — is irrelevant: none of that changes where `sha` was actually authored. |
+| `sha`'s only path into `source_commit` is through a merge commit, and the merged-in content at the touched policy path(s) matches `target_commit`'s current content | `target-pull-in-eligible` | Legitimate pull-in of the target's own policy (`DEC-0044-001`). |
+| `sha`'s only path into `source_commit` is through a merge commit, and the content does **not** match `target_commit` | `foreign-branch` | `sha` was authored on some branch other than source/target and merged in — the `DEC-0044-002` violation shape this tool exists to catch. This holds even if the branch that originally carried `sha` has since been deleted; the merge-commit topology itself is the evidence, not a surviving branch name. |
+
+Note what this table does **not** use as a signal: whether any *other* named
+branch/worktree also contains `sha`, and whether that other ref is upstream,
+downstream, or unrelated to `source_commit`. Those all failed as decision
+signals in practice (see the reproduction history above) precisely because
+routine repository hygiene in this project — retaining branches, running
+reviews from separate worktrees, chaining Task branches — produces exactly
+that shape without any foreign-origin implication. `containing_branches` is
+reported for human orientation only.
+
+Residual known limitations (unchanged from earlier revisions): history
+rewrites (rebase/filter-repo) invalidate first-parent-chain reasoning same as
+any git-log-based tool; a foreign commit cherry-picked with an identical tree
+directly onto source (new SHA, no merge involved) is indistinguishable from a
+commit genuinely authored on source, and is correctly *not* flagged, since
+nothing about that SHA's own history links it to a foreign branch anymore.
+It is a mechanical aid for an integrator/reviewer, not a substitute for
+review, and it makes no accept/reject decision itself.
 
 This module is deliberately read-only: it never mutates the repository, never
 writes files, and only shells out to `git` in ways that cannot mutate refs or
-the working tree (`rev-parse`, `merge-base`, `merge-base --is-ancestor`,
-`log`, `branch --contains`, `diff`).
+the working tree (`rev-parse`, `merge-base`, `log`, `rev-list --first-parent`,
+`branch --contains`, `diff`).
 
 Stdlib-only. No third-party dependencies.
 
@@ -129,20 +145,26 @@ def _touches_policy_path(repo: Path, sha: str, policy_paths: Sequence[str]) -> L
     return sorted(p for p in policy_paths if p in changed)
 
 
-def _is_ancestor(repo: Path, ancestor: str, descendant: str) -> bool:
-    proc = subprocess.run(
-        ["git", "-C", str(repo), "merge-base", "--is-ancestor", ancestor, descendant],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        check=False,
-    )
-    if proc.returncode in (0, 1):
-        return proc.returncode == 0
-    raise GitError(
-        f"git merge-base --is-ancestor {ancestor} {descendant} failed "
-        f"(exit {proc.returncode}): {proc.stderr.strip()}"
-    )
+def _first_parent_chain(repo: Path, commit: str) -> set:
+    """SHAs reachable from `commit` by following only first parents.
+
+    This is `source_commit`'s own "mainline": the commit itself plus every
+    ancestor reached by always taking the first parent, i.e. exactly the
+    commits that were directly authored on (or fast-forwarded onto) the
+    source branch's own line, as opposed to pulled in as the *second* (or
+    later) parent of a merge commit. This is the sole classification signal
+    `check_policy_provenance` uses to decide `source-origin` vs. everything
+    else — see the module docstring's relationship table.
+    """
+    out = _run_git(repo, ["rev-list", "--first-parent", commit])
+    return {line.strip() for line in out.splitlines() if line.strip()}
+
+
+def _parent_count(repo: Path, sha: str) -> int:
+    """Number of parents of `sha` (0 for a root commit, >=2 for a merge)."""
+    out = _run_git(repo, ["rev-list", "--parents", "-n", "1", sha]).strip()
+    tokens = out.split()
+    return max(len(tokens) - 1, 0)
 
 
 def _blob_at(repo: Path, commit: str, path: str) -> Optional[str]:
@@ -267,72 +289,84 @@ def check_policy_provenance(
     # set of commits the merge would still be carrying onto target.
     source_only = _commits_only_in(repo, source_commit, target_commit)
 
+    # Computed once: source_commit's own first-parent ("mainline") history —
+    # see `_first_parent_chain`'s docstring and the module docstring's
+    # relationship table. This, not branch containment, is the sole
+    # classification signal.
+    source_mainline = _first_parent_chain(repo, source_commit)
+
     findings: List[PolicyCommitFinding] = []
     for sha in source_only:
         changed = _touches_policy_path(repo, sha, paths)
         if not changed:
             continue
+
+        # containing_branches is informational only (human orientation in
+        # the report/CLI output) and never feeds the classification below —
+        # see the module docstring for why branch-containment signals were
+        # abandoned as the decision criterion.
         containing = _branches_containing(repo, sha)
-        candidate_others = [
-            b
-            for b in containing
-            if b not in (source_branch, target_branch)
-            and not b.endswith(f"/{source_branch}")
-            and not b.endswith(f"/{target_branch}")
-        ]
-        # A branch containing `sha` is only evidence of a *foreign* origin
-        # when it is a genuinely independent lineage from the source branch.
-        # A branch built ON TOP of source (a review/audit branch, or a later
-        # Task branch chained onto it, per branch-workflow.md's normal
-        # up-the-tree chaining) is at or downstream of source_commit and
-        # trivially contains every source commit through plain ancestry, not
-        # because the commit originated there. A branch whose own tip is an
-        # *ancestor* of source_commit, by contrast, is exactly the DEC-0044-002
-        # violation shape: a commit authored on that other branch and later
-        # merged into source — that stays foreign evidence.
-        others = []
-        for b in candidate_others:
-            try:
-                branch_tip = _rev_parse(repo, b)
-            except GitError:
-                continue
-            if branch_tip == source_commit or _is_ancestor(repo, source_commit, branch_tip):
-                # b is source_commit itself or downstream of it (built on top
-                # of source, e.g. a chained review/Task branch): not foreign.
-                continue
-            others.append(b)
-        # Content-based pull-in check: a merge commit that pulls target's
-        # current policy content in is not reachable-from-target itself (the
-        # merge commit only exists on source), so compare the changed path's
-        # blob at this commit against its blob on the target tip directly.
-        content_matches_target = bool(changed) and all(
-            _blob_at(repo, sha, p) == _blob_at(repo, target_commit, p) for p in changed
-        )
-        if content_matches_target:
-            classification = "target-pull-in-eligible"
-            note = (
-                "Commit is already reachable from the target branch: this is a "
-                "legitimate pull-in of the target's own policy (DEC-0044-001), "
-                "not a foreign-branch commit."
-            )
-        elif others:
-            classification = "foreign-branch"
-            note = (
-                "Commit changes a declared policy path, is unique to the source "
-                "branch relative to the target, and is also reachable from a "
-                "branch other than source/target: "
-                + ", ".join(others)
-                + ". Flag for review under DEC-0044-002 (no agent commits "
-                "policy changes onto a branch other than the one they "
-                "originated on or the integration target)."
-            )
-        else:
+
+        # `rev-list --first-parent source_commit` always lists source_commit
+        # itself as the first entry regardless of whether source_commit is
+        # itself a merge commit — that membership is trivial and tells us
+        # nothing about where a *merge* commit's own diff came from (it came
+        # from a non-first parent by definition of what we're testing here).
+        # So the mainline shortcut only applies to a non-merge commit: for
+        # those, first-parent-chain membership is exactly "authored directly
+        # on (or fast-forwarded onto) source's own line". A merge commit
+        # always falls through to the content-based check below, even when
+        # it is source_commit itself (e.g. the tip is a merge that just
+        # pulled the target's policy in).
+        is_merge_commit = _parent_count(repo, sha) > 1
+
+        if not is_merge_commit and sha in source_mainline:
             classification = "source-origin"
             note = (
-                "Commit changes a declared policy path and is reachable only "
-                "from the source branch among known local/remote branches: "
-                "consistent with having originated on the source branch itself."
+                "Commit is a non-merge commit on source_branch's own "
+                "first-parent (mainline) history: authored directly on (or "
+                "fast-forwarded onto) the source branch itself. Which other "
+                "branches/worktrees also happen to contain this commit does "
+                "not change that."
             )
+        else:
+            # Either sha is a merge commit (so its own diff came from a
+            # non-first parent by construction), or sha is a non-merge
+            # commit that is an ancestor-or-equal of source_commit (by
+            # construction of `source_only`) but not on its first-parent
+            # chain — i.e. it entered source only via some merge commit's
+            # non-first parent further up the chain.
+            # Content-based pull-in check: compare the changed path's blob
+            # at this commit against its blob on the target tip directly.
+            content_matches_target = bool(changed) and all(
+                _blob_at(repo, sha, p) == _blob_at(repo, target_commit, p) for p in changed
+            )
+            if content_matches_target:
+                classification = "target-pull-in-eligible"
+                note = (
+                    "Commit entered source_branch via a merge and its changed "
+                    "policy content matches target_branch's current content: "
+                    "a legitimate pull-in of the target's own policy "
+                    "(DEC-0044-001), not a foreign-branch commit."
+                )
+            else:
+                classification = "foreign-branch"
+                other_note = (
+                    f" Other branches currently containing it: {', '.join(containing)}."
+                    if containing
+                    else " No surviving branch currently names it; the merge-commit "
+                    "topology is the evidence regardless."
+                )
+                note = (
+                    "Commit changes a declared policy path, is unique to the "
+                    "source branch relative to the target, entered source_branch "
+                    "only via a merge (not source's own first-parent history), "
+                    "and its content does not match target_branch's current "
+                    "policy." + other_note + " Flag for review under DEC-0044-002 "
+                    "(no agent commits policy changes onto a branch other than "
+                    "the one they originated on or the integration target)."
+                )
+
         findings.append(
             PolicyCommitFinding(
                 sha=sha,

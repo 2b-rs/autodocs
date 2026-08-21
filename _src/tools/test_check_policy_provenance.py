@@ -5,6 +5,19 @@ Builds small throwaway git repos under a temp dir for each scenario. Never
 touches the real repository. Run:
 
     python3 -m unittest _src/tools/test_check_policy_provenance.py -v
+
+Test organization: this file went through two rounds of independent-review
+findings against branch-containment-based classification (a detached-HEAD
+worktree's synthetic "(no branch)" line; a downstream review/Task branch
+built on top of source; an old branch sitting at an earlier point on
+source's own mainline). The tool was rewritten to classify purely from the
+topology of the commit itself relative to source_commit's first-parent
+history (see the module docstring's relationship table), which makes branch
+*names* irrelevant to the decision. `TopologyMatrixTest` below enumerates,
+as explicit individual tests, every branch-tip-vs-source_commit relationship
+this tool could plausibly encounter, to confirm none of them leak into the
+classification any more -- not just the three specific shapes that were
+previously reported broken one at a time.
 """
 
 from __future__ import annotations
@@ -45,6 +58,8 @@ def _commit(repo: Path, path: str, content: str, message: str) -> str:
 
 
 class CheckPolicyProvenanceTest(unittest.TestCase):
+    """Baseline behavioral tests: the classification contract itself."""
+
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
         self.repo = Path(self._tmp.name) / "repo"
@@ -122,83 +137,29 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
         foreign = report.foreign_branch_findings[0]
         self.assertIn("0002-99", foreign.containing_branches)
 
-    def test_detached_head_worktree_at_source_tip_does_not_cause_false_foreign(self):
-        # Regression test for the integration-review finding (Seven-Tom,
-        # 2026-08-21): `git branch --all --contains <sha>` emits a synthetic
-        # "(no branch)" line whenever <sha> is a detached-HEAD checkout in
-        # *any* worktree of this repository -- including the reviewer's own
-        # isolated worktree, which is exactly how this tool's documented
-        # usage (and this repository's branch-workflow) is normally
-        # exercised. That placeholder must never be treated as an
-        # unrecognized third/foreign branch.
-        _git(self.repo, "checkout", "-q", "-b", "0001-01")
-        tip = _commit(
+    def test_foreign_finding_survives_deletion_of_the_foreign_branch(self):
+        # Robustness win of the topology-based rewrite: the old
+        # branch-containment approach could only name a foreign branch that
+        # still exists. Classification must not depend on that -- the
+        # merge-commit topology is the evidence, independent of whether any
+        # ref still names the foreign commit.
+        _git(self.repo, "checkout", "-q", "-b", "0002-99")
+        _commit(
             self.repo,
             "docs/pipeline/branch-workflow.md",
-            "policy v2 (from 0001-01)\n",
-            "revise policy on 0001-01",
+            "policy v2 (from foreign branch 0002-99)\n",
+            "revise policy on foreign branch",
         )
-
-        with tempfile.TemporaryDirectory() as extra_worktree_parent:
-            worktree_path = Path(extra_worktree_parent) / "detached-review-worktree"
-            _git(self.repo, "worktree", "add", "--detach", str(worktree_path), tip)
-            try:
-                # Sanity: `git branch --all --contains` really does emit the
-                # synthetic "(no branch)" artifact the review reported --
-                # but only when queried *from within* the detached worktree
-                # itself (its own current-HEAD marker line), which is
-                # exactly how an independent reviewer's isolated worktree
-                # setup invokes this tool.
-                raw_from_primary = _git(
-                    self.repo, "branch", "--all", "--contains", tip, "--format=%(refname:short)"
-                )
-                self.assertNotIn("(no branch)", raw_from_primary)
-                raw_from_worktree = _git(
-                    worktree_path, "branch", "--all", "--contains", tip, "--format=%(refname:short)"
-                )
-                self.assertIn("(no branch)", raw_from_worktree)
-
-                # The tool must classify identically regardless of which of
-                # the two locations it is invoked from.
-                report_from_primary = cpp.check_policy_provenance(self.repo, "0001-01", "main")
-                report_from_worktree = cpp.check_policy_provenance(
-                    worktree_path, "0001-01", "main"
-                )
-                for report in (report_from_primary, report_from_worktree):
-                    self.assertEqual(len(report.findings), 1)
-                    finding = report.findings[0]
-                    self.assertEqual(finding.sha, tip)
-                    self.assertNotIn("(no branch)", finding.containing_branches)
-                    self.assertEqual(finding.classification, "source-origin")
-                    self.assertFalse(report.has_foreign_branch_policy_commit)
-            finally:
-                _git(self.repo, "worktree", "remove", "--force", str(worktree_path))
-
-    def test_downstream_review_branch_on_top_of_source_is_not_foreign(self):
-        # Second half of the same integration-review finding: even with the
-        # "(no branch)" placeholder filtered, a branch created *on top of*
-        # source_branch (e.g. a reviewer's audit branch, or a later Task
-        # branch chained onto this one -- both routine here per
-        # branch-workflow.md) trivially contains every source commit through
-        # plain ancestry. That must not be treated as foreign-origin
-        # evidence either.
+        _git(self.repo, "checkout", "-q", "main")
         _git(self.repo, "checkout", "-q", "-b", "0001-01")
-        tip = _commit(
-            self.repo,
-            "docs/pipeline/branch-workflow.md",
-            "policy v2 (from 0001-01)\n",
-            "revise policy on 0001-01",
-        )
-        _git(self.repo, "checkout", "-q", "-b", "0001-01-review-someone", "0001-01")
-        _commit(self.repo, "review-notes.md", "notes\n", "review notes, no policy change")
+        _commit(self.repo, "code.txt", "impl\n", "implementation work")
+        _git(self.repo, "merge", "-q", "--no-edit", "0002-99")
+        _git(self.repo, "branch", "-D", "0002-99")
 
         report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
-        self.assertEqual(len(report.findings), 1)
-        finding = report.findings[0]
-        self.assertEqual(finding.sha, tip)
-        self.assertIn("0001-01-review-someone", finding.containing_branches)
-        self.assertEqual(finding.classification, "source-origin")
-        self.assertFalse(report.has_foreign_branch_policy_commit)
+        self.assertTrue(report.has_foreign_branch_policy_commit)
+        foreign = report.foreign_branch_findings[0]
+        self.assertNotIn("0002-99", foreign.containing_branches)
 
     def test_cli_exit_code_reflects_verdict(self):
         _git(self.repo, "checkout", "-q", "-b", "0001-01")
@@ -228,6 +189,177 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
             ]
         )
         self.assertEqual(rc, 2)
+
+
+class TopologyMatrixTest(unittest.TestCase):
+    """Enumerated matrix: every branch-tip-vs-source_commit relationship a
+    surviving/visible branch/worktree can have, confirmed to have NO effect
+    on classification of a mainline source-origin commit. This is the
+    adversarial pass requested after the third branch-containment false
+    positive (2026-08-21): rather than adding one more targeted regression
+    for the specific case reported, enumerate the whole relationship space
+    once so the same class of defect can't resurface a fourth time.
+
+    Fixture shape shared by every test in this class: `source_branch`
+    ("0001-01") has exactly one policy-touching commit, `policy_tip`,
+    authored directly on it (a mainline commit by construction). Each test
+    then adds one additional branch/worktree in a specific topological
+    relationship to `source_commit` and asserts `policy_tip` is still
+    classified `source-origin` and nothing is flagged foreign.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.repo = Path(self._tmp.name) / "repo"
+        _init_repo(self.repo)
+        _commit(self.repo, "README.md", "root\n", "root")
+        _commit(self.repo, "docs/pipeline/branch-workflow.md", "policy v1\n", "policy v1")
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        self.policy_tip = _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2 (from 0001-01)\n",
+            "revise policy on 0001-01",
+        )
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _assert_still_clean_source_origin(self):
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertEqual(len(report.findings), 1, report.to_dict())
+        finding = report.findings[0]
+        self.assertEqual(finding.sha, self.policy_tip)
+        self.assertEqual(finding.classification, "source-origin")
+        self.assertFalse(report.has_foreign_branch_policy_commit)
+
+    # -- 1. Equal: another ref points at exactly source_commit. ------------
+    def test_relationship_equal(self):
+        _git(self.repo, "branch", "another-name-same-tip", "0001-01")
+        self._assert_still_clean_source_origin()
+
+    # -- 2. Downstream/descendant: a branch built ON TOP of source. --------
+    def test_relationship_downstream_descendant(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01-review-someone", "0001-01")
+        _commit(self.repo, "review-notes.md", "notes\n", "review notes, no policy change")
+        self._assert_still_clean_source_origin()
+
+    # -- 3. Upstream/ancestor via first-parent: an old branch sitting at an
+    #       earlier point on source's OWN mainline (Tom's second-verdict
+    #       repro shape: "stale-wip-branch" at an ancestor commit). --------
+    def test_relationship_upstream_ancestor_via_first_parent(self):
+        # Tom's second-verdict repro shape: an old, retained branch sitting
+        # at an earlier commit already on source's OWN first-parent line
+        # (setUp's "policy v1" root commit, one before policy_tip) -- not a
+        # commit added by this test, so policy_tip stays the actual tip.
+        before_policy = _git(self.repo, "rev-parse", "0001-01~1").strip()
+        _git(self.repo, "branch", "stale-wip-branch", before_policy)
+        self.assertNotEqual(before_policy, self.policy_tip)
+        self._assert_still_clean_source_origin()
+
+    # -- 4. Upstream/ancestor via merge: genuinely foreign -- must STILL be
+    #       flagged (the one relationship that IS real evidence). ---------
+    def test_relationship_upstream_ancestor_via_merge_is_still_foreign(self):
+        _git(self.repo, "checkout", "-q", "main")
+        _git(self.repo, "checkout", "-q", "-b", "0002-99")
+        foreign_tip = _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v3 (from foreign branch 0002-99)\n",
+            "revise policy on foreign branch",
+        )
+        _git(self.repo, "checkout", "-q", "0001-01")
+        # policy_tip (from setUp) and foreign_tip both touch
+        # branch-workflow.md, so a plain merge would conflict on content
+        # that is irrelevant to this test (we only care that foreign_tip's
+        # *commit* is reachable via the merge, not what the merged text
+        # says) -- resolve deterministically in favor of the incoming side.
+        _git(self.repo, "merge", "-q", "--no-edit", "-X", "theirs", "0002-99")
+
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        shas = {f.sha: f.classification for f in report.findings}
+        self.assertEqual(shas.get(self.policy_tip), "source-origin")
+        self.assertEqual(shas.get(foreign_tip), "foreign-branch")
+        self.assertTrue(report.has_foreign_branch_policy_commit)
+
+    # -- 5. Genuinely disjoint: an orphan branch sharing no history at all,
+    #       and not containing policy_tip either. Must simply not appear
+    #       and must not affect classification. -----------------------
+    def test_relationship_disjoint_orphan_branch(self):
+        _git(self.repo, "checkout", "-q", "--orphan", "unrelated-orphan")
+        _git(self.repo, "reset", "-q", "--hard")
+        _commit(self.repo, "island.txt", "island\n", "unrelated orphan history")
+        _git(self.repo, "checkout", "-q", "0001-01")
+
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertEqual(len(report.findings), 1)
+        finding = report.findings[0]
+        self.assertEqual(finding.classification, "source-origin")
+        self.assertNotIn("unrelated-orphan", finding.containing_branches)
+
+    # -- 6. Detached HEAD in another worktree at exactly source_commit. ----
+    def test_relationship_detached_head_worktree_at_source_tip(self):
+        with tempfile.TemporaryDirectory() as extra:
+            worktree_path = Path(extra) / "detached-wt"
+            _git(self.repo, "worktree", "add", "--detach", str(worktree_path), self.policy_tip)
+            try:
+                # Confirm the historically-problematic artifact is really
+                # present from the worktree's own vantage point.
+                raw = _git(
+                    worktree_path,
+                    "branch",
+                    "--all",
+                    "--contains",
+                    self.policy_tip,
+                    "--format=%(refname:short)",
+                )
+                self.assertIn("(no branch)", raw)
+
+                report_primary = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+                report_worktree = cpp.check_policy_provenance(worktree_path, "0001-01", "main")
+                for report in (report_primary, report_worktree):
+                    self.assertEqual(len(report.findings), 1)
+                    finding = report.findings[0]
+                    self.assertEqual(finding.classification, "source-origin")
+                    self.assertNotIn("(no branch)", finding.containing_branches)
+                    self.assertFalse(report.has_foreign_branch_policy_commit)
+            finally:
+                _git(self.repo, "worktree", "remove", "--force", str(worktree_path))
+
+    # -- 7. All relationships present simultaneously -- combined sanity. ---
+    def test_relationship_matrix_combined_does_not_misclassify(self):
+        before_policy = _git(self.repo, "rev-parse", "0001-01~1").strip()
+        _git(self.repo, "branch", "stale-wip-branch", before_policy)  # (3) upstream/first-parent
+        _git(self.repo, "branch", "same-tip-branch", "0001-01")  # (1) equal
+        _git(self.repo, "checkout", "-q", "-b", "0001-01-review-someone", "0001-01")
+        _commit(self.repo, "review-notes.md", "notes\n", "review notes")  # (2) downstream
+        _git(self.repo, "checkout", "-q", "0001-01")
+
+        _git(self.repo, "checkout", "-q", "main")
+        _git(self.repo, "checkout", "-q", "-b", "0002-99")
+        foreign_tip = _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v3 (from foreign branch 0002-99)\n",
+            "revise policy on foreign branch",
+        )  # (4) upstream/via-merge, added next
+        _git(self.repo, "checkout", "-q", "0001-01")
+        _git(self.repo, "merge", "-q", "--no-edit", "-X", "theirs", "0002-99")
+
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        shas = {f.sha: f.classification for f in report.findings}
+        # The mainline policy commit stays source-origin regardless of the
+        # five benign relationships (equal/downstream/upstream-first-parent)
+        # now coexisting with it.
+        self.assertEqual(shas.get(self.policy_tip), "source-origin")
+        # foreign_tip (authored on 0002-99, merged in) is flagged. The merge
+        # commit that carried it in may legitimately also be flagged (its
+        # own diff-vs-first-parent also shows non-source, non-target policy
+        # content, via `-X theirs`) -- both are correct evidence of the same
+        # foreign-origin event, not a double-count bug. What must NOT happen
+        # is the mainline policy_tip being swept into that set.
+        self.assertIn(foreign_tip, {sha for sha, c in shas.items() if c == "foreign-branch"})
+        self.assertNotIn(self.policy_tip, {sha for sha, c in shas.items() if c == "foreign-branch"})
 
 
 if __name__ == "__main__":
