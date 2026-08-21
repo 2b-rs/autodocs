@@ -498,6 +498,30 @@ class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
         findings = [item for item in repo.scan()["findings"] if item["rule"] == "LTD-PARENT-CLOSURE-ELIGIBLE"]
         self.assertEqual(findings, [])
 
+    def test_deferred_task_is_flagged_once_its_prerequisites_are_terminal(self):
+        ref_value = "a" * 40
+        repo = self.make_repo(
+            f"# TODO\n\n## Feature: 1000 — Deferred\n- [x] **1000-01** Predecessor. REF: {ref_value}\n- [d] **1000-02** PREREQ: 1000-02:1000-01 Deferred successor.\n",
+            reachable={ref_value},
+        )
+        self.assertIn("LTD-DEFERRED-STALE", rules(repo.scan()))
+
+    def test_deferred_task_with_a_live_blocker_is_not_flagged(self):
+        repo = self.make_repo(
+            "# TODO\n\n## Feature: 1000 — Deferred\n- [ ] **1000-01** Predecessor.\n- [d] **1000-02** PREREQ: 1000-02:1000-01 Deferred successor.\n",
+        )
+        observed = rules(repo.scan())
+        self.assertNotIn("LTD-DEFERRED-STALE", observed)
+        self.assertNotIn("LTD-DEFERRED-UNVERIFIABLE", observed)
+
+    def test_deferred_task_without_an_explicit_prerequisite_is_unverifiable(self):
+        repo = self.make_repo(
+            "# TODO\n\n## Feature: 1000 — Deferred\n- [d] **1000-01** Deferred with no recorded blocker.\n",
+        )
+        observed = rules(repo.scan())
+        self.assertIn("LTD-DEFERRED-UNVERIFIABLE", observed)
+        self.assertNotIn("LTD-DEFERRED-STALE", observed)
+
     def test_identity_parser_ignores_request_history_fields(self):
         clean = CASES["clean"]
         repo = FixtureRepository(clean)
