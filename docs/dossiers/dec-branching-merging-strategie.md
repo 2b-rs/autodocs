@@ -147,6 +147,75 @@ Empfehlungen der Entscheidungsvorlage.
   main muss bzgl. Governance auch immer aktuell sein. In Zukunft stimmt ihr euch
   über agent-inbox ab, ja?"
 
+## `DEC-0044-013` — Selbst gestarteter Reviewer: Persona getrennt, Briefing aufgezeichnet
+
+- **Entscheidung (Management, 2026-08-21).** Ein von der prüfenden Session selbst
+  gestarteter Subagent darf die `TK-1`-Unabhängigkeit erfüllen, wenn drei
+  Bedingungen zugleich gelten: er nimmt **ausdrücklich die Persona des Reviewers
+  an**; diese Persona ist **verschieden von der Persona des Erzeugers**; und
+  **Prompt und übergebener Kontext werden dokumentiert**. Der Datensatz nennt die
+  dispatchende Identität, die Reviewer-Persona, das wortwörtliche Briefing und
+  welchen Kontext der Reviewer bekommen hat und welchen nicht.
+- **Fachliche Rechtfertigung.** Der Vorfall, der die Frage aufwarf: Seven startete
+  für die vierte Reviewrunde zu `0044-01` über ihr eigenes Agent-Tool die Persona
+  „Seven-Tom", die die Arbeit dreier ebenfalls von ihr gestarteter Personas
+  prüfte, `Acceptance: ✓` setzte und nach `main` integrierte. Sie hat es selbst
+  gemeldet. Denselben Fall hatte dieselbe Session bei `0038-26` früher am Tag
+  korrekt erkannt und einen Waiver eingeholt. Ermessen ist hier also nicht
+  unfähig, sondern unzuverlässig.
+  Die gewählte Lösung setzt nicht auf Verbot, sondern auf **Nachprüfbarkeit**: Der
+  Zweifel an einem selbst gestarteten Reviewer ist nicht, dass er dieselbe
+  Laufzeit benutzt, sondern dass er auf die gewünschte Antwort hin gebrieft worden
+  sein könnte. Genau das wird durch das aufgezeichnete Briefing entscheidbar.
+  Ohne Briefingtext ist im Nachhinein niemand in der Lage, das zu beurteilen —
+  deshalb erfüllt ein **nicht aufgezeichneter** selbst gestarteter Reviewer
+  `TK-1` nicht.
+- **Abgrenzung.** Die Anforderung getrennter Personas ist keine Formalie: Erzeuger
+  und Reviewer müssen unterscheidbar benannt sein, sonst ist der Datensatz nicht
+  lesbar. Der Waiver-Pfad für den Fall, dass gar kein Reviewer erreichbar ist,
+  bleibt daneben bestehen (Vorbild `0038-26`).
+- **Umsetzung.** Verankert in `AGENTS.md` unter „Implementation completion and
+  privileged acceptance". Eine maschinelle Prüfung, die einen Acceptance-Record
+  ohne aufgezeichnetes Briefing meldet, ist noch offen und wäre ein eigener
+  Vorgang.
+- **Provenienz.** Nutzer-Antwort vom 2026-08-21, wortwörtlich: „Selbst erzeugte
+  Prüfer sind ok, sofern sie die Persona des Prüfers annehmen, der vom Erzeuger
+  verschieden sein muss. Der Prompt und der Kontext, den sie übernehmen, muss
+  dokumentiert werden."
+
+## `DEC-0044-014` — Feature `0037`: Genehmigungsregime auf Einzelbetrieb zuschneiden
+
+- **Entscheidung (Management, 2026-08-21).** Das Genehmigungsregime aus Feature
+  `0037` wird auf die tatsächliche Betriebsform zugeschnitten: **eine Autorität,
+  ein Schlüssel**, Rollentrennung als dokumentierte Selbstauskunft statt als
+  kryptografisch getrennte Identitäten. `0037-49` wird entsprechend neu gefasst,
+  damit die abhängigen Vorgänge ausführbar werden.
+- **Fachliche Rechtfertigung.** `0037-49` verlangte registrierte Prozess-,
+  Security-/Privacy-, Release-, unabhängige Quality- und Translation-Review-Rollen,
+  einen genehmigten Signaturdienst, eng gefasste Credential-Handles, einen dauerhaft
+  laufenden Runner-Service und eine Out-of-Band-Bestätigung des Repository-Owners.
+  Das ist die korrekte Antwort auf die Frage „wie genehmigt man in einem
+  Repository mit mehreren Beteiligten" — nur stellt dieses Repository diese Frage
+  nicht: Es wird von einer Person mit Agenten betrieben, die fünf getrennten
+  Rollen wären dieselbe Person. Die Anforderung war damit nicht unerfüllt, sondern
+  unerfüllbar. Seven hat unabhängig festgestellt und ich habe nachvollzogen, dass
+  jede offene Task in `0037` transitiv an `0037-07` hängt und `0037-07` an
+  `0037-49` — es gab keine unblockierte Insel, an der stattdessen hätte gearbeitet
+  werden können.
+- **Was erhalten bleibt.** Der Zuschnitt senkt die Zahl der Beteiligten, nicht die
+  Prüftiefe: Antrags-/Entscheidungstrennung, Nachvollziehbarkeit, Digest-Bindung
+  und die append-only Aufzeichnung bleiben. Was entfällt, ist die Annahme mehrerer
+  natürlicher Personen.
+- **Umsetzung.** Neufassung von `0037-49` und Prüfung der abhängigen Kriterien in
+  `0037-07`, `0037-38`, `0037-43`, `0037-32`, `0037-33`, `0037-36`; eigener
+  Vorgang, noch nicht ausgeführt. Die lokale Vorarbeit
+  (`docs/pipeline/0037-49-external-readiness.md`, Fixtures,
+  `_src/tools/manage_approval_readiness.py`) bleibt gültig und wird angepasst,
+  nicht verworfen.
+- **Provenienz.** Nutzer-Entscheidung vom 2026-08-21 auf die Vorlage
+  `docs/dossiers/entscheidungsvorlage-offene-punkte-20260821.md`, Option A1
+  („Auf dich zuschneiden").
+
 ## Ausführungsprotokoll zu `DEC-0044-010` — Bereinigung des Root-Index
 
 Ausgeführt von `agent:kathryn:projektleiter:branching-strategie:20260821T090000Z`
