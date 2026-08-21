@@ -20,6 +20,7 @@ ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird nicht in die
 Sprachbaeume uebersetzt.
 """
 import argparse, glob, html, json, os, re, subprocess, sys
+from report_page_header import report_page_header
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
@@ -708,6 +709,7 @@ def write_archive_page(versions):
     tabelle = _versions_table_html(versions)
     inhalt = "\n".join([
         STIL,
+        report_page_header(generator="_src/tools/extraction_report.py", data_source="_src/spec/campaigns/extraction-report-versions/", purpose="Zeigt die Versionen der Extraktionsberichte; Ausführungszeitpunkt, Script-Stand und Delta erklären, was sich zwischen Läufen geändert hat."),
         '<section class="tr-head"><p>Vollstaendige Historie aller Extraktions-Berichtsversionen, jeweils mit Ausfuehrungszeitpunkt, Vorgaenger-Verweis, Extraktionsskript-Version (Git-Hash + Checkin-Datum von <code>extraction_report.py</code> und <code>spec_scrape.py</code>) und Delta zur vorigen Script-Version.</p></section>',
         tabelle,
     ])

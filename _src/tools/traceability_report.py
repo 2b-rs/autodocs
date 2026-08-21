@@ -16,6 +16,7 @@ Der Bericht ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird
 nicht in die Sprachbaeume uebersetzt.
 """
 import argparse, datetime, glob, html, json, os, re, sys
+from report_page_header import report_page_header
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
@@ -144,6 +145,7 @@ def baue(daten, datum, idx, quelle):
     verlinkt = sum(1 for r in x["only_in_db"] if r in idx)
     inhalt = "".join([
         STIL,
+        report_page_header(generator="_src/tools/traceability_report.py", data_source="crosscheck JSON und versionierter PDF-Cache", purpose="Vergleicht lokale Spezifikations-Records mit den geprüften Standarddokumenten; Abweichungen sind Prüfhinweise und keine automatische Korrektur."),
         "<h1>Traceability-Bericht — Spec-Datenbank gegen AUTOSAR %s</h1>" % esc(daten["release"]),
         '<section class="tr-head"><p>Abgleich der lokalen Spezifikations-Records mit den '
         'gecachten normativen AUTOSAR-Standarddokumenten. Abweichungen sind Prüfhinweise: '
