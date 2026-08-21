@@ -183,6 +183,51 @@ Empfehlungen der Entscheidungsvorlage.
   verschieden sein muss. Der Prompt und der Kontext, den sie übernehmen, muss
   dokumentiert werden."
 
+## Korrekturvermerk zu `DEC-0044-014` (2026-08-21, nachgetragen)
+
+**Die Entscheidung bleibt gültig. Ihre tragende Begründung war falsch.**
+
+`DEC-0044-014` stützt sich unten auf den Befund, die Anforderung von `0037-49`
+sei „nicht unerfüllt, sondern unerfüllbar". Das stimmt nicht. Sie war zum
+Zeitpunkt der Entscheidung **bereits erfüllt** — seit dem 2026-08-16, 16:42 Uhr.
+
+Beleg, nachträglich erhoben: Commit `e0c969976` des Repository-Eigentümers sagt
+in seiner eigenen Nachricht wörtlich „All 6 readiness checks pass (EXIT=0)". Der
+Befund gilt unverändert; `python3 _src/tools/manage_approval_readiness.py --check
+--json` liefert `all_ok: true`, Exit 0. Remote konfiguriert, SSH-Signierung aktiv,
+`allowed_signers` mit zwei echten `ssh-ed25519`-Prinzipalen statt Platzhaltern,
+`authorities.json` mit echten Fingerabdrücken für alle fünf Rollen, ein
+verifizierter Credential-Handle.
+
+**Wie der Fehler entstand.** Drei Sessions nacheinander haben denselben Fehler
+gemacht: den **Tickettext** und ein am 2026-08-16 eingefrorenes Reifegrad-Dokument
+gelesen, das in jeder Zeile `BLOCKED` sagt, statt den **Zustand** zu messen. Erst
+wurde `[d]` gesetzt, dann von Seven vertragskonform auf `[u]` korrigiert, dann
+baute ich eine Managemententscheidung darauf. Ein einziger Aufruf des Werkzeugs,
+das für genau diese Frage gebaut wurde (`0038-15`), hätte den Fehler in jeder der
+drei Runden beendet. Ich habe Sevens Abhängigkeitskette nachgerechnet und
+bestätigt, aber nie deren Prämisse geprüft.
+
+**Was von der Entscheidung trägt.** Der Zuschnitt auf Einzelautorität ist
+sachlich richtig und bleibt in Kraft — aber er beschreibt, was der Eigentümer
+längst gebaut hatte: `authorities.json` legte alle fünf Rollen bereits auf eine
+Person, mit dem ausdrücklichen Vermerk „Solo project: approver is also
+implementer". Falsch war nicht das *Was*, sondern das *Warum*: Die Neufassung von
+`0037-49` hat den Tickettext an eine bestehende Konfiguration angeglichen; sie
+hat kein Hindernis beseitigt, weil keines vorlag.
+
+**Folge.** `0037-49` ist am selben Tag geschlossen worden (`[x]`, Bericht
+`9d4815c6b`, Buchführung `aaa74b8e6`, Branch `0037-49`) — ohne dass irgendeine
+externe Bereitstellung nötig gewesen wäre. Das Feature war fünf Tage lang
+grundlos blockiert.
+
+**Lehre, als Vorschlag und nicht als Beschluss.** Ein Vorgang, dessen Blocker
+maschinell prüfbar ist, sollte den Prüfbefehl im Ticket nennen, und wer den
+Zustand behauptet, sollte ihn ausgeführt haben. Das ist dasselbe Muster wie
+`DEC-0044-009` und `LTD-DEFERRED-STALE`: gespeicherte Behauptungen über
+ableitbaren Zustand veralten still. Hier hat eine solche Behauptung fünf Tage
+lang ein ganzes Feature stillgelegt.
+
 ## `DEC-0044-014` — Feature `0037`: Genehmigungsregime auf Einzelbetrieb zuschneiden
 
 - **Entscheidung (Management, 2026-08-21).** Das Genehmigungsregime aus Feature
