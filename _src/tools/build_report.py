@@ -14,6 +14,12 @@ Tasks:
 CLI:
     python3 _src/tools/build_report.py combine [--run-archive-ref=<ref>]
     python3 _src/tools/build_report.py publish [--run-archive-ref=<ref>]
+    python3 _src/tools/build_report.py mint-ref
+        Mints and prints a distinguishably marked fallback RUN_ARCHIVE_REF
+        (see mint_manual_run_archive_ref) for a manual/out-of-runner build
+        (0043-01), so `combine` can still correlate its cohort. Export it
+        before invoking the producers, e.g.:
+            export RUN_ARCHIVE_REF="$(python3 _src/tools/build_report.py mint-ref)"
 """
 import datetime
 import glob
@@ -21,6 +27,7 @@ import html
 import json
 import math
 import os
+import secrets
 import sys
 import time
 from pathlib import Path
@@ -33,9 +40,32 @@ REQUIRED_STAGES = ("i18n_merge", "i18n_diagrams", "html_generate", "validate")
 ALLOWED_FINDING_SEVERITIES = frozenset(("info", "warning", "error"))
 SCHEMA_VERSION = "1.0"
 
+# Runner-issued refs name a real output/run-archive/run-<timestamp>-n<seq>
+# pair (see runner-host/run-loop.sh). A build run outside the runner (the
+# manual WARTUNG.md path) has no such pair to name, but `combine` still
+# requires a non-empty run_archive_ref shared by every subreport in the
+# cohort (0043-01: "combine cannot starve on missing cohorts"). This prefix
+# marks a minted fallback so it can never be mistaken for, or collide with, a
+# real runner-issued ref.
+MANUAL_REF_PREFIX = "manual-"
+
 
 def _esc(s):
     return html.escape(str(s if s is not None else ""), quote=True)
+
+
+def mint_manual_run_archive_ref():
+    """Mint a fallback RUN_ARCHIVE_REF for a publication run executed outside
+    the runner lifecycle (runner-host/run-loop.sh).
+
+    The result is distinguishably marked with MANUAL_REF_PREFIX so it is never
+    indistinguishable from a real runner-issued ref, which always names an
+    actual output/run-archive/run-<timestamp>-n<seq> pair. Uniqueness across
+    concurrent/successive manual runs comes from a UTC timestamp plus 4 bytes
+    (8 hex chars) of CSPRNG entropy from `secrets`.
+    """
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return f"{MANUAL_REF_PREFIX}{stamp}-{secrets.token_hex(4)}"
 
 
 def _has_run_archive_ref(value):
@@ -484,7 +514,10 @@ def main(argv=None):
         page_path = generate_report_page(combined, ref)
         print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
         return combined["exit_code"]
-    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish")
+    if cmd == "mint-ref":
+        print(mint_manual_run_archive_ref())
+        return 0
+    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish, mint-ref")
     return 2
 
 
