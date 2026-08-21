@@ -50,6 +50,39 @@ branch whose name **is the item's ID**:
   [`runner-transaction.md`](runner-transaction.md)) and are never the canonical
   item branch.
 
+## Exception: governance artifacts live on `main`
+
+Management decision `DEC-0044-012` (2026-08-21) removes one class of file from
+the one-branch-per-item rule above. **Changes to governance processes are always
+made on `main`, and `main` is always current with respect to governance.**
+
+Governance artifacts are at minimum:
+
+- decision records (`DEC-*`, normally under `docs/dossiers/`);
+- the authority files `AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, `CLAUDE.md`;
+- everything under `docs/pipeline/` — including this document;
+- the marker and prerequisite contract in the `TODO.md` header.
+
+Everything else — ordinary work products, generated output, tools, tests, and the
+per-item backlog entries themselves — is unaffected and travels on item branches
+as described throughout the rest of this document.
+
+The reason is that governance is *shared* state, and shared state held on a
+private branch cannot be coordinated, only reconstructed after the fact. That is
+the same failure class `DEC-0044-008` rejected for provenance. The trigger was
+concrete: a decision record drafted on a branch claimed an identifier that a
+parallel line of work had already allocated on `main`, leaving two append-only
+records under one ID that answered the same question in opposite ways. On `main`
+the collision would have been visible at allocation time — `main` is the only
+place where an allocation point for identifiers can exist. **Check a new `DEC-`
+identifier against `main` before using it.**
+
+Practically this means a governance change is committed directly on `main`
+rather than through an item branch and a merge. The provenance trailer from
+`DEC-0044-008` still applies (`Policy-Origin-Branch: main`), and the
+integrator's ordinary duty of care is unchanged; what disappears is the branch
+detour, not the review.
+
 ## Claim files and work products travel on the branch
 
 Under this workflow the `TODO-<agent-id>.md` claim file is a tracked artifact on

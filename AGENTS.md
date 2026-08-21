@@ -12,6 +12,19 @@ Capability classes and all sandbox-specific execution mechanics—including disc
 
 Feature, Task, and Subtask work is carried on Git branches named after the item ID, merged upward, with claim files committed alongside work products. The branch topology, the binding base-and-merge start rule, merge authority by level, Feature integration, and the Feature-level `[u]` integration verdict are defined in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md); the acceptance meanings it references are unchanged.
 
+### Governance changes go on `main`; agents coordinate through the agent-inbox
+
+Management decision `DEC-0044-012` (2026-08-21, recorded in [`docs/dossiers/dec-branching-merging-strategie.md`](docs/dossiers/dec-branching-merging-strategie.md)):
+
+1. **Changes to governance processes are always made on `main`, and `main` is always current with respect to governance.** A governance artifact must never sit on a branch while other agents work against `main`.
+2. **Agents coordinate through the agent-inbox.**
+
+Governance artifacts are at minimum: decision records (`DEC-*`), the authority files `AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, `CLAUDE.md`, everything under `docs/pipeline/`, and the marker and prerequisite contract in the `TODO.md` header. Ordinary work products are **not** governance artifacts and continue to travel on item branches exactly as described in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md).
+
+This is an exception to the one-branch-per-item rule above, and it exists because governance is *shared* state. Shared state held on a private branch cannot be coordinated, only reconstructed afterwards — the same failure class `DEC-0044-008` already rejected for provenance. The concrete trigger: a decision record drafted on a branch took an ID that a parallel line of work had already assigned on `main`, producing two append-only records under one identifier that answered the same question in opposite ways. `main` is the only place where an allocation point for identifiers can exist at all. Before allocating a new `DEC-` identifier, check it against `main`.
+
+Coordination duties that follow from (2): the mailbox is not a telephone — nothing is pushed, and a recipient sees mail only on its next turn. A coordination step is complete when the **answer** has arrived, not when the message was sent. Read the inbox before any consequential action: a merge to `main`, an acceptance, or the allocation of a new identifier. Addresses are case-sensitive. Acknowledge (`ack`) what you acted on, so senders can tell their message arrived instead of concluding your session is dead.
+
 ## Starting work
 
 1. Determine the capability class as required by `SANDBOX.md`; default to sandboxed/grunt.
