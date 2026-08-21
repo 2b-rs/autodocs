@@ -175,7 +175,7 @@ HOW TO USE:
   - **Definition of Done:** Committed; the check demonstrably fires on the pre-Feature state and passes on the post-Feature state; `WARTUNG.md` documents the extended sequence.
   - **Integration review:** **mandatory.** **Rationale (architect):** this adds a gate to the canonical validation every future build runs through; an error is either a silent no-op (staleness returns) or a false-positive build blocker.
 
-- [p] **0043-05** Overhaul the five report pages: uniform explanatory header, visible freshness, S-Core campaign included. Claim: .
+- [p] **0043-05** Overhaul the five report pages: uniform explanatory header, visible freshness, S-Core campaign included. Claim: `TODO-Data-Julia-0043-05-20260821T090700Z.md`.
   - **Requirements covered:** `RQ-BR-05`, `RQ-BR-06`.
   - **Context (finding B5):** Curation, traceability, and open-reviews pages carry no visible generation timestamp; the newest extraction state is 2026-08-12; the S-Core campaign appears nowhere.
   - **Acceptance criteria:** `build-reports.html`, `curation-report.html`, `extraction-reports.html`, `traceability.html`, and `open-reviews.html` each carry a uniform header naming generation timestamp, generating tool, data source, and a short "what this report shows and how to read it" paragraph; the S-Core campaign evidence (`0019-06`) is reachable from the report landscape; visual presentation is aligned across the five pages per `KONVENTIONEN.md`; all changes go through the page-model generators (`curation_report.py`, `extraction_report.py`, `open_reviews_report.py`, …), never hand-edited HTML.
