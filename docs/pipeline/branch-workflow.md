@@ -165,6 +165,27 @@ time, and the mechanical provenance checks are Feature `0044` work
   the suspension's scope, duration, and participants recorded. Without
   unanimity, the integration escalates to the user for decision; this composes
   with, and does not replace, the `[u]` integration verdict below.
+- **Fast-forward absorption of foreign content is prohibited (mechanical-check
+  blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
+  advance a branch tip without ever creating a merge commit, so an absorbed
+  foreign commit becomes indistinguishable, by topology alone, from one
+  authored directly on the receiving branch — `check_policy_provenance.py`
+  (the `DEC-0044-002` mechanical check) is therefore structurally unable to
+  catch a foreign-branch policy commit absorbed this way. To keep the
+  mechanical check meaningful, an agent MUST NOT use `git merge --ff-only` or
+  `git update-ref` to advance a Task/Feature/Subtask branch, or `main`, onto
+  the tip of any branch other than that item's own direct predecessor/
+  successor chain (the base-and-merge chain required above) or its own prior
+  tip. Absorbing content from any other branch — including a legitimate
+  `DEC-0044-001` target-policy pull-in — MUST instead use an explicit merge
+  commit (`git merge --no-ff` or equivalent), so the mechanical check's
+  merge-commit-based foreign/pull-in classification has topology to inspect.
+  Fast-forwarding a branch (including `main`) to the tip of that item's own
+  already-integrated predecessor/successor chain remains permitted and is not
+  "absorption" in this sense — the content already passed through the merge
+  commits recorded within that chain's own history. See `DEC-0044-007`
+  ([`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md))
+  for the full analysis and residual-limitation record.
 
 ## Merge authority and direction
 

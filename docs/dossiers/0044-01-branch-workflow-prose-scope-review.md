@@ -270,3 +270,247 @@ and no further Implementer judgment remains.
 This review does not grant Task acceptance, an integration verdict, or
 `Acceptance: ✓` for `0044-01`. `0044-01`'s mandatory integration review
 remains a separate, later step.
+
+## 5. Third-round scope review — fast-forward absorption blind spot
+
+**Reviewer:** `agent:seven-bellana:0044-01-architect-review:20260821T030000Z`
+(Architect persona, `privileged`), a third, focused review distinct from
+sections 1–4 above, following Seven-Tom's third independent integration
+review (`agent:seven-tom:integrator:0044-01-review:20260821T020000Z`, verdict
+recorded beneath Task `0044-01` in `TODO.md`, commit `b62df43a8` on branch
+`0044-01-integration-review-seven-tom-20260821T020000Z`, now fast-forwarded
+onto `0044-01`).
+
+### 5.1 What Tom found and why it is real
+
+Rounds 1–2 found and Seven-Rebi fixed two genuine false-positive causes in
+`_src/tools/check_policy_provenance.py` (detached-HEAD `(no branch)` lines,
+and stale/retained branches sitting at an ancestor point on `source`'s own
+first-parent line), culminating in a topology-only redesign
+(`36d048ce2`/`bc01f6a76`) that classifies a policy-path commit as
+`source-origin` purely from **first-parent-chain membership plus non-merge
+status**, deliberately ignoring `containing_branches` as a decision input.
+
+Round 3's finding is structural, and I independently confirm it rather than
+taking Tom's word alone: `git merge --ff-only` and `git update-ref` advance a
+branch tip to a target commit without ever creating a merge commit. The
+absorbed commit(s) become part of the receiving branch's own first-parent
+chain, with exactly one parent each — topologically indistinguishable from a
+commit authored directly there. No git-native, purely local-history signal
+(reflogs excepted, and reflogs are local/prunable/not shared, per Tom's own
+option (b)) can tell "authored on `source`" apart from "absorbed onto
+`source`'s tip via fast-forward" after the fact. Tom's minimal scratch-repo
+reproduction (target-tip source branch, then `git merge --ff-only
+foreign-branch`, zero merge commits) is not repository-specific; it is a
+property of Git itself. I re-read `_first_parent_chain()`/`_parent_count()`
+in `_src/tools/check_policy_provenance.py` (current tip `bc01f6a76`) and
+confirm the code has no path that could detect this case — it is not an
+implementation bug to patch, it is the necessary consequence of using
+first-parent-chain topology as the classification signal at all, which is
+itself the necessary consequence of `containing_branches`/branch-name
+evidence having been proven unreliable in rounds 1–2. There is no fourth
+purely-mechanical redesign available that closes this gap; a correct
+disposition must be a documented residual limitation, a process control, or
+both — not a fifth code patch.
+
+### 5.2 Is this a `[u]`/management decision, or an Architect scope call?
+
+I evaluate this independently against the same authority boundary the
+Cross-item gate-scope review exception and `AGENTS.md`'s implementation-
+completion section both describe, rather than adopting Tom's `TK-2`-reach
+framing as automatically meaning "route to the user."
+
+**What is genuinely `TK-2` (reach beyond this Task) here:** yes — this
+finding affects every future integration across the repository that relies
+on `check_policy_provenance.py`, not only `0044-01`, so `cross-item-blast-
+radius` applies, and any change to `branch-workflow.md`'s merge-authority
+prose is `material-architecture-or-repository-behavior` on a document already
+flagged `Integration review: mandatory`. A `decision-record@v1` is therefore
+mandatory. That is a documentation requirement, not by itself an escalation
+requirement — `AGENTS.md`'s "Cross-item gate-scope review exception" and
+"Autonomous backlog repair" sections both draw this same distinction
+explicitly, and I already exercised exactly this authority twice this
+session for `DEC-0044-005`/`DEC-0044-006` on the same document.
+
+**What is not a genuine `[u]`/management call:** neither of Tom's two named
+options requires choosing between materially different **product**
+architectures the user has not already indicated a preference on, accepting
+a **security/release risk on the user's behalf** beyond what `DEC-0044-001..
+003`/`DEC-0044-002` already accept, changing externally controlled
+configuration, or exposing credentials. Both options operate entirely within
+the integration-policy architecture the user already decided on 2026-08-20
+(`DEC-0044-001..003`): the target-branch-governs-precedence rule and the
+foreign-branch prohibition are unchanged by either option; the only question
+is which **enforcement mechanism** closes an already-known-imperfect gap in
+the mechanical check the user asked `0044-01` to build. Choosing an
+enforcement mechanism for an already-accepted policy, when the alternatives
+differ only in strength/cost/complexity and not in what risk is accepted, is
+squarely the kind of technical/process-scope call `AGENTS.md` places within
+Architect authority ("only escalate ... if it requires accepting a security/
+release risk on the user's behalf, or choosing between materially different
+product directions the user hasn't already indicated a preference for").
+
+I also weigh the concrete cost of reflexive escalation: this exact
+fast-forward mechanism is this session's own routine mechanism for advancing
+`main` (Feature `0038` integration, `0037-37`, `0037-49`, `0041-01`,
+`0043-01` — all hand-verified, all legitimate), so an uninformed `[u]` here
+would stall on a question the Architect role exists precisely to answer from
+already-established architecture: not "is fast-forward acceptable," but
+"under what condition, if any, must fast-forward give way to an explicit
+merge commit so the mechanical check can see the evidence."
+
+**Conclusion:** within Architect authority. I decide below, record it as
+`DEC-0044-007`, and do not set `[u]`.
+
+### 5.3 Decision
+
+I select Tom's option (a) — accept the fast-forward blind spot as a
+documented residual limitation, paired with a companion process control —
+over option (b) for three technical reasons: (1) a reflog-based heuristic is
+explicitly non-authoritative (local, prunable, not shared across clones/
+worktrees) and would give a false sense of mechanical coverage for exactly
+the violation shape the tool exists to catch, which is a worse property than
+an honestly documented gap; (2) option (a)'s process control is enforceable
+at the point of the operation itself (an agent either uses `--no-ff` for
+non-predecessor absorption or it doesn't; this is directly observable in the
+resulting commit graph, unlike a reflog entry that decays), and, once
+followed, closes the gap **completely** for future policy-path commits,
+rather than merely flagging some fraction of them for human review; (3) it
+requires no new code and does not touch the classifier `check_policy_
+provenance.py` just repaired three times — it changes what git operations are
+permitted to reach a Task/Feature branch's first-parent chain in the first
+place, which is a process rule, not a fourth attempt at a mechanical fix.
+
+**Scope note on the broader branching/merging strategy:** this finding and
+decision are narrowly about closing the mechanical check's blind spot for
+policy-path commits under `DEC-0044-002`. I agree with Tom that it connects
+to, but do not attempt to resolve, the broader question of this repository's
+whole branching/merging (configuration management) strategy that is being
+separately routed to project management via Kathryn — that broader question
+may reach further (e.g., whether fast-forward should be restricted more
+generally, or whether `main`-advancement itself should require a different
+mechanism). `DEC-0044-007` is scoped to the `DEC-0044-002` policy-provenance
+check only and does not prejudge that separate, broader review.
+
+### `DEC-0044-007` — Accept the fast-forward provenance blind spot as a documented residual limitation, paired with a mandatory non-fast-forward absorption rule
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-21T03:00:00Z`
+- **Deciding identity:** `agent:seven-bellana:0044-01-architect-review:20260821T030000Z`
+- **Role:** `Architekt`
+- **Authority reference:** `task:0044-01`, elaborating `DEC-0044-001..003`
+  and `DEC-0044-002` specifically
+  (`docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`);
+  scope review conducted per the Cross-item gate-scope review exception
+  (`AGENTS.md`); responds to Seven-Tom's third `[u]` integration verdict
+  (`TODO.md`, Task `0044-01`, commit `b62df43a8`)
+- **Subject:** How `check_policy_provenance.py`'s structural inability to
+  distinguish a commit authored on `source` from a foreign commit absorbed
+  onto `source`'s tip via fast-forward (`git merge --ff-only`/`git
+  update-ref`, no merge commit) is disposed for Task `0044-01`'s acceptance
+  criterion and for the repository's branch-workflow process.
+- **Decision:** (1) `check_policy_provenance.py`'s classification design is
+  **not** changed again to attempt to close this gap — no purely local-
+  history signal can do so with certainty, per §5.1. The gap is accepted as a
+  documented residual limitation of the mechanical check. (2)
+  `docs/pipeline/branch-workflow.md` is amended (see the accompanying
+  substantive commit) to add a binding process control: an agent MUST NOT use
+  `git merge --ff-only` or `git update-ref` to advance a Task/Feature/Subtask
+  branch, or `main`, onto the tip of any branch other than that item's own
+  direct predecessor/successor chain or its own prior tip; absorbing content
+  from any other branch — including a legitimate `DEC-0044-001` target-policy
+  pull-in — MUST use an explicit merge commit (`git merge --no-ff` or
+  equivalent) so `check_policy_provenance.py`'s merge-commit-based foreign/
+  pull-in classification has topology to inspect. Advancing a branch
+  (including `main`) via fast-forward to the tip of that item's own
+  already-integrated predecessor/successor chain remains permitted and is not
+  "absorption" in this sense — for example fast-forwarding `main` to a
+  Feature branch's fully-integrated, already-merge-commit-verified tip is the
+  item's own successor state, not foreign content. (3)
+  `check_policy_provenance.py`'s module docstring gains a new "fast-forward
+  absorption" entry in its "Residual known limitations" section, referencing
+  this record; this is direct implementation follow-up work, not a further
+  gated architecture decision, and is left to a resumed Implementer session
+  (see the Task `0044-01` note accompanying this record for the exact scope).
+- **Technical justification:** See §5.1–§5.3 above. Fast-forward absorption
+  is topologically unrecoverable from local history alone; a reflog heuristic
+  is non-authoritative and would misrepresent coverage. A process control
+  that prohibits the git operation which creates the blind spot in the first
+  place, for the one case that matters (absorbing genuinely foreign branch
+  content), closes the gap completely and requires no further code changes to
+  a classifier already independently re-reviewed three times. The
+  predecessor/successor-chain and own-prior-tip exceptions preserve this
+  session's own already-legitimate, hand-verified `main`-advancement pattern
+  (Feature `0038`, `0037-37`, `0037-49`, `0041-01`, `0043-01`) without
+  weakening `DEC-0044-002`.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Accept the residual limitation, add the non-fast-forward
+    absorption process control to `branch-workflow.md` (Tom's option (a)).
+    - **Disposition:** `selected`
+    - **Reason:** Closes the gap completely and durably for future policy
+      commits, is directly observable/enforceable in the commit graph itself,
+      requires no further classifier changes, and does not weaken
+      `DEC-0044-002`.
+  - **ALT-02:** Add a best-effort reflog-based heuristic to flag likely
+    fast-forward absorption for human review (Tom's option (b)).
+    - **Disposition:** `rejected`
+    - **Reason:** Reflogs are local, prunable, and not shared across clones/
+      worktrees/CI, so the heuristic would be unreliable exactly where the
+      check is most needed (a fresh isolated integration-review worktree, per
+      this Task's own repeated review pattern); a partial, non-authoritative
+      signal risks being mistaken for real coverage, which is a worse
+      property than an honestly documented gap.
+  - **ALT-03:** Attempt a fourth classifier redesign to close the gap purely
+    mechanically.
+    - **Disposition:** `rejected`
+    - **Reason:** Per §5.1, no purely local-history signal can distinguish
+      the two cases after a fast-forward has occurred; this is not an
+      implementation defect but a property of Git itself, so further code
+      changes to the classifier cannot succeed where the first three rounds'
+      genuine defects could.
+  - **ALT-04:** Escalate to the user (`[u]`) as Tom's verdict flagged.
+    - **Disposition:** `rejected`
+    - **Reason:** Per §5.2, neither remaining option chooses between
+      materially different product architectures beyond what `DEC-0044-001..
+      003` already decided, nor accepts security/release risk beyond what
+      `DEC-0044-002` already accepts; this is an enforcement-mechanism choice
+      for an already-accepted policy, within Architect authority.
+- **Consequences:**
+  - **CON-01:** Future integrators/agents absorbing content from a non-
+    predecessor branch onto a Task/Feature branch must use an explicit merge
+    commit; ad hoc `--ff-only`/`update-ref` absorption of foreign content is
+    now a process violation, independent of and in addition to whatever
+    `check_policy_provenance.py` reports.
+  - **CON-02:** This session's own `main`-advancement pattern (fast-forward
+    to an already-integrated successor tip) remains permitted and requires no
+    rework.
+  - **CON-03:** `check_policy_provenance.py`'s documented limitations grow by
+    one entry; no code behavior changes as a direct result of this record.
+  - **CON-04:** The broader repository-wide branching/merging strategy
+    question remains open and is not resolved by this record (see the scope
+    note in §5.3); a future broader revision could supersede or narrow this
+    process control.
+- **Affected work units:**
+  - `feature:0044`
+  - `task:0044-01`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0044`
+  - `integration:main` (every future fast-forward-based integration in this
+    repository)
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:seven-tom:integrator:0044-01-review:20260821T020000Z`
+    - **Role:** `Integrator`
+    - **Participation:** `reviewed`
+    - **Position:** `no-position`
+    - **Note:** Tom's third `[u]` verdict identified the defect, proved it
+      with an independent minimal reproduction, named both disposition
+      options considered here, and explicitly deferred the choice between
+      them as a `TK-2` decision without recommending one; this record adopts
+      option (a) of his own naming.
+- **Waiver:** `none`
