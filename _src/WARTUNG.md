@@ -116,6 +116,12 @@ Extraktionsskript-Stände unverändert sind, wird keine neue Berichtsversion
 angelegt; ein nachträgliches `generate.py` rendert dann lediglich bestehende
 Versionen nach HTML aus, statt Dubletten wie v0012/v0013 zu erzeugen.
 
+**Minimal-change policy (0043-05):** Historische versionierte Seitenmodelle und
+die daraus gerenderten `extraction-report-v%04d.html`-Seiten sind unveränderliche
+Evidenz. Ein neuer Extraktionslauf darf nur ein fehlendes Seitenmodell für seine
+neue Version anlegen und das Berichtsverzeichnis bzw. den Index verlinken; er darf
+keine bereits vorhandene Extraktionsberichtseite neu erzeugen oder überschreiben.
+
 Für lokale Agent-/Sandbox-Läufe gilt zusätzlich AGENTS.md: wegen CPU-/I/O-Last
 immer über `run.sh` ausführen und darin **beide** Schritte kombinieren
 (`extraction_report.py build && python3 _src/generate.py`).

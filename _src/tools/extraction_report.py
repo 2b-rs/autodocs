@@ -738,9 +738,13 @@ def _versions_summary_html():
 
 
 def write_version_page(page, version_entry):
+    """Create a versioned page model once; historical reports are immutable."""
     os.makedirs(VERSION_PAGES_DIR, exist_ok=True)
     path = os.path.join(VERSION_PAGES_DIR, "extraction-report-v%04d.json" % version_entry["version"])
+    if os.path.exists(path):
+        return False
     _atomic_write_json(path, page)
+    return True
 
 
 def _archive_stub_page(v):
@@ -897,9 +901,11 @@ def cmd_assemble(input_dir):
     raw = load_raw_records(input_dir)
     datum = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     seite = baue(datum, {"records": raw})
-    with open(PAGE, "w", encoding="utf-8") as f:
-        json.dump(seite, f, ensure_ascii=False, indent=1)
-        f.write("\n")
+    # The live extraction report is historical evidence once created. A new
+    # extraction run adds only its missing version page; the overview/index
+    # below links it without rewriting older report models.
+    if not os.path.exists(PAGE):
+        _atomic_write_json(PAGE, seite)
     ensure_version_pages()
     verlinke_startseite(datum)
     total = sum(len(v) for v in raw.values())
