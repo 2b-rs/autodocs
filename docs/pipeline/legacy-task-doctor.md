@@ -126,7 +126,7 @@ The valid legacy markers are exactly `[ ]`, `[u]`, `[p]`, `[?]`, `[w]`, and `[x]
 
 | Rule | Meaning |
 |---|---|
-| `LTD-MARKER-UNDEFINED` | A Task, legacy entry, or claim uses an undefined marker such as `[d]`. |
+| `LTD-MARKER-UNDEFINED` | A Task, legacy entry, or claim uses a marker outside the `TODO.md` legend. |
 | `LTD-ID-DUPLICATE` | A Feature or Task/Subtask ID occurs more than once across the authoritative lists. |
 | `LTD-TASK-HEADER-MALFORMED` | A Task-like checklist entry has a malformed canonical Task ID/header instead of disappearing into legacy text. |
 | `LTD-FEATURE-HEADER-MALFORMED` | A current Feature header lacks its canonical four-digit ID. |
@@ -196,6 +196,16 @@ The parser validates complete comma-separated Task and Feature declarations befo
 | `LTD-PREREQ-SELF` | An item depends on itself. |
 | `LTD-PREREQ-CYCLE` | The explicit graph contains a canonicalized cycle. |
 | `LTD-TERMINAL-UNSATISFIED-PREREQ` | A terminal item still has a nonterminal explicit prerequisite. |
+| `LTD-DEFERRED-STALE` | A `[d]` deferred item has explicit prerequisites and every one of them is now terminal, so its deferral is no longer justified. |
+| `LTD-DEFERRED-UNVERIFIABLE` | A `[d]` deferred item declares no explicit prerequisite, so no tool can tell when its blocker clears. |
+
+A `[d]` deferral (`DEC-MARKER-001`) records that work happened but is currently
+blocked. "Currently" is derived from the prerequisite graph, and nothing in the
+file changes when the last predecessor closes — so the practice rule that the
+closing agent revisits deferred successors is enforced here rather than
+remembered. A deferral whose blocker is not written down as a `PREREQ` edge is
+reported too: it cannot be rechecked mechanically, and an unrecheckable
+deferral is the failure mode the marker was meant to avoid.
 
 The doctor detects syntactic graph errors. General semantic-deadlock repair remains an agent/backlog-authority responsibility because arbitrary prose intent cannot be inferred safely.
 
