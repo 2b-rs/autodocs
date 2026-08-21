@@ -445,3 +445,90 @@ the branch-to-root `git merge --ff-only/--no-ff` sequence"; die von `Data`
 verlangten Auflagen (benannte Autorität, Preflight, Abbruch statt Aufräumen,
 `update-ref`-Verbot, Prüfer bleibt Vorbedingung) sind oben vollständig
 übernommen.
+
+---
+
+## `DEC-0044-016` — Umfang der Gates A1 und A2 für die Feature-Breakdown-Anweisung (`0044-04`)
+
+- **Recorded at:** 2026-08-22T00:00:00Z
+- **Deciding identity:** Management (aktueller User / Repository-Eigentümer)
+- **Recording identity:** `agent:kathryn:projektleiter:0044-04-gate-scope:20260822T000000Z`
+- **Role of the recorder:** Projektleiter unter `DEC-ROLE-001` — zeichnet auf,
+  entscheidet nicht
+- **Authority reference:** vier Managemententscheidungen aus einem strukturierten
+  Fragebogen, wörtlich in
+  [`dec-0044-016-provenance.txt`](dec-0044-016-provenance.txt)
+- **Anlass:** Architekt `Data-Riker-20260821T221000Z` beanspruchte `0044-04` bei
+  `b098882fac` und stellte fest, dass die A1-Prüfung zur Branch-Zeit und die
+  A2-Aufzeichnung von Reihenfolgeabweichungen **qualifizierende
+  cross-item-Gates** sind: sie können Start, Validierung, Abnahme, Integration
+  oder Abschluss anderer Arbeitseinheiten blockieren. `DEC-0044-006` deckt die
+  neue Anweisung nicht ab. Gemeldet von `Data`, agent-inbox Thread
+  `work-dispatch`, 2026-08-21T23:03:08Z.
+
+### Betroffene Arbeitseinheiten und Gates
+
+- **Arbeitseinheit:** `0044-04` (Feature-Breakdown-Prozessanweisung), mit
+  Fortwirkung auf `0044-05` (Schemata/Matcher), `0044-06` (Bedarfsklassen) und
+  `0044-08` (Feature-Integration).
+- **Gate A1:** Prüfung der Integrierbarkeit unter der Zielpolicy **zum Zeitpunkt
+  der Branch-Erstellung**.
+- **Gate A2:** Aufzeichnung von Abweichungen von der geplanten
+  Implementierungsreihenfolge.
+
+### Entscheidung
+
+**A1 — Vorabprüfung: ja, aber schlank.** Beim Anlegen eines Arbeits-Branches
+wird einmal geprüft, ob die Arbeit unter der Policy des Integrationsziels
+zurückführbar ist. Mindestevidenz ist **ein Satz im Vorgangsdatensatz**:
+Ergebnis (passt / passt nicht) und woran es festgemacht wurde. Ein Werkzeuglauf
+mit abgelegtem Ergebnis wird **nicht** verlangt.
+
+> *Begründung des Managements:* Der teure Fall ist der, in dem jemand tagelang an
+> etwas baut, das am Ende nicht zusammenpasst. Den fängt ein Satz beim Start ab.
+> Ein voller Nachweis bremst jeden Arbeitsbeginn spürbar, ohne diesen Fall besser
+> abzufangen.
+
+**A2 — Reihenfolgeabweichung: nur bei Fremdbetroffenheit.** Eine Abweichung von
+der geplanten Reihenfolge wird aufgezeichnet, **wenn sie die Arbeit einer anderen
+Einheit blockiert oder deren Vertrag verändert**. Sonst nicht. Auslöser ist damit
+derselbe cross-item-Prädikatstest, den `decision-record@v1` bereits definiert;
+`0044-04` erfindet keinen zweiten.
+
+> *Begründung des Managements:* Lückenlose Aufzeichnung erzeugt lange Notizen,
+> die am Ende niemand liest. Sie soll dort greifen, wo sie jemand braucht.
+
+**Worked Example: Feature `0043` (Berichtswesen/Build-Evidenz).** Die Anweisung
+wird an `0043` erprobt, bevor sie allgemein gilt — laufend, überschaubar, mit
+offenen Teilen, also ohne nennenswerten Zusatzaufwand. Entspricht dem Vorschlag
+von `Data`, vorbehaltlich der von `Data` genannten Owner-/Provenance-Prüfung.
+
+**Gegenlesen: ein von der Projektleitung instanziierter Architekt.** Die
+Scope-Prüfung übernimmt ein Architekt, den die Projektleitung ansetzt und der
+**nicht** an der Anweisung mitschreibt. `Data` prüft nicht die eigene Arbeit.
+
+> *Begründung des Managements:* Die Anweisung formt jede künftige Planung; ein
+> Denkfehler hier vererbt sich besonders weit.
+
+### Was diese Entscheidung nicht tut
+
+- Sie ersetzt **nicht** die Scope-Prüfung. Sie ist die Entscheidungsgrundlage,
+  die `AGENTS.md` vor der ersten Mutation einer qualifizierenden Gate-Reichweite
+  verlangt; die **zweite** Bedingung — Prüfung durch einen von der
+  Implementierung unabhängigen Architekten — ist damit *beauftragt*, nicht
+  erfüllt.
+- Sie ist **keine** Autorisierung für `Data-Riker-20260821T221000Z`, die Policy
+  zu schreiben. `Data` hat ausdrücklich darum gebeten, seinen Claim nicht als
+  solche zu lesen; dem wird entsprochen.
+- Sie ändert `DEC-0044-006` nicht und hebt keine bestehende Gate-Semantik auf.
+- `0044-04` trägt weiterhin `Integration review: mandatory`. Dieser Checkpoint
+  ist **nicht** gewaivt; der Waiver `DEC-0019-002` gilt ausschließlich für
+  Feature `0019`.
+
+### Konsequenzen
+
+- `0044-04` bleibt `[p]`. Die gebundene Vorbereitung ist mit diesem Datensatz
+  abgeschlossen; die Policy-Mutation bleibt gesperrt, bis die
+  Architekten-Scope-Prüfung vorliegt.
+- Die Projektleitung setzt den unabhängigen Architekten an und meldet das
+  Ergebnis an `Data`.
