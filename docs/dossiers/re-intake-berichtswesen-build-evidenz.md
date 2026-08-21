@@ -94,6 +94,65 @@ Format nach `RQ-DEC-01/02/03`; Aufzeichnungspflicht nach `TK-2`
   Skript/Log-Paare unter `output/run-archive/` bleiben ignoriert.
 - **Umsetzung:** Feature `0043` (insb. `0043-02`).
 
+### `DEC-0043-002` — Berichte werden bewahrt, nicht routinemäßig neu erzeugt
+
+- **Zeitpunkt:** 2026-08-21
+- **Entscheidende Instanz:** aktueller Benutzer (Management/Kunde), übermittelt
+  durch Koordinator Data.
+- **Vorbereitende Prüfung:** Architekt Riker hat eine unabhängige Scope-Prüfung
+  durchgeführt (Session `937e1b2b`) und festgestellt, dass eine erzwungene
+  Berichtsbewahrung ein **qualifizierendes vorgangsübergreifendes Tor** im Sinne
+  der `cross-item-blast-radius`-Prüfung ist. Damit ist dieser Datensatz vor der
+  ersten qualifizierenden Mutation verpflichtend (`AGENTS.md`,
+  Cross-item gate-scope review exception).
+- **Entscheidung:** Bestehende Berichte werden **bewahrt**. Eine Neuerzeugung ist
+  nur bei **Notwendigkeit** zulässig, und Notwendigkeit hat genau drei Gestalten:
+  1. **Verlust** der gerenderten Seiten;
+  2. **schwere Fehler in früheren Fassungen der Erzeugungslogik**, die nicht nur
+     im Skript, sondern auch in den erzeugten Seiten behoben werden müssen;
+  3. **Vergleich** — wenn an einem alten HTML-Bericht etwas seltsam wirkt und
+     rekonstruiert werden soll, ob jemand ihn manipuliert hat, ob die Daten
+     beschädigt oder unvollständig waren, oder ob die Erzeugungslogik einen
+     Fehler hatte.
+- **Zweite, unabhängige Begründung — Skalierbarkeit:** Extraktionsberichte müssen
+  von den normalen Site-Neuerzeugungen **ausgenommen** sein, weil sie mit der Zeit
+  länger werden und die Website-Regenerierung dadurch immer langsamer würde. Das
+  ist auf Dauer nicht tragbar. Diese Begründung steht **neben** der
+  Evidenzbewahrung, nicht unter ihr: Selbst wenn die Bewahrung nicht gewollt
+  wäre, verböte sich das routinemäßige Neurendern des wachsenden Archivs aus
+  Laufzeitgründen.
+- **Betriebliche Grenze:** Historische veröffentlichte Berichte werden
+  standardmäßig bewahrt. Verlust oder ein materieller Erzeugungsfehler erlauben
+  eine **auditierbare Ersetzung** mit Grund, Digests und Verknüpfung. Forensische
+  Rekonstruktion und Vergleich erzeugen einen **getrennten Kandidaten** und
+  überschreiben **niemals** den beobachteten Bericht. Das Verhalten für den
+  aktuellen/lebenden Bericht und den Index ist ausdrücklich zu klassifizieren und
+  fällt nicht stillschweigend unter die Archivregel. Normale Site-Neuerzeugungen
+  rendern das historische Extraktionsarchiv nicht neu; erzeugt werden nur
+  wirklich neue Seiten und die nötige Übersichtsverknüpfung.
+- **Bewusst aufgegeben:** Die zuvor vorgeschlagene **universelle
+  Unveränderlichkeitsregel**. Der Benutzer hat sie ausdrücklich verworfen
+  („scrap that"). Bewahrung ist die Voreinstellung, nicht ein Verbot: Es gibt
+  benannte, begründete und auditierbare Wege zur Ersetzung.
+- **Reichweite:** `0043-05` und die weitere Berichtserzeugung; die in `0043-05`
+  bereits committete Extraktions-Bewahrungsregel (`f7cf0f09b`) ist **Präzedenz,
+  nicht Blankovollmacht** — sie wird durch diesen Datensatz getragen, nicht
+  umgekehrt.
+- **Umsetzung:** Keine Implementierung ist autorisiert, bevor dieser Datensatz
+  existiert. Mit seiner Aufzeichnung ist diese Bedingung erfüllt.
+- **Offener Punkt — Governance-Pfad `docs/pipeline/reports.md`:** Der
+  Implementierungs-Commit `f7cf0f09b` hat diese Datei auf dem Vorgangszweig
+  geändert. Nach `DEC-0044-012` ist sie ein Governance-Artefakt und gehört auf
+  `main`. Der Anteil ist auf `main` nachzuziehen, sobald sein Inhalt feststeht;
+  der Worker hat weitere Policy-Mutationen zu Recht eingestellt. Siehe die
+  Klarstellung zum Geltungsbereich unter `DEC-0044-012`.
+
+- **Provenienz — Nutzeranweisungen wortwörtlich:**
+
+  > scrap that. I simply want existing reports to be preseved if possible and only re-generated when necessary. Necessity for re-generation could be: Loss of the rendered pages, or severe errors in past versions of generation logic that needs fixing not only in the scripts, but also in the generated pages, and third, comparison. If we find something strange in an old html report and want to reconstruct whether somenoe has tampered with the report, or the data was corrupt/incomplete, or the generation logic had a bug.
+
+  > Also, there is a very practical reason why extraction reports must be exempt from normal site rebuilds: They will grow longer over time, so website regeneration will become slower over time. We cannot affort this in the long run.
+
 ## 5. Abgrenzung
 
 Nicht Gegenstand dieses Features: die Behebung des Automation-Safety-Blockers

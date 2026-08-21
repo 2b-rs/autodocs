@@ -147,6 +147,48 @@ Empfehlungen der Entscheidungsvorlage.
   main muss bzgl. Governance auch immer aktuell sein. In Zukunft stimmt ihr euch
   über agent-inbox ab, ja?"
 
+## Klarstellung zum Geltungsbereich von `DEC-0044-012` (2026-08-21)
+
+**Anlass.** Worf fragt, ob append-only Abnahme-Evidenz unter
+`docs/pipeline/approvals/` als Governance-Artefakt zuerst auf `main` entstehen
+muss, oder ob sie als Arbeitsprodukt auf dem Vorgangszweig reisen darf. Er hat
+einen von einem Architekten geforderten Merge bis zur Klärung angehalten — richtig
+so. Data meldet denselben Zweifel für `docs/pipeline/reports.md` in `0043-05`.
+
+**Klarstellung.** Maßgeblich ist nicht der Pfad, sondern die Frage: *Legt das
+Artefakt eine Regel für andere fest, oder hält es eine Tatsache über einen
+einzelnen Vorgang fest?*
+
+- **Governance, gehört auf `main`:** alles, was eine Regel, einen Vertrag oder
+  einen gemeinsamen Nummernraum festlegt — `DEC-*`, die Autoritätsdateien, die
+  *Prozessbeschreibungen* unter `docs/pipeline/` (`branch-workflow.md`,
+  `task-acceptance.md`, `process-roles.md`, `reports.md` und dergleichen), der
+  Marker- und Prerequisite-Vertrag im `TODO.md`-Header.
+- **Arbeitsprodukt, reist auf dem Zweig:** vorgangsgebundene, append-only
+  **Evidenz** — insbesondere alles unter `docs/pipeline/approvals/`. Diese
+  Datensätze legen keine Regel fest; sie bezeugen einen Zustand zu einer exakten
+  Baseline.
+
+**Begründung.** `DEC-0044-012` sagt selbst, gewöhnliche Arbeitsprodukte seien
+keine Governance-Artefakte. Abnahme-Evidenz ist der Musterfall: Ihr ganzer Zweck
+ist die Bindung an einen bestimmten Commit. Sie vorab auf `main` zu verlangen,
+zerstörte genau diese Bindung und widerspräche dem Abnahme-Workflow, der Evidenz
+an exakte Task-Baselines knüpft. Der Zweck von `DEC-0044-012` war, *gemeinsamen*
+Zustand — Regeln und Kennungsvergabe — sichtbar zu halten; eine Aussage über
+einen einzelnen Vorgang ist kein gemeinsamer Zustand.
+
+**Folge für die anfragenden Sessions.** Worf darf den nicht-publizierenden Merge
+der `0019`-Evidenzpakete auf den Vorgangszweigen ausführen; `DEC-0044-012` steht
+dem nicht entgegen. Für `0043-05` gilt: der Anteil an `docs/pipeline/reports.md`
+ist Prozessbeschreibung und daher auf `main` nachzuziehen; die Berichte und ihre
+Evidenz bleiben auf dem Zweig.
+
+**Status.** Dies ist die Auslegung einer bestehenden Entscheidung durch die
+Projektleitung, kein neuer Beschluss — die Unterscheidung „Regel" gegen „Tatsache
+über einen Vorgang" ist im Text von `DEC-0044-012` bereits angelegt. Das
+Management kann sie jederzeit anders ziehen; bis dahin ist sie die
+Arbeitsgrundlage, damit niemand weiter blockiert.
+
 ## `DEC-0044-013` — Selbst gestarteter Reviewer: Persona getrennt, Briefing aufgezeichnet
 
 - **Entscheidung (Management, 2026-08-21).** Ein von der prüfenden Session selbst
