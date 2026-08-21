@@ -104,7 +104,44 @@ angelegt:
 **Eingriff.** `git reset -q HEAD -- .` im Root-Checkout. Ergebnis verifiziert:
 `git diff --cached --stat HEAD` ist leer.
 
-**Offener Restbefund — nicht behoben, bewusst.** Der **Arbeitsbaum** des
+**Nachtrag: Arbeitsbaum ebenfalls bereinigt (2026-08-21, später am selben Tag).**
+
+Der zunächst offen gelassene Restbefund wurde nach Klärung geschlossen. Kriterium
+war nicht eine Frist, sondern der Nachweis, dass niemand dort arbeitet — eine
+„Runde" ist keine Zeitspanne, da der Briefkasten erst zustellt, wenn eine Session
+ihren nächsten Zug macht.
+
+Nachweis vor dem Eingriff:
+
+- **Zeitstempel:** die zuletzt geänderte Datei im Root-Checkout war rund 28
+  Stunden alt (2026-08-20 09:46 lokal). Eine dort arbeitende Session hinterlässt
+  frische mtimes.
+- **Lebende Sessions:** vier, keine davon im Root-Checkout schreibend; alle
+  Roster-Agenten mit Claim nennen ausdrücklich ihren eigenen Worktree.
+- **Direkte Rückfrage** an die einzige nie am Briefkasten registrierte Session
+  (`b1ed11db`, RE-/Analysefunktion, kein Claim, keine Lease). Antwort: „Keine
+  Arbeit im Root-Checkout", belegt durch `git merge-base --is-ancestor` für alle
+  neun Commits jener Session gegen `HEAD`.
+
+Eingriff: `git restore --source=HEAD --worktree -- .`. Verifiziert: Arbeitsbaum
+und Index stimmen mit `HEAD` überein, getrackte Abweichungen 0; `DONE.md` enthält
+wieder 88 Erwähnungen von `0040` (vorher 0). Die 25 untracked Einträge
+(`.worktrees/`, `.zed/`, Claim-Dateien u. a.) blieben unberührt — es wurde
+bewusst **kein** `git clean` ausgeführt.
+
+**Offener Punkt zur Entscheidung.** Die zurückgestellte `TODO.md` enthielt einen
+Hunk, den `HEAD` nicht kennt: die Zustandskorrektur zu `0037-49` (Marker `[d]` →
+`[u]`, „State correction (2026-08-19, user-directed)"). Er stammt von keiner der
+befragten Sessions. Er ist vollständig gesichert — `git show
+preserved/root-worktree-20260821-kathryn:TODO.md` ist byteidentisch mit dem
+zurückgestellten Stand — lebt aber jetzt nur noch im Snapshot. **Bevor der Tag
+aufgeräumt wird, muss entschieden werden, ob diese Korrektur regulär nach `HEAD`
+gehört.** Inhaltlich spricht dafür, dass `[d]` kein im Contract definierter
+Marker ist. (Befund gemeldet von Session `b1ed11db`.)
+
+**Ursprünglicher Restbefund, zum Zeitpunkt der Index-Bereinigung — historisch:**
+
+**Damals offen, inzwischen behoben (siehe Nachtrag).** Der **Arbeitsbaum** des
 Root-Checkouts weicht weiterhin von `HEAD` ab (127 Dateien, 1241 Einfügungen,
 39401 Löschungen); `DONE.md` auf Platte enthält null Erwähnungen von `0040`,
 `HEAD` dagegen 88. Ein `git commit -a` dort würde den Abschluss von Feature
