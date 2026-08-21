@@ -168,12 +168,13 @@ HOW TO USE:
   - **Definition of Done:** Committed; regenerating after a new run adds the run to the list without manual editing; layout follows `KONVENTIONEN.md`.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** presentation over an authoritative ledger; errors are visible on the page itself. Re-examined at `0043-07`.
 
-- [p] **0043-04** PREREQ: 0043-04:0043-01 Make report staleness mechanically impossible to miss. Claim: `TODO-Data-Aria-0043-04-20260821T093000Z.md`; owner_token: `agent:data-aria-20260821t093000z:0043-04:20260821T093000Z`.
+- [u] **0043-04** PREREQ: 0043-04:0043-01 Make report staleness mechanically impossible to miss. Claim: `TODO-Data-Aria-0043-04-20260821T093000Z.md`; owner_token: `agent:data-aria-20260821t093000z:0043-04:20260821T093000Z`.
   - **Requirements covered:** `RQ-BR-04`.
   - **Context (finding B6):** No check notices a frozen report page today; the canonical build sequence does not include `publish`.
   - **Acceptance criteria:** The canonical build sequence includes `combine`+`publish`; `validate.py` emits a finding when the published page model is older than the newest subreport cohort or when a run produced no ledger entry; the check has focused tests including the frozen-page case that motivated this Feature.
   - **Definition of Done:** Committed; the check demonstrably fires on the pre-Feature state and passes on the post-Feature state; `WARTUNG.md` documents the extended sequence.
   - **Integration review:** **mandatory.** **Rationale (architect):** this adds a gate to the canonical validation every future build runs through; an error is either a silent no-op (staleness returns) or a false-positive build blocker.
+  - **Authority hold (2026-08-21):** Discovery at `59a546c03` established that the proposed `validate.py` finding has cross-item blast radius and depends on the unintegrated terminal ledger contract from `0043-02` (`56560fa2c`). Before any gate-scope mutation, Management must instantiate an Architect independent of the Implementer; a conforming `decision-record@v1` on `main` and the Architect’s supporting scope review must name the completed-cohort/ledger boundary, affected work units/gates, severity/absence behavior, prerequisite disposition, and allowed paths. This Task remains `[u]` because that authorization is now the sole next action.
 
 - [ ] **0043-05** Overhaul the five report pages: uniform explanatory header, visible freshness, S-Core campaign included.
   - **Requirements covered:** `RQ-BR-05`, `RQ-BR-06`.
