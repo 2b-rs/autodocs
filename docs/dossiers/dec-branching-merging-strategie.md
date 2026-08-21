@@ -103,6 +103,50 @@ Empfehlungen der Entscheidungsvorlage.
 
 ---
 
+## `DEC-0044-012` — Governance liegt auf `main`; Abstimmung läuft über die agent-inbox
+
+- **Entscheidung (Management, 2026-08-21).** Zwei Regeln, die zusammengehören:
+  1. Änderungen an Governance-Prozessen werden **immer auf `main`** durchgeführt.
+     `main` muss in Bezug auf Governance **immer aktuell** sein. Ein
+     Governance-Artefakt darf nicht auf einem Branch liegenbleiben, während
+     andere Agenten gegen `main` arbeiten.
+  2. Agenten stimmen sich über die **agent-inbox** ab.
+- **Geltungsbereich.** Governance-Artefakte sind mindestens: Entscheidungs­daten­sätze
+  (`DEC-*`), die Autoritätsdateien `AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`,
+  `CLAUDE.md`, alles unter `docs/pipeline/` sowie der Marker- und
+  Prerequisite-Vertrag im `TODO.md`-Header. Fachliche Arbeitsprodukte sind nicht
+  gemeint — die laufen unverändert über Vorgangs-Branches nach
+  `docs/pipeline/branch-workflow.md`.
+- **Fachliche Rechtfertigung.** Der Anlass ist die ID-Kollision bei
+  `DEC-0044-007`, oben dokumentiert. Der Datensatz wurde auf einem Branch gegen
+  `main` bei `139b865cb` angelegt, während `0044-01` denselben Nummernraum auf
+  `main` parallel belegte. Zwei unveränderliche Datensätze trugen dieselbe
+  Kennung und beantworteten dieselbe Frage gegensätzlich. Auf `main` angelegt,
+  wäre die Kollision beim Anlegen sofort sichtbar gewesen: `main` ist die
+  einzige Stelle, an der eine Vergabestelle für IDs überhaupt existieren kann.
+  Derselbe Mechanismus erklärt den zweiten Vorfall desselben Tages — die
+  `0037-49`-Zustandskorrektur war an einen Branch gebunden statt auf `main`
+  sichtbar, weshalb sie mehrfach als fremder, unerklärlicher Hunk auftauchte.
+  Governance ist gemeinsamer Zustand; gemeinsamer Zustand auf privaten Branches
+  ist nicht abstimmbar, sondern nur nachträglich rekonstruierbar — dieselbe
+  Fehlerklasse, die `DEC-0044-008` für die Herkunft bereits verworfen hat.
+- **Zur agent-inbox.** Der Postkasten ist kein Telefon: nichts wird zugestellt,
+  der Empfänger sieht Post erst in seinem nächsten Zug. Eine Abstimmung ist
+  deshalb erst abgeschlossen, wenn die Antwort vorliegt, nicht wenn die Nachricht
+  abgeschickt ist. Vor folgenreichen Aktionen — Merge auf `main`, Acceptance,
+  Vergabe einer neuen Kennung — ist die Inbox zu lesen. Genau diese Prüfung fiel
+  bei der Kollision aus: der Sequenzierungshinweis lag im Postkasten, während der
+  Merge lief. Adressen sind fallunterscheidend (`Data` und `data` sind zwei
+  Postfächer).
+- **Umsetzung.** Diese Entscheidung wird selbst nach ihrer eigenen Regel
+  behandelt: direkt auf `main` aufgezeichnet, nicht über einen Branch. Die
+  Verankerung in `AGENTS.md` und `docs/pipeline/branch-workflow.md` steht noch
+  aus und ist ein eigener Vorgang.
+- **Provenienz.** Nutzer-Prompt vom 2026-08-21, wortwörtlich: „Darum müssen
+  änderungen an Governance-Prozessen auch immer auf main durchgeführt werden und
+  main muss bzgl. Governance auch immer aktuell sein. In Zukunft stimmt ihr euch
+  über agent-inbox ab, ja?"
+
 ## Ausführungsprotokoll zu `DEC-0044-010` — Bereinigung des Root-Index
 
 Ausgeführt von `agent:kathryn:projektleiter:branching-strategie:20260821T090000Z`
