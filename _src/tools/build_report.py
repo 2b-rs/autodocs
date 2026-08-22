@@ -31,6 +31,7 @@ CLI:
 import datetime
 import glob
 import html
+from report_page_header import report_page_header
 import json
 import math
 import os
@@ -423,6 +424,7 @@ def generate_report_page(combined_report=None, run_archive_ref=None):
 </style>""")
 
     status_badge = '<span class="br-badge-ok">ERFOLG</span>' if overall_success else '<span class="br-badge-err">FEHLER</span>'
+    html_parts.append(report_page_header(generator="_src/tools/build_report.py", data_source="output/build-reports/combined-*.json", purpose="Zeigt den zusammengeführten Veröffentlichungs- und Validierungsstand; Kennzahlen und Befunde sind nach Pipeline-Stufe zu lesen."))
     html_parts.append(f"""<h1>Traceable Build- & Publikations-Report</h1>
 <section class="br-head">
 <p>Zusammenfassender Veröffentlichungs- und Validierungsbericht der Dokumentations-Pipeline. Jeder Lauf aggregiert die Befunde aus Übersetzung, Diagrammerzeugung, HTML-Generierung und Konsistenzprüfung.</p>
