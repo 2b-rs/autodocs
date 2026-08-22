@@ -94,3 +94,9 @@ The Task's prerequisite graph should add `0043-02` and `0043-03`: the implementa
 **Blocked pending Decision record and governance integration.** The independent Architect review supports the bounded scope, but the second precondition is absent until Kathryn allocates the exact Decision identifier/path, Dispatcher Harry expands write scope to that exact path, and a conforming `decision-record@v1` is integrated on `main`. The Task remains `[u]`; no product/gate mutation may begin before then.
 
 The complete dispatch briefing, dispatcher identity, persona-name discrepancy, and context given/not given are retained verbatim in `TODO-Harry-Seven-0043-04-scope-20260822T203500Z.md`.
+
+## Additive governance update — 2026-08-22
+
+Kathryn allocated exact identifier `DEC-0043-003` and exact path `docs/dossiers/dec-0043-report-staleness-gate.md` on `main@69326064dac5bb2aab93f61762d8bc6891d570e6`; Dispatcher Harry then expanded this review's write scope to exactly that path. The conforming draft is committed with this review and implements the bounded verdict above. It also incorporates `DEC-CAP-003` explicitly: neither the decision nor the contemplated product implementation changes any agent-controlling host, Runner, start, health, restart, rollback, or revocation mechanism. The 2026-08-22 task-acceptance clarification is likewise incorporated: this Architect scope decision is not Task acceptance or a checkpoint verdict, and transitive non-accepted prerequisite closure remains a Feature-closure concern rather than an entry gate for the later node-level checkpoint review.
+
+The authorization state changes only after governance integration: until `DEC-0043-003` is present on `main`, Task `0043-04` remains blocked from product/gate mutation. This additive update does not perform acceptance, integration, publication, Feature closure, or implementation.
