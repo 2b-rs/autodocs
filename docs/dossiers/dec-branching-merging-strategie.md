@@ -1017,4 +1017,60 @@ Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
       `scope-ok-mit-auflagen`. The binding conditions are staged activation,
       inclusion of new checkpoint `0044-16`, exact-candidate evidence, explicit
       no-automation failure semantics, and strict separation from acceptance.
+
+---
+
+### `DEC-0044-018` — Common authority envelope for A4 risk integration; panel composition deferred
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T23:10:00+02:00`
+- **Deciding identity:** `authority:repository:owner`
+- **Role:** `Management`
+- **Authority reference:** Management directive recorded on `main` at `0d04432d6a4c6ae7f67a7818c6b9ab93266a527d`, implementing and superseding the composition assumptions of `DEC-0044-003` for Task `0044-02`
+- **Subject:** The repository-wide authority envelope for case-A4 risk integration, including temporary target-policy suspension, unanimous approval, QA and Security vetoes, restoration evidence, and escalation; excluding the unresolved question whether the veto holders sit inside or outside the three-person panel.
+- **Decision:** A bounded temporary suspension capability shall exist for a case-A4 risk integration. Activation requires the affirmative recorded votes of three privileged agents in independent sessions and unanimity among those three; the QA-Manager and Security-Manager each also hold an individual veto. A suspension is effective only for the exact integration, policy clauses, actions, scope, and finite duration or restoration event recorded in advance, with named participants, reason, compensating controls, restoration condition, and subsequent restoration evidence. Absence, non-unanimity, a veto, failed independence, missing evidence, expiry, or failed restoration never becomes approval by silence or role substitution and instead follows the existing `[u]` integration-verdict path to Management. The composition clause—whether QA and Security occupy seats within the three-person unanimous panel or exercise vetoes outside it—is expressly deferred, proposed only, and not in force until Management ratifies one shape; no A4 suspension may be activated while that clause remains unresolved.
+- **Technical justification:** A4 is the strongest integration intervention because it permits a policy to be displaced temporarily. Three independent privileged approvals prevent unilateral exercise; separate QA and Security veto authority prevents an affirmative technical majority from overruling either quality or security objection. Exact scope, finite duration, compensating controls, deterministic restoration, and before/after evidence prevent the temporary exception from becoming a silent policy change. Deferring rather than interpreting the composition question preserves Management authority because the two shapes require materially different participant counts, independence relations, deadlock behavior, and audit fields.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Establish the common bounded A4 authority envelope now, while keeping the inside-versus-outside panel-composition clause deferred and non-operative until Management ratification.
+    - **Disposition:** `selected`
+    - **Reason:** This records every point Management has decided without converting the unresolved composition choice into agent-made policy or allowing premature activation.
+  - **ALT-02:** Prohibit every temporary policy suspension and require Management to decide every A4 case directly.
+    - **Disposition:** `rejected`
+    - **Reason:** Management expressly decided that the bounded capability shall exist.
+  - **ALT-03:** Permit fewer than three affirmative privileged votes, treat abstention or absence as assent, omit either specialist veto, or allow silent role substitution.
+    - **Disposition:** `rejected`
+    - **Reason:** It contradicts the decided unanimity, independent-session, QA-veto, Security-veto, and no-silent-substitution controls.
+- **Consequences:**
+  - **CON-01:** Every future A4 record must bind the source and target, exact candidate and policy baseline, exact suspended clauses and permitted actions, three privileged session identities and votes, both specialist veto dispositions, reason, finite duration or stable restoration event, compensating controls, restoration condition, and before/after evidence.
+  - **CON-02:** Until Management ratifies the composition clause, the capability exists as a decided policy direction but has no executable activation path; any attempted invocation fails closed to the existing `[u]` verdict.
+  - **CON-03:** Under the inside-panel shape, QA and Security are two of the three privileged unanimous voters and their vetoes are inherent in unanimity unless Management additionally defines a later veto window; under the outside-panel shape, three independent privileged affirmative voters are followed by two separately recorded specialist veto dispositions. Neither shape is selected by this record.
+  - **CON-04:** A missing, unavailable, conflicted, non-independent, or substituted participant blocks activation. No Integrator, Architect, QA-Manager, Security-Manager, Implementer, or dispatcher may fill an absent function silently.
+  - **CON-05:** An A4 suspension does not transfer acceptance, signing, credential, release, external-service, or residual-risk authority; does not authorize an agent to modify a service that controls agents under `DEC-CAP-003`; and does not erase `TK-1`, provenance, root-worktree, hygiene, or append-only evidence duties except for an exact clause that Management later permits to be suspended within the recorded A4 scope.
+  - **CON-06:** Restoration is a gate, not a narrative promise: expiry or the restoration event requires proof that the target policy and affected branch state match the recorded restored baseline. A failed or unproved restoration remains `[u]` and blocks further integration or closure that depends on it.
+  - **CON-07:** The later `0044-02` implementation must encode the finally ratified composition exactly, retain both vetoes and the common envelope above, and be checked against this record and the independent scope review before any qualifying policy mutation.
+- **Affected work units:**
+  - `feature:0044`
+  - `task:0044-02`
+  - `task:0044-08`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0044`
+  - `integration:0044-08`
+  - `integration:main`
+  - `feature-closure:0044`
+  - `external:0044-02-a4-unanimity-and-veto`
+  - `external:0044-02-composition-ratification`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data-lore-20260822t210200z:architect:0044-02:20260822T210200Z`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent pre-mutation review recorded in `docs/dossiers/0044-02-gate-scope-review.md`; verdict `scope-ok-mit-auflagen` supports the common decided envelope only, requires fail-closed non-activation pending Management ratification of composition, and does not support either proposed composition shape yet.
 - **Waiver:** `none`
