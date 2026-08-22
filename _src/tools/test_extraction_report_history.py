@@ -39,12 +39,12 @@ class ExtractionReportHistoryTests(unittest.TestCase):
             finally:
                 extraction_report.VERSION_PAGES_DIR = original_dir
 
-    def test_assemble_preserves_existing_live_model_and_updates_overview_index(self):
+    def test_assemble_updates_current_model_and_preserves_archive_separately(self):
         with tempfile.TemporaryDirectory() as directory:
             old_page = extraction_report.PAGE
             extraction_report.PAGE = str(Path(directory) / "extraction-report.json")
             target = Path(extraction_report.PAGE)
-            original = b'{"historical":"live evidence"}\n'
+            original = b'{"stale":"current working model"}\n'
             target.write_bytes(original)
             try:
                 with mock.patch.object(extraction_report, "load_raw_records", return_value={}), \
@@ -52,7 +52,8 @@ class ExtractionReportHistoryTests(unittest.TestCase):
                      mock.patch.object(extraction_report, "ensure_version_pages") as ensure, \
                      mock.patch.object(extraction_report, "verlinke_startseite") as index:
                     extraction_report.cmd_assemble(directory)
-                self.assertEqual(target.read_bytes(), original)
+                self.assertEqual(json.loads(target.read_text()), {"file": "new.html"})
+                self.assertNotEqual(target.read_bytes(), original)
                 ensure.assert_called_once()
                 index.assert_called_once()
             finally:

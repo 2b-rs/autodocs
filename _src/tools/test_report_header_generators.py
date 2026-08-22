@@ -52,6 +52,7 @@ class ReportHeaderGeneratorTests(unittest.TestCase):
                 for page in pages:
                     rendered = "".join(block.get("html", "") for block in page["main"])
                     with self.subTest(page=page["file"]):
+                        self.assertTrue(page["nolang"])
                         self.assertIn('data-report-header="0043-05"', rendered)
                         self.assertIn("Erzeugt:", rendered)
                         self.assertIn("Werkzeug:", rendered)
@@ -61,6 +62,21 @@ class ReportHeaderGeneratorTests(unittest.TestCase):
                 (build_report.PAGE_MODEL, curation_report.PAGE_MODEL,
                  curation_report.DATASET_JSON, extraction_report.ARCHIVE_PAGE,
                  extraction_report.ARCHIVE_DATA_JS) = originals
+
+    def test_traceability_can_refresh_header_without_crosscheck_input(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "traceability.json"
+            target.write_text(json.dumps({
+                "file": "traceability.html", "nolang": True,
+                "main": [{"t": "html", "html": "<h1>Existing trace data</h1>"}],
+            }))
+            page = traceability_report.refresh_existing_header(
+                str(target), generated_at="2026-08-22T16:41:00Z")
+            rendered = page["main"][0]["html"]
+            self.assertIn('data-report-header="0043-05"', rendered)
+            self.assertIn("2026-08-22T16:41:00Z", rendered)
+            self.assertIn("<h1>Existing trace data</h1>", rendered)
+            self.assertTrue(page["nolang"])
 
 
 if __name__ == "__main__":
