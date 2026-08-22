@@ -1536,6 +1536,70 @@ class IndexWorktreeVariantMergeTests(unittest.TestCase):
         self.assertEqual(report["sources"]["authoritative"], "worktree")
         self.assertEqual(report["sources"]["divergent_paths"], [])
 
+    def test_new_uncommitted_copy_colliding_with_the_index_line_keeps_both(self):
+        """Review round 1, F1 (Kathryn-Kolos, 0db2a4fd9): Index 1 / Worktree 2
+        with the new copy placed so an occurrence collides with the index
+        representative's line must report 2, never 1."""
+        committed = (
+            "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER
+        )  # danger at line 6
+        with self.repository(committed) as (root, script):
+            # One blank line removed, danger doubled: worktree lines 5 AND 6 --
+            # the second worktree occurrence collides with index line 6.
+            script.write_text(
+                "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER * 2,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_new_uncommitted_copy_colliding_after_the_index_line_keeps_both(self):
+        """Neighbour of F1: copy added *after* the original while a shift makes
+        the first worktree occurrence collide with the index line."""
+        committed = (
+            "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER
+        )  # danger at line 5
+        with self.repository(committed) as (root, script):
+            # One blank line added, danger doubled: worktree lines 6 and 7 --
+            # no collision on the first, but the index representative is line 5
+            # and the top-up must still add exactly one more.
+            script.write_text(
+                "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER * 2,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_copy_removed_in_the_worktree_keeps_the_committed_pair(self):
+        """Neighbour of F1, mirrored: Index 2 / Worktree 1 must report 2."""
+        committed = "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER * 2
+        with self.repository(committed) as (root, script):
+            script.write_text(
+                "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_two_code_sites_with_line_collisions_in_one_file(self):
+        """Neighbour of F1: two distinct code sites whose occurrences swap
+        lines between index and worktree must each survive once."""
+        committed = (
+            "import os\nimport subprocess\n\n\ndef danger(cmd):\n"
+            "    subprocess.run(cmd, shell=True)\n    os.system(cmd)\n"
+        )
+        with self.repository(committed) as (root, script):
+            script.write_text(
+                "import os\nimport subprocess\n\n\ndef danger(cmd):\n"
+                "    os.system(cmd)\n    subprocess.run(cmd, shell=True)\n",
+                encoding="utf-8",
+            )
+            report = safety.scan_repository(root)
+            sites = self.sites(report)
+        # Both sites survive; each is reported once, at its index line.
+        self.assertEqual(len(sites), 2, sites)
+        self.assertEqual(sorted(line for line, _digest in sites), [6, 7])
+
     def test_code_site_key_ignores_the_line_but_not_the_code(self):
         moved = safety.scan_text("a.py", self.body())
         shifted = safety.scan_text("a.py", self.body(leading_blank_lines=3))

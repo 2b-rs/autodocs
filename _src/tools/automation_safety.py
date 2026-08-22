@@ -204,6 +204,17 @@ def _merge_source_variants(variants: Sequence[Sequence[Finding]]) -> List[Findin
     matching (which is keyed on the line) identical on clean and dirty trees.
     Extra occurrences beyond the index's count are topped up from the later
     variant.
+
+    The top-up must never reuse a line already kept for the site: the merged
+    list still passes through the line-keyed :func:`_dedupe`, so a topped-up
+    occurrence carrying the same line as the kept representative would silently
+    collapse with it and *lose* a real finding (review round 1, finding F1:
+    index 1 / worktree 2 with the new uncommitted copy placed before the
+    original).  Choosing collision-free occurrences is always possible: within
+    one variant the occurrences of a site have pairwise distinct lines (the
+    within-variant :func:`_dedupe` guarantees it), so with ``k`` lines kept and
+    ``m > k`` occurrences in the variant, at most ``k`` of them can collide and
+    at least ``m - k`` -- exactly the number needed -- do not.
     """
     merged: Dict[Tuple[str, str, str, str], List[Finding]] = {}
     order: List[Tuple[str, str, str, str]] = []
@@ -216,8 +227,11 @@ def _merge_source_variants(variants: Sequence[Sequence[Finding]]) -> List[Findin
                 merged[key] = []
                 order.append(key)
             kept = merged[key]
-            if len(occurrences) > len(kept):
-                kept.extend(occurrences[len(kept):])
+            needed = len(occurrences) - len(kept)
+            if needed > 0:
+                kept_lines = {finding.line for finding in kept}
+                fresh = [f for f in occurrences if f.line not in kept_lines]
+                kept.extend(fresh[:needed])
     result: List[Finding] = []
     for key in order:
         result.extend(merged[key])
@@ -2719,6 +2733,10 @@ def _read_index_source(
 
 
 def _read_tracked_sources(root: Path, path: str) -> Tuple[List[str], Optional[Dict[str, object]]]:
+    # Ordering contract: the index version is always first. _merge_source_variants
+    # keeps the representative from the earliest variant a code site occurs in,
+    # which is what makes the index the authoritative locator in the report
+    # (see docs/pipeline/automation-safety.md, "What the gate scans").
     index_text, index_error = _read_index_source(root, path)
     if index_error or index_text is None:
         return [], index_error
