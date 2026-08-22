@@ -83,6 +83,132 @@ rather than through an item branch and a merge. The provenance trailer from
 integrator's ordinary duty of care is unchanged; what disappears is the branch
 detour, not the review.
 
+## Where agents mutate: item-owned worktrees only
+
+Decisions `DEC-0044-010`, `DEC-0044-012` and `DEC-0044-015` fix **where** a
+mutation may happen, independently of which branch it belongs on.
+
+**The rule.** An agent mutates only inside a **worktree it owns for its item**
+— normally `.worktrees/<item-id>` or an equally isolated path it provisioned
+itself (see `_src/tools/provision_tmp_worktree.sh`). The shared root checkout
+`/Users/tobias.anton/devel/autodocs` is **not written to**: no authoring there,
+no `git add`, no `git commit`, no `commit -a`, no cleanup, no reset. It is a
+read reference and the place where `main` happens to be checked out. This
+applies to governance artifacts too: "governance lives on `main`" says which
+branch, not which directory. A governance change is authored and committed in an
+item-owned worktree on a branch cut from `main`, and only the final ref advance
+touches the root.
+
+**Why.** The damage that produced this rule was never in Git history and no
+history-based control could have found it. The root checkout carried a staged
+tree from before Feature `0040`'s closure — 138 files, 28683 deletions — and its
+files on disk matched that same old state (`DONE.md` on disk held zero mentions
+of `0040`, against 88 in `HEAD`). An unrestricted `git commit -a` there would
+have silently reverted a closed Feature. It was found by hand.
+
+**Confirmed mechanism.** Task `0044-14` reproduced the suspected cause in a
+hermetic fixture: `git update-ref refs/heads/main <new> <old>` executed from a
+detached worktree advances the ref **past** the index and files of the worktree
+where `main` is checked out. That worktree is then left with `HEAD` at `<new>`
+while its index and files still hold `<old>` — reported by the check below as
+`INDEX_NOT_HEAD` plus `STALE_AFTER_REF_MOVE`. The fixture is
+`_src/tools/test_check_integration_hygiene.py::test_update_ref_reproduces_stale_worktree_signature`.
+The finding is stated as a *signature*, not as proof that this exact command ran:
+any equivalent low-level ref move produces the same observable state.
+
+**The required remedy, per `DEC-0044-015`.** Do not refresh the stale checkout
+after the fact; avoid creating it. `git update-ref` on `refs/heads/main` is
+**prohibited**. `main` is advanced **from the root checkout itself**, because a
+`git merge` there moves ref, index and files in one step and therefore cannot
+leave the root stale:
+
+1. Author and commit the change in an item-owned worktree, on a branch cut from
+   `main`, with the `DEC-0044-008` provenance trailer.
+2. **Hard preflight in the root**, all three must hold: `git diff --quiet`,
+   `git diff --cached --quiet`, and `HEAD` is `refs/heads/main`. Additionally run
+   the hygiene check below. Any failure means **abort** — do not "tidy up" the
+   root; recovering it is a separate, separately authorized operation.
+3. Advance from the root: `git -C <root> merge --ff-only <branch>`, or `--no-ff`
+   when `DEC-0044-008` requires a real merge commit because the branch is not on
+   the direct predecessor chain.
+4. Remove the helper worktree and branch.
+
+Only a **privileged integrator or the Projektleitung** may perform step 3. No
+unprivileged worker moves `refs/heads/main` at all.
+
+## Pre-integration hygiene check
+
+Before any integration — and mandatorily before the ref advance above — run the
+machine-runnable check:
+
+```bash
+python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> [--json]
+```
+
+It is strictly read-only (no files, refs, indexes or objects are written) and
+inspects **every** worktree registered against the shared repository. Exit code
+`0` means clean, `1` means findings, `2` means the check itself could not run —
+and a `2` is a failed check, never a pass. Findings:
+
+| Code | Meaning |
+|---|---|
+| `INDEX_NOT_HEAD` | the integration worktree's own index differs from its `HEAD` |
+| `FOREIGN_STAGED_TREE` | some *other* registered worktree holds a staged tree |
+| `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
+| `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
+
+Two properties of the check must be understood, or it will be trusted for more
+than it does:
+
+- `FOREIGN_STAGED_TREE` is **not** by itself an accusation. Another agent staging
+  work in its own worktree is ordinary. The finding says that state exists which
+  Git history cannot show, and an integration must not proceed across it. The
+  resolution is to have that owner commit or stash — never to reset a foreign
+  worktree.
+- The check compares **index against `HEAD`**. A worktree whose index matches
+  `HEAD` while its *files* diverge produces no finding. That is deliberate, since
+  unstaged edits are normal in a live item worktree — but it means the check
+  alone would not have caught the residual root divergence of 2026-08-21, where
+  the index had already been cleared and only the files were stale. This is why
+  step 2 above requires `git diff --quiet` in the root **in addition to** the
+  check. Tool and preflight are complementary; neither replaces the other.
+
+## Preserved snapshot tags and recovery
+
+When state that exists in no branch has to be cleared — a foreign staged index, a
+diverged working tree — it is **captured as a commit and tagged `preserved/*`
+before** anything is cleared. These tags are not on any branch and are reachable
+only through the tag. **Deleting one can destroy the only copy of something.** Do
+not prune, garbage-collect around, or "clean up" `preserved/*` tags; they are
+retained indefinitely unless the current user explicitly authorizes removal of a
+named tag.
+
+Current tags (`git tag -l 'preserved/*'`):
+
+| Tag | Commit | What it holds |
+|---|---|---|
+| `preserved/root-index-20260821` | `70e2c4e3e` | root checkout's staged index, captured by Seven before the `0038` integration |
+| `preserved/root-unstaged-draft-20260821` | `f074c26b1` | unowned unstaged draft from the root checkout, on its true base `c0a274e66` |
+| `preserved/root-worktree-20260821-kathryn` | `88e335c27` | complete root working tree **including untracked files**, taken before the index cleanup; the fallback line for the incident above |
+| `preserved/root-worktree-20260821-kathryn-2` | `f8963b833` | root checkout state before the second realignment following a ref move |
+| `preserved/0019-staged-index-20260822-kathryn` | `eb0c95f1d` | foreign staged index found in the canonical `0019` worktree |
+| `preserved/staged-0043-01-20260822-kathryn` | `05680c5c7` | foreign staged index found in `.worktrees/0043-01` |
+| `preserved/staged-0044-01-20260822-kathryn` | `56bc616f4` | foreign staged index found in `.worktrees/0044-01` |
+| `preserved/staged-0044-01-task-20260822-kathryn` | `c70c45d5d` | foreign staged index found in `.worktrees/0044-01-task` |
+
+To recover from a snapshot, inspect and extract it — never check it out over a
+live worktree:
+
+```bash
+git show --stat preserved/<tag>                      # what is in it
+git diff HEAD preserved/<tag>                        # how it differs from now
+git worktree add /tmp/recover-<tag> preserved/<tag>  # inspect in isolation
+git checkout preserved/<tag> -- <path>               # take back one path, in an item worktree
+```
+
+Anyone who captures a new snapshot appends a row to the table above in the same
+commit, so the record of what each tag protects never lives only in a message.
+
 ## Claim files and work products travel on the branch
 
 Under this workflow the `TODO-<agent-id>.md` claim file is a tracked artifact on
@@ -264,21 +390,27 @@ Feature branch and performs the Feature-level review. The integrator:
 1. Confirms current privilege and an explicit assignment to integrate/accept the
    Feature scope (privilege alone is not authority — see
    [`task-acceptance.md`](task-acceptance.md)).
-2. Merges the required Task branch(es) into the Feature branch, resolving
+2. **Runs the pre-integration hygiene check** (above):
+   `python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree>`.
+   A non-zero exit is a stop, not a warning: findings are resolved by their
+   owners — or the integration is deferred — before any merge. A foreign
+   worktree is never reset by the integrator.
+3. Merges the required Task branch(es) into the Feature branch, resolving
    conflicts without discarding any owner's work and carrying up all claim files.
-3. Performs the integration review at each node the architect marked
+4. Performs the integration review at each node the architect marked
    `Integration review: mandatory` — and the Feature aggregate review if the
    Feature itself is flagged — as defined in
    [`task-acceptance.md`](task-acceptance.md), **adding the review findings and
    acceptance records** on the Feature branch. `Acceptance: ✓` records are created
    at those checkpoints, bottom-up and prerequisite-closed. Unflagged work carries
    no such record.
-4. Reconciles and removes the predecessor claim files whose information is now
+5. Reconciles and removes the predecessor claim files whose information is now
    captured in acceptance records and check-in provenance
    ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).
-5. On full approval, integrates the Feature branch into `main` and moves the
-   Feature to `DONE.md` via the path-isolated bookkeeping commit that
-   [`task-acceptance.md`](task-acceptance.md) requires.
+6. On full approval, integrates the Feature branch into `main` — using the
+   root-checkout advance procedure of `DEC-0044-015` described above, never
+   `git update-ref` — and moves the Feature to `DONE.md` via the path-isolated
+   bookkeeping commit that [`task-acceptance.md`](task-acceptance.md) requires.
 
 ## Integration rejection: the `[u]` verdict
 
