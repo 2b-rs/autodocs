@@ -268,3 +268,88 @@ bleiben als **Willensäußerung** gültig; die Inhaltsschranke aus
 `CUR-0019-08-20260820` ebenfalls. Berichtigt wird die **Tatsachengrundlage**,
 auf der die Erweiterung erging. Ob das Management bei seiner Entscheidung
 bleibt, wenn die Zahl unbelegt ist, ist ihm vorzulegen.
+
+---
+
+## Freigabe 2026-08-22 — enger Weg autorisiert, Erweiterung wird nicht in Anspruch genommen
+
+**Art:** append-only Ergänzung. Die Freigabe und die Berichtigung oben bleiben
+unverändert stehen.
+
+- **Erteilt am:** 2026-08-22
+- **Erteilt von:** Management (aktueller User / Repository-Eigentümer), Wortlaut:
+  „gut, gib Worf das ok."
+- **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`)
+
+### Was sich gegenüber der Erweiterung ändert
+
+Die Erweiterung auf den vollständigen Website-Abgleich wurde erteilt, weil zum
+damaligen Zeitpunkt nur *alles* oder *nichts* möglich war. Diese Zwangslage
+besteht nicht mehr: `_src/tools/publish_approved_subtree.py` ist abgenommen und
+auf `main` (Integration `0180fa854`, Checkpoint bestanden, zweirundiges Review).
+
+**Der enge Weg wird genommen. Die Erweiterung wird nicht in Anspruch genommen.**
+Die 4.133 ungeprüften Pfade werden **nicht** veröffentlicht; die unbelegte Zahl
+aus der Berichtigung ist damit gegenstandslos, ohne dass sie nachträglich
+geklärt werden müsste.
+
+### Autorisierter Ablauf
+
+Vorgelegt vom privilegierten Operator `worf`, hier autorisiert:
+
+1. Persistenten lokalen Klon von `PUBLISH_REMOTE` verwenden (derselbe, den
+   `_src/publish.sh` als `PUBLISH_DIR` nutzt), **kein** Orphan-Baum.
+2. `publish_approved_subtree.py --apply` mit
+   `--expected-tree-digest 7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283`
+   und `--authorization-ref`, schreibt ausschließlich unter
+   `<PUBLISH_DIR>/eclipse-score-v0.6.0-curation-review/`.
+3. **Pfadbegrenzt** committen — ausdrücklich **nicht** `git add -A`, damit ein
+   abweichender Rest des Klons nicht mitgenommen wird.
+4. Normaler Fast-Forward-`push`. **Kein Force.**
+
+Dieser Weg umgeht beide bekannten Werkzeugdefekte: die feste Verzeichnisliste
+von Werkzeug 1 spielt keine Rolle, weil der Pfad explizit gewählt wird; der
+Revisions-/Arbeitsverzeichnis-Fehler von Werkzeug 2 spielt keine Rolle, weil
+weder `tar` noch ein Revisionsargument beteiligt sind; der Force-Zwang von
+Werkzeug 2 entfällt, weil kein fremder Historienbaum entsteht.
+
+### Entschieden: Zielpfad
+
+Der Teilbaum wird als **oberstes Verzeichnis**
+`eclipse-score-v0.6.0-curation-review/` veröffentlicht. Begründung: so liegt er
+auf dem integrierten `0019`-Zweig, und genau dieser Baum ist vom Digest gedeckt.
+Die resultierende öffentliche Adresse ist
+<https://2b-rs.github.io/autodocs/eclipse-score-v0.6.0-curation-review/>.
+
+**Bekannte Folge, die dadurch nicht behoben wird:** Die unter `0019-13`
+erfassten toten relativen Links entstehen aus einer Einbettungsannahme des
+Renderers und bleiben in jeder Platzierung bestehen. Sie sind bereits als
+mitveröffentlichter Mangel festgehalten; die Platzierung ändert daran nichts und
+wird nicht dafür verbogen.
+
+### Entschieden: Handkommandos statt Wrapper
+
+Schritte 3 und 4 dürfen als **pfadbegrenzte Handkommandos** ausgeführt werden.
+Ein eigenes Wrapper-Skript wird für diesen einen Vorgang **nicht** verlangt: es
+wäre ungetestet, ungeprüft und würde eine dritte Publikationsmechanik neben die
+beiden bestehenden stellen — genau der Zustand, den `0038-29` beenden soll. Die
+Absicherung liegt in der Pfadbegrenzung und in der Vorlagepflicht unten, nicht
+in zusätzlichem Code.
+
+### Bindende Auflagen
+
+1. **Dry-Run vor `--apply`**, Ergebnis der Projektleitung vorlegen.
+2. **Digest unmittelbar vor dem Schreiben** erneut gegen den freigegebenen Wert
+   prüfen. Abweichung: nicht veröffentlichen.
+3. **Vor `git push` melden** — was der pfadbegrenzte Commit enthält und was der
+   Klon sonst noch an Abweichungen trägt. Erst nach Bestätigung pushen.
+4. **Kein Force-Push.** Unverändert und ausnahmslos.
+5. Ergäbe der Klon, dass der Push kein Fast-Forward wäre: **anhalten und
+   melden**, nicht erzwingen.
+6. Die Inhaltsschranke aus `CUR-0019-08-20260820` bleibt unberührt.
+
+### Nach der Veröffentlichung
+
+Zu melden und in die `0019-10`-Buchhaltung einzutragen: Ziel-URL, Commit im
+Deploy-Repository, Digest des tatsächlich veröffentlichten Teilbaums, Zeitpunkt,
+sowie die Autoritätsreferenzen `DEC-0019-001`, `d394f39f8` und dieser Nachtrag.
