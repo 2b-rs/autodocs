@@ -8,6 +8,7 @@ import sys
 import tempfile
 import types
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 
@@ -39,12 +40,64 @@ finally:
 
 
 class AutomationSafetyFixtureTests(unittest.TestCase):
+    # DEC-0038-002 and the independent 0038-33 Architect scope review permit
+    # only these five existing AUTO010 identities.  Equality is deliberate:
+    # any sixth, moved, renamed, or byte-changed finding requires re-review.
+    RUNNER_TRANSACTION_ALLOWED_AUTO010 = frozenset(
+        {
+            (
+                240,
+                "_atomic_create",
+                "a9585e4f1caf3113aa8a1da53260983471d1e10d5339b4a553f0fcce7a047ea2",
+            ),
+            (
+                1698,
+                "Transaction.acquire_lock",
+                "bbeb1bc976b167dc0d4939d3788858124cb8cfecdc064b4c6bac40cc1f290fd8",
+            ),
+            (
+                1839,
+                "Transaction.materialize_editor_candidate",
+                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+            ),
+            (
+                3295,
+                "BranchMergeTransaction._synchronize_worktree",
+                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+            ),
+            (
+                3922,
+                "_recovery_lease",
+                "d9bae0d944b115d54df1aa8eb1b10f982d72c3427965fb54b216068970284802",
+            ),
+        }
+    )
+
     def scan(self, name, language):
         path = FIXTURES / name
         return safety.scan_text(name, path.read_text(encoding="utf-8"), language)
 
     def rules(self, name, language):
         return {finding.rule for finding in self.scan(name, language)}
+
+    def runner_transaction_findings(self):
+        relative = "_src/tools/runner_transaction.py"
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        return safety.scan_text(relative, text, "python")
+
+    def assert_runner_transaction_control(self, findings):
+        unconditionally_forbidden = {"AUTO001", "AUTO002", "AUTO009"}
+        observed_rules = {finding.rule for finding in findings}
+        self.assertTrue(
+            unconditionally_forbidden.isdisjoint(observed_rules),
+            sorted(observed_rules & unconditionally_forbidden),
+        )
+        observed_auto010 = {
+            (finding.line, finding.symbol, finding.evidence_sha256)
+            for finding in findings
+            if finding.rule == "AUTO010"
+        }
+        self.assertEqual(self.RUNNER_TRANSACTION_ALLOWED_AUTO010, observed_auto010)
 
     def test_link_verification_fixture_freezes_false_green_and_wildcard_commit(self):
         rules = self.rules("link_verification_evidence.py.fixture", "python")
@@ -1181,7 +1234,6 @@ def validate():
     def test_current_safe_aggregate_controls_do_not_regress(self):
         controls = {
             "_src/tools/review_request_baseline_audit.py": {"AUTO001", "AUTO002"},
-            "_src/tools/runner_transaction.py": {"AUTO001", "AUTO002", "AUTO009", "AUTO010"},
             "_src/tools/review_ingest.py": {"AUTO002"},
             "_src/tools/curation_ingest.py": {"AUTO002"},
             "_src/validate.py": {"AUTO007"},
@@ -1190,6 +1242,62 @@ def validate():
             text = (ROOT / relative).read_text(encoding="utf-8")
             rules = {finding.rule for finding in safety.scan_text(relative, text, "python")}
             self.assertTrue(forbidden.isdisjoint(rules), f"{relative}: {sorted(rules & forbidden)}")
+        self.assert_runner_transaction_control(self.runner_transaction_findings())
+
+    def test_runner_transaction_control_rejects_a_sixth_auto010(self):
+        findings = self.runner_transaction_findings()
+        sixth = replace(
+            next(finding for finding in findings if finding.rule == "AUTO010"),
+            line=9999,
+            symbol="FutureTransaction.unreviewed_operation",
+            evidence="unreviewed destructive operation",
+            evidence_sha256=safety.hashlib.sha256(
+                b"unreviewed destructive operation"
+            ).hexdigest(),
+        )
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control([*findings, sixth])
+
+    def test_runner_transaction_control_rejects_a_moved_auto010(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 240)
+        changed = [
+            replace(finding, line=finding.line + 1) if finding is target else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
+
+    def test_runner_transaction_control_rejects_a_renamed_auto010(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 1698)
+        changed = [
+            replace(finding, symbol="Transaction.renamed_lock")
+            if finding is target
+            else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
+
+    def test_runner_transaction_control_rejects_changed_evidence_bytes(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 1839)
+        changed_evidence = target.evidence + "\n# byte drift"
+        changed = [
+            replace(
+                finding,
+                evidence=changed_evidence,
+                evidence_sha256=safety.hashlib.sha256(
+                    changed_evidence.encode("utf-8")
+                ).hexdigest(),
+            )
+            if finding is target
+            else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
 
     def test_findings_have_exact_stable_source_identity(self):
         finding = self.scan("shell_exec.py.fixture", "python")[0]
