@@ -177,7 +177,7 @@ Aufruf aus `_src/tools/`: `python3 -m unittest test_check_integration_hygiene -v
 | `_src/tools/task_bookkeeping_closure.py` | **Stillgelegt:** frühere freie TODO-/Claim-Direktschreiboberfläche; APIs/CLI schlagen ohne Dateizugriff fehl und verweisen auf `legacy_task_editor.py`. |
 | `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz; `BranchMergeTransactionTests` (`0038-20`) deckt zusätzlich `base-branch`/`merge-prereqs` ab: Basis-off-Parent, sequentielle Mehrquellen-Merges, Claim-Union bei gleichem `owner_token`, Ablehnung bei fremdem `owner_token`/veraltetem Source-Tip/nicht deklarierter Quelle/Sandboxed-Task→Feature-Versuch, sowie Publish-dann-Crash-Recovery |
 | `_src/tools/check_policy_provenance.py` | Rein lesende, stdlib-only Herkunftsprüfung für Integrations-Policy-Commits (`RQ-IP-04`/`DEC-0044-002`, `0044-01`): meldet für einen Merge-Kandidaten (`--source-branch`, `--target-branch`), welche Commits, die den deklarierten Policy-Pfad (`docs/pipeline/branch-workflow.md` per Default, `--policy-path` wiederholbar) berühren und für die Integration einzigartig zum Source-Branch wären, `source-origin`, `target-pull-in-eligible` (erlaubtes Hereinziehen der Ziel-Policy, `DEC-0044-001`) oder `foreign-branch` (Verstoß gegen `DEC-0044-002`, zu prüfen) sind; mutiert nie Refs/Working-Tree, trifft keine Entscheidung selbst; Aufruf: `python3 _src/tools/check_policy_provenance.py --source-branch <b> --target-branch <b> [--policy-path <pfad>...] [--repo <pfad>] [--json]`; Tests: `_src/tools/test_check_policy_provenance.py` |
-| `_src/tools/legacy_handoff_manifest.py` | Rein lesende, stdlib-only Prüfung des Pre-Activation-Handoff-Manifests (`0038-16.01`): bindet das exakte `0037-37`-Review-Paket (Datei-Digest, `base_commit`, alle 17 Kontrakt-Digests, gegen den Arbeitsbaum nachgerechnet) und beweist über `docs/pipeline/legacy-handoff-manifest-v1.json`, dass jedes überlebende Legacy-Primitiv (action, schema, result, scope, evidence, recovery, context, validation, approval-readiness) **genau eine** Disposition trägt — entweder eine typisierte `0037-46.01`-Aktion/Kontrakt oder einen expliziten `0037-46.02`-Retirement-Trigger — und dass kein `authority_key` und keine Aktions-ID doppelt beansprucht wird; die Abdeckung wird gegen die lebende Mechanismen-Tabelle dieses Abschnitts geprüft, nicht gegen eine Kopie; aktiviert keine Queue und ändert keine Autorität (prüft im Gegenteil, dass weder `.runner/` noch `_src/runner/` existiert); Aufruf: `python3 _src/tools/legacy_handoff_manifest.py --check [--json] [--root <root>]`; siehe [`legacy-handoff-manifest.md`](legacy-handoff-manifest.md) |
+| `_src/tools/legacy_handoff_manifest.py` | Rein lesende, stdlib-only Prüfung des Pre-Activation-Handoff-Manifests (`0038-16.01`): bindet das exakte `0037-37`-Review-Paket (Datei-Digest, `base_commit`, alle 17 Kontrakt-Digests, gegen den Arbeitsbaum nachgerechnet) und beweist über `docs/pipeline/legacy-handoff-manifest-v1.json`, dass jedes überlebende Legacy-Primitiv (action, schema, result, scope, evidence, recovery, context, validation, approval-readiness) **genau eine** Disposition trägt — entweder eine typisierte `0037-46.01`-Aktion/Kontrakt oder einen expliziten `0037-46.02`-Retirement-Trigger — und dass kein `authority_key` und keine Aktions-ID doppelt beansprucht wird; die Abdeckung wird gegen die lebende Mechanismen-Tabelle dieses Abschnitts geprüft, nicht gegen eine Kopie; aktiviert keine Queue und ändert keine Autorität (prüft im Gegenteil auf echte Queue-Liveness: dass kein `.runner/`-Runtime-Root existiert und der lebende Bootstrap-Selektor `agent-workflow.json` weiterhin das Pre-Activation-Protokoll `runner-request@v1` deklariert; die bloße Existenz der `_src/runner/`-Registry ist seit Task `0038-30` bewusst kein Aktivierungssignal); Aufruf: `python3 _src/tools/legacy_handoff_manifest.py --check [--json] [--root <root>]`; siehe [`legacy-handoff-manifest.md`](legacy-handoff-manifest.md) |
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Veränderlicher Zeiger/Log des jeweils letzten (oder laufenden) Legacy-Aufrufs; nie als alleiniger Abschlussnachweis verwenden |
@@ -214,18 +214,16 @@ sich. Ohne `--batch` ist ein interaktives Terminal erforderlich. Normale Aufrufe
 
 ## Publikationswerkzeuge — welches gilt wann
 
-Es gibt **drei** Publikationswerkzeuge mit **drei verschiedenen Auswahllogiken**.
+Es gibt **zwei** Publikationswerkzeuge mit **zwei verschiedenen Auswahllogiken**.
 Sie ersetzen einander nicht. Wer publiziert, wählt zuerst hier aus, bevor er ein
-Skript aufruft — genau diese Auswahl war beim Vorfall vom 2026-08-22 (Feature
-`0019`) die Fehlerquelle.
+Skript aufruft.
 
 | Werkzeug | Was es auswählt | Dry-Run | Schreibt/veröffentlicht | Wann es gilt |
 |---|---|---|---|---|
-| `_src/publish.sh` | **feste Liste** von Verzeichnissen (`PUBLIC_DIRS`) und Dateien (`PUBLIC_FILES`) aus dem generierten Baum | nein | `rsync -a --delete` je gelistetem Verzeichnis in einen persistenten Klon, dann Commit + Fast-Forward-Push nach `PUBLISH_REMOTE` | **Ganzseiten-Publisher.** Der reguläre Weg für den vollständigen Website-Abgleich nach einer Regenerierung. Wird **nicht** ersetzt. |
-| `_src/tools/publish_public_site.sh` | **gesamter getrackter Baum minus Ausschlussliste** (`_src/`, `docs/`, `logs/`, Agentendateien, …); die **Dateiliste** stammt aus der angegebenen Revision, die **Inhalte** jedoch aus dem Arbeitsverzeichnis — siehe Defekthinweis unten | ja (`--dry-run`) | Orphan-Export, Commit, Push; optional Force-Push nur mit `PUBLISH_ALLOW_FORCE_PUSH=1` **und** `PUBLISH_FORCE_APPROVAL_REF` | Vollständiger, gefilterter Neuaufbau des öffentlichen Baums — **nur korrekt, wenn die gewünschte Revision zugleich ausgecheckt ist**. |
+| `_src/tools/publish_public_site.sh` | **gesamter getrackter Baum minus Ausschlussliste** (`_src/`, `docs/`, `logs/`, Agentendateien, …); Dateiliste **und** Inhalte kommen beide aus der angegebenen Revision (`git ls-tree`/`git archive "$REVISION"` — siehe Konsolidierungshinweis unten) | ja (`--dry-run`) | Orphan-Export, Commit, Push; optional Force-Push nur mit `PUBLISH_ALLOW_FORCE_PUSH=1` **und** `PUBLISH_FORCE_APPROVAL_REF` | **Ganzseiten-Publisher.** Der einzige reguläre Weg für den vollständigen Website-Abgleich nach einer Regenerierung, für jede angegebene Revision — auch eine nicht ausgecheckte. |
 | `_src/tools/publish_approved_subtree.py` | **genau ein vom Aufrufer benannter Teilbaum**, gebunden an einen Pflicht-Tree-Digest | ja (`--dry-run`, Offenlegungsmodus) | **nur Dateisystem**: materialisiert den Teilbaum in ein Zielverzeichnis. Kein Git, kein Netz, kein Commit, kein Push. | **Begrenzte Freigabe** (`0038-29`): das Management hat *einen* Teilbaum mit *einem* Digest freigegeben, und nur der soll ins Ziel. |
 
-**Faustregel:** Lautet die Freigabe „der gesamte Stand" → `_src/publish.sh`.
+**Faustregel:** Lautet die Freigabe „der gesamte Stand" → `_src/tools/publish_public_site.sh`.
 Lautet sie „dieser Teilbaum, dieser Digest" → `publish_approved_subtree.py`,
 danach ein separat autorisierter Commit-/Push-Schritt durch den Operator.
 Der dritte Fall — Freigabe für einen Teilbaum, Ausführung über einen
@@ -233,23 +231,50 @@ Ganzseiten-Publisher — ist der Fall, den `0038-29` beseitigt: er hätte das
 Freigegebene **nicht** publiziert und stattdessen 4.133 ungeprüfte Pfade
 mitgenommen.
 
-> **Offener Defekt in `_src/tools/publish_public_site.sh` — nicht beabsichtigtes
-> Verhalten.** Die Auswahl der Dateien kommt zwar aus der angegebenen Revision
-> (`git ls-tree "$REVISION"`), die **Inhalte** liest Zeile 80
-> (`tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C "$EXPORT_DIR"`)
-> jedoch aus dem gerade ausgecheckten Arbeitsverzeichnis; mit einer **nicht
-> ausgecheckten** Revision erzeugt das Werkzeug deshalb **lautlos einen
-> unvollständigen Export**: `tar` meldet für jeden nur in der Revision
-> vorhandenen Pfad `Cannot stat: No such file or directory` und endet mit `1`,
-> aber weil das in einer Pipe steht, zählt nur der Status des **zweiten** `tar`
-> — der Fehlschlag wird verschluckt und der Lauf geht weiter (Mechanismus am
-> 2026-08-22 isoliert nachgestellt; gegen den freigegebenen `0019`-Baum am
-> selben Tag mit `Cannot stat` für alle 2.248 Pfade beobachtet, siehe
-> Integrationsreview zu `0038-29`). Das Werkzeug liefert also **nur dann** ein
-> revisionstreues Ergebnis,
-> wenn die gewünschte Revision zugleich ausgecheckt ist. Wer eine
-> revisionsgebundene Freigabe umzusetzen hat, prüft das vorher; ob der Defekt
-> einen eigenen Vorgang bekommt, entscheidet die Projektleitung/Architektur.
+> **Konsolidierung `0038-32` (2026-08-22): `_src/publish.sh` retiriert, der
+> `publish_public_site.sh`-Defekt behoben.** Bis zu diesem Datum trug das
+> Repository **drei** Ganzseiten-/Teilbaum-Publikationswerkzeuge mit
+> unterschiedlicher Auswahllogik; am 2026-08-22 kostete genau diese
+> Mehrdeutigkeit einen Arbeitstag (`0038-29`-Vorfall, s.o.). Entscheidung und
+> Begründung:
+>
+> 1. **`_src/publish.sh` wurde retiriert** (Datei entfernt, keine inerte
+>    Kopie danebengelassen). Es wählte über eine **feste Verzeichnisliste**
+>    (`PUBLIC_DIRS`/`PUBLIC_FILES`) aus — exakt die Struktur, die den
+>    `0019`-Vorfall verursachte: ein neu freigegebener Teilbaum kam in keiner
+>    festen Liste vor und wäre **nicht** publiziert worden. Es hatte außerdem
+>    keinen Dry-Run, den die Aufgabe für den Überlebenden verlangt, und keinen
+>    Revisionsparameter. `rsync -a --delete` in einen persistenten Klon blieb
+>    als Mechanismus zwar robust, löst aber das strukturelle Problem nicht.
+> 2. **`_src/tools/publish_public_site.sh` bleibt der einzige
+>    Ganzseiten-Publisher**, weil sein Auswahlprinzip — „gesamter getrackter
+>    Baum minus Ausschlussliste" — ein neu freigegebenes Verzeichnis
+>    automatisch mitnimmt, ohne dass jemand zuerst eine feste Liste pflegen
+>    muss; es hatte bereits Dry-Run und die von `0038-26` verlangte
+>    Force-Push-Freigabeschranke (`PUBLISH_ALLOW_FORCE_PUSH=1` **und**
+>    `PUBLISH_FORCE_APPROVAL_REF`, unverändert übernommen — sie verschwindet
+>    nicht und bleibt nicht stillschweigend erreichbar).
+> 3. **Der bestätigte Zeile-80-Defekt ist behoben, nicht dokumentiert
+>    belassen.** Die Datei**liste** kam schon vorher korrekt aus
+>    `git ls-tree "$REVISION"`; die Datei**inhalte** las die alte Zeile 80
+>    (`tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C
+>    "$EXPORT_DIR"`) jedoch aus dem gerade ausgecheckten Arbeitsverzeichnis,
+>    unabhängig von `$REVISION` — mit einer **nicht ausgecheckten** Revision
+>    entstand dadurch lautlos ein unvollständiger Export, weil in der Pipe nur
+>    der Status des zweiten `tar` zählte. Der Fix liest die Inhalte jetzt über
+>    `git archive "$REVISION"` direkt aus dem Git-Objekt und filtert
+>    anschließend weiterhin über `tar -T "$EXPORT_LIST"` auf die erlaubte
+>    Dateiliste — das Revisionsargument bedeutet jetzt, was es sagt, auch für
+>    eine nicht ausgecheckte Revision. Test:
+>    `_src/tests/test_publish_scripts.py::PublishPublicSiteEndToEndTests::test_export_reads_content_from_a_revision_other_than_the_worktree`.
+>
+> `_src/tools/publish_approved_subtree.py` (`0038-29`) war an dieser
+> Konsolidierung nicht beteiligt: begrenzte digest-gebundene Publikation und
+> Ganzseiten-Publikation bleiben zwei getrennte Werkzeuge mit getrennten
+> Zusagen. Wer die alte Drei-Werkzeug-Lage aus der Git-Historie
+> wiederherstellen möchte, lese zuerst diesen Absatz und Task `0038-32` in
+> `TODO.md`: das entfernte `_src/publish.sh` trug genau den strukturellen
+> Fehler, den der `0019`-Vorfall aufdeckte.
 
 ### `_src/tools/publish_approved_subtree.py`
 
