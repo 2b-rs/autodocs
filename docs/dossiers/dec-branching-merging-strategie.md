@@ -778,3 +778,75 @@ Anweisung dort doch eingreift, führt sie additiv nach.
 **Unverändert:** Alle Entscheidungen 1–5 aus `DEC-0044-017`, sämtliche
 `CON-01`…`CON-05`, die `Review participation` und die 15 Auflagen. Diese
 Korrektur ergänzt Listen; sie ändert keine Entscheidung.
+
+---
+
+## Identifier-Reservierung 2026-08-22 — `DEC-0044-018` und `DEC-0044-019`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz, keine Entscheidung.
+
+`AGENTS.md` verlangt, dass ein `DEC-`-Bezeichner vor seiner Verwendung gegen
+`main` geprüft wird, weil `main` der einzige Ort ist, an dem ein
+Zuteilungspunkt überhaupt existieren kann. Genau diese Regel entstand, weil ein
+auf einem Zweig entworfener Entscheidungsdatensatz eine Nummer belegte, die auf
+`main` bereits vergeben war — zwei append-only Datensätze unter einer Kennung,
+die dieselbe Frage gegenteilig beantworteten.
+
+Hiermit sind reserviert, geprüft gegen `main` (höchste belegte Nummer war
+`DEC-0044-017`):
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand laut Vorlage |
+|---|---|---|---|
+| `DEC-0044-018` | Task `0044-02` | Dispatcher `data`, vorbereitet durch `Data-Nora-20260822T150414Z` | Risiko-Integrationsverfahren: unabhängige Integrator-/QA-/Architekten-Sessions, Einstimmigkeit, befristete Policy-Aussetzung mit Umfang/Dauer/Wiederherstellungsnachweis, Eskalation bei Nicht-Einstimmigkeit über das bestehende `[u]`-Integrationsverdikt |
+| `DEC-0044-019` | Task `0044-03` | Dispatcher `data` | Verbindliche ausführbare Testverpflichtung an verpflichtenden Checkpoints, proportional aus Architekturrisiken/Schnittstellen/Invarianten/externen Effekten abgeleitet; Nachweis nennt Kommando, Eingabe, Kandidat, Digest, Ergebnis; fehlende Automatisierung erfordert ausdrücklichen manuellen Rückfallpfad samt aufgezeichneter Lücke und Fail-/`[u]`-Weg, niemals ein stilles Bestehen |
+
+**Was diese Reservierung nicht ist:** keine Genehmigung des Inhalts, keine
+Scope-Prüfung, keine Abnahme. Beide Vorgänge erfüllen nach übereinstimmender
+Einschätzung ihrer Vorbereiter das kanonische `cross-item-blast-radius`-Prädikat
+und benötigen vor der qualifizierenden Mutation zusätzlich die unabhängige
+Scope-Prüfung eines von Management instanziierten Architekten. Die Reservierung
+verhindert lediglich, dass zwei Sessions dieselbe Nummer belegen.
+
+**Verfällt** die Reservierung, wenn einer der beiden Vorgänge ohne
+Entscheidungsdatensatz abgeschlossen wird: dann ist die Nummer hier ausdrücklich
+als unbenutzt zu vermerken und wird **nicht** neu vergeben — eine Lücke in der
+Nummernfolge ist harmlos, eine doppelt belegte Nummer nicht.
+
+**Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf Anforderung
+von Dispatcher `data` (agent-inbox `1787411895011-243c3652`, 2026-08-22T15:18:15Z).
+
+---
+
+## Identifier-Reservierung 2026-08-22 — `DEC-0038-002`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz, keine Entscheidung.
+
+Geprüft gegen `main`; höchste belegte Nummer der `DEC-0038-`-Reihe war
+`DEC-0038-001`.
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand laut Vorlage |
+|---|---|---|---|
+| `DEC-0038-002` | Task `0038-33` | Dispatcher `harry`; Architekt `Harry-Seven-20260822T153500Z`, Implementierer `Harry-Bashir-20260822T152700Z` | Behandlung der fünf bestehenden `AUTO010`-Befunde in `_src/tools/runner_transaction.py` gegenüber der geteilten Aggregatkontrolle `_src/tests/test_automation_safety.py` |
+
+**Vorgesehener Pfad des Datensatzes:** `docs/dossiers/dec-0038-automation-safety-aggregate-control.md`.
+
+**Was dieser Vermerk festhält, ohne die Entscheidung vorwegzunehmen:** Der
+Architekt hat den Scope bereits unabhängig geprüft (Branch
+`review-0038-33-scope-harry-seven-20260822T153500Z`, `966442b10`) und das
+kanonische `cross-item-blast-radius`-Prädikat bejaht. Seine Feststellung —
+die Kontrolle wurde am 2026-08-17 (`ec251f2a6`) eingeführt und **datiert allen
+fünf Befunden vor**, die erst danach entstanden (`2e688ab6c`, `4231f93b2`,
+`2d510d08e`, `b70238ad0`) — stützt die Lesart „veraltete Kontrolle", nicht
+„Regression der fünf Operationen". Ob das zutrifft, entscheidet der
+Datensatz, nicht diese Reservierung.
+
+**Ausdrücklich festgehaltene Grenze aus der Architektenprüfung:** Eine
+pauschale Datei- oder Regelausnahme ist unzulässig. Das zulässige Minimum ist
+eine exakt geschlossene Allow-Set-Bindung an Zeile, Symbol **und** vollen
+Hash, deren Gleichheit asserted wird; jeder neue `AUTO010` sowie `AUTO001`,
+`AUTO002` und `AUTO009` bleiben verboten. Änderungen an Policy, Scanner oder
+Laufzeit sind nicht gedeckt.
+
+**Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf Anforderung
+von `Harry-Seven-20260822T153500Z` (agent-inbox `1787413040296-5846e0a5`) und
+Dispatcher `harry` (`1787413514209-b4eba140`), 2026-08-22.
