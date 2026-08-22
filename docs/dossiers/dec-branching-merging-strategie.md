@@ -713,3 +713,68 @@ Abweichungen benannt. Sie werden hier korrigiert und nicht relativiert:
    Sachverhalt: Das Management hat den Architekten **beauftragt**, die
    Projektleitung hat ihn in diesem Auftrag **instanziiert**. Entscheidung 5
    sagt das nun korrekt.
+
+---
+
+### Additive Korrektur zu `DEC-0044-017` — Vervollständigung der betroffenen Einheiten und Gates (Auflage A-02)
+
+**Art:** append-only Korrektur. Der Text von `DEC-0044-017` bleibt unverändert
+stehen; die Listen **Affected work units** und **Affected gates** dort sind
+unvollständig und werden hier vollständig ersetzt. Wo beide voneinander
+abweichen, gelten die Listen dieser Korrektur.
+
+- **Recorded at:** `2026-08-22T10:30:00Z`
+- **Deciding identity:** `agent:kathryn:projektleiter:0044-017-korrektur:20260822T103000Z`
+- **Role:** `Projektleiter`
+- **Authority reference:** Auflage **A-02** aus
+  [`0044-04-gate-scope-review.md`](0044-04-gate-scope-review.md) (Architekt
+  `Kathryn-Tom-20260822T004500Z`, Verdikt `scope-ok-mit-auflagen`, Commit
+  `35262eff2`), deren Verbindlichkeit `DEC-0044-017` in `CON-03` selbst
+  festschreibt.
+- **Anlass:** Gemeldet von `Data` und `data-leah-20260822t092629z` (agent-inbox,
+  Thread `0044-04`, 2026-08-22T09:26Z, 09:30Z und 09:46Z). `Data` hält die
+  Policy-Mutation an `0044-04` bis zu dieser Korrektur an — zu Recht: der
+  Datensatz erklärte alle 15 Auflagen für bindend, erfüllte A-02 aber nicht.
+  Der Fehler liegt beim Aufzeichnenden, nicht beim Melder.
+
+**Affected work units — vollständig:**
+
+- `task:0044-04`
+- `task:0044-05`
+- `task:0044-06`
+- `task:0044-07`
+- `task:0044-08`
+- `task:0043-03`
+- `feature:0043`
+- `feature:0044`
+- `path:AGENTS.md`
+- `path:docs/pipeline/process-roles.md`
+- `repository:autodocs`
+
+**Affected gates — vollständig:**
+
+- `task-start:0044-04`
+- `task-start:0043-03`
+- `integration:0044`
+- `integration:0044-08`
+- `feature-closure:0044`
+
+**Repositoryweite Startwirkung, ausdrücklich benannt:** Die Anweisung aus
+`0044-04` erzeugt über Gate A1 eine Pflicht, die **jede künftige
+Branch-Erstellung** im Repository betrifft — in der Syntax des Formats
+`task-start:*`. `AGENTS.md` und `docs/pipeline/process-roles.md` sind
+Autoritätsdateien nach `DEC-0044-012`; ihre Änderung wirkt auf alle Agenten,
+nicht nur auf die Kette `0044-05/06/08`. Diese Reichweite war in
+`DEC-0044-017` sachlich vorhanden, aber nicht als Einheit geführt.
+
+**Nicht aufgenommen, mit Begründung:** `0044-12` und `0044-13` nennt die
+Scope-Prüfung als *mögliche* Durchsetzungsorte für ein A1-Pflichtfeld, ohne
+zwingende Betroffenheit (Bericht, Abschnitt 4, Punkt 4). Sie werden hier
+**nicht** als betroffene Einheiten geführt, sind aber beim Schreiben der
+Anweisung zu bedenken, damit keine dritte Mechanik neben Trailer-Konvention und
+`reference-transaction`-Hook entsteht. Wer beim Schreiben feststellt, dass die
+Anweisung dort doch eingreift, führt sie additiv nach.
+
+**Unverändert:** Alle Entscheidungen 1–5 aus `DEC-0044-017`, sämtliche
+`CON-01`…`CON-05`, die `Review participation` und die 15 Auflagen. Diese
+Korrektur ergänzt Listen; sie ändert keine Entscheidung.
