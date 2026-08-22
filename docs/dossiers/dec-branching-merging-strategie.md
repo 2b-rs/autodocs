@@ -850,3 +850,227 @@ Laufzeit sind nicht gedeckt.
 **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf Anforderung
 von `Harry-Seven-20260822T153500Z` (agent-inbox `1787413040296-5846e0a5`) und
 Dispatcher `harry` (`1787413514209-b4eba140`), 2026-08-22.
+
+---
+
+## Identifier-Reservierung 2026-08-22 — `DEC-0043-003`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz.
+
+Geprüft gegen `main`; höchste belegte Nummer der `DEC-0043-`-Reihe war
+`DEC-0043-002`.
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand |
+|---|---|---|---|
+| `DEC-0043-003` | Task `0043-04` | Architekt `Harry-Seven-20260822T153500Z`, Dispatcher `harry` | Gate-Scope des Report-Staleness-Befundes in `_src/validate.py` |
+
+**Vorgesehener Pfad:** `docs/dossiers/dec-0043-report-staleness-gate.md`.
+
+**Belegte Feststellung der Architektenprüfung** (Branch
+`review-0043-04-scope-harry-seven-20260822T203500Z`, REF `4598afca0`): Das
+kanonische `cross-item-blast-radius`-Prädikat greift aufgrund der
+**tatsächlichen** Semantik, nicht einer Vermutung — der deklarierte
+Staleness-Befund trägt `severity=error`, `record_finding` hängt ihn an
+`problems`, `main()` beendet damit mit Exit 1, und `_src/validate.py` ist das
+kanonische Build-Gate fremder Arbeitseinheiten. Damit kann der Befund den
+Abschluss fremder Einheiten blockieren.
+
+**Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf
+Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
+`1787430954327-6b380f26`, `1787431238534-40448b35`) und Dispatcher `harry`
+(`1787431247497-5f9ba525`).
+
+---
+
+### `DEC-0044-019` — Executable evidence at mandatory integration checkpoints
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T21:03:40Z`
+- **Deciding identity:** `agent:Data-Lore-20260822T205800Z:architect:0044-03`
+- **Role:** `Architekt`
+- **Authority reference:** `docs/dossiers/0044-03-gate-scope-review.md#dispatch-and-independence-record`
+- **Subject:** The executable integration-test obligation, evidence minimum,
+  manual fallback, failure path, and staged activation at mandatory integration
+  checkpoints.
+- **Decision:** A mandatory integration checkpoint MUST execute a
+  checkpoint-specific verification set against the exact integrated candidate,
+  not merely read implementation evidence. The Integrator derives the set from
+  the affected architecture risks, interfaces and contracts, invariants,
+  failure and recovery modes, and external effects. Every applicable derivation
+  item maps to an executable automated test or a reproducible, falsifiable
+  manual procedure; every non-applicable item carries a reason. The retained
+  evidence identifies the checkpoint and boundary, candidate and target refs or
+  trees, inputs and fixtures, material environment/tool versions, command or
+  typed procedure, expected oracle, actual result and exit status, digest-bound
+  logs/artifacts, exclusions, gaps, residual risk, and replay instructions.
+  Missing automation is never a pass: a bounded manual fallback may establish
+  the criterion with its limits recorded; if neither automated nor manual
+  evidence establishes it, the checkpoint fails and the Integrator records the
+  existing `[u]` integration verdict. This evidence informs but never grants
+  `Acceptance: ✓`, specialist authority, a waiver, or permission to cross the
+  checkpoint. Activation is staged: the rule binds Feature `0044` trial
+  checkpoints immediately. Task `0043-07` is the real qualification example,
+  but the repository-wide obligation for future `integration:*` and
+  `feature-closure:*` gates remains dormant until `0043-07` has actually been
+  executed and recorded and `0044-08` has confirmed the record against this
+  minimum. If that confirmation cannot be made, broad activation does not occur
+  and `0044-08` takes the fail/`[u]` path or obtains an additive scope decision.
+- **Technical justification:** The architecture determines what can fail at an
+  integration seam; a fixed universal suite can therefore be simultaneously
+  excessive and incomplete. Binding evidence to the exact integrated candidate
+  prevents branch-local green runs from standing in for composition evidence.
+  A reproducible manual oracle preserves evidence where automation is absent
+  without misrepresenting assurance. Staged activation confines initial blast
+  radius to Feature `0044`, uses the real `0043-07` composition boundary to test
+  the rule, and prevents an unexecuted example from becoming repository-wide
+  authority. Test results remain evidence because review and acceptance are
+  authority decisions, not properties produced by a command's exit status.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Proportional architecture-derived execution with explicit
+    manual fallback and staged repository activation
+    - **Disposition:** `selected`
+    - **Reason:** It makes checkpoint evidence executable and reproducible while
+      matching test scope to the actual integration risks and proving the rule
+      before repository-wide activation.
+  - **ALT-02:** No execution obligation; review implementation evidence only
+    - **Disposition:** `rejected`
+    - **Reason:** It does not test the integrated candidate and does not answer
+      `RQ-IP-07`'s explicit execute-not-only-read requirement.
+  - **ALT-03:** Run one fixed repository-wide suite at every checkpoint
+    - **Disposition:** `rejected`
+    - **Reason:** It cannot prove architecture-specific interfaces, failure
+      behavior, or external effects and needlessly executes unrelated checks.
+  - **ALT-04:** Activate the rule repository-wide before the worked example
+    - **Disposition:** `rejected`
+    - **Reason:** It would impose a new cross-item gate before its derivation and
+      evidence contract have been demonstrated on a real composition boundary.
+- **Consequences:**
+  - **CON-01:** Every open or repeated Feature-`0044` mandatory checkpoint review
+    must retain the decision's derivation matrix and minimum evidence. Completed
+    `0044-14` and `0044-15` reviews are historical evidence and are not
+    retroactively invalidated; `0044-08` assesses their available records and
+    applies this rule to any new execution or re-review.
+  - **CON-02:** The current Feature-`0044` checkpoint inventory is `0044-01`,
+    `0044-04`, `0044-05`, `0044-12`, `0044-13`, `0044-14`, `0044-15`,
+    `0044-16`, and integrating Task `0044-08`. The preparation proposal omitted
+    `0044-16`, which was added after its pinned baseline; this record includes it
+    rather than silently preserving the stale inventory.
+  - **CON-03:** The `0043-07` worked example is an activation qualification, not
+    an early repository-wide mandate and not Task acceptance. Its evidence must
+    demonstrate a real architecture-derived set against the integrated
+    candidate; repeating a generic suite without the derivation map is
+    insufficient.
+  - **CON-04:** Repository-wide future reach activates only through a passing
+    `0044-08` confirmation that the `0043-07` example was executed and recorded.
+    Before that event the future `integration:*` and `feature-closure:*`
+    obligation is dormant; afterwards it applies prospectively to mandatory
+    checkpoints and Feature closures.
+  - **CON-05:** An unavailable environment, unsafe external effect, missing
+    oracle, or irreproducible manual step is recorded as a gap and cannot be
+    converted into a silent pass. Existing `[u]` and escalation semantics are
+    used; this record creates no new acceptance or waiver authority.
+  - **CON-06:** Task `0044-03` may implement and document this decision only
+    after the decision and supporting scope review reach `main` through the
+    authorized governance integration procedure.
+- **Affected work units:**
+  - `task:0044-03`
+  - `task:0044-01`
+  - `task:0044-04`
+  - `task:0044-05`
+  - `task:0044-08`
+  - `task:0044-12`
+  - `task:0044-13`
+  - `task:0044-14`
+  - `task:0044-15`
+  - `task:0044-16`
+  - `feature:0044`
+  - `task:0043-07`
+  - `feature:0043`
+  - `path:docs/pipeline/task-acceptance.md`
+  - `path:docs/pipeline/branch-workflow.md`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0044-01`
+  - `integration:0044-04`
+  - `integration:0044-05`
+  - `integration:0044-08`
+  - `integration:0044-12`
+  - `integration:0044-13`
+  - `integration:0044-14`
+  - `integration:0044-15`
+  - `integration:0044-16`
+  - `integration:0044`
+  - `feature-closure:0044`
+  - `integration:0043-07`
+  - `feature-closure:0043`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:Data-Lore-20260822T205800Z:architect:0044-03`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent pre-mutation cross-item gate-scope review, distinct
+      from preparer `Data-Iris-20260822T150415Z` and dispatcher `Data`; verdict
+      `scope-ok-mit-auflagen`. The binding conditions are staged activation,
+      inclusion of new checkpoint `0044-16`, exact-candidate evidence, explicit
+      no-automation failure semantics, and strict separation from acceptance.
+
+---
+
+### `DEC-0044-018` — Common authority envelope for A4 risk integration; panel composition deferred
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T23:10:00+02:00`
+- **Deciding identity:** `authority:repository:owner`
+- **Role:** `Management`
+- **Authority reference:** Management directive recorded on `main` at `0d04432d6a4c6ae7f67a7818c6b9ab93266a527d`, implementing and superseding the composition assumptions of `DEC-0044-003` for Task `0044-02`
+- **Subject:** The repository-wide authority envelope for case-A4 risk integration, including temporary target-policy suspension, unanimous approval, QA and Security vetoes, restoration evidence, and escalation; excluding the unresolved question whether the veto holders sit inside or outside the three-person panel.
+- **Decision:** A bounded temporary suspension capability shall exist for a case-A4 risk integration. Activation requires the affirmative recorded votes of three privileged agents in independent sessions and unanimity among those three; the QA-Manager and Security-Manager each also hold an individual veto. A suspension is effective only for the exact integration, policy clauses, actions, scope, and finite duration or restoration event recorded in advance, with named participants, reason, compensating controls, restoration condition, and subsequent restoration evidence. Absence, non-unanimity, a veto, failed independence, missing evidence, expiry, or failed restoration never becomes approval by silence or role substitution and instead follows the existing `[u]` integration-verdict path to Management. The composition clause—whether QA and Security occupy seats within the three-person unanimous panel or exercise vetoes outside it—is expressly deferred, proposed only, and not in force until Management ratifies one shape; no A4 suspension may be activated while that clause remains unresolved.
+- **Technical justification:** A4 is the strongest integration intervention because it permits a policy to be displaced temporarily. Three independent privileged approvals prevent unilateral exercise; separate QA and Security veto authority prevents an affirmative technical majority from overruling either quality or security objection. Exact scope, finite duration, compensating controls, deterministic restoration, and before/after evidence prevent the temporary exception from becoming a silent policy change. Deferring rather than interpreting the composition question preserves Management authority because the two shapes require materially different participant counts, independence relations, deadlock behavior, and audit fields.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Establish the common bounded A4 authority envelope now, while keeping the inside-versus-outside panel-composition clause deferred and non-operative until Management ratification.
+    - **Disposition:** `selected`
+    - **Reason:** This records every point Management has decided without converting the unresolved composition choice into agent-made policy or allowing premature activation.
+  - **ALT-02:** Prohibit every temporary policy suspension and require Management to decide every A4 case directly.
+    - **Disposition:** `rejected`
+    - **Reason:** Management expressly decided that the bounded capability shall exist.
+  - **ALT-03:** Permit fewer than three affirmative privileged votes, treat abstention or absence as assent, omit either specialist veto, or allow silent role substitution.
+    - **Disposition:** `rejected`
+    - **Reason:** It contradicts the decided unanimity, independent-session, QA-veto, Security-veto, and no-silent-substitution controls.
+- **Consequences:**
+  - **CON-01:** Every future A4 record must bind the source and target, exact candidate and policy baseline, exact suspended clauses and permitted actions, three privileged session identities and votes, both specialist veto dispositions, reason, finite duration or stable restoration event, compensating controls, restoration condition, and before/after evidence.
+  - **CON-02:** Until Management ratifies the composition clause, the capability exists as a decided policy direction but has no executable activation path; any attempted invocation fails closed to the existing `[u]` verdict.
+  - **CON-03:** Under the inside-panel shape, QA and Security are two of the three privileged unanimous voters and their vetoes are inherent in unanimity unless Management additionally defines a later veto window; under the outside-panel shape, three independent privileged affirmative voters are followed by two separately recorded specialist veto dispositions. Neither shape is selected by this record.
+  - **CON-04:** A missing, unavailable, conflicted, non-independent, or substituted participant blocks activation. No Integrator, Architect, QA-Manager, Security-Manager, Implementer, or dispatcher may fill an absent function silently.
+  - **CON-05:** An A4 suspension does not transfer acceptance, signing, credential, release, external-service, or residual-risk authority; does not authorize an agent to modify a service that controls agents under `DEC-CAP-003`; and does not erase `TK-1`, provenance, root-worktree, hygiene, or append-only evidence duties except for an exact clause that Management later permits to be suspended within the recorded A4 scope.
+  - **CON-06:** Restoration is a gate, not a narrative promise: expiry or the restoration event requires proof that the target policy and affected branch state match the recorded restored baseline. A failed or unproved restoration remains `[u]` and blocks further integration or closure that depends on it.
+  - **CON-07:** The later `0044-02` implementation must encode the finally ratified composition exactly, retain both vetoes and the common envelope above, and be checked against this record and the independent scope review before any qualifying policy mutation.
+- **Affected work units:**
+  - `feature:0044`
+  - `task:0044-02`
+  - `task:0044-08`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0044`
+  - `integration:0044-08`
+  - `integration:main`
+  - `feature-closure:0044`
+  - `external:0044-02-a4-unanimity-and-veto`
+  - `external:0044-02-composition-ratification`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data-lore-20260822t210200z:architect:0044-02:20260822T210200Z`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent pre-mutation review recorded in `docs/dossiers/0044-02-gate-scope-review.md`; verdict `scope-ok-mit-auflagen` supports the common decided envelope only, requires fail-closed non-activation pending Management ratification of composition, and does not support either proposed composition shape yet.
+- **Waiver:** `none`
