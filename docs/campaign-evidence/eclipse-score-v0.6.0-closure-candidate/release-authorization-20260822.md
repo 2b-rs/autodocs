@@ -100,3 +100,75 @@ betrifft die Autorität, nicht den Inhalt.
 Sie ist **keine** Task- oder Feature-Abnahme, **kein** Integrationsverdikt und
 **kein** `DONE.md`-Umzug. Die Integration von Feature `0019` nach `main` und
 sein Abschluss bleiben eigenständige privilegierte Akte.
+
+---
+
+## Nachtrag 2026-08-22 — Freigabe auf den vollständigen Website-Abgleich erweitert
+
+**Art:** append-only Erweiterung der Freigabe oben. Der ursprüngliche Text bleibt
+unverändert gültig; sein Umfang wird durch diesen Nachtrag erweitert.
+
+### Der Befund, der die Erweiterung nötig machte
+
+Der privilegierte Publikationsoperator `worf-krell-20260822t102000z` hat den
+Vorabtest bestanden — exakter Digest
+`7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283`, 2.248
+Dateien, byteidentisch zur freigegebenen Vorschau, Marker und Status gültig,
+Deployment-Schlüssel `SHA256:+oo7DoLWJP3RtulD24fsHw57zTp/K3V9WrpGOKFT52M`
+genehmigt — und **vor jedem Schreibvorgang gestoppt**. Kein Push, kein
+Deployment-Commit, kein Log.
+
+Grund: `_src/publish.sh` synchronisiert eine **feste Liste** von Verzeichnissen
+(`PUBLIC_DIRS`: `ar classes en es flags fr hi ko modules namespaces pt ru
+services zh`) und Dateien (`PUBLIC_FILES`: `index.html style.css fold.js
+review.js`) aus dem lokal generierten Baum. Gegen die Deployment-Baseline
+`70fcf5935b5725c92ceccd234a8087268eaee28f` ergibt das **4.133 zusätzliche
+Einträge** außerhalb des freigegebenen Teilbaums.
+
+**Verschärfender Befund der Projektleitung:** Der freigegebene Kuratier-Teilbaum
+steht in `PUBLIC_DIRS` **überhaupt nicht**. `publish.sh` ist damit nicht nur zu
+breit, sondern für den freigegebenen Gegenstand das **falsche Werkzeug** — es
+würde die freigegebene Sache nicht veröffentlichen und stattdessen 4.133
+ungeprüfte Änderungen mitnehmen.
+
+### Entscheidung des Managements
+
+- **Erteilt am:** 2026-08-22
+- **Erteilt von:** Management (aktueller User / Repository-Eigentümer)
+- **Entscheidung:** **Alles mitveröffentlichen.** Die Freigabe wird vom exakten
+  Teilbaum auf den vollständigen Website-Abgleich erweitert.
+- **Ausdrücklich akzeptiertes Risiko:** Die 4.133 zusätzlichen Pfade hat
+  **niemand inhaltlich geprüft**. Das war Bestandteil der zur Wahl gestellten
+  Option und ist bewusst angenommen.
+- **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`).
+
+### Auflagen, die trotz der Erweiterung gelten
+
+1. **Der geprüfte Teilbaum bleibt byteidentisch.** Sein Digest muss unmittelbar
+   vor dem Push erneut stimmen. Weicht er ab: nicht pushen.
+2. **Aufschlüsselung vor dem Push liefern.** Der Operator legt vor, was die
+   4.133 Einträge sind — nach Kategorie und Änderungsart (neu / geändert /
+   gelöscht), mit Beispielen. Das Management hat diese Aufschlüsselung zugesagt
+   bekommen; sie wird geliefert, nicht nachgereicht.
+3. **Harte Abbruchbedingungen.** Der Operator veröffentlicht **nicht** und
+   meldet stattdessen, wenn eine der folgenden Bedingungen zutrifft:
+   - Der Abgleich würde auf dem Ziel vorhandene veröffentlichte Inhalte
+     **löschen** (`rsync --delete` wirkt innerhalb der Zielverzeichnisse);
+   - er berührt Pfade **außerhalb** von `PUBLIC_DIRS`/`PUBLIC_FILES`;
+   - eine private Pfad-Schranke (`_src`, `output`, `.gitignore`) schlägt an;
+   - der Digest des geprüften Teilbaums stimmt nicht mehr.
+   Diese Bedingungen sind **nicht** miterweitert. Das Management hat den Umfang
+   erweitert, nicht die Sorgfalt aufgehoben.
+4. **Die Inhaltsschranke bleibt unberührt.** `CUR-0019-08-20260820` gilt
+   weiter: die 2.239 `invalid`/`to-be-confirmed` Records bleiben von faktischer
+   Publikation ausgeschlossen; veröffentlicht wird die durchgehend als
+   unvalidiert markierte Kuratier-/Reviewansicht.
+
+### Nachfolgearbeit
+
+Dass für einen begrenzten, freigegebenen Teilbaum kein passendes
+Veröffentlichungswerkzeug existiert, ist ein echter Werkzeugmangel und keine
+Einzelfall-Panne. Er ist als Vorgang zu führen: ein Mechanismus, der genau einen
+freigegebenen Teilbaum mit geprüftem Digest veröffentlicht, ohne den restlichen
+Website-Abgleich mitzuziehen. Bis dahin ist jede künftige Teilbaum-Freigabe
+derselben Erweiterungsentscheidung ausgesetzt.
