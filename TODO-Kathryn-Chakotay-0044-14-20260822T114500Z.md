@@ -2,7 +2,7 @@
 
 - `owner_token`: `agent:kathryn-chakotay-20260822t114500z:0044-14:20260822T114500Z`
 - `task`: `0044-14`
-- `status`: `active [p]` — implementation complete on branch; governance transfer to `main` pending Projektleitung
+- `status`: `[x]` implementation complete on branch `0044-14`; governance transfer to `main` pending Projektleitung. Ownership lease ended.
 - `capability_class`: `unprivileged`
 - `execution_authority`: Direct Git, scripts, and tests permitted. No acceptance, no crossing the mandatory integration checkpoint, no merge to `main`, no `DONE.md` move, no `run.sh`.
 - `dispatcher`: `kathryn` (Projektleiter)
@@ -68,3 +68,5 @@ sag es mir, statt den Text passend zu schreiben.
 ```
 
 The user prompt that originated this line of work is recorded in the predecessor claim `TODO-Data-Miles-0044-14-20260821T195500Z.md`.
+
+- 2026-08-22T12:20:00Z — Terminal. Commits on `0044-14`: merge of current `main` `407c231ce`; substantive governance prose `649db737b`; bookkeeping `[x]` `f970f1674`. Working tree clean, nothing uncommitted. Root checkout verified untouched (`HEAD` `6a688283b`, empty index, no unstaged tracked change). Deferred-successor recheck: only `0044-08` names `0044-14` as a prerequisite and it is `[ ]`, not `[d]` — no state change owed. Scratch venv `/tmp/venv-0044-14` is disposable and outside the repository. Reported to `kathryn` via agent-inbox, naming the three governance files to be carried to `main`.
