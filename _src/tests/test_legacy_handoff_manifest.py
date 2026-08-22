@@ -204,6 +204,7 @@ class FaultInjectionTests(unittest.TestCase):
         report = lhm.validate(fake_root, fake_root / MANIFEST_REL, REPO_ROOT / TOOLS_REL)
         self.assertIn("LHM035", rules(report))
 
+
     def test_missing_consumer_is_detected(self) -> None:
         m = copy.deepcopy(self.manifest)
         m["consumers"] = [c for c in m["consumers"] if c["task"] != "0037-46.02"]
@@ -261,6 +262,122 @@ class CliTests(unittest.TestCase):
         mechanisms = lhm.tools_doc_mechanisms(REPO_ROOT / TOOLS_REL)
         self.assertGreater(len(mechanisms), 10)
         self.assertIn("_src/tools/runner_transaction.py", mechanisms)
+
+
+class QueueLivenessTests(unittest.TestCase):
+    """`LHM035` must separate "a registry exists on disk" from "the queue is live".
+
+    Task `0038-30`. The distinguishing signal is taken from the manifest's own
+    definition of activation, not invented:
+
+    * the manifest's `0037-46.01` consumer obligation commissions
+      `_src/runner/actions-v1.json` and ends "do not activate" — so the registry's
+      existence is explicitly *not* activation;
+    * `singleton.note` and `docs/pipeline/legacy-handoff-manifest.md` place
+      activation at `0037-46.02` bumping the runner protocol epoch in the live
+      bootstrap selector.
+
+    Liveness therefore means: a dispatcher has run (`.runner/` runtime root), or
+    the live selector declares a bumped `runner_protocol`.
+    """
+
+    def setUp(self) -> None:
+        self.tmp = Path(tempfile.mkdtemp(prefix="lhm-liveness-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+
+    def _fake_root(self, *, selector_protocol: str | None = None) -> Path:
+        """A minimal repository root carrying the real manifest.
+
+        `selector_protocol` writes a live bootstrap selector declaring that
+        runner protocol; `None` omits the selector entirely.
+        """
+        root = self.tmp / "repo"
+        (root / "docs" / "pipeline").mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO_ROOT / MANIFEST_REL, root / MANIFEST_REL)
+        if selector_protocol is not None:
+            (root / lhm.BOOTSTRAP_SELECTOR).write_text(
+                json.dumps(
+                    {
+                        "schema": "agent-workflow-bootstrap@v1",
+                        "authority_epoch": "legacy-writable",
+                        "runner_protocol": selector_protocol,
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+        return root
+
+    def _rules(self, root: Path) -> set:
+        return rules(lhm.validate(root, root / MANIFEST_REL, REPO_ROOT / TOOLS_REL))
+
+    def _write_registry(self, root: Path) -> None:
+        """Create `_src/runner/` exactly as Task `0037-46.01` is obliged to."""
+        registry = root / lhm.QUEUE_REGISTRY_ROOT
+        registry.mkdir(parents=True, exist_ok=True)
+        (registry / "actions-v1.json").write_text(
+            json.dumps({"schema": "action-registry@v1", "registry_version": 1, "actions": []})
+            + "\n",
+            encoding="utf-8",
+        )
+
+    # --- present but inactive: must NOT fire ---------------------------------
+
+    def test_present_but_inactive_registry_does_not_trip_the_finding(self) -> None:
+        """`0037-46.01`'s `_src/runner/` registry alone is not activation."""
+        root = self._fake_root(selector_protocol=lhm.PREACTIVATION_RUNNER_PROTOCOL)
+        self._write_registry(root)
+        self.assertTrue((root / lhm.QUEUE_REGISTRY_ROOT / "actions-v1.json").is_file())
+        self.assertNotIn("LHM035", self._rules(root))
+
+    def test_registry_without_any_selector_does_not_trip_the_finding(self) -> None:
+        """A missing selector is not evidence of activation either."""
+        root = self._fake_root(selector_protocol=None)
+        self._write_registry(root)
+        self.assertNotIn("LHM035", self._rules(root))
+
+    def test_unparsable_selector_is_not_treated_as_activation(self) -> None:
+        """Selector corruption is the bootstrap path's concern, not this checker's."""
+        root = self._fake_root(selector_protocol=lhm.PREACTIVATION_RUNNER_PROTOCOL)
+        (root / lhm.BOOTSTRAP_SELECTOR).write_text("{ not json", encoding="utf-8")
+        self._write_registry(root)
+        self.assertNotIn("LHM035", self._rules(root))
+
+    # --- genuinely live: must STILL fire -------------------------------------
+
+    def test_bumped_runner_protocol_epoch_still_trips_the_finding(self) -> None:
+        """A live queue — `0037-46.02` bumped the selector's protocol epoch."""
+        root = self._fake_root(selector_protocol="runner-request@v2")
+        self._write_registry(root)
+        found = self._rules(root)
+        self.assertIn("LHM035", found)
+        report = lhm.validate(root, root / MANIFEST_REL, REPO_ROOT / TOOLS_REL)
+        wheres = {f.get("where") for f in report["findings"] if f["rule"] == "LHM035"}
+        self.assertIn(lhm.BOOTSTRAP_SELECTOR, wheres)
+
+    def test_runtime_root_still_trips_the_finding_even_with_a_pristine_selector(self) -> None:
+        """A dispatcher that has actually run is live regardless of the selector."""
+        root = self._fake_root(selector_protocol=lhm.PREACTIVATION_RUNNER_PROTOCOL)
+        (root / lhm.QUEUE_RUNTIME_ROOT).mkdir(parents=True, exist_ok=True)
+        self._write_registry(root)
+        report = lhm.validate(root, root / MANIFEST_REL, REPO_ROOT / TOOLS_REL)
+        wheres = {f.get("where") for f in report["findings"] if f["rule"] == "LHM035"}
+        self.assertEqual(wheres, {lhm.QUEUE_RUNTIME_ROOT})
+
+    def test_both_liveness_signals_report_independently(self) -> None:
+        root = self._fake_root(selector_protocol="runner-request@v2")
+        (root / lhm.QUEUE_RUNTIME_ROOT).mkdir(parents=True, exist_ok=True)
+        report = lhm.validate(root, root / MANIFEST_REL, REPO_ROOT / TOOLS_REL)
+        wheres = {f.get("where") for f in report["findings"] if f["rule"] == "LHM035"}
+        self.assertEqual(wheres, {lhm.QUEUE_RUNTIME_ROOT, lhm.BOOTSTRAP_SELECTOR})
+
+    def test_the_live_repository_selector_is_still_pre_activation(self) -> None:
+        """Guards the pinned constant against silent drift in the real selector."""
+        selector = json.loads(
+            (REPO_ROOT / lhm.BOOTSTRAP_SELECTOR).read_text(encoding="utf-8")
+        )
+        self.assertEqual(selector["runner_protocol"], lhm.PREACTIVATION_RUNNER_PROTOCOL)
 
 
 if __name__ == "__main__":

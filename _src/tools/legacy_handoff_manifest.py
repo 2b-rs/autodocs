@@ -21,8 +21,13 @@ properties Task `0038-16.01`'s Definition of Done requires:
    same authority key, and no typed action ID is owned by more than one
    primitive.
 4. **Singleton preserved / authority unchanged** — the manifest declares the
-   legacy singleton active and the queue inactive, and the repository agrees
-   (no ``.runner/`` runtime root, no ``_src/runner/`` registry yet).
+   legacy singleton active and the queue inactive, and the repository agrees:
+   no ``.runner/`` runtime root exists, and the live bootstrap selector
+   ``agent-workflow.json`` still declares the pre-activation runner protocol.
+
+   The presence of the ``_src/runner/`` typed-action **registry** is explicitly
+   *not* an activation signal — see ``_check_queue_liveness`` below and Task
+   ``0038-30``.
 
 Usage::
 
@@ -81,8 +86,44 @@ REQUIRED_PRIMITIVE_KEYS = (
     "disposition",
 )
 
-# Paths that must not exist for the manifest's "queue not activated" claim.
-QUEUE_ACTIVATION_MARKERS = (".runner", "_src/runner")
+# --- Queue liveness, narrowed by Task `0038-30` -----------------------------
+#
+# `0038-16.01` originally treated *either* `.runner/` or `_src/runner/` as proof
+# that the queue had been activated. That conflated two different things, and
+# the manifest's own text says so:
+#
+#   * The manifest's consumer obligation for Task `0037-46.01` reads: "Register
+#     every `typed-action` disposition's action IDs in the permanent typed-action
+#     registry (`_src/runner/actions-v1.json`) ... implement no generic shell
+#     action; *do not activate*." The manifest therefore commissions
+#     `_src/runner/` itself and, in the same sentence, states that creating it is
+#     not activation. Its existence cannot be the activation signal without the
+#     manifest contradicting its own consumer obligation.
+#   * `singleton.note` reads: "The singleton remains the only mechanism that
+#     accepts mutating requests *until `0037-46.02` bumps the protocol epoch*",
+#     and `docs/pipeline/legacy-handoff-manifest.md` spells out where: "`0037-46.02`
+#     bumps the runner protocol epoch *in the live bootstrap selector* after queue
+#     health, round-trip, concurrency, restart and mutation-isolation tests pass
+#     durably."
+#
+# So the manifest's own definition of activation is liveness — a dispatcher that
+# actually runs, or a bumped protocol epoch in the live selector — not a source
+# file on disk. `LHM035` fires only on that.
+
+# Git-ignored *runtime* root of the versioned queue. It comes into being only
+# when a dispatcher actually runs, so its presence is liveness.
+QUEUE_RUNTIME_ROOT = ".runner"
+
+# Versioned typed-action *registry* source, created by `0037-46.01` under its own
+# declared write scope. Present-but-inactive is the expected pre-activation state
+# once that Task lands; it is deliberately **not** an activation marker.
+QUEUE_REGISTRY_ROOT = "_src/runner"
+
+# The live bootstrap selector (`docs/pipeline/agent-workflow.md`: "root
+# `agent-workflow.json` as the canonical machine selector") and the runner
+# protocol it declares before activation. `0037-46.02` activates by bumping this.
+BOOTSTRAP_SELECTOR = "agent-workflow.json"
+PREACTIVATION_RUNNER_PROTOCOL = "runner-request@v1"
 
 
 class Finding(Dict[str, str]):
@@ -238,11 +279,59 @@ def _check_singleton(root: Path, manifest: Dict[str, Any]) -> List[Dict[str, str
         findings.append(_finding("LHM033", "activates_queue must be false"))
     if manifest.get("changes_authority") is not False:
         findings.append(_finding("LHM034", "changes_authority must be false"))
-    for marker in QUEUE_ACTIVATION_MARKERS:
-        if (root / marker).exists():
-            findings.append(
-                _finding("LHM035", f"queue runtime path {marker!r} exists but the manifest claims the queue is inactive", marker)
+    findings.extend(_check_queue_liveness(root))
+    return findings
+
+
+def _check_queue_liveness(root: Path) -> List[Dict[str, str]]:
+    """Report `LHM035` only when the queue is *live*, never when it merely exists.
+
+    Two independent liveness signals, both taken from the manifest's own
+    definition of activation (see the constants above):
+
+    1. the git-ignored ``.runner/`` runtime root exists — a dispatcher has run;
+    2. the live bootstrap selector declares a ``runner_protocol`` other than the
+       pre-activation one — ``0037-46.02`` has bumped the protocol epoch.
+
+    ``_src/runner/`` — the typed-action registry ``0037-46.01`` is obliged to
+    create *without activating* — is not a signal and never fires this rule.
+
+    A missing or unparsable selector is deliberately not treated as activation:
+    activation requires the selector to positively *declare* the new protocol,
+    and selector corruption is the fail-closed responsibility of the bootstrap
+    path (``docs/pipeline/agent-workflow.md``), not of this read-only checker.
+    """
+    findings: List[Dict[str, str]] = []
+
+    if (root / QUEUE_RUNTIME_ROOT).exists():
+        findings.append(
+            _finding(
+                "LHM035",
+                f"queue runtime root {QUEUE_RUNTIME_ROOT!r} exists — a dispatcher has run, "
+                "but the manifest claims the queue is inactive",
+                QUEUE_RUNTIME_ROOT,
             )
+        )
+
+    selector_path = root / BOOTSTRAP_SELECTOR
+    if selector_path.is_file():
+        try:
+            selector = json.loads(selector_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            selector = None
+        if isinstance(selector, dict):
+            protocol = selector.get("runner_protocol")
+            if isinstance(protocol, str) and protocol != PREACTIVATION_RUNNER_PROTOCOL:
+                findings.append(
+                    _finding(
+                        "LHM035",
+                        f"live bootstrap selector declares runner_protocol {protocol!r}, bumped past "
+                        f"the pre-activation {PREACTIVATION_RUNNER_PROTOCOL!r} — the queue is live, "
+                        "but the manifest claims the queue is inactive",
+                        BOOTSTRAP_SELECTOR,
+                    )
+                )
+
     return findings
 
 

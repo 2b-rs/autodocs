@@ -778,3 +778,39 @@ Anweisung dort doch eingreift, führt sie additiv nach.
 **Unverändert:** Alle Entscheidungen 1–5 aus `DEC-0044-017`, sämtliche
 `CON-01`…`CON-05`, die `Review participation` und die 15 Auflagen. Diese
 Korrektur ergänzt Listen; sie ändert keine Entscheidung.
+
+---
+
+## Identifier-Reservierung 2026-08-22 — `DEC-0044-018` und `DEC-0044-019`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz, keine Entscheidung.
+
+`AGENTS.md` verlangt, dass ein `DEC-`-Bezeichner vor seiner Verwendung gegen
+`main` geprüft wird, weil `main` der einzige Ort ist, an dem ein
+Zuteilungspunkt überhaupt existieren kann. Genau diese Regel entstand, weil ein
+auf einem Zweig entworfener Entscheidungsdatensatz eine Nummer belegte, die auf
+`main` bereits vergeben war — zwei append-only Datensätze unter einer Kennung,
+die dieselbe Frage gegenteilig beantworteten.
+
+Hiermit sind reserviert, geprüft gegen `main` (höchste belegte Nummer war
+`DEC-0044-017`):
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand laut Vorlage |
+|---|---|---|---|
+| `DEC-0044-018` | Task `0044-02` | Dispatcher `data`, vorbereitet durch `Data-Nora-20260822T150414Z` | Risiko-Integrationsverfahren: unabhängige Integrator-/QA-/Architekten-Sessions, Einstimmigkeit, befristete Policy-Aussetzung mit Umfang/Dauer/Wiederherstellungsnachweis, Eskalation bei Nicht-Einstimmigkeit über das bestehende `[u]`-Integrationsverdikt |
+| `DEC-0044-019` | Task `0044-03` | Dispatcher `data` | Verbindliche ausführbare Testverpflichtung an verpflichtenden Checkpoints, proportional aus Architekturrisiken/Schnittstellen/Invarianten/externen Effekten abgeleitet; Nachweis nennt Kommando, Eingabe, Kandidat, Digest, Ergebnis; fehlende Automatisierung erfordert ausdrücklichen manuellen Rückfallpfad samt aufgezeichneter Lücke und Fail-/`[u]`-Weg, niemals ein stilles Bestehen |
+
+**Was diese Reservierung nicht ist:** keine Genehmigung des Inhalts, keine
+Scope-Prüfung, keine Abnahme. Beide Vorgänge erfüllen nach übereinstimmender
+Einschätzung ihrer Vorbereiter das kanonische `cross-item-blast-radius`-Prädikat
+und benötigen vor der qualifizierenden Mutation zusätzlich die unabhängige
+Scope-Prüfung eines von Management instanziierten Architekten. Die Reservierung
+verhindert lediglich, dass zwei Sessions dieselbe Nummer belegen.
+
+**Verfällt** die Reservierung, wenn einer der beiden Vorgänge ohne
+Entscheidungsdatensatz abgeschlossen wird: dann ist die Nummer hier ausdrücklich
+als unbenutzt zu vermerken und wird **nicht** neu vergeben — eine Lücke in der
+Nummernfolge ist harmlos, eine doppelt belegte Nummer nicht.
+
+**Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf Anforderung
+von Dispatcher `data` (agent-inbox `1787411895011-243c3652`, 2026-08-22T15:18:15Z).
