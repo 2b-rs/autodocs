@@ -38,6 +38,12 @@ The full rationale, the confirmed mechanism with its hermetic fixture, the findi
 
 ## Starting work
 
+Architects must apply the normative [`docs/pipeline/feature-breakdown.md`](docs/pipeline/feature-breakdown.md)
+instruction when decomposing a Feature or Task. The instruction is the
+recording point for architecture-decision sources, prerequisite/order and test
+derivations, capability profiles, branch creation, and the A1/A2 planning-error
+prevention fields; it does not replace the authority rules in this file.
+
 1. Determine the capability class as required by `SANDBOX.md`; default to sandboxed/grunt.
 2. Read `TODO.md` and active `TODO-<agent-id>.md` files. Resume a claim only when the assignment explicitly references it or its immutable `owner_token` matches the current runtime/session token. Never infer ownership from a shared model/display name or filename such as `TODO-perplexity.md`; unmatched legacy claims belong to another session and must not be overwritten. A response/turn boundary is not a handoff: once this session mints or receives an immutable `owner_token`, that token remains this session's ownership proof for the claim until authoritative closure or explicit handoff. On every later turn, execution result, generic continuation prompt, or restored context, resume that owned `[p]` claim and its recorded next step before scanning for new work.
 3. Do not abandon, defer, or replace an owned incomplete Task merely because it was not completed in one response, consumed multiple execution attempts, became technically difficult, or crossed a context/tool-budget boundary. Continue until it is complete or clearly unreachable under the state rules below. Do not open a new claim while an owned Task is actionable unless multiple simultaneous Tasks are explicitly justified, disjoint, and recorded in the claim.

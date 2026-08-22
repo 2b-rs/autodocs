@@ -269,6 +269,10 @@ typical failure, and a repository example.
 - **Result:** One-pass executable Tasks with criteria, Definition of Done,
   correct prerequisite graph, exactly one mandatory integration task per Feature,
   and no-checkpoint rationale for each unflagged high-risk node.
+- **Breakdown instruction:** Apply the normative
+  [`feature-breakdown.md`](feature-breakdown.md) record for the source of each
+  architecture decision, prerequisite/order and test derivation, capability
+  profile, branch instruction, and A1/A2 evidence.
 - **Prohibitions:** Gate decisions without TK-2; accept its own breakdown;
   imply completeness where a gap exists.
 - **Typical failure:** Check duplicates against the wrong neighboring Feature.
