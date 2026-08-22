@@ -221,7 +221,7 @@ Skript aufruft — genau diese Auswahl war beim Vorfall vom 2026-08-22 (Feature
 | Werkzeug | Was es auswählt | Dry-Run | Schreibt/veröffentlicht | Wann es gilt |
 |---|---|---|---|---|
 | `_src/publish.sh` | **feste Liste** von Verzeichnissen (`PUBLIC_DIRS`) und Dateien (`PUBLIC_FILES`) aus dem generierten Baum | nein | `rsync -a --delete` je gelistetem Verzeichnis in einen persistenten Klon, dann Commit + Fast-Forward-Push nach `PUBLISH_REMOTE` | **Ganzseiten-Publisher.** Der reguläre Weg für den vollständigen Website-Abgleich nach einer Regenerierung. Wird **nicht** ersetzt. |
-| `_src/tools/publish_public_site.sh` | **gesamter getrackter Baum minus Ausschlussliste** (`_src/`, `docs/`, `logs/`, Agentendateien, …) zu einer Revision | ja (`--dry-run`) | Orphan-Export, Commit, Push; optional Force-Push nur mit `PUBLISH_ALLOW_FORCE_PUSH=1` **und** `PUBLISH_FORCE_APPROVAL_REF` | Vollständiger, gefilterter Neuaufbau des öffentlichen Baums aus einer Git-Revision. |
+| `_src/tools/publish_public_site.sh` | **gesamter getrackter Baum minus Ausschlussliste** (`_src/`, `docs/`, `logs/`, Agentendateien, …); die **Dateiliste** stammt aus der angegebenen Revision, die **Inhalte** jedoch aus dem Arbeitsverzeichnis — siehe Defekthinweis unten | ja (`--dry-run`) | Orphan-Export, Commit, Push; optional Force-Push nur mit `PUBLISH_ALLOW_FORCE_PUSH=1` **und** `PUBLISH_FORCE_APPROVAL_REF` | Vollständiger, gefilterter Neuaufbau des öffentlichen Baums — **nur korrekt, wenn die gewünschte Revision zugleich ausgecheckt ist**. |
 | `_src/tools/publish_approved_subtree.py` | **genau ein vom Aufrufer benannter Teilbaum**, gebunden an einen Pflicht-Tree-Digest | ja (`--dry-run`, Offenlegungsmodus) | **nur Dateisystem**: materialisiert den Teilbaum in ein Zielverzeichnis. Kein Git, kein Netz, kein Commit, kein Push. | **Begrenzte Freigabe** (`0038-29`): das Management hat *einen* Teilbaum mit *einem* Digest freigegeben, und nur der soll ins Ziel. |
 
 **Faustregel:** Lautet die Freigabe „der gesamte Stand" → `_src/publish.sh`.
@@ -231,6 +231,24 @@ Der dritte Fall — Freigabe für einen Teilbaum, Ausführung über einen
 Ganzseiten-Publisher — ist der Fall, den `0038-29` beseitigt: er hätte das
 Freigegebene **nicht** publiziert und stattdessen 4.133 ungeprüfte Pfade
 mitgenommen.
+
+> **Offener Defekt in `_src/tools/publish_public_site.sh` — nicht beabsichtigtes
+> Verhalten.** Die Auswahl der Dateien kommt zwar aus der angegebenen Revision
+> (`git ls-tree "$REVISION"`), die **Inhalte** liest Zeile 80
+> (`tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C "$EXPORT_DIR"`)
+> jedoch aus dem gerade ausgecheckten Arbeitsverzeichnis; mit einer **nicht
+> ausgecheckten** Revision erzeugt das Werkzeug deshalb **lautlos einen
+> unvollständigen Export**: `tar` meldet für jeden nur in der Revision
+> vorhandenen Pfad `Cannot stat: No such file or directory` und endet mit `1`,
+> aber weil das in einer Pipe steht, zählt nur der Status des **zweiten** `tar`
+> — der Fehlschlag wird verschluckt und der Lauf geht weiter (Mechanismus am
+> 2026-08-22 isoliert nachgestellt; gegen den freigegebenen `0019`-Baum am
+> selben Tag mit `Cannot stat` für alle 2.248 Pfade beobachtet, siehe
+> Integrationsreview zu `0038-29`). Das Werkzeug liefert also **nur dann** ein
+> revisionstreues Ergebnis,
+> wenn die gewünschte Revision zugleich ausgecheckt ist. Wer eine
+> revisionsgebundene Freigabe umzusetzen hat, prüft das vorher; ob der Defekt
+> einen eigenen Vorgang bekommt, entscheidet die Projektleitung/Architektur.
 
 ### `_src/tools/publish_approved_subtree.py`
 
@@ -280,9 +298,32 @@ Verhalten und Schranken:
 - Jeder mutierende Schritt hängt einen dauerhaften Ergebnis-/Recovery-Satz an das
   optionale `--journal` an. Nach dem Schreiben wird der Digest des Zielteilbaums
   erneut berechnet und muss dem freigegebenen entsprechen.
+- **Ein bereits vorhandener Symlink irgendwo im Zielteilbaum blockiert die
+  Publikation** (Verweigerung, Exit 1) — er wird nicht ersetzt und nicht gelöscht.
+  Das ist fail-closed und beabsichtigt, überrascht aber bei einem gewachsenen
+  Deploy-Verzeichnis: solche Links müssen vorher vom Operator aufgelöst werden.
+  Verweigerungen, die aus dem Ziel stammen, benennen auch das Ziel
+  („destination subtree …"), nicht die Quelle.
+- **Dateirechte werden nicht übernommen.** Kopiert werden ausschließlich Bytes;
+  Modus und Executable-Bit gehen verloren. Für einen HTML-Baum bedeutungslos,
+  relevant nur, falls das Werkzeug je für ausführbare Artefakte benutzt würde.
+- Der Restlistenhinweis des Dry-Runs verweist nur dann auf die Evidenz, wenn
+  `--evidence` tatsächlich angegeben wurde; sonst weist er aus, dass die
+  vollständige Liste in diesem Lauf nirgends festgehalten wird.
 
-Exit-Codes: `0` Erfolg, `1` Verweigerung (es wurde nichts publiziert), `2`
-Aufruffehler.
+Exit-Codes: `0` Erfolg, `1` Verweigerung, `2` Aufruffehler.
+
+`1` heißt in **jedem Schrankenfall** zugleich „es wurde nichts geschrieben" —
+alle Pfad-, Symlink-, Überlappungs-, Autoritäts-, Evidenz- und Digest-Schranken
+greifen vor dem ersten Schreibvorgang. Es gibt genau **eine** Ausnahme, und sie
+sagt es selbst: schlägt die **Nachverifikation** des Zielteilbaums fehl (oder
+tritt mitten in der Schreibphase ein Dateisystemfehler auf), wurde das Ziel
+bereits verändert. Der Lauf endet ebenfalls mit `1`, meldet aber ausdrücklich
+„the destination WAS modified" und schreibt — sofern `--evidence` angegeben ist —
+einen Evidenzsatz mit `"state": "incomplete"`, `"published": false` und den
+Listen `written`/`removed`, damit der Zustand des Ziels rekonstruierbar bleibt.
+Ein nacktes Exit `1` darf deshalb **nicht** als „das Ziel ist unberührt" gelesen
+werden; die Meldung entscheidet.
 
 #### Tree-Digest-Verfahren (von Hand nachrechenbar)
 
@@ -314,7 +355,9 @@ Quelländerung zwischen Plan und Schreiben, unbeteiligter Zielinhalt bleibt
 **byteidentisch**, Löschung innerhalb des Teilbaums wird vor der Ausführung
 gemeldet, Privatpfad- und Symlink-Schranke, Teilbaum-Ausbruch, Quelle/Ziel-Überlappung,
 Vollständigkeit und Begrenztheit der Dry-Run-Ausgabe, Autoritätsreferenz-Pflicht,
-Evidenz-Pflicht und Überschreibschutz.
+Evidenz-Pflicht und Überschreibschutz, Beschriftung ziel-verursachter
+Verweigerungen sowie der Nachverifikationsfehler (Fehlerinjektion: das Ziel ist
+mutiert, es wird ein `incomplete`-Evidenzsatz geschrieben).
 
 ## Werkzeuge des vereinheitlichten Kurations-/Review-Modells (0006-14)
 

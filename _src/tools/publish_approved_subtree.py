@@ -55,7 +55,20 @@ Shell equivalent for a reviewer:
       printf '%s\\0' "$p"; shasum -a 256 -b "$p" | cut -d' ' -f1 | xxd -r -p
     done | shasum -a 256
 
-Exit codes: 0 success, 1 refusal (nothing was published), 2 usage error.
+Exit codes
+----------
+``0`` success, ``1`` refusal, ``2`` usage error.
+
+A ``1`` is a refusal, and in every guard case it also means *nothing was
+written*: all path, symlink, overlap, authority, evidence and digest guards
+fire before the first write. There is exactly **one** exception, and it says so
+itself: if the post-publication verification of the destination subtree fails,
+the destination has already been written to. That case exits ``1`` as well but
+prints "the destination WAS modified" and writes an evidence record with
+``"state": "incomplete"`` listing what was written and deleted, so the state of
+the destination stays reconstructible. The same applies to a filesystem error
+raised in the middle of the writing phase. Do not read a bare exit ``1`` as
+"the destination is untouched" — read the message.
 """
 
 from __future__ import annotations
@@ -87,7 +100,28 @@ EXIT_USAGE = 2
 
 
 class Refusal(Exception):
-    """Raised when the tool declines to act. Nothing has been written."""
+    """Raised when the tool declines to act *before* touching the destination.
+
+    Every refusal of this class is raised before the first write or delete
+    inside the destination subtree, so "nothing has been written" holds.
+    The one case where it does not hold has its own subclass below.
+    """
+
+
+class PublicationIncomplete(Refusal):
+    """Raised after the destination subtree has already been mutated.
+
+    The exit code stays ``1``, but the usual guarantee "nothing was published"
+    does **not** hold here: writes and/or deletions inside the destination
+    subtree already happened and the result did not verify. The destination is
+    left as it is — the tool does not attempt an unsupervised rollback — and an
+    ``incomplete`` evidence record is written (when ``--evidence`` was given) so
+    the state of the destination stays reconstructible.
+    """
+
+    def __init__(self, message: str, result: Optional[Dict[str, object]] = None) -> None:
+        super().__init__(message)
+        self.result: Dict[str, object] = result or {}
 
 
 def _now() -> str:
@@ -147,14 +181,18 @@ def file_digest(path: Path) -> bytes:
     return digest.digest()
 
 
-def collect_regular_files(root: Path) -> Dict[str, bytes]:
+def collect_regular_files(root: Path, label: str = "source") -> Dict[str, bytes]:
     """Map relative POSIX path -> raw per-file SHA-256 for every regular file.
 
     Symbolic links and other non-regular entries are a refusal: a link can name
     a path outside the approved subtree, which this tool must never publish.
+
+    ``label`` names the tree being inspected in every message, so a refusal
+    caused by the *destination* does not send the operator to the source
+    directory.
     """
     if not root.is_dir() or root.is_symlink():
-        raise Refusal(f"source is not an existing directory: {root}")
+        raise Refusal(f"{label} is not an existing directory: {root}")
     collected: Dict[str, bytes] = {}
     for directory, subdirectories, names in os.walk(root, followlinks=False):
         subdirectories.sort()
@@ -162,14 +200,14 @@ def collect_regular_files(root: Path) -> Dict[str, bytes]:
             absolute = Path(directory) / name
             relative = absolute.relative_to(root).as_posix()
             if absolute.is_symlink():
-                raise Refusal(f"symbolic link in source is not publishable: {relative}")
+                raise Refusal(f"symbolic link in {label} is not publishable: {relative}")
             if not absolute.is_file():
-                raise Refusal(f"non-regular file in source is not publishable: {relative}")
+                raise Refusal(f"non-regular file in {label} is not publishable: {relative}")
             collected[relative] = file_digest(absolute)
         for name in sorted(subdirectories):
             if (Path(directory) / name).is_symlink():
                 relative = (Path(directory) / name).relative_to(root).as_posix()
-                raise Refusal(f"symbolic link in source is not publishable: {relative}")
+                raise Refusal(f"symbolic link in {label} is not publishable: {relative}")
     return collected
 
 
@@ -183,8 +221,8 @@ def tree_digest(files: Dict[str, bytes]) -> str:
     return stream.hexdigest()
 
 
-def compute_tree_digest(root: Path) -> Tuple[str, Dict[str, bytes]]:
-    files = collect_regular_files(root)
+def compute_tree_digest(root: Path, label: str = "source") -> Tuple[str, Dict[str, bytes]]:
+    files = collect_regular_files(root, label)
     return tree_digest(files), files
 
 
@@ -262,10 +300,13 @@ def check_outside_destination(path: Optional[Path], destination_subtree: Path, l
 # --------------------------------------------------------------------------
 
 
+DESTINATION_LABEL = "destination subtree"
+
+
 def destination_inventory(destination_subtree: Path) -> Dict[str, bytes]:
     if not destination_subtree.exists():
         return {}
-    return collect_regular_files(destination_subtree)
+    return collect_regular_files(destination_subtree, DESTINATION_LABEL)
 
 
 def build_plan(
@@ -332,7 +373,7 @@ def build_plan(
     }
 
 
-def format_report(plan: Dict[str, object], stream) -> None:
+def format_report(plan: Dict[str, object], stream, has_evidence: bool = False) -> None:
     counts = plan["counts"]
     sample = plan["sample"]
     print(f"{TOOL}: mode={plan['mode']}", file=stream)
@@ -356,7 +397,12 @@ def format_report(plan: Dict[str, object], stream) -> None:
         for name in shown:
             print(f"    {category[0].upper()} {plan['subtree']}/{name}", file=stream)
         if total > len(shown):
-            print(f"    ... {total - len(shown)} more (full list in the evidence record)", file=stream)
+            where = (
+                "full list in the evidence record"
+                if has_evidence
+                else "full list only with --evidence; not recorded in this run"
+            )
+            print(f"    ... {total - len(shown)} more ({where})", file=stream)
     print(
         "  outside the subtree: nothing is created, modified or deleted by this tool",
         file=stream,
@@ -388,13 +434,26 @@ def apply_plan(
     authorization_ref: str,
     journal_path: Optional[str],
     stream,
+    progress: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
     """Re-verify the gate, then perform exactly the planned effect.
 
     The digest is recomputed over the actual source directory here, immediately
     before the first write, so a source that changed between planning and
     writing is refused rather than published.
+
+    ``progress`` is an optional caller-owned dict that this function keeps
+    current: ``destination_mutated`` flips to ``True`` immediately before the
+    very first write or delete, and ``written``/``removed`` grow step by step.
+    The caller uses it to tell "refused, nothing happened" apart from "the
+    destination was already touched" even when the failure is an ``OSError``
+    from the middle of the run.
     """
+    progress = progress if progress is not None else {}
+    progress.setdefault("destination_mutated", False)
+    written: List[str] = progress.setdefault("written", [])  # type: ignore[assignment]
+    removed: List[str] = progress.setdefault("removed", [])  # type: ignore[assignment]
+    pruned: List[str] = progress.setdefault("pruned_directories", [])  # type: ignore[assignment]
     verify_digest, verify_files = compute_tree_digest(source)
     if verify_digest != expected_digest:
         raise Refusal(
@@ -412,12 +471,12 @@ def apply_plan(
     else:
         print(f"  deletions to be performed inside {plan['subtree']}: none", file=stream)
 
-    written: List[str] = []
     destination_subtree.mkdir(parents=True, exist_ok=True)
     for name in list(plan["created"]) + list(plan["modified"]):
         parts = check_relative_path(name, "source path")
         check_private_components(parts, f"{plan['subtree']}/{name}")
         target = destination_subtree.joinpath(*parts)
+        progress["destination_mutated"] = True
         promoted = _write_file(target, source.joinpath(*parts))
         _record_outcome(
             journal_path, "write", 0, str(target), len(written) + 1,
@@ -425,10 +484,10 @@ def apply_plan(
         )
         written.append(name)
 
-    removed: List[str] = []
     for name in deleted:
         parts = check_relative_path(name, "destination path")
         target = destination_subtree.joinpath(*parts)
+        progress["destination_mutated"] = True
         target.unlink()
         _record_outcome(
             journal_path, "delete", 0, str(target), len(removed) + 1,
@@ -436,7 +495,6 @@ def apply_plan(
         )
         removed.append(name)
 
-    pruned: List[str] = []
     for directory, _subdirectories, _names in os.walk(destination_subtree, topdown=False):
         current = Path(directory)
         if current == destination_subtree:
@@ -450,7 +508,7 @@ def apply_plan(
         )
         pruned.append(current.relative_to(destination_subtree).as_posix())
 
-    final_digest, _final_files = compute_tree_digest(destination_subtree)
+    final_digest, _final_files = compute_tree_digest(destination_subtree, DESTINATION_LABEL)
     result = dict(plan)
     result["mode"] = "apply"
     result["written"] = written
@@ -460,10 +518,22 @@ def apply_plan(
     result["published_digest_matches"] = final_digest == expected_digest
     result["completed_at"] = _now()
     if not result["published_digest_matches"]:
-        raise Refusal(
+        message = (
             "post-publication verification failed: destination subtree digest "
-            f"{final_digest} does not equal the approved digest {expected_digest}"
+            f"{final_digest} does not equal the approved digest {expected_digest}. "
+            "The destination WAS modified and is left as it stands; see the "
+            "incomplete evidence record"
         )
+        _record_outcome(
+            journal_path, "verify-failed", 1, str(destination_subtree),
+            len(written) + len(removed), expected_digest, final_digest, None,
+            authorization_ref,
+        )
+        result["published"] = False
+        result["state"] = "incomplete"
+        result["destination_mutated"] = True
+        result["failure"] = message
+        raise PublicationIncomplete(message, result)
     _record_outcome(
         journal_path, "complete", 0, str(destination_subtree), len(written) + len(removed),
         expected_digest, final_digest, None, authorization_ref,
@@ -517,11 +587,56 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _write_evidence(
+    evidence_path: Optional[Path],
+    payload: Dict[str, object],
+    stream,
+    error_stream=None,
+) -> None:
+    """Write the JSON evidence record, if the caller asked for one."""
+    if evidence_path is None:
+        return
+    evidence_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(evidence_path, "w", encoding="utf-8") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    print(f"  evidence written: {evidence_path}", file=error_stream or stream)
+
+
+def _incomplete_record(
+    plan: Optional[Dict[str, object]],
+    progress: Dict[str, object],
+    failure: str,
+) -> Dict[str, object]:
+    """Evidence payload for a run that stopped after mutating the destination."""
+    record: Dict[str, object] = dict(plan or {})
+    record["mode"] = "apply"
+    record["published"] = False
+    record["state"] = "incomplete"
+    record["destination_mutated"] = bool(progress.get("destination_mutated"))
+    record["written"] = list(progress.get("written", []))
+    record["removed"] = list(progress.get("removed", []))
+    record["pruned_directories"] = list(progress.get("pruned_directories", []))
+    record["failure"] = failure
+    record["completed_at"] = _now()
+    return record
+
+
 def run(argv: Optional[Sequence[str]] = None, stream=None) -> int:
     stream = stream if stream is not None else sys.stdout
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    evidence_path: Optional[Path] = None
+    plan_record: Optional[Dict[str, object]] = None
+    progress: Dict[str, object] = {
+        "destination_mutated": False,
+        "written": [],
+        "removed": [],
+        "pruned_directories": [],
+    }
     try:
         if args.sample < 0:
             raise Refusal("--sample must not be negative")
@@ -556,7 +671,8 @@ def run(argv: Optional[Sequence[str]] = None, stream=None) -> int:
             mode,
             args.sample,
         )
-        format_report(plan, stream)
+        plan_record = plan
+        format_report(plan, stream, has_evidence=evidence_path is not None)
 
         if not plan["digest_matches"]:
             raise Refusal(
@@ -578,6 +694,7 @@ def run(argv: Optional[Sequence[str]] = None, stream=None) -> int:
                 args.authorization_ref,
                 str(journal_path) if journal_path else None,
                 stream,
+                progress=progress,
             )
             result["published"] = True
             print(
@@ -588,20 +705,30 @@ def run(argv: Optional[Sequence[str]] = None, stream=None) -> int:
                 file=stream,
             )
 
-        if evidence_path is not None:
-            evidence_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(evidence_path, "w", encoding="utf-8") as handle:
-                json.dump(result, handle, indent=2, sort_keys=True)
-                handle.write("\n")
-                handle.flush()
-                os.fsync(handle.fileno())
-            print(f"  evidence written: {evidence_path}", file=stream)
+        _write_evidence(evidence_path, result, stream)
         return EXIT_OK
+    except PublicationIncomplete as incomplete:
+        print(f"{TOOL}: {incomplete}", file=sys.stderr)
+        _write_evidence(evidence_path, incomplete.result, stream, error_stream=sys.stderr)
+        return EXIT_REFUSED
     except Refusal as refusal:
         print(f"{TOOL}: {refusal}", file=sys.stderr)
         return EXIT_REFUSED
     except OSError as error:
-        print(f"{TOOL}: filesystem error, publication not completed: {error}", file=sys.stderr)
+        if progress.get("destination_mutated"):
+            print(
+                f"{TOOL}: filesystem error AFTER the destination was already modified, "
+                f"publication not completed: {error}",
+                file=sys.stderr,
+            )
+            _write_evidence(
+                evidence_path,
+                _incomplete_record(plan_record, progress, str(error)),
+                stream,
+                error_stream=sys.stderr,
+            )
+        else:
+            print(f"{TOOL}: filesystem error, publication not completed: {error}", file=sys.stderr)
         return EXIT_REFUSED
 
 

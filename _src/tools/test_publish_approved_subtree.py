@@ -7,6 +7,7 @@ Run:  python3 -m unittest discover -s _src/tools -p 'test_publish_approved_subtr
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import io
 import json
@@ -70,6 +71,13 @@ class Harness(unittest.TestCase):
         argv.extend(extra)
         code = tool.run(argv, stream=stream)
         return code, stream.getvalue()
+
+    def invoke_capturing_stderr(self, *extra: str, **keywords):
+        """As invoke(), but also returns everything the tool wrote to stderr."""
+        errors = io.StringIO()
+        with contextlib.redirect_stderr(errors):
+            code, report = self.invoke(*extra, **keywords)
+        return code, report, errors.getvalue()
 
 
 class DigestProcedure(Harness):
@@ -337,10 +345,25 @@ class DryRun(Harness):
     def test_dry_run_sample_is_bounded_and_the_remainder_is_disclosed(self):
         for index in range(25):
             write(self.source / "bulk" / f"page-{index:02d}.html", f"<p>{index}</p>\n")
-        code, report = self.invoke("--sample", "3", mode="--dry-run")
+        code, report = self.invoke(
+            "--sample", "3", "--evidence", str(self.evidence), mode="--dry-run"
+        )
         self.assertEqual(code, tool.EXIT_OK, report)
         self.assertIn("created (28), showing 3:", report)
         self.assertIn("... 25 more (full list in the evidence record)", report)
+        recorded = json.loads(self.evidence.read_text(encoding="utf-8"))
+        self.assertEqual(len(recorded["source_files"]), 28)
+
+    def test_dry_run_remainder_does_not_promise_an_evidence_record_without_evidence(self):
+        """F6: without --evidence the full list exists nowhere; do not point at it."""
+        for index in range(25):
+            write(self.source / "bulk" / f"page-{index:02d}.html", f"<p>{index}</p>\n")
+        code, report = self.invoke("--sample", "3", mode="--dry-run")
+        self.assertEqual(code, tool.EXIT_OK, report)
+        self.assertIn("... 25 more", report)
+        self.assertNotIn("full list in the evidence record", report)
+        self.assertIn("full list only with --evidence", report)
+        self.assertFalse(self.evidence.exists())
 
     def test_apply_requires_evidence(self):
         code, report = self.invoke()
@@ -377,6 +400,110 @@ class DryRun(Harness):
         for bad in ("abc", "z" * 64, ""):
             code, report = self.invoke(digest=bad, mode="--dry-run")
             self.assertEqual(code, tool.EXIT_REFUSED, f"accepted digest {bad!r}")
+
+
+class RefusalLabelling(Harness):
+    """F4: a refusal caused by the destination must not name the source."""
+
+    def test_destination_subtree_that_is_a_regular_file_is_named_as_destination(self):
+        target = self.destination_root / "campaign" / "report"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("not a directory\n", encoding="utf-8")
+        code, _report, errors = self.invoke_capturing_stderr(
+            "--evidence", str(self.evidence)
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertIn("destination subtree is not an existing directory", errors)
+        self.assertNotIn("source is not an existing directory", errors)
+        self.assertEqual(target.read_text(encoding="utf-8"), "not a directory\n")
+
+    def test_symlink_inside_the_destination_subtree_is_named_as_destination(self):
+        outside = self.base / "outside.txt"
+        outside.write_text("TOPSECRET\n", encoding="utf-8")
+        subtree = self.destination_root / "campaign" / "report"
+        subtree.mkdir(parents=True, exist_ok=True)
+        (subtree / "link.html").symlink_to(outside)
+        code, _report, errors = self.invoke_capturing_stderr(
+            "--evidence", str(self.evidence)
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertIn("symbolic link in destination subtree is not publishable", errors)
+        self.assertNotIn("symbolic link in source", errors)
+
+    def test_missing_source_is_still_named_as_source(self):
+        code, _report, errors = self.invoke_capturing_stderr(
+            "--source", str(self.base / "absent"), "--evidence", str(self.evidence)
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertIn("source is not an existing directory", errors)
+
+
+class PostVerificationFailure(Harness):
+    """F3: exit 1 after the destination was already written must say so."""
+
+    def _fail_after_writing(self):
+        """Fault injection: write bytes that do not match the approved source."""
+        original = tool._write_file
+
+        def corrupt(destination: Path, source_file: Path) -> str:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(b"corrupted by fault injection\n")
+            return str(destination)
+
+        tool._write_file = corrupt
+        self.addCleanup(lambda: setattr(tool, "_write_file", original))
+
+    def test_post_verification_failure_reports_that_the_destination_was_modified(self):
+        self._fail_after_writing()
+        code, _report, errors = self.invoke_capturing_stderr(
+            "--evidence", str(self.evidence), "--journal", str(self.journal)
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertIn("post-publication verification failed", errors)
+        self.assertIn("destination WAS modified", errors)
+
+    def test_post_verification_failure_still_writes_an_incomplete_evidence_record(self):
+        self._fail_after_writing()
+        code, _report, _errors = self.invoke_capturing_stderr(
+            "--evidence", str(self.evidence), "--journal", str(self.journal)
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertTrue(self.evidence.exists(), "no evidence for a mutated destination")
+        recorded = json.loads(self.evidence.read_text(encoding="utf-8"))
+        self.assertIs(recorded["published"], False)
+        self.assertEqual(recorded["state"], "incomplete")
+        self.assertIs(recorded["destination_mutated"], True)
+        self.assertEqual(len(recorded["written"]), 3)
+        self.assertIn("post-publication verification failed", recorded["failure"])
+        self.assertNotEqual(
+            recorded["published_tree_digest"], recorded["expected_tree_digest"]
+        )
+        # The destination really is mutated — the guarantee "nothing was written"
+        # would have been false here, which is exactly what F3 was about.
+        self.assertTrue((self.destination_root / "campaign" / "report" / "index.html").exists())
+        journal = [
+            json.loads(line)
+            for line in self.journal.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertTrue(any(record["phase"] == "verify-failed" for record in journal))
+        self.assertFalse(any(record["phase"] == "complete" for record in journal))
+
+    def test_incomplete_is_a_refusal_subclass_so_existing_handling_still_applies(self):
+        self.assertTrue(issubclass(tool.PublicationIncomplete, tool.Refusal))
+
+    def test_ordinary_refusal_leaves_the_destination_untouched(self):
+        """The unqualified promise still holds for every pre-write guard."""
+        subtree = self.destination_root / "campaign" / "report"
+        write(subtree / "keep.html", "<p>old</p>\n")
+        before = snapshot(self.destination_root)
+        code, _report, errors = self.invoke_capturing_stderr(
+            "--evidence", str(self.evidence), digest="0" * 64
+        )
+        self.assertEqual(code, tool.EXIT_REFUSED)
+        self.assertNotIn("destination WAS modified", errors)
+        self.assertEqual(snapshot(self.destination_root), before)
+        self.assertFalse(self.evidence.exists())
 
 
 if __name__ == "__main__":
