@@ -153,7 +153,7 @@ and a `2` is a failed check, never a pass. Findings:
 | Code | Meaning |
 |---|---|
 | `INDEX_NOT_HEAD` | the integration worktree's own index differs from its `HEAD` |
-| `FOREIGN_STAGED_TREE` | some *other* registered worktree holds a staged tree |
+| `FOREIGN_STAGED_TREE` | some *other* registered worktree still holds a staged tree after one bounded 2.0-second re-sample; the finding includes index mtime and age |
 | `MAIN_WORKTREE_DIRTY` | tracked files in the worktree checking out `main` differ from its index; this is a blocking root-quiescence finding, not a rule for live item worktrees |
 | `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
 | `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
@@ -162,10 +162,15 @@ Two properties of the check must be understood, or it will be trusted for more
 than it does:
 
 - `FOREIGN_STAGED_TREE` is **not** by itself an accusation. Another agent staging
-  work in its own worktree is ordinary. The finding says that state exists which
-  Git history cannot show, and an integration must not proceed across it. The
-  resolution is to have that owner commit or stash — never to reset a foreign
-  worktree.
+  work in its own worktree is ordinary. The check waits a bounded 2.0 seconds and
+  re-samples every initial foreign candidate once; a commit that completes in
+  that interval is not reported. A candidate still divergent on the second
+  sample remains the same blocking finding, with structured index mtime and age
+  (`index_mtime_utc`, `index_age_seconds`) so fresh and stale state can be told
+  apart without another run. The resolution is to have that owner commit or
+  stash — never to reset a foreign worktree. Re-sampling does not make any
+  persistent foreign staged tree advisory and does not narrow which worktrees
+  block.
 - `MAIN_WORKTREE_DIRTY` closes the known clean-index blind spot for the worktree
   checking out `main`, including the residual tracked-file divergence observed
   on 2026-08-21. The same unstaged divergence on an item branch is intentionally
