@@ -98,13 +98,35 @@ the matcher in a successor Task must explain any rejection.
   status: "conforming pre-branch A1 record; 0043-07 remains open and unclaimed"
 ```
 
+### Authority correction and operative A1 record (append-only)
+
+The `0043-07` A1 mapping immediately above was recorded by the prior
+Data-Ada implementation session. Its `recorded_by` attribution to an
+Architect was not supported by that session's authority. It is retained as
+historical evidence, but is explicitly **authority-invalid and superseded**;
+it is not an operative A1 determination. The R2 rejection history remains
+append-only (`f16ca4c0c45b79430ee0ce14402c7e6968fa4f2d`), as does the earlier
+rejection history (`1aa0c468a600e8006ae6d669e9852f041332feb2`).
+
+The operative determination is the byte-identical signed record in
+[`0043-07-a1-architect-record.md`](0043-07-a1-architect-record.md), authored
+and adopted independently by `Architect / Data-Lore-20260822T212950Z` under
+the authorized Lore review commit `00394908b2e41bd81c9ff78174ee1251844d7eb1`.
+Its signed-record SHA-256 is
+`e66a57f660d21703cec4b26b80398210a7afb1ea9cda6c9749ad86decf6fd91e`.
+The `fits` value means **policy integrability only**. It is not readiness,
+acceptance, permission to claim or start `0043-07`, or integration authority.
+The six prerequisites remain binding; `0043-04` is `[u]`, so `0043-07`
+remains `[ ]`, unclaimed, unbranched, and not start-ready.
+
 The first record is deliberately qualified: a branch-time gate cannot be
-proven after the branch already exists. The `0043-07` record is the one actual
-pre-branch pilot record: the branch/claim absence was checked immediately
-before recording it, and this Task did not create or claim that work. The
-rejected candidate's `pending-at-branch-creation` entries for `0043-06` and
-`0043-07` were planning placeholders, not conforming A1 records; they are not
-treated as records here.
+proven after the branch already exists. The historical Data-Ada-attributed
+`0043-07` mapping recorded the branch/claim absence immediately before it was
+written, but it is not operative because its authority attribution is invalid;
+the independent Lore record above is the operative pre-branch determination.
+The rejected candidate's `pending-at-branch-creation` entries for `0043-06`
+and `0043-07` were planning placeholders, not conforming A1 records; they are
+not treated as records here.
 
 `0043-06` is therefore recorded honestly as a missed prospective pilot and a
 current-state retrospective only: its branch already existed and completed
@@ -138,8 +160,11 @@ before the project claims the instruction is fully exercised.
   represented as a structured contract with an explicit evidence limitation.
 - `0043-06` missed the prospective A1 pilot; its completed branch is retained
   as a retrospective current-state observation, never as retroactive proof.
-- `0043-07` has the sole new conforming pre-branch A1 record above; its task
-  remains open/unclaimed and this evidence does not start or integrate it.
+- The historical Data-Ada-attributed `0043-07` A1 mapping is authority-invalid
+  and superseded; Lore's independently signed record is the operative
+  pre-branch A1 determination. Its `fits` verdict means policy integrability
+  only. The task remains open/unclaimed and this evidence does not start or
+  integrate it.
 - A2 is not tested by this Feature. This evidence does not alter `TODO.md`,
   prerequisites, claims, acceptance, or integration state for Feature 0043.
 - The pilot does not authorize any branch creation, merge, publication,
