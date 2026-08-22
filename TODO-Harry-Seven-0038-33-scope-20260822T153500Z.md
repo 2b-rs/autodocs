@@ -17,7 +17,7 @@
 - prohibited: Task acceptance, `Acceptance: ✓`, integration/checkpoint crossing, `main` movement, Feature integration, `DONE.md`, Safety implementation, edits to the gate, policy, or `runner_transaction.py`, runner protocol, and `run.sh`
 - pre-mutation hygiene: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs` → PASS, 111 registered worktrees
 - Decision-ID request: sent to `kathryn` in agent-inbox message `1787413040296-5846e0a5`; no `DEC-*` artifact may be created before Kathryn allocates its exact identifier/path and Dispatcher Harry explicitly expands scope to that path
-- state: scope review prepared; qualifying implementation mutation remains blocked until a conforming decision record exists
+- state: scope review committed as `966442b10`; current `main` `9226adfdf` merged as `b549b5acf`, with reviewed gate/runtime objects unchanged; qualifying implementation mutation remains blocked until a conforming decision record exists
 
 ## Verbatim briefing
 

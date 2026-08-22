@@ -7,6 +7,14 @@
 **Baseline:** `main` at `77c4d0aee730909ba1e1284144772595ada7722d`  
 **Decision-record state:** identifier/path requested from `kathryn` via agent-inbox `1787413040296-5846e0a5`; not yet allocated at review preparation time
 
+**Main-drift recheck:** after the initial review commit, current `main`
+`9226adfdf` was merged into the review branch as `b549b5acf`. The intervening
+accepted `0038-30` integration changed `TODO.md` and its own LHM035/tooling
+scope only. `_src/tests/test_automation_safety.py` remained object
+`ad7c9a4cedd5abd69b064175388067084c8a12a7`; `_src/tools/runner_transaction.py`
+remained object `f3363db43add9a8dc8937def065a853d70daac3e`. No reviewed AUTO010 identity,
+authority rule, or `0038-33` contract changed, so the verdict remains current.
+
 ## Verdict
 
 `cross-item-blast-radius` **applies**. The failing aggregate control is shared validation behavior: its declared full-suite assertion can block validation and integration evidence for work units other than `0038-33`. Narrowing it is therefore a qualifying gate-scope mutation and remains prohibited until both this independent Architect review and a conforming `decision-record@v1` exist.
