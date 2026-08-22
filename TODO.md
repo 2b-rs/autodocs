@@ -290,7 +290,8 @@ HOW TO USE:
   - **Definition of Done:** Committed; regeneration reproduces the headers; i18n segments for new user-visible text are extracted; validation passes.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** presentation and explanatory text through existing generators; no authority or data semantics change. Re-examined at `0043-07`.
 
-- [ ] **0043-06** PREREQ: 0043-06:0043-02, 0043-06:0043-05 Document the ASPICE evidence map for the report landscape.
+- [p] **0043-06** PREREQ: 0043-06:0043-02, 0043-06:0043-05 Document the ASPICE evidence map for the report landscape.
+  - **Claimed (2026-08-22T19:00:21Z, `agent:seven:0043-06:20260822T190021Z`, Dispatcher Seven, unprivileged):** Both prerequisites `[x]`. `0043-02` already an ancestor of `main`; `0043-05` (tip `c897899c4`) merged in directly (`5c20c6883`). Claim: `TODO-Seven-0043-06-20260822T190021Z.md`.
   - **Requirements covered:** `RQ-BR-07`.
   - **Acceptance criteria:** A `docs/pipeline/` document maps each report page and the ledger to the ASPICE process outcome it evidences (at minimum SUP.8 baselines/CM for the ledger, MAN.3 status reporting, SWE.6-adjacent verification evidence), states what an assessor should be shown for each claim, and names the known gaps honestly (e.g. evidence that remains git-ignored by design) rather than overclaiming.
   - **Definition of Done:** Committed and linked from `docs/pipeline/README.md`; no capability-level claim is made (consistent with the `0011-03`/`0019-10` wording constraints).
