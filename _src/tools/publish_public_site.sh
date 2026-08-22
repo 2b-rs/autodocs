@@ -76,8 +76,13 @@ while IFS= read -r file; do
   echo "$file" >> "$EXPORT_LIST"
 done <<< "$TRACKED_FILES"
 
-# Extract only allowed files into EXPORT_DIR via tar
-tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C "$EXPORT_DIR"
+# Extract only allowed files into EXPORT_DIR. Contents come from the
+# REVISION git object via `git archive`, not from $REPO_ROOT, so a REVISION
+# that is not currently checked out still exports correctly (0038-32; the
+# prior `tar -C "$REPO_ROOT"` read working-tree bytes regardless of the
+# requested REVISION, silently truncating the export when they diverged,
+# and the pipe masked the failing first `tar`'s exit status).
+git archive "$REVISION" | tar -xf - -C "$EXPORT_DIR" -T "$EXPORT_LIST"
 
 # Initialize git repository inside EXPORT_DIR and commit
 cd "$EXPORT_DIR"
