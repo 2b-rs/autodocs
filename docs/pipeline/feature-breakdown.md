@@ -81,8 +81,12 @@ session. Rights, data, tools, execution needs, and cognitive demand are
 separate dimensions. A profile may require `unprivileged` or `privileged`
 direct execution even when the role normally maps to `sandboxed-grunt`; it may
 never grant authority forbidden by `SANDBOX.md`, `AGENTS.md`, or the role
-catalog. The deterministic matcher introduced by a later Task consumes this
-profile; an Architect must not select an agent by intuition in its place.
+catalog. Each controlled field has exactly one value: alternatives such as
+`none or direct`, `as assigned`, or an omitted execution route are not a
+profile. If work can genuinely follow different execution routes, split it
+into separately profiled cases before matching. The deterministic matcher
+introduced by a later Task consumes this profile; an Architect must not select
+an agent by intuition in its place.
 
 ## 3. Deriving prerequisites and planned order
 
