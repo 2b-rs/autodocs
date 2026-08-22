@@ -1,10 +1,13 @@
 # Worked breakdown: Feature 0043
 
-**Application date:** 2026-08-22 (Europe/Berlin)  
+**Application date:** 2026-08-22 (Europe/Berlin)
+
 **Breakdown owner:** Architect role, implemented by
-`agent:data-ada-20260822t150413z:0044-04:20260822T150413Z`  
-**Instruction:** [`docs/pipeline/feature-breakdown.md`](../../pipeline/feature-breakdown.md)  
-**Feature contract:** `TODO.md` Feature 0043, current baseline `418f09b79`  
+`agent:data-ada-20260822t150413z:0044-04:20260822T150413Z`
+
+**Instruction:** [`docs/pipeline/feature-breakdown.md`](../../pipeline/feature-breakdown.md)
+
+**Feature contract:** `TODO.md` Feature 0043, current baseline `418f09b79`
 **Evidence purpose:** real application of the source, dependency, test,
 capability, branch, A1 and A2 record shape; not an acceptance or integration
 review.
