@@ -46,4 +46,5 @@
 - Work-product manifest SHA-256: `3b280ec5e9b2072e153355f1004c850bfb455b228028f427cfa56f8bd6d36e74`.
 - Prerequisite-acceptance SHA-256: `70d563a79cfe6134a8cbefd7d6819d5f1fbf2a8c5914dd886d877589785a2d8d`.
 - Review evidence: `docs/campaign-evidence/review-0038-31-20260822-data-geordi/report.md` (pending evidence commit at this update).
-- Next action: commit the two review-evidence paths, then add the exact `Acceptance: ✓` record to `TODO.md` in a separate path-limited commit referencing the real evidence REF.
+- Evidence commit `f829b116fe87856cd65a31f19875c210e865a681` created the report and claim. Its message transcribed the two receipt digests incorrectly; the report records the actual pre-commit digests append-only. The next correction commit is the final Review REF.
+- Next action: commit the evidence-metadata correction, then add the exact `Acceptance: ✓` record to `TODO.md` in a separate path-limited commit referencing that real evidence REF.

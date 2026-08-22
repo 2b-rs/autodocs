@@ -93,3 +93,12 @@ Create branch `review-0038-31-data-geordi-20260822T203511Z` and isolated review 
 
 DEC-0044-013 record requirement: reproduce THIS ENTIRE BRIEFING verbatim in the report; record dispatching identity Data, reviewer persona Geordi, context given and not given. Verdict append-only: accepted/rejected/inconclusive. At rejection/inconclusive, do not self-fix or integrate. Report commits, verdict, validation, findings, and any escalation to Data.
 ```
+
+## Evidence metadata correction
+
+The first evidence commit `f829b116fe87856cd65a31f19875c210e865a681` committed the correct report and claim bytes, but its message transcribed both pre-commit receipt digests incorrectly. The actual SHA-256 values printed immediately before that commit were:
+
+- report: `125a408b2a6e61332208bf7a540ed1ff57955a1100a0c85e4060765ea76a57a6`;
+- claim: `694ce194c3b76096a7f36baa2372c62e31cbba0d3ff035deba2cdce06f8c0051`.
+
+This correction is append-only; it changes no verdict, baseline, manifest, validation result, finding, or authority statement. The correction commit is the final Review REF used by acceptance bookkeeping.
