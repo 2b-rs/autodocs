@@ -445,3 +445,336 @@ the branch-to-root `git merge --ff-only/--no-ff` sequence"; die von `Data`
 verlangten Auflagen (benannte Autorität, Preflight, Abbruch statt Aufräumen,
 `update-ref`-Verbot, Prüfer bleibt Vorbedingung) sind oben vollständig
 übernommen.
+
+---
+
+## `DEC-0044-016` — Umfang der Gates A1 und A2 für die Feature-Breakdown-Anweisung (`0044-04`)
+
+- **Recorded at:** 2026-08-22T00:00:00Z
+- **Deciding identity:** Management (aktueller User / Repository-Eigentümer)
+- **Recording identity:** `agent:kathryn:projektleiter:0044-04-gate-scope:20260822T000000Z`
+- **Role of the recorder:** Projektleiter unter `DEC-ROLE-001` — zeichnet auf,
+  entscheidet nicht
+- **Authority reference:** vier Managemententscheidungen aus einem strukturierten
+  Fragebogen, wörtlich in
+  [`dec-0044-016-provenance.txt`](dec-0044-016-provenance.txt)
+- **Anlass:** Architekt `Data-Riker-20260821T221000Z` beanspruchte `0044-04` bei
+  `b098882fac` und stellte fest, dass die A1-Prüfung zur Branch-Zeit und die
+  A2-Aufzeichnung von Reihenfolgeabweichungen **qualifizierende
+  cross-item-Gates** sind: sie können Start, Validierung, Abnahme, Integration
+  oder Abschluss anderer Arbeitseinheiten blockieren. `DEC-0044-006` deckt die
+  neue Anweisung nicht ab. Gemeldet von `Data`, agent-inbox Thread
+  `work-dispatch`, 2026-08-21T23:03:08Z.
+
+### Betroffene Arbeitseinheiten und Gates
+
+- **Arbeitseinheit:** `0044-04` (Feature-Breakdown-Prozessanweisung), mit
+  Fortwirkung auf `0044-05` (Schemata/Matcher), `0044-06` (Bedarfsklassen) und
+  `0044-08` (Feature-Integration).
+- **Gate A1:** Prüfung der Integrierbarkeit unter der Zielpolicy **zum Zeitpunkt
+  der Branch-Erstellung**.
+- **Gate A2:** Aufzeichnung von Abweichungen von der geplanten
+  Implementierungsreihenfolge.
+
+### Entscheidung
+
+**A1 — Vorabprüfung: ja, aber schlank.** Beim Anlegen eines Arbeits-Branches
+wird einmal geprüft, ob die Arbeit unter der Policy des Integrationsziels
+zurückführbar ist. Mindestevidenz ist **ein Satz im Vorgangsdatensatz**:
+Ergebnis (passt / passt nicht) und woran es festgemacht wurde. Ein Werkzeuglauf
+mit abgelegtem Ergebnis wird **nicht** verlangt.
+
+> *Begründung des Managements:* Der teure Fall ist der, in dem jemand tagelang an
+> etwas baut, das am Ende nicht zusammenpasst. Den fängt ein Satz beim Start ab.
+> Ein voller Nachweis bremst jeden Arbeitsbeginn spürbar, ohne diesen Fall besser
+> abzufangen.
+
+**A2 — Reihenfolgeabweichung: nur bei Fremdbetroffenheit.** Eine Abweichung von
+der geplanten Reihenfolge wird aufgezeichnet, **wenn sie die Arbeit einer anderen
+Einheit blockiert oder deren Vertrag verändert**. Sonst nicht. Auslöser ist damit
+derselbe cross-item-Prädikatstest, den `decision-record@v1` bereits definiert;
+`0044-04` erfindet keinen zweiten.
+
+> *Begründung des Managements:* Lückenlose Aufzeichnung erzeugt lange Notizen,
+> die am Ende niemand liest. Sie soll dort greifen, wo sie jemand braucht.
+
+**Worked Example: Feature `0043` (Berichtswesen/Build-Evidenz).** Die Anweisung
+wird an `0043` erprobt, bevor sie allgemein gilt — laufend, überschaubar, mit
+offenen Teilen, also ohne nennenswerten Zusatzaufwand. Entspricht dem Vorschlag
+von `Data`, vorbehaltlich der von `Data` genannten Owner-/Provenance-Prüfung.
+
+**Gegenlesen: ein von der Projektleitung instanziierter Architekt.** Die
+Scope-Prüfung übernimmt ein Architekt, den die Projektleitung ansetzt und der
+**nicht** an der Anweisung mitschreibt. `Data` prüft nicht die eigene Arbeit.
+
+> *Begründung des Managements:* Die Anweisung formt jede künftige Planung; ein
+> Denkfehler hier vererbt sich besonders weit.
+
+### Was diese Entscheidung nicht tut
+
+- Sie ersetzt **nicht** die Scope-Prüfung. Sie ist die Entscheidungsgrundlage,
+  die `AGENTS.md` vor der ersten Mutation einer qualifizierenden Gate-Reichweite
+  verlangt; die **zweite** Bedingung — Prüfung durch einen von der
+  Implementierung unabhängigen Architekten — ist damit *beauftragt*, nicht
+  erfüllt.
+- Sie ist **keine** Autorisierung für `Data-Riker-20260821T221000Z`, die Policy
+  zu schreiben. `Data` hat ausdrücklich darum gebeten, seinen Claim nicht als
+  solche zu lesen; dem wird entsprochen.
+- Sie ändert `DEC-0044-006` nicht und hebt keine bestehende Gate-Semantik auf.
+- `0044-04` trägt weiterhin `Integration review: mandatory`. Dieser Checkpoint
+  ist **nicht** gewaivt; der Waiver `DEC-0019-002` gilt ausschließlich für
+  Feature `0019`.
+
+### Konsequenzen
+
+- `0044-04` bleibt `[p]`. Die gebundene Vorbereitung ist mit diesem Datensatz
+  abgeschlossen; die Policy-Mutation bleibt gesperrt, bis die
+  Architekten-Scope-Prüfung vorliegt.
+- Die Projektleitung setzt den unabhängigen Architekten an und meldet das
+  Ergebnis an `Data`.
+
+---
+
+## `DEC-0044-017` — Konforme Neufassung von `DEC-0044-016`: Gate-Umfang A1/A2 für `0044-04`
+
+**Verhältnis zu `DEC-0044-016`:** Dieser Datensatz **korrigiert und ersetzt
+inhaltlich** `DEC-0044-016`. `DEC-0044-016` bleibt append-only stehen und wird
+nicht gelöscht; es war formal kein `decision-record@v1` und bot deshalb keinen
+Ort, an dem die vorgeschriebene Architekten-Scope-Prüfung eingetragen werden
+konnte (Befund des Architekten `Kathryn-Tom-20260822T004500Z`,
+[`0044-04-gate-scope-review.md`](0044-04-gate-scope-review.md)). Wo beide
+Datensätze voneinander abweichen, gilt **dieser**.
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T01:15:00Z`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** `task:0044-04`
+- **Subject:** Reichweite und Mindestevidenz der beiden Gates der
+  Feature-Breakdown-Prozessanweisung `0044-04` — A1 (Prüfung der
+  Integrierbarkeit unter der Zielpolicy zum Zeitpunkt der Branch-Erstellung)
+  und A2 (Aufzeichnung von Abweichungen der Implementierungsreihenfolge) —
+  einschließlich des Verhaltens im Negativfall von A1 und der Auswahl des
+  Erprobungsvorhabens.
+- **Decision:**
+  1. **A1 — schlank, mit Abbruchzweig.** Beim Anlegen eines Arbeits-Branches
+     wird einmal geprüft, ob die Arbeit unter der Policy des Integrationsziels
+     zurückführbar ist. Mindestevidenz ist **ein Satz im Vorgangsdatensatz**:
+     Ergebnis (passt / passt nicht) und woran es festgemacht wurde. Ein
+     Werkzeuglauf mit abgelegtem Ergebnis wird **nicht** verlangt.
+  2. **A1-Negativfall — rollenbasierte Meldung, Arbeit läuft weiter.** Lautet
+     das Ergebnis „passt nicht", wird der Befund **gemeldet, nicht nur
+     notiert**: an einen **Integrator**, der bei Bedarf an einen
+     **Projektleiter** eskaliert. Adressiert wird vorzugsweise, wer mit dem
+     Vorgang befasst ist; ist diese Person nicht verfügbar, wird auf eine
+     andere Vertretung **derselben Rolle** zurückgegriffen. Die Meldung ist
+     rollenbasiert, nicht personengebunden — ein abwesender Einzelner darf das
+     Gate nicht aushebeln.
+  3. **A2 — nur bei Fremdbetroffenheit.** Eine Abweichung von der geplanten
+     Reihenfolge wird aufgezeichnet, **wenn sie die Arbeit einer anderen
+     Einheit blockiert oder deren Vertrag verändert**. Sonst nicht. Auslöser
+     ist der kanonische `cross-item-blast-radius`-Prädikatstest aus
+     [`decision-record@v1`](../pipeline/decision-record.md#2-wann-ein-datensatz-verpflichtend-ist);
+     `0044-04` definiert kein zweites Prädikat.
+  4. **Erprobung wird aufgeteilt.** **A1** wird an Task `0043-03` erprobt — dem
+     einzigen Task in Feature `0043`, der dafür prospektiv frei ist. **A2** wird
+     an `0043` **nicht** erprobt, weil dort keine erprobbare
+     Reihenfolgeabweichung vorliegt; sie wird am **nächsten neu zerlegten
+     Feature** erprobt. Die Anweisung darf für A2 erst dann als erprobt gelten.
+  5. **Gegenlesen durch einen vom Management beauftragten Architekten.** Die
+     Scope-Prüfung nach `AGENTS.md` erfolgt durch einen Architekten, den das
+     Management beauftragt und den die Projektleitung in dessen Auftrag
+     instanziiert; er schreibt die Anweisung nicht mit. Ausgeführt, siehe
+     *Review participation*.
+- **Technical justification:** A1 und A2 sind qualifizierende cross-item-Gates:
+  ihr deklariertes Verhalten kann Start, Validierung, Abnahme, Integration oder
+  Abschluss anderer Arbeitseinheiten blockieren. `DEC-0044-006` bezeichnet sich
+  in seinem eigenen `CON-02` als reiner Verankerungsakt und deckt die neue
+  Anweisung nicht ab; ein eigener Datensatz war daher verpflichtend. Das
+  Satz-Minimum von A1 folgt demselben Handel wie `DEC-0044-008`/`DEC-0044-011`:
+  aufzeichnen statt rekonstruieren, weil die vollständige Information nur zum
+  Zeitpunkt der Handlung vorliegt. Ein Gate ohne Abbruchzweig ist jedoch keine
+  Kontrolle, sondern eine Notiz — deshalb der rollenbasierte Meldeweg. Dass die
+  Arbeit trotz Negativbefund beginnt, ist bewusst: der teure Schaden ist die
+  spät entdeckte Fehlplanung, nicht der frühe Start; die Meldung macht sie ab
+  Minute eins sichtbar.
+- **Triggers:**
+  - `cross-item-blast-radius`
+- **Considered alternatives:**
+  - **ALT-01:** A1 schlank (ein Satz), A2 nur bei Fremdbetroffenheit,
+    Erprobung aufgeteilt
+    - **Disposition:** `selected`
+    - **Reason:** Fängt den teuren Fall (tagelange Arbeit auf falscher Basis)
+      beim Start ab, ohne jeden Arbeitsbeginn mit einem Werkzeuglauf zu
+      belasten; hält die A2-Aufzeichnung dort, wo sie jemand liest.
+  - **ALT-02:** A1 mit vollem Werkzeugnachweis und abgelegtem Ergebnis
+    - **Disposition:** `rejected`
+    - **Reason:** Bremst jeden Arbeitsbeginn spürbar, ohne den Zielschaden
+      besser abzufangen.
+  - **ALT-03:** A2 zeichnet jede Reihenfolgeabweichung auf
+    - **Disposition:** `rejected`
+    - **Reason:** Erzeugt lange Notizen, die niemand liest; verlagert die
+      Kontrolle von Wirkung auf Vollständigkeit.
+  - **ALT-04:** Gar keine Vorabprüfung
+    - **Disposition:** `rejected`
+    - **Reason:** Probleme fallen erst beim Zusammenführen auf, dann teurer.
+  - **ALT-05:** A1-Negativfall hält die Arbeit an, bis geklärt
+    - **Disposition:** `rejected`
+    - **Reason:** Blockiert eine arbeitsfähige Einheit, während auf eine
+      Antwort gewartet wird; die Meldung erreicht dasselbe Ziel ohne
+      Stillstand.
+  - **ALT-06:** A1-Negativfall wird nur im Vorgang notiert
+    - **Disposition:** `rejected`
+    - **Reason:** Ohne aktive Meldung fällt der Befund erst auf, wenn jemand
+      nachliest — möglicherweise nie.
+  - **ALT-07:** Erprobung beider Regeln ausschließlich an Feature `0043`
+    - **Disposition:** `rejected`
+    - **Reason:** A2 ist dort nachweislich nicht erprobbar; die Anweisung
+      wäre als erprobt ausgewiesen, ohne es für A2 zu sein.
+- **Consequences:**
+  - **CON-01:** `0044-04` bleibt `[p]`. Die Policy-Mutation ist ab diesem
+    Datensatz **freigegeben**, da beide Bedingungen der
+    Cross-item-gate-scope-review-Ausnahme nun erfüllt sind: der Datensatz hier
+    und die Prüfung unter *Review participation*.
+  - **CON-02:** Die Anweisung gilt für **A2 erst dann als erprobt**, wenn ein
+    neu zerlegtes Feature sie durchlaufen hat. Bis dahin ist jede Aussage,
+    `0044-04` sei vollständig erprobt, unzutreffend.
+  - **CON-03:** Die 15 Auflagen des Architekten aus
+    [`0044-04-gate-scope-review.md`](0044-04-gate-scope-review.md) bleiben
+    verbindlich; sechs davon sind vor der ersten Policy-Mutation zu erfüllen.
+  - **CON-04:** Der rollenbasierte Meldeweg setzt voraus, dass die Rollen
+    Integrator und Projektleiter besetzt und über die agent-inbox erreichbar
+    sind. Ist keine Vertretung erreichbar, ist das selbst ein meldepflichtiger
+    Zustand und kein stiller Durchlauf.
+  - **CON-05:** `0044-04` trägt weiterhin `Integration review: mandatory`. Der
+    Waiver `DEC-0019-002` gilt ausschließlich für Feature `0019`.
+- **Affected work units:**
+  - `task:0044-04`
+  - `task:0044-05`
+  - `task:0044-06`
+  - `task:0044-08`
+  - `task:0043-03`
+  - `feature:0043`
+  - `feature:0044`
+- **Affected gates:**
+  - `task-start:0044-04`
+  - `integration:0044-08`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:Kathryn-Tom-20260822T004500Z`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports-with-conditions`
+    - **Note:** Unabhängige Scope-Prüfung nach `AGENTS.md`,
+      Verdikt `scope-ok-mit-auflagen`, Bericht
+      [`0044-04-gate-scope-review.md`](0044-04-gate-scope-review.md),
+      Commit `35262eff2`. Bestätigt, dass das cross-item-Prädikat richtig
+      angewandt ist und `DEC-0044-006` die Anweisung nicht abdeckt. Stellte den
+      fehlenden A1-Abbruchzweig fest (hier durch Entscheidung 2 geschlossen),
+      die Formnichtkonformität von `DEC-0044-016` (durch diesen Datensatz
+      geschlossen), die Untauglichkeit von `0043` für A2 (durch Entscheidung 4
+      geschlossen) sowie vier Abweichungen in der Rückübersetzung der
+      Projektleitung aus dem Fragebogen. 15 Auflagen, sechs vor der ersten
+      Policy-Mutation.
+  - **PART-02:**
+    - **Identity:** `agent:Data`
+    - **Role:** `Integrator`
+    - **Participation:** `consulted`
+    - **Note:** Meldete die Gate-Qualifikation und verlangte Datensatz plus
+      unabhängige Architektenprüfung vor jeder Policy-Mutation
+      (agent-inbox, Thread `work-dispatch`, 2026-08-21T23:03:08Z). Bat
+      ausdrücklich darum, den Claim von `Data-Riker-20260821T221000Z` nicht als
+      Schreibautorisierung zu lesen; dem wird entsprochen.
+- **Waiver:** `none`
+
+### Korrektur der vier Übersetzungsabweichungen
+
+Die Entscheidung wurde auf ausdrücklichen Wunsch des Managements über einen
+Fragebogen in bewusst einfacher Sprache erhoben, ohne Bezeichner und ohne den
+Begriff cross-item-Gate. Die Rückübersetzung nahm die Projektleitung vor. Der
+Architekt hat sie geprüft und im Kern als redlich befunden, aber vier
+Abweichungen benannt. Sie werden hier korrigiert und nicht relativiert:
+
+1. **„Hauptprojekt" → „Integrationsziel".** Materielle Erweiterung: gefragt war
+   nach `main`, aufgezeichnet wurde das jeweilige Integrationsziel. Der breitere
+   Begriff wird **beibehalten**, weil ein Branch auch gegen ein Feature-Ziel
+   integriert wird und die engere Lesart eine Lücke ließe — die Erweiterung wird
+   hiermit aber als solche **offengelegt und ausdrücklich mitentschieden**.
+2. **„die Arbeit verändert" → „deren Vertrag verändert".** Verengung. Der
+   Vertragsbegriff wird beibehalten, weil er dem kanonischen Prädikat entspricht;
+   die Verengung ist damit gewollt und nicht versehentlich.
+3. **Gleichsetzung mit dem kanonischen Prädikat.** Diese Gleichsetzung war
+   ungefragt und stand in `DEC-0044-016` indikativ statt als Entscheidung. Sie
+   ist hier als Entscheidung 3 ausdrücklich getroffen.
+4. **„ein Prüfer, den ich starte" → „von der Projektleitung instanziiert".** Die
+   Regel verlangt einen **vom Management** beauftragten Architekten. Der
+   Fragebogen ließ offen, dass „ich" in der Antwortoption die Projektleitung
+   meinte, weil die Projektleitung die Option selbst so formuliert hatte. Der
+   Sachverhalt: Das Management hat den Architekten **beauftragt**, die
+   Projektleitung hat ihn in diesem Auftrag **instanziiert**. Entscheidung 5
+   sagt das nun korrekt.
+
+---
+
+### Additive Korrektur zu `DEC-0044-017` — Vervollständigung der betroffenen Einheiten und Gates (Auflage A-02)
+
+**Art:** append-only Korrektur. Der Text von `DEC-0044-017` bleibt unverändert
+stehen; die Listen **Affected work units** und **Affected gates** dort sind
+unvollständig und werden hier vollständig ersetzt. Wo beide voneinander
+abweichen, gelten die Listen dieser Korrektur.
+
+- **Recorded at:** `2026-08-22T10:30:00Z`
+- **Deciding identity:** `agent:kathryn:projektleiter:0044-017-korrektur:20260822T103000Z`
+- **Role:** `Projektleiter`
+- **Authority reference:** Auflage **A-02** aus
+  [`0044-04-gate-scope-review.md`](0044-04-gate-scope-review.md) (Architekt
+  `Kathryn-Tom-20260822T004500Z`, Verdikt `scope-ok-mit-auflagen`, Commit
+  `35262eff2`), deren Verbindlichkeit `DEC-0044-017` in `CON-03` selbst
+  festschreibt.
+- **Anlass:** Gemeldet von `Data` und `data-leah-20260822t092629z` (agent-inbox,
+  Thread `0044-04`, 2026-08-22T09:26Z, 09:30Z und 09:46Z). `Data` hält die
+  Policy-Mutation an `0044-04` bis zu dieser Korrektur an — zu Recht: der
+  Datensatz erklärte alle 15 Auflagen für bindend, erfüllte A-02 aber nicht.
+  Der Fehler liegt beim Aufzeichnenden, nicht beim Melder.
+
+**Affected work units — vollständig:**
+
+- `task:0044-04`
+- `task:0044-05`
+- `task:0044-06`
+- `task:0044-07`
+- `task:0044-08`
+- `task:0043-03`
+- `feature:0043`
+- `feature:0044`
+- `path:AGENTS.md`
+- `path:docs/pipeline/process-roles.md`
+- `repository:autodocs`
+
+**Affected gates — vollständig:**
+
+- `task-start:0044-04`
+- `task-start:0043-03`
+- `integration:0044`
+- `integration:0044-08`
+- `feature-closure:0044`
+
+**Repositoryweite Startwirkung, ausdrücklich benannt:** Die Anweisung aus
+`0044-04` erzeugt über Gate A1 eine Pflicht, die **jede künftige
+Branch-Erstellung** im Repository betrifft — in der Syntax des Formats
+`task-start:*`. `AGENTS.md` und `docs/pipeline/process-roles.md` sind
+Autoritätsdateien nach `DEC-0044-012`; ihre Änderung wirkt auf alle Agenten,
+nicht nur auf die Kette `0044-05/06/08`. Diese Reichweite war in
+`DEC-0044-017` sachlich vorhanden, aber nicht als Einheit geführt.
+
+**Nicht aufgenommen, mit Begründung:** `0044-12` und `0044-13` nennt die
+Scope-Prüfung als *mögliche* Durchsetzungsorte für ein A1-Pflichtfeld, ohne
+zwingende Betroffenheit (Bericht, Abschnitt 4, Punkt 4). Sie werden hier
+**nicht** als betroffene Einheiten geführt, sind aber beim Schreiben der
+Anweisung zu bedenken, damit keine dritte Mechanik neben Trailer-Konvention und
+`reference-transaction`-Hook entsteht. Wer beim Schreiben feststellt, dass die
+Anweisung dort doch eingreift, führt sie additiv nach.
+
+**Unverändert:** Alle Entscheidungen 1–5 aus `DEC-0044-017`, sämtliche
+`CON-01`…`CON-05`, die `Review participation` und die 15 Auflagen. Diese
+Korrektur ergänzt Listen; sie ändert keine Entscheidung.
