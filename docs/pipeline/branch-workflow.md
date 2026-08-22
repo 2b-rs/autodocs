@@ -326,6 +326,8 @@ time, and the mechanical provenance checks are Feature `0044` work
   the suspension's scope, duration, and participants recorded. Without
   unanimity, the integration escalates to the user for decision; this composes
   with, and does not replace, the `[u]` integration verdict below.
+  The canonical record schema, bounded suspension states, QA/Security consultation,
+  veto, and fail-closed rules are in [`risk-integration.md`](risk-integration.md).
 - **Fast-forward absorption of foreign content is prohibited (mechanical-check
   blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
   advance a branch tip without ever creating a merge commit, so an absorbed
