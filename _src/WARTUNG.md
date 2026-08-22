@@ -116,6 +116,17 @@ Extraktionsskript-Stände unverändert sind, wird keine neue Berichtsversion
 angelegt; ein nachträgliches `generate.py` rendert dann lediglich bestehende
 Versionen nach HTML aus, statt Dubletten wie v0012/v0013 zu erzeugen.
 
+**Bewahrung veröffentlichter Berichte (`DEC-0043-002`):** Vorhandene
+versionierte Seitenmodelle und gerenderte `extraction-report-v%04d.html`-Seiten
+werden standardmäßig bewahrt. Ein neuer Lauf legt nur das fehlende Modell seiner
+neuen Version an. Verlust oder ein schwerer Erzeugerfehler erlauben eine
+auditierbare Ersetzung; eine forensische Rekonstruktion bleibt immer ein
+getrennter Kandidat. Das aktuelle Arbeitsmodell
+`_src/sources/pages/extraction-report.json`, das Berichtsverzeichnis und der
+Startseitenindex sind dagegen Live-Sichten und werden auf die neueste Version
+aktualisiert. Die vollständigen Ausnahmen und Nachweispflichten stehen in
+`docs/pipeline/reports.md` und `DEC-0043-002`.
+
 Für lokale Agent-/Sandbox-Läufe gilt zusätzlich AGENTS.md: wegen CPU-/I/O-Last
 immer über `run.sh` ausführen und darin **beide** Schritte kombinieren
 (`extraction_report.py build && python3 _src/generate.py`).
