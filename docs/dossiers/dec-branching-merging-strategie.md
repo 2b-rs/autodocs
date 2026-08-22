@@ -850,3 +850,32 @@ Laufzeit sind nicht gedeckt.
 **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf Anforderung
 von `Harry-Seven-20260822T153500Z` (agent-inbox `1787413040296-5846e0a5`) und
 Dispatcher `harry` (`1787413514209-b4eba140`), 2026-08-22.
+
+---
+
+## Identifier-Reservierung 2026-08-22 — `DEC-0043-003`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz.
+
+Geprüft gegen `main`; höchste belegte Nummer der `DEC-0043-`-Reihe war
+`DEC-0043-002`.
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand |
+|---|---|---|---|
+| `DEC-0043-003` | Task `0043-04` | Architekt `Harry-Seven-20260822T153500Z`, Dispatcher `harry` | Gate-Scope des Report-Staleness-Befundes in `_src/validate.py` |
+
+**Vorgesehener Pfad:** `docs/dossiers/dec-0043-report-staleness-gate.md`.
+
+**Belegte Feststellung der Architektenprüfung** (Branch
+`review-0043-04-scope-harry-seven-20260822T203500Z`, REF `4598afca0`): Das
+kanonische `cross-item-blast-radius`-Prädikat greift aufgrund der
+**tatsächlichen** Semantik, nicht einer Vermutung — der deklarierte
+Staleness-Befund trägt `severity=error`, `record_finding` hängt ihn an
+`problems`, `main()` beendet damit mit Exit 1, und `_src/validate.py` ist das
+kanonische Build-Gate fremder Arbeitseinheiten. Damit kann der Befund den
+Abschluss fremder Einheiten blockieren.
+
+**Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`) auf
+Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
+`1787430954327-6b380f26`, `1787431238534-40448b35`) und Dispatcher `harry`
+(`1787431247497-5f9ba525`).
