@@ -121,31 +121,71 @@ time, and the mechanical provenance checks are Feature `0044` work
 - **The policy of the target branch governs every integration.** When work moves
   from `B` onto `A`, the policy in force on `A` decides whether the merge is
   permitted — not the policy `B` was implemented under.
-- **Non-integrability is triaged, not improvised.** If `A`'s policy would
-  already have forbidden integrating `B` at branch-out time, or the block exists
-  because implementation happened in a different order than the architect
-  planned, that is a **planning error** — it is reported against the breakdown,
-  not worked around. If `A`'s policy changed because a feature was added later
-  or a deviation permit was granted, it is **not** a planning error, and the
-  integrator may proceed under the replacement rule below.
-- **Policy replacement (integrator only):** for the non-planning-error case, the
-  integrator may substitute, for this integration, any policy version that was
-  valid at some point since branch-out on **either** of the two branches being
-  integrated. Which version was chosen and why is a decision with reach beyond
-  the integrator's own work unit and therefore requires a recorded decision
-  (`TK-2`, [`process-roles.md`](process-roles.md)).
+- **Non-integrability is triaged by case, not improvised.** When integrating
+  `B` onto `A` fails because of `A`'s policy, exactly one of four cases applies
+  (table A1–A4,
+  [`re-intake-prozessverbesserung-integration-und-capabilities.md`](../dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md)
+  §2.1; anchoring decision `DEC-0044-006`,
+  [`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md)):
+  - **A1 — planning error, pre-existing.** `A`'s policy would already have
+    forbidden integrating `B` at branch-out time.
+  - **A2 — planning error, order deviation.** `A`'s policy changed because
+    implementation proceeded in a different order than the architect planned.
+  - **A3 — not a planning error.** `A`'s policy changed because a feature was
+    added later or a deviation permit was granted after `B` branched out. The
+    integrator may proceed under the **policy replacement** rule below.
+  - **A4 — still not integrable after replacement.** This is a **risk
+    integration**; see the "Risk integration" bullet below.
+
+  A1 and A2 are **planning errors**: they are reported against the breakdown,
+  not worked around by the integrator. `0044-04` (the feature-breakdown
+  process instruction) is the prevention point required by `RQ-IP-02`: it must
+  check target-branch integrability and capture implementation-order fidelity
+  at breakdown/branch-creation time so A1/A2 cannot occur; a deviation from the
+  planned order is itself captured there as a recorded decision rather than
+  surfacing later as an integration failure.
+- **Policy replacement (integrator only, case A3):** for the non-planning-error
+  case, the integrator may substitute, for this integration, any policy
+  version that was valid at some point since branch-out on **either** of the
+  two branches being integrated. Which version was chosen and why is a
+  decision with reach beyond the integrator's own work unit and therefore
+  requires a recorded decision (`TK-2`, [`process-roles.md`](process-roles.md));
+  see `DEC-0044-005` in
+  [`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md)
+  for the required record shape.
 - **Policy provenance is protected:** no agent commits onto a branch policy
   changes that originated on any branch other than the branch being integrated
   or the integration target. Consequently, pulling the **target branch's**
   policy changes into the branch to be integrated is permitted — that is the
   one policy flow that keeps provenance checkable.
-- **Risk integration:** if integration remains impossible even under
+- **Risk integration (case A4):** if integration remains impossible even under
   replacement and pull-in, it is a *Risikointegration*. The integrator may
   approve it — and temporarily suspend policies for it — only after a review
   with two further agents (QA and Architect) that reaches **unanimity**, with
   the suspension's scope, duration, and participants recorded. Without
   unanimity, the integration escalates to the user for decision; this composes
   with, and does not replace, the `[u]` integration verdict below.
+- **Fast-forward absorption of foreign content is prohibited (mechanical-check
+  blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
+  advance a branch tip without ever creating a merge commit, so an absorbed
+  foreign commit becomes indistinguishable, by topology alone, from one
+  authored directly on the receiving branch — `check_policy_provenance.py`
+  (the `DEC-0044-002` mechanical check) is therefore structurally unable to
+  catch a foreign-branch policy commit absorbed this way. To keep the
+  mechanical check meaningful, an agent MUST NOT use `git merge --ff-only` or
+  `git update-ref` to advance a Task/Feature/Subtask branch, or `main`, onto
+  the tip of any branch other than that item's own direct predecessor/
+  successor chain (the base-and-merge chain required above) or its own prior
+  tip. Absorbing content from any other branch — including a legitimate
+  `DEC-0044-001` target-policy pull-in — MUST instead use an explicit merge
+  commit (`git merge --no-ff` or equivalent), so the mechanical check's
+  merge-commit-based foreign/pull-in classification has topology to inspect.
+  Fast-forwarding a branch (including `main`) to the tip of that item's own
+  already-integrated predecessor/successor chain remains permitted and is not
+  "absorption" in this sense — the content already passed through the merge
+  commits recorded within that chain's own history. See `DEC-0044-007`
+  ([`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md))
+  for the full analysis and residual-limitation record.
 
 ## Merge authority and direction
 

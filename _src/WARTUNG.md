@@ -409,6 +409,41 @@ python3 _src/generate.py build-reports.html
 python3 _src/validate.py
 ```
 
+### Build-Ledger (`docs/evidence/build-ledger.jsonl`, 0043-02)
+
+`combine` und `publish` hängen jeden Veröffentlichungslauf als **eine Zeile** an
+das getrackte, append-only Build-Ledger `docs/evidence/build-ledger.jsonl` an
+(Entscheidung `DEC-0043-001`, Schema und Konsumentenvertrag:
+[`docs/pipeline/build-ledger.md`](../docs/pipeline/build-ledger.md)). Der
+Eintrag hält Zeitpunkt, `run_archive_ref`, Repository-Commit, Exit-Status,
+Zähler je Stufe, Befundzahl und den SHA-256-Digest des kombinierten Reports
+fest. Die **Rohdaten** bleiben git-ignoriert: das Ledger verweist auf
+`output/build-reports/combined-*.json` und `output/run-archive/`, kopiert sie
+aber nicht ins Repository.
+
+Regeln für den Betrieb:
+
+- Ein Lauf erzeugt genau einen Eintrag; das `publish` nach dem `combine`
+  desselben Laufs erkennt ihn an `run_archive_ref` wieder und schreibt nicht
+  erneut.
+- **Einträge werden nie nachträglich geändert.** Ist etwas falsch, wird ein
+  neuer Eintrag angehängt. Prüfen lässt sich das mit:
+
+```bash
+python3 _src/tools/build_ledger.py verify --baseline=HEAD
+python3 _src/tools/build_ledger.py list --limit=10
+```
+
+- Nach einem Lauf gehört die neue Ledger-Zeile **eingecheckt** — sie ist die
+  konfigurationsverwaltete Evidenz, nicht ein Nebenprodukt.
+- Konnte das Ledger nicht geschrieben werden, endet `combine`/`publish` mit
+  einem Exit-Code ≥ 1, auch wenn der Build selbst grün war.
+- `--no-ledger` unterdrückt den Eintrag und ist ausschließlich für
+  Diagnoseläufe gedacht, die nicht in die Bauhistorie gehören.
+
+Der erste Eintrag ist der nachgetragene (`backfilled`) historische Lauf vom
+2026-08-13/14 — der eingefrorene Stand, der Feature `0043` ausgelöst hat.
+
 Das publizierte `build-reports.html` verlinkt direkt auf das zugehörige
 Runner-Archiv (`output/run-archive/run-<timestamp>-n<seq>.log`), sofern
 `run_archive_ref` einen tatsächlich vorhandenen Runner-Archiv-Pfad benennt; ein
