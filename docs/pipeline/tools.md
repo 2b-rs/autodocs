@@ -92,6 +92,47 @@ verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
 ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
 soll.
 
+## Integrations-Hygieneprüfung
+
+| Werkzeug | Zweck |
+|---|---|
+| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Task `0044-14`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält einen gestagten Baum), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
+
+Aufruf: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> [--json]`
+
+Exit-Codes: `0` sauber, `1` Befunde, `2` die Prüfung selbst konnte nicht laufen —
+eine `2` ist ein **Fehlschlag, kein Bestehen**. `--json` liefert
+`integration-hygiene-report@v1`.
+
+Das Werkzeug schreibt **nichts**: keine Dateien, Refs, Indizes oder Objekte. Es
+findet Zustand, den die Git-Historie grundsätzlich nicht zeigen kann — genau die
+Schadensklasse, die den Root-Checkout mit einem gestagten Baum aus der Zeit vor
+dem Abschluss von Feature `0040` zurückließ.
+
+Zwei Eigenschaften müssen mitgelesen werden, sonst wird der Prüfung mehr
+zugetraut, als sie leistet:
+
+- `FOREIGN_STAGED_TREE` ist **kein Vorwurf**. Dass ein anderer Agent in seinem
+  eigenen Worktree etwas staged, ist der Normalfall. Der Befund sagt nur, dass
+  Zustand existiert, den die Historie nicht zeigt, und dass eine Integration
+  nicht darüber hinweggehen darf. Aufgelöst wird er vom Eigentümer (committen
+  oder stashen) — **niemals** durch ein Zurücksetzen eines fremden Worktrees.
+- Verglichen wird **Index gegen `HEAD`**. Ein Worktree, dessen Index sauber ist,
+  dessen *Dateien* aber abweichen, erzeugt keinen Befund. Das ist beabsichtigt
+  (ungestagte Änderungen sind in einem lebenden Vorgangs-Worktree normal),
+  bedeutet aber, dass die Prüfung allein die Restabweichung des Root-Checkouts
+  vom 2026-08-21 nicht gefunden hätte. Deshalb verlangt `DEC-0044-015`
+  zusätzlich den harten Preflight im Root (`git diff --quiet`, `git diff --cached
+  --quiet`, `HEAD` ist `refs/heads/main`). Werkzeug und Preflight ergänzen
+  einander; keines ersetzt das andere.
+
+Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
+`STALE_AFTER_REF_MOVE` und die `preserved/*`-Momentaufnahmen:
+[`branch-workflow.md`](branch-workflow.md).
+
+Tests: `_src/tools/test_check_integration_hygiene.py` (hermetische Git-Fixtures;
+Aufruf aus `_src/tools/`: `python3 -m unittest test_check_integration_hygiene -v`).
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |
