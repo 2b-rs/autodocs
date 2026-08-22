@@ -377,7 +377,7 @@ def combine_reports(run_archive_ref=None):
     return combined, out_file
 
 
-def generate_report_page(combined_report=None, run_archive_ref=None):
+def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path=None):
     """Generate the static page model for build-reports.html."""
     if combined_report is None:
         # Load most recent combined report or build one
@@ -424,8 +424,29 @@ def generate_report_page(combined_report=None, run_archive_ref=None):
 </style>""")
 
     status_badge = '<span class="br-badge-ok">ERFOLG</span>' if overall_success else '<span class="br-badge-err">FEHLER</span>'
-    html_parts.append(report_page_header(generator="_src/tools/build_report.py", data_source="output/build-reports/combined-*.json", purpose="Zeigt den zusammengeführten Veröffentlichungs- und Validierungsstand; Kennzahlen und Befunde sind nach Pipeline-Stufe zu lesen."))
-    html_parts.append(f"""<h1>Traceable Build- & Publikations-Report</h1>
+    html_parts.append(report_page_header(generator="_src/tools/build_report.py", data_source="docs/evidence/build-ledger.jsonl und output/build-reports/combined-*.json", purpose="Zeigt die vollständige Bauhistorie aus dem Build-Ledger sowie Details des jüngsten Laufs; die Liste ist neueste zuerst zu lesen."))
+    ledger_entries, ledger_findings = build_ledger.read_entries(ledger_path)
+    html_parts.append('<h2 class="sect">Build-Historie</h2>')
+    html_parts.append('<p>Quelle der Historie: <code>docs/evidence/build-ledger.jsonl</code>. Die Seite wurde beim aktuellen Publikationslauf erzeugt.</p>')
+    if ledger_findings:
+        html_parts.append('<div class="br-section"><strong>Build-Ledger-Befunde</strong><ul>')
+        for finding in ledger_findings:
+            html_parts.append(f'<li><code>{_esc(finding.get("category", "-"))}</code>: {_esc(finding.get("message", "-"))}</li>')
+        html_parts.append('</ul></div>')
+    html_parts.append('<div class="br-table-wrap"><table class="br-table"><thead><tr><th>Zeit</th><th>Ergebnis</th><th>Ref</th><th>Kennzahlen</th><th>Details</th></tr></thead><tbody>')
+    for entry in reversed(ledger_entries):
+        badge = '<span class="br-badge-ok">ERFOLG</span>' if entry.get("overall_success") else '<span class="br-badge-err">FEHLER</span>'
+        counts = entry.get("counts_by_stage") or {}
+        pages = ((counts.get("html_generate") or {}).get("pages_generated_per_lang") or {}).get("de", 0)
+        checks = (counts.get("validate") or {}).get("checks_performed", 0)
+        diagrams = (counts.get("i18n_diagrams") or {}).get("sources_considered", 0)
+        detail_ref = entry.get("combined_report_ref") or ""
+        detail = f'<a href="{_esc(detail_ref)}">JSON-Details</a>' if detail_ref else "–"
+        html_parts.append(f'<tr><td>{_esc(entry.get("run_finished_at", ""))}</td><td>{badge}</td><td><code>{_esc(entry.get("run_archive_ref") or "historisch nachgetragen")}</code></td><td>Seiten: {pages}; Prüfungen: {checks}; Diagramme: {diagrams}; Befunde: {entry.get("findings_count", 0)}</td><td>{detail}</td></tr>')
+    if not ledger_entries:
+        html_parts.append('<tr><td colspan="5">Keine schemakonformen Ledger-Einträge vorhanden.</td></tr>')
+    html_parts.append('</tbody></table></div>')
+    html_parts.append(f"""<h1 id="latest-run">Traceable Build- & Publikations-Report</h1>
 <section class="br-head">
 <p>Zusammenfassender Veröffentlichungs- und Validierungsbericht der Dokumentations-Pipeline. Jeder Lauf aggregiert die Befunde aus Übersetzung, Diagrammerzeugung, HTML-Generierung und Konsistenzprüfung.</p>
 <p class="br-meta">
@@ -554,14 +575,14 @@ def main(argv=None):
         return exit_code
     if cmd in ("publish", "page"):
         combined, out = combine_reports(ref)
-        page_path = generate_report_page(combined, ref)
-        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
         exit_code = combined["exit_code"]
         if use_ledger:
             ok, message = record_in_ledger(combined, out)
             print(message, file=sys.stdout if ok else sys.stderr)
             if not ok:
                 exit_code = max(exit_code, 1)
+        page_path = generate_report_page(combined, ref)
+        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
         return exit_code
     if cmd == "mint-ref":
         print(mint_manual_run_archive_ref())
