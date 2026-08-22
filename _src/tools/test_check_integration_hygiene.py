@@ -121,6 +121,12 @@ class IntegrationHygieneTests(unittest.TestCase):
         self.assertIn("MAIN_WORKTREE_DIRTY", findings)
         self.assertEqual(findings["MAIN_WORKTREE_DIRTY"].worktree, str(self.root.resolve()))
         self.assertNotIn("INDEX_NOT_HEAD", findings)
+        serialized = next(
+            item for item in report.to_dict()["findings"] if item["code"] == "MAIN_WORKTREE_DIRTY"
+        )
+        self.assertNotIn("index_age_seconds", serialized)
+        self.assertNotIn("index_mtime_utc", serialized)
+        self.assertNotIn("resample_delay_seconds", serialized)
 
     def test_unstaged_item_worktree_is_not_a_blocking_finding(self) -> None:
         item = Path(self.temporary.name) / "item"

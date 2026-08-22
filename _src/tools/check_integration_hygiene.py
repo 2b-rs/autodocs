@@ -140,7 +140,10 @@ class HygieneReport:
             "root_worktree": self.root_worktree,
             "ok": self.ok,
             "worktrees": [asdict(state) for state in self.worktrees],
-            "findings": [asdict(finding) for finding in self.findings],
+            "findings": [
+                {key: value for key, value in asdict(finding).items() if value is not None}
+                for finding in self.findings
+            ],
         }
 
 
