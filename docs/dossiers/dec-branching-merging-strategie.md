@@ -1074,3 +1074,50 @@ Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
     - **Position:** `supports`
     - **Note:** Independent pre-mutation review recorded in `docs/dossiers/0044-02-gate-scope-review.md`; verdict `scope-ok-mit-auflagen` supports the common decided envelope only, requires fail-closed non-activation pending Management ratification of composition, and does not support either proposed composition shape yet.
 - **Waiver:** `none`
+
+---
+
+## Ratifizierung 2026-08-22 — Zusammensetzung zu `DEC-0044-018` entschieden
+
+**Art:** append-only Ratifizierung. `DEC-0044-018` bleibt unverändert stehen;
+der dort als *nicht in Kraft* markierte Punkt ist hiermit entschieden.
+
+- **Entschieden von:** Management (aktueller User / Repository-Eigentümer)
+- **Wortlaut:** „können im Gremium sitzen, vetorecht gilt aber auch von außen."
+- **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`), der die
+  Entscheidung nicht selbst trifft.
+- **Datum:** 2026-08-22
+
+### Was damit gilt
+
+QA-Manager und Security-Manager **dürfen** Mitglieder des einstimmig
+entscheidenden Dreiergremiums sein — sie sind es aber nicht zwingend.
+**Ihr Vetorecht besteht unabhängig von der Mitgliedschaft und gilt auch von
+außerhalb des Gremiums.**
+
+Daraus folgt für die Umsetzung:
+
+1. **Das Gremium ist nicht besetzungsfest.** Drei unabhängige privilegierte
+   Sessions entscheiden einstimmig. Welche Rollen das sind, ist nicht durch
+   diese Entscheidung festgelegt; die Unabhängigkeitsanforderungen aus
+   `TK-1` gelten unverändert.
+2. **QA-Manager und Security-Manager sind immer zu befassen** — ob als
+   Mitglied oder als externer Vetoträger. Eine Aussetzung, die an einem der
+   beiden vorbeigeht, ist ungültig. Es gibt keine Besetzung, in der ihr Veto
+   entfällt.
+3. **Sitzt einer von beiden im Gremium**, ist sein Veto in der Einstimmigkeit
+   bereits enthalten; ein zusätzliches externes Veto derselben Rolle ist
+   gegenstandslos, nicht doppelt.
+4. **Sitzt keiner von beiden im Gremium**, ist die Einstimmigkeit der drei
+   **notwendig, aber nicht hinreichend**: die Aussetzung tritt erst in Kraft,
+   wenn beide Vetoträger befasst wurden und keiner widerspricht. Schweigen
+   ist keine Zustimmung — die Befassung ist nachzuweisen.
+5. **Ein Veto ist endgültig für den betreffenden Aussetzungsantrag.** Es wird
+   nicht überstimmt, auch nicht durch Einstimmigkeit des Gremiums. Ein
+   erneuter Antrag ist ein neuer Vorgang mit eigenem Datensatz.
+
+### Was diese Ratifizierung nicht tut
+
+Sie autorisiert keine Aussetzung, ändert keine bestehende Policy und ersetzt
+keine der Auflagen aus dem Scope-Review `Data-Lore-20260822T210200Z`
+(`scope-ok-mit-auflagen`). Der Umsetzungsvorgang `0044-02` führt sie aus.
