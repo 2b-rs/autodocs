@@ -96,7 +96,7 @@ soll.
 
 | Werkzeug | Zweck |
 |---|---|
-| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Task `0044-14`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält einen gestagten Baum), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
+| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Tasks `0044-14`/`0044-15`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält einen gestagten Baum), `MAIN_WORKTREE_DIRTY` (getrackte Dateien im `main`-Worktree ≠ Index), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
 
 Aufruf: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> [--json]`
 
@@ -117,14 +117,15 @@ zugetraut, als sie leistet:
   Zustand existiert, den die Historie nicht zeigt, und dass eine Integration
   nicht darüber hinweggehen darf. Aufgelöst wird er vom Eigentümer (committen
   oder stashen) — **niemals** durch ein Zurücksetzen eines fremden Worktrees.
-- Verglichen wird **Index gegen `HEAD`**. Ein Worktree, dessen Index sauber ist,
-  dessen *Dateien* aber abweichen, erzeugt keinen Befund. Das ist beabsichtigt
-  (ungestagte Änderungen sind in einem lebenden Vorgangs-Worktree normal),
-  bedeutet aber, dass die Prüfung allein die Restabweichung des Root-Checkouts
-  vom 2026-08-21 nicht gefunden hätte. Deshalb verlangt `DEC-0044-015`
-  zusätzlich den harten Preflight im Root (`git diff --quiet`, `git diff --cached
-  --quiet`, `HEAD` ist `refs/heads/main`). Werkzeug und Preflight ergänzen
-  einander; keines ersetzt das andere.
+- `MAIN_WORKTREE_DIRTY` meldet die bekannte Restabweichung getrackter Dateien
+  bei sauberem Index nun blockierend, aber ausschließlich für den Worktree, der
+  `main` auscheckt. Derselbe ungestagte Zustand in einem lebenden
+  Vorgangs-Worktree ist normale unfertige Arbeit und erzeugt bewusst keinen
+  Befund. Untracked Dateien bleiben ebenfalls außerhalb der Prüfung. Deshalb
+  verlangt `DEC-0044-015` weiterhin zusätzlich den harten Preflight im Root
+  (`git diff --quiet`, `git diff --cached --quiet`, `HEAD` ist
+  `refs/heads/main`). Werkzeug und Preflight ergänzen einander; keines ersetzt
+  das andere.
 
 Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
 `STALE_AFTER_REF_MOVE` und die `preserved/*`-Momentaufnahmen:
@@ -235,4 +236,3 @@ The versioned curation toolchain now spans `version_id.py`, `version_store.py`,
 cover id minting, immutable storage, version-pinning, graph semantics,
 invalidation/confidence, typed synthesized claims, trigger orchestration, and
 historical/delta queries.
-
