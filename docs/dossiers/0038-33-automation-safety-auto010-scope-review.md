@@ -5,7 +5,11 @@
 **Implementer:** `Harry-Bashir-20260822T152700Z`  
 **Review kind:** independent pre-mutation cross-item gate-scope review, not Task acceptance  
 **Baseline:** `main` at `77c4d0aee730909ba1e1284144772595ada7722d`  
-**Decision-record state:** identifier/path requested from `kathryn` via agent-inbox `1787413040296-5846e0a5`; not yet allocated at review preparation time
+**Decision-record state:** `DEC-0038-002` allocated by `kathryn` on `main`
+`418f09b79` at the exact path
+`docs/dossiers/dec-0038-automation-safety-aggregate-control.md`; Dispatcher
+`Harry` explicitly expanded this review's write scope to that path. The
+conforming record carries forward this review's exact closed-set verdict.
 
 **Main-drift recheck:** after the initial review commit, current `main`
 `9226adfdf` was merged into the review branch as `b549b5acf`. The intervening
@@ -102,6 +106,10 @@ This deliberately creates maintenance friction on line movement. That is the sma
 
 ## Mutation status
 
-**Blocked pending Decision record.** This review supplies the required independent Architect support for the narrow scope, but the second precondition is absent until Kathryn allocates an exact Decision identifier/path, Dispatcher Harry expands this review's write scope to that exact path, and a conforming `decision-record@v1` is committed. Bashir must not mutate the qualifying gate before then.
+**Blocked pending governance integration.** This review supplies the required
+independent Architect support and `DEC-0038-002` supplies the conforming
+decision record on the review branch. Because governance must be current on
+`main`, Bashir must not mutate the qualifying gate until Kathryn integrates the
+record there. The review branch itself grants no implementation authority.
 
 The complete dispatch briefing and the context boundary are preserved verbatim in `TODO-Harry-Seven-0038-33-scope-20260822T153500Z.md`; that record is part of this review evidence.

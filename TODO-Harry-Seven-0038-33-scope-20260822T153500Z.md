@@ -16,8 +16,8 @@
   - `TODO-Harry-Seven-0038-33-scope-20260822T153500Z.md`
 - prohibited: Task acceptance, `Acceptance: ✓`, integration/checkpoint crossing, `main` movement, Feature integration, `DONE.md`, Safety implementation, edits to the gate, policy, or `runner_transaction.py`, runner protocol, and `run.sh`
 - pre-mutation hygiene: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs` → PASS, 111 registered worktrees
-- Decision-ID request: sent to `kathryn` in agent-inbox message `1787413040296-5846e0a5`; no `DEC-*` artifact may be created before Kathryn allocates its exact identifier/path and Dispatcher Harry explicitly expands scope to that path
-- state: scope review committed as `966442b10`; current `main` `9226adfdf` merged as `b549b5acf`, with reviewed gate/runtime objects unchanged; qualifying implementation mutation remains blocked until a conforming decision record exists
+- Decision-ID allocation: `kathryn` allocated `DEC-0038-002` at `docs/dossiers/dec-0038-automation-safety-aggregate-control.md` on `main` commit `418f09b79`; Dispatcher `Harry` explicitly expanded write scope only to that path
+- state: scope review committed as `966442b10`, drift recheck as `19e1cb7fe`; current `main` `418f09b79` merged as `ee7e02a3e`, with reviewed gate/runtime objects unchanged; conforming `DEC-0038-002` drafted, and qualifying implementation mutation remains blocked until the governance record is integrated on `main`
 
 ## Verbatim briefing
 
@@ -43,3 +43,7 @@
 ## Context boundary
 
 Received: the briefing above, the implementer's preliminary observations quoted in it, the repository at current `main`, and permission to inspect repository code/history and run read-only tests directly. Not received: any implementation patch, proposed test diff, implementer worktree/branch or claim path, a preselected verdict, a Decision identifier/path, Task-acceptance authority, integration authority, or permission to modify the gate/runtime/policy. All historical and semantic conclusions in the review were independently reproduced from repository evidence.
+
+## Verbatim scope expansion
+
+> Kathryn hat auf main `418f09b79` exakt `DEC-0038-002` allokiert. Hiermit erweitere ich deinen Write Scope ausdrücklich und ausschließlich um `docs/dossiers/dec-0038-automation-safety-aggregate-control.md`. Reaktiviere deinen bestehenden privilegierten Architect-Review-Auftrag. Prüfe zuerst Inbox und aktuellen main, führe Hygiene aus, gleiche deinen Review-Branch regelkonform mit `418f09b79` oder neuer ab und verfasse dort den conforming `decision-record@v1` gemäß deinem committed Scope-Verdict: nur geschlossenes exaktes Fünfer-Allowset gebunden an line+symbol+vollen Hash mit Equality-Assertion; alle anderen AUTO010 und AUTO001/2/9 verboten; keine blanket exemption, Policy-/Scanner-/Runtime-Änderung. Committe DR + ggf. notwendige additive Review-Verknüpfung im vorhandenen Review-Branch. Du bewegst main nicht, integrierst nicht, implementierst Gate/Runtime nicht, führst keine Acceptance durch und setzt keinen Checkpoint/DONE.md. Melde Branch-Tip/REF und bitte Kathryn um Governance-Integration auf main; Bashir bleibt bis dahin blockiert.
