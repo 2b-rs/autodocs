@@ -37,4 +37,3 @@ Full ephemeral run artifacts were retained at `/private/tmp/autodocs-qa-harry-lo
 - Current validate: `2a09a444d870f2043d775d3ff698d84582ce5b159302e36649271ca22ad47960`
 - Baseline generate: `1e3911dd5375aa551b864daf0c92c19b274f78b9b7274522c08a5282bbb16804`
 - Baseline validate: `e3345356ba739b03f2cfea089db39b8911b926a625a98249037bcf481f6e037d`
-

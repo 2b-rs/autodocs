@@ -37,4 +37,6 @@ Run the complete repository build and validation after the 2026-08-22 recovery a
 
 Implementation complete. Both isolated runs generated 428 pages with exit 0. Both validations executed 11 checks and returned exit 1 with the same 13 dead-link findings; their CLI outputs are byte-identical. No regression was found between `f9c8050ff` and `478a89e7c`. The later main tip `388018fdd` differs only in a release-authorization evidence document outside build inputs. Durable summary: `docs/campaign-evidence/qa-build-regression-20260822/report.md`.
 
-Next: commit this claim and report with the user prompt provenance, notify Kathryn, then continue with assigned QA task 2.
+Substantive REF: `da19d92018f555780750fa0bcba0986660addfa9`.
+
+Next: notify Kathryn, then continue with assigned QA task 2.
