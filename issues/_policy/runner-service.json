@@ -1,16 +1,16 @@
 {
   "schema": "runner-service@v1",
-  "repo_path": "/tmp/autodocs",
-  "run_slot": "/tmp/autodocs/run.sh",
-  "runner_executable": "/tmp/autodocs/runner-host/run-loop.sh",
-  "invocation": "run-loop.sh --once run.sh",
+  "repo_path": "/tmp/runner-0037-46.02",
+  "run_slot": "/tmp/runner-0037-46.02/run.sh",
+  "runner_executable": "/tmp/runner-0037-46.02/runner-host/run-loop.sh",
+  "invocation": "run-loop.sh run.sh",
   "launch_mechanism": "manual",
-  "launch_notes": "Operator launches run-loop.sh manually from the repo working directory. No launchd/systemd service. Process is not automatically restarted by the OS.",
-  "health_check": "pgrep -f 'run-loop.sh --once run.sh'",
-  "restart_path": "cd /tmp/autodocs && runner-host/run-loop.sh --once run.sh",
-  "rollback_path": "git checkout HEAD -- runner-host/run-loop.sh",
-  "revocation_path": "kill $(pgrep -f 'run-loop.sh --once run.sh') && truncate -s 0 /tmp/autodocs/run.sh",
+  "launch_notes": "Operator launches run-loop.sh manually from /tmp/runner-0037-46.02, a dedicated git worktree of the main repository checked out on branch 0037-46.02. No launchd/systemd service; the process is not restarted by the OS. Continuous mode (no --once, no --cyclic): the runner waits for a request in the slot, executes it, moves it to the archive, then waits for the next one. This is the mode a sandboxed agent needs in order to work through a multi-step transaction without an operator restart between every request.",
+  "health_check": "pgrep -f 'run-loop.sh run.sh'",
+  "restart_path": "cd /tmp/runner-0037-46.02 && runner-host/run-loop.sh run.sh",
+  "rollback_path": "git -C /tmp/runner-0037-46.02 checkout HEAD -- runner-host/run-loop.sh",
+  "revocation_path": "kill $(pgrep -f 'run-loop.sh run.sh') && rm -f /tmp/runner-0037-46.02/run.sh",
   "operator": "tobias.anton <tobias.anton@accenture.com>",
   "restart_notes": "Manual restart — operator restarts as soon as crash is observed by re-running the invocation above.",
-  "rollback_notes": "Restore run-loop.sh from its original location in the tracked repository tree. Canonical source is runner-host/run-loop.sh at HEAD."
+  "rollback_notes": "runner-host/run-loop.sh is tracked in the repository; restore it from HEAD in this worktree. Superseded note: the earlier rollback_path pointed into /tmp/autodocs, whose HEAD did not contain runner-host/ at all, so it could never have worked there."
 }
