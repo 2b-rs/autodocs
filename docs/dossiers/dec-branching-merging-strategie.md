@@ -879,3 +879,142 @@ Abschluss fremder Einheiten blockieren.
 Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
 `1787430954327-6b380f26`, `1787431238534-40448b35`) und Dispatcher `harry`
 (`1787431247497-5f9ba525`).
+
+---
+
+### `DEC-0044-019` — Executable evidence at mandatory integration checkpoints
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T21:03:40Z`
+- **Deciding identity:** `agent:Data-Lore-20260822T205800Z:architect:0044-03`
+- **Role:** `Architekt`
+- **Authority reference:** `docs/dossiers/0044-03-gate-scope-review.md#dispatch-and-independence-record`
+- **Subject:** The executable integration-test obligation, evidence minimum,
+  manual fallback, failure path, and staged activation at mandatory integration
+  checkpoints.
+- **Decision:** A mandatory integration checkpoint MUST execute a
+  checkpoint-specific verification set against the exact integrated candidate,
+  not merely read implementation evidence. The Integrator derives the set from
+  the affected architecture risks, interfaces and contracts, invariants,
+  failure and recovery modes, and external effects. Every applicable derivation
+  item maps to an executable automated test or a reproducible, falsifiable
+  manual procedure; every non-applicable item carries a reason. The retained
+  evidence identifies the checkpoint and boundary, candidate and target refs or
+  trees, inputs and fixtures, material environment/tool versions, command or
+  typed procedure, expected oracle, actual result and exit status, digest-bound
+  logs/artifacts, exclusions, gaps, residual risk, and replay instructions.
+  Missing automation is never a pass: a bounded manual fallback may establish
+  the criterion with its limits recorded; if neither automated nor manual
+  evidence establishes it, the checkpoint fails and the Integrator records the
+  existing `[u]` integration verdict. This evidence informs but never grants
+  `Acceptance: ✓`, specialist authority, a waiver, or permission to cross the
+  checkpoint. Activation is staged: the rule binds Feature `0044` trial
+  checkpoints immediately. Task `0043-07` is the real qualification example,
+  but the repository-wide obligation for future `integration:*` and
+  `feature-closure:*` gates remains dormant until `0043-07` has actually been
+  executed and recorded and `0044-08` has confirmed the record against this
+  minimum. If that confirmation cannot be made, broad activation does not occur
+  and `0044-08` takes the fail/`[u]` path or obtains an additive scope decision.
+- **Technical justification:** The architecture determines what can fail at an
+  integration seam; a fixed universal suite can therefore be simultaneously
+  excessive and incomplete. Binding evidence to the exact integrated candidate
+  prevents branch-local green runs from standing in for composition evidence.
+  A reproducible manual oracle preserves evidence where automation is absent
+  without misrepresenting assurance. Staged activation confines initial blast
+  radius to Feature `0044`, uses the real `0043-07` composition boundary to test
+  the rule, and prevents an unexecuted example from becoming repository-wide
+  authority. Test results remain evidence because review and acceptance are
+  authority decisions, not properties produced by a command's exit status.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Proportional architecture-derived execution with explicit
+    manual fallback and staged repository activation
+    - **Disposition:** `selected`
+    - **Reason:** It makes checkpoint evidence executable and reproducible while
+      matching test scope to the actual integration risks and proving the rule
+      before repository-wide activation.
+  - **ALT-02:** No execution obligation; review implementation evidence only
+    - **Disposition:** `rejected`
+    - **Reason:** It does not test the integrated candidate and does not answer
+      `RQ-IP-07`'s explicit execute-not-only-read requirement.
+  - **ALT-03:** Run one fixed repository-wide suite at every checkpoint
+    - **Disposition:** `rejected`
+    - **Reason:** It cannot prove architecture-specific interfaces, failure
+      behavior, or external effects and needlessly executes unrelated checks.
+  - **ALT-04:** Activate the rule repository-wide before the worked example
+    - **Disposition:** `rejected`
+    - **Reason:** It would impose a new cross-item gate before its derivation and
+      evidence contract have been demonstrated on a real composition boundary.
+- **Consequences:**
+  - **CON-01:** Every open or repeated Feature-`0044` mandatory checkpoint review
+    must retain the decision's derivation matrix and minimum evidence. Completed
+    `0044-14` and `0044-15` reviews are historical evidence and are not
+    retroactively invalidated; `0044-08` assesses their available records and
+    applies this rule to any new execution or re-review.
+  - **CON-02:** The current Feature-`0044` checkpoint inventory is `0044-01`,
+    `0044-04`, `0044-05`, `0044-12`, `0044-13`, `0044-14`, `0044-15`,
+    `0044-16`, and integrating Task `0044-08`. The preparation proposal omitted
+    `0044-16`, which was added after its pinned baseline; this record includes it
+    rather than silently preserving the stale inventory.
+  - **CON-03:** The `0043-07` worked example is an activation qualification, not
+    an early repository-wide mandate and not Task acceptance. Its evidence must
+    demonstrate a real architecture-derived set against the integrated
+    candidate; repeating a generic suite without the derivation map is
+    insufficient.
+  - **CON-04:** Repository-wide future reach activates only through a passing
+    `0044-08` confirmation that the `0043-07` example was executed and recorded.
+    Before that event the future `integration:*` and `feature-closure:*`
+    obligation is dormant; afterwards it applies prospectively to mandatory
+    checkpoints and Feature closures.
+  - **CON-05:** An unavailable environment, unsafe external effect, missing
+    oracle, or irreproducible manual step is recorded as a gap and cannot be
+    converted into a silent pass. Existing `[u]` and escalation semantics are
+    used; this record creates no new acceptance or waiver authority.
+  - **CON-06:** Task `0044-03` may implement and document this decision only
+    after the decision and supporting scope review reach `main` through the
+    authorized governance integration procedure.
+- **Affected work units:**
+  - `task:0044-03`
+  - `task:0044-01`
+  - `task:0044-04`
+  - `task:0044-05`
+  - `task:0044-08`
+  - `task:0044-12`
+  - `task:0044-13`
+  - `task:0044-14`
+  - `task:0044-15`
+  - `task:0044-16`
+  - `feature:0044`
+  - `task:0043-07`
+  - `feature:0043`
+  - `path:docs/pipeline/task-acceptance.md`
+  - `path:docs/pipeline/branch-workflow.md`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration:0044-01`
+  - `integration:0044-04`
+  - `integration:0044-05`
+  - `integration:0044-08`
+  - `integration:0044-12`
+  - `integration:0044-13`
+  - `integration:0044-14`
+  - `integration:0044-15`
+  - `integration:0044-16`
+  - `integration:0044`
+  - `feature-closure:0044`
+  - `integration:0043-07`
+  - `feature-closure:0043`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:Data-Lore-20260822T205800Z:architect:0044-03`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent pre-mutation cross-item gate-scope review, distinct
+      from preparer `Data-Iris-20260822T150415Z` and dispatcher `Data`; verdict
+      `scope-ok-mit-auflagen`. The binding conditions are staged activation,
+      inclusion of new checkpoint `0044-16`, exact-candidate evidence, explicit
+      no-automation failure semantics, and strict separation from acceptance.
+- **Waiver:** `none`
