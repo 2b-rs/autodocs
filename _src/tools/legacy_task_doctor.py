@@ -23,7 +23,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 
 REPORT_SCHEMA = "legacy-task-doctor-report@v1"
-VALID_MARKERS = {" ", "u", "p", "?", "w", "x"}
+VALID_MARKERS = {" ", "u", "p", "?", "w", "x", "d"}
 TERMINAL_MARKERS = {"w", "x"}
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
 FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
@@ -143,6 +143,8 @@ RULE_SEVERITY = {
     "LTD-PREREQ-SELF": "error",
     "LTD-PREREQ-CYCLE": "error",
     "LTD-TERMINAL-UNSATISFIED-PREREQ": "error",
+    "LTD-DEFERRED-STALE": "warning",
+    "LTD-DEFERRED-UNVERIFIABLE": "warning",
     "LTD-PARENT-CLOSURE-ELIGIBLE": "warning",
     "LTD-FEATURE-CLOSURE-ELIGIBLE": "warning",
     "LTD-FEATURE-INTEGRATION-READY": "info",
@@ -1507,6 +1509,22 @@ def _prerequisite_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBl
             _terminal_id(prerequisite, task_markers, done_features) for prerequisite in parent.prerequisites
         ):
             findings.append(_make_finding("LTD-PARENT-CLOSURE-ELIGIBLE", "prerequisite", parent.path, parent.line, parent.id, f"parent package has {len(children)} terminal direct children and terminal start gates", blobs))
+
+    # A ``[d]`` deferral (DEC-MARKER-001) states that work happened but is
+    # currently blocked by unmet prerequisites. "Currently" is derived state:
+    # it stops being true the moment the last predecessor turns terminal, and
+    # nothing in the file changes when that happens. The practice rule asks the
+    # closing agent to revisit the deferred successors; this check exists so
+    # that obligation is caught by the tool instead of remembered, which is the
+    # only reason the marker is worth storing at all.
+    for task in sorted(parsed.tasks, key=lambda value: (value.path, value.line, value.id)):
+        if task.marker != "d" or task.archived_not_accepted:
+            continue
+        if not task.prerequisites:
+            findings.append(_make_finding("LTD-DEFERRED-UNVERIFIABLE", "prerequisite", task.path, task.line, task.id, "deferred item declares no explicit prerequisite, so its blocker cannot be rechecked", blobs))
+            continue
+        if all(_terminal_id(prerequisite, task_markers, done_features) for prerequisite in task.prerequisites):
+            findings.append(_make_finding("LTD-DEFERRED-STALE", "prerequisite", task.path, task.line, task.id, f"deferred item has {len(task.prerequisites)} explicit prerequisites and all of them are terminal", blobs))
 
     for feature in sorted(parsed.features, key=lambda value: (value.path, value.line, value.id or "")):
         if feature.path != "TODO.md" or not feature.id or feature.archived_not_accepted:

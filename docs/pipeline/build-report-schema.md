@@ -67,3 +67,14 @@ non-empty strings (no new field, no schema-version bump required):
   to an archive file and is rendered as plain text, not a link — see
   `_src/WARTUNG.md` § "Build- & Publikations-Berichte" for the operator
   procedure.
+
+## Build-Ledger (0043-02)
+
+Der kombinierte Report beschreibt **einen** Lauf und liegt git-ignoriert unter
+`output/build-reports/`. Die *Historie* über alle Läufe ist davon getrennt und
+getrackt: `build_report.py combine`/`publish` projizieren jeden kombinierten
+Report auf eine Zeile des append-only Ledgers
+`docs/evidence/build-ledger.jsonl`. Schema, Append-only-Garantie und der
+Konsumentenvertrag stehen in [`build-ledger.md`](build-ledger.md); die
+Entscheidung, das Ledger (und nur das Ledger, nicht die Rohlogs) einzuchecken,
+ist `DEC-0043-001`.
