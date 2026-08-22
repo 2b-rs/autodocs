@@ -154,6 +154,7 @@ and a `2` is a failed check, never a pass. Findings:
 |---|---|
 | `INDEX_NOT_HEAD` | the integration worktree's own index differs from its `HEAD` |
 | `FOREIGN_STAGED_TREE` | some *other* registered worktree holds a staged tree |
+| `MAIN_WORKTREE_DIRTY` | tracked files in the worktree checking out `main` differ from its index; this is a blocking root-quiescence finding, not a rule for live item worktrees |
 | `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
 | `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
 
@@ -165,13 +166,14 @@ than it does:
   Git history cannot show, and an integration must not proceed across it. The
   resolution is to have that owner commit or stash — never to reset a foreign
   worktree.
-- The check compares **index against `HEAD`**. A worktree whose index matches
-  `HEAD` while its *files* diverge produces no finding. That is deliberate, since
-  unstaged edits are normal in a live item worktree — but it means the check
-  alone would not have caught the residual root divergence of 2026-08-21, where
-  the index had already been cleared and only the files were stale. This is why
-  step 2 above requires `git diff --quiet` in the root **in addition to** the
-  check. Tool and preflight are complementary; neither replaces the other.
+- `MAIN_WORKTREE_DIRTY` closes the known clean-index blind spot for the worktree
+  checking out `main`, including the residual tracked-file divergence observed
+  on 2026-08-21. The same unstaged divergence on an item branch is intentionally
+  not a finding: unfinished work in an agent's own item worktree is normal, and
+  this is a quiescence gate for integration rather than an accusation against
+  live work. Untracked files also remain outside the check. This is why step 2
+  above still requires the direct hard preflight in the root **in addition to**
+  the check. Tool and preflight are complementary; neither replaces the other.
 
 ## Preserved snapshot tags and recovery
 

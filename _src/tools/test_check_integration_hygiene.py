@@ -67,6 +67,33 @@ class IntegrationHygieneTests(unittest.TestCase):
         self.assertIn("FOREIGN_STAGED_TREE", findings)
         self.assertEqual(findings["FOREIGN_STAGED_TREE"].worktree, str(foreign.resolve()))
 
+    def test_clean_index_with_tampered_main_worktree_fails_preflight(self) -> None:
+        # Reproduce the residual 2026-08-21 root state hermetically: HEAD and
+        # index agree, but a tracked working file no longer matches the index.
+        (self.root / "README.md").write_text("tampered but unstaged\n", encoding="utf-8")
+
+        report = hygiene.check_integration_hygiene(self.root)
+        findings = {finding.code: finding for finding in report.findings}
+        root_state = next(state for state in report.worktrees if state.path == str(self.root.resolve()))
+        self.assertTrue(root_state.index_equals_head)
+        self.assertFalse(root_state.worktree_equals_index)
+        self.assertFalse(report.ok)
+        self.assertIn("MAIN_WORKTREE_DIRTY", findings)
+        self.assertEqual(findings["MAIN_WORKTREE_DIRTY"].worktree, str(self.root.resolve()))
+        self.assertNotIn("INDEX_NOT_HEAD", findings)
+
+    def test_unstaged_item_worktree_is_not_a_blocking_finding(self) -> None:
+        item = Path(self.temporary.name) / "item"
+        _git(self.root, "worktree", "add", "-q", "-b", "0044-item", str(item))
+        (item / "README.md").write_text("ordinary unfinished item work\n", encoding="utf-8")
+
+        report = hygiene.check_integration_hygiene(item)
+        item_state = next(state for state in report.worktrees if state.path == str(item.resolve()))
+        self.assertTrue(item_state.index_equals_head)
+        self.assertFalse(item_state.worktree_equals_index)
+        self.assertTrue(report.ok, report.to_dict())
+        self.assertNotIn("MAIN_WORKTREE_DIRTY", {finding.code for finding in report.findings})
+
     def test_update_ref_reproduces_stale_worktree_signature(self) -> None:
         # The root worktree stays on main at the initial commit. A low-level
         # ref update advances refs/heads/main without refreshing its index or

@@ -7,6 +7,7 @@ fails when:
 
 * the integration worktree index differs from its `HEAD`;
 * another worktree has a staged tree (a foreign staged tree); or
+* tracked files in the worktree checking out `main` differ from its index; or
 * a symbolic-branch worktree still has the index and files of the immediately
   preceding reflog tip after its branch ref advanced. This is the stale
   checkout signature produced by `git update-ref` on a checked-out branch.
@@ -144,6 +145,15 @@ def check_integration_hygiene(repo: Path | str) -> HygieneReport:
             findings.append(Finding("INDEX_NOT_HEAD", str(path), "integration index differs from HEAD"))
         elif path != integration and not index_equals_head:
             findings.append(Finding("FOREIGN_STAGED_TREE", str(path), "foreign worktree index differs from HEAD"))
+
+        if branch == "main" and not worktree_equals_index:
+            findings.append(
+                Finding(
+                    "MAIN_WORKTREE_DIRTY",
+                    str(path),
+                    "worktree checking out main has tracked files that differ from its index",
+                )
+            )
 
         previous = _previous_reflog_tip(path, branch) if branch else None
         if (
