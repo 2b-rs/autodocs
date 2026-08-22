@@ -172,3 +172,99 @@ Einzelfall-Panne. Er ist als Vorgang zu führen: ein Mechanismus, der genau eine
 freigegebenen Teilbaum mit geprüftem Digest veröffentlicht, ohne den restlichen
 Website-Abgleich mitzuziehen. Bis dahin ist jede künftige Teilbaum-Freigabe
 derselben Erweiterungsentscheidung ausgesetzt.
+
+---
+
+## Berichtigung 2026-08-22 — Die Zahl 4.133 ist unbelegt; die Publikation ist blockiert
+
+**Art:** append-only Berichtigung. Der Text oben bleibt stehen. Er enthält eine
+Angabe, die sich nicht belegen lässt, und die Managemententscheidung beruhte
+darauf.
+
+### 1. Die Zahl 4.133 hat keinen dauerhaften Beleg
+
+Der privilegierte Operator `worf` hat gezielt nach einem durablen Nachweis
+gesucht — Log oder Quittung von `worf-krell-20260822t102000z`,
+Preflight-Ausgabe, Diff-Kommando — und **keinen gefunden**. Die Zahl existiert
+ausschließlich als Prosa in diesem Datensatz.
+
+Sie kann nicht aus einem Trockenlauf von `_src/publish.sh` stammen: dieses
+Werkzeug **hat keinen**. Ob sie aus `_src/tools/publish_public_site.sh` oder aus
+einem Handvergleich stammt, ist unbestimmt.
+
+**Verantwortung:** Die Projektleitung (`kathryn`) hat die Zahl in die
+Entscheidungsvorlage an das Management übernommen und in diesen Datensatz
+geschrieben, ohne ihre Herkunft zu prüfen. Sie war Grundlage der Erweiterung
+oben. Das ist ein Fehler der Aufzeichnung, nicht des meldenden Operators.
+
+### 2. Neuer Defekt in `_src/tools/publish_public_site.sh` — stille Unvollständigkeit
+
+Gefunden von `worf`, von der Projektleitung am Quelltext bestätigt (Zeile 80):
+
+```
+tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C "$EXPORT_DIR"
+```
+
+Die **Dateiliste** stammt aus `git ls-tree -r "$REVISION"` — korrekt. Die
+**Dateiinhalte** liest `tar` aber aus `$REPO_ROOT`, also aus dem *aktuell
+ausgecheckten Arbeitsverzeichnis*, nicht aus dem Git-Objekt der Revision.
+
+Folge: Wird das Werkzeug mit einer Revision aufgerufen, die **nicht**
+ausgecheckt ist, existieren die gelisteten Pfade auf Platte nicht. `worf` hat
+das reproduziert: Aufruf aus dem Root-Checkout (dort ist `main` ausgecheckt)
+gegen Revision `58b35f1e5` meldete `Cannot stat` für alle 2.248
+`eclipse-score-v0.6.0-curation-review/`-Pfade und mehrere
+`provenance/0019-*`-Dateien — und erzeugte trotzdem einen „Export", der den
+kuratierten Baum **lautlos nicht enthält**.
+
+**Präzisierung gegenüber dem Meldetext:** `worf` schrieb, das Skript habe „kein
+`pipefail`". Das trifft nicht zu — Zeile 2 setzt `set -euo pipefail`. Der
+strukturelle Defekt besteht davon unabhängig und ist der wesentliche Punkt: die
+Herkunft der Inhalte ist falsch. Ob der Lauf zusätzlich hätte abbrechen müssen,
+ist eine zweite, kleinere Frage.
+
+Das Werkzeug ist damit nur korrekt, wenn die gewünschte Revision zugleich
+ausgecheckt ist. Mit Revisionsargument aus einem anderen Worktree aufgerufen
+liefert es still einen unvollständigen Baum. Für ein **Publikationswerkzeug**
+ist das die gefährlichste Fehlerart überhaupt.
+
+`worf` hat aus diesem fehlerhaften Lauf **keinen** Digest berechnet und das
+gitignorierte Scratch-Verzeichnis gelöscht, um keinen falschen Artefakteindruck
+zu hinterlassen.
+
+### 3. `main` trackt den freigegebenen Baum nicht
+
+Bestätigt: `git ls-tree main` enthält **null** Pfade unter
+`eclipse-score-v0.6.0-curation-review/`. Der freigegebene Baum lebt
+ausschließlich auf dem integrierten `0019`-Zweig (`58b35f1e5`).
+
+### 4. Weder Werkzeug 1 noch Werkzeug 2 ist derzeit ein gangbarer Weg
+
+- **Werkzeug 1** (`_src/publish.sh`): synchronisiert eine feste Verzeichnisliste,
+  in der der freigegebene Teilbaum nicht vorkommt — es würde den freigegebenen
+  Gegenstand nicht veröffentlichen. Sein Löschverhalten (`rsync -a --delete` je
+  Zielverzeichnis) ließ sich **nicht** empirisch prüfen: es existiert kein
+  lokaler Klon des Deploy-Ziels, und ein Lesezugriff auf das reale Remote wurde
+  ohne gesonderte Freigabe nicht versucht.
+- **Werkzeug 2** (`_src/tools/publish_public_site.sh`): trägt den Defekt aus
+  Abschnitt 2 und kann ohne `PUBLISH_ALLOW_FORCE_PUSH=1` **überhaupt nicht
+  pushen** — Git lehnt den historienfremden Orphan-Branch gegen ein bestehendes
+  `main` als Non-Fast-Forward ab. Force-Push ist von der Projektleitung
+  untersagt und von keiner Managemententscheidung gedeckt.
+
+**Ergebnis: Die Publikation von Feature `0019` ist blockiert.** Sie steht nicht
+an einer fehlenden Freigabe — die liegt vor —, sondern daran, dass kein
+verifiziert sicherer Weg existiert, sie auszuführen.
+
+### Was nicht geschehen ist
+
+Kein Push, kein Force-Update, keine Nutzung von Zugangsdaten, keine
+Netzwerkoperation gegen das Deploy-Ziel. Das Ziel ist unverändert.
+
+### Was gültig bleibt
+
+Die Freigabe des Managements (Abschnitt „Freigabe" oben) und die Erweiterung
+bleiben als **Willensäußerung** gültig; die Inhaltsschranke aus
+`CUR-0019-08-20260820` ebenfalls. Berichtigt wird die **Tatsachengrundlage**,
+auf der die Erweiterung erging. Ob das Management bei seiner Entscheidung
+bleibt, wenn die Zahl unbelegt ist, ist ihm vorzulegen.
