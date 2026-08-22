@@ -167,7 +167,7 @@ HOW TO USE:
   - **Definition of Done:** Committed in `docs/pipeline/`; the record format is specified; `branch-workflow.md` and `task-acceptance.md` reference it; a worked example exists.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the Task documents a procedure that itself requires three-party unanimity or user decision at use time; misuse is caught at that gate. Re-examined at `0044-08`.
 
-- [ ] **0044-03** PREREQ: 0044-03:0044-01 Answer "Integrationstests?": define which integration tests checkpoints require and how their scope and kind are derived from the architecture. *(architect-elaboration)*
+- [p] **0044-03** PREREQ: 0044-03:0044-01 Answer "Integrationstests?": define which integration tests checkpoints require and how their scope and kind are derived from the architecture. *(architect-elaboration)* Claim: `TODO-Data-Iris-0044-03-20260822T150415Z.md`.
   - **Requirements covered:** `RQ-IP-07`.
   - **Acceptance criteria:** A documented rule states what an integrator must execute (not only read) at a checkpoint, how the test obligation is derived from the architecture and interface contracts of the integrated items, what evidence the run leaves, and what happens when no automated test exists; the rule is applied to at least one real pending integration as a worked example.
   - **Definition of Done:** Committed; `task-acceptance.md` and `branch-workflow.md` reference the rule; the worked example is retained as evidence.
