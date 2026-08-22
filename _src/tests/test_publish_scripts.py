@@ -1,13 +1,14 @@
-"""Behavioral tests for the legacy publishers `_src/publish.sh` and
-`_src/tools/publish_public_site.sh` (Task 0038-26).
+"""Behavioral tests for the whole-site publisher `_src/tools/publish_public_site.sh`
+(originally Task `0038-26`; consolidated onto this single tool by Task `0038-32`,
+which retired the former `_src/publish.sh`).
 
-These tests exercise the scripts for real (via `subprocess`), but only ever
+These tests exercise the script for real (via `subprocess`), but only ever
 against local, disposable scratch Git remotes created under a `tempfile`
 directory for the duration of each test. No test ever configures a remote
 that resolves to `2b-rs/autodocs` or performs any network call; `git@`,
 `https://`, and `ssh://` remotes are never used here on purpose, since the
-whole point of this Task is that such a destination must now be supplied
-explicitly rather than being reachable by omission.
+whole point of Task `0038-26` is that such a destination must now be
+supplied explicitly rather than being reachable by omission.
 """
 
 import shutil
@@ -24,12 +25,6 @@ TOOLS = ROOT / "_src" / "tools"
 sys.path.insert(0, str(TOOLS))
 
 import automation_safety as safety  # noqa: E402
-
-PUBLIC_DIRS = (
-    "ar", "classes", "en", "es", "flags", "fr", "hi", "ko",
-    "modules", "namespaces", "pt", "ru", "services", "zh",
-)
-PUBLIC_FILES = ("index.html", "style.css", "fold.js", "review.js")
 
 
 def _run_git(args, cwd, env=None):
@@ -57,152 +52,79 @@ def _base_env(base):
     return env
 
 
+class PublishShRetirementTests(unittest.TestCase):
+    """Task `0038-32` retired `_src/publish.sh` in favor of a single
+    whole-site publisher (`_src/tools/publish_public_site.sh`), because its
+    fixed `PUBLIC_DIRS`/`PUBLIC_FILES` directory allowlist was the exact
+    structural cause of the `0019`/2026-08-22 incident: a newly approved
+    subtree existed in no fixed list and would not have been published.
+    These tests freeze the retirement so the file is not silently
+    resurrected without anyone seeing why it was removed; see
+    `docs/pipeline/tools.md` ("Konsolidierung 0038-32") for the recorded
+    decision and justification."""
+
+    def test_publish_sh_no_longer_exists(self):
+        self.assertFalse(
+            PUBLISH_SH.exists(),
+            "_src/publish.sh was retired by Task 0038-32 (see "
+            "docs/pipeline/tools.md); it must not be resurrected without a "
+            "recorded decision reversing that retirement.",
+        )
+
+    def test_no_other_script_still_shells_out_to_publish_sh(self):
+        for path in sorted(ROOT.rglob("*.sh")):
+            if ".git" in path.parts or "output" in path.parts:
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            self.assertNotIn(
+                "_src/publish.sh",
+                text,
+                "%s still references the retired _src/publish.sh" % path,
+            )
+
+
 class PublishScriptsAutomationSafetyRegressionTests(unittest.TestCase):
     """Freezes the fix: no more hard-coded identity/destination or bare
     unconditional force-push, without re-litigating findings this Task does
     not own (candidate isolation / broad staging stay with Task 0038-13)."""
 
-    def test_publish_sh_has_no_hardcoded_integration_or_missing_recovery_state(self):
-        text = PUBLISH_SH.read_text(encoding="utf-8")
-        findings = safety.scan_text("_src/publish.sh", text, "shell")
-        rules = {finding.rule for finding in findings}
-        self.assertNotIn("AUTO005", rules)
-        self.assertNotIn("AUTO010", rules)
-        self.assertNotIn("AUTO004", rules)
-        self.assertNotIn("AUTO001", rules)
-
     def test_publish_public_site_sh_has_no_identity_destination_or_force_findings(self):
         text = PUBLISH_PUBLIC_SITE_SH.read_text(encoding="utf-8")
         findings = safety.scan_text("_src/tools/publish_public_site.sh", text, "shell")
         by_line = {(finding.rule, finding.line) for finding in findings}
-        # The three findings Task 0038-13 owns (lines 38 and 86, untouched by
-        # this Task) are expected to remain exactly where they were.
+        # The three findings Task 0038-13 owns (line 38 twice, and the
+        # module-level broad-staging finding whose evidence text is the
+        # unchanged "git add -A" line, which Task 0038-32's fix moved from
+        # line 86 to line 91 without changing its evidence_sha256 -- see the
+        # mechanically-refreshed automation_safety_policy.json entry) remain.
         self.assertIn(("AUTO008", 38), by_line)
         self.assertIn(("AUTO010", 38), by_line)
-        self.assertIn(("AUTO003", 86), by_line)
-        # The four findings this Task owned (identity at 92, destination at
-        # 104, force-push at 105) must be gone entirely.
+        self.assertIn(("AUTO003", 91), by_line)
+        # The findings Tasks 0038-26/0038-32 own (identity, destination,
+        # force-push, and the old defective content-read at line 80) must
+        # not have crept back in under any line.
         for rule, line in by_line:
             self.assertFalse(
-                line in (92, 104, 105) and rule in ("AUTO004", "AUTO005"),
+                rule in ("AUTO004", "AUTO005"),
                 "unexpected residual finding %s at line %s" % (rule, line),
             )
 
     def test_no_literal_publish_bot_or_public_repo_remote_remains(self):
-        for path in (PUBLISH_SH, PUBLISH_PUBLIC_SITE_SH):
-            text = path.read_text(encoding="utf-8")
-            self.assertNotIn("2b-rs/autodocs", text)
-            self.assertNotIn("publish-bot", text)
-            self.assertNotIn("user.name=", text)
-            self.assertNotIn("user.email=", text)
+        text = PUBLISH_PUBLIC_SITE_SH.read_text(encoding="utf-8")
+        self.assertNotIn("2b-rs/autodocs", text)
+        self.assertNotIn("publish-bot", text)
+        self.assertNotIn("user.name=", text)
+        self.assertNotIn("user.email=", text)
 
-
-class PublishShEndToEndTests(unittest.TestCase):
-    def setUp(self):
-        self.tmp = Path(tempfile.mkdtemp(prefix="publish-sh-test-"))
-        self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
-
-    def _fake_root_with_script(self):
-        fake_root = self.tmp / "fake-repo-root"
-        (fake_root / "_src").mkdir(parents=True)
-        shutil.copy2(PUBLISH_SH, fake_root / "_src" / "publish.sh")
-        (fake_root / "_src" / "publish.sh").chmod(0o755)
-        for dir_name in PUBLIC_DIRS:
-            target = fake_root / dir_name
-            target.mkdir()
-            (target / "stub.html").write_text("<html>stub</html>", encoding="utf-8")
-        for file_name in PUBLIC_FILES:
-            (fake_root / file_name).write_text("stub", encoding="utf-8")
-        return fake_root
-
-    def _seeded_bare_origin(self, env):
-        origin = self.tmp / "origin.git"
-        _run_git(["init", "--quiet", "--bare", str(origin)], cwd=self.tmp)
-        seed = self.tmp / "seed"
-        seed.mkdir()
-        _run_git(["init", "--quiet", "-b", "main", str(seed)], cwd=self.tmp)
-        (seed / "README.md").write_text("seed\n", encoding="utf-8")
-        _run_git(["add", "-A"], cwd=seed, env=env)
-        _run_git(
-            ["-c", "user.name=Seed", "-c", "user.email=seed@example.invalid",
-             "commit", "--quiet", "-m", "seed"],
-            cwd=seed,
-            env=env,
-        )
-        _run_git(["push", "--quiet", str(origin), "main"], cwd=seed, env=env)
-        return origin
-
-    def _run_publish(self, fake_root, extra_env):
-        import os
-
-        env = dict(os.environ)
-        env.update(extra_env)
-        return subprocess.run(
-            ["bash", str(fake_root / "_src" / "publish.sh")],
-            cwd=str(fake_root),
-            env=env,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-
-    def test_missing_publish_remote_fails_closed_without_side_effects(self):
-        fake_root = self._fake_root_with_script()
-        publish_dir = self.tmp / "publish-dir-should-not-exist"
-        result = self._run_publish(fake_root, {
-            "PUBLISH_DIR": str(publish_dir),
-            "PUBLISH_IDENTITY_NAME": "Test Publisher",
-            "PUBLISH_IDENTITY_EMAIL": "test-publisher@example.invalid",
-        })
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("PUBLISH_REMOTE is required", result.stderr)
-        self.assertFalse(publish_dir.exists())
-
-    def test_missing_identity_fails_closed(self):
-        fake_root = self._fake_root_with_script()
-        result = self._run_publish(fake_root, {
-            "PUBLISH_DIR": str(self.tmp / "publish-dir"),
-            "PUBLISH_REMOTE": str(self.tmp / "unused.git"),
-        })
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("PUBLISH_IDENTITY_NAME is required", result.stderr)
-
-    def test_end_to_end_push_to_local_scratch_remote_uses_configured_identity(self):
-        fake_root = self._fake_root_with_script()
-        env_for_seed = _base_env(self.tmp)
-        origin = self._seeded_bare_origin(env_for_seed)
-        publish_dir = self.tmp / "publish-dir"
-        result_log = self.tmp / "publish-result.log"
-        result = self._run_publish(fake_root, {
-            "PUBLISH_DIR": str(publish_dir),
-            "PUBLISH_REMOTE": str(origin),
-            "PUBLISH_IDENTITY_NAME": "Test Publisher",
-            "PUBLISH_IDENTITY_EMAIL": "test-publisher@example.invalid",
-            "PUBLISH_RESULT_LOG": str(result_log),
-            "HOME": str(self.tmp),
-        })
-        self.assertEqual(result.returncode, 0, msg=result.stderr)
-        self.assertIn("Published via explicitly configured", result.stdout)
-
-        # The bare origin's main branch must now carry a commit authored
-        # under the explicitly configured identity, never the old
-        # hard-coded 'publish-bot'/'tobias.anton@accenture.com' pair.
-        author = _run_git(
-            ["log", "-1", "--format=%an <%ae>", "main"],
-            cwd=origin,
-        ).strip()
-        self.assertEqual(author, "Test Publisher <test-publisher@example.invalid>")
-        self.assertNotIn("publish-bot", author)
-
-        # Durable per-phase result journal recorded real phases, ending in
-        # a successful push.
-        log_text = result_log.read_text(encoding="utf-8")
-        self.assertIn("phase=push status=0", log_text)
-        self.assertIn("phase=complete status=0", log_text)
-
-        # Safety guard preserved: no private paths leaked into the publish
-        # clone.
-        self.assertFalse((publish_dir / "_src").exists())
+    def test_content_read_no_longer_reads_repo_root_working_tree(self):
+        """Regression guard for the confirmed 0038-32 defect: the export's
+        file CONTENTS must come from the requested REVISION's git object
+        (e.g. via `git archive "$REVISION"`), never from a `tar -C
+        "$REPO_ROOT"` read of the checked-out working tree, which silently
+        produced an incomplete export against a non-checked-out revision."""
+        text = PUBLISH_PUBLIC_SITE_SH.read_text(encoding="utf-8")
+        self.assertNotIn('tar -cf - -C "$REPO_ROOT"', text)
+        self.assertIn('git archive "$REVISION"', text)
 
 
 class PublishPublicSiteEndToEndTests(unittest.TestCase):
@@ -270,6 +192,46 @@ class PublishPublicSiteEndToEndTests(unittest.TestCase):
             cwd=export_dir,
         ).strip()
         self.assertEqual(author, "Test Publisher <test-publisher@example.invalid>")
+
+    def test_export_reads_content_from_a_revision_other_than_the_worktree(self):
+        """The confirmed 0038-32 defect, reproduced and fixed: exporting a
+        REVISION that is NOT the currently checked-out commit must still
+        yield that revision's content, not the working tree's."""
+        src = self._scratch_source_repo(content="v1")
+        v1_sha = _run_git(["rev-parse", "trunk"], cwd=src).strip()
+
+        (src / "index.html").write_text("<html>v2</html>", encoding="utf-8")
+        _run_git(["add", "-A"], cwd=src, env=self.env)
+        _run_git(
+            ["-c", "user.name=Source", "-c", "user.email=source@example.invalid",
+             "commit", "--quiet", "-m", "v2"],
+            cwd=src,
+            env=self.env,
+        )
+        v2_sha = _run_git(["rev-parse", "trunk"], cwd=src).strip()
+
+        # Check out v1 in the working tree, but ask the script to export v2
+        # -- the revision that is NOT checked out.
+        _run_git(["checkout", "--quiet", v1_sha], cwd=src, env=self.env)
+        self.assertEqual(
+            (src / "index.html").read_text(encoding="utf-8"), "<html>v1</html>",
+            "test setup: working tree must be at v1 content",
+        )
+
+        result = self._run_script(src, ["--dry-run", v2_sha], {
+            "PUBLISH_IDENTITY_NAME": "Test Publisher",
+            "PUBLISH_IDENTITY_EMAIL": "test-publisher@example.invalid",
+        })
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+        export_dir = src / "output" / "publish-export" / "tree"
+        exported = (export_dir / "index.html").read_text(encoding="utf-8")
+        self.assertEqual(
+            exported, "<html>v2</html>",
+            "export must read REVISION's git object content (v2), not the "
+            "checked-out working tree's content (v1) -- this is the "
+            "confirmed defect Task 0038-32 fixed",
+        )
 
     def test_missing_remote_fails_closed_after_dry_run_check(self):
         src = self._scratch_source_repo()
