@@ -148,6 +148,30 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
         self.assertTrue(report.has_missing_policy_origin_trailer)
         self.assertIsNone(report.findings[0].policy_origin_branch)
 
+    def test_duplicate_policy_origin_trailers_are_a_finding(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2\n",
+            "revise policy\n\nPolicy-Origin-Branch: 0001-01\nPolicy-Origin-Branch: main",
+        )
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertTrue(report.has_missing_policy_origin_trailer)
+        self.assertIsNone(report.findings[0].policy_origin_branch)
+
+    def test_empty_policy_origin_trailer_is_a_finding(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "policy v2\n",
+            "revise policy\n\nPolicy-Origin-Branch:",
+        )
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        self.assertTrue(report.has_missing_policy_origin_trailer)
+        self.assertIsNone(report.findings[0].policy_origin_branch)
+
     def test_policy_commit_reachable_from_target_is_pull_in_eligible(self):
         # Target branch changes policy after branch-out; source pulls it in
         # via merge (DEC-0044-001 permitted flow) -> must NOT be flagged.
