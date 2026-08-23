@@ -21,3 +21,16 @@
 ## Purpose and next step
 
 Record the Management selection as conforming `decision-record@v1`, reopen the rejected parent for corrective work without erasing its implementation history, add the five bounded packages from Datas proposal, validate governance/backlog structure, and integrate the governance branch to `main` only after the mandatory hygiene and root preflight pass.
+
+## Closure and handoff
+
+- `status: implementation-complete; coordination claim lease released after main integration`
+- `decision_ref: 0ffac017ef05ef14dd6e622f94bc1580d3e4f1f5`
+- `backlog_ref: b64076ea1791e9e8679428f35c6dd57f8c9f2f81`
+- `identifier_repair: Datas conceptual 0037-46.02.01--.05 labels were a parser-invalid third ID level; intent is preserved as valid Task 0037-50 with Subtasks 0037-50.01--.05`
+- `validation:`
+  - `python3 _src/tools/process_doc_doctor.py --json`: exit 0, 0 errors; `DEC-0037-001` is referenced by `TODO.md`
+  - `python3 _src/tools/legacy_task_doctor.py --json`: no findings for `0037-46.02` or `0037-50*`; repository-wide pre-existing totals improve from 449 errors/611 findings on base to 442 errors/604 findings
+  - `git diff --check`: exit 0
+  - each of `0037-50`, `.01`, `.02`, `.03`, `.04`, `.05` occurs exactly once as a Task header
+- `handoff: after the governance branch is current on main, 0037-50.02 and 0037-50.03 are the first parallel-eligible implementation packages; each requires its own exact claim, item branch/worktree, and implementer distinct from data and geordi`
