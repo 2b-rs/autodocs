@@ -83,7 +83,7 @@ claims.
 
 | Role | Purpose | Work products | May decide alone | Must not decide alone |
 |---|---|---|---|---|
-| **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement | A scope decision reaching beyond the Feature without a TK-2 record; acceptance of its own breakdown |
+| **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement before current Acceptance of the affected node | A scope decision reaching beyond the Feature without a TK-2 record; silent checkpoint change after current Acceptance; acceptance of its own breakdown |
 | **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
 | **Integrator** | Merge work across **integration checkpoints** and review it there | Boundary merge, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes | Resolve its own `[u]` verdict; skip a checkpoint |
 
@@ -269,6 +269,13 @@ typical failure, and a repository example.
 - **Result:** One-pass executable Tasks with criteria, Definition of Done,
   correct prerequisite graph, exactly one mandatory integration task per Feature,
   and no-checkpoint rationale for each unflagged high-risk node.
+- **Checkpoint timing:** Checkpoint placement remains exclusively Architect
+  authority after decomposition. The Architect may add a checkpoint, with
+  rationale, while the affected node lacks current Acceptance, including at
+  `[x]`/`[w]`. Current Acceptance freezes that accepted baseline; later addition,
+  removal, or movement first requires separately authorized append-only
+  invalidation or reopening. Applicable TK-2 and independent gate-scope review
+  requirements remain in force.
 - **Prohibitions:** Gate decisions without TK-2; accept its own breakdown;
   imply completeness where a gap exists.
 - **Typical failure:** Check duplicates against the wrong neighboring Feature.

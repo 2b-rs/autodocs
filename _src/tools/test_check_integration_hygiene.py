@@ -11,6 +11,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 import check_integration_hygiene as hygiene
@@ -55,17 +56,56 @@ class IntegrationHygieneTests(unittest.TestCase):
         self.assertEqual(report.root_worktree, str(self.root.resolve()))
         self.assertEqual(report.findings, [])
 
-    def test_foreign_staged_tree_fails_preflight(self) -> None:
+    def test_transient_foreign_staged_tree_resolves_before_second_sample(self) -> None:
+        foreign = Path(self.temporary.name) / "foreign"
+        _git(self.root, "worktree", "add", "-q", "-b", "0044-transient", str(foreign))
+        (foreign / "foreign.txt").write_text("commit in flight\n", encoding="utf-8")
+        _git(foreign, "add", "foreign.txt")
+        observed_delays: list[float] = []
+
+        def finish_commit(delay: float) -> None:
+            observed_delays.append(delay)
+            _git(foreign, "commit", "-q", "-m", "finish in-flight commit")
+
+        report = hygiene.check_integration_hygiene(
+            self.root,
+            foreign_resample_delay_seconds=0.25,
+            sleeper=finish_commit,
+        )
+        self.assertEqual(observed_delays, [0.25])
+        self.assertTrue(report.ok, report.to_dict())
+        self.assertNotIn("FOREIGN_STAGED_TREE", {finding.code for finding in report.findings})
+
+    def test_persistent_foreign_staged_tree_fails_with_index_age(self) -> None:
         foreign = Path(self.temporary.name) / "foreign"
         _git(self.root, "worktree", "add", "-q", "-b", "0044-foreign", str(foreign))
         (foreign / "foreign.txt").write_text("staged elsewhere\n", encoding="utf-8")
         _git(foreign, "add", "foreign.txt")
+        sample_time = 1_700_000_000.0
+        index_mtime = sample_time - (11 * 60 * 60)
+        os.utime(hygiene._index_path(foreign), (index_mtime, index_mtime))
 
-        report = hygiene.check_integration_hygiene(self.root)
+        report = hygiene.check_integration_hygiene(
+            self.root,
+            clock=lambda: sample_time,
+        )
         findings = {finding.code: finding for finding in report.findings}
         self.assertFalse(report.ok)
         self.assertIn("FOREIGN_STAGED_TREE", findings)
-        self.assertEqual(findings["FOREIGN_STAGED_TREE"].worktree, str(foreign.resolve()))
+        finding = findings["FOREIGN_STAGED_TREE"]
+        self.assertEqual(finding.worktree, str(foreign.resolve()))
+        self.assertEqual(finding.index_age_seconds, 39_600.0)
+        self.assertEqual(finding.resample_delay_seconds, 2.0)
+        self.assertIsNotNone(finding.index_mtime_utc)
+        parsed_mtime = datetime.fromisoformat(finding.index_mtime_utc.replace("Z", "+00:00"))
+        self.assertEqual(parsed_mtime.timestamp(), index_mtime)
+        self.assertIn("index age 39600.000s", finding.detail)
+        serialized = next(
+            item for item in report.to_dict()["findings"] if item["code"] == "FOREIGN_STAGED_TREE"
+        )
+        self.assertEqual(serialized["index_age_seconds"], 39_600.0)
+        self.assertEqual(serialized["index_mtime_utc"], finding.index_mtime_utc)
+        self.assertEqual(serialized["resample_delay_seconds"], 2.0)
 
     def test_clean_index_with_tampered_main_worktree_fails_preflight(self) -> None:
         # Reproduce the residual 2026-08-21 root state hermetically: HEAD and
@@ -81,6 +121,12 @@ class IntegrationHygieneTests(unittest.TestCase):
         self.assertIn("MAIN_WORKTREE_DIRTY", findings)
         self.assertEqual(findings["MAIN_WORKTREE_DIRTY"].worktree, str(self.root.resolve()))
         self.assertNotIn("INDEX_NOT_HEAD", findings)
+        serialized = next(
+            item for item in report.to_dict()["findings"] if item["code"] == "MAIN_WORKTREE_DIRTY"
+        )
+        self.assertNotIn("index_age_seconds", serialized)
+        self.assertNotIn("index_mtime_utc", serialized)
+        self.assertNotIn("resample_delay_seconds", serialized)
 
     def test_unstaged_item_worktree_is_not_a_blocking_finding(self) -> None:
         item = Path(self.temporary.name) / "item"
