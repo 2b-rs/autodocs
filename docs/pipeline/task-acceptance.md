@@ -12,16 +12,18 @@ The word `accepted` in this document is namespaced to **Task/Feature work-produc
 
 ## Integration checkpoints and the architect
 
-Privileged review is **not** required uniformly. It is required exactly at the nodes an **architect** marks as integration checkpoints. This keeps review — the most expensive step — proportional to declared risk instead of implied by hierarchy, and it is decided up front.
+Privileged **integration review is not independently triggered uniformly**. It is triggered exactly at the nodes an **architect** marks as integration checkpoints. The checkpoint identifies the initiating review node; it does not exempt unmarked required predecessors from the prerequisite-closed Task-Acceptance batch described in section 2. This keeps independently initiated review proportional to declared risk instead of implied by hierarchy. Checkpoints are selected at decomposition or later under the timing rule below, not frozen at decomposition.
 
-- **Architect.** An authority **instantiated by management** whose job is to subdivide a Feature into bounded, context-rich work packages so implementers need minimal reasoning, and to review the resulting tasks and flag the most critical ones `Integration review: mandatory`. The architect is a recorded designation distinct from both the implementer and the integrator who performs the review — a separation of *who scopes*, *who builds*, and *who reviews*.
-- **The attribute.** A node (Task, Subtask, or Feature) carries `**Integration review:** mandatory` when it is an integration checkpoint. The attribute is the **requirement** that a privileged integration review occur before the node's work is integrated across its boundary; the `Acceptance: ✓` record defined below is that requirement's **fulfillment**. It is orthogonal to the checkbox marker and set only by the architect, with recorded rationale.
-- **Opt-in, both directions audited.** A node without the attribute is integrated by ordinary grunt-eligible merges with no privileged review. So an omission is never silent, a node that touches an irreversible migration, external effect, credential/security boundary, or public release and is left unflagged must record an explicit **no-checkpoint justification** by the architect.
+- **Architect.** An authority **instantiated by management** whose job is to subdivide a Feature into bounded, context-rich work packages so implementers need minimal reasoning, and to review the resulting tasks and flag the most critical ones `Integration review: mandatory`. Checkpoint placement is exclusively Architect authority. The Architect may add the attribute, with recorded rationale, at any time before the affected node has current Acceptance, including while it is `[x]`/`[w]`. Current Acceptance closes that ordinary designation window for the accepted baseline. A later addition, removal, or movement requires separately authorized append-only invalidation or reopening first; history is never rewritten. Applicable decision-record and distinct Architect gate-scope review requirements remain binding. The architect is a recorded designation distinct from both the implementer and the integrator who performs the review — a separation of *who scopes*, *who builds*, and *who reviews*.
+- **The attribute.** A node (Task, Subtask, or Feature) carries `**Integration review:** mandatory` when it is an integration checkpoint. The attribute requires a privileged integration review before the node's work is integrated across its boundary. Current `Acceptance: ✓` for the checkpoint requires both a passing review of that initiating node and current individual Acceptance for every member of its induced prerequisite-closed batch. The attribute is orthogonal to the checkbox marker and set only by the architect, with recorded rationale.
+- **Opt-in, both directions audited.** A node without the attribute does not independently trigger integration review and may cross a checkpoint-free boundary through an ordinary grunt-eligible merge. It is not exempt from Task Acceptance when it is an unaccepted required predecessor of a target now being accepted. An omission is never silent: a node that touches an irreversible migration, external effect, credential/security boundary, or public release and is left unflagged must record an explicit **no-checkpoint justification** by the architect.
 - **Gate scope.** A checkpoint gates *upward integration*, not implementation start: dependents may build on its `[x]`/`[w]` and merge it, but crossing its boundary and treating it as integrated waits for a passing review. An architect may additionally impose the stricter *acceptance-before-start* edge gate for a high-risk predecessor.
 - **Mandatory integrating task (the floor).** The feature-breakdown process requires the architect to create exactly one integration task per Feature that integrates the whole Feature's work, flagged `Integration review: mandatory`. It is the Feature's terminal checkpoint and effective review floor; further intermediate checkpoints are added at the architect's discretion. Absent an override, no Feature closes without this review.
 - **Management override.** Management — the current user or a registered authority above the process — may waive the mandatory integrating task, override an integrator's `[u]` verdict, or authorize closure without a required review. An override is valid only as an explicit, recorded authorization naming authority, scope, reason, and compensating controls; it is append-only, deletes no history, and is never performed autonomously by an architect, integrator, implementer, or grunt. It is the sanctioned path for the surprises real work produces — distinct from an agent silently skipping a gate, which remains prohibited.
 
 The independence, competence, procedure, invalidation, and recording rules in the rest of this document apply to every review a checkpoint requires. Sandboxed/grunt agents never set, clear, or move the `Integration review` attribute; that is architect authority.
+
+For this timing rule, **current Acceptance** means a reachable, non-invalidated record bound to the exact Task contract, work-product baseline, prerequisite-Acceptance set, authority epoch, and review evidence. Historical, stale, superseded, rejected, inconclusive, or invalidated records neither supply Acceptance credit nor close the Architect's designation window.
 
 ## State and rendering model
 
@@ -101,6 +103,8 @@ The reviewer parses the exact prerequisite graph, rejects missing endpoints, sel
 
 The batch is topologically ordered from leaves to the target. Acceptance is prerequisite-closed: a Task cannot be accepted while a required predecessor remains unaccepted, rejected, inconclusive, stale, or invalidated. Several items may be reviewed in one batch, but each receives its own decision and is promoted bottom-up.
 
+This is a two-gate rule. `[x]`/`[w]` ordinarily satisfies an implementation-start prerequisite without Acceptance. When Task Acceptance is assigned for a target, every required transitive `[x]`/`[w]` predecessor without current valid Acceptance enters the same bottom-up batch and receives an individual decision before the target can receive current `Acceptance: ✓`. Only a marked checkpoint independently triggers integration review; unmarked predecessors included by closure do not thereby become checkpoints.
+
 Ordinary implementation may consume `[x]`/`[w]` to avoid serializing all work behind privileged reviews. A Task with an irreversible migration, canonical interface/schema, credential/security boundary, public release, architecture selection, or comparable high-risk dependency may state a stricter acceptance-before-start gate; until machine-enforced profile edges exist, this gate must be explicit in the Task contract and checked manually.
 
 ### 3. Inspect contract, work products, and scope
@@ -139,7 +143,7 @@ The review has exactly one outcome for the reviewed baseline:
 
 Rejected and inconclusive attempts remain append-only evidence. Rejection normally returns the Task to `[p]` when corrective implementation work is actionable. Inconclusive normally leaves `[x]`/`[w]` awaiting corrected review evidence; it becomes `[p]` only when substantive rework is required. `[u]` remains reserved for a genuine human decision as the sole next action.
 
-The review evidence is committed first. A separate path-isolated bookkeeping commit adds `Acceptance: ✓` and references the real review commit. The acceptance commit must preserve unrelated work and use compare-and-swap or equivalent expected-base protection. The reviewer never fabricates a self-referential hash.
+The review evidence is committed first. A separate path-isolated bookkeeping commit adds `Acceptance: ✓` and references the real review commit. Immediately before bookkeeping, the reviewer must compare-and-swap the expected Task block, checkpoint attribute, contract digest, prerequisite graph, prerequisite-Acceptance set, and Acceptance state. If an Architect added or changed a checkpoint, or any other bound input drifted after the review baseline was pinned, the review is stale and must not be promoted; the changed scope is reviewed first. The acceptance commit must preserve unrelated work and use expected-base protection. The reviewer never fabricates a self-referential hash.
 
 ## Invalidation and reacceptance
 
@@ -156,7 +160,7 @@ An unrelated repository `HEAD` advance does not invalidate acceptance. Impact is
 
 ## Feature aggregate acceptance and `DONE.md`
 
-A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`) and **every integration checkpoint within it has a current passing integration review**. If the architect marked the Feature node itself `Integration review: mandatory`, a separately assigned independent privileged reviewer performs the Feature aggregate review below before closure; an unflagged Feature whose internal checkpoints all pass is closed by the privileged closure authority without an additional aggregate review. The `DONE.md` move is always a privileged act, never a grunt or checkbox-counter action. When a Feature aggregate review is required, the reviewer verifies:
+A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`), **every integration checkpoint within it has a current passing integration review**, and every required transitive `[x]`/`[w]` predecessor induced into those Task-Acceptance batches has its own current accepted disposition. If the architect marked the Feature node itself `Integration review: mandatory`, a separately assigned independent privileged reviewer performs the Feature aggregate review below before closure; an unflagged Feature whose internal checkpoints and induced Acceptance batches all pass is closed by the privileged closure authority without an additional Feature-node review. The `DONE.md` move is always a privileged act, never a grunt or checkbox-counter action. When a Feature aggregate review is required, the reviewer verifies:
 
 1. complete, acyclic, current Task/Subtask and Feature-prerequisite closure;
 2. satisfaction of the Feature goal and Feature Definition of Done;
@@ -169,7 +173,7 @@ A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`) and **
 
 Only after every required integration checkpoint has passed — and the Feature aggregate review too, when the Feature node is flagged — may a privileged agent authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
 
-Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, adds the per-Task and Feature acceptance records and findings there, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `[u]` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, rejected tasks, reason, integration-branch tip) and hands resolution to an explicit user interaction. The `[u]` verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
+Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, reviews marked checkpoints, expands their Acceptance assignments through every required transitive predecessor until current valid Acceptance boundaries, adds an individual decision and record for every accepted batch member, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `[u]` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, rejected tasks, reason, integration-branch tip) and hands resolution to an explicit user interaction. The `[u]` verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
 
 ## Interim legacy enforcement and required migration
 
@@ -193,7 +197,7 @@ This process can contribute evidence to quality assurance, verification, configu
 
 ---
 
-## Klarstellung 2026-08-22 — Integrationscheckpoint-Review vs. transitive Acceptance-Closure
+## Klarstellung 2026-08-22/23 — Integrationscheckpoint-Review und transitive Acceptance-Closure
 
 **Anlass:** Bei Task `0038-33` stellte der unabhängige Reviewer
 `Data-Geordi-20260822T203512Z` fest, dass die direkte Vorleistung `0038-14`
@@ -203,42 +207,53 @@ nicht-akzeptierte transitive Closure von **30 Vorgängen** über die Features
 aufgezeichnet, statt außerhalb seines Auftrags zu akzeptieren, und die
 Klärung angefordert. Diese Zurückhaltung war richtig.
 
-**Klarstellung (Projektleiter `kathryn`, ableitbar aus dem `TODO.md`-Header,
-keine neue Regel):**
+**Verbindliche Präzisierung:** Die Abgrenzung des technischen Checkpoint-Reviews
+vom Implementierungsstart bleibt bestehen. Die Folgerung, nicht akzeptierte
+Vorfahren erst bei der Feature-Schließung zu behandeln, ist durch die
+Managemententscheidung `DEC-0044-020` präzisiert: Ein technischer Vorreview darf
+früher stattfinden, aber aktuelle Task-Acceptance bleibt ausnahmslos
+prerequisite-closed.
 
 Die transitive Closure aus §2 gehört zur **Task-Acceptance**. Sie ist **kein**
-Eintrittsgatter für ein **Integrationscheckpoint-Review**. Die beiden sind
-nach `AGENTS.md` ausdrücklich getrennte Lebenszyklen, und der `TODO.md`-Header
-bestimmt beide Seiten unmissverständlich:
+Eintrittsgatter für den technischen Vorreview eines Checkpoints, wohl aber für
+dessen aktuelle `Acceptance: ✓`. `AGENTS.md` und der `TODO.md`-Header bestimmen
+beide Seiten ausdrücklich:
 
 - Header Zeile 24: *„A Task/Subtask prerequisite is ordinarily an
   **implementation start gate**: `[x]`/`[w]` satisfies it so work can continue
   without serial privileged review."* Eine ausdrückliche Ausnahme („requires a
   predecessor's current acceptance before start") muss am Vorgang **benannt**
   sein; `0038-33` nennt keine.
-- Header Zeile 67: *„Integration review is attribute-driven, per node. A Task,
-  Subtask, or Feature is reviewed by a privileged integrator **only if** it
-  carries the attribute `Integration review: mandatory`."*
+- Der Headerabschnitt *Integration checkpoints and the architect* legt fest:
+  Nur ein markierter Knoten löst selbständig Integrationsreview aus; unmarkierte
+  Vorgänger sind dadurch nicht von der induzierten Task-Acceptance ausgenommen.
 
 **Daraus folgt:**
 
-1. Ein Checkpoint-Review beurteilt **den Knoten, an dem es steht**. Es
-   verlangt nicht, dass die Vorleistungskette akzeptiert ist — nur, dass sie
-   `[x]`/`[w]` ist.
-2. Nicht akzeptierte Vorfahren sind eine Angelegenheit der
-   **Feature-Schließung**, nicht dieses Knotens. Sie sind vor dem
-   `DONE.md`-Zug zu klären, dort aber vollständig.
-3. Eine Prosa-Formulierung wie *„no `Acceptance: ✓` record is required"* ist
-   **kein** strukturierter Acceptance-Datensatz. Der Reviewer hat das zu Recht
-   nicht als solchen gewertet. Sie bleibt dennoch für die Frage unerheblich,
-   ob dieses Checkpoint-Review abschließen darf.
+1. Ein markierter Checkpoint löst den Integrationsreview seines Knotens aus.
+   Dessen technische Prüfung darf beginnen, sobald die erforderlichen
+   Vorleistungen `[x]`/`[w]` sind; fehlende Acceptance blockiert weder diesen
+   Vorreview noch gewöhnliche Nachfolgeimplementierung.
+2. Der Review darf dem Checkpoint jedoch erst dann aktuelle
+   `Acceptance: ✓` geben, wenn jeder erforderliche transitive `[x]`/`[w]`-
+   Vorgänger ohne aktuelle gültige Acceptance in denselben Batch aufgenommen,
+   einzeln entschieden und bottom-up akzeptiert wurde. Ein unmarkierter
+   Vorgänger löst keinen eigenen Integrationsreview aus, ist aber von dieser
+   Task-Acceptance nicht ausgenommen.
+3. Ein technisches `accepted`-Ergebnis ohne abgeschlossene
+   Voraussetzungskette ist nur Review-Evidenz, keine aktuelle Task-Acceptance
+   und darf nicht als `Acceptance: ✓` gebucht werden.
+4. Eine Prosa-Formulierung wie *„no `Acceptance: ✓` record is required"* ist
+   weder ein strukturierter Acceptance-Datensatz noch eine Ausnahme von der
+   prerequisite-closed Closure.
 
-**Konkret für `0038-33`:** Das Review darf auf seinen eigenen technischen
-Befunden abschließen. Es lag kein technischer Befund vor. Der
-`inconclusive`-Datensatz bleibt append-only erhalten; ein Folgereview kann auf
-dieser Klarstellung aufsetzen.
+**Konkret für `0038-33`:** Der technische Folgereview darf seine eigenen
+Befunde abschließen. Seine Acceptance-Buchung wartet jedoch auf die dokumentierte
+Closure von 30 Vorgängen über `0038` und `0037`; jeder noch nicht aktuell
+akzeptierte Vorgang erhält eine eigene bottom-up Entscheidung. Der historische
+`inconclusive`-Datensatz bleibt append-only erhalten.
 
-**Was diese Klarstellung nicht tut:** Sie akzeptiert keinen einzigen der 30
-Vorgänge, hebt keine Checkpoint-Pflicht auf und verkleinert §2 nicht. Sie
-sagt nur, an welcher Stelle im Ablauf die Closure zu prüfen ist — bei der
-Feature-Schließung, nicht an jedem Knoten erneut.
+Diese Klarstellung akzeptiert keinen Vorgang, hebt keine Checkpoint-Pflicht auf
+und blockiert keinen gewöhnlichen Implementierungsstart. Sie legt eindeutig
+fest, dass die transitive Closure bei **jeder Task-Acceptance** gilt und deshalb
+spätestens vor Feature-Schließung vollständig gebucht sein muss.

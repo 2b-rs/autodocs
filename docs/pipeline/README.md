@@ -6,6 +6,8 @@ where possible, to the associated implementation or evidence.
 
 ## Contents
 
+- [`core-rules.md`](./core-rules.md) — core pipeline and engineering rules (ASPICE baseline, IDs, isolation, 4-eyes principle)
+- [`roles/`](./roles/) — role-specific Standard Operating Procedures (SOPs) for modular process execution
 - [`roles.md`](./roles.md) — **product-domain** roles (human, AI,
   tool/validator), distinct from [`process-roles.md`](./process-roles.md)
 - [`process-roles.md`](./process-roles.md) — process roles, capability-class
