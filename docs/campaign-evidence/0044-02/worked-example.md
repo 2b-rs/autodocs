@@ -10,6 +10,7 @@ schema: risk-integration/v1
 application_id: A4-2026-08-22-001
 supersedes: null
 integration: feature-0044/task-0044-02 -> feature-0044
+candidate: sha256:CANDIDATE
 case: A4
 target_branch: refs/heads/feature-0044
 source_branch: refs/heads/0044-02
@@ -22,15 +23,19 @@ participants:
   - {session: sess-qa-2, role: QA-Manager, privileged: true, independent: true}
   - {session: sess-architect-3, role: Architect, privileged: true, independent: true}
 consultations:
-  qa: {location: panel, requested_at: 2026-08-22T10:00:00Z, response_at: 2026-08-22T10:01:00Z, response: approve, evidence: ev-qa-panel}
+  qa: {location: panel, consulter: sess-qa-2, requested_at: 2026-08-22T10:00:00Z, response_at: 2026-08-22T10:01:00Z, response: approve, evidence: ev-qa-panel}
   security: {location: outside, consulter: sess-security-4, requested_at: 2026-08-22T10:00:00Z, response_at: 2026-08-22T10:03:00Z, response: approve, evidence: ev-security-explicit}
-votes: [{session: sess-integrator-1, response: approve}, {session: sess-qa-2, response: approve}, {session: sess-architect-3, response: approve}]
+votes: [{session: sess-integrator-1, response: approve, at: 2026-08-22T10:04:00Z}, {session: sess-qa-2, response: approve, at: 2026-08-22T10:04:00Z}, {session: sess-architect-3, response: approve, at: 2026-08-22T10:04:00Z}]
 vetoes: {qa: none, security: none}
 scope: {clauses: [policy/A, policy/B], permitted_action: "merge this source into this target", exclusions: [release, credentials, services]}
+compensating_controls: [manual-policy-diff, post-merge-verification]
 start: 2026-08-22T10:05:00Z
 end: 2026-08-22T10:20:00Z
 restoration: {condition: "merge decision recorded and policy restored", action: "restore target baseline", evidence: [before:BASELINE, after:RESTORED]}
 state: closed
+created_by: sess-integrator-1
+created_at: 2026-08-22T10:00:00Z
+record_digest: sha256:RECORD
 ```
 
 QA's panel vote is the unanimity gate; Security's separate explicit response is

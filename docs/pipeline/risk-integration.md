@@ -33,15 +33,15 @@ creation; append a new application for corrections or retries.
 | Field | Required value/validation |
 |---|---|
 | `schema`, `application_id`, `supersedes` | `risk-integration/v1`; globally unique ID; `supersedes` is null or a prior failed/expired ID |
-| `integration`, `case`, `target_branch`, `source_branch`, `policy_baseline` | exact integration identity; `case=A4`; full refs/IDs and baseline digest |
+| `integration`, `candidate`, `case`, `target_branch`, `source_branch`, `policy_baseline` | exact integration identity and candidate digest; `case=A4`; full refs/IDs and baseline digest |
 | `reason`, `authority_refs` | non-empty reason; `DEC-0044-018`, scope-review REF, and applicable TK-2 decision refs |
 | `participants` | exactly three panel entries: immutable session ID, role, privileged capability, independence statement, and session start |
 | `panel_membership` | explicit QA/Security `inside` or `outside`; no inferred role or silent substitution |
 | `consultations.qa`, `consultations.security` | each has consulter/session ID, location (`panel`/`outside`), requested and response timestamps, exact explicit response (`approve`/`veto`/`reject`), and evidence ref |
 | `votes` | one explicit vote per panel participant, timestamped and bound to application; all `approve` for success |
 | `vetoes` | QA and Security dispositions, timestamps, evidence; `none` is explicit, never inferred from silence |
-| `scope` | exact policy clauses/files/branches and permitted action; exclusions stated; no open-ended or silent substitution |
-| `reason`, `start`, `end`/`duration` | reason plus finite ISO-8601 start and end or finite duration; end must be computable |
+| `scope`, `compensating_controls` | exact policy clauses/files/branches and permitted action; exclusions and compensating controls stated; no open-ended or silent substitution |
+| `reason`, `start`, `end`/`duration` | reason plus finite ISO-8601 start and end or finite duration; end must be computable and cannot be an implicit Feature lifetime |
 | `restoration` | exact condition, responsible action, before/after baseline digests, timestamp, and evidence ref |
 | `state`, `failure` | state from the transition list; failure code/evidence for every failed path |
 | `created_by`, `created_at`, `record_digest` | immutable author/session, ISO-8601 timestamp, digest over canonical record |
@@ -49,9 +49,11 @@ creation; append a new application for corrections or retries.
 Validity requires all IDs and refs to resolve, sessions to be distinct and
 independent, consultations to precede the vote decision, explicit responses from
 both specialists, unanimous panel approval, no veto, finite scope/duration, and
-restoration evidence matching the recorded baseline. Expiry, missing evidence,
-invalid independence, non-unanimity, or failed restoration is invalid even if work
-was performed; dependent integration remains blocked under `[u]`.
+restoration evidence matching the recorded baseline. A specialist outside the panel
+is a distinct external session; an inside-panel specialist has no second external
+vote or veto step. Expiry, missing evidence, invalid independence, non-unanimity,
+or failed restoration is invalid even if work was performed; dependent integration
+and closure remain blocked under `[u]`.
 
 ## Relationship to acceptance and integration
 
