@@ -190,3 +190,55 @@ Track acceptance queue age, implementation-to-acceptance lead time, first-review
 ## Automotive SPICE relationship boundary
 
 This process can contribute evidence to quality assurance, verification, configuration management, problem/change management, project/risk/measurement management, work-product management, and process improvement. It is not an assessment and establishes no process capability level. A privileged agent is not automatically an organizationally independent QA function or competent assessor. Capability claims require the selected Automotive SPICE model/edition, named process and organizational scope, representative process instances, competent assessment, and evidence that practices are deployed and effective—not merely documented in this repository.
+
+---
+
+## Klarstellung 2026-08-22 — Integrationscheckpoint-Review vs. transitive Acceptance-Closure
+
+**Anlass:** Bei Task `0038-33` stellte der unabhängige Reviewer
+`Data-Geordi-20260822T203512Z` fest, dass die direkte Vorleistung `0038-14`
+kein aktuelles `Acceptance: ✓` trägt, und leitete daraus über §2 eine
+nicht-akzeptierte transitive Closure von **30 Vorgängen** über die Features
+`0038` und `0037` ab. Der Reviewer hat daraufhin korrekt `inconclusive`
+aufgezeichnet, statt außerhalb seines Auftrags zu akzeptieren, und die
+Klärung angefordert. Diese Zurückhaltung war richtig.
+
+**Klarstellung (Projektleiter `kathryn`, ableitbar aus dem `TODO.md`-Header,
+keine neue Regel):**
+
+Die transitive Closure aus §2 gehört zur **Task-Acceptance**. Sie ist **kein**
+Eintrittsgatter für ein **Integrationscheckpoint-Review**. Die beiden sind
+nach `AGENTS.md` ausdrücklich getrennte Lebenszyklen, und der `TODO.md`-Header
+bestimmt beide Seiten unmissverständlich:
+
+- Header Zeile 24: *„A Task/Subtask prerequisite is ordinarily an
+  **implementation start gate**: `[x]`/`[w]` satisfies it so work can continue
+  without serial privileged review."* Eine ausdrückliche Ausnahme („requires a
+  predecessor's current acceptance before start") muss am Vorgang **benannt**
+  sein; `0038-33` nennt keine.
+- Header Zeile 67: *„Integration review is attribute-driven, per node. A Task,
+  Subtask, or Feature is reviewed by a privileged integrator **only if** it
+  carries the attribute `Integration review: mandatory`."*
+
+**Daraus folgt:**
+
+1. Ein Checkpoint-Review beurteilt **den Knoten, an dem es steht**. Es
+   verlangt nicht, dass die Vorleistungskette akzeptiert ist — nur, dass sie
+   `[x]`/`[w]` ist.
+2. Nicht akzeptierte Vorfahren sind eine Angelegenheit der
+   **Feature-Schließung**, nicht dieses Knotens. Sie sind vor dem
+   `DONE.md`-Zug zu klären, dort aber vollständig.
+3. Eine Prosa-Formulierung wie *„no `Acceptance: ✓` record is required"* ist
+   **kein** strukturierter Acceptance-Datensatz. Der Reviewer hat das zu Recht
+   nicht als solchen gewertet. Sie bleibt dennoch für die Frage unerheblich,
+   ob dieses Checkpoint-Review abschließen darf.
+
+**Konkret für `0038-33`:** Das Review darf auf seinen eigenen technischen
+Befunden abschließen. Es lag kein technischer Befund vor. Der
+`inconclusive`-Datensatz bleibt append-only erhalten; ein Folgereview kann auf
+dieser Klarstellung aufsetzen.
+
+**Was diese Klarstellung nicht tut:** Sie akzeptiert keinen einzigen der 30
+Vorgänge, hebt keine Checkpoint-Pflicht auf und verkleinert §2 nicht. Sie
+sagt nur, an welcher Stelle im Ablauf die Closure zu prüfen ist — bei der
+Feature-Schließung, nicht an jedem Knoten erneut.

@@ -8,7 +8,18 @@ Until Feature `0037` completes its authorized cutover, `TODO.md` and `DONE.md` a
 
 Feature `0037` implementation must be executable by sandboxed/grunt agents. Privileged-agent availability must never be an unstated prerequisite.
 
-Capability classes and all sandbox-specific execution mechanics—including discovery, runner requests, network execution, and the root `run.sh` lifecycle—are defined by `SANDBOX.md`. This file defines the collaboration and bookkeeping requirements shared across capability classes.
+Capability classes and all sandbox-specific execution mechanics—including discovery, runner requests, network execution, and the queue dispatch lifecycle—are defined by `SANDBOX.md`. This file defines the collaboration and bookkeeping requirements shared across capability classes.
+
+### Queue-based dispatch (`runner-queue@v1`)
+
+Sandboxed agents reach the runner through the versioned queue, using non-execution file operations only:
+
+- Stage the request under `.runner/drafts/<agent>/<request_id>/` with standard file-write tools.
+- Publish it by an atomic same-filesystem rename to `.runner/requests/<request_id>`.
+- Read the verdict from `.runner/results/<request_id>.result.json`.
+- Observe lease expirations and idempotence keys; a retry of a rejected or failed request keeps its ancestry record (`retry_of`).
+
+Requests with disjoint write scopes run in parallel; overlapping scopes are rejected (`RD-SCOPE-COLLISION`), as are unprivileged writes to governance documents (`RD-GOVERNANCE-SCOPE`). The legacy singleton `run.sh` is retired — `SANDBOX.md` retains its description for reading archived runs, not for new work.
 
 Feature, Task, and Subtask work is carried on Git branches named after the item ID, merged upward, with claim files committed alongside work products. The branch topology, the binding base-and-merge start rule, merge authority by level, Feature integration, and the Feature-level `[u]` integration verdict are defined in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md); the acceptance meanings it references are unchanged.
 
@@ -262,6 +273,14 @@ If concurrent edits make a safe append impossible, record the suggestion in the 
   - **Expected benefit:** Turns a rare, high-damage, hours-to-notice failure mode into an immediate, addressed one; gives the periodic report as a net under a gate that can be skipped or bypassed by direct-to-main commits (which DEC-0044-012 explicitly permits for governance artifacts) — matching the "hook is a net, not the gate" philosophy already adopted for provenance in DEC-0044-008.
   - **Risk/tradeoff:** A naive line-count-drop heuristic will false-positive on legitimate large deletions (retirements, translations, migrations) — this sweep hit five such cases (`ac2e9f5376`, `2d6493cafb`, `3660701735`, `505caf6f75`, `0f21b9f14b`), all correctly explained by their commit messages. Any implementation needs either a message-based allowlist/justification field or human override at the gate, and must be scoped to paths traceable to a recorded `[x]`/`[w]` branch tip — it cannot police free-form deletions outside that traceable set. Building it is a Task, not authorized by this suggestion alone.
   - **Evidence:** `4b95d99db` / `27930dc9c` (this repository, `main`); this sweep's report at `docs/campaign-evidence/qa-sweep-20260822/report.md` (branch `qa-sweep-20260822`, worktree `.worktrees/qa-harry-20260822T003000Z`), which lists all inspected commits and their disposition.
+  - **Disposition:** pending
+
+- 2026-08-23 — proposer: `kathryn` (Projektleiter, interaktive Session); scope: `general / Koordination bei Sessionwechseln und Wartelagen` (beobachtet an `0037-46.02`, `0044-04`)
+  - **Observation (drei verwandte Vorfaelle eines Tages):** (a) `Harry` lief ein Heredoc im Root-Checkout statt im Reviewworktree, weil ein `cd` aus einem frueheren Tool-Aufruf nicht persistierte (`F-HARRY-R4-SELF-001`, selbst gemeldet und bereinigt); mir schlug am selben Tag ein Preflight fehl, weil er im Zweig- statt Root-Worktree lief. (b) Adas `0044-04`-Korrektur lag 7,5 h fertig auf dem Branch, waehrend alle auf eine angekuendigte Tip-Meldung warteten, die die inzwischen beendete Session nie mehr absetzen konnte. (c) Mailbox-Weckrufe fuehrten Turns derselben Session ausserhalb des sichtbaren Gespraechsfadens aus; die Antworten sahen wie eine parallele Zweitinstanz aus, erzeugten eine Doppelantwort an `harry`, und die Projektleitung haette beinahe den eigenen Prozess beendet (PID-Verwechslung, vom Berechtigungsfilter gestoppt).
+  - **Suggestion:** Drei Arbeitsregeln: (1) In Umgebungen ohne garantiert persistentes Arbeitsverzeichnis ist ein `cd`-basierter Worktree-Wechsel keine Isolationsmassnahme — mutierende Git-/Datei-Operationen nur mit absoluten Pfaden bzw. `git -C <abs>`. (2) Wer eine Meldung ankuendigt, benennt den **erwarteten Commit/Tip vorher**, damit Wartende selbst am Repository nachmessen koennen, statt auf eine Meldung zu warten, die eine beendete Session nicht mehr senden kann; Wartende messen nach spaetestens 30 min selbst nach. (3) Vor jeder „fremde Instanz unter meinem Namen"-Diagnose die Prozessliste gegen die eigene Session-ID pruefen (`ps aux | grep claude`, `--resume <id>`); erst danach koordinieren oder gar beenden.
+  - **Expected benefit:** Verhindert Root-Checkout-Verletzungen durch stillen cwd-Verlust, stundenlange tote Wartelagen auf unmoegliche Meldungen, und Fehlreaktionen auf die eigenen Weckruf-Turns (bis hin zum Selbstabschuss).
+  - **Risk/tradeoff:** Regel (2) verlagert Last auf den Ankuendigenden; bei echten Ueberraschungs-Commits gibt es keinen vorab nennbaren Tip — dann gilt die 30-min-Nachmesspflicht des Wartenden. Reine Arbeitsregeln, keine Werkzeugaenderung; ein spaeterer Task kann (1) als Lint fuer Runner-/Subagent-Skripte haerten.
+  - **Evidence:** agent-inbox `1787483881414-d51c8e0f` (harrys Selbstbefund und Wartelagen-Analyse); Commit `c8d3c1672` (7,5 h unentdeckt); Doppelantworten `1787483931987`/`1787483963069`; PID-Vorfall in der kathryn-Session vom 2026-08-23 (kill 42491, vom Klassifikator blockiert).
   - **Disposition:** pending
 
 Further information is available in [`README.md`](README.md), [`_src/WARTUNG.md`](_src/WARTUNG.md), and [`docs/pipeline/`](docs/pipeline/README.md).
