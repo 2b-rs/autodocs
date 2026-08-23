@@ -402,7 +402,11 @@ Feature branch and performs the Feature-level review. The integrator:
 4. Performs the integration review at each node the architect marked
    `Integration review: mandatory` — and the Feature aggregate review if the
    Feature itself is flagged — as defined in
-   [`task-acceptance.md`](task-acceptance.md), **adding the review findings and
+   [`task-acceptance.md`](task-acceptance.md), executing the derived
+   integration-test obligation of
+   [`integration-test-obligation.md`](integration-test-obligation.md) against
+   the exact integrated candidate (staged activation per `DEC-0044-019`), and
+   **adding the review findings and
    acceptance records** on the Feature branch. `Acceptance: ✓` records are created
    at those checkpoints, bottom-up and prerequisite-closed. Unflagged work carries
    no such record.
