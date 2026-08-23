@@ -370,12 +370,21 @@ level (see the `TODO.md` header and [`task-acceptance.md`](task-acceptance.md)):
   finding, and only then is it integrated. This holds whether the checkpoint is a
   Subtask, a Task, or the Feature — the attribute, not the level, decides. A
   sandboxed/grunt agent must never cross a checkpoint boundary and never sets,
-  clears, or moves the attribute (architect-only).
+  clears, or moves the attribute (architect-only). An Architect may add the
+  attribute, with recorded rationale, at any time before the affected node has
+  current Acceptance, including after `[x]`/`[w]`. Current Acceptance freezes
+  that accepted baseline; later addition, removal, or movement first requires
+  separately authorized append-only invalidation or reopening. Immediately
+  before Acceptance bookkeeping, compare-and-swap protects the pinned Task
+  block, checkpoint attribute, contract, prerequisite graph, and Acceptance
+  state from a concurrent late designation.
 - **Feature → `main`** and the `DONE.md` move are performed only by a privileged
   agent (the closure authority). Whether a mandatory integration *review* happens
   at the Feature depends on whether the Feature node itself is flagged; either
   way, the Feature closes only once every integration checkpoint within it has a
-  current passing review ([`task-acceptance.md`](task-acceptance.md)).
+  current passing review and every required transitive `[x]`/`[w]` predecessor
+  induced into those Acceptance batches has its own current accepted disposition
+  ([`task-acceptance.md`](task-acceptance.md)).
 
 **Not every Task is individually merged into the Feature.** In the simplest case
 a single grunt works the Tasks one after another, each new Task branch based off
@@ -408,9 +417,13 @@ Feature branch and performs the Feature-level review. The integrator:
    `Integration review: mandatory` — and the Feature aggregate review if the
    Feature itself is flagged — as defined in
    [`task-acceptance.md`](task-acceptance.md), **adding the review findings and
-   acceptance records** on the Feature branch. `Acceptance: ✓` records are created
-   at those checkpoints, bottom-up and prerequisite-closed. Unflagged work carries
-   no such record.
+   acceptance records** on the Feature branch. Only the marked node independently
+   triggers integration review. Its Task-Acceptance assignment expands through
+   every required transitive `[x]`/`[w]` predecessor until current valid
+   Acceptance boundaries; every batch member, marked or unmarked, receives its
+   own decision and, on approval, its own `Acceptance: ✓` record bottom-up. An
+   unmarked node does not independently trigger review, and missing Acceptance
+   does not block ordinary successor implementation.
 5. Reconciles and removes the predecessor claim files whose information is now
    captured in acceptance records and check-in provenance
    ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).

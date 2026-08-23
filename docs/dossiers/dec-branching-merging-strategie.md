@@ -1074,3 +1074,100 @@ Anforderung von `Harry-Seven-20260822T153500Z` (agent-inbox
     - **Position:** `supports`
     - **Note:** Independent pre-mutation review recorded in `docs/dossiers/0044-02-gate-scope-review.md`; verdict `scope-ok-mit-auflagen` supports the common decided envelope only, requires fail-closed non-activation pending Management ratification of composition, and does not support either proposed composition shape yet.
 - **Waiver:** `none`
+
+---
+
+## Ratifizierung 2026-08-22 — Zusammensetzung zu `DEC-0044-018` entschieden
+
+**Art:** append-only Ratifizierung. `DEC-0044-018` bleibt unverändert stehen;
+der dort als *nicht in Kraft* markierte Punkt ist hiermit entschieden.
+
+- **Entschieden von:** Management (aktueller User / Repository-Eigentümer)
+- **Wortlaut:** „können im Gremium sitzen, vetorecht gilt aber auch von außen."
+- **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`), der die
+  Entscheidung nicht selbst trifft.
+- **Datum:** 2026-08-22
+
+### Was damit gilt
+
+QA-Manager und Security-Manager **dürfen** Mitglieder des einstimmig
+entscheidenden Dreiergremiums sein — sie sind es aber nicht zwingend.
+**Ihr Vetorecht besteht unabhängig von der Mitgliedschaft und gilt auch von
+außerhalb des Gremiums.**
+
+Daraus folgt für die Umsetzung:
+
+1. **Das Gremium ist nicht besetzungsfest.** Drei unabhängige privilegierte
+   Sessions entscheiden einstimmig. Welche Rollen das sind, ist nicht durch
+   diese Entscheidung festgelegt; die Unabhängigkeitsanforderungen aus
+   `TK-1` gelten unverändert.
+2. **QA-Manager und Security-Manager sind immer zu befassen** — ob als
+   Mitglied oder als externer Vetoträger. Eine Aussetzung, die an einem der
+   beiden vorbeigeht, ist ungültig. Es gibt keine Besetzung, in der ihr Veto
+   entfällt.
+3. **Sitzt einer von beiden im Gremium**, ist sein Veto in der Einstimmigkeit
+   bereits enthalten; ein zusätzliches externes Veto derselben Rolle ist
+   gegenstandslos, nicht doppelt.
+4. **Sitzt keiner von beiden im Gremium**, ist die Einstimmigkeit der drei
+   **notwendig, aber nicht hinreichend**: die Aussetzung tritt erst in Kraft,
+   wenn beide Vetoträger befasst wurden und keiner widerspricht. Schweigen
+   ist keine Zustimmung — die Befassung ist nachzuweisen.
+5. **Ein Veto ist endgültig für den betreffenden Aussetzungsantrag.** Es wird
+   nicht überstimmt, auch nicht durch Einstimmigkeit des Gremiums. Ein
+   erneuter Antrag ist ein neuer Vorgang mit eigenem Datensatz.
+
+### Was diese Ratifizierung nicht tut
+
+Sie autorisiert keine Aussetzung, ändert keine bestehende Policy und ersetzt
+keine der Auflagen aus dem Scope-Review `Data-Lore-20260822T210200Z`
+(`scope-ok-mit-auflagen`). Der Umsetzungsvorgang `0044-02` führt sie aus.
+
+---
+
+## Identifier-Reservierung 2026-08-23 — `DEC-0038-003`
+
+**Art:** append-only Reservierungsvermerk. Kein Entscheidungsdatensatz, keine
+Entscheidung.
+
+Geprüft gegen `main` (`45e0383d13c87d889e63836581143fad21214d6d`); höchste
+belegte Nummer der `DEC-0038-`-Reihe war `DEC-0038-002`. `DEC-0038-003` kam
+im gesamten getrackten Baum von `main` und auf keinem lokalen Branch vor.
+
+| Kennung | Reserviert für | Anfordernde Instanz | Gegenstand laut Vorlage |
+|---|---|---|---|
+| `DEC-0038-003` | Task `0038-34` | QA-Analyse `Harry-Quark-20260823T021100Z` über Dispatcher `harry`; Projektleiter `kathryn` | Regeländerung zu Review-Evidenz und Teststrategie: welche Abschlussnachweise künftige Implementierer erbringen müssen |
+
+**Vorgesehener Pfad des Datensatzes:**
+`docs/dossiers/dec-0038-review-evidence-strategy.md`.
+
+**Warum ein Datensatz erforderlich ist:** Der Knoten `0038-34` trägt
+`Integration review: mandatory` und ändert, was **jeder künftige
+Implementierer** als Abschlussnachweis liefern muss. Damit greift das
+kanonische `cross-item-blast-radius`-Prädikat auf der Vertragsseite: die Regel
+ändert den Contract anderer Arbeitseinheiten, nicht nur deren Ablauf.
+
+**Was dieser Vermerk festhält, ohne die Entscheidung vorwegzunehmen:** Die
+read-only QA-Analyse `Harry-Quark-20260823T021100Z` (agent-inbox
+`1787444052284-4bd42f62`) hat die in `0038-34` niedergelegte **starke kausale
+Diagnose** — Implementierertests seien konfirmatorisch, Reviewertests
+refutational, und daraus erkläre sich das Muster des Tages — gegen die
+tatsächlichen Review-Datensätze geprüft und **nicht gestützt** gefunden. Sie
+empfiehlt eine **verengte Korrektur** anstelle der ausgeschriebenen Regel.
+`0038-34` verlangt genau dieses Vorgehen selbst: „Analysis first, then the
+rule … If the evidence does not support the confirmatory/refutational split …
+correct this Task instead of implementing a rule built on a wrong reading."
+Ob die Empfehlung zutrifft und welche Fassung des Regeltextes gilt,
+entscheidet der Datensatz — nicht diese Reservierung.
+
+**Zuständigkeit:** Abfassung des `decision-record@v1` und die unabhängige
+Architekten-Scope-Prüfung sind Architekt `data` zugewiesen.
+
+**Was diese Reservierung ausdrücklich nicht tut:** Sie belegt die Kennung und
+sonst nichts. Sie enthält **keinen Regeltext** und keinen Datensatzinhalt,
+ändert keinen Marker in `TODO.md`, legt keinen Acceptance-Datensatz an,
+bestätigt oder degradiert das Checkpoint-Attribut von `0038-34` nicht (das ist
+Architektensache), und autorisiert keine Mutation an `TODO.md`, `AGENTS.md`
+oder dem Header-Contract.
+
+**Aufgezeichnet von:** privilegierter Integrator `belanna` (Team Voyager) auf
+Beauftragung durch Projektleiter `kathryn`, 2026-08-23.
