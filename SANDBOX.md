@@ -89,7 +89,7 @@ The runner is an execution service. It is not the user, and the user is not expe
 
 ### Current procedure — queue dispatch (`runner-queue@v1`)
 
-The versioned request queue/dispatcher is active. The live bootstrap selector `agent-workflow.json` carries `"runner_protocol":"runner-queue@v1"`, and **the queue is the sole mutation authority**. The runner host operates in multi-worker continuous mode, accepting asynchronous drafts and processing ready queue requests under `.runner/`.
+**The live bootstrap selector `agent-workflow.json` is the machine authority for which procedure governs a checkout.** From the moment it declares `"runner_protocol":"runner-queue@v1"` (bumped by Task `0037-46.02` on its item branch), the queue is the sole mutation authority for that checkout. While a checkout's selector still declares `runner-request@v1`, the legacy singleton procedure below still governs it — read the selector, not the calendar. Under the queue, the runner host operates in multi-worker continuous mode, accepting asynchronous drafts and processing ready queue requests under `.runner/`.
 
 Publication workflow, using non-execution file tools only:
 
@@ -115,7 +115,7 @@ Both protocols are therefore never accepting mutations at the same time, and the
 
 ### [Legacy / Deprecated] Singleton slot (`runner-request@v1`)
 
-**The following describes the retired singleton procedure. It is retained so that archived runs, evidence and claim records stay readable. Do not apply it to new work** — active agents use the queue procedure above. The single exception is the retirement transaction named in the transition rule.
+**The following describes the singleton procedure being retired. It is retained so that archived runs, evidence and claim records stay readable, and it still governs any checkout whose selector declares `runner-request@v1`. Do not apply it to new work under a queue-epoch selector** — there, agents use the queue procedure above, and the single exception is the retirement transaction named in the transition rule. `runner-host/run-loop.sh` enforces this mechanically: under a bumped selector it moves any new singleton submission unexecuted to the archive with a written rejection notice.
 
 Under that procedure, root `run.sh` was a singleton runner slot. Active Task/claim ownership serialized requests. An existing or pending `run.sh`, or another Task's runner scope, was never to be overwritten.
 
