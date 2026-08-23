@@ -65,6 +65,12 @@ CLAIM_POINTER_RE = re.compile(
     r"(?:base|base_commit) `(?P<base>[0-9a-f]{40}|pending-discovery)`.*$"
 )
 AUTHORITATIVE_REF_RE = re.compile(r"\bREF:\s*(?P<ref>[0-9a-f]{40})\b")
+CHECKPOINT_BULLET_RE = re.compile(r"^\s*-\s*\*\*integration review\b", re.IGNORECASE)
+RATIONALE_ARCHITECT_RE = re.compile(r"rationale\s*\(architect\)", re.IGNORECASE)
+JUSTIFICATION_ARCHITECT_RE = re.compile(r"no-checkpoint justification\s*\(architect\)", re.IGNORECASE)
+RATIONALE_LABEL_RE = re.compile(r"\brationale\b", re.IGNORECASE)
+JUSTIFICATION_LABEL_RE = re.compile(r"no-checkpoint justification", re.IGNORECASE)
+ARCHITECT_AUTHORITY_KEYS = {"role", "rationale"}
 MAX_SOURCE_BYTES = 12 * 1024 * 1024
 MAX_DIFF_BYTES = 2 * 1024 * 1024
 EXIT_OPERATION = 10
@@ -84,6 +90,7 @@ TOP_KEYS = {
     "backlog",
     "claim",
     "payload",
+    "architect_authority",
 }
 SUBJECT_KEYS = {"feature_id", "task_id"}
 ACTOR_KEYS = {"request_id", "owner_token"}
@@ -395,7 +402,7 @@ def _owner(value: object, location: str, task_id: str, request_id: str) -> str:
 
 def load_operation(raw: bytes) -> Operation:
     value = _load_json_unique(raw)
-    top = _closed_object(value, TOP_KEYS, TOP_KEYS - {"claim"}, "$")
+    top = _closed_object(value, TOP_KEYS, TOP_KEYS - {"claim", "architect_authority"}, "$")
     if top.get("schema") != OPERATION_SCHEMA:
         raise EditorError("LTE-OP-SCHEMA", f"$.schema must be {OPERATION_SCHEMA}", "operation", EXIT_OPERATION)
     operation_id = _single_line(top.get("operation_id"), "$.operation_id")
@@ -457,6 +464,23 @@ def load_operation(raw: bytes) -> Operation:
                 subject=task_id,
             )
 
+    authority_value = top.get("architect_authority")
+    architect_authority: Optional[Dict[str, object]] = None
+    if authority_value is not None:
+        architect_authority = _closed_object(authority_value, ARCHITECT_AUTHORITY_KEYS, ARCHITECT_AUTHORITY_KEYS, "$.architect_authority")
+        role = _single_line(architect_authority.get("role"), "$.architect_authority.role")
+        if role != "architect":
+            raise EditorError(
+                "LTE-CHECKPOINT-AUTHORITY-REQUIRED",
+                "$.architect_authority.role must be exactly 'architect'",
+                "operation",
+                EXIT_OPERATION,
+            )
+        architect_authority["role"] = role
+        architect_authority["rationale"] = _single_line(
+            architect_authority.get("rationale"), "$.architect_authority.rationale"
+        )
+
     required_payload, optional_payload = PAYLOAD_FIELDS[kind]
     payload = _closed_object(top.get("payload"), required_payload | optional_payload, required_payload, "$.payload")
     _validate_payload(kind, payload, task_id)
@@ -498,6 +522,10 @@ def load_operation(raw: bytes) -> Operation:
         normalized["claim"] = claim
     else:
         normalized.pop("claim", None)
+    if architect_authority is not None:
+        normalized["architect_authority"] = architect_authority
+    else:
+        normalized.pop("architect_authority", None)
     contract = _json_bytes(normalized)
     return Operation(normalized, _sha256(raw), _sha256(contract))
 
@@ -914,6 +942,104 @@ def _assert_pointer(task_block: str, claim: ClaimDocument) -> re.Match[str]:
     return pointer
 
 
+def _checkpoint_attribute_line(line: str) -> Optional[Dict[str, object]]:
+    """Parse a structural ``- **Integration review: ...`` attribute bullet.
+
+    Mirrors ``legacy_task_doctor._checkpoint_attribute_line`` exactly (kept as
+    an independent copy so each ``_src/tools/`` script stays a standalone,
+    dependency-free file per project convention). Returns ``None`` when the
+    line is not the attribute bullet itself; prose that merely quotes or
+    discusses the attribute does not count. Otherwise returns the parsed
+    polarity (``True``/``False``/``None`` for mandatory/not-mandatory/
+    unrecognized) plus whether an ``(architect)``-tagged Rationale/
+    No-checkpoint justification label is present on the same line.
+    """
+
+    if not CHECKPOINT_BULLET_RE.match(line):
+        return None
+    stripped = re.sub(r"[*`]", "", line)
+    match = re.search(r"integration review:?\s*(?P<rest>.+)", stripped, re.IGNORECASE)
+    if not match:
+        return {
+            "mandatory": None,
+            "has_rationale_label": False,
+            "has_justification_label": False,
+            "architect_tagged": False,
+        }
+    first_clause = match.group("rest").split(".")[0]
+    starts_with_mandatory = bool(re.match(r"\s*mandatory\b", first_clause, re.IGNORECASE))
+    starts_with_not_mandatory = bool(re.match(r"\s*not\s+mandatory\b", first_clause, re.IGNORECASE))
+    has_not = bool(re.search(r"\bnot\b", first_clause, re.IGNORECASE))
+    mandatory: Optional[bool]
+    if starts_with_mandatory:
+        mandatory = not has_not
+    elif starts_with_not_mandatory:
+        mandatory = False
+    else:
+        mandatory = None
+    return {
+        "mandatory": mandatory,
+        "has_rationale_label": bool(RATIONALE_LABEL_RE.search(stripped)),
+        "has_justification_label": bool(JUSTIFICATION_LABEL_RE.search(stripped)),
+        "architect_tagged": bool(
+            RATIONALE_ARCHITECT_RE.search(stripped) or JUSTIFICATION_ARCHITECT_RE.search(stripped)
+        ),
+    }
+
+
+def _checkpoint_lines(text: str) -> List[str]:
+    return [line for line in text.splitlines() if CHECKPOINT_BULLET_RE.match(line)]
+
+
+def _enforce_checkpoint_authority(operation: Operation, before: str, after: str, task_id: str, path: str) -> None:
+    """Refuse any rendered change to an ``Integration review:`` attribute
+    bullet unless the operation carries an explicit ``architect_authority``
+    assertion, and unless the resulting bullet(s) are themselves well-formed
+    (Task ``0038-23``; ``AGENTS.md`` — "Sandboxed/grunt implementers never
+    set, clear, or move the attribute").
+
+    Comparing the exact set of attribute bullets before/after means ordinary
+    operations that never touch the attribute (the overwhelming majority)
+    pay no cost and are never asked for authority they have no reason to
+    carry; only a render that actually adds, removes, or edits a checkpoint
+    bullet is gated. Architect authority is a self-declared role assertion
+    carried in the operation, not a capability-class fact: `_
+    docs/pipeline/process-roles.md` fixes the architect's minimum capability
+    class at `sandboxed/grunt`, so capability class cannot stand in for it.
+    """
+
+    before_lines = _checkpoint_lines(before)
+    after_lines = _checkpoint_lines(after)
+    if before_lines == after_lines:
+        return
+    authority = operation.data.get("architect_authority")
+    if not isinstance(authority, dict) or authority.get("role") != "architect" or not authority.get("rationale"):
+        raise EditorError(
+            "LTE-CHECKPOINT-AUTHORITY-REQUIRED",
+            "change sets, clears, or moves an Integration review attribute without an architect_authority assertion",
+            "precondition",
+            EXIT_INPUT,
+            path=path,
+            subject=task_id,
+        )
+    for line in after_lines:
+        parsed = _checkpoint_attribute_line(line)
+        if (
+            parsed is None
+            or parsed["mandatory"] is None
+            or not parsed["architect_tagged"]
+            or not (parsed["has_rationale_label"] or parsed["has_justification_label"])
+        ):
+            raise EditorError(
+                "LTE-CHECKPOINT-MALFORMED",
+                "rendered Integration review attribute lacks a recognized polarity or an (architect)-tagged rationale/justification",
+                "render",
+                EXIT_RENDER,
+                path=path,
+                subject=task_id,
+            )
+
+
 def _render_task_change(operation: Operation, document: BacklogDocument, task: TaskNode, claim: Optional[ClaimDocument], sources: Mapping[str, bytes]) -> Tuple[Change, ...]:
     data = operation.data
     kind = str(data["kind"])
@@ -1168,6 +1294,7 @@ def _render_task_change(operation: Operation, document: BacklogDocument, task: T
         )
 
     if new_block != block:
+        _enforce_checkpoint_authority(operation, block, new_block, task_id, document.path)
         after_text = document.text[: task.span.start] + new_block + document.text[task.span.end :]
         if not after_text.startswith(document.text[: task.span.start]) or not after_text.endswith(document.text[task.span.end :]):
             raise EditorError("LTE-UNRELATED-BYTES", "render changed bytes outside the Task span", "render", EXIT_RENDER, path=document.path, subject=task_id)

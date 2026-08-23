@@ -1,0 +1,68 @@
+Provenance receipt — DEC-0044-015
+=================================
+
+Artifact:  docs/dossiers/dec-branching-merging-strategie.md (section `DEC-0044-015`)
+Recorder:  Projektleiter `kathryn` (DEC-ROLE-001: records decisions, does not make them)
+Runtime:   zed / claude-opus-5
+Date:      2026-08-21 (UTC)
+Base:      e0055e9814a2ac80e11870af4f1a4d93b1ff0942 (main)
+Branch:    gov-dec-0044-015
+
+Per AGENTS.md, section "Check-in provenance": the full verbatim text of every
+user-authored prompt that materially requested, authorized, corrected, or
+triggered the committed artifact is reproduced below, in order, unsummarized.
+No system, developer, or internal prompts are included. No secrets, credentials,
+or restricted personal data are present; no redaction was applied.
+
+---------------------------------------------------------------------------
+PROMPT 1 — session opening; assigns role, identity, and dispatch rules
+---------------------------------------------------------------------------
+Du bist ein privilegierter Agent in der Rolle Projektleiter. Dein Name ist
+
+Kathryn
+. Du hast ein `agent-inbox` MCP-Tool. Rufe `announce(agent: "<dein Name>", role: "<deine Rolle>", runtime: "zed/`<dein Modell>`")` auf, dann `inbox(agent: "<dein-Name>")`. Schau zu Beginn jeder Session und vor jeder Folgeaktion da rein. Wenn sich deine Rolle oder dein Modell ändert, rufe announce erneut auf.
+
+Starte die Implementierung von Tasks stets als umprivilegierte Subagenten (maximal 3 parallel), denen du deinen Namen vererbst, ihnen aber zusätzlich einen passenden, frei erfundenen Vornamen gibst und Datum-Zeit der Erzeugung anhängst. Für diese Subagenten gilt: Keine Abnahme, kein Integrationsknoten, kein `DONE.md`. Die `capability_class` dieser Subagenten ist `unprivileged`, nicht `sandboxed-grunt`. Sie führen Git, Merges, Commits und Tests **direkt** aus und benutzen NIE das Runner-Protokoll. Keiner deiner Agenten darf auf `run.sh` warten — der Slot ist für euch irrelevant.
+
+Wenn Reviews benötigt werden, starte dafür einen privilegierten Subagenten mit entsprechender Autorität und gleichem Namensschema:
+
+Requirements Engineer - Vorname "Chakotay",
+Architekt - Vorname "Tom",
+Integrator - Vorname 'B'ellana',
+Security Engineer - 'Tuvok',
+Projektleiter - 'Kathryn',
+QA-Manager 'Harry'.
+
+---------------------------------------------------------------------------
+PROMPT 2 — decision on the mailbox address collision (answer to a question
+           posed by this session)
+---------------------------------------------------------------------------
+Ich laufe unter 'kathryn' weiter
+
+---------------------------------------------------------------------------
+PROMPT 3 — the instruction that authorizes this decision record
+---------------------------------------------------------------------------
+Ja, DEC-0044-009 ist ratifiziert. Data  soll an den freien Subtasks von 0044 arbeiten. Worf soll 0019 und 0040 fertig machen. Regle alles notwendige, damit die drei Dispatcher fertig werden. Ggfs. kannst du in ihrem Auftrag einen Integrator als Subagent starten.
+
+---------------------------------------------------------------------------
+NOTE ON THE IDENTIFIER IN PROMPT 3
+---------------------------------------------------------------------------
+The user ratified under the identifier `DEC-0044-009`. The rule actually meant
+and discussed — the read-only root checkout — is recorded as `DEC-0044-010`;
+`DEC-0044-009` is the reference-transaction hook. The confusion originates in an
+early project-lead broadcast that announced the four management decisions as
+`DEC-0044-007..010`, a numbering later corrected to `008..011`. This session
+carried that stale numbering into its own question to the user, and the user
+answered in the terms the question was posed. The substance ratified is
+unambiguous from the surrounding exchange. The discrepancy is recorded rather
+than silently corrected, per the append-only rule.
+
+---------------------------------------------------------------------------
+PRIOR TECHNICAL REVIEW (not a user prompt; recorded for traceability)
+---------------------------------------------------------------------------
+Privileged coordinator `Data`, agent-inbox thread `work-dispatch`,
+2026-08-21T20:49:39Z, message id 1787345379543-f2647290. Verdict: no technical
+flaw in the branch-to-root `git merge --ff-only/--no-ff` sequence; required
+conditions (named authority, clean-state preflight, abort without cleanup,
+prohibition of `update-ref` for `main`, checker retained as precondition). All
+five conditions are incorporated into `DEC-0044-015`.

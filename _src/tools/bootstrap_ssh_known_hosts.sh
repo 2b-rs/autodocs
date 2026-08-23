@@ -7,7 +7,9 @@ set -euo pipefail
 
 GITHUB_ED25519_FP='SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU'
 KNOWN_HOSTS="${HOME}/.ssh/known_hosts"
-mkdir -p "${HOME}/.ssh" && chmod 700 "${HOME}/.ssh"
+
+mkdir -p "${HOME}/.ssh" || exit 1
+chmod 700 "${HOME}/.ssh" || exit 1
 
 if ssh-keygen -F github.com -l 2>/dev/null | grep -qF "$GITHUB_ED25519_FP"; then
   echo "OK: GitHub host key already present and fingerprint matches."
@@ -17,17 +19,19 @@ fi
 echo "Adding GitHub Ed25519 host key..."
 scanned=$(ssh-keyscan -t ed25519 github.com 2>/dev/null)
 if [ -z "$scanned" ]; then
-  echo "FAIL: ssh-keyscan returned nothing — check network access."; exit 1
-fi
-echo "$scanned" >> "$KNOWN_HOSTS"
-
-# Verify the key we just added matches the known-good fingerprint
-added_fp=$(ssh-keygen -lf <(echo "$scanned") | awk '{print $2}')
-if [ "$added_fp" != "$GITHUB_ED25519_FP" ]; then
-  echo "FAIL: fingerprint mismatch — expected $GITHUB_ED25519_FP got $added_fp"
-  # Remove the untrusted entry we just appended
-  grep -vF "$scanned" "$KNOWN_HOSTS" > "${KNOWN_HOSTS}.tmp" && mv "${KNOWN_HOSTS}.tmp" "$KNOWN_HOSTS"
+  echo "FAIL: ssh-keyscan returned nothing — check network access." >&2
   exit 1
 fi
 
-echo "VERIFIED: GitHub host key added — fingerprint $added_fp"
+# Verify the fingerprint BEFORE mutating known_hosts at all — fail closed by
+# gating the write, rather than writing an unverified entry and rolling it
+# back after the fact.
+scanned_fp=$(ssh-keygen -lf <(echo "$scanned") | awk '{print $2}')
+if [ "$scanned_fp" != "$GITHUB_ED25519_FP" ]; then
+  echo "FAIL: fingerprint mismatch — expected $GITHUB_ED25519_FP got $scanned_fp" >&2
+  exit 1
+fi
+
+echo "$scanned" >> "$KNOWN_HOSTS" || exit 1
+
+echo "VERIFIED: GitHub host key added — fingerprint $scanned_fp"

@@ -16,7 +16,7 @@ If these instructions conflict and precedence does not resolve the conflict safe
 
 ## Privileged capability
 
-A privileged agent may directly use available shell, Git, test, build, generator, browser, network, and package-management tools within the runtime's actual security and approval controls.
+A privileged agent may directly use available shell, Git, test, build, generator, browser, network, and package-management tools within the runtime's actual security and approval controls. Direct execution is **not** what distinguishes this class: an `unprivileged` agent may execute just as directly (`SANDBOX.md`). What distinguishes a privileged agent is **authority** — acceptance, integration across a mandatory checkpoint, and the `DONE.md` move. Never treat the ability to run a command as evidence of that authority.
 
 Privilege changes the execution mechanism, not the required engineering discipline. A privileged agent must still:
 

@@ -142,6 +142,28 @@ A target Feature and Task must each be structurally unique. Rendering splices on
 
 Multi-file/create/delete plans are fully rendered and reviewed, but publication remains `0038-05.02` work.
 
+## Checkpoint-attribute authority
+
+Task `0038-23` adds one guard that applies to every one of the nine kinds above, at the point each renders its final Task-block text: if the rendered result changes the exact set of `- **Integration review: ...` attribute bullets in the Task block relative to the source (a bullet added, removed, or edited), the operation is refused unless it carries an explicit, optional top-level `architect_authority` assertion:
+
+```json
+{
+  "architect_authority": {
+    "role": "architect",
+    "rationale": "Flags this Task as the Feature's integrating checkpoint."
+  }
+}
+```
+
+`role` must be the exact literal string `architect`; `rationale` must be one non-structural printable line (the same narrative-field rules as every other payload field). This is a self-declared role assertion, not a capability-class check: `docs/pipeline/process-roles.md` fixes the architect's *minimum* capability class at `sandboxed/grunt`, so a claim's `capability_class` cannot stand in for architect authority.
+
+Even with a valid `architect_authority`, every resulting attribute bullet must itself be well-formed under the same structural-bullet, polarity, and `(architect)`-tag rules the read-only doctor validates (`docs/pipeline/legacy-task-doctor.md`, "Checkpoint-attribute rules") — an authorized but malformed or untagged result is still refused. Ordinary operations that never touch a checkpoint bullet (the overwhelming majority — none of the nine typed kinds render free narrative text as the *start* of a fresh bullet, so a well-formed attribute bullet cannot be introduced except by an operation that already carries this authority) pay no cost and never need to declare `architect_authority`.
+
+| Rule | Meaning |
+|---|---|
+| `LTE-CHECKPOINT-AUTHORITY-REQUIRED` | The rendered change sets, clears, or edits an Integration review attribute bullet without a valid `architect_authority` assertion (or the assertion's `role` is not exactly `architect`). |
+| `LTE-CHECKPOINT-MALFORMED` | An `architect_authority`-authorized change still leaves an attribute bullet whose polarity is unrecognized, or whose `Rationale`/`No-checkpoint justification` label is missing the `(architect)` tag. |
+
 ## Candidate contract
 
 `write_candidate()` creates a new candidate directory containing:
@@ -217,6 +239,7 @@ No authoritative bytes are changed.
 | Claim | `LTE-CLAIM-IDENTITY`, `LTE-CLAIM-POINTER`, `LTE-CLAIM-CONFLICT`, `LTE-CLAIM-FINALIZE-MISMATCH` |
 | Candidate | `LTE-NOOP`, `LTE-UNRELATED-BYTES`, `LTE-CANDIDATE-POSTCONDITION`, `LTE-CANDIDATE-TAMPERED` |
 | Publication | `LTE-PROMOTE-COORDINATOR-REQUIRED` |
+| Checkpoint attribute | `LTE-CHECKPOINT-AUTHORITY-REQUIRED`, `LTE-CHECKPOINT-MALFORMED` |
 
 ## Historical fixtures and validation
 
@@ -230,7 +253,7 @@ No authoritative bytes are changed.
 - parent/child aggregation;
 - hidden REFs and fenced normative-section decoys.
 
-The focused suite covers all nine operation plans, byte-exact prefix/suffix preservation, pending-discovery pickup, actor/claim ownership, role alias rejection, complete read/absent sets, coherent semantic candidate tampering, newly appearing claims, source drift, nested candidate/path/member/diff/blob tampering, mixed fence/comment syntax, Unicode line separators, CLI planning, structured coordinator handoff, and fail-closed legacy-helper retirement.
+The focused suite covers all nine operation plans, byte-exact prefix/suffix preservation, pending-discovery pickup, actor/claim ownership, role alias rejection, complete read/absent sets, coherent semantic candidate tampering, newly appearing claims, source drift, nested candidate/path/member/diff/blob tampering, mixed fence/comment syntax, Unicode line separators, CLI planning, structured coordinator handoff, and fail-closed legacy-helper retirement. `CheckpointAuthorityTests` (Task `0038-23`) separately covers both attribute polarities, prose-mention rejection, unauthorized bullet addition/removal, authorized-but-malformed/untagged results, an authorized well-formed change, `architect_authority` schema validation (role/rationale/unknown-field), and that an ordinary operation untouched by the guard renders unaffected.
 
 Run:
 
