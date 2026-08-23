@@ -6,6 +6,8 @@ where possible, to the associated implementation or evidence.
 
 ## Contents
 
+- [`core-rules.md`](./core-rules.md) — core pipeline and engineering rules (ASPICE baseline, IDs, isolation, 4-eyes principle)
+- [`roles/`](./roles/) — role-specific Standard Operating Procedures (SOPs) for modular process execution
 - [`roles.md`](./roles.md) — **product-domain** roles (human, AI,
   tool/validator), distinct from [`process-roles.md`](./process-roles.md)
 - [`process-roles.md`](./process-roles.md) — process roles, capability-class
@@ -19,6 +21,8 @@ where possible, to the associated implementation or evidence.
   evidence, generate source, validate, publish, archive)
 - [`tools.md`](./tools.md) — catalog of project tools and their contracts
 - [`reports.md`](./reports.md) — report types, locations, and retention rules
+- [`build-ledger.md`](./build-ledger.md) — schema and append-only contract of
+  the tracked build ledger `docs/evidence/build-ledger.jsonl` (`DEC-0043-001`)
 - [`agent-execution.md`](./agent-execution.md) — capability classes and the
   sandboxed runner contract
 - [`agent-workflow.md`](./agent-workflow.md) — authority discovery,
@@ -27,6 +31,13 @@ where possible, to the associated implementation or evidence.
   integration, claim carriage, and integration verdicts
 - [`task-acceptance.md`](./task-acceptance.md) — privileged Task acceptance
   and Feature closure
+- [`integration-test-obligation.md`](./integration-test-obligation.md) — the
+  executable integration-test obligation at mandatory checkpoints: derivation
+  from architecture and interface contracts, evidence minimum, no-automation
+  fallback (`DEC-0044-019`, staged activation)
+- [`legacy-handoff-manifest.md`](./legacy-handoff-manifest.md) — pre-activation
+  hand-over of every surviving legacy execution primitive to the `0037-46.01`
+  typed-action registry or an explicit `0037-46.02` retirement trigger
 - [`automation-safety.md`](./automation-safety.md) — automation-safety policy
   and findings workflow
 - [`environment-doctor.md`](./environment-doctor.md) — environment and

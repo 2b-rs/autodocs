@@ -131,3 +131,32 @@ dass nur eine Session mit runner-pflichtiger Klasse je auf `run.sh` wartet.
 
 Der Default selbst bleibt `sandboxed-grunt`. Er ist die restriktivste Klasse und
 damit die einzige, die man gefahrlos annehmen kann, wenn nichts bekannt ist.
+
+---
+
+## `DEC-CAP-003` — Agenten ändern niemals einen Dienst, der sie kontrolliert
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T20:40:00+02:00`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** Direkte Anweisung des aktuellen Users, 2026-08-22, im Wortlaut: „Ich erlaube Agenten generell nicht sie kontrollierende Dienste zu verändern, sondern bitte sie stattdessen mich zu beauftragen, damit ich die änderung am dienst prüfen und selbst durchführen kann."
+- **Aufgezeichnet von:** Projektleiter `kathryn` (`DEC-ROLE-001`), der die Entscheidung nicht selbst trifft.
+- **Subject:** Änderungen an Diensten, Prozessen und Konfigurationen, die die Ausführung von Agenten selbst steuern.
+- **Decision:** Kein Agent — unabhängig von Kapazitätsklasse, auch privilegiert — verändert einen Dienst, der ihn oder andere Agenten **kontrolliert**. Das umfasst mindestens den Runner-Dienst und sein Startskript, die Startmechanik, Health-, Restart-, Rollback- und Revocation-Pfade sowie jede Konfiguration, die bestimmt, ob und wie Agenten überhaupt ausgeführt werden. Ein Agent, der eine solche Änderung für nötig hält, **beauftragt stattdessen den Repository-Eigentümer**: er beschreibt die gewünschte Änderung, ihren Zweck, die erwartete Wirkung, die Rücksetzung und die Prüfung. Der Eigentümer prüft und führt sie **selbst** durch. Unberührt bleiben die *Beschreibungen* solcher Dienste im Repository — sie dürfen bearbeitet werden, aber eine Beschreibung darf niemals ein Verhalten behaupten, das am Dienst nicht hergestellt wurde.
+- **Technical justification:** Ein Agent, der den Dienst ändert, der ihn ausführt, kann sich im Fehlerfall nicht selbst zurückholen — die Rücksetzung liefe über genau den Mechanismus, den er beschädigt hat. Der Fall ist am 2026-08-22 unter Task `0037-46.02` konkret geworden: `issues/_policy/runner-service.json` beschreibt einen Dienst unter `/tmp/autodocs/runner-host/run-loop.sh`, der **zum Zeitpunkt dieser Aufzeichnung gar nicht existiert**, und ein Agent hatte die Beschreibung bereits auf ein `--once`-Verhalten umgestellt, das am Skript niemand hergestellt hat. Beschreibung und Wirklichkeit waren damit auseinandergelaufen, ohne dass es jemandem auffiel.
+- **Triggers:**
+  - `cross-item-blast-radius`
+- **Considered alternatives:**
+  - **ALT-01:** Agenten dürfen kontrollierende Dienste ändern, wenn sie einen bewiesenen Rollback mitliefern.
+    - **Disposition:** `rejected`
+    - **Reason:** Der Rollback läuft im Zweifel über denselben Dienst. Ein Beweis vor der Änderung sagt nichts über den Zustand nach einer fehlgeschlagenen Änderung.
+  - **ALT-02:** Beauftragung des Eigentümers; Agenten liefern Beschreibung, Zweck, Wirkung, Rücksetzung und Prüfung.
+    - **Disposition:** `selected`
+    - **Reason:** Trennt die Stelle, die den Bedarf erkennt, von der Stelle, die den Eingriff verantwortet — ohne den Bedarf zu unterdrücken.
+- **Consequences:**
+  - **CON-01:** Für Task `0037-46.02` ist der Host-Anteil damit dauerhaft eine Auftragsleistung an den Eigentümer, kein Agentenschritt. Der gemeldete Blocker ist damit kein Ausnahmefall, sondern der Regelfall.
+  - **CON-02:** Eine Dienstbeschreibung, die ein noch nicht hergestelltes Verhalten behauptet, ist ein Befund und keine Vorbereitung.
+- **Affected work units:** `task:0037-46.02`, `task:0037-46`, `feature:0037`, `repository:autodocs`
+- **Affected gates:** Runner-Ausführung insgesamt; jede künftige Aktivierung, Stilllegung oder Umkonfiguration eines steuernden Dienstes.
+- **Waiver:** keiner.
