@@ -13,6 +13,11 @@ Prüft:
   5. Sprachbäume (en es pt fr ru ar hi ko zh): byte-genau reproduzierbar,
      gleicher Seitenbestand wie Deutsch, korrekte lang-/dir-Attribute,
      keine Maskierungs-Platzhalter (⟦…⟧) im Output, Flaggen vorhanden
+  6. Aktualität des veröffentlichten Build-Reports (0043-04): das Seitenmodell
+     `_src/sources/pages/build-reports.json` ist über sein
+     `publication_provenance`-Objekt an genau einen schemakonformen Eintrag des
+     getrackten Ledgers `docs/evidence/build-ledger.jsonl` gebunden, und eine
+     vollständige lokale Publikationskohorte hat einen Ledger-Eintrag
 Exit-Code 0 = alles in Ordnung.
 """
 import glob
@@ -593,6 +598,209 @@ def check_record_status():
             record_finding("missing-record-status", "error", f"Record ohne 'status': {rid}", ref=rid)
 
 
+BUILD_REPORT_PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
+BUILD_REPORTS_DIR = os.path.join(ROOT, "output", "build-reports")
+
+
+def _import_build_tools():
+    tools_dir = os.path.join(SRC, "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import build_ledger
+    import build_report
+    return build_report, build_ledger
+
+
+def _eligible_publication_cohorts(build_report):
+    """Group local raw subreports into publication-candidate cohorts (0043-04).
+
+    A cohort is a publication candidate only when it is *complete*: all four
+    required stages present, every subreport schema-valid, sharing one non-empty
+    ``run_archive_ref``. Identity-less reports and reports of an expressly
+    diagnostic ``--no-ledger`` run are excluded, and an incomplete (in-flight)
+    cohort is never a candidate — that is the false-positive guard that keeps a
+    build in progress, including this validator's own subreport, from producing
+    a staleness finding.
+
+    Returns a list of ``(finished_at, run_archive_ref)`` sorted oldest first.
+    """
+    diagnostic_refs = set()
+    by_ref = {}
+    if not os.path.isdir(BUILD_REPORTS_DIR):
+        return []
+    for path in sorted(glob.glob(os.path.join(BUILD_REPORTS_DIR, "*.json"))):
+        try:
+            with open(path, encoding="utf-8") as fp:
+                data = json.load(fp)
+            if not isinstance(data, dict):
+                continue
+        except (OSError, UnicodeError, ValueError):
+            # Unreadable raw evidence is reported by `combine`, not here: it is
+            # not one of this check's two firing conditions.
+            continue
+        ref = data.get("run_archive_ref")
+        if not isinstance(ref, str) or not ref.strip():
+            continue
+        if os.path.basename(path).startswith("combined-"):
+            if data.get("diagnostic_no_ledger") is True:
+                diagnostic_refs.add(ref)
+            continue
+        if build_report._validate_subreport(data, ref):
+            continue
+        by_ref.setdefault(ref, {})[data["report_kind"]] = data
+
+    cohorts = []
+    for ref, stages in by_ref.items():
+        if ref in diagnostic_refs:
+            continue
+        if any(stage not in stages for stage in build_report.REQUIRED_STAGES):
+            continue
+        cohorts.append((max(s["finished_at"] for s in stages.values()), ref))
+    return sorted(cohorts)
+
+
+def check_report_freshness():
+    """Report staleness of the published build report (0043-04, DEC-0043-003).
+
+    Two firing conditions, and no others:
+
+      (a) the tracked page model's publication provenance is missing, malformed,
+          or does not match the newest schema-valid entry of the tracked ledger
+          `docs/evidence/build-ledger.jsonl`;
+      (b) a complete, non-diagnostic publication cohort exists locally with no
+          matching tracked ledger entry.
+
+    The check is read-only: it never combines, publishes, appends to the ledger,
+    or repairs the page. It is decidable from tracked state alone — a clean
+    checkout with an empty `output/` and a page model matching the newest ledger
+    entry passes, and the absence of git-ignored raw reports is never itself a
+    finding.
+    """
+    checks_performed.append("check_report_freshness")
+    try:
+        build_report, build_ledger = _import_build_tools()
+    except Exception as exc:
+        record_finding(
+            "report-freshness-error", "error",
+            f"Report-Freshness-Pruefung konnte nicht laufen: {exc}",
+        )
+        return
+
+    page_rel = os.path.relpath(BUILD_REPORT_PAGE_MODEL, ROOT)
+    try:
+        with open(BUILD_REPORT_PAGE_MODEL, encoding="utf-8") as fp:
+            page_data = json.load(fp)
+        if not isinstance(page_data, dict):
+            raise ValueError("top-level JSON value must be an object")
+    except (OSError, UnicodeError, ValueError) as exc:
+        record_finding(
+            "stale-build-report", "error",
+            f"Seitenmodell des Build-Reports ist nicht lesbar: {page_rel}: {exc}",
+            ref=page_rel,
+        )
+        return
+
+    # --- Ledger: malformed tracked history is itself an error finding. -------
+    entries, ledger_findings = build_ledger.read_entries()
+    for finding in ledger_findings:
+        record_finding(
+            finding.get("category", "malformed-build-ledger"),
+            finding.get("severity", "error"),
+            finding.get("message", ""),
+            ref=finding.get("ref"),
+        )
+    newest = entries[-1] if entries else None
+
+    # --- (a) page binding vs newest valid ledger entry -----------------------
+    prov = page_data.get(build_report.PROVENANCE_KEY)
+    if not isinstance(prov, dict):
+        record_finding(
+            "stale-build-report", "error",
+            "Seitenmodell des Build-Reports traegt keine Publikations-Provenienz "
+            f"('{build_report.PROVENANCE_KEY}'); die veroeffentlichte Seite ist an keinen "
+            "Ledger-Eintrag gebunden und ihre Aktualitaet daher nicht pruefbar. "
+            "Erzeugen mit: python3 _src/tools/build_report.py publish  (oder provenance).",
+            ref=page_rel,
+        )
+        return
+    if prov.get("schema_version") != build_report.PROVENANCE_SCHEMA_VERSION:
+        record_finding(
+            "stale-build-report", "error",
+            f"Publikations-Provenienz hat unbekannte schema_version "
+            f"{prov.get('schema_version')!r} (erwartet {build_report.PROVENANCE_SCHEMA_VERSION!r}).",
+            ref=page_rel,
+        )
+        return
+
+    binding = prov.get("ledger_entry")
+    if newest is None:
+        if binding is not None:
+            record_finding(
+                "stale-build-report", "error",
+                "Publikations-Provenienz nennt einen Ledger-Eintrag, das getrackte Ledger "
+                "enthaelt aber keinen schemakonformen Eintrag.",
+                ref=page_rel,
+            )
+    elif not isinstance(binding, dict):
+        record_finding(
+            "stale-build-report", "error",
+            "Publikations-Provenienz enthaelt keinen Ledger-Eintrag, obwohl das getrackte "
+            f"Ledger {len(entries)} schemakonforme Eintraege hat (juengster: "
+            f"{newest.get('recorded_at')}).",
+            ref=page_rel,
+        )
+    else:
+        mismatched = [
+            field for field in ("recorded_at", "run_archive_ref", "combined_report_digest")
+            if binding.get(field) != newest.get(field)
+        ]
+        if mismatched:
+            record_finding(
+                "stale-build-report", "error",
+                "Veroeffentlichter Build-Report ist veraltet oder falsch gebunden: "
+                f"Seitenmodell nennt {{recorded_at={binding.get('recorded_at')!r}, "
+                f"run_archive_ref={binding.get('run_archive_ref')!r}}}, juengster "
+                f"Ledger-Eintrag ist {{recorded_at={newest.get('recorded_at')!r}, "
+                f"run_archive_ref={newest.get('run_archive_ref')!r}}} "
+                f"(abweichend: {', '.join(mismatched)}). "
+                "Neu erzeugen mit: python3 _src/tools/build_report.py publish.",
+                ref=page_rel,
+            )
+        elif binding.get("run_archive_ref") is None and not binding.get("backfilled"):
+            # A live publication must name its cohort; a null ref is honest only
+            # for the historic backfilled entry it exactly mirrors.
+            record_finding(
+                "stale-build-report", "error",
+                "Publikations-Provenienz bindet an einen Eintrag ohne run_archive_ref, "
+                "der nicht als 'backfilled' markiert ist; ein Live-Lauf muss seine "
+                "Kohorte benennen.",
+                ref=page_rel,
+            )
+        rendered = prov.get("rendered_run_archive_ref")
+        if rendered is not None and rendered != binding.get("run_archive_ref"):
+            record_finding(
+                "stale-build-report", "error",
+                f"Seitenkoerper wurde aus Kohorte {rendered!r} gerendert, die Provenienz "
+                f"bindet aber an {binding.get('run_archive_ref')!r}.",
+                ref=page_rel,
+            )
+
+    # --- (b) complete local cohort without a tracked ledger entry ------------
+    cohorts = _eligible_publication_cohorts(build_report)
+    if not cohorts:
+        # No raw reports (clean checkout) or only incomplete/diagnostic ones.
+        return
+    _, newest_ref = cohorts[-1]
+    if not any(entry.get("run_archive_ref") == newest_ref for entry in entries):
+        record_finding(
+            "unrecorded-publication-run", "error",
+            f"Vollstaendige Publikationskohorte {newest_ref!r} hat keinen Eintrag im "
+            "getrackten Build-Ledger docs/evidence/build-ledger.jsonl. Ein Lauf ohne "
+            "Ledger-Eintrag ist kein gruener Lauf (DEC-0043-001/DEC-0043-003).",
+            ref=newest_ref,
+        )
+
+
 def check_automation_safety():
     checks_performed.append("check_automation_safety")
     tools_dir = os.path.join(SRC, "tools")
@@ -648,6 +856,7 @@ def main():
     check_client_rendered_german()
     check_record_status()
     check_workflow_lifecycle()
+    check_report_freshness()
 
     finished_at = time.time()
     _exit_code = 1 if problems else 0

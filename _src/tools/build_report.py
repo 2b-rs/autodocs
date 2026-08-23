@@ -26,7 +26,23 @@ CLI:
     run to the tracked append-only build ledger `docs/evidence/build-ledger.jsonl`
     (see build_ledger.py and docs/pipeline/build-ledger.md). `--no-ledger`
     suppresses the append for a diagnostic re-run that must not enter the
-    permanent build history.
+    permanent build history. Such a diagnostic combined report is machine-marked
+    with `"diagnostic_no_ledger": true` so `validate.py`'s freshness check can
+    tell an expressly diagnostic cohort from a publication cohort whose ledger
+    append simply failed (0043-04 / DEC-0043-003).
+  - 0043-04: `publish` (and the `provenance` command) write the structured
+    `publication_provenance` object into the page model, binding the published
+    page to exactly one schema-valid ledger entry. `validate.py` compares that
+    binding against the ledger and the local cohorts and reports staleness as
+    an error finding.
+
+CLI (0043-04):
+    python3 _src/tools/build_report.py provenance
+        Recompute only the `publication_provenance` object of the existing page
+        model from the tracked ledger, leaving the rendered body untouched. This
+        is the supported way to refresh the binding when the raw combined report
+        of the recorded run is no longer present (it lives under git-ignored
+        `output/` per DEC-0043-001), and it is idempotent.
 """
 import datetime
 import glob
@@ -50,6 +66,12 @@ PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
 REQUIRED_STAGES = ("i18n_merge", "i18n_diagrams", "html_generate", "validate")
 ALLOWED_FINDING_SEVERITIES = frozenset(("info", "warning", "error"))
 SCHEMA_VERSION = "1.0"
+
+# 0043-04: schema version of the `publication_provenance` object written into
+# the page model. Bump only on a breaking change; validate.py refuses an
+# unknown version rather than guessing its meaning.
+PROVENANCE_SCHEMA_VERSION = "1.0"
+PROVENANCE_KEY = "publication_provenance"
 
 # Runner-issued refs name a real output/run-archive/run-<timestamp>-n<seq>
 # pair (see runner-host/run-loop.sh). A build run outside the runner (the
@@ -263,7 +285,7 @@ def load_latest_subreports(since_ts=None, run_archive_ref=None):
     return by_kind, findings
 
 
-def combine_reports(run_archive_ref=None):
+def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
     """Combine one correlated producer-report cohort into a canonical report."""
     requested_ref = run_archive_ref if run_archive_ref is not None else os.environ.get("RUN_ARCHIVE_REF")
     subreports, load_findings = load_latest_subreports(run_archive_ref=requested_ref)
@@ -369,12 +391,86 @@ def combine_reports(run_archive_ref=None):
         "findings": all_findings,
         "run_archive_ref": ref,
     }
+    if diagnostic_no_ledger:
+        # 0043-04 / DEC-0043-003: an expressly diagnostic cohort is not a
+        # publication candidate. Marking it in the combined report keeps that
+        # distinction machine-readable, so a *failed* ledger append (which is
+        # not diagnostic) still surfaces as a missing-ledger-entry finding.
+        combined["diagnostic_no_ledger"] = True
 
     out_file = os.path.join(REPORTS_DIR, f"combined-{int(now)}.json")
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(combined, f, ensure_ascii=False, indent=1)
 
     return combined, out_file
+
+
+def publication_provenance(ledger_path=None, rendered_run_archive_ref=None, previous=None):
+    """Build the structured publication-provenance object for the page model (0043-04).
+
+    The binding is derived from the tracked ledger alone: the newest
+    schema-valid entry is *the* published run, because the ledger is the only
+    configuration-managed publication evidence (`DEC-0043-001`). The raw
+    combined report it pins lives under git-ignored `output/` and may be absent
+    in any clean checkout, so it is never required to compute this object.
+
+    `rendered_run_archive_ref` records which cohort the page's latest-run detail
+    section was rendered from, so a page whose body and whose binding disagree
+    is detectable. It is `None` when the rendered run carries no cohort identity
+    (the historic backfilled run does not).
+    """
+    entries, findings = build_ledger.read_entries(ledger_path)
+    newest = entries[-1] if entries else None
+    binding = None
+    if newest is not None:
+        binding = {
+            "recorded_at": newest.get("recorded_at"),
+            "run_archive_ref": newest.get("run_archive_ref"),
+            "combined_report_digest": newest.get("combined_report_digest"),
+            "backfilled": bool(newest.get("backfilled")),
+        }
+    provenance = {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "bound_at": _utc_now_iso(),
+        "ledger_ref": os.path.relpath(ledger_path or build_ledger.LEDGER_PATH, ROOT),
+        "ledger_entry_count": len(entries),
+        "ledger_findings_count": len(findings),
+        "ledger_entry": binding,
+        "rendered_run_archive_ref": rendered_run_archive_ref,
+    }
+    # `bound_at` is when *this* binding was established, not when the generator
+    # last ran: an unchanged binding keeps its original timestamp so a repeated
+    # publication of the same run produces a byte-identical tracked page model.
+    if isinstance(previous, dict):
+        unchanged = all(
+            previous.get(field) == provenance[field]
+            for field in provenance if field != "bound_at"
+        )
+        if unchanged and isinstance(previous.get("bound_at"), str):
+            provenance["bound_at"] = previous["bound_at"]
+    return provenance
+
+
+def _utc_now_iso():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def write_page_provenance(ledger_path=None, page_model=None):
+    """Refresh only `publication_provenance` in an existing page model.
+
+    Used when the page body is current but the binding must be recomputed from
+    the tracked ledger — e.g. after a backfill, or in a checkout where the raw
+    combined report of the recorded run is not present. Idempotent.
+    """
+    target = page_model or PAGE_MODEL
+    with open(target, encoding="utf-8") as f:
+        page_data = json.load(f)
+    previous = page_data.get(PROVENANCE_KEY)
+    rendered = previous.get("rendered_run_archive_ref") if isinstance(previous, dict) else None
+    page_data[PROVENANCE_KEY] = publication_provenance(ledger_path, rendered, previous)
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(page_data, f, ensure_ascii=False, indent=1)
+    return target
 
 
 def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path=None):
@@ -507,6 +603,15 @@ def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path
         html_parts.append(f"<tr><td><strong>{_esc(stage_name)}</strong></td><td><code>{_esc(json.dumps(c, ensure_ascii=False))}</code></td></tr>")
     html_parts.append("</tbody></table></div></details>")
 
+    rendered_ref = combined_report.get("run_archive_ref")
+    if not _has_run_archive_ref(rendered_ref):
+        rendered_ref = None
+    try:
+        with open(PAGE_MODEL, encoding="utf-8") as f:
+            previous_provenance = json.load(f).get(PROVENANCE_KEY)
+    except (OSError, UnicodeError, ValueError):
+        previous_provenance = None
+
     page_data = {
         "file": "build-reports.html",
         "title": "Build- & Publikations-Bericht",
@@ -520,7 +625,10 @@ def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path
                 "t": "html",
                 "html": "".join(html_parts)
             }
-        ]
+        ],
+        # 0043-04 / DEC-0043-003: binds this published page to exactly one
+        # schema-valid tracked ledger entry; validate.py checks the binding.
+        PROVENANCE_KEY: publication_provenance(ledger_path, rendered_ref, previous_provenance),
     }
 
     os.makedirs(os.path.dirname(PAGE_MODEL), exist_ok=True)
@@ -564,7 +672,7 @@ def main(argv=None):
             ref = a.split("=", 1)[1]
 
     if cmd == "combine":
-        combined, out = combine_reports(ref)
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger)
         print(f"Aggregierter Build-Report geschrieben: {out} (Exit-Code {combined['exit_code']})")
         exit_code = combined["exit_code"]
         if use_ledger:
@@ -573,8 +681,12 @@ def main(argv=None):
             if not ok:
                 exit_code = max(exit_code, 1)
         return exit_code
+    if cmd == "provenance":
+        target = write_page_provenance()
+        print(f"Publikations-Provenienz im Seitenmodell aktualisiert: {target}")
+        return 0
     if cmd in ("publish", "page"):
-        combined, out = combine_reports(ref)
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger)
         exit_code = combined["exit_code"]
         if use_ledger:
             ok, message = record_in_ledger(combined, out)
@@ -587,7 +699,7 @@ def main(argv=None):
     if cmd == "mint-ref":
         print(mint_manual_run_archive_ref())
         return 0
-    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish, mint-ref")
+    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish, provenance, mint-ref")
     return 2
 
 
