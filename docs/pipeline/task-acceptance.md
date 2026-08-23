@@ -127,6 +127,8 @@ Existing immutable runs support review but do not replace independent freshness 
 
 A full expensive rerun may be omitted only when the validation profile permits reuse, all inputs/environment/tool versions and immutable results match exactly, canaries prove coverage, and the reviewer records why reproduction adds no material assurance. Child exit zero, output existence, timestamps, synthetic-only data, or a baseline-only run are not sufficient by themselves.
 
+At an **integration checkpoint**, the execution content of this step is defined by [`integration-test-obligation.md`](./integration-test-obligation.md) (decided by `DEC-0044-019`, staged activation): the integrator derives a checkpoint-specific test set from the integrated items' architecture and interface contracts, executes it against the exact integrated candidate, and retains the reproducible evidence minimum stated there. That obligation produces evidence for this review; it grants no acceptance by itself.
+
 ### 5. Review findings and authority boundaries
 
 Findings use stable identities and at least critical, major, minor, and observation/improvement classes. Critical and major findings block acceptance. A minor finding may remain only when it does not contradict a criterion, the Task contract permits deferral, and it has an owner, due condition, traceable downstream item, and any required authority disposition.

@@ -31,6 +31,10 @@ where possible, to the associated implementation or evidence.
   integration, claim carriage, and integration verdicts
 - [`task-acceptance.md`](./task-acceptance.md) — privileged Task acceptance
   and Feature closure
+- [`integration-test-obligation.md`](./integration-test-obligation.md) — the
+  executable integration-test obligation at mandatory checkpoints: derivation
+  from architecture and interface contracts, evidence minimum, no-automation
+  fallback (`DEC-0044-019`, staged activation)
 - [`legacy-handoff-manifest.md`](./legacy-handoff-manifest.md) — pre-activation
   hand-over of every surviving legacy execution primitive to the `0037-46.01`
   typed-action registry or an explicit `0037-46.02` retirement trigger
