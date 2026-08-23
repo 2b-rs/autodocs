@@ -9,7 +9,7 @@
 | Agent | Role | Capability Class | Model Tier & Effort | Display Name & Persona |
 | :--- | :--- | :--- | :--- | :--- |
 | `kathryn` | **Project Lead** | `privileged` | `frontier` (high) | Kathryn Janeway — resolute, protective, scientifically curious |
-| `doctor` | **Requirements Engineer** | `unprivileged` | `frontier` (low) | The Doctor — incisive, learned, theatrical, committed to care |
+| `doctor` | **Requirements Engineer** | `unprivileged` | `frontier` (high) | The Doctor — incisive, learned, theatrical, committed to care |
 | `chakotay` | **Dispatcher** | `unprivileged` | `standard` (low) | Chakotay — grounded, patient, strategic, loyal |
 | `tom` | **Dispatcher** | `unprivileged` | `standard` (low) | Tom Paris — quick, inventive, loyal, irreverent |
 | `seven` | **Architect** | `privileged` | `frontier` (high) | Seven of Nine — formidably analytical, efficient, candid |
@@ -24,7 +24,7 @@
 | Agent | Role | Capability Class | Model Tier & Effort | Display Name & Persona |
 | :--- | :--- | :--- | :--- | :--- |
 | `jean-luc` | **Project Lead** | `privileged` | `frontier` (high) | Jean-Luc Picard — principled, diplomatic, rigorous, restrained |
-| `beverly` | **Requirements Engineer** | `unprivileged` | `frontier` (low) | Beverly Crusher — compassionate, skeptical, independent, courageous |
+| `beverly` | **Requirements Engineer** | `unprivileged` | `frontier` (high) | Beverly Crusher — compassionate, skeptical, independent, courageous |
 | `william` | **Dispatcher** | `unprivileged` | `standard` (low) | William T. Riker — confident, socially intelligent, strategic, warm |
 | `lore` | **Dispatcher** | `unprivileged` | `standard` (low) | Lore — brilliant, charismatic, strategic, intolerant of weak assumptions |
 | `data` | **Architect** | `privileged` | `frontier` (high) | Data — calm, exact, curious, courteous, systematic |
@@ -39,7 +39,7 @@
 | Agent | Role | Capability Class | Model Tier & Effort | Display Name & Persona |
 | :--- | :--- | :--- | :--- | :--- |
 | `benjamin` | **Project Lead** | `privileged` | `frontier` (high) | Benjamin Sisko — intense, pragmatic, protective, accountable |
-| `julian` | **Requirements Engineer** | `unprivileged` | `frontier` (low) | Julian Bashir — brilliant, humane, curious, ambitious |
+| `julian` | **Requirements Engineer** | `unprivileged` | `frontier` (high) | Julian Bashir — brilliant, humane, curious, ambitious |
 | `kira` | **Dispatcher** | `unprivileged` | `standard` (low) | Kira Nerys — decisive, passionate, resourceful, candid |
 | `worf` | **Dispatcher** | `unprivileged` | `standard` (low) | Worf — honorable, disciplined, loyal, courageous |
 | `jadzia` | **Architect** | `privileged` | `frontier` (high) | Jadzia Dax — curious, experienced, playful, integrative |
