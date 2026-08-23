@@ -6,16 +6,19 @@ inspects every registered worktree sharing a repository common directory and
 fails when:
 
 * the integration worktree index differs from its `HEAD`;
-* another worktree has a staged tree (a foreign staged tree); or
+* another worktree still has a staged tree after one bounded re-sample (a
+  foreign staged tree); or
 * tracked files in the worktree checking out `main` differ from its index; or
 * a symbolic-branch worktree still has the index and files of the immediately
   preceding reflog tip after its branch ref advanced. This is the stale
   checkout signature produced by `git update-ref` on a checked-out branch.
 
-The checker never writes files, refs, indexes, or object data. It reports the
-stale signature rather than claiming to prove a particular command was used:
-the same observable state could be produced by an equivalent low-level ref
-move. The required integration procedure decides recovery.
+The checker never writes files, refs, indexes, or object data. A persistent
+foreign staged finding includes its index mtime and age; it remains blocking.
+The checker reports the stale signature rather than claiming to prove a
+particular command was used: the same observable state could be produced by an
+equivalent low-level ref move. The required integration procedure decides
+recovery.
 
 Usage:
     python3 _src/tools/check_integration_hygiene.py --repo <worktree> [--json]
@@ -27,11 +30,14 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Callable, Iterable, Optional
 
 REPORT_SCHEMA = "integration-hygiene-report@v1"
+FOREIGN_STAGED_RESAMPLE_SECONDS = 2.0
 
 
 class GitError(RuntimeError):
@@ -74,6 +80,19 @@ def _worktree_equals_index(repo: Path) -> bool:
     return _git(repo, "diff", "--quiet", check=False).returncode == 0
 
 
+def _index_path(repo: Path) -> Path:
+    path = Path(_git(repo, "rev-parse", "--git-path", "index").stdout.strip())
+    return path if path.is_absolute() else (repo / path).resolve()
+
+
+def _index_mtime(repo: Path) -> float:
+    path = _index_path(repo)
+    try:
+        return path.stat().st_mtime
+    except OSError as error:
+        raise GitError(f"cannot stat index {path}: {error}") from error
+
+
 def _previous_reflog_tip(repo: Path, branch: str) -> Optional[str]:
     tips = [
         line.strip()
@@ -88,6 +107,9 @@ class Finding:
     code: str
     worktree: str
     detail: str
+    index_age_seconds: Optional[float] = None
+    index_mtime_utc: Optional[str] = None
+    resample_delay_seconds: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -118,12 +140,23 @@ class HygieneReport:
             "root_worktree": self.root_worktree,
             "ok": self.ok,
             "worktrees": [asdict(state) for state in self.worktrees],
-            "findings": [asdict(finding) for finding in self.findings],
+            "findings": [
+                {key: value for key, value in asdict(finding).items() if value is not None}
+                for finding in self.findings
+            ],
         }
 
 
-def check_integration_hygiene(repo: Path | str) -> HygieneReport:
+def check_integration_hygiene(
+    repo: Path | str,
+    *,
+    foreign_resample_delay_seconds: float = FOREIGN_STAGED_RESAMPLE_SECONDS,
+    sleeper: Callable[[float], None] = time.sleep,
+    clock: Callable[[], float] = time.time,
+) -> HygieneReport:
     """Inspect all registered worktrees without changing repository state."""
+    if foreign_resample_delay_seconds < 0:
+        raise ValueError("foreign re-sample delay must not be negative")
     integration = Path(repo).resolve()
     paths = _worktree_paths(integration)
     if integration not in paths:
@@ -131,6 +164,7 @@ def check_integration_hygiene(repo: Path | str) -> HygieneReport:
 
     states: list[WorktreeState] = []
     findings: list[Finding] = []
+    foreign_staged_candidates: list[Path] = []
     for path in paths:
         if not path.exists():
             findings.append(Finding("WORKTREE_UNAVAILABLE", str(path), "registered worktree path is absent"))
@@ -144,7 +178,7 @@ def check_integration_hygiene(repo: Path | str) -> HygieneReport:
         if path == integration and not index_equals_head:
             findings.append(Finding("INDEX_NOT_HEAD", str(path), "integration index differs from HEAD"))
         elif path != integration and not index_equals_head:
-            findings.append(Finding("FOREIGN_STAGED_TREE", str(path), "foreign worktree index differs from HEAD"))
+            foreign_staged_candidates.append(path)
 
         if branch == "main" and not worktree_equals_index:
             findings.append(
@@ -168,6 +202,38 @@ def check_integration_hygiene(repo: Path | str) -> HygieneReport:
                     "STALE_AFTER_REF_MOVE",
                     str(path),
                     f"branch {branch} HEAD advanced while index and worktree still match previous reflog tip {previous}",
+                )
+            )
+
+    if foreign_staged_candidates:
+        sleeper(foreign_resample_delay_seconds)
+        for path in foreign_staged_candidates:
+            if not path.exists():
+                findings.append(
+                    Finding("WORKTREE_UNAVAILABLE", str(path), "registered worktree path disappeared during re-sample")
+                )
+                continue
+            if _index_equals(path, "HEAD"):
+                continue
+            index_mtime = _index_mtime(path)
+            index_age_seconds = round(max(0.0, clock() - index_mtime), 3)
+            index_mtime_utc = (
+                datetime.fromtimestamp(index_mtime, timezone.utc)
+                .isoformat(timespec="milliseconds")
+                .replace("+00:00", "Z")
+            )
+            findings.append(
+                Finding(
+                    "FOREIGN_STAGED_TREE",
+                    str(path),
+                    (
+                        "foreign worktree index still differs from HEAD after "
+                        f"{foreign_resample_delay_seconds:.3f}s re-sample; "
+                        f"index age {index_age_seconds:.3f}s; index mtime {index_mtime_utc}"
+                    ),
+                    index_age_seconds=index_age_seconds,
+                    index_mtime_utc=index_mtime_utc,
+                    resample_delay_seconds=foreign_resample_delay_seconds,
                 )
             )
 
