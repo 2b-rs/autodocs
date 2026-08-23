@@ -157,6 +157,41 @@ Format nach `RQ-DEC-01/02/03`; Aufzeichnungspflicht nach `TK-2`
   Ersetzungsregel (`RQ-IP-03`) und jede mechanische Herkunftsprüfung.
 - **Umsetzung:** `0044-01` (Verankerung + Prüfwerkzeug).
 
+> **Additive Erweiterung durch `DEC-0044-011` (Management, 2026-08-21).** Der
+> Text von `DEC-0044-002` oben bleibt unverändert gültig und wird nicht
+> ersetzt. Er wird um eine **Aufzeichnungspflicht** ergänzt: Wer einen
+> Policy-Commit auf einen Branch bringt, macht dessen Herkunft **nachweisbar**
+> — in der Praxis über den Commit-Trailer `Policy-Origin-Branch:` nach
+> `DEC-0044-008`. Absorption ohne solchen Nachweis gilt als Verletzung von
+> `DEC-0044-002`, **unabhängig vom Mechanismus** (`merge --ff-only`,
+> `update-ref`, Cherry-Pick oder Rebase).
+>
+> **Beweislast.** `DEC-0044-002` in seiner ursprünglichen Fassung verlangte vom
+> *Prüfer*, eine Verletzung nachzuweisen. Unter `0044-01` wurde belegt, dass das
+> mit Gits Datenmodell nicht geht: ein absorbierter Commit hat genau einen
+> Parent und liegt auf der First-Parent-Kette, topologisch nicht von einem nativ
+> entstandenen unterscheidbar (drittes `[u]`-Verdikt, `b62df43a8`). Die
+> Erweiterung dreht die Beweislast um — sie liegt beim **Einbringenden**.
+>
+> **Geltung: ab Beschluss (2026-08-21), ohne Rückwirkung.** Gegen Historie, die
+> vor dem Beschluss entstanden ist, wird **kein** Verstoß behauptet. Altbestand
+> trägt keine Nachweise und wird **nicht nachgerüstet**; ein fehlender Trailer
+> an einem vorbeschlusslichen Commit ist kein Befund.
+>
+> **Ausdrücklich akzeptiertes Restrisiko.** Wer den Nachweis weglässt, den
+> `reference-transaction`-Hook (`DEC-0044-009`) umgeht und am
+> Integrationscheckpoint nicht auffällt, bleibt unentdeckt. Vollständige
+> mechanische Sicherheit ist mit lokalem Git und kooperativen Agenten nicht
+> erreichbar. Ziel ist, dass ein Verstoß **auffällt**, nicht dass er unmöglich
+> wird. Verbindliches Tor bleibt die Prüfung des Integrators; der Hook ist ein
+> Netz, keine Garantie.
+>
+> **Vollständiger Datensatz:**
+> [`dec-branching-merging-strategie.md`](dec-branching-merging-strategie.md),
+> Abschnitt `DEC-0044-011`. **Umsetzung:** `0044-12` (Trailer-Konvention,
+> `branch-workflow.md`, erweiterte Prüfung in
+> `_src/tools/check_policy_provenance.py`).
+
 ### `DEC-0044-003` — Risikointegration nur einstimmig oder per User-Entscheidung
 
 - **Entscheidung:** Eine Risikointegration (Fall A4, §2.1) kann der Integrator

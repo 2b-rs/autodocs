@@ -20,6 +20,7 @@ ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird nicht in die
 Sprachbaeume uebersetzt.
 """
 import argparse, glob, html, json, os, re, subprocess, sys
+from report_page_header import report_page_header
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from functools import lru_cache
 from pathlib import Path
@@ -708,6 +709,7 @@ def write_archive_page(versions):
     tabelle = _versions_table_html(versions)
     inhalt = "\n".join([
         STIL,
+        report_page_header(generator="_src/tools/extraction_report.py", data_source="_src/spec/campaigns/extraction-report-versions/", purpose="Zeigt die Versionen der Extraktionsberichte; Ausführungszeitpunkt, Script-Stand und Delta erklären, was sich zwischen Läufen geändert hat."),
         '<section class="tr-head"><p>Vollstaendige Historie aller Extraktions-Berichtsversionen, jeweils mit Ausfuehrungszeitpunkt, Vorgaenger-Verweis, Extraktionsskript-Version (Git-Hash + Checkin-Datum von <code>extraction_report.py</code> und <code>spec_scrape.py</code>) und Delta zur vorigen Script-Version.</p></section>',
         tabelle,
     ])
@@ -736,9 +738,13 @@ def _versions_summary_html():
 
 
 def write_version_page(page, version_entry):
+    """Create a versioned page model once; preserve existing history by default."""
     os.makedirs(VERSION_PAGES_DIR, exist_ok=True)
     path = os.path.join(VERSION_PAGES_DIR, "extraction-report-v%04d.json" % version_entry["version"])
+    if os.path.exists(path):
+        return False
     _atomic_write_json(path, page)
+    return True
 
 
 def _archive_stub_page(v):
@@ -895,9 +901,10 @@ def cmd_assemble(input_dir):
     raw = load_raw_records(input_dir)
     datum = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     seite = baue(datum, {"records": raw})
-    with open(PAGE, "w", encoding="utf-8") as f:
-        json.dump(seite, f, ensure_ascii=False, indent=1)
-        f.write("\n")
+    # PAGE is the current working model, not the historical archive. ``baue``
+    # already created the missing version model once; keep this current copy
+    # and the overview/index aligned with that newest version.
+    _atomic_write_json(PAGE, seite)
     ensure_version_pages()
     verlinke_startseite(datum)
     total = sum(len(v) for v in raw.values())

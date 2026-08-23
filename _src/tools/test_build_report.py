@@ -13,6 +13,7 @@ from pathlib import Path
 from unittest import mock
 
 import build_report
+import build_ledger
 
 
 class TestBuildReport(unittest.TestCase):
@@ -315,6 +316,36 @@ class TestBuildReport(unittest.TestCase):
             {item["ref"] for item in combined["findings"] if item["category"] == "missing-build-stage"},
             set(build_report.REQUIRED_STAGES),
         )
+
+    def test_page_history_is_ledger_driven_newest_first_after_append(self):
+        ledger = os.path.join(self.test_dir, "build-ledger.jsonl")
+        combined = {
+            "report_kind": "combined", "started_at": "2026-08-22T10:00:00Z",
+            "finished_at": "2026-08-22T10:01:00Z", "exit_code": 0,
+            "counts": {"overall_success": True, "by_stage": {
+                "i18n_merge": {}, "i18n_diagrams": {"sources_considered": 3},
+                "html_generate": {"pages_generated_per_lang": {"de": 7}},
+                "validate": {"checks_performed": 11}}},
+            "findings": [], "run_archive_ref": "manual-newest-deadbeef",
+        }
+        combined_path = os.path.join(self.test_dir, "combined.json")
+        Path(combined_path).write_text(json.dumps(combined), encoding="utf-8")
+        build_ledger.append_entry(build_ledger.entry_from_combined(
+            combined, combined_path, repo_commit="a" * 40,
+            recorded_at="2026-08-22T10:02:00Z"), ledger)
+        build_report.generate_report_page(combined, ledger_path=ledger)
+        first = json.loads(Path(build_report.PAGE_MODEL).read_text(encoding="utf-8"))["main"][0]["html"]
+        self.assertIn("manual-newest-deadbeef", first)
+        later = dict(combined, run_archive_ref="manual-later-cafebabe",
+                     finished_at="2026-08-22T11:01:00Z")
+        Path(combined_path).write_text(json.dumps(later), encoding="utf-8")
+        build_ledger.append_entry(build_ledger.entry_from_combined(
+            later, combined_path, repo_commit="b" * 40,
+            recorded_at="2026-08-22T11:02:00Z"), ledger)
+        build_report.generate_report_page(later, ledger_path=ledger)
+        html = json.loads(Path(build_report.PAGE_MODEL).read_text(encoding="utf-8"))["main"][0]["html"]
+        self.assertLess(html.index("manual-later-cafebabe"), html.index("manual-newest-deadbeef"))
+        self.assertIn('id="latest-run"', html)
 
 
 if __name__ == "__main__":

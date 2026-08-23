@@ -15,6 +15,7 @@ CLI:
 """
 import csv
 import html
+from report_page_header import report_page_header
 import json
 import os
 import sys
@@ -142,6 +143,7 @@ def generate_curation_report_page(items):
 .cr-trust-github_authenticated{color:#166534;background:#dcfce7;border-radius:999px;padding:.08rem .45rem;font-size:.78rem}
 </style>""")
 
+    html_parts.append(report_page_header(generator="_src/tools/curation_report.py", data_source="_src/spec/curation-queue/ und _src/spec/review-queue/", purpose="Zeigt offene, beanspruchte und abgeschlossene Kurations- und Review-Entscheidungen; Status und Quelle erklären den jeweiligen Bearbeitungsstand."))
     html_parts.append(f"""<h1>Zentraler Kurations- & Review-Bericht</h1>
 <section class="cr-head">
 <p>Übersicht aller offenen, in Bearbeitung befindlichen und abgeschlossenen Kurations- und Review-Entscheidungen über alle Warteschlangen (<code>curation-queue</code>, <code>review-queue</code>). Normalisiert nach dem kanonischen <code>curation-item@v1</code> Schema.</p>
