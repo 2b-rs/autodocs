@@ -87,7 +87,37 @@ Sandboxed agents use non-execution file tools for collaboration-suggestion entri
 
 The runner is an execution service. It is not the user, and the user is not expected to execute an agent's script.
 
-Until Feature `0037` installs and activates the versioned request queue/dispatcher, root `run.sh` is a singleton runner slot. Active Task/claim ownership serializes requests. Never overwrite an existing/pending `run.sh` or another Task's runner scope.
+### Current procedure — queue dispatch (`runner-queue@v1`)
+
+The versioned request queue/dispatcher is active. The live bootstrap selector `agent-workflow.json` carries `"runner_protocol":"runner-queue@v1"`, and **the queue is the sole mutation authority**. The runner host operates in multi-worker continuous mode, accepting asynchronous drafts and processing ready queue requests under `.runner/`.
+
+Publication workflow, using non-execution file tools only:
+
+1. Compose the request draft under `.runner/drafts/<agent>/<request_id>/` with `manifest.json` and `request.json`.
+2. Publish it atomically to `.runner/requests/<request_id>` with a single same-filesystem rename.
+3. Read the verdict and outputs from `.runner/results/<request_id>.result.json`; each result carries its own SHA-256 digest.
+
+Scope isolation and collision guards:
+
+- Concurrent requests with **disjoint** `write_scopes` are processed in parallel. Proven under Task `0037-46.02` with a synchronized-start fixture pair whose execution windows overlap.
+- Concurrent requests with **overlapping** `write_scopes` are rejected with `RD-SCOPE-COLLISION`.
+- Unprivileged attempts to mutate governance documents (`AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, `CLAUDE.md`, `docs/pipeline/`) are rejected with `RD-GOVERNANCE-SCOPE`. Governance changes travel the route defined by `DEC-0044-012`.
+- Observe lease expirations and idempotence keys. A retry of a previously rejected or failed request keeps its ancestry record (`retry_of`).
+
+### Transition phase — after the epoch bump, before singleton retirement
+
+Between the epoch bump (Task `0037-46.02`, step 4) and the retirement of the legacy singleton (step 5), exactly one protocol accepts mutations, and it is the queue:
+
+- From the moment `runner-queue@v1` is active in the selector, **the queue is the sole mutation authority**.
+- Writes to the legacy singleton slot `run.sh` are admissible in this phase **only for the final retirement transaction itself** — the operation that shuts the old path down. No other use is valid.
+
+Both protocols are therefore never accepting mutations at the same time, and there is never a moment in which neither does. Once retirement is complete, direct writes to `run.sh` are rejected outright.
+
+### [Legacy / Deprecated] Singleton slot (`runner-request@v1`)
+
+**The following describes the retired singleton procedure. It is retained so that archived runs, evidence and claim records stay readable. Do not apply it to new work** — active agents use the queue procedure above. The single exception is the retirement transaction named in the transition rule.
+
+Under that procedure, root `run.sh` was a singleton runner slot. Active Task/claim ownership serialized requests. An existing or pending `run.sh`, or another Task's runner scope, was never to be overwritten.
 
 `run.sh` is a consumable request envelope, not a reusable project script. The runner claims it for one execution, archives the submitted content and result as evidence, and removes it from the root slot before releasing that slot. Therefore its expected post-execution state is **absent**. Never rerun, restore, copy back, or treat an archived `run.sh` as a pending request. Every retry or subsequent operation requires the owning agent to inspect the prior result, verify that the root slot is free, allocate a new unique request ID, record it in the active claim, and publish a newly generated `run.sh` for exactly one execution. Absence before any result/archive evidence means “not published or not yet reconciled”; absence after matching result/archive evidence means “consumed successfully by the runner,” not “lost.”
 

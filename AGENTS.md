@@ -8,7 +8,18 @@ Until Feature `0037` completes its authorized cutover, `TODO.md` and `DONE.md` a
 
 Feature `0037` implementation must be executable by sandboxed/grunt agents. Privileged-agent availability must never be an unstated prerequisite.
 
-Capability classes and all sandbox-specific execution mechanics—including discovery, runner requests, network execution, and the root `run.sh` lifecycle—are defined by `SANDBOX.md`. This file defines the collaboration and bookkeeping requirements shared across capability classes.
+Capability classes and all sandbox-specific execution mechanics—including discovery, runner requests, network execution, and the queue dispatch lifecycle—are defined by `SANDBOX.md`. This file defines the collaboration and bookkeeping requirements shared across capability classes.
+
+### Queue-based dispatch (`runner-queue@v1`)
+
+Sandboxed agents reach the runner through the versioned queue, using non-execution file operations only:
+
+- Stage the request under `.runner/drafts/<agent>/<request_id>/` with standard file-write tools.
+- Publish it by an atomic same-filesystem rename to `.runner/requests/<request_id>`.
+- Read the verdict from `.runner/results/<request_id>.result.json`.
+- Observe lease expirations and idempotence keys; a retry of a rejected or failed request keeps its ancestry record (`retry_of`).
+
+Requests with disjoint write scopes run in parallel; overlapping scopes are rejected (`RD-SCOPE-COLLISION`), as are unprivileged writes to governance documents (`RD-GOVERNANCE-SCOPE`). The legacy singleton `run.sh` is retired — `SANDBOX.md` retains its description for reading archived runs, not for new work.
 
 Feature, Task, and Subtask work is carried on Git branches named after the item ID, merged upward, with claim files committed alongside work products. The branch topology, the binding base-and-merge start rule, merge authority by level, Feature integration, and the Feature-level `[u]` integration verdict are defined in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md); the acceptance meanings it references are unchanged.
 
