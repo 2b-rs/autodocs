@@ -42,3 +42,27 @@ rg -o 'RQ-UIUX-[0-9]{3}' docs/design/ui-ux-quality-trace-matrix.md
 ```
 
 The exact set/count comparison and contiguous-sequence check were executed in the review worktree; all mechanical checks passed. The verdict remains `needs-correction` solely because of F-UIUX-RQ-REVIEW-001.
+
+## Re-review R2 — corrected candidate `ae11b1f8b`
+
+- **Re-reviewed candidate:** `ae11b1f8beacaaf4a84998ed6f99b2d5cf3533fd`
+- **Previous candidate:** `5109048a1a8bc00d1b1f4e1d5af9bbd7045274ac`
+- **Verdict:** `review-ready`
+- **Finding disposition:** `F-UIUX-RQ-REVIEW-001` is `closed`.
+
+### Independent correction inspection
+
+- The candidate adds `D-06 Visibility and classified governance publication` using the dossier's public/internal/restricted, default-deny recommendation and preserves explicit risk acceptance for a full-public alternative. It does not decide the choice.
+- `D-03` remains the distinct feedback-identity question.
+- `RQ-UIUX-021` now explicitly names unresolved D-06 and retains F-D/F-H plus Q-05/Q-08/Q-19 trace.
+- The handoff now describes six identified unresolved choices and correctly distinguishes the dossier's Personality, Visibility, and Density interview choices from feedback identity, ticket cutover, and telemetry policy.
+
+### R2 recomputation
+
+- Six unique contiguous D handles (`D-01` through `D-06`).
+- 32 unique contiguous RQ rows; exact RQ-set equality with the roadmap and quality reverse bindings.
+- 119 unique inventory IDs and 119 unique route-matrix IDs with exact set equality.
+- `git diff --check 1d749458859726323d5c2fb9bae32766a0da9b12 ae11b1f8beacaaf4a84998ed6f99b2d5cf3533fd` exited zero.
+- The correction delta from `5109048a1` changes only the Requirements Engineer's claim and the requirements baseline.
+
+No open review finding remains. `review-ready` means this preparation baseline is ready for the Project Lead's next bounded process step; it is not Acceptance, an architecture decision, an implementation authorization, or an integration verdict.

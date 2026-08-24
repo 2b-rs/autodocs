@@ -14,3 +14,6 @@
 - **Finding:** `F-UIUX-RQ-REVIEW-001` — the claimed complete D-handle inventory omits the dossier's explicit Visibility/classified-projection product choice and substitutes a separate public-feedback-identity choice. Correct the baseline and re-review; no Acceptance or integration action is implied.
 - **Validation:** candidate-range `git diff --check` PASS; 32 contiguous RQ IDs; inventory/matrix 119/119 unique set equality; baseline RQ set equals both quality and roadmap reverse-binding sets (32 each).
 - **Handoff:** Requirements Engineer and Project Lead correct the decision inventory without silently deciding product behavior, then request a fresh independent review against the corrected exact candidate.
+- **R2 candidate:** `ae11b1f8beacaaf4a84998ed6f99b2d5cf3533fd`.
+- **R2 verdict:** `review-ready`; `F-UIUX-RQ-REVIEW-001` closed after exact correction inspection and full independent mechanical recomputation.
+- **R2 boundary:** review readiness only; no Acceptance, product decision, allocation, implementation authorization, checkpoint, integration, `main`, or `DONE.md` action.
