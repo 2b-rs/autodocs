@@ -1,7 +1,7 @@
 # UI/UX requirements baseline
 
-Status: requirements preparation; not accepted, allocated, or implementation-authorizing  
-Requirements owner: Beverly Crusher, Requirements Engineer, Team Enterprise  
+Status: requirements preparation; not accepted, allocated, or implementation-authorizing
+Requirements owner: Beverly Crusher, Requirements Engineer, Team Enterprise
 Input baseline: `ui-ux-design-dossier-20260824@1d749458859726323d5c2fb9bae32766a0da9b12`
 
 ## 1. Source and interpretation
