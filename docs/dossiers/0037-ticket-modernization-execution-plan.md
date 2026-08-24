@@ -70,6 +70,44 @@ validate all prerequisite endpoints, prove acyclicity and reachability, and
 check semantic start gates and current Acceptance edges against then-current
 `TODO.md`. This plan does not apply that backlog delta itself.
 
+### Complete Runner-amendment node/disposition manifest
+
+This manifest is the plan's mechanical parity set for Data's Runner amendment.
+Ranges name every individual node in the range. Operative work compares the
+expanded sorted set and each disposition with the amendment; missing, extra, or
+changed entries fail before mutation.
+
+| Work unit/interface | Disposition | Dependency and contract effect |
+|---|---|---|
+| `0037-21` | rewrite | Own the shared role/job-control contract; replace `0038-16` with `0038-16.01`; add `0037-51` and `0037-42`; require current Acceptance at its intermediate checkpoint. |
+| `0037-39` | rewrite | Replace `0037-47` with `0037-37` and `0037-51`; expose deterministic foreground and Runner-controlled background invocation. |
+| `0037-42` | rewrite/retain direct bootstrap | Keep doctor, epoch, freeze and stale-client fencing; report operational role separately from capability class, reject `runner` as a capability class, and accept Runner only with a valid direct mapping. |
+| `0037-25`, `0037-25.01` | rewrite | Retain the bounded regeneration DAG; background mode consumes current accepted `0037-21` and stable job/run identity without queue or action registry. |
+| `0037-44` | rewrite/retain recovery | Retain direct freeze/export/restore/replay/forward-repair controls. Runner may execute an separately authorized long recovery job but cannot authorize freeze, restore, re-enable, risk, or release. |
+| `0037-30` | rewrite | Add current accepted `0037-21`; quiescence consumes canonical active-job identity, process handle, lifecycle, cancellation/recovery, evidence and handoff state. |
+| `0037-32`, `0037-35.01`, `0037-36` | rewrite | Runner may execute an already authorized long audit/rebuild; distinct Tester and registered signer evaluate evidence and own no execution-derived Acceptance authority. |
+| `0037-34.01` | rewrite | Add current accepted `0037-21`; prepare exact accepted role/capability/job bundle, active-job disposition, inverse patch and stale-client proof. |
+| `0037-34.02` | retain/checkpoint | Keep the mandatory atomic authority switch; reject stale Runner-as-transport or Runner-as-authority clients. |
+| `0037-40` | retain/terminal checkpoint | Keep the single terminal integrating Task; consume synthetic long-job completion, cancel/recovery, stale-role and authority-negative proof. |
+| `0038-07`, `0038-09` | retain | Bind context/resume capsule and environment identity to Task ID, job ID, owner, exact command/profile, state, results and recovery; never reinterpret them as queue requests. |
+| `0038-16.01` | historical/retain inventory | Preserve the completed transport primitive inventory; reuse a primitive only behind an explicit direct interface. |
+| `0043-01` | retain run identity | Bind `RUN_ARCHIVE_REF` and manual-cohort provenance to long build jobs through the direct job record; transport remains irrelevant. |
+| `0039-02` | rewrite | Retain `0037-51`, add current accepted `0037-21`; classify tools as bounded foreground, Runner-controlled background, or both, with permissions/evidence/recovery and no typed allowlist. |
+| `0044-04` | retain | Preserve capability-requirement profiling while keeping operational role, direct capability and authority separate. |
+| `0044-05` | rewrite | Retain `0044-04` and `0037-51`, add current accepted `0037-21`; map Runner normally to `unprivileged` without inference from duration, model, or persona. |
+| `0044-07` | rewrite | Remove sandbox/text-only and runner-obligation proposals while retaining role-gap analysis and Runner as a selectable operational role. |
+| `0037-46`, `0037-46.01`, `0037-46.02`, `0037-47` | remove from future path | Preserve append-only branches, claims, implementation/rejection evidence; no future dependency consumes singleton/queue/qualification work. |
+| `0037-50.02`, `0037-50.03`, `0037-50.04`, `0037-50.05` | remove from future path | Reconcile active claims, preserve evidence, and close additively; Runner retention creates no consumer for failover-remediation work. |
+| `0038-16.02` | remove from future path | Preserve history and close additively; the retained `0038-16.01` inventory does not activate post-runner rollout. |
+
+The expanded parity set is therefore:
+`0037-21`, `0037-25`, `0037-25.01`, `0037-30`, `0037-32`,
+`0037-34.01`, `0037-34.02`, `0037-35.01`, `0037-36`, `0037-39`,
+`0037-40`, `0037-42`, `0037-44`, `0037-46`, `0037-46.01`,
+`0037-46.02`, `0037-47`, `0037-50.02`, `0037-50.03`, `0037-50.04`,
+`0037-50.05`, `0038-07`, `0038-09`, `0038-16.01`, `0038-16.02`,
+`0039-02`, `0043-01`, `0044-04`, `0044-05`, `0044-07`.
+
 ## 4. Shared `0037-21` Runner Job-Control Contract
 
 The rewritten `0037-21` product is one shared contract, not a transport service
@@ -130,52 +168,56 @@ Recovery before cutover restores the current legacy direct-execution state;
 post-cutover recovery is forward issue-store recovery. Neither path restores
 retired transport as a mandatory interface.
 
-## 6. Bounded Preparation and Implementation Packages
+## 6. Preparation and Implementation Packages
 
-These contracts are allocation-neutral: the plan does not claim them or make
-them immediately executable. Each starts only on its named existing Task
-branch, with an active owner claim, disjoint writes, and satisfied gates.
+These packages are allocation-neutral: the plan does not claim them or make
+them immediately executable. Package A and Package B are explicitly
+non-executable design-preparation proposals until their stop conditions are
+resolved. Package C is a bounded implementation contract after its authority
+and branch-sequencing gates are met.
 
-### Package A — UI/projection contract (`0037-23`)
+### Package A — UI/projection design preparation (`0037-23`, not executable)
 
 - **Inputs:** retained `0037-12` graph adapter; exact accepted UI F-J baseline
   if one has been allocated (otherwise stop); current schema fixtures and
   classified-projection policy. A Runner-controlled background generation mode
   additionally requires current accepted `0037-21`; foreground work does not
   gain a new start edge from this plan.
-- **Branch/target:** Task branch/worktree `0037-23`; outputs only its declared
-  public-projection and generated-site paths plus Task evidence/claim paths.
-- **Execution:** direct Programmer for bounded implementation; Runner only when
-  the Dispatcher records a Task-ID-bound long generation job under `0037-21`.
-- **Validation/evidence:** no-JS projection, route/link, privacy-negative,
-  deterministic generation, cancellation/recovery, and stale-epoch profiles;
-  retain exact commands, inputs, digests and job/result records under the
-  Task's evidence scope.
-- **Bounds/recovery/completion:** allocator pins wall/CPU/memory/output limits
-  and exact paths before start; cancellation leaves authored sources intact;
-  completion requires no unpublished UI assumption, no restricted leak, and a
-  reproducible clean rebuild. Advisory estimate: 12k–25k tokens and 1–3 hours
-  plus bounded generation, with 35–50% uncertainty until the UI F-J baseline
-  and corpus are pinned.
+- **Stop condition:** no immutable accepted UI F-J baseline is pinned in this
+  plan, and exact projection/site/test/fixture/evidence paths plus a finite
+  predecessor-owned CPU/RAM/wall/output profile are absent. Therefore Package A
+  authorizes no branch, write, generation job, or implementation.
+- **Required local deliverable before conversion:** an allocated `0037-23`
+  contract must pin the immutable UI baseline or explicitly reject the
+  dependency; enumerate exact authored/generated/test/fixture/evidence paths;
+  name its branch/merge target and disjoint scope; provide deterministic
+  no-JS/link/privacy/determinism/cancel/recovery profiles with finite workers,
+  CPU, RAM, wall time and output bytes; and name success, partial-failure,
+  cleanup and recovery artifacts. Only then may a direct Programmer start, with
+  Runner background generation conditional on accepted `0037-21`.
+- **Advisory estimate:** 12k–25k tokens and 1–3 hours for design preparation,
+  35–50% uncertainty until baseline and corpus measurement. This is not an
+  execution estimate or permission.
 
-### Package B — parser implementation contract (`0037-08`)
+### Package B — parser design preparation (`0037-08`, not executable)
 
 - **Inputs:** retained parser/schema contracts, rewritten `0037-39`, exact
   canonical fixtures and dependency locks; no `0037-47`/`0037-46` dependency.
-- **Branch/target:** Task branch/worktree `0037-08`; `_src/tools/issue_store.py`,
-  its task-owned tests/fixtures, lock documentation, evidence and claim paths.
-- **Execution:** direct Programmer for implementation and focused tests; a
-  selected Runner may own only a bounded long fuzz/property job recorded under
-  accepted `0037-21`.
-- **Validation/evidence:** unit, property, fixed fuzz-seed, malformed input,
-  Unicode/resource-limit, deterministic JSON, stale-base, cancellation and
-  recovery checks with retained command/environment/result digests.
-- **Bounds/recovery/completion:** exact seed count, workers, wall/CPU/memory and
-  corpus limits are pinned in the Task claim; failures leave canonical inputs
-  unchanged; completion is byte-stable normalized output and all declared
-  parser gates passing. Advisory estimate: 18k–30k tokens and 2–5 hours plus
-  10–45 minutes per bounded fuzz profile, with 25–40% uncertainty until the
-  fixture/corpus measurement is pinned.
+- **Known future target:** Task branch/worktree `0037-08` and
+  `_src/tools/issue_store.py`; no implementation starts from this plan.
+- **Stop condition:** the exact test/fixture/evidence paths and deterministic
+  predecessor-owned profile with finite seed count, workers, CPU, RAM, wall and
+  output limits are not yet pinned. Package B therefore authorizes no parser
+  mutation or fuzz/background job.
+- **Required local deliverable before conversion:** the allocated `0037-08`
+  contract enumerates exact parser/test/fixture/lock/evidence paths, immutable
+  corpus and dependency digests, fixed seeds and finite resource limits, exact
+  unit/property/fuzz/malformed/Unicode/determinism commands, success artifacts,
+  failure/cleanup state and recovery proof. A Runner-owned long fuzz job is
+  conditional on accepted `0037-21` and that checked profile.
+- **Advisory estimate:** 18k–30k tokens and 2–5 hours for design preparation,
+  25–40% uncertainty until the predecessor profile is pinned. This is not an
+  execution estimate or permission.
 
 ### Package C — shared Runner contract implementation (`0037-21`)
 
@@ -184,17 +226,30 @@ branch, with an active owner claim, disjoint writes, and satisfied gates.
   `b38c3202d0d40812733204d4386388ff73234599`, integrated through its authorized
   governance path; rewritten `0037-42`; retained `0038-16.01` inventory and
   `0037-21` domain inputs.
-- **Owner/branch/target:** an implementation identity distinct from Data, on
-  Task branch/worktree `0037-21`. The operative rewrite declares these exact
-  outputs before mutation: `SANDBOX.md`, `AGENTS.md`, `PRIVILEGED.md`,
+- **Governance slice:** `SANDBOX.md`, `AGENTS.md`, `PRIVILEGED.md`,
   `agent-workflow.json`, `docs/pipeline/agent-workflow.md`,
   `docs/pipeline/tools.md`, `docs/pipeline/reports.md`,
   `docs/pipeline/README.md`, `docs/pipeline/roles/programmer.md`,
   `docs/pipeline/roles/tester.md`, `docs/pipeline/roles/runner.md`,
-  `docs/pipeline/agent-roster.md`, `docs/pipeline/process-roles.md`, the
-  versioned background-job schema/interface and their task-owned fixtures,
-  tests, evidence and claim paths. If the integrated Task has not allocated the
-  schema/interface paths, Package C stops rather than inventing them locally.
+  `docs/pipeline/agent-roster.md`, and `docs/pipeline/process-roles.md` are
+  authored in a Package-C-owned isolated worktree on a branch cut from current
+  `main`. Before authoring and immediately before integration, run the required
+  root hard preflight and `check_integration_hygiene.py`; any non-zero result
+  stops. A separately authorized governance integrator advances current `main`
+  immediately through the repository's governance route. The ordinary Task
+  branch never privately carries these shared changes while parallel agents
+  consume old governance.
+- **Ordinary slice:** the versioned background-job schema/direct interface and
+  their task-owned fixtures, tests, evidence and claim paths remain on the exact
+  `0037-21` item topology. If the integrated operative Task has not allocated
+  these paths, the slice stops rather than inventing them locally.
+- **Atomic compatibility boundary:** the governance slice first defines a
+  versioned compatibility range that accepts the current ordinary product and
+  rejects premature new semantics. After its immediate integration, the
+  ordinary slice implements the new version. Activation occurs only in a
+  separately reviewed compatibility commit/bundle that pins both digests;
+  rollback restores the prior compatible pair. No agent observes a role/schema/
+  instruction bundle that requires an unavailable interface.
 - **Execution:** direct Programmer implements; Runner may execute only its
   Task-ID-bound long validation fixtures; an independent Integrator owns the
   mandatory intermediate checkpoint.
