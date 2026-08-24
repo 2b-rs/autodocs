@@ -9,7 +9,7 @@
 - **Branch:** `ui-ux-requirements-baseline-20260824`
 - **Worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/ui-ux-requirements-baseline-20260824`
 - **Base:** `ui-ux-design-dossier-20260824@1d749458859726323d5c2fb9bae32766a0da9b12`
-- **Status:** `[p]`
+- **Status:** `[x]`
 - **Startup review:** user-directed follow-on to a completed dossier; no `TODO.md` mutation or Feature/Task/DEC allocation. The work stabilizes needs and traceability without selecting or activating architecture.
 - **Write scope:** this claim; `docs/design/ui-ux-requirements-baseline.md`; RQ bindings only in `docs/design/ui-ux-quality-trace-matrix.md` and `docs/design/ui-ux-implementation-roadmap.md`
 - **Read scope:** dossier and its design, route, view, critique, quality, and roadmap inputs; repository evidence as needed
@@ -19,4 +19,7 @@
 - **Validation intent:** unique/contiguous RQ IDs; all 119 inventory views accounted for; every RQ maps to source, decision status, view/route family, proposed Feature, quality gate/test/evidence; reverse Q/Feature bindings; local links and diff hygiene
 - **Safety hold:** do not use `memory_append` until workspace routing is fixed; any durable follow-up remains in this claim.
 - **Recovery:** discard only this isolated branch/worktree; no production or governance state is changed.
-
+- **Implementation REF:** `a2c47d306a6261862db44c97b24463d955be3889`
+- **Delivered:** 32 atomic `RQ-UIUX-*` requirements; exact current-user provenance; goal/constraint/quality/open-decision classification; five genuine open product choices; requirement-to-decision/view-route/proposed-Feature/Q-test-evidence trace; reverse bindings for Q-01..Q-24 and F-A..F-O/F-E0.
+- **Validation:** PASS — 32 unique contiguous RQ rows; every RQ appears in both reverse binding artifacts; 24 exact Q binding rows; 16 exact proposed-Feature binding rows; inventory and route matrix each contain 119 unique IDs with exact set equality; `git diff --check` clean; only declared paths changed.
+- **Handoff:** Project Lead routes D-01..D-05 to authorized decision-making and allocates future Feature/Task/DEC IDs. This claim grants none of those authorities.
