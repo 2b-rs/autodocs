@@ -413,3 +413,29 @@ The versioned curation toolchain now spans `version_id.py`, `version_store.py`,
 cover id minting, immutable storage, version-pinning, graph semantics,
 invalidation/confidence, typed synthesized claims, trigger orchestration, and
 historical/delta queries.
+
+## Worktree Topology Plan validator
+
+`_src/tools/worktree_topology_plan.py` is the read-only, standard-library
+validator for `worktree-topology-plan@v1`. It reproduces the
+`json-sort-utf8-no-floats@v1` content digest, checks the published JSON Schema,
+and applies the fail-closed topology, scope/overlap, checkpoint, lifecycle,
+activation, migration, and recovery invariants. Validation requires the complete
+expected executable-unit population and a full committed plan REF:
+
+```sh
+python3 _src/tools/worktree_topology_plan.py path/to/plan.json \
+  --schema docs/pipeline/worktree-topology-plan.schema.json \
+  --repo . --plan-ref <40-hex-commit> \
+  --expected-work-unit task:0046-01 \
+  --expected-work-unit task:0046-02
+```
+
+The REF check uses only `git cat-file` and `git show`: it verifies that the REF
+resolves to a commit and contains the exact plan bytes at the repository-relative
+path. It never checks out, stages, cleans, resets, or otherwise changes a
+worktree. Output is a stable `wtp-validation-report@v1` JSON object; exit `0`
+means no finding, exit `1` means invalid or unreadable input. Omitting the
+expected population or REF is itself a finding, so a partial graph cannot pass.
+
+Focused tests: `python3 _src/tools/test_worktree_topology_plan.py -v`.
