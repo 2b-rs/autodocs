@@ -8,4 +8,7 @@
 - **Branch / worktree:** `process-workproducts-worktree-integration-plan-20260824` / `.worktrees/process-workproducts-worktree-integration-plan-20260824`.
 - **Write scope:** this claim and `docs/dossiers/worktree-topology-and-integration-plan-feature-proposal.md` only.
 - **Boundaries:** no `TODO.md`, policy, decision-record, Acceptance, integration, `main`, `DONE.md`, root, production, or external-system mutation; this proposal neither activates gates nor allocates IDs.
-- **Next step:** document the observed process gap, feature proposal, proposed work-product schemas/templates, validation, compatibility/migration, role handoffs, and authority route for Architect/Integrator decomposition.
+- **Status:** preparation complete.
+- **Proposal REF:** `96d5fe3ad41fccd125967528aa256ca9a247f9e2`.
+- **Validation:** `git diff --check` passed before commit; changed-path scope is exactly this claim and the proposal dossier.
+- **Handoff:** Project Lead allocates numeric Feature/Task IDs and obtains Management-instantiated Architect scope review. The assigned Architect then decides/records any qualifying gate reach before operative process mutation; QA later audits the independently authored process operation.
