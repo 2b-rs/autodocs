@@ -29,7 +29,10 @@
 - prior_findings: F-002, F-003 and F-005 resolved; F-001 and F-004 partial
 - new_findings: one Critical, two High
 - candidate_mutation: none
-- status: re-review authored; validation and commit pending
+- re_review_ref: `9ae3d8c8e86d794fb09b531253e530d82b13c1bc`
+- validation: `git diff --check`; three findings (one Critical, two High);
+  full prior-finding and amendment-node comparison; two-path write scope
+- status: re-review complete, validated and committed
 
 The candidate remains unmodified. This claim records no Acceptance or
 integration authority.
