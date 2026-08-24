@@ -9,7 +9,7 @@
 - **Normative binding:** Data's Architect amendment substantive REF `5d5996d07d8e8be71a99722a12e3afcb1d57919a`, final tip `b38c3202d0d40812733204d4386388ff73234599`
 - **Branch/worktree:** `0037-ticket-modernization-benjamin-20260824`; `/Users/tobias.anton/devel/autodocs/.worktrees/0037-ticket-modernization-benjamin-20260824`
 - **Observed start tip:** `65a769f58edf8a58534fd4b6957fea03554fe735`; worktree clean, no foreign changes
-- **Status:** `[x]`
+- **Status:** `[p]`
 - **Write scope:** this collision-resistant claim and `docs/dossiers/0037-ticket-modernization-execution-plan.md` only
 - **Required preservation:** current inventory, transport-independent safety invariants, task graph, and Packages A–C
 - **Required correction boundary:** retire `sandboxed-grunt`, runner queue, singleton, typed-action, and Host-Transport; retain Runner as Dispatcher-selected, normally unprivileged operational role for Task-ID-bound long-running jobs, job control, and agent interfaces; do not preserve retired transport schemas without new authority
@@ -22,3 +22,4 @@
 - **Delivered:** Benjamin's Runner-aligned revision replaces only the contradictory title, Task `0037-51` Runner/transport statements, `0037-08` rewire wording, and Package C; inventory, all eight safety invariants, the remaining task graph, and Packages A–B remain verbatim.
 - **Validation:** PASS — amendment REF exists and is an ancestor of actual amendment tip; required transport-retirement and retained-Runner assertions present; prior inventory/safety section and Packages A–B compare byte-identical; 23 expanded task IDs exist; 16 JSON schemas and 7 policy files reproduce; exact two-path scope; exact start-tip-to-REF `git diff --check` exit 0.
 - **Handoff:** Benjamin reviews transcription against mailbox `1787580503269-2382f470`; Jean-Luc receives the immutable candidate. Neither transcription nor author review is Acceptance, integration, gate mutation, or authority allocation.
+- **Author review and architecture rejection:** Benjamin returned `faithful` for REF `fc80d5f082dc90f3c722bbb99939284a0f097249` in mailbox `1787580612579-44fc8d2d`; this verifies transcription only. Jadzia's independent Architect review REF `c456d66c394306a1667d20cf9d2fe4f62012da12`, final tip `a30a3cc20aea5d808d54a79c3425514062a33376`, rejected that plan for findings F-TICKET-PLAN-001..005. Jean-Luc assigned bounded correction in mailbox `1787580832121-a5aa70a0`. The claim is reopened for that correction; no Acceptance or integration credit is inferred.
