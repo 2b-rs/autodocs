@@ -413,3 +413,59 @@ The versioned curation toolchain now spans `version_id.py`, `version_store.py`,
 cover id minting, immutable storage, version-pinning, graph semantics,
 invalidation/confidence, typed synthesized claims, trigger orchestration, and
 historical/delta queries.
+
+## Worktree Topology Plan validator
+
+`_src/tools/worktree_topology_plan.py` is the read-only, standard-library
+validator for `worktree-topology-plan@v1`. It reproduces the
+`json-sort-utf8-no-floats@v1` content digest, checks the published JSON Schema,
+and applies the fail-closed topology, scope/overlap, checkpoint, lifecycle,
+activation, migration, and recovery invariants. Validation requires the complete
+expected executable-unit population and a full committed plan REF:
+
+```sh
+python3 _src/tools/worktree_topology_plan.py path/to/plan.json \
+  --schema docs/pipeline/worktree-topology-plan.schema.json \
+  --repo . --plan-ref <40-hex-commit> \
+  --expected-work-unit task:0046-01 \
+  --expected-work-unit task:0046-02
+```
+
+The REF check uses only `git cat-file` and `git show`: it verifies that the REF
+resolves to a commit and contains the exact plan bytes at the repository-relative
+path. It never checks out, stages, cleans, resets, or otherwise changes a
+worktree. Output is a stable `wtp-validation-report@v1` JSON object; exit `0`
+means no finding, exit `1` means invalid or unreadable input. Omitting the
+expected population or REF is itself a finding, so a partial graph cannot pass.
+
+Focused tests: `python3 _src/tools/test_worktree_topology_plan.py -v`.
+
+## Composed Worktree Topology / Integration Plan gate
+
+`_src/tools/validate_worktree_integration_plans.py` performs the dormant,
+read-only composed validation of one `WTP@v1` and one bound `IP@v1`. It checks
+both published schemas and canonical digests, exact WTP binding and complete
+topology consumption, ordered absorption and overlap timing, reconciliation,
+refresh-versus-revision classification, prerequisite-closed Acceptance
+snapshots, checkpoint/test coverage, exact reachable pins, and the privileged
+authority/root-preflight boundary of the unique final `main` step.
+
+```sh
+python3 _src/tools/validate_worktree_integration_plans.py \
+  path/to/integration-plan.json path/to/worktree-topology-plan.json \
+  --ip-schema docs/pipeline/integration-plan.schema.json \
+  --wtp-schema docs/pipeline/worktree-topology-plan.schema.json \
+  --wtp-ref <40-hex-committed-wtp-ref> --repo .
+```
+
+The tool emits sorted, stable `WIP-*` refusal codes in a
+`worktree-integration-validation@v1` JSON report, together with the reproduced
+IP digest and a normalized topology/closure-set digest. It uses only read-only
+Git object queries (`git cat-file -e`) for reachability and never checks out,
+stages, cleans, resets, merges, or writes repository state. Exit `0` means the
+composed pair is valid; exit `1` means refusal or unreadable input. A green
+report is evidence only—not authority, Acceptance, activation, or permission to
+execute a planned step.
+
+Focused property/refusal matrix:
+`python3 _src/tools/test_validate_worktree_integration_plans.py -v`.
