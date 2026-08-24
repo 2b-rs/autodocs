@@ -25,7 +25,7 @@ def sha(value: bytes) -> str:
     return "sha256:"+hashlib.sha256(value).hexdigest()
 
 
-def inventory(baseline: str):
+def inventory(baseline: str, branch_snapshot: dict):
     todo=subprocess.check_output(["git","-C",str(ROOT),"show",f"{baseline}:TODO.md"])
     text=todo.decode(); heads=list(re.finditer(r"^## Feature: (\d{4}) — (.+)$",text,re.M)); rows=[]
     for index,match in enumerate(heads):
@@ -34,14 +34,18 @@ def inventory(baseline: str):
         for j,item in enumerate(task_matches):
             task_block=block[item.end():task_matches[j+1].start() if j+1<len(task_matches) else len(block)]
             if re.search(r"Integration review:\**\s+\**mandatory",task_block,re.I): gates.append(item.group(1))
-        proc=subprocess.run(["git","-C",str(ROOT),"rev-parse","--verify",f"refs/heads/{fid}"],text=True,capture_output=True)
-        branch_ref=proc.stdout.strip() if proc.returncode==0 else None
-        rows.append({"feature_id":fid,"title":title,"work_units":tasks,"mandatory_gates":gates,"feature_branch":{"name":fid,"state":"reachable" if branch_ref else "unavailable","ref":branch_ref}})
+        branch=branch_snapshot.get("branches",{}).get(fid)
+        if branch is None: raise ValueError(f"branch snapshot missing Feature {fid}")
+        rows.append({"feature_id":fid,"title":title,"work_units":tasks,"mandatory_gates":gates,"feature_branch":branch})
     return todo,rows
 
 
-def build(baseline: str) -> None:
-    baseline=git("rev-parse",baseline); todo,items=inventory(baseline); rows=[]
+def build(baseline: str, branch_snapshot: dict) -> None:
+    baseline=git("rev-parse",baseline)
+    if branch_snapshot.get("baseline_ref")!=baseline: raise ValueError("branch snapshot baseline mismatch")
+    expected_snapshot_digest=sha(canonical({k:v for k,v in branch_snapshot.items() if k!="snapshot_digest"}))
+    if branch_snapshot.get("snapshot_digest")!=expected_snapshot_digest: raise ValueError("branch snapshot digest mismatch")
+    todo,items=inventory(baseline,branch_snapshot); rows=[]
     for item in items:
         fid=item["feature_id"]; is_trial=fid=="0046"
         rows.append({
@@ -57,16 +61,16 @@ def build(baseline: str) -> None:
             "recovery":"Withdraw/supersede this manifest row; retain prior rules, claims, Acceptance, verdicts, and history.",
             "validator_result":{"state":"compatible-bounded-no-activation" if is_trial else "deferred-explicit-unknown","evidence_ref":baseline}
         })
-    manifest={"schema":"feature-migration-manifest@v1","baseline_ref":baseline,"todo_digest":sha(todo),"allowed_dispositions":["migrated","compatible-with-bounds","deferred"],"population_count":len(rows),"rows":rows,"manifest_digest":""}
+    manifest={"schema":"feature-migration-manifest@v1","baseline_ref":baseline,"todo_digest":sha(todo),"branch_snapshot_digest":branch_snapshot["snapshot_digest"],"allowed_dispositions":["migrated","compatible-with-bounds","deferred"],"population_count":len(rows),"rows":rows,"manifest_digest":""}
     manifest["manifest_digest"]=sha(canonical({k:v for k,v in manifest.items() if k!="manifest_digest"}))
     OUT.mkdir(parents=True,exist_ok=True); (OUT/"manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,sort_keys=True,indent=2)+"\n")
-    evidence=OUT/"evidence"; evidence.mkdir(exist_ok=True); (evidence/"inventory.json").write_text(json.dumps({"schema":"feature-inventory@v1","baseline_ref":baseline,"todo_digest":sha(todo),"features":items},ensure_ascii=False,sort_keys=True,indent=2)+"\n")
+    evidence=OUT/"evidence"; evidence.mkdir(exist_ok=True); (evidence/"inventory.json").write_text(json.dumps({"schema":"feature-inventory@v1","baseline_ref":baseline,"todo_digest":sha(todo),"branch_snapshot_digest":branch_snapshot["snapshot_digest"],"features":items},ensure_ascii=False,sort_keys=True,indent=2)+"\n")
     counts={d:sum(r["disposition"]==d for r in rows) for d in manifest["allowed_dispositions"]}
-    lines=["# Feature 0046 migration/compatibility candidate","",f"Pinned baseline: `{baseline}`","",f"TODO digest: `{manifest['todo_digest']}`","",f"Manifest digest: `{manifest['manifest_digest']}`","", "This is a dormant migration candidate, not activation, Acceptance, or a QA conclusion. Existing governance remains controlling for every deferred or bounded-compatible Feature.","","## Result","",f"Exact active-Feature population: **{len(rows)}**. Dispositions: migrated **{counts['migrated']}**, compatible-with-bounds **{counts['compatible-with-bounds']}**, deferred **{counts['deferred']}**.","","| Feature | Branch baseline | Work units | Gates | Disposition |", "|---|---|---:|---:|---|"]
+    lines=["# Feature 0046 migration/compatibility candidate","",f"Pinned baseline: `{baseline}`","",f"TODO digest: `{manifest['todo_digest']}`","",f"Branch snapshot digest: `{manifest['branch_snapshot_digest']}`","",f"Manifest digest: `{manifest['manifest_digest']}`","", "This is a dormant migration candidate, not activation, Acceptance, or a QA conclusion. Existing governance remains controlling for every deferred or bounded-compatible Feature.","","## Result","",f"Exact active-Feature population: **{len(rows)}**. Dispositions: migrated **{counts['migrated']}**, compatible-with-bounds **{counts['compatible-with-bounds']}**, deferred **{counts['deferred']}**.","","| Feature | Branch baseline | Work units | Gates | Disposition |", "|---|---|---:|---:|---|"]
     for row in rows: lines.append(f"| {row['feature_id']} | `{row['feature_branch']['ref'] or 'unavailable'}` | {len(row['work_units'])} | {len(row['mandatory_gates'])} | `{row['disposition']}` |")
-    lines += ["","## Interpretation","","Feature `0046` is bounded-compatible only with its dormant candidate contracts and trial IP; it lacks a complete issued WTP instance and receives no activation or execution authority. Every other Feature is explicitly deferred because complete Feature-specific WTP/IP evidence and an independent migration decision are absent. Missing Feature branches are recorded as unavailable, never replaced by an invented ref.","","## Reproduction","","```sh",f"python3 docs/campaign-evidence/0046-migration/evidence/build_manifest.py --baseline {baseline}","python3 docs/campaign-evidence/0046-migration/evidence/validate_manifest.py --manifest docs/campaign-evidence/0046-migration/manifest.json --inventory docs/campaign-evidence/0046-migration/evidence/inventory.json","```","","A distinct QA participant must independently audit process conformance; this report intentionally contains no QA verdict."]
+    lines += ["","## Interpretation","","Feature `0046` is bounded-compatible only with its dormant candidate contracts and trial IP; it lacks a complete issued WTP instance and receives no activation or execution authority. Every other Feature is explicitly deferred because complete Feature-specific WTP/IP evidence and an independent migration decision are absent. Missing Feature branches are recorded as unavailable, never replaced by an invented ref. Branch observations come only from the immutable, digest-bound `branch-ref-map.json`; regeneration never reads ambient branch refs.","","## Reproduction","","```sh",f"python3 docs/campaign-evidence/0046-migration/evidence/build_manifest.py --baseline {baseline} --branch-map docs/campaign-evidence/0046-migration/evidence/branch-ref-map.json","python3 docs/campaign-evidence/0046-migration/evidence/validate_manifest.py --manifest docs/campaign-evidence/0046-migration/manifest.json --inventory docs/campaign-evidence/0046-migration/evidence/inventory.json --branch-map docs/campaign-evidence/0046-migration/evidence/branch-ref-map.json","```","","A distinct QA participant must independently audit process conformance; this report intentionally contains no QA verdict."]
     (OUT/"report.md").write_text("\n".join(lines)+"\n")
 
 
 if __name__=="__main__":
-    parser=argparse.ArgumentParser(); parser.add_argument("--baseline",required=True); args=parser.parse_args(); build(args.baseline)
+    parser=argparse.ArgumentParser(); parser.add_argument("--baseline",required=True); parser.add_argument("--branch-map",type=Path,required=True); args=parser.parse_args(); build(args.baseline,json.loads(args.branch_map.read_text()))

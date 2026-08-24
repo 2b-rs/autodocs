@@ -4,7 +4,9 @@ Pinned baseline: `c55cca8786d99f91d400f720cbcec616e228a6df`
 
 TODO digest: `sha256:97a124e4fef596616e6026acda128fcb90cff28a01b554974889137a208780d8`
 
-Manifest digest: `sha256:d6bb99803472f207cab4805e6fc4ffdb6a37384eb606c94602a19c3bd016af34`
+Branch snapshot digest: `sha256:85b064567a8cce523fd54abb445b784ce3431d19245767457d03b5825dd1fc31`
+
+Manifest digest: `sha256:3407f169efc9f8e290e15ec8db2a5d4e966c234833537cb4f3d5eb2a9b4ff703`
 
 This is a dormant migration candidate, not activation, Acceptance, or a QA conclusion. Existing governance remains controlling for every deferred or bounded-compatible Feature.
 
@@ -49,13 +51,13 @@ Exact active-Feature population: **32**. Dispositions: migrated **0**, compatibl
 
 ## Interpretation
 
-Feature `0046` is bounded-compatible only with its dormant candidate contracts and trial IP; it lacks a complete issued WTP instance and receives no activation or execution authority. Every other Feature is explicitly deferred because complete Feature-specific WTP/IP evidence and an independent migration decision are absent. Missing Feature branches are recorded as unavailable, never replaced by an invented ref.
+Feature `0046` is bounded-compatible only with its dormant candidate contracts and trial IP; it lacks a complete issued WTP instance and receives no activation or execution authority. Every other Feature is explicitly deferred because complete Feature-specific WTP/IP evidence and an independent migration decision are absent. Missing Feature branches are recorded as unavailable, never replaced by an invented ref. Branch observations come only from the immutable, digest-bound `branch-ref-map.json`; regeneration never reads ambient branch refs.
 
 ## Reproduction
 
 ```sh
-python3 docs/campaign-evidence/0046-migration/evidence/build_manifest.py --baseline c55cca8786d99f91d400f720cbcec616e228a6df
-python3 docs/campaign-evidence/0046-migration/evidence/validate_manifest.py --manifest docs/campaign-evidence/0046-migration/manifest.json --inventory docs/campaign-evidence/0046-migration/evidence/inventory.json
+python3 docs/campaign-evidence/0046-migration/evidence/build_manifest.py --baseline c55cca8786d99f91d400f720cbcec616e228a6df --branch-map docs/campaign-evidence/0046-migration/evidence/branch-ref-map.json
+python3 docs/campaign-evidence/0046-migration/evidence/validate_manifest.py --manifest docs/campaign-evidence/0046-migration/manifest.json --inventory docs/campaign-evidence/0046-migration/evidence/inventory.json --branch-map docs/campaign-evidence/0046-migration/evidence/branch-ref-map.json
 ```
 
 A distinct QA participant must independently audit process conformance; this report intentionally contains no QA verdict.
