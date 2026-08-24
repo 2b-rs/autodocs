@@ -105,13 +105,16 @@ update, hand the final tip to `jean-luc`, and acknowledge the assignment message
 
 ### Next action
 
-Validate the two changed review paths, commit them path-limited, report the
-review REF/tip to `jean-luc`, then acknowledge message
-`1787580308469-fd100cd7`.
+Second-round review evidence committed path-limited at
+`6b8a81ff1171127a95b44795bd4d1852df4ffe7b`. Commit this final claim
+bookkeeping update, report the final branch tip to `jean-luc`, then acknowledge
+message `1787580308469-fd100cd7`.
 
 ### Current result
 
 - **Verdict:** rejected
+- **Second-round review REF:**
+  `6b8a81ff1171127a95b44795bd4d1852df4ffe7b`
 - **Acceptance/integration credit:** none
 - **Candidate mutation:** none
 - **Main integration:** not performed and not authorized
