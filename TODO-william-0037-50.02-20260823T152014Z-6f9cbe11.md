@@ -11,3 +11,11 @@
 - expected_result: extracted singleton retirement guard proves healthy-queue rejection, sentinel exemption, restored-legacy pass-through, malformed-selector failover handling, and collision-safe same-second rejections. `FAILOVER_REQUIRED` parks/fails closed with a stable nonzero/result code. No production rollback executor call is introduced; a hermetic injected callback seam is permitted only for exactly-once/future-mapping tests.
 - assumptions: shared `TODO.md` bookkeeping is outside this assignment's write scope and remains dispatcher-owned; the work is behavior-preserving/dormant until `.04`.
 - next_step: inspect current runner-loop behavior and manifest/test conventions, then implement focused guard and tests.
+
+## Additive release — 2026-08-24
+
+- disposition: **superseded by DEC-0037-002** (integrated on `main` at `7a10f50d76e5620f3b7e3c796093c88037bb54bd`)
+- authority: explicit Project Lead `jean-luc` coordination assignment, mailbox `1787586335426-d322bef1`; DEC-0037-002 names `subtask:0037-50.02` and supersedes DEC-0037-001's unimplemented corrective chain for planning.
+- preserved starting tip: `0037-50.02@56562ff08ca28536a9de942b66a8b7b7cca1a891`.
+- release action: no further implementation started. Existing preparation state and this claim's startup evidence remain untouched; only this additive claim record is committed.
+- boundaries retained: no acceptance, integration, `main`, `TODO.md`, or `DONE.md` mutation; no production runner action.
