@@ -20,6 +20,7 @@ Every WTP carries:
 - `canonicalization_version: json-sort-utf8-no-floats@v1`;
 - `digest_algorithm: sha256`;
 - immutable `feature_id`, `baseline_ref`, `topology_revision`, `architect_identity`, `authority_ref`, `created_at`, `status`, and `supersedes`;
+- one closed `validation_profile` naming `profile_id`, numeric-string `profile_version`, the non-empty unique `required_stages`, and `failure_policy: fail-closed`;
 - `content_digest`, computed after removing the top-level `content_digest` member, recursively sorting object keys by Unicode code point, preserving array order, encoding strings and structural tokens as compact UTF-8 JSON, prohibiting floating-point values, and hashing the resulting bytes with SHA-256.
 
 Both the reachable Git REF of the committed plan and the reproducible `content_digest` identify a WTP. REF supplies provenance and reachability; digest supplies content identity. Neither substitutes for the other. A consumer rejects an unreproducible digest, unsupported schema/canonicalization/digest version, unreachable REF, or mismatched Feature identity.
@@ -93,7 +94,7 @@ The Architect supplies the Integrator:
 2. Feature and structural baseline identity/compatibility constraints;
 3. normalized complete nodes, edges, scope rules, overlap classes, checkpoints, and recovery premises;
 4. closed blocking/refreshable/invalid classifications;
-5. required validation profile and activation state;
+5. required validation profile (`profile_id`, `profile_version`, ordered required stages, and fail-closed policy) and activation state;
 6. status, supersession compatibility, and immutable Architect/authority identities.
 
 The Integrator-owned IP adds exact source/target tips, ordered predecessor absorption, merge mode, target-before state, checkpoint steps, validation/test profile execution, reconciliation choice, rollback commands, evidence outputs, and final-`main` preconditions. It also computes an immutable Acceptance-closure snapshot containing:

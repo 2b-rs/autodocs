@@ -112,3 +112,17 @@ The candidate's declared reach is necessary to close the observed planning gap a
 - **Signature scheme:** `sha256` over the UTF-8 literal payload documented below; integrity binding, not a credential or external digital signature
 - **Payload:** `0046-scope-review|agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c|2dae2a088d54b950908edcbc31c5f4402a078750|f80c41850d1161032cfb006a6aa1f6707593f49132e89db4a016415c50ec7bcc|b3e6771f9b7db79b9b866398aa7170099de923e45ed40d11dc08dbd00bcd944e|2c6b79d5a8831266c287668e9329272ff4e1fbfd6dabf1f763b7cf7ff1d294ef|a01afa2a9c7d00cf8162acd1b13a5d382c28aff70f310736b7d4fd2b5c1fcc31|24d93ba41854f724a52563f1c73db460a5d41194ee35609239c3c03af3840574|scope-ok-mit-auflagen|S-01..S-08`
 - **Signature digest:** `sha256:944d2292ff27dd4a83ab7d707900d460b9a95d9124865733bf5b3504b00824cb`
+
+## 9. Additive contract correction 1
+
+- **Finding:** `F-0046-02-WTP-CONTRACT-001`
+- **Disposition:** confirmed and corrected. The prose and requirements already classified the validation profile as required structural input, but the closed schema/template could not represent it.
+- **Correction boundary:** add the required top-level `validation_profile` object with closed fields `profile_id`, `profile_version`, non-empty unique `required_stages`, and `failure_policy: fail-closed`; add the same object to the minimal template and clarify the existing prose interface. No gate reach, activation state, checkpoint, authority, topology, scope, stale class, or recovery premise changes.
+- **Corrected WTP contract SHA-256:** `fd36237c3feeeb55e4d4c4ac4060971a7eb125d27111b9abe1dc582538708b70`
+- **Corrected WTP schema SHA-256:** `da11de8a3ce06936b8373f1ea42677d2d5fe9fa629dd2fcd5847dd3b46320e4d`
+- **Corrected WTP template file SHA-256:** `720ddae7942fa2293c3d1ea45f87bc9584bcb21bf370ccfc6fccd60ffe2ef47e`
+- **Corrected embedded semantic digest:** `sha256:022f4676dc5ba6974ef16e5db31bfd828f7e46b1193add6e466bbc912144de55`
+- **Scope verdict:** remains `scope-ok-mit-auflagen`; conditions S-01 through S-08 remain binding.
+- **Signed at:** `2026-08-24T19:16:00+02:00`
+- **Payload:** `0046-scope-review-correction-1|F-0046-02-WTP-CONTRACT-001|agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c|fd36237c3feeeb55e4d4c4ac4060971a7eb125d27111b9abe1dc582538708b70|da11de8a3ce06936b8373f1ea42677d2d5fe9fa629dd2fcd5847dd3b46320e4d|720ddae7942fa2293c3d1ea45f87bc9584bcb21bf370ccfc6fccd60ffe2ef47e|sha256:022f4676dc5ba6974ef16e5db31bfd828f7e46b1193add6e466bbc912144de55|scope-ok-mit-auflagen|S-01..S-08`
+- **Signature digest:** `sha256:243c2c01f81619a04fe0a279f315e3018f24ffbeecb5819e2f5eb401473a6e4f`
