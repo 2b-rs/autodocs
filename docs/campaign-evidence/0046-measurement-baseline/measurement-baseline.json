@@ -1,0 +1,76 @@
+{
+  "schema": "0046-measurement-baseline@v1",
+  "recorded_at": "2026-08-24T19:01:00+02:00",
+  "feature_ref": "ff7f7e8bad6de50d157c48b6fbeca29269ea8309",
+  "architect_candidate_ref": "4bff5e5095f26ba8c4849dbf9e9b9de83041ec92",
+  "environment": {
+    "repository": "autodocs",
+    "locale": "C for sorted inventories; inherited locale for read-only grep counts",
+    "timezone": "Europe/Berlin",
+    "network": "not used",
+    "privacy": "internal minimized evidence; raw worktree paths, claim bodies, and mailbox bodies not retained"
+  },
+  "population": {
+    "todo_features": 32,
+    "done_features_excluded": 15,
+    "tracked_claim_files": 110,
+    "observed_registered_worktrees": 178,
+    "observed_local_branches": 218,
+    "feature_id_title_inventory_sha256": "5a8d919ca95056bc94a11408deae736f4c42afac9d5f10c23111d5b457ff3621",
+    "committed_population_tsv_sha256": "424b09a45a24f6a89fda690af65430b2900e97fda97b9031f63308cb477f39fc",
+    "claim_name_inventory_sha256": "812f0a2394a93c346075ed3024d24e36bfa5ad5dc849b7ec560490a89a6ee221",
+    "worktree_porcelain_sha256": "73b30a44ac915aba854ee65bc6b454e69612d62e2ab6a6e907bd4f5a611b9a2b",
+    "branch_ref_tip_inventory_sha256": "9829289bdbfbc9062ee5a0b1d00145ccc4fb423c9ac6d098e091c9eb92dc7d5b"
+  },
+  "measures": [
+    {
+      "id": "MEAS-DISCOVERY-READS",
+      "name": "retained discovery-read proxy",
+      "value": 32,
+      "unit": "matching claim lines",
+      "command": "git grep -i -E '(git worktree list|git status|rev-parse|show-ref|check_integration_hygiene)' ff7f7e8bad6de50d157c48b6fbeca29269ea8309 -- ':(glob)TODO-*.md' | wc -l",
+      "denominator": "110 tracked claim files at feature_ref",
+      "limitation": "Lower-bound documentary proxy; it does not observe unrecorded reads and must not be interpreted as user effort."
+    },
+    {
+      "id": "MEAS-STALE-HANDOFFS",
+      "name": "explicit retained stale-handoff proxy",
+      "value": 0,
+      "unit": "matching claim lines",
+      "command": "git grep -i -E '(stale.{0,40}handoff|handoff.{0,40}stale)' ff7f7e8bad6de50d157c48b6fbeca29269ea8309 -- ':(glob)TODO-*.md' | wc -l",
+      "denominator": "110 tracked claim files at feature_ref",
+      "limitation": "Zero means no explicit retained phrase match, not proof that stale handoffs did not occur."
+    },
+    {
+      "id": "MEAS-INTEGRATION-REWORK",
+      "name": "integration-related corrective commits",
+      "value": 32,
+      "unit": "matching commits",
+      "command": "git log ff7f7e8bad6de50d157c48b6fbeca29269ea8309 --since='2026-08-20T00:00:00+02:00' --format='%H%x09%s' --grep='integrat' -i | rg -i '(correct|repair|reconcil|rework|fix)' | wc -l",
+      "denominator": "commits reachable from feature_ref since the fixed timestamp",
+      "limitation": "Subject-line proxy; exposure window and reachable commit population must accompany comparisons."
+    },
+    {
+      "id": "MEAS-BLOCKED-PREFLIGHTS",
+      "name": "explicit retained blocked preflight/hygiene proxy",
+      "value": 8,
+      "unit": "matching claim lines",
+      "command": "git grep -i -E '((preflight|hygiene).{0,60}(fail|block|stop|abort)|(fail|block|stop|abort).{0,60}(preflight|hygiene))' ff7f7e8bad6de50d157c48b6fbeca29269ea8309 -- ':(glob)TODO-*.md' | wc -l",
+      "denominator": "110 tracked claim files at feature_ref",
+      "limitation": "Documentary proxy; multiple lines may describe one event and unrecorded events are invisible."
+    },
+    {
+      "id": "MEAS-RECOVERY-TIME",
+      "name": "representative incident-to-terminal-recovery elapsed time",
+      "value": 7162,
+      "unit": "seconds",
+      "command": "start=$(git show -s --format=%ct 6d9a9ba116419fc0631412870f9d5914d3fda7c2); end=$(git show -s --format=%ct 2dae2a088d54b950908edcbc31c5f4402a078750); printf '%s\\n' $((end-start))",
+      "denominator": "one named recovery episode",
+      "start_ref": "6d9a9ba116419fc0631412870f9d5914d3fda7c2",
+      "end_ref": "2dae2a088d54b950908edcbc31c5f4402a078750",
+      "limitation": "Single representative episode measured by commit timestamps; trial comparisons must use the same named start/end event semantics and report sample count."
+    }
+  ],
+  "comparison_rule": "A post value is comparable only when command semantics, population boundary, denominator, time/exposure window, exclusions, and limitations are retained. Otherwise report non-comparable and explain the drift; never normalize silently.",
+  "retention": "Commit this minimized baseline and additive supersessions. Do not promote the raw temporary inventory extracts."
+}
