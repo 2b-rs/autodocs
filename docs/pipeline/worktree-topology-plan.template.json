@@ -1,0 +1,97 @@
+{
+  "schema_version": "worktree-topology-plan@v1",
+  "canonicalization_version": "json-sort-utf8-no-floats@v1",
+  "digest_algorithm": "sha256",
+  "content_digest": "sha256:b87c29151401c4702dcf906ac7e48945fa45a3c195a1a1d213c75ec5019dd8d2",
+  "feature_id": "0000",
+  "baseline_ref": "0000000000000000000000000000000000000000",
+  "topology_revision": "1",
+  "architect_identity": "agent:example:architect:0000:revision-1",
+  "authority_ref": "example-only:not-operative",
+  "created_at": "2026-08-24T18:45:00+02:00",
+  "status": "candidate",
+  "supersedes": "none",
+  "nodes": [
+    {
+      "node_id": "main-root",
+      "work_unit": "feature:0000",
+      "branch": "main",
+      "base_branch": "main",
+      "worktree_path": "/absolute/repository/root",
+      "owner_role": "privileged integrator for final advance only",
+      "capability_class": "privileged",
+      "write_scope": [],
+      "read_scope": [{ "match": "prefix", "path": "." }],
+      "predecessor_constraints": [],
+      "concurrency_group": "retained-root",
+      "phase": "final-only",
+      "provisioner": "pre-existing unique main checkout",
+      "lifecycle": "retained",
+      "recovery_reference": "docs/pipeline/branch-workflow.md#preserved-snapshot-tags-and-recovery",
+      "is_main_worktree": true
+    },
+    {
+      "node_id": "task-0000-01",
+      "work_unit": "task:0000-01",
+      "branch": "0000-01",
+      "base_branch": "0000",
+      "worktree_path": "/absolute/repository/.worktrees/0000-01",
+      "owner_role": "Implementer",
+      "capability_class": "unprivileged",
+      "write_scope": [{ "match": "prefix", "path": "example/0000-01" }],
+      "read_scope": [{ "match": "prefix", "path": "docs/pipeline" }],
+      "predecessor_constraints": [],
+      "concurrency_group": "phase-1",
+      "phase": "implementation",
+      "provisioner": "item owner under branch-workflow.md",
+      "lifecycle": "planned",
+      "recovery_reference": "claim:task-0000-01-recovery",
+      "is_main_worktree": false
+    }
+  ],
+  "edges": [
+    {
+      "from": "task-0000-01",
+      "to": "main-root",
+      "kind": "integration-target",
+      "condition": "Only after Feature integration and separately authorized final advance",
+      "evidence_required": ["checkpoint review", "root hard preflight", "integration hygiene"]
+    }
+  ],
+  "overlap_rules": [],
+  "checkpoints": [
+    {
+      "work_unit": "task:0000-01",
+      "mandatory": true,
+      "rationale": "Example terminal integrating Task and Feature review floor",
+      "acceptance_closure_algorithm": "task-acceptance-prerequisite-closure@v1"
+    }
+  ],
+  "staleness_policy": {
+    "blocking_structural_fields": [
+      "/feature_id", "/baseline_ref", "/nodes", "/edges", "/overlap_rules",
+      "/checkpoints", "/activation", "/recovery"
+    ],
+    "refreshable_operational_inputs": [
+      "IP source_tip", "IP target_tip_before", "observed ancestry", "evidence timestamp",
+      "recomputed hygiene result", "recomputed Acceptance-closure snapshot"
+    ],
+    "invalid_conditions": [
+      "unreproducible digest", "withdrawn plan", "incompatible supersession",
+      "partial graph", "unknown overlap class", "duplicate active branch or worktree"
+    ]
+  },
+  "activation": {
+    "mode": "dormant",
+    "affected_gates": [],
+    "self_application_feature": "0000",
+    "migration_required": true,
+    "grandfathering": "forbidden"
+  },
+  "recovery": {
+    "stop_condition": "Any blocking-stale or invalid finding",
+    "last_valid_plan": "Retain the last reproducible WTP and bound IP",
+    "restore_authority": "Separately authorized governance change",
+    "preserve": ["claims", "Acceptance records", "integration verdicts", "evidence", "preserved snapshot tags"]
+  }
+}

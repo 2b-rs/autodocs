@@ -1,0 +1,117 @@
+# `DEC-0046-001` — Architect-owned topology and Integrator-owned execution plans
+
+### `DEC-0046-001` — Separate structural worktree topology from operational integration planning
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-24T18:45:00+02:00`
+- **Deciding identity:** `agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c`
+- **Role:** `Architekt`
+- **Authority reference:** `agent-inbox:1787596613148-71301e6e`
+- **Subject:** Ownership, lifecycle, validation reach, activation, migration, and recovery for Worktree Topology Plan `WTP@v1` and Integration Plan `IP@v1` in Feature `0046`
+- **Decision:** The Architect owns a versioned WTP that declares structural work-unit topology, scope ownership, concurrency and ordered-overlap classes, checkpoint inputs, compatibility constraints, and structural recovery premises. The Integrator owns a versioned IP that binds one reproducible WTP identity and supplies exact runtime branch tips, merge order, prerequisite absorption, Acceptance-closure snapshots, reconciliation choices, execution evidence, and final-`main` preconditions. WTP identity requires immutable Git REF plus canonical content digest and schema/canonicalization/digest-algorithm versions. A WTP structural change, incompatible supersession, withdrawal, partial graph, unknown overlap class, or unreproducible digest is blocking or invalid; runtime pin drift is refreshable only when every WTP structural and authority premise remains unchanged and the current IP already bounds the selected response. Validation remains dormant during architecture, trials on Feature `0046`, and may become repository-wide only after explicit migration dispositions, mandatory checkpoint review, independent QA audit, and separately authorized governance integration. No existing Feature is implicitly grandfathered.
+- **Technical justification:** Current claims and branch rules describe local work but do not provide one reproducible architecture product proving that all work units, branches, worktrees, owners, scopes, predecessors, concurrency relations, checkpoints, and recovery routes compose safely. Combining topology and execution would let the Integrator silently make architecture decisions when refreshing pins; freezing runtime pins into the WTP would instead require needless architecture revisions. The split keeps structural authority with the Architect and operational responsibility with the Integrator, while canonical identity, closed stale classes, and time-aware overlap prevent plan drift from becoming an implicit waiver. Staged activation and explicit migration bound the cross-item blast radius.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** One combined Architect/Integrator plan
+    - **Disposition:** `rejected`
+    - **Reason:** It conflates structural authority with execution planning, makes ordinary pin refresh an architecture edit, and weakens separation evidence.
+  - **ALT-02:** WTP owns topology while IP owns runtime execution, joined by immutable REF and canonical digest
+    - **Disposition:** `selected`
+    - **Reason:** It gives each role a bounded work product, permits safe operational refresh without architectural reinterpretation, and supports deterministic stale classification.
+  - **ALT-03:** Retain distributed claims and reconstruct topology during each integration
+    - **Disposition:** `rejected`
+    - **Reason:** It preserves the incident failure class: repeated ad-hoc discovery cannot prove completeness, compatibility, or recovery before integration starts.
+  - **ALT-04:** Activate WTP/IP immediately for every open Feature
+    - **Disposition:** `rejected`
+    - **Reason:** Immediate activation would change other work-unit gates before representative validation, migration classification, and recovery evidence exist.
+- **Consequences:**
+  - **CON-01:** Every executable Task/Subtask in a governed Feature maps to exactly one active item-owned topology node; no two active nodes own the same branch or worktree.
+  - **CON-02:** Scope overlap is assessed with time and relation semantics: simultaneous incompatible ownership blocks, while explicit predecessor carry, sequential ownership, or bounded reconciliation may reuse paths with order, authority, and evidence.
+  - **CON-03:** WTP structural fields and status determine blocking or invalid drift; IP runtime pins and evidence may refresh only inside WTP- and IP-bounded alternatives.
+  - **CON-04:** Acceptance closure is an immutable normalized IP snapshot with a digest; missing, invalidated, stale, or candidate-mismatched Acceptance is blocking and never silently refreshed.
+  - **CON-05:** Feature `0046` self-applies the candidate WTP/IP contracts in trial mode before broad activation; existing authority remains controlling during the trial.
+  - **CON-06:** Every Feature open when migration work starts receives exactly one additive disposition: `migrated`, `compatible-with-bounds`, or `deferred`, with owner, evidence, risk, and revisit trigger.
+  - **CON-07:** Rollback stops affected validation/integration gates, retains the last valid plans and append-only evidence, restores the prior authority selector/process through separate authorization, and never rewrites claims, Acceptance, verdicts, or preserved snapshots.
+  - **CON-08:** A plan is evidence and a gate input, never a claim, lease, authority grant, Acceptance decision, integration verdict, or permission to advance `main`.
+- **Affected work units:**
+  - `feature:0046`
+  - `task:0046-01`
+  - `task:0046-02`
+  - `task:0046-03`
+  - `task:0046-04`
+  - `task:0046-05`
+  - `task:0046-06`
+  - `task:0046-07`
+  - `feature:0044`
+  - `feature:0043`
+  - `feature:0041`
+  - `feature:0039`
+  - `feature:0038`
+  - `feature:0037`
+  - `feature:0035`
+  - `feature:0034`
+  - `feature:0033`
+  - `feature:0020`
+  - `feature:0027`
+  - `feature:0022`
+  - `feature:0028`
+  - `feature:0029`
+  - `feature:0030`
+  - `feature:0031`
+  - `feature:0032`
+  - `feature:0023`
+  - `feature:0024`
+  - `feature:0025`
+  - `feature:0026`
+  - `feature:0011`
+  - `feature:0012`
+  - `feature:0013`
+  - `feature:0014`
+  - `feature:0015`
+  - `feature:0016`
+  - `feature:0017`
+  - `feature:0018`
+  - `feature:0019`
+  - `feature:0007`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `task-start:0046-02`
+  - `task-start:0046-03`
+  - `task-start:0046-04`
+  - `task-start:0046-05`
+  - `validation:worktree-topology-plan@v1`
+  - `validation:integration-plan@v1`
+  - `integration:0046-04`
+  - `integration:0046-05`
+  - `integration:0046-07`
+  - `integration:main`
+  - `feature-closure:0046`
+  - `external:active-feature-migration-status`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:jean-luc:0046:1787596613148-71301e6e`
+    - **Role:** `registered specialist:project-lead`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Allocated the exact Feature, decision ID, baseline, branch/worktree, scope, outputs, and prohibitions after recovery and proposal reconciliation.
+  - **PART-02:**
+    - **Identity:** `agent:geordi:0046:1787592585547-3aa76586`
+    - **Role:** `Integrator`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Confirmed the structural/runtime ownership split, dual REF/digest binding, immutable Acceptance-closure snapshot, and event-versus-revision boundary without authoring an IP contract.
+  - **PART-03:**
+    - **Identity:** `agent:troy:0046:1787596567195-e5edfd65`
+    - **Role:** `QA-Manager`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Prepared and reconciled the non-operative proposal and preserved the incident evidence, Feature allocation, and activation boundary.
+- **Waiver:** `none`
+
+## Operative boundary
+
+This decision defines the architecture candidate and its permitted future activation path. It does not itself activate a validator, change another Feature's start or integration gate, migrate a Feature, authorize an IP, or grant Acceptance/integration authority. Until Tasks `0046-01` through `0046-07` complete their stated gates, the repository's pre-existing process remains authoritative.
+
