@@ -1,0 +1,88 @@
+# Future direct-execution capability decision
+
+### `DEC-0037-002` — Remove sandboxed-grunt transport dependencies from the future architecture
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-24T08:37:26Z`
+- **Deciding identity:** `agent:data:0037-51:20260824T083513Z`
+- **Role:** `Architekt`
+- **Authority reference:** `task:0037-51`
+- **Subject:** Future Feature `0037` agent capability model and disposition of work introduced solely for sandboxed-grunt execution
+- **Decision:** Every future agent is modeled as having direct Shell and Git execution capability. Feature `0037` removes or defers the legacy singleton runner, runner queue, typed runner-action transport, runner-only bootstrap, and sandboxed-grunt qualification work that exists solely to compensate for absent direct execution. It retains or rewrites the independent safety invariants those transports carried: isolated item worktrees, exact claims and scopes, collision rejection, governance-path protection, stale-baseline and authority-epoch rejection, deterministic validation, immutable evidence, recovery, review separation, atomic cutover, and fail-closed rollback. Completed runner artifacts and decisions remain append-only historical evidence and are not described as unimplemented or deleted by this decision.
+- **Technical justification:** Management removed sandboxed grunts from the future system after all agents gained Shell and Git access. Preserving runner transport as a mandatory architectural layer would retain avoidable Tasks, deployment boundaries, host-service failure modes, and dependency edges without a future consumer. Removing transport must not erase the safety properties previously coupled to it; those properties protect concurrent repository mutation, authority, provenance, cutover, and recovery independently of which process executes Git or validation commands.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Remove runner-only transport and re-home independent safety invariants in direct-execution contracts
+    - **Disposition:** `selected`
+    - **Reason:** It implements Management's capability decision while preserving repository safety, authority, provenance, recovery, and cutover guarantees.
+  - **ALT-02:** Retain the runner queue as the mandatory execution path even though every future agent has Shell and Git access
+    - **Disposition:** `rejected`
+    - **Reason:** It preserves an unnecessary host service, action registry, deployment sequence, and runner-specific Task chain whose original capability constraint no longer exists.
+  - **ALT-03:** Remove all runner-related work and its coupled checks without replacement
+    - **Disposition:** `rejected`
+    - **Reason:** Collision control, governance protection, stale-state rejection, immutable evidence, and fail-closed recovery are safety invariants rather than sandbox accommodations.
+- **Consequences:**
+  - **CON-01:** Open runner-only implementation, activation, failover-remediation, qualification, and post-activation rollout work is removed or deferred before implementation; already completed work remains immutable history.
+  - **CON-02:** Direct-execution tools and process contracts must enforce exact item scope, branch/worktree isolation, stale-baseline rejection, collision control, governance protection, validation, evidence, and recovery without depending on a runner request envelope.
+  - **CON-03:** The Feature `0037` prerequisite graph and cutover plan require an explicit reviewed rewrite before any affected gate is implemented or crossed; this candidate does not itself mutate those gates.
+  - **CON-04:** `DEC-0037-001` remains a valid record for its historical queue-failover subject, but its unimplemented future corrective chain is superseded for planning by this decision after `DEC-0037-002` is integrated on `main`.
+  - **CON-05:** Rollback before issue-store authority cutover restores the current legacy direct-execution workflow; post-cutover recovery remains forward issue-store recovery and does not depend on restoring a retired sandbox runner.
+  - **CON-06:** No active claim, request, or completed evidence is silently grandfathered, discarded, or reclassified; operative backlog changes must disposition each affected item and preserve its provenance.
+- **Affected work units:**
+  - `feature:0037`
+  - `task:0037-45`
+  - `task:0037-41`
+  - `task:0037-46`
+  - `task:0037-46.01`
+  - `task:0037-46.02`
+  - `task:0037-47`
+  - `task:0037-50`
+  - `task:0037-50.01`
+  - `task:0037-50.02`
+  - `task:0037-50.03`
+  - `task:0037-50.04`
+  - `task:0037-50.05`
+  - `task:0037-51`
+  - `task:0037-39`
+  - `task:0037-42`
+  - `task:0037-43`
+  - `task:0037-44`
+  - `task:0037-21`
+  - `task:0037-25`
+  - `task:0037-25.01`
+  - `task:0037-30`
+  - `task:0037-32`
+  - `task:0037-34.01`
+  - `task:0037-33`
+  - `task:0037-35.01`
+  - `task:0037-36`
+  - `task:0038-16.02`
+  - `task:0039-05`
+  - `task:0044-05`
+  - `task:0044-07`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `task-start:0037-46.02`
+  - `task-start:0037-47`
+  - `task-start:0037-50.02`
+  - `task-start:0037-50.03`
+  - `task-start:0037-50.04`
+  - `task-start:0037-50.05`
+  - `validation:agent-bootstrap`
+  - `validation:issue-policy`
+  - `integration:0037-46.02`
+  - `integration:0037-34.02`
+  - `feature-closure:0037`
+  - `external:runner-host-service`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `authority:repository-owner`
+    - **Role:** `Management`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Management directly removed sandboxed grunts from the future system and approved eliminating Tasks and intermediate steps introduced solely for them while retaining useful non-runner functionality.
+- **Waiver:** `none`
