@@ -105,3 +105,40 @@ hineinmergt. **Nur ein einziges Prerequisite** — und dennoch ein echter Merge:
 würden die Invariante verletzen, ohne dass die Base-Ref sachlich falsch wäre. Bei
 der Umsetzung von `0041-02` ist zu entscheiden, ob solche Verfahren
 ausgeschlossen oder gesondert behandelt werden.
+
+---
+
+## `DEC-0041-005` — Technische Durchsetzung vor End-to-End-Integration
+
+- **Zeitpunkt:** 2026-08-18
+- **Entscheidende Instanz:** Architekt-Funktion, Session
+  `agent:zed:0041-04:20260818T125428Z-be7929d33e40`, im Rahmen der
+  agentisch bestimmbaren Backlog-Reparatur.
+- **Gegenstand:** Kann `0041-05` den neuen Workflow bereits ehrlich end-to-end
+  integrieren?
+- **Befund:** Nein. `_src/tools/runner_transaction.py` verlangt für
+  `close-task-v1` weiterhin ein `bookkeeping`-Objekt, erstellt zwei Commits und
+  verifiziert deren Elternbeziehung. `_src/tools/legacy_task_doctor.py` meldet
+  weiterhin jeden terminalen Task ohne sichtbaren Implementierungs-`REF` als
+  Fehler. `docs/pipeline/runner-transaction.md` beschreibt denselben Altvertrag.
+  Damit widerspricht die technische Durchsetzung den terminalen Tasks
+  `0041-02`/`0041-03`.
+- **Entscheidung:** Neue Task `0041-06` passt den bestehenden Transaktions- und
+  Diagnosepfad an den atomaren Implementation-Check-in an. `0041-05` erhält
+  `0041-06` als Voraussetzung. Die konkurrierende Altdefekt-Task `0038-25`
+  wird bis zur gemeinsamen Disposition von `0041-06` abhängig gemacht, statt
+  den abgeschafften Bookkeeping-Zwang parallel zu reparieren.
+- **Abhängigkeit und Kollisionsschutz:** `0041-06` darf erst nach der fremd
+  beanspruchten `0038-02` starten, weil diese Task denselben
+  `runner_transaction.py`-Wiederherstellungs-/Journalbereich besitzt. Die
+  Abhängigkeit ist ein echtes Startgate, keine bloße Dokumentationsbeziehung.
+- **Fachliche Rechtfertigung:** Ein Dokumentenprozess, den der einzige
+  technische Abschlussweg ablehnt, hält die Pipeline weiter an. Eine sofortige
+  Paralleländerung würde dagegen den aktiven `0038-02`-Claim appropriieren. Die
+  neue Task ist die kleinste kollisionsfreie, intent-erhaltende Reparatur.
+- **Checkpoint-Entscheidung:** `0041-06` erhält keinen zusätzlichen
+  Integrationscheckpoint. Es ändert technische Durchsetzung, aber keine neue
+  Autorität; hermetische Negativ-/Recovery-Tests sind Pflicht, und der
+  unmittelbar folgende verpflichtende End-to-End-Checkpoint `0041-05` prüft
+  den vollständigen Workflow. Ein zweiter Review derselben Grenze wäre
+  redundant.
