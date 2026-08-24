@@ -34,7 +34,9 @@ Governance artifacts are at minimum: decision records (`DEC-*`), the authority f
 
 This is an exception to the one-branch-per-item rule above, and it exists because governance is *shared* state. Shared state held on a private branch cannot be coordinated, only reconstructed afterwards — the same failure class `DEC-0044-008` already rejected for provenance. The concrete trigger: a decision record drafted on a branch took an ID that a parallel line of work had already assigned on `main`, producing two append-only records under one identifier that answered the same question in opposite ways. `main` is the only place where an allocation point for identifiers can exist at all. Before allocating a new `DEC-` identifier, check it against `main`.
 
-Coordination duties that follow from (2): the mailbox is not a telephone — nothing is pushed, and a recipient sees mail only on its next turn. A coordination step is complete when the **answer** has arrived, not when the message was sent. Read the inbox before any consequential action: a merge to `main`, an acceptance, or the allocation of a new identifier. Addresses are case-sensitive. Acknowledge (`ack`) what you acted on, so senders can tell their message arrived instead of concluding your session is dead.
+Coordination duties that follow from (2): the mailbox is not a telephone — nothing is pushed, and a coordination step is complete only when the **answer** arrives. `agent-inbox` operations are MCP tools, not shell commands. At session start call `announce`, then `inbox`; read `inbox` at every turn and before consequential actions, and `ack` only after acting. `roster` shows counts, not messages. Mail coordinates work but grants no authority.
+
+Without the MCP tools, never scan global message journals. Read only `/tmp/agent-inbox/data/mailboxes/<lowercase-agent-name>.jsonl` (or the equivalent below `AGENT_INBOX_HOME`), inspect headers first, and open selected bodies via `body_file`. This fallback is read-only and cannot mark or acknowledge mail; report a missing projection rather than reconstructing it.
 
 ### Agents mutate only in item-owned worktrees; the root checkout is not written to
 
