@@ -8,6 +8,8 @@
 - **Authority reference:** direct-user clarification recorded at `fa8d575f723b9905050c77df935cc7b55a8ebaa2` in `TODO-jean-luc-0037-51-20260824T072000Z.md`
 - **Assignment source:** Project Lead `jean-luc`, mailbox thread `0037-51`, messages `1787566669522-d2e024d9` and `1787566813425-92cf5fd2`
 - **Prior review baseline:** `9f4d3f6ee04389a77dc296ed21a85f918d75739d`
+- **Review REF:** `5d5996d07d8e8be71a99722a12e3afcb1d57919a`
+- **State:** completed; review write-scope lease released after bookkeeping
 - **Branch:** `review-0037-51-runner-role-amendment-data-20260824`
 - **Worktree:** `.review-worktrees/0037-51-runner-role-amendment-data-20260824`
 
@@ -83,6 +85,9 @@ services, background jobs, pushes, and publication.
 
 ## Next action
 
-Review the final scoped diff, commit only the three assigned paths, report the
-final REF to `jean-luc`, then acknowledge both assignment messages. No
-integration is permitted while the recorded shared-root hygiene finding remains.
+No further repository action is assigned to this Architect. Report substantive
+review REF `5d5996d07d8e8be71a99722a12e3afcb1d57919a` and the final bookkeeping tip
+to `jean-luc`, then acknowledge both assignment messages. A distinct downstream
+Architect/Implementer applies the decomposition correction only after this
+authority package reaches `main`. No integration is permitted while the
+recorded shared-root hygiene finding remains.
