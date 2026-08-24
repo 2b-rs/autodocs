@@ -1,0 +1,1779 @@
+{
+  "activates_queue": false,
+  "changes_authority": false,
+  "consumers": [
+    {
+      "obligation": "Register every `typed-action` disposition's action IDs in the permanent typed-action registry (`_src/runner/actions-v1.json`) with the compatibility note honoured and the named test fixtures inherited; implement no generic shell action; do not activate.",
+      "task": "0037-46.01"
+    },
+    {
+      "obligation": "Fire every `retirement-trigger` disposition in the recorded order only after queue success is durable, keep the singleton rollback executable for the whole activation window, and remove a primitive only when its `removal_condition` is met.",
+      "task": "0037-46.02"
+    }
+  ],
+  "coverage": {
+    "excluded": [
+      {
+        "mechanism": ".log",
+        "reason": "Suffix fragment of the `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` row, not a separate mechanism; both members are covered by primitive `evidence.run-archive`."
+      }
+    ],
+    "inventory_section": "## Skript-Ausführungs-Infrastruktur",
+    "inventory_source": "docs/pipeline/tools.md",
+    "method": "Every mechanism the living tools.md execution-infrastructure table enumerates must be a primitive `sources` entry or an explicit exclusion. Tools not in that table (safety, approval-readiness, provisioning, bootstrap, publication) are additionally mapped here."
+  },
+  "manifest_version": 1,
+  "primitives": [
+    {
+      "authority_key": "mechanism:_src/tools/bootstrap_instance.sh",
+      "category": "action",
+      "compatibility": "Bootstrap remains protocol-agnostic; only the protocol epoch it reports changes at activation.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "env.bootstrap-instance@v1"
+        ]
+      },
+      "id": "action.bootstrap.instance",
+      "owner_task": "0038-23",
+      "sources": [
+        "_src/tools/bootstrap_instance.sh"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_automation_safety.py"
+      ],
+      "title": "`bootstrap_instance.sh` — agent instance bootstrap"
+    },
+    {
+      "authority_key": "mechanism:_src/tools/bootstrap_ssh_known_hosts.sh",
+      "category": "action",
+      "compatibility": "Verify-before-write semantics (hardened by `0038-27`) are a precondition of the queue's network/credential preflight and transfer unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "env.bootstrap-known-hosts@v1"
+        ]
+      },
+      "id": "action.bootstrap.ssh-known-hosts",
+      "owner_task": "0038-27",
+      "sources": [
+        "_src/tools/bootstrap_ssh_known_hosts.sh"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_automation_safety.py"
+      ],
+      "title": "`bootstrap_ssh_known_hosts.sh` — fingerprint-verified host key installation"
+    },
+    {
+      "authority_key": "typed-action:base-branch",
+      "category": "action",
+      "compatibility": "Already specified against the frozen `0038-19` contract with the future ID named in that document's forward-mapping table (section 10); argument names are carried over verbatim.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "git.base-branch@v1"
+        ]
+      },
+      "id": "action.branch-merge.base-branch",
+      "owner_task": "0038-20",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/branch-merge-actions.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::BranchMergeTransactionTests"
+      ],
+      "title": "Typed `base-branch` action: create the item branch off its declared parent"
+    },
+    {
+      "authority_key": "typed-action:integrate-checkpoint",
+      "category": "action",
+      "compatibility": "No legacy implementation exists and none may be added: `runner_transaction.py` refuses every attempt. The queue must implement it privileged-only; this manifest changes no authority.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Not a retirement: this contract has no legacy implementation to remove. It is satisfied when `0037-46.01` registers the privileged-only action and the non-bypassable integration-policy gate (`0037-43`) enforces it machine-readably.",
+        "typed_actions": [
+          "git.integrate-checkpoint@v1"
+        ]
+      },
+      "id": "action.branch-merge.integrate-checkpoint",
+      "owner_task": "0038-19",
+      "sources": [
+        "docs/pipeline/branch-merge-actions.md",
+        "docs/pipeline/branch-workflow.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::BranchMergeTransactionTests (negative: sandboxed Task→Feature attempt rejected)"
+      ],
+      "title": "Typed `integrate-checkpoint` action (Task→Feature, Feature→main) — contract only, structurally refused by the legacy bridge"
+    },
+    {
+      "authority_key": "typed-action:merge-prereqs",
+      "category": "action",
+      "compatibility": "As `base-branch`; the `--no-ff` requirement of `DEC-0044-007` is a property of the action arguments, not of the implementation, and transfers unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "git.merge-prereqs@v1"
+        ]
+      },
+      "id": "action.branch-merge.merge-prereqs",
+      "owner_task": "0038-20",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/branch-merge-actions.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::BranchMergeTransactionTests"
+      ],
+      "title": "Typed `merge-prereqs` action: sequential non-octopus two-parent merges with append-only claim union"
+    },
+    {
+      "authority_key": "mechanism:_src/tools/provision_tmp_worktree.sh",
+      "category": "action",
+      "compatibility": "Superseded by `provision_worker_clone.sh` before activation; no queue action is derived from it.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "Deleted once no tracked script, doc or claim references it and `0041-01`'s successor is the only provisioner in `docs/pipeline/tools.md`.",
+        "retirement_trigger": "`0037-46.02` activation, by which time `env.provision-worker-clone@v1` is the sole provisioning authority.",
+        "superseded_by": [
+          "env.provision-worker-clone@v1"
+        ]
+      },
+      "id": "action.provision.tmp-worktree",
+      "owner_task": "0038-22",
+      "sources": [
+        "_src/tools/provision_tmp_worktree.sh"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_provision_tmp_worktree.py"
+      ],
+      "title": "`provision_tmp_worktree.sh` — explicitly superseded shared-checkout worktree provisioner"
+    },
+    {
+      "authority_key": "mechanism:_src/tools/provision_worker_clone.sh",
+      "category": "action",
+      "compatibility": "Environment provisioning is orthogonal to request transport; the script keeps working across activation and is wrapped, not rewritten.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "env.provision-worker-clone@v1"
+        ]
+      },
+      "id": "action.provision.worker-clone",
+      "owner_task": "0041-01",
+      "sources": [
+        "_src/tools/provision_worker_clone.sh",
+        "docs/pipeline/worker-clone-provisioning.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_provision_tmp_worktree.py"
+      ],
+      "title": "`provision_worker_clone.sh` — current privileged worker-clone provisioner"
+    },
+    {
+      "authority_key": "mechanism:_src/tools/publish_public_site.sh",
+      "category": "action",
+      "compatibility": "A protected external-effect action; the queue must gate it behind credential preflight and privileged authority exactly as the current script's guards do.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "publish.public-site@v1"
+        ]
+      },
+      "id": "action.publish.public-site",
+      "owner_task": "0038-14",
+      "sources": [
+        "_src/tools/publish_public_site.sh"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_publish_scripts.py"
+      ],
+      "title": "`publish_public_site.sh` — external publication to the deploy repository"
+    },
+    {
+      "authority_key": "mechanism:_src/tools/task_bookkeeping_closure.py",
+      "category": "action",
+      "compatibility": "Already inert: every API/CLI path fails without touching files and redirects to `legacy_task_editor.py`. It is retained only as a tripwire against reintroducing a second write surface.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "The file may be deleted once `0037-46.02` is terminal and no tracked caller, doc or inventory entry references it.",
+        "retirement_trigger": "`0037-46.02` completes activation, at which point no caller can reach a pre-queue bookkeeping write path at all."
+      },
+      "id": "action.retired.task-bookkeeping-closure",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/task_bookkeeping_closure.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "`task_bookkeeping_closure.py` — already-decommissioned free-form TODO/claim direct write surface"
+    },
+    {
+      "authority_key": "profile:close-task-v1",
+      "category": "action",
+      "compatibility": "Manifest key `profile: \"close-task-v1\"`; argument-vector actions only, no shell strings. The queue action arguments are a superset; a legacy manifest is mechanically translatable field-by-field.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "repo.generate@v1",
+          "repo.validate@v1",
+          "git.commit-path-limited@v1",
+          "bookkeeping.two-commit-ref-closure@v1",
+          "claim.finalize@v1"
+        ]
+      },
+      "id": "action.runner-transaction.close-task-v1",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/runner-transaction.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::CloseTaskTransactionTests",
+        "_src/tests/fixtures"
+      ],
+      "title": "Legacy fail-closed close-task transaction (generate → validate → promote → substantive commit → REF bookkeeping → claim finalization)"
+    },
+    {
+      "authority_key": "profile:legacy-editor-candidate-v1",
+      "category": "action",
+      "compatibility": "Manifest key `profile: \"legacy-editor-candidate-v1\"` plus an `editor` object; the candidate digest is re-verified at promotion, so the queue can reuse the same preimage contract unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "bookkeeping.promote-editor-candidate@v1"
+        ]
+      },
+      "id": "action.runner-transaction.legacy-editor-candidate-v1",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/legacy-task-editor.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::EditorCandidateTests",
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "Authoritative multi-file promotion of a pre-planned legacy_task_editor.py candidate"
+    },
+    {
+      "authority_key": "profile:verify-and-commit-v1",
+      "category": "action",
+      "compatibility": "Manifest key `profile: \"verify-and-commit-v1\"`; a strict prefix of close-task-v1 that stops before REF bookkeeping.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "git.commit-verified@v1"
+        ]
+      },
+      "id": "action.runner-transaction.verify-and-commit-v1",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/runner-transaction.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::VerifyAndCommitTests"
+      ],
+      "title": "Legacy verify-then-commit transaction without bookkeeping closure"
+    },
+    {
+      "authority_key": "mechanism:runner-host/run-loop.sh",
+      "category": "action",
+      "compatibility": "The host process survives activation but must stop consuming the singleton slot and start consuming `.runner/requests/`; its sandbox and self-test stages are reusable unchanged.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "The watch-loop branch that reads root `run.sh` is removed once the epoch bump is durable and rollback is no longer retained.",
+        "retirement_trigger": "`0037-46.02` registers the runner-side queue trigger/service and dedicated runtime root, replacing the singleton watch loop."
+      },
+      "id": "action.singleton.run-loop",
+      "owner_task": "0040-10",
+      "sources": [
+        "runner-host/run-loop.sh"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_automation_safety.py"
+      ],
+      "title": "`runner-host/run-loop.sh` — legacy watch/one-shot runner host with sandbox and environment self-test"
+    },
+    {
+      "authority_key": "mechanism:run.sh",
+      "category": "action",
+      "compatibility": "No forward compatibility is intended: the queue replaces the slot entirely. Stale clients must receive exactly one actionable bootstrap diagnostic (`0038-16.02` Definition of Done).",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "Removed only after the last accepted singleton request is identified, new singleton submissions are rejected, and the tested automatic rollback to the singleton is no longer required.",
+        "retirement_trigger": "`0037-46.02` bumps the runner protocol epoch in the live bootstrap selector after queue health, round-trip, concurrency, restart and mutation-isolation tests pass durably.",
+        "superseded_by": [
+          "runner.discovery@v1"
+        ]
+      },
+      "ephemeral": true,
+      "id": "action.singleton.run-sh",
+      "notes": "Expected steady state is ABSENT (consumed and archived). Absence is not evidence of loss; see SANDBOX.md.",
+      "owner_task": "0037-46.02",
+      "sources": [
+        "run.sh"
+      ],
+      "test_fixtures": [
+        "docs/pipeline/fixtures",
+        "_src/tests/test_publish_scripts.py"
+      ],
+      "title": "Root `run.sh` — the consumable, parameterless singleton runner request envelope"
+    },
+    {
+      "authority_key": "approval:authorities-policy",
+      "category": "approval-readiness",
+      "compatibility": "Authority membership and credential handles are external configuration. This manifest binds and reports them; it changes no authority and creates no approval.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires: approval authority outlives the runner protocol. Only the execution path for creating a signed approval moves into the queue.",
+        "typed_actions": [
+          "approval.ref-create-append-cas@v1",
+          "sign.create@v1"
+        ]
+      },
+      "id": "approval.authorities-policy",
+      "owner_task": "0038-15",
+      "sources": [
+        "issues/_schema/issue-approval-v1.schema.json",
+        "docs/pipeline/issue-approval-setup.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_manage_approval_readiness.py"
+      ],
+      "title": "`issue-authorities@v1` and `credential-handles@v1` policy records"
+    },
+    {
+      "authority_key": "approval:bootstrap-verifier",
+      "category": "approval-readiness",
+      "compatibility": "Verifies SSH-signed commits on the dedicated immutable approval ref; signature verification is a typed queue action but the verifier logic is reused verbatim.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "approval.verify-bootstrap@v1",
+          "sign.verify@v1"
+        ]
+      },
+      "id": "approval.bootstrap-verifier",
+      "owner_task": "0038-15",
+      "sources": [
+        "_src/tools/verify_issue_approval_bootstrap.py",
+        "docs/pipeline/issue-approval.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_manage_approval_readiness.py"
+      ],
+      "title": "`verify_issue_approval_bootstrap.py` — approval-ref bootstrap verifier"
+    },
+    {
+      "authority_key": "approval:external-readiness-blocker",
+      "category": "approval-readiness",
+      "compatibility": "Recorded as an explicit blocking-external finding in the bound `0037-37` review package's finding log; it is owned and tracked by `0037-49`, not resolved here.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Cleared by `0037-49`, which owns the external credential readiness; `0037-46.01` must treat it as an unavailable-credential preflight branch until then.",
+        "typed_actions": [
+          "approval.check-readiness-external@v1"
+        ]
+      },
+      "id": "approval.external-readiness-blocker",
+      "owner_task": "0037-49",
+      "sources": [
+        "docs/pipeline/0037-49-external-readiness.md",
+        "docs/pipeline/issue-store-findings.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_manage_approval_readiness.py"
+      ],
+      "title": "`BLOCKING-EXTERNAL-001` — external approval/signing/hosting credential readiness deferred to `0037-49`"
+    },
+    {
+      "authority_key": "approval:readiness-manager",
+      "category": "approval-readiness",
+      "compatibility": "Checks SSH signing config, allowed signers, `issue-authorities@v1`, credential handles and the runner service. Activation changes none of those; only the runner-service check's expected protocol epoch moves.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "approval.check-readiness@v1"
+        ]
+      },
+      "id": "approval.readiness-manager",
+      "owner_task": "0038-15",
+      "sources": [
+        "_src/tools/manage_approval_readiness.py",
+        "docs/pipeline/issue-approval-setup.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_manage_approval_readiness.py"
+      ],
+      "title": "`manage_approval_readiness.py` — machine-checkable readiness gate for the `0037-07` approval flow"
+    },
+    {
+      "authority_key": "context:backlog-diagnosis",
+      "category": "context",
+      "compatibility": "Read-only by construction; it also reads `agent-workflow-bootstrap@v1`, so it is the natural place a stale client learns the epoch changed.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "runner.discovery@v1"
+        ]
+      },
+      "id": "context.backlog-diagnosis",
+      "owner_task": "0038-06",
+      "sources": [
+        "_src/tools/legacy_task_doctor.py",
+        "docs/pipeline/legacy-task-doctor.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_doctor.py"
+      ],
+      "title": "`legacy_task_doctor.py` — read-only backlog, claim, REF, prerequisite and bootstrap diagnosis"
+    },
+    {
+      "authority_key": "context:bookkeeping-planner",
+      "category": "context",
+      "compatibility": "Plans only; authoritative promotion is delegated to `legacy-editor-candidate-v1`. That planner/promoter split is the model the queue keeps.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "bookkeeping.plan@v1"
+        ]
+      },
+      "id": "context.bookkeeping-planner",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/legacy_task_editor.py",
+        "docs/pipeline/legacy-task-editor.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "`legacy_task_editor.py` — digest-bound structural planner for backlog bookkeeping"
+    },
+    {
+      "authority_key": "context:resume-capsule",
+      "category": "context",
+      "compatibility": "Composes doctor, planner and immutable attempt results into ≤ a declared byte budget plus ten summary lines. After activation the attempt-result reader points at the queue result store; the capsule contract is unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "context.build-capsule@v1"
+        ]
+      },
+      "id": "context.resume-capsule",
+      "owner_task": "0038-07",
+      "sources": [
+        "_src/tools/task_context_capsule.py",
+        "docs/pipeline/task-context-capsule.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_context_capsule.py"
+      ],
+      "title": "`task_context_capsule.py` — bounded resume capsule after a context/tool-budget boundary"
+    },
+    {
+      "authority_key": "evidence:pack-builder",
+      "category": "evidence",
+      "compatibility": "Fail-closed against secrets, wildcard paths, foreign-task evidence and ignored scratch paths as sole closure proof. Those refusals are the queue's evidence contract, not an implementation detail.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "evidence.build-pack@v1",
+          "evidence.verify-pack@v1"
+        ]
+      },
+      "id": "evidence.pack-builder",
+      "owner_task": "0038-12",
+      "sources": [
+        "_src/tools/task_evidence_pack.py",
+        "docs/pipeline/task-evidence-pack.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_evidence_pack.py"
+      ],
+      "title": "`task_evidence_pack.py` — deduplicated, content-addressed evidence pack builder"
+    },
+    {
+      "authority_key": "evidence:request-log-root",
+      "category": "evidence",
+      "compatibility": "The queue writes results/logs under `.runner/` but must keep this path as the Task-addressed evidence root so retention, capsules and acceptance packages keep resolving.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "evidence.request-log-root@v1"
+        ]
+      },
+      "id": "evidence.request-log-root",
+      "owner_task": "0038-11",
+      "sources": [
+        "output/logs/<task-id>/<request-id>/"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "`output/logs/<task-id>/<request-id>/` — bounded, git-ignored per-request evidence root"
+    },
+    {
+      "authority_key": "evidence:run-archive",
+      "category": "evidence",
+      "compatibility": "Archive stays readable forever; only new writes stop. `0038-16.02` must prove evidence/recovery access is preserved after activation.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "Never removed. Retention of the closed archive is permanent provenance under `AGENTS.md` check-in provenance rules.",
+        "retirement_trigger": "`0037-46.02` identifies the last accepted singleton request and rejects new submissions; from that point the archive is closed, not deleted."
+      },
+      "id": "evidence.run-archive",
+      "owner_task": "0037-46.02",
+      "sources": [
+        "output/run-archive/run-<timestamp>-n<seq>.sh",
+        "output/run-archive/run-<timestamp>-n<seq>.log"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "`output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` — complete singleton invocation archive"
+    },
+    {
+      "authority_key": "evidence:run-current-log",
+      "category": "evidence",
+      "compatibility": "Superseded by the queue's per-request result/log files; no consumer may depend on the fixed path after activation.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "Removed once the archive is closed and no doc, tool or claim references the fixed path.",
+        "retirement_trigger": "`0037-46.02` epoch bump: the singleton stops accepting requests, so nothing writes this path again.",
+        "superseded_by": [
+          "evidence.request-log-root@v1"
+        ]
+      },
+      "id": "evidence.run-current-log",
+      "owner_task": "0037-46.02",
+      "sources": [
+        "output/run-current.log"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "`output/run-current.log` — live singleton invocation log"
+    },
+    {
+      "authority_key": "recovery:artifact-quarantine-gc",
+      "category": "recovery",
+      "compatibility": "Refuses active claims, unfinished journals, unknown states and the `current.json` pointer; honours evidence-pack references and guards against clock drift. All of that survives activation unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "recovery.quarantine@v1",
+          "recovery.gc-plan@v1"
+        ]
+      },
+      "id": "recovery.artifact-quarantine-gc",
+      "owner_task": "0038-11",
+      "sources": [
+        "_src/tools/artifact_retention.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Claim-aware quarantine, retention tiering and dry-run-first GC"
+    },
+    {
+      "authority_key": "recovery:rollback-ref-cleanup",
+      "category": "recovery",
+      "compatibility": "Every Git/ref action's rollback is explicitly required by `0037-46.01`'s Definition of Done; the legacy tests are the fixture source.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "git.rollback-ref-cleanup@v1",
+          "git.worktree-detached@v1"
+        ]
+      },
+      "id": "recovery.rollback-and-ref-cleanup",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::RollbackTests"
+      ],
+      "title": "Rollback of partial mutations plus temporary ref/worktree cleanup"
+    },
+    {
+      "authority_key": "recovery:singleton-rollback",
+      "category": "recovery",
+      "compatibility": "The rollback target *is* the legacy singleton; it must stay executable for the whole activation window. This is why no primitive above may be deleted at activation time.",
+      "disposition": {
+        "consumer": "0037-46.02",
+        "kind": "retirement-trigger",
+        "removal_condition": "The rollback path is retired only after `0038-16.02` has proven the activated queue implements this manifest and legacy `run.sh` accepts no mutation.",
+        "retirement_trigger": "`0037-46.02` post-switch verification passes durably and management no longer requires the rollback window."
+      },
+      "id": "recovery.singleton-rollback",
+      "owner_task": "0037-46.02",
+      "sources": [
+        "docs/pipeline/issue-cutover-rollback.md"
+      ],
+      "test_fixtures": [
+        "docs/pipeline/fixtures"
+      ],
+      "title": "Tested automatic rollback restoring the singleton and prior protocol epoch"
+    },
+    {
+      "authority_key": "recovery:transaction-journal",
+      "category": "recovery",
+      "compatibility": "Journal replay is protocol-independent; an unfinished journal blocks GC (`0038-11`) and must keep doing so after activation.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "recovery.journal-replay@v1"
+        ]
+      },
+      "id": "recovery.transaction-journal",
+      "owner_task": "0038-10",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/runner-transaction.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py",
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Transaction and promotion journals with crash-safe replay"
+    },
+    {
+      "authority_key": "result:approval-readiness-result@v1",
+      "category": "result",
+      "compatibility": "EXIT=0 from `--check --json` is the stated machine gate for `0037-07`; unchanged by activation.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.approval-readiness@v1"
+        ]
+      },
+      "id": "result.approval-readiness",
+      "owner_task": "0038-15",
+      "sources": [
+        "_src/tools/manage_approval_readiness.py",
+        "docs/pipeline/issue-approval-setup.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_manage_approval_readiness.py"
+      ],
+      "title": "Approval-readiness verdict"
+    },
+    {
+      "authority_key": "result:artifact-gc-report@v1",
+      "category": "result",
+      "compatibility": "Proposals only; real deletion still requires an explicit `--apply`, a property the queue must preserve.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.artifact-gc@v1"
+        ]
+      },
+      "id": "result.artifact-gc-report",
+      "owner_task": "0038-11",
+      "sources": [
+        "_src/tools/artifact_retention.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Dry-run-first retention/GC report"
+    },
+    {
+      "authority_key": "result:candidate-budget-report@v1",
+      "category": "result",
+      "compatibility": "Shares `0038-08`'s three-valued verdict vocabulary; promotion is blocked on anything but PASS.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.candidate-budget@v1"
+        ]
+      },
+      "id": "result.candidate-budget-report",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py"
+      ],
+      "title": "Candidate budget PASS/FAIL/INCONCLUSIVE report"
+    },
+    {
+      "authority_key": "result:candidate-promotion-result@v1",
+      "category": "result",
+      "compatibility": "Records the atomic pointer swap; recoverable and idempotent.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.candidate-promotion@v1"
+        ]
+      },
+      "id": "result.candidate-promotion",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py"
+      ],
+      "title": "Candidate promotion result"
+    },
+    {
+      "authority_key": "result:legacy-runner-transaction-result@v1",
+      "category": "result",
+      "compatibility": "Ancestor of the frozen `runner-result@v1`; terminal verdicts (`passed`/`failed`) and exit-code families map one-to-one.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.transaction@v1"
+        ]
+      },
+      "id": "result.legacy-runner-transaction",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/runner-transaction.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py"
+      ],
+      "title": "Structured transaction result"
+    },
+    {
+      "authority_key": "result:legacy-scope-planner-result@v1",
+      "category": "result",
+      "compatibility": "Four-valued verdict incl. the fail-closed `INCOMPLETE`; the queue must not collapse it to a boolean.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.scope-verdict@v1"
+        ]
+      },
+      "id": "result.legacy-scope-planner",
+      "owner_task": "0038-21",
+      "sources": [
+        "_src/tools/legacy_scope_planner.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_scope_planner.py"
+      ],
+      "title": "PARALLEL/SERIALIZE/BLOCK/INCOMPLETE scope verdict"
+    },
+    {
+      "authority_key": "result:legacy-task-doctor-report@v1",
+      "category": "result",
+      "compatibility": "Never repairs; bounded to ten summary lines. The queue's discovery action returns the same report shape.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.doctor-report@v1"
+        ]
+      },
+      "id": "result.legacy-task-doctor-report",
+      "owner_task": "0038-06",
+      "sources": [
+        "_src/tools/legacy_task_doctor.py",
+        "docs/pipeline/legacy-task-doctor.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_doctor.py"
+      ],
+      "title": "Read-only backlog/claim/REF diagnosis"
+    },
+    {
+      "authority_key": "result:legacy-task-editor-result@v1",
+      "category": "result",
+      "compatibility": "Includes the `verified-coordinator-required` verdict that must keep existing so no tool self-promotes bookkeeping.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.bookkeeping@v1"
+        ]
+      },
+      "id": "result.legacy-task-editor",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/legacy_task_editor.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "Bookkeeping planning/promotion result"
+    },
+    {
+      "authority_key": "result:task-validation-report@v1",
+      "category": "result",
+      "compatibility": "Structured failures instead of blind trust in exit 0; the queue's validation action must return this, not a bare status.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.validation-report@v1"
+        ]
+      },
+      "id": "result.task-validation-report",
+      "owner_task": "0038-08",
+      "sources": [
+        "issues/_schema/task-validation-report-v1.schema.json",
+        "_src/tools/task_validation.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_validation.py"
+      ],
+      "title": "Validation evaluation report"
+    },
+    {
+      "authority_key": "result:task-validation-run@v1",
+      "category": "result",
+      "compatibility": "Freshness-bound to the run it describes; the queue may not re-date it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "result.validation-run@v1"
+        ]
+      },
+      "id": "result.task-validation-run",
+      "owner_task": "0038-08",
+      "sources": [
+        "_src/tools/task_validation.py",
+        "docs/pipeline/task-validation.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_validation.py"
+      ],
+      "title": "Immutable validation run record"
+    },
+    {
+      "authority_key": "schema:agent-workflow-bootstrap@v1",
+      "category": "schema",
+      "compatibility": "The epoch field is the single switch `0037-46.02` bumps; both readers already tolerate an unknown future epoch by failing closed with one actionable diagnostic.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires: it is the cutover switch itself. `0037-46.02` mutates its value, not its existence.",
+        "typed_actions": [
+          "contract.agent-workflow-bootstrap@v1"
+        ]
+      },
+      "id": "schema.agent-workflow-bootstrap",
+      "owner_task": "0037-37",
+      "sources": [
+        "issues/_schema/agent-workflow-bootstrap-v1.schema.json",
+        "_src/tools/legacy_task_doctor.py",
+        "_src/tools/environment_doctor.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_doctor.py",
+        "_src/tests/test_environment_doctor.py"
+      ],
+      "title": "Agent bootstrap/protocol-epoch selector"
+    },
+    {
+      "authority_key": "schema:artifact-quarantine@v1",
+      "category": "schema",
+      "compatibility": "Quarantine state is orthogonal to the request protocol; the queue's failure path writes the same record.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.artifact-quarantine@v1"
+        ]
+      },
+      "id": "schema.artifact-quarantine",
+      "owner_task": "0038-11",
+      "sources": [
+        "_src/tools/artifact_retention.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Quarantine record for partial/failed attempts"
+    },
+    {
+      "authority_key": "schema:candidate-budget@v1",
+      "category": "schema",
+      "compatibility": "`sole_writer`, path allowlists, byte budgets and realism floors are exactly the queue's declared write-scope preflight inputs.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.candidate-budget@v1"
+        ]
+      },
+      "id": "schema.candidate-budget",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py"
+      ],
+      "title": "Candidate output/diff/realism budget contract"
+    },
+    {
+      "authority_key": "schema:candidate-manifest@v1",
+      "category": "schema",
+      "compatibility": "Produced inside the run-attempt root; the queue keeps the same isolated-root discipline.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.candidate-manifest@v1"
+        ]
+      },
+      "id": "schema.candidate-manifest",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py"
+      ],
+      "title": "Per-attempt candidate manifest"
+    },
+    {
+      "authority_key": "schema:candidate-promotion-pointer@v1",
+      "category": "schema",
+      "compatibility": "Same atomic-pointer pattern as `0038-10`; recoverable across a crash without protocol knowledge.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.promotion-pointer@v1"
+        ]
+      },
+      "id": "schema.candidate-promotion-pointer",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py"
+      ],
+      "title": "Atomic candidate promotion pointer"
+    },
+    {
+      "authority_key": "schema:cutover-control-ledger@v1",
+      "category": "schema",
+      "compatibility": "Append-only ledger that records the epoch bump and its rollback; `0037-46.02` writes to it rather than replacing it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires: it is the rollback record of the retirement itself.",
+        "typed_actions": [
+          "contract.cutover-ledger@v1"
+        ]
+      },
+      "id": "schema.cutover-control-ledger",
+      "owner_task": "0037-37",
+      "sources": [
+        "issues/_schema/cutover-control-ledger-v1.schema.json",
+        "docs/pipeline/issue-cutover-rollback.md"
+      ],
+      "test_fixtures": [
+        "issues/_schema/fixtures"
+      ],
+      "title": "Cutover control ledger"
+    },
+    {
+      "authority_key": "schema:environment-doctor-requirements@v1",
+      "category": "schema",
+      "compatibility": "Read-only diagnosis inputs; unchanged by activation.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.environment-requirements@v1"
+        ]
+      },
+      "id": "schema.environment-doctor-requirements",
+      "owner_task": "0038-23",
+      "sources": [
+        "_src/tools/environment_doctor.py",
+        "docs/pipeline/environment-doctor.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_environment_doctor.py"
+      ],
+      "title": "Environment requirement/profile/observation inputs"
+    },
+    {
+      "authority_key": "schema:issue-regeneration-dag@v1",
+      "category": "schema",
+      "compatibility": "Digest-bound by the `0037-37` review package and already consumed by the legacy planner; unchanged across activation.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires: it is a queue-side contract already.",
+        "typed_actions": [
+          "contract.regeneration-dag@v1"
+        ]
+      },
+      "id": "schema.issue-regeneration-dag",
+      "owner_task": "0037-37",
+      "sources": [
+        "issues/_schema/issue-regeneration-dag-v1.schema.json",
+        "_src/tools/legacy_scope_planner.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_scope_planner.py"
+      ],
+      "title": "Authoritative derived-artifact regeneration DAG"
+    },
+    {
+      "authority_key": "schema:legacy-runner-current-pointer@v1",
+      "category": "schema",
+      "compatibility": "The pointer semantics (atomic replace, never deleted by GC) are reused by the queue's result pointer; `artifact_retention.py` already refuses to delete it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.result-pointer@v1"
+        ]
+      },
+      "id": "schema.legacy-runner-current-pointer",
+      "owner_task": "0038-10",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "_src/tools/task_context_capsule.py"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py",
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Atomic `current.json` attempt pointer"
+    },
+    {
+      "authority_key": "schema:legacy-runner-lock@v1",
+      "category": "schema",
+      "compatibility": "Replaced by the queue's atomic claim of a ready request directory; no data migration is required because locks are runtime-only.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.queue-claim@v1"
+        ]
+      },
+      "id": "schema.legacy-runner-lock",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py"
+      ],
+      "title": "Singleton slot lock record"
+    },
+    {
+      "authority_key": "schema:legacy-runner-transaction@v1",
+      "category": "schema",
+      "compatibility": "Field-for-field ancestor of the frozen `runner-request@v1` contract already bound by the `0037-37` review package; the queue consumes the frozen schema, not this one.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.runner-request@v1"
+        ]
+      },
+      "id": "schema.legacy-runner-transaction",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/runner-transaction.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py"
+      ],
+      "title": "Legacy transaction request manifest"
+    },
+    {
+      "authority_key": "schema:legacy-scope-planner-request@v1",
+      "category": "schema",
+      "compatibility": "The queue's scope preflight consumes the same normalized claim/DAG inputs; only the transport changes.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.scope-request@v1"
+        ]
+      },
+      "id": "schema.legacy-scope-planner-request",
+      "owner_task": "0038-21",
+      "sources": [
+        "_src/tools/legacy_scope_planner.py",
+        "docs/pipeline/legacy-scope-planner.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_scope_planner.py"
+      ],
+      "title": "Scope-collision planning request"
+    },
+    {
+      "authority_key": "schema:legacy-task-editor-candidate@v1",
+      "category": "schema",
+      "compatibility": "Candidate+diff+preimage-reverification is the model the queue's bookkeeping action must keep; the digest binding is protocol-independent.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.bookkeeping-candidate@v1"
+        ]
+      },
+      "id": "schema.legacy-task-editor-candidate",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/legacy_task_editor.py",
+        "docs/pipeline/legacy-task-editor.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "Content-addressed bookkeeping candidate"
+    },
+    {
+      "authority_key": "schema:legacy-task-editor-operation@v1",
+      "category": "schema",
+      "compatibility": "Pickup/progress/closure/wontfix/parent-aggregation/REF-injection/claim-handoff map one-to-one onto queue action arguments.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.bookkeeping-operation@v1"
+        ]
+      },
+      "id": "schema.legacy-task-editor-operation",
+      "owner_task": "0038-05.02",
+      "sources": [
+        "_src/tools/legacy_task_editor.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_task_editor.py"
+      ],
+      "title": "Declarative bookkeeping operation set"
+    },
+    {
+      "authority_key": "schema:prepared-environment@v1",
+      "category": "schema",
+      "compatibility": "Carries the capability/protocol gates the queue's preflight needs; the protocol gate is the activation switch's read side.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.prepared-environment@v1"
+        ]
+      },
+      "id": "schema.prepared-environment",
+      "owner_task": "0038-23",
+      "sources": [
+        "issues/_schema/prepared-environment-v1.schema.json",
+        "_src/tools/environment_doctor.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_environment_doctor.py"
+      ],
+      "title": "Digest-bound prepared-environment record"
+    },
+    {
+      "authority_key": "schema:prepared-environment-cache@v1",
+      "category": "schema",
+      "compatibility": "Optional cache with digest verification; the queue may reuse or ignore it without contract change.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.prepared-environment-cache@v1"
+        ]
+      },
+      "id": "schema.prepared-environment-cache",
+      "owner_task": "0038-23",
+      "sources": [
+        "_src/tools/environment_doctor.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_environment_doctor.py"
+      ],
+      "title": "Verified prepared-environment cache"
+    },
+    {
+      "authority_key": "schema:runner-request@v1",
+      "category": "schema",
+      "compatibility": "Already frozen and digest-bound by the `0037-37` review package; `0037-46.01` implements it verbatim.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires: this is the queue's own contract, not a legacy primitive. Listed so the mapping is total.",
+        "typed_actions": [
+          "contract.runner-request-schema@v1"
+        ]
+      },
+      "id": "schema.runner-request-v1",
+      "owner_task": "0037-37",
+      "sources": [
+        "issues/_schema/runner-request-v1.schema.json"
+      ],
+      "test_fixtures": [
+        "issues/_schema/fixtures"
+      ],
+      "title": "Frozen `runner-request@v1` request contract"
+    },
+    {
+      "authority_key": "schema:runner-result@v1",
+      "category": "schema",
+      "compatibility": "As `runner-request@v1`.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires; see `schema.runner-request-v1`.",
+        "typed_actions": [
+          "contract.runner-result-schema@v1"
+        ]
+      },
+      "id": "schema.runner-result-v1",
+      "owner_task": "0037-37",
+      "sources": [
+        "issues/_schema/runner-result-v1.schema.json"
+      ],
+      "test_fixtures": [
+        "issues/_schema/fixtures"
+      ],
+      "title": "Frozen `runner-result@v1` result contract"
+    },
+    {
+      "authority_key": "schema:task-context-capsule@v1",
+      "category": "schema",
+      "compatibility": "Composes doctor + planner + attempt results; after activation the attempt-result source becomes the queue result store, a source swap only.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.context-capsule@v1"
+        ]
+      },
+      "id": "schema.task-context-capsule",
+      "owner_task": "0038-07",
+      "sources": [
+        "_src/tools/task_context_capsule.py",
+        "docs/pipeline/task-context-capsule.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_context_capsule.py"
+      ],
+      "title": "Bounded resume capsule"
+    },
+    {
+      "authority_key": "schema:task-evidence-pack@v1",
+      "category": "schema",
+      "compatibility": "Transport-independent; `artifact_retention.py` already honours its references, so the queue inherits both sides for free.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.evidence-pack@v1"
+        ]
+      },
+      "id": "schema.task-evidence-pack",
+      "owner_task": "0038-12",
+      "sources": [
+        "_src/tools/task_evidence_pack.py",
+        "docs/pipeline/task-evidence-pack.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_evidence_pack.py"
+      ],
+      "title": "Content-addressed task evidence pack"
+    },
+    {
+      "authority_key": "schema:task-validation-profile@v1",
+      "category": "schema",
+      "compatibility": "Stage/input/output/freshness/canary contract; the queue's validation action consumes it unchanged.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.validation-profile@v1"
+        ]
+      },
+      "id": "schema.task-validation-profile",
+      "owner_task": "0038-08",
+      "sources": [
+        "issues/_schema/task-validation-profile-v1.schema.json",
+        "_src/tools/task_validation.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_validation.py"
+      ],
+      "title": "Immutable validation-profile contract"
+    },
+    {
+      "authority_key": "schema:typed-claim@v1",
+      "category": "schema",
+      "compatibility": "Claims stay authoritative under `AGENTS.md` across activation; the queue reads them, never rewrites their ownership semantics.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "contract.typed-claim@v1"
+        ]
+      },
+      "id": "schema.typed-claim",
+      "owner_task": "0038-21",
+      "sources": [
+        "_src/tools/typed_claim.py",
+        "docs/pipeline/typed-claim-schema.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_typed_claim.py"
+      ],
+      "title": "Typed claim record"
+    },
+    {
+      "authority_key": "scope:forbidden-branch-writes",
+      "category": "scope",
+      "compatibility": "A hard authority boundary, not a convenience guard: Feature closure never routes through a non-privileged bridge. The queue must reproduce the refusal, not relax it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Never retires as a *rule*. The legacy enforcement point is removed only when `0037-46.01` enforces the identical refusal machine-readably and `0037-43`'s non-bypassable integration-policy gate is active.",
+        "typed_actions": [
+          "scope.authority-boundary@v1"
+        ]
+      },
+      "id": "scope.forbidden-branch-writes",
+      "owner_task": "0038-20",
+      "sources": [
+        "_src/tools/runner_transaction.py",
+        "docs/pipeline/branch-merge-actions.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py::BranchMergeTransactionTests (negative cases)"
+      ],
+      "title": "Structural refusal of `DONE.md` writes and checkpoint-crossing merges on the legacy bridge"
+    },
+    {
+      "authority_key": "scope:collision-preflight",
+      "category": "scope",
+      "compatibility": "Combines normalized active claims, the authoritative regeneration DAG and exactly bound Git/runner/generator/i18n/publication snapshots; the queue's scope preflight is the same computation on queued requests.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "scope.preflight@v1"
+        ]
+      },
+      "id": "scope.planner.collision-preflight",
+      "owner_task": "0038-21",
+      "sources": [
+        "_src/tools/legacy_scope_planner.py",
+        "docs/pipeline/legacy-scope-planner.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_scope_planner.py"
+      ],
+      "title": "Read-only, fail-closed write-scope collision planner"
+    },
+    {
+      "authority_key": "scope:policy-provenance",
+      "category": "scope",
+      "compatibility": "Implements `RQ-IP-04`/`DEC-0044-002`; classifies commits as `source-origin`, `target-pull-in-eligible` or `foreign-branch` and never decides. The queue's merge preflight must call it, not re-derive it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "scope.policy-provenance@v1"
+        ]
+      },
+      "id": "scope.policy-provenance",
+      "owner_task": "0044-01",
+      "sources": [
+        "_src/tools/check_policy_provenance.py",
+        "docs/pipeline/branch-workflow.md"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_check_policy_provenance.py"
+      ],
+      "title": "Integration-policy provenance classification for merge candidates"
+    },
+    {
+      "authority_key": "scope:run-attempt-roots",
+      "category": "scope",
+      "compatibility": "Isolation is a filesystem property, independent of transport; the queue's isolated temporary roots must keep the same layout so retention/GC keeps working.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "scope.isolated-attempt-root@v1"
+        ]
+      },
+      "id": "scope.run-attempt-roots",
+      "owner_task": "0038-13",
+      "sources": [
+        "_src/tools/candidate_budget.py",
+        "_src/tools/artifact_retention.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_candidate_budget.py",
+        "_src/tests/test_artifact_retention.py"
+      ],
+      "title": "Per-attempt isolated roots (`.candidates/`, `.partial/`) under `output/logs/<task-id>/<request-id>/`"
+    },
+    {
+      "authority_key": "scope:claim-declared-write-scope",
+      "category": "scope",
+      "compatibility": "`AGENTS.md` remains authoritative for what a claim must declare; the queue validates the declaration, it does not redefine it.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "scope.claim-declaration@v1"
+        ]
+      },
+      "id": "scope.write-scope-declaration",
+      "owner_task": "0038-21",
+      "sources": [
+        "AGENTS.md",
+        "_src/tools/typed_claim.py"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_typed_claim.py"
+      ],
+      "title": "Claim-declared intended write scope and runner scope"
+    },
+    {
+      "authority_key": "validation:automation-safety",
+      "category": "validation",
+      "compatibility": "Repository-wide gate independent of the request protocol. Its disposition schema requires a live owner Task; `0038-16` is the declared durable custodian for the carried dispositions (see `TODO.md` notes under `0038-14-repair`/`0038-22`/`0038-27`).",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "validate.automation-safety@v1"
+        ]
+      },
+      "id": "validation.automation-safety",
+      "notes": "Open TK-2 confirmation carried from `0038-27`: the `owner_task: 0038-16` re-point of the `sync_to_devel.sh` and `provision_tmp_worktree.sh` dispositions is flagged for confirmation when `0038-16` or Feature `0038`'s integrating task is worked. This manifest records it; it does not resolve it.",
+      "owner_task": "0038-03",
+      "sources": [
+        "_src/tools/automation_safety.py",
+        "_src/tools/automation_safety_policy.json",
+        "docs/pipeline/automation-safety.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_automation_safety.py"
+      ],
+      "title": "`automation_safety.py` + policy — static safety gate over tracked automation"
+    },
+    {
+      "authority_key": "validation:chore-tool-inventory",
+      "category": "validation",
+      "compatibility": "Reuses `automation_safety.tracked_automation_paths()` as a living enumeration; the same enumeration backs this manifest's coverage proof, so drift is detected in both places.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "validate.chore-inventory@v1"
+        ]
+      },
+      "id": "validation.chore-tool-inventory",
+      "owner_task": "0038-14",
+      "sources": [
+        "_src/tools/chore_tool_inventory.py",
+        "_src/tools/chore_tool_inventory_data.json"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_chore_tool_inventory.py"
+      ],
+      "title": "`chore_tool_inventory.py` — lifecycle-contract classification of tracked mutating chore tools"
+    },
+    {
+      "authority_key": "validation:handoff-manifest",
+      "category": "validation",
+      "compatibility": "Read-only and stdlib-only. `0037-46.01` should run it as an acceptance input to prove it consumed a currently-valid manifest.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires when `0038-16.02` has verified the activated queue implements this manifest and every primitive is either registered or removed.",
+        "typed_actions": [
+          "validate.handoff-manifest@v1"
+        ]
+      },
+      "id": "validation.handoff-manifest",
+      "owner_task": "0038-16.01",
+      "sources": [
+        "_src/tools/legacy_handoff_manifest.py",
+        "docs/pipeline/legacy-handoff-manifest.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_legacy_handoff_manifest.py"
+      ],
+      "title": "`legacy_handoff_manifest.py` — checker proving this manifest's totality and single-authority properties"
+    },
+    {
+      "authority_key": "validation:task-validation",
+      "category": "validation",
+      "compatibility": "Enforces freshness, stage/input/output contracts and coverage canaries instead of trusting exit 0; the queue's validation action must delegate here.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "validate.run-profile@v1"
+        ]
+      },
+      "id": "validation.task-validation",
+      "owner_task": "0038-08",
+      "sources": [
+        "_src/tools/task_validation.py",
+        "docs/pipeline/task-validation.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_task_validation.py"
+      ],
+      "title": "`task_validation.py` — profile-driven evaluation of an immutable validation run"
+    },
+    {
+      "authority_key": "validation:transaction-fixtures",
+      "category": "validation",
+      "compatibility": "This suite is the fixture inheritance `0037-46.01`'s Definition of Done depends on: abort, rollback, index isolation, two-commit closure, CAS races, symlink/path protection, result persistence, publish-then-crash recovery.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only when `0037-46.01`'s own fixture suite demonstrably covers every case enumerated here; the legacy suite is deleted last, not first.",
+        "typed_actions": [
+          "validate.transaction-fixtures@v1"
+        ]
+      },
+      "id": "validation.transaction-fixtures",
+      "owner_task": "0038-05",
+      "sources": [
+        "_src/tools/test_runner_transaction.py"
+      ],
+      "test_fixtures": [
+        "_src/tools/test_runner_transaction.py"
+      ],
+      "title": "`test_runner_transaction.py` — hermetic Git and fault-injection fixture suite"
+    },
+    {
+      "authority_key": "validation:workflow-lifecycle",
+      "category": "validation",
+      "compatibility": "Vocabulary-level check independent of transport.",
+      "disposition": {
+        "consumer": "0037-46.01",
+        "kind": "typed-action",
+        "removal_condition": "Retires only after `0037-46.01` registers the listed typed action IDs with passing fixture tests and `0037-46.02` has bumped the runner protocol epoch durably; until then this remains the sole authority.",
+        "typed_actions": [
+          "validate.workflow-lifecycle@v1"
+        ]
+      },
+      "id": "validation.workflow-validator",
+      "owner_task": "0038-14",
+      "sources": [
+        "_src/tools/validate_workflow_validator.py",
+        "_src/tools/workflow_lifecycle.py",
+        "docs/pipeline/workflow-validation.md"
+      ],
+      "test_fixtures": [
+        "_src/tests/test_curation_item_lifecycle.py"
+      ],
+      "title": "`validate_workflow_validator.py` / `workflow_lifecycle.py` — lifecycle vocabulary consistency"
+    }
+  ],
+  "produced_by": {
+    "agent": "Seven-Azan",
+    "base_commit": "7b2e2ce9983321901a388e19fc3d13a8f8c9c6aa",
+    "capability_class": "unprivileged",
+    "date": "2026-08-21",
+    "task": "0038-16.01"
+  },
+  "purpose": "Pre-activation hand-over record between the surviving Feature `0038` legacy execution bridge and the versioned runner queue implemented by `0037-46.01` and activated by `0037-46.02`. It maps, it does not migrate: no queue is activated and no authority is changed.",
+  "review_package": {
+    "architecture": "docs/pipeline/issue-store-architecture.md",
+    "base_commit": "e3a176aeb8e10a0d08a977e08db1aaec6d69cb4f",
+    "contracts": [
+      {
+        "path": "docs/pipeline/issue-item-v1-package.json",
+        "sha256": "9d6c6d8a722462c712bd772fe6cd459a6b27ee329ca506812fdb3ae796cbce19"
+      },
+      {
+        "path": "docs/pipeline/issue-store.md",
+        "sha256": "c033260766f606fadbf6264d7929684081bfef81c1281dd26471b4046d5bda17"
+      },
+      {
+        "path": "docs/pipeline/issue-lifecycle.md",
+        "sha256": "fd3b56c5e719c992666130aeb2361354a8e86e591ecbdae9bedc1ca4c78e934d"
+      },
+      {
+        "path": "docs/pipeline/issue-yaml-profile.md",
+        "sha256": "00bc9301c98e39d4358239d2b7fdbf7050fdda3c097d295a8e61d3dd0ca8058f"
+      },
+      {
+        "path": "docs/pipeline/provenance-contract.md",
+        "sha256": "e38786fdd9710e1d79499503d693bf3d9d18145ccc95045c47d1fffd6a815f7d"
+      },
+      {
+        "path": "docs/pipeline/issue-derived-artifacts-v1.json",
+        "sha256": "d9ddcbadfe67d6d5e9a0d0803c58f26af55cc336b41b90ecfbb07ba3cabd5427"
+      },
+      {
+        "path": "docs/pipeline/issue-migration-shadow-import.md",
+        "sha256": "6406e619e84b456371376d0aaab0fa931a0a311216f22e8f69fc11773c8f7777"
+      },
+      {
+        "path": "docs/pipeline/issue-cutover-rollback.md",
+        "sha256": "166c1ba0e0c2b98bdef8c239c4af9e0aaadc0a641c421df665a4ba17573bf1a6"
+      },
+      {
+        "path": "docs/pipeline/agent-execution.md",
+        "sha256": "10bb49fe6e0ea6d3706352c93b3f89bca40c0ec1d0a2a86a6c23efb46a27de2c"
+      },
+      {
+        "path": "docs/pipeline/agent-workflow.md",
+        "sha256": "f56b6f68142139e8a792b40d85acb9a730db31d7868daaa6fad104d83acb2b6f"
+      },
+      {
+        "path": "issues/_schema/issue-item-v1.schema.json",
+        "sha256": "d67e9abb6d40568440878ac4f39aaf33863dd116f43c5509d999e475602c5c83"
+      },
+      {
+        "path": "issues/_schema/issue-regeneration-dag-v1.schema.json",
+        "sha256": "2122807954a44db1b576e45ae04d686a05980dee004a37010d0012325d82a9c0"
+      },
+      {
+        "path": "issues/_schema/migration-state-v1.schema.json",
+        "sha256": "7b592ba2db5771e866f6296e8bd0e6b4782c5498219418b297d789611a38fc61"
+      },
+      {
+        "path": "issues/_schema/agent-capability-v1.schema.json",
+        "sha256": "ee553404d0e859e4fdd1876edb0d4dc8d016921f92818fbd143ba4ad71870955"
+      },
+      {
+        "path": "issues/_schema/runner-request-v1.schema.json",
+        "sha256": "3f59baa70ad00f39e4d8578e646ae85ee89edf6884a8c1e1eef0f31a19d906fe"
+      },
+      {
+        "path": "issues/_schema/runner-result-v1.schema.json",
+        "sha256": "3a5457b7c5a16c21309736f5ce3546e7c9503e94339107375c783ad6a65af863"
+      },
+      {
+        "path": "issues/_schema/agent-workflow-bootstrap-v1.schema.json",
+        "sha256": "b73fbbdcbeb4e15b8714f94a838f5736054c500c6a199507c6f6c68d6e2036af"
+      }
+    ],
+    "findings": "docs/pipeline/issue-store-findings.md",
+    "path": "docs/pipeline/issue-store-review-package.json",
+    "producer_ref": "927da0690a964249f7ca0b83719601b849be801f",
+    "producer_task": "0037-37",
+    "residual_risks": [
+      "external approval/signing/hosting credential readiness is deferred to 0037-49",
+      "implementation is forbidden until architecture approval"
+    ],
+    "sha256": "bf98dffe33da51c29e8952e7cfe10e0bb172d1d50ddb191282ea5c3330909a5f"
+  },
+  "rules": [
+    "Exactly one disposition per primitive: a `0037-46.01` typed action/contract OR a `0037-46.02` retirement trigger, never both and never neither.",
+    "Each `authority_key` and each typed action/contract ID has exactly one owning primitive — no primitive is multiply authoritative.",
+    "`superseded_by` may only reference a typed action ID owned by some primitive in this manifest.",
+    "A retirement trigger never fires before the queue's success for that capability is durable; the legacy path is removed, not disabled-in-place.",
+    "Amending this manifest requires re-running `python3 _src/tools/legacy_handoff_manifest.py --check` to a zero-finding verdict."
+  ],
+  "schema": "legacy-handoff-manifest@v1",
+  "singleton": {
+    "mechanism": "run.sh",
+    "note": "Root `run.sh` is a consumable one-use envelope; its expected steady state is ABSENT. Absence is not deactivation. The singleton remains the only mechanism that accepts mutating requests until `0037-46.02` bumps the protocol epoch.",
+    "queue_activated": false,
+    "state": "active"
+  }
+}

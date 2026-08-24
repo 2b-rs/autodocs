@@ -103,7 +103,7 @@ All artifacts in this section belong to the current documentation/data-pipeline 
 | `docs/pipeline/build-report-schema.md` | Canonical report schema and producer counts | I | PA 2.2, `MAN.6`, release evidence | Schema alone does not guarantee complete/correlated reports. |
 | `_src/tools/build_report.py` | Combined report aggregation | M | `SWE.5/6`, `SPL.2`, `MAN.6` | Selects latest reports independently and may tolerate absent stages, so a “success” need not represent one complete run. |
 | Published `build-reports.html` / page model | One human-readable report | O | Release/measurement evidence | Sample showed missing i18n stage/runner reference; source timestamps may span different runs. |
-| `_src/run-loop.sh`, `output/run-current.*` | Script/log pairing and execution trace mechanism | M/O | PA 2.1/2.2, reproducibility | Run archive was sampled empty and output is ignored; evidence is not a controlled release baseline. |
+| `runner-host/run-loop.sh`, `output/run-current.*` | Script/log pairing and execution trace mechanism | M/O | PA 2.1/2.2, reproducibility | Run archive was sampled empty and output is ignored; evidence is not a controlled release baseline. |
 | `_src/publish.sh` | Publication packaging/push mechanism | M | `SPL.2` | Does not itself establish complete generation/validation/approval gate, release notes, support/rollback, or all configured-language completeness. |
 
 ### Management, risk, and measurement

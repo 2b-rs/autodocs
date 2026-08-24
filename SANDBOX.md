@@ -12,6 +12,10 @@ You are an AGENT and must follow the current operating contract below.
 - `docs/pipeline/` is authoritative for implemented operational processes in its documented scope.
 - If applicable instructions conflict and precedence does not resolve the conflict safely, stop mutating the repository, identify the exact conflict, and request clarification.
 
+## Default execution gate — sandboxed unless explicitly privileged
+
+A session is sandboxed/grunt unless the current runtime or user explicitly grants privileged capability. Tool availability does not grant privilege. A sandboxed/grunt agent may directly edit files under `/tmp`, but that is not execution authority: scripts, shell commands, Git, tests, generators, browsers, package managers, network clients, and every other execution-capable action must use its claim-bound runner. Runtime tool-policy denial is a host/platform control; repository checks can validate claim declarations but cannot configure or guarantee that denial.
+
 ## Agent capability classes
 
 A capability class answers **two independent questions**, and both must be
@@ -83,7 +87,37 @@ Sandboxed agents use non-execution file tools for collaboration-suggestion entri
 
 The runner is an execution service. It is not the user, and the user is not expected to execute an agent's script.
 
-Until Feature `0037` installs and activates the versioned request queue/dispatcher, root `run.sh` is a singleton runner slot. Active Task/claim ownership serializes requests. Never overwrite an existing/pending `run.sh` or another Task's runner scope.
+### Current procedure — queue dispatch (`runner-queue@v1`)
+
+**The live bootstrap selector `agent-workflow.json` is the machine authority for which procedure governs a checkout.** From the moment it declares `"runner_protocol":"runner-queue@v1"` (bumped by Task `0037-46.02` on its item branch), the queue is the sole mutation authority for that checkout. While a checkout's selector still declares `runner-request@v1`, the legacy singleton procedure below still governs it — read the selector, not the calendar. Under the queue, the runner host operates in multi-worker continuous mode, accepting asynchronous drafts and processing ready queue requests under `.runner/`.
+
+Publication workflow, using non-execution file tools only:
+
+1. Compose the request draft under `.runner/drafts/<agent>/<request_id>/` with `manifest.json` and `request.json`.
+2. Publish it atomically to `.runner/requests/<request_id>` with a single same-filesystem rename.
+3. Read the verdict and outputs from `.runner/results/<request_id>.result.json`; each result carries its own SHA-256 digest.
+
+Scope isolation and collision guards:
+
+- Concurrent requests with **disjoint** `write_scopes` are processed in parallel. Proven under Task `0037-46.02` with a synchronized-start fixture pair whose execution windows overlap.
+- Concurrent requests with **overlapping** `write_scopes` are rejected with `RD-SCOPE-COLLISION`.
+- Unprivileged attempts to mutate governance documents (`AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, `CLAUDE.md`, `docs/pipeline/`) are rejected with `RD-GOVERNANCE-SCOPE`. Governance changes travel the route defined by `DEC-0044-012`.
+- Observe lease expirations and idempotence keys. A retry of a previously rejected or failed request keeps its ancestry record (`retry_of`).
+
+### Transition phase — after the epoch bump, before singleton retirement
+
+Between the epoch bump (Task `0037-46.02`, step 4) and the retirement of the legacy singleton (step 5), exactly one protocol accepts mutations, and it is the queue:
+
+- From the moment `runner-queue@v1` is active in the selector, **the queue is the sole mutation authority**.
+- Writes to the legacy singleton slot `run.sh` are admissible in this phase **only for the final retirement transaction itself** — the operation that shuts the old path down. No other use is valid.
+
+Both protocols are therefore never accepting mutations at the same time, and there is never a moment in which neither does. Once retirement is complete, direct writes to `run.sh` are rejected outright.
+
+### [Legacy / Deprecated] Singleton slot (`runner-request@v1`)
+
+**The following describes the singleton procedure being retired. It is retained so that archived runs, evidence and claim records stay readable, and it still governs any checkout whose selector declares `runner-request@v1`. Do not apply it to new work under a queue-epoch selector** — there, agents use the queue procedure above, and the single exception is the retirement transaction named in the transition rule. `runner-host/run-loop.sh` enforces this mechanically: under a bumped selector it moves any new singleton submission unexecuted to the archive with a written rejection notice.
+
+Under that procedure, root `run.sh` was a singleton runner slot. Active Task/claim ownership serialized requests. An existing or pending `run.sh`, or another Task's runner scope, was never to be overwritten.
 
 `run.sh` is a consumable request envelope, not a reusable project script. The runner claims it for one execution, archives the submitted content and result as evidence, and removes it from the root slot before releasing that slot. Therefore its expected post-execution state is **absent**. Never rerun, restore, copy back, or treat an archived `run.sh` as a pending request. Every retry or subsequent operation requires the owning agent to inspect the prior result, verify that the root slot is free, allocate a new unique request ID, record it in the active claim, and publish a newly generated `run.sh` for exactly one execution. Absence before any result/archive evidence means “not published or not yet reconciled”; absence after matching result/archive evidence means “consumed successfully by the runner,” not “lost.”
 
@@ -140,7 +174,7 @@ Before changing the repository:
 1. Determine and record the agent capability class; default to sandboxed.
 2. Read this file, `AGENTS.md`, and the Task-acceptance boundary in `docs/pipeline/task-acceptance.md`. If explicitly privileged, also read `PRIVILEGED.md` before acting.
 3. Read `TODO.md` and active claims. First resume any incomplete claim whose immutable `owner_token` belongs to this session; a response, runner-result, or context boundary does not end ownership or authorize selecting replacement work. If no Task was assigned and no owned claim exists, deterministically scan the entire backlog under `AGENTS.md` instead of asking the user to choose. Skip blocked items and foreign active claims while scanning; one occupied dependency chain never blocks disjoint eligible work elsewhere.
-4. Read the complete selected Feature/Task and prerequisites. Substantial scope, unfamiliarity, movement to another Campaign/Feature, or a blocked preceding textual item does not require confirmation when another Task is eligible. Only after a complete global scan finds no eligible work may the agent use the short `SENTINTEL.md` retrigger reminder for the owning session of a blocking foreign claim; never use `run.sh` for that notification.
+4. Read the complete selected Feature/Task and prerequisites. Substantial scope, unfamiliarity, movement to another Campaign/Feature, or a blocked preceding textual item does not require confirmation when another Task is eligible. Only after a complete global scan finds no eligible work may the agent use the short `SENTINEL.md` retrigger reminder for the owning session of a blocking foreign claim; never use `run.sh` for that notification.
 5. Inspect relevant claims and working-tree information using permitted tools or the claimed read-only discovery request.
 6. Follow the claim and state-transition procedure in `AGENTS.md`.
 
