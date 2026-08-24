@@ -203,6 +203,7 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/staged-0044-01-20260822-kathryn` | `56bc616f4` | foreign staged index found in `.worktrees/0044-01` |
 | `preserved/staged-0044-01-task-20260822-kathryn` | `c70c45d5d` | foreign staged index found in `.worktrees/0044-01-task` |
 | `preserved/main-incident-6d9a9ba-20260824` | `6d9a9ba116419fc0631412870f9d5914d3fda7c2` | unauthorized root merge of `0037-39` during `0037-08` setup, retained before the explicitly authorized Option-B recovery of `main` to `a3cee63085bdee02521c0437d8696ee1afaa872e` |
+| `preserved/root-git-config-incident-20260825-jean-luc` | this tagged snapshot commit; exact REF recorded by its child recovery commit | the three uncommitted physical-root divergences found after repairing the shared `core.worktree`/test-identity contamination; preserved as evidence without adopting their contents into `main` |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
