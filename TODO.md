@@ -88,7 +88,7 @@ HOW TO USE:
 
 **Feature Definition of Done:** Requirements and measurement baselines are committed; WTP and IP contracts have distinct owners and reproducible REF+digest identity; deterministic tooling validates topology completeness, scope/overlap timing, stale classes, plan binding, prerequisite order, checkpoint/Acceptance closure, authority boundaries, and final-main restrictions; every active Feature has a migration disposition; Feature `0046` completes a fail-closed self-application and recovery drill; independent QA audits the lived trail; all marked checkpoints pass; and the single terminal integrating Task produces a review-ready Feature candidate without itself advancing `main` or moving the Feature to `DONE.md`.
 
-- [ ] **0046-01** Stabilize the requirements, activation profile, migration population, and measurement baseline for WTP/IP operation.
+- [p] **0046-01** CLAIM: `TODO-beverly-0046-01-20260824T190100Z-7c91e4b2.md` Stabilize the requirements, activation profile, migration population, and measurement baseline for WTP/IP operation.
   - **Owner role / branch:** Requirements Engineer on branch `0046-01`, worktree `.worktrees/0046-01`; capability `unprivileged` or `sandboxed-grunt` with the applicable execution path.
   - **Exact write scope:** `TODO-<owner>-0046-01-*.md`; `docs/dossiers/0046-requirements-and-activation-baseline.md`; `docs/campaign-evidence/0046-measurement-baseline/**`; this Task block only for implementation bookkeeping.
   - **Inputs:** Feature goal; `DEC-0046-001`; WTP contract; reconciled proposal; current Feature/Task/claim/worktree inventories; current authority selector and branch/Acceptance/integration rules.
