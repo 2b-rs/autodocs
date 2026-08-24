@@ -43,7 +43,11 @@
 - parity_set: 30 unique nodes; SHA-256
   `f9c6371a4f3357ecec23b53433a01b357e7f043036ffbe82ab67f19ad97ef93c`
 - candidate_mutation: none
-- status: second re-review authored; validation and commit pending
+- second_re_review_ref: `2e37978c2a71c0befc8adc5fcf0f3f8c7623b86e`
+- validation: exact 30-node set equality and digest; R2-001..003 closure;
+  original-finding regression checks; Package A/B stop-boundary and Package C
+  governance/compatibility-route checks; `git diff --check`
+- status: second re-review complete, validated and committed
 
 The candidate remains unmodified. This claim records no Acceptance or
 integration authority.
