@@ -31,9 +31,22 @@
 - Secrets, credentials, and user data must never be committed.
 
 ## 6. Memory Governance
+- On first use of a newly applied native profile, read only that agent's
+  partitioned agent, role, and capability memories. On ordinary resume, use the
+  conversation context and reread only when shared memory may have changed.
 - Use partitioned working memories:
-  * Agent memory: `.memory/agents/{agent}.md` (personal habitus)
-  * Role memory: `.memory/roles/{role}.md` (role practices)
-  * Capability memory: `.memory/capability-sets/{cap_set}.md` (permissions)
+  * Agent memory: `logs/agent-memory/agents/{agent}.md` (personal habitus)
+  * Role memory: `logs/agent-memory/roles/{role}.md` (role practices)
+  * Capability memory: `logs/agent-memory/capability-sets/{cap_set}.md` (permissions)
   * Feature memory: `docs/features/{feature}/MEMORY.md` (active feature work, deleted strictly upon Acceptance).
-- All memory entries must have an ISO-8601 UTC timestamp and author signature.
+- Missing files mean empty memory and are created only on the first useful
+  append. Shared memory writes must use the generated profile's locked helper;
+  direct read-modify-write is prohibited.
+- Append only verified, durable, reusable facts with an ISO-8601 UTC timestamp,
+  author signature, and stable reference. Do not store transcripts, mailbox
+  bodies, task progress, secrets, personal data, or normative facts duplicated
+  elsewhere.
+- Shared agent/role/capability paths resolve against the common repository root;
+  feature memory resolves against the active feature worktree. Memory
+  maintenance is incidental permission for these paths only and never widens
+  task scope or authority.
