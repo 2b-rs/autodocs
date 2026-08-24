@@ -96,7 +96,7 @@ soll.
 
 | Werkzeug | Zweck |
 |---|---|
-| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Tasks `0044-14`/`0044-15`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält einen gestagten Baum), `MAIN_WORKTREE_DIRTY` (getrackte Dateien im `main`-Worktree ≠ Index), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
+| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Tasks `0044-14`/`0044-15`/`0044-16`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält auch nach begrenztem Re-Sample einen gestagten Baum), `MAIN_WORKTREE_DIRTY` (getrackte Dateien im `main`-Worktree ≠ Index), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
 
 Aufruf: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> [--json]`
 
@@ -113,16 +113,20 @@ Zwei Eigenschaften müssen mitgelesen werden, sonst wird der Prüfung mehr
 zugetraut, als sie leistet:
 
 - `FOREIGN_STAGED_TREE` ist **kein Vorwurf**. Dass ein anderer Agent in seinem
-  eigenen Worktree etwas staged, ist der Normalfall. Der Befund sagt nur, dass
-  Zustand existiert, den die Historie nicht zeigt, und dass eine Integration
-  nicht darüber hinweggehen darf. Aufgelöst wird er vom Eigentümer (committen
-  oder stashen) — **niemals** durch ein Zurücksetzen eines fremden Worktrees.
+  eigenen Worktree etwas staged, ist der Normalfall. Ein initialer Kandidat wird
+  nach genau 2,0 Sekunden einmal neu gemessen; ist sein Index inzwischen wieder
+  gleich `HEAD`, entsteht kein Befund. Bleibt er divergent, bleibt
+  `FOREIGN_STAGED_TREE` unverändert blockierend und nennt zusätzlich
+  `index_mtime_utc`, `index_age_seconds` und `resample_delay_seconds`. Der
+  Zustand wird dadurch weder advisory noch auf integrationsnahe Worktrees
+  beschränkt. Aufgelöst wird er vom Eigentümer (committen oder stashen) —
+  **niemals** durch ein Zurücksetzen eines fremden Worktrees.
 - `MAIN_WORKTREE_DIRTY` meldet die bekannte Restabweichung getrackter Dateien
   bei sauberem Index nun blockierend, aber ausschließlich für den Worktree, der
   `main` auscheckt. Derselbe ungestagte Zustand in einem lebenden
   Vorgangs-Worktree ist normale unfertige Arbeit und erzeugt bewusst keinen
   Befund. Untracked Dateien bleiben ebenfalls außerhalb der Prüfung. Deshalb
-  verlangt `DEC-0044-015` weiterhin zusätzlich den harten Preflight im Root
+  verlangt `DEC-0044-015` weiterhin zusätzlich und unverändert den harten Preflight im Root
   (`git diff --quiet`, `git diff --cached --quiet`, `HEAD` ist
   `refs/heads/main`). Werkzeug und Preflight ergänzen einander; keines ersetzt
   das andere.
