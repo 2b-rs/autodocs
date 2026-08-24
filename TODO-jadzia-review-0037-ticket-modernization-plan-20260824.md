@@ -16,7 +16,10 @@
   Acceptance, checkpoint crossing, integration, main advance, Feature closure
 - verdict: `rejected`
 - findings: five (three Critical, two High)
-- status: review authored; validation and commit pending
+- review_ref: `c456d66c394306a1667d20cf9d2fe4f62012da12`
+- validation: `git diff --check`; five findings (three Critical, two High);
+  exact baseline/amendment and affected-node token checks; two-path write scope
+- status: review complete, validated and committed
 
 The candidate remains unmodified. This claim records no Acceptance or
 integration authority.
