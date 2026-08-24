@@ -102,3 +102,14 @@ Existing Features remain governed by their current contracts until their migrati
 ## 9. Routing request
 
 Route `FC-WTIP-20260824` to the Project Lead for numeric Feature allocation and to a Management-instantiated Architect for scope review. The Architect must decide whether the proposed plan validation creates a qualifying cross-item gate and, if so, prepare the required decision record before any activation. Until that point this dossier is preparatory evidence only.
+
+## 10. Preliminary Architect routing advice
+
+Architect Data reviewed proposal `96d5fe3ad41fccd125967528aa256ca9a247f9e2` read-only and found it suitable for numeric allocation as preparatory evidence. This is routing advice, not the required formal scope approval.
+
+The preliminary classification is that WTP/IP validation meets `cross-item-blast-radius`: it can block implementation start and integration or closure across work units. Therefore the conforming decision record and independently assigned Architect scope review remain mandatory before operative mutation.
+
+The allocated decomposition must refine two controls:
+
+1. **Time-aware overlap classification:** reject simultaneously active conflicting scopes, while permitting declared sequential, predecessor-carry, or reconciliation overlap whose order, ownership, and evidence are explicit. A shared path alone must not create an indiscriminate cross-item stop.
+2. **Stale-pin classification:** distinguish `blocking-stale` (the plan's safety or authority premise no longer holds) from `refreshable-stale` (ordinary drift that can be re-pinned without changing topology, contract, or gate reach). Each class requires explicit evidence, refresh/stop authority, and recovery behavior.

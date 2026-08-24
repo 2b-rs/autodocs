@@ -12,3 +12,4 @@
 - **Proposal REF:** `96d5fe3ad41fccd125967528aa256ca9a247f9e2`.
 - **Validation:** `git diff --check` passed before commit; changed-path scope is exactly this claim and the proposal dossier.
 - **Handoff:** Project Lead allocates numeric Feature/Task IDs and obtains Management-instantiated Architect scope review. The assigned Architect then decides/records any qualifying gate reach before operative process mutation; QA later audits the independently authored process operation.
+- **Architect routing advice:** Data's read-only review classified the proposal allocation-ready and preliminarily identified the validator as a qualifying cross-item gate. This is not formal scope approval. Decomposition follow-up must add time-aware overlap classes and blocking-vs-refreshable stale-pin classes with evidence/recovery.
