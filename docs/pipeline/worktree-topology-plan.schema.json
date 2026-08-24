@@ -21,6 +21,7 @@
     "edges",
     "overlap_rules",
     "checkpoints",
+    "validation_profile",
     "staleness_policy",
     "activation",
     "recovery"
@@ -61,6 +62,7 @@
       "minItems": 1,
       "items": { "$ref": "#/$defs/checkpoint" }
     },
+    "validation_profile": { "$ref": "#/$defs/validationProfile" },
     "staleness_policy": { "$ref": "#/$defs/staleness" },
     "activation": { "$ref": "#/$defs/activation" },
     "recovery": { "$ref": "#/$defs/recovery" }
@@ -156,6 +158,22 @@
         "mandatory": { "const": true },
         "rationale": { "type": "string", "minLength": 1 },
         "acceptance_closure_algorithm": { "type": "string", "minLength": 1 }
+      }
+    },
+    "validationProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "profile_version", "required_stages", "failure_policy"],
+      "properties": {
+        "profile_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "profile_version": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "required_stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" }
+        },
+        "failure_policy": { "const": "fail-closed" }
       }
     },
     "staleness": {
