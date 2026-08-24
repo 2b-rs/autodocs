@@ -250,3 +250,217 @@ session cannot retain the required candidate, baseline, and validation context.
 branch was created. Start commit `849fc917f` added exactly the two declared
 files. The final handoff must report the final tip, file digests, identifier and
 coverage checks, graph-rewrite validation, document validation, and clean status.
+
+## Append-only amendment — Runner role retained
+
+### Authority, identity, and amendment baseline
+
+- **Amendment item:** `0037-51-runner-role-amendment-20260824`
+- **Architect:** `agent:data:0037-51-runner-role-amendment:20260824T102013Z`
+- **Role/capability:** Management-instantiated Architect; `privileged`
+- **Direct-user clarification:** recorded by Project Lead `jean-luc` at
+  `fa8d575f723b9905050c77df935cc7b55a8ebaa2` in
+  `TODO-jean-luc-0037-51-20260824T072000Z.md`
+- **Prior review baseline:** `9f4d3f6ee04389a77dc296ed21a85f918d75739d`
+- **Amendment branch:**
+  `review-0037-51-runner-role-amendment-data-20260824`
+- **Write scope:** this review, the append-only `DEC-0037-002` correction
+  events, and the amendment claim only
+
+The user clarification is: retire and declare invalid the requirements and
+intermediate mechanisms introduced specifically for `sandboxed-grunt`, but do
+not retire Runner as a role. Future Dispatchers explicitly choose Programmer,
+Tester, or Runner. Runner owns Task-ID-bound long-running background work, job
+control, and interfaces to other agents; webtree regeneration and nightly
+database rebuild are representative jobs.
+
+### Corrected classification boundary
+
+The earlier review remains correct only with the following terms separated.
+They must not again be collapsed because they share the word “runner”.
+
+| Concept | Disposition | Binding boundary |
+|---|---|---|
+| `sandboxed-grunt` capability constraint | remove from the future model | Every future operational agent has direct Shell and Git; no Task may require absence of direct execution. |
+| Singleton/queue/typed-action/host-service runner transport | remove or retain only as history | No future Task requires `run.sh`, the queue, a host daemon, or a typed action merely to execute commands. |
+| Runner operational role | retain and rewrite | A Dispatcher selects Runner for Task-ID-bound long-running background work whose primary responsibility is job lifecycle and inter-agent interface control. |
+| Programmer and Tester operational roles | retain beside Runner | Programmer owns scoped product/tool authoring; Tester owns bounded verification execution and reporting. These role labels do not replace the normative Architect/Implementer/Integrator separation. |
+| Background-job control interface | retain as a shared direct-execution interface | Exact job/Task identity, owner, state, resource bounds, logs, outputs, cancellation, timeout, restart/recovery, cleanup, and handoff are mandatory. |
+| Safety/authority invariants previously coupled to transport | retain or re-home | Scope, collision, governance protection, stale-state rejection, evidence, recovery, and review separation remain independent of role and transport. |
+
+Runner is normally mapped to capability class `unprivileged`: direct execution
+without Acceptance, checkpoint-integration, Feature-closure, architecture,
+specialist, credential, release, or residual-risk authority. A different
+capability or process-role assignment remains explicit and separate. The
+current roster literal `runner` is therefore not a future capability class; it
+is a role label that the decomposition correction must map to a valid direct
+class without deleting the role.
+
+### Amended verdict
+
+**Verdict: `scope-supported-with-bounds`, remains valid with this amendment.**
+The selected direct-execution architecture, removal of the sandbox transport
+chain, preservation of safety invariants, `0037-34.02` authority-switch review,
+and `0037-40` terminal integration floor remain valid. The over-broad
+interpretation that Runner itself had no future consumer is invalid. The
+operative decomposition must add the role/job-control interface, its explicit
+predecessor and checkpoint, and the delta rewiring below before mutating any
+affected gate.
+
+This amendment is not Task acceptance, an integration verdict, implementation,
+a waiver, an external job instruction, or authority to start/stop a process.
+
+### Affected-node delta
+
+This table amends only rows affected by the retained Runner role. Every omitted
+row and every removal/historical disposition in the original exhaustive matrix
+remains unchanged.
+
+| Work unit/interface | Amended disposition and bounded contract |
+|---|---|
+| `0037-21` | Rewrite and make the owner of the shared operational-role and background-job interface. It must publish Dispatcher selection rules for Programmer/Tester/Runner, valid direct capability mappings, authority non-inheritance, and the complete job-control contract. Add `docs/pipeline/roles/{programmer,tester,runner}.md`, `agent-roster.md`, and the corresponding boundary in `process-roles.md` to its exact declared scope. |
+| `0037-39` | Keep reproducible toolchain qualification. Commands intended for long background use expose deterministic non-interactive invocation, resource/time estimates, bounded output, stable status/result, cancellation, and recovery inputs consumable by Runner; no queue envelope is restored. |
+| `0037-42` | Keep direct bootstrap and doctor. Report execution capability and operational role as separate fields; reject `runner` as a capability-class substitute while accepting a valid Runner role mapped to direct execution. |
+| `0037-25` / `0037-25.01` | Keep one direct bounded regeneration DAG. Its background mode uses the shared Runner job-control interface and stable run identity. The Dispatcher may assign Runner for webtree regeneration; this does not reintroduce a runner action registry or host service. |
+| `0037-44` | Keep direct emergency recovery. Runner may execute a separately authorized long-running recovery job and report state, but cannot authorize freeze, restore, re-enable, risk acceptance, or release. Those authorities stay separate. |
+| `0037-30` | Extend quiescence to every active Task-ID-bound background job: identity, owner, state, process/service handle, logs/results, cancellation/recovery, and handoff must be reconciled. Do not equate “stop the transport” with “all Runner work is drained”. |
+| `0037-32`, `0037-35.01`, `0037-36` | Long audit/rebuild commands may be executed by Runner, while Tester/registered signer independently evaluates evidence. The execution producer cannot acquire review or acceptance authority through role selection. |
+| `0037-34.01` | The prepared authority bundle includes the accepted direct operational-role/job-control contract and valid role-to-capability mappings; it excludes sandbox runner transport. |
+| `0037-34.02` | Existing mandatory authority-switch checkpoint remains. It verifies the accepted role contract is present in the exact switched bundle and that no stale client interprets Runner as the retired transport or as an authority grant. |
+| `0037-40` | Remains the single terminal integrating Task and review floor. Its end-to-end proof includes one synthetic Task-ID-bound long background job completing through the direct Runner interface, plus cancellation/recovery and role/authority negative controls. |
+| `0038-07`, `0038-09` | Retain context/resume capsules and environment identity as reusable background-job inputs. A capsule binds job ID, Task ID, owner, exact command/profile, state, results, and recovery without becoming a queue request. |
+| `0038-16.01` and completed runner artifacts | Preserve as historical transport inventory. Reuse a safety primitive only through an explicit direct interface; do not treat “Runner retained” as queue activation authority. |
+| `0043-01` run identity | Retain `RUN_ARCHIVE_REF`/manual-cohort semantics as provenance input for long build jobs. The identity producer is transport-neutral and can be bound by the direct Runner job record. |
+| `0039-02` | The future tool process describes whether a tool supports bounded foreground use, Runner-controlled background use, or both; it requires job-control, evidence, recovery, permission, and side-effect contracts without typed-runner allowlisting. |
+| `0044-04`, `0044-05`, `0044-07` | Capability requirements and matching keep role separate from capability. All three operational roles have direct execution; `0044-05` maps Runner normally to `unprivileged`, and `0044-07` must not delete Runner while removing sandbox/text-only proposals. |
+
+The previously reviewed removals of `0037-46`, `0037-47`, `0037-50.02`–`.05`,
+and `0038-16.02` remain removals. Runner retention does not supply any future
+consumer for their singleton, queue, failover, or sandbox-qualification
+outcomes.
+
+### Revised dependency and interface baselining
+
+The decomposition correction must preserve the earlier rewiring and apply this
+delta. It must validate the complete graph, not paste these edges blindly into
+a concurrently changed backlog.
+
+| Dependent | Required predecessor change and reason |
+|---|---|
+| `0037-21` | Keep the earlier replacement of `0038-16` with historical inventory `0038-16.01`; add `0037-51` and `0037-42`. The integrated decision supplies authority, and the direct bootstrap supplies the role/capability representation before the shared contract is baselined. |
+| `0037-25.01` | Add `0037-21` with an explicit **current-Acceptance-before-start** gate. The DAG's background interface consumes the shared role/job-control contract and must not invent a parallel protocol. |
+| `0037-30` | Add accepted `0037-21` before quiescence implementation so the job inventory and drain use the canonical identity/state interface. |
+| `0037-34.01` | Add accepted `0037-21`; the prepared authority tree must carry the exact reviewed role/capability/job-control contract. |
+| `0039-02` | Retain the earlier `0037-51` edge and add accepted `0037-21` before the tool process adopts background execution semantics. |
+| `0044-05` | Retain the earlier `0037-51` edge and add accepted `0037-21`; the matcher consumes the stable operational-role taxonomy and cannot infer Runner from command duration or model name. |
+
+`0037-44`, `0037-32`, `0037-35.01`, `0037-36`, and `0037-40` receive the
+contract transitively through the edges above and the existing cutover graph.
+If the current graph has drifted so that this is no longer true, the correction
+adds the smallest explicit edge rather than relying on prose.
+
+The shared predecessor product at `0037-21` must define at least:
+
+1. stable role values `programmer`, `tester`, and `runner`, separately from
+   capability and process-role authority;
+2. Dispatcher selection based on primary responsibility, not model/persona:
+   authoring, bounded verification, or sustained background-job control;
+3. a job identity containing exact Task ID, collision-resistant job ID, owner,
+   base/authority epoch, command/profile digest, read/write scope, resource and
+   wall-clock bounds, and external/credential declarations;
+4. a monotonic job lifecycle with requested, starting, running, terminal,
+   cancellation, timeout, failed, and recoverable/interrupted outcomes;
+5. bounded status/heartbeat, logs, artifacts, result digest, handoff, cleanup,
+   retry/idempotence, and recovery behavior;
+6. explicit prohibitions on intent interpretation, unassigned repair, scope
+   expansion, authority promotion, acceptance, integration, hidden network or
+   credential use, and silent orphan adoption.
+
+### Checkpoints and review reach
+
+- Add `Integration review: mandatory` to `0037-21` before it receives current
+  Acceptance. **Rationale:** this is the shared role/capability and job-control
+  interface consumed by multiple Features and every future Dispatcher; its
+  silent error directions are orphaned background work, unbounded resources,
+  lost evidence, or authority inheritance. The checkpoint is intermediate, not
+  a second terminal integrating Task.
+- Require current Acceptance of `0037-21` before the consumers named above
+  start, because they consume a repository-wide authority/job-control contract.
+- Keep `0037-34.02` mandatory for the atomic authority switch.
+- Keep exactly one terminal integrating Task, `0037-40`, mandatory. No terminal
+  checkpoint is added or moved by this amendment.
+- A green job-control fixture proves mechanics, not correct role selection,
+  specialist authority, risk acceptance, or Task acceptance.
+
+### Governance activation, self-application, and no grandfathering
+
+1. Integrate the `DEC-0037-002` correction events, this amendment, and their
+   authority reference onto current `main` before the decomposition correction.
+2. A distinct assigned Architect/Implementer applies the full reviewed backlog
+   delta in an item-owned worktree, revalidates current IDs/edges/claims, and
+   records checkpoint placement before current Acceptance of `0037-21`.
+3. Integrate and accept `0037-21` before any declared consumer crosses its
+   start gate. Later code/tool work remains with distinct implementers and
+   integration reviewers.
+4. This review self-applied only the direct-execution capability: Data used
+   direct Shell/Git in an isolated review worktree. It started no background
+   job and therefore provides no qualification evidence for Runner.
+5. Existing `kes`, `guinan`, or `quark` personas, capability literals, host
+   processes, queue requests, claims, or long-running processes receive no new
+   state automatically. Each operative mapping names the exact role,
+   capability, Task/job identity, owner, state, and retained evidence.
+
+### Recovery and rollback
+
+- Before integration, abandoning this amendment branch changes no operative
+  role, process, Task, or job.
+- After integration but before `0037-21` activation, reversal requires a new
+  append-only Management decision; no job interface has yet changed.
+- During role-contract activation, preserve the prior direct instruction
+  bundle and mapping. Rollback first rejects new jobs, inventories exact
+  Task-ID-bound jobs, requests bounded cancellation, retains logs/results and
+  process identity, and restores the prior bundle only after the declared
+  quiescence condition. It never kills an unidentified process or deletes the
+  only evidence of a job.
+- At authority cutover, existing `0037-34.01`/`.02` inverse-patch and epoch
+  controls remain authoritative. Post-cutover recovery stays forward recovery;
+  retaining Runner is not a promise to restore the retired queue/host service.
+
+### Validation and negative test design
+
+The operative work must retain reproducible evidence for at least:
+
+1. schema/doctor separation of role, capability class, process-role authority,
+   Task ID, and job ID; reject `runner` as a capability class and reject role
+   selection as Acceptance/integration authority;
+2. deterministic start/status/heartbeat/success/failure/cancel/timeout/restart
+   and cleanup transitions, including duplicate job ID, wrong Task ID, stale
+   base/epoch, overlapping scope, unbounded resource, missing result, orphaned
+   owner, and interrupted controller cases;
+3. a synthetic webtree regeneration and nightly database rebuild with bounded
+   CPU/memory/wall-clock, non-secret inputs, exact logs/artifacts/results, and no
+   external mutation;
+4. inter-agent handoff where Programmer or Tester receives status/evidence but
+   Runner cannot change task intent, findings disposition, or acceptance;
+5. quiescence/cutover fixtures proving new-job rejection, drain or explicit
+   recoverable interruption, no lost evidence, stale-client fencing, and no
+   implicit restoration of the retired transport;
+6. checkpoint validation proving mandatory intermediate reviews at `0037-21`
+   and `0037-34.02`, exactly one terminal integrating Task at `0037-40`, and
+   prerequisite-closed current Acceptance before consumers start.
+
+### Advisory estimates for the amended work
+
+Assumptions: direct local execution, existing transaction/environment/run-ID
+primitives are reused, no production database or external service is touched,
+and synthetic jobs are CPU/time bounded.
+
+| Package | Tokens / cognitive demand | Runtime / CPU | Uncertainty | Material risk |
+|---|---|---|---|---|
+| Backlog/dependency/checkpoint correction | 12k–25k; high | 1–3 h; low CPU | 20–35% from concurrent graph drift | high, cross-Feature start gates |
+| Role/capability/job-control contract (`0037-21`) | 18k–35k; high | 2–5 h; low/medium CPU | 20–30% | high, repository-wide dispatch and authority boundary |
+| Direct background-job implementation and fixtures | 25k–50k; high | 3–8 h; medium/high CPU; focused fixtures 10–45 min | 25–40% from process portability and recovery | high, orphan/resource/evidence failure modes |
+| Cutover and terminal integration proof | 25k–45k; very high | 3–8 h plus independent reviews; medium/high CPU | 25–40% | very high, authority switch and active-job quiescence |
+
+These ranges advise decomposition and test design only. They confer no budget,
+external-system, release, risk, or acceptance authority.
