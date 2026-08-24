@@ -120,3 +120,136 @@ magnitude in runtime are not bounded estimates.
 The candidate must not be allocated unchanged. A correction limited to the
 three open finding groups can preserve the resolved gate and trace sections.
 This verdict grants no Acceptance or integration credit.
+
+## Second correction re-review — candidate `5651bff97596dde165ae09555b7374ea086f3988`
+
+### Baseline and latest verdict
+
+- **Second substantive correction:**
+  `7aeedacd6405b63023d89cefb9bf149cc349978c`
+- **Second correction claim tip:**
+  `5651bff97596dde165ae09555b7374ea086f3988`
+- **Prior rejected review:**
+  `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`
+- **Review scope:** unchanged; independent Architect re-review of the three
+  open finding groups only, without candidate mutation, Acceptance,
+  integration, checkpoint crossing, `main` mutation, or Feature closure.
+
+**Rejected.** The candidate fixes the F-N migration paths and adds the intended
+A.4 lifecycle, consumer edges, and intermediate checkpoint. It still does not
+baseline a consumable shared A.4 product, and its normative executable overlay
+leaves every package dependent on an unowned validator. All terminal validation
+contracts are also outside their declared write/evidence manifests, while all
+77 branch targets contradict the repository branch contract. The decomposition
+therefore remains unsafe to allocate as executable Tasks.
+
+### F-UIUX-CORR-R2-001 — Critical — the A.4 shared interface is outside A.4's normative write manifest
+
+The A.4 package bullet at candidate lines 128–154 correctly names the versioned
+`operational-role-v1.json` and `background-job-v1.json` products and supplies
+the required lifecycle, negative controls, checkpoint, recovery, and review
+rationale. However, the overlay declares that it wins on conflict (lines
+593–598), and A.4's overlay row (line 607) permits only
+`src/ui/a/a-4/**`, `tests/uiux/a-4/**`, the package-local
+`uiux-packages/a-4.{json,writes.json}`, and package evidence. It does not permit
+either named shared contract under `docs/design/contracts/`.
+
+Consequently the machine A.4 start edges can require current Acceptance of A.4,
+but the package cannot produce the two shared interface products its consumers
+are meant to accept. The prose lifecycle is materially improved; the explicit
+predecessor work product is not baselined in an executable write contract.
+
+Required correction: include the exact versioned shared-contract paths and
+their schemas/fixtures in A.4's normative manifest, identify their public
+types, validation/error behavior and compatibility/recovery rules, and bind the
+consumer edges to those exact products and digests. Preserve the A.4
+intermediate checkpoint and current-Acceptance-before-start semantics.
+
+### F-UIUX-CORR-R2-002 — Critical — all package validation depends on an unowned tool; terminal contract inputs have no owner
+
+Every one of the 77 overlay rows invokes
+`src/tools/uiux_validate_package.py`, but no package manifest owns that path,
+the candidate contains no such tool, and no predecessor product or dependency
+edge supplies it. The commands are therefore syntactically package-specific
+but not executable from their declared prerequisite graphs.
+
+In addition, all 16 terminal rows invoke
+`docs/design/contracts/uiux-packages/<terminal>.json` and
+`<terminal>.writes.json`, while their normative write/evidence manifests contain
+only terminal evidence. A whole-population check found the omission for E0.T
+and A.T through O.T. Those validation inputs have no declared producer.
+
+Required correction: create one bounded shared validation-interface predecessor
+that owns the validator, schemas, result contract, negative fixtures, recovery,
+and compatibility rules, with the necessary reviewed consumer gates; or replace
+the shared command with package-owned exact harnesses. Give every terminal
+contract input an exact producer and prerequisite. Any new shared blocking gate
+must satisfy `decision-record@v1` and distinct Architect scope-review rules
+before activation.
+
+### F-UIUX-CORR-R2-003 — High — the deterministic branch rule contradicts the normative item-branch topology
+
+All 77 rows target
+`feature/<allocated-feature-id>/<package>` and merge to
+`feature/<allocated-feature-id>`. The current branch workflow instead requires
+the branch name to be the allocated item's exact ID, with Task branches based on
+the exact Feature-ID branch and Subtask branches based on the exact Task-ID
+branch (`docs/pipeline/branch-workflow.md`, lines 34–45). The proposed rule is
+deterministic, but it deterministically produces the wrong branch identity and
+does not distinguish Task from Subtask parentage.
+
+Required correction: bind each allocated package to its exact allocated item ID
+and parent item branch, preserving prerequisite-branch merges and carried claim
+files. Do not introduce a second branch-naming convention inside the portfolio.
+
+### Advisory — malformed overlay heading
+
+Candidate line 593 begins with literal `+##`, so the normative overlay is not a
+Markdown heading. This is not the basis of the rejection, but it should be
+removed so renderers and structure-aware tooling recognize the section.
+
+### Re-review disposition of the original five groups
+
+1. **Capability / Runner model: still blocking.** The conceptual role,
+   lifecycle, consumer set, accepted start edges, and intermediate checkpoint
+   are now present, but the exact shared A.4 products remain outside the
+   normative write manifest.
+2. **`_src` → `src` migration: resolved.** N.1–N.3 now use disjoint
+   `src/import/classic/n-*` roots and require E.T; no `_src/import/**` output
+   remains.
+3. **Gate enforceability: resolved for this review scope.** The A.4 consumer
+   gate is machine-listed, uses `⊳acc`, and preserves the decision/scope-review
+   requirement. Finding R2-002 concerns the missing validation predecessor, not
+   removal of those corrected edges.
+4. **Package executability: still blocking.** Exact-looking commands and paths
+   do not form an executable graph when their common tool and terminal contract
+   inputs have no owner, and their branch targets violate the repository
+   topology.
+5. **Exact traceability: remains resolved.** The second correction does not
+   regress the exact RQ/Q/view ownership established by the first correction.
+
+### Second-round validation evidence
+
+- Pinned the exact `7aeedacd64` substantive correction and `5651bff975` claim
+  tip; verified direct parentage and a clean candidate worktree.
+- Whole-population table parse: 77 unique package rows, 16 terminal rows, 77
+  validator command users, zero validator write owners, and 16 terminal rows
+  whose invoked contract/write-manifest inputs are absent from their normative
+  write/evidence manifests.
+- Compared the A.4 bullet, overlay, machine gate table, and controlling Runner
+  amendment `5d5996d07d8e8be71a99722a12e3afcb1d57919a`.
+- Compared all 77 declared branch targets with the normative item-ID branch
+  rules in `docs/pipeline/branch-workflow.md`.
+- `git diff --check` passes for the candidate correction. The process-document
+  doctor exits 0 with the current repository-wide baseline of 118 documents,
+  30 findings, and one pre-existing unrelated broken-link error in
+  `docs/dossiers/0044-03-gate-scope-proposal.md`; it does not validate this
+  design document's executable graph.
+- Pre-mutation integration hygiene passed over 161 registered worktrees for the
+  isolated review worktree. No candidate or shared-root file was changed.
+
+### Second-round handoff
+
+The exact candidate `5651bff975` must not be allocated unchanged. This review
+changes no candidate file and grants no Acceptance, integration, checkpoint, or
+Feature-closure credit.

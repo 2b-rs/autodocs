@@ -69,3 +69,49 @@ update, hand the final tip to `jean-luc`, and acknowledge the assignment message
 - **Substantive review REF:** `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`
 - **Acceptance/integration credit:** none
 - **Main integration:** not performed and not authorized
+
+## Second correction re-review
+
+- **Assignment:** Project Lead `jean-luc`, mailbox message
+  `1787580308469-fd100cd7`; existing review scope unchanged
+- **Candidate substantive REF:**
+  `7aeedacd6405b63023d89cefb9bf149cc349978c`
+- **Candidate final claim tip:**
+  `5651bff97596dde165ae09555b7374ea086f3988`
+- **Review baseline:** findings at
+  `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`
+- **Hygiene:** PASS for the isolated review worktree; 161 registered worktrees
+- **Scope:** unchanged; only this claim and the existing review report may be
+  changed. No candidate correction, Acceptance, integration, checkpoint
+  crossing, `main` mutation, Feature closure, external state, publication, or
+  push.
+
+### Progress
+
+- Pinned and inspected the exact second correction and its parentage.
+- Rechecked all three prior blocking groups and retained the earlier resolved
+  gate/trace findings.
+- Migration blocker is resolved: N.1–N.3 use disjoint `src/import/**` roots and
+  require E.T.
+- Runner lifecycle/checkpoint prose is materially corrected, but A.4's
+  normative overlay excludes its two shared contract products.
+- Whole-population overlay check found 77 users and zero owners of
+  `src/tools/uiux_validate_package.py`; all 16 terminal rows invoke contract
+  inputs outside their write/evidence manifests.
+- All 77 deterministic branch targets conflict with the normative exact-item-ID
+  branch rule.
+- Appended the evidence-backed second-round rejected verdict and findings
+  F-UIUX-CORR-R2-001 through R2-003 to the review report.
+
+### Next action
+
+Validate the two changed review paths, commit them path-limited, report the
+review REF/tip to `jean-luc`, then acknowledge message
+`1787580308469-fd100cd7`.
+
+### Current result
+
+- **Verdict:** rejected
+- **Acceptance/integration credit:** none
+- **Candidate mutation:** none
+- **Main integration:** not performed and not authorized
