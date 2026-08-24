@@ -118,3 +118,47 @@ message `1787580308469-fd100cd7`.
 - **Acceptance/integration credit:** none
 - **Candidate mutation:** none
 - **Main integration:** not performed and not authorized
+
+## Third correction re-review
+
+- **Assignment:** Project Lead `jean-luc`, mailbox message
+  `1787580993686-4530501c`; existing review scope unchanged
+- **Candidate substantive REF:**
+  `7707b8d00a7e5cfc3e733cd990c7be373e3aa41b`
+- **Candidate final claim tip:**
+  `9190e5a346d87edbc62a4d38b4050bb2aab000eb`
+- **Review baseline:** second-round findings at
+  `6b8a81ff1171127a95b44795bd4d1852df4ffe7b`
+- **Hygiene:** PASS for the isolated review worktree; 163 registered worktrees
+- **Scope:** unchanged; only this claim and the existing review report may be
+  changed. No candidate correction, Acceptance, integration, checkpoint
+  crossing, backlog/governance mutation, `main` mutation, Feature closure,
+  external state, publication, or push.
+
+### Progress
+
+- Pinned the exact second correction and claim tip and verified parentage.
+- Rechecked every row of the 77-package overlay against all three second-round
+  blockers and inspected the unchanged gate, migration, and trace sections for
+  regressions.
+- Confirmed A.4 owns and types both shared contracts, schemas, fixtures,
+  compatibility/recovery rules, and exact consumer digest bindings.
+- Confirmed 77 package-owned harnesses and contract pairs, including complete
+  ownership for all 16 terminals; no old global-validator consumer remains.
+- Confirmed 77 exact item/parent branch bindings matching Task→Feature and
+  Subtask→Task topology; the old `feature/` prefix is absent.
+- Recorded a passing Architect re-review with no blocking finding in the
+  assigned scope. No Acceptance or integration credit is granted.
+
+### Next action
+
+Validate and commit the two review paths, record the substantive review REF in
+this claim, commit final bookkeeping, report the final tip to `jean-luc`, and
+acknowledge message `1787580993686-4530501c`.
+
+### Current result
+
+- **Verdict:** passed; no blocking finding in assigned Architect re-review scope
+- **Acceptance/integration credit:** none
+- **Candidate mutation:** none
+- **Main integration:** not performed and not authorized

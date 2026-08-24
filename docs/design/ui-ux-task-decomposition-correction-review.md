@@ -253,3 +253,91 @@ removed so renderers and structure-aware tooling recognize the section.
 The exact candidate `5651bff975` must not be allocated unchanged. This review
 changes no candidate file and grants no Acceptance, integration, checkpoint, or
 Feature-closure credit.
+
+## Third correction re-review — candidate `9190e5a346d87edbc62a4d38b4050bb2aab000eb`
+
+### Baseline, boundary, and verdict
+
+- **Third substantive correction:**
+  `7707b8d00a7e5cfc3e733cd990c7be373e3aa41b`
+- **Third correction claim tip:**
+  `9190e5a346d87edbc62a4d38b4050bb2aab000eb`
+- **Prior rejected review:**
+  `6b8a81ff1171127a95b44795bd4d1852df4ffe7b`
+- **Scope:** unchanged independent Architect re-review of findings
+  F-UIUX-CORR-R2-001 through R2-003 plus regression inspection. This is not
+  Task Acceptance, integration, checkpoint crossing, backlog/governance
+  mutation, `main` mutation, allocation, or Feature closure.
+
+**Passed — no blocking finding remains in the assigned re-review scope.** The
+candidate now owns and types A.4's exact shared interface products, gives every
+package an owned validation harness and owned contract inputs, and binds every
+package branch to the exact allocated item and parent item IDs. The migration,
+Runner lifecycle/checkpoint/consumer gates, exact trace mappings, and prior gate
+corrections remain intact. This verdict is Architect work-product review only;
+it grants no `Acceptance: ✓` or integration credit.
+
+### Disposition of second-round findings
+
+1. **F-UIUX-CORR-R2-001 — closed.** A.4's normative row now owns
+   `operational-role-v1.{json,schema.json}`,
+   `background-job-v1.{json,schema.json}`, the background-job fixtures, its
+   package contract/write manifest, implementation, tests, and evidence. The
+   appended normative interface text defines the public role, capability,
+   identity, state, status, result, cancellation, retry, handoff, and recovery
+   types; invalid fields/transitions; compatibility/versioning; recovery; and
+   exact shared-contract-digest binding by consumers. The A.4 intermediate
+   checkpoint and current-Acceptance-before-start edges remain unchanged.
+2. **F-UIUX-CORR-R2-002 — closed.** All 77 validation commands now invoke their
+   package-owned `tests/uiux/<package>/validate.py`; no command references the
+   removed portfolio-global validator. Every row owns its package contract and
+   write manifest. All 16 terminal rows additionally own their harness,
+   fixtures, terminal contracts, candidate manifest, validation, recovery, and
+   resource evidence. No invoked validation input is left without a declared
+   producer/write scope.
+3. **F-UIUX-CORR-R2-003 — closed.** All 77 branch columns now use exact
+   `<allocated-item-id>` and `<allocated-parent-item-id>` substitutions. The
+   normative rule defines Task→Feature and Subtask→Task parentage, prerequisite
+   and claim carriage, and rejection of prefixes, slugs, aliases, or parent
+   mismatch, matching `docs/pipeline/branch-workflow.md`.
+4. **Prior advisory — closed.** The overlay heading is now valid Markdown
+   `## 4a`; the stray leading `+` is absent.
+
+### Regression review
+
+- The substantive delta is limited to the executable overlay, its ownership and
+  interface explanations, and the correction claim. It does not alter the gate
+  table, exact RQ/Q/view mappings, Feature/package inventory, or migration rule.
+- F-N.1–N.3 retain disjoint `src/import/classic/n-*` roots, E.T prerequisites,
+  and the repository-wide `_src/**` prohibition for post-migration packages.
+- A.4 remains the sole shared Runner interface and an intermediate mandatory
+  checkpoint; all nine enumerated consumers retain `⊳acc A.4` start gates and
+  digest binding. No sandbox transport, runner queue, `run.sh`, or authority
+  inheritance is reintroduced.
+- The inventory remains 16 Features, 77 unique packages, and exactly 16
+  terminal integrating packages, one per Feature. Exact trace ownership remains
+  unchanged.
+
+### Third-round validation evidence
+
+- Verified exact parentage `5651bff975` → `7707b8d00` → `9190e5a346` and a
+  clean candidate worktree.
+- Whole-population parse: 77 unique rows; 16 terminals; zero missing
+  package-owned harnesses; zero missing package contract/write-manifest pairs;
+  zero old global-validator users; zero invalid branch-target rows.
+- Negative scans: zero malformed `+##` headings, zero `_src/import`
+  occurrences, and zero old `feature/<allocated-feature-id>` branch prefixes.
+- Confirmed A.4's two versioned shared products, schemas, fixtures, named public
+  types, error/transition rules, compatibility and recovery bounds, and exact
+  digest consumption.
+- `git diff --check` passes for the complete third correction. Pre-mutation
+  integration hygiene passes over 163 registered worktrees for the isolated
+  review worktree.
+
+### Third-round handoff
+
+Within the assigned scope, candidate `9190e5a346` is suitable for the separate
+allocation/integration workflow. Outstanding human decisions and external
+inputs already declared by the decomposition remain allocation gates; this
+review neither resolves nor waives them. No candidate, backlog, governance,
+Acceptance, integration, or `main` state was changed.
