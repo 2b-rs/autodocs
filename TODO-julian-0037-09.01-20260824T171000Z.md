@@ -24,7 +24,7 @@
 - input modes: explicit working-tree and staged-index roots, both read-only
 - external_resources: none expected; no external state mutation
 - prohibitions: no root/main mutation or recovery, other Feature integration, Acceptance, checkpoint crossing, `DONE.md`, push/deploy, runner queue, or silent scope expansion
-- status: `[p]`; implementation and focused validation complete; next step is substantive commit followed by terminal bookkeeping with the real REF.
+- status: `[x]`; implementation complete at substantive REF `7b36370e84c5c793e705a1d418e2b5db2b7cc965`; terminal bookkeeping is committed separately and no Acceptance is claimed.
 
 ## Findings and progress
 
@@ -34,3 +34,5 @@
 - Cross-item checks cover duplicate/path-conflicting item IDs, removed/reused tombstones, self/missing prerequisite endpoints, deterministic cycle detection, and rejection of Feature-closure nodes used as Task/Subtask start gates. Bounded limits are 10,000 items and 100,000 edges in addition to the parser's document/depth/criterion limits.
 - Tracked negative-fixture manifest contains one case per required error category, including malformed/duplicate item and criterion IDs, path/parent/field/Markdown errors, self/missing/cyclic edges, Feature-gate misuse, and oversize input. Fixed seeds bound the generated acyclic graph/property coverage.
 - Validation: `test_issue_validate` 8/8 PASS (including distinct staged-index versus unstaged-working-tree behavior and explicit authoritative/candidate roots); carried `test_issue_store` 10/10 PASS; `py_compile` PASS; automation-safety PASS with zero findings; `git diff --check` PASS.
+- Substantive REF: `7b36370e84c5c793e705a1d418e2b5db2b7cc965`.
+- Handoff: merge only under the parent Task's normal authority; this implementation does not cross a checkpoint, grant Acceptance, or integrate upward.
