@@ -1,0 +1,1 @@
+- [2026-08-24T17:14Z] (julian@Requirements Engineer): History mutation must be executed strictly with explicit `git -C <item-worktree>` and upfront assertion of Toplevel and Branch. Worktree creation and mutation must be performed as separate steps to prevent accidental operations on the root/main checkout. [Ref: 6d9a9ba116419fc0631412870f9d5914d3fda7c2]
