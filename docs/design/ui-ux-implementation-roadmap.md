@@ -174,6 +174,32 @@ any autonomous code execution scope expands.
 
 ## 3. Cross-Feature acceptance matrix
 
+### Requirements bindings for proposed Features
+
+The identifiers below refer to
+[`ui-ux-requirements-baseline.md`](ui-ux-requirements-baseline.md). `F-*`
+labels remain planning proposals: this matrix creates neither Feature
+allocation nor implementation, checkpoint, or acceptance authority.
+
+| Proposed Feature | Bound requirements |
+|---|---|
+| F-A | RQ-UIUX-003, RQ-UIUX-004, RQ-UIUX-005, RQ-UIUX-025, RQ-UIUX-026, RQ-UIUX-031, RQ-UIUX-032 |
+| F-B | RQ-UIUX-002, RQ-UIUX-011, RQ-UIUX-012, RQ-UIUX-013, RQ-UIUX-014, RQ-UIUX-015, RQ-UIUX-018, RQ-UIUX-024, RQ-UIUX-026, RQ-UIUX-031, RQ-UIUX-032 |
+| F-C | RQ-UIUX-014, RQ-UIUX-032 |
+| F-D | RQ-UIUX-020, RQ-UIUX-021, RQ-UIUX-022, RQ-UIUX-023, RQ-UIUX-025, RQ-UIUX-032 |
+| F-E0 | RQ-UIUX-019 |
+| F-E | RQ-UIUX-016, RQ-UIUX-019, RQ-UIUX-025, RQ-UIUX-026, RQ-UIUX-029, RQ-UIUX-032 |
+| F-F | RQ-UIUX-001, RQ-UIUX-002, RQ-UIUX-012, RQ-UIUX-016, RQ-UIUX-032 |
+| F-G | RQ-UIUX-004, RQ-UIUX-012, RQ-UIUX-017, RQ-UIUX-018, RQ-UIUX-032 |
+| F-H | RQ-UIUX-004, RQ-UIUX-005, RQ-UIUX-011, RQ-UIUX-015, RQ-UIUX-018, RQ-UIUX-021, RQ-UIUX-024, RQ-UIUX-032 |
+| F-I | RQ-UIUX-002, RQ-UIUX-006, RQ-UIUX-007, RQ-UIUX-012, RQ-UIUX-020, RQ-UIUX-032 |
+| F-J | RQ-UIUX-002, RQ-UIUX-008, RQ-UIUX-012, RQ-UIUX-018, RQ-UIUX-028, RQ-UIUX-032 |
+| F-K | RQ-UIUX-007, RQ-UIUX-020, RQ-UIUX-023, RQ-UIUX-027 |
+| F-L | RQ-UIUX-002, RQ-UIUX-009, RQ-UIUX-020, RQ-UIUX-032 |
+| F-M | RQ-UIUX-008, RQ-UIUX-028 |
+| F-N | RQ-UIUX-001, RQ-UIUX-014, RQ-UIUX-030, RQ-UIUX-032 |
+| F-O | RQ-UIUX-010, RQ-UIUX-032 |
+
 Every Feature contract maps requirements to: source inputs, architecture
 decision, prerequisites and planned order, capability/rights/data/tool profile,
 test scope/kind, runtime/CPU range, cognitive demand, uncertainty, risk,

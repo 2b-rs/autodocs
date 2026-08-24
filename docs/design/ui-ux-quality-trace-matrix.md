@@ -33,6 +33,39 @@ commands, profiles, baselines, and digests in its own contract.
 
 ## Completion rule
 
+### Requirements bindings
+
+These bindings point to the preparation IDs in
+[`ui-ux-requirements-baseline.md`](ui-ux-requirements-baseline.md). They add
+requirements traceability without allocating work or changing any gate.
+
+| Gate | Bound requirements |
+|---|---|
+| Q-01 | RQ-UIUX-003, RQ-UIUX-025, RQ-UIUX-032 |
+| Q-02 | RQ-UIUX-002, RQ-UIUX-003, RQ-UIUX-014, RQ-UIUX-025, RQ-UIUX-029, RQ-UIUX-032 |
+| Q-03 | RQ-UIUX-004, RQ-UIUX-011, RQ-UIUX-030, RQ-UIUX-032 |
+| Q-04 | RQ-UIUX-005, RQ-UIUX-011, RQ-UIUX-031, RQ-UIUX-032 |
+| Q-05 | RQ-UIUX-021, RQ-UIUX-032 |
+| Q-06 | RQ-UIUX-007, RQ-UIUX-020 |
+| Q-07 | RQ-UIUX-006, RQ-UIUX-007, RQ-UIUX-020 |
+| Q-08 | RQ-UIUX-021, RQ-UIUX-022 |
+| Q-09 | RQ-UIUX-001, RQ-UIUX-002, RQ-UIUX-012, RQ-UIUX-031, RQ-UIUX-032 |
+| Q-10 | RQ-UIUX-002, RQ-UIUX-013, RQ-UIUX-015, RQ-UIUX-032 |
+| Q-11 | RQ-UIUX-001, RQ-UIUX-013, RQ-UIUX-014, RQ-UIUX-031, RQ-UIUX-032 |
+| Q-12 | RQ-UIUX-015, RQ-UIUX-026, RQ-UIUX-031, RQ-UIUX-032 |
+| Q-13 | RQ-UIUX-016, RQ-UIUX-032 |
+| Q-14 | RQ-UIUX-017, RQ-UIUX-032 |
+| Q-15 | RQ-UIUX-008, RQ-UIUX-018, RQ-UIUX-032 |
+| Q-16 | RQ-UIUX-019, RQ-UIUX-026, RQ-UIUX-029 |
+| Q-17 | RQ-UIUX-019, RQ-UIUX-025, RQ-UIUX-029 |
+| Q-18 | RQ-UIUX-025, RQ-UIUX-026, RQ-UIUX-030 |
+| Q-19 | RQ-UIUX-006, RQ-UIUX-009, RQ-UIUX-021, RQ-UIUX-023 |
+| Q-20 | RQ-UIUX-011, RQ-UIUX-015, RQ-UIUX-024 |
+| Q-21 | RQ-UIUX-006, RQ-UIUX-007, RQ-UIUX-020 |
+| Q-22 | RQ-UIUX-008, RQ-UIUX-028 |
+| Q-23 | RQ-UIUX-009, RQ-UIUX-010 |
+| Q-24 | RQ-UIUX-007, RQ-UIUX-023, RQ-UIUX-027 |
+
 An implementation Task may narrow this matrix only when its declared surface is
 provably unaffected. It may not replace a named test with “manual inspection”
 without identifying the manual procedure, competence, exact candidate,
