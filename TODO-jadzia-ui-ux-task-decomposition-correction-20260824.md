@@ -83,4 +83,5 @@ No Acceptance or integration decision is made by this claim.
   owned contract/harness manifests; 77 exact item-ID/parent branch bindings;
   zero unowned global-validator, `feature/` branch-prefix, malformed heading or
   `_src/import` occurrence; A.4 shared outputs/types present
-- status: second re-review findings corrected and validated; commit pending
+- second_re_review_correction_ref: `7707b8d00a7e5cfc3e733cd990c7be373e3aa41b`
+- status: second re-review findings corrected, validated and committed
