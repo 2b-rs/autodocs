@@ -36,4 +36,8 @@ Commit the proposal on this branch; report exact tip, files, validation, complet
 
 ## Progress log
 
-- 2026-08-24T08:44:50Z — branch + worktree created from `40ceb3d2e`; claim authored; start proof to `jean-luc` follows as first commit is made.
+- 2026-08-24T08:44:50Z — branch + worktree created from `40ceb3d2e`; claim authored; start proof to `jean-luc` sent (msg `1787561143189-f2ecfc30`) after first commit `76321eaa1`.
+- 2026-08-24 — inputs read in full: `ui-ux-requirements-baseline.md` (32 RQ, 6 D-handles, 119-view accounting), `ui-ux-implementation-roadmap.md` (F-A..F-O + F-E0, prerequisite graph, sizing), `ui-ux-quality-trace-matrix.md` (Q-01..Q-24 with per-gate fixtures/evidence/terminals), view→route matrix structure. Review evidence `9896d9d20` consumed independently (R2, no open finding).
+- 2026-08-24 — deliverable authored: `docs/design/ui-ux-task-decomposition.md` — 16 Feature sections, 77 bounded packages, 16 terminal integrating Tasks (exactly one per Feature, each with checkpoint rationale), D-01..D-06 consumption map with neutrality mechanisms, 7 cross-item gate scopes flagged for `decision-record@v1` + distinct Architect review, DAG/deadlock analysis, full RQ/Q/view coverage accounting, 6 genuine blocking decisions enumerated.
+- Mechanical self-checks (run 2026-08-24, recorded here as §10 requires): 16 Feature sections exact; 77 package IDs, all unique; 16 terminals `{E0,A..O}.T`; missing RQ: none (32/32); missing Q: none (24/24); D-01..D-06 all mapped. Package-count self-check caught and corrected an initial 78→77 miscount before commit.
+- Roadmap refinement: none required; `ui-ux-implementation-roadmap.md` deliberately untouched — all package boundaries expressible without contradiction (recorded in deliverable §10).
