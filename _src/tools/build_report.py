@@ -52,6 +52,7 @@ import json
 import math
 import os
 import secrets
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -81,6 +82,51 @@ PROVENANCE_KEY = "publication_provenance"
 # marks a minted fallback so it can never be mistaken for, or collide with, a
 # real runner-issued ref.
 MANUAL_REF_PREFIX = "manual-"
+
+# A ledger entry's combined_report_ref names output/build-reports/combined-*.json,
+# which DEC-0043-001 keeps permanently git-ignored — it never reaches the published
+# site. Rendering it as a link therefore produces a dead link on every history row
+# (0043-03, finding F-BELANNA-0043-03-01). Following the same idea as
+# MANUAL_REF_PREFIX above — mark what cannot resolve instead of pretending it does —
+# such a ref is rendered as plain text that still shows its value. Only a ref naming
+# a *tracked* (published) path is rendered as a link; the local, git-ignored
+# output/ tree is deliberately not consulted, since a check that passes only because
+# this machine happens to hold an artifact is exactly the defect being fixed.
+_TRACKED_PATHS_CACHE = {}
+
+
+def _tracked_paths(root=None):
+    """Set of repository-relative paths tracked by Git, cached per root.
+
+    Fails closed: if Git cannot be consulted, the set is empty and nothing is
+    rendered as a link.
+    """
+    key = os.path.abspath(root or ROOT)
+    if key not in _TRACKED_PATHS_CACHE:
+        try:
+            completed = subprocess.run(
+                ["git", "-C", key, "ls-files", "-z"],
+                capture_output=True, text=True, timeout=60, check=True,
+            )
+            paths = frozenset(p for p in completed.stdout.split("\0") if p)
+        except (OSError, subprocess.SubprocessError):
+            paths = frozenset()
+        _TRACKED_PATHS_CACHE[key] = paths
+    return _TRACKED_PATHS_CACHE[key]
+
+
+def _ref_is_published(ref, root=None):
+    """True only when `ref` names a tracked file, i.e. one that exists on the
+    published site and can therefore be linked without producing a dead link."""
+    if not isinstance(ref, str) or not ref.strip():
+        return False
+    candidate = ref.strip()
+    if os.path.isabs(candidate):
+        return False
+    candidate = os.path.normpath(candidate)
+    if candidate.startswith(".."):
+        return False
+    return candidate in _tracked_paths(root)
 
 
 def _esc(s):
@@ -537,7 +583,14 @@ def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path
         checks = (counts.get("validate") or {}).get("checks_performed", 0)
         diagrams = (counts.get("i18n_diagrams") or {}).get("sources_considered", 0)
         detail_ref = entry.get("combined_report_ref") or ""
-        detail = f'<a href="{_esc(detail_ref)}">JSON-Details</a>' if detail_ref else "–"
+        if not detail_ref:
+            detail = "–"
+        elif _ref_is_published(detail_ref):
+            detail = f'<a href="{_esc(detail_ref)}">JSON-Details</a>'
+        else:
+            # Not published (typically the git-ignored output/build-reports/ tree):
+            # show the ref value as plain text instead of a dead link.
+            detail = f'<code>{_esc(detail_ref)}</code>'
         html_parts.append(f'<tr><td>{_esc(entry.get("run_finished_at", ""))}</td><td>{badge}</td><td><code>{_esc(entry.get("run_archive_ref") or "historisch nachgetragen")}</code></td><td>Seiten: {pages}; Prüfungen: {checks}; Diagramme: {diagrams}; Befunde: {entry.get("findings_count", 0)}</td><td>{detail}</td></tr>')
     if not ledger_entries:
         html_parts.append('<tr><td colspan="5">Keine schemakonformen Ledger-Einträge vorhanden.</td></tr>')
