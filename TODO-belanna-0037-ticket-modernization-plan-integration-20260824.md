@@ -1,0 +1,24 @@
+# Claim: Feature 0037 ticket-modernization plan integration preparation
+
+- item_id: `0037-ticket-modernization-plan-integration-20260824`
+- owner: B'Elanna Torres, Team Voyager, independent Integrator
+- owner_token: `agent:belanna:0037-ticket-modernization-plan-integration-20260824:20260824T152500CEST`
+- capability_class: `privileged`
+- execution_authority: direct Git, validation, and integration-review preparation; no `main` advance
+- base_commit: `892fb5f92b34b411e76ef2a011e82183e2cd2315`
+- branch: `integration-0037-ticket-modernization-plan-belanna-20260824`
+- worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/integration-0037-ticket-modernization-plan-belanna-20260824`
+- status: `in_progress`
+- write_scope:
+  - `TODO-belanna-0037-ticket-modernization-plan-integration-20260824.md`
+  - necessary merge and integration-review evidence under `docs/dossiers/`
+- must_not:
+  - correct candidate content
+  - mutate `TODO.md`, `DONE.md`, decisions, or governance
+  - invent Task Acceptance or close a Feature
+  - advance `main`
+- candidate_substantive_ref: `5f26ab93585a5bb3c961d03828f673ee222dde0f`
+- candidate_final_ref: `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`
+- independent_review_ref: `2e37978c2a71c0befc8adc5fcf0f3f8c7623b86e`
+- independent_review_final_ref: `d9724324f3c570ff4d5d10009719c5d4bf654ef0`
+- next_step: assemble exact candidate and review tips on current `main`, retaining the candidate plan tree if the separate review branch carries an older plan snapshot, then validate and record verdict.
