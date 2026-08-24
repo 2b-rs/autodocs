@@ -347,6 +347,82 @@ class TestBuildReport(unittest.TestCase):
         self.assertLess(html.index("manual-later-cafebabe"), html.index("manual-newest-deadbeef"))
         self.assertIn('id="latest-run"', html)
 
+    def _history_row_html(self, ledger, combined_path_name="combined.json",
+                          combined_report_ref=None):
+        """Render one ledger row and return the page HTML (0043-03)."""
+        combined = {
+            "report_kind": "combined", "started_at": "2026-08-23T10:00:00Z",
+            "finished_at": "2026-08-23T10:01:00Z", "exit_code": 0,
+            "counts": {"overall_success": True, "by_stage": {
+                "i18n_merge": {}, "i18n_diagrams": {"sources_considered": 1},
+                "html_generate": {"pages_generated_per_lang": {"de": 2}},
+                "validate": {"checks_performed": 3}}},
+            "findings": [], "run_archive_ref": "manual-detailref-0043aa03",
+        }
+        combined_path = os.path.join(self.test_dir, combined_path_name)
+        Path(combined_path).write_text(json.dumps(combined), encoding="utf-8")
+        entry = build_ledger.entry_from_combined(
+            combined, combined_path, repo_commit="c" * 40,
+            recorded_at="2026-08-23T10:02:00Z")
+        if combined_report_ref is not None:
+            entry["combined_report_ref"] = combined_report_ref
+        build_ledger.append_entry(entry, ledger)
+        build_report.generate_report_page(combined, ledger_path=ledger)
+        return json.loads(
+            Path(build_report.PAGE_MODEL).read_text(encoding="utf-8"))["main"][0]["html"]
+
+    def test_unresolvable_detail_ref_is_plain_text_not_a_dead_link(self):
+        """0043-03 / F-BELANNA-0043-03-01: combined_report_ref points into the
+        permanently git-ignored output/build-reports/ tree (DEC-0043-001), so it must
+        never be rendered as a link — but its value must stay visible."""
+        ledger = os.path.join(self.test_dir, "build-ledger.jsonl")
+        ref = "output/build-reports/combined-20260823T100100Z.json"
+        html = self._history_row_html(ledger, combined_report_ref=ref)
+        self.assertIn(ref, html)
+        self.assertNotIn(f'<a href="{ref}"', html)
+        self.assertNotIn("JSON-Details", html)
+
+    def test_published_detail_ref_is_still_rendered_as_a_link(self):
+        ledger = os.path.join(self.test_dir, "build-ledger.jsonl")
+        tracked = "docs/evidence/build-ledger.jsonl"
+        self.assertTrue(
+            build_report._ref_is_published(tracked),
+            "fixture assumes %s is tracked in this repository" % tracked)
+        html = self._history_row_html(ledger, combined_report_ref=tracked)
+        self.assertIn(f'<a href="{tracked}">JSON-Details</a>', html)
+
+    def test_empty_detail_ref_keeps_the_placeholder(self):
+        """An entry without a usable ref keeps the existing placeholder. The ledger
+        schema rejects an empty combined_report_ref on append, so this defensive
+        branch is exercised at the rendering level."""
+        combined = {
+            "report_kind": "combined", "started_at": "2026-08-23T10:00:00Z",
+            "finished_at": "2026-08-23T10:01:00Z", "exit_code": 0,
+            "counts": {"overall_success": True, "by_stage": {}},
+            "findings": [], "run_archive_ref": "manual-placeholder-0043aa03",
+        }
+        entry = {"run_finished_at": "2026-08-23T10:01:00Z", "overall_success": True,
+                 "run_archive_ref": "manual-placeholder-0043aa03",
+                 "counts_by_stage": {}, "findings_count": 0,
+                 "combined_report_ref": ""}
+        with mock.patch.object(build_ledger, "read_entries", return_value=([entry], [])):
+            build_report.generate_report_page(combined)
+        html = json.loads(
+            Path(build_report.PAGE_MODEL).read_text(encoding="utf-8"))["main"][0]["html"]
+        self.assertIn("<td>–</td>", html)
+        self.assertNotIn("JSON-Details", html)
+
+    def test_ref_is_unpublished_when_git_cannot_be_consulted(self):
+        """The lookup fails closed: no tracked-path knowledge means no link."""
+        build_report._TRACKED_PATHS_CACHE.clear()
+        try:
+            with mock.patch.object(build_report.subprocess, "run",
+                                   side_effect=OSError("git unavailable")):
+                self.assertFalse(
+                    build_report._ref_is_published("docs/evidence/build-ledger.jsonl"))
+        finally:
+            build_report._TRACKED_PATHS_CACHE.clear()
+
 
 if __name__ == "__main__":
     unittest.main()
