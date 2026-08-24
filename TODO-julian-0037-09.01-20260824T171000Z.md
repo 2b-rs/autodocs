@@ -24,9 +24,13 @@
 - input modes: explicit working-tree and staged-index roots, both read-only
 - external_resources: none expected; no external state mutation
 - prohibitions: no root/main mutation or recovery, other Feature integration, Acceptance, checkpoint crossing, `DONE.md`, push/deploy, runner queue, or silent scope expansion
-- status: `[p]`; next step is validator/fixture design followed by bounded implementation and validation.
+- status: `[p]`; implementation and focused validation complete; next step is substantive commit followed by terminal bookkeeping with the real REF.
 
 ## Findings and progress
 
 - The setup contradiction was resolved via authorized option A; parent/subtask topology was established in the item worktree before content/history mutation.
 - The parked `main` incident `6d9a9ba116419fc0631412870f9d5914d3fda7c2` remains outside this work and was not touched.
+- Implemented a side-effect-free snapshot validator layered on the terminal `0037-08` parser. It accepts explicit candidate and authoritative roots or the staged Git index, emits stable structured diagnostics and exit codes, preserves parser rule IDs, and adds `IV0900`–`IV0908` cross-item/configuration rules.
+- Cross-item checks cover duplicate/path-conflicting item IDs, removed/reused tombstones, self/missing prerequisite endpoints, deterministic cycle detection, and rejection of Feature-closure nodes used as Task/Subtask start gates. Bounded limits are 10,000 items and 100,000 edges in addition to the parser's document/depth/criterion limits.
+- Tracked negative-fixture manifest contains one case per required error category, including malformed/duplicate item and criterion IDs, path/parent/field/Markdown errors, self/missing/cyclic edges, Feature-gate misuse, and oversize input. Fixed seeds bound the generated acyclic graph/property coverage.
+- Validation: `test_issue_validate` 8/8 PASS (including distinct staged-index versus unstaged-working-tree behavior and explicit authoritative/candidate roots); carried `test_issue_store` 10/10 PASS; `py_compile` PASS; automation-safety PASS with zero findings; `git diff --check` PASS.
