@@ -6,7 +6,7 @@
 - `branch`: `recovery-core-worktree-jean-luc-20260825`
 - `worktree`: `.worktrees/recovery-core-worktree-jean-luc-20260825`
 - `base_commit`: `2dae2a088d54b950908edcbc31c5f4402a078750`
-- `status`: snapshot preserved; root restoration and integration pending
+- `status`: recovery candidate complete; integration pending
 
 ## Scope and evidence
 
@@ -51,3 +51,21 @@ No Task Acceptance, checkpoint, Feature closure, `DONE.md`, external service,
 push, or unrelated cleanup is authorized. The three snapshot-only changes are
 removed again on this branch after the preservation tag is created. The physical
 root is restored only after the tag and exact registry record are durable.
+
+## Recovery verification
+
+- The three physical-root files matched the preserved tag byte-for-byte before
+  restoration and were restored from `main@2dae2a088d54b950908edcbc31c5f4402a078750`.
+  The root tracked tree and shared index then both matched `HEAD`; untracked
+  paths were deliberately untouched.
+- The mandatory hygiene tool initially failed closed with exit `2` because two
+  registered paths existed without valid Git metadata:
+  `/private/tmp/0040-mb` and `/private/tmp/backlog-roles`. `git worktree prune
+  --dry-run --verbose --expire now` named exactly those two registrations.
+- Their administrative records were copied first to
+  `/private/tmp/autodocs-stale-worktree-admin-20260825`, then exactly those two
+  prunable registrations were removed. The directories and branch/commit refs
+  were not deleted or rewritten.
+- The subsequent mandatory hygiene run passed across 185 registered worktrees:
+  `integration hygiene: PASS`, exit `0`. No Acceptance, checkpoint, Feature,
+  `DONE.md`, push, or external operation occurred.
