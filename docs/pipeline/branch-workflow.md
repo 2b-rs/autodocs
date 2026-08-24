@@ -202,6 +202,7 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/staged-0043-01-20260822-kathryn` | `05680c5c7` | foreign staged index found in `.worktrees/0043-01` |
 | `preserved/staged-0044-01-20260822-kathryn` | `56bc616f4` | foreign staged index found in `.worktrees/0044-01` |
 | `preserved/staged-0044-01-task-20260822-kathryn` | `c70c45d5d` | foreign staged index found in `.worktrees/0044-01-task` |
+| `preserved/main-incident-6d9a9ba-20260824` | `6d9a9ba116419fc0631412870f9d5914d3fda7c2` | unauthorized root merge of `0037-39` during `0037-08` setup, retained before the explicitly authorized Option-B recovery of `main` to `a3cee63085bdee02521c0437d8696ee1afaa872e` |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
