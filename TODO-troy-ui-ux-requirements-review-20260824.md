@@ -1,0 +1,12 @@
+# Review claim — ui-ux-requirements-baseline-review-20260824
+
+- **Owner token:** `agent:troy:ui-ux-requirements-baseline-review-20260824:20260824T082352Z`
+- **Role / capability:** QA-Manager / `unprivileged`
+- **Authority:** Direct Project Lead assignment, mailbox `1787559832215-06ace8e0`; review evidence only, not Acceptance or integration.
+- **Candidate baseline:** `5109048a1a8bc00d1b1f4e1d5af9bbd7045274ac` (`a2c47d306` substantive; `376bc8370` correction).
+- **Branch / worktree:** `review-ui-ux-requirements-baseline-20260824` / `.review-worktrees/ui-ux-requirements-baseline-20260824`.
+- **Write scope:** `docs/design/ui-ux-requirements-review.md`; this claim only.
+- **Prohibited:** no baseline/dossier/TODO/governance/production changes; no ID allocation, Acceptance, integration, checkpoint crossing, `main`/`DONE.md` movement, or root mutation.
+- **Review scope:** independently check provenance; RQ-UIUX-001..032 identity, atomicity and testability; 119-view coverage; bidirectional requirement-to-decision/view/route/Feature/quality evidence trace; assumptions/exclusions; dossier conflicts; and whether D-01..D-05 exhaust material product choices. Recompute coverage and diff checks.
+- **Startup discovery:** candidate and clean review worktree verified at `5109048a1a8bc00d1b1f4e1d5af9bbd7045274ac` on 2026-08-24.
+- **Next step:** inspect candidate work products and source provenance; write an evidence-based verdict (`review-ready`, `needs-correction`, or `inconclusive`).
