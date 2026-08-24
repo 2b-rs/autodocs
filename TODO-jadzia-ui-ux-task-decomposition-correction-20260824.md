@@ -13,7 +13,8 @@
 - data_runner_amendment_check: no newer durable REF than `9f4d3f6ee04389a77dc296ed21a85f918d75739d`; direct authority above is sufficient
 - write_scope: `docs/design/ui-ux-task-decomposition.md`; this claim
 - prohibited: backlog/governance/requirements/review mutation, ID allocation, Acceptance, checkpoint crossing, integration, main advance, Feature closure
-- status: implementation complete; validated; pending commit
+- status: implementation complete; validated; committed
+- substantive_ref: `3f9aa330f0085dba87e5701dafbcc51c667c835e`
 
 ## Correction disposition
 
