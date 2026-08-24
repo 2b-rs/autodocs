@@ -1010,7 +1010,7 @@ HOW TO USE:
   - **Acceptance criteria:** All validators share `_src/tools/issue_validate.py` diagnostics/config, are side-effect free, accept explicit authoritative/candidate/staged roots, and cover every rule ID in the architecture review package without one validator silently weakening another.
   - **Definition of Done:** All four Subtasks pass the fixed rule-coverage/test profile and `_src/validate.py` invokes the complete suite; tracked CI is not claimed unless separately introduced.
 
-- [ ] **0037-09.01** PREREQ: 0037-09.01:0037-02, 0037-09.01:0037-08 Implement structural, schema, path, criterion, prerequisite, and dependency-graph validation.
+- [p] **0037-09.01** PREREQ: 0037-09.01:0037-02, 0037-09.01:0037-08 Implement structural, schema, path, criterion, prerequisite, and dependency-graph validation. **Claim:** `TODO-julian-0037-09.01-20260824T171000Z.md` (`agent:julian:0037-09.01:20260824T171000Z`).
   - **Acceptance criteria:** Detect unknown/duplicate/malformed IDs and criteria, reused tombstones, parent/prefix/path mismatch, invalid fields/Markdown, cycles/self-dependencies, missing endpoints, and Feature-closure versus start-gate misuse; diagnostics name item/path/line/field/rule and use stable exit codes.
   - **Definition of Done:** One negative fixture per rule plus fixed property/fuzz seeds and resource limits pass deterministically for working-tree and staged-index inputs.
 
