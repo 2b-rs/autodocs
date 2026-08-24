@@ -113,3 +113,9 @@ The allocated decomposition must refine two controls:
 
 1. **Time-aware overlap classification:** reject simultaneously active conflicting scopes, while permitting declared sequential, predecessor-carry, or reconciliation overlap whose order, ownership, and evidence are explicit. A shared path alone must not create an indiscriminate cross-item stop.
 2. **Stale-pin classification:** distinguish `blocking-stale` (the plan's safety or authority premise no longer holds) from `refreshable-stale` (ordinary drift that can be re-pinned without changing topology, contract, or gate reach). Each class requires explicit evidence, refresh/stop authority, and recovery behavior.
+
+## 11. Numeric allocation
+
+Project Lead Jean-Luc reserved Feature ID `0046` under the direct user instruction, with the title **Architect-Owned Worktree Topology and Integrator-Owned Integration Plans**. `FC-WTIP-20260824` remains the immutable preparation/provenance identifier for this proposal; subsequent records refer to the allocated work unit as `feature:0046`.
+
+This allocation does not activate the proposed process or gate. The proposal branch is based on incident-state `main@6d9a9ba116419fc0631412870f9d5914d3fda7c2`. Backlog/governance integration must wait for the separately authorized root recovery, then rebase or reconcile the proposal against the new exact `main` pin before any Feature contract, decision record, formal Architect scope review, or operative mutation is integrated.
