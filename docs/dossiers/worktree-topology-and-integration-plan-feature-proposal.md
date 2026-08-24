@@ -119,3 +119,15 @@ The allocated decomposition must refine two controls:
 Project Lead Jean-Luc reserved Feature ID `0046` under the direct user instruction, with the title **Architect-Owned Worktree Topology and Integrator-Owned Integration Plans**. `FC-WTIP-20260824` remains the immutable preparation/provenance identifier for this proposal; subsequent records refer to the allocated work unit as `feature:0046`.
 
 This allocation does not activate the proposed process or gate. The proposal branch is based on incident-state `main@6d9a9ba116419fc0631412870f9d5914d3fda7c2`. Backlog/governance integration must wait for the separately authorized root recovery, then rebase or reconcile the proposal against the new exact `main` pin before any Feature contract, decision record, formal Architect scope review, or operative mutation is integrated.
+
+## 12. Read-only WTP/IP interface critique
+
+Data and Geordi supplied the following preparatory interface requirements for the future formal decomposition. They refine this proposal without activating a contract, validator, or gate:
+
+- The WTP binds structural baseline compatibility. Its immutable identity must include an exact REF, a canonical digest, and explicit schema, canonicalization, and digest-algorithm versions so independent consumers can reproduce the identity.
+- The IP binds exact runtime pins. Moving tips may be refreshed without a WTP revision only when the WTP-defined structure and compatibility remain unchanged.
+- Acceptance closure must be represented by a normalized immutable member manifest and digest. The manifest covers prerequisite edges, accepted-boundary stops, candidates, contracts, dispositions, claims, Acceptance records, evidence, authority records, and invalidation records.
+- Append-only refresh is limited to drift preclassified as `refreshable-stale` and to alternatives already bounded by the current IP. A change to ordering, prerequisite meaning, checkpoint reach, scope or authority, reconciliation, validation, recovery, the final-`main` method, or WTP structure requires a new IP revision.
+- Unknown overlap, an unreproducible digest, a partial graph, or a withdrawn or incompatible WTP fails closed.
+
+These are required briefing inputs for the independently assigned Architect's later decision record, scope review, and decomposition. They remain subject to reconciliation against the exact post-recovery `main` baseline and do not themselves authorize formal Feature work or operative mutation.
