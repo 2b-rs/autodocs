@@ -152,13 +152,16 @@ message `1787580308469-fd100cd7`.
 
 ### Next action
 
-Validate and commit the two review paths, record the substantive review REF in
-this claim, commit final bookkeeping, report the final tip to `jean-luc`, and
-acknowledge message `1787580993686-4530501c`.
+Third-round review evidence committed path-limited at
+`ca273c915feca9511420ccfedb6f70bd333c39aa`. Commit this final claim
+bookkeeping update, report the final tip to `jean-luc`, and acknowledge message
+`1787580993686-4530501c`.
 
 ### Current result
 
 - **Verdict:** passed; no blocking finding in assigned Architect re-review scope
+- **Third-round review REF:**
+  `ca273c915feca9511420ccfedb6f70bd333c39aa`
 - **Acceptance/integration credit:** none
 - **Candidate mutation:** none
 - **Main integration:** not performed and not authorized
