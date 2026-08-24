@@ -6,7 +6,7 @@
 - `branch`: `recovery-core-worktree-jean-luc-20260825`
 - `worktree`: `.worktrees/recovery-core-worktree-jean-luc-20260825`
 - `base_commit`: `2dae2a088d54b950908edcbc31c5f4402a078750`
-- `status`: recovery candidate complete; integration pending
+- `status`: complete; recovery integrated on `main`
 
 ## Scope and evidence
 
@@ -69,3 +69,9 @@ root is restored only after the tag and exact registry record are durable.
 - The subsequent mandatory hygiene run passed across 185 registered worktrees:
   `integration hygiene: PASS`, exit `0`. No Acceptance, checkpoint, Feature,
   `DONE.md`, push, or external operation occurred.
+- Immediately before the authorized ref advance, the root hard preflight passed,
+  the recovery branch was fast-forwardable, and a fresh 185-worktree hygiene run
+  passed. Root `main` then advanced by `git merge --ff-only` from
+  `2dae2a088d54b950908edcbc31c5f4402a078750` to recovery REF
+  `13076a2f45a6a6f44a6990cc51417ce1d5d9f10b`. Post-merge root/index checks and
+  the preservation-tag target check passed.
