@@ -57,4 +57,5 @@ No Acceptance or integration decision is made by this claim.
 - validation: `git diff --check`; 16 Features; 77 unique packages and validation
   contracts; 16 terminals; A.4 intermediate checkpoint; 24 Q IDs; no stale
   `_src/import`, generic overlay templates, `sg`, runner queue or `Cap:` literal
-- status: re-review findings corrected and validated; substantive commit pending
+- re_review_correction_ref: `7aeedacd6405b63023d89cefb9bf149cc349978c`
+- status: re-review findings corrected, validated and committed
