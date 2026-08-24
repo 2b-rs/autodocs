@@ -218,11 +218,16 @@ def _commit_timestamp(repo: Path, sha: str) -> datetime:
 
 
 def _policy_origin_trailers(repo: Path, sha: str) -> List[str]:
-    """Return non-empty Policy-Origin-Branch trailer values, preserving order."""
-    out = _run_git(
-        repo, ["show", "-s", f"--format=%(trailers:key={POLICY_ORIGIN_TRAILER},valueonly)", sha]
-    )
-    return [line.strip() for line in out.splitlines() if line.strip()]
+    """Return every exact Policy-Origin-Branch line value, preserving order.
+
+    Parse the commit message directly so duplicate and empty occurrences remain
+    observable. Git's ``%(trailers)`` formatter discards an empty occurrence and
+    may ignore a syntactically exact trailer line when another paragraph follows
+    it, which would turn malformed evidence into an undetectable absence.
+    """
+    message = _run_git(repo, ["show", "-s", "--format=%B", sha])
+    prefix = f"{POLICY_ORIGIN_TRAILER}:"
+    return [line[len(prefix) :].strip() for line in message.splitlines() if line.startswith(prefix)]
 
 
 def _has_valid_policy_origin_trailer(repo: Path, sha: str) -> tuple[bool, Optional[str]]:
@@ -428,11 +433,28 @@ def check_policy_provenance(
             content_matches_target = bool(changed) and all(
                 _blob_at(repo, sha, p) == _blob_at(repo, target_commit, p) for p in changed
             )
-            if content_matches_target:
+            # A merge performed on source may retain source-local policy edits,
+            # so its resulting blob need not equal the target tip byte-for-byte.
+            # It is nevertheless a target pull-in when a non-first parent is
+            # reachable from the target. This topology is stronger evidence than
+            # comparing the combined merge result to either parent's blob.
+            parents = _run_git(repo, ["rev-list", "--parents", "-n", "1", sha]).split()[1:]
+            pulls_target_parent = is_merge_commit and any(
+                subprocess.run(
+                    ["git", "-C", str(repo), "merge-base", "--is-ancestor", parent, target_commit],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False,
+                ).returncode
+                == 0
+                for parent in parents[1:]
+            )
+            if content_matches_target or pulls_target_parent:
                 classification = "target-pull-in-eligible"
                 note = (
                     "Commit entered source_branch via a merge and its changed "
-                    "policy content matches target_branch's current content: "
+                    "policy content matches target_branch's current content or "
+                    "the merge pulls a non-first parent reachable from target: "
                     "a legitimate pull-in of the target's own policy "
                     "(DEC-0044-001), not a foreign-branch commit."
                 )

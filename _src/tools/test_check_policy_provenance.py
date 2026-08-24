@@ -193,6 +193,39 @@ class CheckPolicyProvenanceTest(unittest.TestCase):
         self.assertNotIn("foreign-branch", classifications)
         self.assertFalse(report.has_foreign_branch_policy_commit)
 
+    def test_target_pull_in_merge_may_retain_source_local_policy_content(self):
+        _git(self.repo, "checkout", "-q", "-b", "0001-01")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "source policy\n",
+            "source policy\n\nPolicy-Origin-Branch: 0001-01",
+        )
+        _git(self.repo, "checkout", "-q", "main")
+        _commit(
+            self.repo,
+            "docs/pipeline/branch-workflow.md",
+            "target policy\n",
+            "target policy\n\nPolicy-Origin-Branch: main",
+        )
+        _git(self.repo, "checkout", "-q", "0001-01")
+        proc = subprocess.run(
+            ["git", "-C", str(self.repo), "merge", "--no-ff", "main", "-m", "pull target\n\nPolicy-Origin-Branch: main"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+        self.assertNotEqual(proc.returncode, 0)
+        (self.repo / "docs/pipeline/branch-workflow.md").write_text("source policy\ntarget policy\n")
+        _git(self.repo, "add", "docs/pipeline/branch-workflow.md")
+        _git(self.repo, "commit", "-q", "--no-edit")
+
+        report = cpp.check_policy_provenance(self.repo, "0001-01", "main")
+        merge_finding = next(f for f in report.findings if f.sha == _git(self.repo, "rev-parse", "HEAD").strip())
+        self.assertEqual(merge_finding.classification, "target-pull-in-eligible")
+        self.assertFalse(report.has_foreign_branch_policy_commit)
+
     def test_policy_commit_from_a_third_branch_is_flagged_foreign(self):
         # A policy change originates on an unrelated third branch and gets
         # merged onto the source branch -> DEC-0044-002 violation, must flag.
