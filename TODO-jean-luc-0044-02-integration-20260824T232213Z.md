@@ -11,7 +11,7 @@
 - `base_commit`: `b3fa32a6a2e5a87753971b67710517130d1f6379`
 - `source_branch`: `0044-02`
 - `source_tip`: `ec7b3cad3d57d7e1ee14c81808e24e42f1c376bc`
-- `status`: source integrated and validated; root fast-forward pending
+- `status`: complete; integrated on `main`
 
 ## Contract
 
@@ -54,3 +54,10 @@ candidate records substantive REF
   implementation claim's bounded procedure, evidence, references and
   bookkeeping scope. No Acceptance, checkpoint, Feature closure, `DONE.md`,
   external effect, or push occurred.
+- Immediately before the root advance, the hard preflight and a fresh mandatory
+  hygiene run passed across 186 registered worktrees. Root `main` then advanced
+  by `git merge --ff-only` from
+  `b3fa32a6a2e5a87753971b67710517130d1f6379` to integration tip
+  `37c2e0132aeb3815572293b8c3ff4f2673f80fc1`. Post-merge checks confirmed a
+  clean tracked root/index, source-tip ancestry on `main`, and Task `0044-02`
+  rendered `[x]` with its substantive REF and no-checkpoint justification.
