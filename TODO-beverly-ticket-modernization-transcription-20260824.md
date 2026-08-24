@@ -10,7 +10,7 @@
 - **Branch:** `0037-ticket-modernization-benjamin-20260824`
 - **Worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0037-ticket-modernization-benjamin-20260824`
 - **Base:** `main@59fd480255b188c2a8438f6d504a716679f1d988`
-- **Status:** `[p]`
+- **Status:** `[x]`
 - **Write scope:** this claim and new `docs/dossiers/0037-ticket-modernization-execution-plan.md` only
 - **Permitted editorial changes:** Markdown formatting and verifiable file-count wording only; no technical-intent change or invented findings
 - **Validation:** cited paths/tasks exist; provenance and authorship explicit; faithful content comparison; diff check; exact two-path scope; clean worktree after commit
@@ -20,3 +20,6 @@
 - **Verification observations:** `issues/`, `issues/_schema/`, and `issues/_policy/` exist at the pinned base; counts reproduce as 16 JSON schema files and 7 policy files. Every task identifier named in the plan exists in `TODO.md`. Data's UI/UX dossier is not present at pinned `main@59fd480255b188c2a8438f6d504a716679f1d988`; it exists on the separately handed-off UI/UX dossier line, so Package A needs an explicit consumable handoff before using it. This observation does not rewrite Benjamin's plan.
 - **Memory safety:** `memory_append` remains under the communicated workspace-routing safety hold; no memory write is needed for this item.
 - **Recovery:** discard only this isolated branch/worktree; root, main, TODO, governance, schemas, policies, and production remain untouched.
+- **Implementation REF:** `8a1dbd31cef0d530f430d7af057beeaac58493ac`
+- **Validation:** PASS — 16 JSON schema files and 7 policy files reproduce; all 23 explicitly expanded task IDs named by the plan exist in `TODO.md`; dossier-availability boundary recorded; exact base-to-REF `git diff --check` exits 0; only the two declared paths changed.
+- **Handoff:** Benjamin must review the transcription against mailbox source `1787562639879-2eefb65a` before any integration. A positive transcription review is not Task Acceptance or integration authority.
