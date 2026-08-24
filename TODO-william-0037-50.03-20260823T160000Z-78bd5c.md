@@ -22,3 +22,11 @@
 ## Scope and next step
 
 Implement only the dormant executor, its policy and schema, and focused tests. It must restore the service before the selector only after active-claim drain, bind each payload to corrected `46fdd6398` lineage digests, retain verified append-only event/blocked state on every failure class, and leave no production call site.
+
+## Additive release — 2026-08-24
+
+- disposition: **superseded by DEC-0037-002** (integrated on `main` at `7a10f50d76e5620f3b7e3c796093c88037bb54bd`)
+- authority: explicit Project Lead `jean-luc` coordination assignment, mailbox `1787586335426-d322bef1`; DEC-0037-002 names `subtask:0037-50.03` and supersedes DEC-0037-001's unimplemented corrective chain for planning.
+- preserved starting tip: `0037-50.03@7ef4a317ae467a831cd1bcd8d898075a68699162`.
+- release action: no further implementation started. Existing preparation state and this claim's startup evidence remain untouched; only this additive claim record is committed.
+- boundaries retained: no acceptance, integration, `main`, `TODO.md`, or `DONE.md` mutation; no production rollback or host action.
