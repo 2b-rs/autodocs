@@ -59,3 +59,28 @@ No Acceptance or integration decision is made by this claim.
   `_src/import`, generic overlay templates, `sg`, runner queue or `Cap:` literal
 - re_review_correction_ref: `7aeedacd6405b63023d89cefb9bf149cc349978c`
 - status: re-review findings corrected, validated and committed
+
+## Second re-review correction round
+
+- rejected second re-review:
+  `6b8a81ff1171127a95b44795bd4d1852df4ffe7b` (final review tip
+  `73f2008a1540140ebd4e5148bdd0f7ee444d9db0`), candidate
+  `5651bff97596dde165ae09555b7374ea086f3988`
+- A.4 manifest now owns the named operational-role/background-job contracts,
+  schemas and fixtures; public types, error behavior, compatibility and recovery
+  are normative and consumer edges bind exact contract digests
+- all 77 packages own their validation harness under their own test root; the
+  unowned global validator dependency is removed
+- all 16 terminals own their validation harness, fixtures, contract and write
+  manifest inside their normative manifest
+- all 77 branch targets use the exact allocated item-ID branch and exact parent
+  item branch; Task→Feature and Subtask→Task topology is explicit and extra
+  prefixes/aliases are rejected
+- malformed `+##` overlay heading corrected
+- F-N migration, A.4 lifecycle/checkpoint/consumer gates and exact trace/gate
+  sections retained
+- validation: `git diff --check`; 77 unique package-owned harnesses; 16 terminal
+  owned contract/harness manifests; 77 exact item-ID/parent branch bindings;
+  zero unowned global-validator, `feature/` branch-prefix, malformed heading or
+  `_src/import` occurrence; A.4 shared outputs/types present
+- status: second re-review findings corrected and validated; commit pending
