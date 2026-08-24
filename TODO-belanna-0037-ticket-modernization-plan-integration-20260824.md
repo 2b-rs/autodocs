@@ -8,7 +8,7 @@
 - base_commit: `892fb5f92b34b411e76ef2a011e82183e2cd2315`
 - branch: `integration-0037-ticket-modernization-plan-belanna-20260824`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/integration-0037-ticket-modernization-plan-belanna-20260824`
-- status: `in_progress`
+- status: `integration preparation complete; verdict passed`
 - write_scope:
   - `TODO-belanna-0037-ticket-modernization-plan-integration-20260824.md`
   - necessary merge and integration-review evidence under `docs/dossiers/`
@@ -21,4 +21,9 @@
 - candidate_final_ref: `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`
 - independent_review_ref: `2e37978c2a71c0befc8adc5fcf0f3f8c7623b86e`
 - independent_review_final_ref: `d9724324f3c570ff4d5d10009719c5d4bf654ef0`
-- next_step: assemble exact candidate and review tips on current `main`, retaining the candidate plan tree if the separate review branch carries an older plan snapshot, then validate and record verdict.
+- included_merge_tips: `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`, `d9724324f3c570ff4d5d10009719c5d4bf654ef0`
+- validation: exact ancestry PASS; current-main conflict check PASS; `git diff --check` PASS; forbidden-scope delta 0; 30-node parity digest PASS; root hard preflight PASS; full hygiene PASS across 166 registered worktrees
+- integration_verdict: `passed`
+- main_merge_permitted: `yes`, provided the root integrator repeats the hard preflight and full hygiene check immediately before merge
+- review_record: `docs/dossiers/0037-ticket-modernization-execution-plan-integration-review.md`
+- next_step: commit the review evidence and final claim, report the exact assembly tip; do not advance `main`.
