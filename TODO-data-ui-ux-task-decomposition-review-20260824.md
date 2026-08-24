@@ -43,3 +43,17 @@ accept Task work, or integrate/close any Feature.
 ## Progress
 
 - 2026-08-24T10:01:11Z — authority and immutable refs verified; isolated review worktree created; independent evidence collection started.
+- 2026-08-24 — reproduced passing structural checks: 16 Feature sections, 77
+  unique packages, 16 terminals (one per Feature), exact 32-RQ and 24-Q baseline
+  sets, exact 119-view inventory/route equality, resolved normalized prerequisite
+  endpoints, and no syntactic package cycle.
+- 2026-08-24 — recorded verdict `rejected` with five finding groups in
+  `docs/design/ui-ux-task-decomposition-review.md`: stale runner capability and
+  invalid E0.T authority; F-E path/order collision; incomplete or unenforceable
+  cross-item gates; non-self-contained package contracts; and summary-only
+  RQ/Q/view coverage.
+- 2026-08-24 — Benjamin mailbox relay `1787565781899-43843aa4` asserted new
+  D-01/D-02/D-06 values. Because mailbox coordination is not authority and the
+  immutable review scope forbids candidate/dossier edits, the relay was routed
+  to Project Lead `jean-luc` for verification and durable owner handling; it did
+  not alter this verdict.
