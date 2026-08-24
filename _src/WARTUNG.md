@@ -360,12 +360,47 @@ Jeder Veröffentlichungslauf der Dokumentations-Pipeline erzeugt maschinenlesbar
 Subreports (`i18n_merge`, `i18n_diagrams`, `html_generate`, `validate`) unter
 `output/build-reports/` gemäß `docs/pipeline/build-report-schema.md`.
 
+### `RUN_ARCHIVE_REF` (Lauf-Korrelation, 0043-01)
+
+`generate.py`, `validate.py`, `i18n_translate.py` und `i18n_diagrams.py` lesen
+alle die Umgebungsvariable `RUN_ARCHIVE_REF` und schreiben ihren Wert in das
+`run_archive_ref`-Feld ihres jeweiligen Subreports (Schema siehe
+`docs/pipeline/build-report-schema.md`). `build_report.py combine` gruppiert
+Subreports zu einem Kohorten-Report ausschließlich über einen **gemeinsamen,
+nicht-leeren** `run_archive_ref`; ohne ihn (bzw. bei uneinheitlichem Wert)
+schlägt `combine` absichtlich fehl (fail-closed) statt eine falsche Kohorte zu
+raten.
+
+- **Runner-Lauf:** `runner-host/run-loop.sh` setzt `RUN_ARCHIVE_REF` automatisch
+  vor jeder Ausführung des überwachten Skripts auf
+  `run-archive/run-<timestamp>-n<seq>` — denselben Namensstamm, unter dem es
+  Log (`.log`) und Skript (`.sh`) danach unter `output/run-archive/` archiviert.
+  Jeder Subprozess des Runs erbt die Variable automatisch.
+- **Manueller Build (außerhalb des Runners):** Es gibt kein Runner-Archiv, das
+  benannt werden könnte. Vor dem manuellen Aufruf der Produzenten muss daher
+  ein Fallback-Wert gesetzt werden, den `build_report.py mint-ref` erzeugt.
+  Er trägt das Präfix `manual-` (gefolgt von UTC-Zeitstempel und 8 Hex-Zeichen
+  Zufall), damit er nie mit einem echten, vom Runner vergebenen Ref verwechselt
+  oder kollidieren kann:
+
+```bash
+export RUN_ARCHIVE_REF="$(python3 _src/tools/build_report.py mint-ref)"
+python3 _src/generate.py && python3 _src/validate.py
+python3 _src/i18n_translate.py merge <lg>     # falls Teil des Laufs
+python3 _src/i18n_diagrams.py <lg>            # falls Teil des Laufs
+```
+
+Alle Produzenten desselben Laufs (ob Runner oder manuell) müssen mit
+demselben `RUN_ARCHIVE_REF`-Wert laufen, damit `combine` sie als eine Kohorte
+erkennt.
+
 `build_report.py` führt diese Subreports zusammen und erzeugt das publizierte
 Seitenmodell `_src/sources/pages/build-reports.json`, welches in `build-reports.html`
 gerendert wird:
 
 ```bash
-# 1. Subreports aggregieren
+# 1. Subreports aggregieren (verwendet $RUN_ARCHIVE_REF aus der Umgebung, falls
+#    nicht per --run-archive-ref=<ref> überschrieben)
 python3 _src/tools/build_report.py combine
 
 # 2. Seitenmodell erzeugen und in HTML-Tree rendern
@@ -374,9 +409,48 @@ python3 _src/generate.py build-reports.html
 python3 _src/validate.py
 ```
 
+### Build-Ledger (`docs/evidence/build-ledger.jsonl`, 0043-02)
+
+`combine` und `publish` hängen jeden Veröffentlichungslauf als **eine Zeile** an
+das getrackte, append-only Build-Ledger `docs/evidence/build-ledger.jsonl` an
+(Entscheidung `DEC-0043-001`, Schema und Konsumentenvertrag:
+[`docs/pipeline/build-ledger.md`](../docs/pipeline/build-ledger.md)). Der
+Eintrag hält Zeitpunkt, `run_archive_ref`, Repository-Commit, Exit-Status,
+Zähler je Stufe, Befundzahl und den SHA-256-Digest des kombinierten Reports
+fest. Die **Rohdaten** bleiben git-ignoriert: das Ledger verweist auf
+`output/build-reports/combined-*.json` und `output/run-archive/`, kopiert sie
+aber nicht ins Repository.
+
+Regeln für den Betrieb:
+
+- Ein Lauf erzeugt genau einen Eintrag; das `publish` nach dem `combine`
+  desselben Laufs erkennt ihn an `run_archive_ref` wieder und schreibt nicht
+  erneut.
+- **Einträge werden nie nachträglich geändert.** Ist etwas falsch, wird ein
+  neuer Eintrag angehängt. Prüfen lässt sich das mit:
+
+```bash
+python3 _src/tools/build_ledger.py verify --baseline=HEAD
+python3 _src/tools/build_ledger.py list --limit=10
+```
+
+- Nach einem Lauf gehört die neue Ledger-Zeile **eingecheckt** — sie ist die
+  konfigurationsverwaltete Evidenz, nicht ein Nebenprodukt.
+- Konnte das Ledger nicht geschrieben werden, endet `combine`/`publish` mit
+  einem Exit-Code ≥ 1, auch wenn der Build selbst grün war.
+- `--no-ledger` unterdrückt den Eintrag und ist ausschließlich für
+  Diagnoseläufe gedacht, die nicht in die Bauhistorie gehören.
+
+Der erste Eintrag ist der nachgetragene (`backfilled`) historische Lauf vom
+2026-08-13/14 — der eingefrorene Stand, der Feature `0043` ausgelöst hat.
+
 Das publizierte `build-reports.html` verlinkt direkt auf das zugehörige
-Runner-Archiv (`output/run-archive/run-<timestamp>-n<seq>.log`), um vollständige
-Traceability vom HTML-Artefakt bis zum ausführenden Prozess zu gewährleisten.
+Runner-Archiv (`output/run-archive/run-<timestamp>-n<seq>.log`), sofern
+`run_archive_ref` einen tatsächlich vorhandenen Runner-Archiv-Pfad benennt; ein
+`manual-*`-Fallback wird stattdessen als Klartext-Referenz angezeigt (kein
+Archiv-Link, da keines existiert). So bleibt vollständige Traceability vom
+HTML-Artefakt bis zum ausführenden Prozess gewährleistet, ohne bei manuellen
+Läufen einen nicht existenten Link vorzutäuschen.
 
 ## CSV-Indizes unter `_src/data/` (nur lesen!)
 

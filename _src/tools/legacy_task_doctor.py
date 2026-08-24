@@ -23,7 +23,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 
 REPORT_SCHEMA = "legacy-task-doctor-report@v1"
-VALID_MARKERS = {" ", "u", "p", "?", "w", "x"}
+VALID_MARKERS = {" ", "u", "p", "?", "w", "x", "d"}
 TERMINAL_MARKERS = {"w", "x"}
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
 FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
@@ -41,6 +41,19 @@ TASK_HEADER_RE = re.compile(
 LEGACY_TASK_RE = re.compile(r"^- \[(?P<marker>[^]]*)\](?P<tail>.*)$")
 FEATURE_HEADER_RE = re.compile(
     r"^## Feature:\s*(?:(?P<id>[0-9]{4})\s+[—-]\s+)?(?P<title>.+?)\s*$"
+)
+ACCEPTANCE_MARK_RE = re.compile(r"\*\*Acceptance:\*\*\s*✓")
+CHECKPOINT_BULLET_RE = re.compile(r"^\s*-\s*\*\*integration review\b", re.IGNORECASE)
+RATIONALE_ARCHITECT_RE = re.compile(r"rationale\s*\(architect\)", re.IGNORECASE)
+JUSTIFICATION_ARCHITECT_RE = re.compile(r"no-checkpoint justification\s*\(architect\)", re.IGNORECASE)
+RATIONALE_LABEL_RE = re.compile(r"\brationale\b", re.IGNORECASE)
+JUSTIFICATION_LABEL_RE = re.compile(r"no-checkpoint justification", re.IGNORECASE)
+HIGH_RISK_KEYWORDS = (
+    "irreversible migration",
+    "external effect",
+    "credential",
+    "security boundary",
+    "public release",
 )
 PREREQ_PAIR_RE = re.compile(
     r"(?P<left>[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?):"
@@ -87,7 +100,7 @@ WORKFLOW_ENUMS = {
         "write-frozen",
         "legacy-restored",
     },
-    "required_capability": {"sandboxed-grunt", "privileged"},
+    "required_capability": {"sandboxed-grunt", "unprivileged", "privileged"},
 }
 RULE_SEVERITY = {
     "LTD-INPUT-CHANGED": "error",
@@ -105,6 +118,8 @@ RULE_SEVERITY = {
     "LTD-REF-UNREACHABLE": "error",
     "LTD-REF-STATE-DIVERGED": "error",
     "LTD-CLAIM-FIELDS-MISSING": "error",
+    "LTD-CLAIM-EXECUTION-AUTHORITY-INVALID": "error",
+    "LTD-CLAIM-STARTUP-REVIEW-INVALID": "error",
     "LTD-CLAIM-FIELD-DUPLICATE": "error",
     "LTD-CLAIM-FIELD-NONCANONICAL": "warning",
     "LTD-CLAIM-STATE-DIVERGED": "error",
@@ -128,8 +143,14 @@ RULE_SEVERITY = {
     "LTD-PREREQ-SELF": "error",
     "LTD-PREREQ-CYCLE": "error",
     "LTD-TERMINAL-UNSATISFIED-PREREQ": "error",
+    "LTD-DEFERRED-STALE": "warning",
+    "LTD-DEFERRED-UNVERIFIABLE": "warning",
     "LTD-PARENT-CLOSURE-ELIGIBLE": "warning",
     "LTD-FEATURE-CLOSURE-ELIGIBLE": "warning",
+    "LTD-FEATURE-INTEGRATION-READY": "info",
+    "LTD-CHECKPOINT-MISSING-AUTHORITY": "error",
+    "LTD-CHECKPOINT-MALFORMED": "error",
+    "LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK": "warning",
     "LTD-BOOT-INVALID": "error",
     "LTD-BOOT-UNKNOWN-FIELD": "error",
     "LTD-BOOT-CROSS-FIELD": "error",
@@ -207,6 +228,63 @@ class PrerequisiteEdge:
 
 
 @dataclass(frozen=True)
+class FeatureReadiness:
+    feature: str
+    path: str
+    line: int
+    ready: bool
+    in_scope_tasks: Tuple[str, ...]
+    nonterminal_tasks: Tuple[str, ...]
+    nonterminal_prerequisites: Tuple[str, ...]
+    unaccepted_checkpoints: Tuple[str, ...]
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "feature": self.feature,
+            "path": self.path,
+            "line": self.line,
+            "ready": self.ready,
+            "in_scope_tasks": list(self.in_scope_tasks),
+            "nonterminal_tasks": list(self.nonterminal_tasks),
+            "nonterminal_prerequisites": list(self.nonterminal_prerequisites),
+            "unaccepted_checkpoints": list(self.unaccepted_checkpoints),
+        }
+
+
+@dataclass(frozen=True)
+class CheckpointState:
+    """Per-node ``Integration review:`` attribute state (Task ``0038-23``).
+
+    Extends the Task ``0038-21`` per-Feature ``integration-ready`` predicate
+    with per-checkpoint granularity: every Task/Subtask is reported once,
+    naming its own marker alongside the required-integration state derived
+    from its attribute:
+
+    - ``attribute`` is ``"mandatory"``, ``"not-mandatory"``, ``"malformed"``
+      (an ``Integration review:`` clause present but its polarity could not
+      be recognized), or ``None`` (no attribute at all).
+    - ``required_integration_state`` is ``"none"`` (not a checkpoint),
+      ``"pending"`` (a checkpoint awaiting a current ``Acceptance: ✓``, or a
+      malformed clause treated conservatively as still pending), or
+      ``"passed"`` (a checkpoint with a current acceptance mark).
+    """
+
+    task: str
+    path: str
+    line: int
+    marker: str
+    attribute: Optional[str]
+    architect_tagged: bool
+    rationale_present: bool
+    accepted: bool
+    required_integration_state: str
+    high_risk_unflagged: bool
+
+    def to_dict(self) -> Dict[str, object]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class TaskRecord:
     id: str
     marker: str
@@ -251,6 +329,8 @@ class ClaimRecord:
     owner_token: Optional[str]
     base_commit: Optional[str]
     capability_class: Optional[str]
+    execution_authority: Optional[str]
+    startup_review: Optional[str]
     state: Optional[str]
     scopes: Tuple[str, ...]
     next_step_present: bool
@@ -265,6 +345,8 @@ class ClaimRecord:
             "owner_token": self.owner_token,
             "base_commit": self.base_commit,
             "capability_class": self.capability_class,
+            "execution_authority": self.execution_authority,
+            "startup_review": self.startup_review,
             "state": self.state,
             "scopes": list(self.scopes),
             "next_step_present": self.next_step_present,
@@ -920,6 +1002,8 @@ def _parse_claim(blob: InputBlob) -> Tuple[ClaimRecord, List[FieldOccurrence]]:
             owner_token=owner,
             base_commit=one("base_commit"),
             capability_class=one("capability_class"),
+            execution_authority=one("execution_authority"),
+            startup_review=one("startup_review"),
             state=state,
             scopes=_claim_scopes(blob),
             next_step_present=_claim_next_step(blob),
@@ -1093,6 +1177,8 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         for item in items:
             grouped.setdefault(item.key, []).append(item)
         required = {"request_id", "owner_token", "base_commit", "capability_class", "state"}
+        if claim.state == "p":
+            required.update({"execution_authority", "startup_review"})
         if claim.task_id:
             required.add("task_id")
         missing = sorted(key for key in required if key not in grouped)
@@ -1130,12 +1216,22 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         if claim.capability_class and claim.capability_class not in {
             "sandboxed/grunt",
             "sandboxed-grunt",
+            "unprivileged",
             "privileged",
         }:
             mismatches.append(f"unsupported capability_class {claim.capability_class!r}")
         if mismatches:
             line = claim.field_lines.get("owner_token", (1,))[0]
             findings.append(_make_finding("LTD-CLAIM-IDENTITY-MISMATCH", "claim", claim.path, line, claim.task_id or claim.path, "; ".join(mismatches), blobs))
+
+        if claim.state == "p" and claim.capability_class:
+            expected_authority = "runner-only" if claim.capability_class in {"sandboxed/grunt", "sandboxed-grunt"} else "direct" if claim.capability_class == "privileged" else None
+            if expected_authority and claim.execution_authority != expected_authority:
+                findings.append(_make_finding("LTD-CLAIM-EXECUTION-AUTHORITY-INVALID", "claim", claim.path, claim.field_lines.get("execution_authority", (1,))[0], claim.task_id or claim.path, f"{claim.capability_class} claims require execution_authority {expected_authority!r}, observed {claim.execution_authority!r}", blobs))
+            review = (claim.startup_review or "").lower()
+            missing_reviews = [name for name in ("SANDBOX.md", "AGENTS.md") if name.lower() not in review]
+            if missing_reviews:
+                findings.append(_make_finding("LTD-CLAIM-STARTUP-REVIEW-INVALID", "claim", claim.path, claim.field_lines.get("startup_review", (1,))[0], claim.task_id or claim.path, "startup_review must record review of SANDBOX.md and AGENTS.md; missing " + ", ".join(missing_reviews), blobs))
 
         base = claim.base_commit
         if base:
@@ -1414,6 +1510,22 @@ def _prerequisite_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBl
         ):
             findings.append(_make_finding("LTD-PARENT-CLOSURE-ELIGIBLE", "prerequisite", parent.path, parent.line, parent.id, f"parent package has {len(children)} terminal direct children and terminal start gates", blobs))
 
+    # A ``[d]`` deferral (DEC-MARKER-001) states that work happened but is
+    # currently blocked by unmet prerequisites. "Currently" is derived state:
+    # it stops being true the moment the last predecessor turns terminal, and
+    # nothing in the file changes when that happens. The practice rule asks the
+    # closing agent to revisit the deferred successors; this check exists so
+    # that obligation is caught by the tool instead of remembered, which is the
+    # only reason the marker is worth storing at all.
+    for task in sorted(parsed.tasks, key=lambda value: (value.path, value.line, value.id)):
+        if task.marker != "d" or task.archived_not_accepted:
+            continue
+        if not task.prerequisites:
+            findings.append(_make_finding("LTD-DEFERRED-UNVERIFIABLE", "prerequisite", task.path, task.line, task.id, "deferred item declares no explicit prerequisite, so its blocker cannot be rechecked", blobs))
+            continue
+        if all(_terminal_id(prerequisite, task_markers, done_features) for prerequisite in task.prerequisites):
+            findings.append(_make_finding("LTD-DEFERRED-STALE", "prerequisite", task.path, task.line, task.id, f"deferred item has {len(task.prerequisites)} explicit prerequisites and all of them are terminal", blobs))
+
     for feature in sorted(parsed.features, key=lambda value: (value.path, value.line, value.id or "")):
         if feature.path != "TODO.md" or not feature.id or feature.archived_not_accepted:
             continue
@@ -1423,6 +1535,370 @@ def _prerequisite_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBl
         ):
             findings.append(_make_finding("LTD-FEATURE-CLOSURE-ELIGIBLE", "prerequisite", feature.path, feature.line, feature.id, f"Feature has {len(direct)} terminal direct Tasks and is eligible for package closure", blobs))
     return findings
+
+
+def _is_mandatory_checkpoint_line(line: str) -> bool:
+    """Detect a per-node ``**Integration review:** mandatory`` attribute line.
+
+    This is a minimal, forward-compatible heuristic: it recognizes the plain
+    and bold-markdown spellings already used in ``TODO.md`` and rejects an
+    explicit ``not`` in the same clause (``not mandatory`` / ``mandatory ...
+    is not set``). Full attribute validation (architect authority, rationale,
+    no-checkpoint justification) is Task ``0038-23``'s scope; this function
+    only needs to know whether a node is a checkpoint for the Task ``0038-21``
+    readiness predicate.
+
+    The line must be the structural attribute bullet itself (``- **Integration
+    review...``), not merely mention the phrase in prose — a real historical
+    false positive (Task ``0038-23`` review) is acceptance-criteria/closure
+    prose that quotes ``Integration review: mandatory`` or states a node "has
+    no `Integration review: mandatory` attribute" without declaring one.
+    """
+
+    if not CHECKPOINT_BULLET_RE.match(line):
+        return False
+    stripped = re.sub(r"[*`]", "", line)
+    match = re.search(r"integration review:?\s*(?P<rest>.+)", stripped, re.IGNORECASE)
+    if not match:
+        return False
+    first_clause = match.group("rest").split(".")[0]
+    if not re.match(r"\s*mandatory\b", first_clause, re.IGNORECASE):
+        return False
+    if re.search(r"\bnot\b", first_clause, re.IGNORECASE):
+        return False
+    return True
+
+
+def _task_is_mandatory_checkpoint(blob: InputBlob, task: TaskRecord) -> bool:
+    return any(
+        _is_mandatory_checkpoint_line(blob.lines[line_number - 1])
+        for line_number in range(task.line, task.end_line + 1)
+    )
+
+
+def _task_has_acceptance_mark(blob: InputBlob, task: TaskRecord) -> bool:
+    return any(
+        ACCEPTANCE_MARK_RE.search(blob.lines[line_number - 1])
+        for line_number in range(task.line, task.end_line + 1)
+    )
+
+
+def _checkpoint_attribute_line(line: str) -> Optional[Dict[str, object]]:
+    """Parse a line that mentions the ``Integration review:`` attribute.
+
+    Returns ``None`` when the line is not the structural attribute bullet
+    itself (``- **Integration review...``) — prose that merely quotes or
+    discusses the attribute (acceptance criteria, closure notes) does not
+    count, matching the same anchor used by ``_is_mandatory_checkpoint_line``.
+    Otherwise returns a dict describing the parsed polarity and whether an
+    ``(architect)``-tagged ``Rationale``/``No-checkpoint justification`` label
+    is present on the same line — the textual authority marker this
+    repository already uses consistently for every real checkpoint (see e.g.
+    the Feature ``0041``/``0044`` entries in ``TODO.md``). ``mandatory`` is
+    ``True``/``False``/``None``; ``None`` means the clause after
+    ``Integration review:`` did not parse as either recognized polarity
+    (malformed).
+    """
+
+    if not CHECKPOINT_BULLET_RE.match(line):
+        return None
+    stripped = re.sub(r"[*`]", "", line)
+    match = re.search(r"integration review:?\s*(?P<rest>.+)", stripped, re.IGNORECASE)
+    if not match:
+        return {
+            "mandatory": None,
+            "has_rationale_label": False,
+            "has_justification_label": False,
+            "architect_tagged": False,
+        }
+    first_clause = match.group("rest").split(".")[0]
+    starts_with_mandatory = bool(re.match(r"\s*mandatory\b", first_clause, re.IGNORECASE))
+    starts_with_not_mandatory = bool(re.match(r"\s*not\s+mandatory\b", first_clause, re.IGNORECASE))
+    has_not = bool(re.search(r"\bnot\b", first_clause, re.IGNORECASE))
+    mandatory: Optional[bool]
+    if starts_with_mandatory:
+        # Mirrors ``_is_mandatory_checkpoint_line``: a trailing ``not`` (e.g.
+        # "**mandatory** is *not* set") negates a clause that otherwise
+        # starts with the literal word "mandatory".
+        mandatory = not has_not
+    elif starts_with_not_mandatory:
+        mandatory = False
+    else:
+        mandatory = None
+    return {
+        "mandatory": mandatory,
+        "has_rationale_label": bool(RATIONALE_LABEL_RE.search(stripped)),
+        "has_justification_label": bool(JUSTIFICATION_LABEL_RE.search(stripped)),
+        "architect_tagged": bool(
+            RATIONALE_ARCHITECT_RE.search(stripped) or JUSTIFICATION_ARCHITECT_RE.search(stripped)
+        ),
+    }
+
+
+def _task_checkpoint_attribute(blob: InputBlob, task: TaskRecord) -> Optional[Dict[str, object]]:
+    for line_number in range(task.line, task.end_line + 1):
+        if line_number < 1 or line_number > len(blob.lines):
+            continue
+        parsed = _checkpoint_attribute_line(blob.lines[line_number - 1])
+        if parsed is not None:
+            return {"line": line_number, **parsed}
+    return None
+
+
+def _task_high_risk_keyword(blob: InputBlob, task: TaskRecord) -> Optional[str]:
+    for line_number in range(task.line, task.end_line + 1):
+        if line_number < 1 or line_number > len(blob.lines):
+            continue
+        lower = blob.lines[line_number - 1].lower()
+        for keyword in HIGH_RISK_KEYWORDS:
+            if keyword in lower:
+                return keyword
+    return None
+
+
+def _checkpoint_findings(
+    parsed: ParsedRepository, blobs: Mapping[str, InputBlob]
+) -> Tuple[List[CheckpointState], List[Finding]]:
+    """Compute the per-node ``Integration review:`` checkpoint state (Task ``0038-23``).
+
+    Extends the Task ``0038-21`` per-Feature ``integration-ready`` predicate
+    with per-checkpoint granularity, over every Task/Subtask rather than only
+    per Feature: it reports whether each node is a checkpoint (``mandatory``),
+    explicitly exempted (``not-mandatory``), or carries no attribute at all,
+    together with its required-integration state (``none``/``pending``/
+    ``passed``) alongside its own marker.
+
+    Authority enforcement here is read-only and necessarily textual: this
+    repository's own convention (see the real Feature ``0041``/``0044``
+    entries) always pairs a ``mandatory``/``not mandatory`` clause with an
+    ``(architect)``-tagged ``Rationale``/``No-checkpoint justification`` on
+    the same line, and ``docs/pipeline/process-roles.md`` fixes the
+    architect's *minimum* capability class at ``sandboxed/grunt`` — so
+    architect authority is a role assertion, not a capability-class fact this
+    read-only doctor could check instead. A missing or untagged rationale is
+    flagged (``LTD-CHECKPOINT-MISSING-AUTHORITY``); an unrecognized polarity
+    is flagged (``LTD-CHECKPOINT-MALFORMED``) and treated conservatively as
+    still ``pending`` rather than silently ``none``; a node with no attribute
+    at all whose own text matches a high-risk keyword (irreversible
+    migration, external effect, credential, security boundary, public
+    release) is flagged as an advisory (``LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK``)
+    naming the missing no-checkpoint justification. This doctor never mutates
+    the attribute, self-assigns, or integrates; enforcement of an
+    unauthorized *write* is the digest-bound editor's responsibility.
+    """
+
+    states: List[CheckpointState] = []
+    findings: List[Finding] = []
+    for task in sorted(parsed.tasks, key=lambda value: (value.path, value.line, value.id)):
+        if task.archived_not_accepted:
+            continue
+        blob = blobs.get(task.path)
+        if blob is None:
+            continue
+        accepted = _task_has_acceptance_mark(blob, task)
+        attr = _task_checkpoint_attribute(blob, task)
+        if attr is None:
+            high_risk = _task_high_risk_keyword(blob, task)
+            if high_risk is not None:
+                findings.append(
+                    _make_finding(
+                        "LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK",
+                        "integration",
+                        task.path,
+                        task.line,
+                        task.id,
+                        (
+                            f"Task {task.id} carries no Integration review attribute but its text "
+                            f"matches the high-risk keyword '{high_risk}'; an explicit architect "
+                            "no-checkpoint justification is required."
+                        ),
+                        blobs,
+                    )
+                )
+            states.append(
+                CheckpointState(
+                    task=task.id,
+                    path=task.path,
+                    line=task.line,
+                    marker=task.marker,
+                    attribute=None,
+                    architect_tagged=False,
+                    rationale_present=False,
+                    accepted=accepted,
+                    required_integration_state="none",
+                    high_risk_unflagged=high_risk is not None,
+                )
+            )
+            continue
+
+        line_number = int(attr["line"])  # type: ignore[arg-type]
+        mandatory = attr["mandatory"]
+        architect_tagged = bool(attr["architect_tagged"])
+        rationale_present = bool(attr["has_rationale_label"]) or bool(attr["has_justification_label"])
+        if mandatory is None:
+            findings.append(
+                _make_finding(
+                    "LTD-CHECKPOINT-MALFORMED",
+                    "integration",
+                    task.path,
+                    line_number,
+                    task.id,
+                    f"Task {task.id} declares an Integration review attribute with unrecognized polarity",
+                    blobs,
+                )
+            )
+            attribute_label = "malformed"
+            required_state = "pending"
+        else:
+            attribute_label = "mandatory" if mandatory else "not-mandatory"
+            if not rationale_present or not architect_tagged:
+                findings.append(
+                    _make_finding(
+                        "LTD-CHECKPOINT-MISSING-AUTHORITY",
+                        "integration",
+                        task.path,
+                        line_number,
+                        task.id,
+                        (
+                            f"Task {task.id}'s Integration review attribute ({attribute_label}) lacks "
+                            "an (architect)-tagged Rationale/No-checkpoint justification"
+                        ),
+                        blobs,
+                    )
+                )
+            required_state = ("passed" if accepted else "pending") if mandatory else "none"
+        states.append(
+            CheckpointState(
+                task=task.id,
+                path=task.path,
+                line=line_number,
+                marker=task.marker,
+                attribute=attribute_label,
+                architect_tagged=architect_tagged,
+                rationale_present=rationale_present,
+                accepted=accepted,
+                required_integration_state=required_state,
+                high_risk_unflagged=False,
+            )
+        )
+    return states, findings
+
+
+def _prerequisite_closure(start_ids: Iterable[str], edges: Iterable[PrerequisiteEdge]) -> Set[str]:
+    graph: Dict[str, Set[str]] = {}
+    for edge in edges:
+        graph.setdefault(edge.dependent, set()).add(edge.prerequisite)
+    visited: Set[str] = set()
+    stack = list(start_ids)
+    while stack:
+        node = stack.pop()
+        for neighbor in graph.get(node, ()):
+            if neighbor not in visited:
+                visited.add(neighbor)
+                stack.append(neighbor)
+    return visited
+
+
+def _readiness_findings(
+    parsed: ParsedRepository, blobs: Mapping[str, InputBlob]
+) -> Tuple[List[FeatureReadiness], List[Finding]]:
+    """Compute the deterministic per-Feature ``integration-ready`` predicate.
+
+    A Feature is integration-ready when every in-scope Task/Subtask (direct
+    children of the Feature, at any nesting) is terminal (``[x]``/``[w]``),
+    every Task/Subtask its in-scope items transitively depend on via an
+    explicit ``PREREQ`` is also terminal, and no node in that closure that
+    carries an unfulfilled ``**Integration review:** mandatory`` checkpoint
+    lacks a current ``**Acceptance:** ✓`` record. Only open (``TODO.md``,
+    non-archived) Features with at least one in-scope Task are evaluated;
+    Features already in ``DONE.md`` are already integrated.
+
+    On genuine readiness this emits one bounded ``LTD-FEATURE-INTEGRATION-READY``
+    finding naming the ready Feature and stating it needs an explicitly
+    assigned privileged integrator — realized through the doctor's existing
+    non-mutating findings/plans/summary pipeline, which is the concrete
+    notification channel this read-only tool can implement (see
+    ``docs/pipeline/legacy-task-doctor.md`` for why this stands in for the
+    ``SENTINEL`` retrigger channel). The doctor never self-assigns,
+    integrates, or mutates acceptance. The tool has no persisted state across
+    invocations, so every scan is treated as satisfying the "otherwise-idle
+    global scan" condition rather than trying to detect a stateful
+    ready-transition edge.
+    """
+
+    task_by_id = {task.id: task for task in parsed.tasks}
+    task_markers = {task.id: task.marker for task in parsed.tasks}
+    done_features = {
+        feature.id
+        for feature in parsed.features
+        if feature.id and feature.path == "DONE.md" and not feature.archived_not_accepted
+    }
+
+    readiness: List[FeatureReadiness] = []
+    findings: List[Finding] = []
+    for feature in sorted(parsed.features, key=lambda value: (value.path, value.line, value.id or "")):
+        if feature.path != "TODO.md" or not feature.id or feature.archived_not_accepted:
+            continue
+        in_scope = sorted({task.id for task in parsed.tasks if task.feature_id == feature.id})
+        if not in_scope:
+            continue
+        in_scope_set = set(in_scope)
+        nonterminal_tasks = tuple(
+            sorted(task_id for task_id in in_scope if task_markers.get(task_id) not in TERMINAL_MARKERS)
+        )
+        closure = _prerequisite_closure(in_scope_set, parsed.edges)
+        nonterminal_prerequisites = tuple(
+            sorted(
+                node
+                for node in closure - in_scope_set
+                if not _terminal_id(node, task_markers, done_features)
+            )
+        )
+        unaccepted: List[str] = []
+        for node_id in sorted(in_scope_set | closure):
+            checkpoint_task = task_by_id.get(node_id)
+            if checkpoint_task is None or checkpoint_task.marker not in TERMINAL_MARKERS:
+                continue
+            checkpoint_blob = blobs.get(checkpoint_task.path)
+            if checkpoint_blob is None:
+                continue
+            if _task_is_mandatory_checkpoint(checkpoint_blob, checkpoint_task) and not _task_has_acceptance_mark(
+                checkpoint_blob, checkpoint_task
+            ):
+                unaccepted.append(node_id)
+        unaccepted_checkpoints = tuple(sorted(unaccepted))
+        ready = not nonterminal_tasks and not nonterminal_prerequisites and not unaccepted_checkpoints
+        readiness.append(
+            FeatureReadiness(
+                feature=feature.id,
+                path=feature.path,
+                line=feature.line,
+                ready=ready,
+                in_scope_tasks=tuple(in_scope),
+                nonterminal_tasks=nonterminal_tasks,
+                nonterminal_prerequisites=nonterminal_prerequisites,
+                unaccepted_checkpoints=unaccepted_checkpoints,
+            )
+        )
+        if ready:
+            findings.append(
+                _make_finding(
+                    "LTD-FEATURE-INTEGRATION-READY",
+                    "integration",
+                    feature.path,
+                    feature.line,
+                    feature.id,
+                    (
+                        f"Feature {feature.id} is integration-ready (SENTINEL retrigger channel "
+                        "notice): every in-scope Task/Subtask is terminal with a satisfied, "
+                        "acceptance-consistent prerequisite closure. It needs an explicitly assigned "
+                        "privileged integrator; this doctor performs no self-assignment, integration, "
+                        "or acceptance mutation."
+                    ),
+                    blobs,
+                )
+            )
+    return readiness, findings
 
 
 def _resolve_doc_target(
@@ -1693,6 +2169,8 @@ def _git_reachable_commits(root: Path) -> Set[str]:
 
 
 def _plan_action(finding: Finding) -> Tuple[str, str]:
+    if finding.rule == "LTD-FEATURE-INTEGRATION-READY":
+        return "assign-privileged-integrator", "privileged-integrator"
     if finding.category == "claim":
         return "owner-reconcile-claim", "claim-owner-or-authorized-maintainer"
     if finding.rule in {"LTD-PARENT-CLOSURE-ELIGIBLE", "LTD-FEATURE-CLOSURE-ELIGIBLE"}:
@@ -1769,6 +2247,8 @@ def _empty_report(error: DoctorInputError) -> Dict[str, object]:
         "counts": {"error": 1, "warning": 0, "info": 0, "total": 1},
         "findings": [finding.to_dict()],
         "plans": [],
+        "integration_readiness": [],
+        "checkpoint_states": [],
         "summary": [f"legacy-task-doctor INCOMPLETE: {error.rule} {error.path}: {evidence}"],
     }
 
@@ -1819,6 +2299,10 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
     parsed.findings.extend(_ref_findings(parsed, blobs, reachable))
     parsed.findings.extend(_claim_findings(parsed, blobs, claim_occurrences, reachable))
     parsed.findings.extend(_prerequisite_findings(parsed, blobs))
+    readiness, readiness_findings = _readiness_findings(parsed, blobs)
+    parsed.findings.extend(readiness_findings)
+    checkpoint_states, checkpoint_findings = _checkpoint_findings(parsed, blobs)
+    parsed.findings.extend(checkpoint_findings)
     parsed.findings.extend(_instruction_findings(root, parsed, blobs))
     findings = _dedupe_findings(parsed.findings)
 
@@ -1850,6 +2334,8 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
             )
         findings = _dedupe_findings(findings)
         plans = []
+        readiness = []
+        checkpoint_states = []
         verdict = "INCOMPLETE"
 
     counts = {severity: sum(item.severity == severity for item in findings) for severity in ("error", "warning", "info")}
@@ -1885,6 +2371,8 @@ def scan_repository(root: Path, *, reachable_commits: Optional[Set[str]] = None)
         "counts": counts,
         "findings": [value.to_dict() for value in findings],
         "plans": [value.to_dict() for value in plans],
+        "integration_readiness": [value.to_dict() for value in readiness],
+        "checkpoint_states": [value.to_dict() for value in checkpoint_states],
     }
     report["summary"] = _summary(verdict, findings, parsed)
     return report
