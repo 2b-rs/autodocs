@@ -59,5 +59,13 @@ Record an evidence-backed verdict and findings without implementing any repair.
 
 ## Next action
 
-Commit only the two scoped files, record the refs, and hand the final REF to
-`jean-luc` before acknowledging the assignment message.
+Substantive review committed at
+`a3d6e1e8817910676b647d90c82d79d7c2c08bbc`. Commit this final bookkeeping
+update, hand the final tip to `jean-luc`, and acknowledge the assignment message.
+
+## Result
+
+- **Verdict:** rejected
+- **Substantive review REF:** `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`
+- **Acceptance/integration credit:** none
+- **Main integration:** not performed and not authorized
