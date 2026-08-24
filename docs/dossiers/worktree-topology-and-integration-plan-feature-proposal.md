@@ -131,3 +131,9 @@ Data and Geordi supplied the following preparatory interface requirements for th
 - Unknown overlap, an unreproducible digest, a partial graph, or a withdrawn or incompatible WTP fails closed.
 
 These are required briefing inputs for the independently assigned Architect's later decision record, scope review, and decomposition. They remain subject to reconciliation against the exact post-recovery `main` baseline and do not themselves authorize formal Feature work or operative mutation.
+
+## 13. Post-recovery baseline reconciliation
+
+The preparation-only commit series through former tip `8f3bb6ff9d95e1a7e7d98998ba4b7d46038870c3` was reconciled onto recovered `main@f24b0c02c253d97d48473b2efd94a6ee5d7fae6c`. The reconciliation replayed only this dossier and its owned claim; the incident anchor and `FC-WTIP-20260824` provenance remain historical evidence, and Feature allocation remains `0046`.
+
+This baseline reconciliation does not integrate the proposal to `main`, activate WTP/IP policy or validation, create a decision record, constitute the independent Architect scope review, or authorize any gate mutation.
