@@ -134,6 +134,6 @@ These are required briefing inputs for the independently assigned Architect's la
 
 ## 13. Post-recovery baseline reconciliation
 
-The preparation-only commit series through former tip `8f3bb6ff9d95e1a7e7d98998ba4b7d46038870c3` was reconciled onto recovered `main@f24b0c02c253d97d48473b2efd94a6ee5d7fae6c`. The reconciliation replayed only this dossier and its owned claim; the incident anchor and `FC-WTIP-20260824` provenance remain historical evidence, and Feature allocation remains `0046`.
+The preparation-only commit series through former tip `8f3bb6ff9d95e1a7e7d98998ba4b7d46038870c3` was first reconciled onto recovered `main@f24b0c02c253d97d48473b2efd94a6ee5d7fae6c`, then caught up to final recovery pin `main@2dae2a088d54b950908edcbc31c5f4402a078750`. The reconciliation replayed only this dossier and its owned claim; the incident anchor and `FC-WTIP-20260824` provenance remain historical evidence, and Feature allocation remains `0046`.
 
 This baseline reconciliation does not integrate the proposal to `main`, activate WTP/IP policy or validation, create a decision record, constitute the independent Architect scope review, or authorize any gate mutation.
