@@ -32,36 +32,64 @@
   - **CON-04:** `DEC-0037-001` remains a valid record for its historical queue-failover subject, but its unimplemented future corrective chain is superseded for planning by this decision after `DEC-0037-002` is integrated on `main`.
   - **CON-05:** Rollback before issue-store authority cutover restores the current legacy direct-execution workflow; post-cutover recovery remains forward issue-store recovery and does not depend on restoring a retired sandbox runner.
   - **CON-06:** No active claim, request, or completed evidence is silently grandfathered, discarded, or reclassified; operative backlog changes must disposition each affected item and preserve its provenance.
+  - **CON-07:** The removed runner deployment checkpoints do not leave the Feature without a review floor: `0037-34.02` becomes the intermediate authority-switch checkpoint and `0037-40` becomes the single terminal integrating Task with mandatory review.
 - **Affected work units:**
   - `feature:0037`
   - `task:0037-45`
   - `task:0037-41`
   - `task:0037-46`
-  - `task:0037-46.01`
-  - `task:0037-46.02`
+  - `subtask:0037-46.01`
+  - `subtask:0037-46.02`
   - `task:0037-47`
   - `task:0037-50`
-  - `task:0037-50.01`
-  - `task:0037-50.02`
-  - `task:0037-50.03`
-  - `task:0037-50.04`
-  - `task:0037-50.05`
+  - `subtask:0037-50.01`
+  - `subtask:0037-50.02`
+  - `subtask:0037-50.03`
+  - `subtask:0037-50.04`
+  - `subtask:0037-50.05`
   - `task:0037-51`
   - `task:0037-39`
+  - `subtask:0037-10.04`
   - `task:0037-42`
   - `task:0037-43`
   - `task:0037-44`
   - `task:0037-21`
   - `task:0037-25`
-  - `task:0037-25.01`
+  - `subtask:0037-25.01`
   - `task:0037-30`
   - `task:0037-32`
-  - `task:0037-34.01`
+  - `subtask:0037-34.01`
+  - `subtask:0037-34.02`
   - `task:0037-33`
-  - `task:0037-35.01`
+  - `subtask:0037-35.01`
   - `task:0037-36`
-  - `task:0038-16.02`
+  - `task:0037-40`
+  - `task:0038-02`
+  - `task:0038-04`
+  - `task:0038-06`
+  - `task:0038-07`
+  - `task:0038-09`
+  - `task:0038-10`
+  - `task:0038-17`
+  - `task:0038-19`
+  - `task:0038-20`
+  - `task:0038-22`
+  - `task:0038-23`
+  - `task:0038-24`
+  - `task:0038-28`
+  - `task:0038-30`
+  - `task:0038-16`
+  - `subtask:0038-16.01`
+  - `subtask:0038-16.02`
   - `task:0039-05`
+  - `task:0039-02`
+  - `task:0041-01`
+  - `task:0041-02`
+  - `task:0041-03`
+  - `task:0041-04`
+  - `task:0041-05`
+  - `task:0041-06`
+  - `task:0044-04`
   - `task:0044-05`
   - `task:0044-07`
   - `repository:autodocs`
@@ -76,6 +104,7 @@
   - `validation:issue-policy`
   - `integration:0037-46.02`
   - `integration:0037-34.02`
+  - `integration:0037-40`
   - `feature-closure:0037`
   - `external:runner-host-service`
 - **Review participation:**
