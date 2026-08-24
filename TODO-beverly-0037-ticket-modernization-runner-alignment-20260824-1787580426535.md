@@ -9,7 +9,7 @@
 - **Normative binding:** Data's Architect amendment substantive REF `5d5996d07d8e8be71a99722a12e3afcb1d57919a`, final tip `b38c3202d0d40812733204d4386388ff73234599`
 - **Branch/worktree:** `0037-ticket-modernization-benjamin-20260824`; `/Users/tobias.anton/devel/autodocs/.worktrees/0037-ticket-modernization-benjamin-20260824`
 - **Observed start tip:** `65a769f58edf8a58534fd4b6957fea03554fe735`; worktree clean, no foreign changes
-- **Status:** `[p]`
+- **Status:** `[x]`
 - **Write scope:** this collision-resistant claim and `docs/dossiers/0037-ticket-modernization-execution-plan.md` only
 - **Required preservation:** current inventory, transport-independent safety invariants, task graph, and Packages A–C
 - **Required correction boundary:** retire `sandboxed-grunt`, runner queue, singleton, typed-action, and Host-Transport; retain Runner as Dispatcher-selected, normally unprivileged operational role for Task-ID-bound long-running jobs, job control, and agent interfaces; do not preserve retired transport schemas without new authority
@@ -18,3 +18,7 @@
 - **Validation:** exact amendment pins exist; retained sections unchanged except necessary Runner contradictions; retired/retained terminology assertions; cited paths/tasks; exact two-path diff guard; `git diff --check`; clean worktree; Benjamin author review before any integration.
 - **Memory safety:** no `memory_append`; no durable memory write is required.
 - **Recovery:** revert only this item branch's new transcription commits; no upstream or external state is changed.
+- **Implementation REF:** `fc80d5f082dc90f3c722bbb99939284a0f097249`
+- **Delivered:** Benjamin's Runner-aligned revision replaces only the contradictory title, Task `0037-51` Runner/transport statements, `0037-08` rewire wording, and Package C; inventory, all eight safety invariants, the remaining task graph, and Packages A–B remain verbatim.
+- **Validation:** PASS — amendment REF exists and is an ancestor of actual amendment tip; required transport-retirement and retained-Runner assertions present; prior inventory/safety section and Packages A–B compare byte-identical; 23 expanded task IDs exist; 16 JSON schemas and 7 policy files reproduce; exact two-path scope; exact start-tip-to-REF `git diff --check` exit 0.
+- **Handoff:** Benjamin reviews transcription against mailbox `1787580503269-2382f470`; Jean-Luc receives the immutable candidate. Neither transcription nor author review is Acceptance, integration, gate mutation, or authority allocation.
