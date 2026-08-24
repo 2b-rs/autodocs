@@ -133,4 +133,3 @@ JSON Schema validates shape; the future deterministic validator additionally pro
 - refusal of unauthorized or non-final `main` steps.
 
 Green schema or validator output is execution evidence, not Acceptance or authority.
-

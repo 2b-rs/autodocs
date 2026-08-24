@@ -114,4 +114,3 @@
 ## Operative boundary
 
 This decision defines the architecture candidate and its permitted future activation path. It does not itself activate a validator, change another Feature's start or integration gate, migrate a Feature, authorize an IP, or grant Acceptance/integration authority. Until Tasks `0046-01` through `0046-07` complete their stated gates, the repository's pre-existing process remains authoritative.
-

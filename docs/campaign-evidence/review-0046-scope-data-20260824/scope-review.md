@@ -23,8 +23,8 @@
 | `docs/pipeline/process-roles.md` | `58277edab9adfbcf261cd1509ee487fab54047224755ed6199906a2add535b35` |
 | `docs/pipeline/task-acceptance.md` | `e37139e40781c516803fc9db4fb796500868de8f1e14b3579ede8652c45003d6` |
 | `docs/pipeline/branch-workflow.md` | `639e20144b0bc5cf9b1b183a960b92160630ab81eed7e8dfb347c68c1f27bfaf` |
-| `DEC-0046-001` candidate | `a9a0f93972500a2cc15dff2f984044855b7e1d9d781ef772d5a229acd5643a07` |
-| WTP contract | `0310997af047d9cc322f86b6062abf7e0d90e0cae07347a5e0c570c4056f8ba2` |
+| `DEC-0046-001` candidate | `f80c41850d1161032cfb006a6aa1f6707593f49132e89db4a016415c50ec7bcc` |
+| WTP contract | `b3e6771f9b7db79b9b866398aa7170099de923e45ed40d11dc08dbd00bcd944e` |
 | WTP schema | `2c6b79d5a8831266c287668e9329272ff4e1fbfd6dabf1f763b7cf7ff1d294ef` |
 | WTP template file | `a01afa2a9c7d00cf8162acd1b13a5d382c28aff70f310736b7d4fd2b5c1fcc31` |
 | reconciled proposal | `da7ef16925e3804146e6e005540af806133ac24378b062ded712dd63b170f643` |
@@ -110,5 +110,5 @@ The candidate's declared reach is necessary to close the observed planning gap a
 - **Signed by:** `agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c`
 - **Signed at:** `2026-08-24T18:52:00+02:00`
 - **Signature scheme:** `sha256` over the UTF-8 literal payload documented below; integrity binding, not a credential or external digital signature
-- **Payload:** `0046-scope-review|agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c|2dae2a088d54b950908edcbc31c5f4402a078750|a9a0f93972500a2cc15dff2f984044855b7e1d9d781ef772d5a229acd5643a07|0310997af047d9cc322f86b6062abf7e0d90e0cae07347a5e0c570c4056f8ba2|2c6b79d5a8831266c287668e9329272ff4e1fbfd6dabf1f763b7cf7ff1d294ef|a01afa2a9c7d00cf8162acd1b13a5d382c28aff70f310736b7d4fd2b5c1fcc31|24d93ba41854f724a52563f1c73db460a5d41194ee35609239c3c03af3840574|scope-ok-mit-auflagen|S-01..S-08`
-- **Signature digest:** `sha256:b00e9d360993b1aa58392f8eb6340499f9be8de838f3d9d2fbffd52499725ff8`
+- **Payload:** `0046-scope-review|agent:data:0046:20260824T183826Z-6234dad8-43e4-406f-b78d-9040e5ed726c|2dae2a088d54b950908edcbc31c5f4402a078750|f80c41850d1161032cfb006a6aa1f6707593f49132e89db4a016415c50ec7bcc|b3e6771f9b7db79b9b866398aa7170099de923e45ed40d11dc08dbd00bcd944e|2c6b79d5a8831266c287668e9329272ff4e1fbfd6dabf1f763b7cf7ff1d294ef|a01afa2a9c7d00cf8162acd1b13a5d382c28aff70f310736b7d4fd2b5c1fcc31|24d93ba41854f724a52563f1c73db460a5d41194ee35609239c3c03af3840574|scope-ok-mit-auflagen|S-01..S-08`
+- **Signature digest:** `sha256:944d2292ff27dd4a83ab7d707900d460b9a95d9124865733bf5b3504b00824cb`
