@@ -37,3 +37,24 @@ No Acceptance or integration decision is made by this claim.
   Q-01..Q-24; view partitions expand to 119 IDs with one implementation owner
   and one terminal verifier by construction
 - changed scope: only the decomposition and this claim
+
+## Re-review correction round
+
+- rejected re-review: `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`
+  (final review tip `1728db9d4b3f65fa4765584264137eb26ceff820`)
+- controlling Runner amendment: `5d5996d07d8e8be71a99722a12e3afcb1d57919a`
+  (actual amendment tip `b38c3202d0d40812733204d4386388ff73234599`)
+- Runner correction: A.4 repurposed as shared role/job-control contract and
+  intermediate mandatory checkpoint; search grammar consolidated into A.3;
+  all enumerated background consumers now require current Acceptance of A.4
+- migration correction: N.1–N.3 now write collision-free `src/import/**`
+  package roots and start behind E.T; `_src/import/**` is absent
+- executability correction: all 77 overlay rows now carry a unique package-ID
+  command/result, collision-free write/evidence manifest, named recovery target,
+  bounded CPU/memory/time/test/cognitive/uncertainty/risk estimate, and
+  deterministic branch/merge target
+- prior gate and exact trace corrections retained
+- validation: `git diff --check`; 16 Features; 77 unique packages and validation
+  contracts; 16 terminals; A.4 intermediate checkpoint; 24 Q IDs; no stale
+  `_src/import`, generic overlay templates, `sg`, runner queue or `Cap:` literal
+- status: re-review findings corrected and validated; substantive commit pending
