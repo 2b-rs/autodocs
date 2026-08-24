@@ -34,5 +34,16 @@
   full prior-finding and amendment-node comparison; two-path write scope
 - status: re-review complete, validated and committed
 
+## Second re-review attempt
+
+- candidate_ref: `5f26ab93585a5bb3c961d03828f673ee222dde0f`
+- candidate_tip: `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`
+- verdict: `accepted` (architecture-plan verdict only; no Task Acceptance)
+- R2_disposition: R2-001, R2-002 and R2-003 resolved; no new finding
+- parity_set: 30 unique nodes; SHA-256
+  `f9c6371a4f3357ecec23b53433a01b357e7f043036ffbe82ab67f19ad97ef93c`
+- candidate_mutation: none
+- status: second re-review authored; validation and commit pending
+
 The candidate remains unmodified. This claim records no Acceptance or
 integration authority.

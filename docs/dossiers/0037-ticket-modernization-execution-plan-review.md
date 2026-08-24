@@ -341,3 +341,136 @@ boundary so no agent observes a half-updated role/schema/instruction bundle.
 
 The corrected candidate remains rejected. This review grants no Acceptance,
 integration, checkpoint-crossing or Feature-closure credit.
+
+## Second re-review attempt — candidate `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`
+
+### Immutable baseline and verdict
+
+- **Substantive plan:** `5f26ab93585a5bb3c961d03828f673ee222dde0f`
+- **Final candidate tip:** `4141d1e7a689c4b3b59c1d2c04b5096598b723ce`
+- **Initial review:** `c456d66c394306a1667d20cf9d2fe4f62012da12`
+- **First re-review:** `9ae3d8c8e86d794fb09b531253e530d82b13c1bc`
+- **Controlling amendment:**
+  `5d5996d07d8e8be71a99722a12e3afcb1d57919a`
+
+**Verdict: `accepted` as an architecture/execution-plan candidate.** All three
+R2 findings are closed, the five original finding groups remain resolved or
+are now fully resolved, and no material regression was found. Here `accepted`
+is the bounded Architect review verdict for this immutable plan only. It is not
+Task Acceptance (`Acceptance: ✓`), governance integration, authority to mutate
+the backlog, a checkpoint crossing, a Runner job instruction, `main` advance or
+Feature closure.
+
+### R2-001 disposition — resolved: complete amendment parity manifest
+
+The candidate now carries a 30-node expanded parity set and a disposition/effect
+row for every controlling-amendment member:
+
+- rewrites/retentions for `0037-21`, `0037-25`, `0037-25.01`, `0037-30`,
+  `0037-32`, `0037-34.01`, `0037-34.02`, `0037-35.01`, `0037-36`, `0037-39`,
+  `0037-40`, `0037-42`, `0037-44`, `0038-07`, `0038-09`, `0038-16.01`,
+  `0039-02`, `0043-01`, `0044-04`, `0044-05` and `0044-07`; and
+- governed removals with preserved history for `0037-46`, `.01`, `.02`,
+  `0037-47`, `0037-50.02`–`.05` and `0038-16.02`.
+
+The effects preserve direct foreground/background invocation, role/capability
+doctor separation, Runner recovery authority negatives, accepted consumer
+edges, active-job quiescence, independent evidence evaluation, context/run
+identity, matcher semantics and transport-history boundaries. The explicitly
+expanded sorted set contains exactly 30 unique nodes; its newline-delimited
+SHA-256 is
+`f9c6371a4f3357ecec23b53433a01b357e7f043036ffbe82ab67f19ad97ef93c`.
+The plan requires set and disposition equality, endpoint, acyclicity,
+reachability and semantic-gate validation before operative mutation.
+
+### R2-002 disposition — resolved: A/B are honest non-executable design preparation
+
+Packages A and B no longer claim bounded implementation or immediate execution.
+Each is explicitly labelled non-executable, states the absent immutable inputs,
+paths and finite resource profile as a stop condition, authorizes no branch,
+write, generation/fuzz job or implementation, and enumerates the exact local
+contract that must exist before conversion. Their advisory token/time ranges are
+correctly scoped to design preparation and explicitly are not execution
+estimates or permission. Runner use remains conditional on current accepted
+`0037-21` plus the later checked profile. This is an honest bounded preparation
+boundary rather than deferred hidden implementation judgment.
+
+### R2-003 disposition — resolved: Package C has a valid governance/ordinary split
+
+Package C now separates:
+
+1. a governance slice authored in a Package-C-owned isolated worktree on a
+   branch cut from current `main`, with the root hard preflight and integration
+   hygiene check before authoring/integration, immediate advancement through a
+   separately authorized governance integrator, and no private shared
+   governance state on the ordinary Task branch; and
+2. an ordinary schema/interface/test/evidence slice on the exact `0037-21`
+   item topology, with a hard stop when paths have not been allocated.
+
+The compatibility sequence is coherent: governance first accepts the current
+ordinary product while rejecting premature semantics; the ordinary new version
+then lands; activation occurs only through a separately reviewed bundle pinning
+both digests; rollback restores the prior compatible pair. This prevents a
+half-updated role/schema/instruction bundle without claiming that governance and
+ordinary Task artifacts share one branch or integration authority.
+
+### Complete prior-finding disposition
+
+1. **F-TICKET-PLAN-001 — resolved.** Retired transport nodes are removed by
+   explicit governed dispositions and no retained node consumes them; the full
+   amendment parity set and graph validations are required.
+2. **F-TICKET-PLAN-002 — resolved.** `0037-21` owns the complete shared
+   role/job-control contract, intermediate checkpoint and current-Acceptance
+   consumer edges with role/capability/authority separation.
+3. **F-TICKET-PLAN-003 — resolved.** Active-job quiescence, prepared bundle,
+   stale-client switch behavior, independent Tester/signer/Integrator evidence
+   evaluation and synthetic `0037-40` cancellation/recovery proof are present.
+4. **F-TICKET-PLAN-004 — resolved.** A/B are explicitly stopped design prep;
+   C supplies a bounded, correctly routed implementation sequence. None is
+   misrepresented as immediately executable.
+5. **F-TICKET-PLAN-005 — resolved.** `0037-51` remains preparation only; the
+   plan separates governance integration, implementation ownership, current
+   Acceptance, authority switch and terminal integration.
+6. **F-TICKET-PLAN-R2-001..003 — resolved** as detailed above.
+
+### Regression and amendment checks
+
+- `TODO.md` remains authoritative and `issues/` remains a disposable shadow
+  until authorized cutover.
+- Collision, governance, CAS, recovery, immutable evidence, stale-client,
+  audit and independent-checkpoint invariants remain transport-independent.
+- `sandboxed-grunt`, queue, singleton, typed action and host transport remain
+  retired from future execution; preserved history is not a live interface.
+- Dispatcher-selected Runner remains normally `unprivileged`, Task-ID-bound and
+  authority-negative; Programmer, Tester, capability, Architect/Implementer/
+  Integrator and specialist authority remain distinct.
+- `0037-21` remains the mandatory intermediate contract checkpoint,
+  `0037-34.02` the authority-switch checkpoint and `0037-40` the single terminal
+  integrating Task.
+- Recovery never promises restoration of retired transport.
+- The plan makes no operative backlog/governance mutation and grants no
+  Acceptance or integration credit.
+
+### Independent validation
+
+- Pinned and inspected substantive candidate `5f26ab93585a` and final tip
+  `4141d1e7a689`; compared their change set with candidate `702021c6c70c`.
+- Re-evaluated every R2 finding and all five original findings against the full
+  candidate rather than relying on the separate uncommitted mailbox opinion.
+- Parsed the explicit parity list: 30 unique nodes, exact expected set, digest
+  `f9c6371a4f3357ecec23b53433a01b357e7f043036ffbe82ab67f19ad97ef93c`.
+- Inspected every manifest row for disposition, dependency and role/transport
+  effect; no missing or extra member was found.
+- Inspected A/B labels, stop conditions, prohibited actions and conversion
+  deliverables; neither claims executability.
+- Inspected C's current-main base, owned worktree, preflight/hygiene,
+  separately authorized immediate integration, ordinary `0037-21` topology,
+  compatibility activation and rollback boundaries.
+- Re-ran regression token checks for shared job lifecycle, accepted consumers,
+  quiescence, stale-client fencing, synthetic terminal proof, transport
+  non-restoration and `0037-51` preparation-only status.
+- `git diff --check` is required before committing this append-only verdict.
+
+No new finding is opened. A later material change to the plan, amendment,
+authority epoch, graph or package boundary requires a fresh review; this verdict
+does not grandfather implementation drift.
