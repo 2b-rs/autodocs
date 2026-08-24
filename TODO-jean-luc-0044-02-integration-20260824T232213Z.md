@@ -11,7 +11,7 @@
 - `base_commit`: `b3fa32a6a2e5a87753971b67710517130d1f6379`
 - `source_branch`: `0044-02`
 - `source_tip`: `ec7b3cad3d57d7e1ee14c81808e24e42f1c376bc`
-- `status`: integration preparation
+- `status`: source integrated and validated; root fast-forward pending
 
 ## Contract
 
@@ -36,3 +36,21 @@ candidate records substantive REF
 - Validate exact changed paths, `git diff --check`, the documentation checker,
   Task marker/REF consistency, source-tip ancestry, and a clean integration
   worktree before the root fast-forward.
+
+## Integration evidence
+
+- Root hard preflight passed on `main@b3fa32a6a2e5a87753971b67710517130d1f6379`.
+- Mandatory hygiene passed across 186 registered worktrees before source merge.
+- `0044-02@ec7b3cad3d57d7e1ee14c81808e24e42f1c376bc` merged conflict-free with a real
+  `--no-ff` merge commit `05749d1b03fb95666e38f8c5ab0d67af0a02c064`.
+- Source-tip ancestry, the `[x]` marker, substantive REF
+  `c9f0968e9765fa2eab765d85dab6c376cf314a99`, and the Architect no-checkpoint
+  justification were verified after the merge.
+- `git diff --check` passed. `process_doc_doctor.py --json` remained `ok: true`
+  with 30 findings. Relative to current `main`, the only tuple change is the
+  non-blocking README inventory info count, from 54/75 to 55/76, caused by the
+  new `docs/pipeline/risk-integration.md`; no error or warning was introduced.
+- Exact source delta: six paths, 227 insertions and seven deletions, matching the
+  implementation claim's bounded procedure, evidence, references and
+  bookkeeping scope. No Acceptance, checkpoint, Feature closure, `DONE.md`,
+  external effect, or push occurred.
