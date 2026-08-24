@@ -6,7 +6,7 @@
 - `branch`: `recovery-core-worktree-jean-luc-20260825`
 - `worktree`: `.worktrees/recovery-core-worktree-jean-luc-20260825`
 - `base_commit`: `2dae2a088d54b950908edcbc31c5f4402a078750`
-- `status`: recovery in progress
+- `status`: snapshot preserved; root restoration and integration pending
 
 ## Scope and evidence
 
@@ -33,6 +33,11 @@ verbatim and tags the capture as
 `preserved/root-git-config-incident-20260825-jean-luc`. The roster addition and
 the two memory lines are preserved as evidence only; their presence here grants
 no authority and they are not adopted into `main` by the recovery candidate.
+
+Snapshot REF: `1252503ae1cdcad5b387d2351965da9063964d3f`.
+The preservation tag resolves to that exact commit. The child recovery commit
+removes all three snapshot-only contents and retains only this claim plus the
+exact registry row.
 
 ## Write scope
 

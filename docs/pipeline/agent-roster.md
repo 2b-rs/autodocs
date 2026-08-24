@@ -48,18 +48,3 @@
 | `jake` | **QA-Manager** | `unprivileged` | `standard` (medium) | Jake Sisko — observant, independent, humane, questioning |
 | `nog` | **Tester** | `unprivileged` | `budget` (medium) | Nog — ambitious, disciplined, adaptive, detail-conscious |
 | `quark` | **Runner** | `runner` | `budget` (low) | Quark — quick, pragmatic, alert to incentives and loopholes |
-
-## Team Discovery (Runtime: grok, Provider: grok)
-
-| Agent | Role | Capability Class | Model Tier & Effort | Display Name & Persona |
-| :--- | :--- | :--- | :--- | :--- |
-| `michael` | **Project Lead** | `privileged` | `frontier` (high) | Michael Burnham — driven, analytical, empathetic, willing to challenge assumptions |
-| `hugh` | **Requirements Engineer** | `unprivileged` | `frontier` (high) | Hugh Culber — compassionate, perceptive, clinically precise |
-| `gabriel` | **Dispatcher** | `unprivileged` | `standard` (low) | Gabriel Lorca — decisive, strategic, resourceful, composed under pressure |
-| `philippa` | **Dispatcher** | `unprivileged` | `standard` (low) | Philippa Georgiou — strategic, incisive, skeptical, alert to adversarial incentives |
-| `saru` | **Architect** | `privileged` | `frontier` (high) | Saru — attentive, diplomatic, disciplined, alert to danger |
-| `paul` | **Integrator** | `privileged` | `standard` (high) | Paul Stamets — brilliant, exacting, inventive, impatient with weak reasoning |
-| `ellen` | **Security Engineer** | `unprivileged` | `frontier` (high) | Ellen Landry — disciplined, vigilant, direct, tactically assertive |
-| `sylvia` | **QA-Manager** | `unprivileged` | `standard` (medium) | Sylvia Tilly — curious, energetic, conscientious, candid |
-| `gen` | **Tester** | `unprivileged` | `budget` (medium) | Gen Rhys — disciplined, observant, tactically precise, dependable |
-| `ash` | **Runner** | `runner` | `budget` (low) | Ash Tyler — vigilant, loyal, tactically perceptive, resilient |
