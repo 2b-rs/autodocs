@@ -1,0 +1,26 @@
+# Claim: UI/UX task decomposition integration preparation
+
+- item_id: `ui-ux-task-decomposition-integration-20260824`
+- owner: B'Elanna Torres, Team Voyager, independent Integrator
+- owner_token: `agent:belanna:ui-ux-task-decomposition-integration-20260824:20260824T151900CEST`
+- capability_class: `privileged`
+- execution_authority: direct Git, validation, and integration-review preparation; no `main` advance
+- base_commit: `892fb5f92b34b411e76ef2a011e82183e2cd2315`
+- branch: `integration-ui-ux-task-decomposition-belanna-20260824`
+- worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/integration-ui-ux-task-decomposition-belanna-20260824`
+- status: `in_progress`
+- write_scope:
+  - `TODO-belanna-ui-ux-task-decomposition-integration-20260824.md`
+  - necessary merge and integration-review evidence under `docs/design/`
+- must_not:
+  - correct candidate content
+  - mutate `TODO.md`, `DONE.md`, decisions, or governance
+  - invent Task Acceptance or close a Feature
+  - advance `main`
+- candidate_branch: `ui-ux-task-decomposition-correction-jadzia-20260824`
+- candidate_substantive_ref: `7707b8d00a7e5cfc3e733cd990c7be373e3aa41b`
+- candidate_final_ref: `9190e5a346d87edbc62a4d38b4050bb2aab000eb`
+- independent_review_ref: `ca273c915feca9511420ccfedb6f70bd333c39aa`
+- independent_review_final_ref: `5da93d2c74613bacfb5083d150d66f8c32dfdc6b`
+- pinned_predecessors: `1d749458859726323d5c2fb9bae32766a0da9b12`, `40ceb3d2eb4cd818547833c9f5b9ecb50408bf9a`, `9896d9d2073c91a9345b7c1f03cce3ffa817cb01`, `76d227ed73b48b0e48d66e585d0c5e0a13de1868`, `1907ddc344ed775543da9aa6de3bd7be9ea4f752`, `a3d6e1e8817910676b647d90c82d79d7c2c08bbc`, `6b8a81ff1171127a95b44795bd4d1852df4ffe7b`
+- next_step: assemble exact candidate and review tips on current `main`, preserving current governance and backlog state, then validate and record verdict.
