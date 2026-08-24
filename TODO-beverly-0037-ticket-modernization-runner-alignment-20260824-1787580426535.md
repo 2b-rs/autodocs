@@ -9,7 +9,7 @@
 - **Normative binding:** Data's Architect amendment substantive REF `5d5996d07d8e8be71a99722a12e3afcb1d57919a`, final tip `b38c3202d0d40812733204d4386388ff73234599`
 - **Branch/worktree:** `0037-ticket-modernization-benjamin-20260824`; `/Users/tobias.anton/devel/autodocs/.worktrees/0037-ticket-modernization-benjamin-20260824`
 - **Observed start tip:** `65a769f58edf8a58534fd4b6957fea03554fe735`; worktree clean, no foreign changes
-- **Status:** `[p]`
+- **Status:** `[x]`
 - **Write scope:** this collision-resistant claim and `docs/dossiers/0037-ticket-modernization-execution-plan.md` only
 - **Required preservation:** current inventory, transport-independent safety invariants, task graph, and Packages A–C
 - **Required correction boundary:** retire `sandboxed-grunt`, runner queue, singleton, typed-action, and Host-Transport; retain Runner as Dispatcher-selected, normally unprivileged operational role for Task-ID-bound long-running jobs, job control, and agent interfaces; do not preserve retired transport schemas without new authority
@@ -28,3 +28,7 @@
 - **Correction validation:** PASS — inventory/safety section byte-identical to rejected candidate; retired chain absent as live blocker; replacement edges, shared-contract fields, Acceptance-before-start consumers, checkpoint, quiescence/cutover/terminal negative proofs, package inputs/targets/execution/validation/recovery/bounds/estimates, and authority separation present; 31 cited Task/Subtask endpoints exist; 16 schema and 7 policy counts reproduce; exact two-path scope; start-tip-to-REF diff clean.
 - **Next action:** fresh independent Architect re-review against exact correction REF. No author-faithfulness verdict can replace that review.
 - **Conflicting re-review mail and committed R2:** Jadzia's mailbox `1787581194779-3bf6c95c` reported an uncommitted `ACCEPTED` verdict and requested a new review file outside this claim's scope. Jean-Luc then pinned the later append-only committed R2 rejection at review REF `9ae3d8c8e86d794fb09b531253e530d82b13c1bc`, final tip `32600baea04b49727a9a37396968aa4323116d4d`, with findings F-TICKET-PLAN-R2-001..003. The committed rejection governs this correction; no out-of-scope review file was transcribed.
+- **R2 correction REF:** `5f26ab93585a5bb3c961d03828f673ee222dde0f`
+- **R2 correction delivered:** exact 30-node expanded Runner-amendment parity manifest with dispositions and dependency/role/recovery/run-ID/signer effects; Packages A/B honestly classified as non-executable design preparation with explicit conversion stop conditions; Package C split into immediately integrated current-main governance slice and ordinary `0037-21` slice with an atomic versioned compatibility boundary.
+- **R2 validation:** PASS — expanded parity set exactly equals the expected 30-node amendment set and every endpoint exists; required retained/rewrite/remove effects present; A/B non-executability and missing-bound conditions explicit; C branch/hygiene/preflight/integration/ordinary/compatibility sequence explicit; prior Runner contract, cutover, `0037-51`, retirement and invariant corrections preserved; exact two-path scope; base-to-REF diff clean.
+- **Next action after R2:** fresh independent Architect re-review against exact R2 correction REF; the conflicting uncommitted verdict remains non-operative.
