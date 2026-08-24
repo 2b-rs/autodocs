@@ -194,3 +194,150 @@ A fresh immutable plan is reviewable when it:
 
 The reviewer did not correct the candidate and grants no implementation,
 Acceptance, checkpoint or integration credit.
+
+## Re-review attempt — corrected candidate `702021c6c70cf467a36877e996e4e99545a75196`
+
+### Immutable re-review baseline
+
+- **Corrected substantive plan:**
+  `fb6580eb3922bc2694f3117d395bec05d69c9d05`
+- **Corrected final tip:**
+  `702021c6c70cf467a36877e996e4e99545a75196`
+- **Prior review:** `c456d66c394306a1667d20cf9d2fe4f62012da12`
+- **Controlling Runner amendment:**
+  `5d5996d07d8e8be71a99722a12e3afcb1d57919a`
+
+The re-review is append-only and uses the same identity, independence, scope and
+authority boundary as the initial review.
+
+### Re-review verdict
+
+**Verdict: `rejected`.** The correction fully closes the prior Runner shared-
+contract, cutover and `0037-51` authority-separation findings. It also removes
+the stale `0037-47` edge from the graph rows it covers. It does not, however,
+provide the complete affected-node delta it says must precede mutation, and two
+of its three proposed packages remain non-executable because exact write and
+resource bounds are deferred. Package C additionally routes governance outputs
+through a normal Task branch without reconciling the mandatory governance-on-
+`main` integration path. These are allocation and execution blockers, not
+editorial omissions.
+
+### F-TICKET-PLAN-R2-001 — Critical — the advertised complete graph delta omits controlling amendment nodes
+
+Section 3 correctly removes `0037-46`, `.01`, `.02` and `0037-47`, rewires
+`0037-39`, establishes `0037-21`, and names its five direct accepted consumers.
+But the controlling amendment also gives explicit dispositions for retained
+`0037-42`, `0037-44`, `0037-32`, `0037-35.01`, `0037-36`, `0038-07`, `0038-09`,
+`0043-01`, `0044-04`, `0044-07`, and explicit removals of `0037-50.02`–`.05`
+and `0038-16.02`. None of those rows appears in the candidate's graph contract
+(except bare mentions of “rewritten `0037-42`” and the cutover chain). Their
+role/capability, historical-transport, recovery, signer-separation and run-ID
+contracts therefore remain unbound.
+
+The generic instruction that a later graph candidate must enumerate every
+disposition does not make this plan itself complete or independently
+reviewable. In particular, the plan cannot prove that no future consumer of the
+removed singleton/queue/failover packages survives when the relevant removals
+are absent from its own matrix.
+
+**Required correction:** add every affected-node delta from the amendment with
+its retain/rewrite/remove/historical disposition and exact dependency impact;
+state the separate role/capability doctor behavior for `0037-42`, recovery
+authority boundary for `0037-44`, background capsule/run-identity bindings,
+signer separation, `0044-04/.07` role treatment, and all remaining removal
+rows. Then mechanically validate complete set equality against the amendment,
+not only endpoint validity for the listed subset.
+
+### F-TICKET-PLAN-R2-002 — High — Packages A and B still defer executable bounds
+
+Package A declares only “outputs only its declared public-projection and
+generated-site paths” and says the allocator later pins exact output paths,
+wall/CPU/memory limits and corpus. Package B similarly defers exact seed count,
+workers, wall/CPU/memory and corpus limits to the Task claim. These are precisely
+the write-collision, resource and validation boundaries the initial finding
+required the plan to define before calling the packages bounded. Package A also
+conditions its input on an accepted UI F-J baseline “if one has been allocated”,
+without pinning an immutable candidate or defining the local deliverable when it
+has not.
+
+The new advisory ranges are useful planning evidence, but 35–50% uncertainty
+and later allocator-selected output sets do not constitute exact executable
+contracts. By contrast, Package C enumerates its paths and stop condition much
+more concretely.
+
+**Required correction:** enumerate Package A's exact public projection/site,
+test, fixture and evidence paths and a pinned/explicitly absent UI baseline;
+enumerate Package B's exact test/fixture/evidence paths; assign finite seed,
+worker, CPU, memory, wall and output bounds or a deterministic checked profile
+owned by a named predecessor; and state exact success/recovery artifacts. If
+these cannot yet be known, label the entries design-preparation proposals rather
+than bounded implementation packages and do not claim executability.
+
+### F-TICKET-PLAN-R2-003 — High — Package C's branch route conflicts with governance-on-main
+
+Package C correctly lists `SANDBOX.md`, `AGENTS.md`, `PRIVILEGED.md`,
+`agent-workflow.json` and `docs/pipeline/**` outputs. Those are governance
+artifacts. It nevertheless assigns all work to “Task branch/worktree `0037-21`”
+without stating that the governance change is authored in an isolated worktree
+on a branch cut from current `main` and integrated immediately through the
+authorized governance route before agents consume it. An ordinary Task branch
+cannot hold private shared governance state while parallel work proceeds.
+
+The correction's authority sequence says the decision/amendment is integrated
+through governance, but that does not resolve the later Package C implementation
+route for the listed governance files.
+
+**Required correction:** split or explicitly sequence the Package C governance
+slice and ordinary work products. Bind governance authoring to an item-owned
+worktree/branch based on current `main`, run required hygiene/preflight, and use
+the separately authorized governance integration route; keep non-governance
+Task products on the exact `0037-21` topology. Record the atomic compatibility
+boundary so no agent observes a half-updated role/schema/instruction bundle.
+
+### Disposition of prior findings F-TICKET-PLAN-001..005
+
+1. **F-TICKET-PLAN-001 — partially resolved, still blocking.** The stale
+   `0037-47` critical edge is removed, but the complete amendment node/removal
+   matrix is not represented; R2-001 remains.
+2. **F-TICKET-PLAN-002 — resolved.** `0037-21`, its complete job-control
+   lifecycle, mandatory intermediate checkpoint, current-Acceptance edges and
+   role/authority separation are now explicit.
+3. **F-TICKET-PLAN-003 — resolved.** Quiescence, prepared authority bundle,
+   stale-client switch behavior, independent evidence evaluation and synthetic
+   `0037-40` cancellation/recovery proof are present without transport revival.
+4. **F-TICKET-PLAN-004 — partially resolved, still blocking.** Package C is
+   materially bounded, but A/B defer exact paths/resources and C's governance
+   route is invalid; R2-002 and R2-003 remain.
+5. **F-TICKET-PLAN-005 — resolved.** The plan now states `0037-51` is
+   preparation only and separates governance integration, distinct
+   implementation, Acceptance, checkpoints and terminal integration.
+
+### Regression check
+
+- `TODO.md` remains authoritative until cutover; `issues/` remains disposable.
+- Transport-independent safety invariants remain retained.
+- Sandboxed-grunt/queue/singleton/typed-action/host transport remain retired.
+- Runner remains normally `unprivileged`, Task-ID-bound and authority-negative.
+- `0037-21`, `0037-34.02` and the single `0037-40` terminal floor remain distinct.
+- No candidate, backlog, governance, Acceptance, integration or `main` state was
+  mutated by this review.
+
+### Re-review validation
+
+- Pinned candidate `fb6580eb3922` and final tip `702021c6c70c`; inspected the
+  complete corrected plan and changed-path set.
+- Compared the candidate row-by-row with all five original findings and the
+  controlling amendment's affected-node, dependency, checkpoint, recovery and
+  validation sections.
+- Positive token checks confirmed the full shared job record/lifecycle,
+  Acceptance consumer edges, quiescence, authority switch, synthetic terminal
+  proof and `0037-51` preparation-only sequence.
+- Whole-document affected-node comparison found the omitted nodes/removals named
+  in R2-001; direct searches confirmed only a bare `0037-42` reference among
+  that omitted set.
+- Package-field review confirmed A/B defer exact paths/resources and Package C
+  combines governance outputs with a normal Task branch route.
+- `git diff --check` is required before the append-only review commit.
+
+The corrected candidate remains rejected. This review grants no Acceptance,
+integration, checkpoint-crossing or Feature-closure credit.

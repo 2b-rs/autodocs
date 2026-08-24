@@ -21,5 +21,15 @@
   exact baseline/amendment and affected-node token checks; two-path write scope
 - status: review complete, validated and committed
 
+## Re-review attempt
+
+- corrected_candidate_ref: `fb6580eb3922bc2694f3117d395bec05d69c9d05`
+- corrected_candidate_tip: `702021c6c70cf467a36877e996e4e99545a75196`
+- verdict: `rejected`
+- prior_findings: F-002, F-003 and F-005 resolved; F-001 and F-004 partial
+- new_findings: one Critical, two High
+- candidate_mutation: none
+- status: re-review authored; validation and commit pending
+
 The candidate remains unmodified. This claim records no Acceptance or
 integration authority.
