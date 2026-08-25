@@ -1263,3 +1263,19 @@ grandfathered before the fully reviewed implementation reaches `main`.
 This is a pre-mutation scope review, not implementation validation, risk
 acceptance, Task Acceptance, an integration verdict, or authority to advance
 `main`.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-022`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-discovery-runtime-cursor.md`](dec-discovery-runtime-cursor.md),
+nicht in dieser Datei.
+
+`DEC-0044-022` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+(höchste belegte Nummer dort `DEC-0044-021`) und bezeichnet die
+Managemententscheidung: Team Discovery Runtime/Provider ist Cursor; Grok ist
+dekommissioniert; bei Rekommissionierung erhält Grok ein anderes Team.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 14:03 +02.
