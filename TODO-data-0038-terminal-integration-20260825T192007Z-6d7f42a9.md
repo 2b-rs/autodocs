@@ -3,13 +3,14 @@
 item: 0038-terminal-integration-architecture
 owner: data
 owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [x]
+status: [p]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
 branch: gov-0038-terminal-integration-data-20260825-r2
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0038-terminal-integration-data-20260825-r2
 base: 96e7a8b71a75773fd2f7193245792243e704a574
+refreshed_base: 6037b5febb36609f48580a9a797be618ddc27223
 write_scope: `TODO.md`; `docs/campaign-evidence/0038-35/architect-terminal-integration-contract.md`; this record
 
 ## Purpose and separation
@@ -37,6 +38,18 @@ identities under the contract evidence.
   and its R-6 no-closure finding remain append-only history.
 
 ## Next action
+
+Current `main` legitimately advanced through accepted `0044-05` integration to
+`6037b5febb36609f48580a9a797be618ddc27223`, making corrected candidate
+`5503f49fb619a2fd97fbce7e60dddcd63bc77b2e` stale for review. Merge that exact
+new baseline additively, preserve its complete `0044-05` records, and carry
+forward only the unchanged `0038-35` Task block with the canonical
+`(architect)` tag and exact 38-node prerequisite boundary. Revalidate the
+canonical doctor, graph/ID population, protected digests, and diff before
+recording refreshed substantive and bookkeeping tips. No implementation,
+Acceptance, integration, closure, or `main` advance is in scope.
+
+### Prior corrected candidate (preserved history)
 
 Corrected the independently rejected candidate at substantive REF
 `705b249709e8c0f6a5a0f3577c73b46313ff2749`: the only Task-contract change is
