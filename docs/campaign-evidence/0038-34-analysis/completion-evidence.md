@@ -121,3 +121,132 @@ about an existing set, so they too fall outside `AE-1`.
    was an `automation_safety` run that had executed against the contaminated tree; it was
    discarded and re-run. See the claim's progress log and the suggestion appended to
    `AGENTS.md`.
+
+---
+
+## 5.1 Correction (append-only) — §5.1's attribution claim was falsified
+
+*Appended 2026-08-25 by implementer `Tom-Georgiou-20260825T140200Z` (unprivileged),
+taking over from `Tom-Sisko-20260825T091500Z`. Nothing above this line has been altered:
+the original claim stays visible on purpose. A record that quietly swaps a false claim for
+a true one is worth less than one that shows its own error — and on a Task whose entire
+subject is adversarial completion evidence, the error is the most useful artifact in it.*
+
+### What was claimed
+
+§5 limit 1 argued that the repo-wide `automation_safety` `FAIL` was not attributable to
+this Task, and offered as its first piece of attribution evidence:
+
+> **zero findings in either file this Task adds**
+
+### That claim was false, and it was not found by re-reading the report
+
+Integrator `belanna` did not trust the completion evidence. She re-measured
+`automation_safety` against the **actual candidate** `9bcf87edb` rather than against the
+report's description of it:
+
+```
+$ python3 _src/tools/automation_safety.py --json --path _src/tests/test_adversarial_evidence.py
+verdict: FAIL — 3 unresolved critical findings
+```
+
+| Location | Code | Pattern |
+|---|---|---|
+| `_src/tests/test_adversarial_evidence.py:175` | `AUTO010` | `tempfile.mkdtemp()` fixture directory leaked on every run |
+| `_src/tests/test_adversarial_evidence.py:205` | `AUTO001` | unchecked mutating `subprocess.run` against the tool's own CLI |
+| `_src/tests/test_adversarial_evidence.py:221` | `AUTO001` | second instance of the same pattern |
+
+None of the 35 existing policy dispositions covered any of the three. The file *this Task
+adds* carried three unresolved critical findings while the evidence asserted it carried
+zero. The generalization from the repo-wide baseline `FAIL` to "and therefore nothing of
+mine contributes" was never measured against the candidate; it was inferred. That is
+precisely the failure mode `AE-2` and `AE-3` exist to prevent, committed inside the
+document defining them.
+
+### Mechanism chosen: rewrite the fixtures, not suppress the findings
+
+Two mechanisms were available: **(a)** add policy dispositions to
+`_src/tools/automation_safety_policy.json`, or **(b)** rewrite the fixtures so the flagged
+patterns do not arise. **(b)** was chosen and is what is committed.
+
+Rationale: a disposition records *"this finding is understood and accepted"*, and neither
+finding qualified. The `mkdtemp()` call really did leak a directory per run — `AUTO010`
+was correct, not a false positive. The `subprocess.run` calls really were unchecked
+mutating invocations. Suppressing a correct finding on a Task about not fooling yourself
+with evidence would have been the wrong artifact to leave behind. The suggestion log's own
+2026-08-20 entry documents where accumulated dispositions lead.
+
+- `ProjectionFixtures._repo`: `tempfile.mkdtemp()` → `tempfile.TemporaryDirectory()` with
+  `self.addCleanup(box.cleanup)`. The leak is gone, not annotated.
+- `CliFixtures`: `subprocess.run([...])` against the tool's own CLI → an in-process
+  `mod.main(argv)` call through a `_run()` helper capturing stdout/stderr.
+- `test_findings_exit_one` added, covering the previously unexercised middle exit code
+  (0 conforming / 1 findings / 2 failure).
+
+### The mechanism had a cost, and it surfaced immediately
+
+Replacing the subprocess with an in-process call broke
+`test_malformed_input_exits_two_and_never_passes`: `AssertionError: 0 != 2`. The exit-code
+contract itself was under test, so weakening the assertion was not available.
+
+Diagnosis — the tool and the assertion were both **correct**; the harness was not:
+
+```
+$ python3 -c "... import check_adversarial_evidence as mod; mod.main(['--evidence', bad])"
+FAILURE: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+rc= 0                                   # source says `return 2`
+
+$ dis.dis(mod.main)    # line 350: LOAD_CONST 0 (0); RETURN_VALUE
+$ inspect.getsource(mod.main)  # line 350: `        return 2`
+```
+
+Bytecode and source disagreed. The module was being loaded from a **stale cached `.pyc`**
+in macOS's shared cache prefix. CPython validates a cached `.pyc` against the source's
+*(mtime, size)* pair only, and the two revisions collided exactly:
+
+```
+src mtime 1787654168 size 12725
+pyc mtime 1787654168 size 12725      # different bytecode, considered valid
+```
+
+A copy of the identical source at a fresh path returned `2`. This never showed up under
+the subprocess harness because a spawned CLI runs as `__main__`, which CPython never loads
+from the bytecode cache. Moving in-process silently traded that guarantee away.
+
+**Fix (in the test file, within scope):** the tool is now loaded by compiling its source
+directly (`_load_tool_from_source()`), never through the cache — restoring for the
+in-process harness the property the subprocess had for free. `check_adversarial_evidence.py`
+itself was **not** modified; it was correct throughout.
+
+**Fault injection, per this Task's own rule.** A `.pyc` was deliberately forged from a
+mutated source (`return 2` → `return 0`) and stamped with the real source's *(mtime, size)*
+header. Under that poisoned cache:
+
+| Loader | Result |
+|---|---|
+| plain `import check_adversarial_evidence` (control) | `rc= 0` — original failure reproduced |
+| `_load_tool_from_source()` (the fix) | **22/22 pass** |
+
+Red on the pre-change harness, green on the candidate, with the defect injected rather
+than waited for.
+
+### Residual limit, surfaced actively
+
+The in-process harness still does not cover the `raise SystemExit(main())` line in
+`__main__`, nor real process isolation. That tradeoff is recorded in the `CliFixtures`
+docstring and is restated here so the checkpoint reviewer does not have to find it in the
+source. It is a genuine reduction in coverage accepted to remove two correct findings.
+
+### Final verified state
+
+| Check | Result |
+|---|---|
+| `automation_safety.py --json --path _src/tests/test_adversarial_evidence.py` | **PASS**, 0 findings, 0 unresolved critical, 0 policy errors |
+| `python3 -m pytest _src/tests/test_adversarial_evidence.py -q` | **22 passed** |
+| `python3 -m py_compile _src/tests/test_adversarial_evidence.py` | clean |
+| Poisoned-cache fault injection | control red (`rc=0`), candidate **22/22** |
+
+The repo-wide `automation_safety` `FAIL` described in §5 limit 1 (the `0038-16` disposition
+expiry and the 22 pre-existing shell findings) is **unchanged and still not repaired here**
+— that part of the original limit stands. What was false was only the attribution clause,
+and it is corrected above rather than deleted.

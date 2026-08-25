@@ -16,18 +16,47 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import importlib.util
 import io
 import json
 import re
 import sys
 import tempfile
+import types
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO_ROOT / "_src" / "tools"))
+TOOL_PATH = REPO_ROOT / "_src" / "tools" / "check_adversarial_evidence.py"
+sys.path.insert(0, str(TOOL_PATH.parent))
 
-import check_adversarial_evidence as mod  # noqa: E402
+
+def _load_tool_from_source() -> types.ModuleType:
+    """Load the tool by compiling its source, never a cached `.pyc`.
+
+    `CliFixtures` calls `mod.main(argv)` in-process instead of spawning the
+    CLI. A spawned CLI runs the tool as `__main__`, which CPython never loads
+    from the bytecode cache; an ordinary `import` does. That difference is not
+    academic: CPython validates a cached `.pyc` against the source's
+    *(mtime, size)* pair only, so two revisions written in the same second with
+    an identical byte length are indistinguishable to it and the stale
+    bytecode is used silently. That is exactly what happened here — a cached
+    build of an older revision returned `0` where the current source returns
+    `2`, and `test_malformed_input_exits_two_and_never_passes` failed against a
+    correct tool and a correct assertion.
+
+    Compiling from source restores the property the subprocess harness had for
+    free, so the in-process mechanism cannot report on code that is not the
+    code in the working tree.
+    """
+    src = TOOL_PATH.read_text(encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("check_adversarial_evidence", TOOL_PATH)
+    module = importlib.util.module_from_spec(spec)
+    exec(compile(src, str(TOOL_PATH), "exec"), module.__dict__)  # noqa: S102
+    return module
+
+
+mod = _load_tool_from_source()
 
 
 def codes(findings) -> set[str]:
