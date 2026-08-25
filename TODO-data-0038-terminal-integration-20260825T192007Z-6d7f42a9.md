@@ -3,7 +3,7 @@
 item: 0038-terminal-integration-architecture
 owner: data
 owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [p]
+status: [x]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
@@ -39,15 +39,28 @@ identities under the contract evidence.
 
 ## Next action
 
-Current `main` legitimately advanced through accepted `0044-05` integration to
-`6037b5febb36609f48580a9a797be618ddc27223`, making corrected candidate
-`5503f49fb619a2fd97fbce7e60dddcd63bc77b2e` stale for review. Merge that exact
-new baseline additively, preserve its complete `0044-05` records, and carry
-forward only the unchanged `0038-35` Task block with the canonical
-`(architect)` tag and exact 38-node prerequisite boundary. Revalidate the
-canonical doctor, graph/ID population, protected digests, and diff before
-recording refreshed substantive and bookkeeping tips. No implementation,
-Acceptance, integration, closure, or `main` advance is in scope.
+Refreshed substantive candidate
+`becef8b419fd10ff8c3110719209317823446283` is a two-parent additive merge of
+prior corrected candidate `5503f49fb619a2fd97fbce7e60dddcd63bc77b2e`
+and exact current `main@6037b5febb36609f48580a9a797be618ddc27223`.
+Against that current `main`, the complete candidate changes exactly three
+owned paths: this claim, the architecture contract, and `TODO.md`; the latter
+has exactly seven inserted lines and no deletion, so all accepted `0044-05`
+records are preserved byte-for-byte.
+
+Canonical `legacy_task_doctor.py --root . --json` reports zero findings for
+`0038-35` and zero unknown/duplicate/self/cycle/malformed prerequisite
+findings; its 779 unrelated repository findings remain disclosed and out of
+scope. Feature `0038` remains 39 unique nodes, with all other 38 named exactly
+once by `0038-35`, no missing, extra, or self edge. `DEC-0038-005` remains one
+unique heading. The protected partial-integration record retains SHA-256
+`d45ade874c9e1a03367b2ffb64c0eb9334f4d09be3d34c0786be97617ee146bd`; the
+architecture contract is byte-identical to the prior corrected candidate at
+SHA-256
+`7cbe8e4a18337b988ef7d39bd7ccf0ed7b37968c8146ac65336b04ba454bdf37`;
+`git diff --check` passed. Hand only this refreshed exact candidate to a
+separately assigned privileged Integrator. This claim performed no
+implementation, Acceptance, integration, closure, or `main` advance.
 
 ### Prior corrected candidate (preserved history)
 
