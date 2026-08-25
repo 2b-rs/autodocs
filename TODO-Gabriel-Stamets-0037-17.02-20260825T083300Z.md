@@ -17,3 +17,5 @@
 ## Progress
 
 - 2026-08-25T08:33:00Z worktree created from 736c16659; 17.01 already merged as ancestor.
+- Product REF `71189ce1141743f71ff2c94a11bd264ef6e890bf`. Validation: `python3 _src/tests/test_provenance_views.py` 8 tests OK; `test_provenance_store.py` 13 tests OK.
+- Successor `0037-17.03` remains `[ ]` (implementation-unlocked once this `[x]` is visible).
