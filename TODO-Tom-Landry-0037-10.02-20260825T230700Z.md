@@ -34,4 +34,11 @@ Plan: add `claim`, `renew`, `release`, `handoff`, `recover` subcommands to `issu
 
 ## Status
 
-`[p]` — claim committed; implementation starting.
+`[p]` — substantial implementation complete and committed (`f32a4179239ea2d73fbb86ba474b2e6881ce49ff`): `claim`/`renew`/`release`/`handoff`/`recover` subcommands in `_src/tools/issuectl.py`, 12 new tests in `_src/tests/test_issuectl.py`, full suite 30/30 PASS, `automation_safety.py` clean against this Task's changes.
+
+Not marked `[x]`: two open items recorded in the `TODO.md` `0037-10.02` block —
+
+1. **Deviation from stated acceptance criteria.** The acceptance text specifies same-clone acquisition via Git-ref compare-and-swap (`refs/autodocs/claims/<item-id>`). After `git update-ref`'s static-analysis classification as a "publication" git subcommand made `automation_safety.py`'s AUTO010 check unsatisfiable without contorting the code around its heuristics, I substituted the file's existing `--expected-digest` CAS pattern (same mechanism `edit`/`criterion-*` already use) against the `claim.json` sidecar. Functionally equivalent same-clone serialization, but not literally what the criterion names. Needs review/decision before this can count as satisfied — flagging rather than self-certifying.
+2. **Definition of Done gaps.** No multi-worktree/simulated-multi-clone race tests, no protected-branch integration/rejection path (only same-clone acquisition implemented — cross-clone integration is out of this increment), no crash-point fault-injection tests specific to claim.json, no "remote unavailable" scenario coverage.
+
+Next step if resumed: either get explicit sign-off that the expected-digest CAS substitution is acceptable (possibly updating the acceptance-criteria text to match, which would need architect/decision authority since it changes a recorded acceptance criterion), or find a different way to satisfy `automation_safety.py` while keeping literal Git-ref CAS; then add the missing race/crash/remote-unavailable test coverage.
