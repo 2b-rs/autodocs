@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import os
@@ -96,6 +97,7 @@ def fixture_add(repo, paths):
         relatives.append(str(contained.relative_to(repo)))
     if not relatives:
         raise FixtureGitError("git add requires enumerated paths")
+    _assert_fixture_identity(repo)
     run_isolated_git(repo, "add", "--", *relatives)
 
 
@@ -683,10 +685,71 @@ _HOSTILE_GIT_KEYS = (
     "GIT_CONFIG_PARAMETERS",
 )
 
+_ROOT_FINGERPRINT_PATHS = (
+    "_src/tests/test_issue_validate.py",
+    "_src/tools/issue_validate.py",
+)
+
+
+def _read_bytes(path):
+    path = Path(path)
+    if not path.exists():
+        return None
+    return path.read_bytes()
+
+
+def _sha256_bytes(payload):
+    if payload is None:
+        return None
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _index_bytes(repo):
+    git_dir = Path(repo) / ".git"
+    if git_dir.is_file():
+        text = git_dir.read_text(encoding="utf-8")
+        prefix = "gitdir:"
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.lower().startswith(prefix):
+                git_dir = Path(stripped[len(prefix):].strip())
+                if not git_dir.is_absolute():
+                    git_dir = (Path(repo) / git_dir).resolve()
+                break
+    index = git_dir / "index"
+    if not index.exists():
+        return None
+    return index.read_bytes()
+
+
+def _root_readonly_fingerprints(repo):
+    write_tree = run_isolated_git(repo, "write-tree").stdout.strip()
+    ls_stage = run_isolated_git(repo, "ls-files", "--stage").stdout
+    porcelain = run_isolated_git(repo, "status", "--porcelain").stdout
+    tracked = {}
+    for relative in _ROOT_FINGERPRINT_PATHS:
+        payload = (Path(repo) / relative).read_bytes()
+        tracked[relative] = (_sha256_bytes(payload), payload)
+    return {
+        "head": run_isolated_git(repo, "rev-parse", "HEAD").stdout.strip(),
+        "write_tree": write_tree,
+        "ls_stage": ls_stage,
+        "porcelain": porcelain,
+        "tracked": tracked,
+    }
+
+
+def _write_gitdir_file(worktree, git_dir):
+    worktree = Path(worktree)
+    worktree.mkdir(parents=True, exist_ok=True)
+    pointer = worktree / ".git"
+    pointer.write_text("gitdir: {}\n".format(Path(git_dir).resolve()), encoding="utf-8")
+    return pointer
+
 
 class FixtureGitIsolationTest(unittest.TestCase):
     def test_hostile_git_env_does_not_mutate_foreign_or_root(self):
-        root_head = run_isolated_git(ROOT, "rev-parse", "HEAD").stdout.strip()
+        before = _root_readonly_fingerprints(ROOT)
         with tempfile.TemporaryDirectory() as temp:
             parent = Path(temp)
             foreign = parent / "foreign"
@@ -729,11 +792,277 @@ class FixtureGitIsolationTest(unittest.TestCase):
             self.assertFalse((foreign / "index").exists())
             self.assertFalse((foreign / "pwned").exists())
             self.assertEqual(marker.read_text(), "foreign-canary\n")
-            self.assertEqual(run_isolated_git(ROOT, "rev-parse", "HEAD").stdout.strip(), root_head)
+            after = _root_readonly_fingerprints(ROOT)
+            self.assertEqual(after["head"], before["head"])
+            self.assertEqual(after["write_tree"], before["write_tree"])
+            self.assertEqual(after["ls_stage"], before["ls_stage"])
+            self.assertEqual(after["porcelain"], before["porcelain"])
+            for relative, (digest, payload) in before["tracked"].items():
+                self.assertEqual(after["tracked"][relative][0], digest)
+                self.assertEqual(after["tracked"][relative][1], payload)
             gpgsign = run_isolated_git(repo, "config", "--get", "commit.gpgsign").stdout.strip()
             self.assertEqual(gpgsign, "false")
             hooks = run_isolated_git(repo, "config", "--get", "core.hooksPath").stdout.strip()
             self.assertEqual(Path(hooks).resolve(), (repo / ".git" / "hooks").resolve())
+
+    def test_hostile_env_root_write_tree_fingerprint_stable(self):
+        before = run_isolated_git(ROOT, "write-tree").stdout.strip()
+        self.assertEqual(len(before), _SHA1_HEX)
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "intended")
+            payload = repo / "n.txt"
+            payload.write_text("n\n")
+            fixture_add(repo, [payload])
+        after = run_isolated_git(ROOT, "write-tree").stdout.strip()
+        self.assertEqual(after, before)
+
+    def test_hostile_env_root_ls_files_stage_stable(self):
+        before = run_isolated_git(ROOT, "ls-files", "--stage").stdout
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "intended")
+            payload = repo / "n.txt"
+            payload.write_text("n\n")
+            fixture_add(repo, [payload])
+        after = run_isolated_git(ROOT, "ls-files", "--stage").stdout
+        self.assertEqual(after, before)
+
+    def test_hostile_env_root_status_porcelain_stable(self):
+        before = run_isolated_git(ROOT, "status", "--porcelain").stdout
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "intended")
+            payload = repo / "n.txt"
+            payload.write_text("n\n")
+            fixture_add(repo, [payload])
+        after = run_isolated_git(ROOT, "status", "--porcelain").stdout
+        self.assertEqual(after, before)
+
+    def test_hostile_env_root_selected_tracked_hashes_stable(self):
+        before = {
+            relative: _sha256_bytes((ROOT / relative).read_bytes())
+            for relative in _ROOT_FINGERPRINT_PATHS
+        }
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "intended")
+            payload = repo / "n.txt"
+            payload.write_text("n\n")
+            fixture_add(repo, [payload])
+            fixture_commit(repo, "local")
+        after = {
+            relative: _sha256_bytes((ROOT / relative).read_bytes())
+            for relative in _ROOT_FINGERPRINT_PATHS
+        }
+        self.assertEqual(after, before)
+
+    def test_add_rejects_redirected_gitdir_file_before_mutation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            keep = foreign / "KEEP.txt"
+            keep.write_text("foreign-canary\n")
+            fixture_add(foreign, [keep])
+            fixture_commit(foreign, "foreign-base")
+            before_index = _index_bytes(foreign)
+            before_keep = keep.read_bytes()
+            _write_gitdir_file(intended, foreign / ".git")
+            payload = intended / "payload.txt"
+            payload.write_text("should-not-stage-in-foreign\n")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(intended, [payload])
+            self.assertEqual(_index_bytes(foreign), before_index)
+            self.assertEqual(keep.read_bytes(), before_keep)
+            self.assertNotIn("payload.txt", run_isolated_git(foreign, "ls-files").stdout)
+
+    def test_add_redirected_gitdir_foreign_index_byte_identical(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            keep = foreign / "KEEP.txt"
+            keep.write_text("stay\n")
+            fixture_add(foreign, [keep])
+            before = _index_bytes(foreign)
+            self.assertIsNotNone(before)
+            _write_gitdir_file(intended, foreign / ".git")
+            payload = intended / "x.txt"
+            payload.write_text("x\n")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(intended, [payload])
+            self.assertEqual(_index_bytes(foreign), before)
+
+    def test_add_redirected_gitdir_foreign_object_dir_unchanged(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            objects = foreign / ".git" / "objects"
+            listing = sorted(p.relative_to(objects).as_posix() for p in objects.rglob("*") if p.is_file())
+            _write_gitdir_file(intended, foreign / ".git")
+            payload = intended / "x.txt"
+            payload.write_text("x\n")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(intended, [payload])
+            after = sorted(p.relative_to(objects).as_posix() for p in objects.rglob("*") if p.is_file())
+            self.assertEqual(after, listing)
+
+    def test_assert_identity_rejects_gitdir_file(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            _write_gitdir_file(intended, foreign / ".git")
+            with self.assertRaises(FixtureGitError):
+                _assert_fixture_identity(intended)
+
+    def test_assert_identity_ok_on_normal_fixture(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            _assert_fixture_identity(repo)
+
+    def test_add_empty_paths_raises_without_git_add(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(repo, [])
+            self.assertEqual(run_isolated_git(repo, "status", "--porcelain").stdout, "")
+
+    def test_isolated_env_strips_git_dir(self):
+        env = _isolated_git_env(ROOT)
+        self.assertNotIn("GIT_DIR", env)
+        self.assertNotIn("GIT_WORK_TREE", env)
+        self.assertNotIn("GIT_INDEX_FILE", env)
+
+    def test_isolated_env_sets_nosystem_and_null_global(self):
+        env = _isolated_git_env(ROOT)
+        self.assertEqual(env["GIT_CONFIG_NOSYSTEM"], "1")
+        self.assertEqual(env["GIT_CONFIG_GLOBAL"], os.devnull)
+        self.assertEqual(env["GIT_CONFIG_SYSTEM"], os.devnull)
+
+    def test_isolated_env_ceiling_is_parent(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp) / "repo"
+            repo.mkdir()
+            env = _isolated_git_env(repo)
+            self.assertEqual(env["GIT_CEILING_DIRECTORIES"], str(repo.parent.resolve()))
+
+    def test_contain_under_repo_rejects_escape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp) / "repo"
+            repo.mkdir()
+            outsider = Path(temp) / "out.txt"
+            outsider.write_text("x\n")
+            with self.assertRaises(FixtureGitError):
+                _contain_under_repo(repo, outsider)
+
+    def test_contain_under_repo_accepts_nested(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp) / "repo"
+            nested = repo / "a" / "b.txt"
+            nested.parent.mkdir(parents=True)
+            nested.write_text("x\n")
+            self.assertEqual(_contain_under_repo(repo, nested), nested.resolve())
+
+    def test_add_does_not_stage_unlisted_sibling(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            listed = repo / "listed.txt"
+            sibling = repo / "sibling.txt"
+            listed.write_text("a\n")
+            sibling.write_text("b\n")
+            fixture_add(repo, [listed])
+            staged = run_isolated_git(repo, "ls-files").stdout.splitlines()
+            self.assertEqual(staged, ["listed.txt"])
+
+    def test_add_on_healthy_fixture_does_not_change_foreign_index(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = init_isolated_repo(parent / "intended")
+            keep = foreign / "KEEP.txt"
+            keep.write_text("k\n")
+            fixture_add(foreign, [keep])
+            before = _index_bytes(foreign)
+            payload = intended / "p.txt"
+            payload.write_text("p\n")
+            fixture_add(intended, [payload])
+            self.assertEqual(_index_bytes(foreign), before)
+
+    def test_commit_identity_mismatch_is_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            before = _index_bytes(foreign)
+            _write_gitdir_file(intended, foreign / ".git")
+            with self.assertRaises(FixtureGitError):
+                fixture_commit(intended, "nope")
+            self.assertEqual(_index_bytes(foreign), before)
+
+    def test_init_identity_matches_fixture_root(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            toplevel = run_isolated_git(repo, "rev-parse", "--show-toplevel").stdout.strip()
+            git_dir = run_isolated_git(repo, "rev-parse", "--absolute-git-dir").stdout.strip()
+            self.assertEqual(Path(toplevel).resolve(), repo)
+            self.assertEqual(Path(git_dir).resolve(), (repo / ".git").resolve())
+
+    def test_gitdir_file_text_survives_failed_add(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            pointer = _write_gitdir_file(intended, foreign / ".git")
+            payload = intended / "p.txt"
+            payload.write_text("p\n")
+            before = pointer.read_bytes()
+            with self.assertRaises(FixtureGitError):
+                fixture_add(intended, [payload])
+            self.assertEqual(pointer.read_bytes(), before)
+
+    def test_foreign_head_unchanged_after_redirected_add(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = init_isolated_repo(parent / "foreign")
+            intended = parent / "intended"
+            keep = foreign / "KEEP.txt"
+            keep.write_text("k\n")
+            fixture_add(foreign, [keep])
+            head = fixture_commit(foreign, "base")
+            _write_gitdir_file(intended, foreign / ".git")
+            payload = intended / "p.txt"
+            payload.write_text("p\n")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(intended, [payload])
+            self.assertEqual(run_isolated_git(foreign, "rev-parse", "HEAD").stdout.strip(), head)
+
+    def test_root_fingerprints_helper_is_read_only(self):
+        before = _root_readonly_fingerprints(ROOT)
+        again = _root_readonly_fingerprints(ROOT)
+        self.assertEqual(again["write_tree"], before["write_tree"])
+        self.assertEqual(again["ls_stage"], before["ls_stage"])
+        self.assertEqual(again["head"], before["head"])
+
+    def test_assert_identity_rejects_non_repo(self):
+        with tempfile.TemporaryDirectory() as temp:
+            empty = Path(temp) / "empty"
+            empty.mkdir()
+            with self.assertRaises(FixtureGitError):
+                _assert_fixture_identity(empty)
+
+    def test_add_rejects_symlink_escape_before_identity_git(self):
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            repo = init_isolated_repo(parent / "repo")
+            outsider = parent / "out.txt"
+            outsider.write_text("nope\n")
+            link = repo / "link.txt"
+            try:
+                link.symlink_to(outsider)
+            except OSError:
+                self.skipTest("symlink unavailable")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(repo, [link])
+            self.assertEqual(run_isolated_git(repo, "ls-files").stdout, "")
 
     def test_add_rejects_path_outside_fixture(self):
         with tempfile.TemporaryDirectory() as temp:
