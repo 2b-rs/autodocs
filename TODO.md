@@ -1080,7 +1080,7 @@ HOW TO USE:
   - **Acceptance criteria:** Both renderers consume one normalized catalog and neither view becomes input authority. SQLite is explicitly out of scope for v1 and may be proposed only by a later performance measurement Feature.
   - **Definition of Done:** Both Subtasks reconcile source/view IDs, states, criteria, and edges exactly.
 
-- [ ] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries.
+- [p] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries. Claim: `TODO-gabriel-0037-11.01-20260825T112400Z.md` (`owner_token: agent:gabriel:0037-11.01:20260825T112400Z`). **No product mutation until this claim commit REF is reported.**
   - **Acceptance criteria:** Render every lifecycle/archive disposition truthfully, including superseded/not-accepted; preserve normative text and criterion IDs; include an unambiguous generated warning plus source/schema/tool/config hashes and content-derived generation ID while linking the volatile execution run only from its external manifest; use deterministic ordering; and make manual divergence, omission, duplicated item, or false completion fail validation.
   - **Definition of Done:** Golden and repeated clean runs prove byte determinism and exact counts/IDs/state/text reconciliation for open, terminal, and anomalous fixtures.
 
