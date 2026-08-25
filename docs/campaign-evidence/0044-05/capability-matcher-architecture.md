@@ -311,8 +311,9 @@ a red-first mutation proving the authority-class constraint fails when removed.
 - Prerequisite: `0044-05.02` implementation complete.
 - Exact write scope: section 4.2 plus own coordination/bookkeeping record.
 - Topology: observe exact then-current `main` SHA `M`; create a new item-owned
-  governance branch/worktree at `M`; merge `--no-ff` the exact completed parent
-  `0044-05` tip carrying `.01` and `.02`, so `M` is first parent and the parent
+  governance branch/worktree at `M`; merge `--no-ff` exact assigned parent tip
+  `P`, which must carry `.01`, `.02`, and this clarification commit
+  `a222f7b32` by ancestry, so `M` is first parent and the parent
   Task tip is second parent; only then author the path-limited governance edits.
   If `main` drifts before mutation, stop and recalculate rather than replaying a
   stale policy baseline. This declared merge carries the executable/schemas and
