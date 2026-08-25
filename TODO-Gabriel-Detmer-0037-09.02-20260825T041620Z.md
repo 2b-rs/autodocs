@@ -1,7 +1,8 @@
 # Claim 0037-09.02
 
-- owner_token: `agent:gabriel-detmer-20260825t041620z:0037-09.02:20260825T041620Z`
-- agent: Gabriel-Detmer-20260825T041620Z
+- owner_token: `agent:gabriel-detmer-20260825t041620z:0037-09.02:20260825T041620Z` (Detmer token retained as provenance only; not current ownership proof)
+- current_owner_token: `agent:gabriel-owosekun-20260825t043500z:0037-09.02:20260825T043500Z`
+- agent: Gabriel-Owosekun-20260825T043500Z (takeover from Gabriel-Detmer-20260825T041620Z)
 - capability_class: unprivileged
 - execution_authority: direct local Shell/Git/tests in the item worktree only
 - item: 0037-09.02
@@ -37,3 +38,16 @@ Deviation: none. Implementation stays in `issue_validate.py` (shared diagnostics
 - 2026-08-25: worktree/branch created from binding base; claim authored.
 - 2026-08-25: implemented IV0910–IV0922 lifecycle/claim/closure/signature/evidence checks in `_src/tools/issue_validate.py`; negative fixtures `_src/tests/fixtures/0037-09.02/cases.json`; tests in `_src/tests/test_issue_validate.py`. `uv run python _src/tests/test_issue_validate.py` → 13 OK. Did not weaken 0037-09.01 rules.
 - 2026-08-25 continuation (Gabriel-Owosekun-20260825T043500Z, same owner_token): disposition coverage for completed/wontfix/superseded/duplicate/cancelled/archived-not-accepted; removed unreachable nested completed check. Tests 13/13 OK. Substantive REF `d2fd153a97f21003583fabaa62f74618cd874df5`. Implementation complete `[x]` on this Subtask branch only; claim kept; no Acceptance/merge/push.
+
+## Explicit takeover (2026-08-25T04:35:00Z)
+
+- dispatcher: gabriel
+- from: Gabriel-Detmer-20260825T041620Z
+- to: Gabriel-Owosekun-20260825T043500Z
+- timestamp: 2026-08-25T04:35:00Z
+- previous token (provenance only): `agent:gabriel-detmer-20260825t041620z:0037-09.02:20260825T041620Z`
+- new owner_token (current ownership proof): `agent:gabriel-owosekun-20260825t043500z:0037-09.02:20260825T043500Z`
+- write_scope: unchanged
+- product mutation: STOP — tip already `[x]` at bookkeeping `d654fdc89131ffd01006b45e162d792e743602f0`, substantive REF `d2fd153a97f21003583fabaa62f74618cd874df5`, progress `c4da065dea06fd14001e27255a7279726d99e649`
+- Detmer history retained; this session must not continue under the Detmer token
+- must_not still: Acceptance; merge to 0037-09 / main; 0037-09.03/.04; 0041-02; uv.lock
