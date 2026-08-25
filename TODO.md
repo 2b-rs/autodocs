@@ -182,6 +182,16 @@ HOW TO USE:
   - **Acceptance criteria:** A process instruction for the breakdown owner requires each task to record: the inputs its architecture decisions derive from (requirements, decision records, existing architecture, repository evidence), the derivation of its prerequisites (with the planned implementation order where order matters), the derivation of test scope and kind, the capability requirement profile (rights, data, tools, execution needs, cognitive demand class), and how the implementer is to create the branch; the instruction states how integrability under the target policy is verified at branch time (A1) and how order deviations are recorded (A2).
   - **Definition of Done:** Committed in `docs/pipeline/`; linked from `process-roles.md` and `AGENTS.md`; applied to one new real feature breakdown as a worked example (Feature `0043` or later).
   - **Integration review:** **mandatory.** **Rationale (architect):** this instruction shapes every future breakdown; a defect here propagates into every feature planned under it.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `geordi` (Geordi La Forge, privileged Team Enterprise Integrator)
+    - **Authority reference:** `agent-inbox:jean-luc→geordi:1787668111539-12cdc72a` (exact `0044-04` checkpoint/integration assignment, relaying current-user directive)
+    - **Accepted at:** `2026-08-25T16:47:21+02:00`
+    - **Contract SHA-256:** `7451ccc9b43dcc93ee89a4cf6031ebcb3ec6d46fbdd5f61efd6f08f39468fa83`
+    - **Work-product manifest SHA-256:** `48966619f762fab8ef4929e87a000f4fb57849b067cb9313574ad751b6d69abb`
+    - **Prerequisite-acceptance SHA-256:** `37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570`
+    - **Review REF:** `982602e81eacee2dc910db10a843f28f2f32a558`
+    - **Review evidence SHA-256:** `1f64881f8519d44b9bc3e53e3ba17b4f9d2e5a56f55dbfb373c7b08e4d048bd2` (`docs/campaign-evidence/0044-04/integration-review-geordi-20260825.md`)
 
 - [ ] **0044-05** PREREQ: 0044-05:0044-04 Define machine-readable schemas for task requirement profiles and agent capability descriptors, plus a deterministic no-AI matcher. *(architect-elaboration)*
   - **Requirements covered:** `RQ-CB-01` … `RQ-CB-03`; implements `DEC-0044-004`.
