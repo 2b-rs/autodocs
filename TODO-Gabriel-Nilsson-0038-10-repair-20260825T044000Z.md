@@ -7,7 +7,7 @@ feature_id: 0038
 capability_class: unprivileged
 execution_authority: direct local Shell/Git in the item worktree only; not sandboxed-grunt; no runner queue
 startup_review: Dispatcher briefing for Gabriel-Nilsson-20260825T044000Z, Team Discovery, Programmer. Read AGENTS.md/SANDBOX.md collaboration rules via session context. Re-measured: no `refs/heads/0038-10-repair-20260825T044000Z`; no worktree dir; binding base `4231f93b24cbd9aa056305ffa5a147ac316c783c` is a reachable commit (`feat(0038-10): persist immutable attempt results`). Worktree created from that exact base. First mutation this session is this claim plus the 0038-10 TODO marker/claim pointer only.
-state: [p]
+state: [x]
 binding_base: 4231f93b24cbd9aa056305ffa5a147ac316c783c
 canonical_branch: 0038-10-repair-20260825T044000Z
 canonical_worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z
@@ -47,4 +47,26 @@ MUST NOT: Acceptance, review, checkpoint; other 0038 Tasks including 0038-33; Fe
 
 ## Next step after this commit
 
-Stop. Later turns may repair `_src/tools/runner_transaction.py` and tests under this claim; not this commit.
+Done for implementation. Later turns must not self-accept.
+
+## Diagnosis (2026-08-25)
+
+Review `4fddf329efdd53ec65d9639e7210d2585bbf37c9` reproduced 46 ran, 5 failed, 2 errors. All seven touched `_current_pointer_status` or `_atomic_write` via `_open_directory_nofollow`. `Transaction` uses `root.resolve()` (`/private/var/folders/...`); tests pass unresolved `TemporaryDirectory` (`/var/folders/...`). macOS `/var` is a symlink; `O_NOFOLLOW` on that component yields `[Errno 20] Not a directory: 'var'`. Pointer status then reported `invalid` after an otherwise successful attempt.
+
+## Repair
+
+`_open_directory_nofollow` follows a directory symlink only when the target stays under the current physical prefix (OS aliases such as `/var` -> `/private/var`). Escaping links still fail. Tests unchanged. Docs unchanged.
+
+Substantive repair REF: `d712bbb95a8f9bfea5b546919561bad442a45fdb`
+
+## Validation
+
+- `PYTHONDONTWRITEBYTECODE=1 python3 _src/tools/test_runner_transaction.py`: 46/46 OK in 100.264s
+- `python3 -m py_compile _src/tools/runner_transaction.py`
+- `git diff --check` clean for the repair file
+
+## Gaps
+
+- No Acceptance, review, or checkpoint (out of scope).
+- Feature/main/DONE not updated.
+- Other 0038 Tasks not mutated.
