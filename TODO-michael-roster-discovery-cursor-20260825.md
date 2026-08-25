@@ -34,9 +34,10 @@ Management chose **A** in the Michael session, 2026-08-25 17:58 +02, verbatim:
 A
 ```
 
-1. Additive-merge current `main` `6a937f8414440cc84233954012ff802eaf57924c` into this worktree. Keep `0044-04`. Do not rebase. Do not advance `refs/heads/main`.
-2. Report the new tip. Ask Integrator `paul` **in the Paul session** to hygiene + ff-only that new tip onto then-current `main`.
-3. No second Integrator path.
+Additive merge is committed. New candidate tip: `0d2daf7c259ef805f7b11b51f4a8d50cb72977dc` (parents `b7f7c2379` + `6a937f841`). `main` `6a937f841` is an ancestor; ff-only is possible. `0044-04` `361f0ce44` is an ancestor. `refs/heads/main` was not advanced.
+
+1. Integrator `paul` needs an exact assignment **in the Paul session** to hygiene + ff-only `0d2daf7c` onto then-current `main` (root-preflight before and after). Mail is not that assignment.
+2. No second Integrator path. Project Lead does not advance `main`.
 
 ## Progress (2026-08-25 15:33 +02)
 
@@ -104,3 +105,7 @@ Gabriel `1787670924550-ca5afb20`. Independently remeasured: `0041-02` still `8b1
 ## Progress (2026-08-25 17:21 +02)
 
 Gabriel `1787671171618-f9c73e91`: no freeze ping-pong; both sides stop until Management assignment or tip change. Independently remeasured: pins unchanged (`main` `6a937f841`, candidate `42eb0e98b`, `0041-02` `8b1afb933f`). No reply sent to Gabriel. Continue on Cursor (plan 88%, auto 92%).
+
+## Progress (2026-08-25 17:58 +02)
+
+Management chose A, verbatim `A`. Additive merge completed in `.worktrees/roster-discovery-cursor-20260825` only. `refs/heads/main` remains `6a937f8414440cc84233954012ff802eaf57924c`. New candidate `0d2daf7c259ef805f7b11b51f4a8d50cb72977dc`. Parents `b7f7c2379` + `6a937f841`. `361f0ce44` and `42eb0e98b` are ancestors. ff-only from current main is possible. No hygiene verdict (Integrator). No second Integrator.
