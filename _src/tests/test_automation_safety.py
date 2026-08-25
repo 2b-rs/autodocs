@@ -1260,7 +1260,7 @@ def validate():
 
     def test_runner_transaction_control_rejects_a_moved_auto010(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 240)
+        target = next(finding for finding in findings if finding.line == 277)
         changed = [
             replace(finding, line=finding.line + 1) if finding is target else finding
             for finding in findings
@@ -1270,7 +1270,7 @@ def validate():
 
     def test_runner_transaction_control_rejects_a_renamed_auto010(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 1698)
+        target = next(finding for finding in findings if finding.line == 1735)
         changed = [
             replace(finding, symbol="Transaction.renamed_lock")
             if finding is target
@@ -1282,7 +1282,7 @@ def validate():
 
     def test_runner_transaction_control_rejects_changed_evidence_bytes(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 1839)
+        target = next(finding for finding in findings if finding.line == 1876)
         changed_evidence = target.evidence + "\n# byte drift"
         changed = [
             replace(
