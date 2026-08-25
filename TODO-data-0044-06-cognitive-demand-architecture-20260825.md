@@ -42,9 +42,11 @@ rubric, historical selection and falsification evidence, two-channel
 nondeterminism protocol, affected work units/gates, staged activation, rollback,
 and Implementer/Acceptance/Integrator separation.
 
+Substantive governance REF:
+`66878d88d24f401696ac1c7fb83f38a9eb57d000`.
+
 ## Intended validation and handoff
 
-Validate decision-record structure, exact three-path scope, document doctors,
-identifier uniqueness, trailer provenance, and a clean worktree. Hand the exact
-candidate to Jean-Luc for a separately assigned governance integration. Do not
+Hand the exact candidate containing the substantive REF and final validation
+evidence to Jean-Luc for a separately assigned governance integration. Do not
 advance `main` or begin implementation.
