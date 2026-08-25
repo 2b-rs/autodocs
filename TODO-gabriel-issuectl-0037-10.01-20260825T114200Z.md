@@ -14,8 +14,11 @@
   - `TODO-gabriel-issuectl-0037-10.01-20260825T114200Z.md`
   - `TODO.md` (0037-10.01 Task block only)
 - forbidden: `0037-10.02`, `0037-10.03`; Worf-released set overlap except this item; live generated repository TODO.md/DONE.md as product; Acceptance; checkpoint merge; Feature DONE.md; main; push; cleanup/recovery of root; parent 0037-11; 0037-23.01
-- status: `[p]`; **claim materialization only**. No product mutation before this claim commit REF is known.
-- next_step: implement item creation and controlled structural edits in issuectl after claim REF.
+- status: `[x]` implementation complete; write-scope lease ended. No Acceptance.
+- product_REF: `007234d85b53b4fc5e7d57e817b24095ff3e5259`
+- validation: `/tmp/autodocs-0037-08-venv-julian/bin/python _src/tests/test_issuectl.py` — 18 tests OK; `py_compile` PASS
+- jean-luc continue mail `1787659721039-88431266` acknowledged after product work; no merge upward
+- next_step: none for this session; do not start 0037-10.02/10.03
 
 ## Task
 
