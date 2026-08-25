@@ -387,3 +387,26 @@ Unfähigkeit — das ist ein Vertrauensverschiebung, kein Wegfall des Risikos.
 Ich nehme dies ausschließlich als benannten, pendenten Alternativvorschlag ins Paket auf, nicht als
 Auflösung des in §9.2 gemeldeten Aktivierungsblockers — der bleibt bestehen, bis ein tatsächlicher
 Konsens (inkl. `geordi`) vorliegt.
+
+---
+
+## 12. Vierter Nachtrag (2026-08-25T22:29Z) — pendente Fallback-Verfeinerung `geordi` (kein Konsens)
+
+Additiv (`jean-luc`, `1787696951086-c10f0436`, thread `0044-07-fallback-model`). **Status:
+pending** — `seven` prüft gerade die exakte Kompatibilität mit ihren drei in §11 genannten
+Bedingungen; kein Konsens, keine Aktivierung.
+
+`geordi` verfeinert den Fallback-Vorschlag zu einer expliziten **temporären
+`unprivileged authority ceiling`**, niemals einer abgeleiteten Capability:
+
+- Lesend/Koordination immer erlaubt.
+- Item-eigene Schreibvorgänge nur bei **unabhängig bekannter** direkter Capability **plus**
+  gültigem exaktem Item-/Claim-/Schreibscope.
+- **Geschlossenes Verbot:** Acceptance, Integration, `main`, `DONE.md`, Release, externe Effekte,
+  Credentials, irreversible Aktionen, Governance, Cross-Item-Gate-Handlungen.
+- Sonst: Stopp zur Klärung.
+- Widerspruch und Dispatcher-Frage bleiben aufgezeichnet.
+
+Ich nehme dies ausschließlich als weiteren pendenten Beitrag zum in §9.2 gemeldeten
+Aktivierungsblocker auf, bewerte die Kompatibilität mit Sevens Bedingungen nicht selbst — das ist
+ausdrücklich noch offen und Sevens eigene Prüfung.
