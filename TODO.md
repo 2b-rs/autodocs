@@ -1185,7 +1185,7 @@ HOW TO USE:
   - **Acceptance criteria:** Translation records are keyed by stable issue/UI identity plus source hash; no identity-bearing token is translated; all language requirements derive dynamically from `_src/site.json`.
   - **Definition of Done:** Both Subtasks pass fixture-level completeness, stale-source, protected-token, LTR/RTL, and language-local-link tests and may report production translations incomplete; only `0037-38` may make the repository-wide all-language completeness gate pass.
 
-- [ ] **0037-24.01** PREREQ: 0037-24.01:0037-02, 0037-24.01:0037-23.01 Extend `_src/i18n_translate.py` extraction/split/merge/status for public issue titles stored in `_src/i18n/<lang>/issues.json`.
+- [p] **0037-24.01** PREREQ: 0037-24.01:0037-02, 0037-24.01:0037-23.01 Extend `_src/i18n_translate.py` extraction/split/merge/status for public issue titles stored in `_src/i18n/<lang>/issues.json`. Claim: `TODO-lore-ada-0037-24.01-20260826T011000Z.md` (`owner_token: agent:lore-ada-20260826t011000z:0037-24.01:20260826T011000Z`).
   - **Acceptance criteria:** Key by item ID with canonical English `source_locale`, SHA-256 source-title hash, translated title, translator/run metadata, and status; include only `public-summary` titles; invalidate on source hash change; protect IDs/refs/code/placeholders; require canonical language plus every target in `_src/site.json`; reject duplicate/stale/wrong-item records. External human/model translation remains an authoring step, not part of hermetic regeneration.
   - **Definition of Done:** Schema, extraction/merge fixtures, split round trip, stale invalidation, all-language completeness report, and protected-token tests pass for English/German, representative LTR, and Arabic RTL.
 
