@@ -20,3 +20,4 @@
 
 - 2026-08-25T09:20:00Z takeover claims authored; claim-first commit next; then product validation and [x].
 - 2026-08-25T09:22:00Z claim commit `702028e8490b6a3e6a3c04b1595cc114b1785812`. Tests: `/tmp/autodocs-0037-08-venv-julian/bin/python _src/tests/test_issuectl.py` 10/10 OK; py_compile OK. Product commit next.
+- 2026-08-25T09:23:00Z product REF `7382aea9215de3e5ba60e744993078c8f2efda3c`. Implementation [x] bookkeeping next. No Acceptance/main/DONE/push.
