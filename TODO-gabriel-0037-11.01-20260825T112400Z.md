@@ -27,8 +27,8 @@
   - Worf set: `0037-10.01`, parent `0037-17`, `0037-22`, `0037-23.01`
   - Acceptance, Integration-review checkpoint merge, Feature `DONE.md` move, `refs/heads/main`
 - external_resources: none
-- status: `[p]`; claim `86b5f0ec50df04b2c75a82406bdb817cc8414fc4`; PL packet `99cd6b7e25b859a6c8b6fbd87b865f9eaecf3761`. Product mutation remains stopped until this write-scope correction is committed and its REF reported (jean-luc `1787657166190-24e07120`). Michael `1787657240393-f5c6611a` is coordination; it does not override the exact-path stop.
-- next_step: commit this additive write-scope correction; report corrective REF; then implement only the exact paths above.
+- status: `[x]`; product REF `beb2564331279bfdc29ae357cded9571b7416e9c`. No Acceptance is claimed.
+- next_step: none for implementation; privileged acceptance is a separate assignment.
 
 ## Authority provenance (stable across sessions)
 
