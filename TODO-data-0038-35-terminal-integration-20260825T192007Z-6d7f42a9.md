@@ -2,8 +2,12 @@
 
 item: 0038-terminal-integration-architecture
 owner: data
-owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [x]
+task_id: 0038-35
+request_id: terminal-integration-20260825T192007Z-6d7f42a9
+owner_token: agent:data:0038-35:terminal-integration-20260825T192007Z-6d7f42a9
+base_commit: 6037b5febb36609f48580a9a797be618ddc27223
+state: [ ]
+architect_work_product_status: [x]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
@@ -11,7 +15,13 @@ branch: gov-0038-terminal-integration-data-20260825-r2
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0038-terminal-integration-data-20260825-r2
 base: 96e7a8b71a75773fd2f7193245792243e704a574
 refreshed_base: 6037b5febb36609f48580a9a797be618ddc27223
-write_scope: `TODO.md`; `docs/campaign-evidence/0038-35/architect-terminal-integration-contract.md`; this record
+write_scope: ["TODO.md", "docs/campaign-evidence/0038-35/architect-terminal-integration-contract.md", "TODO-data-0038-35-terminal-integration-20260825T192007Z-6d7f42a9.md"]
+
+## Intended write scope
+
+- `TODO.md`
+- `docs/campaign-evidence/0038-35/architect-terminal-integration-contract.md`
+- `TODO-data-0038-35-terminal-integration-20260825T192007Z-6d7f42a9.md`
 
 ## Purpose and separation
 
@@ -36,6 +46,12 @@ identities under the contract evidence.
   architecture/decomposition authority only.
 - Existing `docs/pipeline/approvals/0038-main-integration-20260821T000000Z.md`
   and its R-6 no-closure finding remain append-only history.
+- **Canonical identity correction:** the original noncanonical path
+  `TODO-data-0038-terminal-integration-20260825T192007Z-6d7f42a9.md` and token
+  `agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9` are preserved
+  in Git history through bookkeeping tip `b19cb6cbb8`; the canonical identity
+  retains the existing `terminal-integration-20260825T192007Z-6d7f42a9`
+  request component and binds it to authoritative Task `0038-35`.
 
 ## Next action
 
