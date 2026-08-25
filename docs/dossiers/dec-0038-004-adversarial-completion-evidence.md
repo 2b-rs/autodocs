@@ -1,0 +1,45 @@
+### `DEC-0038-004` — Adversarial completion evidence is claim-bound, not role-bound
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T09:22:12Z`
+- **Deciding identity:** `agent:data:architect:0038-34:20260825T092500Z`
+- **Role:** `Architekt`
+- **Authority reference:** `TODO.md#feature-0038--transactional-task-work-reliable-evidence-and-chore-automation`; `docs/pipeline/process-roles.md#architect`
+- **Subject:** Repository-wide completion-evidence requirements for substantive changes that alter counting/cardinality, identity matching, serialization shape or field presence, gate classification, or set invariants.
+- **Decision:** Completion evidence for an in-scope substantive change is adversarial and claim-bound. It identifies the exact pre-change and candidate baselines; names at least one falsification case derived from the changed contract; shows that case red on the pre-change behavior and green on the candidate with the real command and bounded output or immutable output reference; and names at least two distinct adjacent contract cases with expectation, result, and relevance. If the change claims an invariant over a set or sequence— including deduplication, union/merge, closure, membership, multiplicity, or ordering—evidence additionally includes a generative or exhaustive property test, its oracle/invariant, generation domain or enumeration boundary, replay information, and executed case count. Applicability is determined by the behavior or contract changed, not by file type, author/reviewer role, or whether ordinary tests are green. The requirements are projected consistently into the `TODO.md` header contract and the completion section of `AGENTS.md`; they add to, and do not replace or weaken, existing validation, checkpoint, Acceptance, authority, or evidence-binding requirements.
+- **Technical justification:** The cited reviews do not support a universal implementer-confirmatory versus reviewer-refutational role split. They support a narrower mechanism: defects became detectable when a specific contract claim was converted into a named falsification question. Review `0038-31` found a multiplicity-loss neighbor by code inspection after ten green examples; property testing then established the corrected set behavior. Review `0044-16` found serialization-shape leakage one field over through an explicit absence/presence question. `DEC-0038-002` named four negative controls in advance for `0038-33`, and the technical review verified each independently; its first overall verdict was nevertheless inconclusive for an authority-package reason, so “passed first attempt” is not the governing fact. The `0044-04` findings concern stale baseline and role attribution, not executable red-first or set behavior, and therefore demonstrate why the rule needs an exclusion boundary. Binding the requirement to changed claims and named neighboring dimensions transfers the useful mechanism without ritualizing adversarial evidence for unrelated work.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Require claim-bound falsification evidence for the enumerated behavioral change classes, with property evidence only for asserted set or sequence invariants.
+    - **Disposition:** `selected`
+    - **Reason:** This matches the actual review evidence, gives implementers an executable target, and keeps the rule narrow enough to remain discriminating.
+  - **ALT-02:** Require adversarial completion evidence for every Task.
+    - **Disposition:** `rejected`
+    - **Reason:** Universal scope would create ritual evidence for bookkeeping, prose-only, and unrelated changes without support from the reviewed incidents.
+  - **ALT-03:** Define adversarial evidence by implementer versus reviewer role.
+    - **Disposition:** `rejected`
+    - **Reason:** The decisive variable in the reviewed cases was whether the contract question was named, not which role executed it; role-binding would also conflict with independent review rather than strengthen it.
+  - **ALT-04:** Require one example-based negative test but no property evidence for set invariants.
+    - **Disposition:** `rejected`
+    - **Reason:** The `0038-31` failure was a multiplicity and collision interaction outside the hand-written examples; set claims require population-oriented evidence.
+- **Consequences:**
+  - **CON-01:** In-scope completion records become independently replayable against exact before/after baselines and expose which contract claim was actually falsified.
+  - **CON-02:** Implementers must design negative and neighboring cases explicitly; a merely green existing suite or prose assertion is insufficient.
+  - **CON-03:** Set-invariant changes incur the cost of a generative or exhaustive property test and reporting its real domain, oracle, replay data, and executed count; no universal numeric minimum is imposed because valid finite domains and generators differ.
+  - **CON-04:** Documentation-only edits, bookkeeping-only edits, claim/marker updates, and changes that do not alter one of the enumerated behaviors are outside this additional rule; existing requirements still apply.
+  - **CON-05:** Stale-baseline, identity/authority attribution, independence, Acceptance, and checkpoint defects remain governed by their existing controls; adversarial test evidence cannot prove or waive them.
+  - **CON-06:** Activation requires identical normative meaning in the `TODO.md` header contract and `AGENTS.md`; partial or divergent projection is nonconforming and must not be treated as active policy.
+  - **CON-07:** Rollback removes both operative projections together and preserves this decision and all produced evidence append-only; rollback does not validate work completed under an inconsistent partial projection.
+- **Affected work units:**
+  - `task:0038-34`
+  - `repository:autodocs`
+  - `path:AGENTS.md`
+  - `path:TODO.md`
+- **Affected gates:**
+  - `validation:implementation-completion-evidence`
+  - `integration:0038-34`
+- **Review participation:** `none`
+- **No-review reason:** No second decision reviewer participated before recording. The mandatory supporting pre-mutation scope review is authored concurrently by the assigned Architect against the exact decision and source baselines; the Implementer's uncommitted preparation was deliberately not treated as review participation.
+- **Waiver:** `none`
