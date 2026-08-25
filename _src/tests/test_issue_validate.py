@@ -501,5 +501,60 @@ class LifecycleIssueValidateTest(unittest.TestCase):
             self.assertEqual(diagnostics, [])
 
 
+PROV_FIXTURES = ROOT / "_src/tests/fixtures/0037-09.03"
+PROV_CASES = json.loads((PROV_FIXTURES / "cases.json").read_text())["cases"]
+LEAK_TOKEN = json.loads((PROV_FIXTURES / "cases.json").read_text())["adversarial_leak_token"]
+
+
+class ProvenanceIssueValidateTest(unittest.TestCase):
+    maxDiff = None
+
+    def seed_issues(self, root):
+        write_item(root, "0099", document("0099", "feature"))
+        write_item(root, "0099-01", document("0099-01", "task", "0099"))
+
+    def validate_prov(self, prov):
+        with tempfile.TemporaryDirectory() as temp:
+            issues = Path(temp) / "issues"
+            self.seed_issues(issues)
+            diagnostics, _ = VALIDATE.validate(
+                repo=ROOT, source="working-tree", root=issues, compare_head=False,
+                now=FIXED_NOW, provenance_root=prov)
+            return {value.rule for value in diagnostics}, diagnostics
+
+    def test_valid_chain_passes(self):
+        rules, diagnostics = self.validate_prov(PROV_FIXTURES / "valid-chain")
+        self.assertEqual(rules, set(), diagnostics)
+
+    def test_every_provenance_negative_fixture(self):
+        for case in PROV_CASES:
+            with self.subTest(case=case["name"]):
+                rules, diagnostics = self.validate_prov(PROV_FIXTURES / case["dir"])
+                self.assertIn(case["rule"], rules, diagnostics)
+
+    def test_adversarial_leak_token_is_detected_under_budget(self):
+        self.assertEqual(VALIDATE.MAX_TRAVERSAL, 100000)
+        self.assertEqual(VALIDATE.MAX_PROVENANCE_FILES, 20000)
+        rules, diagnostics = self.validate_prov(PROV_FIXTURES / "restricted-leak")
+        self.assertIn("IV0932", rules, diagnostics)
+        self.assertTrue(any(LEAK_TOKEN in value.message for value in diagnostics), diagnostics)
+
+    def test_existing_structural_and_lifecycle_rules_are_unchanged(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "issues"
+            write_item(root, "0099", document("0099", "feature"))
+            write_item(root, "0099-01", document("0099-01", "task", "0099", ["0099-99"]))
+            diagnostics, _ = VALIDATE.validate(repo=ROOT, source="working-tree", root=root,
+                                               compare_head=False)
+            self.assertIn("IV0904", {value.rule for value in diagnostics})
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "issues"
+            write_item(root, "0099", document("0099", "feature"))
+            write_item(root, "0099-01", document("0099-01", "task", "0099", state="in_progress"))
+            diagnostics, _ = VALIDATE.validate(
+                repo=ROOT, source="working-tree", root=root, compare_head=False, now=FIXED_NOW)
+            self.assertIn("IV0911", {value.rule for value in diagnostics})
+
+
 if __name__ == "__main__":
     unittest.main()
