@@ -32,6 +32,12 @@ integrate this product.
   `/Users/tobias.anton/devel/autodocs/.worktrees/0044-06-cognitive-demand-governance-data-20260825`.
 - The root checkout was read-only and no authoritative marker was changed.
 
+## Intended write scope
+
+- `TODO-data-0044-06-cognitive-demand-architecture-20260825.md`
+- `docs/dossiers/dec-0044-026-cognitive-demand-scope.md`
+- `docs/dossiers/0044-06-cognitive-demand-scope-review.md`
+
 ## Delivered architecture
 
 `DEC-0044-026` preserves the existing `low | medium | high | critical`
