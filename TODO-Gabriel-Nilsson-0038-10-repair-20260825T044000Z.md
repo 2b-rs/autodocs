@@ -126,6 +126,21 @@ No product mutation in this commit. Marker stays `[p]` pending separately author
 
 Independently inspect code, run all 46 tests in `_src/tools/test_runner_transaction.py`, `py_compile`, and `git diff --check`. Then additive claim/TODO-only confirm or reject of `d712bbb95` with concrete finding and test counts. No new code unless a new defect is proven.
 
+## Independent inspect-and-confirm (2026-08-25, Gabriel-Linus-20260825T045800Z)
+
+**Verdict: CONFIRM** quarantine candidate `d712bbb95a8f9bfea5b546919561bad442a45fdb`.
+
+Takeover SHA (this session, claim-only): `634e4804e91e65ecfeb865f72c0a47ab7f472c21`
+
+**Finding (independent):** `_open_directory_nofollow` at `4231f93b2` opened every path component from `/` with `O_NOFOLLOW`. `Transaction` uses `Path.resolve()` so live repo roots already sit on the physical prefix (`/private/var/...` on this macOS). `_current_pointer_status` / `_atomic_write` and the 46 hermetic fixtures pass unresolved `TemporaryDirectory` paths whose lexical prefix is `/var` → `/private/var`. `O_NOFOLLOW` on that alias yields `ENOTDIR` (`Not a directory: 'var'`), so pointer validation reported `invalid` after an otherwise successful attempt. Candidate `d712bbb95` follows a directory symlink only when `os.path.realpath` of the link target stays under the current physical prefix (`_path_is_relative_to`); escaping runtime-parent links still raise. That matches the observed macOS prefix-alias failure without relaxing in-tree nofollow. No new defect found.
+
+**Independent validation (this session, worktree HEAD including candidate):**
+- `PYTHONDONTWRITEBYTECODE=1 python3 _src/tools/test_runner_transaction.py`: **46 ran, 0 failed, 0 errors, OK in 106.359s**
+- `python3 -m py_compile _src/tools/runner_transaction.py`: pass
+- `git diff --check` (worktree and `d712bbb95^..d712bbb95`): clean
+
+No product mutation in this commit. Marker stays `[p]`. `9c3b8e412` is not a valid close. `1d800dfa1` is Bryce provenance only. `0f49010c` remains an inspect-runtime adopt without retroactive authority; this confirmation is independent of that commit.
+
 ## Gaps
 
 - No Acceptance, review, or checkpoint (out of scope).
