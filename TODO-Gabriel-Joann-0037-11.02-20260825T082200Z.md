@@ -20,10 +20,13 @@
   - only the `0037-11.02` Task block in `TODO.md` for `[p]`/`[x]` bookkeeping
 - external_resources: none
 - prohibitions: no Acceptance, no Integration review, no `DONE.md` Feature move, no `main`, no 0037-11.01/17.01/13, no other Features, no runner-queue
-- status: `[p]` implementing catalog and dependency-graph views
+- status: `[x]`; implementation complete at substantive REF `bdffd04e8f6221490b5fb773673804936bbf330d`; no Acceptance is claimed.
 
 ## Findings and progress
 
 - HEAD confirmed `063b9c04eb68e770ef7b2f9b7d7ea3aeff5c984a`.
 - A prior Joann identity `20260825T081500Z` is not reused.
 - Generator is `_src/tools/issue_views.py`; views are generated-only and fail closed on stale/hand-edited bytes.
+- Validation: `python3 -m unittest _src.tests.test_issue_views -v` 9/9 PASS (venv with `ruamel.yaml`).
+- Substantive REF: `bdffd04e8f6221490b5fb773673804936bbf330d`.
+- Handoff: stop at `[x]`; no Acceptance, checkpoint, or Feature integration.
