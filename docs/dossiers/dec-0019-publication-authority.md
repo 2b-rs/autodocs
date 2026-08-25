@@ -202,3 +202,46 @@ Ausschlussprüfung):
 
 Vollständige Prompt-Kette in
 [`dec-0019-002-provenance.txt`](dec-0019-002-provenance.txt).
+
+---
+
+### `DEC-0019-003` — Later S-Core curation exports are self-contained and locally link-closed
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T06:09:44Z`
+- **Deciding identity:** `agent:tasha:0019-13:20260825T060255Z-702c7697`
+- **Role:** `Implementierer`
+- **Authority reference:** `task:0019-13`
+- **Subject:** The assembled publication root and blocking local-link validation contract for later releases of the S-Core v0.6.0 unvalidated-curation subtree, without changing the already published digest-bound tree.
+- **Decision:** The assembled publication root is the strict `eclipse-score-v0.6.0-curation-review/` export directory. A later candidate packages the canonical `review_request.js` at that root and a deterministic local `curation-report.html` replacement at that root; record pages reference the packaged script within the root, and `participate.html` references the local report. Validation examines every local `href` and `src` in every generated HTML page against that exact root and refuses missing files, non-regular targets, absolute or scheme-like local paths, and any path escape. No defect-specific missing-link allowlist remains. The decision authorizes only local candidate preparation under Task `0019-13`; implementation begins only after a separate supporting scope review by a management-instantiated Architect and after this governance record is current on `main`. It does not authorize publication.
+- **Technical justification:** The approved narrow publisher copies only the named subtree, so targets outside that subtree are not part of its supported output and cannot be assumed present. Packaging the unchanged canonical browser client and a small local report makes the artifact independently navigable, deterministic, and testable without widening the publisher or silently depending on ambient website layout. Resolving every local link against the actual assembled root removes both known false exceptions and makes a later publication fail before external effect if any required target is absent. The old digest `7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283` remains immutable evidence and is not repaired in place.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `public-release`
+- **Considered alternatives:**
+  - **ALT-01:** Make the strict subtree self-contained by packaging the canonical review client and a local curation-report replacement, then validate all local links within that root.
+    - **Disposition:** `selected`
+    - **Reason:** This is the smallest topology that matches the narrow publisher's actual payload, preserves the participation route, and permits exhaustive pre-release validation without ambient dependencies.
+  - **ALT-02:** Keep the links escaping the subtree and define the complete website root as the validator's assembled root.
+    - **Disposition:** `rejected`
+    - **Reason:** The bounded publication mechanism copies only the subtree, so a larger assumed root would validate files that are not carried by the approved payload and would reproduce the shipped defect class.
+  - **ALT-03:** Remove the curation-report link and browser review-request script from the generated pages.
+    - **Disposition:** `rejected`
+    - **Reason:** This would avoid dead targets by deleting the established user participation route, weakening the existing curation contract instead of repairing its packaging.
+- **Consequences:**
+  - **CON-01:** Any later S-Core curation candidate contains two additional root files, both included in deterministic inventory, digest, repeat-generation, and whole-population link evidence.
+  - **CON-02:** The strict validator may block a later release candidate when any local `href` or `src` is missing, escapes the root, resolves to a non-regular target, or is removed after generation; green validation is not release authorization.
+  - **CON-03:** The canonical IDs, version IDs, unvalidated markers, status/history, provenance, candidate counts, manifests, curator boundary, review-request authentication semantics, and narrow publisher authority remain unchanged.
+  - **CON-04:** The already published 2,248-file tree and its approved digest are retained byte-for-byte as historical evidence; this decision creates no special publication and has no external effect by itself.
+  - **CON-05:** Rollback before a later authorized publication is the ordinary removal of the Task `0019-13` candidate commit; after publication, supersession requires a new reviewed candidate and cannot relabel the old digest.
+- **Affected work units:**
+  - `task:0019-13`
+  - `repository:autodocs`
+  - `external:autodocs-github-pages-eclipse-score-curation`
+- **Affected gates:**
+  - `validation:_src/tools/prepare_score_curation_export.py`
+  - `release:eclipse-score-curation-later-release`
+- **Review participation:** `none`
+- **No-review reason:** The mandatory distinct Architect scope review is requested separately before any gate-scope implementation; no second-instance response existed when this pre-implementation decision record was created, so no support is inferred.
+- **Waiver:** `none`
