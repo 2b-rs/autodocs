@@ -1,0 +1,26 @@
+# Ticket-modernization plan transcription claim
+
+- **Item:** `ticket-modernization-transcription-20260824` (directly assigned transcription; no backlog marker claimed)
+- **Owner token:** `agent:beverly:ticket-modernization-transcription-20260824:20260824T090934Z`
+- **Author / technical lead:** Benjamin Sisko (`benjamin`); authorship remains Benjamin's
+- **Transcriber:** Beverly Crusher (`beverly`), Requirements Engineer, Team Enterprise
+- **Capability class:** `unprivileged`
+- **Execution authority:** direct local Shell/Git in this isolated worktree only; no allocation, acceptance, integration, checkpoint, DONE, Management, architecture, or production authority
+- **Assignment:** Jean-Luc mailbox `1787562574801-3a48fdf8`; faithful transcription of Benjamin's final ticket-modernization plan identified as mail `1787561830460-fc493ffd`
+- **Branch:** `0037-ticket-modernization-benjamin-20260824`
+- **Worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0037-ticket-modernization-benjamin-20260824`
+- **Base:** `main@59fd480255b188c2a8438f6d504a716679f1d988`
+- **Status:** `[x]`
+- **Write scope:** this claim and new `docs/dossiers/0037-ticket-modernization-execution-plan.md` only
+- **Permitted editorial changes:** Markdown formatting and verifiable file-count wording only; no technical-intent change or invented findings
+- **Validation:** cited paths/tasks exist; provenance and authorship explicit; faithful content comparison; diff check; exact two-path scope; clean worktree after commit
+- **Required review:** Benjamin reviews the transcription before any integration.
+- **Source received:** Benjamin forwarded the verbatim final revision in mailbox `1787562639879-2eefb65a`. The dossier preserves his text and authorship; only Markdown blank-line formatting was normalized.
+- **Claim-name reconciliation:** Benjamin's forward requested `TODO-benjamin-0037-ticket-modernization-20260824.md`; Jean-Luc's operative assignment explicitly scoped the new claim as `TODO-beverly-ticket-modernization-transcription-20260824.md` and named Beverly as transcriber. This claim follows that assignment while retaining Benjamin as author/technical lead.
+- **Verification observations:** `issues/`, `issues/_schema/`, and `issues/_policy/` exist at the pinned base; counts reproduce as 16 JSON schema files and 7 policy files. Every task identifier named in the plan exists in `TODO.md`. Data's UI/UX dossier is not present at pinned `main@59fd480255b188c2a8438f6d504a716679f1d988`; it exists on the separately handed-off UI/UX dossier line, so Package A needs an explicit consumable handoff before using it. This observation does not rewrite Benjamin's plan.
+- **Memory safety:** `memory_append` remains under the communicated workspace-routing safety hold; no memory write is needed for this item.
+- **Recovery:** discard only this isolated branch/worktree; root, main, TODO, governance, schemas, policies, and production remain untouched.
+- **Implementation REF:** `8a1dbd31cef0d530f430d7af057beeaac58493ac`
+- **Validation:** PASS — 16 JSON schema files and 7 policy files reproduce; all 23 explicitly expanded task IDs named by the plan exist in `TODO.md`; dossier-availability boundary recorded; exact base-to-REF `git diff --check` exits 0; only the two declared paths changed.
+- **Handoff:** Benjamin must review the transcription against mailbox source `1787562639879-2eefb65a` before any integration. A positive transcription review is not Task Acceptance or integration authority.
+- **Author review:** Benjamin reviewed substantive REF `8a1dbd31cef0d530f430d7af057beeaac58493ac` and returned verdict `faithful` in mailbox `1787562798791-c418a8b6`: text and table structure exactly match his final revision. This closes the required transcription review only; it is not Task Acceptance, allocation, checkpoint, or integration authority.

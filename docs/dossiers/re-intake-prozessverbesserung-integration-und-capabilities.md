@@ -238,3 +238,64 @@ Auftrag des Kunden: „RE und Architektur wäre den Spezialisten zu überlassen.
 Die Ausarbeitung der Tasks `0044-03` … `0044-07` ist daher der Architekt- bzw.
 RE-Persona nach `docs/pipeline/process-roles.md` zuzuweisen; dieses Dossier ist
 der RE-Intake, nicht die Architekturausarbeitung.
+
+### `DEC-0044-025` — Separate capability-matching contracts with staged activation
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T19:27:21+02:00`
+- **Deciding identity:** `agent:data:0044-05:20260825T165207Z-4f9c2a71`
+- **Role:** `Architekt`
+- **Authority reference:** `TODO.md#feature-0044--process-improvement-integration-policy-architecture-process-and-capability-based-task-matching` and `docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md#6-rollenzuordnung-der-umsetzung`
+- **Subject:** Shared schema, matching, separation, activation, and legacy-migration boundary for Task `0044-05`.
+- **Decision:** Task `0044-05` introduces two new closed contracts, `task-requirement-profile@v1` and `agent-capability-descriptor@v1`, plus a pure deterministic matcher that validates both inputs, evaluates required sets and ordered capacity classes, and returns the complete sorted eligible set with stable per-dimension rejection reasons. The Architect specifies profiles and never selects an agent; the orchestrator chooses only from the eligible set using separately recorded scheduling inputs. A match is necessary evidence, never assignment, ownership, authority, independence, Acceptance, waiver, or permission to widen scope. Unknown schema versions, unknown controlled values, missing capacity, and authority/process-role conflicts fail closed. The accepted two-class `agent-capability@v1` contract from `0037-45` remains unchanged and is not silently redefined; the new descriptor is a distinct contract and `0044-07` owns population of the role/agent catalog. Activation is staged: `0044-05` builds and self-checks the mechanism, `0044-07` supplies catalog descriptors, and only `0044-08` may activate broad dispatch enforcement after its end-to-end pilot and user decisions. Before broad activation, use is limited to the Feature-0044 pilot and produces advisory eligibility evidence without changing existing claim or start authority. The pilot has no implicit grandfathering: every pilot dispatch after the schema/tool baseline must carry a conforming profile and matcher result. Bootstrap self-application is explicit: the `0044-05` Implementer is selected by the existing authority process against the Architect's recorded profile, then the completed matcher must reproduce that result against the Implementer's exact descriptor before implementation completion. Rollback disables matcher enforcement at the orchestrator/briefing activation point while retaining schemas, results, and findings; `SANDBOX.md` fail-safe capability rules remain authoritative throughout and rollback never widens authority.
+- **Technical justification:** The matcher's allow/deny result can block another work unit's start and its schema becomes a shared boundary, so `cross-item-blast-radius` and material shared-interface triggers apply. Mutating `agent-capability@v1` in place would invalidate the accepted `0037-45` baseline and its consumers while still failing to represent the richer vector required by `RQ-CB-02`; a distinct descriptor preserves provenance and makes migration explicit. Separating profile specification, implementation, and integration review prevents the Architect who chooses decisive eligibility semantics from also implementing or accepting them. Staged activation makes the failure direction observable before repository-wide enforcement and provides a bounded rollback that cannot bypass the existing authority model.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+- **Considered alternatives:**
+  - **ALT-01:** Add distinct versioned task-profile and agent-descriptor contracts, a pure explainable matcher, and staged activation.
+    - **Disposition:** `selected`
+    - **Reason:** Preserves accepted legacy contracts, keeps agent selection outside the Architect role, and makes every rejection and activation boundary auditable.
+  - **ALT-02:** Rewrite `agent-capability@v1` in place to add `unprivileged` and the richer matching vector.
+    - **Disposition:** `rejected`
+    - **Reason:** Would silently change an accepted Feature-0037 contract and its bound consumers instead of recording a migration.
+  - **ALT-03:** Let an AI or the Architect choose the best agent directly from free-form prose.
+    - **Disposition:** `rejected`
+    - **Reason:** Contradicts Management decision `DEC-0044-004`, is nondeterministic, and conflates architecture with scheduling.
+  - **ALT-04:** Activate the matcher as a repository-wide start gate immediately when its executable first passes tests.
+    - **Disposition:** `rejected`
+    - **Reason:** A locally green implementation does not prove catalog completeness, composition, or rollback; `0044-07` and the `0044-08` pilot remain necessary.
+- **Consequences:**
+  - **CON-01:** `0044-05` is split into an Architect contract unit, a distinct Implementer unit, and a bounded adoption/validation unit; its existing mandatory checkpoint remains on the parent package and `0044-08` remains the Feature's sole terminal integrating Task.
+  - **CON-02:** Matcher eligibility uses set inclusion for rights, data handles, and tools; ordered sufficiency for token/context and cognitive-demand classes; exact execution-route compatibility; and explicit process-role, capability-class, and independence constraints. No single string or rank may override a failed authority constraint.
+  - **CON-03:** Multiple eligible descriptors are a valid, explicitly reported result; zero eligible descriptors block pilot dispatch, while the orchestrator—not the matcher or Architect—resolves multiple eligible candidates through separately governed scheduling.
+  - **CON-04:** `agent-capability@v1` remains readable legacy evidence. It is not an input to the new matcher and its known two-class limitation remains visible until the owning Feature-0037 migration path explicitly supersedes it.
+  - **CON-05:** Broad activation, affected non-pilot gates, and any migration of existing agent catalogs remain unactivated until `0044-08`; no historic dispatch receives retrospective matcher credit.
+- **Affected work units:**
+  - `feature:0044`
+  - `task:0044-05`
+  - `subtask:0044-05.01`
+  - `subtask:0044-05.02`
+  - `subtask:0044-05.03`
+  - `task:0044-07`
+  - `task:0044-08`
+  - `task:0037-45`
+  - `task:0038-19`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `task-start:0044-05.02`
+  - `task-start:0044-05.03`
+  - `task-start:0044-07`
+  - `task-start:0044-08`
+  - `validation:_src/tools/capability_match.py`
+  - `integration:0044-05`
+  - `feature-closure:0044`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0044-05:20260825T165207Z-4f9c2a71`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Data supplies the required pre-mutation Architect scope review and is prohibited from implementing or accepting the matcher; the future Implementer and Integrator must be distinct identities.
+- **Waiver:** `none`

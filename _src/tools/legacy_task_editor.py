@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import difflib
+import errno
 import hashlib
 import json
 import os
@@ -1410,9 +1411,29 @@ def _diff_for_changes(changes: Sequence[Change]) -> bytes:
     return encoded
 
 
+def _path_is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
 def _open_dir_nofollow(path: Path, *, create: bool = False) -> int:
+    """Open an existing directory without traversing escaping symlinks.
+
+    Leading OS aliases (macOS ``/var`` -> ``/private/var``) are followed because
+    the resolved target remains under the current physical prefix.  A directory
+    symlink whose target leaves that prefix is never followed: the original
+    ``O_NOFOLLOW`` failure is re-raised, so symlink-escape attempts are still
+    rejected.  This mirrors the fix already carried by
+    ``runner_transaction._open_directory_nofollow`` (Task ``0038-10``).
+    """
     absolute = path.absolute()
-    descriptor = os.open(os.sep, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    nofollow_flags = directory_flags | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open(os.sep, directory_flags)
+    current_physical = Path(os.path.realpath(os.sep))
     try:
         for part in absolute.parts[1:]:
             if create:
@@ -1420,13 +1441,28 @@ def _open_dir_nofollow(path: Path, *, create: bool = False) -> int:
                     os.mkdir(part, 0o755, dir_fd=descriptor)
                 except FileExistsError:
                     pass
-            next_descriptor = os.open(
-                part,
-                os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
-                dir_fd=descriptor,
-            )
+            try:
+                next_descriptor = os.open(part, nofollow_flags, dir_fd=descriptor)
+            except OSError as exc:
+                if exc.errno not in (errno.ENOTDIR, errno.ELOOP):
+                    raise
+                try:
+                    link_stat = os.lstat(part, dir_fd=descriptor)
+                except OSError:
+                    raise exc
+                if not stat.S_ISLNK(link_stat.st_mode):
+                    raise
+                raw_target = Path(os.readlink(part, dir_fd=descriptor))
+                if raw_target.is_absolute():
+                    resolved_target = Path(os.path.realpath(raw_target))
+                else:
+                    resolved_target = Path(os.path.realpath(current_physical / raw_target))
+                if not _path_is_relative_to(resolved_target, current_physical):
+                    raise
+                next_descriptor = os.open(part, directory_flags, dir_fd=descriptor)
             os.close(descriptor)
             descriptor = next_descriptor
+            current_physical = Path(os.path.realpath(current_physical / part))
         return descriptor
     except Exception:
         os.close(descriptor)

@@ -1,0 +1,77 @@
+# fresh run, stage 16a: CORRECTION to stage 16 -- self-caught mismeasurement of the combine exit status
+agent: Tom-Adeyemi-20260824T133000Z
+recorded: 2026-08-24T16:23Z
+
+## The defect
+
+`16-combine.txt` records `shell exit_code: 0` for
+`python3 _src/tools/build_report.py combine`. **That value is wrong.**
+
+The capture line in that stage's script was
+
+    echo "----------------..."
+    echo "shell exit_code: $?"
+
+so `$?` held the exit status of the preceding `echo`, not of the Python
+interpreter. It could only ever have printed 0.
+
+## Why this matters, and why it is not being hidden
+
+This is **exactly the same error class this Task already documented in a
+predecessor**: `F-TOM-OKONKWO-003` established that Tom-Rivera's stage-1a
+`exit 0` was a mismeasurement of a wrapper status rather than the interpreter's,
+contradicted by his own subreport. This session reproduced that error one stage
+later, in its own script, having read that finding. Recorded plainly, because an
+evidence set whose author quietly corrects his own measurement errors is worth
+less than one that shows them.
+
+`18-publish.txt` does not share the defect; it captures `rc=$?` immediately
+after the interpreter returns.
+
+## The corrected measurement
+
+Re-measured at 2026-08-24T16:23Z, at ledger state 2 lines,
+sha256 254862eee8af423835154607533af18e21c0e5d8a98efb47322fb6a930d8625e:
+
+    $ RUN_ARCHIVE_REF=manual-20260824T072259Z-d6eece5d \
+      python3 _src/tools/build_report.py combine
+    Aggregierter Build-Report geschrieben: .../combined-1787588496.json (Exit-Code 1)
+    Build-Ledger unveraendert: Lauf 'manual-20260824T072259Z-d6eece5d' ist in
+      docs/evidence/build-ledger.jsonl bereits verzeichnet (ein Eintrag je Lauf).
+    real combine exit: 1
+
+**Correct value: `1`, not `0`.**
+
+## This changes no conclusion
+
+`build_report.py` `combine` and `publish` both `return combined["exit_code"]`
+(`_src/tools/build_report.py:736` and `:751`) -- they propagate the exit status
+of the *aggregated run*, and do not report whether aggregation itself succeeded.
+The aggregated run genuinely has `exit_code 1` / `overall_success false`, for the
+107 task-foreign i18n_merge rejections (`F-TOM-ADEYEMI-001`). So:
+
+- the ledger entry appended by stage 16 is correct and unaffected -- it was
+  written from `combined`, never from the shell status;
+- `combine` did what it was supposed to do; the `1` is the run's verdict, not a
+  tool failure;
+- the stage-16 commit message's substantive claims stand.
+
+Only the `shell exit_code:` line of `16-combine.txt` is wrong. That file is left
+**unedited** -- committed evidence is not rewritten -- and this correction is
+appended alongside it as a separate, later artifact.
+
+## Bonus guard demonstration, obtained for free
+
+The re-measurement re-ran `combine` against an already-recorded cohort. The
+ledger **did not** gain a second entry:
+
+    ledger before re-run: 2 lines, sha256 254862ee...
+    ledger after  re-run: 2 lines, sha256 254862ee...  (identical)
+
+`record_in_ledger` enforces one entry per run and reported so explicitly. The
+append-only ledger is therefore also proven **idempotent under repeated
+`combine`** -- a run cannot be double-recorded by re-running the aggregation.
+`publish` (stage 18) exercised the same guard independently and also left the
+ledger byte-identical.
+
+STAGE-COMPLETE
