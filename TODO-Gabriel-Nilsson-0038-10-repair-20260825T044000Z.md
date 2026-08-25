@@ -85,8 +85,25 @@ Substantive repair REF: `d712bbb95a8f9bfea5b546919561bad442a45fdb`
 - `python3 -m py_compile _src/tools/runner_transaction.py`
 - `git diff --check` clean for the repair file
 
+## Independent inspect-and-adopt (2026-08-25, Gabriel-Bryce-20260825T045000Z)
+
+**Verdict: ADOPT** quarantined candidate `d712bbb95a8f9bfea5b546919561bad442a45fdb`.
+
+**Not a valid handoff close:** `9c3b8e412622c9402b6fa21fbf185b2066af962b` remains invalid as a close/handoff; it is not this session's implementation-close REF.
+
+**Independent finding:** `_open_directory_nofollow` at `4231f93b2` opened every path component from `/` with `O_NOFOLLOW`. `Transaction` uses `Path.resolve()` on the repo root (physical `/private/var/...` on macOS), so live attempts already wrote results. `_current_pointer_status` and `_atomic_write` (and hermetic fixtures) pass unresolved `TemporaryDirectory` paths whose lexical prefix is `/var` → `/private/var`. `O_NOFOLLOW` on that alias yields `ENOTDIR` (`Not a directory: 'var'`), so pointer validation reported `invalid` after an otherwise successful attempt. Candidate `d712bbb95` follows a directory symlink only when `os.path.realpath` of the link target stays under the current physical prefix; escaping runtime-parent links still raise. That matches the observed macOS prefix-alias failure without relaxing in-tree nofollow.
+
+**Independent validation (this session, worktree HEAD including candidate):**
+- `PYTHONDONTWRITEBYTECODE=1 python3 _src/tools/test_runner_transaction.py`: **46 ran, 0 failed, 0 errors, OK in 110.438s**
+- `python3 -m py_compile _src/tools/runner_transaction.py`: pass
+- `git diff --check` (worktree and `d712bbb95^..d712bbb95`): clean
+
+No product mutation in this commit. Marker stays `[p]` pending separately authorized closure; product SHA adopted is `d712bbb95`.
+
 ## Gaps
 
 - No Acceptance, review, or checkpoint (out of scope).
 - Feature/main/DONE not updated.
 - Other 0038 Tasks not mutated.
+- `9c3b8e412` is not a valid close.
+- No new code in this commit.
