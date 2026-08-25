@@ -16,7 +16,7 @@
 - external_resources: none
 - assumptions: the Project Lead's exact target-worktree assignment authorizes this session to use the existing isolated item worktree for this merge action; no ownership is inferred from the directory name
 - prohibited: `uv.lock`; `0037-09.03`/`0037-09.04`; foreign claim edits; Acceptance; review verdicts; checkpoint crossing; Feature/main/DONE movement; push; root-checkout mutation; unrelated repair
-- status: parent integration complete after separately owned EOF repair and successful bounded revalidation; no Acceptance or review disposition made
+- status: `0037-09.02` parent integration complete; subsequent `0037-09.03` parent integration inconclusive after assigned automation-safety gate failed; no Acceptance or review disposition made
 
 ## Required evidence
 
@@ -47,3 +47,15 @@
 - `py_compile` for `_src/tools/issue_validate.py` and `_src/tests/test_issue_validate.py`: **PASS**.
 - `git diff --check 993e995bebeda483c34449d4e9a7679c63078d6c..0b662697803eefa3a8bcf01a248da32e5ed8a735`: **PASS**, exit `0`.
 - Target worktree clean after validation. The EOF repair was integrated through its branch history; no cherry-pick, rewrite, independent repair, Acceptance, review verdict, checkpoint, Feature/main/DONE transition, push, `uv.lock`, or `0037-09.03`/`.04` action occurred.
+
+## Subtask 0037-09.03 integration evidence
+
+- Authority: exact Project Lead merge-and-validation assignment from `jean-luc`, mailbox `1787635188087-9c84ac2c`; no Acceptance, review, checkpoint, Feature, or main authority.
+- Preflight: target `0037-09@f4007f447cdba3db68a0167a9acbf9bbabe6ac9e` and source `0037-09.03-20260825T050700Z@016a21f484e83b4d9486e242ea0165f59ba19bdb` matched their assigned pins; target tracked worktree and index clean; source not yet an ancestor.
+- Integration hygiene: **PASS**, exit `0`, 196 registered worktrees.
+- Explicit merge: `32d9d2279ebfadae9a8a73087f69c9114275950e`; parents `f4007f447cdba3db68a0167a9acbf9bbabe6ac9e` and `016a21f484e83b4d9486e242ea0165f59ba19bdb`.
+- Focused validation with Python 3.9.6: **17 tests passed** in 9.210s.
+- `py_compile` for `_src/tools/issue_validate.py` and `_src/tests/test_issue_validate.py`: **PASS**.
+- `automation_safety.py --root . --path _src/tools/issue_validate.py --path _src/tests/test_issue_validate.py`: **FAIL**, exit `1`; scanned 2 files, 29 findings, 11 unresolved critical, 18 advisory, 0 policy errors. Critical findings are `AUTO003`/`AUTO010` around fixture-repository `git add`/`git commit` subprocesses in `_src/tests/test_issue_validate.py`. No finding was repaired or dispositioned during integration.
+- `git diff --check f4007f447cdba3db68a0167a9acbf9bbabe6ac9e..32d9d2279ebfadae9a8a73087f69c9114275950e`: **PASS**, exit `0`.
+- Target worktree clean at the stop. No Acceptance, review verdict, checkpoint, Feature/main/DONE transition, push, `uv.lock`, `0037-09.04`, `0041-02`, foreign-claim edit, history rewrite, or independent repair occurred.
