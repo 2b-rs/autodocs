@@ -104,9 +104,80 @@ process (full-repo scan, exceeded the 120s foreground timeout in this
 environment); result to be appended when it returns, or reported separately
 if it does not complete before handoff.
 
-## Status: reported to dispatcher, not closing claim as [x]
+## Scope extension and completion (2026-08-25)
 
-Awaiting Tom's direction on whether the three additional hardcoded
-line-number lookups are in-scope for a follow-up correction (would require
-write-scope expansion beyond this briefing) or a separate item. No further
-mutation performed pending that direction.
+Tom relayed jean-luc's scope extension (agent-inbox `1787644022848-39813957`)
+authorizing exactly three more hardcoded `finding.line ==` literal updates in
+the same file, for the same three tests already identified above:
+
+| test / lookup | old | new | symbol |
+|---|---|---|---|
+| `test_runner_transaction_control_rejects_a_moved_auto010` (~line 1263) | 240 | 277 | `_atomic_create` |
+| `test_runner_transaction_control_rejects_a_renamed_auto010` (~line 1273) | 1698 | 1735 | `Transaction.acquire_lock` |
+| `test_runner_transaction_control_rejects_changed_evidence_bytes` (~line 1285) | 1839 | 1876 | `Transaction.materialize_editor_candidate` |
+
+Before editing, confirmed each lookup still selects the same symbol via the
+same mutation-test semantics as before (moved/renamed/evidence-changed
+negative tests, each expecting `AssertionError`) — only the literal line
+number changes. No digest, symbol, or test-logic change.
+
+Committed separately as `f8f7992` (not folded into `928f1ed`), per Tom's
+instruction. `git diff` confirmed only the three literals changed in that
+commit.
+
+### All eight literals, taken together
+
+`git diff d03115278 HEAD -- _src/tests/test_automation_safety.py` shows
+exactly **8** numeric literal changes across the two commits (`928f1ed` +
+`f8f7992`) and nothing else in the file:
+
+- `RUNNER_TRANSACTION_ALLOWED_AUTO010` frozenset (5 entries, `928f1ed`):
+  `_atomic_create` 240→277, `Transaction.acquire_lock` 1698→1735,
+  `Transaction.materialize_editor_candidate` 1839→1876,
+  `BranchMergeTransaction._synchronize_worktree` 3295→3332,
+  `_recovery_lease` 3922→3959.
+- Three adversarial-test lookups (`f8f7992`), same three symbols as the
+  first three frozenset entries above (the moved/renamed/evidence tests
+  only exercise those three, not `_synchronize_worktree` or
+  `_recovery_lease`): 240→277, 1698→1735, 1839→1876.
+
+Every one of the 8 is a pure line-number update: same symbol name, same
+`evidence_sha256` where a digest is present (the frozenset entries; the
+three adversarial lookups carry no digest literal of their own — they look
+up a `Finding` by line and then operate on whatever digest that live
+`Finding` object carries), same test semantics/assertions unchanged. No
+symbol was renamed, no digest was altered, no test's expected outcome
+(`AssertionError`, `assertEqual`, etc.) was changed.
+
+### Final validation
+
+- `python3 -m pytest _src/tests/test_automation_safety.py -q` → **125 passed**
+  (previously 122/125 before the scope-extension commit).
+- `python3 -m py_compile _src/tests/test_automation_safety.py` → clean.
+- Live full-repo scan: `python3 _src/tools/automation_safety.py --json` run
+  to completion in the background (exceeds the 120s foreground timeout in
+  this environment; run via `nohup`-style background + completion-marker
+  polling). Output at `/tmp/autosafety_full.json` (98.2K), exit code `0`
+  recorded in `/tmp/autosafety_full.done`. Parsed result: `"verdict": "PASS"`,
+  `0` `policy_errors`. (Note: these are local /tmp scratch paths, not
+  repository artifacts; not committed.)
+- Diff-check: `git diff d03115278 HEAD -- _src/tests/test_automation_safety.py`
+  → exactly 8 numeric literal lines changed, `+8 -8`, nothing else moved.
+  `git diff --stat d03115278 HEAD` shows only
+  `_src/tests/test_automation_safety.py` (the 8 literals) and this claim
+  file changed — no other path touched.
+
+### Final commit SHAs
+
+- `928f1ed` — original five `RUNNER_TRANSACTION_ALLOWED_AUTO010` line
+  corrections.
+- `f8f7992` — three adversarial-lookup line corrections (scope extension).
+- This claim-bookkeeping commit — additive update to `[x]`, see below.
+
+## Status: [x] — implementation complete
+
+All eight line-number corrections applied, verified, and committed across
+two path-limited commits on branch `0038-33`. 125/125 tests passing. Live
+`automation_safety` scan: PASS, 0 policy_errors. Diff-check confirms no
+scope creep. Handed to Tom for handoff to kathryn/belanna. Acceptance review
+remains independent (belanna) — not performed or claimed here.
