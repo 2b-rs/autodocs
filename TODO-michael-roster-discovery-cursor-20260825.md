@@ -36,7 +36,7 @@ A
 
 Additive merge is committed. New candidate tip: `0d2daf7c259ef805f7b11b51f4a8d50cb72977dc` (parents `b7f7c2379` + `6a937f841`). `main` `6a937f841` is an ancestor; ff-only is possible. `0044-04` `361f0ce44` is an ancestor. `refs/heads/main` was not advanced.
 
-1. Integrator `paul` needs an exact assignment **in the Paul session** to hygiene + ff-only `0d2daf7c` onto then-current `main` (root-preflight before and after). Mail is not that assignment.
+1. Integrator `paul` needs an exact assignment **in the Paul session** to hygiene + ff-only the tip that contains `DEC-0044-024` onto then-current `main` (root-preflight before and after). Mail is not that assignment. Prior pin `8931c8ffa` is stale after `d4fb6644a`.
 2. No second Integrator path. Project Lead does not advance `main`.
 
 ## Progress (2026-08-25 15:33 +02)
@@ -109,3 +109,13 @@ Gabriel `1787671171618-f9c73e91`: no freeze ping-pong; both sides stop until Man
 ## Progress (2026-08-25 17:58 +02)
 
 Management chose A, verbatim `A`. Additive merge completed in `.worktrees/roster-discovery-cursor-20260825` only. `refs/heads/main` remains `6a937f8414440cc84233954012ff802eaf57924c`. New candidate `0d2daf7c259ef805f7b11b51f4a8d50cb72977dc`. Parents `b7f7c2379` + `6a937f841`. `361f0ce44` and `42eb0e98b` are ancestors. ff-only from current main is possible. No hygiene verdict (Integrator). No second Integrator.
+
+## Progress (2026-08-25 18:49 +02)
+
+Management asked to record the merge decision already, verbatim:
+
+```
+kannst du die Entscheidung zum Mergen nicht schonmal notieren?
+```
+
+Recorded as `DEC-0044-024` in `docs/dossiers/dec-0044-024-governance-ff-main.md` with allocation pointer in `docs/dossiers/dec-branching-merging-strategie.md`. Substantive REF `d4fb6644a88f96a73a77ed6a295cd5ff1718dde8`. Execution remains gated on an exact assignment in the Paul session (user B 18:47 +02). Project Lead does not advance `main`. New candidate tip is that substantive commit (ff-descendant of `main` `6a937f841`; prior pin `8931c8ffa` is stale).
