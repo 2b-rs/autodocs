@@ -1171,3 +1171,67 @@ oder dem Header-Contract.
 
 **Aufgezeichnet von:** privilegierter Integrator `belanna` (Team Voyager) auf
 Beauftragung durch Projektleiter `kathryn`, 2026-08-23.
+
+## `DEC-0044-020` — Ephemerer Agent-Memory-Zustand blockiert Integrationen nicht
+
+**Status:** Managemententscheidung als ausführbarer Kandidat aufgezeichnet;
+Aktivierung erst nach unabhängiger Architekten-Scope-Prüfung, Implementierung,
+Validierung und Integration auf `main`.
+
+**Authority reference:** Direkte Anweisung des aktuellen Nutzers vom
+2026-08-25: `logs/agent-memory` ist ephemer; Agenten schreiben dort Erfahrungen
+zum Teilen nieder; die Zuordnung zu einer Issue in der Commit-Message ist
+ausreichend; für den Hygiene-Checker ist eine Ausnahme zu definieren.
+
+**Entscheidung.** Getrackte Arbeitsbaumabweichungen ausschließlich unter
+`logs/agent-memory/**` sind im `main`-Checkout zulässiger ephemerer
+Lernzustand und dürfen für sich allein weder `MAIN_WORKTREE_DIRTY` noch den
+komplementären harten Root-Preflight blockieren. Die Ausnahme ist pfadbasiert,
+nicht autoren-, inhalts- oder zeitbasiert. Eine spätere persistente Übernahme
+dieser Lerninhalte benötigt lediglich eine Task-/Issue-Zuordnung in der
+Commit-Message; die Memory-Datei benötigt dafür keinen eigenen Backlog-Knoten.
+
+**Unverändert und weiterhin blockierend:**
+
+1. Jede Indexabweichung, einschließlich gestagter Memory-Dateien
+   (`INDEX_NOT_HEAD`/`FOREIGN_STAGED_TREE`).
+2. `STALE_AFTER_REF_MOVE`, `WORKTREE_UNAVAILABLE` und ein nicht ausführbarer
+   Checker (Exit `2`).
+3. Jede getrackte Arbeitsbaumabweichung außerhalb `logs/agent-memory/**`.
+4. Merge-Konflikte oder ein Git-Abbruch, insbesondere wenn ein zu
+   integrierender Commit dieselbe Memory-Datei verändert.
+5. Die Verbote gegen Root-Autorenschaft, Root-Commits, Reset/Clean/Stash
+   fremder Zustände, eigenmächtige Tag-Löschung sowie erfundene Acceptance-,
+   Review-, Integrations- oder Managementautorität.
+
+**Betroffene Arbeit und Schnittstellen:** Der ausführbare Checker
+`_src/tools/check_integration_hygiene.py`, seine hermetischen Tests, die
+Preflight-Anweisungen in `AGENTS.md` und
+`docs/pipeline/branch-workflow.md` sowie die Werkzeugdokumentation in
+`docs/pipeline/tools.md`. Die Ausnahme betrifft alle Integrationen, weil diese
+Gates repository-weit wirken. Produkt-, Acceptance- und
+Checkpoint-Verträge bleiben unverändert.
+
+**Aktivierungspunkt:** Erst der vollständig geprüfte Governance- und
+Checker-Stand auf `main`. Bis dahin bleibt die bisherige strikte Semantik
+wirksam; insbesondere ist die aktuell beobachtete Abweichung in
+`logs/agent-memory/roles/Architect.md` noch kein gültiger Pass.
+
+**Erforderliche Verifikation:** Hermetische Positiv- und Negativkontrollen
+müssen mindestens beweisen: (a) ausschließlich unstaged Memory-Divergenz ist
+nicht blockierend; (b) gemischte Memory- und Nicht-Memory-Divergenz bleibt
+blockierend und nennt nur die relevante nicht-ephemere Ursache; (c) gestagte
+Memory-Divergenz bleibt blockierend; (d) stale-ref-, unavailable- und
+Exit-2-Semantik bleiben unverändert; (e) der harte Root-Preflight verwendet
+dieselbe kanonische Pfadgrenze wie der Checker; (f) ein Merge, der dieselbe
+Memory-Datei berührt, scheitert sicher und wird nicht erzwungen. Live-Evidenz
+ist zusätzlich, aber ersetzt diese Kontrollen nicht.
+
+**Recovery:** Bei Rücknahme wird die Pfadausnahme additiv widerrufen; Checker
+und Root-Preflight behandeln danach wieder jede getrackte Root-Divergenz als
+blockierend. Bereits ephemer gebliebene Memory-Zeilen erhalten dadurch keine
+nachträgliche Persistenz- oder Acceptance-Wirkung.
+
+**Aufgezeichnet von:** `jean-luc`, Project Lead Team Enterprise, 2026-08-25.
+Diese Aufzeichnung setzt die Managementanweisung operativ um, beansprucht aber
+keine Architekten-, Implementierungs-, Review- oder Acceptance-Autorität.
