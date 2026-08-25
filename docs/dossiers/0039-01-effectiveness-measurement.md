@@ -153,7 +153,9 @@ One authority wait in the whole population, resolved to implementation completio
 | `0038-28` | `[x]` → `[ ]` | `4b95d99db` |
 | `0043-02` | `[x]` → `[ ]` | `4b95d99db` |
 
-Both occur at the **same commit**, `4b95d99db` — the already-documented data-loss incident in which a stale-root-checkout commit deleted 4,869 lines from three already-terminal items, repaired by `27930dc9c`. **These are not scope reversals; they are the known incident, and the derivation reproduces it exactly.** That the corrected traversal returns precisely the one documented event and nothing else is the strongest available check that the correction in §1a worked: the defective traversal reported 18 of 20 Tasks reverting, including nine at an unrelated claim commit.
+Both occur at the **same commit**, `4b95d99db` — the already-documented data-loss incident in which a stale-root-checkout commit deleted 4,869 lines from three already-terminal items, repaired by `27930dc9c`. **These are not scope reversals; they are the known incident, and the derivation reproduces it exactly.** That the corrected traversal returns precisely the one documented event and nothing else is **supporting validation** that the correction in §1a worked: the defective traversal reported 18 of 20 Tasks reverting, including nine at an unrelated claim commit.
+
+**Bound on that validation, and it is a real one (jean-luc, `1787679599796-becf8c42`):** agreement with a known incident is evidence **against false positives only**. It says nothing about *completeness* — a reversal that left no documented incident behind would be equally invisible to this check. I had first written that the agreement was "the strongest available check"; that phrasing claimed a two-sided assurance from a one-sided test, which is precisely the direction axis this Task catalogues, applied to my own validation claim. Corrected here, contributed by jean-luc.
 
 **Genuine scope reversals in the population: none observed.**
 
