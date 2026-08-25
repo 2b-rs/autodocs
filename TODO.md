@@ -1026,7 +1026,7 @@ HOW TO USE:
   - **Acceptance criteria:** Detect invalid/dangling/reversed/cardinality-violating edges, ID/digest collisions, fabricated context, mutable path without digest, synthetic-as-production evidence, restricted-field/endpoint leakage, redaction mismatch, and stale or incomplete reverse indexes.
   - **Definition of Done:** One negative fixture per typed relation/classification/privacy rule and adversarial leak tokens pass fixed traversal/resource budgets.
 
-- [ ] **0037-09.04** PREREQ: 0037-09.04:0037-05, 0037-09.04:0037-09.01, 0037-09.04:0037-09.02, 0037-09.04:0037-09.03 Implement DAG, sole-writer, freshness, generated-view, determinism, and project-validator integration.
+- [p] **0037-09.04** PREREQ: 0037-09.04:0037-05, 0037-09.04:0037-09.01, 0037-09.04:0037-09.02, 0037-09.04:0037-09.03 Implement DAG, sole-writer, freshness, generated-view, determinism, and project-validator integration. **Claim:** `TODO-Gabriel-Pike-0037-09.04-20260825T061300Z.md` (`agent:gabriel-pike-20260825t061300z:0037-09.04:20260825T061300Z`). Branch `0037-09.04-20260825T061300Z` from parent `0037-09` @ `e0ed8a52b9640c20cd48f7e062f339a1c78ebf37`.
   - **Acceptance criteria:** Detect DAG cycles, undeclared/multiple writers, missing required stages, stale/hand-edited outputs, mixed content-generation IDs, byte/semantic comparator violations, self-consuming reports, and unexplained generated files; integrate all issue checks into `_src/validate.py` with explicit staged/candidate modes.
   - **Definition of Done:** Cycle/writer/staleness/determinism fixtures, repeated runs, integration tests, and mutation guards pass without modifying authoritative or generated files.
 
