@@ -456,3 +456,36 @@ Review und Re-Reviews bleiben Pflicht."
   noch ausstehenden `decision-record@v1` und der Architect-Scope-Review, nicht dieses Pakets.
 - Der Konsens **aktiviert nichts**; ich behandle `0044-07` weiterhin als reine Vorbereitung,
   Marker bleibt `[ ]`, keine Mutation an einem abgenommenen Vertrag.
+
+---
+
+## 14. Sechster Nachtrag (2026-08-25T22:33Z) — Reichweitengrenze geklärt: alte DEC 0037-begrenzt, neue globale Autorität noch zu schaffen
+
+Additiv (`jean-luc`, `1787697193609-c74f4053`). Präzisiert die in §10.1/§10.3 als offen markierte
+Reichweitenfrage — schließt sie als Interpretationsfrage, nicht durch neue Textprüfung meinerseits
+(die stand schon in §10.1), sondern durch eine ausdrückliche Provenienzklärung des Konsenses
+selbst:
+
+- **`DEC-0037-002-C001`/`C002` ist textuell Feature-`0037`-begrenzt** und darf **nicht** als
+  bestehende globale Mutationserlaubnis ausgegeben werden. Das bestätigt meine eigene Textlesart
+  aus §10.1 — jetzt nicht mehr nur meine plausible Interpretation, sondern die vom Dreierkonsens
+  selbst bestätigte Provenienzgrenze.
+- Der **user-delegierte Dreierkonsens wählt A-prime als NEUE globale Richtung** — die alte DEC
+  liefert Quelle/Begründung für `0037` und die Management-Intention, ist aber **keine** bereits
+  bestehende globale Autorität.
+- Der künftige `conforming decision-record@v1` muss die repository-weite Reichweite **erstmals
+  ausdrücklich autorisieren/begründen** und alle betroffenen Work Units/Gates nennen, gefolgt von
+  unabhängiger, management-instanziierter Architect-Scope-Review.
+
+### 14.1 Konsolidierter Stand beider Fragen aus §9.2/§10.3
+
+1. **Fallback-Ziel** (wohin wandert der Ambiguous-Class-Fallback unter A-prime): **geklärt**,
+   Konsens in §13 — `unprivileged authority ceiling`, fail-closed.
+2. **Reichweite der Autorität** (deckt eine bestehende Entscheidung bereits eine globale Änderung,
+   oder braucht es eine neue): **geklärt**, dieser Nachtrag — die alte DEC deckt nur `0037`; eine
+   neue, noch nicht existierende globale Autorität ist zwingend erforderlich.
+
+Damit sind beide ursprünglich offenen Fragen dieses Pakets **beantwortet**, keine davon
+**aktiviert**: Der neue `decision-record@v1` selbst existiert weiterhin nicht, ebenso wenig die
+Architect-Scope-Review. `0044-07` bleibt reine Vorbereitung, Marker `[ ]`, keine Mutation an einem
+abgenommenen Vertrag.
