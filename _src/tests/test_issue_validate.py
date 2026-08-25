@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import random
 import shutil
@@ -12,6 +13,156 @@ SPEC = importlib.util.spec_from_file_location("issue_validate", ROOT / "_src/too
 VALIDATE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(VALIDATE)
 CASES = json.loads((ROOT / "_src/tests/fixtures/0037-09.01/cases.json").read_text())["cases"]
+
+_SHA1_HEX = 40
+
+
+class FixtureGitError(RuntimeError):
+    """Fail-closed isolation error for temporary Git fixtures."""
+
+
+def _isolated_git_env(repo, *, template=None, hooks_path=None):
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    repo = Path(repo).resolve()
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    env["GIT_CONFIG_GLOBAL"] = os.devnull
+    env["GIT_CONFIG_SYSTEM"] = os.devnull
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_ASKPASS"] = os.devnull
+    env["GIT_EDITOR"] = "true"
+    env["GIT_SEQUENCE_EDITOR"] = "true"
+    env["GIT_PAGER"] = "cat"
+    env["GIT_CEILING_DIRECTORIES"] = str(repo.parent)
+    keys = [
+        ("commit.gpgsign", "false"),
+        ("tag.gpgSign", "false"),
+        ("gpg.format", "openpgp"),
+        ("advice.detachedHead", "false"),
+    ]
+    if template is not None:
+        env["GIT_TEMPLATE_DIR"] = str(template)
+        keys.append(("init.templateDir", str(template)))
+    if hooks_path is not None:
+        keys.append(("core.hooksPath", str(hooks_path)))
+    env["GIT_CONFIG_COUNT"] = str(len(keys))
+    for index, (name, value) in enumerate(keys):
+        env[f"GIT_CONFIG_KEY_{index}"] = name
+        env[f"GIT_CONFIG_VALUE_{index}"] = value
+    return env
+
+
+def _contain_under_repo(repo, path):
+    root = Path(repo).resolve()
+    resolved = Path(path).resolve()
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise FixtureGitError(f"path escapes fixture root: {resolved} not under {root}") from exc
+    return resolved
+
+
+def run_isolated_git(repo, *args, check=True, template=None, hooks_path=None):
+    repo = Path(repo).resolve()
+    env = _isolated_git_env(repo, template=template, hooks_path=hooks_path)
+    completed = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    if check and completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        raise FixtureGitError(f"git {' '.join(args)} failed: {detail}")
+    return completed
+
+
+def _assert_fixture_identity(repo):
+    repo = Path(repo).resolve()
+    toplevel = run_isolated_git(repo, "rev-parse", "--show-toplevel").stdout.strip()
+    git_dir = run_isolated_git(repo, "rev-parse", "--absolute-git-dir").stdout.strip()
+    expected_git = str(repo / ".git")
+    if Path(toplevel).resolve() != repo:
+        raise FixtureGitError(f"show-toplevel {toplevel!r} != {str(repo)!r}")
+    if Path(git_dir).resolve() != Path(expected_git).resolve():
+        raise FixtureGitError(f"absolute-git-dir {git_dir!r} != {expected_git!r}")
+
+
+def fixture_add(repo, paths):
+    repo = Path(repo).resolve()
+    relatives = []
+    for path in paths:
+        contained = _contain_under_repo(repo, path)
+        relatives.append(str(contained.relative_to(repo)))
+    if not relatives:
+        raise FixtureGitError("git add requires enumerated paths")
+    run_isolated_git(repo, "add", "--", *relatives)
+
+
+def fixture_commit(repo, message):
+    repo = Path(repo).resolve()
+    _assert_fixture_identity(repo)
+    run_isolated_git(repo, "config", "user.email", "fixture@example.invalid")
+    run_isolated_git(repo, "config", "user.name", "Fixture")
+    run_isolated_git(repo, "commit", "-qm", message)
+    head = run_isolated_git(repo, "rev-parse", "HEAD").stdout.strip()
+    if len(head) != _SHA1_HEX or any(ch not in "0123456789abcdef" for ch in head):
+        raise FixtureGitError(f"HEAD is not a commit sha: {head!r}")
+    kind = run_isolated_git(repo, "cat-file", "-t", head).stdout.strip()
+    if kind != "commit":
+        raise FixtureGitError(f"HEAD is {kind}, not commit")
+    git_dir = Path(run_isolated_git(repo, "rev-parse", "--absolute-git-dir").stdout.strip()).resolve()
+    object_path = git_dir / "objects" / head[:2] / head[2:]
+    if not object_path.is_file():
+        raise FixtureGitError(f"commit object not inside fixture git dir: {object_path}")
+    return head
+
+
+def init_isolated_repo(directory):
+    repo = Path(directory).resolve()
+    repo.mkdir(parents=True, exist_ok=True)
+    _contain_under_repo(repo, repo)
+    template = repo / ".fixture-git-template"
+    template.mkdir(exist_ok=True)
+    (template / "hooks").mkdir(exist_ok=True)
+    hooks = repo / ".git" / "hooks"
+    run_isolated_git(repo, "init", "-q", "--template", str(template),
+                     template=template, hooks_path=str(hooks))
+    _assert_fixture_identity(repo)
+    hooks.mkdir(parents=True, exist_ok=True)
+    run_isolated_git(repo, "config", "user.email", "fixture@example.invalid",
+                     template=template, hooks_path=str(hooks))
+    run_isolated_git(repo, "config", "user.name", "Fixture",
+                     template=template, hooks_path=str(hooks))
+    run_isolated_git(repo, "config", "commit.gpgsign", "false",
+                     template=template, hooks_path=str(hooks))
+    run_isolated_git(repo, "config", "core.hooksPath", str(hooks),
+                     template=template, hooks_path=str(hooks))
+    return repo
+
+
+def _seed_validator_sources(repo):
+    paths = []
+    for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
+        target = Path(repo) / relative
+        _contain_under_repo(repo, target)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / relative, target)
+        paths.append(target)
+    return paths
+
+
+def _files_under(repo):
+    repo = Path(repo).resolve()
+    files = []
+    for path in repo.rglob("*"):
+        if not path.is_file():
+            continue
+        if ".git" in path.parts or ".fixture-git-template" in path.parts:
+            continue
+        _contain_under_repo(repo, path)
+        files.append(path)
+    return files
 
 
 def document(item_id, level, parent=None, prerequisites=(), criteria=None, state="open"):
@@ -131,17 +282,11 @@ class IssueValidateTest(unittest.TestCase):
             self.assertTrue(diagnostic.rule)
 
     def init_repo(self, directory):
-        repo = Path(directory)
-        subprocess.run(["git", "init", "-q", str(repo)], check=True)
-        subprocess.run(["git", "-C", str(repo), "config", "user.email", "fixture@example.invalid"], check=True)
-        subprocess.run(["git", "-C", str(repo), "config", "user.name", "Fixture"], check=True)
-        for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
-            target = repo / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(ROOT / relative, target)
+        repo = init_isolated_repo(directory)
+        _seed_validator_sources(repo)
         self.base(repo / "issues")
-        subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-        subprocess.run(["git", "-C", str(repo), "commit", "-qm", "baseline"], check=True)
+        fixture_add(repo, _files_under(repo))
+        fixture_commit(repo, "baseline")
         return repo
 
     def test_working_tree_and_staged_index_are_distinct(self):
@@ -150,7 +295,7 @@ class IssueValidateTest(unittest.TestCase):
             task = repo / "issues/0099/0099-01/index.md"
             valid = task.read_text()
             task.write_text(document("0099-01", "task", "0099", ["0099-99"]))
-            subprocess.run(["git", "-C", str(repo), "add", str(task)], check=True)
+            fixture_add(repo, [task])
             task.write_text(valid)  # unstaged repair must not affect staged validation
             staged, _ = VALIDATE.validate(repo=repo, source="staged-index", compare_head=True)
             working, _ = VALIDATE.validate(repo=repo, source="working-tree", compare_head=True)
@@ -165,8 +310,8 @@ class IssueValidateTest(unittest.TestCase):
                 "- **AC-001** ~~Retired.~~ (withdrawn, 2026-08-24: obsolete)",
                 "- **AC-002** Active.",
             ]))
-            subprocess.run(["git", "-C", str(repo), "add", str(task)], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "tombstones"], check=True)
+            fixture_add(repo, [task])
+            fixture_commit(repo, "tombstones")
             task.write_text(document("0099-01", "task", "0099", criteria=[
                 "- **AC-001** Illegally reused.",
             ]))
@@ -349,12 +494,10 @@ class LifecycleIssueValidateTest(unittest.TestCase):
             return {}
         if mutation == "non_commit_ref":
             self.seed(root, task_state="closed")
-            blob_a = subprocess.check_output(
-                ["git", "-C", str(ROOT), "rev-parse", "HEAD:_src/tools/issue_validate.py"],
-                text=True).strip()
-            blob_b = subprocess.check_output(
-                ["git", "-C", str(ROOT), "rev-parse", "HEAD:_src/tools/issue_store.py"],
-                text=True).strip()
+            blob_a = run_isolated_git(
+                ROOT, "rev-parse", "HEAD:_src/tools/issue_validate.py").stdout.strip()
+            blob_b = run_isolated_git(
+                ROOT, "rev-parse", "HEAD:_src/tools/issue_store.py").stdout.strip()
             write_json(root / "0099/0099-01/closure.json",
                        closure_payload("0099-01", commit_refs=[blob_a, blob_b]))
             write_json(root / "0099/0099-01/approval.json", approval_payload())
@@ -385,19 +528,12 @@ class LifecycleIssueValidateTest(unittest.TestCase):
                 kwargs = {"now": FIXED_NOW, "compare_head": extra.get("compare_head", False)}
                 if case["mutation"] == "stale_base":
                     # Isolated git repo: HEAD is not an ancestor of 1*40.
-                    repo = Path(temp) / "repo"
-                    repo.mkdir()
-                    subprocess.run(["git", "init", "-q", str(repo)], check=True)
-                    subprocess.run(["git", "-C", str(repo), "config", "user.email", "f@e.invalid"], check=True)
-                    subprocess.run(["git", "-C", str(repo), "config", "user.name", "F"], check=True)
+                    repo = init_isolated_repo(Path(temp) / "repo")
                     issues = repo / "issues"
                     shutil.copytree(root, issues)
-                    for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
-                        target = repo / relative
-                        target.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copyfile(ROOT / relative, target)
-                    subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-                    subprocess.run(["git", "-C", str(repo), "commit", "-qm", "base"], check=True)
+                    _seed_validator_sources(repo)
+                    fixture_add(repo, _files_under(repo))
+                    fixture_commit(repo, "base")
                     diagnostics, _ = VALIDATE.validate(
                         repo=repo, source="working-tree", compare_head=True, now=FIXED_NOW)
                     rules = {value.rule for value in diagnostics}
@@ -410,21 +546,15 @@ class LifecycleIssueValidateTest(unittest.TestCase):
 
     def test_illegal_transition_against_head(self):
         with tempfile.TemporaryDirectory() as temp:
-            repo = Path(temp)
-            subprocess.run(["git", "init", "-q", str(repo)], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.email", "f@e.invalid"], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.name", "F"], check=True)
+            repo = init_isolated_repo(temp)
             issues = repo / "issues"
             write_item(issues, "0099", document("0099", "feature"))
             write_item(issues, "0099-01", document("0099-01", "task", "0099", state="closed"))
             write_json(issues / "0099/0099-01/closure.json", closure_payload("0099-01"))
             write_json(issues / "0099/0099-01/approval.json", approval_payload())
-            for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
-                target = repo / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(ROOT / relative, target)
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "closed"], check=True)
+            _seed_validator_sources(repo)
+            fixture_add(repo, _files_under(repo))
+            fixture_commit(repo, "closed")
             task = issues / "0099/0099-01/index.md"
             task.write_text(document("0099-01", "task", "0099", state="open"))
             diagnostics, _ = VALIDATE.validate(repo=repo, source="working-tree", now=FIXED_NOW)
@@ -454,22 +584,16 @@ class LifecycleIssueValidateTest(unittest.TestCase):
 
     def test_lifecycle_working_tree_and_staged_index(self):
         with tempfile.TemporaryDirectory() as temp:
-            repo = Path(temp)
-            subprocess.run(["git", "init", "-q", str(repo)], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.email", "f@e.invalid"], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.name", "F"], check=True)
+            repo = init_isolated_repo(temp)
             issues = repo / "issues"
             write_item(issues, "0099", document("0099", "feature"))
             write_item(issues, "0099-01", document("0099-01", "task", "0099"))
-            for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
-                target = repo / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(ROOT / relative, target)
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "open"], check=True)
+            _seed_validator_sources(repo)
+            fixture_add(repo, _files_under(repo))
+            fixture_commit(repo, "open")
             task = issues / "0099/0099-01/index.md"
             task.write_text(document("0099-01", "task", "0099", state="in_progress"))
-            subprocess.run(["git", "-C", str(repo), "add", str(task)], check=True)
+            fixture_add(repo, [task])
             task.write_text(document("0099-01", "task", "0099", state="open"))
             staged, _ = VALIDATE.validate(repo=repo, source="staged-index", compare_head=True,
                                           now=FIXED_NOW)
@@ -480,21 +604,13 @@ class LifecycleIssueValidateTest(unittest.TestCase):
 
     def test_clean_in_progress_with_fresh_claim_passes(self):
         with tempfile.TemporaryDirectory() as temp:
-            repo = Path(temp)
-            subprocess.run(["git", "init", "-q", str(repo)], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.email", "f@e.invalid"], check=True)
-            subprocess.run(["git", "-C", str(repo), "config", "user.name", "F"], check=True)
+            repo = init_isolated_repo(temp)
             issues = repo / "issues"
             write_item(issues, "0099", document("0099", "feature"))
             write_item(issues, "0099-01", document("0099-01", "task", "0099"))
-            for relative in ("_src/tools/issue_store.py", "issues/_schema/issue-item-v1.schema.json"):
-                target = repo / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(ROOT / relative, target)
-            subprocess.run(["git", "-C", str(repo), "add", "."], check=True)
-            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "base"], check=True)
-            head = subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"],
-                                           text=True).strip()
+            _seed_validator_sources(repo)
+            fixture_add(repo, _files_under(repo))
+            head = fixture_commit(repo, "base")
             write_item(issues, "0099-01", document("0099-01", "task", "0099", state="in_progress"))
             write_json(issues / "0099/0099-01/claim.json", claim_payload("0099-01", base_commit=head))
             diagnostics, _ = VALIDATE.validate(repo=repo, source="working-tree", now=FIXED_NOW)
@@ -554,6 +670,87 @@ class ProvenanceIssueValidateTest(unittest.TestCase):
             diagnostics, _ = VALIDATE.validate(
                 repo=ROOT, source="working-tree", root=root, compare_head=False, now=FIXED_NOW)
             self.assertIn("IV0911", {value.rule for value in diagnostics})
+
+
+_HOSTILE_GIT_KEYS = (
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_COMMON_DIR",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_TEMPLATE_DIR",
+    "GIT_CONFIG_GLOBAL",
+    "GIT_CONFIG_PARAMETERS",
+)
+
+
+class FixtureGitIsolationTest(unittest.TestCase):
+    def test_hostile_git_env_does_not_mutate_foreign_or_root(self):
+        root_head = run_isolated_git(ROOT, "rev-parse", "HEAD").stdout.strip()
+        with tempfile.TemporaryDirectory() as temp:
+            parent = Path(temp)
+            foreign = parent / "foreign"
+            intended = parent / "intended"
+            foreign.mkdir()
+            marker = foreign / "KEEP.txt"
+            marker.write_text("foreign-canary\n")
+            hostile_config = parent / "hostile.gitconfig"
+            hostile_config.write_text("[commit]\n\tgpgsign = true\n[core]\n\thooksPath = /tmp\n")
+            hostile_template = parent / "hostile-template"
+            (hostile_template / "hooks").mkdir(parents=True)
+            (hostile_template / "hooks" / "pre-commit").write_text(
+                "#!/bin/sh\necho injected > \"{}/pwned\"\n".format(foreign)
+            )
+            os.chmod(hostile_template / "hooks" / "pre-commit", 0o755)
+            saved = {key: os.environ.get(key) for key in _HOSTILE_GIT_KEYS}
+            os.environ["GIT_DIR"] = str(foreign / ".git")
+            os.environ["GIT_WORK_TREE"] = str(foreign)
+            os.environ["GIT_INDEX_FILE"] = str(foreign / "index")
+            os.environ["GIT_COMMON_DIR"] = str(foreign / ".git")
+            os.environ["GIT_OBJECT_DIRECTORY"] = str(foreign / "objects")
+            os.environ["GIT_TEMPLATE_DIR"] = str(hostile_template)
+            os.environ["GIT_CONFIG_GLOBAL"] = str(hostile_config)
+            os.environ["GIT_CONFIG_PARAMETERS"] = "'commit.gpgsign=true' 'core.hooksPath=/tmp'"
+            try:
+                repo = init_isolated_repo(intended)
+                payload = repo / "tracked.txt"
+                payload.write_text("intended\n")
+                fixture_add(repo, [payload])
+                head = fixture_commit(repo, "isolated")
+            finally:
+                for key, value in saved.items():
+                    if value is None:
+                        os.environ.pop(key, None)
+                    else:
+                        os.environ[key] = value
+            self.assertTrue((repo / ".git").is_dir())
+            self.assertEqual(run_isolated_git(repo, "rev-parse", "HEAD").stdout.strip(), head)
+            self.assertFalse((foreign / ".git").exists())
+            self.assertFalse((foreign / "index").exists())
+            self.assertFalse((foreign / "pwned").exists())
+            self.assertEqual(marker.read_text(), "foreign-canary\n")
+            self.assertEqual(run_isolated_git(ROOT, "rev-parse", "HEAD").stdout.strip(), root_head)
+            gpgsign = run_isolated_git(repo, "config", "--get", "commit.gpgsign").stdout.strip()
+            self.assertEqual(gpgsign, "false")
+            hooks = run_isolated_git(repo, "config", "--get", "core.hooksPath").stdout.strip()
+            self.assertEqual(Path(hooks).resolve(), (repo / ".git" / "hooks").resolve())
+
+    def test_add_rejects_path_outside_fixture(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            outsider = Path(temp) / "outside.txt"
+            outsider.write_text("nope\n")
+            with self.assertRaises(FixtureGitError):
+                fixture_add(repo, [outsider])
+            status = run_isolated_git(repo, "status", "--porcelain").stdout
+            self.assertEqual(status, "")
+
+    def test_identity_mismatch_is_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp) / "empty"
+            repo.mkdir()
+            with self.assertRaises(FixtureGitError):
+                _assert_fixture_identity(repo)
 
 
 if __name__ == "__main__":
