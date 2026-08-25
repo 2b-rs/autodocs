@@ -14,6 +14,12 @@
   - optional generated views under a disposable/candidate root only
   - this claim file on branch `0037-11.01`
   - only the `0037-11.01` Task block in `TODO.md` for `[p]`/`[x]` bookkeeping
+- exact_write_scope_correction (2026-08-25, additive; supersedes the four bullets immediately above; does not rewrite authority history):
+  - `_src/tools/issue_lists.py`
+  - `_src/tests/test_issue_lists.py`
+  - `_src/tests/fixtures/0037-11.01/` (single owned fixture-root for issue sources, golden generated lists, summaries, and run manifests; all generated TODO.md/DONE.md/summary outputs for this Task live only under this directory)
+  - `TODO-gabriel-0037-11.01-20260825T112400Z.md`
+  - `TODO.md` (0037-11.01 Task block bookkeeping only)
 - forbidden:
   - repository `TODO.md` / `DONE.md` as generated live authority (render into fixtures/candidate roots only)
   - shared root checkout `/Users/tobias.anton/devel/autodocs`
@@ -21,8 +27,8 @@
   - Worf set: `0037-10.01`, parent `0037-17`, `0037-22`, `0037-23.01`
   - Acceptance, Integration-review checkpoint merge, Feature `DONE.md` move, `refs/heads/main`
 - external_resources: none
-- status: `[p]`; **claim materialization only**. Product mutation is blocked until this claim/record is committed and its REF is reported (jean-luc `1787656989365-99f3c210`).
-- next_step: commit this claim + `[p]` bookkeeping; report REF to jean-luc and michael; then implement fixtures-only renderer.
+- status: `[p]`; claim `86b5f0ec50df04b2c75a82406bdb817cc8414fc4`; PL packet `99cd6b7e25b859a6c8b6fbd87b865f9eaecf3761`. Product mutation remains stopped until this write-scope correction is committed and its REF reported (jean-luc `1787657166190-24e07120`). Michael `1787657240393-f5c6611a` is coordination; it does not override the exact-path stop.
+- next_step: commit this additive write-scope correction; report corrective REF; then implement only the exact paths above.
 
 ## Authority provenance (stable across sessions)
 
@@ -39,6 +45,8 @@ Mailbox is not authority. Recorded here so the user answer is reachable without 
   - jean-luc `1787656665571-2a9bfc5f` wait for exact authority reference
   - michael `1787656952849-514cb14d` authority ID: no inbox id, no committed DEC; dispatch on user text `A`
   - jean-luc `1787656989365-99f3c210` user A is valid; materialize claim with this packet; no product mutation until claim REF reported
+  - jean-luc `1787657166190-24e07120` STOP product: write scope not exact; additive correction required
+  - michael `1787657240393-f5c6611a` PL packet REF `99cd6b7e2`; product unblocked — recorded, not treated as overriding the exact-path stop
 
 ## Exact Task text (Feature tip `722aaa2149c78cf705db411a4142c67d92bb1c3d`)
 
