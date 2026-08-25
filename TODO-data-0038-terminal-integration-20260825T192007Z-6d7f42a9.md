@@ -3,7 +3,7 @@
 item: 0038-terminal-integration-architecture
 owner: data
 owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [p]
+status: [x]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
@@ -38,11 +38,22 @@ identities under the contract evidence.
 
 ## Next action
 
-Independent Integrator pre-review rejected candidate `2b87ab0ce` before
-integration because the `0038-35` checkpoint rationale named Architect Data
-but omitted the canonical literal `(architect)` authority tag required by
-`legacy_task_doctor.py` (`LTD-CHECKPOINT-MISSING-AUTHORITY`). Correct only that
-tag, rerun the canonical validator plus whole-graph and protected-history
-checks, then record fresh substantive and bookkeeping REFs. Preserve the full
-38-node contract and all separation boundaries; do not implement, accept,
-integrate, close, or advance `main`.
+Corrected the independently rejected candidate at substantive REF
+`705b249709e8c0f6a5a0f3577c73b46313ff2749`: the only Task-contract change is
+the exact `(architect)` authority tag on `0038-35`'s mandatory checkpoint
+rationale. Canonical `legacy_task_doctor.py --root . --json` now reports zero
+findings for `0038-35` and zero unknown/duplicate/self/cycle/malformed
+prerequisite findings; its 766 other repository findings remain disclosed and
+out of scope. The Feature population remains 39 unique nodes, and `0038-35`
+names the other 38 exactly once with no missing, extra, or self edge.
+
+`DEC-0038-005` remains a unique heading. Main remains
+`96e7a8b71a75773fd2f7193245792243e704a574`; the protected partial-integration
+record remains byte-identical at SHA-256
+`d45ade874c9e1a03367b2ffb64c0eb9334f4d09be3d34c0786be97617ee146bd`, and the
+architecture contract remains byte-identical to rejected candidate `2b87ab0ce`
+at SHA-256
+`7cbe8e4a18337b988ef7d39bd7ccf0ed7b37968c8146ac65336b04ba454bdf37`.
+`git diff --check` passed. Hand the corrected candidate to a separately
+assigned privileged Integrator; this claim performed no implementation,
+Acceptance, integration, closure, or `main` advance.
