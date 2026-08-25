@@ -2,7 +2,7 @@
 
 - owner_token: `agent:gabriel-graphhtml:0037-22:20260825T114200Z`
 - agent/persona: Gabriel-Graphhtml, unprivileged Programmer, Team Discovery
-- dispatcher: gabriel; jean-luc `1787658051022-50ec1d09`
+- dispatcher: gabriel; jean-luc `1787658051022-50ec1d09`; continue `1787659721039-88431266`
 - capability_class: `unprivileged`
 - execution_authority: direct local Shell/Git in this dedicated item worktree; no runner queue
 - item/branch/worktree: `0037-22` / `0037-22` / `/Users/tobias.anton/devel/autodocs/.worktrees/0037-22`
@@ -14,8 +14,9 @@
   - `TODO-gabriel-graphhtml-0037-22-20260825T114200Z.md`
   - `TODO.md` (0037-22 Task block only)
 - forbidden: fetching `../TODO.md`; live repository TODO.md/DONE.md as product; Acceptance; checkpoint; Feature DONE.md; main; push; 10.01/issuectl; parent 17 product; 23.01
-- status: `[p]`; claim materialization only. No product mutation before claim REF.
-- next_step: implement HTML consumer of `issues/_views/dependency-graph.json` after claim REF.
+- status: implementation `[x]` on product REF `aae7dffa74f7419cb9e3689ee400d65fc14c2379`
+- validation: `python3 _src/tests/test_todo_dependency_graph.py` 10/10 PASS (also `test_todo_graph_adapter.py` 8/8 PASS)
+- next_step: none for this owner; do not merge upward; do not start 23.02 (needs 23.01)
 
 ## Task
 
