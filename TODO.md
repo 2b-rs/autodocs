@@ -1015,7 +1015,8 @@ HOW TO USE:
   - **Definition of Done:** One negative fixture per rule plus fixed property/fuzz seeds and resource limits pass deterministically for working-tree and staged-index inputs.
   - **Implementation evidence (2026-08-24, Julian):** The side-effect-free validator, deterministic negative fixtures, fixed-seed graph checks, resource limits, and staged-index/working-tree coverage are committed at the REF above. Post-commit validation passed: `test_issue_validate` 8/8, carried `test_issue_store` 10/10, `py_compile`, automation-safety (zero findings), and `git diff --check`.
 
-- [ ] **0037-09.02** PREREQ: 0037-09.02:0037-03, 0037-09.02:0037-08 Implement lifecycle, claim, authority/signature, criterion-evidence, closure, archive, and commit-reference validation.
+- [p] **0037-09.02** PREREQ: 0037-09.02:0037-03, 0037-09.02:0037-08 Implement lifecycle, claim, authority/signature, criterion-evidence, closure, archive, and commit-reference validation.
+  - **Claim:** `TODO-Gabriel-Detmer-0037-09.02-20260825T041620Z.md` (`owner_token: agent:gabriel-detmer-20260825t041620z:0037-09.02:20260825T041620Z`)
   - **Acceptance criteria:** Detect illegal transitions, missing/expired/overlapping/stale-base claims, invalid claim refs, completion without checked criteria/closure/reachable evidence/role approval, invalid/revoked signatures, non-commit or same-commit refs, false Feature closure, and archive/not-accepted inflation.
   - **Definition of Done:** Transition/race/signature/closure fixtures cover every state/disposition and fixed authority policy revision with deterministic diagnostics.
 
