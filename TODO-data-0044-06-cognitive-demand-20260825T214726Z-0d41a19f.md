@@ -43,6 +43,8 @@ checkpoint review, and integration of that product.
   calibration to explainable shadow operation pending later authority.
 - The original assigned coordination file preserves the exact briefing,
   collision, and identity-repair history without rewriting its token.
+- Canonical identity repair REF:
+  `0442694d38a79fbfbd08928a1d2ea42e5811265c`.
 
 ## Next step
 

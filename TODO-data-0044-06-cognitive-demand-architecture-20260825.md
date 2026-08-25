@@ -84,3 +84,6 @@ the sole live identity record for any later resumption and handoff.
 historical_disposition: inactive-coordination-provenance
 lease_active: false
 canonical_claim_path: TODO-data-0044-06-cognitive-demand-20260825T214726Z-0d41a19f.md
+
+Canonical identity repair REF:
+`0442694d38a79fbfbd08928a1d2ea42e5811265c`.
