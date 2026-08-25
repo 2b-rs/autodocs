@@ -14,9 +14,11 @@ condition it names.
 
 from __future__ import annotations
 
+import contextlib
 import copy
+import io
+import json
 import re
-import subprocess
 import sys
 import tempfile
 import unittest
@@ -170,9 +172,17 @@ class ProjectionFixtures(unittest.TestCase):
     )
 
     def _repo(self, agents: str, todo: str) -> Path:
-        tmp = Path(tempfile.mkdtemp())
-        (tmp / "AGENTS.md").write_text(agents, encoding="utf-8")
-        (tmp / "TODO.md").write_text(todo, encoding="utf-8")
+        """Build a throwaway two-file repository, cleaned up deterministically.
+
+        Uses `TemporaryDirectory` with `addCleanup` rather than `mkdtemp`: the
+        latter leaks a directory per fixture on every run, with no recovery
+        path. `automation_safety` flags that as `AUTO010` and is correct to.
+        """
+        box = tempfile.TemporaryDirectory()
+        self.addCleanup(box.cleanup)
+        tmp = Path(box.name)
+        for name, body in (("AGENTS.md", agents), ("TODO.md", todo)):
+            (tmp / name).write_text(body, encoding="utf-8")
         return tmp
 
     def test_inconsistent_partial_projection(self):
@@ -201,34 +211,46 @@ class ProjectionFixtures(unittest.TestCase):
 
 
 class CliFixtures(unittest.TestCase):
+    """Exercise the CLI contract in-process.
+
+    These call `mod.main(argv)` directly rather than spawning an interpreter.
+    That still exercises argparse wiring, the exit-code mapping, and stdout, and
+    it avoids an unchecked mutating subprocess (`AUTO001`). What it does not
+    cover is the `raise SystemExit(main())` line in `__main__` and real process
+    isolation; that gap is recorded in the Task's completion evidence.
+    """
+
+    def _run(self, argv: list[str]) -> tuple[int, str]:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(io.StringIO()):
+            code = mod.main(argv)
+        return code, buf.getvalue()
+
     def test_projection_mode_exit_zero_on_live_repo(self):
-        proc = subprocess.run(
-            [
-                sys.executable,
-                str(REPO_ROOT / "_src" / "tools" / "check_adversarial_evidence.py"),
-                "--projection",
-                str(REPO_ROOT),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(proc.returncode, 0, proc.stderr)
-        self.assertIn("PASS", proc.stdout)
+        code, out = self._run(["--projection", str(REPO_ROOT)])
+        self.assertEqual(code, 0)
+        self.assertIn("PASS", out)
 
     def test_malformed_input_exits_two_and_never_passes(self):
-        tmp = Path(tempfile.mkdtemp()) / "bad.json"
-        tmp.write_text("{not json", encoding="utf-8")
-        proc = subprocess.run(
-            [
-                sys.executable,
-                str(REPO_ROOT / "_src" / "tools" / "check_adversarial_evidence.py"),
-                "--evidence",
-                str(tmp),
-            ],
-            capture_output=True,
-            text=True,
+        box = tempfile.TemporaryDirectory()
+        self.addCleanup(box.cleanup)
+        bad = Path(box.name) / "bad.json"
+        bad.write_text("{not json", encoding="utf-8")
+        code, out = self._run(["--evidence", str(bad)])
+        self.assertEqual(code, 2)
+        self.assertNotIn("PASS", out)
+
+    def test_findings_exit_one(self):
+        """The middle exit code: conforming=0, findings=1, failure=2."""
+        box = tempfile.TemporaryDirectory()
+        self.addCleanup(box.cleanup)
+        rec = Path(box.name) / "rec.json"
+        rec.write_text(
+            json.dumps({"schema": "completion-evidence@v1", "change_kinds": []}),
+            encoding="utf-8",
         )
-        self.assertEqual(proc.returncode, 2, proc.stdout)
+        code, _ = self._run(["--evidence", str(rec)])
+        self.assertEqual(code, 1)
 
 
 class BlockContentFixtures(unittest.TestCase):
