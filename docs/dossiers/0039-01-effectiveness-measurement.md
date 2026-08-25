@@ -46,7 +46,7 @@ The attributed Tasks are the same three (`0040-05`, `0040-09`, `0044-01`); `0044
 
 **This is the reach axis in my own measurement:** the traversal computed "state at some ancestor of main" while the result asserted "state of main over time". Same defect class this Task catalogues; third time it has caught its own author. The tool now uses `--first-parent`, with the reason recorded at the source line; the 11-test suite remains green.
 
-**Consequence for §4:** the escalation draft and the §7.1 context findings were computed on the same defective traversal and are therefore **withdrawn pending re-derivation**; see §4.
+**Consequence for §4:** the escalation draft and the §7.1 context findings computed on the defective traversal were withdrawn and have since been **re-derived** on the corrected population; see §4 and §4a. The superseded figures are not restored.
 
 ## 2. Population — 20 Tasks, deterministic
 
@@ -118,31 +118,46 @@ measure yields 14/20 and is **invalid** — it measures shared file residence, n
 attribution (`0037-07` alone "hits" 26 records through an index page). Same
 inflation direction as the `0038-31` double-count incident.
 
-## 4. Primary count 2 — escalations (DRAFT, limitations visible)
+## 4. Primary count 2 — escalation-marked Tasks (DRAFT, re-derived)
 
-> **WITHDRAWN pending re-derivation (`F-SEVEN-0039-01-SELF-002`).** The figure below was computed against the defective non-`--first-parent` traversal *and* on a population that has since been corrected. It is retained for traceability and must not be cited.
+**Re-derived on the corrected first-parent population (`F-SEVEN-0039-01-SELF-002`). The previously withdrawn figure is superseded, not restored: it happened to be the same number, 9, but it was computed over a population containing `0040-11` instead of `0044-14`.**
 
-**Result as computed (superseded): 9 of 20 Tasks** — `0040-05`, `0040-08`, `0040-09`,
-`0040-10`, `0038-20`, `0037-37`, `0044-01`, `0037-49`, `0037-07`.
+**Result: 9 of 20** — `0038-20`, `0040-05`, `0040-08`, `0040-09`, `0040-10`, `0037-37`, `0044-01`, `0037-49`, `0037-07`.
 
-Method: escalation markers (`BLOCKER`, `escalat*`, `Eskalation`, `[u]`,
-`Managemententscheidung`, `management decision required`, `user decision`) in each
-Task's authoritative block on `main` (`TODO.md` + `DONE.md`).
+Method: escalation markers (`BLOCKER`, `escalat*`, `Eskalation`, `[u]`, `Managemententscheidung`, `management decision required`, `user decision`) in each Task's authoritative block on current `main` (`TODO.md` + `DONE.md`).
 
-**This is reported as *"Tasks whose authoritative block contains an escalation
-marker"*, which is what was computed — not as "escalations".** Its limitations are
-part of the result, not a footnote:
+**Reported as *"Tasks whose authoritative block contains an escalation marker"*, which is what was computed — not as "escalations".** Limitations are part of the result:
 
-- **Lexical, not structural.** It counts a marker's presence, not a conforming
-  escalation record. Reporting it as "escalations" would be a proxy behind a
-  target's name — the same defect this Task catalogues elsewhere.
-- **Block delimitation.** Blocks end at the next Task-level marker, so a note filed
-  under a neighbouring item is attributed to the wrong Task.
-- **Quotation blindness.** A `[u]` inside quoted prose is indistinguishable from a
-  live marker.
+- **Lexical, not structural.** Marker presence, not a conforming escalation record.
+- **Block delimitation.** Blocks end at the next Task-level marker, so a note filed under a neighbouring item is attributed to the wrong Task.
+- **Quotation blindness.** A `[u]` in quoted prose is indistinguishable from a live marker.
 
-A structural count against a conforming escalation record shape is owed before this
-figure may be called final.
+A structural count against a conforming escalation-record shape is still owed before this may be called final.
+
+## 4a. Context findings — `[u]` authority waits and marker reversals (DRAFT, structural)
+
+Re-derived from the corrected first-parent traversal; method: marker-transition reconstruction per population Task across main's bookkeeping history. **Structural, not lexical** — it reads marker state changes, not prose.
+
+**`[u]` authority-wait episodes: 1 of 20 Tasks.**
+
+| Task | Entered `[u]` | Left | Duration | Outcome |
+|---|---|---|---|---|
+| `0037-49` | 2026-08-20 23:47Z | 2026-08-21 19:50Z | **20.0 h** | `[x]` |
+
+One authority wait in the whole population, resolved to implementation completion after twenty hours. No open-ended `[u]` remains among the twenty.
+
+**Terminal→non-terminal reversals: 2 of 20 Tasks — and neither is a scope reversal.**
+
+| Task | Transition | Commit |
+|---|---|---|
+| `0038-28` | `[x]` → `[ ]` | `4b95d99db` |
+| `0043-02` | `[x]` → `[ ]` | `4b95d99db` |
+
+Both occur at the **same commit**, `4b95d99db` — the already-documented data-loss incident in which a stale-root-checkout commit deleted 4,869 lines from three already-terminal items, repaired by `27930dc9c`. **These are not scope reversals; they are the known incident, and the derivation reproduces it exactly.** That the corrected traversal returns precisely the one documented event and nothing else is the strongest available check that the correction in §1a worked: the defective traversal reported 18 of 20 Tasks reverting, including nine at an unrelated claim commit.
+
+**Genuine scope reversals in the population: none observed.**
+
+**Still owed for §7.1:** missed-trigger findings — Tasks whose declared behaviour met the cross-item predicate but which carry no attributed TK-2 record. That requires judging each Task's declared reach, which is not a lexical operation and is therefore not attempted here as a count.
 
 ## 5. Mandated conclusion
 
