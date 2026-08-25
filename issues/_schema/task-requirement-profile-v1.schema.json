@@ -76,5 +76,66 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "capability_class": { "const": "sandboxed-grunt" } },
+        "required": ["capability_class"]
+      },
+      "then": {
+        "properties": { "execution_needs": { "enum": ["none", "runner"] } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "capability_class": { "enum": ["unprivileged", "privileged"] } },
+        "required": ["capability_class"]
+      },
+      "then": {
+        "properties": { "execution_needs": { "enum": ["none", "direct"] } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "process_role": { "const": "Integrator" } },
+        "required": ["process_role"]
+      },
+      "then": {
+        "properties": {
+          "capability_class": { "const": "privileged" },
+          "required_rights": {
+            "allOf": [
+              { "contains": { "const": "acceptance.review" } },
+              { "contains": { "const": "integration.checkpoint" } }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "required_rights": { "contains": { "const": "acceptance.review" } }
+        }
+      },
+      "then": { "properties": { "capability_class": { "const": "privileged" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "required_rights": { "contains": { "const": "integration.checkpoint" } }
+        }
+      },
+      "then": { "properties": { "capability_class": { "const": "privileged" } } }
+    },
+    {
+      "if": {
+        "properties": {
+          "required_rights": { "contains": { "const": "feature.close" } }
+        }
+      },
+      "then": { "properties": { "capability_class": { "const": "privileged" } } }
+    }
+  ]
 }

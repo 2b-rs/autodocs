@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "_src" / "tools"))
-from capability_match import InputError, run, validate_profile  # noqa: E402
+from capability_match import InputError, run, validate_descriptor, validate_profile  # noqa: E402
 
 MATCHER = ROOT / "_src" / "tools" / "capability_match.py"
 LEGACY_SCHEMA = ROOT / "issues" / "_schema" / "agent-capability-v1.schema.json"
@@ -84,6 +84,8 @@ def schema_errors(instance, schema):
             if "items" in sch:
                 for index, item in enumerate(inst):
                     walk(item, sch["items"], f"{path}[{index}]")
+            if "contains" in sch and not any(schema_ok(item, sch["contains"]) for item in inst):
+                fail(path, "contains")
         for clause in sch.get("allOf") or []:
             walk(inst, clause, path)
         if "if" in sch and schema_ok(inst, sch["if"]) and "then" in sch:
@@ -423,6 +425,105 @@ class CapabilityMatchTests(unittest.TestCase):
             invalid = json.loads(proc.stdout)
             del invalid["error"]
             self.assertTrue(schema_errors(invalid, result_schema))
+
+    def _assert_schema_and_matcher_profile(self, profile, schema_ok_expected, matcher_ok_expected):
+        profile_schema, _, _ = self._schemas()
+        schema_pass = not schema_errors(profile, profile_schema)
+        self.assertEqual(schema_pass, schema_ok_expected, schema_errors(profile, profile_schema))
+        try:
+            validate_profile(profile)
+            matcher_pass = True
+        except InputError:
+            matcher_pass = False
+        self.assertEqual(matcher_pass, matcher_ok_expected)
+
+    def _assert_schema_and_matcher_desc(self, desc, schema_ok_expected, matcher_ok_expected):
+        _, desc_schema, _ = self._schemas()
+        schema_pass = not schema_errors(desc, desc_schema)
+        self.assertEqual(schema_pass, schema_ok_expected, schema_errors(desc, desc_schema))
+        try:
+            validate_descriptor(desc)
+            matcher_pass = True
+        except InputError:
+            matcher_pass = False
+        self.assertEqual(matcher_pass, matcher_ok_expected)
+
+    def test_schema_cross_field_positive_boundaries(self):
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="sandboxed-grunt", execution_needs="none", required_rights=[]),
+            True, True,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="sandboxed-grunt", execution_needs="runner", required_rights=[]),
+            True, True,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(
+                process_role="Integrator",
+                capability_class="privileged",
+                execution_needs="direct",
+                required_rights=["acceptance.review", "integration.checkpoint"],
+            ),
+            True, True,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(capability_class="sandboxed-grunt", execution_routes=["none"], rights=[]),
+            True, True,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(capability_class="sandboxed-grunt", execution_routes=["none", "runner"], rights=[]),
+            True, True,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(cognitive_classes_served=["low"]),
+            True, True,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(cognitive_classes_served=["low", "medium", "high", "critical"]),
+            True, True,
+        )
+
+    def test_schema_cross_field_negative_neighbors(self):
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="sandboxed-grunt", execution_needs="direct", required_rights=[]),
+            False, False,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="privileged", execution_needs="runner"),
+            False, False,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="unprivileged", execution_needs="runner"),
+            False, False,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(process_role="Integrator", capability_class="unprivileged", execution_needs="direct"),
+            False, False,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(
+                process_role="Integrator",
+                capability_class="privileged",
+                required_rights=["acceptance.review"],
+            ),
+            False, False,
+        )
+        self._assert_schema_and_matcher_profile(
+            _profile(capability_class="unprivileged", required_rights=["feature.close", "git.write"]),
+            False, False,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(capability_class="privileged", execution_routes=["none", "runner"]),
+            False, False,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(capability_class="sandboxed-grunt", execution_routes=["runner"], rights=[]),
+            False, False,
+        )
+        self._assert_schema_and_matcher_desc(
+            _desc(cognitive_classes_served=["low", "high"]),
+            False, False,
+        )
 
 
 if __name__ == "__main__":

@@ -46,5 +46,46 @@
     "assurances": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "capacity_status": { "enum": ["available", "unavailable", "unknown"] },
     "snapshot_reference": { "type": "string", "minLength": 1 }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "capability_class": { "const": "sandboxed-grunt" } },
+        "required": ["capability_class"]
+      },
+      "then": {
+        "properties": {
+          "execution_routes": {
+            "enum": [
+              ["none"],
+              ["none", "runner"]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "capability_class": { "enum": ["unprivileged", "privileged"] } },
+        "required": ["capability_class"]
+      },
+      "then": {
+        "properties": {
+          "execution_routes": { "enum": [["direct", "none"]] }
+        }
+      }
+    },
+    {
+      "properties": {
+        "cognitive_classes_served": {
+          "enum": [
+            ["low"],
+            ["low", "medium"],
+            ["low", "medium", "high"],
+            ["low", "medium", "high", "critical"]
+          ]
+        }
+      }
+    }
+  ]
 }
