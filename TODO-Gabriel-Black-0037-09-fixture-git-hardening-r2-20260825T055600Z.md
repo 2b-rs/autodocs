@@ -28,4 +28,12 @@
 
 ## Progress
 
-- Claim-only commit first (this file). Product follows in a later commit.
+- Claim SHA: `524192565749c764fdb1b923212748b7e8c78e41`
+- Product SHA: `6564dfbca9abb947e6b522301f354494fef2bf7b`
+- Validation (worktree):
+  - `python3 -m py_compile _src/tests/test_issue_validate.py` exit 0
+  - `uv run python _src/tests/test_issue_validate.py -v` → Ran 44 tests, OK (24 new isolation tests plus original 20)
+  - `git diff --check -- _src/tests/test_issue_validate.py` exit 0
+  - `python3 _src/tools/automation_safety.py --path _src/tools/issue_validate.py --path _src/tests/test_issue_validate.py` → PASS scanned=2 findings=0 unresolved-critical=0 (no policy edit)
+- `uv.lock` / `.venv` from `uv run` left untracked; not staged.
+- No `TODO.md` marker change. Not merged to parent/main.
