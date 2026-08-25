@@ -31,3 +31,9 @@ Forbidden: shared root authoring; `refs/heads/main`; Acceptance; Feature `DONE.m
 1. Commit this branch.
 2. Restore `docs/pipeline/agent-roster.md` in the shared root to `HEAD` (authorized recovery after the content exists on the branch).
 3. Ask Integrator `paul` to run hygiene and merge to `main`. Project Lead does not advance `main`.
+
+## Progress (2026-08-25 15:33 +02)
+
+Management selected A plus retention of the all-worktree hygiene scan (`DEC-0044-023`).
+Snapshot tag `preserved/as-verify-0038-34-index-20260825` created before removal.
+Next: commit this documentation, remove only `/private/tmp/as-verify-0038-34`, then paul re-runs hygiene on this branch.

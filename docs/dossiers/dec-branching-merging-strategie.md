@@ -1279,3 +1279,19 @@ dekommissioniert; bei Rekommissionierung erhält Grok ein anderes Team.
 
 **Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
 Users in der Michael-Cursor-Session, 2026-08-25 14:03 +02.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-023`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-as-verify-0038-34-registration-20260825.md`](dec-as-verify-0038-34-registration-20260825.md).
+
+`DEC-0044-023` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+und gegen `DEC-0044-022` auf diesem Branch. Gegenstand: nur die tote Registrierung
+`/private/tmp/as-verify-0038-34` nach `preserved/*`-Snapshot entfernen; das
+bestehende Hygiene-Gate (sekundäre Worktrees dürfen den kanonischen Checkout
+blockieren) bleibt.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 15:33 +02.
