@@ -245,3 +245,52 @@ Vollständige Prompt-Kette in
 - **Review participation:** `none`
 - **No-review reason:** The mandatory distinct Architect scope review is requested separately before any gate-scope implementation; no second-instance response existed when this pre-implementation decision record was created, so no support is inferred.
 - **Waiver:** `none`
+
+---
+
+### `DEC-0019-004` — Unchanged review client resolves a packaged local process report
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T06:13:12Z`
+- **Deciding identity:** `agent:tasha:0019-13:20260825T060255Z-702c7697`
+- **Role:** `Implementierer`
+- **Authority reference:** `task:0019-13`
+- **Subject:** Supersession of the incomplete `DEC-0019-003` topology after discovery that the canonical review client dynamically creates an additional local `process.html` dependency on every record page.
+- **Decision:** `DEC-0019-003` is not implemented. The assembled publication root remains the strict `eclipse-score-v0.6.0-curation-review/` export directory. A later candidate packages the canonical `review_request.js` byte-for-byte at that root; relocates the generated view stylesheet from `assets/view.css` to root `style.css`; and packages root `process.html` as the deliberately local curation/process report, including stable `flag-for-review-protocol` and `storage-and-privacy` anchors. Record pages reference `../style.css` and `../review_request.js`, so the unchanged client's existing `style.css` discovery resolves its dynamic process-document links to `../process.html`; `participate.html` also references `process.html`. Validation examines every static local `href` and `src` in every generated HTML page against that exact root, while an interactive browser regression opens the review dialog and proves both dynamically created process-document links resolve inside the same root. Missing files, non-regular targets, absolute or scheme-like local paths, path escapes, removed targets, and defect-specific missing-link allowlists are refused. This decision authorizes only local Task `0019-13` candidate preparation after a separate supporting scope review by a management-instantiated Architect and after the effective governance record is current on `main`; it does not authorize publication.
+- **Technical justification:** `review_request.js` computes process-document links by locating the literal suffix `style.css` in the page's stylesheet URL. `DEC-0019-003` retained `assets/view.css`, so the lookup failed and the browser fell back to `process.html` relative to each record page, producing missing `records/process.html` targets even though all initial HTML links were closed. Relocating the existing generated CSS payload to root `style.css` satisfies the unchanged client's established discovery rule; a single root `process.html` then serves both the explicit participation link and the two dynamic help/privacy anchors. This closes the actual browser flow without forking authentication, token, package, or GitHub-submission logic. The approved old digest remains immutable evidence and no current publication occurs.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `public-release`
+- **Considered alternatives:**
+  - **ALT-01:** Package the unchanged root review client and root process report, and relocate the generated stylesheet payload to root `style.css` so existing client link discovery resolves the report.
+    - **Disposition:** `selected`
+    - **Reason:** This closes static and dynamic local links with one shared process target while leaving the credential, identity, export, and submission client byte-identical to the established implementation.
+  - **ALT-02:** Implement `DEC-0019-003` with `assets/view.css` and a separate root `curation-report.html`.
+    - **Disposition:** `rejected`
+    - **Reason:** The dynamically created help and privacy links would still resolve to missing `records/process.html`, so the assembled tree would not be link-closed in actual browser use.
+  - **ALT-03:** Patch a subtree-specific copy of `review_request.js` to accept a new process-document configuration.
+    - **Disposition:** `rejected`
+    - **Reason:** Forking the client would create a second credential and GitHub-submission implementation whose security behavior could drift; the established client already supports a safe path convention.
+  - **ALT-04:** Validate against the complete ambient website and retain escaping dependencies.
+    - **Disposition:** `rejected`
+    - **Reason:** The approved bounded publisher carries only the subtree, so ambient files are not guaranteed members of the released payload and cannot satisfy deterministic pre-release validation.
+- **Consequences:**
+  - **CON-01:** The later strict candidate has two net additional files, root `review_request.js` and root `process.html`; the existing stylesheet payload changes path from `assets/view.css` to root `style.css` without changing bytes.
+  - **CON-02:** Whole-population static validation covers all local `href` and `src` values on all generated pages, and interactive validation additionally exercises the review dialog's dynamically created help and privacy links.
+  - **CON-03:** Any later candidate is blocked before publication if the script, stylesheet, process report, dynamic anchors, or another local target is missing, non-regular, escaping, or removed; green validation remains neither release authorization nor risk acceptance.
+  - **CON-04:** The canonical IDs, versions, unvalidated markers, status/history, provenance, counts, manifests, curator boundary, localStorage token keys, explicit GitHub authentication, JSON export, and submission semantics remain unchanged.
+  - **CON-05:** The already published 2,248-file tree and digest `7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283` remain byte-for-byte historical evidence; no special publication or external effect follows from this record.
+  - **CON-06:** The root process report is deliberately scoped to this unvalidated S-Core candidate subtree; it does not replace repository-wide process documentation or grant a content decision, review identity, publication authority, or Acceptance.
+- **Affected work units:**
+  - `task:0019-13`
+  - `repository:autodocs`
+  - `external:autodocs-github-pages-eclipse-score-curation`
+- **Affected gates:**
+  - `validation:_src/tools/score_curation_views.py`
+  - `validation:_src/tools/prepare_score_curation_export.py`
+  - `release:eclipse-score-curation-later-release`
+- **Review participation:** `none`
+- **No-review reason:** The prior Architect assignment was paused immediately after this additional dependency was discovered; a new distinct scope review is required against this superseding record and its exact candidate commit before any product mutation.
+- **Waiver:** `none`
