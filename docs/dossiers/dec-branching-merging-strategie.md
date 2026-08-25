@@ -1218,3 +1218,48 @@ Beauftragung durch Projektleiter `kathryn`, 2026-08-23.
 - **Review participation:** `none`
 - **No-review reason:** Der konforme Kandidat muss vor jeder Gate-Mutation durch den bereits beauftragten, von der protokollierenden Projektleitung verschiedenen Management-instantiated Architect gegen den exakten Commit geprüft werden; dessen append-only Review wird anschließend als Teilnahme und bindende Implementierungsauflage referenziert.
 - **Waiver:** `none`
+
+### Independent Architect pre-mutation re-review — `DEC-0044-021`
+
+- **Recorded at:** `2026-08-25T07:12:44Z`
+- **Reviewing identity:** `agent:data:architect:0044-memory-hygiene-rereview:20260825T071244Z-29d37e749`
+- **Role:** `Architekt`
+- **Capability class:** `privileged`
+- **Authority reference:** Current runtime management-instantiated Architect profile; exact re-review scope coordinated in agent-inbox message `1787641797336-9764721a`.
+- **Independence:** Data is distinct from recorder and Project Lead Jean-Luc, did not author the corrected candidate, and will not implement or integrate it.
+- **Exact reviewed candidate:** `29d37e7496bf485acf9d6cc7f1a696f27962c951`, parent `18272308798679633add6311d61ed4b9bd4599c0`.
+- **Verdict:** `supports`
+
+The corrected candidate resolves both blockers in the prior rejection. It removes
+the unpublished colliding label, allocates `DEC-0044-021` without collision in
+the reviewed baseline, and records a structurally conforming
+`decision-record@v1`. Its decision, consequences, affected units, and gates
+bind the smallest safe repository-wide behavior identified by the prior review.
+
+This support is conditional on implementing the record literally and fail
+closed. The shared executable implementation must enumerate repository-relative
+Git paths NUL-safely and recognize only paths having the exact case-sensitive
+component prefix `logs/agent-memory/` plus at least one child. Only a non-empty
+set of exclusively unstaged tracked paths satisfying that predicate is
+excepted. Any staged Memory state, mixed Memory/non-Memory divergence, other
+hygiene finding, or unavailable/indeterminate check remains blocking. Before
+merge, the exact integration candidate's changed-path set must be intersected
+with the currently allowed dirty Memory paths; any overlap aborts even when
+bytes are already equal. The same classification implementation must drive the
+checker, hard preflight, and immediate post-merge verification.
+
+The dossier remains the authority record. Activation requires a consistent
+operative projection in `AGENTS.md`, `docs/pipeline/branch-workflow.md`,
+`docs/pipeline/tools.md`, `docs/pipeline/process-roles.md`, the Project Lead and
+Integrator SOPs, and the role matrix, plus hermetic tests covering the full
+positive and negative matrix recorded in the prior review at
+`b3dc4a736e341cab713efa190ef3b3a424342724`. Any inconsistency fails closed.
+The expressly assigned privileged Integrator owns the hygiene run, verdict,
+and authorized `main` merge; Project Lead coordinates only. Nothing in this
+decision authorizes root writes, cleanup, staging, Acceptance, bypass of a
+finding, or a merge by the Project Lead. The pre-existing root deviation is not
+grandfathered before the fully reviewed implementation reaches `main`.
+
+This is a pre-mutation scope review, not implementation validation, risk
+acceptance, Task Acceptance, an integration verdict, or authority to advance
+`main`.
