@@ -80,6 +80,16 @@ missing trailer.
 Additive origin-provenance correction REF:
 `bbc4174f27b37e93384e2a1dc2142623b141bacb`.
 
+Integrator Geordi rejected corrected candidate
+`add65255e5c6da9ae21616051844582c1dc0053c` before integration because
+path-specific history for the decision artifact still resolved to untrailed
+introduction commit `9e63b0c8a852273ea6e622b4caa273e0f011310b`. Project Lead
+Jean-Luc assigned a second additive correction under
+`agent-inbox:1787694349958-8b82e56c`: touch the exact decision document with an
+append-only provenance note in a commit carrying the mandatory origin trailer,
+preserve both rejected tips as ancestors, and remain within the same three-path
+scope.
+
 ## Validation before check-in
 
 - Decision-record shape: PASS; all 15 ordered fields present, four alternatives

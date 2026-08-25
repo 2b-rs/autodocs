@@ -58,3 +58,12 @@
     - **Position:** `supports`
     - **Note:** The separately recorded pre-mutation scope review supports this exact lifecycle boundary and constrains the future Implementer; it is not Task Acceptance or implementation authority.
 - **Waiver:** `none`
+
+#### Origin-provenance note — 2026-08-25
+
+Candidate `add65255e5c6da9ae21616051844582c1dc0053c` was rejected before integration
+because the decision artifact's path-specific last-touch commit still resolved
+to its untrailed introduction commit. This append-only note binds this exact
+decision artifact to the current correction commit, whose immutable commit
+metadata carries `Policy-Origin-Branch: main`. The decision fields and their
+effective values are unchanged; the previously rejected tips remain in history.
