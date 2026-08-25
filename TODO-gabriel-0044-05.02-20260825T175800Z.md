@@ -18,4 +18,6 @@
   - this claim
   - `TODO.md` (0044-05.02 Task block only)
 - forbidden: governance; legacy `agent-capability@v1` mutation; activation; agent selection; Acceptance; integration; checkpoint; parent completion; Feature closure; main; network; credentials; 0041-02; 0020-02/03
-- status: `[x]` product REF `2c563040563b350f26e6c85b0dccb8c211fdbdef`. No Acceptance.
+- status: `[x]` original product REF `2c563040563b350f26e6c85b0dccb8c211fdbdef`; corrective product REF `e637660978fdbd1eb7f73dd115757b69b0819b63` for F-0044-05-GEORDI-001. Parent checkpoint remains rejected (review REF `5208d4b31677792a9f9685085fa7053071f55938`); this does not clear it. No Acceptance.
+- corrective_assignment: jean-luc `1787682749227-4466687f` (mail is not extra authority). Resume HEAD was `79f279ffcbdacf3d275048ffbd0df70e966e9429`.
+- validation_corrective: `python3 -m unittest _src.tests.test_capability_match` 19 tests OK; `py_compile` OK; `automation_safety.py --path capability_match.py --path test_capability_match.py` verdict PASS; legacy SHA-256 `ee553404d0e859e4fdd1876edb0d4dc8d016921f92818fbd143ba4ad71870955`; `git diff --cached --check` clean.
