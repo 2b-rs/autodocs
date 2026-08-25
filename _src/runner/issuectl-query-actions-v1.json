@@ -1,0 +1,109 @@
+{
+  "schema": "issuectl-query-actions@v1",
+  "registry_version": 1,
+  "purpose": "Typed read-only runner actions for Task 0037-10.04 issuectl query surfaces. Sandboxed agents invoke these ids rather than a generic shell. 0037-46 may absorb the ids into actions-v1.json; this fragment is the 10.04 registration.",
+  "actions": [
+    {
+      "id": "issuectl.validate@v1",
+      "category": "issue-query",
+      "envelope_action": "read_only_discovery",
+      "argv": ["python3", "_src/tools/issuectl.py", "validate"],
+      "description": "Validate canonical/candidate/staged issue roots via issue_validate.",
+      "args": {
+        "required": [],
+        "optional": [
+          "repo",
+          "source",
+          "root",
+          "authoritative-root",
+          "provenance-root",
+          "generated-root",
+          "format"
+        ]
+      },
+      "authority": {
+        "capability_class": "any",
+        "network": false,
+        "credentials": false,
+        "mutates": false
+      }
+    },
+    {
+      "id": "issuectl.view@v1",
+      "category": "issue-query",
+      "envelope_action": "read_only_discovery",
+      "argv": ["python3", "_src/tools/issuectl.py", "view"],
+      "description": "Render catalog or graph from issue_views; fail on stale --require-views.",
+      "args": {
+        "required": [],
+        "optional": ["repo", "issues-root", "kind", "require-views", "format"]
+      },
+      "authority": {
+        "capability_class": "any",
+        "network": false,
+        "credentials": false,
+        "mutates": false
+      }
+    },
+    {
+      "id": "issuectl.graph@v1",
+      "category": "issue-query",
+      "envelope_action": "read_only_discovery",
+      "argv": ["python3", "_src/tools/issuectl.py", "graph"],
+      "description": "Dependency graph projection via issue_views.",
+      "args": {
+        "required": [],
+        "optional": ["repo", "issues-root", "require-views", "format"]
+      },
+      "authority": {
+        "capability_class": "any",
+        "network": false,
+        "credentials": false,
+        "mutates": false
+      }
+    },
+    {
+      "id": "issuectl.list@v1",
+      "category": "issue-query",
+      "envelope_action": "read_only_discovery",
+      "argv": ["python3", "_src/tools/issuectl.py", "list"],
+      "description": "Open/blocked/unclear/owner/prerequisite queries over the generated catalog.",
+      "args": {
+        "required": [],
+        "optional": ["repo", "issues-root", "query", "owner", "require-views", "format"]
+      },
+      "authority": {
+        "capability_class": "any",
+        "network": false,
+        "credentials": false,
+        "mutates": false
+      }
+    },
+    {
+      "id": "issuectl.trace@v1",
+      "category": "issue-query",
+      "envelope_action": "read_only_discovery",
+      "argv": ["python3", "_src/tools/issuectl.py", "trace"],
+      "description": "Delegates to provenance_query.query_trace; no second trace model.",
+      "args": {
+        "required": ["kind", "id"],
+        "optional": [
+          "repo",
+          "provenance-root",
+          "direction",
+          "depth",
+          "type",
+          "max-classification",
+          "require-index",
+          "format"
+        ]
+      },
+      "authority": {
+        "capability_class": "any",
+        "network": false,
+        "credentials": false,
+        "mutates": false
+      }
+    }
+  ]
+}
