@@ -96,9 +96,10 @@ soll.
 
 | Werkzeug | Zweck |
 |---|---|
-| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Tasks `0044-14`/`0044-15`/`0044-16`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält auch nach begrenztem Re-Sample einen gestagten Baum), `MAIN_WORKTREE_DIRTY` (getrackte Dateien im `main`-Worktree ≠ Index), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
+| `check_integration_hygiene.py` | Gemeinsame read-only Hygiene- und Root-Preflight-Implementierung (`DEC-0044-010`, `DEC-0044-015`, `DEC-0044-021`): prüft alle registrierten Worktrees, erlaubt ausschließlich ungestagte getrackte exakte Kinder von `logs/agent-memory/`, blockiert gemischte/gestagte/indeterminierte Zustände und Kandidatenüberlappung sowie alle bisherigen Findings |
+| `integration_hygiene_policy.py` | Reine gemeinsame Byte-Pfadklassifikation für Memory-Kindprädikat, NUL-Ausgabe, Root-Divergenz und exakte Kandidatenüberlappung; wird vom Checker, Root-Preflight und Post-Merge-Lauf verwendet |
 
-Aufruf: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> [--json]`
+Aufruf vor Merge: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> --candidate-ref <candidate> [--json]`. Harter Root-Preflight unmittelbar vor und nach dem Root-Merge: `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
 
 Exit-Codes: `0` sauber, `1` Befunde, `2` die Prüfung selbst konnte nicht laufen —
 eine `2` ist ein **Fehlschlag, kein Bestehen**. `--json` liefert
@@ -121,15 +122,13 @@ zugetraut, als sie leistet:
   Zustand wird dadurch weder advisory noch auf integrationsnahe Worktrees
   beschränkt. Aufgelöst wird er vom Eigentümer (committen oder stashen) —
   **niemals** durch ein Zurücksetzen eines fremden Worktrees.
-- `MAIN_WORKTREE_DIRTY` meldet die bekannte Restabweichung getrackter Dateien
-  bei sauberem Index nun blockierend, aber ausschließlich für den Worktree, der
-  `main` auscheckt. Derselbe ungestagte Zustand in einem lebenden
-  Vorgangs-Worktree ist normale unfertige Arbeit und erzeugt bewusst keinen
-  Befund. Untracked Dateien bleiben ebenfalls außerhalb der Prüfung. Deshalb
-  verlangt `DEC-0044-015` weiterhin zusätzlich und unverändert den harten Preflight im Root
-  (`git diff --quiet`, `git diff --cached --quiet`, `HEAD` ist
-  `refs/heads/main`). Werkzeug und Preflight ergänzen einander; keines ersetzt
-  das andere.
+- `MAIN_WORKTREE_DIRTY` bleibt für jede Nicht-Memory- oder gemischte getrackte
+  Root-Abweichung blockierend. Nur eine nichtleere Menge ausschließlich
+  ungestagter, NUL-sicher bestimmter und exakt groß-/kleinschreibungstreuer
+  Kinder von `logs/agent-memory/` ist erlaubt. `CANDIDATE_MEMORY_OVERLAP`
+  blockiert, wenn der Kandidat einen solchen aktuell abweichenden Pfad ändert —
+  auch bei gleichen Bytes. `--root-preflight` ersetzt die frühere rohe
+  Shell-Rezeptur und prüft Branch, Index und dieselbe Pfadklassifikation.
 
 Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
 `STALE_AFTER_REF_MOVE` und die `preserved/*`-Momentaufnahmen:
