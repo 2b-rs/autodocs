@@ -25,6 +25,8 @@
 
 ## Progress
 
-- [p] claim + TODO marker
-- implement + fixtures + tests
-- substantive / bookkeeping commits
+- claim commit `5d52557e182ee4a1436b095960155e18fc1a80d0`
+- implemented IV0923–IV0934 in `_src/tools/issue_validate.py` (typed refs, provenance graph, artifact/run/finding, evidence-class, privacy/public projection)
+- fixtures: `_src/tests/fixtures/0037-09.03/` (27 negative cases + valid-chain + leak token)
+- validation: `python3 -m unittest _src.tests.test_issue_validate` 17/17 OK (venv `/tmp/autodocs-0037-08-venv-julian`); `py_compile` OK; `git diff --check` OK; automation_safety: `_src/tools/issue_validate.py` 0 findings (policy file has unrelated stale disposition errors)
+- substantive REF `b72aefbcfc2b3e5002cf5762876de9b520951e2b`
