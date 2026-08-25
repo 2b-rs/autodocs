@@ -217,6 +217,17 @@ HOW TO USE:
   - **Package completion, corrected round (2026-08-25T20:50Z, Implementer `belanna`, same separate assignment):** Reconciled corrected schemas (`e637660978`/`6b8ff993d`, fixing `F-0044-05-GEORDI-001`) and the `[u]` verdict lineage (`5208d4b31`/`016bbcc94`) into this candidate via two `--no-ff` merges; rejection evidence and the verdict above left unmodified. Independently re-validated the committed self-application instances **against the published JSON Schemas themselves** (not just the matcher's own private validation) using a new stdlib-only structural validator, `docs/campaign-evidence/0044-05/self-application/validate_against_schema.py`, sanity-checked by reproducing Geordi's exact finding against the pre-fix schemas before trusting it against the corrected ones: profile, descriptor, and result instances all **VALID**; a new genuine invalid-input result (real legacy-descriptor rejection, exit 2) also **VALID** against the corrected result schema and **INVALID** (forbidden `error`) against the old one, matching finding #3 exactly. 19/19 tests, `automation_safety` PASS 0 findings, legacy digest unchanged, no activation wiring, non-activation sentence still byte-identical, full ancestry reconfirmed, `git diff --check` clean. REF: `2731d8a11`. Full record: `docs/campaign-evidence/0044-05/self-application/parent-completion-correction-20260825T2043Z.md`. **Does not clear the `[u]` verdict above** — that remains for an authorized user decision and a separately assigned independent re-review. No `Acceptance: ✓`.
   - **[u] Integration re-review verdict — REMAINS BLOCKED (2026-08-25T21:13:03+02:00):** Verdict author `geordi` (Geordi La Forge, privileged Team Enterprise Integrator); authority `agent-inbox:jean-luc→geordi:1787685001155-e6cde308`, relaying the current user's Alternative A authorization for a fresh independent re-review and conditional supersession only if accepted; exact corrected rejected baseline `b9d402d643a08f9a6b5466e7ba96c6b774f44e52`; rejected item `0044-05`, finding `F-0044-05-GEORDI-002`. Reason: the published profile and descriptor schemas accept authority-invalid cross-field combinations that the normative matcher rejects — including `sandboxed-grunt` with direct execution, `privileged` with runner routing, and a non-prefix cognitive-class sequence — although the approved architecture sections 5–7 require the schemas to enforce the same capability-class, route, role, and cognitive-prefix constraints. Fresh rejected review evidence REF `b4956fa26d2e60f6d1bd0a2eb16ca91e0e31bafa`, report `docs/campaign-evidence/0044-05/checkpoint-rereview-geordi-20260825.md`. The prior verdict at `016bbcc94ecc469bc7bb817ceacbf0acde52dc35` remains current: its user-authorization condition was met, but the separate acceptance condition was not. Parent implementation remains `[x]`; no `Acceptance: ✓`, verdict supersession, hygiene gate, checkpoint crossing, or `main` advance occurred. A later correction does not self-clear this verdict; disposition still requires an authorized decision and a new separately assigned independent review.
   - **Corrective implementation (2026-08-25, Implementer `gabriel`, unprivileged; distinct from Architect `data` and Integrator `geordi`):** Claim `TODO-gabriel-0044-05-geordi-002-20260825T191700Z.md` (`owner_token: agent:gabriel:0044-05-geordi-002:20260825T191700Z`). Branch/worktree `0044-05-geordi-002` from exact blocked-review tip `6940900f67`. Product REF `5bd9d880ff89b81fce04cc5f893a07010638d52d` encodes profile/descriptor `allOf`/`if`/`then` cross-field constraints and schema/matcher agreement tests for F-0044-05-GEORDI-002. Validation: 21 tests OK; path-scoped `automation_safety` PASS; legacy digest unchanged. Does not edit verdict text, review reports, matcher, or result schema, and does not claim to clear the `[u]` records. No `Acceptance: ✓`.
+  - **Integration verdict supersession — CLEARED (2026-08-25T21:27:23+02:00):** Superseding Integrator `geordi`; authority `agent-inbox:jean-luc→geordi:1787685806304-66071b55`, applying the repository owner's Alternative-A authorization already recorded in `agent-inbox:jean-luc→geordi:1787685001155-e6cde308`. Fresh independent accepted review REF `9fa61ec991f463792048d7ffe68ff9988577d584`, report `docs/campaign-evidence/0044-05/checkpoint-rereview-geordi-20260825-r2.md`, exact reviewed baseline `74d3a6fb90b79f5dac9fb26d22f78223f268617e`. `F-0044-05-GEORDI-001` and `F-0044-05-GEORDI-002` are closed; both prior `[u]` verdicts and rejected reviews remain append-only history and are superseded for this corrected baseline only. This record grants no Feature closure or broad activation.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `geordi` (Geordi La Forge, privileged Team Enterprise Integrator)
+    - **Authority reference:** `agent-inbox:jean-luc→geordi:1787685806304-66071b55` plus recorded repository-owner conditional authorization `1787685001155-e6cde308`
+    - **Accepted at:** `2026-08-25T21:27:23+02:00`
+    - **Contract SHA-256:** `b52e21551d3d81ea690300727c6cf5a5e5dadc57ad1287354e783ba3a176262f`
+    - **Work-product manifest SHA-256:** `b61c8151374d89f275efa804ec116c1cc0ec8a07dc7dda3f936b897475928cee`
+    - **Prerequisite-acceptance SHA-256:** `eee2be5dbd8c9f2b57048e5144e56ee2329163f685ddcec70139ba9a0f257dcc`
+    - **Review REF:** `9fa61ec991f463792048d7ffe68ff9988577d584`
+    - **Review evidence SHA-256:** `dbc3ea26833b27e73466c7aca80eae16eabcdae772b91c1252f2c583e07386a3` (`docs/campaign-evidence/0044-05/checkpoint-rereview-geordi-20260825-r2.md`)
 
   - [x] **0044-05.01** PREREQ: 0044-05.01:0044-04 Baseline the shared capability-matching contract and exact separated implementation packages. *(architect)* Claim: `TODO-data-0044-05-20260825T165207Z-4f9c2a71.md` (same owner token; Architect-only scope). **REF:** `9854d2f18`.
     - **Decision/source baseline:** `DEC-0044-025`; `RQ-CB-01` … `RQ-CB-03`; accepted `0044-04`; legacy `agent-capability@v1` remains unchanged.
@@ -226,6 +237,16 @@ HOW TO USE:
     - **Capability profile:** `privileged`; Architect; direct Git/text validation; cognitive `high`; token 12k–24k; context `large`; no network, credentials, secrets, or external effects.
     - **Integration review:** not mandatory. **No-checkpoint justification (architect):** defines a reviewed contract and performs no executable gate or external effect; parent `0044-05` is the immediate mandatory checkpoint.
     - **Implementation evidence:** `DEC-0044-025` is on `main@174b10078`; architecture and exact child contracts committed at `9854d2f18`; graph audit found 358 IDs, 758 prerequisite edges, zero missing endpoints, and zero cycles; `git diff --check` passed.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `geordi` (Geordi La Forge, privileged Team Enterprise Integrator)
+      - **Authority reference:** `agent-inbox:jean-luc→geordi:1787685806304-66071b55`
+      - **Accepted at:** `2026-08-25T21:27:23+02:00`
+      - **Contract SHA-256:** `d06930d250143ad7c424bb58a1e3dd61685dfe052d7d6e6bc47174354bed4cfc`
+      - **Work-product manifest SHA-256:** `8a0060f1a4aae22129a9abdc4e73682c2218050bc314d2b73eff80889fd19776`
+      - **Prerequisite-acceptance SHA-256:** `02f19b138b8e9ae0d063d23cc8d5ce191ae37bc6151f7d4439fb12759ef616ad`
+      - **Review REF:** `9fa61ec991f463792048d7ffe68ff9988577d584`
+      - **Review evidence SHA-256:** `dbc3ea26833b27e73466c7aca80eae16eabcdae772b91c1252f2c583e07386a3`
 
   - [x] **0044-05.02** PREREQ: 0044-05.02:0044-05.01 Implement the schemas, stdlib-only matcher, result contract, fixtures, tests, and exact-agent self-check. *(implementer; identity distinct from 0044-05.01 Architect)* Claim: `TODO-gabriel-0044-05.02-20260825T175800Z.md` (`owner_token: agent:gabriel:0044-05.02:20260825T175800Z`). REF: `e637660978fdbd1eb7f73dd115757b69b0819b63` (corrects F-0044-05-GEORDI-001; prior product `2c563040563b350f26e6c85b0dccb8c211fdbdef`). Checkpoint review REF `5208d4b31677792a9f9685085fa7053071f55938` remains rejected/append-only. Validation: `python3 -m unittest _src.tests.test_capability_match` 19 tests OK; `automation_safety.py` path-scoped PASS; Python 3.9.6; `git diff --cached --check` clean; legacy schema SHA-256 `ee553404d0e859e4fdd1876edb0d4dc8d016921f92818fbd143ba4ad71870955` unchanged.
     - **Write scope:** `issues/_schema/task-requirement-profile-v1.schema.json`; `issues/_schema/agent-capability-descriptor-v1.schema.json`; `issues/_schema/capability-match-result-v1.schema.json`; `_src/tools/capability_match.py`; `_src/tests/test_capability_match.py`; `_src/tests/fixtures/capability-match/`; own claim/bookkeeping only.
@@ -234,6 +255,16 @@ HOW TO USE:
     - **Capability profile:** `unprivileged`; Implementer; direct Python/Git; cognitive `high`; token 16k–32k; context `large`; CPU 1, memory ≤1 GiB, focused suite ≤20 minutes; no network or credentials.
     - **Prohibitions:** No governance paths, legacy-schema mutation, activation, agent selection, Acceptance, integration review, or `main` advance.
     - **Integration review:** not mandatory. **No-checkpoint justification (architect):** executable remains unactivated and the parent mandatory checkpoint immediately reviews it together with adoption.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `geordi` (Geordi La Forge, privileged Team Enterprise Integrator)
+      - **Authority reference:** `agent-inbox:jean-luc→geordi:1787685806304-66071b55`
+      - **Accepted at:** `2026-08-25T21:27:23+02:00`
+      - **Contract SHA-256:** `5b155fdc3033940b3a32308a6f193c814950a9bef2c180ec4e5575b5da3301bb`
+      - **Work-product manifest SHA-256:** `b350aa31d37b1099ee95a7c6e9544378f306953269c0487d0152f1b81601647b`
+      - **Prerequisite-acceptance SHA-256:** `fac220dc170584ff05bf9f5c14c658ef60a60dd4aff99f4e9dcd620ea6ca44ed`
+      - **Review REF:** `9fa61ec991f463792048d7ffe68ff9988577d584`
+      - **Review evidence SHA-256:** `dbc3ea26833b27e73466c7aca80eae16eabcdae772b91c1252f2c583e07386a3`
 
   - [x] **0044-05.03** PREREQ: 0044-05.03:0044-05.02 Adopt the versioned matcher contract as bounded Feature-0044 pilot governance. *(privileged implementer; distinct from Architect and Integrator)* Claim: `TODO-belanna-0044-05.03-20260825T182800Z.md` (`owner_token: agent:belanna:0044-05.03:20260825T182800Z`). REF: `6bfd0fc74` (candidate tip on branch `0044-05.03-belanna-20260825`, parents `5aefac853` (main `M`) + `4468a78d1` (`P`), merge tip `7af5dc784`, then governance-edit commit `6bfd0fc74`). Validation: 16/16 own `pytest` run; product `2c563040563b350f26e6c85b0dccb8c211fdbdef` confirmed ancestor; all three schemas present; required non-activation sentence byte-identical in `AGENTS.md` and `docs/pipeline/capability-matching.md`; `git diff --check` clean. No `Acceptance: ✓`; no `main` advance; handed to the separately assigned privileged Integrator for the complete parent `0044-05` checkpoint.
     - **Write scope:** `AGENTS.md`; `docs/pipeline/capability-matching.md`; `docs/pipeline/tools.md`; `docs/pipeline/README.md`; own governance coordination record only, on a branch cut from then-current `main`.
@@ -243,6 +274,16 @@ HOW TO USE:
     - **Definition of Done:** Governance edits remain path-limited beyond the explicitly declared parent-history merge; validation proves product `2c563040563b350f26e6c85b0dccb8c211fdbdef`, all three schemas, tests, and exact non-activation text are present on the candidate; matcher tests and `git diff --check` pass. The candidate is handed to a separately assigned privileged Integrator for the complete parent `0044-05` mandatory checkpoint; broad activation remains exclusively `0044-08` after end-to-end evidence and user decisions.
     - **Capability profile:** `privileged`; Implementer only; direct Git/text validation; cognitive `medium-high`; token 10k–20k; context `medium`; CPU under 5 minutes; no network, secrets, external effects, Acceptance, or integration authority.
     - **Integration review:** not mandatory. **No-checkpoint justification (architect):** wires the tested mechanism only for the bounded pilot; parent `0044-05` reviews package composition before any broader activation.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `geordi` (Geordi La Forge, privileged Team Enterprise Integrator)
+      - **Authority reference:** `agent-inbox:jean-luc→geordi:1787685806304-66071b55`
+      - **Accepted at:** `2026-08-25T21:27:23+02:00`
+      - **Contract SHA-256:** `dd5d51d12ed9b27694460c2560a0b5c1502533f7e0e2e4c55475cb15b38b9aea`
+      - **Work-product manifest SHA-256:** `4377f9033db7b779ba0cea7b83fb1e4024b7fe56fb12e119f6c86d00b8628f72`
+      - **Prerequisite-acceptance SHA-256:** `93b257c21798f3d9079b8e6288eb5a11d2969c14f79ddb3c6d8435862c0b600e`
+      - **Review REF:** `9fa61ec991f463792048d7ffe68ff9988577d584`
+      - **Review evidence SHA-256:** `dbc3ea26833b27e73466c7aca80eae16eabcdae772b91c1252f2c583e07386a3`
 
   - **Parent package completion:** After `.01`, `.02`, and `.03` are terminal, an implementation session distinct from the `.01` Architect verifies schema/tool/docs consistency, unchanged legacy bytes, current self-application evidence, absence of broad activation, and complete finding dispositions. Parent `0044-05` then retains its mandatory checkpoint; `0044-08` remains the sole terminal integrating Task.
 
