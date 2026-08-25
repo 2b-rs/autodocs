@@ -69,3 +69,18 @@ forbids that rename, and immutable-token rules forbid rewriting the token after
 it entered committed history. All other packet diagnostics are clean. The next
 action requires Project Lead direction that explicitly reconciles the assigned
 path with immutable claim identity; no unassigned mutation is authorized.
+
+## Additive historical disposition
+
+Project Lead direction `agent-inbox:1787694795766-f8cea917` authorizes the
+canonical live identity at
+`TODO-data-0044-06-cognitive-demand-20260825T214726Z-0d41a19f.md`. This
+originally assigned file is retained as inactive historical coordination
+provenance for the exact briefing, collision discovery, architecture work, and
+identity-format finding. It asserts no second lease, ownership, or live claim;
+the immutable token is neither rewritten nor reassigned. The canonical file is
+the sole live identity record for any later resumption and handoff.
+
+historical_disposition: inactive-coordination-provenance
+lease_active: false
+canonical_claim_path: TODO-data-0044-06-cognitive-demand-20260825T214726Z-0d41a19f.md
