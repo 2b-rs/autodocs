@@ -56,3 +56,16 @@ Substantive governance REF:
 Hand the exact candidate containing the substantive REF and final validation
 evidence to Jean-Luc for a separately assigned governance integration. Do not
 advance `main` or begin implementation.
+
+## Open identity-format blocker
+
+The exact assigned claim path ends in
+`cognitive-demand-architecture-20260825.md`, while this session's already-minted
+immutable request ID is `cognitive-demand-20260825T214726Z-0d41a19f`.
+Consequently the legacy doctor requires the different canonical filename
+`TODO-data-0044-06-cognitive-demand-20260825T214726Z-0d41a19f.md` and reports
+one attributable `LTD-CLAIM-IDENTITY-MISMATCH`. The exact write-scope assignment
+forbids that rename, and immutable-token rules forbid rewriting the token after
+it entered committed history. All other packet diagnostics are clean. The next
+action requires Project Lead direction that explicitly reconciles the assigned
+path with immutable claim identity; no unassigned mutation is authorized.
