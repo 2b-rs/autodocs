@@ -17,3 +17,5 @@
 ## Progress
 
 - 2026-08-25T08:50:00Z worktree created from 4184756f6; claim minted.
+- Product REF `91b848933fb055d4c51ee62ceba0a1d6e2b8e619`. Validation: `python3 _src/tests/test_provenance_query.py` 7 tests OK; `test_provenance_views.py` OK.
+- Successors `0037-10.04` and `0037-23.01` remain `[ ]` (other open prerequisites). Parent `0037-17` remains `[ ]`.
