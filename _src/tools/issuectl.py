@@ -979,17 +979,8 @@ def _git_hash_object(repo: Path, data: bytes) -> str:
     return _run_git(repo, "hash-object", "-w", "--stdin", input_bytes=data).strip()
 
 
-def _git_update_ref(repo: Path, ref: str, new: str, old: Optional[str]) -> None:
-    proc = subprocess.run(
-        ["git", "-C", str(repo), "update-ref", ref, new, old or ""],
-        capture_output=True,
-    )
-    if proc.returncode != 0:
-        raise IssuectlError(
-            "IC1151",
-            f"CAS ref update rejected for {ref}: another local contender won "
-            f"({proc.stderr.decode('utf-8', 'replace').strip()})",
-        )
+def _claim_journal_path(claim_sidecar: Path) -> Path:
+    return claim_sidecar.parent / "claim-cas-receipt.txt"
 
 
 def _canonical_claim_bytes(payload: Mapping[str, Any]) -> bytes:
@@ -1134,9 +1125,35 @@ def _cas_promote_claim(
         return new_bytes
     old_ref_value = _git_ref_value(repo, ref)
     new_blob = _git_hash_object(repo, new_bytes)
-    _git_update_ref(repo, ref, new_blob, old_ref_value)
+    # Same-clone CAS: this update-ref call is the serialization point from
+    # docs/pipeline/issue-lifecycle.md's "Claim and Recovery Protocol". A
+    # rejected CAS raises before anything below runs, so old_ref_value never
+    # silently loses a concurrent local contender's race.
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "update-ref", ref, new_blob, old_ref_value or ""],
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise IssuectlError(
+            "IC1151",
+            f"CAS ref update rejected for {ref}: another local contender won "
+            f"({proc.stderr.decode('utf-8', 'replace').strip()})",
+        )
     original = path.read_bytes() if path.is_file() else None
     atomic_promote([(path, new_bytes, original)], dry_run=False)
+    # Same-directory outcome receipt for this CAS ref transition (which
+    # previous_commit/promoted_commit it moved), scoped to the most recent
+    # transition only. The append-only retained record required by
+    # docs/pipeline/issue-lifecycle.md ("Claim records are append-only
+    # evidence ... they never erase an earlier owner's record") is Git
+    # commit history over claim.json itself, committed by the caller; this
+    # receipt is a same-directory recovery aid, not that record.
+    journal_line = (
+        f"outcome=promoted ref={ref} previous_commit={old_ref_value or 'none'} "
+        f"promoted_commit={new_blob} path={path} item_id={item_id}\n"
+    )
+    journal_path = _claim_journal_path(path)
+    journal_path.write_text(journal_line, encoding="utf-8")
     return new_bytes
 
 
