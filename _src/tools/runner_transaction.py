@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import datetime as dt
+import errno
 import hashlib
 import json
 import os
@@ -156,18 +157,54 @@ def _json_bytes(value: Any) -> bytes:
     return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")
 
 
+def _path_is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
 def _open_directory_nofollow(path: Path) -> int:
-    """Open an existing directory without resolving or traversing symlinks."""
+    """Open an existing directory without traversing in-tree symlinks.
+
+    Leading OS aliases (macOS ``/var`` -> ``/private/var``) are followed because
+    they remain under the current physical prefix. A directory symlink that
+    leaves that prefix is not followed. Callers that already ``Path.resolve()``
+    the repository root never hit the alias case; ``_current_pointer_status``
+    and test fixtures that pass an unresolved TemporaryDirectory path do.
+    """
     absolute = path.absolute()
     if not absolute.is_absolute():
         raise OSError(f"directory path is not absolute: {path}")
-    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
-    descriptor = os.open("/", flags)
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    nofollow_flags = directory_flags | getattr(os, "O_NOFOLLOW", 0)
+    descriptor = os.open("/", directory_flags)
+    current_physical = Path(os.path.realpath("/"))
     try:
         for component in absolute.parts[1:]:
-            next_descriptor = os.open(component, flags, dir_fd=descriptor)
+            try:
+                next_descriptor = os.open(component, nofollow_flags, dir_fd=descriptor)
+            except OSError as exc:
+                if exc.errno not in (errno.ENOTDIR, errno.ELOOP):
+                    raise
+                try:
+                    link_stat = os.lstat(component, dir_fd=descriptor)
+                except OSError:
+                    raise exc
+                if not stat.S_ISLNK(link_stat.st_mode):
+                    raise
+                raw_target = Path(os.readlink(component, dir_fd=descriptor))
+                if raw_target.is_absolute():
+                    resolved_target = Path(os.path.realpath(raw_target))
+                else:
+                    resolved_target = Path(os.path.realpath(current_physical / raw_target))
+                if not _path_is_relative_to(resolved_target, current_physical):
+                    raise
+                next_descriptor = os.open(component, directory_flags, dir_fd=descriptor)
             os.close(descriptor)
             descriptor = next_descriptor
+            current_physical = Path(os.path.realpath(current_physical / component))
         return descriptor
     except Exception:
         os.close(descriptor)
