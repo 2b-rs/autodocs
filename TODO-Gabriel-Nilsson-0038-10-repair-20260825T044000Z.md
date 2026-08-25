@@ -1,13 +1,14 @@
 # Claim — Task 0038-10 repair (immutable per-attempt results / current pointer)
 
 request_id: 20260825T044000Z
-owner_token: agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z
+owner_token: agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z
+prior_owner_token_provenance_only: agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z
 task_id: 0038-10
 feature_id: 0038
 capability_class: unprivileged
 execution_authority: direct local Shell/Git in the item worktree only; not sandboxed-grunt; no runner queue
-startup_review: Dispatcher briefing for Gabriel-Nilsson-20260825T044000Z, Team Discovery, Programmer. Read AGENTS.md/SANDBOX.md collaboration rules via session context. Re-measured: no `refs/heads/0038-10-repair-20260825T044000Z`; no worktree dir; binding base `4231f93b24cbd9aa056305ffa5a147ac316c783c` is a reachable commit (`feat(0038-10): persist immutable attempt results`). Worktree created from that exact base. First mutation this session is this claim plus the 0038-10 TODO marker/claim pointer only.
-state: [x]
+startup_review: Dispatcher briefing for Gabriel-Bryce-20260825T045000Z, unprivileged Programmer. Work only in `/Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z` branch `0038-10-repair-20260825T044000Z`. Path-limited additive claim-only commit. Do not reset/stash/checkout -- or commit `_src/tools/runner_transaction.py`. Do not add `uv.lock`. HEAD may already be `9c3b8e412`; leave that tree. MUST NOT: Acceptance, merge, 0041-02, Airiam EOF, product files.
+state: [p]
 binding_base: 4231f93b24cbd9aa056305ffa5a147ac316c783c
 canonical_branch: 0038-10-repair-20260825T044000Z
 canonical_worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z
@@ -45,9 +46,28 @@ MUST NOT: Acceptance, review, checkpoint; other 0038 Tasks including 0038-33; Fe
 - `TODO-Gabriel-Nilsson-0038-10-repair-20260825T044000Z.md` (this file)
 - `TODO.md` (0038-10 marker/claim pointer and retained `[x]` evidence only)
 
+## Explicit takeover (2026-08-25T04:50:00Z)
+
+- Dispatcher: gabriel
+- From: Gabriel-Nilsson-20260825T044000Z
+- To: Gabriel-Bryce-20260825T045000Z
+- At: 2026-08-25T04:50:00Z
+- Nilsson `owner_token` `agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z` is provenance only.
+- Current ownership: `agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z`
+- Filename of this claim is unchanged (`TODO-Gabriel-Nilsson-0038-10-repair-20260825T044000Z.md`).
+
+## Recorded deviation (does not authorize retroactively)
+
+Product mutation occurred **before** this takeover.
+
+- Unstaged `_src/tools/runner_transaction.py` (+41/−4) SHA-256 `d018cd46881caf8fbd29cf955a9082dfea3f822ab70424ceb6bc65f4edcddfde` was later committed as `d712bbb95a8f9bfea5b546919561bad442a45fdb` by a **second Nilsson-labeled workflow agent that was NOT the original claim session**.
+- Bookkeeping commit: `9c3b8e412622c9402b6fa21fbf185b2066af962b`
+- This record documents the deviation; it does not authorize it retroactively.
+- New owner may inspect/adopt that committed diff **only after** this claim-follow-up commit. This turn does not inspect or adopt the product.
+
 ## Next step after this commit
 
-Done for implementation. Later turns must not self-accept.
+Inspect/adopt committed repair `d712bbb95` only after this claim commit is on the branch. No Acceptance. No product mutation this turn.
 
 ## Diagnosis (2026-08-25)
 
