@@ -15,8 +15,8 @@
   - `0037-23.01@69ed6d7572fe6516867169280e79c3e471e53715`
 - exact_write_scope: union of those candidates' changed paths plus this claim
 - forbidden: rewrite candidate history; unrelated TODO/DONE; Acceptance; mandatory checkpoint; move `refs/heads/0037`; move `main`; publish; credentials; foreign cleanup; Wave-1 tasks
-- status: `[p]` **blocked on pre-merge hygiene** (did not merge any Layer-B tip). First hygiene vs candidate `78f1e3fd2` using main `_src/tools/check_integration_hygiene.py` (Feature tree tool lacks `--candidate-ref`).
-- hygiene_1: EXIT 1; `FOREIGN_STAGED_TREE` `.worktrees/0033-02-tom-culber-20260825T215200Z` index age ~21s (2026-08-25T21:54:19Z).
-- hygiene_2 (retry +25s): EXIT 1; `FOREIGN_STAGED_TREE` `.worktrees/0033-02-saru-landry-20260825T214500Z` (~48s) and `.worktrees/0033-02-tom-culber-20260825T215200Z` (~173s). Did not touch those worktrees.
-- staging_HEAD: `73717e2d628f7d902c86c404a87ad6dddf9576bb` (claim + hygiene stop; still based on `722aaa214` plus this claim). No Layer-B merges. Canonical `0037` and `main` not moved.
-- next_step: rerun hygiene when those 0033-02 indexes match HEAD; then serial-merge the five named tips.
+- retrigger: jean-luc `1787696951000-fd640aeb`; main recovery `d401aeb069371934ed349f5b59b9cae5051dbfbc`; tag peel `6db991be`
+- status: `[x]` staging complete. Merge commits `93677fe5e` (17), `3fb574fba` (10.01), `2f4b06951` (11.01), `73586cd7a` (22), `d17b8f042` (23.01). All five source tips are ancestors of staging HEAD `d17b8f04211d2dbef3d837606a63a96ef2a0a98f`. Canonical `0037` remains `722aaa214`; `main` remains `d401aeb` (not moved by this session).
+- conflicts: TODO.md auto-merged (ort) on 10.01/11.01/22/23.01; no manual UU. Hygiene: first 17-run FOREIGN_STAGED on 0038-35-r2 then PASS after 30s; 11.01 first FOREIGN_STAGED 0033-04-saru-rhys (4s) then PASS after 20s. Did not touch foreign trees.
+- validation: issuectl 18 OK; issue_lists 5 OK (julian venv); graph 10+8 OK; privacy 10 OK; combined 23+10+8 OK; `git diff --check` clean after each merge.
+- wave_1: **not started**. Ready only after this staging tip is separately reconciled into canonical Feature `0037`.
