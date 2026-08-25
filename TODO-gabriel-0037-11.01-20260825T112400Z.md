@@ -71,3 +71,4 @@ DoD remains the Task text: golden and repeated clean runs, byte determinism, fix
 - This session's `owner_token` is minted here and is not reused for another Task.
 - Product code, tests, and live-list generation wait until after the claim commit REF is reported.
 - Rendering live repository `TODO.md`/`DONE.md` is out of scope for this Task's write path.
+- Product REF `beb2564331279bfdc29ae357cded9571b7416e9c`. Tests 5/5 PASS twice with `.worktrees/0037-11.02/.venv` (ruamel.yaml).
