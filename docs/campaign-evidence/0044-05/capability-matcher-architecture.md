@@ -1,8 +1,8 @@
 # Task 0044-05 capability-matcher architecture baseline
 
-Status: pre-implementation Architect work product. It becomes an executable
-predecessor contract only after `DEC-0044-022` is integrated to `main` and this
-work product is committed on `0044-05.01`. It does not activate matching,
+Status: Architect predecessor contract for `0044-05.01`. `DEC-0044-025` is
+integrated on `main` at `174b10078c519d81ff43703ee45b572e19180101`. This work
+product does not activate matching,
 assign an agent, grant authority, or accept work.
 
 ## 1. Goal and observable boundary
@@ -24,7 +24,7 @@ Task's write scope.
 | Source | Revision | Class | Derived obligation |
 | --- | --- | --- | --- |
 | `TODO.md`, Feature/Task `0044`/`0044-05` | accepted predecessor tree `c8d3c1672d57021e670ed5e9c2141b24dea9e0cd`; authoritative `main` at start `6a937f8414440cc84233954012ff802eaf57924c` | authority | Two machine-readable schemas, deterministic matcher, self-check, role/class mapping, tests, tool registration, briefing input |
-| `docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`, `RQ-CB-01..03`, `DEC-0044-004` | `main@6a937f8414`; governance candidate `DEC-0044-022@0ff7bd63d70ceca8980660cf44280183e2775cb3` | authority / pending authority | Architect specifies requirements; orchestrator selects without AI; staged activation and legacy preservation |
+| `docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`, `RQ-CB-01..03`, `DEC-0044-004`, `DEC-0044-025` | `main@174b10078c519d81ff43703ee45b572e19180101` | authority | Architect specifies requirements; orchestrator selects without AI; staged activation and legacy preservation |
 | `docs/pipeline/feature-breakdown.md` | accepted `0044-04` candidate `c8d3c1672d57021e670ed5e9c2141b24dea9e0cd` | authority | Rights, data, tools, execution need, cognitive demand, independence, branch, source/order/test derivation |
 | `SANDBOX.md` and `docs/pipeline/process-roles.md` | `main@6a937f8414` | authority | Three capability classes; direct execution and authority remain separate; Integrator requires privileged; fail-safe fallback |
 | `issues/_schema/agent-capability-v1.schema.json` | accepted `0037-45` REF `b01d56f134671c89693a9f7a3781b43f761ffd29` | legacy shared contract | Preserve unchanged; its two-class runner contract is not a matcher descriptor |
@@ -276,7 +276,7 @@ a red-first mutation proving the authority-class constraint fails when removed.
 
 - Role: Architect (`data` currently owns only this preparation).
 - Prerequisite: `0044-04` accepted work-product baseline.
-- Deliverables: `DEC-0044-022` on `main`; this architecture document; repaired
+- Deliverables: `DEC-0044-025` on `main`; this architecture document; repaired
   Task graph and exact child contracts.
 - Write scope: Task claim/TODO block, this evidence directory, and the separate
   governance decision branch only.
@@ -291,8 +291,8 @@ a red-first mutation proving the authority-class constraint fails when removed.
 ### `0044-05.02` — Implement schemas, matcher, fixtures, and self-check
 
 - Role: Implementer, identity distinct from Data.
-- Prerequisite: current Acceptance/implementation completion of `0044-05.01`
-  as specified by the repaired Task contract; `DEC-0044-022` must be reachable
+- Prerequisite: implementation completion of `0044-05.01`
+  as specified by the repaired Task contract; `DEC-0044-025` must be reachable
   on `main` before first matcher mutation.
 - Exact write scope: section 4.1 plus own claim and its Task/Subtask bookkeeping.
 - Prohibitions: no governance documents, legacy schema mutation, activation,
@@ -355,15 +355,16 @@ other declared prerequisites.
 
 ## 12. Additive governance-ID collision finding
 
-After this preparation was committed, Project Leads `jean-luc` and `michael`
+After the initial preparation was committed, Project Leads `jean-luc` and `michael`
 independently verified that sibling governance candidate `d4acf24bc` already
 uses `DEC-0044-022` for a different decision and also carries
 `DEC-0044-023`/`024`. The capability-matching record at `0ff7bd63d` is therefore
 colliding evidence, not an integrable authority record. No architecture content
 in this document is activated by that candidate.
 
-Preserve both histories. After the authorized sibling candidate lands, recut
-the governance work from the new `main`, allocate the then-next free ID by a
-fresh check, and record the same capability-matching decision additively. Until
-that occurs, Task-graph mutation and matcher implementation remain blocked. No
-future identifier is reserved here.
+Both histories were preserved. The capability decision was recut as
+`DEC-0044-025`, reconciled additively with post-0020 `main` using merge tip
+`174b10078c`, and integrated by an independently assigned privileged
+Integrator. The colliding `0ff7bd63d` / `20bf78883` line and stale r2 tip
+`a058b915d` remain provenance only and must never be treated as integration
+candidates.
