@@ -410,3 +410,49 @@ Bedingungen; kein Konsens, keine Aktivierung.
 Ich nehme dies ausschließlich als weiteren pendenten Beitrag zum in §9.2 gemeldeten
 Aktivierungsblocker auf, bewerte die Kompatibilität mit Sevens Bedingungen nicht selbst — das ist
 ausdrücklich noch offen und Sevens eigene Prüfung.
+
+---
+
+## 13. Fünfter Nachtrag (2026-08-25T22:31Z) — Dreierkonsens erreicht: Fallback-Inhaltsblocker geschlossen (keine Aktivierung)
+
+Additiv (`jean-luc`, `1787697098979-e281b52f`). **Dreierkonsens `Jean-Luc`/`Geordi`/`Seven` ist
+erreicht** und ersetzt damit den pendenten Status der Vorschläge in §11/§12 durch ein finales
+Ergebnis — jene Abschnitte bleiben als Entstehungsgeschichte stehen, dieser hier ist der
+maßgebliche Stand.
+
+**Finale Fallback-Regel, wörtlich:**
+
+- Fehlende/unbekannte/widersprüchliche Capability erzeugt eine **ausdrücklich protokollierte
+  temporäre `unprivileged authority ceiling`** — niemals den Nachweis oder die Annahme direkter
+  Ausführungsfähigkeit.
+- Read-only Diagnose/Koordination darf fortfahren.
+- Item-eigene Claim-/Worktree-Schreibvorbereitung **nur** wenn direkte Shell/Git-Fähigkeit
+  **unabhängig bekannt** UND exakter Assignment-/Item-/Claim-/Write-Scope gültig sind.
+- **Geschlossen verboten:** Acceptance, Checkpoint/Integration/`main`/`DONE`/Release, externe
+  Effekte, Credentials, irreversible Aktionen, Governance-Mutation, Cross-item-Gate-Mutation.
+- Alles nicht ausdrücklich Erlaubte ist **ungeklärt und fail-closed**.
+- Bei unbekannter Fähigkeit/Scope, Deckenüberschreitung, oder wenn Klärung das Produkt materiell
+  ändern kann: **stoppen und klären.**
+- Widerspruch und benannte Dispatcherfrage bleiben aufgezeichnet.
+- **Eskalationszusatz (nach `seven`):** eine unbeantwortete Frage wird spätestens beim nächsten
+  Project-Lead-Statuszyklus **oder** nach 120 Minuten Inaktivität sichtbar an die
+  Project-Lead-/Management-Route eskaliert — das ist **Sichtbarkeit, keine neue Autorität.**
+- **Restrisiko ausdrücklich im Decision Record zu halten:** schwächere technische Erzwingung
+  gegenüber `sandboxed-grunt`.
+
+**Reichweite dieses Konsenses, wörtlich übernommen:** „Dies schließt den
+Fallback-Inhaltsblocker, aktiviert aber noch nichts; globale `decision-record@v1`, Architect Scope
+Review und Re-Reviews bleiben Pflicht."
+
+### 13.1 Eigene Einordnung
+
+- Das schließt genau die **eine** von zwei in §9.2/§10.3 offen benannten Fragen — wohin der
+  `SANDBOX.md`/`process-roles.md`-Fallback unter A-prime wandert. Damit ist er beantwortet: auf
+  eine explizite, protokollierte, fail-closed `unprivileged authority ceiling`.
+- **Nicht geschlossen, weiterhin offen:** die Reichweitenfrage aus §10.1 (ist `DEC-0037-002`
+  `0037`-begrenzt oder global?) — dieser Konsens betrifft nur den Fallback-Mechanismus, nicht die
+  Reichweite der zugrundeliegenden Entscheidung. Ich behandle beide Fragen weiterhin als getrennt.
+- Ich bewerte nicht, ob die neue Fallback-Regel ausreichend ist — das ist erklärter Gegenstand des
+  noch ausstehenden `decision-record@v1` und der Architect-Scope-Review, nicht dieses Pakets.
+- Der Konsens **aktiviert nichts**; ich behandle `0044-07` weiterhin als reine Vorbereitung,
+  Marker bleibt `[ ]`, keine Mutation an einem abgenommenen Vertrag.
