@@ -16,7 +16,7 @@ authoritative disposition first becomes `[x]`/`[w]` after the activation
 reference, ordered by terminal-transition event with the Task ID as the
 deterministic tie-breaker.
 """
-import importlib.util
+import json
 import os
 import subprocess
 import tempfile
@@ -42,10 +42,14 @@ class Fixture:
 
     def __init__(self, tmp: str):
         self.path = Path(tmp)
+        self.journal: list = []
+        self.journal_path = self.path / "fixture-journal.jsonl"
         self._git("init", "-q", "-b", "main")
         self._git("config", "user.email", "fixture@example.invalid")
         self._git("config", "user.name", "fixture")
-        (self.path / "DONE.md").write_text("# DONE\n", encoding="utf-8")
+        target = self.path / "DONE.md"
+        target.write_text("# DONE\n", encoding="utf-8")
+        self._record(action="seed-file", target=target, outcome="written")
 
     def _git(self, *args: str) -> str:
         return subprocess.run(
@@ -53,15 +57,38 @@ class Fixture:
             capture_output=True, text=True, check=True,
         ).stdout
 
+    def _record(self, action: str, target, outcome: str) -> dict:
+        """Append the durable outcome/recovery state for one fixture mutation.
+
+        Every mutation this fixture performs is confined to `self.path`, a
+        `TemporaryDirectory` removed by `addCleanup`; the entry records that
+        recovery path explicitly rather than leaving it implicit.
+        """
+        entry = {
+            "action": action,
+            "path": str(target),
+            "outcome": outcome,
+            "status": "recorded",
+            "recovery": f"temporary root {self.path} removed by addCleanup",
+        }
+        self.journal.append(entry)
+        with open(self.journal_path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry, sort_keys=True) + "\n")
+        return entry
+
     def commit(self, todo_body: str, when: str) -> str:
-        (self.path / "TODO.md").write_text(todo_body, encoding="utf-8")
+        target = self.path / "TODO.md"
+        target.write_text(todo_body, encoding="utf-8")
+        self._record(action="write-backlog", target=target, outcome="written")
         self._git("add", "TODO.md", "DONE.md")
         env = {**os.environ, "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when}
-        subprocess.run(
+        result = subprocess.run(
             ["/usr/bin/git", "-C", str(self.path), "commit", "-q", "-m", f"state at {when}"],
             check=True, env=env, capture_output=True, text=True,
         )
-        return self._git("rev-parse", "HEAD").strip()
+        commit_ref = self._git("rev-parse", "HEAD").strip()
+        self._record(action="commit", target=commit_ref, outcome=f"exit_code {result.returncode}")
+        return commit_ref
 
     def run_tool(self):
         os.environ["TK2_GITDIR"] = str(self.path / ".git")
