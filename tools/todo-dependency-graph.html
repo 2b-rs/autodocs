@@ -8,147 +8,322 @@
   :root { color-scheme: light; }
   body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; padding: 1.2rem 1.5rem; background: #f7f8fa; color: #1d2129; }
   h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
+  .skip { position: absolute; left: -999px; }
+  .skip:focus { left: 1rem; top: 1rem; background: #fff; padding: .4rem .7rem; z-index: 2; }
   .warn { background: #fff3cd; border: 1px solid #f0c36d; border-radius: 8px; padding: .6rem .9rem; font-size: .9rem; margin-bottom: 1rem; }
   .toolbar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 1rem; }
   .toolbar label { font-size: .9rem; display: flex; align-items: center; gap: .35rem; }
-  button, input[type=file] { font-size: .9rem; padding: .4rem .7rem; border-radius: 6px; border: 1px solid #c7ccd6; background: #fff; cursor: pointer; }
-  button:hover { background: #eef1f6; }
+  button { font-size: .9rem; padding: .4rem .7rem; border-radius: 6px; border: 1px solid #c7ccd6; background: #fff; cursor: pointer; }
+  button:hover, button:focus { background: #eef1f6; outline: 2px solid #1f4e79; outline-offset: 1px; }
   #status { font-size: .85rem; color: #596274; white-space: pre-wrap; margin-bottom: .8rem; }
   #status.error { color: #b3261e; }
+  #provenance { font-size: .8rem; font-family: ui-monospace, monospace; background: #fff; border: 1px solid #d9dce3; border-radius: 8px; padding: .6rem .8rem; margin-bottom: .8rem; white-space: pre-wrap; }
   #legend { font-size: .8rem; color: #596274; margin-bottom: .8rem; display: flex; flex-wrap: wrap; gap: 0; }
   #legend span { display: inline-flex; align-items: center; gap: .3rem; margin-right: 1.1rem; }
   #legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; }
-  #graph-container { background: #fff; border: 1px solid #d9dce3; border-radius: 10px; padding: .8rem; overflow: auto; min-height: 200px; }
-  #graph-container svg { max-width: 100%; height: auto; }
+  #graph-container { background: #fff; border: 1px solid #d9dce3; border-radius: 10px; padding: .8rem; overflow: auto; min-height: 200px; max-height: 70vh; }
+  #graph-stage { transform-origin: 0 0; }
+  #graph-stage svg { display: block; }
+  #item-nav { margin-top: 1rem; font-size: .9rem; }
+  #item-nav ul { padding-left: 1.2rem; }
+  #item-nav a:focus, #item-nav [tabindex]:focus { outline: 2px solid #1f4e79; }
+  .redacted { color: #8a90a0; }
 </style>
 </head>
 <body>
 
+<a class="skip" href="#graph-container">Skip to graph</a>
 <h1>Issue dependency graph</h1>
-<div class="warn">
+<div class="warn" id="serve-note">
   Maintainer-only tool. Loads validated
   <code>issues/_views/dependency-graph.json</code> (never TODO.md / DONE.md / YAML).
-  Malformed or stale catalogs fail visibly. Serve over
-  <code>http(s)://</code> so <code>fetch()</code> can read the sibling catalog.
+  Malformed, stale, missing, or redacted catalog data fails or is listed visibly.
+  Serve over local <code>http(s)://</code> from the repository root
+  (<code>python3 -m http.server</code>) so <code>fetch()</code> can read tracked
+  sibling assets only: this page, <code>todo-graph-core.js</code>, and
+  <code>vendor/hpcc-js-wasm-graphviz.umd.js</code>. Volatile execution-run IDs
+  belong in the external run manifest, not this page.
 </div>
 
-<div class="toolbar">
+<div class="toolbar" role="toolbar" aria-label="Graph filters and zoom">
   <label><input type="checkbox" id="chk-include-done" checked> include closed items</label>
   <label><input type="checkbox" id="chk-include-w" checked> include withdrawn [w]</label>
-  <button id="btn-rerender" disabled>Re-render</button>
+  <button type="button" id="btn-zoom-out" aria-label="Zoom out">−</button>
+  <button type="button" id="btn-zoom-reset" aria-label="Reset zoom">100%</button>
+  <button type="button" id="btn-zoom-in" aria-label="Zoom in">+</button>
+  <button type="button" id="btn-rerender" disabled>Re-render</button>
 </div>
 
-<div id="status">Loading…</div>
+<div id="status" role="status" aria-live="polite">Loading…</div>
+<div id="provenance" aria-label="Catalog digests and generation id" hidden></div>
 
-<div id="legend">
-  <span><i style="background:black"></i>same-feature / start-gate</span>
-  <span><i style="background:#1f4e79"></i>cross-feature / start-gate</span>
-  <span><i style="background:crimson"></i>feature-closure</span>
-  <span><i style="background:#6a1b9a;border-top:2px dashed #6a1b9a;height:0"></i>relation</span>
-  <span><i style="background:#d9d9d9"></i>outgoing from closed</span>
-  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open</span>
-  <span><i style="width:10px;height:10px;background:#fff3b0"></i>in_progress</span>
-  <span><i style="width:10px;height:10px;background:#ffb3b3"></i>blocked</span>
-  <span><i style="width:10px;height:10px;background:#e8d5ff"></i>withdrawn [w]</span>
-  <span><i style="width:10px;height:10px;background:#d9d9d9"></i>missing/malformed</span>
-  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">closed</span></span>
+<div id="legend" role="list" aria-label="State, archive, and edge legend">
+  <span role="listitem" data-legend="explicit_same"><i style="background:black"></i>same-feature / start-gate</span>
+  <span role="listitem" data-legend="explicit_cross"><i style="background:#1f4e79"></i>cross-feature / start-gate</span>
+  <span role="listitem" data-legend="feature_closure"><i style="background:crimson"></i>feature-closure</span>
+  <span role="listitem" data-legend="relation"><i style="background:#6a1b9a;border-top:2px dashed #6a1b9a;height:0"></i>relation</span>
+  <span role="listitem" data-legend="done_edge"><i style="background:#d9d9d9"></i>outgoing from closed</span>
+  <span role="listitem" data-legend="open"><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open</span>
+  <span role="listitem" data-legend="in_progress"><i style="width:10px;height:10px;background:#fff3b0"></i>in_progress</span>
+  <span role="listitem" data-legend="blocked"><i style="width:10px;height:10px;background:#ffb3b3"></i>blocked</span>
+  <span role="listitem" data-legend="withdrawn"><i style="width:10px;height:10px;background:#e8d5ff"></i>withdrawn [w]</span>
+  <span role="listitem" data-legend="missing_malformed"><i style="width:10px;height:10px;background:#d9d9d9"></i>missing/malformed</span>
+  <span role="listitem" data-legend="closed"><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">closed</span></span>
+  <span role="listitem" data-legend="archived"><i style="width:10px;height:10px;background:#b6e3b6;border:1px dashed #808080"></i>archived-not-accepted</span>
 </div>
 
-<div id="graph-container"><p style="color:#8a90a0">Graph will render here.</p></div>
+<div id="graph-container" role="region" aria-label="Dependency graph" tabindex="0">
+  <div id="graph-stage"><p style="color:#8a90a0">Graph will render here.</p></div>
+</div>
+<nav id="item-nav" aria-label="Internal issue links">
+  <h2 style="font-size:1rem">Items</h2>
+  <ul id="item-list"></ul>
+</nav>
 
 <script src="todo-graph-core.js"></script>
 <script src="vendor/hpcc-js-wasm-graphviz.umd.js"></script>
-<script type="module">
-const statusEl = document.getElementById('status');
-const graphEl = document.getElementById('graph-container');
-const btnRerender = document.getElementById('btn-rerender');
-const chkIncludeDone = document.getElementById('chk-include-done');
-const chkIncludeW = document.getElementById('chk-include-w');
-const core = window.TodoGraphCore;
+<script>
+(function () {
+  'use strict';
 
-let lastText = null;
-let graphviz = null;
+  var GRAPH_URL = '../issues/_views/dependency-graph.json';
+  var TRACKED_ASSETS = ['todo-graph-core.js', 'vendor/hpcc-js-wasm-graphviz.umd.js'];
+  var ZOOM_MIN = 0.25;
+  var ZOOM_MAX = 4;
+  var ZOOM_STEP = 0.15;
 
-function setStatus(msg, isError) {
-  statusEl.textContent = msg;
-  statusEl.className = isError ? 'error' : '';
-}
+  var statusEl = document.getElementById('status');
+  var provenanceEl = document.getElementById('provenance');
+  var graphEl = document.getElementById('graph-container');
+  var stageEl = document.getElementById('graph-stage');
+  var itemListEl = document.getElementById('item-list');
+  var btnRerender = document.getElementById('btn-rerender');
+  var btnZoomIn = document.getElementById('btn-zoom-in');
+  var btnZoomOut = document.getElementById('btn-zoom-out');
+  var btnZoomReset = document.getElementById('btn-zoom-reset');
+  var chkIncludeDone = document.getElementById('chk-include-done');
+  var chkIncludeW = document.getElementById('chk-include-w');
+  var core = window.TodoGraphCore;
 
-async function ensureGraphviz() {
-  if (graphviz) return graphviz;
-  setStatus('Loading local Graphviz-WASM bundle…');
-  const hpcc = globalThis['@hpcc-js/wasm/graphviz'];
-  if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
-    throw new Error('Local Graphviz-WASM bundle not found.');
+  var lastText = null;
+  var lastGraph = null;
+  var graphviz = null;
+  var zoom = 1;
+
+  function setStatus(msg, isError) {
+    statusEl.textContent = msg;
+    statusEl.className = isError ? 'error' : '';
   }
-  graphviz = await hpcc.Graphviz.load();
-  return graphviz;
-}
 
-async function renderFromText(text) {
-  lastText = text;
-  btnRerender.disabled = false;
-  try {
+  function applyZoom(next) {
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+    stageEl.style.transform = 'scale(' + zoom + ')';
+    btnZoomReset.textContent = Math.round(zoom * 100) + '%';
+    graphEl.setAttribute('data-zoom', String(zoom));
+  }
+
+  function formatProvenance(graph) {
+    var d = graph.digests || {};
+    var sources = Array.isArray(d.source_sha256) ? d.source_sha256 : [];
+    return [
+      'generation_id=' + graph.generation_id,
+      'catalog_generation_id=' + (d.catalog_generation_id || '(absent)'),
+      'schema_sha256=' + (d.schema_sha256 || '(absent)'),
+      'tool_sha256=' + (d.tool_sha256 || '(absent)'),
+      'config_sha256=' + (d.config_sha256 || '(absent)'),
+      'source_sha256_count=' + sources.length,
+      'source_sha256=' + (sources.length ? sources.join(' ') : '(none)')
+    ].join('\n');
+  }
+
+  function formatCounts(tallies, built) {
+    return (
+      'Catalog nodes=' + tallies.nodes + ' (features=' + tallies.features +
+      ' tasks=' + tallies.tasks + ' subtasks=' + tallies.subtasks +
+      ' withdrawn=' + tallies.withdrawn + ' missing=' + tallies.missing_nodes +
+      ' malformed=' + tallies.malformed_nodes + ')\n' +
+      'edges=' + tallies.edges + ' start-gate=' + tallies.start_gate_edges +
+      ' feature-closure=' + tallies.feature_closure_edges +
+      ' unresolved=' + tallies.unresolved_edges + '\n' +
+      'Rendered ' + built.nodeCount + ' node(s), ' + built.liveFeatureCount +
+      ' cluster(s), ' + built.edgeCount + ' edge(s)' +
+      ' (unresolved edges kept: ' + built.unresolvedEdgeCount + ').'
+    );
+  }
+
+  function renderItemNav(graph) {
+    itemListEl.textContent = '';
+    graph.nodes.forEach(function (node) {
+      var li = document.createElement('li');
+      li.setAttribute('data-item-id', node.id);
+      li.setAttribute('data-endpoint', node.endpoint_status || '');
+      li.setAttribute('data-lifecycle', node.lifecycle_status || '');
+      if (node.archive_status) li.setAttribute('data-archive', node.archive_status);
+      if (node.url) {
+        var a = document.createElement('a');
+        a.href = node.url;
+        a.textContent = node.id;
+        a.setAttribute('data-internal-link', '1');
+        li.appendChild(a);
+      } else {
+        var span = document.createElement('span');
+        span.className = 'redacted';
+        span.setAttribute('data-redacted-endpoint', '1');
+        span.textContent = node.id + ' (redacted/no url)';
+        li.appendChild(span);
+      }
+      var extra = [];
+      if (node.endpoint_status && node.endpoint_status !== 'present') extra.push(node.endpoint_status);
+      if (node.archive_status) extra.push(node.archive_status);
+      if (extra.length) {
+        var note = document.createElement('span');
+        note.textContent = ' — ' + extra.join(', ');
+        li.appendChild(note);
+      }
+      itemListEl.appendChild(li);
+    });
+  }
+
+  function ensureGraphviz() {
+    if (graphviz) return Promise.resolve(graphviz);
+    setStatus('Loading local Graphviz-WASM bundle…');
+    var hpcc = globalThis['@hpcc-js/wasm/graphviz'];
+    if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
+      return Promise.reject(new Error(
+        'Local Graphviz-WASM bundle not found. Tracked asset vendor/hpcc-js-wasm-graphviz.umd.js is required.'
+      ));
+    }
+    return hpcc.Graphviz.load().then(function (gv) {
+      graphviz = gv;
+      return gv;
+    });
+  }
+
+  function renderFromText(text) {
+    lastText = text;
+    btnRerender.disabled = false;
     if (!core || typeof core.loadGraph !== 'function') {
-      throw new Error('todo-graph-core.js failed to load (no loadGraph).');
+      setStatus('ERROR: todo-graph-core.js failed to load (no loadGraph).', true);
+      return Promise.resolve();
     }
     if (typeof core.parseTodo === 'function') {
-      throw new Error('duplicate semantic classifier parseTodo must not remain in browser core');
+      setStatus('ERROR: duplicate semantic classifier parseTodo must not remain in browser core', true);
+      return Promise.resolve();
     }
-    const graph = core.loadGraph(text);
-    const tallies = core.counts(graph);
-    const { dot, nodeCount, edgeCount, liveFeatureCount, unresolvedEdgeCount } = core.buildDot(graph, {
-      includeClosed: chkIncludeDone.checked,
-      includeWithdrawn: chkIncludeW.checked,
-      includeUnresolved: true,
+    var graph;
+    try {
+      graph = core.loadGraph(text);
+    } catch (err) {
+      lastGraph = null;
+      provenanceEl.hidden = true;
+      itemListEl.textContent = '';
+      setStatus('ERROR: ' + err.message, true);
+      return Promise.resolve();
+    }
+    lastGraph = graph;
+    provenanceEl.hidden = false;
+    provenanceEl.textContent = formatProvenance(graph);
+    renderItemNav(graph);
+    var tallies = core.counts(graph);
+    var built;
+    try {
+      built = core.buildDot(graph, {
+        includeClosed: chkIncludeDone.checked,
+        includeWithdrawn: chkIncludeW.checked,
+        includeUnresolved: true
+      });
+    } catch (err) {
+      setStatus('ERROR: ' + err.message, true);
+      return Promise.resolve();
+    }
+    return ensureGraphviz().then(function (gv) {
+      setStatus('Rendering…');
+      var svg = gv.layout(built.dot, 'svg', 'dot');
+      stageEl.innerHTML = svg;
+      applyZoom(zoom);
+      setStatus(formatCounts(tallies, built));
+    }).catch(function (err) {
+      setStatus('ERROR: ' + err.message, true);
     });
-
-    const gv = await ensureGraphviz();
-    setStatus('Rendering…');
-    const svg = gv.layout(dot, 'svg', 'dot');
-    graphEl.innerHTML = svg;
-
-    setStatus(
-      `Catalog nodes=${tallies.nodes} (features=${tallies.features} tasks=${tallies.tasks} ` +
-      `subtasks=${tallies.subtasks} withdrawn=${tallies.withdrawn} missing=${tallies.missing_nodes} ` +
-      `malformed=${tallies.malformed_nodes})\n` +
-      `edges=${tallies.edges} start-gate=${tallies.start_gate_edges} ` +
-      `feature-closure=${tallies.feature_closure_edges} unresolved=${tallies.unresolved_edges}\n` +
-      `Rendered ${nodeCount} node(s), ${liveFeatureCount} cluster(s), ${edgeCount} edge(s)` +
-      ` (unresolved edges kept: ${unresolvedEdgeCount}).`
-    );
-  } catch (err) {
-    setStatus('ERROR: ' + err.message, true);
-    console.error(err);
   }
-}
 
-async function loadAndRender() {
-  setStatus('Fetching ../issues/_views/dependency-graph.json…');
-  try {
-    const res = await fetch('../issues/_views/dependency-graph.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status} fetching dependency-graph.json`);
-    const text = await res.text();
-    await renderFromText(text);
-  } catch (err) {
-    setStatus(
-      'ERROR: ' + err.message +
-      '\nServe over http(s):// and keep issues/_views/dependency-graph.json available. ' +
-      'Markdown TODO.md input is refused.',
-      true
-    );
+  function loadAndRender() {
+    setStatus('Fetching ' + GRAPH_URL + '…');
+    return fetch(GRAPH_URL, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' fetching dependency-graph.json');
+      return res.text();
+    }).then(function (text) {
+      return renderFromText(text);
+    }).catch(function (err) {
+      setStatus(
+        'ERROR: ' + err.message +
+        '\nServe over http(s):// from the repository root and keep tracked ' +
+        'issues/_views/dependency-graph.json available. Markdown TODO.md input is refused.',
+        true
+      );
+    });
   }
-}
 
-btnRerender.addEventListener('click', () => loadAndRender());
-chkIncludeDone.addEventListener('change', () => {
-  if (lastText != null) renderFromText(lastText);
-});
-chkIncludeW.addEventListener('change', () => {
-  if (lastText != null) renderFromText(lastText);
-});
+  function handleKey(ev) {
+    var tag = (ev.target && ev.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'A') return;
+    if (ev.key === '+' || ev.key === '=') {
+      ev.preventDefault();
+      applyZoom(zoom + ZOOM_STEP);
+    } else if (ev.key === '-' || ev.key === '_') {
+      ev.preventDefault();
+      applyZoom(zoom - ZOOM_STEP);
+    } else if (ev.key === '0') {
+      ev.preventDefault();
+      applyZoom(1);
+    } else if (ev.key === 'ArrowRight') {
+      ev.preventDefault();
+      graphEl.scrollLeft += 40;
+    } else if (ev.key === 'ArrowLeft') {
+      ev.preventDefault();
+      graphEl.scrollLeft -= 40;
+    } else if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      graphEl.scrollTop += 40;
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      graphEl.scrollTop -= 40;
+    }
+  }
 
-loadAndRender();
+  graphEl.addEventListener('wheel', function (ev) {
+    if (!ev.ctrlKey && !ev.metaKey) return;
+    ev.preventDefault();
+    applyZoom(zoom + (ev.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
+  }, { passive: false });
+
+  document.addEventListener('keydown', handleKey);
+  btnZoomIn.addEventListener('click', function () { applyZoom(zoom + ZOOM_STEP); });
+  btnZoomOut.addEventListener('click', function () { applyZoom(zoom - ZOOM_STEP); });
+  btnZoomReset.addEventListener('click', function () { applyZoom(1); });
+  btnRerender.addEventListener('click', function () { loadAndRender(); });
+  chkIncludeDone.addEventListener('change', function () {
+    if (lastText != null) renderFromText(lastText);
+  });
+  chkIncludeW.addEventListener('change', function () {
+    if (lastText != null) renderFromText(lastText);
+  });
+
+  window.TodoGraphPage = {
+    GRAPH_URL: GRAPH_URL,
+    TRACKED_ASSETS: TRACKED_ASSETS,
+    formatProvenance: formatProvenance,
+    formatCounts: formatCounts,
+    renderFromText: renderFromText,
+    loadAndRender: loadAndRender,
+    applyZoom: applyZoom,
+    handleKey: handleKey,
+    getZoom: function () { return zoom; },
+    getLastGraph: function () { return lastGraph; }
+  };
+
+  loadAndRender();
+})();
 </script>
 </body>
 </html>
