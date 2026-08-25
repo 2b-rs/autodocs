@@ -36,3 +36,4 @@ Deviation: none. Implementation stays in `issue_validate.py` (shared diagnostics
 
 - 2026-08-25: worktree/branch created from binding base; claim authored.
 - 2026-08-25: implemented IV0910–IV0922 lifecycle/claim/closure/signature/evidence checks in `_src/tools/issue_validate.py`; negative fixtures `_src/tests/fixtures/0037-09.02/cases.json`; tests in `_src/tests/test_issue_validate.py`. `uv run python _src/tests/test_issue_validate.py` → 13 OK. Did not weaken 0037-09.01 rules.
+- 2026-08-25 continuation (Gabriel-Owosekun-20260825T043500Z, same owner_token): disposition coverage for completed/wontfix/superseded/duplicate/cancelled/archived-not-accepted; removed unreachable nested completed check. Tests 13/13 OK. Substantive REF `d2fd153a97f21003583fabaa62f74618cd874df5`. Implementation complete `[x]` on this Subtask branch only; claim kept; no Acceptance/merge/push.
