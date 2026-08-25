@@ -1,6 +1,6 @@
 # Legacy Task/Claim/Bootstrap Doctor
 
-Status: implemented legacy safety adapter for Feature `0038`, Task `0038-04`.
+Status: implemented legacy safety adapter for Feature `0038`, Tasks `0038-04`, `0038-21`, and `0038-23`.
 
 ## Purpose and authority boundary
 
@@ -14,6 +14,30 @@ Status: implemented legacy safety adapter for Feature `0038`, Task `0038-04`.
 
 The tool is limited to the `legacy-lists` era. It neither creates a second issue store nor becomes the permanent bootstrap authority. Task `0037-42` owns the future `agent-doctor` implementation; Task `0038-16` maps or retires this legacy adapter during queue/issue-store handoff.
 
+### Deliberate legacy limitation: one authorized non-Task coordination record
+
+`AGENTS.md` authorizes a temporary `TODO-<agent-id>.md` coordination record for
+a user-directed activity that is not an existing Task, provided it does not
+falsely mark an unrelated Task `[p]`. The legacy doctor nevertheless models all
+top-level `TODO-*.md` records as Task claims. The exact known false positive is:
+
+- path: `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md`;
+- immutable token:
+  `agent:claude:re-intake:20260818T003223Z-845170c0e4da`;
+- deliberate shape: no `task_id`, because Feature `0040` did not yet exist and
+  the record coordinated the user-directed requirements-intake activity rather
+  than claiming a Task;
+- expected finding: `LTD-CLAIM-IDENTITY-MISMATCH`, because the token component
+  `re-intake` is not a canonical Task ID.
+
+The token MUST remain byte-for-byte unchanged: retrofitting a Task ID would
+break the stronger immutable-owner-token rule and falsify the historical
+coordination scope. This is a documented limitation of the retiring legacy
+adapter, not a general exception for malformed Task claims. There is no
+filename-, token-, or rule-wide suppression; all Task claims remain subject to
+the normal checks, and the known finding remains visible. No code, tool, or
+schema change is made for this single historical record.
+
 The doctor does **not**:
 
 - edit, rename, create, or delete repository files;
@@ -22,7 +46,8 @@ The doctor does **not**:
 - execute, inspect, create, remove, restore, or consume root `run.sh`;
 - inspect transaction locks, recovery journals, or backups owned by `0038-02`;
 - calculate derived write-scope collisions owned by `0038-06`;
-- infer approval, authority, ownership, or human decisions from display names or filenames.
+- infer approval, authority, ownership, or human decisions from display names or filenames;
+- self-assign, integrate, or create/change/invalidate acceptance credit when it reports Feature-integration readiness (see **Feature-integration readiness** below).
 
 ## Invocation and exit codes
 
@@ -70,7 +95,9 @@ The report schema is `legacy-task-doctor-report@v1`. It contains:
 - claim identity, exact scope paths, and resume-state presence;
 - REF visibility (`visible` or HTML-comment `hidden`) and role (`authoritative-task`, `authoritative-feature`, or `narrative`);
 - prerequisite edges with their declared dependent and prerequisite;
-- stable findings and non-destructive exact-path reconciliation plans.
+- stable findings and non-destructive exact-path reconciliation plans;
+- per-Feature integration-readiness records (`integration_readiness`; see **Feature-integration readiness** below);
+- per-node checkpoint-attribute states (`checkpoint_states`; see **Checkpoint-attribute rules** below).
 
 Object keys are sorted. Features and Tasks retain document order (`TODO.md` before `DONE.md`); claims and inputs sort by repository-relative path; REFs sort by path/line/column/value; findings sort by severity, rule, path, line, subject, and evidence digest.
 
@@ -99,7 +126,7 @@ The valid legacy markers are exactly `[ ]`, `[u]`, `[p]`, `[?]`, `[w]`, and `[x]
 
 | Rule | Meaning |
 |---|---|
-| `LTD-MARKER-UNDEFINED` | A Task, legacy entry, or claim uses an undefined marker such as `[d]`. |
+| `LTD-MARKER-UNDEFINED` | A Task, legacy entry, or claim uses a marker outside the `TODO.md` legend. |
 | `LTD-ID-DUPLICATE` | A Feature or Task/Subtask ID occurs more than once across the authoritative lists. |
 | `LTD-TASK-HEADER-MALFORMED` | A Task-like checklist entry has a malformed canonical Task ID/header instead of disappearing into legacy text. |
 | `LTD-FEATURE-HEADER-MALFORMED` | A current Feature header lacks its canonical four-digit ID. |
@@ -169,8 +196,101 @@ The parser validates complete comma-separated Task and Feature declarations befo
 | `LTD-PREREQ-SELF` | An item depends on itself. |
 | `LTD-PREREQ-CYCLE` | The explicit graph contains a canonicalized cycle. |
 | `LTD-TERMINAL-UNSATISFIED-PREREQ` | A terminal item still has a nonterminal explicit prerequisite. |
+| `LTD-DEFERRED-STALE` | A `[d]` deferred item has explicit prerequisites and every one of them is now terminal, so its deferral is no longer justified. |
+| `LTD-DEFERRED-UNVERIFIABLE` | A `[d]` deferred item declares no explicit prerequisite, so no tool can tell when its blocker clears. |
+
+A `[d]` deferral (`DEC-MARKER-001`) records that work happened but is currently
+blocked. "Currently" is derived from the prerequisite graph, and nothing in the
+file changes when the last predecessor closes — so the practice rule that the
+closing agent revisits deferred successors is enforced here rather than
+remembered. A deferral whose blocker is not written down as a `PREREQ` edge is
+reported too: it cannot be rechecked mechanically, and an unrecheckable
+deferral is the failure mode the marker was meant to avoid.
 
 The doctor detects syntactic graph errors. General semantic-deadlock repair remains an agent/backlog-authority responsibility because arbitrary prose intent cannot be inferred safely.
+
+## Feature-integration readiness
+
+Task `0038-21` adds a deterministic per-Feature `integration-ready` predicate, distinct from the pre-existing `LTD-FEATURE-CLOSURE-ELIGIBLE` package-closure advisory (below). A Feature's **in-scope Task/Subtask set** is every Task or Subtask whose Feature is that Feature (any nesting depth). For each open (`TODO.md`, non-archived) Feature with at least one in-scope item, the doctor computes:
+
+1. every in-scope Task/Subtask is terminal (`[x]`/`[w]`);
+2. the transitive `PREREQ` closure of the in-scope set — following explicit `dependent:prerequisite` edges outward, including across Feature boundaries — is also entirely terminal;
+3. no terminal node in the in-scope set or its closure that carries a `**Integration review:** mandatory` checkpoint attribute is missing a syntactic `**Acceptance:** ✓` record.
+
+The Feature is `ready` only when all three hold, but this legacy value means
+**checkpoint-integration readiness only**. It is not Task-Acceptance readiness or
+Feature-closure authority: the current implementation neither expands each
+checkpoint through all unaccepted transitive `[x]`/`[w]` predecessors nor proves
+that a syntactic Acceptance record is current, reachable, non-invalidated, and
+bound to the required prerequisite-Acceptance set. A privileged reviewer must
+perform that calculation independently under `task-acceptance.md` and
+`DEC-0044-020`; until machine enforcement is extended and tested, `ready: true`
+cannot justify Acceptance or a `DONE.md` move. This remains the historical Task
+`0038-21` Feature-level view; Task `0038-23` (below) adds the finer per-checkpoint
+attribute validation (architect authority, rationale, no-checkpoint
+justification) and per-node readiness without changing the legacy predicate's
+mechanics — both share the same structural attribute-bullet detector so a
+checkpoint is recognized identically by both views.
+
+Every evaluated Feature (ready or not) is reported in the top-level `integration_readiness` array, independent of `findings`, so a not-ready Feature is still visible in deterministic JSON:
+
+```json
+{
+  "feature": "1000",
+  "path": "TODO.md",
+  "line": 3,
+  "ready": false,
+  "in_scope_tasks": ["1000-01", "1000-02"],
+  "nonterminal_tasks": ["1000-02"],
+  "nonterminal_prerequisites": [],
+  "unaccepted_checkpoints": []
+}
+```
+
+On genuine readiness only, the doctor additionally emits one info-severity `LTD-FEATURE-INTEGRATION-READY` finding (and its advisory plan, actor `privileged-integrator`, action `assign-privileged-integrator`) naming the ready Feature and stating it needs an explicitly assigned privileged integrator. This finding carries no acceptance action and triggers no mutation, matching every other doctor finding.
+
+**Why the finding/plan/summary pipeline realizes the "SENTINEL retrigger channel."** Task `0038-21`'s text asks for the notice to go "through the canonical `SENTINEL` retrigger channel." `SENTINEL.md`'s only concrete mechanism is "create a new sentinel atomically at `run.sh`," which `SANDBOX.md` explicitly forbids as an escalation/notification channel — the doctor itself already reports this exact contradiction as `LTD-POLICY-CONTRADICTION`. The doctor is also contractually read-only and never touches `run.sh`. The determinable, intent-preserving resolution is that the doctor's existing non-mutating findings/plans/summary output *is* the channel it can implement: every other reconciliation notice already reaches its "required actor" this same way. No file is created or written to realize this notice.
+
+**Why every scan is treated as an idle scan.** The Task text also allows emitting "on transition to ready or during an otherwise-idle global scan." The doctor is a stateless single-pass scanner with no persisted prior-run state, so it cannot itself observe a *transition* edge without adding hidden mutable state to a read-only tool. It instead treats every invocation as satisfying the "otherwise-idle global scan" arm: the notice fires deterministically whenever a Feature is currently ready. A caller that wants the transition edge specifically can diff two successive report runs.
+
+| Rule | Meaning |
+|---|---|
+| `LTD-FEATURE-INTEGRATION-READY` | Legacy advisory only: an open Feature's complete in-scope Task/Subtask set and transitive prerequisite closure are terminal, and no in-closure mandatory checkpoint lacks a syntactic acceptance record. It does not prove prerequisite-closed current Task Acceptance or authorize Feature closure. |
+
+## Checkpoint-attribute rules
+
+Task `0038-23` extends the `**Integration review:** mandatory`/`not mandatory` attribute recognition from Task `0038-21`'s per-Feature predicate to a per-node, per-checkpoint view over every Task/Subtask, and validates the attribute's own well-formedness — not only whether a node counts as a checkpoint.
+
+**Structural anchor, not prose matching.** A node's attribute is recognized only from its own literal bullet line — one whose content (after stripping leading whitespace) begins `- **Integration review...`. Prose that merely *discusses* or *quotes* the attribute (acceptance criteria describing this very rule, a closure note stating a node "has no `Integration review: mandatory` attribute") is not mistaken for a declaration. This anchor is shared verbatim by `_is_mandatory_checkpoint_line` (the `0038-21` predicate) and the new checkpoint parser, so both views agree on which nodes are checkpoints.
+
+**Textual authority marker, not capability class.** Real checkpoints in this repository always pair their polarity clause with an `(architect)`-tagged `**Rationale (architect):**` (mandatory) or `**No-checkpoint justification (architect):**` (not-mandatory) label on the same line (see the Feature `0041`/`0044` entries). `docs/pipeline/process-roles.md` fixes the architect's *minimum* capability class at `sandboxed/grunt`, so architect authority is necessarily a self-declared role assertion recorded in the text, not a capability-class fact a read-only tool could check instead. The doctor validates the presence of that tagged label; it never infers authorship from capability class, claim owner, or display name.
+
+For every Task/Subtask (excluding archived-not-accepted entries), the doctor reports one `checkpoint_states` entry:
+
+```json
+{
+  "task": "1000-01",
+  "path": "TODO.md",
+  "line": 5,
+  "marker": "x",
+  "attribute": "mandatory",
+  "architect_tagged": true,
+  "rationale_present": true,
+  "accepted": false,
+  "required_integration_state": "pending",
+  "high_risk_unflagged": false
+}
+```
+
+`attribute` is `"mandatory"`, `"not-mandatory"`, `"malformed"` (a clause present but its polarity could not be recognized), or `null` (no attribute at all). `required_integration_state` is `"none"` (not a checkpoint), `"pending"` (a checkpoint — including a malformed one, treated conservatively — awaiting a current `**Acceptance:** ✓`), or `"passed"` (a checkpoint with a current acceptance mark).
+
+| Rule | Severity | Meaning |
+|---|---|---|
+| `LTD-CHECKPOINT-MISSING-AUTHORITY` | error | A `mandatory`/`not-mandatory` attribute bullet lacks a `Rationale`/`No-checkpoint justification` label, or the label is not `(architect)`-tagged. |
+| `LTD-CHECKPOINT-MALFORMED` | error | An attribute bullet's polarity clause is present but did not parse as either `mandatory` or `not mandatory`. |
+| `LTD-CHECKPOINT-UNFLAGGED-HIGH-RISK` | warning | A node carries no attribute at all, but its own text matches a high-risk keyword (`irreversible migration`, `external effect`, `credential`, `security boundary`, `public release`) that `AGENTS.md` names as requiring an explicit architect no-checkpoint justification when left unflagged. Advisory only — the keyword match is a heuristic, not proof that the node is actually high-risk. |
+
+The doctor never mutates the attribute, self-assigns, or integrates; refusing an unauthorized *write* to the attribute is the digest-bound editor's responsibility (`docs/pipeline/legacy-task-editor.md`, "Checkpoint-attribute authority").
 
 ## Bootstrap and instruction rules
 
@@ -199,7 +319,7 @@ The selector's digest syntax and obvious placeholder are checkable, but the curr
 | `LTD-INPUT-CHANGED` | Input names or bytes changed during the scan. |
 | `LTD-GIT-PROBE` | The bounded read-only reachability command failed or returned malformed output. |
 
-These rules produce `INCOMPLETE`, and stale reconciliation plans are suppressed.
+These rules produce `INCOMPLETE`, and stale reconciliation plans and integration-readiness records are suppressed (`integration_readiness` is emptied the same way `plans` is).
 
 ## Fixtures and validation
 
@@ -210,7 +330,14 @@ Hermetic cases live under `_src/tests/fixtures/legacy_task_doctor/`:
 - `marker-and-refs` freezes `[d]`, inline/multiline hidden, verified/pending/local, short, duplicate, unreachable, and premature REFs;
 - `claim-drift` freezes orphan/state/terminal-retention/exact immutable filename/base/unsafe scope/final-next-step/Task-pointer failures;
 - `prerequisites-and-parent` freezes Task and Feature missing/wrong/partial/malformed/cyclic edges, terminality drift, and safe eligible parent closure;
-- `bootstrap-policy` freezes escaping links and the current `SENTINTEL.md`/`SENTINEL.md`/`run.sh`/unavailable-command contradictions.
+- `bootstrap-policy` freezes escaping links and the current `SENTINTEL.md`/`SENTINEL.md`/`run.sh`/unavailable-command contradictions;
+- `integration-not-ready` freezes a Feature with one nonterminal in-scope Task (no readiness finding);
+- `integration-ready-linear` freezes a two-Task terminal `PREREQ` chain that is integration-ready;
+- `integration-ready-parallel` freezes a terminal parent Task with two terminal parallel Subtasks that is integration-ready;
+- `integration-blocked-high-risk` freezes a terminal in-scope prerequisite carrying an unfulfilled mandatory checkpoint, which blocks readiness even though the Feature is still closure-eligible in the pre-existing sense;
+- `checkpoint-well-formed` freezes a mandatory and a not-mandatory checkpoint that both carry a properly `(architect)`-tagged rationale/justification (zero checkpoint findings);
+- `checkpoint-missing-authority` freezes a mandatory checkpoint whose `Rationale` label lacks the `(architect)` tag;
+- `checkpoint-unflagged-high-risk` freezes a node with no attribute at all whose text names an irreversible migration.
 
 Run focused validation with:
 
