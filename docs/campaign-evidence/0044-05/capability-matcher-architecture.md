@@ -352,3 +352,18 @@ other declared prerequisites.
   historic dispatch is grandfathered or retroactively credited.
 - Schema supersession is additive. Never rewrite or delete legacy
   `agent-capability@v1` or prior result evidence.
+
+## 12. Additive governance-ID collision finding
+
+After this preparation was committed, Project Leads `jean-luc` and `michael`
+independently verified that sibling governance candidate `d4acf24bc` already
+uses `DEC-0044-022` for a different decision and also carries
+`DEC-0044-023`/`024`. The capability-matching record at `0ff7bd63d` is therefore
+colliding evidence, not an integrable authority record. No architecture content
+in this document is activated by that candidate.
+
+Preserve both histories. After the authorized sibling candidate lands, recut
+the governance work from the new `main`, allocate the then-next free ID by a
+fresh check, and record the same capability-matching decision additively. Until
+that occurs, Task-graph mutation and matcher implementation remain blocked. No
+future identifier is reserved here.
