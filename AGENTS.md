@@ -93,6 +93,20 @@ Every briefing must state, explicitly:
 4. what the subagent must **not** do — at minimum whether it may accept work,
    cross an integration checkpoint, or move a Feature to `DONE.md`.
 
+**Feature `0044` pilot briefing input (`0044-05`).** Where a `task-requirement-profile@v1`
+and one or more `agent-capability-descriptor@v1` records exist for the item being
+dispatched, the dispatcher may run
+[`capability_match.py`](docs/pipeline/capability-matching.md) and attach its
+`capability-match-result@v1` output to the briefing as an **additional**, non-replacing
+input: it names every capable descriptor with explainable rejections so the dispatcher
+chooses among eligible agents with machine-checked evidence instead of guessing. It does
+not substitute for any of the four mandatory fields above, and eligibility evidence is
+never itself an assignment, ownership, independence, Acceptance, waiver, specialist
+approval, or release-authority claim — the dispatcher still decides, states the four
+fields explicitly, and remains answerable for the briefing.
+
+> This pilot requirement becomes operative only when this governance commit and the bound `0044-05.02` product are both reachable from `main`; it does not activate repository-wide dispatch enforcement, grant authority, or credit historic dispatches.
+
 The capability-class default in `SANDBOX.md` exists for a runtime that cannot
 report its class. It is **not** a substitute for an assignment the dispatcher
 failed to make. Omitting the class silently downgrades the subagent to

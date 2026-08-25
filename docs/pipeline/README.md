@@ -41,6 +41,9 @@ where possible, to the associated implementation or evidence.
 - [`legacy-handoff-manifest.md`](./legacy-handoff-manifest.md) — pre-activation
   hand-over of every surviving legacy execution primitive to the `0037-46.01`
   typed-action registry or an explicit `0037-46.02` retirement trigger
+- [`capability-matching.md`](./capability-matching.md) — deterministic no-AI
+  Task-requirement/agent-capability matcher (`0044-05`), pilot briefing input,
+  and its non-activation boundary
 - [`automation-safety.md`](./automation-safety.md) — automation-safety policy
   and findings workflow
 - [`environment-doctor.md`](./environment-doctor.md) — environment and
