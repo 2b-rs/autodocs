@@ -85,12 +85,15 @@ claims.
 |---|---|---|---|---|
 | **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement before current Acceptance of the affected node | A scope decision reaching beyond the Feature without a TK-2 record; silent checkpoint change after current Acceptance; acceptance of its own breakdown |
 | **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
-| **Integrator** | Merge work across **integration checkpoints** and review it there | Boundary merge, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes | Resolve its own `[u]` verdict; skip a checkpoint |
+| **Integrator** | Merge work across **integration checkpoints** and review it there; execute repository hygiene for assigned `main` integrations | Boundary merge, hygiene verdict, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes and whether the exact assigned merge satisfies the machine hygiene gate | Resolve its own `[u]` verdict; skip a checkpoint; delegate the hygiene verdict to Project Lead |
 
-Only a merge that crosses an integration checkpoint is Integrator work.
-Checkpoint-free merges, typically Subtask→Task, are implementer work and may be
-performed by a sandboxed-grunt agent through the runner. The acceptance reviewer
-in [`task-acceptance.md`](task-acceptance.md) is the Integrator role.
+Checkpoint-free item-branch merges, typically Subtask→Task, are implementer
+work and may be performed by a sandboxed-grunt agent through the runner. The
+Feature→`main` boundary is always expressly assigned privileged Integrator work:
+that Integrator owns the machine hygiene run, verdict, root merge, and immediate
+post-merge verification even when no intermediate checkpoint is crossed. The
+acceptance reviewer in [`task-acceptance.md`](task-acceptance.md) is also the
+Integrator role.
 
 ### 3.2 Two functions
 
@@ -303,8 +306,8 @@ typical failure, and a repository example.
   the checkpoint.
 - **Reading order:** Checkpoint marking → transitive prerequisites → work
   products and findings → independent validation → authority boundaries.
-- **Result:** Boundary merge, review findings, `Acceptance: ✓` or `[u]` verdict,
-  and reconciled claims.
+- **Result:** Boundary merge, machine hygiene and immediate post-merge verdict,
+  review findings, `Acceptance: ✓` or `[u]` verdict, and reconciled claims.
 - **Prohibitions:** Resolve own `[u]` verdict; skip a checkpoint; repair findings
   rather than issue a verdict; accept when TK-1 applies without a waiver.
 - **Typical failure:** Wave work through because progress is blocked. `[u]`

@@ -124,17 +124,21 @@ leave the root stale:
 
 1. Author and commit the change in an item-owned worktree, on a branch cut from
    `main`, with the `DEC-0044-008` provenance trailer.
-2. **Hard preflight in the root**, all three must hold: `git diff --quiet`,
-   `git diff --cached --quiet`, and `HEAD` is `refs/heads/main`. Additionally run
-   the hygiene check below. Any failure means **abort** — do not "tidy up" the
-   root; recovering it is a separate, separately authorized operation.
+2. **Machine hard preflight in the root:**
+   `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
+   The shared executable verifies the root is on `main`, its index equals
+   `HEAD`, and its tracked working-tree divergence satisfies the same
+   `DEC-0044-021` classifier used by the hygiene check below. Any failure means
+   **abort** — do not "tidy up" the root; recovery is separately authorized.
 3. Advance from the root: `git -C <root> merge --ff-only <branch>`, or `--no-ff`
    when `DEC-0044-008` requires a real merge commit because the branch is not on
    the direct predecessor chain.
 4. Remove the helper worktree and branch.
 
-Only a **privileged integrator or the Projektleitung** may perform step 3. No
-unprivileged worker moves `refs/heads/main` at all.
+Only the expressly assigned **privileged Integrator** performs the hygiene
+verdict and step 3. The Project Lead coordinates the baseline and authority but
+does not run the gate or merge `main`. No unprivileged worker moves
+`refs/heads/main` at all.
 
 ## Pre-integration hygiene check
 
@@ -142,7 +146,7 @@ Before any integration — and mandatorily before the ref advance above — run 
 machine-runnable check:
 
 ```bash
-python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> [--json]
+python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> --candidate-ref <candidate> [--json]
 ```
 
 It is strictly read-only (no files, refs, indexes or objects are written) and
@@ -155,6 +159,7 @@ and a `2` is a failed check, never a pass. Findings:
 | `INDEX_NOT_HEAD` | the integration worktree's own index differs from its `HEAD` |
 | `FOREIGN_STAGED_TREE` | some *other* registered worktree still holds a staged tree after one bounded 2.0-second re-sample; the finding includes index mtime and age |
 | `MAIN_WORKTREE_DIRTY` | tracked files in the worktree checking out `main` differ from its index; this is a blocking root-quiescence finding, not a rule for live item worktrees |
+| `CANDIDATE_MEMORY_OVERLAP` | the candidate changes a currently allowed dirty Memory path; overlap blocks even when bytes are equal |
 | `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
 | `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
 
@@ -172,13 +177,15 @@ than it does:
   persistent foreign staged tree advisory and does not narrow which worktrees
   block.
 - `MAIN_WORKTREE_DIRTY` closes the known clean-index blind spot for the worktree
-  checking out `main`, including the residual tracked-file divergence observed
-  on 2026-08-21. The same unstaged divergence on an item branch is intentionally
-  not a finding: unfinished work in an agent's own item worktree is normal, and
-  this is a quiescence gate for integration rather than an accusation against
-  live work. Untracked files also remain outside the check. This is why step 2
-  above still requires the direct hard preflight in the root **in addition to**
-  the check. Tool and preflight are complementary; neither replaces the other.
+  checking out `main`. Under `DEC-0044-021`, only a non-empty set made entirely
+  of unstaged tracked exact children of `logs/agent-memory/` is allowed. The
+  directory name itself, prefix lookalikes, case variants, mixed paths, staged
+  Memory, and indeterminate output block. Git paths are read with `-z`; newline
+  characters are never record separators. Before merge, `--candidate-ref`
+  intersects the exact candidate tree-diff paths with the allowed dirty Memory
+  paths and blocks every overlap. The same classifier powers `--root-preflight`,
+  which is rerun immediately after the root merge. Untracked files and ordinary
+  unstaged item-worktree changes remain outside this particular gate.
 
 ## Preserved snapshot tags and recovery
 
@@ -418,8 +425,8 @@ Feature branch and performs the Feature-level review. The integrator:
 1. Confirms current privilege and an explicit assignment to integrate/accept the
    Feature scope (privilege alone is not authority — see
    [`task-acceptance.md`](task-acceptance.md)).
-2. **Runs the pre-integration hygiene check** (above):
-   `python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree>`.
+2. **Runs the pre-integration hygiene check** (above) against the exact branch:
+   `python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> --candidate-ref <candidate>`.
    A non-zero exit is a stop, not a warning: findings are resolved by their
    owners — or the integration is deferred — before any merge. A foreign
    worktree is never reset by the integrator.
