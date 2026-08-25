@@ -1,0 +1,22 @@
+# Claim: Feature 0037 Layer-B staging (user-directed coordination)
+
+- owner_token: `agent:gabriel:0037-layer-b:20260825T215000Z`
+- identity: gabriel; unprivileged Dispatcher/Implementer; Team Discovery
+- dispatcher: jean-luc `1787694598878-15a84858` (mail is not extra authority); ACCEPT `1787694726241-987a326f`
+- capability_class: `unprivileged`
+- execution_authority: direct Git in this worktree only
+- item/branch/worktree: Feature-0037 Layer-B staging / `0037-layer-b-integration-jean-luc-20260825` / `/Users/tobias.anton/devel/autodocs/.worktrees/0037-layer-b-integration-jean-luc-20260825`
+- binding_base: Feature `0037` `722aaa2149c78cf705db411a4142c67d92bb1c3d`
+- serial_merge_order:
+  - `0037-17@78f1e3fd2a74e4dab5a6c8fe150ab69384715157`
+  - `0037-10.01@1e0693d058d6d232e05b1ed00fb711dd9665292c`
+  - `0037-11.01@b4b0c09c9088cc70fb4dab22e50c3bb043480d1d`
+  - `0037-22@04664e94260f8aadfd8f3183a3d6ab3da74d6cd2`
+  - `0037-23.01@69ed6d7572fe6516867169280e79c3e471e53715`
+- exact_write_scope: union of those candidates' changed paths plus this claim
+- forbidden: rewrite candidate history; unrelated TODO/DONE; Acceptance; mandatory checkpoint; move `refs/heads/0037`; move `main`; publish; credentials; foreign cleanup; Wave-1 tasks
+- retrigger: jean-luc `1787696951000-fd640aeb`; main recovery `d401aeb069371934ed349f5b59b9cae5051dbfbc`; tag peel `6db991be`
+- status: `[x]` staging complete. Merge commits `93677fe5e` (17), `3fb574fba` (10.01), `2f4b06951` (11.01), `73586cd7a` (22), `d17b8f042` (23.01). All five source tips are ancestors of staging HEAD `d17b8f04211d2dbef3d837606a63a96ef2a0a98f`. Canonical `0037` remains `722aaa214`; `main` remains `d401aeb` (not moved by this session).
+- conflicts: TODO.md auto-merged (ort) on 10.01/11.01/22/23.01; no manual UU. Hygiene: first 17-run FOREIGN_STAGED on 0038-35-r2 then PASS after 30s; 11.01 first FOREIGN_STAGED 0033-04-saru-rhys (4s) then PASS after 20s. Did not touch foreign trees.
+- validation: issuectl 18 OK; issue_lists 5 OK (julian venv); graph 10+8 OK; privacy 10 OK; combined 23+10+8 OK; `git diff --check` clean after each merge.
+- wave_1: **not started**. Ready only after this staging tip is separately reconciled into canonical Feature `0037`.

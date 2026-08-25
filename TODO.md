@@ -1030,7 +1030,7 @@ HOW TO USE:
   - **Acceptance criteria:** Detect DAG cycles, undeclared/multiple writers, missing required stages, stale/hand-edited outputs, mixed content-generation IDs, byte/semantic comparator violations, self-consuming reports, and unexplained generated files; integrate all issue checks into `_src/validate.py` with explicit staged/candidate modes.
   - **Definition of Done:** Cycle/writer/staleness/determinism fixtures, repeated runs, integration tests, and mutation guards pass without modifying authoritative or generated files.
 
-- [ ] **0037-17** PREREQ: 0037-17:0037-17.01, 0037-17:0037-17.02, 0037-17:0037-17.03 Complete immutable provenance storage, indexing, and query support.
+- [x] **0037-17** PREREQ: 0037-17:0037-17.01, 0037-17:0037-17.02, 0037-17:0037-17.03 Complete immutable provenance storage, indexing, and query support. Claim: `TODO-gabriel-provpkg-0037-17-20260825T114200Z.md` (`owner_token: agent:gabriel-provpkg:0037-17:20260825T114200Z`). Claim materialization REF `7be6c50137bf726b291d1485c8fa7f588cc54046`. **Implementation completion (2026-08-25, Gabriel-Provpkg, unprivileged Programmer):** package consistency only; child products read-only. Validation: `python3 _src/tests/test_provenance_store.py` 13/13 OK; `test_provenance_views.py` 8/8 OK; `test_provenance_query.py` 7/7 OK; `py_compile` of `provenance_store.py`/`provenance_views.py`/`provenance_query.py` PASS. Shared `_seed_causal` plus view rebuild proves disposable indexes and reverse traces from one forward event chain; store exclusive-create rejects overwrite/collision of event and artifact-set identities. No package gap. No Acceptance, checkpoint, main, DONE, or push.
   - **Acceptance criteria:** Storage remains authoritative/immutable, indexes remain disposable, and every reverse result is derivable from one validated forward event rather than duplicated links.
   - **Definition of Done:** All three Subtasks pass shared causal-chain fixtures and no writer can mutate an existing event/artifact-set identity.
 
@@ -1055,7 +1055,7 @@ HOW TO USE:
   - **Acceptance criteria:** Every subcommand validates before atomic promotion, supports `--dry-run` and explicit candidate/staged roots where applicable, compares expected source digests to prevent lost updates, emits immutable events, and uses documented stable diagnostics/exit codes.
   - **Definition of Done:** All five Subtasks pass CLI/API and injected-failure tests; no command silently overwrites hand edits or bypasses role/claim checks.
 
-- [ ] **0037-10.01** PREREQ: 0037-10.01:0037-08, 0037-10.01:0037-09, 0037-10.01:0037-17.01 Implement item creation and controlled structural edits.
+- [x] **0037-10.01** PREREQ: 0037-10.01:0037-08, 0037-10.01:0037-09, 0037-10.01:0037-17.01 Implement item creation and controlled structural edits. Claim: `TODO-gabriel-issuectl-0037-10.01-20260825T114200Z.md` (`owner_token: agent:gabriel-issuectl:0037-10.01:20260825T114200Z`). **REF:** `007234d85b53b4fc5e7d57e817b24095ff3e5259`. **Validation:** `/tmp/autodocs-0037-08-venv-julian/bin/python _src/tests/test_issuectl.py` — 18 tests OK; `py_compile` PASS. No Acceptance.
   - **Acceptance criteria:** Create Feature/Task/Subtask paths; edit approved front-matter fields; allocate/withdraw/supersede/move `AC-NNN`; and add/remove prerequisites/relations using expected input digest and atomic temp-file replacement. Validate ID/path/parent, cycles, criterion invariants, claim/write scope, and no-op behavior before promotion; preserve unrelated prose bytes.
   - **Definition of Done:** Tests cover each operation, concurrent edit rejection, invalid cycle/parent/move, criterion history, crash rollback, dry-run diff, and byte-stable no-op.
 
@@ -1080,9 +1080,23 @@ HOW TO USE:
   - **Acceptance criteria:** Both renderers consume one normalized catalog and neither view becomes input authority. SQLite is explicitly out of scope for v1 and may be proposed only by a later performance measurement Feature.
   - **Definition of Done:** Both Subtasks reconcile source/view IDs, states, criteria, and edges exactly.
 
-- [ ] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries.
+- [x] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries. Claim: `TODO-gabriel-0037-11.01-20260825T112400Z.md` (`owner_token: agent:gabriel:0037-11.01:20260825T112400Z`). REF: `beb2564331279bfdc29ae357cded9571b7416e9c`. **Implementation completion (2026-08-25, gabriel, unprivileged):** `_src/tools/issue_lists.py` writes generated lists only under `--output-root` (fixture `_src/tests/fixtures/0037-11.01/generated/`); live repository `TODO.md`/`DONE.md` refused. Validation: `python3 -m unittest _src.tests.test_issue_lists` 5/5 PASS twice; `py_compile` PASS. No Acceptance, checkpoint, main, or Feature `DONE.md` move.
   - **Acceptance criteria:** Render every lifecycle/archive disposition truthfully, including superseded/not-accepted; preserve normative text and criterion IDs; include an unambiguous generated warning plus source/schema/tool/config hashes and content-derived generation ID while linking the volatile execution run only from its external manifest; use deterministic ordering; and make manual divergence, omission, duplicated item, or false completion fail validation.
   - **Definition of Done:** Golden and repeated clean runs prove byte determinism and exact counts/IDs/state/text reconciliation for open, terminal, and anomalous fixtures.
+  - **Management operative packet (Project Lead `michael`, 2026-08-25, append-only; mailbox is not authority):**
+    - **Authority:** current user in the Michael Cursor session. No agent-inbox ID. No `DEC-*`.
+    - **Exact user texts (verbatim, Europe/Berlin):**
+      - 2026-08-25 13:15 +02:00 — `lass uns 11.01 freigeben. Frag mich.`
+      - 2026-08-25 13:16 +02:00 — `A`
+      - 2026-08-25 13:20 +02:00 — `gut, weitermachen. Wenn die Task durch ist, arbeitet als Projektleiter alle gemeinsam an dne weiteren Features. Stimmt euch ab, verteilt Arbeit, bietet Unterstützung an, wenn ihr freie Kapazität in eurem Team habt.`
+    - **What A selected:** lift the Discovery hold; Discovery claims and implements `0037-11.01` (not global pickup).
+    - **What changes:** 11.01 hold lifted; Discovery may implement.
+    - **What does not change:** Worf set `10.01` / parent `17` / `22` / `23.01`; `10.02`/`10.03` serialized behind `10.01`; `0033-04.01`/`0041-02` freeze; live `TODO.md`/`DONE.md` remain authority until cutover; no Acceptance, checkpoint merge, or Feature `DONE.md` move.
+    - **Affected work/interfaces:** `0037-11.01`; unblocks parent `0037-11` then `0037-16`. Write interface: `_src/tools/`, `_src/tests/`, owned fixture/candidate roots only.
+    - **Activation:** implementer product mutation only after the authority-bearing claim commit is reachable: `86b5f0ec50df04b2c75a82406bdb817cc8414fc4` (`TODO-gabriel-0037-11.01-20260825T112400Z.md`) plus this PL packet commit.
+    - **Required verification:** product/tests write only fixtures and candidate/disposable roots; a path that writes repository `TODO.md` or `DONE.md` fails the assignment. Golden/repeated clean runs per Definition of Done.
+    - **Prohibitions:** repository `TODO.md`/`DONE.md`; foreign claims; shared root checkout writes; `sandboxed-grunt` briefing for a direct-execution worker.
+    - **PL packet claim:** `TODO-michael-0037-11.01-authority-20260825T112400Z.md` (`owner_token: agent:michael:0037-11.01-authority:20260825T112400Z`). Does not replace Gabriel's implementation token.
 
 - [x] **0037-11.02** PREREQ: 0037-11.02:0037-05, 0037-11.02:0037-08, 0037-11.02:0037-09 Implement `issues/_views/catalog.json` and `issues/_views/dependency-graph.json`. **Claim:** `TODO-Gabriel-Joann-0037-11.02-20260825T082200Z.md` (`agent:gabriel-joann-20260825t082200z:0037-11.02:20260825T082200Z`). **REF:** `bdffd04e8f6221490b5fb773673804936bbf330d`. **Claim:** `TODO-Gabriel-Joann-0037-11.02-20260825T081500Z.md` (`agent:gabriel-joann-20260825t081500z:0037-11.02:20260825T081500Z`).
   - **Acceptance criteria:** Catalog contains normalized items with source locators/hashes; graph projection contains already-classified nodes/edges, lifecycle/archive status, Feature-closure versus start-gate edges, stable internal item URLs, and explicit malformed/missing endpoints. Both include schema/tool/config/source digests plus a content-derived generation ID and deterministic ordering; they contain no inferred browser-only semantics.
@@ -1151,7 +1165,7 @@ HOW TO USE:
 
 ### Campaign D — Graph, Website, i18n, Pipeline Provenance, and Tree Integration
 
-- [ ] **0037-22** PREREQ: 0037-22:0037-12 Implement `tools/todo-dependency-graph.html` as the internal maintainer consumer of `issues/_views/dependency-graph.json`.
+- [x] **0037-22** PREREQ: 0037-22:0037-12 Implement `tools/todo-dependency-graph.html` as the internal maintainer consumer of `issues/_views/dependency-graph.json`. Claim: `TODO-gabriel-graphhtml-0037-22-20260825T114200Z.md` (`owner_token: agent:gabriel-graphhtml:0037-22:20260825T114200Z`). **REF:** `aae7dffa74f7419cb9e3689ee400d65fc14c2379`. **Implementation completion (2026-08-25, Gabriel-Graphhtml, unprivileged Programmer):** Maintainer HTML fetches `issues/_views/dependency-graph.json` only (no `../TODO.md`); shows item links, digests, generation_id, legends, zoom/scroll, and visible stale/missing/malformed/Graphviz errors. Validation: `python3 _src/tests/test_todo_dependency_graph.py` 10/10 PASS. No Acceptance. No merge upward.
   - **Acceptance criteria:** Preserve filtering, counts, zoom/scroll, all state/archive/edge legends, done handling, and actionable errors; add internal item links, source/schema/tool/config digests and content-generation ID, with volatile execution-run linkage only in the external run manifest; eliminate `../TODO.md` fetching; work over documented local HTTP with only tracked assets; expose stale/missing/malformed data instead of silently disappearing.
   - **Definition of Done:** Browser/DOM tests cover every state/edge class, redacted/missing endpoints, malformed/stale data, missing Graphviz assets, item navigation, keyboard/accessibility behavior, and exact catalog count/edge parity.
 
@@ -1159,7 +1173,7 @@ HOW TO USE:
   - **Acceptance criteria:** Public data is generated by allowlist from internal normalized data before embedding; website code cannot access the full internal catalog.
   - **Definition of Done:** Both Subtasks pass privacy, generation, accessibility, and deployment-failure tests.
 
-- [ ] **0037-23.01** PREREQ: 0037-23.01:0037-01, 0037-23.01:0037-12, 0037-23.01:0037-17.03 Implement the locale-neutral privacy projector for `_src/data/issue-graph-public.json`.
+- [x] **0037-23.01** PREREQ: 0037-23.01:0037-01, 0037-23.01:0037-12, 0037-23.01:0037-17.03 Implement the locale-neutral privacy projector for `_src/data/issue-graph-public.json`. Claim: `TODO-gabriel-privacy-0037-23.01-20260825T115400Z.md` (`owner_token: agent:gabriel-privacy:0037-23.01:20260825T115400Z`). REF: `b9c374d0edafc9dbfed550630349bb8de45a211e`. Validation: `python3 -m unittest _src.tests.test_privacy_projector` (10 tests, OK).
   - **Acceptance criteria:** Include only items explicitly marked `public-summary` and only approved ID/level/title-key/title-source-hash/coarse-state/public-summary/public prerequisites/link fields, with no translated title; exclude claims, identities, private paths, detailed findings/decisions/evidence, security/unreleased items, and all incident edges to omitted nodes. Emit an aggregate restricted count without identifiers; fail closed on unknown fields/classes, dangling public edges, missing privacy decisions, or leaked restricted fixture tokens; record input/output artifact sets and policy digest.
   - **Definition of Done:** Allowlist and adversarial leak tests, schema validation, deterministic output, reverse privacy checks, and mutation tests prove the public artifact cannot reveal omitted IDs or fields.
 
