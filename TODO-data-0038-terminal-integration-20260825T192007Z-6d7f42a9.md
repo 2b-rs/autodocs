@@ -3,7 +3,7 @@
 item: 0038-terminal-integration-architecture
 owner: data
 owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [x]
+status: [p]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
@@ -38,10 +38,11 @@ identities under the contract evidence.
 
 ## Next action
 
-Completed Architect package at substantive REF `f3225d3a3`. Validation found
-356 repository Task IDs, 793 prerequisite edges, zero missing endpoints, zero
-cycles; Feature `0038` now has 39 unique nodes and `0038-35` names all 38 prior
-nodes exactly once with no extras or self-edge. `DEC-0038-005` has exactly one
-heading; `git diff --check` passed; the 2026-08-21 partial-integration approval
-file is byte-unchanged. Hand the exact candidate to a separately assigned
-privileged Integrator. Do not implement or close `0038-35` in this claim.
+Independent Integrator pre-review rejected candidate `2b87ab0ce` before
+integration because the `0038-35` checkpoint rationale named Architect Data
+but omitted the canonical literal `(architect)` authority tag required by
+`legacy_task_doctor.py` (`LTD-CHECKPOINT-MISSING-AUTHORITY`). Correct only that
+tag, rerun the canonical validator plus whole-graph and protected-history
+checks, then record fresh substantive and bookkeeping REFs. Preserve the full
+38-node contract and all separation boundaries; do not implement, accept,
+integrate, close, or advance `main`.
