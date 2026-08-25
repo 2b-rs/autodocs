@@ -3,7 +3,7 @@
 item: 0038-terminal-integration-architecture
 owner: data
 owner_token: agent:data:0038-terminal-integration:20260825T192007Z-6d7f42a9
-status: [p]
+status: [x]
 capability_class: privileged
 process_role: Architect
 authority_reference: `DEC-0038-005` on `main@96e7a8b71a75773fd2f7193245792243e704a574`
@@ -38,7 +38,10 @@ identities under the contract evidence.
 
 ## Next action
 
-Commit the smallest Task/scope candidate, validate IDs, prerequisite endpoints,
-cycles, exact-one terminal integrating Task, whitespace, and historical-file
-non-modification, then hand the exact candidate to a separately assigned
+Completed Architect package at substantive REF `f3225d3a3`. Validation found
+356 repository Task IDs, 793 prerequisite edges, zero missing endpoints, zero
+cycles; Feature `0038` now has 39 unique nodes and `0038-35` names all 38 prior
+nodes exactly once with no extras or self-edge. `DEC-0038-005` has exactly one
+heading; `git diff --check` passed; the 2026-08-21 partial-integration approval
+file is byte-unchanged. Hand the exact candidate to a separately assigned
 privileged Integrator. Do not implement or close `0038-35` in this claim.
