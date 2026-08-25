@@ -1015,9 +1015,12 @@ HOW TO USE:
   - **Definition of Done:** One negative fixture per rule plus fixed property/fuzz seeds and resource limits pass deterministically for working-tree and staged-index inputs.
   - **Implementation evidence (2026-08-24, Julian):** The side-effect-free validator, deterministic negative fixtures, fixed-seed graph checks, resource limits, and staged-index/working-tree coverage are committed at the REF above. Post-commit validation passed: `test_issue_validate` 8/8, carried `test_issue_store` 10/10, `py_compile`, automation-safety (zero findings), and `git diff --check`.
 
-- [ ] **0037-09.02** PREREQ: 0037-09.02:0037-03, 0037-09.02:0037-08 Implement lifecycle, claim, authority/signature, criterion-evidence, closure, archive, and commit-reference validation.
+- [x] **0037-09.02** PREREQ: 0037-09.02:0037-03, 0037-09.02:0037-08 Implement lifecycle, claim, authority/signature, criterion-evidence, closure, archive, and commit-reference validation.
+  - **Claim:** `TODO-Gabriel-Detmer-0037-09.02-20260825T041620Z.md` (`owner_token: agent:gabriel-detmer-20260825t041620z:0037-09.02:20260825T041620Z` provenance; current `agent:gabriel-owosekun-20260825t043500z:0037-09.02:20260825T043500Z`)
   - **Acceptance criteria:** Detect illegal transitions, missing/expired/overlapping/stale-base claims, invalid claim refs, completion without checked criteria/closure/reachable evidence/role approval, invalid/revoked signatures, non-commit or same-commit refs, false Feature closure, and archive/not-accepted inflation.
   - **Definition of Done:** Transition/race/signature/closure fixtures cover every state/disposition and fixed authority policy revision with deterministic diagnostics.
+  - **REF:** `d2fd153a97f21003583fabaa62f74618cd874df5`
+  - **Implementation evidence (2026-08-25, Gabriel):** IV0910–IV0922 in `_src/tools/issue_validate.py`; negative fixtures `_src/tests/fixtures/0037-09.02/cases.json`; working-tree and staged-index coverage; `uv run python _src/tests/test_issue_validate.py` 13/13 OK. 0037-09.01 rules not weakened. Claim remains on branch `0037-09.02`. Not accepted.
 
 - [ ] **0037-09.03** PREREQ: 0037-09.03:0037-04, 0037-09.03:0037-08 Implement typed-reference, provenance graph, artifact/run/finding, evidence-class, and privacy/public-projection validation.
   - **Acceptance criteria:** Detect invalid/dangling/reversed/cardinality-violating edges, ID/digest collisions, fabricated context, mutable path without digest, synthetic-as-production evidence, restricted-field/endpoint leakage, redaction mismatch, and stale or incomplete reverse indexes.
