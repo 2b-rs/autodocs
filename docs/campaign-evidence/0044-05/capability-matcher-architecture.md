@@ -310,11 +310,26 @@ a red-first mutation proving the authority-class constraint fails when removed.
 - Role: privileged Implementer distinct from Data and from the Integrator.
 - Prerequisite: `0044-05.02` implementation complete.
 - Exact write scope: section 4.2 plus own coordination/bookkeeping record.
-- Branch: governance branch cut from then-current `main`; no Feature branch
-  policy may be treated as current without target-policy comparison.
+- Topology: observe exact then-current `main` SHA `M`; create a new item-owned
+  governance branch/worktree at `M`; merge `--no-ff` the exact completed parent
+  `0044-05` tip carrying `.01` and `.02`, so `M` is first parent and the parent
+  Task tip is second parent; only then author the path-limited governance edits.
+  If `main` drifts before mutation, stop and recalculate rather than replaying a
+  stale policy baseline. This declared merge carries the executable/schemas and
+  their claims into the candidate; it is not an undeclared `.03` scope widening.
 - Acceptance: briefing text names profile/result as pilot inputs, preserves the
   four existing mandatory dispatch fields, makes no broad-activation claim,
   registers CLI/failure/recovery, and states legacy schema distinction.
+- Atomic availability rule: the `.03` candidate must never be integrated as
+  documentation-only. Before integration its briefing text is candidate policy,
+  not active authority; after integration the same candidate also contains the
+  tested matcher and schemas. The exact non-activation wording is: “This pilot
+  requirement becomes operative only when this governance commit and the bound
+  `0044-05.02` product are both reachable from `main`; it does not activate
+  repository-wide dispatch enforcement, grant authority, or credit historic
+  dispatches.” Validation proves the bound product SHA and all three schemas are
+  ancestors/files of the candidate and that the sentence appears in `AGENTS.md`
+  and `docs/pipeline/capability-matching.md`.
 - Capability: `privileged` solely because current governance paths and direct
   execution require it; the Implementer role may not exercise Acceptance or
   integration authority. Cognitive `medium-high`, token 10k–20k, context
@@ -322,6 +337,12 @@ a red-first mutation proving the authority-class constraint fails when removed.
 - Checkpoint: not independently mandatory. No-checkpoint justification: it
   wires the already-tested mechanism only for the bounded pilot and cannot
   activate broad dispatch; the parent mandatory checkpoint reviews composition.
+- Integration boundary: the `.03` Implementer may prepare and validate this
+  combined candidate but may not review, accept, or land it. A separately
+  assigned privileged Integrator evaluates the complete parent `0044-05`
+  checkpoint, including `.01`, `.02`, `.03`, exact second-parent provenance,
+  executable/docs consistency, and the no-broad-activation boundary, before any
+  ff-only advance of `main` to the prepared candidate.
 
 ### Parent `0044-05` package completion
 
