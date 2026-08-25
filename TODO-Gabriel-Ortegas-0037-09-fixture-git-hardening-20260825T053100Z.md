@@ -48,3 +48,15 @@ Validation: `py_compile`, `git diff --check`, `automation_safety.py --path` on `
 - Unprivileged session may create the assigned worktree/branch and commit only in that worktree.
 - `issue_validate.py` is read-only; fixture isolation is a test-side defect.
 - Claim-only commit first, then product commit, then close/bookkeeping note in this claim (no `TODO.md`).
+
+## Completion
+
+- Claim SHA: `7de8ca995ec6459c6fd3be475704ca9058004e1c`
+- Product SHA: `e7e68f2be06728fb5b38ca0937610790af97213b`
+- Validation:
+  - `python3 -m py_compile _src/tests/test_issue_validate.py` exit 0
+  - `uv run python _src/tests/test_issue_validate.py -v` → Ran 20 tests, OK (original 17 plus 3 isolation tests)
+  - `git diff --check -- _src/tests/test_issue_validate.py` exit 0
+  - `python3 _src/tools/automation_safety.py --path _src/tools/issue_validate.py --path _src/tests/test_issue_validate.py` → PASS scanned=2 findings=0 unresolved-critical=0 (no policy edit)
+- `uv.lock` appeared in worktree from `uv run` and was not staged.
+- No `TODO.md` marker change. Not merged to parent/main.
