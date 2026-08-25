@@ -18,4 +18,4 @@
   - this claim
   - `TODO.md` (0044-05.02 Task block only)
 - forbidden: governance; legacy `agent-capability@v1` mutation; activation; agent selection; Acceptance; integration; checkpoint; parent completion; Feature closure; main; network; credentials; 0041-02; 0020-02/03
-- status: `[p]` after this claim commit
+- status: `[x]` product REF `2c563040563b350f26e6c85b0dccb8c211fdbdef`. No Acceptance.
