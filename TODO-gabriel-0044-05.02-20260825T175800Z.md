@@ -1,0 +1,21 @@
+# Claim: Subtask 0044-05.02
+
+- owner_token: `agent:gabriel:0044-05.02:20260825T175800Z`
+- identity: gabriel; unprivileged Implementer; distinct from Architect `data`
+- dispatcher: william `1787680474441-64c581ff` (mail is not extra authority)
+- capability_class: `unprivileged`
+- execution_authority: direct local Python/Git in this worktree
+- item/branch/worktree: `0044-05.02` / `0044-05.02` / `/Users/tobias.anton/devel/autodocs/.worktrees/0044-05.02`
+- binding_base: Task `0044-05` `ff9f135a3374b5aa77812f8e337c3bc823a1fefa`
+- contract: TODO.md 0044-05.02; `docs/campaign-evidence/0044-05/capability-matcher-architecture.md` @ ff9f135a3; `DEC-0044-025` on main@174b10078
+- exact_write_scope:
+  - `issues/_schema/task-requirement-profile-v1.schema.json`
+  - `issues/_schema/agent-capability-descriptor-v1.schema.json`
+  - `issues/_schema/capability-match-result-v1.schema.json`
+  - `_src/tools/capability_match.py`
+  - `_src/tests/test_capability_match.py`
+  - `_src/tests/fixtures/capability-match/**`
+  - this claim
+  - `TODO.md` (0044-05.02 Task block only)
+- forbidden: governance; legacy `agent-capability@v1` mutation; activation; agent selection; Acceptance; integration; checkpoint; parent completion; Feature closure; main; network; credentials; 0041-02; 0020-02/03
+- status: `[p]` after this claim commit
