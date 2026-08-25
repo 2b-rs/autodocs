@@ -13,4 +13,5 @@
 - **write_scope:** `_src/tools/issue_schema_transform.py`, `_src/tests/test_issue_schema_transform.py`, `issues/_schema/fixtures/issue-item-v1-draft-to-v1/`, this claim, `TODO.md` 0037-15.02 markers
 - **do_not:** mutate `issue_reimport.py` (15.01), issuectl (10.04), event-replay (15.03); no Acceptance; no checkpoint; no `main`; no `DONE.md`; no push
 - **capability_class_received:** unprivileged (matches briefing)
-- **next:** implement transform + fixtures + tests; close at `[x]`
+- **next:** closed at `[x]`; product REF `1f5dd302fd24bf6af64aaa612e7bafc1c2ed9d09`
+- **validation:** `python3 _src/tests/test_issue_schema_transform.py` 7/7 PASS
