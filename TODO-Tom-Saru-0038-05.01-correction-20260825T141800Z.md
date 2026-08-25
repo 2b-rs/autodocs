@@ -94,6 +94,13 @@ extra `create=True` mode:
   invocation; `git diff --stat` on the tool was empty afterwards and the full suite
   re-ran at 54 passed. Nothing injected was committed.
 
+- `automation_safety.py --json --path _src/tools/legacy_task_editor.py --path
+  _src/tests/test_legacy_task_editor.py`: `verdict: FAIL`, `policy_errors: 0`,
+  `findings: 7` (4× `AUTO010`, 3× `AUTO001`, all in the test file). The **same 7
+  findings at the same sites** are present on `main`@`28d7a0091` (line numbers differ
+  by exactly one, from the added `import errno`). **Zero new findings introduced.**
+  The pre-existing findings are outside this correction's scope and were not touched.
+
 ## Not done / out of scope
 
 - No `Acceptance: ✓` created, altered or removed; no reviewer role assumed.
