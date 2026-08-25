@@ -16,7 +16,7 @@
 - external_resources: none
 - assumptions: the Project Lead's exact target-worktree assignment authorizes this session to use the existing isolated item worktree for this merge action; no ownership is inferred from the directory name
 - prohibited: `uv.lock`; `0037-09.03`/`0037-09.04`; foreign claim edits; Acceptance; review verdicts; checkpoint crossing; Feature/main/DONE movement; push; root-checkout mutation; unrelated repair
-- status: claim recorded; claim commit, hard preflight, integration hygiene, pinned merge, and assigned validation pending
+- status: integration inconclusive after post-merge validation finding; source repair or disposition requires a separate owner/Project Lead action
 
 ## Required evidence
 
@@ -25,3 +25,14 @@
 - Merge commit SHA and exact source parentage.
 - Focused test, `py_compile`, and `git diff --check` results.
 - Final clean target state and confirmation that prohibited boundaries were not crossed.
+
+## Actual integration evidence
+
+- Claim commit: `993e995bebeda483c34449d4e9a7679c63078d6c`.
+- Hard preflight: target `refs/heads/0037-09` at the claim commit, source still exactly `3aa10521fea7b18dff9c93b252e13d2e624d7480`, tracked worktree clean, index clean.
+- Integration hygiene: **PASS**, exit `0`, 192 registered worktrees.
+- Explicit merge commit: `ca2adeadb63def2284dafa3a0ac9963f851b714b`; parents `993e995bebeda483c34449d4e9a7679c63078d6c` and `3aa10521fea7b18dff9c93b252e13d2e624d7480`.
+- Focused validation with pin-compatible existing interpreter `/Users/tobias.anton/devel/autodocs/.worktrees/0037-09.02/.venv/bin/python` (Python 3.9.6): **13 tests passed** in 7.290s.
+- `py_compile` for `_src/tools/issue_validate.py` and `_src/tests/test_issue_validate.py`: **PASS**.
+- `git diff --check 993e995bebeda483c34449d4e9a7679c63078d6c..ca2adeadb63def2284dafa3a0ac9963f851b714b`: **FAIL** — `_src/tests/test_issue_validate.py:506: new blank line at EOF.` The line is present on the pinned source tip and attributed by `git blame` to `c4da065dea0`; it was not repaired during integration.
+- Target worktree remains clean after the merge. No Acceptance, review verdict, checkpoint, Feature/main/DONE transition, push, root mutation, foreign-claim edit, or unrelated repair was performed.
