@@ -42,3 +42,10 @@ Acceptance, integration state, `main`, external state, or the root checkout.
   `workspace`, but reported and performed an append in the shared root path,
   adding a duplicate `2026-08-25T07:15Z` line there. No root recovery or cleanup
   was attempted; the unexpected root state is reported to the coordinator.
+- Bounded retention follow-up from agent-inbox message
+  `1787642224891-5e46bd8f`: without recalling the misrouting helper, appended
+  the exact evidenced `2026-08-25T07:15Z` line in this item-owned worktree and
+  committed it as the sole path at
+  `47e90c9eae92650c1dda3cde5a72ded0708b9c43`. The resulting branch Memory
+  blob is `fa20ddf4fc75ce782d5bfa60bca2cddae4c42600`, matching the observed root
+  blob; no root mutation or cleanup was performed by this follow-up.
