@@ -46,27 +46,27 @@ class AutomationSafetyFixtureTests(unittest.TestCase):
     RUNNER_TRANSACTION_ALLOWED_AUTO010 = frozenset(
         {
             (
-                240,
+                277,
                 "_atomic_create",
                 "a9585e4f1caf3113aa8a1da53260983471d1e10d5339b4a553f0fcce7a047ea2",
             ),
             (
-                1698,
+                1735,
                 "Transaction.acquire_lock",
                 "bbeb1bc976b167dc0d4939d3788858124cb8cfecdc064b4c6bac40cc1f290fd8",
             ),
             (
-                1839,
+                1876,
                 "Transaction.materialize_editor_candidate",
                 "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
             ),
             (
-                3295,
+                3332,
                 "BranchMergeTransaction._synchronize_worktree",
                 "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
             ),
             (
-                3922,
+                3959,
                 "_recovery_lease",
                 "d9bae0d944b115d54df1aa8eb1b10f982d72c3427965fb54b216068970284802",
             ),
