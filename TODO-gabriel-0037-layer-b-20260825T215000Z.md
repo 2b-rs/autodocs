@@ -18,5 +18,5 @@
 - status: `[p]` **blocked on pre-merge hygiene** (did not merge any Layer-B tip). First hygiene vs candidate `78f1e3fd2` using main `_src/tools/check_integration_hygiene.py` (Feature tree tool lacks `--candidate-ref`).
 - hygiene_1: EXIT 1; `FOREIGN_STAGED_TREE` `.worktrees/0033-02-tom-culber-20260825T215200Z` index age ~21s (2026-08-25T21:54:19Z).
 - hygiene_2 (retry +25s): EXIT 1; `FOREIGN_STAGED_TREE` `.worktrees/0033-02-saru-landry-20260825T214500Z` (~48s) and `.worktrees/0033-02-tom-culber-20260825T215200Z` (~173s). Did not touch those worktrees.
-- staging_HEAD: `6ea947e32912fb8d66f58895333bd02e6b0ef6f0` (claim-only, still based on `722aaa214` + this claim). No Layer-B merges. Canonical `0037` and `main` not moved.
+- staging_HEAD: `73717e2d628f7d902c86c404a87ad6dddf9576bb` (claim + hygiene stop; still based on `722aaa214` plus this claim). No Layer-B merges. Canonical `0037` and `main` not moved.
 - next_step: rerun hygiene when those 0033-02 indexes match HEAD; then serial-merge the five named tips.
