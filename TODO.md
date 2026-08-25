@@ -1080,9 +1080,23 @@ HOW TO USE:
   - **Acceptance criteria:** Both renderers consume one normalized catalog and neither view becomes input authority. SQLite is explicitly out of scope for v1 and may be proposed only by a later performance measurement Feature.
   - **Definition of Done:** Both Subtasks reconcile source/view IDs, states, criteria, and edges exactly.
 
-- [ ] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries.
+- [x] **0037-11.01** PREREQ: 0037-11.01:0037-05, 0037-11.01:0037-08, 0037-11.01:0037-09 Implement generated `TODO.md`, `DONE.md`, and open/blocked/unclear/owner summaries. Claim: `TODO-gabriel-0037-11.01-20260825T112400Z.md` (`owner_token: agent:gabriel:0037-11.01:20260825T112400Z`). REF: `beb2564331279bfdc29ae357cded9571b7416e9c`. **Implementation completion (2026-08-25, gabriel, unprivileged):** `_src/tools/issue_lists.py` writes generated lists only under `--output-root` (fixture `_src/tests/fixtures/0037-11.01/generated/`); live repository `TODO.md`/`DONE.md` refused. Validation: `python3 -m unittest _src.tests.test_issue_lists` 5/5 PASS twice; `py_compile` PASS. No Acceptance, checkpoint, main, or Feature `DONE.md` move.
   - **Acceptance criteria:** Render every lifecycle/archive disposition truthfully, including superseded/not-accepted; preserve normative text and criterion IDs; include an unambiguous generated warning plus source/schema/tool/config hashes and content-derived generation ID while linking the volatile execution run only from its external manifest; use deterministic ordering; and make manual divergence, omission, duplicated item, or false completion fail validation.
   - **Definition of Done:** Golden and repeated clean runs prove byte determinism and exact counts/IDs/state/text reconciliation for open, terminal, and anomalous fixtures.
+  - **Management operative packet (Project Lead `michael`, 2026-08-25, append-only; mailbox is not authority):**
+    - **Authority:** current user in the Michael Cursor session. No agent-inbox ID. No `DEC-*`.
+    - **Exact user texts (verbatim, Europe/Berlin):**
+      - 2026-08-25 13:15 +02:00 — `lass uns 11.01 freigeben. Frag mich.`
+      - 2026-08-25 13:16 +02:00 — `A`
+      - 2026-08-25 13:20 +02:00 — `gut, weitermachen. Wenn die Task durch ist, arbeitet als Projektleiter alle gemeinsam an dne weiteren Features. Stimmt euch ab, verteilt Arbeit, bietet Unterstützung an, wenn ihr freie Kapazität in eurem Team habt.`
+    - **What A selected:** lift the Discovery hold; Discovery claims and implements `0037-11.01` (not global pickup).
+    - **What changes:** 11.01 hold lifted; Discovery may implement.
+    - **What does not change:** Worf set `10.01` / parent `17` / `22` / `23.01`; `10.02`/`10.03` serialized behind `10.01`; `0033-04.01`/`0041-02` freeze; live `TODO.md`/`DONE.md` remain authority until cutover; no Acceptance, checkpoint merge, or Feature `DONE.md` move.
+    - **Affected work/interfaces:** `0037-11.01`; unblocks parent `0037-11` then `0037-16`. Write interface: `_src/tools/`, `_src/tests/`, owned fixture/candidate roots only.
+    - **Activation:** implementer product mutation only after the authority-bearing claim commit is reachable: `86b5f0ec50df04b2c75a82406bdb817cc8414fc4` (`TODO-gabriel-0037-11.01-20260825T112400Z.md`) plus this PL packet commit.
+    - **Required verification:** product/tests write only fixtures and candidate/disposable roots; a path that writes repository `TODO.md` or `DONE.md` fails the assignment. Golden/repeated clean runs per Definition of Done.
+    - **Prohibitions:** repository `TODO.md`/`DONE.md`; foreign claims; shared root checkout writes; `sandboxed-grunt` briefing for a direct-execution worker.
+    - **PL packet claim:** `TODO-michael-0037-11.01-authority-20260825T112400Z.md` (`owner_token: agent:michael:0037-11.01-authority:20260825T112400Z`). Does not replace Gabriel's implementation token.
 
 - [x] **0037-11.02** PREREQ: 0037-11.02:0037-05, 0037-11.02:0037-08, 0037-11.02:0037-09 Implement `issues/_views/catalog.json` and `issues/_views/dependency-graph.json`. **Claim:** `TODO-Gabriel-Joann-0037-11.02-20260825T082200Z.md` (`agent:gabriel-joann-20260825t082200z:0037-11.02:20260825T082200Z`). **REF:** `bdffd04e8f6221490b5fb773673804936bbf330d`. **Claim:** `TODO-Gabriel-Joann-0037-11.02-20260825T081500Z.md` (`agent:gabriel-joann-20260825t081500z:0037-11.02:20260825T081500Z`).
   - **Acceptance criteria:** Catalog contains normalized items with source locators/hashes; graph projection contains already-classified nodes/edges, lifecycle/archive status, Feature-closure versus start-gate edges, stable internal item URLs, and explicit malformed/missing endpoints. Both include schema/tool/config/source digests plus a content-derived generation ID and deterministic ordering; they contain no inferred browser-only semantics.
