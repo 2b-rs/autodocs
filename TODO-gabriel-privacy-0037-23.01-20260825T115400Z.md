@@ -15,8 +15,14 @@
   - `TODO-gabriel-privacy-0037-23.01-20260825T115400Z.md`
   - `TODO.md` (0037-23.01 Task block only)
 - forbidden: Acceptance; checkpoint merge; Feature DONE.md; main; push; root recovery/cleanup; live repository TODO.md/DONE.md as product; 10.02/10.03; parent 0037-11
-- status: `[p]`; **claim materialization only**. No product mutation before this claim commit REF is reported.
-- next_step: wait for start-gate / then implement locale-neutral privacy projector.
+- status: `[x]` implementation complete; product REF `b9c374d0edafc9dbfed550630349bb8de45a211e`. Lease ended. No Acceptance.
+- next_step: none for this token; privileged integrator owns merge.
+
+## Progress
+
+- jean-luc `1787659063633-1e63e686` cleared product start; michael independently remeasured claim-only tip then product.
+- Product: `_src/tools/privacy_projector.py`, `_src/tests/test_privacy_projector.py` (10 tests OK), regenerated `_src/data/issue-graph-public.json`.
+- Bookkeeping commit follows this claim update.
 
 ## Task
 
