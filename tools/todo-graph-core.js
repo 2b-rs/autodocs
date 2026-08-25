@@ -1,57 +1,41 @@
 // todo-graph-core.js
 //
-// Single, canonical browser-safe implementation of the TODO.md parser and
-// Graphviz DOT builder used by both browser consumers:
-//   - tools/todo-dependency-graph.html (standalone maintainer tool)
-//   - tools/todo-graph-embed.js (live embed on the published start page)
-//
-// This replaces two previously independent, manually-"kept in sync" copies
-// of the same ~150 lines of logic for the active browser consumers (2026-08-13).
-// The live embed was migrated immediately; the standalone maintainer page was
-// later re-pointed at this module on 2026-08-14 after a drift bug was traced
-// to its stale inline copy. The formerly separate Node.js CLI
-// (tools/todo_dependency_graph.js) and Python CLI (tools/todo_dependency_
-// graph.py) twins were removed the same day (not used for static artifact
-// generation); this browser module is now the sole implementation.
-//
-// Exposes a single global: window.TodoGraphCore = { parseTodo, buildDot,
-// dotQuote, truncate, FEATURE_COLORS, MARK_COLORS, DONE_FONT_COLOR,
-// DONE_EDGE_COLOR }.
+// Canonical browser-safe adapter for issue-dependency-graph@v1 JSON.
+// Consumers: tools/todo-dependency-graph.html and tools/todo-graph-embed.js.
+// Python twin: _src/tools/todo_graph_adapter.py (byte-compared in tests).
+// Never parses YAML, Markdown, TODO.md, or DONE.md.
 
 (function (global) {
   'use strict';
 
-  var FEATURE_RE = /^##\s*Feature:\s*(\d{4})\s*(?:\u2014|--|-)?\s*(.*)$/;
-  var TASK_RE = /^-\s*\[([ xup?])\]\s*(?:\*\*)?(\d+-\d+(?:\.\d+)?)(?:\*\*)?\s*(.*)$/;
-  var PREREQ_BLOCK_RE = /PREREQ:\s*(.+?)(?:\s*(?:\u2014|--)\s|\s*$)/;
-  var PREREQ_ITEM_RE = /(\d{4}(?:-\d+(?:\.\d+)?)?)\s*:\s*(\d{4}(?:-\d+(?:\.\d+)?)?)/g;
-  var SOFT_RE = /\(soft\b/i;
+  var SCHEMA = 'issue-dependency-graph@v1';
+  var AUTHORITY = 'generated-view';
+  var REQUIRED_TOP = ['schema', 'authority', 'nodes', 'edges', 'digests', 'generation_id'];
+  var REQUIRED_NODE = ['id', 'level', 'lifecycle_status', 'endpoint_status'];
+  var REQUIRED_EDGE = ['source', 'target', 'kind', 'endpoint_status'];
+  var ENDPOINT_OK = { present: 1, missing: 1, malformed: 1 };
 
   var FEATURE_COLORS = [
     '#cfe8ff', '#d6ecff', '#d9f2d9', '#ffe0cc',
     '#ffd6d6', '#ffe680', '#ffe9cc', '#e6dcff',
     '#c9f7f5', '#f7d9e3', '#e3f7c9', '#d9d9f7',
   ];
-
-  // See TODO.md's "HOW TO USE" section for the authoritative meaning of each
-  // marker: ' '=open, 'p'=partial (agent-workable, in progress), 'u'=unclear
-  // (blocked on human/manager discussion), '?'=unknown, 'x'=done.
   var MARK_COLORS = {
     ' ': '#ffffff',
     'p': '#fff3b0',
     'u': '#ffb3b3',
+    'w': '#e8d5ff',
     '?': '#d9d9d9',
     'x': '#b6e3b6',
   };
-  // 'x' (done) is rendered unfilled with this font color instead of using
-  // MARK_COLORS.x as a fill — finished tasks recede visually but stay legible.
   var DONE_FONT_COLOR = '#808080';
-  // Edges originating FROM a done task render in this light grey instead of
-  // their normal classification color (re-added 2026-08-14; was dropped
-  // during the 2026-08-13 revert/squash that produced 73f27778 despite that
-  // commit's message still claiming it was present). Edges merely pointing
-  // AT a done task are unaffected and keep their normal classification.
   var DONE_EDGE_COLOR = '#d9d9d9';
+
+  function GraphAdapterError(message) {
+    var err = new Error(message);
+    err.name = 'GraphAdapterError';
+    return err;
+  }
 
   function htmlEscape(s) {
     return String(s)
@@ -60,12 +44,6 @@
       .replace(/>/g, '&gt;');
   }
 
-  // Builds an HTML-like Graphviz label: task text on the left, a
-  // right-aligned checkmark glyph in its own cell, wrapped in a
-  // rounded table filled with the enclosing feature's color so done
-  // tasks still read as part of that feature. The grey text/checkmark
-  // is now the only visual distinction from non-done tasks.
-  // multiLineLabel may contain '\n' (id + wrapped task text).
   function htmlDoneLabel(multiLineLabel, featureColor) {
     var textHtml = multiLineLabel.split('\n').map(htmlEscape).join('<BR/>');
     return '<' +
@@ -77,6 +55,7 @@
       '</TABLE>' +
       '>';
   }
+
   function dotQuote(s) {
     return '"' + String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
   }
@@ -84,98 +63,191 @@
   function truncate(text, maxLen) {
     var cleaned = String(text || '').replace(/\s+/g, ' ').trim();
     if (cleaned.length <= maxLen) return cleaned;
-    return cleaned.slice(0, maxLen).replace(/\s+\S*$/, '') + '\u2026';
+    var trimmed = cleaned.slice(0, maxLen).replace(/\s+\S*$/, '');
+    return trimmed + '\u2026';
   }
 
-  function parseTodo(text) {
-    var features = new Map();
-    var order = [];
-    var currentFeature = null;
-
-    text.split(/\r?\n/).forEach(function (rawLine) {
-      var line = rawLine.trim();
-
-      var mFeat = FEATURE_RE.exec(line);
-      if (mFeat) {
-        var fid = mFeat[1];
-        var name = (mFeat[2] || '').trim();
-        if (!features.has(fid)) {
-          features.set(fid, { id: fid, name: name, tasks: [] });
-          order.push(fid);
-        }
-        currentFeature = features.get(fid);
-        return;
-      }
-
-      var mTask = TASK_RE.exec(line);
-      if (mTask && currentFeature) {
-        var mark = mTask[1];
-        var id = mTask[2];
-        var restText = mTask[3] || '';
-        var tidFeature = id.split('-', 1)[0];
-        var feature = features.get(tidFeature) || currentFeature;
-        var task = {
-          id: id,
-          featureId: feature.id,
-          mark: mark,
-          text: restText,
-          prereqs: [],
-          get done() { return this.mark === 'x'; },
-        };
-
-        var mBlock = PREREQ_BLOCK_RE.exec(restText);
-        if (mBlock) {
-          var body = mBlock[1];
-          var isSoft = SOFT_RE.test(restText);
-          PREREQ_ITEM_RE.lastIndex = 0;
-          var mItem;
-          while ((mItem = PREREQ_ITEM_RE.exec(body)) !== null) {
-            task.prereqs.push([mItem[2], isSoft]);
-          }
-        }
-        feature.tasks.push(task);
-      }
-    });
-
-    return order.map(function (fid) { return features.get(fid); });
+  function looksLikeMarkdown(text) {
+    var head = String(text).replace(/^\s+/, '').slice(0, 800);
+    if (head.indexOf('---') === 0) return true;
+    if (head.indexOf('## Feature:') !== -1 || head.indexOf('# ') === 0) return true;
+    if (head.indexOf('PREREQ:') !== -1 && head.indexOf('- [') !== -1) return true;
+    return false;
   }
 
-  function featureDone(feature) {
-    return feature.tasks.length > 0 && feature.tasks.every(function (t) { return t.done; });
+  function lifecycleToMark(lifecycleStatus, endpointStatus) {
+    if (endpointStatus === 'missing' || endpointStatus === 'malformed') return '?';
+    var status = lifecycleStatus || '';
+    if (status === 'open') return ' ';
+    if (status === 'in_progress') return 'p';
+    if (status === 'blocked') return 'u';
+    if (status === 'withdrawn') return 'w';
+    if (status === 'closed' || status.indexOf('closed:') === 0) return 'x';
+    return '?';
   }
 
-  function classifyEdge(srcTask, dstId) {
-    var isSoft = srcTask.prereqs.some(function (p) { return p[0] === dstId && p[1]; });
-    var dstIsFeatureOnly = dstId.indexOf('-') === -1;
-    var sameFeature = dstId.split('-', 1)[0] === srcTask.featureId;
-    if (isSoft) return 'soft_cross';
-    if (sameFeature && !dstIsFeatureOnly) return 'explicit_same';
-    if (dstIsFeatureOnly) return 'implicit_cross';
+  function featurePrefix(itemId) {
+    var text = String(itemId || '');
+    if (text.indexOf('-') === -1) {
+      return (text.length === 4 && /^\d{4}$/.test(text)) ? text : '_unresolved';
+    }
+    return text.split('-')[0];
+  }
+
+  function classifyEdge(sourceId, targetId, gate, kind) {
+    if (gate === 'feature-closure') return 'feature_closure';
+    if (kind && kind !== 'prerequisite') return 'relation';
+    var srcF = featurePrefix(sourceId);
+    var dstF = featurePrefix(targetId);
+    var dstIsFeature = String(targetId).indexOf('-') === -1;
+    if (srcF === dstF && !dstIsFeature) return 'explicit_same';
+    if (dstIsFeature) return 'feature_closure';
     return 'explicit_cross';
   }
 
-  // opts: { taskLabelMaxLen: number|null }
-  // All features and tasks are always rendered (no done-item filtering);
-  // finished features are expected to have been moved to DONE.md already.
-  // taskLabelMaxLen: if set, node labels are "<id>\n<truncated text>" (used by
-  // the embed, which has limited horizontal space); if omitted/null, node
-  // labels are just "<id>" (used by the standalone tool, which renders a
-  // large canvas and lets the user zoom/scroll).
-  function buildDot(features, opts) {
+  function validateGraph(document) {
+    if (!document || typeof document !== 'object' || Array.isArray(document)) {
+      throw GraphAdapterError('graph document must be a JSON object');
+    }
+    var allowed = { schema: 1, authority: 1, nodes: 1, edges: 1, digests: 1, generation_id: 1 };
+    Object.keys(document).forEach(function (key) {
+      if (!allowed[key]) throw GraphAdapterError('unknown graph fields: ' + key);
+    });
+    REQUIRED_TOP.forEach(function (key) {
+      if (!(key in document)) throw GraphAdapterError('missing required field ' + key);
+    });
+    if (document.schema !== SCHEMA) {
+      throw GraphAdapterError('unsupported schema ' + JSON.stringify(document.schema) + '; expected ' + SCHEMA);
+    }
+    if (document.authority !== AUTHORITY) {
+      throw GraphAdapterError('authority ' + JSON.stringify(document.authority) + ' is not ' + AUTHORITY);
+    }
+    var gen = document.generation_id;
+    if (typeof gen !== 'string' || gen.indexOf('sha256:') !== 0 || gen.length !== 71) {
+      throw GraphAdapterError('malformed or missing generation_id');
+    }
+    var nodes = document.nodes;
+    var edges = document.edges;
+    if (!Array.isArray(nodes) || !Array.isArray(edges)) {
+      throw GraphAdapterError('nodes and edges must be arrays');
+    }
+    var seen = Object.create(null);
+    nodes.forEach(function (node, index) {
+      if (!node || typeof node !== 'object') throw GraphAdapterError('node[' + index + '] is not an object');
+      REQUIRED_NODE.forEach(function (key) {
+        if (!(key in node)) throw GraphAdapterError('node[' + index + '] missing ' + key);
+      });
+      if (seen[node.id]) throw GraphAdapterError('duplicate node id ' + JSON.stringify(node.id));
+      seen[node.id] = node;
+      if (!ENDPOINT_OK[node.endpoint_status]) {
+        throw GraphAdapterError('node ' + JSON.stringify(node.id) + ' bad endpoint_status ' + JSON.stringify(node.endpoint_status));
+      }
+    });
+    edges.forEach(function (edge, index) {
+      if (!edge || typeof edge !== 'object') throw GraphAdapterError('edge[' + index + '] is not an object');
+      REQUIRED_EDGE.forEach(function (key) {
+        if (!(key in edge)) throw GraphAdapterError('edge[' + index + '] missing ' + key);
+      });
+      if (!ENDPOINT_OK[edge.endpoint_status]) {
+        throw GraphAdapterError('edge[' + index + '] bad endpoint_status ' + JSON.stringify(edge.endpoint_status));
+      }
+      if (edge.endpoint_status !== 'present' && !seen[edge.target]) {
+        throw GraphAdapterError(
+          'unresolved edge target ' + JSON.stringify(edge.target) +
+          ' missing from nodes (silently dropped endpoints are forbidden)');
+      }
+      if (!seen[edge.source]) {
+        throw GraphAdapterError('edge source ' + JSON.stringify(edge.source) + ' missing from nodes');
+      }
+    });
+    return document;
+  }
+
+  function loadGraph(text) {
+    if (typeof text !== 'string') throw GraphAdapterError('graph input must be text');
+    if (looksLikeMarkdown(text)) {
+      throw GraphAdapterError(
+        'refused Markdown/TODO.md/DONE.md/YAML input; load issues/_views/dependency-graph.json');
+    }
+    var document;
+    try {
+      document = JSON.parse(text);
+    } catch (exc) {
+      throw GraphAdapterError('malformed graph JSON: ' + exc.message);
+    }
+    return validateGraph(document);
+  }
+
+  function nodeLabel(node, taskLabelMaxLen) {
+    var status = node.endpoint_status || 'present';
+    var mark = lifecycleToMark(node.lifecycle_status, status);
+    var title = node.id;
+    var extra = [];
+    if (status === 'missing') extra.push('missing');
+    else if (status === 'malformed') extra.push('malformed');
+    if (node.archive_status) extra.push(String(node.archive_status));
+    if (node.lifecycle_status === 'withdrawn' || mark === 'w') extra.push('[w]');
+    var suffix = extra.length ? (' ' + extra.join(' ')) : '';
+    if (taskLabelMaxLen) {
+      var body = truncate(node.lifecycle_status || '', taskLabelMaxLen);
+      return title + suffix + '\n' + body;
+    }
+    return title + suffix;
+  }
+
+  function buildDot(graph, opts) {
     opts = opts || {};
     var taskLabelMaxLen = opts.taskLabelMaxLen || null;
+    var includeClosed = opts.includeClosed !== false;
+    var includeWithdrawn = opts.includeWithdrawn !== false;
+    var includeUnresolved = opts.includeUnresolved !== false;
 
-    // No filtering: every feature and task is rendered. Fully-finished
-    // features are expected to already have been moved out to DONE.md by
-    // convention, and finished tasks inside still-open features must stay
-    // visible (they carry their own [x] styling via MARK_COLORS).
-    var liveFeatures = features;
+    var nodes = graph.nodes.slice();
+    var edges = graph.edges.slice();
 
-    var allTaskIds = new Set();
-    liveFeatures.forEach(function (f) {
-      f.tasks.forEach(function (t) { allTaskIds.add(t.id); });
-    });
-    var liveFeatureIds = new Set(liveFeatures.map(function (f) { return f.id; }));
+    function isVisible(node) {
+      var mark = lifecycleToMark(node.lifecycle_status, node.endpoint_status);
+      var ep = node.endpoint_status;
+      if ((ep === 'missing' || ep === 'malformed') && !includeUnresolved) return false;
+      if (mark === 'x' && !includeClosed) return false;
+      if (mark === 'w' && !includeWithdrawn) return false;
+      return true;
+    }
+
+    var visibleIds = {};
+    nodes.forEach(function (n) { if (isVisible(n)) visibleIds[n.id] = true; });
+    if (includeUnresolved) {
+      var hiddenRequired = [];
+      edges.forEach(function (edge) {
+        if (edge.endpoint_status !== 'present' && !visibleIds[edge.target]) {
+          hiddenRequired.push(edge.target);
+        }
+      });
+      if (hiddenRequired.length) {
+        throw GraphAdapterError('unresolved endpoints would be dropped by filter: ' + hiddenRequired.sort().join(','));
+      }
+    }
+
+    var featureIds = [];
+    var clusters = {};
+    nodes.slice().sort(function (a, b) { return String(a.id) < String(b.id) ? -1 : (String(a.id) > String(b.id) ? 1 : 0); })
+      .forEach(function (node) {
+        if (!visibleIds[node.id]) return;
+        var fid;
+        if (node.level === 'feature' || (
+          node.level == null && String(node.id).indexOf('-') === -1 &&
+          /^\d{4}$/.test(String(node.id)))) {
+          fid = node.id;
+        } else {
+          fid = featurePrefix(node.id);
+          if (node.level == null && fid === '_unresolved') fid = '_unresolved';
+        }
+        if (!clusters[fid]) {
+          clusters[fid] = [];
+          featureIds.push(fid);
+        }
+        clusters[fid].push(node);
+      });
 
     var lines = [];
     lines.push('digraph todo_dependency_graph {');
@@ -189,86 +261,145 @@
     lines.push('  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize="10", margin="0.08,0.05"];');
     lines.push('  edge [fontname="Helvetica", fontsize="9"];');
 
-    var edges = [];
+    var nodeById = {};
+    nodes.forEach(function (n) { nodeById[n.id] = n; });
+    var renderedNodes = 0;
 
-    liveFeatures.forEach(function (feature, idx) {
+    featureIds.forEach(function (fid, idx) {
+      var members = clusters[fid];
+      if (!members || !members.length) return;
       var color = FEATURE_COLORS[idx % FEATURE_COLORS.length];
-      var openTasks = feature.tasks;
-      if (openTasks.length === 0) return;
-
-      lines.push('  subgraph cluster_' + feature.id + ' {');
-      var label = feature.name ? feature.id + ' \u2014 ' + feature.name : feature.id;
+      var clusterName = fid === '_unresolved' ? 'unresolved' : fid;
+      var label = fid === '_unresolved' ? 'unresolved endpoints' : fid;
+      lines.push('  subgraph cluster_' + clusterName + ' {');
       lines.push('    label=' + dotQuote(label) + ';');
       lines.push('    style="rounded,filled";');
       lines.push('    color="#777777";');
       lines.push('    fillcolor=' + dotQuote(color) + ';');
       lines.push('    penwidth="1.2";');
       lines.push('    node [fillcolor="white"];');
-      lines.push('    ' + dotQuote(feature.id) + ' [label=' + dotQuote(feature.id) + ', shape=tab, fillcolor=' + dotQuote(color) + ', style="filled,bold"];');
-      openTasks.forEach(function (t) {
-        var taskLabel = taskLabelMaxLen ? (t.id + '\n' + truncate(t.text, taskLabelMaxLen)) : t.id;
-        if (t.mark === 'x') {
-          // Done: rounded box filled with the feature's color, grey text,
-          // plus a right-aligned checkmark glyph. HTML-like labels are
-          // required to place the checkmark in its own cell instead of
-          // inline with the text.
-          var htmlLabel = htmlDoneLabel(taskLabel, color);
-          lines.push('    ' + dotQuote(t.id) + ' [shape="none", margin="0", label=' + htmlLabel + '];');
+      members.forEach(function (node) {
+        var nid = node.id;
+        var mark = lifecycleToMark(node.lifecycle_status, node.endpoint_status);
+        var labelText = nodeLabel(node, taskLabelMaxLen);
+        var urlAttr = node.url ? (', URL=' + dotQuote(node.url)) : '';
+        if (node.level === 'feature' && node.endpoint_status === 'present') {
+          var featLabel = node.archive_status ? labelText : nid;
+          lines.push('    ' + dotQuote(nid) + ' [label=' + dotQuote(featLabel) + ', shape=tab, fillcolor=' +
+            dotQuote(color) + ', style="filled,bold"' + urlAttr + '];');
+        } else if (mark === 'x' && node.endpoint_status === 'present') {
+          var htmlLabel = htmlDoneLabel(labelText, color);
+          lines.push('    ' + dotQuote(nid) + ' [shape="none", margin="0", label=' + htmlLabel + urlAttr + '];');
         } else {
-          var fill = MARK_COLORS[t.mark] || '#ffffff';
-          lines.push('    ' + dotQuote(t.id) + ' [label=' + dotQuote(taskLabel) + ', fillcolor=' + dotQuote(fill) + '];');
+          var fill = MARK_COLORS[mark] || '#ffffff';
+          var extra = '';
+          if (node.endpoint_status === 'missing') extra = ', style="dashed,filled", color="#b3261e"';
+          else if (node.endpoint_status === 'malformed') extra = ', style="dashed,filled", color="#e65100"';
+          lines.push('    ' + dotQuote(nid) + ' [label=' + dotQuote(labelText) + ', fillcolor=' +
+            dotQuote(fill) + extra + urlAttr + '];');
         }
+        renderedNodes += 1;
       });
       lines.push('  }');
-
-      openTasks.forEach(function (t) {
-        t.prereqs.forEach(function (p) {
-          var dstId = p[0];
-          var dstIsFeatureOnly = dstId.indexOf('-') === -1;
-          var targetAlive = allTaskIds.has(dstId) || (dstIsFeatureOnly && liveFeatureIds.has(dstId));
-          if (!targetAlive) return;
-          edges.push([t.id, dstId, classifyEdge(t, dstId)]);
-        });
-      });
     });
 
     var styles = {
       explicit_same: 'color="black", penwidth="1.2"',
       explicit_cross: 'color="#1f4e79", penwidth="1.4"',
-      implicit_cross: 'color="crimson", penwidth="1.5"',
-      soft_cross: 'color="gray50", penwidth="1.2", style="dashed"',
+      feature_closure: 'color="crimson", penwidth="1.5"',
+      relation: 'color="#6a1b9a", penwidth="1.3", style="dashed"',
     };
-    var taskById = new Map();
-    liveFeatures.forEach(function (f) {
-      f.tasks.forEach(function (t) { taskById.set(t.id, t); });
-    });
-    edges.forEach(function (e) {
-      var srcTask = taskById.get(e[0]);
-      var style = (srcTask && srcTask.mark === 'x')
-        ? 'color=' + dotQuote(DONE_EDGE_COLOR) + ', penwidth="1.2"'
-        : styles[e[2]];
-      lines.push('  ' + dotQuote(e[0]) + ' -> ' + dotQuote(e[1]) + ' [' + style + '];');
+    var drawn = 0;
+    var unresolvedEdges = 0;
+    edges.slice().sort(function (a, b) {
+      var ka = a.source + '\0' + a.kind + '\0' + a.target;
+      var kb = b.source + '\0' + b.kind + '\0' + b.target;
+      return ka < kb ? -1 : (ka > kb ? 1 : 0);
+    }).forEach(function (edge) {
+      if (!visibleIds[edge.source] || !visibleIds[edge.target]) {
+        if (includeUnresolved && edge.endpoint_status !== 'present') {
+          throw GraphAdapterError('would drop unresolved edge ' + edge.source + '->' + edge.target);
+        }
+        return;
+      }
+      var src = nodeById[edge.source];
+      var srcMark = lifecycleToMark(src.lifecycle_status, src.endpoint_status);
+      var klass = classifyEdge(edge.source, edge.target, edge.gate, edge.kind);
+      var style = (srcMark === 'x')
+        ? ('color=' + dotQuote(DONE_EDGE_COLOR) + ', penwidth="1.2"')
+        : styles[klass];
+      if (edge.endpoint_status === 'missing') style += ', style="dotted"';
+      else if (edge.endpoint_status === 'malformed') style += ', style="dashed", color="#e65100"';
+      if (edge.gate) style += ', edgetooltip=' + dotQuote(edge.gate);
+      lines.push('  ' + dotQuote(edge.source) + ' -> ' + dotQuote(edge.target) + ' [' + style + '];');
+      drawn += 1;
+      if (edge.endpoint_status !== 'present') unresolvedEdges += 1;
     });
 
     lines.push('}');
-
+    var unresolvedNodeCount = 0;
+    nodes.forEach(function (n) {
+      if ((n.endpoint_status === 'missing' || n.endpoint_status === 'malformed') && visibleIds[n.id]) {
+        unresolvedNodeCount += 1;
+      }
+    });
     return {
       dot: lines.join('\n') + '\n',
-      nodeCount: allTaskIds.size,
-      edgeCount: edges.length,
-      liveFeatureCount: liveFeatures.length,
+      nodeCount: renderedNodes,
+      edgeCount: drawn,
+      liveFeatureCount: featureIds.length,
+      unresolvedEdgeCount: unresolvedEdges,
+      unresolvedNodeCount: unresolvedNodeCount,
     };
   }
 
-  global.TodoGraphCore = {
-    parseTodo: parseTodo,
+  function counts(graph) {
+    var nodes = graph.nodes;
+    var edges = graph.edges;
+    function ncount(pred) {
+      var c = 0;
+      nodes.forEach(function (n) { if (pred(n)) c += 1; });
+      return c;
+    }
+    function ecount(pred) {
+      var c = 0;
+      edges.forEach(function (e) { if (pred(e)) c += 1; });
+      return c;
+    }
+    return {
+      nodes: nodes.length,
+      edges: edges.length,
+      features: ncount(function (n) { return n.level === 'feature'; }),
+      tasks: ncount(function (n) { return n.level === 'task'; }),
+      subtasks: ncount(function (n) { return n.level === 'subtask'; }),
+      withdrawn: ncount(function (n) {
+        return lifecycleToMark(n.lifecycle_status, n.endpoint_status) === 'w';
+      }),
+      missing_nodes: ncount(function (n) { return n.endpoint_status === 'missing'; }),
+      malformed_nodes: ncount(function (n) { return n.endpoint_status === 'malformed'; }),
+      start_gate_edges: ecount(function (e) { return e.gate === 'start-gate'; }),
+      feature_closure_edges: ecount(function (e) { return e.gate === 'feature-closure'; }),
+      unresolved_edges: ecount(function (e) { return e.endpoint_status !== 'present'; }),
+    };
+  }
+
+  var api = {
+    loadGraph: loadGraph,
+    validateGraph: validateGraph,
     buildDot: buildDot,
+    counts: counts,
+    lifecycleToMark: lifecycleToMark,
+    classifyEdge: classifyEdge,
     dotQuote: dotQuote,
     truncate: truncate,
-    featureDone: featureDone,
     FEATURE_COLORS: FEATURE_COLORS,
     MARK_COLORS: MARK_COLORS,
     DONE_FONT_COLOR: DONE_FONT_COLOR,
     DONE_EDGE_COLOR: DONE_EDGE_COLOR,
   };
-})(window);
+
+  global.TodoGraphCore = api;
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : globalThis);
