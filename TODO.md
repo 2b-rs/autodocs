@@ -1151,7 +1151,7 @@ HOW TO USE:
 
 ### Campaign D — Graph, Website, i18n, Pipeline Provenance, and Tree Integration
 
-- [ ] **0037-22** PREREQ: 0037-22:0037-12 Implement `tools/todo-dependency-graph.html` as the internal maintainer consumer of `issues/_views/dependency-graph.json`.
+- [p] **0037-22** PREREQ: 0037-22:0037-12 Implement `tools/todo-dependency-graph.html` as the internal maintainer consumer of `issues/_views/dependency-graph.json`. Claim: `TODO-gabriel-graphhtml-0037-22-20260825T114200Z.md` (`owner_token: agent:gabriel-graphhtml:0037-22:20260825T114200Z`). **No product mutation until this claim commit REF is reported.**
   - **Acceptance criteria:** Preserve filtering, counts, zoom/scroll, all state/archive/edge legends, done handling, and actionable errors; add internal item links, source/schema/tool/config digests and content-generation ID, with volatile execution-run linkage only in the external run manifest; eliminate `../TODO.md` fetching; work over documented local HTTP with only tracked assets; expose stale/missing/malformed data instead of silently disappearing.
   - **Definition of Done:** Browser/DOM tests cover every state/edge class, redacted/missing endpoints, malformed/stale data, missing Graphviz assets, item navigation, keyboard/accessibility behavior, and exact catalog count/edge parity.
 
