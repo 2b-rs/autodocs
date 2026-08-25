@@ -19,8 +19,8 @@
 - external_resources: none; external translation is explicitly outside hermetic regeneration
 - assumptions: public title extraction joins the sanitized public projection's allowlisted IDs/hashes to the internal generated catalog's canonical English title; configured output languages derive only from `_src/site.json`
 - forbidden: Acceptance; review/integration verdict; mandatory checkpoint crossing; main advance; `DONE.md`; push; root-checkout mutation; any path outside exact scope; Wave 1A owner contact; work on `0037-10.02`, `0037-23.02`, `0037-11`, or held `0037-10.03`
-- status: `[p]` implementation in progress
-- next_step: implement issue-title extraction/split/merge/status and focused fixtures/tests
+- status: `[x]` implementation complete; product REF `386590183ebd742032b46f8c67274c498a2ddaa6`. Lease ended. No Acceptance.
+- next_step: none for this token; privileged integration remains separate
 
 ## Task
 
@@ -28,3 +28,13 @@ Extend `_src/i18n_translate.py` extraction/split/merge/status for public issue t
 
 - **Acceptance criteria:** Key by item ID with canonical English `source_locale`, SHA-256 source-title hash, translated title, translator/run metadata, and status; include only `public-summary` titles; invalidate on source hash change; protect IDs/refs/code/placeholders; require canonical language plus every target in `_src/site.json`; reject duplicate/stale/wrong-item records. External human/model translation remains an authoring step, not part of hermetic regeneration.
 - **Definition of Done:** Schema, extraction/merge fixtures, split round trip, stale invalidation, all-language completeness report, and protected-token tests pass for English/German, representative LTR, and Arabic RTL.
+
+## Completion evidence
+
+- Product REF: `386590183ebd742032b46f8c67274c498a2ddaa6`.
+- Focused plus existing i18n regression validation: `python3 -m unittest _src.tests.test_issue_title_i18n _src.tests.test_i18n_page_content` — 14/14 tests passed.
+- Compilation: `python3 -m py_compile _src/i18n_translate.py _src/tests/test_issue_title_i18n.py` — passed.
+- Static safety: path-scoped `automation_safety.py` — PASS, zero unresolved critical findings; two pre-existing deletion advisories in the legacy segment pipeline.
+- `git diff --check HEAD^ HEAD` — passed.
+- Production `issues-status` derives 11 languages from `_src/site.json` and correctly reports incomplete: the current public projection exposes one placeholder item but the generated catalog has no matching canonical title. No translation or title was fabricated.
+- Scope audit: all product paths are within the exact dispatch write scope; no Acceptance, checkpoint crossing, main/DONE/push, root mutation, or external translation occurred.
