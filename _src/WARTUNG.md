@@ -116,6 +116,17 @@ Extraktionsskript-Stände unverändert sind, wird keine neue Berichtsversion
 angelegt; ein nachträgliches `generate.py` rendert dann lediglich bestehende
 Versionen nach HTML aus, statt Dubletten wie v0012/v0013 zu erzeugen.
 
+**Bewahrung veröffentlichter Berichte (`DEC-0043-002`):** Vorhandene
+versionierte Seitenmodelle und gerenderte `extraction-report-v%04d.html`-Seiten
+werden standardmäßig bewahrt. Ein neuer Lauf legt nur das fehlende Modell seiner
+neuen Version an. Verlust oder ein schwerer Erzeugerfehler erlauben eine
+auditierbare Ersetzung; eine forensische Rekonstruktion bleibt immer ein
+getrennter Kandidat. Das aktuelle Arbeitsmodell
+`_src/sources/pages/extraction-report.json`, das Berichtsverzeichnis und der
+Startseitenindex sind dagegen Live-Sichten und werden auf die neueste Version
+aktualisiert. Die vollständigen Ausnahmen und Nachweispflichten stehen in
+`docs/pipeline/reports.md` und `DEC-0043-002`.
+
 Für lokale Agent-/Sandbox-Läufe gilt zusätzlich AGENTS.md: wegen CPU-/I/O-Last
 immer über `run.sh` ausführen und darin **beide** Schritte kombinieren
 (`extraction_report.py build && python3 _src/generate.py`).
@@ -398,16 +409,55 @@ erkennt.
 Seitenmodell `_src/sources/pages/build-reports.json`, welches in `build-reports.html`
 gerendert wird:
 
+### Die kanonische Bau- und Publikationsfolge (0043-04)
+
+**`combine` und `publish` gehören zur Folge, nicht dazu.** Genau ihr Fehlen hat
+die eingefrorene `build-reports.html` verursacht, die Feature `0043` ausgelöst
+hat: die Produzenten liefen, aber nichts hat den Bericht je neu veröffentlicht.
+Die vollständige Folge ist:
+
 ```bash
-# 1. Subreports aggregieren (verwendet $RUN_ARCHIVE_REF aus der Umgebung, falls
-#    nicht per --run-archive-ref=<ref> überschrieben)
+# 0. Kohorten-Identität für den ganzen Lauf setzen (Runner setzt sie selbst)
+export RUN_ARCHIVE_REF="$(python3 _src/tools/build_report.py mint-ref)"
+
+# 1. Produzenten — alle unter demselben RUN_ARCHIVE_REF
+python3 _src/i18n_translate.py merge <lg>     # falls Teil des Laufs
+python3 _src/i18n_diagrams.py <lg>            # falls Teil des Laufs
+python3 _src/generate.py
+python3 _src/validate.py                      # erste Validierung
+
+# 2. Subreports zu einem Lauf aggregieren und den Lauf ins Ledger schreiben
+#    (verwendet $RUN_ARCHIVE_REF, falls nicht per --run-archive-ref=<ref>
+#    überschrieben)
 python3 _src/tools/build_report.py combine
 
-# 2. Seitenmodell erzeugen und in HTML-Tree rendern
+# 3. Bericht veröffentlichen: Seitenmodell samt Publikations-Provenienz erzeugen
 python3 _src/tools/build_report.py publish
+
+# 4. Seitenmodell in den HTML-Tree rendern
 python3 _src/generate.py build-reports.html
+
+# 5. Abschließende Validierung — prüft u. a. die Aktualität des Berichts
 python3 _src/validate.py
 ```
+
+Schritt 5 läuft unter demselben `RUN_ARCHIVE_REF` und erzeugt daher **keine
+neuere Kohorte**; er ist die Endabnahme des Laufs, kein neuer Lauf.
+
+Wird Schritt 2 oder 3 ausgelassen, meldet `validate.py` das ab sofort als
+Fehler (`stale-build-report` bzw. `unrecorded-publication-run`, Task `0043-04`,
+Entscheidung `DEC-0043-003`) — der Bericht kann nicht mehr unbemerkt einfrieren.
+Die Prüfung ist rein beobachtend: sie repariert nichts, sondern nennt den
+Befehl, der fehlt. Ist nur die Bindung veraltet, während der Seitenkörper
+stimmt (etwa weil der kombinierte Rohreport unter git-ignoriertem `output/`
+nicht mehr vorliegt), genügt:
+
+```bash
+python3 _src/tools/build_report.py provenance   # idempotent, nur die Bindung
+```
+
+Details zum Objekt `publication_provenance` im Seitenmodell:
+[`docs/pipeline/build-report-schema.md`](../docs/pipeline/build-report-schema.md).
 
 ### Build-Ledger (`docs/evidence/build-ledger.jsonl`, 0043-02)
 

@@ -23,6 +23,9 @@ where possible, to the associated implementation or evidence.
 - [`reports.md`](./reports.md) — report types, locations, and retention rules
 - [`build-ledger.md`](./build-ledger.md) — schema and append-only contract of
   the tracked build ledger `docs/evidence/build-ledger.jsonl` (`DEC-0043-001`)
+- [`aspice-report-evidence-map.md`](./aspice-report-evidence-map.md) — maps
+  the report landscape and build ledger to the ASPICE process outcomes they
+  could evidence, honestly, with no capability-level claim
 - [`agent-execution.md`](./agent-execution.md) — capability classes and the
   sandboxed runner contract
 - [`agent-workflow.md`](./agent-workflow.md) — authority discovery,
