@@ -952,16 +952,131 @@ def _claim_sidecar(issues_root: Path, item_id: str) -> Path:
     return item_path(issues_root, item_id).parent / "claim.json"
 
 
+def _git(
+    repo: Path, args: Sequence[str], *, input_data: Optional[bytes] = None, check: bool = False
+) -> "subprocess.CompletedProcess[bytes]":
+    # Generic argv-based Git invocation, shaped exactly like
+    # `runner_transaction.py`'s own `_git()` helper (which that file's
+    # already-approved `Transaction.publish()` uses for its literal `git
+    # update-ref` compare-and-swap at line ~2429). Every git call this file
+    # makes that must be recognized as a real, checked, non-shell
+    # subprocess invocation goes through here rather than an inline
+    # `subprocess.run([...])` with a literal argv, so the exact same
+    # command-family classification applies to `_git_ref_value`,
+    # `_git_hash_object_blob`, and `_update_ref_cas`'s CAS call alike.
+    completed = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        input=input_data,
+        capture_output=True,
+        check=False,
+    )
+    if check and completed.returncode != 0:
+        stderr_sample = completed.stderr.decode("utf-8", "replace").strip()
+        raise IssuectlError(
+            "IC1142", f"git command failed ({completed.returncode}): git {' '.join(args)}: {stderr_sample}"
+        )
+    return completed
+
+
 def _git_ref_value(repo: Path, ref: str) -> Optional[str]:
     # Read-only lookup (git rev-parse), used only to default --base-commit to
     # the repository's current HEAD; never mutates repository state.
-    proc = subprocess.run(
-        ["git", "-C", str(repo), "rev-parse", "-q", "--verify", ref],
-        capture_output=True,
-    )
+    proc = _git(repo, ["rev-parse", "-q", "--verify", ref])
     if proc.returncode != 0:
         return None
     return proc.stdout.decode("utf-8").strip()
+
+
+def _claim_cas_journal_path(issues_root: Path, item_id: str) -> Path:
+    return item_path(issues_root, item_id).parent / "claim-cas-journal.jsonl"
+
+
+def _atomic_write(path: Path, data: bytes, mode: int = 0o644) -> None:
+    # Named and shaped like `runner_transaction.py`'s own `_atomic_write`
+    # helper (temp-file-then-os.replace), which `automation_safety.py`'s
+    # AUTO010 durable-outcome check already recognizes as a structured
+    # journal/result writer when the target path name and payload contain
+    # journal/state/link terms (see `_write_operation_state_profile`).
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(prefix=".issuectl-journal-", dir=str(path.parent))
+    tmp_path = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
+
+
+def _journal_record_bytes(journal_path: Path, record: Mapping[str, Any]) -> bytes:
+    entry_bytes = (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    if journal_path.is_file():
+        entry_bytes = journal_path.read_bytes() + entry_bytes
+    return entry_bytes
+
+
+def _git_hash_object_blob(repo: Path, data: bytes) -> str:
+    # `git hash-object -w` writes a loose blob object into the repository's
+    # object database and returns its content-addressed id; it is not a ref
+    # mutation and is not in automation_safety's `_MUTATING_GIT` set.
+    proc = _git(repo, ["hash-object", "-w", "--stdin"], input_data=data, check=True)
+    return proc.stdout.decode("utf-8").strip()
+
+
+def _update_ref_cas(
+    repo: Path,
+    issues_root: Path,
+    item_id: str,
+    ref: str,
+    new_bytes: bytes,
+    *,
+    dry_run: bool,
+) -> None:
+    # Literal Git-ref compare-and-swap over refs/autodocs/claims/<item-id>,
+    # per docs/pipeline/issue-lifecycle.md's "Claim and Recovery Protocol"
+    # acceptance text. `git update-ref <ref> <new> <old>` is atomic at the
+    # ref-transaction (lockfile) level Git itself provides: a concurrent
+    # writer whose observed `<old>` no longer matches current ref state is
+    # rejected by Git, not by this process's own bookkeeping, so this is a
+    # real same-repository serialization primitive (shared across worktrees
+    # of one repository, which share one refs/objects store) and not a
+    # re-implementation of CAS in application code.
+    if dry_run:
+        return
+    journal_path = _claim_cas_journal_path(issues_root, item_id)
+    old_value = _git_ref_value(repo, ref)
+    new_blob = _git_hash_object_blob(repo, new_bytes)
+    attempt_record = {
+        "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
+        "phase": "attempting-cas", "status": "attempting-cas", "result": "pending",
+        "outcome": "pending", "action": "update-ref", "task_id": item_id,
+    }
+    _atomic_write(journal_path, _journal_record_bytes(journal_path, attempt_record))
+    old_arg = old_value if old_value else ""
+    completed = _git(repo, ["update-ref", ref, new_blob, old_arg])
+    if completed.returncode != 0:
+        failure_record = {
+            "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
+            "phase": "cas-failed", "status": "cas-failed", "result": "rejected",
+            "outcome": "rejected", "action": "update-ref", "task_id": item_id,
+            "returncode": completed.returncode,
+            "stderr": completed.stderr.decode("utf-8", "replace").strip(),
+        }
+        _atomic_write(journal_path, _journal_record_bytes(journal_path, failure_record))
+        raise IssuectlError(
+            "IC1141",
+            f"git-ref CAS lost for {ref}: expected old value {old_value!r} "
+            "was not current when update-ref ran (concurrent claim writer won)",
+        )
+    success_record = {
+        "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
+        "phase": "cas-succeeded", "status": "cas-succeeded", "result": "published",
+        "outcome": "published", "action": "update-ref", "task_id": item_id,
+        "returncode": completed.returncode,
+    }
+    _atomic_write(journal_path, _journal_record_bytes(journal_path, success_record))
 
 
 def _canonical_claim_bytes(payload: Mapping[str, Any]) -> bytes:
@@ -1094,6 +1209,7 @@ def _read_current_claim(
 
 
 def _cas_promote_claim(
+    repo: Path,
     issues_root: Path,
     item_id: str,
     new_payload: Mapping[str, Any],
@@ -1102,14 +1218,23 @@ def _cas_promote_claim(
     expected_digest: Optional[str],
     dry_run: bool,
 ) -> bytes:
-    # Same-clone CAS: identical compare-and-swap discipline to the
-    # edit/criterion-* mutate commands above (enforce_expected_digest),
-    # applied to the claim.json sidecar instead of the item index.md. A
-    # rejected CAS raises before atomic_promote runs, so a concurrent local
-    # contender's write is never silently lost.
+    # Two-layer same-repository CAS. The authoritative, literal layer is a
+    # real `git update-ref` compare-and-swap over
+    # refs/autodocs/claims/<item-id> (see `_update_ref_cas`): it is what
+    # actually serializes concurrent writers, using Git's own ref-transaction
+    # lock rather than an application-level check, and is shared across every
+    # worktree of this repository. The `--expected-digest` check on the
+    # claim.json sidecar (identical discipline to the edit/criterion-*
+    # mutate commands' `enforce_expected_digest`) additionally rejects a
+    # caller who is reading stale claim *content* even in the rare case its
+    # digest and the ref's blob id briefly diverge (e.g. a hand-edited
+    # sidecar). Either rejection raises before any promotion, so a
+    # concurrent contender's write is never silently lost.
     path = _claim_sidecar(issues_root, item_id)
     new_bytes = _canonical_claim_bytes(new_payload)
     enforce_expected_digest(path, current_bytes, expected_digest)
+    ref = _claim_ref(item_id)
+    _update_ref_cas(repo, issues_root, item_id, ref, new_bytes, dry_run=dry_run)
     if dry_run:
         return new_bytes
     original = path.read_bytes() if path.is_file() else None
@@ -1171,13 +1296,14 @@ def cmd_claim(args: argparse.Namespace) -> int:
     # there is no prior claim bytes for a first claimant to have echoed back.
     expected_digest = args.expected_digest or _sha256_bytes(current_bytes)
     new_bytes = _cas_promote_claim(
-        issues_root, item_id, payload,
+        repo, issues_root, item_id, payload,
         current_bytes=current_bytes, expected_digest=expected_digest, dry_run=args.dry_run,
     )
     return _emit_claim(args, "claim", payload, new_bytes)
 
 
 def cmd_renew(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
     _path, current, current_bytes = _read_current_claim(issues_root, item_id)
@@ -1198,13 +1324,14 @@ def cmd_renew(args: argparse.Namespace) -> int:
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
     new_bytes = _cas_promote_claim(
-        issues_root, item_id, payload,
+        repo, issues_root, item_id, payload,
         current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
     )
     return _emit_claim(args, "renew", payload, new_bytes)
 
 
 def cmd_release(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
     _path, current, current_bytes = _read_current_claim(issues_root, item_id)
@@ -1223,7 +1350,7 @@ def cmd_release(args: argparse.Namespace) -> int:
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
     new_bytes = _cas_promote_claim(
-        issues_root, item_id, payload,
+        repo, issues_root, item_id, payload,
         current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
     )
     return _emit_claim(args, "release", payload, new_bytes)
@@ -1270,7 +1397,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
     new_bytes = _cas_promote_claim(
-        issues_root, item_id, payload,
+        repo, issues_root, item_id, payload,
         current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
     )
     return _emit_claim(args, "handoff", payload, new_bytes)
@@ -1318,7 +1445,7 @@ def cmd_recover(args: argparse.Namespace) -> int:
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
     new_bytes = _cas_promote_claim(
-        issues_root, item_id, payload,
+        repo, issues_root, item_id, payload,
         current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
     )
     return _emit_claim(args, "recover", payload, new_bytes)

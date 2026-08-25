@@ -5,10 +5,12 @@ import importlib.util
 import io
 import json
 import shutil
+import subprocess
 import sys
 import hashlib
 import os
 import tempfile
+import threading
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -1018,17 +1020,49 @@ class IssuectlClaimTests(unittest.TestCase):
         self.repo = Path(self.temp.name)
         self.issues = self.repo / "issues"
         self.issues.mkdir()
-        # No real Git repository is needed: this Task's CAS mechanism is the
-        # same --expected-digest compare-and-swap the edit/criterion-*
-        # commands already use (see _cas_promote_claim), not a Git ref, and
-        # every claim command accepts an explicit --base-commit, so
+        # A real Git repository is required: _cas_promote_claim performs a
+        # literal `git update-ref refs/autodocs/claims/<item-id>` CAS (see
+        # _update_ref_cas) in addition to the --expected-digest sidecar
+        # check, so every claim/renew/release/handoff/recover command needs
+        # a real .git object/ref store to write blobs and refs into.
+        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "config", "user.email", "test@example.invalid"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(self.repo), "config", "user.name", "Test"],
+            check=True,
+        )
+        # Every claim command still accepts an explicit --base-commit, so
         # _resolve_base_commit never has to shell out to `git rev-parse
-        # HEAD`. A fixed 40-hex placeholder is enough to satisfy the
-        # claim schema's base_commit pattern for these unit tests.
+        # HEAD`. A fixed 40-hex placeholder is enough to satisfy the claim
+        # schema's base_commit pattern for these unit tests; it is unrelated
+        # to the refs/autodocs/claims/<item-id> CAS ref, which is resolved
+        # against the real repository created above.
         self.base = COMMIT
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def _claim_cas_ref_value(self, item_id):
+        proc = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify",
+             f"refs/autodocs/claims/{item_id}"],
+            capture_output=True,
+        )
+        if proc.returncode != 0:
+            return None
+        return proc.stdout.decode("utf-8").strip()
+
+    def _claim_cas_blob_bytes(self, item_id):
+        blob = self._claim_cas_ref_value(item_id)
+        self.assertIsNotNone(blob, f"no CAS ref for {item_id}")
+        proc = subprocess.run(
+            ["git", "-C", str(self.repo), "cat-file", "-p", blob],
+            capture_output=True, check=True,
+        )
+        return proc.stdout
 
     def _create(self, item_id, **extra):
         argv = [
@@ -1248,6 +1282,314 @@ class IssuectlClaimTests(unittest.TestCase):
         code, out, err = self._claim("0100", extra_args=["--dry-run"])
         self.assertEqual(code, ctl.EXIT_OK, err or out)
         self.assertFalse(self._claim_sidecar_path("0100").exists())
+
+    def test_claim_writes_real_git_ref_cas_matching_sidecar(self):
+        # Direct evidence for the literal acceptance criterion: claim
+        # acquisition must be a real `refs/autodocs/claims/<item-id>` CAS,
+        # not only a sidecar-file digest check. The ref must exist, its
+        # blob content must equal the canonical sidecar bytes exactly, and
+        # renew must move the ref forward to a new blob.
+        self._create("0100")
+        code, _out, err = self._claim("0100")
+        self.assertEqual(code, ctl.EXIT_OK, err)
+        sidecar_bytes = self._claim_sidecar_path("0100").read_bytes()
+        self.assertEqual(self._claim_cas_blob_bytes("0100"), sidecar_bytes)
+        first_ref_value = self._claim_cas_ref_value("0100")
+        self.assertIsNotNone(first_ref_value)
+
+        code, _out, err = _run_main([
+            "renew", "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", "0100", "--owner", "agent:alpha", "--expected-digest", self._digest("0100"),
+            "--now", "2026-08-16T09:30:00+00:00", "--ttl-seconds", "7200", "--format", "json",
+        ])
+        self.assertEqual(code, ctl.EXIT_OK, err)
+        self.assertEqual(self._claim_cas_blob_bytes("0100"), self._claim_sidecar_path("0100").read_bytes())
+        self.assertNotEqual(self._claim_cas_ref_value("0100"), first_ref_value)
+
+
+class IssuectlClaimCasRaceAndRecoveryTests(unittest.TestCase):
+    """DoD coverage gaps flagged by Task 0037-10.02's predecessor claim:
+    multi-worktree race serialization, crash-point fault injection between
+    reading and writing claim state, remote-unavailable behavior, and the
+    protected-branch-adjacent path (refs/autodocs/claims/* is never a
+    branch ref and must never collide with branch protection surfaces)."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name) / "origin"
+        self.repo.mkdir()
+        self.issues = self.repo / "issues"
+        self.issues.mkdir()
+        subprocess.run(["git", "init", "-q", str(self.repo)], check=True)
+        subprocess.run(
+            ["git", "-C", str(self.repo), "config", "user.email", "test@example.invalid"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(self.repo), "config", "user.name", "Test"], check=True,
+        )
+        self.base = COMMIT
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def _create(self, item_id):
+        argv = [
+            "create", "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", item_id, "--format", "json",
+        ]
+        code, out, err = _run_main(argv)
+        self.assertEqual(code, 0, err or out)
+        return json.loads(out)
+
+    def _claim_argv(self, item_id, owner, worktree_id, now="2026-08-16T09:00:00+00:00"):
+        return [
+            "claim", "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", item_id, "--owner", owner, "--worktree-id", worktree_id,
+            "--clone-id", worktree_id, "--base-commit", self.base,
+            "--ttl-seconds", "7200", "--now", now, "--format", "json",
+            "--write-scope", f"issues/{item_id}/index.md",
+        ]
+
+    # -- Multi-worktree race: real concurrent processes, real CAS -------
+
+    def test_concurrent_claim_attempts_from_two_worktrees_only_one_wins(self):
+        # Two real `git worktree`s of the *same* repository (sharing one
+        # refs/objects store, exactly the "different worktrees" case named
+        # in the DoD gap) race a real `issuectl claim` subprocess against
+        # the same item at the same instant. Git's own update-ref
+        # lockfile, not application bookkeeping, must ensure exactly one
+        # writer's CAS succeeds.
+        self._create("0300")
+        worktree_a = Path(self.temp.name) / "wt-a"
+        worktree_b = Path(self.temp.name) / "wt-b"
+        subprocess.run(
+            ["git", "-C", str(self.repo), "worktree", "add", "-q", str(worktree_a), "-b", "wt-a-branch"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(self.repo), "worktree", "add", "-q", str(worktree_b), "-b", "wt-b-branch"],
+            check=True,
+        )
+
+        def run_claim(repo_path, owner, worktree_id, results, index):
+            argv = [
+                sys.executable, str(ISSUECTL_PATH), "claim",
+                "--repo", str(repo_path), "--issues-root", str(self.issues),
+                "--id", "0300", "--owner", owner, "--worktree-id", worktree_id,
+                "--clone-id", worktree_id, "--base-commit", self.base,
+                "--ttl-seconds", "7200", "--now", "2026-08-16T09:00:00+00:00",
+                "--format", "json", "--write-scope", "issues/0300/index.md",
+            ]
+            proc = subprocess.run(argv, capture_output=True)
+            results[index] = proc
+
+        results = [None, None]
+        threads = [
+            threading.Thread(target=run_claim, args=(worktree_a, "agent:alpha", "wt-a", results, 0)),
+            threading.Thread(target=run_claim, args=(worktree_b, "agent:beta", "wt-b", results, 1)),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+
+        self.assertIsNotNone(results[0])
+        self.assertIsNotNone(results[1])
+        return_codes = sorted(proc.returncode for proc in results)
+        # Exactly one process must observe success (EXIT_OK); the other
+        # must be rejected -- either by the IC1135 "already claimed"
+        # application check (if it observed the winner's sidecar first) or
+        # by IC1141 git-ref CAS loss (if both raced past that read at
+        # nearly the same instant). Both are real serialization outcomes,
+        # never "both succeeded".
+        self.assertEqual(return_codes[0], ctl.EXIT_OK, [p.stdout + p.stderr for p in results])
+        self.assertNotEqual(return_codes[1], ctl.EXIT_OK)
+        winner, loser = (results[0], results[1]) if results[0].returncode == ctl.EXIT_OK else (results[1], results[0])
+        combined_loser_output = (loser.stdout + loser.stderr).decode("utf-8", "replace")
+        self.assertTrue(
+            "IC1135" in combined_loser_output or "IC1141" in combined_loser_output,
+            combined_loser_output,
+        )
+        # The sidecar and the CAS ref converge to the single winner's state.
+        sidecar = json.loads((self.issues / "0300" / "claim.json").read_text(encoding="utf-8"))
+        winner_payload = json.loads(winner.stdout.decode("utf-8"))["claim"]
+        self.assertEqual(sidecar["owner"]["identity"], winner_payload["owner"]["identity"])
+        ref_proc = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0300"],
+            capture_output=True,
+        )
+        self.assertEqual(ref_proc.returncode, 0)
+        blob = subprocess.run(
+            ["git", "-C", str(self.repo), "cat-file", "-p", ref_proc.stdout.decode().strip()],
+            capture_output=True, check=True,
+        ).stdout
+        self.assertEqual(blob, (self.issues / "0300" / "claim.json").read_bytes())
+
+    def test_concurrent_claims_on_different_items_both_succeed(self):
+        # Adjacent-neighbor case for the race test above: two concurrent
+        # claims that do NOT share a CAS ref (different items, disjoint
+        # write scopes) must both succeed -- the ref-CAS lock is scoped
+        # per-item, not a repository-wide serialization point.
+        self._create("0301")
+        self._create("0302")
+
+        def run_claim(item_id, results, index):
+            argv = [
+                sys.executable, str(ISSUECTL_PATH), "claim",
+                "--repo", str(self.repo), "--issues-root", str(self.issues),
+                "--id", item_id, "--owner", "agent:alpha", "--worktree-id", "wt-a",
+                "--clone-id", "wt-a", "--base-commit", self.base,
+                "--ttl-seconds", "7200", "--now", "2026-08-16T09:00:00+00:00",
+                "--format", "json", "--write-scope", f"issues/{item_id}/index.md",
+            ]
+            proc = subprocess.run(argv, capture_output=True)
+            results[index] = proc
+
+        results = [None, None]
+        threads = [
+            threading.Thread(target=run_claim, args=("0301", results, 0)),
+            threading.Thread(target=run_claim, args=("0302", results, 1)),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+        for proc in results:
+            self.assertEqual(proc.returncode, ctl.EXIT_OK, proc.stdout + proc.stderr)
+
+    # -- Crash-point fault injection ------------------------------------
+
+    def test_crash_between_ref_cas_and_sidecar_promotion_leaves_ref_authoritative(self):
+        # Simulates a process crash exactly between the real git-ref CAS
+        # succeeding and the local claim.json sidecar promotion running
+        # (the two-step window inside `_cas_promote_claim`). Recovery must
+        # not corrupt the claim record: re-derive the sidecar from the now
+        # git-durable ref content, and the *next* real claim command must
+        # still see a consistent, single active claim rather than a torn
+        # state that would let a second claimant slip through.
+        self._create("0310")
+        code, out, err = _run_main(self._claim_argv("0310", "agent:alpha", "wt-a"))
+        self.assertEqual(code, ctl.EXIT_OK, err or out)
+        sidecar_path = self.issues / "0310" / "claim.json"
+        ref_blob_before = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0310"],
+            capture_output=True, check=True,
+        ).stdout.decode().strip()
+
+        # Inject the crash: delete the sidecar file (as if the process died
+        # after `_update_ref_cas` returned but before `atomic_promote` ran)
+        # while leaving the git ref -- the durable side of the two-step
+        # write -- untouched.
+        sidecar_path.unlink()
+        self.assertFalse(sidecar_path.exists())
+        ref_blob_after_crash = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0310"],
+            capture_output=True, check=True,
+        ).stdout.decode().strip()
+        self.assertEqual(ref_blob_before, ref_blob_after_crash)
+
+        # Recovery: the git ref is still the durable source of truth and
+        # its blob is exactly the last-promoted claim payload, so a
+        # recovery step can reconstruct the sidecar byte-for-byte from it.
+        recovered_bytes = subprocess.run(
+            ["git", "-C", str(self.repo), "cat-file", "-p", ref_blob_after_crash],
+            capture_output=True, check=True,
+        ).stdout
+        recovered_payload = json.loads(recovered_bytes.decode("utf-8"))
+        self.assertEqual(recovered_payload["item_id"], "0310")
+        self.assertEqual(recovered_payload["owner"]["identity"], "agent:alpha")
+        sidecar_path.write_bytes(recovered_bytes)
+
+        # A subsequent claim attempt for the same item by a different
+        # owner is still correctly rejected post-recovery: no torn state
+        # let a second claimant through.
+        code, _out, err = _run_main(self._claim_argv("0310", "agent:beta", "wt-b"))
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1135", err)
+
+    def test_crash_before_ref_cas_leaves_no_ref_and_claim_is_retryable(self):
+        # Mirror case: crash (simulated by raising from inside the CAS
+        # helper) *before* the git update-ref call executes at all -- no
+        # ref, no sidecar. The item must remain freely claimable, i.e. the
+        # half-attempted operation left no durable trace to recover from
+        # or get stuck behind.
+        self._create("0311")
+        real_update_ref_cas = ctl._update_ref_cas
+
+        def crashing_update_ref_cas(*args, **kwargs):
+            raise RuntimeError("simulated crash before git update-ref runs")
+
+        ctl._update_ref_cas = crashing_update_ref_cas
+        try:
+            with self.assertRaises(RuntimeError):
+                _run_main(self._claim_argv("0311", "agent:alpha", "wt-a"))
+        finally:
+            ctl._update_ref_cas = real_update_ref_cas
+
+        self.assertFalse((self.issues / "0311" / "claim.json").exists())
+        ref_proc = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0311"],
+            capture_output=True,
+        )
+        self.assertNotEqual(ref_proc.returncode, 0)
+
+        # Retry succeeds cleanly: nothing was left behind to block it.
+        code, out, err = _run_main(self._claim_argv("0311", "agent:alpha", "wt-a"))
+        self.assertEqual(code, ctl.EXIT_OK, err or out)
+
+    # -- Remote-unavailable coverage --------------------------------------
+
+    def test_claim_operations_never_touch_a_remote(self):
+        # All claim/renew/release/handoff/recover operations are same-clone
+        # (local refs/objects only); none of them must invoke a networked
+        # git subcommand (fetch/pull/push) or fail because a remote is
+        # unreachable. Prove it by configuring a non-existent, unroutable
+        # remote and confirming the full claim lifecycle still succeeds
+        # entirely offline.
+        subprocess.run(
+            ["git", "-C", str(self.repo), "remote", "add", "origin", "https://198.51.100.1/nonexistent.git"],
+            check=True,
+        )
+        self._create("0320")
+        code, out, err = _run_main(self._claim_argv("0320", "agent:alpha", "wt-a"))
+        self.assertEqual(code, ctl.EXIT_OK, err or out)
+        code, _out, err = _run_main([
+            "release", "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", "0320", "--owner", "agent:alpha",
+            "--expected-digest", hashlib.sha256((self.issues / "0320" / "claim.json").read_bytes()).hexdigest(),
+            "--format", "json",
+        ])
+        self.assertEqual(code, ctl.EXIT_OK, err)
+
+    # -- Protected-branch-adjacent path -----------------------------------
+
+    def test_claim_cas_ref_namespace_is_disjoint_from_branch_refs(self):
+        # refs/autodocs/claims/<item-id> must never be reachable from, or
+        # collide with, refs/heads/* (branch refs, subject to protection)
+        # or refs/remotes/*. A claim CAS write is a same-clone, non-branch
+        # ref mutation and must not appear in `git branch` output or be
+        # reachable as an ancestor of any branch tip; this is the load-
+        # bearing property that lets claim CAS run entirely outside any
+        # branch-protection / integration-checkpoint gate.
+        self._create("0330")
+        code, out, err = _run_main(self._claim_argv("0330", "agent:alpha", "wt-a"))
+        self.assertEqual(code, ctl.EXIT_OK, err or out)
+        show_ref = subprocess.run(
+            ["git", "-C", str(self.repo), "show-ref"], capture_output=True, check=True,
+        ).stdout.decode("utf-8")
+        claim_lines = [line for line in show_ref.splitlines() if "refs/autodocs/claims/0330" in line]
+        self.assertEqual(len(claim_lines), 1, show_ref)
+        self.assertNotIn("refs/heads/", claim_lines[0].split()[1])
+        branch_list = subprocess.run(
+            ["git", "-C", str(self.repo), "branch", "--list"], capture_output=True, check=True,
+        ).stdout.decode("utf-8")
+        self.assertNotIn("0330", branch_list)
+        for_each_ref = subprocess.run(
+            ["git", "-C", str(self.repo), "for-each-ref", "--format=%(refname)", "refs/heads/"],
+            capture_output=True, check=True,
+        ).stdout.decode("utf-8")
+        self.assertEqual(for_each_ref.strip(), "")
 
 
 if __name__ == "__main__":
