@@ -1022,7 +1022,7 @@ HOW TO USE:
   - **REF:** `d2fd153a97f21003583fabaa62f74618cd874df5`
   - **Implementation evidence (2026-08-25, Gabriel):** IV0910–IV0922 in `_src/tools/issue_validate.py`; negative fixtures `_src/tests/fixtures/0037-09.02/cases.json`; working-tree and staged-index coverage; `uv run python _src/tests/test_issue_validate.py` 13/13 OK. 0037-09.01 rules not weakened. Claim remains on branch `0037-09.02`. Not accepted.
 
-- [ ] **0037-09.03** PREREQ: 0037-09.03:0037-04, 0037-09.03:0037-08 Implement typed-reference, provenance graph, artifact/run/finding, evidence-class, and privacy/public-projection validation.
+- [p] **0037-09.03** PREREQ: 0037-09.03:0037-04, 0037-09.03:0037-08 Implement typed-reference, provenance graph, artifact/run/finding, evidence-class, and privacy/public-projection validation. **Claim:** `TODO-Gabriel-Reno-0037-09.03-20260825T050700Z.md` (`agent:gabriel-reno-20260825t050700z:0037-09.03:20260825T050700Z`).
   - **Acceptance criteria:** Detect invalid/dangling/reversed/cardinality-violating edges, ID/digest collisions, fabricated context, mutable path without digest, synthetic-as-production evidence, restricted-field/endpoint leakage, redaction mismatch, and stale or incomplete reverse indexes.
   - **Definition of Done:** One negative fixture per typed relation/classification/privacy rule and adversarial leak tokens pass fixed traversal/resource budgets.
 
