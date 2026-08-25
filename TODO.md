@@ -1115,7 +1115,7 @@ HOW TO USE:
   - **Acceptance criteria:** The combined candidate equals a clean latest-source import targeting the latest schema plus exactly-once replay of compatible authorized events; no manual shadow state can win.
   - **Definition of Done:** All three Subtasks pass one scenario with intervening legacy commits and one target-schema upgrade, with no lost/duplicated item/event.
 
-- [ ] **0037-15.01** PREREQ: 0037-15.01:0037-06.01, 0037-15.01:0037-14, 0037-15.01:0037-17.01 Implement source-watermark tracking and fresh full re-import.
+- [p] **0037-15.01** PREREQ: 0037-15.01:0037-06.01, 0037-15.01:0037-14, 0037-15.01:0037-17.01 Implement source-watermark tracking and fresh full re-import. **Claim:** `TODO-Gabriel-Book-0037-15.01-20260825T090100Z.md` (`agent:gabriel-book-20260825t090100z:0037-15.01:20260825T090100Z`).
   - **Acceptance criteria:** Record baseline/latest source, candidate schema, importer tool commit/digest, run, and source artifact set; detect every committed delta including Feature `0037`, deleted/reused IDs, task moves, changed prerequisites, and dirty/staged final-source blockers; build in a new temp root and atomically promote only after validation.
   - **Definition of Done:** Tests simulate multiple source commits, interrupted/stale runs, dirty final state, and deleted/reused IDs and prove latest-source equivalence.
 
