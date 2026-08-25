@@ -90,6 +90,9 @@ append-only provenance note in a commit carrying the mandatory origin trailer,
 preserve both rejected tips as ancestors, and remain within the same three-path
 scope.
 
+Decision-path provenance correction REF:
+`401e69651bf6a5899ba2488cc7bb53135cea096f`.
+
 ## Validation before check-in
 
 - Decision-record shape: PASS; all 15 ordered fields present, four alternatives
