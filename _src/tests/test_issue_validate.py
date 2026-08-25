@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import importlib.util
 import json
@@ -6,7 +7,9 @@ from pathlib import Path
 import random
 import shutil
 import subprocess
+import sys
 import tempfile
+import types
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -1080,6 +1083,228 @@ class FixtureGitIsolationTest(unittest.TestCase):
             repo.mkdir()
             with self.assertRaises(FixtureGitError):
                 _assert_fixture_identity(repo)
+
+
+DAG_ARCH = ROOT / "issues/_schema/fixtures/issue-regeneration-dag-v1"
+DAG_CASES = json.loads((ROOT / "_src/tests/fixtures/0037-09.04/cases.json").read_text())["cases"]
+MINI_DAG = ROOT / "_src/tests/fixtures/0037-09.04/mini-dag.json"
+MINI_DAG_ONE = ROOT / "_src/tests/fixtures/0037-09.04/mini-dag-one.json"
+
+
+def _stage_expected_id(stage, generated_root):
+    input_digests = []
+    root = Path(generated_root)
+    for entry in stage.get("inputs") or []:
+        glob = entry["glob"]
+        matched = []
+        if (root / glob).is_file():
+            matched.append(glob)
+        else:
+            for found in root.rglob("*"):
+                if found.is_file() and __import__("fnmatch").fnmatch(
+                        found.relative_to(root).as_posix(), glob):
+                    matched.append(found.relative_to(root).as_posix())
+        for relative in sorted(matched):
+            input_digests.append(VALIDATE._file_sha256((root / relative).read_bytes()))
+    return VALIDATE._content_generation_id(
+        input_digests,
+        VALIDATE._file_sha256(str(stage.get("validator", "")).encode("utf-8")),
+        VALIDATE._file_sha256(VALIDATE._canonical_json(stage.get("argv") or [])),
+        VALIDATE._file_sha256(str(stage.get("id", "")).encode("utf-8")),
+    )
+
+
+class DerivedArtifactValidateTest(unittest.TestCase):
+    maxDiff = None
+
+    def validate_dag(self, dag_path, generated_root=None, required=None):
+        with tempfile.TemporaryDirectory() as temp:
+            issues = Path(temp) / "issues"
+            write_item(issues, "0099", document("0099", "feature"))
+            write_item(issues, "0099-01", document("0099-01", "task", "0099"))
+            diagnostics, _ = VALIDATE.validate(
+                repo=ROOT, source="working-tree", root=issues, compare_head=False,
+                dag_path=dag_path, generated_root=generated_root,
+                required_stage_ids=required)
+            return {value.rule for value in diagnostics}, diagnostics
+
+    def test_canonical_dag_passes(self):
+        rules, diagnostics = self.validate_dag(DAG_ARCH / "valid.json")
+        self.assertEqual(rules, set(), diagnostics)
+
+    def test_architecture_negative_fixtures(self):
+        for case in DAG_CASES:
+            with self.subTest(case=case["name"]):
+                rules, diagnostics = self.validate_dag(DAG_ARCH / case["file"])
+                self.assertIn(case["rule"], rules, diagnostics)
+
+    def test_undeclared_writer(self):
+        payload = json.loads((DAG_ARCH / "valid.json").read_text())
+        payload["stages"][1]["sole_writer"] = "someone-else"
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "dag.json"
+            path.write_text(json.dumps(payload))
+            rules, diagnostics = self.validate_dag(path)
+            self.assertIn("IV0936", rules, diagnostics)
+
+    def _write_catalog(self, root, relative, generation_id, extra=None, pretty=False):
+        body = {"generation_id": generation_id, "items": ["0099"]}
+        if extra:
+            body.update(extra)
+        path = Path(root) / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if pretty:
+            path.write_text(json.dumps(body, indent=2))
+        else:
+            path.write_bytes(VALIDATE._canonical_json(body).encode("utf-8"))
+        return path
+
+    def test_fresh_generated_views_pass(self):
+        manifest = json.loads(MINI_DAG_ONE.read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            issues = gen / "issues/0099/index.md"
+            issues.parent.mkdir(parents=True)
+            issues.write_text(document("0099", "feature"))
+            expected_internal = _stage_expected_id(manifest["stages"][0], gen)
+            self._write_catalog(gen, "data/issue-catalog.internal.json", expected_internal)
+            rules, diagnostics = self.validate_dag(
+                MINI_DAG_ONE, generated_root=gen, required=())
+            self.assertEqual(rules, set(), diagnostics)
+
+    def test_stale_and_hand_edited_outputs(self):
+        manifest = json.loads(MINI_DAG.read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            issues = gen / "issues/0099/index.md"
+            issues.parent.mkdir(parents=True)
+            issues.write_text(document("0099", "feature"))
+            self._write_catalog(gen, "data/issue-catalog.internal.json", "sha256:" + "0" * 64)
+            self._write_catalog(gen, "data/issue-catalog.public.json", "sha256:" + "1" * 64)
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0939", rules, diagnostics)
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            (gen / "data").mkdir()
+            (gen / "data/issue-catalog.internal.json").write_text('{"items":[]}\n')
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0939", rules, diagnostics)
+
+    def test_mixed_generation_ids(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            issues = gen / "issues/0099/index.md"
+            issues.parent.mkdir(parents=True)
+            issues.write_text("x")
+            self._write_catalog(gen, "data/issue-catalog.internal.json", "sha256:" + "a" * 64)
+            self._write_catalog(gen, "data/issue-catalog.public.json", "sha256:" + "b" * 64)
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0940", rules, diagnostics)
+
+    def test_uuid7_in_deterministic_artifact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            issues = gen / "issues/0099/index.md"
+            issues.parent.mkdir(parents=True)
+            issues.write_text("x")
+            gid = "sha256:" + "c" * 64
+            self._write_catalog(
+                gen, "data/issue-catalog.internal.json", gid,
+                extra={"run_id": "01234567-89ab-7cde-89ab-0123456789ab"})
+            self._write_catalog(gen, "data/issue-catalog.public.json", gid)
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0940", rules, diagnostics)
+
+    def test_byte_comparator_pretty_json(self):
+        manifest = json.loads(MINI_DAG.read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            issues = gen / "issues/0099/index.md"
+            issues.parent.mkdir(parents=True)
+            issues.write_text(document("0099", "feature"))
+            expected = _stage_expected_id(manifest["stages"][0], gen)
+            self._write_catalog(gen, "data/issue-catalog.internal.json", expected, pretty=True)
+            expected_public = _stage_expected_id(manifest["stages"][1], gen)
+            self._write_catalog(gen, "data/issue-catalog.public.json", expected_public)
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0941", rules, diagnostics)
+
+    def test_unexplained_generated_file(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gen = Path(temp)
+            extra = gen / "data/orphan.json"
+            extra.parent.mkdir(parents=True)
+            extra.write_text('{"generation_id":"sha256:' + "d" * 64 + '"}')
+            rules, diagnostics = self.validate_dag(MINI_DAG, generated_root=gen, required=())
+            self.assertIn("IV0943", rules, diagnostics)
+
+    def test_repeated_runs_are_deterministic(self):
+        first = self.validate_dag(DAG_ARCH / "valid.json")
+        second = self.validate_dag(DAG_ARCH / "valid.json")
+        self.assertEqual(first[0], second[0])
+        self.assertEqual(
+            [VALIDATE.asdict(item) if hasattr(VALIDATE, "asdict") else item for item in first[1]],
+            [item for item in second[1]])
+
+    def test_validate_py_candidate_and_staged_modes(self):
+        text = (ROOT / "_src/validate.py").read_text()
+        self.assertIn("--issue-source", text)
+        self.assertIn("staged-index", text)
+        self.assertIn("candidate", text)
+        self.assertIn("check_issue_store", text)
+        before = (ROOT / "_src/tools/issue_validate.py").read_bytes()
+        with tempfile.TemporaryDirectory() as temp:
+            issues = Path(temp) / "issues"
+            write_item(issues, "0099", document("0099", "feature"))
+            write_item(issues, "0099-01", document("0099-01", "task", "0099"))
+            diagnostics, _ = VALIDATE.validate(
+                repo=ROOT, source="candidate", root=issues, compare_head=False,
+                dag_path=DAG_ARCH / "valid.json")
+            self.assertEqual({value.rule for value in diagnostics}, set(), diagnostics)
+        self.assertEqual((ROOT / "_src/tools/issue_validate.py").read_bytes(), before)
+
+    def test_staged_index_reads_dag_from_index(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repo = init_isolated_repo(Path(temp) / "repo")
+            _seed_validator_sources(repo)
+            dag_dest = repo / "docs/pipeline/issue-derived-artifacts-v1.json"
+            dag_dest.parent.mkdir(parents=True)
+            dag_dest.write_bytes((DAG_ARCH / "valid.json").read_bytes())
+            write_item(repo / "issues", "0099", document("0099", "feature"))
+            write_item(repo / "issues", "0099-01", document("0099-01", "task", "0099"))
+            fixture_add(repo, [
+                dag_dest,
+                repo / "issues/0099/index.md",
+                repo / "issues/0099/0099-01/index.md",
+                repo / "_src/tools/issue_store.py",
+                repo / "issues/_schema/issue-item-v1.schema.json",
+            ])
+            fixture_commit(repo, "seed")
+            diagnostics, _ = VALIDATE.validate(
+                repo=repo, source="staged-index", compare_head=False,
+                dag_path=dag_dest)
+            rules = {value.rule for value in diagnostics}
+            self.assertNotIn("IV0935", rules, diagnostics)
+
+    def test_mutation_guard_does_not_touch_authoritative_files(self):
+        tracked = [
+            ROOT / "docs/pipeline/issue-derived-artifacts-v1.json",
+            ROOT / "issues/_schema/fixtures/issue-regeneration-dag-v1/valid.json",
+            ROOT / "_src/tools/issue_validate.py",
+        ]
+        before = [path.read_bytes() for path in tracked]
+        self.validate_dag(DAG_ARCH / "invalid-cycle.json")
+        after = [path.read_bytes() for path in tracked]
+        self.assertEqual(before, after)
+
+    def test_existing_structural_lifecycle_and_provenance_rules_hold(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "issues"
+            write_item(root, "0099", document("0099", "feature"))
+            write_item(root, "0099-01", document("0099-01", "task", "0099", ["0099-99"]))
+            diagnostics, _ = VALIDATE.validate(repo=ROOT, source="working-tree", root=root,
+                                               compare_head=False)
+            self.assertIn("IV0904", {value.rule for value in diagnostics})
 
 
 if __name__ == "__main__":
