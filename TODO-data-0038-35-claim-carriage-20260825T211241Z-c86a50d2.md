@@ -63,6 +63,20 @@ profile, and separation conditions for a future Implementer.
 Substantive governance REF:
 `9e63b0c8a852273ea6e622b4caa273e0f011310b`.
 
+## Integration rejection and additive correction
+
+Integrator Geordi rejected candidate
+`836e9cbff7a5283af3771c5b6ada3b722c7787dc` before candidate hygiene or merge
+because substantive commit `9e63b0c8a852273ea6e622b4caa273e0f011310b`
+omitted the mandatory `Policy-Origin-Branch: main` trailer. Project Lead
+Jean-Luc assigned an additive correction under
+`agent-inbox:1787693769934-0972bbb2`: preserve history, remain within these
+three paths, and supply the missing origin provenance without amending,
+rewriting, or touching `main`. The scope-review origin section and the
+correction commit trailer satisfy that bounded follow-up; the rejection remains
+durable and the earlier commit is not represented as having carried the
+missing trailer.
+
 ## Validation before check-in
 
 - Decision-record shape: PASS; all 15 ordered fields present, four alternatives

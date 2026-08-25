@@ -13,6 +13,17 @@ permission to close Feature `0038`. The future Implementer must be a distinct
 identity. The Feature terminal Integrator and any Acceptance reviewer remain
 separately assigned and independent under the existing `0038-35` contract.
 
+## Origin-provenance correction
+
+Candidate `836e9cbff7a5283af3771c5b6ada3b722c7787dc` was rejected before hygiene or
+merge because its substantive commit omitted the mandatory
+`Policy-Origin-Branch: main` commit trailer. The packet was authored in this
+item-owned worktree on branch `gov-0038-35-claim-carriage-data-20260825`, cut
+directly from exact `main@8a364e000fed6e826a1e7d49c4b1c014c849eece` after
+identifier-uniqueness measurement. This additive correction preserves the
+rejected commits and records the required origin in its own immutable commit
+trailer; it does not claim that the earlier commit carried that metadata.
+
 ## Normative precedence and reproduced contradiction
 
 The doctor implementation and its rule table entered at
