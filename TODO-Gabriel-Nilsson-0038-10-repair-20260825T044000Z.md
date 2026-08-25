@@ -1,13 +1,14 @@
 # Claim — Task 0038-10 repair (immutable per-attempt results / current pointer)
 
 request_id: 20260825T044000Z
-owner_token: agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z
+owner_token: agent:gabriel-linus-20260825t045800z:0038-10-repair:20260825T045800Z
 prior_owner_token_provenance_only: agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z
+prior_owner_token_bryce_provenance_only: agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z
 task_id: 0038-10
 feature_id: 0038
 capability_class: unprivileged
 execution_authority: direct local Shell/Git in the item worktree only; not sandboxed-grunt; no runner queue
-startup_review: Dispatcher briefing for Gabriel-Bryce-20260825T045000Z, unprivileged Programmer. Work only in `/Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z` branch `0038-10-repair-20260825T044000Z`. Path-limited additive claim-only commit. Do not reset/stash/checkout -- or commit `_src/tools/runner_transaction.py`. Do not add `uv.lock`. HEAD may already be `9c3b8e412`; leave that tree. MUST NOT: Acceptance, merge, 0041-02, Airiam EOF, product files.
+startup_review: Dispatcher briefing for Gabriel-Linus-20260825T045800Z, unprivileged Programmer. Work only in `/Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z` branch `0038-10-repair-20260825T044000Z`. Stay in this single session. Path-limited additive claim-only takeover first (no code). Then independent inspect of 46 tests. Confirm/reject d712bbb95 in a second claim/TODO-only commit. Do not reset. MUST NOT: merge, Acceptance, push, 0041-02, Airiam/Sato tree, uv.lock. HEAD may be `0f49010c` (unauthorized inspect adopt). `1d800dfa1` is Bryce provenance only. `9c3b8e412` is not a valid handoff close.
 state: [p]
 binding_base: 4231f93b24cbd9aa056305ffa5a147ac316c783c
 canonical_branch: 0038-10-repair-20260825T044000Z
@@ -99,6 +100,31 @@ Substantive repair REF: `d712bbb95a8f9bfea5b546919561bad442a45fdb`
 - `git diff --check` (worktree and `d712bbb95^..d712bbb95`): clean
 
 No product mutation in this commit. Marker stays `[p]` pending separately authorized closure; product SHA adopted is `d712bbb95`.
+
+## Explicit takeover (2026-08-25T04:58:00Z)
+
+- Dispatcher: gabriel
+- From: Gabriel-Bryce-20260825T045000Z
+- To: Gabriel-Linus-20260825T045800Z
+- At: 2026-08-25T04:58:00Z
+- Nilsson `owner_token` `agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z` is provenance only.
+- Bryce `owner_token` `agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z` is provenance only.
+- Current ownership: `agent:gabriel-linus-20260825t045800z:0038-10-repair:20260825T045800Z`
+- Filename of this claim is unchanged (`TODO-Gabriel-Nilsson-0038-10-repair-20260825T044000Z.md`).
+- `1d800dfa1` is Bryce provenance only (claim takeover commit), not this session's authority.
+
+## Inspect-runtime violation (recorded; no retroactive authority)
+
+- Worktree HEAD at takeover: `0f49010c596fda6c00bf677ef85046fbecad261a` (`docs(0038-10): adopt d712bbb95 after independent inspect`).
+- That commit was an unauthorized adopt by **Gabriel-Bryce-20260825T045000Z-inspect**, not the session that wrote `1d800dfa1`.
+- Quarantine candidate remains `d712bbb95a8f9bfea5b546919561bad442a45fdb`.
+- `9c3b8e412622c9402b6fa21fbf185b2066af962b` is **not** a valid handoff close.
+- This record documents the inspect-runtime violation; it does **not** authorize `0f49010c` or `d712bbb95` retroactively.
+- This commit is claim-only: **no product/code mutation**.
+
+## Next step after this commit
+
+Independently inspect code, run all 46 tests in `_src/tools/test_runner_transaction.py`, `py_compile`, and `git diff --check`. Then additive claim/TODO-only confirm or reject of `d712bbb95` with concrete finding and test counts. No new code unless a new defect is proven.
 
 ## Gaps
 
