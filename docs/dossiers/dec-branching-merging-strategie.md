@@ -1263,3 +1263,53 @@ grandfathered before the fully reviewed implementation reaches `main`.
 This is a pre-mutation scope review, not implementation validation, risk
 acceptance, Task Acceptance, an integration verdict, or authority to advance
 `main`.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-022`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-discovery-runtime-cursor.md`](dec-discovery-runtime-cursor.md),
+nicht in dieser Datei.
+
+`DEC-0044-022` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+(höchste belegte Nummer dort `DEC-0044-021`) und bezeichnet die
+Managemententscheidung: Team Discovery Runtime/Provider ist Cursor; Grok ist
+dekommissioniert; bei Rekommissionierung erhält Grok ein anderes Team.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 14:03 +02.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-023`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-as-verify-0038-34-registration-20260825.md`](dec-as-verify-0038-34-registration-20260825.md).
+
+`DEC-0044-023` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+und gegen `DEC-0044-022` auf diesem Branch. Gegenstand: nur die tote Registrierung
+`/private/tmp/as-verify-0038-34` nach `preserved/*`-Snapshot entfernen; das
+bestehende Hygiene-Gate (sekundäre Worktrees dürfen den kanonischen Checkout
+blockieren) bleibt.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 15:33 +02.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-024`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-0044-024-governance-ff-main.md`](dec-0044-024-governance-ff-main.md).
+
+`DEC-0044-024` ist geprüft gegen `main`
+`6a937f8414440cc84233954012ff802eaf57924c` (höchste belegte Nummer dort
+`DEC-0044-021`) und gegen `DEC-0044-022` / `DEC-0044-023` auf diesem Branch.
+Gegenstand: ff-only Landung des Tips von `roster-discovery-cursor-20260825`,
+der diesen Datensatz enthält, auf `refs/heads/main` aus dem Root-Checkout;
+Hygiene plus Root-Preflight; nicht `42eb0e98b`; nicht `0020` zuerst; nicht
+`update-ref`; Ausführung nur nach exaktem Auftrag in der Paul-Session.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 18:49 +02.

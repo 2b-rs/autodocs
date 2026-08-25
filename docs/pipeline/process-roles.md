@@ -279,6 +279,10 @@ typical failure, and a repository example.
   removal, or movement first requires separately authorized append-only
   invalidation or reopening. Applicable TK-2 and independent gate-scope review
   requirements remain in force.
+- **Breakdown instruction:** Apply the normative
+  [`feature-breakdown.md`](feature-breakdown.md) record for the source of each
+  architecture decision, prerequisite/order and test derivation, capability
+  profile, branch instruction, and A1/A2 evidence.
 - **Prohibitions:** Gate decisions without TK-2; accept its own breakdown;
   imply completeness where a gap exists.
 - **Typical failure:** Check duplicates against the wrong neighboring Feature.

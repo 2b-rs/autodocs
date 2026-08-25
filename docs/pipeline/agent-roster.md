@@ -49,7 +49,9 @@
 | `nog` | **Tester** | `unprivileged` | `budget` (medium) | Nog — ambitious, disciplined, adaptive, detail-conscious |
 | `quark` | **Runner** | `runner` | `budget` (low) | Quark — quick, pragmatic, alert to incentives and loopholes |
 
-## Team Discovery (Runtime: grok, Provider: grok)
+## Team Discovery (Runtime: cursor, Provider: cursor)
+
+> **Runtime (2026-08-25, Management):** Cursor is the Discovery runtime. Grok is decommissioned. If grok is recommissioned, it receives a different team; it does not return as Discovery.
 
 | Agent | Role | Capability Class | Model Tier & Effort | Display Name & Persona |
 | :--- | :--- | :--- | :--- | :--- |
