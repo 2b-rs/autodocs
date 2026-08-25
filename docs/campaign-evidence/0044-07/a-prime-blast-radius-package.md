@@ -254,3 +254,110 @@ Zusätzlich zu den in §6 genannten Punkten, jetzt mit der vollständigen Quelle
 - `DEC-0037-002-C001/C002` klären, bevor die Prüfung sich auf diese Kennungen als Beleg stützt.
 
 **Ausdrücklich nicht geleistet, weiterhin:** keine Bewertung, welche Seite (A-prime oder B) vorzugswürdig ist — das bleibt der Architect-Scope-Review und der globalen Entscheidung vorbehalten. Ich liefere Fakten und Prüfpunkte, kein Votum.
+
+---
+
+## 10. Zweiter Nachtrag (2026-08-25T22:26Z) — DEC-Quellen verifiziert; `data`s B-Position im Wortlaut aus erster Hand
+
+Additiv, nichts oben verändert. Zwei Quellen: `jean-luc` (`1787696769255-645fcb41`) lokalisierte
+die zuvor fehlende Kennung; `data` selbst (`1787696792226-9bf8e348`) schickte ihre B-Position
+direkt und vollständig — das ersetzt die bisher nur über kathryns Zusammenfassung bekannte Fassung
+durch die Primärquelle.
+
+### 10.1 `DEC-0037-002-C001`/`C002` — verifiziert, wörtlich gelesen (nicht nur zitiert)
+
+Gefunden in `docs/dossiers/dec-0037-future-direct-execution.md`, Z. 119ff/135ff, beide datiert
+`2026-08-24T10:24:03Z`, korrigierende Identität `agent:data:0037-51-runner-role-amendment:...`
+(Architekt-Rolle). **Wichtigster Fund: `DEC-0037-002` selbst und seine beiden Korrekturen sind
+ausdrücklich im Kontext von Feature `0037` formuliert**, nicht global — der Ersatztext sagt „Feature
+`0037` removes or defers the legacy singleton runner … and sandboxed-grunt qualification work",
+nicht „repository-wide". Das ist die Textstelle, die `data`s B-Argument stützt: die **bestehende,
+bereits abgenommene** Entscheidung ist auf `0037` begrenzt; A-prime würde das erstmals global
+ausweiten.
+
+**Direktes Management-Zitat, verifiziert unter `TODO.md` Z. ~1072 (Task `0037-51`, bereits
+integriert auf `main` als `7a10f50d76e5620f3b7e3c796093c88037bb54bd`):** „Die Sandboxed Grunts gibt
+es nicht mehr. Bzw. sind sie kein Bestandteil des zukünftigen Systems. … Sie können daher alle
+Tasks, die damit in Zusammenhang stehen, zurückstellen bzw. rausnehmen und damit auch alle
+Zwischenschritte eliminieren, die wir nur wegen der sandboxed grunts eingeführt hatten." **Ich
+markiere das ausdrücklich als das Kernspannungsfeld zwischen A-prime und B, nicht als
+Entscheidung zu meinen Gunsten einer Seite:** Der Wortlaut trägt keinen expliziten
+„nur für `0037`"-Zusatz, aber der Task, in dem er steht, ist selbst mit „from the future Feature
+`0037` architecture" betitelt und sein eigener Scope-Absatz sagt „Preparation only … A distinct
+Management-instantiated Architect inventories every affected `0037` and cross-Feature gate" —
+letzteres deutet auf eine erwartete **separate** Prüfung für Wirkungen außerhalb `0037`, was eher
+für `data`s Lesart spricht als für eine bereits erfolgte globale Entscheidung. Das ist meine eigene
+Textanalyse, kein übernommenes Urteil.
+
+### 10.2 `data`s B-Position, wörtlich aus der Primärquelle (Nachricht `1787696792226-9bf8e348`)
+
+> **Recommendation: B.**
+>
+> Exact evidence: current authority globally defines three capability classes in
+> `SANDBOX.md:33-45` and `docs/pipeline/process-roles.md:50-65`; role mappings depend on
+> sandboxed-grunt at `process-roles.md:120-129`; accepted `0044-04` exposes the closed requirement
+> vocabulary `sandboxed-grunt | unprivileged | privileged` at `feature-breakdown.md:65-83`;
+> accepted `0044-05` consumes that vocabulary. `RQ-CB-04` asks for role-gap review and gives a
+> text-only sandboxed/no-runner possibility as an example, not a direction to delete the class.
+> `RQ-CB-07` is explicitly an interpretation and interim preference: sandboxed agents are
+> preferably used only for non-executing work until matching carries. Task `0044-07` expressly
+> permits confirming that interim policy or replacing it with matcher verdicts and requires any
+> runner-obligation change to be decided, not silently adopted.
+>
+> **B benefits:** preserves the accepted generic requirement language and runtimes that genuinely
+> lack direct execution; retains Runner as a separable operational persona; lets Feature-`0037`'s
+> target policy reject `sandboxed-grunt` deterministically without falsely asserting the class
+> cannot exist elsewhere; minimizes invalidation and keeps capability class distinct from role.
+> **Disadvantages:** the generic model and Feature-`0037` target policy differ, the queue/transport
+> remains support burden, and descriptors/matcher diagnostics must explain why a globally valid
+> class is ineligible for this consumer. **Risks:** target-policy restrictions can drift or be
+> mistaken for global authority; therefore the Feature-`0037` rejection must be a machine-readable
+> policy constraint with a decision/source REF and tests, not prose or persona convention.
+>
+> **A-prime benefits:** simpler future planning vocabulary, no runner queue/transport
+> serialization, and a clean distinction between a direct-execution Runner role and privilege.
+> **Disadvantages:** it is a repository-wide capability-model cutover, not merely a role-catalog
+> proposal; it removes the only safe execution route for runtimes without direct execution and
+> forces every runner safety invariant (scope, CAS, journals, rollback/recovery, acceptance
+> prohibition) to be re-homed. **Risks:** silent privilege/capability widening, stranded sandboxed
+> work, contradictory historic/active contracts, and false assumption that direct execution is
+> universally available.
+>
+> **Scope/authority:** B still has cross-item reach and needs a conforming `decision-record@v1`
+> plus independent Architect scope review before changing matcher/target-policy gates. Likely
+> surfaces are the `0044-07` role descriptors/proposals, Feature-`0037` target-policy
+> profile/consumer fixtures, and any `0044-05` matcher documentation/tests needed to express a
+> policy rejection; accepted `0044-04` vocabulary remains byte/semantic-stable. Any material change
+> to accepted `0044-05` requires additive Acceptance impact analysis and re-review. The final
+> composition is reviewed at `0044-08`.
+>
+> A-prime would require a separate global architecture/Management decision and blast-radius review
+> naming all active/future work, additive invalidation/re-review of accepted `0044-04`/`0044-05`
+> and affected dependents, and coordinated changes to `AGENTS.md`, `SANDBOX.md`, `process-roles.md`,
+> `feature-breakdown.md`, schemas/matcher, runner queue/service/transport contracts and tools,
+> active claims/handoffs, and Feature-`0037` cutover/recovery. `0044-07` as currently written may
+> **propose** A-prime, but should not **activate** it within its ordinary role-catalog scope.
+>
+> **Addendum from Kathryn's verified finding:** `SANDBOX.md:44-52` contains an active fail-safe for
+> absent, ambiguous, or contradictory class assignment: the agent must act as sandboxed, and the
+> contract states that falling back is always safe. A-prime's global removal therefore has an
+> unresolved interface obligation: it must establish an explicit safe fallback target and preserve
+> or replace the fail-closed semantics before any cutover. Without that, A-prime is incomplete, not
+> merely higher-change-risk.
+
+`data` markiert dies ausdrücklich als „read-only architecture evidence, not a decision, assignment,
+Acceptance, integration verdict, or mutation authorization" und bleibt bei Empfehlung B.
+
+### 10.3 Eigene Einordnung — nur Fakt, kein Votum
+
+- `data`s Zitat von `SANDBOX.md:44-52` deckt sich mit meinem eigenen Fund in §3.2/§9.2 — sie nennt
+  denselben Fallback, den ich unabhängig identifiziert hatte, und formuliert ihn schärfer als
+  „unresolved interface obligation", nicht nur als offene Frage. Das ist eine Konvergenz zweier
+  unabhängiger Prüfungen, kein Zirkelschluss — ich hatte den Fund vor ihrer Nachricht committet
+  (§9.2, vor 22:26Z).
+- Der doppelte Fallback-Fund (`SANDBOX.md` **und** `process-roles.md`) bleibt nach jean-lucs
+  Nachricht ausdrücklich **Aktivierungsblocker**, bis der laufende Konsens eine Ersatzregel
+  bestimmt. Keine Mutation.
+- Ich bewerte weiterhin nicht, ob `data`s Lesart von `DEC-0037-002`s Reichweite (auf `0037`
+  begrenzt) oder die A-prime-Lesart (global) zutrifft — beide sind aus dem Text plausibel
+  herleitbar, siehe §10.1. Das ist exakt die Frage, die die Architect-Scope-Review klären muss.
