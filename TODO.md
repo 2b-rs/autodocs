@@ -1076,7 +1076,7 @@ HOW TO USE:
   - **Acceptance criteria:** Require reachable criterion evidence and terminal `closure.json`; enforce legal transitions, decision authority, real/reachable commit refs, the two-commit rule, and closure of every child before Feature closure; retain withdrawn/superseded/non-accepted history without presenting it as success.
   - **Definition of Done:** Tests cover every terminal disposition, missing/invalid evidence, same-commit REF rejection, Feature `0021` archive semantics, partial Feature closure, injected write failure, and immutable history.
 
-- [ ] **0037-11** PREREQ: 0037-11:0037-11.01, 0037-11:0037-11.02 Complete deterministic legacy and machine-readable issue views.
+- [p] **0037-11** PREREQ: 0037-11:0037-11.01, 0037-11:0037-11.02 Complete deterministic legacy and machine-readable issue views. Claim: `TODO-philippa-detmer-0037-11-20260826T010800Z.md` (`owner_token: agent:philippa-detmer-0037-11:0037-11:20260826T010800Z`).
   - **Acceptance criteria:** Both renderers consume one normalized catalog and neither view becomes input authority. SQLite is explicitly out of scope for v1 and may be proposed only by a later performance measurement Feature.
   - **Definition of Done:** Both Subtasks reconcile source/view IDs, states, criteria, and edges exactly.
 
