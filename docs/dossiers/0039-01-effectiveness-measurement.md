@@ -55,21 +55,30 @@ Features and Subtasks excluded) whose **authoritative** implementation dispositi
 first becomes `[x]`/`[w]` after activation, ordered by terminal-transition event,
 Task ID as tie-breaker.
 
-Baseline commit at/before activation: `83086add0` — 367 Task-level items, of which
-138 already terminal and therefore excluded.
+Baseline commit at/before activation: `83086add0` — 138 Task-level items already terminal and therefore excluded. Traversal: `git log --reverse --first-parent main -- TODO.md DONE.md` (see the correction in §1a).
 
-| # | Task | Event | # | Task | Event |
-|---|---|---|---|---|---|
-| 1 | `0040-03` | `d5a65d3a7` 08-20T08:05:14Z | 11 | `0038-25` | `d53e570fa` |
-| 2 | `0040-05` | `d5a65d3a7` | 12 | `0038-17` | `ba087fc8b` |
-| 3 | `0040-08` | `d5a65d3a7` | 13 | `0037-37` | `bad253b23` |
-| 4 | `0040-09` | `d5a65d3a7` | 14 | `0041-01` | `caa7cda9a` |
-| 5 | `0040-10` | `d5a65d3a7` | 15 | `0043-01` | `d4741e906` |
-| 6 | `0040-11` | `8f6d42b48` | 16 | `0044-01` | `9716738fa` |
-| 7 | `0038-20` | `b4ea895cb` | 17 | `0038-28` | `d175e4e28` |
-| 8 | `0038-24` | `5f7d1ef17` | 18 | `0043-02` | `946e5e4ab` |
-| 9 | `0038-05` | `6e411eedf` | 19 | `0037-49` | `aaa74b8e6` |
-| 10 | `0038-23` | `053ffb601` | 20 | `0037-07` | `2f8344187` 08-21T22:54:37Z |
+| # | Task | Event commit | Event time (UTC) |
+|---|---|---|---|
+| 1 | `0038-05` | `6e47ec274` | 2026-08-20 19:31:42 |
+| 2 | `0038-20` | `6b4f2a00e` | 2026-08-20 20:14:34 |
+| 3 | `0038-24` | `bd2d64808` | 2026-08-20 20:15:58 |
+| 4 | `0038-23` | `053ffb601` | 2026-08-20 20:16:24 |
+| 5 | `0038-25` | `d53e570fa` | 2026-08-20 21:11:42 |
+| 6 | `0038-17` | `ba087fc8b` | 2026-08-20 21:20:19 |
+| 7 | `0040-03` | `c5c478a6c` | 2026-08-20 23:10:23 |
+| 8 | `0040-05` | `c5c478a6c` | 2026-08-20 23:10:23 |
+| 9 | `0040-08` | `c5c478a6c` | 2026-08-20 23:10:23 |
+| 10 | `0040-09` | `c5c478a6c` | 2026-08-20 23:10:23 |
+| 11 | `0040-10` | `c5c478a6c` | 2026-08-20 23:10:23 |
+| 12 | `0037-37` | `bad253b23` | 2026-08-20 23:44:16 |
+| 13 | `0044-01` | `eeb759a51` | 2026-08-21 08:58:55 |
+| 14 | `0041-01` | `7b2e2ce99` | 2026-08-21 12:22:35 |
+| 15 | `0043-01` | `7b2e2ce99` | 2026-08-21 12:22:35 |
+| 16 | `0038-28` | `4827ddef4` | 2026-08-21 14:07:25 |
+| 17 | `0043-02` | `4c0c7f041` | 2026-08-21 14:07:26 |
+| 18 | `0037-49` | `f5cc5bbb4` | 2026-08-21 19:50:18 |
+| 19 | `0037-07` | `b13257241` | 2026-08-21 23:12:52 |
+| 20 | `0044-14` | `7e12f877d` | 2026-08-22 10:11:13 |
 
 **20 qualifying Tasks exist, so the contract's `not-yet-mature` branch does not
 apply.** Manifest with source event commits and the environment qualifier:
