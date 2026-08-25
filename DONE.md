@@ -649,7 +649,7 @@ No Feature `0019` work, external publication, remote, SSH configuration, or
 
 ## Feature: 0043 — Reporting: Continuous Build Evidence and Current Reports
 
-Completed: 2026-08-25 — REF: `PENDING-SELF-HASH`
+Completed: 2026-08-25 — REF: `4428f9145cec6eea24baa8041b08f0d7ea63557b`
 
 **Feature closure note (2026-08-25).** Closed by privileged Integrator `belanna` after
 the mandatory Feature-Floor checkpoint `0043-07` passed independent review
