@@ -1172,66 +1172,49 @@ oder dem Header-Contract.
 **Aufgezeichnet von:** privilegierter Integrator `belanna` (Team Voyager) auf
 Beauftragung durch Projektleiter `kathryn`, 2026-08-23.
 
-## `DEC-0044-020` — Ephemerer Agent-Memory-Zustand blockiert Integrationen nicht
+### `DEC-0044-021` — Ephemerer Agent-Memory-Zustand und Integrator-geführte Hygiene
 
-**Status:** Managemententscheidung als ausführbarer Kandidat aufgezeichnet;
-Aktivierung erst nach unabhängiger Architekten-Scope-Prüfung, Implementierung,
-Validierung und Integration auf `main`.
-
-**Authority reference:** Direkte Anweisung des aktuellen Nutzers vom
-2026-08-25: `logs/agent-memory` ist ephemer; Agenten schreiben dort Erfahrungen
-zum Teilen nieder; die Zuordnung zu einer Issue in der Commit-Message ist
-ausreichend; für den Hygiene-Checker ist eine Ausnahme zu definieren.
-
-**Entscheidung.** Getrackte Arbeitsbaumabweichungen ausschließlich unter
-`logs/agent-memory/**` sind im `main`-Checkout zulässiger ephemerer
-Lernzustand und dürfen für sich allein weder `MAIN_WORKTREE_DIRTY` noch den
-komplementären harten Root-Preflight blockieren. Die Ausnahme ist pfadbasiert,
-nicht autoren-, inhalts- oder zeitbasiert. Eine spätere persistente Übernahme
-dieser Lerninhalte benötigt lediglich eine Task-/Issue-Zuordnung in der
-Commit-Message; die Memory-Datei benötigt dafür keinen eigenen Backlog-Knoten.
-
-**Unverändert und weiterhin blockierend:**
-
-1. Jede Indexabweichung, einschließlich gestagter Memory-Dateien
-   (`INDEX_NOT_HEAD`/`FOREIGN_STAGED_TREE`).
-2. `STALE_AFTER_REF_MOVE`, `WORKTREE_UNAVAILABLE` und ein nicht ausführbarer
-   Checker (Exit `2`).
-3. Jede getrackte Arbeitsbaumabweichung außerhalb `logs/agent-memory/**`.
-4. Merge-Konflikte oder ein Git-Abbruch, insbesondere wenn ein zu
-   integrierender Commit dieselbe Memory-Datei verändert.
-5. Die Verbote gegen Root-Autorenschaft, Root-Commits, Reset/Clean/Stash
-   fremder Zustände, eigenmächtige Tag-Löschung sowie erfundene Acceptance-,
-   Review-, Integrations- oder Managementautorität.
-
-**Betroffene Arbeit und Schnittstellen:** Der ausführbare Checker
-`_src/tools/check_integration_hygiene.py`, seine hermetischen Tests, die
-Preflight-Anweisungen in `AGENTS.md` und
-`docs/pipeline/branch-workflow.md` sowie die Werkzeugdokumentation in
-`docs/pipeline/tools.md`. Die Ausnahme betrifft alle Integrationen, weil diese
-Gates repository-weit wirken. Produkt-, Acceptance- und
-Checkpoint-Verträge bleiben unverändert.
-
-**Aktivierungspunkt:** Erst der vollständig geprüfte Governance- und
-Checker-Stand auf `main`. Bis dahin bleibt die bisherige strikte Semantik
-wirksam; insbesondere ist die aktuell beobachtete Abweichung in
-`logs/agent-memory/roles/Architect.md` noch kein gültiger Pass.
-
-**Erforderliche Verifikation:** Hermetische Positiv- und Negativkontrollen
-müssen mindestens beweisen: (a) ausschließlich unstaged Memory-Divergenz ist
-nicht blockierend; (b) gemischte Memory- und Nicht-Memory-Divergenz bleibt
-blockierend und nennt nur die relevante nicht-ephemere Ursache; (c) gestagte
-Memory-Divergenz bleibt blockierend; (d) stale-ref-, unavailable- und
-Exit-2-Semantik bleiben unverändert; (e) der harte Root-Preflight verwendet
-dieselbe kanonische Pfadgrenze wie der Checker; (f) ein Merge, der dieselbe
-Memory-Datei berührt, scheitert sicher und wird nicht erzwungen. Live-Evidenz
-ist zusätzlich, aber ersetzt diese Kontrollen nicht.
-
-**Recovery:** Bei Rücknahme wird die Pfadausnahme additiv widerrufen; Checker
-und Root-Preflight behandeln danach wieder jede getrackte Root-Divergenz als
-blockierend. Bereits ephemer gebliebene Memory-Zeilen erhalten dadurch keine
-nachträgliche Persistenz- oder Acceptance-Wirkung.
-
-**Aufgezeichnet von:** `jean-luc`, Project Lead Team Enterprise, 2026-08-25.
-Diese Aufzeichnung setzt die Managementanweisung operativ um, beansprucht aber
-keine Architekten-, Implementierungs-, Review- oder Acceptance-Autorität.
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T07:10:00Z`
+- **Deciding identity:** `authority:current-user:autodocs:2026-08-25`
+- **Role:** `Management`
+- **Authority reference:** `TODO-jean-luc-0044-memory-hygiene-exception-20260825T065000Z.md#coordination-claim--dec-0044-021`
+- **Subject:** Repository-weite Hygieneausnahme für ephemeren Agent-Memory-Zustand und eindeutige Rollenverteilung für Hygieneprüfung und Main-Integration; ersetzt den verworfenen, nicht publizierten Kandidaten mit der kollidierenden Kennung DEC-0044-020 aus Commit `18272308798679633add6311d61ed4b9bd4599c0`.
+- **Decision:** Unstaged getrackte Arbeitsbaumabweichungen ausschließlich unter dem NUL-sicher bestimmten kanonischen Kindpfad `logs/agent-memory/` dürfen für sich allein Integrationen nicht blockieren. Checker und harter Root-Preflight verwenden dafür dieselbe Implementierung des Pfadprädikats. Gestagte Memory-Abweichungen, gemischte Abweichungen mit mindestens einem Pfad außerhalb dieses Baums, Zielkandidaten mit überlappenden Memory-Pfaden und alle übrigen Hygiene-Findings bleiben blockierend. Der ausdrücklich zugewiesene privilegierte Integrator führt Hygieneprüfung, Integrationsbefund und Merge nach `main` aus; die Projektleitung koordiniert Baselines, Abhängigkeiten und Managemententscheidungen, führt aber weder den Hygienecheck noch den Main-Merge aus. Eine spätere persistente Übernahme von Agent-Memory benötigt eine Task-/Issue-Zuordnung in der Commit-Message, aber keinen eigenen Backlog-Knoten.
+- **Technical justification:** Agent-Memory ist absichtlich ephemerer geteilter Lernzustand und darf unabhängige Integrationen nicht global anhalten. Eine reine Checker-Ausnahme wäre unwirksam, solange der rohe Root-Preflight dieselbe Abweichung weiterhin blockiert; getrennte Pfadlogik könnte zudem auseinanderlaufen. Der gemeinsame NUL-sichere Predicate verhindert Sonderfälle durch Pfadpräfixe oder ungewöhnliche Dateinamen. Ein Abbruch bei Zielüberlappung verhindert, dass ein Merge vorhandenen Memory-Zustand überschreibt oder dessen Gleichheit fälschlich als Sicherheit wertet. Die eindeutige Integrator-Zuständigkeit stellt Vier-Augen-Prüfung und einen sichtbaren Integrationsbefund her.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Gemeinsame enge Memory-Ausnahme für Checker und Root-Preflight mit Integrator-geführter Integration.
+    - **Disposition:** `selected`
+    - **Reason:** Sie bewahrt die übrigen Fail-closed-Gates, verhindert Logikdrift und ordnet Prüfung und Merge derselben unabhängigen Rolle zu.
+  - **ALT-02:** Nur `MAIN_WORKTREE_DIRTY` im Python-Checker ausnehmen.
+    - **Disposition:** `rejected`
+    - **Reason:** Der rohe Root-Preflight würde weiterhin stoppen und eine zweite abweichende Pfadlogik erzeugen.
+  - **ALT-03:** Jede Root-Abweichung zulassen oder die Projektleitung weiterhin alternativ mergen lassen.
+    - **Disposition:** `rejected`
+    - **Reason:** Das würde den belegten Root-Quieszenzschutz beziehungsweise die klare unabhängige Integrator-Verantwortung aufheben.
+- **Consequences:**
+  - **CON-01:** Agenten können Lernzustand unter `logs/agent-memory/` teilen, ohne unabhängige Integrationen zu blockieren.
+  - **CON-02:** Checker, maschinenlesbarer Root-Preflight und Dokumentation benötigen eine gemeinsame kanonische Predicate-Implementierung samt hermetischer Positiv- und Negativtests.
+  - **CON-03:** Ein Kandidat, der irgendeinen aktuell abweichenden Memory-Pfad selbst verändert, wird vor dem Merge abgewiesen; Gleichheit der Bytes ist keine Ausnahme.
+  - **CON-04:** `INDEX_NOT_HEAD`, `FOREIGN_STAGED_TREE`, `STALE_AFTER_REF_MOVE`, `WORKTREE_UNAVAILABLE`, Exit `2`, Nicht-Memory-Divergenz, Merge-Konflikte und Root-Schreibverbote bleiben unverändert blockierend.
+  - **CON-05:** Die operative KM-Strategie, `AGENTS.md`, `branch-workflow.md`, `tools.md`, Rollen-SOP und Rollenmatrix müssen dieselbe Integrator-/Projektleitungszuordnung tragen; erst der geprüfte Stand auf `main` aktiviert die Regel.
+- **Affected work units:**
+  - `task:0044-memory-hygiene-exception`
+  - `path:_src/tools/check_integration_hygiene.py`
+  - `path:AGENTS.md`
+  - `path:docs/pipeline/branch-workflow.md`
+  - `path:docs/pipeline/tools.md`
+  - `path:docs/pipeline/process-roles.md`
+  - `path:docs/pipeline/roles/project-lead.md`
+  - `path:docs/pipeline/roles/integrator.md`
+  - `path:docs/pipeline/role_artifact_matrix.csv`
+- **Affected gates:**
+  - `validation:_src/tools/check_integration_hygiene.py`
+  - `integration:repository-main`
+- **Review participation:** `none`
+- **No-review reason:** Der konforme Kandidat muss vor jeder Gate-Mutation durch den bereits beauftragten, von der protokollierenden Projektleitung verschiedenen Management-instantiated Architect gegen den exakten Commit geprüft werden; dessen append-only Review wird anschließend als Teilnahme und bindende Implementierungsauflage referenziert.
+- **Waiver:** `none`
