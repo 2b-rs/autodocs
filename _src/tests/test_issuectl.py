@@ -6,10 +6,13 @@ import io
 import json
 import shutil
 import sys
+import hashlib
+import os
 import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 ISSUECTL_PATH = ROOT / "_src/tools/issuectl.py"
@@ -525,6 +528,486 @@ class IssuectlTraceTests(unittest.TestCase):
             ]
         )
         self.assertEqual(code, ctl.EXIT_ERROR)
+
+
+class IssuectlMutateTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name)
+        self.issues = self.repo / "issues"
+        self.issues.mkdir()
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def _digest(self, item_id):
+        return hashlib.sha256(ctl.item_path(self.issues, item_id).read_bytes()).hexdigest()
+
+    def _create(self, item_id, **extra):
+        argv = [
+            "create",
+            "--repo",
+            str(self.repo),
+            "--issues-root",
+            str(self.issues),
+            "--id",
+            item_id,
+            "--format",
+            "json",
+        ]
+        for key, value in extra.items():
+            argv.extend([f"--{key.replace('_', '-')}", value])
+        code, out, err = _run_main(argv)
+        self.assertEqual(code, 0, err or out)
+        return json.loads(out)
+
+    def test_create_feature_task_subtask_paths(self):
+        self._create("0100", goal="Feature goal.")
+        self._create("0100-01", goal="Task goal.")
+        self._create("0100-01.01", goal="Subtask goal.")
+        self.assertTrue((self.issues / "0100/index.md").is_file())
+        self.assertTrue((self.issues / "0100/0100-01/index.md").is_file())
+        self.assertTrue((self.issues / "0100/0100-01.01/index.md").is_file())
+        for item_id in ("0100", "0100-01", "0100-01.01"):
+            meta, _body, _data = ctl.parse_document(ctl.item_path(self.issues, item_id), self.issues)
+            self.assertEqual(meta["id"], item_id)
+            self.assertEqual(meta["level"], ctl.level_of(item_id))
+
+    def test_edit_approved_field_and_identity_rejected(self):
+        self._create("0100")
+        digest = self._digest("0100")
+        code, out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--field",
+                "visibility",
+                "--value",
+                "public-summary",
+                "--expected-digest",
+                digest,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        meta, body, _data = ctl.parse_document(ctl.item_path(self.issues, "0100"), self.issues)
+        self.assertEqual(meta["visibility"], "public-summary")
+        self.assertIn("Feature goal" if False else "Goal for 0100", body)
+        digest = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--field",
+                "id",
+                "--value",
+                "9999",
+                "--expected-digest",
+                digest,
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1111", err)
+
+    def test_allocate_withdraw_supersede_and_history(self):
+        self._create("0100")
+        d = self._digest("0100")
+        _run_main(
+            [
+                "criterion-allocate",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--text",
+                "Second criterion.",
+                "--expected-digest",
+                d,
+            ]
+        )
+        parsed = ctl.store.parse_markdown_body(
+            ctl.parse_document(ctl.item_path(self.issues, "0100"), self.issues)[1]
+        )
+        self.assertEqual([c["id"] for c in parsed["criteria"]], ["AC-001", "AC-002"])
+        d = self._digest("0100")
+        _run_main(
+            [
+                "criterion-withdraw",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--ac",
+                "AC-002",
+                "--reason",
+                "no longer needed",
+                "--expected-digest",
+                d,
+            ]
+        )
+        d = self._digest("0100")
+        code, out, err = _run_main(
+            [
+                "criterion-allocate",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--text",
+                "Third after withdrawal.",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        payload = json.loads(out)
+        self.assertEqual(payload["allocated"], "AC-003")
+        d = self._digest("0100")
+        code, out, err = _run_main(
+            [
+                "criterion-supersede",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--ac",
+                "AC-001",
+                "--text",
+                "Replacement verification.",
+                "--reason",
+                "method changed",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        parsed = ctl.store.parse_markdown_body(
+            ctl.parse_document(ctl.item_path(self.issues, "0100"), self.issues)[1]
+        )
+        statuses = {c["id"]: c["status"] for c in parsed["criteria"]}
+        self.assertEqual(statuses["AC-001"], "superseded")
+        self.assertEqual(statuses["AC-002"], "withdrawn")
+        self.assertEqual(statuses["AC-003"], "active")
+        self.assertEqual(statuses["AC-004"], "active")
+
+    def test_prereq_relation_and_cycle_rejected(self):
+        self._create("0100")
+        self._create("0101")
+        d = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "prereq",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--action",
+                "add",
+                "--target",
+                "0101",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        d = self._digest("0101")
+        code, _out, err = _run_main(
+            [
+                "prereq",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0101",
+                "--action",
+                "add",
+                "--target",
+                "0100",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1108", err)
+        d = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "relation",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--action",
+                "add",
+                "--type",
+                "blocks",
+                "--target",
+                "0101",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        meta, _body, _data = ctl.parse_document(ctl.item_path(self.issues, "0100"), self.issues)
+        self.assertEqual(meta["relations"], [{"type": "blocks", "target": "0101"}])
+        d = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "prereq",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--action",
+                "remove",
+                "--target",
+                "0101",
+                "--expected-digest",
+                d,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+
+    def test_invalid_parent_and_move(self):
+        code, _out, err = _run_main(
+            [
+                "create",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100-01",
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1107", err)
+        self._create("0100")
+        d = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "criterion-move",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--ac",
+                "AC-001",
+                "--to-id",
+                "0101",
+                "--expected-digest",
+                d,
+                "--expected-digest-dest",
+                d,
+                "--reason",
+                "rehome",
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1114", err)
+
+    def test_move_success_and_claim_scope(self):
+        self._create("0100")
+        self._create("0101")
+        src_d = self._digest("0100")
+        dst_d = self._digest("0101")
+        code, out, err = _run_main(
+            [
+                "criterion-move",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--ac",
+                "AC-001",
+                "--to-id",
+                "0101",
+                "--expected-digest",
+                src_d,
+                "--expected-digest-dest",
+                dst_d,
+                "--reason",
+                "reclassified",
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        src = ctl.store.parse_markdown_body(
+            ctl.parse_document(ctl.item_path(self.issues, "0100"), self.issues)[1]
+        )
+        dst = ctl.store.parse_markdown_body(
+            ctl.parse_document(ctl.item_path(self.issues, "0101"), self.issues)[1]
+        )
+        self.assertEqual(src["criteria"][0]["status"], "moved")
+        self.assertEqual(dst["criteria"][-1]["status"], "active")
+        self.assertEqual(dst["criteria"][-1]["derived_from"], "0100#AC-001")
+        claim = self.issues / "0101/claim.json"
+        claim.write_text(
+            json.dumps(
+                {
+                    "owner_token": "agent:test:0101:x",
+                    "write_scopes": ["issues/other/index.md"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        d = self._digest("0101")
+        code, _out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0101",
+                "--field",
+                "visibility",
+                "--value",
+                "public-summary",
+                "--expected-digest",
+                d,
+                "--owner-token",
+                "agent:test:0101:x",
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1105", err)
+
+    def test_concurrent_edit_rejected(self):
+        self._create("0100")
+        stale = self._digest("0100")
+        ctl.item_path(self.issues, "0100").write_bytes(
+            ctl.item_path(self.issues, "0100").read_bytes() + b""
+        )
+        path = ctl.item_path(self.issues, "0100")
+        text = path.read_text(encoding="utf-8").replace("open", "in_progress", 1)
+        path.write_text(text, encoding="utf-8")
+        code, _out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--field",
+                "visibility",
+                "--value",
+                "public-summary",
+                "--expected-digest",
+                stale,
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1106", err)
+
+    def test_crash_rollback_dry_run_and_noop(self):
+        self._create("0100")
+        original = ctl.item_path(self.issues, "0100").read_bytes()
+        digest = self._digest("0100")
+        code, out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--field",
+                "visibility",
+                "--value",
+                "public-summary",
+                "--expected-digest",
+                digest,
+                "--dry-run",
+                "--format",
+                "json",
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        payload = json.loads(out)
+        self.assertTrue(payload["dry_run"])
+        self.assertIn("diff", payload)
+        self.assertEqual(ctl.item_path(self.issues, "0100").read_bytes(), original)
+        code, out, err = _run_main(
+            [
+                "edit",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--field",
+                "visibility",
+                "--value",
+                "internal",
+                "--expected-digest",
+                digest,
+            ]
+        )
+        self.assertEqual(code, 0, err)
+        self.assertTrue(json.loads(out)["noop"])
+        self.assertEqual(ctl.item_path(self.issues, "0100").read_bytes(), original)
+        calls = {"n": 0}
+        real = os.replace
+
+        def boom(src, dst):
+            calls["n"] += 1
+            raise OSError("injected crash")
+
+        with mock.patch.object(ctl.os, "replace", boom):
+            code, _out, err = _run_main(
+                [
+                    "edit",
+                    "--repo",
+                    str(self.repo),
+                    "--issues-root",
+                    str(self.issues),
+                    "--id",
+                    "0100",
+                    "--field",
+                    "visibility",
+                    "--value",
+                    "public-summary",
+                    "--expected-digest",
+                    digest,
+                ]
+            )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertEqual(ctl.item_path(self.issues, "0100").read_bytes(), original)
+        leftovers = list(self.issues.joinpath("0100").glob(".issuectl-*.tmp"))
+        self.assertEqual(leftovers, [])
 
 
 if __name__ == "__main__":
