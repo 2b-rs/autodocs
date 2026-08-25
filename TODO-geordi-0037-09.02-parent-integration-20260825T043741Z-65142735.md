@@ -16,7 +16,7 @@
 - external_resources: none
 - assumptions: the Project Lead's exact target-worktree assignment authorizes this session to use the existing isolated item worktree for this merge action; no ownership is inferred from the directory name
 - prohibited: `uv.lock`; `0037-09.03`/`0037-09.04`; foreign claim edits; Acceptance; review verdicts; checkpoint crossing; Feature/main/DONE movement; push; root-checkout mutation; unrelated repair
-- status: integration inconclusive after post-merge validation finding; source repair or disposition requires a separate owner/Project Lead action
+- status: parent integration complete after separately owned EOF repair and successful bounded revalidation; no Acceptance or review disposition made
 
 ## Required evidence
 
@@ -36,3 +36,14 @@
 - `py_compile` for `_src/tools/issue_validate.py` and `_src/tests/test_issue_validate.py`: **PASS**.
 - `git diff --check 993e995bebeda483c34449d4e9a7679c63078d6c..ca2adeadb63def2284dafa3a0ac9963f851b714b`: **FAIL** — `_src/tests/test_issue_validate.py:506: new blank line at EOF.` The line is present on the pinned source tip and attributed by `git blame` to `c4da065dea0`; it was not repaired during integration.
 - Target worktree remains clean after the merge. No Acceptance, review verdict, checkpoint, Feature/main/DONE transition, push, root mutation, foreign-claim edit, or unrelated repair was performed.
+
+## EOF repair integration and revalidation
+
+- Follow-up authority: exact Project Lead assignment from `jean-luc`, mailbox `1787634232850-815f8e9e`; merge and revalidation only, with no Acceptance or review authority.
+- Follow-up preflight: target `0037-09@1bdfebac6276f2bb534cb5d2519a8e3c2d8e7755` and source `0037-09-eof-20260825T044400Z@f724a6661f3d3c5fe705dbcbb21fd6640f875bc7` matched their assigned pins; tracked worktree and index clean; source not yet an ancestor.
+- Follow-up integration hygiene: **PASS**, exit `0`, 194 registered worktrees.
+- Explicit EOF-history merge: `0b662697803eefa3a8bcf01a248da32e5ed8a735`; parents `1bdfebac6276f2bb534cb5d2519a8e3c2d8e7755` and `f724a6661f3d3c5fe705dbcbb21fd6640f875bc7`.
+- Focused validation with Python 3.9.6: **13 tests passed** in 8.932s.
+- `py_compile` for `_src/tools/issue_validate.py` and `_src/tests/test_issue_validate.py`: **PASS**.
+- `git diff --check 993e995bebeda483c34449d4e9a7679c63078d6c..0b662697803eefa3a8bcf01a248da32e5ed8a735`: **PASS**, exit `0`.
+- Target worktree clean after validation. The EOF repair was integrated through its branch history; no cherry-pick, rewrite, independent repair, Acceptance, review verdict, checkpoint, Feature/main/DONE transition, push, `uv.lock`, or `0037-09.03`/`.04` action occurred.
