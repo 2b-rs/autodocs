@@ -124,17 +124,21 @@ leave the root stale:
 
 1. Author and commit the change in an item-owned worktree, on a branch cut from
    `main`, with the `DEC-0044-008` provenance trailer.
-2. **Hard preflight in the root**, all three must hold: `git diff --quiet`,
-   `git diff --cached --quiet`, and `HEAD` is `refs/heads/main`. Additionally run
-   the hygiene check below. Any failure means **abort** — do not "tidy up" the
-   root; recovering it is a separate, separately authorized operation.
+2. **Machine hard preflight in the root:**
+   `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
+   The shared executable verifies the root is on `main`, its index equals
+   `HEAD`, and its tracked working-tree divergence satisfies the same
+   `DEC-0044-021` classifier used by the hygiene check below. Any failure means
+   **abort** — do not "tidy up" the root; recovery is separately authorized.
 3. Advance from the root: `git -C <root> merge --ff-only <branch>`, or `--no-ff`
    when `DEC-0044-008` requires a real merge commit because the branch is not on
    the direct predecessor chain.
 4. Remove the helper worktree and branch.
 
-Only a **privileged integrator or the Projektleitung** may perform step 3. No
-unprivileged worker moves `refs/heads/main` at all.
+Only the expressly assigned **privileged Integrator** performs the hygiene
+verdict and step 3. The Project Lead coordinates the baseline and authority but
+does not run the gate or merge `main`. No unprivileged worker moves
+`refs/heads/main` at all.
 
 ## Pre-integration hygiene check
 
@@ -142,7 +146,7 @@ Before any integration — and mandatorily before the ref advance above — run 
 machine-runnable check:
 
 ```bash
-python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> [--json]
+python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> --candidate-ref <candidate> [--json]
 ```
 
 It is strictly read-only (no files, refs, indexes or objects are written) and
@@ -153,8 +157,9 @@ and a `2` is a failed check, never a pass. Findings:
 | Code | Meaning |
 |---|---|
 | `INDEX_NOT_HEAD` | the integration worktree's own index differs from its `HEAD` |
-| `FOREIGN_STAGED_TREE` | some *other* registered worktree holds a staged tree |
+| `FOREIGN_STAGED_TREE` | some *other* registered worktree still holds a staged tree after one bounded 2.0-second re-sample; the finding includes index mtime and age |
 | `MAIN_WORKTREE_DIRTY` | tracked files in the worktree checking out `main` differ from its index; this is a blocking root-quiescence finding, not a rule for live item worktrees |
+| `CANDIDATE_MEMORY_OVERLAP` | the candidate changes a currently allowed dirty Memory path; overlap blocks even when bytes are equal |
 | `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
 | `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
 
@@ -162,18 +167,25 @@ Two properties of the check must be understood, or it will be trusted for more
 than it does:
 
 - `FOREIGN_STAGED_TREE` is **not** by itself an accusation. Another agent staging
-  work in its own worktree is ordinary. The finding says that state exists which
-  Git history cannot show, and an integration must not proceed across it. The
-  resolution is to have that owner commit or stash — never to reset a foreign
-  worktree.
+  work in its own worktree is ordinary. The check waits a bounded 2.0 seconds and
+  re-samples every initial foreign candidate once; a commit that completes in
+  that interval is not reported. A candidate still divergent on the second
+  sample remains the same blocking finding, with structured index mtime and age
+  (`index_mtime_utc`, `index_age_seconds`) so fresh and stale state can be told
+  apart without another run. The resolution is to have that owner commit or
+  stash — never to reset a foreign worktree. Re-sampling does not make any
+  persistent foreign staged tree advisory and does not narrow which worktrees
+  block.
 - `MAIN_WORKTREE_DIRTY` closes the known clean-index blind spot for the worktree
-  checking out `main`, including the residual tracked-file divergence observed
-  on 2026-08-21. The same unstaged divergence on an item branch is intentionally
-  not a finding: unfinished work in an agent's own item worktree is normal, and
-  this is a quiescence gate for integration rather than an accusation against
-  live work. Untracked files also remain outside the check. This is why step 2
-  above still requires the direct hard preflight in the root **in addition to**
-  the check. Tool and preflight are complementary; neither replaces the other.
+  checking out `main`. Under `DEC-0044-021`, only a non-empty set made entirely
+  of unstaged tracked exact children of `logs/agent-memory/` is allowed. The
+  directory name itself, prefix lookalikes, case variants, mixed paths, staged
+  Memory, and indeterminate output block. Git paths are read with `-z`; newline
+  characters are never record separators. Before merge, `--candidate-ref`
+  intersects the exact candidate tree-diff paths with the allowed dirty Memory
+  paths and blocks every overlap. The same classifier powers `--root-preflight`,
+  which is rerun immediately after the root merge. Untracked files and ordinary
+  unstaged item-worktree changes remain outside this particular gate.
 
 ## Preserved snapshot tags and recovery
 
@@ -197,6 +209,8 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/staged-0043-01-20260822-kathryn` | `05680c5c7` | foreign staged index found in `.worktrees/0043-01` |
 | `preserved/staged-0044-01-20260822-kathryn` | `56bc616f4` | foreign staged index found in `.worktrees/0044-01` |
 | `preserved/staged-0044-01-task-20260822-kathryn` | `c70c45d5d` | foreign staged index found in `.worktrees/0044-01-task` |
+| `preserved/main-incident-6d9a9ba-20260824` | `6d9a9ba116419fc0631412870f9d5914d3fda7c2` | unauthorized root merge of `0037-39` during `0037-08` setup, retained before the explicitly authorized Option-B recovery of `main` to `a3cee63085bdee02521c0437d8696ee1afaa872e` |
+| `preserved/root-git-config-incident-20260825-jean-luc` | `1252503ae1cdcad5b387d2351965da9063964d3f` | the three uncommitted physical-root divergences found after repairing the shared `core.worktree`/test-identity contamination; preserved as evidence without adopting their contents into `main` |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
@@ -320,12 +334,22 @@ time, and the mechanical provenance checks are Feature `0044` work
   policy changes into the branch to be integrated is permitted — that is the
   one policy flow that keeps provenance checkable.
 - **Risk integration (case A4):** if integration remains impossible even under
-  replacement and pull-in, it is a *Risikointegration*. The integrator may
-  approve it — and temporarily suspend policies for it — only after a review
-  with two further agents (QA and Architect) that reaches **unanimity**, with
-  the suspension's scope, duration, and participants recorded. Without
-  unanimity, the integration escalates to the user for decision; this composes
-  with, and does not replace, the `[u]` integration verdict below.
+  replacement and pull-in, it is a *risk integration*. A bounded temporary
+  suspension may activate only with the recorded unanimous affirmative votes of
+  **three independent privileged decision-makers**. QA Manager and Security
+  Manager must always be consulted with evidence: each may sit on that panel or
+  be a distinct external specialist, and each has a final veto for that request.
+  An external veto is checked after unanimity; an inside-panel specialist's veto
+  is inherent in that unanimous vote and is not duplicated. Silence, absence,
+  abstention, failed independence, missing evidence, non-unanimity, either veto,
+  expiry, or failed restoration is never approval and routes through the existing
+  `[u]` integration verdict to Management. A record binds the exact candidate,
+  policy clauses, permitted action, exclusions, compensating controls, finite
+  duration/restoration event, participants, votes, vetoes, and restoration
+  evidence. It cannot grant acceptance, signing, credentials, release, external
+  mutation, service-control, or residual-risk authority. The canonical record
+  schema and fail-closed state machine are in
+  [`risk-integration.md`](risk-integration.md).
 - **Fast-forward absorption of foreign content is prohibited (mechanical-check
   blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
   advance a branch tip without ever creating a merge commit, so an absorbed
@@ -365,12 +389,21 @@ level (see the `TODO.md` header and [`task-acceptance.md`](task-acceptance.md)):
   finding, and only then is it integrated. This holds whether the checkpoint is a
   Subtask, a Task, or the Feature — the attribute, not the level, decides. A
   sandboxed/grunt agent must never cross a checkpoint boundary and never sets,
-  clears, or moves the attribute (architect-only).
+  clears, or moves the attribute (architect-only). An Architect may add the
+  attribute, with recorded rationale, at any time before the affected node has
+  current Acceptance, including after `[x]`/`[w]`. Current Acceptance freezes
+  that accepted baseline; later addition, removal, or movement first requires
+  separately authorized append-only invalidation or reopening. Immediately
+  before Acceptance bookkeeping, compare-and-swap protects the pinned Task
+  block, checkpoint attribute, contract, prerequisite graph, and Acceptance
+  state from a concurrent late designation.
 - **Feature → `main`** and the `DONE.md` move are performed only by a privileged
   agent (the closure authority). Whether a mandatory integration *review* happens
   at the Feature depends on whether the Feature node itself is flagged; either
   way, the Feature closes only once every integration checkpoint within it has a
-  current passing review ([`task-acceptance.md`](task-acceptance.md)).
+  current passing review and every required transitive `[x]`/`[w]` predecessor
+  induced into those Acceptance batches has its own current accepted disposition
+  ([`task-acceptance.md`](task-acceptance.md)).
 
 **Not every Task is individually merged into the Feature.** In the simplest case
 a single grunt works the Tasks one after another, each new Task branch based off
@@ -392,8 +425,8 @@ Feature branch and performs the Feature-level review. The integrator:
 1. Confirms current privilege and an explicit assignment to integrate/accept the
    Feature scope (privilege alone is not authority — see
    [`task-acceptance.md`](task-acceptance.md)).
-2. **Runs the pre-integration hygiene check** (above):
-   `python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree>`.
+2. **Runs the pre-integration hygiene check** (above) against the exact branch:
+   `python3 _src/tools/check_integration_hygiene.py --repo <integration-worktree> --candidate-ref <candidate>`.
    A non-zero exit is a stop, not a warning: findings are resolved by their
    owners — or the integration is deferred — before any merge. A foreign
    worktree is never reset by the integrator.
@@ -402,10 +435,18 @@ Feature branch and performs the Feature-level review. The integrator:
 4. Performs the integration review at each node the architect marked
    `Integration review: mandatory` — and the Feature aggregate review if the
    Feature itself is flagged — as defined in
-   [`task-acceptance.md`](task-acceptance.md), **adding the review findings and
-   acceptance records** on the Feature branch. `Acceptance: ✓` records are created
-   at those checkpoints, bottom-up and prerequisite-closed. Unflagged work carries
-   no such record.
+   [`task-acceptance.md`](task-acceptance.md), executing the derived
+   integration-test obligation of
+   [`integration-test-obligation.md`](integration-test-obligation.md) against
+   the exact integrated candidate (staged activation per `DEC-0044-019`), and
+   **adding the review findings and
+   acceptance records** on the Feature branch. Only the marked node independently
+   triggers integration review. Its Task-Acceptance assignment expands through
+   every required transitive `[x]`/`[w]` predecessor until current valid
+   Acceptance boundaries; every batch member, marked or unmarked, receives its
+   own decision and, on approval, its own `Acceptance: ✓` record bottom-up. An
+   unmarked node does not independently trigger review, and missing Acceptance
+   does not block ordinary successor implementation.
 5. Reconciles and removes the predecessor claim files whose information is now
    captured in acceptance records and check-in provenance
    ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).

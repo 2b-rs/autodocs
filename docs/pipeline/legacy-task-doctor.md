@@ -215,9 +215,22 @@ Task `0038-21` adds a deterministic per-Feature `integration-ready` predicate, d
 
 1. every in-scope Task/Subtask is terminal (`[x]`/`[w]`);
 2. the transitive `PREREQ` closure of the in-scope set — following explicit `dependent:prerequisite` edges outward, including across Feature boundaries — is also entirely terminal;
-3. no terminal node in the in-scope set or its closure that carries a `**Integration review:** mandatory` checkpoint attribute is missing a `**Acceptance:** ✓` record.
+3. no terminal node in the in-scope set or its closure that carries a `**Integration review:** mandatory` checkpoint attribute is missing a syntactic `**Acceptance:** ✓` record.
 
-The Feature is `ready` only when all three hold. This remains the Task `0038-21` Feature-level view; Task `0038-23` (below) adds the finer per-checkpoint attribute validation (architect authority, rationale, no-checkpoint justification) and per-node readiness without changing this predicate's semantics — both share the same structural attribute-bullet detector so a checkpoint is recognized identically by both views.
+The Feature is `ready` only when all three hold, but this legacy value means
+**checkpoint-integration readiness only**. It is not Task-Acceptance readiness or
+Feature-closure authority: the current implementation neither expands each
+checkpoint through all unaccepted transitive `[x]`/`[w]` predecessors nor proves
+that a syntactic Acceptance record is current, reachable, non-invalidated, and
+bound to the required prerequisite-Acceptance set. A privileged reviewer must
+perform that calculation independently under `task-acceptance.md` and
+`DEC-0044-020`; until machine enforcement is extended and tested, `ready: true`
+cannot justify Acceptance or a `DONE.md` move. This remains the historical Task
+`0038-21` Feature-level view; Task `0038-23` (below) adds the finer per-checkpoint
+attribute validation (architect authority, rationale, no-checkpoint
+justification) and per-node readiness without changing the legacy predicate's
+mechanics — both share the same structural attribute-bullet detector so a
+checkpoint is recognized identically by both views.
 
 Every evaluated Feature (ready or not) is reported in the top-level `integration_readiness` array, independent of `findings`, so a not-ready Feature is still visible in deterministic JSON:
 
@@ -242,7 +255,7 @@ On genuine readiness only, the doctor additionally emits one info-severity `LTD-
 
 | Rule | Meaning |
 |---|---|
-| `LTD-FEATURE-INTEGRATION-READY` | An open Feature's complete in-scope Task/Subtask set is terminal, its transitive prerequisite closure is terminal, and no in-closure mandatory checkpoint is missing its acceptance record. |
+| `LTD-FEATURE-INTEGRATION-READY` | Legacy advisory only: an open Feature's complete in-scope Task/Subtask set and transitive prerequisite closure are terminal, and no in-closure mandatory checkpoint lacks a syntactic acceptance record. It does not prove prerequisite-closed current Task Acceptance or authorize Feature closure. |
 
 ## Checkpoint-attribute rules
 

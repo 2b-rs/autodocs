@@ -78,7 +78,6 @@ compare,all,crosscheck,urls,upstream,observations}`.
   keine neue Version an, wenn Kennzahlen, Residual-Status und Skript-Stände
   gegenüber der letzten Version unverändert sind — ein reiner Publikationslauf
   (nur `generate.py` nötig) erzeugt dadurch keine Versions-Dubletten mehr.
-
 ## Extraktions-Kampagnenbericht (`spec_extraction_campaign.py`)
 
 - **Subkommandos**: `create`, `report`.
@@ -190,4 +189,3 @@ reports from `supersession_trigger`, point-in-time reconstruction via
 `asof_view`, and arbitrary-window change summaries via `delta_view`. These
 reports are audit/report views over append-only stores, not separate sources of
 truth.
-
