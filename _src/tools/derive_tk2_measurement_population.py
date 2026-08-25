@@ -11,11 +11,15 @@ Activation: DEC-0040-007, 2026-08-20T08:02:27Z (Management ratification; CON-01)
 
 Read-only: walks main's history of TODO.md and DONE.md via git; mutates nothing.
 """
-import re, subprocess, json, sys
+import re, subprocess, json, sys, os
 from datetime import datetime, timezone
 
-GITDIR = "/Users/tobias.anton/devel/autodocs/.git"
-ACTIVATION = datetime(2026, 8, 20, 8, 2, 27, tzinfo=timezone.utc)
+GITDIR = os.environ.get("TK2_GITDIR", "/Users/tobias.anton/devel/autodocs/.git")
+# Overridable so the tool can be exercised against a hermetic fixture repository
+# instead of the live one (the fixture rule this repository learned the hard way).
+ACTIVATION = (datetime.fromisoformat(os.environ["TK2_ACTIVATION"])
+              if os.environ.get("TK2_ACTIVATION")
+              else datetime(2026, 8, 20, 8, 2, 27, tzinfo=timezone.utc))
 FILES = ["TODO.md", "DONE.md"]
 # Task-level marker line: "- [x] **0038-14**" ; excludes Feature (**0038**) and Subtask (**0038-14.01**)
 MARKER = re.compile(r'^- \[([ pxwdu])\] \*\*(\d{4}-\d{2})\*\*(?!\.)', re.M)
@@ -32,7 +36,11 @@ def commits():
         if "|" not in line:
             continue
         sha, iso = line.split("|", 1)
-        ts = datetime.fromisoformat(iso.strip())
+        # `git log --format=%cI` emits `Z` when the committer TZ is UTC; Python's
+        # fromisoformat rejects it before 3.11. The live repository commits with a
+        # numeric offset, so this path stayed green until a UTC fixture exercised it
+        # (the environment-qualifier defect class, found by the hermetic suite).
+        ts = datetime.fromisoformat(iso.strip().replace("Z", "+00:00"))
         res.append((sha.strip(), ts.astimezone(timezone.utc)))
     return res
 
