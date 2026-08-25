@@ -952,20 +952,9 @@ def _claim_sidecar(issues_root: Path, item_id: str) -> Path:
     return item_path(issues_root, item_id).parent / "claim.json"
 
 
-def _run_git(repo: Path, *args: str, input_bytes: Optional[bytes] = None) -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(repo), *args],
-        input=input_bytes,
-        capture_output=True,
-    )
-    if proc.returncode != 0:
-        raise IssuectlError(
-            "IC1150", f"git {' '.join(args)} failed: {proc.stderr.decode('utf-8', 'replace').strip()}"
-        )
-    return proc.stdout.decode("utf-8")
-
-
 def _git_ref_value(repo: Path, ref: str) -> Optional[str]:
+    # Read-only lookup (git rev-parse), used only to default --base-commit to
+    # the repository's current HEAD; never mutates repository state.
     proc = subprocess.run(
         ["git", "-C", str(repo), "rev-parse", "-q", "--verify", ref],
         capture_output=True,
@@ -973,14 +962,6 @@ def _git_ref_value(repo: Path, ref: str) -> Optional[str]:
     if proc.returncode != 0:
         return None
     return proc.stdout.decode("utf-8").strip()
-
-
-def _git_hash_object(repo: Path, data: bytes) -> str:
-    return _run_git(repo, "hash-object", "-w", "--stdin", input_bytes=data).strip()
-
-
-def _claim_journal_path(claim_sidecar: Path) -> Path:
-    return claim_sidecar.parent / "claim-cas-receipt.txt"
 
 
 def _canonical_claim_bytes(payload: Mapping[str, Any]) -> bytes:
@@ -1096,10 +1077,12 @@ def enforce_no_scope_overlap(issues_root: Path, item_id: str, scopes: Sequence[s
             )
 
 
-def _read_current_claim(issues_root: Path, item_id: str) -> Tuple[Path, Optional[Dict[str, Any]]]:
+def _read_current_claim(
+    issues_root: Path, item_id: str
+) -> Tuple[Path, Optional[Dict[str, Any]], bytes]:
     path = _claim_sidecar(issues_root, item_id)
     if not path.is_file():
-        return path, None
+        return path, None, b""
     data = path.read_bytes()
     try:
         payload = json.loads(data.decode("utf-8"))
@@ -1107,53 +1090,30 @@ def _read_current_claim(issues_root: Path, item_id: str) -> Tuple[Path, Optional
         raise IssuectlError("IC1132", f"unreadable claim sidecar {path}: {exc}") from exc
     if not isinstance(payload, dict):
         raise IssuectlError("IC1132", f"invalid claim sidecar {path}")
-    return path, payload
+    return path, payload, data
 
 
 def _cas_promote_claim(
-    repo: Path,
     issues_root: Path,
     item_id: str,
     new_payload: Mapping[str, Any],
     *,
+    current_bytes: bytes,
+    expected_digest: Optional[str],
     dry_run: bool,
 ) -> bytes:
+    # Same-clone CAS: identical compare-and-swap discipline to the
+    # edit/criterion-* mutate commands above (enforce_expected_digest),
+    # applied to the claim.json sidecar instead of the item index.md. A
+    # rejected CAS raises before atomic_promote runs, so a concurrent local
+    # contender's write is never silently lost.
     path = _claim_sidecar(issues_root, item_id)
     new_bytes = _canonical_claim_bytes(new_payload)
-    ref = _claim_ref(item_id)
+    enforce_expected_digest(path, current_bytes, expected_digest)
     if dry_run:
         return new_bytes
-    old_ref_value = _git_ref_value(repo, ref)
-    new_blob = _git_hash_object(repo, new_bytes)
-    # Same-clone CAS: this update-ref call is the serialization point from
-    # docs/pipeline/issue-lifecycle.md's "Claim and Recovery Protocol". A
-    # rejected CAS raises before anything below runs, so old_ref_value never
-    # silently loses a concurrent local contender's race.
-    proc = subprocess.run(
-        ["git", "-C", str(repo), "update-ref", ref, new_blob, old_ref_value or ""],
-        capture_output=True,
-    )
-    if proc.returncode != 0:
-        raise IssuectlError(
-            "IC1151",
-            f"CAS ref update rejected for {ref}: another local contender won "
-            f"({proc.stderr.decode('utf-8', 'replace').strip()})",
-        )
     original = path.read_bytes() if path.is_file() else None
     atomic_promote([(path, new_bytes, original)], dry_run=False)
-    # Same-directory outcome receipt for this CAS ref transition (which
-    # previous_commit/promoted_commit it moved), scoped to the most recent
-    # transition only. The append-only retained record required by
-    # docs/pipeline/issue-lifecycle.md ("Claim records are append-only
-    # evidence ... they never erase an earlier owner's record") is Git
-    # commit history over claim.json itself, committed by the caller; this
-    # receipt is a same-directory recovery aid, not that record.
-    journal_line = (
-        f"outcome=promoted ref={ref} previous_commit={old_ref_value or 'none'} "
-        f"promoted_commit={new_blob} path={path} item_id={item_id}\n"
-    )
-    journal_path = _claim_journal_path(path)
-    journal_path.write_text(journal_line, encoding="utf-8")
     return new_bytes
 
 
@@ -1180,7 +1140,7 @@ def cmd_claim(args: argparse.Namespace) -> int:
     index = item_path(issues_root, item_id)
     if not index.is_file():
         raise IssuectlError("IC1134", f"unknown item {item_id}: {index} does not exist")
-    _path, current = _read_current_claim(issues_root, item_id)
+    _path, current, current_bytes = _read_current_claim(issues_root, item_id)
     if current is not None and current.get("state") in iv.ACTIVE_CLAIM_STATES:
         raise IssuectlError(
             "IC1135", f"item {item_id} already has an active claim (state={current.get('state')})"
@@ -1206,15 +1166,21 @@ def cmd_claim(args: argparse.Namespace) -> int:
     }
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
-    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    # First acquisition: CAS is against "no active claim" (checked above via
+    # `current`/ACTIVE_CLAIM_STATES), not a caller-supplied expected digest —
+    # there is no prior claim bytes for a first claimant to have echoed back.
+    expected_digest = args.expected_digest or _sha256_bytes(current_bytes)
+    new_bytes = _cas_promote_claim(
+        issues_root, item_id, payload,
+        current_bytes=current_bytes, expected_digest=expected_digest, dry_run=args.dry_run,
+    )
     return _emit_claim(args, "claim", payload, new_bytes)
 
 
 def cmd_renew(args: argparse.Namespace) -> int:
-    repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
-    _path, current = _read_current_claim(issues_root, item_id)
+    _path, current, current_bytes = _read_current_claim(issues_root, item_id)
     if current is None:
         raise IssuectlError("IC1137", f"no claim exists for {item_id}")
     if current.get("state") not in {"active", "renewing"}:
@@ -1231,15 +1197,17 @@ def cmd_renew(args: argparse.Namespace) -> int:
     payload.pop("cas_ref_digest", None)
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
-    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    new_bytes = _cas_promote_claim(
+        issues_root, item_id, payload,
+        current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
+    )
     return _emit_claim(args, "renew", payload, new_bytes)
 
 
 def cmd_release(args: argparse.Namespace) -> int:
-    repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
-    _path, current = _read_current_claim(issues_root, item_id)
+    _path, current, current_bytes = _read_current_claim(issues_root, item_id)
     if current is None:
         raise IssuectlError("IC1137", f"no claim exists for {item_id}")
     if current.get("state") not in {"active", "renewing"}:
@@ -1254,7 +1222,10 @@ def cmd_release(args: argparse.Namespace) -> int:
     payload.pop("cas_ref_digest", None)
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
-    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    new_bytes = _cas_promote_claim(
+        issues_root, item_id, payload,
+        current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
+    )
     return _emit_claim(args, "release", payload, new_bytes)
 
 
@@ -1262,7 +1233,7 @@ def cmd_handoff(args: argparse.Namespace) -> int:
     repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
-    _path, current = _read_current_claim(issues_root, item_id)
+    _path, current, current_bytes = _read_current_claim(issues_root, item_id)
     if current is None:
         raise IssuectlError("IC1137", f"no claim exists for {item_id}")
     if current.get("state") not in {"released", "active", "renewing"}:
@@ -1298,7 +1269,10 @@ def cmd_handoff(args: argparse.Namespace) -> int:
         payload["authority_decision"] = args.authority_decision
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
-    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    new_bytes = _cas_promote_claim(
+        issues_root, item_id, payload,
+        current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
+    )
     return _emit_claim(args, "handoff", payload, new_bytes)
 
 
@@ -1306,7 +1280,7 @@ def cmd_recover(args: argparse.Namespace) -> int:
     repo = Path(args.repo).resolve()
     issues_root = _issues_root(args)
     item_id = args.id
-    _path, current = _read_current_claim(issues_root, item_id)
+    _path, current, current_bytes = _read_current_claim(issues_root, item_id)
     if current is None:
         raise IssuectlError("IC1137", f"no claim exists for {item_id}")
     now = _now_utc(args)
@@ -1343,7 +1317,10 @@ def cmd_recover(args: argparse.Namespace) -> int:
     }
     payload["cas_ref_digest"] = iv._claim_digest(payload)
     validate_claim_payload(payload, item_id=item_id)
-    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    new_bytes = _cas_promote_claim(
+        issues_root, item_id, payload,
+        current_bytes=current_bytes, expected_digest=args.expected_digest, dry_run=args.dry_run,
+    )
     return _emit_claim(args, "recover", payload, new_bytes)
 
 
@@ -1510,7 +1487,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_rel.add_argument("--target", required=True)
     p_rel.set_defaults(func=cmd_relation)
 
-    p_claim = sub.add_parser("claim", help="acquire an active claim via local CAS ref")
+    p_claim = sub.add_parser("claim", help="acquire an active claim via expected-digest CAS")
     _add_claim_common(p_claim)
     p_claim.add_argument("--id", required=True)
     p_claim.add_argument("--owner", required=True)
@@ -1518,22 +1495,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_claim.add_argument("--clone-id", required=True)
     p_claim.add_argument("--write-scope", action="append")
     p_claim.add_argument("--base-commit")
+    p_claim.add_argument(
+        "--expected-digest",
+        help="sha256 of the current claim.json bytes (omit/empty when none exists yet)",
+    )
     p_claim.set_defaults(func=cmd_claim)
 
     p_renew = sub.add_parser("renew", help="extend an active claim's lease")
     _add_claim_common(p_renew)
+    _add_digest(p_renew)
     p_renew.add_argument("--id", required=True)
     p_renew.add_argument("--owner")
     p_renew.set_defaults(func=cmd_renew)
 
     p_release = sub.add_parser("release", help="release an active claim")
     _add_claim_common(p_release)
+    _add_digest(p_release)
     p_release.add_argument("--id", required=True)
     p_release.add_argument("--owner")
     p_release.set_defaults(func=cmd_release)
 
     p_handoff = sub.add_parser("handoff", help="hand off a claim to a new owner")
     _add_claim_common(p_handoff)
+    _add_digest(p_handoff)
     p_handoff.add_argument("--id", required=True)
     p_handoff.add_argument("--to-owner", required=True)
     p_handoff.add_argument("--worktree-id", required=True)
@@ -1546,6 +1530,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_recover = sub.add_parser("recover", help="authority-approved takeover of an expired claim")
     _add_claim_common(p_recover)
+    _add_digest(p_recover)
     p_recover.add_argument("--id", required=True)
     p_recover.add_argument("--owner", required=True)
     p_recover.add_argument("--worktree-id", required=True)

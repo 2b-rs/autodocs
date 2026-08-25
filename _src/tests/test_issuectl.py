@@ -5,7 +5,6 @@ import importlib.util
 import io
 import json
 import shutil
-import subprocess
 import sys
 import hashlib
 import os
@@ -1019,16 +1018,14 @@ class IssuectlClaimTests(unittest.TestCase):
         self.repo = Path(self.temp.name)
         self.issues = self.repo / "issues"
         self.issues.mkdir()
-        subprocess.run(["git", "init", "-q"], cwd=self.repo, check=True)
-        subprocess.run(
-            ["git", "-c", "user.name=t", "-c", "user.email=t@t.t",
-             "commit", "-q", "--allow-empty", "-m", "init"],
-            cwd=self.repo, check=True,
-        )
-        self.base = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=self.repo, check=True,
-            capture_output=True, text=True,
-        ).stdout.strip()
+        # No real Git repository is needed: this Task's CAS mechanism is the
+        # same --expected-digest compare-and-swap the edit/criterion-*
+        # commands already use (see _cas_promote_claim), not a Git ref, and
+        # every claim command accepts an explicit --base-commit, so
+        # _resolve_base_commit never has to shell out to `git rev-parse
+        # HEAD`. A fixed 40-hex placeholder is enough to satisfy the
+        # claim schema's base_commit pattern for these unit tests.
+        self.base = COMMIT
 
     def tearDown(self):
         self.temp.cleanup()
@@ -1044,8 +1041,16 @@ class IssuectlClaimTests(unittest.TestCase):
         self.assertEqual(code, 0, err or out)
         return json.loads(out)
 
+    def _claim_sidecar_path(self, item_id):
+        return self.issues / item_id / "claim.json"
+
     def _claim_json(self, item_id):
-        return json.loads((self.issues / item_id / "claim.json").read_text(encoding="utf-8"))
+        return json.loads(self._claim_sidecar_path(item_id).read_text(encoding="utf-8"))
+
+    def _digest(self, item_id):
+        sidecar = self._claim_sidecar_path(item_id)
+        data = sidecar.read_bytes() if sidecar.is_file() else b""
+        return hashlib.sha256(data).hexdigest()
 
     def _claim(self, item_id, owner="agent:alpha", *, now="2026-08-16T09:00:00+00:00",
                ttl_seconds="7200", worktree_id="wt-a", clone_id="clone-a",
@@ -1075,11 +1080,6 @@ class IssuectlClaimTests(unittest.TestCase):
         # `issuectl validate` / `issue_validate.py` apply to committed claims.
         self.assertEqual(payload["cas_ref_digest"], ctl.iv._claim_digest(payload))
         self.assertIn(payload["state"], ctl.iv.ACTIVE_CLAIM_STATES)
-        ref = subprocess.run(
-            ["git", "rev-parse", "-q", "--verify", "refs/autodocs/claims/0100"],
-            cwd=self.repo, capture_output=True, text=True,
-        )
-        self.assertEqual(ref.returncode, 0)
 
     def test_claim_rejects_second_active_claim_for_same_item(self):
         self._create("0100")
@@ -1108,7 +1108,7 @@ class IssuectlClaimTests(unittest.TestCase):
         before = self._claim_json("0100")
         code, out, err = _run_main([
             "renew", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:alpha",
+            "--id", "0100", "--owner", "agent:alpha", "--expected-digest", self._digest("0100"),
             "--now", "2026-08-16T09:30:00+00:00", "--ttl-seconds", "7200",
             "--format", "json",
         ])
@@ -1120,12 +1120,24 @@ class IssuectlClaimTests(unittest.TestCase):
         self.assertGreater(after["expires_at"], before["expires_at"])
         self.assertEqual(after["cas_ref_digest"], ctl.iv._claim_digest(after))
 
+    def test_renew_rejects_stale_expected_digest(self):
+        self._create("0100")
+        self._claim("0100", owner="agent:alpha")
+        code, _out, err = _run_main([
+            "renew", "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", "0100", "--owner", "agent:alpha", "--expected-digest", "0" * 64,
+            "--format", "json",
+        ])
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1106", err)
+
     def test_renew_rejects_owner_mismatch(self):
         self._create("0100")
         self._claim("0100", owner="agent:alpha")
         code, _out, err = _run_main([
             "renew", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:mallory", "--format", "json",
+            "--id", "0100", "--owner", "agent:mallory", "--expected-digest", self._digest("0100"),
+            "--format", "json",
         ])
         self.assertEqual(code, ctl.EXIT_ERROR)
         self.assertIn("IC1138", err)
@@ -1135,7 +1147,8 @@ class IssuectlClaimTests(unittest.TestCase):
         self._claim("0100", owner="agent:alpha")
         code, out, err = _run_main([
             "release", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:alpha", "--format", "json",
+            "--id", "0100", "--owner", "agent:alpha", "--expected-digest", self._digest("0100"),
+            "--format", "json",
         ])
         self.assertEqual(code, ctl.EXIT_OK, err or out)
         self.assertEqual(self._claim_json("0100")["state"], "released")
@@ -1150,7 +1163,7 @@ class IssuectlClaimTests(unittest.TestCase):
         self._claim("0100", owner="agent:alpha")
         code, _out, err = _run_main([
             "handoff", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--to-owner", "agent:beta",
+            "--id", "0100", "--to-owner", "agent:beta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-b", "--clone-id", "clone-b",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--now", "2026-08-16T09:15:00+00:00", "--format", "json",
@@ -1159,7 +1172,7 @@ class IssuectlClaimTests(unittest.TestCase):
         self.assertIn("IC1139", err)
         code, out, err = _run_main([
             "handoff", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--to-owner", "agent:beta",
+            "--id", "0100", "--to-owner", "agent:beta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-b", "--clone-id", "clone-b",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--authority-decision", "decision-handoff-0100",
@@ -1176,11 +1189,12 @@ class IssuectlClaimTests(unittest.TestCase):
         self._claim("0100", owner="agent:alpha")
         _run_main([
             "release", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:alpha", "--format", "json",
+            "--id", "0100", "--owner", "agent:alpha", "--expected-digest", self._digest("0100"),
+            "--format", "json",
         ])
         code, out, err = _run_main([
             "handoff", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--to-owner", "agent:beta",
+            "--id", "0100", "--to-owner", "agent:beta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-b", "--clone-id", "clone-b",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--now", "2026-08-16T09:15:00+00:00", "--format", "json",
@@ -1193,7 +1207,7 @@ class IssuectlClaimTests(unittest.TestCase):
         self._claim("0100", owner="agent:alpha", ttl_seconds=3600)
         code, _out, err = _run_main([
             "recover", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:delta",
+            "--id", "0100", "--owner", "agent:delta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-d", "--clone-id", "clone-d",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--authority-decision", "decision-takeover-0100",
@@ -1208,7 +1222,7 @@ class IssuectlClaimTests(unittest.TestCase):
                     now="2026-08-16T09:00:00+00:00")
         code, _out, err = _run_main([
             "recover", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:delta",
+            "--id", "0100", "--owner", "agent:delta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-d", "--clone-id", "clone-d",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--now", "2026-08-16T09:10:00+00:00", "--format", "json",
@@ -1216,7 +1230,7 @@ class IssuectlClaimTests(unittest.TestCase):
         self.assertEqual(code, 2)  # argparse required-argument usage error
         code, out, err = _run_main([
             "recover", "--repo", str(self.repo), "--issues-root", str(self.issues),
-            "--id", "0100", "--owner", "agent:delta",
+            "--id", "0100", "--owner", "agent:delta", "--expected-digest", self._digest("0100"),
             "--worktree-id", "wt-d", "--clone-id", "clone-d",
             "--write-scope", "issues/0100/index.md", "--base-commit", self.base,
             "--authority-decision", "decision-takeover-0100",
@@ -1229,16 +1243,11 @@ class IssuectlClaimTests(unittest.TestCase):
         self.assertTrue(after["predecessor_claim"])
         self.assertEqual(after["state"], "active")
 
-    def test_claim_dry_run_does_not_write_sidecar_or_move_ref(self):
+    def test_claim_dry_run_does_not_write_sidecar(self):
         self._create("0100")
         code, out, err = self._claim("0100", extra_args=["--dry-run"])
         self.assertEqual(code, ctl.EXIT_OK, err or out)
-        self.assertFalse((self.issues / "0100/claim.json").exists())
-        ref = subprocess.run(
-            ["git", "rev-parse", "-q", "--verify", "refs/autodocs/claims/0100"],
-            cwd=self.repo, capture_output=True, text=True,
-        )
-        self.assertEqual(ref.returncode, 1)
+        self.assertFalse(self._claim_sidecar_path("0100").exists())
 
 
 if __name__ == "__main__":
