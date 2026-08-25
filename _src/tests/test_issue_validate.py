@@ -436,6 +436,21 @@ class LifecycleIssueValidateTest(unittest.TestCase):
         states = ("open", "in_progress", "blocked", "closed", "withdrawn")
         self.assertEqual(set(states), set(VALIDATE.LEGAL_TRANSITIONS))
         self.assertEqual(len(dispositions), 6)
+        completed_only = {"IV0916", "IV0917", "IV0919", "IV0920"}
+        for disposition in dispositions:
+            with self.subTest(disposition=disposition), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp) / "issues"
+                self.seed(root, task_state="closed")
+                kwargs = {"disposition": disposition}
+                if disposition == "archived-not-accepted":
+                    kwargs["validation_result"] = "fail"
+                write_json(root / "0099/0099-01/closure.json",
+                           closure_payload("0099-01", **kwargs))
+                rules, diagnostics, _ = self.validate_root(root)
+                if disposition == "completed":
+                    self.assertTrue(completed_only.intersection(rules), diagnostics)
+                else:
+                    self.assertFalse(completed_only.intersection(rules), diagnostics)
 
     def test_lifecycle_working_tree_and_staged_index(self):
         with tempfile.TemporaryDirectory() as temp:

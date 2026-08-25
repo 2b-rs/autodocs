@@ -451,8 +451,6 @@ def _check_closure(diagnostics, repo, path, parsed_item, closure_entry, approval
             diagnostics.append(Diagnostic(
                 "IV0922", "archived-not-accepted closure must not present validation success credit",
                 closure_path, item_id, field="validation"))
-        if disposition == "completed":
-            pass
     if item_id == "0021" and disposition == "completed":
         diagnostics.append(Diagnostic("IV0922", "Feature 0021 must remain archived-not-accepted",
                                       closure_path, item_id, field="disposition"))
