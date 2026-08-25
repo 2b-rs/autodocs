@@ -212,6 +212,7 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/main-incident-6d9a9ba-20260824` | `6d9a9ba116419fc0631412870f9d5914d3fda7c2` | unauthorized root merge of `0037-39` during `0037-08` setup, retained before the explicitly authorized Option-B recovery of `main` to `a3cee63085bdee02521c0437d8696ee1afaa872e` |
 | `preserved/root-git-config-incident-20260825-jean-luc` | `1252503ae1cdcad5b387d2351965da9063964d3f` | the three uncommitted physical-root divergences found after repairing the shared `core.worktree`/test-identity contamination; preserved as evidence without adopting their contents into `main` |
 | `preserved/as-verify-0038-34-index-20260825` | `d825cff53560878bcfeb4e504113945a21ae0abc` | stale index of the missing worktree `/private/tmp/as-verify-0038-34` (detached HEAD `9bcf87edb`, already `[x]` on branch `0038-34`); captured before authorized removal of that registration only |
+| `preserved/staged-0033-02-tom-culber-20260825` | `6db991be89d60d5f751b739e25fa8c1b3dbb7092` | foreign staged 12-path index from cancelled `.worktrees/0033-02-tom-culber-20260825T215200Z` (HEAD was `8a364e000`); captured by Dispatcher `tom` before `git reset --hard`; Landry catch-up worktree not touched. Recover with `git show --stat preserved/staged-0033-02-tom-culber-20260825` or `git worktree add /tmp/recover-culber-0033-02 preserved/staged-0033-02-tom-culber-20260825` — never check the tag out over a live worktree. |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
