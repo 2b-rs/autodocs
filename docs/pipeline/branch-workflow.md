@@ -203,6 +203,7 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/staged-0044-01-20260822-kathryn` | `56bc616f4` | foreign staged index found in `.worktrees/0044-01` |
 | `preserved/staged-0044-01-task-20260822-kathryn` | `c70c45d5d` | foreign staged index found in `.worktrees/0044-01-task` |
 | `preserved/main-incident-6d9a9ba-20260824` | `6d9a9ba116419fc0631412870f9d5914d3fda7c2` | unauthorized root merge of `0037-39` during `0037-08` setup, retained before the explicitly authorized Option-B recovery of `main` to `a3cee63085bdee02521c0437d8696ee1afaa872e` |
+| `preserved/root-git-config-incident-20260825-jean-luc` | `1252503ae1cdcad5b387d2351965da9063964d3f` | the three uncommitted physical-root divergences found after repairing the shared `core.worktree`/test-identity contamination; preserved as evidence without adopting their contents into `main` |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
@@ -326,12 +327,22 @@ time, and the mechanical provenance checks are Feature `0044` work
   policy changes into the branch to be integrated is permitted — that is the
   one policy flow that keeps provenance checkable.
 - **Risk integration (case A4):** if integration remains impossible even under
-  replacement and pull-in, it is a *Risikointegration*. The integrator may
-  approve it — and temporarily suspend policies for it — only after a review
-  with two further agents (QA and Architect) that reaches **unanimity**, with
-  the suspension's scope, duration, and participants recorded. Without
-  unanimity, the integration escalates to the user for decision; this composes
-  with, and does not replace, the `[u]` integration verdict below.
+  replacement and pull-in, it is a *risk integration*. A bounded temporary
+  suspension may activate only with the recorded unanimous affirmative votes of
+  **three independent privileged decision-makers**. QA Manager and Security
+  Manager must always be consulted with evidence: each may sit on that panel or
+  be a distinct external specialist, and each has a final veto for that request.
+  An external veto is checked after unanimity; an inside-panel specialist's veto
+  is inherent in that unanimous vote and is not duplicated. Silence, absence,
+  abstention, failed independence, missing evidence, non-unanimity, either veto,
+  expiry, or failed restoration is never approval and routes through the existing
+  `[u]` integration verdict to Management. A record binds the exact candidate,
+  policy clauses, permitted action, exclusions, compensating controls, finite
+  duration/restoration event, participants, votes, vetoes, and restoration
+  evidence. It cannot grant acceptance, signing, credentials, release, external
+  mutation, service-control, or residual-risk authority. The canonical record
+  schema and fail-closed state machine are in
+  [`risk-integration.md`](risk-integration.md).
 - **Fast-forward absorption of foreign content is prohibited (mechanical-check
   blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
   advance a branch tip without ever creating a merge commit, so an absorbed
