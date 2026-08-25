@@ -13,7 +13,7 @@
 - **write_scope:** `_src/tools/issue_event_replay.py`, `_src/tests/test_issue_event_replay.py`, this claim, `TODO.md` 0037-15.03 markers only
 - **do_not:** mutate `issue_reimport.py` (15.01), schema transforms (15.02), or issuectl (10.04); shared root checkout; `refs/heads/main`; Acceptance / DONE.md
 - **validation:** `python3 _src/tests/test_issue_event_replay.py` 12/12 PASS
-- **next:** close at `[x]` after product REF is known
+- **next:** closed at `[x]`; product REF `2b8ca3da8d897df39f06d7b5ab09cfc6db5781a6`
 
 ## Progress
 
