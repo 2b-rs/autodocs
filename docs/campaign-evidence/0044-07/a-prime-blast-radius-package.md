@@ -361,3 +361,29 @@ Acceptance, integration verdict, or mutation authorization" und bleibt bei Empfe
 - Ich bewerte weiterhin nicht, ob `data`s Lesart von `DEC-0037-002`s Reichweite (auf `0037`
   begrenzt) oder die A-prime-Lesart (global) zutrifft — beide sind aus dem Text plausibel
   herleitbar, siehe §10.1. Das ist exakt die Frage, die die Architect-Scope-Review klären muss.
+
+---
+
+## 11. Dritter Nachtrag (2026-08-25T22:27Z) — pendente Fallback-Position `seven` (kein Konsens, keine Aktivierung)
+
+Additiv, ausschließlich als geprüfbarer Input erfasst (`jean-luc`, `1787696859896-8508ae39`,
+thread `0044-07-fallback-model`). **Status: pending.** `geordi`s Position steht noch aus; dies ist
+weder Konsens noch Aktivierung, sondern eine Antwort auf den in §9.2/§10 gemeldeten
+Aktivierungsblocker (doppelter Ambiguous-Class-Fallback).
+
+`seven` unterstützt `unprivileged-minimal (fallback, unresolved)` anstelle eines vollständigen
+Stopps bei fehlender/widersprüchlicher Capability-Zuweisung — **nur unter drei Bedingungen:**
+
+1. Der Fallback muss als **ausdrücklicher Wert** samt Widerspruchsdatensatz sichtbar sein, niemals
+   als bloße Feldabwesenheit.
+2. Er ist **befristet bis zur Antwort eines benannten Adressaten** und darf nicht still fortbestehen.
+3. Die erlaubte/gesperrte Tätigkeit ist als **geschlossene Liste** an bereits vorhandene
+   Authority-/Integration-/Acceptance-/Release-/Credential-/External-effect-Gates gebunden; alles
+   andere fail-closed.
+
+**Restrisiko, von `seven` selbst benannt:** Selbstbeschränkung ersetzt die frühere technische
+Unfähigkeit — das ist ein Vertrauensverschiebung, kein Wegfall des Risikos.
+
+Ich nehme dies ausschließlich als benannten, pendenten Alternativvorschlag ins Paket auf, nicht als
+Auflösung des in §9.2 gemeldeten Aktivierungsblockers — der bleibt bestehen, bis ein tatsächlicher
+Konsens (inkl. `geordi`) vorliegt.
