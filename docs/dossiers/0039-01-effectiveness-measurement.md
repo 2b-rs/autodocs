@@ -26,6 +26,28 @@ the `0040-05` TK-2 rule:
 preserved instance of an agent asserting Management authority it did not hold;
 `DEC-0040-007` is the ratification that supplied the missing authority.
 
+## 1a. CORRECTION `F-SEVEN-0039-01-SELF-002` — the first population was derived with a defective traversal
+
+**The population table published in the previous draft revision (`df537b263`) was wrong and is superseded here.** The correction is additive; the superseded membership is retained in the manifest's `corrections` block.
+
+**Defect:** the derivation walked `git log --reverse main -- TODO.md DONE.md` **without `--first-parent`**. That interleaves side-branch commits into what was then read as main's timeline — 399 commits total against 270 on the first-parent line — and reading file state at a side-branch commit reports *that branch's* state as a point in main's history.
+
+**How it surfaced:** while deriving the §7.1 context findings, the structural marker-transition reconstruction reported that nine unrelated Tasks reverted from `[x]` at commit `550a6f50a` — a claim commit for `0037-08`, an entirely different Task. A claim commit cannot revert nine foreign Tasks; the implausible result was the symptom. `550a6f50a` is verifiably **not** on main's first-parent line.
+
+**Effect on the result:**
+
+| | Previous (defective) | Corrected (`--first-parent`) |
+|---|---|---|
+| Membership | included `0040-11` | includes `0044-14` instead |
+| Ordering | side-branch timestamps interleaved | main-line transition order |
+| Attributed TK-2 count | 3 of 20 | **3 of 20 — unchanged** |
+
+The attributed Tasks are the same three (`0040-05`, `0040-09`, `0044-01`); `0044-14`, newly in the population, carries no attributed record. **The count is unchanged, but it was unchanged by luck, not by construction** — a different member could have carried a record, and the published population would still have been wrong.
+
+**This is the reach axis in my own measurement:** the traversal computed "state at some ancestor of main" while the result asserted "state of main over time". Same defect class this Task catalogues; third time it has caught its own author. The tool now uses `--first-parent`, with the reason recorded at the source line; the 11-test suite remains green.
+
+**Consequence for §4:** the escalation draft and the §7.1 context findings were computed on the same defective traversal and are therefore **withdrawn pending re-derivation**; see §4.
+
 ## 2. Population — 20 Tasks, deterministic
 
 Rule from the Task contract: exactly the first 20 Task-level items (`XXXX-YY`;
@@ -89,7 +111,9 @@ inflation direction as the `0038-31` double-count incident.
 
 ## 4. Primary count 2 — escalations (DRAFT, limitations visible)
 
-**Result as computed: 9 of 20 Tasks** — `0040-05`, `0040-08`, `0040-09`,
+> **WITHDRAWN pending re-derivation (`F-SEVEN-0039-01-SELF-002`).** The figure below was computed against the defective non-`--first-parent` traversal *and* on a population that has since been corrected. It is retained for traceability and must not be cited.
+
+**Result as computed (superseded): 9 of 20 Tasks** — `0040-05`, `0040-08`, `0040-09`,
 `0040-10`, `0038-20`, `0037-37`, `0044-01`, `0037-49`, `0037-07`.
 
 Method: escalation markers (`BLOCKER`, `escalat*`, `Eskalation`, `[u]`,

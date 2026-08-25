@@ -30,7 +30,10 @@ def git(*args):
 
 def commits():
     """main's commits touching the bookkeeping files, oldest->newest, after activation."""
-    out = git("log", "--reverse", "--format=%H|%cI", "main", "--", *FILES)
+    # --first-parent: without it the walk interleaves side-branch commits, and
+    # reading file state at a side-branch commit reports THAT branch's state as a
+    # point in main's timeline. Found 2026-08-25 while deriving context findings.
+    out = git("log", "--reverse", "--first-parent", "--format=%H|%cI", "main", "--", *FILES)
     res = []
     for line in out.strip().splitlines():
         if "|" not in line:
