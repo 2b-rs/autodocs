@@ -171,3 +171,86 @@ Keine Implementierung, keine Mutation an einem der genannten abgenommenen Vertr�
 `Acceptance: ✓`, kein Checkpoint-Übertritt, kein Merge. `data`s B-Inhalt ist nicht wiedergegeben,
 weil ich ihn nicht einsehen konnte — als offene Lücke benannt, nicht stillschweigend
 übergangen. Die Tiefe der Werkzeug-Code-Abhängigkeiten (§3.2) ist nur benannt, nicht analysiert.
+
+---
+
+## 9. Nachtrag (2026-08-25T22:22Z) — vollständige A-prime-Quelle und Datas B-Position jetzt vorhanden
+
+`jean-luc` hat die zuvor fehlende Quelle nachgereicht (Nachricht `1787696561534-06a22b7d`),
+einschließlich `data`s B-Position. Dieser Abschnitt ergänzt additiv — nichts oben wurde verändert.
+
+### 9.1 A-prime, vollständig, wörtlich übernommen (zehn Punkte)
+
+1. Runner bleibt eigenständige, normalerweise unprivilegierte **direkte** Ausführungsrolle für
+   Hintergrundarbeit.
+2. Alter Runner-**Dienst**, **Queue**, typisierter **Transport** werden für das Zukunftssystem
+   ausgemustert.
+3. `sandboxed-grunt` wird **global** aus zukünftiger Planung und auswählbaren Profilen entfernt —
+   **nicht nur für Feature `0037` abgelehnt.** (Bestätigt meine eigene Lesart in §3.1 oben.)
+4. `unprivileged`/`privileged` sowie Rechte-/Daten-/Werkzeug-/Cognition-/Independence-Dimensionen
+   und Capability Matching **bleiben**.
+5. Scope-, Compare-and-swap-, Journal-, Rollback-/Recovery-, Acceptance-Verbot- und
+   Hintergrundjob-**Garantien müssen vor Transportentfernung re-homed und getestet werden** — das
+   ist die von mir in §6 geforderte Antwort auf den Fallback-Fund, nur konkreter: nicht „irgendein
+   Ersatz", sondern eine Pflicht, jede einzelne Garantie zu migrieren und zu testen, **bevor** der
+   alte Transport verschwindet.
+6. Historische Profile/Evidenz bleiben unverändert, erhalten **explizite Legacy-/Importdarstellung**;
+   keine Rückschreibung. (Deckt sich mit meiner Ableitung in §5 aus `AGENTS.md`s
+   Nie-Rückschreiben-Regel — hier nun ausdrücklich bestätigt, nicht nur abgeleitet.)
+7. Betroffene abgenommene Governance, **insbesondere `0044-04`/`0044-05`** und abhängige Verträge,
+   braucht additive Impact-/Invalidierungsanalyse und neue unabhängige Review — **keine stille
+   Gültigkeitsfortschreibung.** Das erweitert meine Liste in §3.1: nicht nur `feature-breakdown.md`
+   selbst (`361f0ce44`), sondern auch `0044-05`s eigene Abnahme (Capability-Schemata/Matcher) fällt
+   unter dieselbe Pflicht.
+8. Aktivierung **nur** durch expliziten globalen Cutover-Commit nach konformem
+   `decision-record@v1` und unabhängiger, management-instanziierter Architect-Scope-Review;
+   **fail-closed Übergang** für aktive Claims/Tasks.
+9. Prüfflächen mindestens: `AGENTS.md`, `SANDBOX.md`, `process-roles.md`, `feature-breakdown.md`,
+   Schemata/Matcher, Runner-Service/Queue/Transporttools, aktive Claims/Handoffs, Feature-`0037`-
+   Cutover/Recovery.
+10. **`data`s B-Position, vollständig:** `sandboxed-grunt` bleibt **global gültige Klasse**, wird
+    nur **innerhalb `0037`** per maschinenlesbarer Consumer-Policy abgelehnt. Vorteile: geringere
+    Invalidierung, Unterstützung nicht-direkter Runtimes. Nachteile: divergierende Vokabulare,
+    Transportlast. Risiken: Drift, falsche globale Autorität.
+
+### 9.2 Eigene Nachprüfung der Zitate (read-only, ausgeführt in diesem Worktree)
+
+- `docs/dossiers/dec-0044-015-provenance.txt:25` — bestätigt: beschreibt eine bestehende
+  Anweisung, Task-Implementierung stets als **`unprivileged`**-Subagenten zu starten, „nicht
+  `sandboxed-grunt`", die nie das Runner-Protokoll benutzen. Das ist bereits gelebte Praxis in
+  Teilen des Repositorys, nicht nur eine zukünftige Absicht — relevant für den
+  „unveränderte-Garantien"-Abschnitt: der Trend ist teilweise bereits im Gang.
+- `SANDBOX.md:33-45` — mit Zeilennummern gegengeprüft: exakt der Abschnitt, den ich in §3.1 zitiert
+  habe (Klassentabelle, Fallback-Satz beginnt kurz danach).
+- `docs/pipeline/process-roles.md:50-65` — **neuer eigener Fund, nicht in meiner Erstfassung:**
+  Der Ambiguous-Class-Fallback aus `SANDBOX.md` (§3.1/§6 oben) **existiert dort ein zweites Mal**,
+  fast wortgleich: „When the supplied class is absent, ambiguous, unrecognized, or contradictory,
+  the session acts as `sandboxed-grunt` …" Das verschärft meinen ursprünglichen Fund: A-prime muss
+  **zwei** Stellen mit demselben Fallback-Mechanismus behandeln, nicht nur eine.
+- `docs/pipeline/process-roles.md:120-129` — die in meiner Erstfassung §3.1 zitierte
+  Rollen-Mapping-Tabelle (§4), Zeilennummern bestätigt.
+- `feature-breakdown.md` §§2/7 — bereits in §3.3 meiner Erstfassung selbst gelesen und geprüft;
+  keine neue Erkenntnis, nur Bestätigung, dass die Zitatstelle korrekt ist.
+- `DEC-0037-002-C001/C002` — **nicht gefunden.** Repository-Suche nach diesen exakten Kennungen in
+  `docs/dossiers/`, `TODO.md`, `DONE.md`: kein Treffer. Ich lege das offen statt es zu ignorieren —
+  möglich, dass es Teil eines noch nicht committeten Datensatzes ist oder ich die Kennung falsch
+  suche; ich erfinde den Inhalt nicht.
+
+### 9.3 Überarbeitete Prüfpunkte (ersetzt/ergänzt Abschnitt 6 oben, additiv)
+
+Zusätzlich zu den in §6 genannten Punkten, jetzt mit der vollständigen Quelle geschärft:
+
+- Für **jede einzelne** der in Punkt 5 genannten Garantien (Scope, Compare-and-swap, Journal,
+  Rollback/Recovery, Acceptance-Verbot, Hintergrundjob) muss die Architect-Scope-Review einen
+  konkreten Re-Homing-Zielort auf direkter Ausführung/Runner-Rolle **und** einen Testnachweis
+  verlangen — nicht nur „ein Ersatz existiert".
+- `0044-05`s eigene Abnahme muss explizit in die additive Invalidierungsanalyse aufgenommen werden,
+  nicht nur `feature-breakdown.md`.
+- Beide Fallback-Fundstellen (`SANDBOX.md` und `process-roles.md`) müssen gemeinsam behandelt
+  werden — eine Korrektur an nur einer Stelle ließe die andere widersprüchlich stehen.
+- `data`s B als vollwertige Alternative bewerten, nicht nur als dokumentierten Dissens: insbesondere
+  ihr Punkt „Unterstützung nicht-direkter Runtimes" — betrifft das eine reale, heute genutzte
+  Runtime-Klasse, oder ist es hypothetisch? Das kann ich aus dem Repository nicht beantworten.
+- `DEC-0037-002-C001/C002` klären, bevor die Prüfung sich auf diese Kennungen als Beleg stützt.
+
+**Ausdrücklich nicht geleistet, weiterhin:** keine Bewertung, welche Seite (A-prime oder B) vorzugswürdig ist — das bleibt der Architect-Scope-Review und der globalen Entscheidung vorbehalten. Ich liefere Fakten und Prüfpunkte, kein Votum.
