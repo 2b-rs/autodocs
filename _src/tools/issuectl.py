@@ -10,12 +10,15 @@ TODO.md/DONE.md as authority.
 from __future__ import annotations
 
 import argparse
+import datetime as _dt
 import difflib
 import hashlib
 import importlib.util
 import json
 import os
 import re
+import secrets
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -912,6 +915,431 @@ def cmd_relation(args: argparse.Namespace) -> int:
     return finish_updates(args, f"relation-{args.action}", [(path, new_bytes, original)])
 
 
+# ---------------------------------------------------------------------------
+# Claim / renew / release / handoff / authorized-recovery operations
+# (Task 0037-10.02). These implement the "Claim and Recovery Protocol"
+# section of docs/pipeline/issue-lifecycle.md against the issue-claim@v1
+# schema (issues/_schema/issue-claim-v1.schema.json), reusing the
+# authoritative record-shape helpers from issue_validate.py (`iv`) so the
+# claims this tool writes always validate under `issuectl validate`.
+#
+# Cross-clone/protected-branch integration review is explicitly out of this
+# Task's surface (docs/pipeline/issue-lifecycle.md "Independent clones and
+# integration"); only same-clone local-ref CAS acquisition is implemented
+# here. `0037-10.03` keeps any remaining issuectl.py surfaces unimplemented.
+# ---------------------------------------------------------------------------
+
+CLAIM_SCHEMA = "issuectl-claim-result@v1"
+CLAIM_STATES = frozenset({
+    "proposed", "active", "renewing", "released", "expired",
+    "takeover-pending", "superseded", "rejected",
+})
+CLAIM_NONCE_RE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+CLAIM_SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{2,63}$")
+CLAIM_SCOPE_RE = re.compile(r"^(?!/)(?!.*(?:^|/)\.\.(?:/|$))[A-Za-z0-9._/-]+$")
+CLAIM_REQUIRED_FIELDS = (
+    "schema_version", "item_id", "state", "owner", "worktree_id", "clone_id",
+    "base_commit", "write_scopes", "issued_at", "expires_at", "lease_nonce",
+    "cas_ref", "cas_ref_digest",
+)
+
+
+def _claim_ref(item_id: str) -> str:
+    return f"refs/autodocs/claims/{item_id}"
+
+
+def _claim_sidecar(issues_root: Path, item_id: str) -> Path:
+    return item_path(issues_root, item_id).parent / "claim.json"
+
+
+def _run_git(repo: Path, *args: str, input_bytes: Optional[bytes] = None) -> str:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        input=input_bytes,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise IssuectlError(
+            "IC1150", f"git {' '.join(args)} failed: {proc.stderr.decode('utf-8', 'replace').strip()}"
+        )
+    return proc.stdout.decode("utf-8")
+
+
+def _git_ref_value(repo: Path, ref: str) -> Optional[str]:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "-q", "--verify", ref],
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout.decode("utf-8").strip()
+
+
+def _git_hash_object(repo: Path, data: bytes) -> str:
+    return _run_git(repo, "hash-object", "-w", "--stdin", input_bytes=data).strip()
+
+
+def _git_update_ref(repo: Path, ref: str, new: str, old: Optional[str]) -> None:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), "update-ref", ref, new, old or ""],
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise IssuectlError(
+            "IC1151",
+            f"CAS ref update rejected for {ref}: another local contender won "
+            f"({proc.stderr.decode('utf-8', 'replace').strip()})",
+        )
+
+
+def _canonical_claim_bytes(payload: Mapping[str, Any]) -> bytes:
+    return (iv._canonical_json(payload) + "\n").encode("utf-8")
+
+
+def _new_lease_nonce() -> str:
+    return secrets.token_urlsafe(24)[:32]
+
+
+def _now_utc(args: argparse.Namespace) -> _dt.datetime:
+    value = getattr(args, "now", None)
+    if value:
+        parsed = iv._parse_time(value)
+        if parsed is None:
+            raise IssuectlError("IC1133", f"malformed --now {value!r}")
+        return parsed
+    return _dt.datetime.now(_dt.timezone.utc)
+
+
+def _resolve_base_commit(args: argparse.Namespace, repo: Path) -> str:
+    explicit = getattr(args, "base_commit", None)
+    if explicit:
+        if not iv.COMMIT_SHA.fullmatch(explicit):
+            raise IssuectlError("IC1133", "--base-commit must be a 40-hex commit id")
+        return explicit
+    head = _git_ref_value(repo, "HEAD")
+    if not head:
+        raise IssuectlError("IC1133", f"cannot resolve HEAD in {repo}")
+    return head
+
+
+def _slug_from(item_id: str, marker: str, moment: _dt.datetime) -> str:
+    stamp = moment.strftime("%Y%m%dt%H%M%S")
+    raw = f"claim-{item_id}-{marker}-{stamp}".lower()
+    slug = re.sub(r"[^a-z0-9-]", "-", raw)
+    slug = re.sub(r"-+", "-", slug).strip("-")
+    if len(slug) < 3:
+        slug = (slug + "-claim").strip("-")
+    return slug[:64]
+
+
+def validate_claim_payload(payload: Mapping[str, Any], *, item_id: str) -> None:
+    for field in CLAIM_REQUIRED_FIELDS:
+        if field not in payload:
+            raise IssuectlError("IC1130", f"claim missing required field {field}")
+    if not re.fullmatch(r"1\.[0-9]+", str(payload["schema_version"])):
+        raise IssuectlError("IC1130", "claim schema_version malformed")
+    if payload["item_id"] != item_id:
+        raise IssuectlError("IC1130", "claim item_id does not match target item")
+    if payload["state"] not in CLAIM_STATES:
+        raise IssuectlError("IC1130", f"invalid claim state {payload['state']!r}")
+    owner = payload.get("owner")
+    if not isinstance(owner, dict) or not owner.get("identity"):
+        raise IssuectlError("IC1130", "claim owner.identity is required")
+    if not isinstance(payload.get("worktree_id"), str) or not payload["worktree_id"]:
+        raise IssuectlError("IC1130", "claim worktree_id is required")
+    if not isinstance(payload.get("clone_id"), str) or not payload["clone_id"]:
+        raise IssuectlError("IC1130", "claim clone_id is required")
+    if not iv.COMMIT_SHA.fullmatch(str(payload.get("base_commit"))):
+        raise IssuectlError("IC1130", "claim base_commit must be a 40-hex commit id")
+    scopes = payload.get("write_scopes")
+    if not isinstance(scopes, list) or not scopes or len(set(scopes)) != len(scopes):
+        raise IssuectlError("IC1130", "claim write_scopes must be a non-empty unique list")
+    for scope in scopes:
+        if not isinstance(scope, str) or not CLAIM_SCOPE_RE.fullmatch(scope):
+            raise IssuectlError("IC1130", f"claim write_scope {scope!r} is malformed")
+    issued = iv._parse_time(payload.get("issued_at"))
+    expires = iv._parse_time(payload.get("expires_at"))
+    if issued is None or expires is None or not (issued < expires):
+        raise IssuectlError("IC1130", "claim issued_at must precede expires_at")
+    if not CLAIM_NONCE_RE.fullmatch(str(payload.get("lease_nonce"))):
+        raise IssuectlError("IC1130", "claim lease_nonce malformed")
+    if payload.get("cas_ref") != _claim_ref(item_id):
+        raise IssuectlError("IC1130", "claim cas_ref does not match item")
+    if payload.get("cas_ref_digest") != iv._claim_digest(payload):
+        raise IssuectlError("IC1130", "claim cas_ref_digest does not match canonical bytes")
+    for extra_field, states in (
+        ("predecessor_claim", {"superseded"}),
+        ("authority_decision", {"takeover-pending"}),
+        ("rejection_reason", {"rejected"}),
+    ):
+        if payload.get("state") in states and not payload.get(extra_field):
+            raise IssuectlError("IC1130", f"claim state {payload['state']} requires {extra_field}")
+    for field in ("predecessor_claim", "authority_decision"):
+        if payload.get(field) is not None and not CLAIM_SLUG_RE.fullmatch(str(payload[field])):
+            raise IssuectlError("IC1130", f"claim {field} malformed")
+
+
+def _iter_claims(issues_root: Path) -> Iterable[Tuple[Path, Dict[str, Any]]]:
+    if not issues_root.is_dir():
+        return
+    for claim_path in sorted(issues_root.rglob("claim.json")):
+        try:
+            payload = json.loads(claim_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        if isinstance(payload, dict):
+            yield claim_path, payload
+
+
+def enforce_no_scope_overlap(issues_root: Path, item_id: str, scopes: Sequence[str]) -> None:
+    for _claim_path, payload in _iter_claims(issues_root):
+        other_id = payload.get("item_id")
+        if other_id == item_id:
+            continue
+        if payload.get("state") not in iv.ACTIVE_CLAIM_STATES:
+            continue
+        other_scopes = list(payload.get("write_scopes") or [])
+        if iv._scopes_overlap(list(scopes), other_scopes):
+            raise IssuectlError(
+                "IC1131", f"write scope overlaps active claim for {other_id}"
+            )
+
+
+def _read_current_claim(issues_root: Path, item_id: str) -> Tuple[Path, Optional[Dict[str, Any]]]:
+    path = _claim_sidecar(issues_root, item_id)
+    if not path.is_file():
+        return path, None
+    data = path.read_bytes()
+    try:
+        payload = json.loads(data.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise IssuectlError("IC1132", f"unreadable claim sidecar {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise IssuectlError("IC1132", f"invalid claim sidecar {path}")
+    return path, payload
+
+
+def _cas_promote_claim(
+    repo: Path,
+    issues_root: Path,
+    item_id: str,
+    new_payload: Mapping[str, Any],
+    *,
+    dry_run: bool,
+) -> bytes:
+    path = _claim_sidecar(issues_root, item_id)
+    new_bytes = _canonical_claim_bytes(new_payload)
+    ref = _claim_ref(item_id)
+    if dry_run:
+        return new_bytes
+    old_ref_value = _git_ref_value(repo, ref)
+    new_blob = _git_hash_object(repo, new_bytes)
+    _git_update_ref(repo, ref, new_blob, old_ref_value)
+    original = path.read_bytes() if path.is_file() else None
+    atomic_promote([(path, new_bytes, original)], dry_run=False)
+    return new_bytes
+
+
+def _emit_claim(args: argparse.Namespace, command: str, payload: Mapping[str, Any], new_bytes: bytes) -> int:
+    out = {
+        "schema": CLAIM_SCHEMA,
+        "command": command,
+        "dry_run": bool(getattr(args, "dry_run", False)),
+        "claim": payload,
+        "sha256": _sha256_bytes(new_bytes),
+        "exit_code": EXIT_OK,
+    }
+    human = [
+        f"{command} {payload.get('item_id')} state={payload.get('state')} "
+        f"owner={(payload.get('owner') or {}).get('identity')}"
+    ]
+    return emit_mutate(out, args.format, human)
+
+
+def cmd_claim(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    issues_root = _issues_root(args)
+    item_id = args.id
+    index = item_path(issues_root, item_id)
+    if not index.is_file():
+        raise IssuectlError("IC1134", f"unknown item {item_id}: {index} does not exist")
+    _path, current = _read_current_claim(issues_root, item_id)
+    if current is not None and current.get("state") in iv.ACTIVE_CLAIM_STATES:
+        raise IssuectlError(
+            "IC1135", f"item {item_id} already has an active claim (state={current.get('state')})"
+        )
+    scopes = list(dict.fromkeys(args.write_scope or []))
+    if not scopes:
+        raise IssuectlError("IC1136", "--write-scope is required at least once")
+    enforce_no_scope_overlap(issues_root, item_id, scopes)
+    now = _now_utc(args)
+    payload: Dict[str, Any] = {
+        "schema_version": "1.0",
+        "item_id": item_id,
+        "state": "active",
+        "owner": {"identity": args.owner},
+        "worktree_id": args.worktree_id,
+        "clone_id": args.clone_id,
+        "base_commit": _resolve_base_commit(args, repo),
+        "write_scopes": scopes,
+        "issued_at": now.isoformat(),
+        "expires_at": (now + _dt.timedelta(seconds=args.ttl_seconds)).isoformat(),
+        "lease_nonce": args.lease_nonce or _new_lease_nonce(),
+        "cas_ref": _claim_ref(item_id),
+    }
+    payload["cas_ref_digest"] = iv._claim_digest(payload)
+    validate_claim_payload(payload, item_id=item_id)
+    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    return _emit_claim(args, "claim", payload, new_bytes)
+
+
+def cmd_renew(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    issues_root = _issues_root(args)
+    item_id = args.id
+    _path, current = _read_current_claim(issues_root, item_id)
+    if current is None:
+        raise IssuectlError("IC1137", f"no claim exists for {item_id}")
+    if current.get("state") not in {"active", "renewing"}:
+        raise IssuectlError(
+            "IC1137", f"claim for {item_id} is not renewable in state {current.get('state')}"
+        )
+    owner = (current.get("owner") or {}).get("identity")
+    if args.owner and args.owner != owner:
+        raise IssuectlError("IC1138", "renew owner does not match current claim owner")
+    now = _now_utc(args)
+    payload = dict(current)
+    payload["state"] = "active"
+    payload["expires_at"] = (now + _dt.timedelta(seconds=args.ttl_seconds)).isoformat()
+    payload.pop("cas_ref_digest", None)
+    payload["cas_ref_digest"] = iv._claim_digest(payload)
+    validate_claim_payload(payload, item_id=item_id)
+    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    return _emit_claim(args, "renew", payload, new_bytes)
+
+
+def cmd_release(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    issues_root = _issues_root(args)
+    item_id = args.id
+    _path, current = _read_current_claim(issues_root, item_id)
+    if current is None:
+        raise IssuectlError("IC1137", f"no claim exists for {item_id}")
+    if current.get("state") not in {"active", "renewing"}:
+        raise IssuectlError(
+            "IC1137", f"claim for {item_id} is not releasable in state {current.get('state')}"
+        )
+    owner = (current.get("owner") or {}).get("identity")
+    if args.owner and args.owner != owner:
+        raise IssuectlError("IC1138", "release owner does not match current claim owner")
+    payload = dict(current)
+    payload["state"] = "released"
+    payload.pop("cas_ref_digest", None)
+    payload["cas_ref_digest"] = iv._claim_digest(payload)
+    validate_claim_payload(payload, item_id=item_id)
+    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    return _emit_claim(args, "release", payload, new_bytes)
+
+
+def cmd_handoff(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    issues_root = _issues_root(args)
+    item_id = args.id
+    _path, current = _read_current_claim(issues_root, item_id)
+    if current is None:
+        raise IssuectlError("IC1137", f"no claim exists for {item_id}")
+    if current.get("state") not in {"released", "active", "renewing"}:
+        raise IssuectlError(
+            "IC1139", f"claim for {item_id} cannot be handed off from state {current.get('state')}"
+        )
+    if current.get("state") != "released" and not args.authority_decision:
+        raise IssuectlError(
+            "IC1139", "handoff of a non-released claim requires --authority-decision"
+        )
+    now = _now_utc(args)
+    scopes = list(dict.fromkeys(args.write_scope or list(current.get("write_scopes") or [])))
+    if not scopes:
+        raise IssuectlError("IC1136", "--write-scope is required at least once")
+    enforce_no_scope_overlap(issues_root, item_id, scopes)
+    predecessor = args.predecessor_claim or _slug_from(item_id, "handoff", now)
+    payload: Dict[str, Any] = {
+        "schema_version": "1.0",
+        "item_id": item_id,
+        "state": "active",
+        "owner": {"identity": args.to_owner},
+        "worktree_id": args.worktree_id,
+        "clone_id": args.clone_id,
+        "base_commit": _resolve_base_commit(args, repo),
+        "write_scopes": scopes,
+        "issued_at": now.isoformat(),
+        "expires_at": (now + _dt.timedelta(seconds=args.ttl_seconds)).isoformat(),
+        "lease_nonce": args.lease_nonce or _new_lease_nonce(),
+        "cas_ref": _claim_ref(item_id),
+        "predecessor_claim": predecessor,
+    }
+    if args.authority_decision:
+        payload["authority_decision"] = args.authority_decision
+    payload["cas_ref_digest"] = iv._claim_digest(payload)
+    validate_claim_payload(payload, item_id=item_id)
+    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    return _emit_claim(args, "handoff", payload, new_bytes)
+
+
+def cmd_recover(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    issues_root = _issues_root(args)
+    item_id = args.id
+    _path, current = _read_current_claim(issues_root, item_id)
+    if current is None:
+        raise IssuectlError("IC1137", f"no claim exists for {item_id}")
+    now = _now_utc(args)
+    expires = iv._parse_time(current.get("expires_at"))
+    is_expired = current.get("state") == "expired" or (
+        current.get("state") in iv.ACTIVE_CLAIM_STATES and expires is not None and now > expires
+    )
+    if not is_expired:
+        raise IssuectlError(
+            "IC1140", f"claim for {item_id} is not expired; authorized recovery is not applicable"
+        )
+    if not args.authority_decision:
+        raise IssuectlError("IC1140", "--authority-decision is required for authorized recovery")
+    scopes = list(dict.fromkeys(args.write_scope or list(current.get("write_scopes") or [])))
+    if not scopes:
+        raise IssuectlError("IC1136", "--write-scope is required at least once")
+    enforce_no_scope_overlap(issues_root, item_id, scopes)
+    predecessor = args.predecessor_claim or _slug_from(item_id, "expired", now)
+    payload: Dict[str, Any] = {
+        "schema_version": "1.0",
+        "item_id": item_id,
+        "state": "active",
+        "owner": {"identity": args.owner},
+        "worktree_id": args.worktree_id,
+        "clone_id": args.clone_id,
+        "base_commit": _resolve_base_commit(args, repo),
+        "write_scopes": scopes,
+        "issued_at": now.isoformat(),
+        "expires_at": (now + _dt.timedelta(seconds=args.ttl_seconds)).isoformat(),
+        "lease_nonce": args.lease_nonce or _new_lease_nonce(),
+        "cas_ref": _claim_ref(item_id),
+        "predecessor_claim": predecessor,
+        "authority_decision": args.authority_decision,
+    }
+    payload["cas_ref_digest"] = iv._claim_digest(payload)
+    validate_claim_payload(payload, item_id=item_id)
+    new_bytes = _cas_promote_claim(repo, issues_root, item_id, payload, dry_run=args.dry_run)
+    return _emit_claim(args, "recover", payload, new_bytes)
+
+
+def _add_claim_common(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--repo", default=str(ROOT))
+    parser.add_argument("--issues-root")
+    parser.add_argument("--format", choices=("json", "human"), default="json")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--now", help="ISO-8601 timestamp override for deterministic testing")
+    parser.add_argument("--ttl-seconds", type=int, default=7200)
+    parser.add_argument("--lease-nonce")
+
+
 def _add_mutate_common(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--repo", default=str(ROOT))
     parser.add_argument("--issues-root")
@@ -1064,6 +1492,52 @@ def build_parser() -> argparse.ArgumentParser:
     p_rel.add_argument("--type", required=True)
     p_rel.add_argument("--target", required=True)
     p_rel.set_defaults(func=cmd_relation)
+
+    p_claim = sub.add_parser("claim", help="acquire an active claim via local CAS ref")
+    _add_claim_common(p_claim)
+    p_claim.add_argument("--id", required=True)
+    p_claim.add_argument("--owner", required=True)
+    p_claim.add_argument("--worktree-id", required=True)
+    p_claim.add_argument("--clone-id", required=True)
+    p_claim.add_argument("--write-scope", action="append")
+    p_claim.add_argument("--base-commit")
+    p_claim.set_defaults(func=cmd_claim)
+
+    p_renew = sub.add_parser("renew", help="extend an active claim's lease")
+    _add_claim_common(p_renew)
+    p_renew.add_argument("--id", required=True)
+    p_renew.add_argument("--owner")
+    p_renew.set_defaults(func=cmd_renew)
+
+    p_release = sub.add_parser("release", help="release an active claim")
+    _add_claim_common(p_release)
+    p_release.add_argument("--id", required=True)
+    p_release.add_argument("--owner")
+    p_release.set_defaults(func=cmd_release)
+
+    p_handoff = sub.add_parser("handoff", help="hand off a claim to a new owner")
+    _add_claim_common(p_handoff)
+    p_handoff.add_argument("--id", required=True)
+    p_handoff.add_argument("--to-owner", required=True)
+    p_handoff.add_argument("--worktree-id", required=True)
+    p_handoff.add_argument("--clone-id", required=True)
+    p_handoff.add_argument("--write-scope", action="append")
+    p_handoff.add_argument("--base-commit")
+    p_handoff.add_argument("--authority-decision")
+    p_handoff.add_argument("--predecessor-claim")
+    p_handoff.set_defaults(func=cmd_handoff)
+
+    p_recover = sub.add_parser("recover", help="authority-approved takeover of an expired claim")
+    _add_claim_common(p_recover)
+    p_recover.add_argument("--id", required=True)
+    p_recover.add_argument("--owner", required=True)
+    p_recover.add_argument("--worktree-id", required=True)
+    p_recover.add_argument("--clone-id", required=True)
+    p_recover.add_argument("--write-scope", action="append")
+    p_recover.add_argument("--base-commit")
+    p_recover.add_argument("--authority-decision", required=True)
+    p_recover.add_argument("--predecessor-claim")
+    p_recover.set_defaults(func=cmd_recover)
 
     return parser
 
