@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/issue-dependency-graph-v1.schema.json",
+  "title": "issue-dependency-graph@v1",
+  "description": "Classified graph projection of the internal catalog. No browser-only semantics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "authority", "nodes", "edges", "digests", "generation_id"],
+  "properties": {
+    "schema": {"const": "issue-dependency-graph@v1"},
+    "authority": {"const": "generated-view"},
+    "generation_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "level", "lifecycle_status", "endpoint_status"],
+        "properties": {
+          "id": {"type": "string"},
+          "level": {"type": ["string", "null"], "enum": ["feature", "task", "subtask", null]},
+          "state": {"type": ["string", "null"]},
+          "lifecycle_status": {"type": "string"},
+          "archive_status": {"type": ["string", "null"]},
+          "url": {"type": ["string", "null"]},
+          "endpoint_status": {"type": "string", "enum": ["present", "missing", "malformed"]}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "target", "kind", "endpoint_status"],
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "kind": {"type": "string"},
+          "gate": {"type": ["string", "null"], "enum": ["start-gate", "feature-closure", null]},
+          "endpoint_status": {"type": "string", "enum": ["present", "missing", "malformed"]}
+        }
+      }
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_sha256", "tool_sha256", "config_sha256", "source_sha256"],
+      "properties": {
+        "schema_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "tool_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "config_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "source_sha256": {"type": "array", "items": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}},
+        "catalog_generation_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
+}
