@@ -3,7 +3,7 @@
 item: 0044-memory-hygiene-gate-scope-rereview
 owner: data
 owner_token: agent:data:architect:0044-memory-hygiene-rereview:20260825T071244Z-29d37e749
-status: [p]
+status: [x]
 capability_class: privileged
 process_role: Architect scope reviewer only
 authority_reference: current runtime management-instantiated Architect profile; exact assignment coordinated in agent-inbox message `1787641797336-9764721a`
@@ -28,4 +28,8 @@ Acceptance, integration state, `main`, external state, or the root checkout.
   prior rejection constraints at `b3dc4a736e341cab713efa190ef3b3a424342724`.
 - Verdict: supports, subject to literal fail-closed implementation and the
   recorded verification/role constraints.
-- Next: commit the additive review and separately record its substantive REF.
+- Substantive review REF: `90b1298890ecb72a82951e461396bcba63fcb60a`.
+- Validation: working and staged `git diff --check` passed; the substantive
+  commit changes only this claim and the assigned dossier.
+- Disposition: corrected candidate supported; no implementation, integration,
+  Acceptance, root cleanup, or `main` authority exercised.
