@@ -55,6 +55,26 @@ identities under the contract evidence.
 
 ## Next action
 
+Canonical claim correction substantive REF
+`37bbef2a9b57eed3a7df5ec45e4658aa19b863fd` resolves the complete reported
+set: `LTD-CLAIM-FIELDS-MISSING`, `LTD-CLAIM-IDENTITY-MISMATCH`, and
+`LTD-CLAIM-SCOPE-MISMATCH`. The canonical doctor reports zero findings whose
+path is either the former or canonical claim filename, zero other findings for
+`0038-35`, and zero prerequisite unknown/duplicate/self/cycle/malformed
+findings; its 776 unrelated repository findings remain disclosed. Canonical
+`state: [ ]` matches the still-open authoritative implementation Task, while
+`architect_work_product_status: [x]` records that this decomposition package
+is complete without claiming Task implementation.
+
+`TODO.md` remains byte-identical to prior bookkeeping tip `b19cb6cbb8` at
+SHA-256
+`77e9f3eeb39dc89149e210a805ca58d59a145b4cab7fe9afd59a78e0fc24efd1`;
+the architecture contract and protected partial-integration record retain
+SHA-256 `7cbe8e4a18337b988ef7d39bd7ccf0ed7b37968c8146ac65336b04ba454bdf37`
+and `d45ade874c9e1a03367b2ffb64c0eb9334f4d09be3d34c0786be97617ee146bd`
+respectively. Current `main` remains
+`6037b5febb36609f48580a9a797be618ddc27223`; `git diff --check` passed.
+
 Refreshed substantive candidate
 `becef8b419fd10ff8c3110719209317823446283` is a two-parent additive merge of
 prior corrected candidate `5503f49fb619a2fd97fbce7e60dddcd63bc77b2e`
