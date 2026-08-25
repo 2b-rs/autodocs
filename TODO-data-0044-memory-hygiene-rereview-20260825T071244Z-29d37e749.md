@@ -11,7 +11,7 @@ branch: review-gov-0044-memory-hygiene-rereview-data-20260825
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/review-gov-0044-memory-hygiene-rereview-data-20260825
 base: `29d37e7496bf485acf9d6cc7f1a696f27962c951`
 review_subject: corrected `DEC-0044-021` in `docs/dossiers/dec-branching-merging-strategie.md`
-write_scope: `docs/dossiers/dec-branching-merging-strategie.md`; this coordination claim
+write_scope: `docs/dossiers/dec-branching-merging-strategie.md`; `logs/agent-memory/roles/Architect.md`; this coordination claim
 
 ## Boundaries
 
@@ -33,3 +33,12 @@ Acceptance, integration state, `main`, external state, or the root checkout.
   commit changes only this claim and the assigned dossier.
 - Disposition: corrected candidate supported; no implementation, integration,
   Acceptance, root cleanup, or `main` authority exercised.
+- Bootstrap-retention follow-up from agent-inbox message
+  `1787642084487-9bc46cdd`: committed the exact `2026-08-25T06:25Z`
+  learning line as sole substantive path at
+  `8a7a21a6ac4f51c3d1d93c8650a067dda520c722`; resulting Memory blob is
+  `f54b63ce3f12ac99ecf09e3bd6c47f6840fe22b6`.
+- Tool incident: `memory_append` was called with this item-owned worktree as
+  `workspace`, but reported and performed an append in the shared root path,
+  adding a duplicate `2026-08-25T07:15Z` line there. No root recovery or cleanup
+  was attempted; the unexpected root state is reported to the coordinator.
