@@ -52,6 +52,17 @@ Pike runtime died after leaving unstaged product. Measured before any mutation:
 
 Parent 0037-09: complete strict issue, lifecycle, provenance/privacy, and derived-artifact validation. 0037-09.04 adds DAG/sole-writer/freshness/generated-view/determinism plus `_src/validate.py` staged/candidate integration. Do not weaken 0037-09.01–.03 or fixture-Git hardening.
 
+## Adopt (2026-08-25, Chapel)
+
+**Adopt.** Reason: unstaged Pike product implements IV0935–IV0944, architecture negative fixtures via `cases.json`, mini DAG generated-view coverage, `_src/validate.py` staged/candidate/off CLI, mutation guards, and does not weaken IV0904/prior suites. One EOF blank-line whitespace fix applied before product commit. `uv.lock` left untracked.
+
+## Implementation complete
+
+- takeover SHA: `7ca4f7af768517413d5dc79a38fc0a04ca958507`
+- product SHA: `dd1e76a0d56434349107bd010be82783053f82f4`
+- validation: 58/58 twice; py_compile; git diff --check; automation_safety PASS 0 findings
+- next: bookkeeping `[x]` this commit; no Acceptance/parent merge
+
 ## Next step
 
-Claim-only takeover commit (this file + TODO.md 0037-09.04 block). Then inspect unstaged product and adopt or reject with recorded reason. If adopt: finish implementation, full issue_validate suite, product then `[x]` bookkeeping.
+None for this owner. Claim remains on branch as provenance.
