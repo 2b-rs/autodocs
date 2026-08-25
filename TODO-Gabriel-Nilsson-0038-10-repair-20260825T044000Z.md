@@ -1,15 +1,16 @@
 # Claim — Task 0038-10 repair (immutable per-attempt results / current pointer)
 
 request_id: 20260825T044000Z
-owner_token: agent:gabriel-linus-20260825t045800z:0038-10-repair:20260825T045800Z
+owner_token: agent:gabriel-sato-20260825t071600z:0038-10-repair:20260825T071600Z
 prior_owner_token_provenance_only: agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z
 prior_owner_token_bryce_provenance_only: agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z
+prior_owner_token_linus_provenance_only: agent:gabriel-linus-20260825t045800z:0038-10-repair:20260825T045800Z
 task_id: 0038-10
 feature_id: 0038
-capability_class: unprivileged
-execution_authority: direct local Shell/Git in the item worktree only; not sandboxed-grunt; no runner queue
-startup_review: Dispatcher briefing for Gabriel-Linus-20260825T045800Z, unprivileged Programmer. Work only in `/Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z` branch `0038-10-repair-20260825T044000Z`. Stay in this single session. Path-limited additive claim-only takeover first (no code). Then independent inspect of 46 tests. Confirm/reject d712bbb95 in a second claim/TODO-only commit. Do not reset. MUST NOT: merge, Acceptance, push, 0041-02, Airiam/Sato tree, uv.lock. HEAD may be `0f49010c` (unauthorized inspect adopt). `1d800dfa1` is Bryce provenance only. `9c3b8e412` is not a valid handoff close.
-state: [p]
+capability_class: privileged
+execution_authority: privileged bookkeeping only as assigned by Jean-Luc; not merge; not Acceptance; not Feature close; not push; not root write; not product files; tests except git diff --check/status only; no runner queue
+startup_review: Dispatcher briefing for Gabriel-Sato-20260825T071600Z. Work only in `/Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z` branch `0038-10-repair-20260825T044000Z`. Stay in this single session until the bookkeeping commit. Additive takeover then mark 0038-10 terminal `[x]`. HEAD must be `fbc207b1b321a67d10f5b6ab0d421d31d13a26c7` and clean. Do not reset. Write scope ONLY this claim and the exact 0038-10 block in `TODO.md`. MUST NOT: Acceptance, merge, main, Feature close, push, root write, product files, other tasks, uv.lock, 0011-0018, 0033, 0041-02, hop. Privilege is not merge or acceptance authority.
+state: [x]
 binding_base: 4231f93b24cbd9aa056305ffa5a147ac316c783c
 canonical_branch: 0038-10-repair-20260825T044000Z
 canonical_worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0038-10-repair-20260825T044000Z
@@ -148,3 +149,33 @@ No product mutation in this commit. Marker stays `[p]`. `9c3b8e412` is not a val
 - Other 0038 Tasks not mutated.
 - `9c3b8e412` is not a valid close.
 - No new code in this commit.
+
+## Explicit takeover (2026-08-25T07:16:00Z)
+
+- Dispatcher: gabriel
+- From: Gabriel-Linus-20260825T045800Z
+- To: Gabriel-Sato-20260825T071600Z
+- At: 2026-08-25T07:16:00Z
+- Nilsson `owner_token` `agent:gabriel-nilsson-20260825t044000z:0038-10-repair:20260825T044000Z` is provenance only.
+- Bryce `owner_token` `agent:gabriel-bryce-20260825t045000z:0038-10-repair:20260825T045000Z` is provenance only.
+- Linus `owner_token` `agent:gabriel-linus-20260825t045800z:0038-10-repair:20260825T045800Z` is provenance only.
+- Current ownership: `agent:gabriel-sato-20260825t071600z:0038-10-repair:20260825T071600Z`
+- Filename of this claim is unchanged (`TODO-Gabriel-Nilsson-0038-10-repair-20260825T044000Z.md`).
+- Privilege is not merge or acceptance authority.
+
+## Binding pins (preserved; not rewritten)
+
+- Product: `d712bbb95a8f9bfea5b546919561bad442a45fdb`
+- Takeover (Linus claim-only): `634e4804e91e65ecfeb865f72c0a47ab7f472c21`
+- Confirm (Linus independent inspect): `fbc207b1b321a67d10f5b6ab0d421d31d13a26c7`
+- Independent review: `e93afa347c225fd023e4b1e93d8b9a7dc09b1089`
+
+## Terminal implementation close (2026-08-25, Gabriel-Sato-20260825T071600Z)
+
+Task `0038-10` is implementation-terminal `[x]`. REF: `d712bbb95a8f9bfea5b546919561bad442a45fdb`, binding the pins above.
+
+This session performs one path-limited bookkeeping commit (claim + 0038-10 `TODO.md` block only). No product mutation. No Acceptance. No merge. No `main`. No Feature close. No push. No hop.
+
+`9c3b8e412` remains not a valid handoff close. `1d800dfa1` remains Bryce provenance only. `0f49010c` remains an inspect-runtime adopt without retroactive authority.
+
+Validation this session: `git diff --check` and `git status` only.
