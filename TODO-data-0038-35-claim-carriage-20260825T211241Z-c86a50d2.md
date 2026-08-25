@@ -77,6 +77,9 @@ correction commit trailer satisfy that bounded follow-up; the rejection remains
 durable and the earlier commit is not represented as having carried the
 missing trailer.
 
+Additive origin-provenance correction REF:
+`bbc4174f27b37e93384e2a1dc2142623b141bacb`.
+
 ## Validation before check-in
 
 - Decision-record shape: PASS; all 15 ordered fields present, four alternatives
