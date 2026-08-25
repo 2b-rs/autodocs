@@ -3,12 +3,13 @@
 item: 0044-memory-hygiene-exception
 owner: tasha
 owner_token: agent:tasha:0044-memory-hygiene-exception:1787642674661-dfd421d9
-status: [p]
+status: [x]
 capability_class: unprivileged
 execution_authority: direct local execution in this item-owned worktree only
 branch: 0044-memory-hygiene-exception-tasha-1787642674661-dfd421d9
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0044-memory-hygiene-exception-tasha-1787642674661-dfd421d9
 base_commit: 15dd2f4bf7e56703e6de6abc87951e3e3affa33c
+substantive_ref: 9f905ceeb349b903574215b395334415ffe04abd
 
 ## Assignment and authority
 
@@ -55,4 +56,27 @@ Tasha does not perform Acceptance, integration review, checkpoint crossing, root
 
 ## Next step
 
-Inspect the current checker, tests, and operative documentation; design the smallest shared classifier and test matrix before product mutation.
+Implementation is complete and committed. Route the exact substantive ref and
+bookkeeping tip to Geordi for the separately assigned review/integration; this
+claim grants no Acceptance or integration authority.
+
+## Completion evidence
+
+- Added the shared byte-path classifier in `_src/tools/integration_hygiene_policy.py`
+  and applied it to the checker, hard root preflight, candidate-overlap guard,
+  tests, and operative role/process documentation.
+- Focused tests: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest
+  test_check_integration_hygiene -v` — PASS, 17/17.
+- Syntax: `python3 -m py_compile check_integration_hygiene.py
+  integration_hygiene_policy.py test_check_integration_hygiene.py` — PASS.
+- Focused automation-safety scan of the three implementation/test files — PASS;
+  3 files scanned, 0 findings, 0 policy errors, 0 unresolved critical findings.
+- `git diff --check` — PASS.
+- `process_doc_doctor --strict` — candidate 29 findings with the same single
+  pre-existing `DOC001` error as main (main baseline: 32 findings); no new error.
+- Live full-worktree scan from the item worktree with `--candidate-ref HEAD
+  --json` — exit 0, `ok: true`, no findings; observed root
+  `main@668dd3d5cf1a9f8081b8de5e15301a0031f46c11` clean.
+- Live hard root preflight against the canonical root with `--root-preflight
+  --candidate-ref HEAD --json` — exit 0, `ok: true`, no findings at the same
+  clean main tip.
