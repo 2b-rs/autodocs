@@ -60,6 +60,9 @@ defines the validated historical-carriage interface, classification table,
 exact exclusions, falsification fixtures, exhaustive property matrix, resource
 profile, and separation conditions for a future Implementer.
 
+Substantive governance REF:
+`9e63b0c8a852273ea6e622b4caa273e0f011310b`.
+
 ## Validation before check-in
 
 - Decision-record shape: PASS; all 15 ordered fields present, four alternatives
@@ -79,6 +82,6 @@ profile, and separation conditions for a future Implementer.
 
 ## Next step
 
-Commit only the three declared paths, verify the exact committed candidate and
-record its REF, then hand the tip to separately assigned Integrator Geordi. Do
-not advance `main` or begin tool implementation.
+Hand the exact candidate tip containing the substantive REF and this final
+bookkeeping record to separately assigned Integrator Geordi. Do not advance
+`main` or begin tool implementation.
