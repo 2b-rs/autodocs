@@ -60,6 +60,20 @@ This turn does not edit `_src/tests/test_issue_validate.py`, `TODO.md`, or any o
 
 - 2026-08-25: claim-only turn. Worktree and branch created from binding base. Claim file authored and committed path-limited. STOP after claim commit.
 - 2026-08-25: Sato takeover. Airiam session dead after dispatch-0037-09-eof-airiam-claim. Dispatcher gabriel. Continue in same runtime: takeover commit, then EOF repair, then close.
+- 2026-08-25: takeover commit `95262caf40e6f42da8c49a1639c9ac511f813c28` (claim only).
+- 2026-08-25: substantive EOF repair REF `18639ca0015a1987cba93c415b3aa267fddc5929` (`_src/tests/test_issue_validate.py` one trailing blank line removed).
+- Validation against that REF:
+  - `git diff --check 993e995bebeda483c34449d4e9a7679c63078d6c..HEAD` exit 0 (empty; no whitespace errors)
+  - `python3 -m py_compile _src/tests/test_issue_validate.py` exit 0
+  - `uv run python -m unittest _src.tests.test_issue_validate -v` → Ran 13 tests in 6.243s, OK (13/13)
+- Implementation close at `[x]` for this follow-on; no `TODO.md` edit (dispatcher: not required). No Acceptance.
+
+## Implementation close
+
+- disposition: implemented
+- substantive REF: `18639ca0015a1987cba93c415b3aa267fddc5929`
+- takeover REF: `95262caf40e6f42da8c49a1639c9ac511f813c28`
+- owner_token: `agent:gabriel-sato-20260825t045600z:0037-09-eof:20260825T045600Z`
 
 ## Dispatcher briefing (verbatim provenance)
 
