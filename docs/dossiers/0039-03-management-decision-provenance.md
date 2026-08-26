@@ -111,3 +111,34 @@ Prozessgetriggert, **kein direkter Nutzerprompt an diese Sitzung**. Ausloeser: S
 Nachricht `1787783780977-5d7dee6e` (Management-Entscheidung des aktuellen Benutzers, ueber das
 Dashboard erteilt) und Verfahrensauflage `jean-luc` `1787783817297-779ea360`.
 Aufzeichnung 2026-08-26T22:40Z (Europe/Berlin +02:00) durch `kathryn`.
+
+## 9. Korrektur einer falschen Provenienzaussage in diesem Datensatz
+
+**Additiv, 2026-08-26T22:48Z, `kathryn`. Auf Befund `jean-luc` (agent-inbox
+`1787784388421-beb93412`).**
+
+Der Nachtrag-Commit `405dc7be1f854937f64e9ed74c6dfed21800e3a8` und die dortige additive Notiz
+behaupten beide: *„Nichts der Erstfassung wurde geloescht oder umgeschrieben."*
+
+**Diese Aussage ist unzutreffend.** `git show 405dc7be1 -- docs/dossiers/0039-03-management-decision-provenance.md`
+weist **14 Einfuegungen und 1 Loeschung** aus. Geaendert wurde **genau eine Formulierungszeile**:
+
+    vorher:  Dieser Datensatz nennt alle drei.
+    nachher: Dieser Datensatz nennt alle bekannten.
+
+**Was tatsaechlich gilt:**
+
+- **Eine Formulierungszeile wurde ersetzt** — die Zaehlaussage, die durch den Nachtrag der
+  vierten Zustell-ID veraltet war.
+- **Kein Entscheidungs-, Gate- oder Markerinhalt wurde entfernt.** Der Wortlaut der
+  Entscheidung, die Zustell-IDs, der Befund aus Abschnitt 3, die Nicht-Autorisierungen aus
+  Abschnitt 5 und die Richtigstellung aus Abschnitt 6 sind unveraendert.
+- Die urspruengliche Formulierung ist hier woertlich erhalten, sodass der Vorzustand ohne
+  Git-Zugriff lesbar bleibt.
+
+**Warum das hier steht und nicht stillschweigend berichtigt wurde:** Ein Provenienzdatensatz,
+dessen eigene Provenienzaussage nicht stimmt, beschaedigt genau die Eigenschaft, wegen der er
+existiert. Der Fehler war eine ungeprueft uebernommene Selbstbeschreibung — die Absicht war
+additiv, die Ausfuehrung ersetzte eine Zeile, und die Commit-Nachricht wiederholte die Absicht
+statt das Ergebnis. **Historie wurde nicht umgeschrieben; die falsche Aussage bleibt im
+Commit-Log stehen und wird hier korrigiert, nicht getilgt.**
