@@ -9,10 +9,15 @@
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/0037-24.02`
 - base_commit: `dd12a1dd519a306f54600923a9af42d97a68a01d`
 - startup_review: canonical `refs/heads/0037` matched the base; `0037-12`, `0037-23.02`, and `0037-24.01` were `[x]`; target was `[ ]`; no target claim, branch, or worktree collision was observed
-- status: implementation claimed; claim commit pending
+- status: implementation complete `[x]`; awaiting independent Acceptance
 - intended_write_scope: `_src/i18n/ui.json`; `_src/data/issue-graph-public.{de,en,es,pt,fr,ru,ar,hi,ko,zh,nl}.json`; `tools/todo-graph-core.js`; `tools/todo-graph-embed.js`; `tools/todo-dependency-graph.html`; `_src/i18n_translate.py`; `_src/generate.py`; `_src/validate.py`; `_src/tests/test_issue_graph_i18n.py`; `_src/tests/fixtures/issue-graph-i18n/**`; this claim; exact `TODO.md` block for `0037-24.02`
 - external_resources: none
 - assumptions: production translation population and review remain owned by `0037-38`; fixture translations may be complete only for hermetic tests
 - prohibitions: no Acceptance, checkpoint verdict, integration, protected-ref advance, `DONE.md`, push, root mutation, foreign cleanup, or edits outside the declared scope
-- next_step: commit this claim and exact `[p]` marker, then inspect assigned producers/consumers and implement the bounded i18n join
-
+- claim_commit: `87506a9a416ee22b44a14cf1d416910a2c245d1e`
+- product_ref: `c0c14bb15fd191fb316cf7e5226e4744238b252e`
+- result: deterministic, atomic locale join for 11 configured languages; public mode rejects missing/stale UI, summary, or title translation; maintainer mode exposes canonical-English fallback with `lang="en"` and `data-i18n-fallback="canonical-en"`; language-local deep links and Arabic RTL are retained; translated titles/summaries are added only to locale payloads
+- validation: 44/44 focused plus existing graph/i18n/public tests passed; fixture payload generation repeated byte-identically for 11 languages; Python compile, JS syntax, JSON parse, `git diff --check`, and path-scoped `automation_safety` passed (two pre-existing advisory findings in legacy split/merge, zero unresolved critical); configured-language status reports all 11 incomplete
+- production_gate: the real join fails visibly with `ValueError: public projection/title records disagree` because the committed production `issues.json` records are empty; it publishes no partial `_src/data/issue-graph-public.<lang>.json` files. Population/review remains owned by `0037-38`.
+- findings: no Task-scoped material finding; ResourceWarnings observed in unchanged `lib_i18n.py` during existing public-page tests
+- next_step: independent acceptance/integration authority may review exact product and bookkeeping refs; this implementer performs neither
