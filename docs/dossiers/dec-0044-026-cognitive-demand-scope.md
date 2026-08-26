@@ -56,6 +56,50 @@
     - **Note:** The accompanying pre-mutation scope review constrains implementation and cross-item reach; it is not implementation, Acceptance, or integration authority.
 - **Waiver:** `none`
 
+#### `DEC-0044-026-C001`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0044-026`
+- **Recorded at:** `2026-08-26T13:43:22Z`
+- **Correcting identity:** `agent:data:0044-06:dec-0044-026-gate-grammar-20260826T134322Z-22b5d8c9`
+- **Role:** `Architekt`
+- **Authority reference:** `DEC-0044-026`; Project Lead correction assignment `agent-inbox:1787751722012-0343f4f8`; read-only grammar finding `agent-inbox:1787751663880-c41d7f3f`
+- **Correction reason:** The original affected-gate block used the non-canonical prefixes `planning:`, `scheduling:`, and `quality:`. This event maps those three existing gate identities to the closed `decision-record@v1` grammar according to their already-declared lifecycle effect, without adding, removing, widening, narrowing, or activating a gate.
+- **Target field:** `Affected gates`
+- **Previous effective block SHA-256:** `fdf255f80fcdce2be25ecbc9a8638e6b31ad5a07a990fbce1261d923c319a2d1`
+- **Replacement block:**
+  ```markdown
+  - **Affected gates:**
+    - `validation:feature-breakdown-cognitive-demand`
+    - `task-start:agent-work-package-match`
+    - `validation:0044-06-calibration-evidence`
+    - `validation:orchestrator-result-review`
+    - `integration:0044-08`
+    - `feature-closure:0044`
+  ```
+
+#### `DEC-0044-026-C002`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0044-026`
+- **Recorded at:** `2026-08-26T13:57:55Z`
+- **Correcting identity:** `agent:data:0044-06:dec-0044-026-c002-20260826T135755Z-190105ed`
+- **Role:** `Architekt`
+- **Authority reference:** `DEC-0044-026`; Project Lead correction assignment `agent-inbox:1787752584355-32800305`; independent negative review `4ad4389fc8322e610357df99e77bf550bfc3ded4:docs/dossiers/0044-026-gate-grammar-scope-review.md`
+- **Correction reason:** `DEC-0044-026-C001` mapped the invalid scheduling prefix to a `task-start:` gate even though its slug was not a work-unit ID and the base decision authorizes shadow validation, not start blocking. This event selects the narrowest reading supported by the decision's declared content: validate and record work-package-match evidence without changing matching eligibility, assignment, execution authority, lifecycle state, or Task start.
+- **Target field:** `Affected gates`
+- **Previous effective block SHA-256:** `6ab313136b533f698b578ef143cfe32040518e4274b8f525df2ac17b34553c39`
+- **Replacement block:**
+  ```markdown
+  - **Affected gates:**
+    - `validation:feature-breakdown-cognitive-demand`
+    - `validation:agent-work-package-match`
+    - `validation:0044-06-calibration-evidence`
+    - `validation:orchestrator-result-review`
+    - `integration:0044-08`
+    - `feature-closure:0044`
+  ```
+
 #### Current-main re-pin note — 2026-08-25
 
 After `main` advanced to `433b41b04cd4b353f9681947a9e3c7897a751855`,
