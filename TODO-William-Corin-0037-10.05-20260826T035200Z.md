@@ -17,3 +17,5 @@
 ## Progress
 
 - 2026-08-26T03:52:00Z claim opened at exact base `3d3ab62cf19b0bf70f320b84207a8a94929e71c9`; implementation pending.
+- 2026-08-26T04:10:00Z bounded WIP checkpoint: criterion-check/closure implementation is active and uncommitted; no tests have run and no findings have been dispositioned yet. Next: add focused lifecycle/terminal-disposition tests, then run the Julian-venv focused suite and correct any failures before a product commit.
+- 2026-08-26T06:43:00Z recovery handoff: this claim is retained as immutable historical provenance and is no longer live. Exact dirty bytes were preserved at `preserved/0037-10.05-corin-wip-20260826` (`ff244c9816e80e5ad308522c1e470e5900804307`). Sole replacement ownership is recorded in `TODO-William-Rowan-0037-10.05-20260826T064300Z.md`; Corin's original worktree remains frozen and untouched.
