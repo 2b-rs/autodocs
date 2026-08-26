@@ -9,6 +9,7 @@ import subprocess
 import sys
 import hashlib
 import os
+import signal
 import tempfile
 import threading
 import unittest
@@ -1459,84 +1460,115 @@ class IssuectlClaimCasRaceAndRecoveryTests(unittest.TestCase):
             self.assertEqual(proc.returncode, ctl.EXIT_OK, proc.stdout + proc.stderr)
 
     # -- Crash-point fault injection ------------------------------------
+    #
+    # Both tests below spawn a REAL `issuectl claim` subprocess with
+    # ISSUECTL_TEST_FAULT_POINT set, which makes the child kill *itself*
+    # with SIGKILL (`_maybe_inject_test_fault` in issuectl.py) at the exact
+    # named boundary inside the real CAS code path -- not a monkeypatch
+    # substituting different code, and not post-hoc state deletion after a
+    # normal run completed. The parent process observes the child's death
+    # from the OS (negative returncode == -SIGKILL) and then inspects
+    # on-disk/on-ref state exactly as any real crash-recovery caller would.
 
-    def test_crash_between_ref_cas_and_sidecar_promotion_leaves_ref_authoritative(self):
-        # Simulates a process crash exactly between the real git-ref CAS
-        # succeeding and the local claim.json sidecar promotion running
-        # (the two-step window inside `_cas_promote_claim`). Recovery must
-        # not corrupt the claim record: re-derive the sidecar from the now
-        # git-durable ref content, and the *next* real claim command must
-        # still see a consistent, single active claim rather than a torn
-        # state that would let a second claimant slip through.
-        self._create("0310")
-        code, out, err = _run_main(self._claim_argv("0310", "agent:alpha", "wt-a"))
-        self.assertEqual(code, ctl.EXIT_OK, err or out)
-        sidecar_path = self.issues / "0310" / "claim.json"
-        ref_blob_before = subprocess.run(
-            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0310"],
-            capture_output=True, check=True,
-        ).stdout.decode().strip()
-
-        # Inject the crash: delete the sidecar file (as if the process died
-        # after `_update_ref_cas` returned but before `atomic_promote` ran)
-        # while leaving the git ref -- the durable side of the two-step
-        # write -- untouched.
-        sidecar_path.unlink()
-        self.assertFalse(sidecar_path.exists())
-        ref_blob_after_crash = subprocess.run(
-            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0310"],
-            capture_output=True, check=True,
-        ).stdout.decode().strip()
-        self.assertEqual(ref_blob_before, ref_blob_after_crash)
-
-        # Recovery: the git ref is still the durable source of truth and
-        # its blob is exactly the last-promoted claim payload, so a
-        # recovery step can reconstruct the sidecar byte-for-byte from it.
-        recovered_bytes = subprocess.run(
-            ["git", "-C", str(self.repo), "cat-file", "-p", ref_blob_after_crash],
-            capture_output=True, check=True,
-        ).stdout
-        recovered_payload = json.loads(recovered_bytes.decode("utf-8"))
-        self.assertEqual(recovered_payload["item_id"], "0310")
-        self.assertEqual(recovered_payload["owner"]["identity"], "agent:alpha")
-        sidecar_path.write_bytes(recovered_bytes)
-
-        # A subsequent claim attempt for the same item by a different
-        # owner is still correctly rejected post-recovery: no torn state
-        # let a second claimant through.
-        code, _out, err = _run_main(self._claim_argv("0310", "agent:beta", "wt-b"))
-        self.assertEqual(code, ctl.EXIT_ERROR)
-        self.assertIn("IC1135", err)
+    def _run_claim_with_fault(self, item_id, owner, worktree_id, fault_point):
+        argv = [
+            sys.executable, str(ISSUECTL_PATH), "claim",
+            "--repo", str(self.repo), "--issues-root", str(self.issues),
+            "--id", item_id, "--owner", owner, "--worktree-id", worktree_id,
+            "--clone-id", worktree_id, "--base-commit", self.base,
+            "--ttl-seconds", "7200", "--now", "2026-08-16T09:00:00+00:00",
+            "--format", "json", "--write-scope", f"issues/{item_id}/index.md",
+        ]
+        env = dict(os.environ)
+        env["ISSUECTL_TEST_FAULT_POINT"] = fault_point
+        proc = subprocess.run(argv, capture_output=True, env=env, timeout=30)
+        return proc
 
     def test_crash_before_ref_cas_leaves_no_ref_and_claim_is_retryable(self):
-        # Mirror case: crash (simulated by raising from inside the CAS
-        # helper) *before* the git update-ref call executes at all -- no
-        # ref, no sidecar. The item must remain freely claimable, i.e. the
-        # half-attempted operation left no durable trace to recover from
-        # or get stuck behind.
+        # Real subprocess killed with SIGKILL at the "pre-cas" boundary:
+        # current ref state has been read and the CAS attempt is journaled,
+        # but `git update-ref` has not executed yet. No ref, no sidecar can
+        # exist afterward -- the half-attempted operation must leave no
+        # durable trace to recover from or get stuck behind, and a retry
+        # from a clean process must succeed.
         self._create("0311")
-        real_update_ref_cas = ctl._update_ref_cas
-
-        def crashing_update_ref_cas(*args, **kwargs):
-            raise RuntimeError("simulated crash before git update-ref runs")
-
-        ctl._update_ref_cas = crashing_update_ref_cas
-        try:
-            with self.assertRaises(RuntimeError):
-                _run_main(self._claim_argv("0311", "agent:alpha", "wt-a"))
-        finally:
-            ctl._update_ref_cas = real_update_ref_cas
+        proc = self._run_claim_with_fault("0311", "agent:alpha", "wt-a", "pre-cas")
+        self.assertEqual(
+            proc.returncode, -signal.SIGKILL,
+            f"expected the child to be killed by SIGKILL, got {proc.returncode}: "
+            f"{proc.stdout!r} {proc.stderr!r}",
+        )
 
         self.assertFalse((self.issues / "0311" / "claim.json").exists())
         ref_proc = subprocess.run(
             ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0311"],
             capture_output=True,
         )
-        self.assertNotEqual(ref_proc.returncode, 0)
+        self.assertNotEqual(
+            ref_proc.returncode, 0,
+            "no ref must exist: the killed process never reached `git update-ref`",
+        )
 
-        # Retry succeeds cleanly: nothing was left behind to block it.
+        # Retry, from a fresh (non-faulty) process, succeeds cleanly:
+        # nothing was left behind to block it.
         code, out, err = _run_main(self._claim_argv("0311", "agent:alpha", "wt-a"))
         self.assertEqual(code, ctl.EXIT_OK, err or out)
+
+    def test_crash_between_ref_cas_and_sidecar_promotion_leaves_ref_authoritative(self):
+        # Real subprocess killed with SIGKILL at the "post-ref-pre-sidecar"
+        # boundary: `git update-ref` has already succeeded (the durable,
+        # authoritative write) but `atomic_promote` -- which writes the
+        # local claim.json sidecar -- has not run yet. Detect the resulting
+        # mismatch (ref durable and authoritative, sidecar entirely absent)
+        # and prove it is recoverable without corrupting the claim record:
+        # reconstruct the sidecar byte-for-byte from the still-durable ref
+        # content, and confirm a subsequent claim command still observes a
+        # single consistent claim rather than a torn state that would let a
+        # second claimant slip through.
+        self._create("0310")
+        proc = self._run_claim_with_fault("0310", "agent:alpha", "wt-a", "post-ref-pre-sidecar")
+        self.assertEqual(
+            proc.returncode, -signal.SIGKILL,
+            f"expected the child to be killed by SIGKILL, got {proc.returncode}: "
+            f"{proc.stdout!r} {proc.stderr!r}",
+        )
+
+        sidecar_path = self.issues / "0310" / "claim.json"
+        # Detect the interrupted state: the sidecar the killed process was
+        # about to write is entirely absent...
+        self.assertFalse(
+            sidecar_path.exists(),
+            "the killed process must not have reached atomic_promote",
+        )
+        # ...while the git ref -- written and journaled as succeeded before
+        # the kill point -- is durable and already holds the new claim.
+        ref_blob = subprocess.run(
+            ["git", "-C", str(self.repo), "rev-parse", "-q", "--verify", "refs/autodocs/claims/0310"],
+            capture_output=True, check=True,
+        ).stdout.decode().strip()
+        recovered_bytes = subprocess.run(
+            ["git", "-C", str(self.repo), "cat-file", "-p", ref_blob],
+            capture_output=True, check=True,
+        ).stdout
+        recovered_payload = json.loads(recovered_bytes.decode("utf-8"))
+        self.assertEqual(recovered_payload["item_id"], "0310")
+        self.assertEqual(recovered_payload["owner"]["identity"], "agent:alpha")
+        journal_path = self.issues / "0310" / "claim-cas-journal.jsonl"
+        journal_entries = [
+            json.loads(line) for line in journal_path.read_text(encoding="utf-8").splitlines() if line.strip()
+        ]
+        self.assertEqual(journal_entries[-1]["phase"], "cas-succeeded")
+        self.assertEqual(journal_entries[-1]["new"], ref_blob)
+
+        # Recover: reconstruct the sidecar from the durable ref content.
+        sidecar_path.write_bytes(recovered_bytes)
+
+        # A subsequent claim attempt for the same item by a different
+        # owner is correctly rejected post-recovery: no torn state let a
+        # second claimant through.
+        code, _out, err = _run_main(self._claim_argv("0310", "agent:beta", "wt-b"))
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1135", err)
 
     # -- Remote-unavailable coverage --------------------------------------
 

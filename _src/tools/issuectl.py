@@ -18,6 +18,7 @@ import json
 import os
 import re
 import secrets
+import signal
 import subprocess
 import sys
 import tempfile
@@ -1025,6 +1026,22 @@ def _git_hash_object_blob(repo: Path, data: bytes) -> str:
     return proc.stdout.decode("utf-8").strip()
 
 
+_FAULT_INJECT_ENV = "ISSUECTL_TEST_FAULT_POINT"
+
+
+def _maybe_inject_test_fault(point: str) -> None:
+    # Test-only, env-gated crash hook. It is inert unless a caller explicitly
+    # sets ISSUECTL_TEST_FAULT_POINT (never done by production code paths),
+    # in which case it kills this process outright with SIGKILL -- not a
+    # raise, not a mock, not a monkeypatch substitution -- so tests can prove
+    # recovery from a real interrupted process at an exact, named boundary
+    # inside the claim CAS lifecycle rather than simulating the interruption
+    # by deleting or corrupting state after the fact.
+    if os.environ.get(_FAULT_INJECT_ENV) == point:
+        sys.stderr.flush()
+        os.kill(os.getpid(), signal.SIGKILL)
+
+
 def _update_ref_cas(
     repo: Path,
     issues_root: Path,
@@ -1079,6 +1096,10 @@ def _update_ref_cas(
     }
     _atomic_write(journal_path, _journal_record_bytes(journal_path, attempt_record))
     old_arg = old_value if old_value else ""
+    # Pre-CAS fault-injection boundary: current state (`old_value`) has been
+    # read and the attempt is journaled, but the `update-ref` write itself
+    # has not executed yet.
+    _maybe_inject_test_fault("pre-cas")
     completed = subprocess.run(
         ["git", "-C", str(repo), "update-ref", ref, new_blob, old_arg],
         capture_output=True,
@@ -1273,6 +1294,10 @@ def _cas_promote_claim(
     _update_ref_cas(repo, issues_root, item_id, ref, new_bytes, dry_run=dry_run)
     if dry_run:
         return new_bytes
+    # Post-ref/pre-sidecar fault-injection boundary: the git-ref CAS has
+    # already succeeded (the durable, authoritative write) but the local
+    # claim.json sidecar has not been promoted yet.
+    _maybe_inject_test_fault("post-ref-pre-sidecar")
     original = path.read_bytes() if path.is_file() else None
     atomic_promote([(path, new_bytes, original)], dry_run=False)
     return new_bytes
