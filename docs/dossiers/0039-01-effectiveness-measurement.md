@@ -118,21 +118,57 @@ measure yields 14/20 and is **invalid** — it measures shared file residence, n
 attribution (`0037-07` alone "hits" 26 records through an index page). Same
 inflation direction as the `0038-31` double-count incident.
 
-## 4. Primary count 2 — escalation-marked Tasks (DRAFT, re-derived)
+## 4. Primary count 2 — escalations
 
-**Re-derived on the corrected first-parent population (`F-SEVEN-0039-01-SELF-002`). The previously withdrawn figure is superseded, not restored: it happened to be the same number, 9, but it was computed over a population containing `0040-11` instead of `0044-14`.**
+**Result: 4 of 20** — `0040-09`, `0044-01`, `0037-49`, `0037-07`.
 
-**Result: 9 of 20** — `0038-20`, `0040-05`, `0040-08`, `0040-09`, `0040-10`, `0037-37`, `0044-01`, `0037-49`, `0037-07`.
+**This replaces the lexical draft (9 of 20). It is not a refinement of it: the lexical figure was not an escalation count.**
 
-Method: escalation markers (`BLOCKER`, `escalat*`, `Eskalation`, `[u]`, `Managemententscheidung`, `management decision required`, `user decision`) in each Task's authoritative block on current `main` (`TODO.md` + `DONE.md`).
+### 4.1 Why this is adjudicated and not computed
 
-**Reported as *"Tasks whose authoritative block contains an escalation marker"*, which is what was computed — not as "escalations".** Limitations are part of the result:
+A structural count was owed against "a conforming escalation-record shape". **No such shape exists in the active authority.** `issues/_schema/issue-decision-v1.schema.json` defines one, but it belongs to the post-`0037` issue store and is not in force; the legacy contract now governing defines the `[u]` *marker* and, separately, the `[u]` *integration verdict*, and neither is an escalation record. The contract therefore asks for a count of an object the current process does not define — recorded as `F-ESC-04`, and carried into this Task's requirements rather than resolved by selecting whichever proxy reads better.
 
-- **Lexical, not structural.** Marker presence, not a conforming escalation record.
-- **Block delimitation.** Blocks end at the next Task-level marker, so a note filed under a neighbouring item is attributed to the wrong Task.
-- **Quotation blindness.** A `[u]` in quoted prose is indistinguishable from a live marker.
+What can be done honestly is to enumerate every candidate and adjudicate each one against its own quoted evidence. All nine candidates are adjudicated below; the full record with per-case evidence is `docs/pipeline/evidence/0039-01/escalation-adjudication.json`.
 
-A structural count against a conforming escalation-record shape is still owed before this may be called final.
+### 4.2 The two automated measures, and what each actually counts
+
+| Measure | Count | Counts what |
+|---|---|---|
+| Lexical keyword | 9 | an escalation keyword appears anywhere in the Task's block |
+| Marker transition (structural) | 1 | a `[u]` episode on the Task's own marker on `main`'s first-parent line |
+| **Adjudicated** | **4** | the Task's next action was actually handed to a named human authority |
+
+**Both automated measures are wrong, in opposite directions.** The lexical measure over-counts by five; the structural measure under-counts by three. Neither is the conservative choice.
+
+### 4.3 The five lexical hits that are not escalations
+
+| Task | Kind | Why not |
+|---|---|---|
+| `0038-20` | criterion-text | the criteria require the tool to *reject* "Feature `[u]` verdict actions" — the marker is the object of a requirement, not a state |
+| `0040-05` | subject-matter | the Task *defines* the escalation trigger; the words are its topic, and its `[u]` is quoted from `AGENTS.md` |
+| `0040-08` | criterion-text | "preserves bounded `[p]` preparation and conditional `[u]`" is a requirement on documentation |
+| `0040-10` | word-sense | "blocker" denotes a technical defect — "repair the live automation-safety blocker" |
+| `0037-37` | **inverted** | the block reads *"Do not mark `[u]`: this Task is agentic preparation."* The keyword's presence asserts the **negation** of what is being counted. |
+
+`0037-37` is the case worth keeping: a keyword measure cannot distinguish a state from a prohibition on entering that state. It counted the sentence forbidding the thing as an instance of the thing.
+
+### 4.4 The three genuine escalations the marker method cannot see — and why it is structural
+
+| Task | Kind | Marker history on `main` |
+|---|---|---|
+| `0040-09` | two `[u]` **integration verdicts** (`worf-integrator-kehleyr`, `worf-kurn`), pending user approval / Management authority, resolved 2026-08-20 and retained as history | `[ ]` → `[x]` at `c5c478a6c` |
+| `0044-01` | two `[u]` integration verdicts (`seven-tom`, plus a re-review verdict on a third defect); the Implementer explicitly did not self-clear them | `[ ]` → `[x]` at `eeb759a51` |
+| `0037-07` | block records "`[u]` set (2026-08-21, Seven-Naomi)" per its own Definition of Done | `[ ]` → `[x]` at `b13257241` — **no `[u]` episode at all** |
+
+The first two are `F-ESC-01`, and the blindness is by construction: **a `[u]` integration verdict is recorded *beneath* the node while the node's own marker stays `[x]`.** A method that reads marker state reports "no escalation" for a Task that was handed to human authority twice. It is not a tuning problem; the object it needs to see was never in the place it looks.
+
+`0037-07` is `F-ESC-02` and is worse: the escalation left **no** first-parent marker trace, so even a flawless marker reader would miss it. Marker history is not a complete record of escalation.
+
+Only `0037-49` is visible to both measures — `[d]` → `[u]` at `58a5b5f32`, `[u]` → `[x]` at `f5cc5bbb4`, the 20.0 h wait in §4a.
+
+### 4.5 The bracket is not a bound
+
+In this population `1 ≤ 4 ≤ 9` holds, so the two automated measures do bracket the adjudicated value. **That is an observation about these twenty Tasks, not a property of the measures** (`F-ESC-05`): an escalation recorded with none of the keywords would fall outside the upper bound as well. A bracket of width 9 around a value of 4 is not a measurement, and its endpoints must not be reported as bounds.
 
 ## 4a. Context findings — `[u]` authority waits and marker reversals (DRAFT, structural)
 
@@ -163,8 +199,8 @@ Both occur at the **same commit**, `4b95d99db` — the already-documented data-l
 
 ## 5. Mandated conclusion
 
-Both primary counts are **non-zero** (3 attributed TK-2 records; 9 escalation-marked
-Tasks). The contract's rule — *"If both primary counts are zero, the conclusion is
+Both primary counts are **non-zero** (3 Tasks carrying attributed TK-2 records;
+4 Tasks escalated). The contract's rule — *"If both primary counts are zero, the conclusion is
 `withdraw`, not `expand`"* — therefore yields: **NOT `withdraw`.**
 
 The contract's own qualifier applies in full: **a non-zero count is adoption
@@ -182,7 +218,18 @@ should be cited as effectiveness evidence.
 1. Contextual findings the contract requires and this draft does not yet contain:
    missed-trigger findings, later scope reversals, and `[u]` authority-wait duration
    and outcome.
-2. A structural escalation count replacing the lexical draft in §4.
+2. ~~A structural escalation count replacing the lexical draft in §4.~~ **Done
+   (§4), but not as asked, and the difference is the point.** No conforming
+   escalation-record shape exists in the active authority, so no structural count
+   against one is possible; the nine candidates are adjudicated case by case
+   instead, with evidence, in
+   `docs/pipeline/evidence/0039-01/escalation-adjudication.json`. What remains owed
+   is not a better count but the missing object: **`0039-01`'s process must define an
+   escalation record** (`F-ESC-04`), because both available proxies fail — the
+   keyword measure counts prohibitions as instances (`0037-37`), and the marker
+   measure structurally cannot see a `[u]` integration verdict recorded beneath a
+   node whose own marker stays `[x]` (`F-ESC-01`), nor an escalation that leaves no
+   marker trace (`F-ESC-02`).
 3. Resolution of the `AUTO010` gate question. Three `unresolved_critical` findings
    stand against this Task's own test fixture. `Wesley` independently diagnosed them
    as **checker false positives** (the durable JSONL state exists; the checker does
