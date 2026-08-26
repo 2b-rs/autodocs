@@ -19,3 +19,4 @@
 ## Progress
 
 - 2026-08-26T06:43:00Z recovery accepted after conforming preservation; replacement claim opened. First post-claim action is the required focused Julian-venv closure test.
+- 2026-08-26T07:12:00Z governance-free reconstruction: after the permanent preservation row became independently reachable on `main`, the live recovery line moved append-only to branch `0037-10.05-recovery-product-20260826T064300Z` at clean product base `6e58f95f6d66eadbf02fb23726401ac81554b9af`. Handoff commit `12dec558694ea9ebdd9362fb21eb638052ac9d01` contains only TODO/claim state. Exact preserved `_src/tools/issuectl.py` and `_src/tests/test_issuectl_closure.py` bytes were then restored uncommitted; no `docs/pipeline/branch-workflow.md` delta is carried. The earlier branch/base fields above remain historical receipt data and are superseded only by this additive correction.
