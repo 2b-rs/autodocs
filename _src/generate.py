@@ -152,6 +152,9 @@ def main():
             with open(target, "w", encoding="utf-8") as f:
                 f.write(html_text)
         n += 1
+    if not check:
+        from lib_issue_graph_public import copy_published_payload
+        copy_published_payload(os.path.dirname(os.path.abspath(__file__)), ROOT)
     print(("geprüft" if check else "generiert") + ": %d Seiten" % n + (", Abweichungen: %d" % bad if check else ""))
     _fallback_by_lang, _lang_page_counts, _changed_targets = {}, {}, []
     if not check:

@@ -731,6 +731,9 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
         with open(graph_file, encoding="utf-8") as f:
             graph_json = f.read().replace("</", "<\/")
         main = main.replace(graph_marker, graph_json)
+    if "@@PUBLIC_ISSUE_" in main or "@@ASSET_PREFIX@@" in main:
+        from lib_issue_graph_public import apply_markers
+        main = apply_markers(main, srcdir, prefix)
     return page_tmpl % {
         "title": esc(page["title"]),
         "htmllang": lang,

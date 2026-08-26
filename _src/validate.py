@@ -712,6 +712,42 @@ def check_automation_safety():
         )
 
 
+def check_public_issue_graph():
+    checks_performed.append("check_public_issue_graph")
+    from lib_issue_graph_public import PublicIssueGraphError, validate_required_deployment
+    blobs = []
+    for rel in ("index.html", "issues.html"):
+        path = os.path.join(ROOT, rel)
+        if os.path.isfile(path):
+            with open(path, encoding="utf-8") as f:
+                blobs.append((rel, f.read()))
+        else:
+            record_finding(
+                "public-issue-graph-missing-html",
+                "error",
+                "required public issue page missing: %s" % rel,
+                ref=rel,
+            )
+    for lang in LANGS:
+        for rel in ("index.html", "issues.html"):
+            path = os.path.join(ROOT, lang, rel)
+            if os.path.isfile(path):
+                with open(path, encoding="utf-8") as f:
+                    blobs.append(("%s/%s" % (lang, rel), f.read()))
+    try:
+        findings, _payload = validate_required_deployment(SRC, blobs)
+    except PublicIssueGraphError as exc:
+        record_finding(
+            "public-issue-graph-payload",
+            "error",
+            "required public issue-graph payload failed: %s" % exc,
+            ref="_src/data/issue-graph-public.json",
+        )
+        return
+    for msg in findings:
+        record_finding("public-issue-graph-stale", "error", msg)
+
+
 def main(argv=None):
     global ISSUE_VALIDATE_ARGS
     argv = sys.argv[1:] if argv is None else argv
@@ -721,6 +757,7 @@ def main(argv=None):
     _t0 = time.time()
     check_automation_safety()
     check_issue_store(ISSUE_VALIDATE_ARGS)
+    check_public_issue_graph()
     check_build()
     check_links()
     check_langs()
