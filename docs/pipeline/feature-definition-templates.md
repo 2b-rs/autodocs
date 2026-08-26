@@ -33,19 +33,41 @@ Use these English templates verbatim in a new contract or record a controlled ta
 | Authority | Delegated choice, required decision record, review/checkpoint rationale |
 | Coverage | Implemented and verified `FD-*` criteria |
 | Parent closure | Parent integration contribution or `not applicable` rationale |
+| Cognitive demand | All five dimension ratings from [`feature-breakdown.md`](feature-breakdown.md) §8 — scope breadth, reasoning depth, context volume, ambiguity, verification hardness — plus evidence and estimator version. Missing evidence is `unknown`, never `low`; the highest dimension sets the class |
+| Baseline pin | The exact commit each measured claim was taken against, **and** whether that baseline carried current Task Acceptance at measurement time |
+| Check semantics | For every check this Task introduces or relies on: its **direction** (what it structurally cannot find), **reach** (what may not be inferred from a pass), and **effect** (observes or mutates) |
 
-## C. Decision, exception, and change record
+**This card renders [`feature-breakdown.md`](feature-breakdown.md) §2 and §8; it does not
+redefine them.** Where the two ever disagree, that document governs and this table is the
+defect.
 
-```markdown
-- ID: `<stable ID>`
-- Time: `<ISO-8601 with timezone>`
-- Deciding authority: `<identity and role>`
-- Subject and affected IDs: `<scope>`
-- Alternatives and technical rationale: `<evidence-backed comparison>`
-- Consequences: `<criteria, scopes, dependencies, risks, baselines>`
-- Tailoring/exception: `<control, expiry, compensating control>`
-- Evidence: `<immutable locator>`
-```
+## C. Decision records — use `decision-record@v1`, not a template here
+
+**This section previously carried an eight-field decision-record format. It is removed, and
+nothing is salvaged from it.**
+
+A decision whose reach meets the canonical `cross-item-blast-radius` predicate is recorded as a
+conforming [`decision-record@v1`](decision-record.md) — twelve fields, including `Triggers`,
+`Review participation`, and `Waiver`, with closed grammars for identity, role, work-unit and
+gate references. The removed format had none of those and duplicated only what `@v1` already
+covers.
+
+**Why removal rather than repair.** A second decision-record shape published inside a process
+document Architects are told to follow is a competing answer to "what is a decision record",
+and a partial salvage is precisely how a competing format survives. The reach question this
+prevents is the one `docs/dossiers/0044-04-gate-scope-review.md` names — *"damit nicht dritte
+Mechanik entsteht"*.
+
+**Date order, stated because it decides the case.** The removed format predates
+`decision-record@v1` becoming normative on `main`. Its author was not wrong to write it; the
+baseline moved underneath it. That is a material-baseline change, not a quality finding
+against the prior work.
+
+For a **tailoring or exception**, record the control, its owner, rationale, expiry, and the
+compensating control inside the `@v1` record's `Waiver` block. For an escalation, see the open
+requirement in [`feature-definition-and-breakdown.md`](feature-definition-and-breakdown.md)
+§7a.5: no conforming escalation-record shape exists yet, so an escalation is adjudicated with
+quoted evidence per case and never reported as a parser result.
 
 ## D. Parent-package closure checklist
 
