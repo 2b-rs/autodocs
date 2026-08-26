@@ -66,3 +66,7 @@ All 37/37 tests pass (`/tmp/autodocs-0037-08-venv-julian/bin/python -m unittest 
 ## uv.lock note (carried from predecessor claim)
 
 Confirmed still absent/not recreated in this worktree; validation exclusively via `/tmp/autodocs-0037-08-venv-julian/bin/python`, `uv` not invoked at any point in this session.
+
+## Historical status only (additive, 2026-08-26)
+
+The heading **Status — `[p]`, in progress** above was current for this Reyes increment. It is **not** current Task status. The wrapper-`_git` `update-ref` rationale in this file is **historical** and was later rejected as an `automation_safety.py` blind spot (not endorsed). Terminal implementation `[x]` REF `fcaad421216911d5d69ef0a55cb6f330e105cee1` (Chapel product; Piper bookkeeping `54243ba50`). This file is predecessor provenance, not a live claim lease.

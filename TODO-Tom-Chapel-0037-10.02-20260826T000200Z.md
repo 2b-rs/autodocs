@@ -99,3 +99,14 @@ Not setting `[x]`.
 - Run full `test_issuectl.py` suite; confirm the three preserved valid tests
   (multi-worktree race, offline/remote-unavailable, ref-namespace-disjointness) still pass.
 - Report back to `tom` per the dispatch briefing.
+
+## Supersession (additive, 2026-08-26) — not a rewrite of the text above
+
+The **Marker** (`Task stays [p]`) and **Remaining work** list above were current when this claim was opened and when Chapel's correction product `fcaad421216911d5d69ef0a55cb6f330e105cee1` was still in progress. They are **not** the current status.
+
+- Prior rejection (unchanged history): Tom-Reyes routed `git update-ref` through generic `_git(...)`; Jean-Luc/gabriel rejected that as an `automation_safety.py` analyzer blind spot, not a scanner-recognized safe pattern.
+- Corrected product REF: `fcaad421216911d5d69ef0a55cb6f330e105cee1`.
+- Independent evidence (not this claim's original remaining-work list): focused `_src.tests.test_issuectl` 37/37 PASS; path-scoped `automation_safety.py --path issuectl.py` PASS, `unresolved_critical: 0`.
+- Jean-Luc resolution message `1787703872485-ab93bd05` authorized terminal `[x]` with product REF `fcaad4212`.
+- Terminal bookkeeping: `54243ba5070983abadb0f2dbde97b7c60c11eb94` marked `TODO.md` `[x]` with that REF. Implementation write scope released. This claim file is provenance, not a live `[p]` lease.
+- Feature-reconcile candidate merge that carried this file: `3243c831726469ccec343e5435054719b4529ac1`. This supersession is an additive commit on that isolated branch. Not Acceptance.
