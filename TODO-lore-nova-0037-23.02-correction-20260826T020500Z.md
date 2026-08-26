@@ -1,0 +1,30 @@
+# Claim 0037-23.02 correction replay
+
+- **owner_token:** `agent:lore-nova-20260826t020500z:0037-23.02-correction:20260826T020500Z`
+- **capability_class:** `unprivileged`
+- **execution_authority:** direct local Git, Python, Node, generation, and tests; no privileged authority
+- **item / branch / worktree:** `0037-23.02` correction replay / `0037-23.02-correction-lore-nova-20260826t020500z` / `/Users/tobias.anton/devel/autodocs/.worktrees/0037-23.02-correction-lore-nova-20260826t020500z`
+- **base_commit:** `1cb5413bff852c174dd379976074c655761f17eb`
+- **startup_review:** Dispatcher `/root` assigned this bounded replay. Canonical `refs/heads/0037` independently resolved to the exact base before branch creation. The target branch and worktree were absent. Original and validation worktrees remain foreign and untouched.
+- **prerequisites:** `0037-22` and `0037-23.01` are represented on the canonical Feature base; replay will verify their ancestry/product inputs while validating the implementation.
+- **write_scope:** `_src/generate.py`; `_src/lib_docmodel.py`; `_src/lib_issue_graph_public.py`; `_src/sources/pages/index.json`; `_src/sources/pages/issues.json`; `_src/validate.py`; `_src/tests/test_public_issue_graph_pages.py`; `tools/issue-graph-public-embed.js`; root and localized `index.html` / `issues.html` outputs for `ar`, `en`, `es`, `fr`, `hi`, `ko`, `nl`, `pt`, `ru`, `zh`; `data/issue-graph-public.json`; this claim; and the exact `0037-23.02` block in `TODO.md`.
+- **must_not:** modify the frozen original branch/worktree or Wesley validation branch/worktree; write outside scope; perform Acceptance or a review/checkpoint verdict; create an integration node; advance canonical `0037` or `main`; write `DONE.md`; push; touch `0037-24.02` or `0037-10.*`; mutate the shared root checkout; clean/reset foreign state.
+
+## Correction provenance and defect
+
+- Original product semantics: `4a573e9af17c1c05965ea83485f7b4fd6327232d`.
+- Frozen original bookkeeping tip: `05b306f63e8d899acfc98a6b068032432abf1ef4`.
+- Independent Wesley reproducibility evidence: `a8e52dd571160872bac696a5564d71d1b6cb4b92`.
+- Scope defect: the original implementation was produced on a stale Feature base and therefore could not be merged upward without replaying its source-owned semantics and regenerating outputs against the current canonical Feature tip. The original branch is preserved as evidence; this correction is an additive replay, not a rewrite.
+
+## Plan and progress
+
+1. Commit this claim and exact Task-block correction bookkeeping before product mutation.
+2. Replay only the source semantics owned by `0037-23.02` from the original product onto the pinned current base.
+3. Regenerate all declared HTML and published payload outputs from source.
+4. Run focused tests, deterministic byte/path comparison, restricted/internal-token scan, `git diff --check`, path-scoped `automation_safety`, and clean-worktree verification.
+5. Commit the product separately, then mark the correction `[x]` in a final exact bookkeeping commit only if every check passes.
+
+## Current state
+
+Claim established; product mutation has not begun. Next action: commit this claim/bookkeeping baseline, report the claim commit, then replay source semantics.
