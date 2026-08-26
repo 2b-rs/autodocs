@@ -190,3 +190,69 @@ This review pins the candidate exactly and does not extend to any successor comm
 
 My R1 artifact `5ff5aae54` is unchanged and remains the baseline this candidate was
 measured against.
+
+---
+
+## 6. Post-verdict baseline re-measurement (append-only, 2026-08-26)
+
+**The verdict in the header is unchanged.** This section is appended after it, records a
+measurement taken after `main` advanced, and neither revises nor re-opens the decision
+above. Recorded on Project Lead instruction (`agent-inbox:1787753849975-bcfa6724`) after
+the hold on this branch was lifted.
+
+### 6.1 Why the re-measurement was taken at all
+
+`main` advanced from `059f7e326` — the base this review was cut from and measured
+against — to `4d3f3fefae2d50fcff3d323db01451ed2d1079f9`. Three commits, and one of them
+touches **`docs/dossiers/dec-0041-006-atomic-implementation-checkin.md`**: the exact file
+condition C5 rests on. A green verdict whose baseline has moved will otherwise be reused
+as though nothing happened, so the move was measured rather than assumed harmless.
+
+### 6.2 Result — C5 survives, and is better supported than when it was written
+
+| Load-bearing premise of C5 | State on `4d3f3fefa` |
+|---|---|
+| `DEC-0041-006` CON-05 keeps the `0041` rule **non-operative** until its own cutover | **Still true, and strengthened** — the correction adds `docs/pipeline/core-rules.md`, `_src/tools/legacy_task_editor.py` and `_src/tools/check_integration_hygiene.py` to the consumers that must all agree before cutover |
+| `DEC-0041-006` carries **no trailer-exclusivity clause** | **Still true** — measured, zero matches; CON-02 there fails closed on missing/malformed/non-ancestor/stale/contradictory trailers, not on additional ones |
+| No path overlap between `DEC-0041-006`'s consumers and `DEC-0044-027` CON-02 | **Confirmed** — set intersection computed, empty |
+
+Saru's scoping of the Family B predicate to **post-cutover** commits therefore still
+carries: before `0041`'s cutover no commit matches it, so no overlap can arise and
+`0044-12` cannot pre-activate `0041`'s rule.
+
+### 6.3 What did become false — `DEC-0044-027` CON-07
+
+CON-07 named `4a11a0d284d1ce643c233bf9d208ca9cccf7322d` (with Jadzia transcription
+`6e967dd9a7f0b5bf3766735f497c149c6362acd6`) as an **open** `0041` dependency and stated
+it "must not be treated as already on `main`". Both are reachable from `4d3f3fefa` —
+verified with `git merge-base --is-ancestor`. The statement is factually false as of
+that advance.
+
+The error direction is the harmless one: the record claims **more** openness than exists,
+so it authorizes nothing additional. It was nonetheless reported before integration,
+because a record carrying a demonstrably false claim about the state of `main` will later
+be cited by someone.
+
+### 6.4 Downstream corrections, independently verified rather than accepted on report
+
+| Gate | Commit | Verification |
+|---|---|---|
+| **G2** (F-R2-01) | `629c52d6cfd0e8bfca22eca9a4a1ee3542f4c2a0` | diff vs `2cf41dc90` is **exactly** the single deletion `- \`integration:repository-main\``, nothing else; record digest `6818d58a…c50cf` reproduced |
+| CON-07 correction | `c884782813624ca1c69f53c1a01b49e733770f91` | one file, one hunk, **exactly** CON-07; CON-04/-05/-06/-08/-09 unchanged in context; parent `629c52d6c` preserved, no rebase or amend; digest `71eca5db…ce9d7` reproduced |
+
+The corrected CON-07 marks the dependency **closed**, names both commits and the
+reachability base, states the verification method, and **retains** the operative clause
+that they "remain not authority for `0044-12` CON-02 mutation" — a change to a factual
+claim with the reach statement left untouched, which is the correct shape.
+
+### 6.5 Gate status at time of appending
+
+**G1 open** — `DEC-0044-027` must be on `main` before the first `0044-12` mutation; the
+candidate line is based on `059f7e326` while `main` is at `4d3f3fefa`. **G2 closed and
+verified. G3 open**, with the later implementer. The CON-07 correction is additional to
+the three gates and also verified.
+
+Nothing in this section authorizes integration or activation, and the verdict's own
+boundary is unchanged: it pins candidate `2cf41dc908e1f34af699153179b85238418cf918` and
+does not extend to any successor commit. The successors verified in §6.4 are recorded as
+**measurements**, not as a re-issued verdict over them.
