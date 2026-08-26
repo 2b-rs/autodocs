@@ -17,3 +17,5 @@
 ## Progress
 
 - 2026-08-26T00:53:00Z claim committed at REF `cdd0681f9c071a7825038e9953bcc0b6043b8474`; contract inspection and implementation followed without amending claim history.
+- 2026-08-26T01:25:00Z product REF `e890fa826e54a0fc7de62990d3cdee2793d916d7`: stable finding mint/disposition/replay with immutable material-change history; signed-ref decision verification with exact package/policy digests, role and separation gates, validity/revocation/conditions, and immutable duplicate handling.
+- 2026-08-26T01:25:00Z validation: Julian venv focused+existing issuectl suite 42/42 PASS; py_compile PASS; path-scoped automation safety PASS with zero unresolved critical findings (three pre-existing advisory cleanup findings); git diff-check PASS. Implementation complete at `[x]`; write scope released. No Acceptance, checkpoint, main, DONE, push, parent 0037-23, or 0037-10.05 action.
