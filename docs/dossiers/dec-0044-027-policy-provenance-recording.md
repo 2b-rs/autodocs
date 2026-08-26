@@ -88,7 +88,6 @@ present; `DEC-0044-027` absent).
   - `task-start:0044-13`
   - `integration:0044-12`
   - `integration:0044-08`
-  - `integration:repository-main`
   - `feature-closure:0044`
 - **Review participation:** `none`
 - **No-review reason:** Independent Architect `seven` is assigned to re-review this record after it exists (`1787751762460-6a7ad4b6`). Authoring participation by that reviewer would collapse the required distinctness from the later scope review. Project Lead `jean-luc` assigned the recording; a mailbox is not a `decision-record@v1` identity.
