@@ -1043,6 +1043,30 @@ def _update_ref_cas(
     # real same-repository serialization primitive (shared across worktrees
     # of one repository, which share one refs/objects store) and not a
     # re-implementation of CAS in application code.
+    #
+    # This call site is deliberately NOT routed through the generic `_git()`
+    # argv-forwarding helper. `_git()` forwards `*args` (a function
+    # parameter), which `automation_safety.py`'s static analyzer cannot
+    # resolve to a literal command, and its own call name (`_git`, not
+    # `subprocess.run`) is not in `_SUBPROCESS_APIS` either — so a mutating
+    # `update-ref` routed through it is invisible to AUTO001/AUTO008/AUTO010
+    # scanning twice over (see `_is_subprocess_invocation` and
+    # `_static_command_variants`'s `ast.Name` handling in
+    # `automation_safety.py`). That was flagged and rejected
+    # (`gabriel`/`jean-luc`, Feature 0037 delivery thread, 2026-08-26) as an
+    # analyzer blind-spot regardless of `runner_transaction.py` precedent for
+    # the same idiom. Here the `subprocess.run([...])` call is inlined with
+    # a literal argv so the scanner can see and classify the exact mutating
+    # command (`git update-ref`), and its failure branch (`raise
+    # IssuectlError` below) is the checked-propagation pattern
+    # `_subprocess_failure_is_propagated` already recognizes — the same
+    # discipline `check=True`/`subprocess.check_call` would give, but with
+    # the returncode still available to distinguish a CAS loss from a git
+    # invocation failure. The postdominating `_atomic_write(journal_path,
+    # ...)` calls immediately below are the durable-outcome/recovery writer
+    # AUTO010 requires: same execution scope, after the operation, target
+    # path name containing "journal", and a payload carrying this
+    # operation's own identity (`ref`/`new`/`action: update-ref`).
     if dry_run:
         return
     journal_path = _claim_cas_journal_path(issues_root, item_id)
@@ -1055,28 +1079,40 @@ def _update_ref_cas(
     }
     _atomic_write(journal_path, _journal_record_bytes(journal_path, attempt_record))
     old_arg = old_value if old_value else ""
-    completed = _git(repo, ["update-ref", ref, new_blob, old_arg])
+    completed = subprocess.run(
+        ["git", "-C", str(repo), "update-ref", ref, new_blob, old_arg],
+        capture_output=True,
+        check=False,
+    )
+    # The outcome journal write below is unconditional and immediately
+    # follows the operation (no intervening branch, raise, or return between
+    # them) so it postdominates the `subprocess.run` call exactly as
+    # `_node_postdominates_operation`/`_scope_has_durable_state` require: a
+    # conditional early-raise between the operation and its outcome writer
+    # would count as a possible bypass and make the writer invisible to the
+    # checker even though it is reachable on the recorded path. Recording
+    # the outcome (success or failure, with returncode/stderr) before
+    # deciding whether to raise keeps the recovery record honest — the
+    # journal reflects what `update-ref` actually did — and still lets the
+    # CAS-loss branch raise afterward without weakening the durable-state
+    # guarantee.
+    outcome_record = {
+        "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
+        "phase": "cas-succeeded" if completed.returncode == 0 else "cas-failed",
+        "status": "cas-succeeded" if completed.returncode == 0 else "cas-failed",
+        "result": "published" if completed.returncode == 0 else "rejected",
+        "outcome": "published" if completed.returncode == 0 else "rejected",
+        "action": "update-ref", "task_id": item_id,
+        "returncode": completed.returncode,
+        "stderr": "" if completed.returncode == 0 else completed.stderr.decode("utf-8", "replace").strip(),
+    }
+    _atomic_write(journal_path, _journal_record_bytes(journal_path, outcome_record))
     if completed.returncode != 0:
-        failure_record = {
-            "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
-            "phase": "cas-failed", "status": "cas-failed", "result": "rejected",
-            "outcome": "rejected", "action": "update-ref", "task_id": item_id,
-            "returncode": completed.returncode,
-            "stderr": completed.stderr.decode("utf-8", "replace").strip(),
-        }
-        _atomic_write(journal_path, _journal_record_bytes(journal_path, failure_record))
         raise IssuectlError(
             "IC1141",
             f"git-ref CAS lost for {ref}: expected old value {old_value!r} "
             "was not current when update-ref ran (concurrent claim writer won)",
         )
-    success_record = {
-        "item_id": item_id, "ref": ref, "old": old_value, "new": new_blob,
-        "phase": "cas-succeeded", "status": "cas-succeeded", "result": "published",
-        "outcome": "published", "action": "update-ref", "task_id": item_id,
-        "returncode": completed.returncode,
-    }
-    _atomic_write(journal_path, _journal_record_bytes(journal_path, success_record))
 
 
 def _canonical_claim_bytes(payload: Mapping[str, Any]) -> bytes:
