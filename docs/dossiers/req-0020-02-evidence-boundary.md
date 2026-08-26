@@ -162,10 +162,10 @@ These are genuine remaining choices. They are not assumed.
 
 | ID | Decision | Why it is open | Who can close it |
 |---|---|---|---|
-| `PD-0020-02-01` | What *enforce* means operationally: refuse at use, refuse at freeze, refuse at Task start, or another observable refusal | The Task says “enforce” and “prohibit” but does not name the refusal point | Architect scope (`uras`) plus a `decision-record@v1` if the chosen behavior can block another work unit; Management if the choice is a product/risk trade-off |
+| `PD-0020-02-01` | What *enforce* means operationally | **Closed** by `DEC-0020-002`: refuse at use/freeze for named ECU consumers; not at arbitrary Task start; not a default `_src/validate.py` check | Architect `uras` |
 | `PD-0020-02-02` | Canonical storage/representation of the metadata (schema, catalogue, per-artifact header, or other) | Required fields are named; encoding is not | Architecture, not Requirements |
 | `PD-0020-02-03` | Closed value sets for `validity`, `retention`, and `confidentiality` | Fields are required; allowed tokens/periods are not in the Task text | Product/process decision; escalate if more than one valid set remains after evidence |
-| `PD-0020-02-04` | Whether existing `docs/ASPICE/*` survey files become the live contract, stay informative, or are later generated from the contract | Neighboring files already speak; this dossier is the `0020-02` contract | Architecture / later catalogue Task `0020-08` |
+| `PD-0020-02-04` | Whether existing `docs/ASPICE/*` survey files become the live contract | **Closed** by `DEC-0020-002`: stay informative; not live gates | Architect `uras` |
 | `PD-0020-02-05` | How shared/external interface evidence is identified so it is not mistaken for opportunistic aggregation | `REQ-0020-05` assumes later `0020-03`/`0020-04`/`0020-09` will name the two sides | Those Tasks; do not pre-empt them |
 
 ---
@@ -198,9 +198,7 @@ Canonical predicate (`decision-record@v1` §2, `cross-item-blast-radius`): a qua
 | A freeze/assessment rule that rejects mixed-origin or cross-product sets | Yes | Blocks `0025` freeze / assessment closure |
 | A local fixture that only tests this contract's examples | No, while it cannot fail another unit | Task-local |
 
-**Current session action:** mutate only the local definition (`REQ-0020-09`). Do **not** mutate a qualifying enforcement behavior until a conforming `decision-record@v1` exists **and** Architect `uras` (identity distinct from `hguh`) has performed the supporting scope review.
-
-`[u]` is not used: the Architect assignment named in the dispatch (`uras`) is the next bounded preparation step, not a human Management choice. If `uras` is unreachable and no other management-instantiated Architect can be assigned, that assignment gap is then `[u]`.
+**Current session action:** `DEC-0020-002` and the Architect review are reachable on `0020-02`. Optional CON-01 helper/fixtures classify examples locally and are **not** registered as a shared gate. Consumer-side refusal remains with `0020-07` / `0020-08` / `0020-09` / `0025-02` / `0025-03`.
 
 ---
 
