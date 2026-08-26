@@ -2,6 +2,12 @@
 
 **Status:** Candidate normative process for the repository engineering process. It becomes an approved baseline only through an independently assigned review and recorded authority decision. It neither approves a product architecture nor accepts security, privacy, safety, release, or residual risk.
 
+**Measured against baseline:** `docs/pipeline/feature-breakdown.md` at `main` commit
+`9ccd99b25ccadffa951b0f184e174dd4fa2b8621` (Task `0044-04`, `[x]`, **Task Acceptance `✓`**),
+including its §8 added by Task `0044-06` (`[x]`, integration-reviewed, **no Task Acceptance**).
+The three states — implementation-complete, integration-reviewed, accepted — are recorded
+separately and never collapsed; §8's reference may still move.
+
 **Authority epoch:** Until the authorized Feature `0037` cutover, `TODO.md`, `DONE.md`, and `TODO-*.md` claims are authoritative. The post-cutover mapping uses the issue-store contracts; do not hand-maintain both stores.
 
 ## 1. Purpose and boundary
@@ -27,9 +33,26 @@ The contract MUST distinguish: stakeholder outcome; product requirements; archit
 
 ## 4. Breakdown rules
 
-Each Task or Subtask MUST have one primary observable result, bounded inputs/outputs, direct and derived scopes, feasible validation (including negative or recovery evidence where applicable), an execution capability, and an evidence relation. Split a package when preparation and approval need different authority, an architecture decision selects among material alternatives, scopes cannot safely transact together, an irreversible activation needs separate recovery, or the result cannot complete in one bounded attempt after its gates are met.
+**The breakdown mechanics are owned by [`feature-breakdown.md`](feature-breakdown.md) and
+are cited here, never restated.** Two normative texts on one contract diverge silently, and
+the divergence is invisible until they disagree in a live case. That document governs the
+source boundary, the required task record, prerequisite and order derivation, test scope and
+kind, branch creation, gates A1/A2, and — per its §8 — cognitive-demand estimation, for which
+a task record carries **all five dimension ratings, the evidence, and the estimator version**,
+with missing evidence recorded as `unknown` and never scored `low`.
 
-Dependencies point from consumer to prerequisite. They represent a consumed producer result, decision, readiness condition, integration, or closure condition—not narrative order. A parent owns package closure: terminal children are inputs, never automatic parent completion. Every Feature has exactly one integration Task marked `Integration review: mandatory`; each other Task records either a checkpoint rationale or a no-checkpoint justification.
+This section adds only what is specific to *Feature definition* and is not covered there:
+
+Split a package when preparation and approval need different authority, an architecture
+decision selects among material alternatives, scopes cannot safely transact together, an
+irreversible activation needs separate recovery, or the result cannot complete in one bounded
+attempt after its gates are met.
+
+Dependencies point from consumer to prerequisite and represent a consumed producer result,
+decision, readiness condition, integration, or closure condition — not narrative order. A
+parent owns package closure: terminal children are inputs, never automatic parent completion.
+Every Feature has exactly one integration Task marked `Integration review: mandatory`; each
+other Task records either a checkpoint rationale or a no-checkpoint justification.
 
 ## 5. Semantic-deadlock and executability audit
 
@@ -46,6 +69,52 @@ Measure intake-to-baseline time, criteria with complete implementation-and-verif
 ## 7. Review and migration
 
 Use [`feature-definition-templates.md`](feature-definition-templates.md) for records, [`feature-definition-structural-rules.md`](feature-definition-structural-rules.md) for deterministic checks, and [`feature-definition-migration.md`](feature-definition-migration.md) for legacy/cutover handling. The pilots in `evidence/0039-01/` demonstrate candidate-process assessment only; they do not re-open or alter their assessed Features.
+
+## 7a. Claim discipline for planning statements
+
+Every rule in this section was derived from a recorded defect in this repository, several of
+them made by this document's own author while producing it. They are stated as requirements
+because a planning process that cannot make its own claims checkable cannot make anyone
+else's checkable either.
+
+**7a.1 Every check declares direction, reach, and effect.** A check's declared semantics and
+its actual semantics diverge on three axes, and each has produced a real incident:
+
+| Axis | The question it answers | Failure when unstated |
+|---|---|---|
+| **Direction** | What can this check structurally *not* find? | A marker-transition reader reports "no escalation" for a Task escalated twice, because a `[u]` integration verdict lives beneath the node while its marker stays `[x]` |
+| **Reach** | What may *not* be inferred from a passing result? | Agreement with one known incident is evidence against false positives only; it says nothing about completeness |
+| **Effect** | Does it observe, or does it mutate? | A deliberately held-open verification transaction is indistinguishable, in one sample, from an abandoned staged tree |
+
+A check whose direction is unstated will be read as exhaustive. State it.
+
+**7a.2 A deliverable pins the baseline it was measured against, and that baseline's
+acceptance state.** Record the exact commit **and** whether it carried current Task Acceptance
+at measurement time, keeping *implementation-complete*, *integration-reviewed*, and *accepted*
+as three distinct states. A commit hash alone pins provisional state as though it were
+foundation. The failure this prevents is silent, not frequent: one occurrence justifies it.
+
+**7a.3 An overlap, duplication, or conflict claim quotes the text of both sides.** A
+structural resemblance between two headings is not evidence that two documents normatively
+duplicate each other; measured, they may address different objects behind similar titles, and
+each may already exclude the other. Cite both texts or do not make the claim.
+
+**7a.4 A lexical measure may not be reported as a structural one.** Keyword presence cannot
+distinguish a state from a requirement about that state, from the topic of the document, or
+from a sentence *forbidding* the thing being counted. Where the object being counted has no
+defined shape, say so and adjudicate case by case with quoted evidence, rather than reporting
+whichever proxy reads better.
+
+**7a.5 Escalation needs a record shape, and does not yet have one.** The `[u]` marker and the
+`[u]` integration verdict are lifecycle states, not escalation records, and they miss
+escalations recorded in prose or resolved without a surviving marker transition. Until a
+conforming shape exists, an escalation count is an adjudication with quoted evidence per case,
+never a parser result. **This is an open requirement on this process, recorded rather than
+silently satisfied.**
+
+**7a.6 A frequency claim names its population before it is counted.** Aggregating unlike
+events into a rate inflates it; the correct response to two similar-looking incidents is to
+ask whether they are the same kind of event, not to report a cadence.
 
 ## 8. Automotive SPICE relationship
 
