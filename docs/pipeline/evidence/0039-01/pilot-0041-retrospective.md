@@ -23,3 +23,33 @@
 ## Verdict
 
 The candidate process would add criterion-level coverage and explicit authority interfaces while preserving the existing implementation sequencing. It does not authorize deployment, push, release, or Feature acceptance.
+
+## Process-version pin and re-check — added 2026-08-26
+
+**This pilot originally pinned no process version.** It assessed "the candidate process"
+without naming which text, so a reader could not tell afterwards what was piloted. That is a
+violation of `feature-definition-and-breakdown.md` §7a.2, committed by this package before that
+rule existed. The pin is added retrospectively rather than the pilot being rewritten.
+
+| | |
+|---|---|
+| Process text assessed | `docs/pipeline/feature-definition-and-breakdown.md` and siblings, as of branch `0039-01` @ `316bce655` |
+| Governance baseline | `main` @ `9ccd99b25`; `feature-breakdown.md` from Task `0044-04` (`[x]`, **Task Acceptance `✓`**), its §8 from `0044-06` (`[x]`, integration-reviewed, **no Task Acceptance**) |
+| Assessed Feature | unchanged — no marker, claim, scope, or acceptance state of the assessed Feature was touched, then or now |
+
+**Re-check against the reworked process.** Every control row above was re-read against the
+current text. **All rows still map**, and none depended on removed material:
+
+- The removed templates §C (the competing eight-field decision-record format) is **cited by
+  neither pilot** — both reference real `DEC-` records instead — so its removal disturbs no row.
+- §4's move from restating breakdown mechanics to citing `feature-breakdown.md` does not change
+  what the rows assess; it changes where the rule is written.
+- `feature-breakdown.md` §8 adds cognitive-demand fields to the **task record**, which these
+  retrospective assessments do not produce; no row is invalidated, and no row now covers it.
+
+**What this re-check does not claim.** It does not upgrade these pilots into evidence for the
+*expanded* contract. They demonstrate that the process can be applied retrospectively to two
+materially different Features; they do not address the 20-Task effectiveness measurement added
+to the contract later, which is carried by
+`docs/dossiers/0039-01-effectiveness-measurement.md` instead. Nor does a re-check substitute
+for the independent review that the exit criteria require.
