@@ -142,3 +142,73 @@ existiert. Der Fehler war eine ungeprueft uebernommene Selbstbeschreibung — di
 additiv, die Ausfuehrung ersetzte eine Zeile, und die Commit-Nachricht wiederholte die Absicht
 statt das Ergebnis. **Historie wurde nicht umgeschrieben; die falsche Aussage bleibt im
 Commit-Log stehen und wird hier korrigiert, nicht getilgt.**
+
+## 10. Zweite Management-Entscheidung: Markerbewegung autorisiert (Freitext)
+
+**Additiv, 2026-08-27T00:00Z, `kathryn`. Auf Weisung `jean-luc` (agent-inbox
+`1787788601973-d322ae01`).**
+
+Auf die nach der neuen Dashboard-Konvention eingereichte Entscheidungsvorlage
+`1787788068934-6acdce20` („Welche der zwei Fragen hat `Productize` beantwortet?", Optionen
+`OPT-0339-A/B/C`) antwortete der aktuelle Benutzer ueber das Dashboard.
+
+**Antworttext, woertlich — Referenz `1787788477209-e768ae5c`:**
+
+> „Productize" wurde befuerwortet. Bitte alles noetige dafuer veranlassen, also ggfs auch den
+> Marker verschieben.
+
+**Als Freitextantwort erfasst, nicht als Optionswahl.** Die Antwort waehlt **keine** der drei
+angebotenen Options-IDs. Nach der Kundenvorgabe gilt eine solche Antwort als **neue Lage** und
+ausdruecklich **nicht** als Erlaubnis, die gestellte Frage umzudeuten. Festgehalten wird
+deshalb, was sie eindeutig sagt:
+
+- **`Productize` ist befuerwortet.**
+- **Die Bewegung des `[u]`-Markers ist autorisiert.**
+- Eine **privilegierte Owning-Session wird nicht benannt.**
+
+## 11. Dritte Management-Entscheidung: Integrator benannt
+
+**Referenz `1787788518864-b5d874a5`**, beantwortet die Dashboard-Vorlage
+`1787788352100-4182aa19` (eingereicht von `jean-luc`).
+
+**Antworttext, woertlich:**
+
+> Assign Geordi.
+
+**Exakter, begrenzter Umfang dieser Benennung — wie von `jean-luc` vorgegeben:**
+
+`geordi` ist **privilegierter Integrator** fuer **Hygiene/Review und die bedingte Integration
+nach `main`** **des daraus resultierenden exakten Provenienzkandidaten — und nur dessen.**
+
+**Ausdruecklich NICHT erteilt:**
+
+- keine Implementierung,
+- keine Task-Acceptance,
+- **keine Bewegung eines `TODO.md`-Markers**,
+- keine `0039-02`-Freigabe,
+- kein `DONE.md`,
+- kein Push, keine Publikation.
+
+**Noch nicht zugewiesen.** Diese Aufzeichnung benennt den Umfang; die Zuweisung erfolgt durch
+`jean-luc` nach seiner Pruefung. Bis dahin ist `geordi` nicht beauftragt.
+
+## 12. Daraus folgende Reihenfolge — zwei getrennte Kandidaten
+
+**Von `jean-luc` festgelegt (`1787788601973-d322ae01`), hier festgehalten, damit sie nicht
+verlorengeht:**
+
+    A  **Provenienzkandidat** (dieser Datensatz) → Review/Integration nach `main` durch `geordi`
+    B  **separater Governance-Markerkandidat** `[u]` → `[d]`, der den **integrierten**
+       Provenienzdatensatz und die **unerfuellte Vorbedingung `0039-02`** referenziert
+       → eigenes Review/Integration durch `geordi`
+
+**A und B duerfen nicht kombiniert werden**, weil die aufgezeichnete Aktivierungsregel verlangt,
+dass die Provenienz **zuerst von `main` erreichbar** ist.
+
+**`[d]` ist als wahrer naechster Zustand bestaetigt** — aber **erst nach** der Integration von A.
+Begruendung: agentische Arbeit hat stattgefunden, danach ist **keine Menschentscheidung** mehr
+die naechste Handlung, und die **unerfuellte Vorbedingung `0039-02`** ist der benannte Blocker.
+Die Benennung der privilegierten Owning-Session wird **erst nach `0039-02`-Freigabe faellig** —
+sie ist heute nicht ueberfaellig, sondern noch nicht an der Reihe.
+
+**Dieser Commit aendert `TODO.md` nicht.** Kein Claim, kein Start, keine Implementierung.
