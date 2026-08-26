@@ -353,6 +353,30 @@ time, and the mechanical provenance checks are Feature `0044` work
   mutation, service-control, or residual-risk authority. The canonical record
   schema and fail-closed state machine are in
   [`risk-integration.md`](risk-integration.md).
+- **Recorded policy origin (`DEC-0044-008`/`DEC-0044-011`, effective
+  2026-08-21T11:20:51+02:00; no retroactive requirement):** Every later commit
+  that changes a declared policy path MUST include exactly one Git commit-message
+  trailer in this form:
+
+  ```text
+  Policy-Origin-Branch: <canonical-branch-name>
+  ```
+
+  `<canonical-branch-name>` is the valid Git branch name where the policy change
+  was authored. The person introducing the commit supplies this evidence;
+  reviewers must not infer origin from topology or a surviving branch name. A
+  policy-path commit at or before the effective decision record is legacy history
+  and does not need retrofitting. The read-only `check_policy_provenance.py`
+  check reports a missing, duplicated, empty, or malformed required trailer as a
+  finding. A valid trailer documents origin but does not excuse a foreign-origin
+  policy commit.
+- **No fast-forward absorption of non-predecessor policy content:** A policy-path
+  commit from outside the receiving item direct predecessor/successor chain MUST
+  be introduced by an explicit `--no-ff` merge commit, never by `git merge
+  --ff-only` or `git update-ref`. The merge commit preserves inspectable topology;
+  the introduced policy commit still requires its `Policy-Origin-Branch:` trailer.
+  This is the repository-wide recorded-provenance rule and retains the narrower
+  `DEC-0044-007` control below.
 - **Fast-forward absorption of foreign content is prohibited (mechanical-check
   blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
   advance a branch tip without ever creating a merge commit, so an absorbed
