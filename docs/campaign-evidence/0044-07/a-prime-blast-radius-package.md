@@ -489,3 +489,25 @@ Damit sind beide ursprünglich offenen Fragen dieses Pakets **beantwortet**, kei
 **aktiviert**: Der neue `decision-record@v1` selbst existiert weiterhin nicht, ebenso wenig die
 Architect-Scope-Review. `0044-07` bleibt reine Vorbereitung, Marker `[ ]`, keine Mutation an einem
 abgenommenen Vertrag.
+
+---
+
+## 15. Baseline-Hinweis (2026-08-26T15:34Z, `jean-luc`, `1787758485464-bb202fa1`) — additiv, geprüft
+
+`feature-breakdown.md` änderte sich einmal seit Paketbeginn: Commit `942a648fd` (Implementer
+`Lore-Zeta`), jetzt erreichbar von `main` @ `9ccd99b25`. **Selbst geprüft:** Der Diff fügt
+ausschließlich einen neuen Abschnitt 8 „Cognitive demand estimation" an; §2 und §7 — die in diesem
+Paket zitierten Abschnitte — sind **byte-identisch unverändert**. Meine Analyse in §3.1/§3.3/§10.1
+bleibt damit gegen den neuen Stand gültig, keine Neubewertung nötig.
+
+§8 selbst: fünf-dimensionaler Schätzer, `DEC-0044-026`, ausdrücklich **shadow-only** — „does not
+rewrite existing values, change eligibility, assign/reject an agent, stop a Task, or grant
+authority." Berührt `capability_class` nicht, daher keine neue Relevanz für dieses Paket.
+
+**`0044-06`-Statusnachtrag:** Der Task ist inzwischen implementierungsseitig `[x]` mit bestandener
+unabhängiger Integrationsreview (`belanna`,
+`docs/campaign-evidence/0044-06/belanna-integration-review-20260826T151122Z.md`), aber **ohne
+aktuelle Task-`Acceptance: ✓`**. Das korrigiert meine frühere Einordnung im Dispatch-Briefing
+(„in Vorbereitung, kein fertiges Produkt") additiv — der Stand hat sich seither weiterentwickelt.
+Für dieses Paket bleibt relevant: eine materielle Änderung an akzeptierter `0044-05`/`0044-06`-
+Governance braucht weiterhin additive Invalidierung vor erneuter Abnahme (§9.1 Punkt 7).
