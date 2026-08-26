@@ -16,4 +16,4 @@
 
 ## Progress
 
-- 2026-08-26T00:53:00Z claim created from pinned base; claim-first commit next, then contract inspection and implementation.
+- 2026-08-26T00:53:00Z claim committed at REF `cdd0681f9c071a7825038e9953bcc0b6043b8474`; contract inspection and implementation followed without amending claim history.

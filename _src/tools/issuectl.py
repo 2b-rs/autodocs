@@ -22,6 +22,8 @@ import signal
 import subprocess
 import sys
 import tempfile
+import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
@@ -34,6 +36,10 @@ EXIT_USAGE = 3
 SCHEMA = "issuectl-query-result@v1"
 RUNNER_ACTIONS_PATH = Path("_src/runner/issuectl-query-actions-v1.json")
 LEGACY_AUTHORITY_NAMES = frozenset({"TODO.md", "DONE.md", "todo.md", "done.md"})
+FINDING_STATES = frozenset({"open", "accepted", "rejected", "remediated", "invalidated", "superseded"})
+FINDING_ID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
+DECISION_KINDS = frozenset({"escalation", "approval", "scope", "architecture", "supersession", "duplicate", "cancellation", "archival", "handoff"})
+DECISION_ROLES = {"architecture": "architecture-approver", "approval": "architecture-approver", "scope": "repository-owner", "escalation": "repository-owner", "supersession": "repository-owner", "duplicate": "repository-owner", "cancellation": "repository-owner", "archival": "repository-owner", "handoff": "repository-owner"}
 
 
 def _load(name: str, path: Path):
@@ -68,6 +74,160 @@ class IssuectlError(ValueError):
 
 def _canonical_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True) + "\n"
+
+
+def _read_json_object(path: Path, code: str) -> Dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise IssuectlError(code, f"cannot read JSON object {path}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise IssuectlError(code, f"{path} must contain a JSON object")
+    return value
+
+
+def _typed_ref(kind: str, identifier: str) -> Dict[str, str]:
+    return {"schema_version": "1.0", "kind": kind, "uri": f"{kind}:{identifier}", "classification": "internal"}
+
+
+def _uuid7() -> str:
+    millis = int(time.time() * 1000) & ((1 << 48) - 1)
+    random_bits = secrets.randbits(74)
+    value = (millis << 80) | (0x7 << 76) | ((random_bits >> 62) << 64) | (0x2 << 62) | (random_bits & ((1 << 62) - 1))
+    return str(uuid.UUID(int=value))
+
+
+def _finding_path(repo: Path, finding_id: str, detected_at: str) -> Path:
+    moment = iv._parse_time(detected_at)
+    if moment is None:
+        raise IssuectlError("IC1200", "finding timestamp is malformed")
+    return repo / "provenance/findings" / f"{moment.year:04d}" / f"{moment.month:02d}" / f"{finding_id}.json"
+
+
+def _finding_history_path(repo: Path, finding_id: str, record: Mapping[str, Any]) -> Path:
+    digest = hashlib.sha256(_canonical_json(record).encode("utf-8")).hexdigest()
+    return repo / "provenance/finding-history" / finding_id / f"{digest}.json"
+
+
+def _validate_finding(record: Mapping[str, Any]) -> None:
+    if record.get("schema_version") != "1.0" or not FINDING_ID_RE.fullmatch(str(record.get("finding_id", ""))):
+        raise IssuectlError("IC1200", "finding identity/schema is malformed")
+    if record.get("state") not in FINDING_STATES:
+        raise IssuectlError("IC1200", "finding state is invalid")
+    subject = record.get("subject") or {}
+    during = record.get("detected_during") or {}
+    evidence = record.get("evidence") or []
+    if subject.get("kind") != "issue" or during.get("kind") != "run":
+        raise IssuectlError("IC1200", "finding must link one exact issue and run")
+    kinds = {ref.get("kind") for ref in evidence if isinstance(ref, dict)}
+    if "criterion" not in kinds or not ({"evidence", "artifact", "artifact-set"} & kinds):
+        raise IssuectlError("IC1200", "finding must link exact criterion and evidence/artifact")
+    for ref in [subject, during, *evidence]:
+        if not isinstance(ref, dict) or not ref.get("uri") or ref.get("uri") != f"{ref.get('kind')}:{ref.get('uri', '').split(':', 1)[-1]}":
+            raise IssuectlError("IC1200", "finding contains malformed typed reference")
+
+
+def cmd_finding(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    now = args.detected_at or _dt.datetime.now(_dt.timezone.utc).isoformat().replace("+00:00", "Z")
+    finding_id = args.finding_id or _uuid7()
+    candidates = sorted((repo / "provenance/findings").glob(f"*/*/{finding_id}.json"))
+    current_path = candidates[0] if candidates else _finding_path(repo, finding_id, now)
+    original = current_path.read_bytes() if current_path.is_file() else None
+    if original is not None:
+        enforce_expected_digest(current_path, original, args.expected_digest)
+        prior = json.loads(original)
+        record = dict(prior)
+        record["state"] = args.state or prior["state"]
+        if args.detected_at and args.detected_at != prior.get("detected_at"):
+            raise IssuectlError("IC1201", "finding detected_at is immutable")
+    else:
+        if args.expected_digest:
+            raise IssuectlError("IC1201", "new finding cannot have an expected digest")
+        if not all((args.issue, args.criterion, args.run, args.evidence)):
+            raise IssuectlError("IC1200", "new finding requires issue, criterion, run, and evidence")
+        record = {"schema_version": "1.0", "finding_id": finding_id, "detected_at": now, "state": args.state or "open", "classification": args.classification, "environment": args.environment, "subject": _typed_ref("issue", args.issue), "detected_during": _typed_ref("run", args.run), "evidence": [_typed_ref("criterion", args.criterion)] + [_typed_ref("evidence", value) for value in args.evidence]}
+    _validate_finding(record)
+    new_bytes = _canonical_json(record).encode("utf-8")
+    if original == new_bytes:
+        return emit_mutate({"schema": MUTATE_SCHEMA, "command": "finding", "status": "replay", "finding_id": finding_id, "path": str(current_path), "sha256": _sha256_bytes(new_bytes), "exit_code": 0}, args.format, [f"FINDING {finding_id} replay"])
+    history = {"schema": "finding-history@v1", "finding_id": finding_id, "operation": "mint" if original is None else "update", "record_digest": _sha256_bytes(new_bytes), "previous_digest": _sha256_bytes(original) if original is not None else None, "record": record}
+    history_path = _finding_history_path(repo, finding_id, history)
+    history_bytes = _canonical_json(history).encode("utf-8")
+    if history_path.exists() and history_path.read_bytes() != history_bytes:
+        raise IssuectlError("IC1202", "finding history collision")
+    updates = [(current_path, new_bytes, original)]
+    if not history_path.exists():
+        updates.append((history_path, history_bytes, None))
+    atomic_promote(updates, dry_run=args.dry_run)
+    status = "dry-run" if args.dry_run else ("created" if original is None else "updated")
+    return emit_mutate({"schema": MUTATE_SCHEMA, "command": "finding", "status": status, "finding_id": finding_id, "path": str(current_path), "sha256": _sha256_bytes(new_bytes), "exit_code": 0}, args.format, [f"FINDING {finding_id} {status}"])
+
+
+def _decision_path(repo: Path, item_id: str, decision_id: str) -> Path:
+    return repo / "issues" / item_id.split("-")[0] / item_id / "decisions" / f"{decision_id}.json"
+
+
+def _verify_decision_approval(repo: Path, decision: Mapping[str, Any], approval: Mapping[str, Any], authorities: Mapping[str, Any], now: _dt.datetime) -> None:
+    required = {"schema", "approval_ref", "approval_commit", "package_commit", "package_digest", "policy_revision", "approver", "valid_from", "expires_at", "revoked", "conditions", "implementation_authors"}
+    if set(approval) < required or approval.get("schema") != "issue-decision-approval@v1":
+        raise IssuectlError("IC1210", "approval envelope is incomplete or unsupported")
+    expected_ref = f"refs/autodocs/approval/{decision['decision_id']}"
+    if approval["approval_ref"] != expected_ref:
+        raise IssuectlError("IC1210", "approval ref is not the approved signed-ref topology")
+    decision_bytes = _canonical_json(decision).encode("utf-8")
+    if approval["package_digest"] != _sha256_bytes(decision_bytes):
+        raise IssuectlError("IC1211", "decision package digest mismatch")
+    policy_bytes = _canonical_json(authorities).encode("utf-8")
+    if approval["policy_revision"] != _sha256_bytes(policy_bytes):
+        raise IssuectlError("IC1212", "authority policy revision mismatch")
+    principal = approval.get("approver") or {}
+    matches = [p for p in authorities.get("principals", []) if p.get("identity") == principal.get("identity") and p.get("role") == principal.get("role")]
+    required_role = DECISION_ROLES[decision["kind"]]
+    if not matches or principal.get("role") != required_role:
+        raise IssuectlError("IC1213", "approver is absent or has the wrong role")
+    if approval.get("revoked") is not False:
+        raise IssuectlError("IC1214", "approval is revoked")
+    valid_from, expires = iv._parse_time(approval["valid_from"]), iv._parse_time(approval["expires_at"])
+    if valid_from is None or expires is None or not (valid_from <= now < expires):
+        raise IssuectlError("IC1214", "approval is outside its validity interval")
+    if principal.get("identity") in set(approval.get("implementation_authors") or []):
+        raise IssuectlError("IC1215", "self-approval is forbidden")
+    conditions = approval.get("conditions")
+    satisfied = set(approval.get("satisfied_conditions") or [])
+    if not isinstance(conditions, list) or not set(conditions) <= satisfied:
+        raise IssuectlError("IC1216", "approval conditions are not satisfied")
+    ref_commit = subprocess.run(["git", "-C", str(repo), "rev-parse", "--verify", f"{expected_ref}^{{commit}}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    verified = subprocess.run(["git", "-C", str(repo), "verify-commit", approval["approval_commit"]], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    if ref_commit.returncode != 0 or ref_commit.stdout.decode().strip() != approval["approval_commit"] or verified.returncode != 0:
+        raise IssuectlError("IC1217", "approval ref/commit signature verification failed")
+
+
+def cmd_decision(args: argparse.Namespace) -> int:
+    repo = Path(args.repo).resolve()
+    decision = _read_json_object(Path(args.input), "IC1210")
+    if decision.get("kind") not in DECISION_KINDS or decision.get("decision_id") != args.decision_id or decision.get("item_id") != args.id:
+        raise IssuectlError("IC1210", "decision identity or kind is invalid")
+    approval = _read_json_object(Path(args.approval), "IC1210")
+    authorities = _read_json_object(Path(args.authorities), "IC1210")
+    now = iv._parse_time(args.now) if args.now else _dt.datetime.now(_dt.timezone.utc)
+    if now is None:
+        raise IssuectlError("IC1210", "--now is malformed")
+    _verify_decision_approval(repo, decision, approval, authorities, now)
+    path = _decision_path(repo, args.id, args.decision_id)
+    payload = _canonical_json(decision).encode("utf-8")
+    if path.exists():
+        existing = path.read_bytes()
+        if existing == payload:
+            status = "replay"
+        else:
+            raise IssuectlError("IC1218", "immutable decision identity already exists with different bytes")
+    else:
+        if args.expected_digest:
+            raise IssuectlError("IC1211", "new immutable decision cannot have expected digest")
+        atomic_promote([(path, payload, None)], dry_run=args.dry_run)
+        status = "dry-run" if args.dry_run else "created"
+    return emit_mutate({"schema": MUTATE_SCHEMA, "command": "decision", "status": status, "decision_id": args.decision_id, "path": str(path), "sha256": _sha256_bytes(payload), "exit_code": 0}, args.format, [f"DECISION {args.decision_id} {status}"])
 
 
 def _reject_legacy_authority(path: Optional[Path]) -> None:
@@ -1728,6 +1888,35 @@ def build_parser() -> argparse.ArgumentParser:
     p_recover.add_argument("--authority-decision", required=True)
     p_recover.add_argument("--predecessor-claim")
     p_recover.set_defaults(func=cmd_recover)
+
+    p_finding = sub.add_parser("finding", help="mint or disposition a stable finding")
+    p_finding.add_argument("--repo", default=str(ROOT))
+    p_finding.add_argument("--format", choices=("json", "human"), default="json")
+    p_finding.add_argument("--dry-run", action="store_true")
+    p_finding.add_argument("--finding-id")
+    p_finding.add_argument("--detected-at")
+    p_finding.add_argument("--state", choices=tuple(sorted(FINDING_STATES)))
+    p_finding.add_argument("--classification", choices=("public", "internal", "restricted"), default="internal")
+    p_finding.add_argument("--environment", choices=("synthetic", "development-test", "production", "assessment"), default="assessment")
+    p_finding.add_argument("--issue")
+    p_finding.add_argument("--criterion")
+    p_finding.add_argument("--run")
+    p_finding.add_argument("--evidence", action="append")
+    p_finding.add_argument("--expected-digest")
+    p_finding.set_defaults(func=cmd_finding)
+
+    p_decision = sub.add_parser("decision", help="record an immutable signed-ref-authorized decision")
+    p_decision.add_argument("--repo", default=str(ROOT))
+    p_decision.add_argument("--format", choices=("json", "human"), default="json")
+    p_decision.add_argument("--dry-run", action="store_true")
+    p_decision.add_argument("--id", required=True)
+    p_decision.add_argument("--decision-id", required=True)
+    p_decision.add_argument("--input", required=True)
+    p_decision.add_argument("--approval", required=True)
+    p_decision.add_argument("--authorities", required=True)
+    p_decision.add_argument("--expected-digest")
+    p_decision.add_argument("--now")
+    p_decision.set_defaults(func=cmd_decision)
 
     return parser
 
