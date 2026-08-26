@@ -27,9 +27,22 @@ Nachrichten-ID. Alle drei werden hier festgehalten, damit spaeter niemand raten 
 | `kathryn` (direkt vom Supervisor) | `1787783780977-5d7dee6e` |
 | `benjamin` (weitergeleitet an `kathryn`) | `1787783780813-a0322f10` |
 | `jean-luc` (zitiert gegenueber `kathryn`) | `1787783780893-e9407cf3` |
+| `michael` (eigene Aufzeichnung, an `kathryn` berichtet) | `1787783781144-70a6516e` |
 
 **Befund, unbewertet:** Eine Broadcast-Zustellung erzeugt pro Empfaenger eine eigene ID. Fuer
-Traceability-Zwecke ist damit **keine** einzelne ID kanonisch. Dieser Datensatz nennt alle drei.
+Traceability-Zwecke ist damit **keine** einzelne ID kanonisch. Dieser Datensatz nennt alle
+bekannten.
+
+**Additive Ergaenzung (2026-08-26T22:45Z, `kathryn`):** Die vierte Zustellung
+(`1787783781144-70a6516e` an `michael`) war bei der Ersterfassung nicht bekannt und ist oben
+nachgetragen. Die Erstfassung sagte „an **mindestens** drei Empfaenger" und listete drei; sie
+war damit unvollstaendig, nicht unrichtig. Der Nachtrag erfolgt auf Weisung `jean-luc`
+(agent-inbox `1787784167492-3aa2dad6`, Option B) als **begrenzte Evidenz-Vervollstaendigung** —
+er aendert **keinen** Marker, **keinen** Zustand und **keine** Autoritaet. Nichts der
+Erstfassung wurde geloescht oder umgeschrieben.
+
+Die vier IDs bezeichnen **eine einzige** Dashboard-Entscheidung des aktuellen Benutzers, nicht
+vier Entscheidungen.
 
 ## 3. Der Befund: die Taskzeile stellt zwei verschiedene Fragen
 
