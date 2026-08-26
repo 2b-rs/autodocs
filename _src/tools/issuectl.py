@@ -230,6 +230,207 @@ def cmd_decision(args: argparse.Namespace) -> int:
     return emit_mutate({"schema": MUTATE_SCHEMA, "command": "decision", "status": status, "decision_id": args.decision_id, "path": str(path), "sha256": _sha256_bytes(payload), "exit_code": 0}, args.format, [f"DECISION {args.decision_id} {status}"])
 
 
+TERMINAL_DISPOSITIONS = frozenset({
+    "completed", "wontfix", "superseded", "duplicate", "cancelled",
+    "archived-not-accepted",
+})
+DECISION_DISPOSITIONS = {
+    "superseded": "supersession", "duplicate": "duplicate",
+    "cancelled": "cancellation", "archived-not-accepted": "archival",
+}
+CLOSURE_KEYS = frozenset({
+    "schema_version", "item_id", "disposition", "closed_at", "closed_by",
+    "criteria", "commit_refs", "validation", "reason", "decision_ref",
+    "successor_item",
+})
+
+
+def _commit_is_reachable(repo: Path, sha: str) -> bool:
+    if not iv.COMMIT_SHA.fullmatch(str(sha)):
+        return False
+    proc = _git(repo, ["merge-base", "--is-ancestor", sha, "HEAD"])
+    return proc.returncode == 0
+
+
+def _closure_path(issues_root: Path, item_id: str) -> Path:
+    return item_path(issues_root, item_id).parent / "closure.json"
+
+
+def _criterion_records(path: Path, body: str) -> List[Dict[str, Any]]:
+    return [dict(entry) for entry in store.parse_markdown_body(body, path=path)["criteria"]]
+
+
+def _validate_criterion_evidence(repo: Path, item_id: str, criterion: Mapping[str, Any]) -> None:
+    evidence = criterion.get("evidence")
+    if not isinstance(evidence, list) or not evidence:
+        raise IssuectlError("IC1222", f"criterion {criterion.get('id')} has no evidence")
+    diagnostics: List[Any] = []
+    iv._check_evidence(diagnostics, repo, "closure.json", item_id, str(criterion.get("id")), evidence)
+    if diagnostics:
+        raise IssuectlError("IC1222", diagnostics[0].message)
+
+
+def _decision_at_ref(repo: Path, issues_root: Path, item_id: str, sha: str, kind: str) -> Dict[str, Any]:
+    directory = item_path(issues_root, item_id).parent
+    try:
+        relative = directory.relative_to(repo)
+    except ValueError as exc:
+        raise IssuectlError("IC1226", "decision authority requires an issue root inside the repository") from exc
+    listing = _git(repo, ["ls-tree", "-r", "--name-only", sha, "--", str(relative / "decisions")])
+    if listing.returncode != 0:
+        raise IssuectlError("IC1226", "decision ref is not reachable")
+    for name in listing.stdout.decode("utf-8", "replace").splitlines():
+        shown = _git(repo, ["show", f"{sha}:{name}"])
+        if shown.returncode != 0:
+            continue
+        try:
+            record = json.loads(shown.stdout)
+        except json.JSONDecodeError:
+            continue
+        if (isinstance(record, dict) and record.get("item_id") == item_id
+                and record.get("kind") == kind and record.get("status") == "approved"
+                and isinstance(record.get("authority"), dict)
+                and record["authority"].get("identity")
+                and record["authority"].get("role") == DECISION_ROLES[kind]):
+            return record
+    raise IssuectlError("IC1226", f"decision ref has no approved {kind} authority for {item_id}")
+
+
+def validate_closure_candidate(repo: Path, issues_root: Path, item_path_value: Path,
+                               metadata: Mapping[str, Any], body: str,
+                               closure: Mapping[str, Any]) -> None:
+    item_id = str(metadata["id"])
+    disposition = closure.get("disposition")
+    required = {"schema_version", "item_id", "disposition", "closed_at", "closed_by",
+                "criteria", "commit_refs", "validation"}
+    if (not required <= set(closure) or not set(closure) <= CLOSURE_KEYS
+            or closure.get("schema_version") != "1.0"):
+        raise IssuectlError("IC1220", "closure record is incomplete or unsupported")
+    if closure.get("item_id") != item_id or disposition not in TERMINAL_DISPOSITIONS:
+        raise IssuectlError("IC1220", "closure item/disposition is invalid")
+    if not isinstance(closure.get("closed_by"), str) or not closure["closed_by"].strip():
+        raise IssuectlError("IC1220", "closure closer identity is required")
+    if iv._parse_time(closure.get("closed_at")) is None:
+        raise IssuectlError("IC1220", "closure timestamp is malformed")
+    if metadata.get("state") not in {"open", "in_progress"}:
+        raise IssuectlError("IC1221", f"illegal lifecycle transition {metadata.get('state')} -> closed")
+    refs = closure.get("commit_refs")
+    if not isinstance(refs, list) or len(set(refs)) < 2:
+        raise IssuectlError("IC1223", "two-commit rule requires two distinct commit refs")
+    if any(not _commit_is_reachable(repo, str(sha)) for sha in refs):
+        raise IssuectlError("IC1223", "closure commit refs must be real commits reachable from HEAD")
+    validations = closure.get("validation")
+    if (not isinstance(validations, list) or not validations
+            or any(not isinstance(v, dict) or set(v) - {"name", "result", "evidence"}
+                   or not isinstance(v.get("name"), str)
+                   or v.get("result") not in {"pass", "fail", "not-applicable"}
+                   for v in validations)):
+        raise IssuectlError("IC1220", "closure validation records are required")
+    if disposition == "completed" and any(v.get("result") != "pass" for v in validations if isinstance(v, dict)):
+        raise IssuectlError("IC1224", "completed closure may contain only passing validation")
+    if disposition == "archived-not-accepted" and any(v.get("result") == "pass" for v in validations if isinstance(v, dict)):
+        raise IssuectlError("IC1224", "archived-not-accepted must not present success credit")
+    if item_id == "0021" and disposition != "archived-not-accepted":
+        raise IssuectlError("IC1224", "Feature 0021 must remain archived-not-accepted")
+    raw_criteria = closure.get("criteria")
+    if (not isinstance(raw_criteria, list) or not raw_criteria
+            or any(not isinstance(entry, dict)
+                   or set(entry) != {"id", "status", "evidence"}
+                   or entry.get("status") not in {"checked", "not-applicable", "withdrawn"}
+                   for entry in raw_criteria)):
+        raise IssuectlError("IC1220", "closure criterion records are malformed")
+    provided = {entry["id"]: entry for entry in raw_criteria}
+    if len(provided) != len(raw_criteria):
+        raise IssuectlError("IC1220", "closure criterion identities must be unique")
+    source_criteria = _criterion_records(item_path_value, body)
+    if set(provided) != {entry.get("id") for entry in source_criteria}:
+        raise IssuectlError("IC1222", "closure criteria must exactly match immutable item history")
+    for source in source_criteria:
+        criterion_id, source_status = source.get("id"), source.get("status")
+        record = provided.get(criterion_id)
+        if record is None:
+            raise IssuectlError("IC1222", f"criterion {criterion_id} is absent from closure")
+        if source_status == "active":
+            if disposition == "completed" and record.get("status") != "checked":
+                raise IssuectlError("IC1222", f"active criterion {criterion_id} is not checked")
+            _validate_criterion_evidence(repo, item_id, record)
+        elif record.get("status") not in {"withdrawn", "not-applicable"}:
+            raise IssuectlError("IC1222", f"historical criterion {criterion_id} must not be presented as checked")
+    if disposition in DECISION_DISPOSITIONS:
+        sha = closure.get("decision_ref")
+        if not isinstance(sha, str) or not _commit_is_reachable(repo, sha):
+            raise IssuectlError("IC1226", "terminal disposition requires a reachable decision ref")
+        decision = _decision_at_ref(repo, issues_root, item_id, sha, DECISION_DISPOSITIONS[disposition])
+        if disposition in {"superseded", "duplicate"} and decision.get("successor_item") != closure.get("successor_item"):
+            raise IssuectlError("IC1226", "terminal decision successor does not match closure")
+    if disposition == "completed":
+        approval_path = item_path_value.parent / "approval.json"
+        approval = _read_json_object(approval_path, "IC1226") if approval_path.is_file() else {}
+        if (approval.get("schema") != "issue-approval@v1"
+                or approval.get("signature_verified") is not True
+                or not isinstance(approval.get("approval_ref"), str)
+                or not approval["approval_ref"].startswith("refs/autodocs/approval/")
+                or not isinstance(approval.get("approver_role"), str)
+                or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(approval.get("package_digest", "")))
+                or not _commit_is_reachable(repo, str(approval.get("package_commit", "")))):
+            raise IssuectlError("IC1226", "completed closure requires verified role approval evidence")
+    if disposition in {"superseded", "duplicate"} and not closure.get("successor_item"):
+        raise IssuectlError("IC1220", f"{disposition} closure requires successor_item")
+    if disposition in {"wontfix", "cancelled", "archived-not-accepted"} and not closure.get("reason"):
+        raise IssuectlError("IC1220", f"{disposition} closure requires reason")
+    if metadata.get("level") == "feature":
+        prefix = item_id + "-"
+        for candidate in sorted(issues_root.rglob("index.md")):
+            try:
+                child_meta, _child_body, _raw = parse_document(candidate, issues_root)
+            except (IssuectlError, store.IssueStoreError):
+                continue
+            child_id = str(child_meta.get("id", ""))
+            if child_id.startswith(prefix):
+                child_closure = _closure_path(issues_root, child_id)
+                if child_meta.get("state") != "closed" or not child_closure.is_file():
+                    raise IssuectlError("IC1225", f"Feature closure blocked by nonterminal child {child_id}")
+
+
+def cmd_criterion_check(args: argparse.Namespace) -> int:
+    repo, issues_root = Path(args.repo).resolve(), _issues_root(args)
+    path = item_path(issues_root, args.id)
+    metadata, body, _original = parse_document(path, issues_root)
+    closure = _read_json_object(Path(args.closure), "IC1220")
+    validate_closure_candidate(repo, issues_root, path, metadata, body, closure)
+    return emit_mutate({"schema": MUTATE_SCHEMA, "command": "criterion-check", "status": "pass", "id": args.id, "exit_code": 0}, args.format, [f"CRITERIA {args.id} PASS"])
+
+
+def cmd_close(args: argparse.Namespace) -> int:
+    repo, issues_root = Path(args.repo).resolve(), _issues_root(args)
+    path = item_path(issues_root, args.id)
+    metadata, body, original = parse_document(path, issues_root)
+    enforce_expected_digest(path, original, args.expected_digest)
+    closure = _read_json_object(Path(args.closure), "IC1220")
+    validate_closure_candidate(repo, issues_root, path, metadata, body, closure)
+    closure_path = _closure_path(issues_root, args.id)
+    closure_bytes = _canonical_json(closure).encode("utf-8")
+    existing = closure_path.read_bytes() if closure_path.is_file() else None
+    if existing is not None and existing != closure_bytes:
+        raise IssuectlError("IC1227", "terminal closure history is immutable")
+    metadata = dict(metadata)
+    metadata["state"] = "closed"
+    if getattr(args, "date", None):
+        metadata["updated_at"] = args.date
+    index_bytes = _compose(metadata, body)
+    enforce_claim_scope(issues_root, [path, closure_path], getattr(args, "owner_token", None))
+    validate_composed(path, issues_root, index_bytes)
+    updates = [(path, index_bytes, original), (closure_path, closure_bytes, existing)]
+    if args.dry_run:
+        payload = {"schema": MUTATE_SCHEMA, "command": "close", "dry_run": True,
+                   "id": args.id, "disposition": closure["disposition"], "exit_code": 0}
+        return emit_mutate(payload, args.format, [f"DRY-RUN close {args.id} {closure['disposition']}"])
+    atomic_promote(updates, dry_run=False)
+    return emit_mutate({"schema": MUTATE_SCHEMA, "command": "close", "status": "closed",
+                        "id": args.id, "disposition": closure["disposition"], "exit_code": 0},
+                       args.format, [f"CLOSED {args.id} {closure['disposition']}"])
+
+
 def _reject_legacy_authority(path: Optional[Path]) -> None:
     if path is None:
         return
@@ -1917,6 +2118,19 @@ def build_parser() -> argparse.ArgumentParser:
     p_decision.add_argument("--expected-digest")
     p_decision.add_argument("--now")
     p_decision.set_defaults(func=cmd_decision)
+
+    p_check = sub.add_parser("criterion-check", help="validate terminal criterion evidence and closure")
+    _add_mutate_common(p_check)
+    p_check.add_argument("--id", required=True)
+    p_check.add_argument("--closure", required=True)
+    p_check.set_defaults(func=cmd_criterion_check)
+
+    p_close = sub.add_parser("close", help="atomically close or archive an item")
+    _add_mutate_common(p_close)
+    _add_digest(p_close)
+    p_close.add_argument("--id", required=True)
+    p_close.add_argument("--closure", required=True)
+    p_close.set_defaults(func=cmd_close)
 
     return parser
 
