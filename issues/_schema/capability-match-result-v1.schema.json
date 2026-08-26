@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capability-match-result@v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "matcher_version",
+    "profile_id",
+    "profile_sha256",
+    "descriptor_sha256",
+    "status",
+    "eligible_agent_ids",
+    "rejections",
+    "non_authority_notice"
+  ],
+  "properties": {
+    "schema": { "const": "capability-match-result@v1" },
+    "matcher_version": { "const": "capability-match@v1" },
+    "profile_id": { "type": "string" },
+    "profile_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "descriptor_sha256": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["agent_id", "descriptor_id", "sha256"],
+        "properties": {
+          "agent_id": { "type": "string", "minLength": 1 },
+          "descriptor_id": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "status": { "enum": ["single-eligible", "multiple-eligible", "none-eligible", "invalid-input"] },
+    "eligible_agent_ids": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "rejections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["agent_id", "descriptor_id", "reasons"],
+        "properties": {
+          "agent_id": { "type": "string", "minLength": 1 },
+          "descriptor_id": { "type": "string", "minLength": 1 },
+          "reasons": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "non_authority_notice": { "type": "string", "minLength": 1 },
+    "error": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "invalid-input" } }, "required": ["status"] },
+      "then": {
+        "required": ["error"],
+        "properties": {
+          "eligible_agent_ids": { "maxItems": 0 },
+          "rejections": { "maxItems": 0 },
+          "descriptor_sha256": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "enum": ["single-eligible", "multiple-eligible", "none-eligible"] } },
+        "required": ["status"]
+      },
+      "then": { "not": { "required": ["error"] } }
+    }
+  ]
+}

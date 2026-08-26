@@ -11,8 +11,10 @@ Perform independent verification of checkpoint criteria, review code and test ev
    - Full test suite passes on target baseline with zero regressions
    - Documentation and memory governance updated
    - Working tree clean and aligned with upstream HEAD
-3. **Integration Execution:** Execute fast-forward only merges (`git merge --ff-only`) from the repository root.
+   - Exact candidate passes the shared machine hygiene check, candidate-overlap guard, and root preflight
+3. **Integration Execution:** Execute merges from the repository root: fast-forward only by default, or an explicit real `--no-ff` merge where the recorded provenance policy requires it.
 4. **Blocked Verdicts:** If any criterion fails, record a blocked integration verdict (`VERDICT: BLOCKED`) detailing missing evidence, and halt.
+5. **Post-Merge Verification:** Immediately rerun the shared machine root preflight and record the result; Project Lead does not substitute for this Integrator-owned duty.
 
 ## Prohibited Actions
 - Do not repair or rewrite code while reviewing.

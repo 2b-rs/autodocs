@@ -8,7 +8,9 @@ fails when:
 * the integration worktree index differs from its `HEAD`;
 * another worktree still has a staged tree after one bounded re-sample (a
   foreign staged tree); or
-* tracked files in the worktree checking out `main` differ from its index; or
+* tracked files outside the narrow DEC-0044-021 Memory exception differ in the
+  worktree checking out `main`; or
+* the exact candidate changes an allowed dirty Memory path; or
 * a symbolic-branch worktree still has the index and files of the immediately
   preceding reflog tip after its branch ref advanced. This is the stale
   checkout signature produced by `git update-ref` on a checked-out branch.
@@ -21,7 +23,8 @@ equivalent low-level ref move. The required integration procedure decides
 recovery.
 
 Usage:
-    python3 _src/tools/check_integration_hygiene.py --repo <worktree> [--json]
+    python3 _src/tools/check_integration_hygiene.py --repo <worktree> --candidate-ref <candidate> [--json]
+    python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight [--json]
 """
 
 from __future__ import annotations
@@ -35,6 +38,14 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Iterable, Optional
+
+from integration_hygiene_policy import (
+    RootDivergence,
+    candidate_memory_overlap,
+    classify_unstaged_paths,
+    display_path,
+    split_nul_paths,
+)
 
 REPORT_SCHEMA = "integration-hygiene-report@v1"
 FOREIGN_STAGED_RESAMPLE_SECONDS = 2.0
@@ -56,6 +67,19 @@ def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
     return proc
 
 
+def _git_bytes(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
+    proc = subprocess.run(
+        ["git", "-C", str(repo), *args],
+        capture_output=True,
+        text=False,
+        check=False,
+    )
+    if check and proc.returncode:
+        stderr = proc.stderr.decode("utf-8", "backslashreplace").strip()
+        raise GitError(f"git {' '.join(args)} failed ({proc.returncode}): {stderr}")
+    return proc
+
+
 def _worktree_paths(repo: Path) -> list[Path]:
     output = _git(repo, "worktree", "list", "--porcelain").stdout
     paths: list[Path] = []
@@ -69,15 +93,36 @@ def _worktree_paths(repo: Path) -> list[Path]:
 
 def _symbolic_branch(repo: Path) -> Optional[str]:
     proc = _git(repo, "symbolic-ref", "-q", "--short", "HEAD", check=False)
-    return proc.stdout.strip() if proc.returncode == 0 else None
+    if proc.returncode == 0:
+        return proc.stdout.strip()
+    if proc.returncode == 1:
+        return None
+    raise GitError(f"git symbolic-ref failed ({proc.returncode}): {proc.stderr.strip()}")
 
 
 def _index_equals(repo: Path, treeish: str) -> bool:
-    return _git(repo, "diff", "--cached", "--quiet", treeish, check=False).returncode == 0
+    proc = _git(repo, "diff", "--cached", "--quiet", treeish, check=False)
+    if proc.returncode not in (0, 1):
+        raise GitError(f"git diff --cached failed ({proc.returncode}): {proc.stderr.strip()}")
+    return proc.returncode == 0
 
 
 def _worktree_equals_index(repo: Path) -> bool:
-    return _git(repo, "diff", "--quiet", check=False).returncode == 0
+    proc = _git(repo, "diff", "--quiet", check=False)
+    if proc.returncode not in (0, 1):
+        raise GitError(f"git diff failed ({proc.returncode}): {proc.stderr.strip()}")
+    return proc.returncode == 0
+
+
+def _unstaged_tracked_paths(repo: Path) -> tuple[bytes, ...]:
+    return split_nul_paths(_git_bytes(repo, "diff", "--name-only", "-z", "--").stdout)
+
+
+def _candidate_changed_paths(repo: Path, candidate_ref: str) -> tuple[bytes, ...]:
+    _git(repo, "rev-parse", "--verify", f"{candidate_ref}^{{commit}}")
+    return split_nul_paths(
+        _git_bytes(repo, "diff", "--name-only", "-z", "HEAD", candidate_ref, "--").stdout
+    )
 
 
 def _index_path(repo: Path) -> Path:
@@ -96,7 +141,7 @@ def _index_mtime(repo: Path) -> float:
 def _previous_reflog_tip(repo: Path, branch: str) -> Optional[str]:
     tips = [
         line.strip()
-        for line in _git(repo, "reflog", "show", "--format=%H", "-n", "2", branch, check=False).stdout.splitlines()
+        for line in _git(repo, "reflog", "show", "--format=%H", "-n", "2", branch).stdout.splitlines()
         if line.strip()
     ]
     return tips[1] if len(tips) == 2 else None
@@ -153,6 +198,7 @@ def check_integration_hygiene(
     foreign_resample_delay_seconds: float = FOREIGN_STAGED_RESAMPLE_SECONDS,
     sleeper: Callable[[float], None] = time.sleep,
     clock: Callable[[], float] = time.time,
+    candidate_ref: Optional[str] = None,
 ) -> HygieneReport:
     """Inspect all registered worktrees without changing repository state."""
     if foreign_resample_delay_seconds < 0:
@@ -161,6 +207,7 @@ def check_integration_hygiene(
     paths = _worktree_paths(integration)
     if integration not in paths:
         raise GitError(f"integration worktree {integration} is not registered")
+    candidate_changed_paths = _candidate_changed_paths(integration, candidate_ref) if candidate_ref else ()
 
     states: list[WorktreeState] = []
     findings: list[Finding] = []
@@ -173,6 +220,11 @@ def check_integration_hygiene(
         branch = _symbolic_branch(path)
         index_equals_head = _index_equals(path, "HEAD")
         worktree_equals_index = _worktree_equals_index(path)
+        root_divergence = (
+            classify_unstaged_paths(_unstaged_tracked_paths(path))
+            if branch == "main"
+            else RootDivergence((), (), ())
+        )
         states.append(WorktreeState(str(path), head, branch, index_equals_head, worktree_equals_index))
 
         if path == integration and not index_equals_head:
@@ -180,14 +232,30 @@ def check_integration_hygiene(
         elif path != integration and not index_equals_head:
             foreign_staged_candidates.append(path)
 
-        if branch == "main" and not worktree_equals_index:
+        if branch == "main" and root_divergence.blocking_paths:
             findings.append(
                 Finding(
                     "MAIN_WORKTREE_DIRTY",
                     str(path),
-                    "worktree checking out main has tracked files that differ from its index",
+                    "worktree checking out main has non-Memory tracked divergence: "
+                    + ", ".join(display_path(item) for item in root_divergence.blocking_paths),
                 )
             )
+
+        if branch == "main" and candidate_ref and root_divergence.allowed_memory_paths:
+            overlap = candidate_memory_overlap(
+                root_divergence.allowed_memory_paths,
+                candidate_changed_paths,
+            )
+            if overlap:
+                findings.append(
+                    Finding(
+                        "CANDIDATE_MEMORY_OVERLAP",
+                        str(path),
+                        "candidate changes currently dirty Memory path(s): "
+                        + ", ".join(display_path(item) for item in overlap),
+                    )
+                )
 
         previous = _previous_reflog_tip(path, branch) if branch else None
         if (
@@ -249,13 +317,49 @@ def _render_text(report: HygieneReport) -> str:
     return "\n".join(lines)
 
 
+def check_root_preflight(repo: Path | str, *, candidate_ref: Optional[str] = None) -> HygieneReport:
+    """Run the shared full checker with root-specific branch/index requirements."""
+    report = check_integration_hygiene(repo, candidate_ref=candidate_ref)
+    main_paths = [Path(state.path) for state in report.worktrees if state.branch == "main"]
+    if len(main_paths) != 1:
+        raise GitError(f"expected exactly one worktree checking out main, found {len(main_paths)}")
+    root = main_paths[0]
+    findings = list(report.findings)
+    if Path(repo).resolve() != root.resolve():
+        findings.append(Finding("ROOT_WORKTREE_REQUIRED", str(Path(repo).resolve()), "--root-preflight requires root worktree"))
+    if _symbolic_branch(root) != "main":
+        findings.append(Finding("ROOT_NOT_MAIN", str(root), "root worktree is not checking out main"))
+    if not _index_equals(root, "HEAD"):
+        findings.append(Finding("ROOT_INDEX_NOT_HEAD", str(root), "root index differs from HEAD"))
+    return HygieneReport(
+        report.schema,
+        report.integration_worktree,
+        report.root_worktree,
+        report.worktrees,
+        findings,
+    )
+
+
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", type=Path, default=Path.cwd(), help="registered integration worktree")
     parser.add_argument("--json", action="store_true", help="emit integration-hygiene-report@v1 JSON")
+    parser.add_argument(
+        "--root-preflight",
+        action="store_true",
+        help="run the machine root preflight using the shared hygiene classifier",
+    )
+    parser.add_argument(
+        "--candidate-ref",
+        help="also block when this candidate changes an allowed dirty Memory path",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
     try:
-        report = check_integration_hygiene(args.repo)
+        report = (
+            check_root_preflight(args.repo, candidate_ref=args.candidate_ref)
+            if args.root_preflight
+            else check_integration_hygiene(args.repo, candidate_ref=args.candidate_ref)
+        )
     except GitError as error:
         print(f"integration hygiene: ERROR: {error}", file=sys.stderr)
         return 2

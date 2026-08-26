@@ -202,3 +202,218 @@ Ausschlussprüfung):
 
 Vollständige Prompt-Kette in
 [`dec-0019-002-provenance.txt`](dec-0019-002-provenance.txt).
+
+---
+
+### `DEC-0019-003` — Later S-Core curation exports are self-contained and locally link-closed
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T06:09:44Z`
+- **Deciding identity:** `agent:tasha:0019-13:20260825T060255Z-702c7697`
+- **Role:** `Implementierer`
+- **Authority reference:** `task:0019-13`
+- **Subject:** The assembled publication root and blocking local-link validation contract for later releases of the S-Core v0.6.0 unvalidated-curation subtree, without changing the already published digest-bound tree.
+- **Decision:** The assembled publication root is the strict `eclipse-score-v0.6.0-curation-review/` export directory. A later candidate packages the canonical `review_request.js` at that root and a deterministic local `curation-report.html` replacement at that root; record pages reference the packaged script within the root, and `participate.html` references the local report. Validation examines every local `href` and `src` in every generated HTML page against that exact root and refuses missing files, non-regular targets, absolute or scheme-like local paths, and any path escape. No defect-specific missing-link allowlist remains. The decision authorizes only local candidate preparation under Task `0019-13`; implementation begins only after a separate supporting scope review by a management-instantiated Architect and after this governance record is current on `main`. It does not authorize publication.
+- **Technical justification:** The approved narrow publisher copies only the named subtree, so targets outside that subtree are not part of its supported output and cannot be assumed present. Packaging the unchanged canonical browser client and a small local report makes the artifact independently navigable, deterministic, and testable without widening the publisher or silently depending on ambient website layout. Resolving every local link against the actual assembled root removes both known false exceptions and makes a later publication fail before external effect if any required target is absent. The old digest `7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283` remains immutable evidence and is not repaired in place.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `public-release`
+- **Considered alternatives:**
+  - **ALT-01:** Make the strict subtree self-contained by packaging the canonical review client and a local curation-report replacement, then validate all local links within that root.
+    - **Disposition:** `selected`
+    - **Reason:** This is the smallest topology that matches the narrow publisher's actual payload, preserves the participation route, and permits exhaustive pre-release validation without ambient dependencies.
+  - **ALT-02:** Keep the links escaping the subtree and define the complete website root as the validator's assembled root.
+    - **Disposition:** `rejected`
+    - **Reason:** The bounded publication mechanism copies only the subtree, so a larger assumed root would validate files that are not carried by the approved payload and would reproduce the shipped defect class.
+  - **ALT-03:** Remove the curation-report link and browser review-request script from the generated pages.
+    - **Disposition:** `rejected`
+    - **Reason:** This would avoid dead targets by deleting the established user participation route, weakening the existing curation contract instead of repairing its packaging.
+- **Consequences:**
+  - **CON-01:** Any later S-Core curation candidate contains two additional root files, both included in deterministic inventory, digest, repeat-generation, and whole-population link evidence.
+  - **CON-02:** The strict validator may block a later release candidate when any local `href` or `src` is missing, escapes the root, resolves to a non-regular target, or is removed after generation; green validation is not release authorization.
+  - **CON-03:** The canonical IDs, version IDs, unvalidated markers, status/history, provenance, candidate counts, manifests, curator boundary, review-request authentication semantics, and narrow publisher authority remain unchanged.
+  - **CON-04:** The already published 2,248-file tree and its approved digest are retained byte-for-byte as historical evidence; this decision creates no special publication and has no external effect by itself.
+  - **CON-05:** Rollback before a later authorized publication is the ordinary removal of the Task `0019-13` candidate commit; after publication, supersession requires a new reviewed candidate and cannot relabel the old digest.
+- **Affected work units:**
+  - `task:0019-13`
+  - `repository:autodocs`
+  - `external:autodocs-github-pages-eclipse-score-curation`
+- **Affected gates:**
+  - `validation:_src/tools/prepare_score_curation_export.py`
+  - `release:eclipse-score-curation-later-release`
+- **Review participation:** `none`
+- **No-review reason:** The mandatory distinct Architect scope review is requested separately before any gate-scope implementation; no second-instance response existed when this pre-implementation decision record was created, so no support is inferred.
+- **Waiver:** `none`
+
+---
+
+### `DEC-0019-004` — Unchanged review client resolves a packaged local process report
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T06:13:12Z`
+- **Deciding identity:** `agent:tasha:0019-13:20260825T060255Z-702c7697`
+- **Role:** `Implementierer`
+- **Authority reference:** `task:0019-13`
+- **Subject:** Supersession of the incomplete `DEC-0019-003` topology after discovery that the canonical review client dynamically creates an additional local `process.html` dependency on every record page.
+- **Decision:** `DEC-0019-003` is not implemented. The assembled publication root remains the strict `eclipse-score-v0.6.0-curation-review/` export directory. A later candidate packages the canonical `review_request.js` byte-for-byte at that root; relocates the generated view stylesheet from `assets/view.css` to root `style.css`; and packages root `process.html` as the deliberately local curation/process report, including stable `flag-for-review-protocol` and `storage-and-privacy` anchors. Record pages reference `../style.css` and `../review_request.js`, so the unchanged client's existing `style.css` discovery resolves its dynamic process-document links to `../process.html`; `participate.html` also references `process.html`. Validation examines every static local `href` and `src` in every generated HTML page against that exact root, while an interactive browser regression opens the review dialog and proves both dynamically created process-document links resolve inside the same root. Missing files, non-regular targets, absolute or scheme-like local paths, path escapes, removed targets, and defect-specific missing-link allowlists are refused. This decision authorizes only local Task `0019-13` candidate preparation after a separate supporting scope review by a management-instantiated Architect and after the effective governance record is current on `main`; it does not authorize publication.
+- **Technical justification:** `review_request.js` computes process-document links by locating the literal suffix `style.css` in the page's stylesheet URL. `DEC-0019-003` retained `assets/view.css`, so the lookup failed and the browser fell back to `process.html` relative to each record page, producing missing `records/process.html` targets even though all initial HTML links were closed. Relocating the existing generated CSS payload to root `style.css` satisfies the unchanged client's established discovery rule; a single root `process.html` then serves both the explicit participation link and the two dynamic help/privacy anchors. This closes the actual browser flow without forking authentication, token, package, or GitHub-submission logic. The approved old digest remains immutable evidence and no current publication occurs.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `public-release`
+- **Considered alternatives:**
+  - **ALT-01:** Package the unchanged root review client and root process report, and relocate the generated stylesheet payload to root `style.css` so existing client link discovery resolves the report.
+    - **Disposition:** `selected`
+    - **Reason:** This closes static and dynamic local links with one shared process target while leaving the credential, identity, export, and submission client byte-identical to the established implementation.
+  - **ALT-02:** Implement `DEC-0019-003` with `assets/view.css` and a separate root `curation-report.html`.
+    - **Disposition:** `rejected`
+    - **Reason:** The dynamically created help and privacy links would still resolve to missing `records/process.html`, so the assembled tree would not be link-closed in actual browser use.
+  - **ALT-03:** Patch a subtree-specific copy of `review_request.js` to accept a new process-document configuration.
+    - **Disposition:** `rejected`
+    - **Reason:** Forking the client would create a second credential and GitHub-submission implementation whose security behavior could drift; the established client already supports a safe path convention.
+  - **ALT-04:** Validate against the complete ambient website and retain escaping dependencies.
+    - **Disposition:** `rejected`
+    - **Reason:** The approved bounded publisher carries only the subtree, so ambient files are not guaranteed members of the released payload and cannot satisfy deterministic pre-release validation.
+- **Consequences:**
+  - **CON-01:** The later strict candidate has two net additional files, root `review_request.js` and root `process.html`; the existing stylesheet payload changes path from `assets/view.css` to root `style.css` without changing bytes.
+  - **CON-02:** Whole-population static validation covers all local `href` and `src` values on all generated pages, and interactive validation additionally exercises the review dialog's dynamically created help and privacy links.
+  - **CON-03:** Any later candidate is blocked before publication if the script, stylesheet, process report, dynamic anchors, or another local target is missing, non-regular, escaping, or removed; green validation remains neither release authorization nor risk acceptance.
+  - **CON-04:** The canonical IDs, versions, unvalidated markers, status/history, provenance, counts, manifests, curator boundary, localStorage token keys, explicit GitHub authentication, JSON export, and submission semantics remain unchanged.
+  - **CON-05:** The already published 2,248-file tree and digest `7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283` remain byte-for-byte historical evidence; no special publication or external effect follows from this record.
+  - **CON-06:** The root process report is deliberately scoped to this unvalidated S-Core candidate subtree; it does not replace repository-wide process documentation or grant a content decision, review identity, publication authority, or Acceptance.
+- **Affected work units:**
+  - `task:0019-13`
+  - `repository:autodocs`
+  - `external:autodocs-github-pages-eclipse-score-curation`
+- **Affected gates:**
+  - `validation:_src/tools/score_curation_views.py`
+  - `validation:_src/tools/prepare_score_curation_export.py`
+  - `release:eclipse-score-curation-later-release`
+- **Review participation:** `none`
+- **No-review reason:** The prior Architect assignment was paused immediately after this additional dependency was discovered; a new distinct scope review is required against this superseding record and its exact candidate commit before any product mutation.
+- **Waiver:** `none`
+
+#### Independent Architect pre-mutation scope review of `DEC-0019-004`
+
+- **Recorded at:** `2026-08-25T06:16:53Z`
+- **Reviewing identity:** `agent:data:architect:0019-13-scope-review:20260825T061653Z-1750c1d4`
+- **Role:** `Architekt`
+- **Capability class:** `privileged`
+- **Authority reference:** Current runtime management-instantiated Architect profile; exact review assignment coordinated by Project Lead Jean-Luc in agent-inbox messages `1787638361760-c7bfac65` and `1787638498090-581e5f47`. The mailbox messages identify the scope but do not themselves create authority.
+- **Independence:** Data is distinct from Implementer and deciding identity `agent:tasha:0019-13:20260825T060255Z-702c7697`, did not author the candidate decision or the contemplated product mutation, and acts here only as Architect scope reviewer.
+- **Exact reviewed candidate:** `d6953ea7a140b948749858532364c12d62b1491a` (`DEC-0019-004`), parent `40c03c01ae502dd05a6517b2f12f1c109cd67e4d`, governance base `f1631200b22e53ac13b410662048dec2ba47ddd0`.
+- **Implementation-contract evidence:** Task/claim baseline `0019-13@1d17e99ea0ef51daae4db97917a2e8d27400496d`; no product mutation is present in the reviewed governance candidate.
+- **Verdict:** `supports`
+
+The canonical `cross-item-blast-radius` predicate applies. The exhaustive
+validator is declared to block a later release of the strict S-Core curation
+subtree, which is a work unit other than the local preparation Task. The named
+work-unit set (`task:0019-13`, `repository:autodocs`, and the stable external
+curation-release target) and the two producer/validator gates plus later-release
+gate cover the actual declared reach without converting this decision into a
+repository-wide publication rule.
+
+The strict subtree is the correct assembled root because it is the complete
+payload copied by the already bounded publisher. For a record page at
+`records/<id>.html`, stylesheet `../style.css` contains the literal suffix used
+by the unchanged client, so `processDocHref()` derives prefix `../` and produces
+`../process.html#flag-for-review-protocol` and
+`../process.html#storage-and-privacy`. Both resolve to the single root
+`process.html`; `participate.html` resolves the same root target directly.
+Relocating the existing CSS bytes removes `assets/view.css` and adds
+`style.css`, while `review_request.js` and `process.html` are the only two net
+new files. The topology is therefore narrower than ambient-site validation or
+a subtree-specific credential client and preserves the established
+participation boundary.
+
+Support is bound to all of the following constraints; deviation invalidates
+this review for the changed scope:
+
+1. **Exact client and CSS identity.** Package `review_request.js` byte-for-byte
+   from blob `9b239ecf14ed0e628f0091046137209123e189d6` (SHA-256
+   `bd6e23ae7454e7dee4daba98a104fa76db0ef9cdf54713ef35569a6c992ef0e2`).
+   Relocate, without byte change, the generated `assets/view.css` payload from
+   blob `219d8a819bb06bd15e42b3f6f0e03baed7944202` (SHA-256
+   `7fa99621f52bac786f6793024eda694f0d54454cd8715bc346292c6c5d0d133c`) to
+   root `style.css`. A client or CSS-content change requires fresh scope and
+   security analysis; it is not covered by “canonical” as an unpinned moving
+   label.
+2. **One exact root.** Generate and validate only
+   `eclipse-score-v0.6.0-curation-review/` as the assembled root. Every carried
+   regular file, the new script/report, inventory, digests, repeat-generation
+   evidence, and validation result bind that same root. No ambient website file
+   may satisfy a required local target.
+3. **Static URL population and refusal.** Inspect every non-empty `href` and
+   `src` on every generated HTML page. Explicit external `https`, `http`, and
+   `mailto` references remain external; reject protocol-relative URLs,
+   filesystem-absolute paths, unapproved schemes, backslashes/control
+   characters, and any browser-normalized local path that escapes the root.
+   For a local URL, separate query/fragment from the path, resolve with browser
+   URL semantics against its owning page, require the resolved target to remain
+   under the exact root, and require a regular non-symlink file. There is no
+   defect, filename, page, or count-specific missing-link allowlist.
+4. **Dynamic dependencies and anchors.** Root `process.html` contains the
+   stable `flag-for-review-protocol` and `storage-and-privacy` anchors, and
+   `participate.html` links to `process.html`. A browser regression opens the
+   review dialog from a generated record page, extracts both dynamically
+   created links, proves that each resolves to root `process.html` and its
+   existing anchor, and fails if the script, CSS, process file, either anchor,
+   or a participating page reference is removed. Whole-population static
+   checking still covers all 2,239 record pages and every other generated HTML
+   page; one dynamic interaction case is sufficient only because constraint 1
+   pins a single byte-identical client and every record uses the same relative
+   depth and stylesheet reference.
+5. **Authentication and mutation boundary.** The packaged client retains the
+   existing localStorage token key, GitHub verification, JSON-export package,
+   and issue-submission code unchanged. Negative browser evidence must prove
+   that the unauthenticated route exports only and performs no GitHub write;
+   direct submission remains possible only with an explicitly supplied and
+   verified token. The subtree does not invent credentials, persist them in
+   generated evidence, authenticate a self-declared identity, or claim that a
+   fresh standalone subtree provides a new token-acquisition UI.
+6. **Content and authority preservation.** Candidate IDs and versions,
+   unvalidated markers, `invalid/to-be-confirmed` state, history, provenance,
+   record/count/manifest reconciliation, curator boundary, and narrow publisher
+   authority remain unchanged. Green local validation is neither Task
+   Acceptance, checkpoint/integration approval, release authorization,
+   publication approval, nor security/risk acceptance.
+7. **Historical immutability and activation.** The already published 2,248-file
+   tree and digest
+   `7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283`
+   remain byte-for-byte historical evidence. `DEC-0019-003` is not implemented.
+   The effective decision and this review must first reach authoritative
+   `main`; there is no implicit grandfathering of a prior candidate or gate
+   mutation, and no external effect follows from governance integration.
+8. **Recovery.** Before any separately authorized publication, rollback is
+   removal/reversion of the later Task-owned candidate commit and restoration
+   of its prior local branch state; the approved old tree remains untouched.
+   After a publication, correction requires a new reviewed candidate and
+   separately authorized superseding release; neither the old digest nor its
+   evidence may be relabeled.
+
+Residual risks remain bounded and are not accepted here: a future client change
+could create new dynamic dependencies that static HTML scanning cannot see;
+GitHub availability, token validity, browser network policy, and later release
+authorization are external to this local gate; and the interactive regression
+proves the pinned client's two current dynamic links, not arbitrary future
+script behavior. Constraint 1 converts the first risk into an explicit
+re-review trigger. The others remain release-time or external-operational
+concerns under their existing authorities.
+
+**Governance effect:** This supporting review satisfies only the distinct
+Architect pre-mutation scope-review condition for the exact candidate above,
+once both decision and review are authoritative on `main`. It does not
+implement the gate, accept Task `0019-13`, cross an integration checkpoint,
+move a Feature, publish, push, waive a rule, or accept residual risk.
+
+**Advisory implementation/test design:** deterministic whole-population URL
+checking is linear in generated links and should use one CPU worker; the focused
+negative and interactive browser matrix should remain bounded to roughly
+1–5 minutes and below 1 GiB under the existing 2,239-record corpus. Cognitive
+demand is medium-high because filesystem and browser URL semantics differ.
+Uncertainty is low for the pinned path derivation and medium for browser/network
+environment variance; implementation risk is medium because the route touches
+an authentication and future public-release boundary. These are planning
+ranges, not acceptance criteria, authority, or risk approval.

@@ -96,9 +96,10 @@ soll.
 
 | Werkzeug | Zweck |
 |---|---|
-| `check_integration_hygiene.py` | Read-only-Vorprüfung vor jeder Integration (`DEC-0044-010`, `DEC-0044-015`, Tasks `0044-14`/`0044-15`/`0044-16`): prüft **alle** registrierten Worktrees des gemeinsamen Repositories auf `INDEX_NOT_HEAD` (eigener Index ≠ `HEAD`), `FOREIGN_STAGED_TREE` (fremder Worktree hält auch nach begrenztem Re-Sample einen gestagten Baum), `MAIN_WORKTREE_DIRTY` (getrackte Dateien im `main`-Worktree ≠ Index), `STALE_AFTER_REF_MOVE` (Branch-Ref vorgerückt, Index und Dateien stehen noch auf dem vorigen Reflog-Tip) und `WORKTREE_UNAVAILABLE` |
+| `check_integration_hygiene.py` | Gemeinsame read-only Hygiene- und Root-Preflight-Implementierung (`DEC-0044-010`, `DEC-0044-015`, `DEC-0044-021`): prüft alle registrierten Worktrees, erlaubt ausschließlich ungestagte getrackte exakte Kinder von `logs/agent-memory/`, blockiert gemischte/gestagte/indeterminierte Zustände und Kandidatenüberlappung sowie alle bisherigen Findings |
+| `integration_hygiene_policy.py` | Reine gemeinsame Byte-Pfadklassifikation für Memory-Kindprädikat, NUL-Ausgabe, Root-Divergenz und exakte Kandidatenüberlappung; wird vom Checker, Root-Preflight und Post-Merge-Lauf verwendet |
 
-Aufruf: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> [--json]`
+Aufruf vor Merge: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> --candidate-ref <candidate> [--json]`. Harter Root-Preflight unmittelbar vor und nach dem Root-Merge: `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
 
 Exit-Codes: `0` sauber, `1` Befunde, `2` die Prüfung selbst konnte nicht laufen —
 eine `2` ist ein **Fehlschlag, kein Bestehen**. `--json` liefert
@@ -121,15 +122,13 @@ zugetraut, als sie leistet:
   Zustand wird dadurch weder advisory noch auf integrationsnahe Worktrees
   beschränkt. Aufgelöst wird er vom Eigentümer (committen oder stashen) —
   **niemals** durch ein Zurücksetzen eines fremden Worktrees.
-- `MAIN_WORKTREE_DIRTY` meldet die bekannte Restabweichung getrackter Dateien
-  bei sauberem Index nun blockierend, aber ausschließlich für den Worktree, der
-  `main` auscheckt. Derselbe ungestagte Zustand in einem lebenden
-  Vorgangs-Worktree ist normale unfertige Arbeit und erzeugt bewusst keinen
-  Befund. Untracked Dateien bleiben ebenfalls außerhalb der Prüfung. Deshalb
-  verlangt `DEC-0044-015` weiterhin zusätzlich und unverändert den harten Preflight im Root
-  (`git diff --quiet`, `git diff --cached --quiet`, `HEAD` ist
-  `refs/heads/main`). Werkzeug und Preflight ergänzen einander; keines ersetzt
-  das andere.
+- `MAIN_WORKTREE_DIRTY` bleibt für jede Nicht-Memory- oder gemischte getrackte
+  Root-Abweichung blockierend. Nur eine nichtleere Menge ausschließlich
+  ungestagter, NUL-sicher bestimmter und exakt groß-/kleinschreibungstreuer
+  Kinder von `logs/agent-memory/` ist erlaubt. `CANDIDATE_MEMORY_OVERLAP`
+  blockiert, wenn der Kandidat einen solchen aktuell abweichenden Pfad ändert —
+  auch bei gleichen Bytes. `--root-preflight` ersetzt die frühere rohe
+  Shell-Rezeptur und prüft Branch, Index und dieselbe Pfadklassifikation.
 
 Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
 `STALE_AFTER_REF_MOVE` und die `preserved/*`-Momentaufnahmen:
@@ -182,6 +181,7 @@ Aufruf aus `_src/tools/`: `python3 -m unittest test_check_integration_hygiene -v
 | `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz; `BranchMergeTransactionTests` (`0038-20`) deckt zusätzlich `base-branch`/`merge-prereqs` ab: Basis-off-Parent, sequentielle Mehrquellen-Merges, Claim-Union bei gleichem `owner_token`, Ablehnung bei fremdem `owner_token`/veraltetem Source-Tip/nicht deklarierter Quelle/Sandboxed-Task→Feature-Versuch, sowie Publish-dann-Crash-Recovery |
 | `_src/tools/check_policy_provenance.py` | Rein lesende, stdlib-only Herkunftsprüfung für Integrations-Policy-Commits (`RQ-IP-04`/`DEC-0044-002`, `0044-01`): meldet für einen Merge-Kandidaten (`--source-branch`, `--target-branch`), welche Commits, die den deklarierten Policy-Pfad (`docs/pipeline/branch-workflow.md` per Default, `--policy-path` wiederholbar) berühren und für die Integration einzigartig zum Source-Branch wären, `source-origin`, `target-pull-in-eligible` (erlaubtes Hereinziehen der Ziel-Policy, `DEC-0044-001`) oder `foreign-branch` (Verstoß gegen `DEC-0044-002`, zu prüfen) sind; mutiert nie Refs/Working-Tree, trifft keine Entscheidung selbst; Aufruf: `python3 _src/tools/check_policy_provenance.py --source-branch <b> --target-branch <b> [--policy-path <pfad>...] [--repo <pfad>] [--json]`; Tests: `_src/tools/test_check_policy_provenance.py` |
 | `_src/tools/legacy_handoff_manifest.py` | Rein lesende, stdlib-only Prüfung des Pre-Activation-Handoff-Manifests (`0038-16.01`): bindet das exakte `0037-37`-Review-Paket (Datei-Digest, `base_commit`, alle 17 Kontrakt-Digests, gegen den Arbeitsbaum nachgerechnet) und beweist über `docs/pipeline/legacy-handoff-manifest-v1.json`, dass jedes überlebende Legacy-Primitiv (action, schema, result, scope, evidence, recovery, context, validation, approval-readiness) **genau eine** Disposition trägt — entweder eine typisierte `0037-46.01`-Aktion/Kontrakt oder einen expliziten `0037-46.02`-Retirement-Trigger — und dass kein `authority_key` und keine Aktions-ID doppelt beansprucht wird; die Abdeckung wird gegen die lebende Mechanismen-Tabelle dieses Abschnitts geprüft, nicht gegen eine Kopie; aktiviert keine Queue und ändert keine Autorität (prüft im Gegenteil auf echte Queue-Liveness: dass kein `.runner/`-Runtime-Root existiert und der lebende Bootstrap-Selektor `agent-workflow.json` weiterhin das Pre-Activation-Protokoll `runner-request@v1` deklariert; die bloße Existenz der `_src/runner/`-Registry ist seit Task `0038-30` bewusst kein Aktivierungssignal); Aufruf: `python3 _src/tools/legacy_handoff_manifest.py --check [--json] [--root <root>]`; siehe [`legacy-handoff-manifest.md`](legacy-handoff-manifest.md) |
+| `_src/tools/capability_match.py` | Deterministischer, stdlib-only, kein-KI-Matcher (`0044-05`, `RQ-CB-01..03`, `DEC-0044-004`/`DEC-0044-025`): vergleicht ein `task-requirement-profile@v1` gegen einen oder mehrere `agent-capability-descriptor@v1` und liefert die vollständige sortierte Menge geeigneter Deskriptoren mit stabil geordneten, erklärbaren Ablehnungsgründen; wählt selbst keinen Agenten aus (das bleibt dem Orchestrator vorbehalten) und aktiviert nichts — liest nie Wall-Clock, Git-Zustand, Netzwerk oder Credentials; legacy `agent-capability-v1.schema.json` bleibt unverändert und wird als nicht unterstütztes Schema abgelehnt (Exit 2, nie ein Nicht-Treffer); Aufruf: `python3 _src/tools/capability_match.py --profile <profil.json> --descriptor <deskriptor.json> [--descriptor <pfad> ...] [--agent-id <exakte-id>] [--json]`; siehe [`capability-matching.md`](capability-matching.md) |
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Veränderlicher Zeiger/Log des jeweils letzten (oder laufenden) Legacy-Aufrufs; nie als alleiniger Abschlussnachweis verwenden |

@@ -23,6 +23,9 @@ where possible, to the associated implementation or evidence.
 - [`reports.md`](./reports.md) — report types, locations, and retention rules
 - [`build-ledger.md`](./build-ledger.md) — schema and append-only contract of
   the tracked build ledger `docs/evidence/build-ledger.jsonl` (`DEC-0043-001`)
+- [`aspice-report-evidence-map.md`](./aspice-report-evidence-map.md) — maps
+  the report landscape and build ledger to the ASPICE process outcomes they
+  could evidence, honestly, with no capability-level claim
 - [`agent-execution.md`](./agent-execution.md) — capability classes and the
   sandboxed runner contract
 - [`agent-workflow.md`](./agent-workflow.md) — authority discovery,
@@ -38,6 +41,9 @@ where possible, to the associated implementation or evidence.
 - [`legacy-handoff-manifest.md`](./legacy-handoff-manifest.md) — pre-activation
   hand-over of every surviving legacy execution primitive to the `0037-46.01`
   typed-action registry or an explicit `0037-46.02` retirement trigger
+- [`capability-matching.md`](./capability-matching.md) — deterministic no-AI
+  Task-requirement/agent-capability matcher (`0044-05`), pilot briefing input,
+  and its non-activation boundary
 - [`automation-safety.md`](./automation-safety.md) — automation-safety policy
   and findings workflow
 - [`environment-doctor.md`](./environment-doctor.md) — environment and

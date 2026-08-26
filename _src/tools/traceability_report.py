@@ -16,12 +16,18 @@ Der Bericht ist bewusst nur deutsch (Seitenmodell-Flag ``nolang``); er wird
 nicht in die Sprachbaeume uebersetzt.
 """
 import argparse, datetime, glob, html, json, os, re, sys
+from report_page_header import report_page_header, upsert_report_page_header
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
 PAGE = os.path.join(SRC, "sources", "pages", "traceability.json")
 INDEX = os.path.join(SRC, "sources", "pages", "index.json")
 ID_ATTR = re.compile(r'id="((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})"')
+HEADER_KWARGS = {
+    "generator": "_src/tools/traceability_report.py",
+    "data_source": "crosscheck JSON und versionierter PDF-Cache",
+    "purpose": "Vergleicht lokale Spezifikations-Records mit den geprüften Standarddokumenten; Abweichungen sind Prüfhinweise und keine automatische Korrektur.",
+}
 
 
 def record_index():
@@ -144,6 +150,7 @@ def baue(daten, datum, idx, quelle):
     verlinkt = sum(1 for r in x["only_in_db"] if r in idx)
     inhalt = "".join([
         STIL,
+        report_page_header(**HEADER_KWARGS),
         "<h1>Traceability-Bericht — Spec-Datenbank gegen AUTOSAR %s</h1>" % esc(daten["release"]),
         '<section class="tr-head"><p>Abgleich der lokalen Spezifikations-Records mit den '
         'gecachten normativen AUTOSAR-Standarddokumenten. Abweichungen sind Prüfhinweise: '
@@ -213,11 +220,31 @@ def verlinke_startseite(datum):
         f.write("\n")
 
 
+def refresh_existing_header(page_path=PAGE, generated_at=None):
+    """Refresh only generated context metadata when crosscheck input is absent."""
+    with open(page_path, encoding="utf-8") as f:
+        page = json.load(f)
+    upsert_report_page_header(page, generated_at=generated_at, **HEADER_KWARGS)
+    tmp = page_path + ".tmp-%d" % os.getpid()
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(page, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    os.replace(tmp, page_path)
+    return page
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--json", required=True, help="crosscheck-JSON des Scraping-Laufs")
+    source = ap.add_mutually_exclusive_group(required=True)
+    source.add_argument("--json", help="crosscheck-JSON des Scraping-Laufs")
+    source.add_argument("--refresh-header", action="store_true",
+                        help="nur den generierten Erklärkopf im vorhandenen Modell aktualisieren")
     ap.add_argument("--log", default=None, help="Lauf-Log (liefert das Datum)")
     a = ap.parse_args()
+    if a.refresh_header:
+        refresh_existing_header()
+        print("Traceability-Bericht: Erklärkopf im vorhandenen Modell aktualisiert")
+        return 0
     daten = json.load(open(a.json, encoding="utf-8"))
     datum = lauf_datum(a.log, a.json)
     idx = record_index()
