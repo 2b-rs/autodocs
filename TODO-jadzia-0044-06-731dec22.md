@@ -12,8 +12,8 @@ owner_role: Architect
 base_commit: f423128b4e25def12b28b359d56ea9c5392ab550
 branch: 0044-06-elaboration-jadzia-20260826
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0044-06-elaboration-jadzia-20260826
-state: [ ]
-status: implementation transcribed and validated; awaiting owner bookkeeping
+state: [x]
+status: implementation complete; bookkeeping recorded; ready for integration
 write_scope: ["docs/dossiers/0044-06-cognitive-demand-study.md", "docs/pipeline/feature-breakdown.md", "AGENTS.md", "TODO-jadzia-0044-06-731dec22.md"]
 startup_review: SANDBOX.md, AGENTS.md, TODO.md, docs/pipeline/task-acceptance.md, DEC-0044-026-C002, both Architect scope reviews, 0044-04 feature-breakdown instruction, and 0044-05 matcher/schema products reviewed before mutation
 provisioning_dispatch_source: agent-inbox:jean-luc→lore:1787755052226-ff173d04
