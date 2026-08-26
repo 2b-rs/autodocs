@@ -52,6 +52,18 @@ CATALOG_PATH = os.path.join(HERE, "..", "issues", "_views", "catalog.json")
 ISSUE_SCHEMA = "issue-title-translations@v1"
 ISSUE_SOURCE_LOCALE = "en"
 ISSUE_STATUSES = {"canonical", "pending", "translated", "stale"}
+GRAPH_PAYLOAD_SCHEMA = "issue-graph-public-i18n@v1"
+GRAPH_UI_SCHEMA = "issue-graph-ui@v1"
+GRAPH_UI_REQUIRED = {
+    "title", "summary_heading", "public_count", "restricted_count", "empty",
+    "error", "loading", "rendering", "items", "include_closed",
+    "include_withdrawn", "zoom_in", "zoom_out", "zoom_reset", "rerender",
+    "legend_explicit_same", "legend_explicit_cross", "legend_feature_closure",
+    "legend_relation", "legend_done_edge", "count_summary", "edge_summary",
+    "rendered_summary", "state_open", "state_in_progress",
+    "state_blocked", "state_withdrawn", "state_missing_malformed", "state_closed",
+    "state_archived", "redacted_no_url",
+}
 
 
 def _write_report(report_kind, tool, command, inputs, started_at, exit_code,
@@ -332,6 +344,110 @@ def issue_title_status(site_path=SITE_PATH, i18n_dir=I18N, public_path=None):
         result["languages"][language] = {"complete": complete, "counts": counts}
         result["complete"] = result["complete"] and complete
     return result
+
+
+def _graph_ui_for_language(ui, language, public=False):
+    """Return validated graph chrome or visible canonical-English fallback.
+
+    Public payloads are fail closed. Maintainer consumers may request fallback;
+    every fallback value is returned with its effective language so the DOM can
+    expose ``lang=en`` rather than silently presenting it as translated text.
+    """
+    section = ui.get(language, {}).get("graph") if isinstance(ui, dict) else None
+    fallback = ui.get(ISSUE_SOURCE_LOCALE, {}).get("graph") if isinstance(ui, dict) else None
+    if not isinstance(fallback, dict) or fallback.get("schema") != GRAPH_UI_SCHEMA:
+        raise ValueError("canonical English graph UI is missing or malformed")
+    strings = fallback.get("strings")
+    if not isinstance(strings, dict) or GRAPH_UI_REQUIRED - set(strings):
+        raise ValueError("canonical English graph UI is incomplete")
+    if section is None:
+        if public:
+            raise ValueError("missing required graph UI translation: %s" % language)
+        return {key: {"text": strings[key], "lang": ISSUE_SOURCE_LOCALE, "fallback": True}
+                for key in sorted(GRAPH_UI_REQUIRED)}
+    if not isinstance(section, dict) or section.get("schema") != GRAPH_UI_SCHEMA:
+        raise ValueError("malformed graph UI translation: %s" % language)
+    localized = section.get("strings")
+    if not isinstance(localized, dict) or GRAPH_UI_REQUIRED - set(localized):
+        raise ValueError("incomplete graph UI translation: %s" % language)
+    return {key: {"text": localized[key], "lang": language, "fallback": False}
+            for key in sorted(GRAPH_UI_REQUIRED)}
+
+
+def maintainer_graph_ui(language, ui_path=os.path.join(I18N, "ui.json")):
+    return _graph_ui_for_language(_lade(ui_path, {}), language, public=False)
+
+
+def generate_public_graph_payloads(public_path=PUBLIC_ISSUES_PATH, site_path=SITE_PATH,
+                                   i18n_dir=I18N, ui_path=os.path.join(I18N, "ui.json"),
+                                   output_dir=os.path.join(HERE, "data")):
+    """Join the neutral projection with complete title/UI translations.
+
+    No fallback is permitted here. All outputs are assembled before any file is
+    replaced, so one missing or stale record cannot publish a partial language
+    set. The locale-neutral input is never modified.
+    """
+    public = _lade(public_path, None)
+    if not isinstance(public, dict) or public.get("schema") != "issue-graph-public@v1":
+        raise ValueError("missing or stale locale-neutral public issue graph")
+    items = public.get("items")
+    if not isinstance(items, list):
+        raise ValueError("locale-neutral public issue graph items are malformed")
+    languages = configured_issue_languages(site_path)
+    site = _lade(site_path, {})
+    rtl = set(site.get("sprachen", {}).get("rtl", []))
+    ui = _lade(ui_path, {})
+    canonical_path = os.path.join(i18n_dir, ISSUE_SOURCE_LOCALE, "issues.json")
+    canonical = _load_issue_document(canonical_path, ISSUE_SOURCE_LOCALE)
+    expected = {r["item_id"]: {"title": r["translation"],
+                                "source_title_hash": r["source_title_hash"]}
+                for r in canonical["records"]}
+    projection_ids = [item.get("id") for item in items]
+    if len(set(projection_ids)) != len(projection_ids) or set(projection_ids) != set(expected):
+        raise ValueError("public projection/title records disagree")
+    staged = {}
+    for language in languages:
+        chrome_records = _graph_ui_for_language(ui, language, public=True)
+        chrome = {key: value["text"] for key, value in chrome_records.items()}
+        summary_records = ui[language]["graph"].get("summaries")
+        if not isinstance(summary_records, dict):
+            raise ValueError("missing required public summary translations: %s" % language)
+        doc = _load_issue_document(os.path.join(i18n_dir, language, "issues.json"),
+                                   language, expected=expected)
+        titles = {r["item_id"]: r for r in doc["records"]}
+        localized = []
+        for item in sorted(items, key=lambda value: value["id"]):
+            item_id = item["id"]
+            record = titles.get(item_id)
+            required_status = "canonical" if language == ISSUE_SOURCE_LOCALE else "translated"
+            if not record or record["status"] != required_status:
+                raise ValueError("missing/stale public title translation: %s/%s" % (language, item_id))
+            if record["source_title_hash"] != item.get("title_source_hash"):
+                raise ValueError("stale public title translation: %s/%s" % (language, item_id))
+            translated = dict(item)
+            translated["title"] = record["translation"]
+            summary_key = item.get("public_summary_key")
+            summary = summary_records.get(summary_key)
+            if not isinstance(summary, str) or not summary.strip():
+                raise ValueError("missing required public summary translation: %s/%s" %
+                                 (language, summary_key))
+            translated["public_summary"] = summary
+            translated["link"] = (("/" if language == site["sprachen"]["kanonisch"] else "/%s/" % language)
+                                  + "issues.html#" + item_id)
+            localized.append(translated)
+        payload = {key: value for key, value in public.items()}
+        payload.update({"schema": GRAPH_PAYLOAD_SCHEMA, "source_schema": public["schema"],
+                        "language": language, "direction": "rtl" if language in rtl else "ltr",
+                        "chrome": chrome, "items": localized})
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        staged[os.path.join(output_dir, "issue-graph-public.%s.json" % language)] = encoded
+    os.makedirs(output_dir, exist_ok=True)
+    for path, encoded in staged.items():
+        temporary = path + ".tmp"
+        with open(temporary, "w", encoding="utf-8") as stream:
+            stream.write(encoded)
+        os.replace(temporary, path)
+    return sorted(staged)
 
 
 def _register(lang):

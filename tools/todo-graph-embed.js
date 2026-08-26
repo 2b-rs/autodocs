@@ -19,6 +19,8 @@
 
   var STORAGE_KEY = 'todoGraphEmbed.open';
   var GRAPH_URL = 'issues/_views/dependency-graph.json';
+  var UI_URL = '_src/i18n/ui.json';
+  var ui;
 
   function loadScript(src) {
     return new Promise(function (resolve, reject) {
@@ -46,8 +48,9 @@
   }
 
   function showError(message) {
-    host.textContent = 'Dependency graph error: ' + message;
+    host.textContent = ((ui && ui.strings.error) || '') + ': ' + message;
     host.setAttribute('data-graph-error', '1');
+    if (ui) host.setAttribute('lang', ui.language);
   }
 
   function renderGraph(text) {
@@ -71,24 +74,25 @@
       if (!hpcc || !hpcc.Graphviz) return;
       return hpcc.Graphviz.load().then(function (gv) {
         var svg = gv.layout(built.dot, 'svg', 'dot');
+        var s = ui.strings;
         var legend =
           '<div style="font-size:.8rem;color:#596274;margin:.4rem 0 .8rem;display:flex;flex-wrap:wrap;gap:0;">' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:22px;height:3px;border-radius:2px;background:black;"></i>same-feature / start-gate</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:22px;height:3px;border-radius:2px;background:#1f4e79;"></i>cross-feature / start-gate</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:22px;height:3px;border-radius:2px;background:crimson;"></i>feature-closure</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:22px;height:0;border-top:2px dashed #6a1b9a;"></i>relation</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;border:1px solid #c7ccd6;background:#ffffff;"></i>open</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#fff3b0;"></i>in_progress</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#ffb3b3;"></i>blocked</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#e8d5ff;"></i>withdrawn [w]</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#d9d9d9;"></i>missing/malformed</span>' +
-            '<span style="display:inline-flex;align-items:center;gap:.3rem;margin-right:1.1rem;"><i style="display:inline-block;width:10px;height:10px;background:#ffffff;border:1px solid #808080;"></i><span style="color:#808080;">closed</span></span>' +
+            '<span data-graph-ui="legend_explicit_same">' + s.legend_explicit_same + '</span>' +
+            '<span data-graph-ui="legend_explicit_cross">' + s.legend_explicit_cross + '</span>' +
+            '<span data-graph-ui="legend_feature_closure">' + s.legend_feature_closure + '</span>' +
+            '<span data-graph-ui="legend_relation">' + s.legend_relation + '</span>' +
+            '<span data-graph-ui="state_open">' + s.state_open + '</span>' +
+            '<span data-graph-ui="state_in_progress">' + s.state_in_progress + '</span>' +
+            '<span data-graph-ui="state_blocked">' + s.state_blocked + '</span>' +
+            '<span data-graph-ui="state_withdrawn">' + s.state_withdrawn + '</span>' +
+            '<span data-graph-ui="state_missing_malformed">' + s.state_missing_malformed + '</span>' +
+            '<span data-graph-ui="state_closed">' + s.state_closed + '</span>' +
           '</div>';
         var wrap = document.createElement('details');
         wrap.className = 'fold';
         wrap.open = getPersistedOpen();
         wrap.innerHTML =
-          '<summary><h2 class="sect" style="display:inline">Issue graph (internal)</h2></summary>' +
+          '<summary><h2 class="sect" style="display:inline">' + s.title + '</h2></summary>' +
           legend +
           svg;
         var svgEl = wrap.querySelector('svg');
@@ -103,16 +107,26 @@
           setPersistedOpen(wrap.open);
         });
         host.replaceWith(wrap);
+        wrap.setAttribute('lang', ui.language);
+        if (ui.fallback) wrap.setAttribute('data-i18n-fallback', 'canonical-en');
       });
     });
   }
 
-  fetch(GRAPH_URL, { cache: 'no-store' })
-    .then(function (res) {
-      if (!res.ok) throw new Error('graph catalog not available (HTTP ' + res.status + ')');
-      return res.text();
+  Promise.all([
+    fetch(GRAPH_URL, { cache: 'no-store' }),
+    fetch(UI_URL, { cache: 'no-store' })
+  ])
+    .then(function (responses) {
+      if (!responses[0].ok) throw new Error('graph catalog HTTP ' + responses[0].status);
+      if (!responses[1].ok) throw new Error('graph UI HTTP ' + responses[1].status);
+      return Promise.all([responses[0].text(), responses[1].json()]);
     })
-    .then(renderGraph)
+    .then(function (values) {
+      var language = (document.documentElement.getAttribute('lang') || 'en').split('-')[0];
+      ui = core.graphUi(values[1], language, true);
+      return renderGraph(values[0]);
+    })
     .catch(function (err) {
       if (err && err.message && err.message.indexOf('HTTP') !== -1) {
         if (host && host.parentNode) host.parentNode.removeChild(host);

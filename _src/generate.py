@@ -120,6 +120,8 @@ def main():
     _t0 = time.time()
     args = [a for a in sys.argv[1:]]
     check = "--check" in args
+    from i18n_translate import generate_public_graph_payloads
+    generate_public_graph_payloads()
     langs = []
     for a in args:
         if a.startswith("--lang="):

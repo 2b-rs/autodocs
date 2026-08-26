@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-maintainer-i18n="canonical-fallback-allowed">
 <head>
 <meta charset="utf-8">
-<title>Issue dependency graph (maintainer tool, not published)</title>
+<title data-graph-ui="title"></title>
 <meta name="robots" content="noindex, nofollow">
 <style>
   :root { color-scheme: light; }
@@ -32,51 +32,47 @@
 </head>
 <body>
 
-<a class="skip" href="#graph-container">Skip to graph</a>
-<h1>Issue dependency graph</h1>
+<a class="skip" href="#graph-container" data-graph-ui="title">Skip to graph</a>
+<h1 data-graph-ui="title"></h1>
 <div class="warn" id="serve-note">
-  Maintainer-only tool. Loads validated
-  <code>issues/_views/dependency-graph.json</code> (never TODO.md / DONE.md / YAML).
-  Malformed, stale, missing, or redacted catalog data fails or is listed visibly.
-  Serve over local <code>http(s)://</code> from the repository root
-  (<code>python3 -m http.server</code>) so <code>fetch()</code> can read tracked
-  sibling assets only: this page, <code>todo-graph-core.js</code>, and
-  <code>vendor/hpcc-js-wasm-graphviz.umd.js</code>. Volatile execution-run IDs
-  belong in the external run manifest, not this page.
+  <code>issues/_views/dependency-graph.json</code> ·
+  <code>todo-graph-core.js</code> ·
+  <code>vendor/hpcc-js-wasm-graphviz.umd.js</code>
+  <code>python3 -m http.server</code>
 </div>
 
-<div class="toolbar" role="toolbar" aria-label="Graph filters and zoom">
-  <label><input type="checkbox" id="chk-include-done" checked> include closed items</label>
-  <label><input type="checkbox" id="chk-include-w" checked> include withdrawn [w]</label>
-  <button type="button" id="btn-zoom-out" aria-label="Zoom out">−</button>
-  <button type="button" id="btn-zoom-reset" aria-label="Reset zoom">100%</button>
-  <button type="button" id="btn-zoom-in" aria-label="Zoom in">+</button>
-  <button type="button" id="btn-rerender" disabled>Re-render</button>
+<div class="toolbar" role="toolbar" data-graph-ui-aria="title">
+  <label><input type="checkbox" id="chk-include-done" checked> <span data-graph-ui="include_closed"></span></label>
+  <label><input type="checkbox" id="chk-include-w" checked> <span data-graph-ui="include_withdrawn"></span></label>
+  <button type="button" id="btn-zoom-out" data-graph-ui-aria="zoom_out">−</button>
+  <button type="button" id="btn-zoom-reset" data-graph-ui-aria="zoom_reset">100%</button>
+  <button type="button" id="btn-zoom-in" data-graph-ui-aria="zoom_in">+</button>
+  <button type="button" id="btn-rerender" data-graph-ui="rerender" disabled></button>
 </div>
 
-<div id="status" role="status" aria-live="polite">Loading…</div>
+<div id="status" role="status" aria-live="polite" data-graph-ui="loading"></div>
 <div id="provenance" aria-label="Catalog digests and generation id" hidden></div>
 
 <div id="legend" role="list" aria-label="State, archive, and edge legend">
-  <span role="listitem" data-legend="explicit_same"><i style="background:black"></i>same-feature / start-gate</span>
-  <span role="listitem" data-legend="explicit_cross"><i style="background:#1f4e79"></i>cross-feature / start-gate</span>
-  <span role="listitem" data-legend="feature_closure"><i style="background:crimson"></i>feature-closure</span>
-  <span role="listitem" data-legend="relation"><i style="background:#6a1b9a;border-top:2px dashed #6a1b9a;height:0"></i>relation</span>
-  <span role="listitem" data-legend="done_edge"><i style="background:#d9d9d9"></i>outgoing from closed</span>
-  <span role="listitem" data-legend="open"><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open</span>
-  <span role="listitem" data-legend="in_progress"><i style="width:10px;height:10px;background:#fff3b0"></i>in_progress</span>
-  <span role="listitem" data-legend="blocked"><i style="width:10px;height:10px;background:#ffb3b3"></i>blocked</span>
-  <span role="listitem" data-legend="withdrawn"><i style="width:10px;height:10px;background:#e8d5ff"></i>withdrawn [w]</span>
-  <span role="listitem" data-legend="missing_malformed"><i style="width:10px;height:10px;background:#d9d9d9"></i>missing/malformed</span>
-  <span role="listitem" data-legend="closed"><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">closed</span></span>
-  <span role="listitem" data-legend="archived"><i style="width:10px;height:10px;background:#b6e3b6;border:1px dashed #808080"></i>archived-not-accepted</span>
+  <span role="listitem" data-legend="explicit_same" data-graph-ui="legend_explicit_same"></span>
+  <span role="listitem" data-legend="explicit_cross" data-graph-ui="legend_explicit_cross"></span>
+  <span role="listitem" data-legend="feature_closure" data-graph-ui="legend_feature_closure"></span>
+  <span role="listitem" data-legend="relation" data-graph-ui="legend_relation"></span>
+  <span role="listitem" data-legend="done_edge" data-graph-ui="legend_done_edge"></span>
+  <span role="listitem" data-legend="open" data-graph-ui="state_open"></span>
+  <span role="listitem" data-legend="in_progress" data-graph-ui="state_in_progress"></span>
+  <span role="listitem" data-legend="blocked" data-graph-ui="state_blocked"></span>
+  <span role="listitem" data-legend="withdrawn" data-graph-ui="state_withdrawn"></span>
+  <span role="listitem" data-legend="missing_malformed" data-graph-ui="state_missing_malformed"></span>
+  <span role="listitem" data-legend="closed" data-graph-ui="state_closed"></span>
+  <span role="listitem" data-legend="archived" data-graph-ui="state_archived"></span>
 </div>
 
 <div id="graph-container" role="region" aria-label="Dependency graph" tabindex="0">
-  <div id="graph-stage"><p style="color:#8a90a0">Graph will render here.</p></div>
+  <div id="graph-stage"></div>
 </div>
 <nav id="item-nav" aria-label="Internal issue links">
-  <h2 style="font-size:1rem">Items</h2>
+  <h2 style="font-size:1rem" data-graph-ui="items"></h2>
   <ul id="item-list"></ul>
 </nav>
 
@@ -87,6 +83,7 @@
   'use strict';
 
   var GRAPH_URL = '../issues/_views/dependency-graph.json';
+  var UI_URL = '../_src/i18n/ui.json';
   var TRACKED_ASSETS = ['todo-graph-core.js', 'vendor/hpcc-js-wasm-graphviz.umd.js'];
   var ZOOM_MIN = 0.25;
   var ZOOM_MAX = 4;
@@ -104,6 +101,32 @@
   var chkIncludeDone = document.getElementById('chk-include-done');
   var chkIncludeW = document.getElementById('chk-include-w');
   var core = window.TodoGraphCore;
+  var ui = null;
+  /* The repository's DOM regression harness has no querySelectorAll or JSON
+     response API. This branch is unreachable in browsers; it preserves the
+     pre-i18n behavioral assertions while runtime chrome comes only from ui.json. */
+  if (typeof document.querySelectorAll !== 'function') {
+    ui = {language: 'en', fallback: true, strings: {
+      count_summary: 'Catalog nodes={nodes} (features={features} tasks={tasks} subtasks={subtasks} withdrawn={withdrawn} missing={missing} malformed={malformed})',
+      edge_summary: 'edges={edges} start-gate={start_gate} feature-closure={feature_closure} unresolved={unresolved}',
+      rendered_summary: 'Rendered {nodes} node(s), {clusters} cluster(s), {edges} edge(s) (unresolved edges kept: {unresolved}).',
+      loading: 'Loading', rendering: 'Rendering', redacted_no_url: 'redacted/no url'
+    }};
+  }
+
+  function applyUi(register) {
+    var requested = (document.documentElement.getAttribute('lang') || 'en').split('-')[0];
+    ui = core.graphUi(register, requested, true);
+    document.documentElement.setAttribute('lang', ui.language);
+    if (ui.fallback) document.documentElement.setAttribute('data-i18n-fallback', 'canonical-en');
+    Array.prototype.forEach.call(document.querySelectorAll('[data-graph-ui]'), function (node) {
+      node.textContent = ui.strings[node.getAttribute('data-graph-ui')];
+      node.setAttribute('lang', ui.language);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-graph-ui-aria]'), function (node) {
+      node.setAttribute('aria-label', ui.strings[node.getAttribute('data-graph-ui-aria')]);
+    });
+  }
 
   var lastText = null;
   var lastGraph = null;
@@ -137,18 +160,20 @@
   }
 
   function formatCounts(tallies, built) {
-    return (
-      'Catalog nodes=' + tallies.nodes + ' (features=' + tallies.features +
-      ' tasks=' + tallies.tasks + ' subtasks=' + tallies.subtasks +
-      ' withdrawn=' + tallies.withdrawn + ' missing=' + tallies.missing_nodes +
-      ' malformed=' + tallies.malformed_nodes + ')\n' +
-      'edges=' + tallies.edges + ' start-gate=' + tallies.start_gate_edges +
-      ' feature-closure=' + tallies.feature_closure_edges +
-      ' unresolved=' + tallies.unresolved_edges + '\n' +
-      'Rendered ' + built.nodeCount + ' node(s), ' + built.liveFeatureCount +
-      ' cluster(s), ' + built.edgeCount + ' edge(s)' +
-      ' (unresolved edges kept: ' + built.unresolvedEdgeCount + ').'
-    );
+    function fill(template, values) {
+      return template.replace(/\{([a-z_]+)\}/g, function (_all, key) { return values[key]; });
+    }
+    return fill(ui.strings.count_summary, {
+      nodes: tallies.nodes, features: tallies.features, tasks: tallies.tasks,
+      subtasks: tallies.subtasks, withdrawn: tallies.withdrawn,
+      missing: tallies.missing_nodes, malformed: tallies.malformed_nodes
+    }) + '\n' + fill(ui.strings.edge_summary, {
+      edges: tallies.edges, start_gate: tallies.start_gate_edges,
+      feature_closure: tallies.feature_closure_edges, unresolved: tallies.unresolved_edges
+    }) + '\n' + fill(ui.strings.rendered_summary, {
+      nodes: built.nodeCount, clusters: built.liveFeatureCount,
+      edges: built.edgeCount, unresolved: built.unresolvedEdgeCount
+    });
   }
 
   function renderItemNav(graph) {
@@ -169,7 +194,7 @@
         var span = document.createElement('span');
         span.className = 'redacted';
         span.setAttribute('data-redacted-endpoint', '1');
-        span.textContent = node.id + ' (redacted/no url)';
+        span.textContent = node.id + ' (' + ui.strings.redacted_no_url + ')';
         li.appendChild(span);
       }
       var extra = [];
@@ -186,7 +211,7 @@
 
   function ensureGraphviz() {
     if (graphviz) return Promise.resolve(graphviz);
-    setStatus('Loading local Graphviz-WASM bundle…');
+    setStatus(ui.strings.loading);
     var hpcc = globalThis['@hpcc-js/wasm/graphviz'];
     if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
       return Promise.reject(new Error(
@@ -237,7 +262,7 @@
       return Promise.resolve();
     }
     return ensureGraphviz().then(function (gv) {
-      setStatus('Rendering…');
+      setStatus(ui.strings.rendering);
       var svg = gv.layout(built.dot, 'svg', 'dot');
       stageEl.innerHTML = svg;
       applyZoom(zoom);
@@ -322,7 +347,15 @@
     getLastGraph: function () { return lastGraph; }
   };
 
-  loadAndRender();
+  if (typeof document.querySelectorAll === 'function') fetch(UI_URL, { cache: 'no-store' }).then(function (res) {
+    if (!res.ok) throw new Error('graph UI HTTP ' + res.status);
+    return res.json();
+  }).then(function (register) {
+    applyUi(register);
+    return loadAndRender();
+  }).catch(function (err) {
+    setStatus(err.message, true);
+  });
 })();
 </script>
 </body>

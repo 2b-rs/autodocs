@@ -714,6 +714,16 @@ def check_automation_safety():
 
 def check_public_issue_graph():
     checks_performed.append("check_public_issue_graph")
+    from i18n_translate import generate_public_graph_payloads
+    try:
+        generate_public_graph_payloads()
+    except (ValueError, OSError, json.JSONDecodeError) as exc:
+        record_finding(
+            "public-issue-graph-i18n",
+            "error",
+            "required localized issue-graph payloads failed: %s" % exc,
+            ref="_src/data/issue-graph-public.<lang>.json",
+        )
     from lib_issue_graph_public import PublicIssueGraphError, validate_required_deployment
     blobs = []
     for rel in ("index.html", "issues.html"):

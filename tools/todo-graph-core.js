@@ -37,6 +37,24 @@
     return err;
   }
 
+  function graphUi(register, language, maintainer) {
+    var canonical = register && register.en && register.en.graph;
+    var selected = register && register[language] && register[language].graph;
+    if (!canonical || canonical.schema !== 'issue-graph-ui@v1' || !canonical.strings) {
+      throw GraphAdapterError('canonical graph UI unavailable');
+    }
+    if (!selected) {
+      if (!maintainer) throw GraphAdapterError('required graph UI unavailable: ' + language);
+      selected = canonical;
+      language = 'en';
+    }
+    if (selected.schema !== 'issue-graph-ui@v1' || !selected.strings) {
+      throw GraphAdapterError('malformed graph UI: ' + language);
+    }
+    return { strings: selected.strings, language: language,
+      fallback: selected === canonical && language === 'en' };
+  }
+
   function htmlEscape(s) {
     return String(s)
       .replace(/&/g, '&amp;')
@@ -396,6 +414,7 @@
     MARK_COLORS: MARK_COLORS,
     DONE_FONT_COLOR: DONE_FONT_COLOR,
     DONE_EDGE_COLOR: DONE_EDGE_COLOR,
+    graphUi: graphUi,
   };
 
   global.TodoGraphCore = api;
