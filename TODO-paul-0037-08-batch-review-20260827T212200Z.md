@@ -13,12 +13,10 @@ state: [p]
 write_scope:
   - TODO-paul-0037-08-batch-review-20260827T212200Z.md
   - docs/campaign-evidence/review-0037-08-batch-paul-20260827T212200Z/
-  - docs/campaign-evidence/review-0037-07-paul-20260827T212200Z/
-  - docs/campaign-evidence/review-0037-39-paul-20260827T212200Z/
 
 ## Assignment
 
-ACCEPT of michael OFFER `1787865569072-75488504` (mail `1787865848802-c87f5fc3`). HOLD `1787865353401-bcdda30e` superseded. Feature owner kathryn named the batch (`1787865367689-62983ff2`). ACCEPT is not the award. No `Acceptance: ✓` on `TODO.md` until explicit AWARD from michael.
+ACCEPT of michael OFFER `1787865569072-75488504` (mail `1787865848802-c87f5fc3`). HOLD `1787865353401-bcdda30e` superseded. Feature owner kathryn named the batch (`1787865367689-62983ff2`). Kathryn later named a widening (`1787865936760-b24fa074`) to include 0037-49 and 0037-51 in AWARD write scope; forwarded to michael `1787865981845-fcd4ca6f`. ACCEPT is not the award. No `Acceptance: ✓` on `TODO.md` until explicit AWARD from michael.
 
 Exact baseline: `main@f3f17f66f5e18177ce779b356a8ff8b0a8399afb`. Work already on main. Pin named REFs; do not review unrelated branch-vs-main history.
 
@@ -58,4 +56,4 @@ Not Julian (08/39). Not Seven-Icheb (07). Not jean-luc (51). Not 0037-09.03 re-a
 
 ## Next step
 
-Bottom-up inspect 0037-07, 0037-39, 0037-08 against pinned REFs. Record 0037-49/51 as unaccepted induced predecessors. Do not add `Acceptance: ✓` until AWARD.
+Evidence drafted at `docs/campaign-evidence/review-0037-08-batch-paul-20260827T212200Z/decision.md`. Work products for 49/51/07/39/08 accepted vs contract. Do not add `Acceptance: ✓` until explicit AWARD. Await michael amend/AWARD including 0037-49 and 0037-51.
