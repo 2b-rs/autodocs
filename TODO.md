@@ -1323,7 +1323,7 @@ HOW TO USE:
   - **Acceptance criteria:** Adapt `campaign-manifest@v1` without rewriting history; replace listing/mtime `corpus_hash` as evidence identity with a sorted content artifact set while retaining it only as a staleness hint; link trigger issue/criterion, runs, queue snapshot, decisions, published reports, source/tool/config commits, and scope.
   - **Definition of Done:** Migration and producer tests prove old manifests receive explicit legacy disposition, new snapshots are immutable/queryable, content changes alter identity, and mtime-only changes do not.
 
-- [ ] **0037-26.03** PREREQ: 0037-26.03:0037-17, 0037-26.03:0037-19 Extend raw evidence and record-version writers with issue/run/campaign/artifact provenance.
+- [p] **0037-26.03** PREREQ: 0037-26.03:0037-17, 0037-26.03:0037-19 Extend raw evidence and record-version writers with issue/run/campaign/artifact provenance. Claim: `TODO-programmer-0037-26.03-20260827T124500Z.md` (`owner_token: agent:programmer-0037-26.03:0037-26.03:20260827T124500Z`).
   - **Acceptance criteria:** Preserve append-only source evidence/version history; attach exact input artifact set, source version, producing run/campaign/tool/config, issue/criterion trigger, and evidence/privacy class; never relabel synthetic fixture data as production or backfill unknown legacy context.
   - **Definition of Done:** Integration tests prove immutable raw evidence, exact version linkage, legacy-unknown handling, duplicate prevention, and reverse trace to source bytes and trigger.
 
