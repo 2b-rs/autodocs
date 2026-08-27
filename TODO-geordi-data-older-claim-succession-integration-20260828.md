@@ -1,14 +1,17 @@
 # Claim — Decision A Older-Claim Succession Integration
 
-- **item:** `data-older-claim-succession-integration`
-- **owner_token:** `agent:geordi:data-older-claim-succession-integration:20260827T225743Z-5484e084`
-- **request_id:** `20260827T225743Z-5484e084`
-- **identity/role:** `geordi`, privileged Integrator
-- **capability_class:** `privileged`
-- **state:** `[p]`
-- **authority:** Jean-Luc OFFER `agent-inbox:1787871398238-d5d36cba`; Geordi ACCEPT `agent-inbox:1787871430175-1c0f72c7`; Jean-Luc AWARD `agent-inbox:1787871463665-5484e084`; Management Decision A `agent-inbox:1787869861596-4caa9083`.
-- **baseline:** `main@a8b50eeeab207d91f32114499bdfcbc74b49ad73`, independently remeasured before worktree creation.
-- **reviewed candidate:** `gov-data-older-claim-succession-data-20260828@a051c3808345b506c03aa1c08e0dca6d16881c77`; substantive audit `1638b496728e8c95c24746df0983176fca207fca`; original base `1969e055a5d9697b1db32ca15d5294b290d6f9fc`.
+item_id: data-older-claim-succession-integration
+owner: geordi
+owner_token: agent:geordi:data-older-claim-succession-integration:20260827T225743Z-5484e084
+request_id: 20260827T225743Z-5484e084
+state: [p]
+status: [p]
+capability_class: privileged
+process_role: Integrator
+execution_authority: direct
+base_commit: a8b50eeeab207d91f32114499bdfcbc74b49ad73
+authority_reference: Jean-Luc OFFER `agent-inbox:1787871398238-d5d36cba`; Geordi ACCEPT `agent-inbox:1787871430175-1c0f72c7`; Jean-Luc AWARD `agent-inbox:1787871463665-5484e084`; Management Decision A `agent-inbox:1787869861596-4caa9083`
+reviewed_candidate: `gov-data-older-claim-succession-data-20260828@a051c3808345b506c03aa1c08e0dca6d16881c77`; substantive audit `1638b496728e8c95c24746df0983176fca207fca`; original base `1969e055a5d9697b1db32ca15d5294b290d6f9fc`
 
 ## Authorized scope
 
