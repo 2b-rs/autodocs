@@ -23,3 +23,4 @@ Definition of Done: Source/label/theme changes mark exact SVGs stale, regenerati
 ## Progress
 
 - 2026-08-27: claimed; implemented diagram-provenance@v1 workflow + renderer hooks (env-gated, no SVG injection).
+- 2026-08-27: implementation complete `[x]`. Product REF `9c4b59780da477aa714b4cbcf168e4df48843d64`. Tests 10/10. AE evidence PASS.
