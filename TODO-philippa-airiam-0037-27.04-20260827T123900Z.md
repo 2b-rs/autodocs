@@ -1,0 +1,24 @@
+# Claim `0037-27.04`
+
+- owner_token: `agent:philippa-airiam-0037-27.04:0037-27.04:20260827T123900Z`
+- capability_class: unprivileged
+- execution_authority: direct tools; no runner; no Acceptance; no main; no DONE.md
+- item: 0037-27.04
+- branch: 0037-27.04
+- worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/0037-27.04`
+- write_scope:
+  - i18n segment/title/diagram registers and translation-run provenance
+  - 27.04-owned tests/fixtures
+  - this claim
+  - TODO.md 0037-27.04 block only
+- must_not: Acceptance; main; DONE.md; 0037-16; mutate 19/20/38/42; 0037-26.*; other 0037-27.* products; frozen 0037-23.02; memory_append; root checkout
+- startup_review: briefing names unprivileged implementer; 0037-17 already ancestor of pinned 0037-19 tip; no merge required
+- base: `0037-19` @ `2064704457f98c66fb6f77ad3c263415864fe2ff` (ancestor `cfa4b8f2c` confirmed)
+- merged_prereq_tips:
+  - `0037-17` @ `78f1e3fd2a74e4dab5a6c8fe150ab69384715157` (already ancestor; merge skipped)
+- assumptions:
+  - Human-authored `_src/i18n/<lang>/{segments,labels,issues}.json` remain authoritative inputs; provenance is recorded as envelopes, not by rewriting translation prose.
+  - Common envelope uses `provenance_store` run/event/artifact-set plus a translation-run artifact JSON.
+- next_step: implementation complete; bookkeeping [x] after substantive REF
+- state: [p]
+- validation: `python3 _src/tests/test_i18n_translation_provenance.py` → 6 tests OK
