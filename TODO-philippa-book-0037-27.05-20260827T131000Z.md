@@ -26,5 +26,7 @@
 - assumptions:
   - Manifests stay under `provenance/` (envelope + artifact-set + events); generated HTML is derived output only.
   - Bind to `provenance_store.SCHEMA_VERSION` and existing relations; missing generate.py input families are `HTP-INPUT-GAP` findings, not schema forks.
-- next_step: commit substantive deliverables and close `[x]`
-- state: [p]
+- next_step: implementation terminal; claim retained on branch
+- state: [x]
+- substantive_ref: `df5f8fe36044f00b61a749df7be6b658d58bb943`
+- validation: `python3 _src/tests/test_html_tree_provenance.py` → 10 tests OK
