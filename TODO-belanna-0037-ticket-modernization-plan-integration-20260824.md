@@ -27,3 +27,12 @@
 - main_merge_permitted: `yes`, provided the root integrator repeats the hard preflight and full hygiene check immediately before merge
 - review_record: `docs/dossiers/0037-ticket-modernization-execution-plan-integration-review.md`
 - next_step: commit the review evidence and final claim, report the exact assembly tip; do not advance `main`.
+
+## Closure (2026-08-27, supervisor claim-lifecycle instruction)
+
+- state: [x]
+- Both `candidate_final_ref` (`4141d1e7a689c4b3b59c1d2c04b5096598b723ce`) and
+  `independent_review_final_ref` (`d9724324f3c570ff4d5d10009719c5d4bf654ef0`)
+  independently reconfirmed reachable from current `main`. No further action
+  remains under this claim. Recorded per the standing convention that a finished
+  claim is closed with `state: [x]` rather than left open or deleted.
