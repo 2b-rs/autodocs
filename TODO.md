@@ -1348,7 +1348,7 @@ HOW TO USE:
   - **Acceptance criteria:** Pin record/evidence/policy/prompt/model/config/input versions, issue/criterion/campaign/run, outputs and confidence/invalidation/supersession; give typed claims their own ID family and one-file persistence; adapt legacy traces with explicit unknown/legacy confidence and never invented prompts/models/runs.
   - **Definition of Done:** Tests trace a claim through source evidence and AI run, invalidate on each governed input change, preserve prior claims/history, and reject fabricated or bare-ID provenance.
 
-- [ ] **0037-27.02** PREREQ: 0037-27.02:0037-17, 0037-27.02:0037-19 Extend diagram source and rendered SVG workflows with manifests and common provenance.
+- [x] **0037-27.02** PREREQ: 0037-27.02:0037-17, 0037-27.02:0037-19 Extend diagram source and rendered SVG workflows with manifests and common provenance. **Claim:** `TODO-philippa-detmer-0037-27.02-20260827T123900Z.md` (`owner_token: agent:philippa-detmer-0037-27.02:0037-27.02:20260827T123900Z`). **REF:** `9c4b59780da477aa714b4cbcf168e4df48843d64`. **Validation:** `python3 _src/tests/test_diagram_provenance.py` 10/10 PASS; `python3 _src/tools/check_adversarial_evidence.py --evidence _src/tests/fixtures/diagram_provenance/completion-evidence.json` PASS. No Acceptance.
   - **Acceptance criteria:** Record source model/labels/theme/tool/config, issue/criterion/run, rendered artifact digest, language, invalidation/regeneration relation, and source-to-SVG members; do not inject uncontrolled provenance into SVG markup.
   - **Definition of Done:** Source/label/theme changes mark exact SVGs stale, regeneration links replacements, and queries trace canonical and translated diagrams bidirectionally.
 
