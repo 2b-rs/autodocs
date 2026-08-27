@@ -1,6 +1,6 @@
 # 0037-16 checkpoint integration claim
 
-- state: [p]
+- state: [x]
 - owner_token: agent:geordi:0037-16:0037-16-checkpoint-integration-20260827T073304Z-eec7169a
 - capability_class: privileged
 - execution_authority: AWARD `1787814297680-c77f2ffc` from Kathryn, Feature 0037 coordinator
@@ -23,3 +23,8 @@
 ## Startup review
 
 At startup, exact refs were independently rechecked: checkpoint branch and worktree were absent; the branch was created at the pinned 0037 tip and the isolated worktree was provisioned cleanly. The current `main` tip is allowed to advance only if the awarded pinned main remains reachable; no silent repin is allowed.
+
+## Completion
+- candidate: `c038fdadab245053881b587a4e84675493e6c8e9`
+- verdict: inconclusive
+- completion_note: Both required merge commits and the pre-authorized TODO union were completed. The 15-test focused suite passed, but `_src/validate.py` did not provide a terminal result after bounded observation; no PASS or return merge is claimed.
