@@ -4,8 +4,10 @@ item_id: data-older-claim-succession-integration
 owner: geordi
 owner_token: agent:geordi:data-older-claim-succession-integration:20260827T225743Z-5484e084
 request_id: 20260827T225743Z-5484e084
-state: [p]
-status: [p]
+state: [x]
+status: [x]
+coordination_state: complete
+lease_active: false
 capability_class: privileged
 process_role: Integrator
 execution_authority: direct
@@ -46,4 +48,8 @@ Do not change classifications, product files, `TODO.md`, `DONE.md`, automation-s
 
 ## Next step
 
-Complete independent validation of rebuilt candidate `f2dc8d2168600c932dff6056daab87316c13a419` plus this claim correction, then run candidate hygiene and mandatory root pre/postflight. Advance `main` only if every gate passes.
+Integration complete. Independent verdict: supported. Data's 16-path candidate remained byte-identical; all 14 classifications, 13 evidence-commit ancestors, duplicate-token preservation in exactly two files, zero unfinished result, and validator disclosures were independently verified. Rebuilt candidate `d90ca75a43f1c865ce8f4f8f15a2bc897faa05dc` differed from exact baseline `a8b50eeeab207d91f32114499bdfcbc74b49ad73` only by the 16 reviewed paths plus this claim.
+
+Validation: `git diff --check` passed; process-document doctor returned `ok: true` with 154 documents, 32 findings, one pre-existing error, and no audit-dossier finding; legacy task doctor reproduced Data's disclosed 878 findings plus the one expected non-Task identity mismatch for this management-prescribed integration claim. Candidate hygiene passed across 209 worktrees. Root preflight passed across 211 worktrees, `main` fast-forwarded to `d90ca75a43f1c865ce8f4f8f15a2bc897faa05dc`, and immediate root postflight passed across 211 worktrees.
+
+No classification, product file, `TODO.md`, `DONE.md`, automation-safety content, Acceptance, external state, foreign worktree, or finding was changed outside the authorized scope.
