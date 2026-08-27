@@ -9,7 +9,7 @@
 - base/HEAD at claim: `525e8f96427e69c049d32cf1d6729d099b4a98c9`
 - dispatcher: `jean-luc`, direct e4 assignment `1787770011623-30ddfa63`
 - allocation epoch: `0037-16/20260826T184500Z/e4`
-- status: `[p]`, product implementation authorized
+- status: `[x]`, implementation committed; awaiting independent Acceptance/integration routing
 
 Mailbox coordination identifies the assignment and exact scope but does not create Acceptance, independence, specialist approval, release authority, or permission beyond this claim.
 
@@ -60,3 +60,12 @@ Hguh's exact prior tip is claim-only. `git diff f1f5b9c96888a92f25165db3cd2793f0
 - verified scope: only the three product paths, this claim, and the exact `0037-16` block in `TODO.md`
 
 Implement the migration-report gate, exercise the required positive and adversarial cases, commit the bounded work product and evidence, then report the exact SHA and validation. The original prohibitions remain in force.
+
+## Implementation completion
+
+- implementation REF: `eb9533fe34bb326dded53333b3100f77eaf209d1`
+- validation: `python3 -m unittest _src.tests.test_issue_migration_report` — 15 tests, OK
+- validation: `python3 -m py_compile _src/tools/issue_migration_report.py _src/tests/test_issue_migration_report.py` — pass
+- validation: `git show --check --oneline --stat eb9533fe34bb326dded53333b3100f77eaf209d1` — pass
+- worktree after implementation commit: clean
+- lifecycle boundary: implementation only; no Acceptance, integration checkpoint, Feature closure, or `main` action performed
