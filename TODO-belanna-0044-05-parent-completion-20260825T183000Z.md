@@ -38,3 +38,12 @@ section 10's own instruction that a session distinct from the `.01` Architect pe
 this step once all three children are terminal. **No `Acceptance: ✓` added.** The
 parent's existing mandatory integration checkpoint is untouched and remains for the
 separately assigned privileged Integrator.
+
+## Closure (2026-08-27, supervisor claim-lifecycle instruction)
+
+state: [x]
+
+Package-completion work for this exact item is complete as recorded above; parent
+`0044-05` carries `[x]` on current `main` with its product reachable. No further
+action remains under this claim. Recorded per the standing convention that a
+finished claim is closed with `state: [x]` rather than left open or deleted.
