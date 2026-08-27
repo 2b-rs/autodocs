@@ -106,3 +106,12 @@ claim — that is the separately assigned privileged Integrator's action at the
 complete parent `0044-05` mandatory checkpoint. `main` not advanced. Reporting exact
 candidate tip, ordered parents, full diff, Acceptance evidence placeholders, and
 validation to Project Lead `jean-luc` per the assignment packet.
+
+## Closure (2026-08-27, supervisor claim-lifecycle instruction)
+
+state: [x]
+
+Implementer work for this exact item is complete as recorded above; the product
+this claim prepared is already reachable from current `main`. No further action
+remains under this claim. Recorded per the standing convention that a finished
+claim is closed with `state: [x]` rather than left open or deleted.
