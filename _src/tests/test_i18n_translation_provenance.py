@@ -318,6 +318,47 @@ class I18nTranslationProvenanceTests(unittest.TestCase):
         after = hashlib.sha256(dest.read_bytes()).digest()
         self.assertEqual(before, after)
 
+    def test_writers_bind_existing_provenance_schema(self):
+        self.assertTrue((ROOT / "provenance/_schema/run-v1.schema.json").is_file())
+        for kind, name in mod.BOUND_SCHEMAS.items():
+            self.assertTrue((ROOT / "provenance" / "_schema" / name).is_file(), kind)
+            mod.load_bound_schema(kind)
+        entries = [
+            {
+                "family": "segment",
+                "source_id": "seg-prose-01",
+                "source_text": json.loads((FIXTURES / "segments.de.json").read_text())["seg-prose-01"]["m"],
+                "source_locale": "de",
+                "target_locale": "en",
+                "translation": json.loads((FIXTURES / "segments.en.json").read_text())["seg-prose-01"],
+                "merge_decision": "accepted",
+            }
+        ]
+        recorded = mod.record_translation_run(
+            self.store,
+            run_id=RUN_ID,
+            set_id=SET_ID,
+            event_ids=_ids(),
+            started_at=STAMP,
+            ended_at=ENDED,
+            commit=COMMIT,
+            issue="0037-27.04",
+            criterion="AC-i18n-provenance",
+            producer_path="_src/i18n_translate.py",
+            family="segment",
+            target_locale="en",
+            register_path="_src/i18n/en/segments.json",
+            entries=entries,
+            **self._context(),
+        )
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{recorded['envelope']['run_id']}.json").read_text()
+        )
+        mod.validate_against_bound_schema("run", run)
+        with self.assertRaises(mod.I18nProvenanceError) as ctx:
+            mod.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "I18N-SCHEMA-DEVIATION")
+
 
 if __name__ == "__main__":
     unittest.main()

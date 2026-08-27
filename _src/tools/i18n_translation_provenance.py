@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 _TOOLS = Path(__file__).resolve().parent
 _SRC = _TOOLS.parent
+_ROOT = _SRC.parent
 sys.path.insert(0, str(_SRC))
 sys.path.insert(0, str(_TOOLS))
 
@@ -30,6 +31,15 @@ SCHEMA = "i18n-translation-run@v1"
 FAMILIES = frozenset({"segment", "title", "diagram"})
 MERGE_DECISIONS = frozenset({"accepted", "rejected", "stale", "missing", "fallback"})
 WORK_STATES = frozenset({"current", "stale", "missing", "fallback"})
+# Bind writers to 0037-17/19 schema files; do not fork local copies.
+REPO_SCHEMA_DIR = _ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
 
 
 class I18nProvenanceError(Exception):
@@ -41,6 +51,43 @@ class I18nProvenanceError(Exception):
 
 def sha256_text(value: str) -> str:
     return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise I18nProvenanceError(
+            "I18N-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(
+    kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None
+) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise I18nProvenanceError(
+            "I18N-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise I18nProvenanceError(
+                "I18N-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
+
+
+def _put_event(store: Any, payload: Mapping[str, Any]) -> Dict[str, Any]:
+    result = store.create_event(payload)
+    validate_against_bound_schema("event", result["record"])
+    return result
 
 
 def protected_tokens(family: str, source_text: str, translation: str) -> List[str]:
@@ -218,25 +265,26 @@ def record_translation_run(
     files = {rel_path: payload.encode("utf-8")}
     bound = ps.ProvenanceStore(store.root, file_bytes=files.__getitem__)
 
-    run = bound.create_run(
-        {
-            "schema_version": "1.0",
-            "run_id": run_id,
-            "started_at": started_at,
-            "ended_at": ended_at,
-            "environment": environment,
-            "classification": "internal",
-            "status": "succeeded",
-            "producer": _ref("commit", commit),
-            "inputs": [
-                _ref("commit", commit),
-                _ref("issue", issue),
-                _ref("criterion", criterion),
-                _ref("artifact", f"{register_path}@sha256:{digest.split(':', 1)[1]}", digest=digest),
-            ],
-            "outputs": [],
-        }
-    )
+    run_payload = {
+        "schema_version": "1.0",
+        "run_id": run_id,
+        "started_at": started_at,
+        "ended_at": ended_at,
+        "environment": environment,
+        "classification": "internal",
+        "status": "succeeded",
+        "producer": _ref("commit", commit),
+        "inputs": [
+            _ref("commit", commit),
+            _ref("issue", issue),
+            _ref("criterion", criterion),
+            _ref("artifact", f"{register_path}@sha256:{digest.split(':', 1)[1]}", digest=digest),
+        ],
+        "outputs": [],
+    }
+    run = bound.create_run(run_payload)
+    validate_against_bound_schema("run", bound.read_run(run_id))
+    validate_against_bound_schema("typed-reference", run_payload["producer"])
     artifact_set = bound.create_artifact_set(
         {
             "schema_version": "1.0",
@@ -256,8 +304,10 @@ def record_translation_run(
             ],
         }
     )
+    validate_against_bound_schema("artifact-set", artifact_set["record"])
     set_digest = artifact_set["record"]["set_digest"]
-    produced = bound.create_event(
+    produced = _put_event(
+        bound,
         {
             "schema_version": "1.0",
             "event_id": event_ids["produced-by"],
@@ -268,9 +318,10 @@ def record_translation_run(
             "environment": environment,
             "classification": "internal",
             "run": _ref("run", run_id),
-        }
+        },
     )
-    derived = bound.create_event(
+    derived = _put_event(
+        bound,
         {
             "schema_version": "1.0",
             "event_id": event_ids["derived-from"],
@@ -281,12 +332,13 @@ def record_translation_run(
             "environment": environment,
             "classification": "internal",
             "run": _ref("run", run_id),
-        }
+        },
     )
     invalidation = None
     stale_ids = [entry["source_id"] for entry in validated if entry["merge_decision"] == "stale"]
     if stale_ids:
-        invalidation = bound.create_event(
+        invalidation = _put_event(
+            bound,
             {
                 "schema_version": "1.0",
                 "event_id": event_ids["invalidated-by"],
@@ -297,7 +349,7 @@ def record_translation_run(
                 "environment": environment,
                 "classification": "internal",
                 "run": _ref("run", run_id),
-            }
+            },
         )
     return {
         "envelope": envelope,
