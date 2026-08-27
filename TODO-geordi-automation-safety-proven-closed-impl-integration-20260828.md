@@ -25,3 +25,10 @@ Validation on the rebuilt tree: 136/136 `_src.tests.test_automation_safety` test
 ## Next step
 
 Commit this claim as the sole successor delta, report the exact claim commit, then rerun exact-candidate hygiene and mandatory root preflight. Fast-forward `main` only if the target baseline remains exact and every gate passes; run immediate root postflight.
+
+## Append-only process correction and blocked verdict
+
+- **planned_duration:** 30 minutes
+- **Ordering finding:** Kathryn's OFFER `agent-inbox:1787873736154-6121dbc3`, Geordi ACCEPT `agent-inbox:1787873761520-6934ba4d`, and Kathryn AWARD `agent-inbox:1787873790507-4f76242a` existed before work, but the required durable item-owned Geordi claim did not. The automatic rebuild merge `ec088e8323c514316a49fc8118d70d74fc8cb2db` was committed at `2026-08-28T01:37:50+02:00`; independent inspection, validation, and the first candidate-hygiene run followed; the claim was only committed later as `2a8e5b006e9c6d10ad29b7119ef38684781a146d` at `2026-08-28T01:44:40+02:00`. No manual product edit or conflict resolution occurred in the rebuild. This append-only correction records but does not waive, cure retroactively, erase, or minimize the claim-before-review/mutation process breach.
+- **Supervisor correction authority:** Jean-Luc STOP/corrective instruction `agent-inbox:1787874347574-3b4d6894` requires this sole-path corrective successor and a new exact pin before further hygiene or root action.
+- **VERDICT: BLOCKED.** The claim-bearing candidate hygiene run initiated before delivery of that STOP completed nonzero across 214 registered worktrees: `FOREIGN_STAGED_TREE` at `/Users/tobias.anton/devel/autodocs/.worktrees/integrate-0037-09.04-paul-20260827T233900Z`, whose index still differed from `HEAD` after the mandatory 2.000-second resample (reported index age 142.836 seconds; mtime `2026-08-27T23:43:56.367Z`). No foreign cleanup, root preflight, or root merge occurred. The blocked verdict is retained pending owner resolution, a fresh hygiene run, and a new exact candidate/baseline instruction.
