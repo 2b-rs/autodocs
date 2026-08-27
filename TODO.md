@@ -1327,7 +1327,7 @@ HOW TO USE:
   - **Acceptance criteria:** Preserve append-only source evidence/version history; attach exact input artifact set, source version, producing run/campaign/tool/config, issue/criterion trigger, and evidence/privacy class; never relabel synthetic fixture data as production or backfill unknown legacy context.
   - **Definition of Done:** Integration tests prove immutable raw evidence, exact version linkage, legacy-unknown handling, duplicate prevention, and reverse trace to source bytes and trigger.
 
-- [ ] **0037-26.04** PREREQ: 0037-26.04:0037-17, 0037-26.04:0037-19 Extend database rebuild, migration, and version/snapshot writers with deterministic provenance.
+- [p] **0037-26.04** PREREQ: 0037-26.04:0037-17, 0037-26.04:0037-19 Extend database rebuild, migration, and version/snapshot writers with deterministic provenance. Claim: `TODO-programmer-0037-26.04-20260827T124500Z-db04r2.md` (`owner_token: agent:programmer-0037-26-04:0037-26.04:20260827T124500Z-db04r2`).
   - **Acceptance criteria:** Record schema/migration/tool/config commits, ordered input artifact sets, changed/added/deleted records and versions, output snapshot/tree digest, trigger issue/finding/campaign/run, and rollback/rebuild relation; identical inputs/config produce the same semantic identity.
   - **Definition of Done:** Rebuild/migration fixtures detect input/config/schema drift, trace each changed record to evidence and trigger, prove deterministic identity, and prevent partial snapshot promotion.
 
