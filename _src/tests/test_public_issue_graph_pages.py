@@ -60,7 +60,10 @@ class PublicIssueGraphPagesTests(unittest.TestCase):
         self.assertIn("aria-labelledby=\"public-issue-summary-heading\"", html)
         self.assertIn("role=\"img\"", html)
         self.assertIn("<noscript>", html)
-        self.assertIn("issues.html#0099", html)
+        if self.payload["items"]:
+            self.assertIn("issues.html#%s" % self.payload["items"][0]["id"], html)
+        else:
+            self.assertNotIn("issues.html#", html)
         self.assertIn('src="tools/issue-graph-public-embed.js"', html)
         self.assertNotIn("todo-graph-embed.js", html)
         self.assertNotIn("issues/_views/", html)
@@ -91,7 +94,10 @@ class PublicIssueGraphPagesTests(unittest.TestCase):
         self.assertTrue(region.xpath(".//noscript"))
         self.assertTrue(region.xpath(".//ul[contains(@class,'public-issue-list')]"))
         links = region.xpath(".//ul[contains(@class,'public-issue-list')]//a")
-        self.assertTrue(links)
+        if self.payload["items"]:
+            self.assertTrue(links)
+        else:
+            self.assertEqual(links, [])
         for a in links:
             href = a.get("href")
             self.assertTrue(href.startswith("issues.html#"), href)
@@ -146,7 +152,10 @@ class PublicIssueGraphPagesTests(unittest.TestCase):
         )
         self.assertIn('src="tools/issue-graph-public-embed.js"', de)
         self.assertIn('src="../tools/issue-graph-public-embed.js"', en)
-        self.assertIn("issues.html#0099", en)
+        if self.payload["items"]:
+            self.assertIn("issues.html#%s" % self.payload["items"][0]["id"], en)
+        else:
+            self.assertNotIn("issues.html#", en)
         self.assertIn('lang="en"', en)
         self.assertNotIn("issues/_views/", en)
         self.assertIn(self.payload["_payload_digest"], en)
@@ -160,7 +169,10 @@ class PublicIssueGraphPagesTests(unittest.TestCase):
         )
         self.assertNotIn("@@PUBLIC_ISSUE_", html)
         self.assertIn("<svg", html)
-        self.assertIn("issues.html#0099", html)
+        if self.payload["items"]:
+            self.assertIn("issues.html#%s" % self.payload["items"][0]["id"], html)
+        else:
+            self.assertNotIn("issues.html#", html)
 
     def test_validate_helper_flags_stale_digest(self):
         findings, payload = self.pig.validate_required_deployment(
