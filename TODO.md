@@ -1343,7 +1343,7 @@ HOW TO USE:
   - **Acceptance criteria:** Each artifact family and call site from the exact inventory approved by `0037-37` records inputs/invalidation/regeneration causes under the shared envelope; each Subtask changes only its enumerated family and generated-file metadata stays in manifests, not uncontrolled HTML/SVG injection.
   - **Definition of Done:** All five Subtasks support forward/reverse trace from language-specific HTML to exact issue, trigger, source versions, and producer run.
 
-- [ ] **0037-27.01** PREREQ: 0037-27.01:0037-17, 0037-27.01:0037-19 Persist AI workflow runs and typed claims with stable claim IDs and common provenance.
+- [p] **0037-27.01** PREREQ: 0037-27.01:0037-17, 0037-27.01:0037-19 Persist AI workflow runs and typed claims with stable claim IDs and common provenance. Claim: `TODO-philippa-rhys-0037-27.01-20260827T123900Z.md` (`owner_token: agent:philippa-rhys-0037-27.01:0037-27.01:20260827T123900Z`).
   - **Acceptance criteria:** Pin record/evidence/policy/prompt/model/config/input versions, issue/criterion/campaign/run, outputs and confidence/invalidation/supersession; give typed claims their own ID family and one-file persistence; adapt legacy traces with explicit unknown/legacy confidence and never invented prompts/models/runs.
   - **Definition of Done:** Tests trace a claim through source evidence and AI run, invalidate on each governed input change, preserve prior claims/history, and reject fabricated or bare-ID provenance.
 
