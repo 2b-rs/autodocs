@@ -9,7 +9,7 @@
 - base/HEAD at claim: `525e8f96427e69c049d32cf1d6729d099b4a98c9`
 - dispatcher: `jean-luc`, direct e4 assignment `1787770011623-30ddfa63`
 - allocation epoch: `0037-16/20260826T184500Z/e4`
-- status: `[p]`, claim-only takeover; product STOP
+- status: `[p]`, product implementation authorized
 
 Mailbox coordination identifies the assignment and exact scope but does not create Acceptance, independence, specialist approval, release authority, or permission beyond this claim.
 
@@ -52,6 +52,11 @@ Hguh's exact prior tip is claim-only. `git diff f1f5b9c96888a92f25165db3cd2793f0
 - prerequisites `0037-04`, `0037-11`, `0037-13`, `0037-14`, `0037-15`, and `0037-17.01`: all `[x]` on this branch
 - existing product paths: unchanged by the e4 takeover claim
 
-## Next step
+## Product authorization and next step
 
-Commit only this additive takeover claim and the exact `TODO.md` line, report the full commit SHA, owner token, filename, resulting HEAD, and porcelain to `jean-luc`, then perform no product-file mutation until an independent verification and explicit product GO arrive.
+- claim-only commit: `d7f6b87ca0b32f8538c3954bdfdca181e1fabfc1`
+- independent verification and explicit PRODUCT GO: `agent-inbox:1787770294260-506be28e`
+- verified parent: `525e8f96427e69c049d32cf1d6729d099b4a98c9`
+- verified scope: only the three product paths, this claim, and the exact `0037-16` block in `TODO.md`
+
+Implement the migration-report gate, exercise the required positive and adversarial cases, commit the bounded work product and evidence, then report the exact SHA and validation. The original prohibitions remain in force.
