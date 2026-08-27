@@ -1,0 +1,30 @@
+# Claim `0037-27.05`
+
+- owner_token: `agent:philippa-book-0037-27.05:0037-27.05:20260827T131000Z`
+- capability_class: unprivileged
+- execution_authority: direct tools; no runner; no Acceptance; no main; no DONE.md
+- item: 0037-27.05
+- branch: 0037-27.05
+- worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/0037-27.05`
+- write_scope:
+  - page generation (`_src/generate.py` opt-in `--provenance` / `HTML_TREE_PROVENANCE=1`)
+  - final language-tree HTML artifact-set provenance (`_src/tools/html_tree_provenance.py`)
+  - 27.05-owned tests/fixtures
+  - this claim
+  - TODO.md 0037-27.05 block only
+- must_not: Acceptance; main; DONE.md; 0037-16; mutate 19/20/38/42; 0037-26.*; mutate 27.01–.04 products; frozen 0037-23.02; memory_append; root checkout; local provenance schema forks
+- startup_review: briefing names unprivileged implementer philippa-book-0037-27.05 (not dispatcher philippa)
+- base: Feature `0037` @ `e495e053443726760eae0255fbaf24a216874315`
+- merged_prereq_tips:
+  - `0037-19` @ `2064704457f98c66fb6f77ad3c263415864fe2ff`
+  - `0037-17` @ `78f1e3fd2a74e4dab5a6c8fe150ab69384715157` (already ancestor of 0037-19; merge skipped)
+  - `0037-27.01` @ `9c1a1c86f612996cbb975ec289b9a8456d090d90` (product `f5c059ba8`)
+  - `0037-27.02` @ `93f90cc238993fd0008d8955b7f984f38e6cd2b2` (product `9c4b59780`)
+  - `0037-27.03` @ `946cd468c7d0b4b8254e0f51300e661c8f6cbed7` (product `eca14f6f9`)
+  - `0037-27.04` @ `52e1e9c1159c7af79d0808f4f00be9016ef18f54` (product `144b3b3ba`)
+- r2_ancestor: `cfa4b8f2c` confirmed on HEAD after merges
+- assumptions:
+  - Manifests stay under `provenance/` (envelope + artifact-set + events); generated HTML is derived output only.
+  - Bind to `provenance_store.SCHEMA_VERSION` and existing relations; missing generate.py input families are `HTP-INPUT-GAP` findings, not schema forks.
+- next_step: commit substantive deliverables and close `[x]`
+- state: [p]
