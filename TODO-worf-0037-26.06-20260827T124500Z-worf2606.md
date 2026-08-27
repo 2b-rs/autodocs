@@ -15,7 +15,7 @@ merged_prerequisite_tips:
   - 0037-19: 2064704457f98c66fb6f77ad3c263415864fe2ff (this checkout)
   - 0037-17: contained in 0037-19
 startup_review: claim-first after remesure; no sibling 26/27 writes; 0037-16 STOP not touched
-state: [p]
+state: [x]
 
 ## Task text (verbatim)
 
@@ -41,4 +41,4 @@ Acceptance; main; DONE.md; 0037-16 STOP lift; sibling 26/27; 16/19/20/38/42 prod
 
 ## Next step
 
-Implement explicit 1.0→2.0 migration, v2 envelope, combine-by-run-id (path-sorted, never mtime), producer emit, integration tests, then path-limited commits.
+Implementation terminal at REF `067a833d50d047cb0416b1f7980cfc88ce815ea9`. No Acceptance.
