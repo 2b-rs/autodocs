@@ -169,6 +169,17 @@ class PageCompositionTests(unittest.TestCase):
         run = json.loads((self.root / "provenance" / "runs" / f"{rec['run_id']}.json").read_text())
         self.assertEqual(run["schema_version"], ps.SCHEMA_VERSION)
 
+    def test_writers_bind_existing_provenance_schema(self):
+        self.assertTrue((ROOT / "provenance/_schema/run-v1.schema.json").is_file())
+        rec = self._compose()
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{rec['run_id']}.json").read_text()
+        )
+        pcp.validate_against_bound_schema("run", run)
+        with self.assertRaises(pcp.PageCompositionError) as ctx:
+            pcp.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "PCP-SCHEMA-DEVIATION")
+
     def test_records_envelope_links_and_hashes(self):
         rec = self._compose()
         roles = {m["role"] for m in rec["members"]}

@@ -9,6 +9,9 @@ in `provenance/` manifests, never as injection into HTML.
 
 Writers bind to `provenance_store.SCHEMA_VERSION` and existing endpoint
 kinds/relations. Typed claims use `ai_workflow_persist` (0037-27.01).
+Writers validate run/finding/event/artifact-set/typed-reference against
+existing `provenance/_schema/*-v1.schema.json`; extra fields are
+`PCP-SCHEMA-DEVIATION` findings, not local forks (0037-26.01 pattern).
 """
 from __future__ import annotations
 
@@ -58,6 +61,17 @@ HTML_PROVENANCE_MARKERS = (
     "regenerated-by",
 )
 
+# Bind writers to 0037-17/19 schema files; do not fork local copies.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_SCHEMA_DIR = _REPO_ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
+
 
 class PageCompositionError(Exception):
     def __init__(self, code: str, message: str) -> None:
@@ -68,6 +82,37 @@ class PageCompositionError(Exception):
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise PageCompositionError(
+            "PCP-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(
+    kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None
+) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise PageCompositionError(
+            "PCP-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise PageCompositionError(
+                "PCP-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
 
 
 def _ref(kind: str, ident: str, **extra: Any) -> Dict[str, Any]:
@@ -169,7 +214,9 @@ class PageCompositionWorkflow:
         }
         if extra:
             payload.update(dict(extra))
-        return self.store.create_event(payload)
+        created = self.store.create_event(payload)
+        validate_against_bound_schema("event", created["record"])
+        return created
 
     def _load_index(self) -> None:
         sets_dir = self.root / "provenance" / "artifact-sets"
@@ -346,6 +393,8 @@ class PageCompositionWorkflow:
                 "outputs": [_ref("artifact-set", set_id)],
             }
         )
+        validate_against_bound_schema("run", run["record"])
+        validate_against_bound_schema("typed-reference", run["record"]["producer"])
         aset = self.store.create_artifact_set(
             {
                 "schema_version": ps.SCHEMA_VERSION,
@@ -357,6 +406,7 @@ class PageCompositionWorkflow:
                 "members": members,
             }
         )
+        validate_against_bound_schema("artifact-set", aset["record"])
         out_ref = _artifact_ref(output_path, out_digest)
         frag_ref = _artifact_ref(fragment_path, fragment_digest)
         self._event(relation="produced-by", source=out_ref, target=_ref("run", run_id), run_id=run_id, occurred_at=ended)
@@ -437,6 +487,7 @@ class PageCompositionWorkflow:
                 "evidence": [old_out, dict(new_out)],
             }
         )
+        validate_against_bound_schema("finding", finding["record"])
         self._event(
             relation="invalidated-by",
             source=old_out,
