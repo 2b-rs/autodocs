@@ -8,8 +8,10 @@ base_commit: d05ec9f602d5baaf3c043c8f20e8edda3d5d8caa
 capability_class: privileged
 execution_authority: direct
 startup_review: SANDBOX.md, AGENTS.md, PRIVILEGED.md, docs/pipeline/roles/architect.md, docs/pipeline/core-rules.md, docs/pipeline/feature-breakdown.md, and docs/pipeline/task-acceptance.md reviewed
-state: [ ]
+state: [x]
+recorded_task_state: [ ]
 coordination_state: complete
+lease_active: false
 architect_work_product_status: [x]
 write_scope: ["docs/dossiers/dec-0038-006-claim-carriage-doctor-lifecycle.md", "docs/dossiers/0038-35-claim-carriage-doctor-scope-review.md", "TODO-data-0038-35-claim-carriage-20260825T211241Z-c86a50d2.md"]
 

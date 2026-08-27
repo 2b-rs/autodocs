@@ -3,11 +3,15 @@
 item_id: data-older-claim-succession
 owner: data
 owner_token: agent:data:data-older-claim-succession:1787869988940-3549ff1a
+request_id: 1787869988940-3549ff1a
+state: [p]
 status: [p]
 coordination_state: active
 capability_class: privileged
 process_role: Architect
-execution_authority: direct local execution in the item-owned worktree; no Acceptance, integration-checkpoint verdict, Feature closure, `main` advance, ownership transfer, external mutation, or recovery authority
+execution_authority: direct
+authority_boundaries: no Acceptance, integration-checkpoint verdict, Feature closure, `main` advance, ownership transfer, external mutation, or recovery authority
+startup_review: SANDBOX.md, AGENTS.md, PRIVILEGED.md, docs/pipeline/roles/architect.md, docs/pipeline/core-rules.md, docs/pipeline/task-acceptance.md, the exact AWARD, and all 14 authorized records reviewed before lifecycle mutation
 authority_reference: Management Decision A at `agent-inbox:1787869861596-4caa9083`; OFFER `agent-inbox:1787869917729-22cea7d3`; AWARD `agent-inbox:1787869988940-3549ff1a`; exact scope pin `agent-inbox:1787870046424-24c623f6`
 branch: gov-data-older-claim-succession-data-20260828
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/data-older-claim-succession-data-20260828
@@ -79,3 +83,8 @@ share one historical owner token and must both be preserved.
 - Management Decision A recorded in the paired decision/audit dossier.
 - Exact 14-record classification and lifecycle normalization are in progress.
 
+## Next step
+
+Complete exact-scope and diagnostic validation, commit the bounded lifecycle
+normalization, then finalize this claim with the substantive REF and report the
+candidate without advancing `main`.
