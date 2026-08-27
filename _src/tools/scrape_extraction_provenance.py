@@ -43,6 +43,15 @@ pq = importlib.util.module_from_spec(_PQ_SPEC)
 _PQ_SPEC.loader.exec_module(pq)
 
 SCHEMA = "scrape-extraction-provenance-envelope@v1"
+# Bind writers to 0037-17/19 schema files; do not fork local copies.
+REPO_SCHEMA_DIR = _ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
 PRODUCERS = frozenset(
     {
         "spec_scrape.phase_crosscheck",
@@ -66,6 +75,41 @@ def sha256_bytes(data: bytes) -> str:
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise ScrapeExtractionProvenanceError(
+            "SEP-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise ScrapeExtractionProvenanceError(
+            "SEP-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise ScrapeExtractionProvenanceError(
+                "SEP-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
+
+
+def _put_event(store: Any, payload: Mapping[str, Any]) -> Dict[str, Any]:
+    result = store.create_event(payload)
+    validate_against_bound_schema("event", result["record"])
+    return result
 
 
 def typed_ref(kind: str, ident: str, **extra: Any) -> Dict[str, Any]:
@@ -301,6 +345,8 @@ def persist_scrape_extraction_report(
         "outputs": [typed_ref("artifact-set", set_id)],
     }
     store.create_run(run_payload)
+    validate_against_bound_schema("run", store.read_run(run_id))
+    validate_against_bound_schema("typed-reference", run_payload["producer"])
     aset = store.create_artifact_set(
         {
             "schema_version": "1.0",
@@ -312,6 +358,7 @@ def persist_scrape_extraction_report(
             "members": members,
         }
     )
+    validate_against_bound_schema("artifact-set", aset["record"])
 
     finding_records = []
     items = list(disagreements or [])
@@ -337,8 +384,10 @@ def persist_scrape_extraction_report(
         cause_text = payload.pop("_cause")
         detail = payload.pop("_detail")
         created = store.create_finding(payload)
+        validate_against_bound_schema("finding", created["record"])
         finding_records.append({**created["record"], "cause": cause_text, "detail": detail})
-        store.create_event(
+        _put_event(
+            store,
             {
                 "schema_version": "1.0",
                 "event_id": vid.uuid7(),
@@ -351,7 +400,8 @@ def persist_scrape_extraction_report(
                 "run": typed_ref("run", run_id),
             }
         )
-        store.create_event(
+        _put_event(
+            store,
             {
                 "schema_version": "1.0",
                 "event_id": vid.uuid7(),
@@ -365,7 +415,8 @@ def persist_scrape_extraction_report(
             }
         )
 
-    store.create_event(
+    _put_event(
+        store,
         {
             "schema_version": "1.0",
             "event_id": vid.uuid7(),
@@ -378,7 +429,8 @@ def persist_scrape_extraction_report(
             "run": typed_ref("run", run_id),
         }
     )
-    store.create_event(
+    _put_event(
+        store,
         {
             "schema_version": "1.0",
             "event_id": vid.uuid7(),

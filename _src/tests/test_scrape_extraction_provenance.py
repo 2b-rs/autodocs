@@ -229,6 +229,17 @@ class ScrapeExtractionProvenanceTests(unittest.TestCase):
             write["provenance_envelope"]["producer"], "spec_scrape.write_traceability_records"
         )
 
+    def test_writers_bind_existing_provenance_schema(self):
+        self.assertTrue((ROOT / "provenance/_schema/run-v1.schema.json").is_file())
+        envelope = self._persist()
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{envelope['run_id']}.json").read_text()
+        )
+        sep.validate_against_bound_schema("run", run)
+        with self.assertRaises(sep.ScrapeExtractionProvenanceError) as ctx:
+            sep.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "SEP-SCHEMA-DEVIATION")
+
     def test_input_digest_set_property(self):
         """AE-5: artifact-set membership is the sorted path+digest of exact bytes."""
         cases = 0
