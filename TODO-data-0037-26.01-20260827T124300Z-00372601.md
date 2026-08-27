@@ -18,6 +18,9 @@
 - caveat: tip sits on 0037-16 R2 candidate not main; rejected checkpoint requires rebase
 - startup_review: assigned item; 0037-19 still `[x]` on start_base; implementation start prereqs 0037-17 and 0037-19 terminal on this tip; Mail ACCEPT is not ownership
 - product_ref: `943e852eb596a998f5d9c659427ba5379452af3e`
+- schema_bind_ref: `45ef86d54b27f0b14ea83dd94e1444da7b7e1569`
+- branch_tip: (updated by bookkeeping commit)
+- worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/0037-26.01`
 - next_step: none — implementation `[x]`; Acceptance is a separate privileged review
 
 ## Progress
