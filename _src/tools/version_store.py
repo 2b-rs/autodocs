@@ -42,14 +42,25 @@ def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def record_version(canonical_id: str, release: str, content: str, meta: dict | None = None) -> str:
+def record_version(
+    canonical_id: str,
+    release: str,
+    content: str,
+    meta: dict | None = None,
+    provenance: dict | None = None,
+) -> str:
     """Append a new version if this exact (release, content) isn't already
-    the most recent entry; always idempotent for identical repeated calls.
-    Returns the version_id (existing or newly appended)."""
+    recorded; always idempotent for identical repeated calls.
+    Returns the version_id (existing or newly appended).
+
+    When ``provenance`` is supplied for a *new* line, the 0037-26.03 envelope
+    is attached. A duplicate of a legacy line (no envelope) is not backfilled.
+    """
     version_id = requirement_version_id(canonical_id, release, content)
     path = _store_path(canonical_id)
     path.parent.mkdir(parents=True, exist_ok=True)
 
+    existing_match = None
     if path.exists():
         with path.open("r", encoding="utf-8") as f:
             for line in f:
@@ -58,7 +69,28 @@ def record_version(canonical_id: str, release: str, content: str, meta: dict | N
                     continue
                 existing = json.loads(line)
                 if existing.get("version_id") == version_id:
-                    return version_id  # already recorded, no-op
+                    existing_match = existing
+                    break
+    if existing_match is not None:
+        env = existing_match.get("provenance")
+        if provenance and env:
+            from evidence_version_provenance import attach_record_version_provenance
+            attach_record_version_provenance(
+                version_id=version_id,
+                content=content,
+                request=provenance,
+                existing_envelope=env,
+            )
+        return version_id  # already recorded; never rewrite the JSONL line
+
+    envelope = None
+    if provenance is not None:
+        from evidence_version_provenance import attach_record_version_provenance
+        envelope = attach_record_version_provenance(
+            version_id=version_id,
+            content=content,
+            request=provenance,
+        )
 
     entry = {
         "version_id": version_id,
@@ -68,6 +100,8 @@ def record_version(canonical_id: str, release: str, content: str, meta: dict | N
         "meta": meta or {},
         "recorded_at": _now(),
     }
+    if envelope is not None:
+        entry["provenance"] = envelope
     tmp = path.with_suffix(path.suffix + ".tmp-%s" % uuid.uuid4().hex[:8])
     if path.exists():
         tmp.write_bytes(path.read_bytes())
