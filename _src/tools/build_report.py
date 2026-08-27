@@ -59,14 +59,16 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_ledger  # noqa: E402  (same-directory sibling module)
+import build_report_envelope as envelope  # noqa: E402
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT = os.path.dirname(SRC)
 REPORTS_DIR = os.path.join(ROOT, "output", "build-reports")
 PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
-REQUIRED_STAGES = ("i18n_merge", "i18n_diagrams", "html_generate", "validate")
-ALLOWED_FINDING_SEVERITIES = frozenset(("info", "warning", "error"))
-SCHEMA_VERSION = "1.0"
+REQUIRED_STAGES = envelope.REQUIRED_STAGES
+ALLOWED_FINDING_SEVERITIES = envelope.ALLOWED_FINDING_SEVERITIES
+SCHEMA_VERSION = envelope.SCHEMA_VERSION
+LEGACY_SCHEMA_VERSION = envelope.LEGACY_SCHEMA_VERSION
 
 # 0043-04: schema version of the `publication_provenance` object written into
 # the page model. Bump only on a breaking change; validate.py refuses an
@@ -167,101 +169,21 @@ def _is_string_list(value):
     return isinstance(value, list) and all(isinstance(item, str) for item in value)
 
 
-def _validate_subreport(data, selected_ref):
-    errors = []
-
-    if data.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"schema_version must equal {SCHEMA_VERSION!r}")
-
-    kind = data.get("report_kind")
-    if kind not in REQUIRED_STAGES:
-        errors.append(f"report_kind must be one of {REQUIRED_STAGES!r}")
-
-    for field in ("tool", "command"):
-        value = data.get(field)
-        if not isinstance(value, str) or not value.strip():
-            errors.append(f"{field} must be a non-empty string")
-
-    for field in ("inputs", "changed_artifacts"):
-        if not _is_string_list(data.get(field)):
-            errors.append(f"{field} must be an array of strings")
-
-    started_at = _parse_utc_timestamp(data.get("started_at"))
-    finished_at = _parse_utc_timestamp(data.get("finished_at"))
-    if started_at is None:
-        errors.append("started_at must be a strict UTC timestamp (YYYY-MM-DDTHH:MM:SSZ)")
-    if finished_at is None:
-        errors.append("finished_at must be a strict UTC timestamp (YYYY-MM-DDTHH:MM:SSZ)")
-    if started_at is not None and finished_at is not None and finished_at < started_at:
-        errors.append("finished_at must not precede started_at")
-
-    duration_s = data.get("duration_s")
-    valid_duration = (
-        isinstance(duration_s, (int, float))
-        and not isinstance(duration_s, bool)
-        and (not isinstance(duration_s, float) or math.isfinite(duration_s))
-        and duration_s >= 0
-    )
-    if not valid_duration:
-        errors.append("duration_s must be a finite non-negative number")
-
-    exit_code = data.get("exit_code")
-    valid_exit_code = (
-        isinstance(exit_code, int)
-        and not isinstance(exit_code, bool)
-        and 0 <= exit_code <= 255
-    )
-    if not valid_exit_code:
-        errors.append("exit_code must be an integer from 0 through 255")
-
-    if not isinstance(data.get("counts"), dict):
-        errors.append("counts must be an object")
-
-    findings = data.get("findings")
-    has_error_finding = False
-    if not isinstance(findings, list):
-        errors.append("findings must be an array of structured findings")
-    else:
-        for index, finding in enumerate(findings):
-            prefix = f"findings[{index}]"
-            if not isinstance(finding, dict):
-                errors.append(f"{prefix} must be an object")
-                continue
-            category = finding.get("category")
-            severity = finding.get("severity")
-            message = finding.get("message")
-            if not isinstance(category, str) or not category.strip():
-                errors.append(f"{prefix}.category must be a non-empty string")
-            if not isinstance(severity, str) or severity not in ALLOWED_FINDING_SEVERITIES:
-                errors.append(
-                    f"{prefix}.severity must be one of {tuple(sorted(ALLOWED_FINDING_SEVERITIES))!r}"
-                )
-            if not isinstance(message, str) or not message.strip():
-                errors.append(f"{prefix}.message must be a non-empty string")
-            if "ref" in finding and not isinstance(finding["ref"], str):
-                errors.append(f"{prefix}.ref must be a string when present")
-            if severity == "error" and isinstance(message, str) and message.strip():
-                has_error_finding = True
-
-    report_ref = data.get("run_archive_ref")
-    if not _has_run_archive_ref(report_ref):
-        errors.append("run_archive_ref must be a non-empty string for a correlated producer report")
-    elif report_ref != selected_ref:
-        errors.append(f"run_archive_ref must exactly match the selected cohort {selected_ref!r}")
-
-    if valid_exit_code and exit_code != 0 and not has_error_finding:
-        errors.append("nonzero exit_code requires at least one error finding with a message")
-
-    return errors
+def _validate_subreport(data, selected_run_id):
+    return envelope.validate_v2_subreport(data, selected_run_id)
 
 
-def load_latest_subreports(since_ts=None, run_archive_ref=None):
-    """Load schema-valid producer reports from one exact non-empty run cohort."""
+def load_latest_subreports(since_ts=None, run_archive_ref=None, run_id=None):
+    """Load schema-valid producer reports from one exact run_id cohort.
+
+    Directory listing is path-sorted. Cohort identity is never the newest mtime.
+    """
     os.makedirs(REPORTS_DIR, exist_ok=True)
-    candidates = []
+    paths = []
+    payloads = []
     findings = []
     pattern = os.path.join(REPORTS_DIR, "*.json")
-    for f in sorted(glob.glob(pattern), key=os.path.getmtime, reverse=True):
+    for f in sorted(glob.glob(pattern)):
         if os.path.basename(f).startswith("combined-"):
             continue
         try:
@@ -277,72 +199,33 @@ def load_latest_subreports(since_ts=None, run_archive_ref=None):
                 "ref": os.path.relpath(f, ROOT),
             })
             continue
-        candidates.append((f, data))
+        paths.append(f)
+        payloads.append(data)
 
-    selected_ref = run_archive_ref
-    if selected_ref is None:
-        selected_ref = next(
-            (data.get("run_archive_ref") for _, data in candidates
-             if _has_run_archive_ref(data.get("run_archive_ref"))),
-            None,
-        )
-    elif not _has_run_archive_ref(selected_ref):
-        findings.append({
-            "category": "malformed-build-report",
-            "severity": "error",
-            "message": "Requested run_archive_ref must be a non-empty string; no reports were selected.",
-            "ref": "run_archive_ref",
-        })
-        return {}, findings
-
-    if selected_ref is None:
-        findings.append({
-            "category": "malformed-build-report",
-            "severity": "error",
-            "message": (
-                "No producer report has a non-empty run_archive_ref; identity-less reports "
-                "cannot form a correlated build."
-            ),
-            "ref": os.path.relpath(REPORTS_DIR, ROOT),
-        })
-        return {}, findings
-
-    by_kind = {}
-    for f, data in candidates:
-        if data.get("run_archive_ref") != selected_ref:
-            continue
-        validation_errors = _validate_subreport(data, selected_ref)
-        if validation_errors:
-            findings.append({
-                "category": "malformed-build-report",
-                "severity": "error",
-                "message": (
-                    f"{os.path.basename(f)} violates the build-report schema: "
-                    + "; ".join(validation_errors)
-                ),
-                "ref": os.path.relpath(f, ROOT),
-            })
-            continue
-        if since_ts is not None and data["started_at"] < since_ts:
-            continue
-        kind = data["report_kind"]
-        if kind not in by_kind:
-            by_kind[kind] = data
-    return by_kind, findings
+    requested_run_id = run_id or envelope.run_id_from_env()
+    selected, by_kind, select_findings = envelope.select_cohort_files(
+        paths,
+        payloads,
+        requested_run_id=requested_run_id,
+        requested_archive_ref=run_archive_ref,
+    )
+    findings.extend(select_findings)
+    if since_ts is not None:
+        by_kind = {
+            kind: data
+            for kind, data in by_kind.items()
+            if data.get("started_at", "") >= since_ts
+        }
+    return by_kind, findings, selected
 
 
-def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
-    """Combine one correlated producer-report cohort into a canonical report."""
+def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False, run_id=None):
+    """Combine one correlated producer-report cohort into a canonical v2 report."""
     requested_ref = run_archive_ref if run_archive_ref is not None else os.environ.get("RUN_ARCHIVE_REF")
-    subreports, load_findings = load_latest_subreports(run_archive_ref=requested_ref)
-    if _has_run_archive_ref(requested_ref):
-        ref = requested_ref
-    else:
-        ref = next(
-            (sub.get("run_archive_ref") for sub in subreports.values()
-             if _has_run_archive_ref(sub.get("run_archive_ref"))),
-            None,
-        )
+    subreports, load_findings, selected_run_id = load_latest_subreports(
+        run_archive_ref=requested_ref if _has_run_archive_ref(requested_ref) else None,
+        run_id=run_id,
+    )
     now = time.time()
     now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
     valid_started_at = []
@@ -361,12 +244,26 @@ def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
     all_findings = list(load_findings)
     by_stage = {}
     overall_exit_code = 1 if load_findings else 0
+    lineage_err = envelope.lineage_matches(subreports)
+    if lineage_err:
+        all_findings.append({
+            "category": "mixed-run-cohort",
+            "severity": "error",
+            "message": lineage_err,
+            "ref": selected_run_id or "lineage",
+        })
+        overall_exit_code = max(overall_exit_code, 1)
+
+    trigger = None
+    source_commit = tool_commit = config_commit = None
+    input_members = []
+    output_members = []
 
     for kind in REQUIRED_STAGES:
         sub = subreports.get(kind)
         if sub is None:
             by_stage[kind] = {}
-            cohort = f" for run_archive_ref {ref!r}" if ref is not None else " in a correlated run cohort"
+            cohort = f" for run_id {selected_run_id!r}" if selected_run_id else " in a correlated run cohort"
             all_findings.append({
                 "category": "missing-build-stage",
                 "severity": "error",
@@ -375,6 +272,17 @@ def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
             })
             overall_exit_code = max(overall_exit_code, 1)
             continue
+
+        trigger = sub.get("trigger")
+        source_commit = sub.get("source_commit")
+        tool_commit = sub.get("tool_commit")
+        config_commit = sub.get("config_commit")
+        for member in (sub.get("input_artifact_set") or {}).get("members") or []:
+            if member not in input_members:
+                input_members.append(member)
+        for member in (sub.get("output_artifact_set") or {}).get("members") or []:
+            if member not in output_members:
+                output_members.append(member)
 
         counts = sub.get("counts")
         if not isinstance(counts, dict):
@@ -419,8 +327,26 @@ def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
         elif exit_code != 0:
             overall_exit_code = max(overall_exit_code, exit_code)
 
+    if not input_members or not output_members:
+        all_findings.append({
+            "category": "incomplete-artifact-set",
+            "severity": "error",
+            "message": "combined report requires complete input and output artifact-set members from the stage lineage",
+            "ref": selected_run_id or "artifact-set",
+        })
+        overall_exit_code = max(overall_exit_code, 1)
+
+    archive_ref = None
+    for sub in subreports.values():
+        if _has_run_archive_ref(sub.get("run_archive_ref")):
+            archive_ref = sub.get("run_archive_ref")
+            break
+    if _has_run_archive_ref(requested_ref):
+        archive_ref = requested_ref
+
     combined = {
-        "schema_version": "1.0",
+        "schema_version": SCHEMA_VERSION,
+        "schema": envelope.SCHEMA_NAME,
         "report_kind": "combined",
         "tool": "build_report.py",
         "command": "build_report.py combine",
@@ -435,21 +361,26 @@ def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False):
             "overall_success": overall_exit_code == 0,
         },
         "findings": all_findings,
-        "run_archive_ref": ref,
+        "run_archive_ref": archive_ref,
+        "run_id": selected_run_id,
+        "source_commit": source_commit,
+        "tool_commit": tool_commit,
+        "config_commit": config_commit,
+        "trigger": trigger,
+        "success": overall_exit_code == 0,
     }
+    if input_members:
+        combined["input_artifact_set"] = envelope.artifact_set_from_members(input_members)
+    if output_members:
+        combined["output_artifact_set"] = envelope.artifact_set_from_members(output_members)
     if diagnostic_no_ledger:
-        # 0043-04 / DEC-0043-003: an expressly diagnostic cohort is not a
-        # publication candidate. Marking it in the combined report keeps that
-        # distinction machine-readable, so a *failed* ledger append (which is
-        # not diagnostic) still surfaces as a missing-ledger-entry finding.
         combined["diagnostic_no_ledger"] = True
 
-    out_file = os.path.join(REPORTS_DIR, f"combined-{int(now)}.json")
+    out_file = os.path.join(REPORTS_DIR, f"combined-{selected_run_id or int(now)}.json")
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(combined, f, ensure_ascii=False, indent=1)
 
     return combined, out_file
-
 
 def publication_provenance(ledger_path=None, rendered_run_archive_ref=None, previous=None):
     """Build the structured publication-provenance object for the page model (0043-04).
@@ -522,14 +453,26 @@ def write_page_provenance(ledger_path=None, page_model=None):
 def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path=None):
     """Generate the static page model for build-reports.html."""
     if combined_report is None:
-        # Load most recent combined report or build one
-        combined_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "combined-*.json")),
-                                key=os.path.getmtime, reverse=True)
-        if combined_files:
+        requested_run = envelope.run_id_from_env()
+        combined_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "combined-*.json")))
+        chosen = None
+        if requested_run:
+            for path in combined_files:
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        candidate = json.load(f)
+                except (OSError, UnicodeError, ValueError):
+                    continue
+                if isinstance(candidate, dict) and candidate.get("run_id") == requested_run:
+                    chosen = candidate
+                    break
+        elif len(combined_files) == 1:
             with open(combined_files[0], encoding="utf-8") as f:
-                combined_report = json.load(f)
+                chosen = json.load(f)
+        if chosen is None:
+            combined_report, _ = combine_reports(run_archive_ref, run_id=requested_run)
         else:
-            combined_report, _ = combine_reports(run_archive_ref)
+            combined_report = chosen
 
     stage_counts = (combined_report.get("counts") or {}).get("by_stage", {})
     overall_success = (combined_report.get("counts") or {}).get("overall_success", False)
@@ -719,13 +662,16 @@ def main(argv=None):
     args = list(sys.argv[1:] if argv is None else argv)
     cmd = args[0] if args else "combine"
     ref = None
+    run_id = None
     use_ledger = "--no-ledger" not in args
     for a in args:
         if a.startswith("--run-archive-ref="):
             ref = a.split("=", 1)[1]
+        if a.startswith("--run-id="):
+            run_id = a.split("=", 1)[1]
 
     if cmd == "combine":
-        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger)
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger, run_id=run_id)
         print(f"Aggregierter Build-Report geschrieben: {out} (Exit-Code {combined['exit_code']})")
         exit_code = combined["exit_code"]
         if use_ledger:
@@ -739,7 +685,7 @@ def main(argv=None):
         print(f"Publikations-Provenienz im Seitenmodell aktualisiert: {target}")
         return 0
     if cmd in ("publish", "page"):
-        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger)
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger, run_id=run_id)
         exit_code = combined["exit_code"]
         if use_ledger:
             ok, message = record_in_ledger(combined, out)
@@ -751,6 +697,11 @@ def main(argv=None):
         return exit_code
     if cmd == "mint-ref":
         print(mint_manual_run_archive_ref())
+        return 0
+    if cmd == "mint-run-id":
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from version_id import uuid7
+        print(uuid7())
         return 0
     print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish, provenance, mint-ref")
     return 2

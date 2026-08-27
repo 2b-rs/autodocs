@@ -19,6 +19,7 @@ sys.path.insert(0, str(TOOLS))
 
 import automation_safety as safety  # noqa: E402
 import build_report  # noqa: E402
+import build_report_envelope as envelope  # noqa: E402
 import link_verification_evidence as link_evidence  # noqa: E402
 
 # The campaign report path under test does not use PDF discovery.  Keep this
@@ -1502,22 +1503,43 @@ class AutomationSafetyDiscoveryTests(unittest.TestCase):
 class RemediationBehaviorTests(unittest.TestCase):
     @staticmethod
     def write_required_build_reports(directory, validate_exit=0):
+        commit = "c" * 40
+        run_id = "018f4a31-2606-7abc-8def-0123456789aa"
         for kind in build_report.REQUIRED_STAGES:
+            exit_code = validate_exit if kind == "validate" else 0
+            inputs = ["input-" + kind]
+            outputs = ["output-" + kind]
             payload = {
-                "schema_version": "1.0",
+                "schema_version": "2.0",
+                "schema": "build-report@v2",
                 "report_kind": kind,
                 "tool": kind,
                 "command": kind,
-                "inputs": [],
+                "inputs": inputs,
                 "started_at": "2026-08-16T00:00:00Z",
                 "finished_at": "2026-08-16T00:00:01Z",
                 "duration_s": 1,
-                "exit_code": validate_exit if kind == "validate" else 0,
-                "changed_artifacts": [],
+                "exit_code": exit_code if 0 <= exit_code <= 255 else 1,
+                "changed_artifacts": outputs,
                 "counts": {},
                 "findings": [],
-                "run_archive_ref": None,
+                "run_archive_ref": "output/run-archive/safety",
+                "run_id": run_id,
+                "source_commit": commit,
+                "tool_commit": commit,
+                "config_commit": commit,
+                "trigger": {"kind": "issue", "id": "0037-26.06"},
+                "input_artifact_set": envelope.artifact_set_from_members(
+                    envelope.members_for_paths(inputs, commit)
+                ),
+                "output_artifact_set": envelope.artifact_set_from_members(
+                    envelope.members_for_paths(outputs, commit)
+                ),
+                "success": exit_code == 0,
             }
+            if validate_exit == 256 and kind == "validate":
+                payload["exit_code"] = 256
+                payload["success"] = False
             (Path(directory) / (kind + ".json")).write_text(json.dumps(payload), encoding="utf-8")
 
     def test_link_evidence_scratch_inventory_never_deletes(self):
