@@ -1347,7 +1347,7 @@ HOW TO USE:
   - **Acceptance criteria:** Pin record/evidence/policy/prompt/model/config/input versions, issue/criterion/campaign/run, outputs and confidence/invalidation/supersession; give typed claims their own ID family and one-file persistence; adapt legacy traces with explicit unknown/legacy confidence and never invented prompts/models/runs.
   - **Definition of Done:** Tests trace a claim through source evidence and AI run, invalidate on each governed input change, preserve prior claims/history, and reject fabricated or bare-ID provenance.
 
-- [ ] **0037-27.02** PREREQ: 0037-27.02:0037-17, 0037-27.02:0037-19 Extend diagram source and rendered SVG workflows with manifests and common provenance.
+- [p] **0037-27.02** PREREQ: 0037-27.02:0037-17, 0037-27.02:0037-19 Extend diagram source and rendered SVG workflows with manifests and common provenance. **Claim:** `TODO-philippa-detmer-0037-27.02-20260827T123900Z.md` (`owner_token: agent:philippa-detmer-0037-27.02:0037-27.02:20260827T123900Z`).
   - **Acceptance criteria:** Record source model/labels/theme/tool/config, issue/criterion/run, rendered artifact digest, language, invalidation/regeneration relation, and source-to-SVG members; do not inject uncontrolled provenance into SVG markup.
   - **Definition of Done:** Source/label/theme changes mark exact SVGs stale, regeneration links replacements, and queries trace canonical and translated diagrams bidirectionally.
 
