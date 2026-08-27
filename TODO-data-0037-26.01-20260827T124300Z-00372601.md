@@ -17,8 +17,9 @@
 - must_not: Acceptance; Integration review; merge to main; DONE.md; lift 0037-16 STOP; take 0037-16/19/20/38/42 product; 0037-27.* or sibling 0037-26.* files; Feature ownership; 0019/0041/0044/0047; foreign `[p]`; root checkout; memory_append; push
 - caveat: tip sits on 0037-16 R2 candidate not main; rejected checkpoint requires rebase
 - startup_review: assigned item; 0037-19 still `[x]` on start_base; implementation start prereqs 0037-17 and 0037-19 terminal on this tip; Mail ACCEPT is not ownership
-- next_step: persist this claim, mark `TODO.md` 0037-26.01 `[p]`, implement envelope adapter + producer hooks + integration tests
+- next_step: product commit, then bookkeeping `[x]` with REF
 
 ## Progress
 
-- 2026-08-27T12:43:00Z worktree created at `.worktrees/0037-26.01` from `2064704457`. Claim SHA / branch tip to be recorded after first commit (mailbox reply unavailable once claimed).
+- 2026-08-27T12:43:00Z worktree created at `.worktrees/0037-26.01` from `2064704457`. Claim SHA `b660ea5ef2415dbd03f7894d5dc9e529e0548f90`. WT `/Users/tobias.anton/devel/autodocs/.worktrees/0037-26.01`.
+- Validation: `python3 _src/tests/test_scrape_extraction_provenance.py` 8/8 OK; py_compile of family producers OK.

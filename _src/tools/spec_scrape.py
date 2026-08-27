@@ -2608,6 +2608,37 @@ def phase_urls(modules=None, out_dir="output/pdf") -> str:
 
 
 
+def _apply_scrape_provenance(args, report: dict, producer: str, input_paths) -> dict:
+    """Attach 0037-26.01 envelope when --record-provenance is set."""
+    if not getattr(args, "record_provenance", False):
+        return report
+    import scrape_extraction_provenance as sep
+    files = {}
+    for raw in input_paths or []:
+        path = Path(raw)
+        if not path.is_file():
+            continue
+        try:
+            rel = path.resolve().relative_to(Path(ROOT)).as_posix()
+        except ValueError:
+            rel = path.name
+        files[rel] = path.read_bytes()
+    root = Path(args.provenance_root) if args.provenance_root else Path(ROOT)
+    commit = sep.git_head_commit(Path(ROOT))
+    kwargs = dict(
+        store_root=root,
+        source_commit=commit,
+        tool_commit=commit,
+        config_commit=commit,
+        issue=args.provenance_issue,
+        criterion=args.provenance_criterion,
+        campaign=args.provenance_campaign,
+    )
+    if producer == "spec_scrape.phase_crosscheck":
+        return sep.record_crosscheck_report(report, pdf_files=files, **kwargs)
+    return sep.record_traceability_write_report(report, input_files=files, **kwargs)
+
+
 def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
     """Compare or explicitly rebuild canonical RS metadata in existing records."""
     sources = [rec for rec in scraped.values() if str(rec.get("id", "")).upper().startswith("RS_")]
@@ -2647,6 +2678,13 @@ def main(argv=None) -> int:
     ap.add_argument("--cross-backend", action="append",
                     choices=["pypdf", "mupdf", "builtin"],
                     help="Backends fuer crosscheck (Standard: pypdf + builtin)")
+    ap.add_argument("--record-provenance", action="store_true",
+                    help="Persist scrape-report common provenance envelope (0037-26.01)")
+    ap.add_argument("--provenance-root", type=Path, default=None,
+                    help="Repository root for provenance/ (default: this checkout)")
+    ap.add_argument("--provenance-issue", default="0037-26.01")
+    ap.add_argument("--provenance-criterion", default="AC-scrape-envelope")
+    ap.add_argument("--provenance-campaign", default="scrape-extraction")
     args = ap.parse_args(argv)
 
     if args.phase == "urls":
@@ -2726,6 +2764,7 @@ def main(argv=None) -> int:
         report = phase_crosscheck(pdfs, args.pattern, args.id, args.include_refs,
                                   tuple(args.cross_backend or ("pypdf", "builtin")),
                                   prefixes, args.limit)
+        report = _apply_scrape_provenance(args, report, "spec_scrape.phase_crosscheck", pdfs)
         print(json.dumps(report, ensure_ascii=False, indent=1))
         db_bad = any(r["diffs"] or r["namespace_diffs"] or r["only_in_pdf"]
                      for r in report["database"].values())
@@ -2749,6 +2788,9 @@ def main(argv=None) -> int:
             if args.progress:
                 print("[trace] writing records ...", file=sys.stderr, flush=True)
             write_report = write_traceability_records(rows, args.campaign)
+            write_report = _apply_scrape_provenance(
+                args, write_report, "spec_scrape.write_traceability_records", pdfs
+            )
             if args.progress:
                 print("[trace] write done", file=sys.stderr, flush=True)
         if args.json:

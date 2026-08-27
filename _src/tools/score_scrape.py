@@ -235,6 +235,11 @@ def main() -> int:
     parser.add_argument("--ref-kind", choices=["tag", "release-branch"], default="release-branch")
     parser.add_argument("--commit", default="0000000000000000000000000000000000000000", help="Git commit SHA")
     parser.add_argument("--output", type=Path, help="Optional JSON output file path")
+    parser.add_argument("--record-provenance", action="store_true")
+    parser.add_argument("--provenance-root", type=Path, default=None)
+    parser.add_argument("--provenance-issue", default="0037-26.01")
+    parser.add_argument("--provenance-criterion", default="AC-score-scrape-envelope")
+    parser.add_argument("--provenance-campaign", default="scrape-extraction")
 
     args = parser.parse_args()
     if not args.repo_path.is_dir():
@@ -248,13 +253,41 @@ def main() -> int:
         source_commit=args.commit
     )
     records = scraper.scrape()
+    payload = {"records": records, "count": len(records)}
+    if args.record_provenance:
+        import scrape_extraction_provenance as sep
+        files = {}
+        for rec in records:
+            rel = (rec.get("provenance") or {}).get("source_path")
+            if not rel:
+                continue
+            src = args.repo_path / rel
+            if src.is_file():
+                files[Path(rel).as_posix()] = src.read_bytes()
+        if not files:
+            files["score-scrape/empty-input.txt"] = b""
+        root = args.provenance_root or Path(__file__).resolve().parents[2]
+        commit = sep.git_head_commit(root) if (root / ".git").exists() or (root / ".git").is_file() else args.commit
+        if len(commit) != 40:
+            commit = args.commit if len(args.commit) == 40 else "0" * 40
+        payload = sep.record_score_scrape_report(
+            payload,
+            input_files=files,
+            store_root=root,
+            source_commit=commit,
+            tool_commit=commit,
+            config_commit=commit,
+            issue=args.provenance_issue,
+            criterion=args.provenance_criterion,
+            campaign=args.provenance_campaign,
+        )
 
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps({"records": records, "count": len(records)}, indent=2, ensure_ascii=False), encoding="utf-8")
+        args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"Scraped {len(records)} records to {args.output}")
     else:
-        print(json.dumps({"records": records, "count": len(records)}, indent=2, ensure_ascii=False))
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
 
     return 0
 
