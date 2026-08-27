@@ -1408,6 +1408,214 @@ class AutomationSafetyPolicyTests(unittest.TestCase):
         self.assertTrue(any("without glob" in error["message"] for error in report["policy_errors"]))
 
 
+@unittest.skipUnless(shutil.which("git"), "git is required for owner_ref reachability checks")
+class AutomationSafetyProvenClosedTests(unittest.TestCase):
+    """DEC-0038-007: the `proven-closed` disposition kind.
+
+    AE-2 baselines for this claim-bound change (AE-1 applies: it alters
+    blocking/gate classification): pre-change baseline is any commit before
+    this Task's own substantive commit on branch
+    `automation-safety-proven-closed-impl-belanna-20260827T2251Z`; candidate
+    is that commit. `test_falsification_terminal_owner_task_now_passes_only_with_proof`
+    is the AE-3 red-on-baseline/green-on-candidate case: on the pre-change
+    checker the identical policy entry (terminal `owner_task`, no proof
+    anchor) fails exactly as `AutomationSafetyPolicyTests
+    .test_terminal_owner_task_expires_disposition` already proves; on the
+    candidate it fails without `kind: proven-closed` + proof anchoring and
+    passes with them, for the same terminal task state.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        (self.root / "TODO.md").write_text(
+            "- [x] **0038-14** Deferred mutator classification.\n",
+            encoding="utf-8",
+        )
+        (self.root / "DONE.md").write_text("# Done\n", encoding="utf-8")
+        self.script = self.root / "danger.py"
+        self.script.write_text(
+            "import subprocess\nsubprocess.run(['git', 'commit', '-m', 'unsafe'])\n",
+            encoding="utf-8",
+        )
+        initial = safety.scan_explicit_paths(self.root, ["danger.py"], language="python")
+        self.critical = [item for item in initial["findings"] if item["severity"] == "critical"]
+        self.assertTrue(self.critical)
+        self.policy_path = self.root / "policy.json"
+
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
+        commit = subprocess.run(
+            ["git", "-c", "user.email=test@example.com", "-c", "user.name=Test",
+             "commit", "-q", "-m", "proof commit"],
+            cwd=self.root, check=True,
+        )
+        self.assertEqual(commit.returncode, 0)
+        rev = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=self.root,
+            stdout=subprocess.PIPE, check=True,
+        )
+        self.proof_commit = rev.stdout.decode("utf-8").strip()
+        self.assertRegex(self.proof_commit, r"^[0-9a-f]{40}$")
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def write_policy(self, findings, **overrides):
+        entries = []
+        for finding in findings:
+            entry = {
+                "path": finding["path"],
+                "rule": finding["rule"],
+                "line": finding["line"],
+                "symbol": finding["symbol"],
+                "evidence_sha256": finding["evidence_sha256"],
+                "kind": "proven-closed",
+                "rationale": "The dedicated lifecycle Task owns this exact legacy risk.",
+                "owner_task": "0038-14",
+                "expected_safe_invariant": "No affected source line changes before the owner Task replaces it.",
+                "owner_ref": self.proof_commit,
+                "proof_summary": "Fault-injection-proven safe: test_danger_script_is_inert asserts no real git mutation occurs; see proof commit diff.",
+            }
+            entry.update(overrides)
+            entries.append(entry)
+        self.policy_path.write_text(
+            json.dumps({"schema_version": 1, "dispositions": entries}),
+            encoding="utf-8",
+        )
+
+    def scan(self):
+        return safety.scan_explicit_paths(
+            self.root,
+            ["danger.py"],
+            language="python",
+            policy_path=self.policy_path,
+            today=datetime.date(2026, 8, 27),
+        )
+
+    def test_falsification_terminal_owner_task_now_passes_only_with_proof(self):
+        # Red on baseline (proven by AutomationSafetyPolicyTests
+        # .test_terminal_owner_task_expires_disposition: identical terminal
+        # owner_task state, kind blocking-task, fails). Green on candidate:
+        # same terminal owner_task, kind proven-closed with real proof anchor.
+        self.write_policy(self.critical)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
+        self.assertEqual(report["counts"]["unresolved_critical"], 0)
+        self.assertEqual(report["counts"]["disposed_critical"], len(self.critical))
+        self.assertFalse(any("terminal" in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_missing_owner_ref_rejected(self):
+        self.write_policy(self.critical, owner_ref=None)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("owner_ref must be a full 40-character lowercase commit SHA"
+                             in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_malformed_owner_ref_rejected(self):
+        self.write_policy(self.critical, owner_ref="not-a-sha")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("owner_ref must be a full 40-character lowercase commit SHA"
+                             in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_unreachable_owner_ref_rejected(self):
+        # Well-formed 40-hex SHA, but no such object exists in this repo --
+        # the mechanical reachability check (not just format) must reject it.
+        self.write_policy(self.critical, owner_ref="a" * 40)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("is not a reachable commit" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_short_proof_summary_rejected(self):
+        self.write_policy(self.critical, proof_summary="too short")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("proof_summary must be a substantive" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_missing_proof_summary_rejected(self):
+        self.write_policy(self.critical, proof_summary=None)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("proof_summary must be a substantive" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_non_proven_closed_kind_rejects_owner_ref_field(self):
+        # owner_ref/proof_summary must not silently ride along on the other
+        # two kinds -- would be a confusing, effectively-inert field.
+        self.write_policy(
+            self.critical,
+            kind="blocking-task",
+            expires_after_task="0038-14",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("only permitted for kind proven-closed" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_expires_after_task_not_required_for_proven_closed(self):
+        # CON-01/CON-02: proven-closed's expiry model is reachability +
+        # digest match, not a live/terminal Task -- no expires_after_task or
+        # expires_on field should be required at all.
+        self.write_policy(self.critical)
+        report = self.scan()
+        self.assertNotIn("expires_after_task and/or expires_on is required",
+                          [error["message"] for error in report["policy_errors"]])
+
+    def test_adjacent_terminal_expires_after_task_not_rejected_for_proven_closed(self):
+        # CON-02 explicitly waives BOTH owner_task and expires_after_task
+        # terminal checks for proven-closed, not just owner_task.
+        self.write_policy(self.critical, expires_after_task="0038-14")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
+        self.assertFalse(any("terminal" in error["message"] for error in report["policy_errors"]))
+
+    def test_policy_stale_still_triggers_for_proven_closed_on_digest_mismatch(self):
+        # CON-03: "Unmatched digests must still correctly trigger
+        # POLICY_STALE." This is the check that must never be weakened --
+        # the whole point of anchoring to evidence_sha256 is that a later
+        # source edit re-opens the finding regardless of disposition kind.
+        self.write_policy(self.critical)
+        self.script.write_text(
+            "import subprocess\nsubprocess.run(['git', 'commit', '-m', 'changed'])\n",
+            encoding="utf-8",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any(error["code"] == "POLICY_STALE" for error in report["policy_errors"]))
+        self.assertGreater(report["counts"]["unresolved_critical"], 0)
+
+    def test_reachability_cache_is_memoized_across_entries(self):
+        # Two proven-closed entries citing the same owner_ref should only
+        # need the commit to exist once; exercised indirectly by pointing
+        # two distinct findings at the same proof commit and confirming both
+        # pass (would also work unmemoized, but this is the shape DEC-0038-007's
+        # 33-entry migration relies on for reasonable runtime).
+        entries = []
+        for finding in self.critical:
+            entries.append({
+                "path": finding["path"],
+                "rule": finding["rule"],
+                "line": finding["line"],
+                "symbol": finding["symbol"],
+                "evidence_sha256": finding["evidence_sha256"],
+                "kind": "proven-closed",
+                "rationale": "The dedicated lifecycle Task owns this exact legacy risk.",
+                "owner_task": "0038-14",
+                "expected_safe_invariant": "No affected source line changes before the owner Task replaces it.",
+                "owner_ref": self.proof_commit,
+                "proof_summary": "Fault-injection-proven safe, duplicated to exercise the reachability cache path.",
+            })
+        self.policy_path.write_text(
+            json.dumps({"schema_version": 1, "dispositions": entries}),
+            encoding="utf-8",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
+
+
 @unittest.skipUnless(shutil.which("git"), "git is required for tracked discovery")
 class AutomationSafetyDiscoveryTests(unittest.TestCase):
     def test_live_discovery_scans_only_tracked_non_fixture_automation(self):
