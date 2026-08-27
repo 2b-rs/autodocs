@@ -18,7 +18,22 @@ Remeasured `0037-19` at `2064704457`: marker `[x]`, REF `c2f198e19`. Prerequisit
 
 ## Next step
 
-Implement deterministic provenance writers for rebuild/migration/version snapshots plus DoD fixtures; then `[x]` with real REF. No Acceptance.
+Complete. Implementation terminal at REF `553232536`. Claim retained (`state: [x]`); no Acceptance.
+
+## Progress
+
+- Claim committed `e32a0c2e7`.
+- Substantive REF `553232536a337e30a7b9c6703be8274584f8d0bf`.
+- Validation: `python3 -m unittest _src.tests.test_db_snapshot -v` → 5/5 OK.
+
+## Adversarial completion evidence
+
+- **AE-2 baselines:** pre-change `2064704457f98c66fb6f77ad3c263415864fe2ff`; candidate `553232536a337e30a7b9c6703be8274584f8d0bf`.
+- **AE-3:** `test_partial_snapshot_is_not_promoted` — baseline has no `_src/tools/db_snapshot.py` (`git cat-file -e 2064704457:_src/tools/db_snapshot.py` exit 128); candidate 5/5 green including crash-before-rename leaving `list_live()==[]`.
+- **AE-4 adjacent:** (1) input/config/schema drift → `SNAP-DRIFT`; (2) identical inputs/config → same `semantic_identity`, config digest change → different identity.
+- **AE-5:** `test_record_set_identity_is_order_independent_inputs_are_not`; oracle: sorted record-set identity invariant, ordered input sequence is identity-bearing; domain n in 1..5 plus AB/BA pair; executed 5 + 2.
+
+**state:** [x]
 
 ## User prompt (verbatim)
 
