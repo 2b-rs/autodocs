@@ -16,3 +16,10 @@
 ## Result
 
 The appointment and its separation/activation boundary are appended to `DEC-0037-005`. The record does not itself satisfy the scope-review gate; Jadzia must independently review the affected reach. Governance is not operative until an expressly assigned Integrator lands this candidate on `main`.
+
+## Integration authorization
+
+- authority: current-user Management decision `agent-inbox:1787859066622-3c81a344`
+- assigned Integrator: `geordi`
+- scope: integrate this exact governance candidate to `main` after the mandatory candidate hygiene and root preflight checks, then run the mandatory post-merge root preflight
+- excluded: scope-review authorship, product implementation, Task Acceptance, unrelated candidates, push, publication, external effects, and any further item
