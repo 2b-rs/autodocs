@@ -1331,7 +1331,7 @@ HOW TO USE:
   - **Acceptance criteria:** Record schema/migration/tool/config commits, ordered input artifact sets, changed/added/deleted records and versions, output snapshot/tree digest, trigger issue/finding/campaign/run, and rollback/rebuild relation; identical inputs/config produce the same semantic identity.
   - **Definition of Done:** Rebuild/migration fixtures detect input/config/schema drift, trace each changed record to evidence and trigger, prove deterministic identity, and prevent partial snapshot promotion.
 
-- [ ] **0037-26.05** PREREQ: 0037-26.05:0037-17, 0037-26.05:0037-19 Extend curation items, queues, decisions, and findings with the common provenance envelope.
+- [p] **0037-26.05** PREREQ: 0037-26.05:0037-17, 0037-26.05:0037-19 Extend curation items, queues, decisions, and findings with the common provenance envelope. Claim: `TODO-worf-0037-26.05-20260827T124500Z-c7e4a91b.md` (`owner_token: agent:worf-0037-26-05:0037-26.05:20260827T124500Z-c7e4a91b`).
   - **Acceptance criteria:** Link stable finding, source report/evidence/version, issue/criterion/run/campaign, claim/queue transitions, curator decision/authority, applied change, invalidation/supersession, and published result without treating requester identity as approval.
   - **Definition of Done:** Lifecycle integration tests trace open→claim→decision→apply/publish and reject unauthorized, stale, duplicate, fabricated, or orphaned transitions.
 
