@@ -52,6 +52,48 @@ def load_page_index():
     return mapping
 
 
+def _normalize_queue_item(raw, state_dir, queue_name):
+    """Keep direct canonical items intact while adapting legacy flags.
+
+    Task 0019-07 queues S-Core exceptions as ``curation-item@v1`` directly so
+    their source/version links and rejected-retention state survive reporting.
+    The physical ``done`` directory means ``applied`` only for legacy flags;
+    a canonical item carries its own valid persisted status and lifecycle state.
+    """
+    direct = raw.get("schema") == curation_item.CURATION_ITEM_SCHEMA
+    if direct:
+        item = dict(raw)
+    elif queue_name == "curation":
+        item = curation_item.from_curation_flag(raw)
+    else:
+        item = curation_item.from_review_flag(raw)
+    if not direct:
+        if state_dir == "claimed":
+            item["status"] = "claimed"
+        elif state_dir == "done":
+            item["status"] = "applied"
+    item["display_status"] = item.get("lifecycle_state") or item.get("status", "open")
+    return item
+
+
+def _evidence_links(item):
+    """Render direct S-Core record/version/source links without inventing URLs."""
+    links = item.get("links") or {}
+    parts = []
+    record = links.get("record")
+    if isinstance(record, str) and record:
+        parts.append(f'<a href="{_esc(record)}">Record</a>')
+    versions = links.get("versions")
+    if isinstance(versions, list) and versions:
+        version_links = ", ".join(f'<a href="{_esc(url)}">Version</a>' for url in versions if isinstance(url, str) and url)
+        if version_links:
+            parts.append(version_links)
+    source = links.get("source")
+    if isinstance(source, str) and source:
+        parts.append(f'<a href="{_esc(source)}">Source locator</a>')
+    return " · ".join(parts) if parts else "-"
+
+
 def collect_all_curation_items():
     """Scan both review-queue and curation-queue and normalize into curation-item@v1."""
     items = []
@@ -68,11 +110,7 @@ def collect_all_curation_items():
                 raw = json.loads(f.read_text(encoding="utf-8"))
             except Exception:
                 continue
-            item = curation_item.from_curation_flag(raw)
-            if state_dir == "claimed":
-                item["status"] = "claimed"
-            elif state_dir == "done":
-                item["status"] = "applied"
+            item = _normalize_queue_item(raw, state_dir, "curation")
             cid = item.get("canonical_id", "")
             raw_id = raw.get("id", "")
             target_page = page_map.get(raw_id) or page_map.get(cid.split("/")[-1])
@@ -91,11 +129,7 @@ def collect_all_curation_items():
                 raw = json.loads(f.read_text(encoding="utf-8"))
             except Exception:
                 continue
-            item = curation_item.from_review_flag(raw)
-            if state_dir == "claimed":
-                item["status"] = "claimed"
-            elif state_dir == "done":
-                item["status"] = "applied"
+            item = _normalize_queue_item(raw, state_dir, "review")
             cid = item.get("canonical_id", "")
             raw_id = raw.get("id", "")
             target_page = page_map.get(raw_id) or page_map.get(cid.split("/")[-1])
@@ -113,9 +147,9 @@ def generate_curation_report_page(items):
         json.dump({"schema": "curation-items-export@v1", "count": len(items), "items": items}, f, ensure_ascii=False, indent=1)
 
     total_count = len(items)
-    open_count = sum(1 for x in items if x.get("status") == "open")
-    claimed_count = sum(1 for x in items if x.get("status") == "claimed")
-    applied_count = sum(1 for x in items if x.get("status") == "applied")
+    open_count = sum(1 for x in items if x.get("display_status", x.get("status")) == "open")
+    claimed_count = sum(1 for x in items if x.get("display_status", x.get("status")) == "claimed")
+    applied_count = sum(1 for x in items if x.get("display_status", x.get("status")) in {"applied", "published"})
 
     html_parts = []
     html_parts.append("""<style>
@@ -139,6 +173,7 @@ def generate_curation_report_page(items):
 .cr-badge-accepted{color:#166534;background:#dcfce7;border-radius:999px;padding:.12rem .5rem;font-weight:600}
 .cr-badge-rejected{color:#991b1b;background:#fee2e2;border-radius:999px;padding:.12rem .5rem;font-weight:600}
 .cr-badge-superseded{color:#4b5563;background:#f3f4f6;border-radius:999px;padding:.12rem .5rem;font-weight:600}
+.cr-badge-published{color:#166534;background:#dcfce7;border-radius:999px;padding:.12rem .5rem;font-weight:600}
 .cr-trust-self_declared{color:#92400e;background:#fef3c7;border-radius:999px;padding:.08rem .45rem;font-size:.78rem}
 .cr-trust-github_authenticated{color:#166534;background:#dcfce7;border-radius:999px;padding:.08rem .45rem;font-size:.78rem}
 </style>""")
@@ -168,7 +203,7 @@ def generate_curation_report_page(items):
 <summary><strong>Offene Kurations- & Review-Items ({open_count})</strong></summary>
 <div class="cr-table-wrap">
 <table class="cr-table">
-<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Feld</th><th>Status</th><th>Anfragende(r)</th><th>Quelle / Seite</th><th>Vorschlag / Rationale</th></tr></thead>
+<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Feld</th><th>Status</th><th>Anfragende(r)</th><th>Record / Version / Quelle</th><th>Queue-Datei</th><th>Vorschlag / Rationale</th></tr></thead>
 <tbody>""")
 
     def _requester_cell(it):
@@ -189,17 +224,18 @@ def generate_curation_report_page(items):
                 f'<small>Transport: <code>{transport}</code></small><br>'
                 f'<small>Target version: <code>{target_version}</code></small>')
 
-    open_items = [x for x in items if x.get("status") == "open"]
+    open_items = [x for x in items if x.get("display_status", x.get("status")) == "open"]
     if open_items:
         for it in open_items:
             cid = _esc(it.get("canonical_id", "-"))
             proj = _esc(it.get("project", "-"))
             kind = _esc(it.get("item_kind", "-"))
             fld = _esc(it.get("field", "-"))
-            st = it.get("status", "open")
+            st = it.get("display_status", it.get("status", "open"))
             badge = f'<span class="cr-badge-{st}">{_esc(st)}</span>'
             tpage = it.get("target_page")
             link_html = f'<a href="{_esc(tpage)}">{_esc(cid)}</a>' if tpage else cid
+            evidence_links = _evidence_links(it)
             src_file = _esc(it.get("source_file", "-"))
             prop_val = _esc(it.get("proposed_value") or it.get("current_value") or "-")
             if len(prop_val) > 120:
@@ -207,9 +243,9 @@ def generate_curation_report_page(items):
             raw_rid = it.get("canonical_id", "").split("/")[-1]
             row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''
             requester_html = _requester_cell(it)
-            html_parts.append(f"<tr{row_id_attr}><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td>{requester_html}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
+            html_parts.append(f"<tr{row_id_attr}><td><code>{link_html}</code></td><td>{proj}</td><td>{kind}</td><td><code>{fld}</code></td><td>{badge}</td><td>{requester_html}</td><td>{evidence_links}</td><td><small>{src_file}</small></td><td>{prop_val}</td></tr>")
     else:
-        html_parts.append("<tr><td colspan=\"8\">Keine offenen Kurations-Items vorhanden.</td></tr>")
+        html_parts.append("<tr><td colspan=\"9\">Keine offenen Kurations-Items vorhanden.</td></tr>")
     html_parts.append("</tbody></table></div></details>")
 
     # 0021-06: previously only status in (claimed, applied) was shown here,
@@ -217,27 +253,28 @@ def generate_curation_report_page(items):
     # meant a review-request's accepted or rejected lifecycle outcome (the
     # Definition of Done's central assertion) never appeared on this report
     # at all. Show every non-open status.
-    other_items = [x for x in items if x.get("status") != "open"]
+    other_items = [x for x in items if x.get("display_status", x.get("status")) != "open"]
     html_parts.append(f"""<details class="cr-section">
 <summary><strong>In Bearbeitung & Abgeschlossen ({len(other_items)})</strong></summary>
 <div class="cr-table-wrap">
 <table class="cr-table">
-<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Status</th><th>Bearbeiter</th><th>Quelle</th></tr></thead>
+<thead><tr><th>Kanonische ID</th><th>Projekt</th><th>Art</th><th>Status</th><th>Bearbeiter</th><th>Record / Version / Quelle</th><th>Queue-Datei</th></tr></thead>
 <tbody>""")
     if other_items:
         for it in other_items:
             cid = _esc(it.get("canonical_id", "-"))
             proj = _esc(it.get("project", "-"))
             kind = _esc(it.get("item_kind", "-"))
-            st = it.get("status", "-")
+            st = it.get("display_status", it.get("status", "-"))
             badge = f'<span class="cr-badge-{st}">{_esc(st)}</span>'
             curator = _requester_cell(it) if it.get("item_kind") == "review-request" else _esc(it.get("curator", "-"))
+            evidence_links = _evidence_links(it)
             src_file = _esc(it.get("source_file", "-"))
             raw_rid = it.get("canonical_id", "").split("/")[-1]
             row_id_attr = f' id="{_esc(raw_rid)}"' if raw_rid else ''
-            html_parts.append(f"<tr{row_id_attr}><td><code>{cid}</code></td><td>{proj}</td><td>{kind}</td><td>{badge}</td><td>{curator}</td><td><small>{src_file}</small></td></tr>")
+            html_parts.append(f"<tr{row_id_attr}><td><code>{cid}</code></td><td>{proj}</td><td>{kind}</td><td>{badge}</td><td>{curator}</td><td>{evidence_links}</td><td><small>{src_file}</small></td></tr>")
     else:
-        html_parts.append("<tr><td colspan=\"6\">Keine weiteren Items vorhanden.</td></tr>")
+        html_parts.append("<tr><td colspan=\"7\">Keine weiteren Items vorhanden.</td></tr>")
     html_parts.append("</tbody></table></div></details>")
 
     page_data = {

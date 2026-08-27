@@ -1,0 +1,255 @@
+{
+  "schema": "score-import-profile@v1",
+  "profile_id": "eclipse-score-v0.6.0",
+  "profile_version": "1.0.0",
+  "project": "ECLIPSE/S-CORE",
+  "release": "v0.6.0",
+  "no_moving_ref_fallback": true,
+  "source_bindings": [
+    {
+      "repository": "score",
+      "repository_url": "https://github.com/eclipse-score/score.git",
+      "release_ref": "v0.6.0",
+      "ref_kind": "tag",
+      "resolved_commit": "db1f5bb87ad7f41b40b6aca4b96a889d8798735e",
+      "content_roots": [
+        "docs"
+      ],
+      "identity_metadata_selectors": [
+        "MODULE.bazel",
+        "**/BUILD",
+        "**/BUILD.bazel"
+      ]
+    },
+    {
+      "repository": "process_description",
+      "repository_url": "https://github.com/eclipse-score/process_description.git",
+      "release_ref": "v1.6.0",
+      "ref_kind": "tag",
+      "resolved_commit": "04e9cd30bc657033a764dbb75f07e03e4ccbbc12",
+      "content_roots": [
+        "process"
+      ],
+      "identity_metadata_selectors": []
+    }
+  ],
+  "identity_metadata_boundary": {
+    "rule": "MODULE.bazel and non-root BUILD/BUILD.bazel selectors are read only to derive the canonical module/component identity. They do not widen the documentation content roots or permit arbitrary code import.",
+    "snapshot_note": "The BOM pins complete git archives. Task 0019-02 owns retention and inventory linkage for these metadata locators."
+  },
+  "defaults": {
+    "status": {
+      "state": "invalid/to-be-confirmed",
+      "reason": "release-pinned S-Core source requires curation before factual publication",
+      "campaign": "eclipse-score-v0.6.0"
+    },
+    "traceability": {
+      "required": true,
+      "mode": "source-locator",
+      "required_evidence": [
+        "repository",
+        "repository_url",
+        "release_ref",
+        "ref_kind",
+        "resolved_commit",
+        "locator.path",
+        "locator.line_start",
+        "locator.line_end",
+        "locator.anchor",
+        "source_content_sha256"
+      ]
+    },
+    "history_template": {
+      "campaign": "eclipse-score-v0.6.0",
+      "from": null,
+      "to": "invalid/to-be-confirmed",
+      "reason": "initial release-pinned S-Core import candidate",
+      "actor": "tool",
+      "date": "assigned by the materializing importer"
+    },
+    "curation_draft": {
+      "schema": "curation-item@v1",
+      "origin": "score-scraper",
+      "lifecycle_state": "discovered",
+      "physical_queue_writer": "0019-07",
+      "publication": "prohibited until a curator-authorized valid status exists"
+    }
+  },
+  "artifact_classes": [
+    {
+      "source_class": "score-module-manifest",
+      "repository": "score",
+      "kind": "module",
+      "selector": {
+        "mode": "exact-path",
+        "paths": [
+          "MODULE.bazel"
+        ],
+        "scope": "identity-metadata"
+      },
+      "mandatory_fields": [
+        "module_name",
+        "title"
+      ],
+      "id_strategy": "module_name",
+      "field_mapping": {
+        "id": "fields.module_name",
+        "title": "fields.title",
+        "description": "fields.description",
+        "provenance.source_path": "locator.path"
+      }
+    },
+    {
+      "source_class": "score-bazel-package",
+      "repository": "score",
+      "kind": "component",
+      "selector": {
+        "mode": "bazel-package",
+        "paths": [
+          "**/BUILD",
+          "**/BUILD.bazel"
+        ],
+        "exclude_paths": [
+          "BUILD",
+          "BUILD.bazel"
+        ],
+        "scope": "identity-metadata"
+      },
+      "mandatory_fields": [
+        "module_name",
+        "package_path",
+        "title"
+      ],
+      "id_strategy": "module_name.package_path_dots",
+      "field_mapping": {
+        "id": "fields.module_name + '.' + fields.package_path with '/' replaced by '.'",
+        "title": "fields.title",
+        "description": "fields.description",
+        "provenance.source_path": "locator.path"
+      }
+    },
+    {
+      "source_class": "score-design-need",
+      "repository": "score",
+      "kind": "design-doc",
+      "selector": {
+        "mode": "sphinx-need-document",
+        "root": "docs",
+        "extensions": [
+          ".rst",
+          ".md"
+        ],
+        "directive_forms": [
+          "reStructuredText .. <need-type>::",
+          "MyST ```{<need-type>}"
+        ],
+        "requires_explicit_need_id": true,
+        "scope": "content-root"
+      },
+      "mandatory_fields": [
+        "need_id",
+        "need_type",
+        "title"
+      ],
+      "id_strategy": "need_id",
+      "field_mapping": {
+        "id": "fields.need_id",
+        "title": "fields.title",
+        "sphinx_need_type": "fields.need_type",
+        "description": "fields.description",
+        "provenance.source_path": "locator.path"
+      }
+    },
+    {
+      "source_class": "process-sphinx-need",
+      "repository": "process_description",
+      "kind": "process-doc",
+      "selector": {
+        "mode": "sphinx-need-document",
+        "root": "process",
+        "extensions": [
+          ".rst",
+          ".md"
+        ],
+        "directive_forms": [
+          "reStructuredText .. <need-type>::",
+          "MyST ```{<need-type>}"
+        ],
+        "requires_explicit_need_id": true,
+        "scope": "content-root"
+      },
+      "mandatory_fields": [
+        "need_id",
+        "need_type",
+        "title"
+      ],
+      "id_strategy": "need_id",
+      "field_mapping": {
+        "id": "fields.need_id",
+        "title": "fields.title",
+        "sphinx_need_type": "fields.need_type",
+        "description": "fields.description",
+        "provenance.source_path": "locator.path"
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "REJECT-UNSUPPORTED-SOURCE-CLASS",
+      "action": "reject",
+      "reason": "The artifact class is outside the four declared S-Core classes."
+    },
+    {
+      "id": "REJECT-MOVING-REF",
+      "action": "reject",
+      "reason": "A moving ref or non-tag source ref is not a release-pinned input."
+    },
+    {
+      "id": "REJECT-SOURCE-PIN",
+      "action": "reject",
+      "reason": "Repository URL, release tag, or resolved commit differs from the profile binding."
+    },
+    {
+      "id": "REJECT-INVALID-LOCATOR",
+      "action": "reject",
+      "reason": "The source locator is missing, unsafe, or lacks a bounded path/line/anchor reference."
+    },
+    {
+      "id": "REJECT-SELECTOR-MISS",
+      "action": "reject",
+      "reason": "The locator does not match the class selector."
+    },
+    {
+      "id": "QUEUE-MISSING-MANDATORY-FIELD",
+      "action": "queue",
+      "reason": "A selected artifact lacks source-backed required data or a source digest."
+    },
+    {
+      "id": "REVIEW-MALFORMED-NEED-ID",
+      "action": "review",
+      "reason": "A documentation artifact lacks a valid explicit sphinx-needs ID; no synthetic ID is minted."
+    },
+    {
+      "id": "REVIEW-DUPLICATE-CANONICAL",
+      "action": "review",
+      "reason": "A canonical identity was already observed in this import batch."
+    },
+    {
+      "id": "REVIEW-CONFLICTING-CANONICAL",
+      "action": "review",
+      "reason": "The same canonical identity has contradictory source content or provenance."
+    },
+    {
+      "id": "QUEUE-INITIAL-CURATION",
+      "action": "queue",
+      "reason": "A structurally valid candidate remains invalid/to-be-confirmed until curation."
+    }
+  ],
+  "non_goals": [
+    "No fallback to main, HEAD, a branch, or an unpinned commit.",
+    "No extraction adapter, source snapshot, archive inventory, database write, queue-file write, curation decision, status promotion, or publication.",
+    "No inference of undocumented APIs, production certification, or Automotive SPICE capability claim.",
+    "No synthetic sphinx-needs ID and no silent duplicate merge or conflict overwrite.",
+    "No canonical content-hash/version-ID minting; Task 0019-05 owns normalized record materialization."
+  ]
+}
