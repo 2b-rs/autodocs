@@ -1309,7 +1309,7 @@ HOW TO USE:
   - **Acceptance criteria:** Recompute source/schema/tool/config/artifact digests; apply each stage's declared byte or semantic comparator; fail on missing/stale/hand-edited output, fallback translation, undeclared file, differing repeated clean run, or unexplained working-tree change; retain run/stage reports externally rather than injecting a report into the candidate it validates.
   - **Definition of Done:** Two clean full-tree runs satisfy declared determinism and mutation guards; negative fixtures catch stale/missing stages, semantic-only normalization, byte drift, undeclared files, and self-referential report cycles.
 
-- [ ] **0037-26** PREREQ: 0037-26:0037-26.01, 0037-26:0037-26.02, 0037-26:0037-26.03, 0037-26:0037-26.04, 0037-26:0037-26.05, 0037-26:0037-26.06 Complete provenance-envelope integration for extraction, campaign, evidence/database, curation, and build producers.
+- [p] **0037-26** PREREQ: 0037-26:0037-26.01, 0037-26:0037-26.02, 0037-26:0037-26.03, 0037-26:0037-26.04, 0037-26:0037-26.05, 0037-26:0037-26.06 Complete provenance-envelope integration for extraction, campaign, evidence/database, curation, and build producers. Claim: `TODO-programmer-0037-26-20260827T131800Z-p003726.md` (`owner_token: agent:programmer:0037-26:20260827T131800Z-p003726`).
   - **Acceptance criteria:** Every producer in the exact file/call-site/schema inventory approved by `0037-37` records issue/criterion/run/campaign inputs and output artifact sets without inventing legacy history; each Subtask changes only its enumerated producer family and all adapters use the shared schemas and query indexes.
   - **Definition of Done:** All six Subtasks pass cross-producer reverse-trace and backward-disposition tests.
 
