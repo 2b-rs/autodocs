@@ -4,6 +4,7 @@
 from dataclasses import asdict, dataclass
 import argparse
 import datetime as dt
+import fnmatch
 import hashlib
 import importlib.util
 import json
@@ -85,6 +86,22 @@ LEGAL_TRANSITIONS = {
 }
 ACTIVE_CLAIM_STATES = frozenset({"active", "renewing", "proposed", "takeover-pending"})
 SIDECAR_SUFFIXES = ("/claim.json", "/closure.json", "/approval.json")
+DAG_SCHEMA = "issue-regeneration-dag@v1"
+DEFAULT_DAG_PATH = "docs/pipeline/issue-derived-artifacts-v1.json"
+REQUIRED_STAGE_IDS = (
+    "validate-canonical",
+    "build-internal-catalog",
+    "build-public-projection",
+    "build-graphs",
+    "build-page-models",
+    "render-html",
+    "render-reports",
+)
+GENERATION_ID_RE = re.compile(
+    r"(?:generation_id|data-generation-id)\"?\s*[:=]\s*[\"']?(sha256:[0-9a-f]{64}|[0-9a-f]{64})")
+UUID7_EMBEDDED = re.compile(
+    r"[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", re.I)
+VOLATILE_JSON_KEYS = frozenset({"run_id", "execution_run_id", "uuid", "generated_at", "mtime"})
 
 
 @dataclass(frozen=True, order=True)
@@ -1082,10 +1099,317 @@ def _check_projections(diagnostics, projections, restricted_tokens):
         del redacted_uris
 
 
+def _file_sha256(data):
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
+def _strip_volatile(value):
+    if isinstance(value, dict):
+        return {key: _strip_volatile(item) for key, item in sorted(value.items())
+                if key not in VOLATILE_JSON_KEYS}
+    if isinstance(value, list):
+        return [_strip_volatile(item) for item in value]
+    return value
+
+
+def _content_generation_id(input_digests, schema_digest, tool_digest, config_digest):
+    payload = _canonical_json({
+        "inputs": list(input_digests),
+        "schema": schema_digest,
+        "tool": tool_digest,
+        "config": config_digest,
+    })
+    return _file_sha256(payload)
+
+
+def _load_dag_bytes(path):
+    try:
+        return Path(path).read_bytes()
+    except OSError as exc:
+        raise ConfigurationError(f"IV0900: cannot read DAG manifest {path}: {exc}")
+
+
+def _dag_structural_diagnostics(manifest, path, *, required_ids=REQUIRED_STAGE_IDS):
+    diagnostics = []
+    if not isinstance(manifest, dict):
+        diagnostics.append(Diagnostic("IV0938", "DAG manifest is not an object", path))
+        return diagnostics, {}, {}
+    if manifest.get("schema") != DAG_SCHEMA:
+        diagnostics.append(Diagnostic(
+            "IV0938", f"DAG schema must be {DAG_SCHEMA}", path, field="schema"))
+    stages = manifest.get("stages")
+    if not isinstance(stages, list) or not stages:
+        diagnostics.append(Diagnostic("IV0938", "DAG stages missing", path, field="stages"))
+        return diagnostics, {}, {}
+    ids = []
+    by_id = {}
+    output_owner = {}
+    for index, stage in enumerate(stages):
+        if not isinstance(stage, dict):
+            diagnostics.append(Diagnostic(
+                "IV0938", f"DAG stage {index} is not an object", path, field="stages"))
+            continue
+        stage_id = stage.get("id")
+        loc = f"stages[{index}]"
+        if not isinstance(stage_id, str) or not stage_id:
+            diagnostics.append(Diagnostic("IV0938", "stage id missing", path, field=loc))
+            continue
+        if stage_id in by_id:
+            diagnostics.append(Diagnostic(
+                "IV0937", f"duplicate DAG stage id {stage_id}", path, field="id", item=stage_id))
+        ids.append(stage_id)
+        by_id[stage_id] = stage
+        writer = stage.get("sole_writer")
+        if writer != stage_id:
+            diagnostics.append(Diagnostic(
+                "IV0936", f"undeclared or mismatched sole writer {writer!r}", path,
+                item=stage_id, field="sole_writer"))
+        argv = stage.get("argv")
+        if (not isinstance(argv, list) or not argv
+                or any(not isinstance(arg, str) or not arg for arg in argv)
+                or any("\n" in arg or ";" in arg or "|" in arg or "&" in arg for arg in argv
+                       if isinstance(arg, str))):
+            diagnostics.append(Diagnostic(
+                "IV0936", "argv must be a non-empty string array without a shell string",
+                path, item=stage_id, field="argv"))
+        outputs = stage.get("outputs") or []
+        if not isinstance(outputs, list) or not outputs:
+            diagnostics.append(Diagnostic(
+                "IV0936", "stage outputs missing", path, item=stage_id, field="outputs"))
+            outputs = []
+        for output in outputs:
+            if not isinstance(output, str):
+                continue
+            previous = output_owner.get(output)
+            if previous is not None and previous != stage_id:
+                diagnostics.append(Diagnostic(
+                    "IV0937", f"output {output} has multiple writers {previous} and {stage_id}",
+                    path, item=stage_id, field="outputs"))
+            output_owner[output] = stage_id
+    ephemeral_outputs = {
+        output for stage in by_id.values()
+        for output in (stage.get("outputs") or [])
+        if isinstance(output, str) and stage.get("retention") == "ephemeral"
+    }
+    for stage_id, stage in by_id.items():
+        outputs = [item for item in (stage.get("outputs") or []) if isinstance(item, str)]
+        for entry in stage.get("inputs") or []:
+            if not isinstance(entry, dict):
+                continue
+            glob = entry.get("glob")
+            kind = entry.get("kind")
+            if kind == "derived" and isinstance(glob, str) and glob not in output_owner:
+                diagnostics.append(Diagnostic(
+                    "IV0944", f"derived input has no exact producer: {glob}",
+                    path, item=stage_id, field="inputs"))
+            if isinstance(glob, str) and glob in outputs:
+                diagnostics.append(Diagnostic(
+                    "IV0942", f"self-consuming output used as input: {glob}",
+                    path, item=stage_id, field="inputs"))
+            if isinstance(glob, str) and glob in ephemeral_outputs and "report" in glob:
+                diagnostics.append(Diagnostic(
+                    "IV0942", f"self-consuming or report input {glob}",
+                    path, item=stage_id, field="inputs"))
+    present = set(by_id)
+    for required in required_ids:
+        if required not in present:
+            diagnostics.append(Diagnostic(
+                "IV0938", f"missing required stage {required}", path, field="stages"))
+    for stage_id, stage in by_id.items():
+        depends = stage.get("depends_on") or []
+        if not isinstance(depends, list):
+            continue
+        for dependency in depends:
+            if dependency == stage_id:
+                diagnostics.append(Diagnostic(
+                    "IV0935", f"stage depends on itself: {stage_id}", path,
+                    item=stage_id, field="depends_on"))
+            elif dependency not in by_id:
+                diagnostics.append(Diagnostic(
+                    "IV0935", f"unknown dependency {dependency}", path,
+                    item=stage_id, field="depends_on"))
+    visiting = {}
+    state = {}
+
+    def visit(node, stack):
+        visiting[node] = True
+        state[node] = 1
+        for dependency in by_id.get(node, {}).get("depends_on") or []:
+            if dependency not in by_id:
+                continue
+            if visiting.get(dependency):
+                cycle = stack + [dependency]
+                diagnostics.append(Diagnostic(
+                    "IV0935", "DAG cycle: " + " -> ".join(cycle), path,
+                    item=node, field="depends_on"))
+            elif state.get(dependency, 0) == 0:
+                visit(dependency, stack + [dependency])
+        visiting[node] = False
+        state[node] = 2
+
+    for node in sorted(by_id):
+        if state.get(node, 0) == 0:
+            visit(node, [node])
+    return diagnostics, by_id, output_owner
+
+
+def _extract_generation_id(text):
+    match = GENERATION_ID_RE.search(text)
+    if not match:
+        return None
+    value = match.group(1)
+    if value.startswith("sha256:"):
+        return value
+    return "sha256:" + value
+
+
+def _read_generated_file(root, relative):
+    path = Path(root) / relative
+    if not path.is_file():
+        return None
+    return path.read_bytes()
+
+
+def _generated_view_diagnostics(generated_root, by_id, output_owner, path):
+    diagnostics = []
+    root = Path(generated_root).resolve()
+    if not root.is_dir():
+        diagnostics.append(Diagnostic(
+            "IV0939", f"generated root does not exist: {root}", path))
+        return diagnostics
+    declared = set(output_owner)
+    group_observed = {}
+    for stage_id, stage in by_id.items():
+        input_digests = []
+        for entry in stage.get("inputs") or []:
+            if not isinstance(entry, dict):
+                continue
+            glob = entry.get("glob")
+            if not isinstance(glob, str):
+                continue
+            matched = []
+            if (root / glob).is_file():
+                matched.append(glob)
+            else:
+                for found in root.rglob("*"):
+                    if found.is_file() and fnmatch.fnmatch(
+                            found.relative_to(root).as_posix(), glob):
+                        matched.append(found.relative_to(root).as_posix())
+            for relative in sorted(matched):
+                payload = _read_generated_file(root, relative)
+                if payload is not None:
+                    input_digests.append(_file_sha256(payload))
+        schema_digest = _file_sha256(str(stage.get("validator", "")).encode("utf-8"))
+        tool_digest = _file_sha256(_canonical_json(stage.get("argv") or []))
+        config_digest = _file_sha256(str(stage.get("id", "")).encode("utf-8"))
+        expected = _content_generation_id(input_digests, schema_digest, tool_digest, config_digest)
+        promotion = stage.get("promotion_group")
+        for output in stage.get("outputs") or []:
+            payload = _read_generated_file(root, output)
+            if payload is None:
+                continue
+            text = payload.decode("utf-8", "replace")
+            observed = _extract_generation_id(text)
+            if observed is None:
+                diagnostics.append(Diagnostic(
+                    "IV0939", f"hand-edited or missing generation id: {output}",
+                    output, item=stage_id, field="generation_id"))
+            elif observed != expected:
+                diagnostics.append(Diagnostic(
+                    "IV0939", f"stale generated output {output}",
+                    output, item=stage_id, field="generation_id"))
+            if observed and promotion:
+                group_observed.setdefault(promotion, set()).add(observed)
+            if UUID7_EMBEDDED.search(text) and stage.get("determinism") != "volatile-external-run-manifest":
+                diagnostics.append(Diagnostic(
+                    "IV0940", f"volatile UUIDv7 embedded in deterministic artifact {output}",
+                    output, item=stage_id, field="generation_id"))
+            determinism = stage.get("determinism")
+            if determinism == "byte":
+                if observed is None:
+                    diagnostics.append(Diagnostic(
+                        "IV0941", f"byte comparator cannot locate generation id in {output}",
+                        output, item=stage_id, field="determinism"))
+                else:
+                    try:
+                        parsed_byte = json.loads(payload)
+                    except json.JSONDecodeError:
+                        parsed_byte = None
+                    if parsed_byte is not None:
+                        canonical = _canonical_json(parsed_byte).encode("utf-8")
+                        if payload != canonical:
+                            diagnostics.append(Diagnostic(
+                                "IV0941", f"byte comparator mismatch for {output}",
+                                output, item=stage_id, field="determinism"))
+            elif determinism == "semantic":
+                try:
+                    parsed = json.loads(payload)
+                except json.JSONDecodeError:
+                    parsed = None
+                if isinstance(parsed, dict) and parsed.get("generation_id") and observed:
+                    stripped = _strip_volatile(parsed)
+                    if "generation_id" in parsed and stripped.get("generation_id") != parsed.get("generation_id"):
+                        diagnostics.append(Diagnostic(
+                            "IV0941", f"semantic comparator failed for {output}",
+                            output, item=stage_id, field="determinism"))
+    for promotion, observed_ids in group_observed.items():
+        if len(observed_ids) > 1:
+            diagnostics.append(Diagnostic(
+                "IV0940", f"mixed content-generation IDs in promotion group {promotion}",
+                path, field="promotion_group"))
+    scan_prefixes = ("data/", "output/issue-", "issues/_views/")
+    for found in root.rglob("*"):
+        if not found.is_file():
+            continue
+        relative = found.relative_to(root).as_posix()
+        if not relative.startswith(scan_prefixes):
+            continue
+        text = found.read_text(encoding="utf-8", errors="replace")
+        if _extract_generation_id(text) and relative not in declared:
+            if any(fnmatch.fnmatch(relative, pattern) for pattern in declared):
+                continue
+            diagnostics.append(Diagnostic(
+                "IV0943", f"unexplained generated file {relative}",
+                relative, field="generation_id"))
+    return diagnostics
+
+
+def _dag_and_generated_checks(*, repo, source, dag_path, generated_root, required_ids=None):
+    diagnostics = []
+    if dag_path is None:
+        return diagnostics
+    path = str(dag_path)
+    if source == "staged-index":
+        try:
+            raw = _git(repo, "show", f":{DEFAULT_DAG_PATH}")
+        except ConfigurationError:
+            raw = _load_dag_bytes(path)
+    else:
+        raw = _load_dag_bytes(path)
+    try:
+        manifest = json.loads(raw.decode("utf-8") if isinstance(raw, bytes) else raw)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        diagnostics.append(Diagnostic("IV0938", f"DAG manifest is not JSON: {exc}", path))
+        return diagnostics
+    structural, by_id, output_owner = _dag_structural_diagnostics(
+        manifest, path,
+        required_ids=REQUIRED_STAGE_IDS if required_ids is None else required_ids)
+    diagnostics.extend(structural)
+    if generated_root is not None:
+        diagnostics.extend(_generated_view_diagnostics(
+            generated_root, by_id, output_owner, path))
+    return diagnostics
+
+
 def validate(*, repo=ROOT, source="working-tree", root=None,
              authoritative_root=None, compare_head=True, now=None,
-             provenance_root=None, projection_path=None):
+             provenance_root=None, projection_path=None,
+             dag_path=None, generated_root=None, required_stage_ids=None):
     repo = Path(repo).resolve()
+    if source == "candidate":
+        source = "working-tree"
     if source == "working-tree":
         files = _working_files(root or repo / "issues")
     elif source == "staged-index":
@@ -1114,6 +1438,9 @@ def validate(*, repo=ROOT, source="working-tree", root=None,
     diagnostics.extend(_feature_closure_checks(current))
     if provenance_root is not None:
         diagnostics.extend(_provenance_checks(current, provenance_root, projection_path, repo, clock))
+    diagnostics.extend(_dag_and_generated_checks(
+        repo=repo, source=source, dag_path=dag_path, generated_root=generated_root,
+        required_ids=required_stage_ids))
     return sorted(set(diagnostics)), current
 
 
@@ -1132,12 +1459,15 @@ def result_payload(diagnostics, source, item_count):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", default=str(ROOT))
-    parser.add_argument("--source", choices=("working-tree", "staged-index"), default="working-tree")
-    parser.add_argument("--root", help="explicit candidate issue root for working-tree mode")
+    parser.add_argument("--source", choices=("working-tree", "staged-index", "candidate"),
+                        default="working-tree")
+    parser.add_argument("--root", help="explicit candidate issue root for working-tree/candidate mode")
     parser.add_argument("--authoritative-root", help="explicit read-only baseline issue root (default: HEAD)")
     parser.add_argument("--no-compare-head", action="store_true")
     parser.add_argument("--provenance-root", help="explicit provenance tree (events/runs/findings/views)")
     parser.add_argument("--projection", help="explicit public projection JSON path")
+    parser.add_argument("--dag", help="issue-regeneration-dag@v1 manifest path")
+    parser.add_argument("--generated-root", help="root of generated views to freshness-check")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
     try:
@@ -1145,7 +1475,8 @@ def main(argv=None):
                                        authoritative_root=args.authoritative_root,
                                        compare_head=not args.no_compare_head,
                                        provenance_root=args.provenance_root,
-                                       projection_path=args.projection)
+                                       projection_path=args.projection,
+                                       dag_path=args.dag, generated_root=args.generated_root)
         payload = result_payload(diagnostics, args.source, len(parsed))
         if args.json:
             print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
