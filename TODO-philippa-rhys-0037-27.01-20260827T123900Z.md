@@ -65,3 +65,4 @@ Keep going until complete or blocked. Return claim path, SHAs, validation.
 - Deliverables: `ai_workflow_persist.py`, `claim:` ID family, hermetic tests (14) + typed_claim (10).
 - Validation: `python3 _src/tests/test_ai_workflow_persist.py -v` OK (14); `python3 _src/tests/test_typed_claim.py` OK (10).
 - Implementation terminal at `f5c059ba8`. No Acceptance. No push.
+- Additive schema_bind after [x] product: bind persist writers to existing `provenance/_schema` (run/finding/event/artifact-set/typed-reference). Do not amend `f5c059ba8`. New commit after bookkeeping `9c1a1c86f`. Persona `philippa-rhys-0037-27.01-schemabind`.

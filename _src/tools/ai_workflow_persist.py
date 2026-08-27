@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
 _TOOLS = Path(__file__).resolve().parent
+_ROOT = _TOOLS.parent.parent
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
@@ -36,6 +37,15 @@ import version_id as vid  # noqa: E402
 SCHEMA = "typed-claim-persistence@v1"
 RUN_SCHEMA = "ai-workflow-run@v1"
 ADAPTER = "legacy-ai-trace@v1"
+# Bind writers to 0037-17/19 schema files; do not fork local copies.
+REPO_SCHEMA_DIR = _ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
 GOVERNED_PINS = ("record", "evidence", "policy", "prompt", "model", "config", "input")
 SHA256_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 UUIDV7_RE = ps.UUIDV7_RE
@@ -53,6 +63,55 @@ class AIWorkflowPersistError(Exception):
 
 def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise AIWorkflowPersistError(
+            "AWP-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(
+    kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None
+) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise AIWorkflowPersistError(
+            "AWP-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise AIWorkflowPersistError(
+                "AWP-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
+
+
+def _validate_nested_typed_refs(kind: str, record: Mapping[str, Any]) -> None:
+    refs: list = []
+    if kind == "run":
+        refs.append(record.get("producer"))
+        refs.extend(record.get("inputs") or [])
+        refs.extend(record.get("outputs") or [])
+    elif kind == "event":
+        refs.extend([record.get("source"), record.get("target"), record.get("run")])
+    elif kind == "finding":
+        refs.extend([record.get("subject"), record.get("detected_during")])
+        refs.extend(record.get("evidence") or [])
+    elif kind == "artifact-set":
+        refs.append(record.get("producer"))
+    for item in refs:
+        if isinstance(item, Mapping):
+            validate_against_bound_schema("typed-reference", item)
 
 
 def _canonical_bytes(value: Any) -> bytes:
@@ -117,6 +176,7 @@ def typed_ref(
         obj["digest"] = _require_digest(digest, f"{kind} digest")
     elif require_digest:
         raise AIWorkflowPersistError("AWP-BARE-ID", f"{kind}:{rest} is a bare id without digest")
+    validate_against_bound_schema("typed-reference", obj)
     return obj
 
 
@@ -297,7 +357,7 @@ class AIWorkflowPersist:
             "inputs": inputs,
             "outputs": list(outputs or []),
         }
-        created = self.store.create_run(payload)
+        created = self._put_bound("run", self.store.create_run, payload)
         envelope = {
             "schema": RUN_SCHEMA,
             "run_id": run_id,
@@ -536,44 +596,58 @@ class AIWorkflowPersist:
         source = typed_ref("artifact", f"claim:{claim_id.split(':', 1)[1]}", digest=digest, require_digest=True)
         # artifact URI uses artifact:<rest>; keep claim uuid as identity in uri path.
         source["uri"] = f"artifact:{claim_id}"
-        try:
-            self.store.create_event(
-                {
-                    "schema_version": ps.SCHEMA_VERSION,
-                    "event_id": event_id,
-                    "occurred_at": occurred_at,
-                    "relation": "produced-by",
-                    "source": source,
-                    "target": typed_ref("run", run_id),
-                    "environment": record.get("environment") or "development-test",
-                    "classification": record.get("classification") or "internal",
-                    "run": typed_ref("run", run_id),
-                }
-            )
-        except ps.ProvenanceError as exc:
-            raise AIWorkflowPersistError(exc.code, exc.message) from exc
+        self._put_bound(
+            "event",
+            self.store.create_event,
+            {
+                "schema_version": ps.SCHEMA_VERSION,
+                "event_id": event_id,
+                "occurred_at": occurred_at,
+                "relation": "produced-by",
+                "source": source,
+                "target": typed_ref("run", run_id),
+                "environment": record.get("environment") or "development-test",
+                "classification": record.get("classification") or "internal",
+                "run": typed_ref("run", run_id),
+            },
+        )
 
     def _write_invalidation_event(self, record: Mapping[str, Any], run_id: str, occurred_at: str) -> None:
         claim_id = record["claim"]["claim_id"]
         digest = digest_bytes(_canonical_bytes(record["claim"]))
         source = typed_ref("artifact", claim_id, digest=digest, require_digest=True)
         source["uri"] = f"artifact:{claim_id}"
+        self._put_bound(
+            "event",
+            self.store.create_event,
+            {
+                "schema_version": ps.SCHEMA_VERSION,
+                "event_id": vid.uuid7(),
+                "occurred_at": occurred_at,
+                "relation": "invalidated-by",
+                "source": source,
+                "target": typed_ref("run", run_id),
+                "environment": record.get("environment") or "development-test",
+                "classification": record.get("classification") or "internal",
+                "run": typed_ref("run", run_id),
+            },
+        )
+
+    def persist_finding(self, payload: Mapping[str, Any]) -> Dict[str, Any]:
+        return self._put_bound("finding", self.store.create_finding, payload)
+
+    def persist_artifact_set(self, payload: Mapping[str, Any]) -> Dict[str, Any]:
+        return self._put_bound("artifact-set", self.store.create_artifact_set, payload)
+
+    def _put_bound(self, kind: str, create_fn, payload: Mapping[str, Any]) -> Dict[str, Any]:
         try:
-            self.store.create_event(
-                {
-                    "schema_version": ps.SCHEMA_VERSION,
-                    "event_id": vid.uuid7(),
-                    "occurred_at": occurred_at,
-                    "relation": "invalidated-by",
-                    "source": source,
-                    "target": typed_ref("run", run_id),
-                    "environment": record.get("environment") or "development-test",
-                    "classification": record.get("classification") or "internal",
-                    "run": typed_ref("run", run_id),
-                }
-            )
+            created = create_fn(payload)
         except ps.ProvenanceError as exc:
             raise AIWorkflowPersistError(exc.code, exc.message) from exc
+        record = created["record"]
+        validate_against_bound_schema(kind, record)
+        _validate_nested_typed_refs(kind, record)
+        return created
 
     def _exclusive_put(self, path: Path, record: Mapping[str, Any]) -> None:
         payload = _canonical_bytes(record) + b"\n"

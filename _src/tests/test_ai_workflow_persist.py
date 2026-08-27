@@ -386,6 +386,21 @@ class AIWorkflowPersistTests(unittest.TestCase):
         self.assertEqual(set(ids), set(listed))
         self.assertEqual(len(listed), 8)
 
+    def test_writers_bind_existing_provenance_schema(self):
+        self.assertTrue((ROOT / "provenance/_schema/run-v1.schema.json").is_file())
+        self.assertTrue((ROOT / "provenance/_schema/finding-v1.schema.json").is_file())
+        self.assertTrue((ROOT / "provenance/_schema/provenance-event-v1.schema.json").is_file())
+        self.assertTrue((ROOT / "provenance/_schema/artifact-set-v1.schema.json").is_file())
+        self.assertTrue((ROOT / "provenance/_schema/typed-reference-v1.schema.json").is_file())
+        self._run()
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{RUN_A}.json").read_text(encoding="utf-8")
+        )
+        awp.validate_against_bound_schema("run", run)
+        with self.assertRaises(awp.AIWorkflowPersistError) as ctx:
+            awp.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "AWP-SCHEMA-DEVIATION")
+
 
 if __name__ == "__main__":
     unittest.main()
