@@ -8,7 +8,8 @@ task: 0037-27.01
 feature: 0037
 branch: 0037-27.01
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0037-27.01
-state: [p]
+state: [x]
+substantive_ref: f5c059ba8bb8cb9dc1ee4a8d7b422fe149a8edd4
 base: branch 0037-19 @ 2064704457f98c66fb6f77ad3c263415864fe2ff
 named_expected_ancestor: F-0037-16-R2-01 / cfa4b8f2c (verified ancestor of 0037-19)
 prereq_0037-17: ancestor 78f1e3fd2 (already merged; no extra merge)
@@ -63,3 +64,4 @@ Keep going until complete or blocked. Return claim path, SHAs, validation.
 - Worktree created from 0037-19 @ 206470445.
 - Deliverables: `ai_workflow_persist.py`, `claim:` ID family, hermetic tests (14) + typed_claim (10).
 - Validation: `python3 _src/tests/test_ai_workflow_persist.py -v` OK (14); `python3 _src/tests/test_typed_claim.py` OK (10).
+- Implementation terminal at `f5c059ba8`. No Acceptance. No push.
