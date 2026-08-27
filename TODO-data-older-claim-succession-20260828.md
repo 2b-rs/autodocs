@@ -4,9 +4,10 @@ item_id: data-older-claim-succession
 owner: data
 owner_token: agent:data:data-older-claim-succession:1787869988940-3549ff1a
 request_id: 1787869988940-3549ff1a
-state: [p]
-status: [p]
-coordination_state: active
+state: [x]
+status: [x]
+coordination_state: complete
+lease_active: false
 capability_class: privileged
 process_role: Architect
 execution_authority: direct
@@ -81,10 +82,22 @@ share one historical owner token and must both be preserved.
 ## Progress
 
 - Management Decision A recorded in the paired decision/audit dossier.
-- Exact 14-record classification and lifecycle normalization are in progress.
+- Exact 14-record classification and lifecycle normalization completed at
+  substantive REF `1638b496728e8c95c24746df0983176fca207fca`.
+- Result: six previously terminal records, seven coordination-complete records
+  with stale primary fields, one inactive duplicate-provenance record, and zero
+  genuinely unfinished claims.
+- Validation: exact 16-path candidate, all 14 authorized older records, all
+  evidence REFs reachable, duplicate owner token preserved in exactly two
+  files, `git diff --check` pass, process document doctor exit `0` with 32
+  findings and no finding on the audit dossier, and legacy task doctor expected
+  repository-wide exit `1` with 878 disclosed findings.
+- No product, backlog marker, Acceptance, checkpoint, integration, `main`,
+  external state, automation-safety incident, ownership token, or path outside
+  the assignment changed.
 
 ## Next step
 
-Complete exact-scope and diagnostic validation, commit the bounded lifecycle
-normalization, then finalize this claim with the substantive REF and report the
-candidate without advancing `main`.
+Report exact candidate tip and evidence to Project Lead `jean-luc` for separate
+integration handling. This Architect does not advance `main` or retain any old
+claim lease.
