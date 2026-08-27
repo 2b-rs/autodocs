@@ -1339,7 +1339,7 @@ HOW TO USE:
   - **Acceptance criteria:** Migrate build-report `1.0` explicitly; require shared run ID, source/tool/config commits, exact stage inputs/outputs, stable finding IDs, issue/criterion/campaign trigger, and success/failure; combining reports requires the same run/artifact lineage and all required stages, never latest mtime.
   - **Definition of Done:** Integration tests reject mixed runs, missing/malformed stages, unstable findings, incomplete artifact sets, and self-validating report injection and support reverse trace from final report to trigger/input.
 
-- [ ] **0037-27** PREREQ: 0037-27:0037-27.01, 0037-27:0037-27.02, 0037-27:0037-27.03, 0037-27:0037-27.04, 0037-27:0037-27.05 Complete provenance integration for AI claims, diagrams, guides, i18n, page composition, and HTML artifacts.
+- [p] **0037-27** PREREQ: 0037-27:0037-27.01, 0037-27:0037-27.02, 0037-27:0037-27.03, 0037-27:0037-27.04, 0037-27:0037-27.05 Complete provenance integration for AI claims, diagrams, guides, i18n, page composition, and HTML artifacts. Claim: `TODO-philippa-saru-0037-27-20260827T132500Z.md` (`owner_token: agent:philippa-saru-0037-27:0037-27:20260827T132500Z`).
   - **Acceptance criteria:** Each artifact family and call site from the exact inventory approved by `0037-37` records inputs/invalidation/regeneration causes under the shared envelope; each Subtask changes only its enumerated family and generated-file metadata stays in manifests, not uncontrolled HTML/SVG injection.
   - **Definition of Done:** All five Subtasks support forward/reverse trace from language-specific HTML to exact issue, trigger, source versions, and producer run.
 
