@@ -112,6 +112,10 @@ def main():
                 if not gleich:
                     raise ValueError(f'nicht informationsgleich: {d}')
             ziel.write_text(neu + '\n', encoding='utf-8')
+            from diagram_provenance import maybe_record_from_env
+            maybe_record_from_env(
+                src, neu, language='de', repository_root=D.ROOT, svg_path=ziel,
+            )
             ok += 1
         except Exception as ex:
             fail += 1
