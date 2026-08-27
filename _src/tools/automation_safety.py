@@ -57,6 +57,8 @@ _GATE_WORDS = ("validate", "pytest", "unittest", "test", "check", "ls-tree")
 _WILDCARD_RE = re.compile(r"[*?\[]")
 _TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_COMMIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_DISPOSITION_KINDS = ("blocking-task", "narrow-suppression", "proven-closed")
 _PASS_RE = re.compile(r"\bPASS(?:ED)?\b", re.IGNORECASE)
 _FUNCTION_START_RE = re.compile(
     r"^\s*(?:(?:function\s+)([-A-Za-z0-9_:.+@%]+)(?:\s*\(\s*\))?"
@@ -2753,6 +2755,32 @@ def _load_repository_policy(
     return policy, errors
 
 
+def _commit_reachable(root: Path, sha: str, cache: Dict[str, bool]) -> bool:
+    """Return True iff `sha` names a commit object reachable in `root`'s object database.
+
+    Memoized per validation run (`cache`) since the same proof commit is
+    typically cited by many `proven-closed` entries. Uses `git cat-file -e`
+    with the `^{commit}` peel operator so a tag or blob with a matching
+    hex prefix cannot be mistaken for a commit; DEC-0038-007 CON-03 requires
+    this to remain a real mechanical check, never a rubber stamp.
+    """
+    if sha in cache:
+        return cache[sha]
+    try:
+        result = subprocess.run(
+            ["git", "cat-file", "-e", "%s^{commit}" % sha],
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except OSError:
+        cache[sha] = False
+        return False
+    reachable = result.returncode == 0
+    cache[sha] = reachable
+    return reachable
+
 
 def _validate_dispositions(
     root: Path,
@@ -2765,6 +2793,7 @@ def _validate_dispositions(
     states = _task_states(root)
     today = today or _datetime.date.today()
     finding_keys = {(item.path, item.rule, item.line, item.symbol, item.evidence_sha256) for item in findings}
+    reachability_cache: Dict[str, bool] = {}
 
     raw_dispositions = policy.get("dispositions")
     if not isinstance(raw_dispositions, list):
@@ -2785,6 +2814,9 @@ def _validate_dispositions(
         kind = disposition.get("kind")
         expiry_task = disposition.get("expires_after_task")
         expires_on = disposition.get("expires_on")
+        owner_ref = disposition.get("owner_ref")
+        proof_summary = disposition.get("proof_summary")
+        proven_closed = kind == "proven-closed"
 
         entry_errors = []
         if not isinstance(path, str) or path.startswith("/") or ".." in Path(path).parts or _WILDCARD_RE.search(path):
@@ -2797,27 +2829,41 @@ def _validate_dispositions(
             entry_errors.append("symbol must be the exact non-empty finding symbol")
         if not isinstance(digest, str) or _SHA256_RE.fullmatch(digest) is None:
             entry_errors.append("evidence_sha256 must be a lowercase SHA-256")
-        if kind not in ("blocking-task", "narrow-suppression"):
-            entry_errors.append("kind must be blocking-task or narrow-suppression")
+        if kind not in _DISPOSITION_KINDS:
+            entry_errors.append("kind must be blocking-task, narrow-suppression, or proven-closed")
         if not isinstance(owner, str) or _TASK_ID_RE.fullmatch(owner) is None:
             entry_errors.append("owner_task must be an exact Task ID")
         if not isinstance(rationale, str) or len(rationale.strip()) < 20:
             entry_errors.append("rationale must explain the narrow disposition")
         if not isinstance(invariant, str) or len(invariant.strip()) < 20:
             entry_errors.append("expected_safe_invariant must be independently testable")
-        if expiry_task is None and expires_on is None:
+        if not proven_closed and expiry_task is None and expires_on is None:
             entry_errors.append("expires_after_task and/or expires_on is required")
         if expiry_task is not None and (not isinstance(expiry_task, str) or _TASK_ID_RE.fullmatch(expiry_task) is None):
             entry_errors.append("expires_after_task must be an exact Task ID")
         if isinstance(owner, str) and owner not in states:
             entry_errors.append("owner_task %s is absent from TODO.md/DONE.md" % owner)
-        elif isinstance(owner, str) and states.get(owner, set()) & {"x", "w"}:
+        elif isinstance(owner, str) and not proven_closed and states.get(owner, set()) & {"x", "w"}:
             entry_errors.append("owner_task %s is terminal; disposition expired" % owner)
         if isinstance(expiry_task, str):
             if expiry_task not in states:
                 entry_errors.append("expires_after_task %s is absent from TODO.md/DONE.md" % expiry_task)
-            elif states.get(expiry_task, set()) & {"x", "w"}:
+            elif not proven_closed and states.get(expiry_task, set()) & {"x", "w"}:
                 entry_errors.append("expires_after_task %s is terminal; disposition expired" % expiry_task)
+        # DEC-0038-007 CON-03: `proven-closed` requires immutable proof anchoring
+        # (owner_ref + evidence_sha256 + proof_summary). evidence_sha256 is
+        # already required/validated above for every kind and already drives
+        # POLICY_STALE via the finding_keys membership check below -- that
+        # digest-mismatch path is untouched and unweakened by this kind.
+        if proven_closed:
+            if not isinstance(owner_ref, str) or _COMMIT_SHA_RE.fullmatch(owner_ref) is None:
+                entry_errors.append("owner_ref must be a full 40-character lowercase commit SHA")
+            elif not _commit_reachable(root, owner_ref, reachability_cache):
+                entry_errors.append("owner_ref %s is not a reachable commit" % owner_ref)
+            if not isinstance(proof_summary, str) or len(proof_summary.strip()) < 30:
+                entry_errors.append("proof_summary must be a substantive, independently reviewable explanation")
+        elif owner_ref is not None or proof_summary is not None:
+            entry_errors.append("owner_ref/proof_summary are only permitted for kind proven-closed")
         if expires_on is not None:
             if not isinstance(expires_on, str):
                 entry_errors.append("expires_on must be an ISO-8601 date")
