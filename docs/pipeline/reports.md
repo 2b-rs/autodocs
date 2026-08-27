@@ -48,6 +48,22 @@ compare,all,crosscheck,urls,upstream,observations}`.
 - **Kennzahlen** (`kennzahl(...)`): u. a. "Behobene Fehlerklassen" (=
   `len(CATEGORIES)`), Issues-Count, Curation-Open-Count.
 - **Output-Format**: HTML-Seitenmodell (verlinkt von der Startseite).
+- **Bewahrung veröffentlichter Berichte (`DEC-0043-002`)**: Vorhandene
+  versionierte Extraktionsberichte werden **bewahrt**. Ein neuer Lauf erzeugt nur
+  das noch fehlende Modell seiner eigenen neuen Version und aktualisiert das
+  Berichtsverzeichnis als Verweis darauf; bestehende Berichtseiten werden dabei
+  nicht neu erzeugt oder überschrieben. Normale Site-Neuerzeugungen rendern das
+  historische Archiv nicht neu — es wächst mit der Zeit, und ein routinemäßiges
+  Neurendern würde die Regenerierung dauerhaft verlangsamen.
+  Bewahrung ist die **Voreinstellung, kein Verbot**. Eine Ersetzung ist zulässig
+  bei Verlust der gerenderten Seiten oder bei schweren Fehlern früherer
+  Erzeugungslogik, die auch in den erzeugten Seiten behoben werden müssen — dann
+  auditierbar, mit Grund, Digests und Verknüpfung. Forensische Rekonstruktion und
+  Vergleich erzeugen einen **getrennten Kandidaten** und überschreiben niemals den
+  beobachteten Bericht. Das Verhalten für den aktuellen Bericht und den Index ist
+  gesondert zu klassifizieren und fällt nicht stillschweigend unter die
+  Archivregel. Maßgeblich ist `DEC-0043-002` in
+  [`docs/dossiers/re-intake-berichtswesen-build-evidenz.md`](../dossiers/re-intake-berichtswesen-build-evidenz.md).
 - **Bauen vs. Publizieren (wichtig, seit Vorfall 2026-08-12)**: `extraction_report.py
   build` erzeugt/aktualisiert nur die Seitenmodell-JSONs (u. a.
   `_src/sources/pages/extraction-report.json`, `extraction-reports-data.js`,
@@ -62,7 +78,6 @@ compare,all,crosscheck,urls,upstream,observations}`.
   keine neue Version an, wenn Kennzahlen, Residual-Status und Skript-Stände
   gegenüber der letzten Version unverändert sind — ein reiner Publikationslauf
   (nur `generate.py` nötig) erzeugt dadurch keine Versions-Dubletten mehr.
-
 ## Extraktions-Kampagnenbericht (`spec_extraction_campaign.py`)
 
 - **Subkommandos**: `create`, `report`.
@@ -174,4 +189,3 @@ reports from `supersession_trigger`, point-in-time reconstruction via
 `asof_view`, and arbitrary-window change summaries via `delta_view`. These
 reports are audit/report views over append-only stores, not separate sources of
 truth.
-

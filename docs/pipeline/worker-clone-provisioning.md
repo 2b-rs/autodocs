@@ -35,7 +35,7 @@ The **privileged host side** runs
 once per assigned backlog item, **before** a sandboxed/grunt agent receives
 that item to work on (`RQ-WT-05`). Sandboxed agents may not run Git at all
 (`SANDBOX.md`) and must never invoke this script themselves; none of the
-runner tooling (`_src/perplexity-cpu-loop.js`, `_src/run-loop.sh`) contains
+runner tooling (`runner-host/perplexity-cpu-loop.js`, `runner-host/run-loop.sh`) contains
 branch/clone/merge/push functionality, so there is no other legal place for
 branch and clone creation to happen (finding I).
 

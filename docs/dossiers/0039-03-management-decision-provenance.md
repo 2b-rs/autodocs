@@ -1,0 +1,214 @@
+# `0039-03` — Management-Entscheidung „Productize": Provenienz und Befund
+
+**Art:** Append-only Provenienz-/Entscheidungsdatensatz. **Kein `DEC-`-Datensatz** — es wurde
+bewusst keine neue `DEC-`Nummer alloziert, weil Identifikatoren nur gegen `main` vergeben
+werden und dieser Datensatz keine neue Entscheidung trifft, sondern eine empfangene aufzeichnet.
+
+**Aufgezeichnet von:** `kathryn` (Projektleitung Team Voyager), 2026-08-26T22:40Z.
+**Basis:** `main` @ `6d63a528d4688fe3139895134a730f55c55fc3a4`.
+**Verfahrensauflage:** `jean-luc` (agent-inbox `1787783817297-779ea360`): erst diesen Datensatz
+committen und über den ausdrücklich zugewiesenen Integrator nach `main` bringen; **erst wenn er
+von `main` erreichbar ist**, darf `TODO.md` den `[u]`-Marker bewegen.
+
+## 1. Die Entscheidung, im Wortlaut
+
+> **`Productize.`**
+
+Beantwortet vom **aktuellen Benutzer** über das Supervisor-Dashboard.
+
+## 2. Referenz-IDs — drei Zustellungen derselben Entscheidung
+
+Dieselbe Entscheidung wurde an mindestens drei Empfaenger zugestellt, jeweils mit **eigener**
+Nachrichten-ID. Alle drei werden hier festgehalten, damit spaeter niemand raten muss, welche
+„die" Referenz ist:
+
+| Empfaenger | Nachrichten-ID |
+|---|---|
+| `kathryn` (direkt vom Supervisor) | `1787783780977-5d7dee6e` |
+| `benjamin` (weitergeleitet an `kathryn`) | `1787783780813-a0322f10` |
+| `jean-luc` (zitiert gegenueber `kathryn`) | `1787783780893-e9407cf3` |
+| `michael` (eigene Aufzeichnung, an `kathryn` berichtet) | `1787783781144-70a6516e` |
+
+**Befund, unbewertet:** Eine Broadcast-Zustellung erzeugt pro Empfaenger eine eigene ID. Fuer
+Traceability-Zwecke ist damit **keine** einzelne ID kanonisch. Dieser Datensatz nennt alle
+bekannten.
+
+**Additive Ergaenzung (2026-08-26T22:45Z, `kathryn`):** Die vierte Zustellung
+(`1787783781144-70a6516e` an `michael`) war bei der Ersterfassung nicht bekannt und ist oben
+nachgetragen. Die Erstfassung sagte „an **mindestens** drei Empfaenger" und listete drei; sie
+war damit unvollstaendig, nicht unrichtig. Der Nachtrag erfolgt auf Weisung `jean-luc`
+(agent-inbox `1787784167492-3aa2dad6`, Option B) als **begrenzte Evidenz-Vervollstaendigung** —
+er aendert **keinen** Marker, **keinen** Zustand und **keine** Autoritaet. Nichts der
+Erstfassung wurde geloescht oder umgeschrieben.
+
+Die vier IDs bezeichnen **eine einzige** Dashboard-Entscheidung des aktuellen Benutzers, nicht
+vier Entscheidungen.
+
+## 3. Der Befund: die Taskzeile stellt zwei verschiedene Fragen
+
+**Tasktitel** (`main:TODO.md:463`):
+
+> „**Productize or explicitly reject** the retained page-i18n completeness validator proposal
+> from completed Feature `0036` as the first controlled tool-process pilot."
+
+→ Auf diese Frage passt die Antwort **exakt**.
+
+**Reservierungsvorbehalt** (`main:TODO.md:464`) — dies ist der aufgezeichnete `[u]`-Grund:
+
+> „**Reservation gate:** The sole next action is a current-user decision **naming an explicitly
+> privileged owning session** **after `0039-02` is approved**; historical prototype
+> availability is not permission to execute or promote it."
+
+→ Die Antwort **benennt keine privilegierte Owning-Session**, und **`0039-02` ist nicht
+approved** (Marker `[ ]` auf `main:TODO.md:456`; die dortige Taskzeile sperrt den
+Implementierungsstart ausdruecklich, solange keine privilegierte Owning-Session hergestellt ist).
+
+## 4. Was daraus NICHT gefolgert wird
+
+Die Auflage des Supervisors lautet woertlich: *„If the answer does not match any offered option,
+treat it as new input from management, not as a license to reinterpret the question."*
+
+Dieser Datensatz **loest die Mehrdeutigkeit nicht auf**. Er stellt fest:
+
+- Die Entscheidung `Productize.` ist **vollstaendig und unveraendert** aufgezeichnet.
+- Welche der beiden Fragen sie beantwortet, ist **nicht durch einen Agenten zu bestimmen**.
+- Der `[u]`-Marker von `0039-03` wurde **nicht** veraendert.
+- Es wurde **niemand** auf `0039-03` angesetzt.
+
+Eine Entscheidungsanfrage mit drei Optionen (A: reine Disposition; B: Vorbehalt eingeschlossen,
+dann Sessionname noetig; C: Vorbehalt entfallen) liegt beim Supervisor:
+agent-inbox `1787783870722-22d0b8d3`.
+
+## 5. Was die Entscheidung ausdruecklich NICHT autorisiert
+
+Nach `jean-luc` (`1787783817297-779ea360`) unveraendert:
+
+- **`0039-02`-Freigabe bleibt die echte Startvoraussetzung** von `0039-03`.
+- Die Entscheidung autorisiert **keine** Implementierung, **keine** Werkzeug-Promotion,
+  **keine** Acceptance, **keine** Integration und **keine** `main`-Bewegung.
+
+## 6. Eine weitergeleitete Fehldeutung, richtiggestellt
+
+`benjamin` (`1787783815423-98f7a6a3`) schreibt, die Projektleitung muesse „als PL den
+zustaendigen Agenten fuer die Umsetzung bestimmen", weil der Vorbehalt eine privilegierte
+Owning-Session verlange, die der Benutzer nicht mitgeliefert habe.
+
+**Das trifft nicht zu.** Der Vorbehalt verlangt woertlich eine **`current-user` decision**, die
+die Session benennt — keine Projektleitungsentscheidung. Eine Projektleitung kann Capability-
+Class weder verleihen noch eine Owning-Session-Reservierung ersetzen; `DEC-0044-028` haelt
+zudem fest, dass Projektleiter nicht automatisch registrierte Abnahmeautoritaet sind. Die
+Richtigstellung wird hier festgehalten, damit die Fehldeutung sich nicht fortpflanzt.
+
+## 7. Eigentum
+
+**Kein Workspace-Claim benennt derzeit einen Eigentuemer fuer `0039-03`.** Das bleibt so, bis
+die Frage aus Abschnitt 3 beantwortet ist; eine Vergabe waere ohnehin wirkungslos, solange
+`0039-02` den Start sperrt.
+
+## 8. Provenienz
+
+Prozessgetriggert, **kein direkter Nutzerprompt an diese Sitzung**. Ausloeser: Supervisor-
+Nachricht `1787783780977-5d7dee6e` (Management-Entscheidung des aktuellen Benutzers, ueber das
+Dashboard erteilt) und Verfahrensauflage `jean-luc` `1787783817297-779ea360`.
+Aufzeichnung 2026-08-26T22:40Z (Europe/Berlin +02:00) durch `kathryn`.
+
+## 9. Korrektur einer falschen Provenienzaussage in diesem Datensatz
+
+**Additiv, 2026-08-26T22:48Z, `kathryn`. Auf Befund `jean-luc` (agent-inbox
+`1787784388421-beb93412`).**
+
+Der Nachtrag-Commit `405dc7be1f854937f64e9ed74c6dfed21800e3a8` und die dortige additive Notiz
+behaupten beide: *„Nichts der Erstfassung wurde geloescht oder umgeschrieben."*
+
+**Diese Aussage ist unzutreffend.** `git show 405dc7be1 -- docs/dossiers/0039-03-management-decision-provenance.md`
+weist **14 Einfuegungen und 1 Loeschung** aus. Geaendert wurde **genau eine Formulierungszeile**:
+
+    vorher:  Dieser Datensatz nennt alle drei.
+    nachher: Dieser Datensatz nennt alle bekannten.
+
+**Was tatsaechlich gilt:**
+
+- **Eine Formulierungszeile wurde ersetzt** — die Zaehlaussage, die durch den Nachtrag der
+  vierten Zustell-ID veraltet war.
+- **Kein Entscheidungs-, Gate- oder Markerinhalt wurde entfernt.** Der Wortlaut der
+  Entscheidung, die Zustell-IDs, der Befund aus Abschnitt 3, die Nicht-Autorisierungen aus
+  Abschnitt 5 und die Richtigstellung aus Abschnitt 6 sind unveraendert.
+- Die urspruengliche Formulierung ist hier woertlich erhalten, sodass der Vorzustand ohne
+  Git-Zugriff lesbar bleibt.
+
+**Warum das hier steht und nicht stillschweigend berichtigt wurde:** Ein Provenienzdatensatz,
+dessen eigene Provenienzaussage nicht stimmt, beschaedigt genau die Eigenschaft, wegen der er
+existiert. Der Fehler war eine ungeprueft uebernommene Selbstbeschreibung — die Absicht war
+additiv, die Ausfuehrung ersetzte eine Zeile, und die Commit-Nachricht wiederholte die Absicht
+statt das Ergebnis. **Historie wurde nicht umgeschrieben; die falsche Aussage bleibt im
+Commit-Log stehen und wird hier korrigiert, nicht getilgt.**
+
+## 10. Zweite Management-Entscheidung: Markerbewegung autorisiert (Freitext)
+
+**Additiv, 2026-08-27T00:00Z, `kathryn`. Auf Weisung `jean-luc` (agent-inbox
+`1787788601973-d322ae01`).**
+
+Auf die nach der neuen Dashboard-Konvention eingereichte Entscheidungsvorlage
+`1787788068934-6acdce20` („Welche der zwei Fragen hat `Productize` beantwortet?", Optionen
+`OPT-0339-A/B/C`) antwortete der aktuelle Benutzer ueber das Dashboard.
+
+**Antworttext, woertlich — Referenz `1787788477209-e768ae5c`:**
+
+> „Productize" wurde befuerwortet. Bitte alles noetige dafuer veranlassen, also ggfs auch den
+> Marker verschieben.
+
+**Als Freitextantwort erfasst, nicht als Optionswahl.** Die Antwort waehlt **keine** der drei
+angebotenen Options-IDs. Nach der Kundenvorgabe gilt eine solche Antwort als **neue Lage** und
+ausdruecklich **nicht** als Erlaubnis, die gestellte Frage umzudeuten. Festgehalten wird
+deshalb, was sie eindeutig sagt:
+
+- **`Productize` ist befuerwortet.**
+- **Die Bewegung des `[u]`-Markers ist autorisiert.**
+- Eine **privilegierte Owning-Session wird nicht benannt.**
+
+## 11. Dritte Management-Entscheidung: Integrator benannt
+
+**Referenz `1787788518864-b5d874a5`**, beantwortet die Dashboard-Vorlage
+`1787788352100-4182aa19` (eingereicht von `jean-luc`).
+
+**Antworttext, woertlich:**
+
+> Assign Geordi.
+
+**Exakter, begrenzter Umfang dieser Benennung — wie von `jean-luc` vorgegeben:**
+
+`geordi` ist **privilegierter Integrator** fuer **Hygiene/Review und die bedingte Integration
+nach `main`** **des daraus resultierenden exakten Provenienzkandidaten — und nur dessen.**
+
+**Ausdruecklich NICHT erteilt:**
+
+- keine Implementierung,
+- keine Task-Acceptance,
+- **keine Bewegung eines `TODO.md`-Markers**,
+- keine `0039-02`-Freigabe,
+- kein `DONE.md`,
+- kein Push, keine Publikation.
+
+**Noch nicht zugewiesen.** Diese Aufzeichnung benennt den Umfang; die Zuweisung erfolgt durch
+`jean-luc` nach seiner Pruefung. Bis dahin ist `geordi` nicht beauftragt.
+
+## 12. Daraus folgende Reihenfolge — zwei getrennte Kandidaten
+
+**Von `jean-luc` festgelegt (`1787788601973-d322ae01`), hier festgehalten, damit sie nicht
+verlorengeht:**
+
+    A  **Provenienzkandidat** (dieser Datensatz) → Review/Integration nach `main` durch `geordi`
+    B  **separater Governance-Markerkandidat** `[u]` → `[d]`, der den **integrierten**
+       Provenienzdatensatz und die **unerfuellte Vorbedingung `0039-02`** referenziert
+       → eigenes Review/Integration durch `geordi`
+
+**A und B duerfen nicht kombiniert werden**, weil die aufgezeichnete Aktivierungsregel verlangt,
+dass die Provenienz **zuerst von `main` erreichbar** ist.
+
+**`[d]` ist als wahrer naechster Zustand bestaetigt** — aber **erst nach** der Integration von A.
+Begruendung: agentische Arbeit hat stattgefunden, danach ist **keine Menschentscheidung** mehr
+die naechste Handlung, und die **unerfuellte Vorbedingung `0039-02`** ist der benannte Blocker.
+Die Benennung der privilegierten Owning-Session wird **erst nach `0039-02`-Freigabe faellig** —
+sie ist heute nicht ueberfaellig, sondern noch nicht an der Reihe.
+
+**Dieser Commit aendert `TODO.md` nicht.** Kein Claim, kein Start, keine Implementierung.

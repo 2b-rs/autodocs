@@ -1,0 +1,35 @@
+### `DEC-0038-005` — Restore the terminal integration task before Feature 0038 closure
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T21:12:22+02:00`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** `authority:repository-owner`
+- **Subject:** Resolution of the missing terminal integration-task floor for Feature 0038 closure
+- **Decision:** Feature 0038 receives a new terminal integrating task with a mandatory integration review. The task must require fresh structured, prerequisite-closed Acceptance for Tasks 0038-33 and 0038-34, a digest-bound aggregate review, and successful closure bookkeeping before Feature 0038 may move from `TODO.md` to `DONE.md`.
+- **Technical justification:** All declared Feature 0038 work is terminal, but the partial-integration note at `docs/pipeline/approvals/0038-main-integration-20260821T000000Z.md` explicitly excludes closure and records that the Feature has no integrating task. Restoring the current integration floor provides a complete independent aggregate review and avoids a one-off waiver for a Feature containing repository-wide automation-safety and completion-evidence controls.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Restore a terminal integrating task with a mandatory review and structured prerequisite-closed Acceptance.
+    - **Disposition:** `selected`
+    - **Reason:** This satisfies the current Feature-closure floor, preserves the earlier partial-integration history, and subjects the complete package to an independent aggregate review.
+  - **ALT-02:** Grant a one-time waiver for the missing terminal integrating task and rely on compensating closure controls.
+    - **Disposition:** `rejected`
+    - **Reason:** A waiver would create avoidable exceptional closure semantics and a precedent for bypassing the integration floor when the conforming task can still be restored.
+- **Consequences:**
+  - **CON-01:** An Architect must add exactly one terminal integrating task for Feature 0038 and bind its complete prerequisites, acceptance criteria, validation, evidence, and role separation.
+  - **CON-02:** Tasks 0038-33 and 0038-34 require fresh structured Acceptance records on reachable, pinned baselines; their historical reviews and rejections remain append-only evidence.
+  - **CON-03:** A distinct Implementer prepares the aggregate manifest and closure candidate, and a distinct privileged Integrator performs the terminal review and closure action.
+  - **CON-04:** Feature 0038 remains open until the restored task and all induced Acceptance work pass; this decision grants no Acceptance, integration verdict, or permission to move the Feature by itself.
+- **Affected work units:**
+  - `feature:0038`
+  - `task:0038-33`
+  - `task:0038-34`
+- **Affected gates:**
+  - `integration:0038`
+  - `feature-closure:0038`
+- **Review participation:** `none`
+- **No-review reason:** The repository owner directly selected the conforming alternative. The Project Lead only records and routes that decision; the separately assigned Architect reviews the task scope before mutation.
+- **Waiver:** `none`

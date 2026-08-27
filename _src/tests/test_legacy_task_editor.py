@@ -1,3 +1,4 @@
+import errno
 import importlib.util
 import json
 import os
@@ -443,6 +444,158 @@ class OperationValidationTests(unittest.TestCase):
                         payload={"target": "backlog", "message": unsafe},
                     )
                 self.assertEqual(raised.exception.rule, "LTE-OP-UNSAFE-VALUE")
+
+
+class CheckpointAuthorityTests(unittest.TestCase):
+    """Task 0038-23: the digest-bound editor must refuse any change to an
+    ``- **Integration review: ...`` attribute bullet unless the operation
+    carries an explicit ``architect_authority`` assertion, and the resulting
+    bullet must itself be a well-formed, (architect)-tagged declaration.
+    """
+
+    WELL_FORMED_MANDATORY = "  - **Integration review:** mandatory. **Rationale (architect):** fixture checkpoint."
+    WELL_FORMED_NOT_MANDATORY = (
+        "  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** fixture exemption."
+    )
+    UNTAGGED_MANDATORY = "  - **Integration review:** mandatory. **Rationale:** missing the architect tag."
+    MALFORMED_POLARITY = "  - **Integration review:** unclear. **Rationale (architect):** ambiguous."
+
+    def _operation_with_authority(self, role="architect", rationale="fixture rationale"):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Unrelated status update."},
+        )
+        value = dict(operation.data)
+        value["architect_authority"] = {"role": role, "rationale": rationale}
+        raw = (json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        return editor.load_operation(raw)
+
+    def test_checkpoint_attribute_line_recognizes_both_polarities(self):
+        mandatory = editor._checkpoint_attribute_line(self.WELL_FORMED_MANDATORY)
+        self.assertEqual(mandatory["mandatory"], True)
+        self.assertTrue(mandatory["architect_tagged"])
+        not_mandatory = editor._checkpoint_attribute_line(self.WELL_FORMED_NOT_MANDATORY)
+        self.assertEqual(not_mandatory["mandatory"], False)
+        self.assertTrue(not_mandatory["architect_tagged"])
+
+    def test_checkpoint_attribute_line_ignores_prose_mentions(self):
+        prose = "  - **Acceptance criteria:** discusses the `Integration review: mandatory` attribute in passing."
+        self.assertIsNone(editor._checkpoint_attribute_line(prose))
+
+    def test_unchanged_checkpoint_bullet_is_not_gated(self):
+        before = f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n"
+        after = f"block\n{self.WELL_FORMED_MANDATORY}\nmore text changed\n"
+        editor._enforce_checkpoint_authority(
+            editor.Operation({"architect_authority": None}, "raw", "contract"),
+            before,
+            after,
+            "1000-01",
+            "TODO.md",
+        )  # no exception: the attribute bullet itself did not change
+
+    def test_new_checkpoint_bullet_without_authority_is_rejected(self):
+        operation = editor.Operation({}, "raw", "contract")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_removed_checkpoint_bullet_without_authority_is_rejected(self):
+        operation = editor.Operation({}, "raw", "contract")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+                "block\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_authorized_but_untagged_result_is_still_rejected(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.UNTAGGED_MANDATORY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-MALFORMED")
+
+    def test_authorized_but_malformed_polarity_is_still_rejected(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        with self.assertRaises(editor.EditorError) as raised:
+            editor._enforce_checkpoint_authority(
+                operation,
+                "block\nmore text\n",
+                f"block\n{self.MALFORMED_POLARITY}\nmore text\n",
+                "1000-01",
+                "TODO.md",
+            )
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-MALFORMED")
+
+    def test_authorized_well_formed_change_is_accepted(self):
+        operation = editor.Operation(
+            {"architect_authority": {"role": "architect", "rationale": "fixture"}}, "raw", "contract"
+        )
+        editor._enforce_checkpoint_authority(
+            operation,
+            "block\nmore text\n",
+            f"block\n{self.WELL_FORMED_MANDATORY}\nmore text\n",
+            "1000-01",
+            "TODO.md",
+        )  # no exception
+
+    def test_load_operation_accepts_valid_architect_authority(self):
+        operation = self._operation_with_authority()
+        self.assertEqual(operation.data["architect_authority"], {"role": "architect", "rationale": "fixture rationale"})
+
+    def test_load_operation_rejects_non_architect_role(self):
+        with self.assertRaises(editor.EditorError) as raised:
+            self._operation_with_authority(role="grunt")
+        self.assertEqual(raised.exception.rule, "LTE-CHECKPOINT-AUTHORITY-REQUIRED")
+
+    def test_load_operation_rejects_empty_rationale(self):
+        with self.assertRaises(editor.EditorError):
+            self._operation_with_authority(rationale="")
+
+    def test_load_operation_rejects_unknown_architect_authority_field(self):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Unrelated status update."},
+        )
+        value = dict(operation.data)
+        value["architect_authority"] = {"role": "architect", "rationale": "fixture", "extra": True}
+        raw = (json.dumps(value, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+        with self.assertRaises(editor.EditorError) as raised:
+            editor.load_operation(raw)
+        self.assertEqual(raised.exception.rule, "LTE-OP-UNKNOWN-FIELD")
+
+    def test_ordinary_operation_without_architect_authority_is_unaffected(self):
+        sources = source_bytes("active")
+        operation = operation_for(
+            sources,
+            "progress",
+            payload={"target": "backlog", "message": "Phase one passed."},
+        )
+        plan = editor.plan_operation(operation, sources)
+        after = planned_change(plan, "TODO.md").after.decode()
+        self.assertIn("Phase one passed.", after)
 
 
 class RenderingTests(unittest.TestCase):
@@ -1274,6 +1427,75 @@ class SafetySurfaceTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 2)
         self.assertIn("legacy_task_editor.py", completed.stdout)
+
+
+class OpenDirNofollowTests(unittest.TestCase):
+    """Pins the 0038-05.01 regression and the symlink-escape protection.
+
+    ``_open_dir_nofollow`` must follow a leading OS alias whose resolved target
+    stays under the current physical prefix (macOS ``/var`` -> ``/private/var``,
+    which every ``tempfile.mkdtemp()`` path traverses) while still refusing to
+    follow a directory symlink that leaves that prefix.
+    """
+
+    def test_path_below_symlinked_system_directory_opens(self):
+        # tempfile.gettempdir() is /var/folders/... on macOS; /var is a symlink.
+        temporary = tempfile.mkdtemp()
+        self.addCleanup(lambda: __import__("shutil").rmtree(temporary, ignore_errors=True))
+        unresolved = Path(temporary)
+        resolved = unresolved.resolve()
+        if unresolved == resolved:
+            # Portability: on platforms without the alias, build one explicitly
+            # so the "in-tree alias must be followed" contract is still tested.
+            inner = resolved / "inner"
+            inner.mkdir()
+            alias = resolved / "alias"
+            try:
+                alias.symlink_to(inner, target_is_directory=True)
+            except OSError as exc:  # pragma: no cover - symlink-less filesystem
+                self.skipTest(f"symlinks unavailable: {exc}")
+            unresolved = alias
+
+        descriptor = editor._open_dir_nofollow(unresolved)
+        try:
+            self.assertTrue(stat.S_ISDIR(os.fstat(descriptor).st_mode))
+            self.assertEqual(os.stat(descriptor).st_ino, os.stat(unresolved).st_ino)
+        finally:
+            os.close(descriptor)
+
+        # The write path that first surfaced the defect must work end to end.
+        target = unresolved / "nested" / "written.txt"
+        editor._atomic_write(target, b"payload\n")
+        self.assertEqual(target.read_bytes(), b"payload\n")
+
+    def test_escaping_directory_symlink_is_still_refused(self):
+        temporary = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(lambda: __import__("shutil").rmtree(temporary, ignore_errors=True))
+        permitted = temporary / "permitted"
+        outside = temporary / "outside"
+        (permitted / "real").mkdir(parents=True)
+        (outside / "secret").mkdir(parents=True)
+        escape = permitted / "escape"
+        try:
+            escape.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - symlink-less filesystem
+            self.skipTest(f"symlinks unavailable: {exc}")
+
+        # Adversarial: the resolved target leaves the physical prefix reached so
+        # far, so the descent must fail rather than hand out a descriptor.
+        with self.assertRaises(OSError) as raised:
+            editor._open_dir_nofollow(escape / "secret")
+        self.assertIn(raised.exception.errno, {errno.ENOTDIR, errno.ELOOP})
+
+        # Also refused as an intermediate component of a create-mode write, so
+        # the escape cannot be laundered through _atomic_write.
+        with self.assertRaises(OSError):
+            editor._atomic_write(escape / "secret" / "planted.txt", b"nope\n")
+        self.assertEqual(list((outside / "secret").iterdir()), [])
+
+        # Control: a non-escaping sibling under the same parent still opens.
+        descriptor = editor._open_dir_nofollow(permitted / "real")
+        os.close(descriptor)
 
 
 if __name__ == "__main__":
