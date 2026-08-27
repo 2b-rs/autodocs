@@ -9,7 +9,24 @@ task: 0037-26.02
 feature: 0037
 branch: 0037-26.02
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0037-26.02
-state: [p]
+state: [x]
+
+## Completion (2026-08-27)
+
+Substantive REF `6eb4f9296034b79cf6d6ebcbb2b2fa7590da0375`.
+Validation: `python3 -m unittest _src.tests.test_campaign_manifest` 13/13 OK in
+`/Users/tobias.anton/devel/autodocs/.worktrees/0037-26.02`.
+
+AE-2 baselines: pre-change `2064704457f98c66fb6f77ad3c263415864fe2ff`; candidate `6eb4f9296`.
+AE-3 falsification (mtime-only must not change evidence identity): red on baseline
+`corpus_hash` `f0710015` → `58795203`; green on candidate `content_set_digest`
+`sha256:f188902d1cea496763bcc6c1b78bca40d2a403f24bf2f551d40f305012d86b9a` unchanged.
+AE-4 adjacent: (1) record byte change alters `content_set_digest`; (2) adding a
+record alters both hint and identity; (3) legacy listing files keep original bytes
+and get `disposition.kind=legacy`.
+AE-5: `test_content_set_identity_property_independent_of_mtime_and_walk_order`
+25 cases, seed `20260827`, invariant sorted (path, digest, size) independent of mtime.
+
 
 ## Start / base discovery
 
