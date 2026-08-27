@@ -6,8 +6,9 @@ per-language HTML outputs and tree digest, validation/release relations, and
 invalidation/regeneration cause. Manifests live under `provenance/`; generated
 HTML must not contain provenance markers. Mixed-run language trees are rejected.
 
-Writers bind to `provenance_store.SCHEMA_VERSION` and existing endpoint kinds.
-Schema gaps are findings, not local schema forks.
+Writers bind to `provenance_store.SCHEMA_VERSION` and the five
+`provenance/_schema` files (run, finding, event, artifact-set, typed-reference).
+Schema gaps and extra properties are findings, not local schema forks.
 """
 from __future__ import annotations
 
@@ -20,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 _TOOLS = Path(__file__).resolve().parent
+_ROOT = _TOOLS.parent.parent
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
@@ -29,6 +31,15 @@ import provenance_views as pv  # noqa: E402
 import version_id as vid  # noqa: E402
 
 SCHEMA = "html-tree-provenance@v1"
+# Bind writers to 0037-17/19 schema files; do not fork local copies (0037-26.01 pattern).
+REPO_SCHEMA_DIR = _ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
 INPUT_ROLES = ("page-model", "template", "ai", "diagram", "i18n")
 HTML_ROLE = "language-html"
 MEMBER_ROLES = INPUT_ROLES + (HTML_ROLE,)
@@ -56,6 +67,37 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise HtmlTreeProvenanceError(
+            "HTP-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(
+    kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None
+) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise HtmlTreeProvenanceError(
+            "HTP-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise HtmlTreeProvenanceError(
+                "HTP-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
+
+
 def _ref(kind: str, ident: str, **extra: Any) -> Dict[str, Any]:
     uri = ident if str(ident).startswith(kind + ":") else f"{kind}:{ident}"
     value = {
@@ -65,6 +107,7 @@ def _ref(kind: str, ident: str, **extra: Any) -> Dict[str, Any]:
         "classification": extra.pop("classification", "internal"),
     }
     value.update(extra)
+    validate_against_bound_schema("typed-reference", value)
     return value
 
 
@@ -181,7 +224,9 @@ class HtmlTreeWorkflow:
         }
         if extra:
             payload.update(dict(extra))
-        return self.store.create_event(payload)
+        result = self.store.create_event(payload)
+        validate_against_bound_schema("event", result["record"])
+        return result
 
     def _load_index(self) -> None:
         sets_dir = self.root / "provenance" / "artifact-sets"
@@ -345,6 +390,8 @@ class HtmlTreeWorkflow:
                 "outputs": [_ref("artifact-set", set_id)],
             }
         )
+        validate_against_bound_schema("run", run["record"])
+        validate_against_bound_schema("typed-reference", run["record"]["producer"])
         aset = self.store.create_artifact_set(
             {
                 "schema_version": ps.SCHEMA_VERSION,
@@ -356,6 +403,7 @@ class HtmlTreeWorkflow:
                 "members": members,
             }
         )
+        validate_against_bound_schema("artifact-set", aset["record"])
         html_ref = _artifact_ref(html_relpath, html_digest)
         set_ref = _ref("artifact-set", set_id, digest=aset["record"]["set_digest"])
         self._event(relation="produced-by", source=html_ref, target=_ref("run", run_id), run_id=run_id, occurred_at=ended)
@@ -485,6 +533,7 @@ class HtmlTreeWorkflow:
                 "evidence": [old_html, dict(new_html)],
             }
         )
+        validate_against_bound_schema("finding", finding["record"])
         self._event(
             relation="invalidated-by",
             source=old_html,

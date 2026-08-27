@@ -106,6 +106,20 @@ class HtmlTreeProvenanceTests(unittest.TestCase):
         rec = self._generate()
         self.assertEqual(rec["schema_version"], ps.SCHEMA_VERSION)
 
+    def test_writers_bind_existing_provenance_schema(self):
+        for name in htp.BOUND_SCHEMAS.values():
+            self.assertTrue((ROOT / "provenance" / "_schema" / name).is_file())
+        rec = self._generate()
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{rec['run_id']}.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        htp.validate_against_bound_schema("run", run)
+        with self.assertRaises(htp.HtmlTreeProvenanceError) as ctx:
+            htp.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "HTP-SCHEMA-DEVIATION")
+
     def test_manifests_inputs_outputs_tree_and_validation_release(self):
         rec = self._generate()
         roles = {m["role"] for m in rec["members"]}
