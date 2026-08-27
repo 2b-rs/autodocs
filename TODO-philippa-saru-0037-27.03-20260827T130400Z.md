@@ -8,7 +8,8 @@ task: 0037-27.03
 feature: 0037
 branch: 0037-27.03
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0037-27.03
-state: [p]
+state: [x]
+substantive_ref: eca14f6f9a87ac38c62c7f4b1404b22f5c60f535
 named_expected_ancestor: F-0037-16-R2-01 / cfa4b8f2c (verified ancestor of HEAD after base-and-merge)
 
 ## Base-and-merge (measured)
@@ -69,4 +70,6 @@ Stop at [x]. Report REFs to philippa, kathryn, michael. Keep going.
 ## Progress
 
 - Worktree created; prereq merges recorded above.
-- Next: product + tests, then [x] bookkeeping.
+- Deliverables: `page_composition_provenance.py`, fixtures, 9 tests.
+- Validation: `python3 _src/tests/test_page_composition_provenance.py -v` OK (9).
+- Implementation terminal at `eca14f6f9`. No Acceptance. No push.
