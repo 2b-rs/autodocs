@@ -19,6 +19,7 @@
 - assumptions:
   - Human-authored `_src/i18n/<lang>/{segments,labels,issues}.json` remain authoritative inputs; provenance is recorded as envelopes, not by rewriting translation prose.
   - Common envelope uses `provenance_store` run/event/artifact-set plus a translation-run artifact JSON.
-- next_step: implementation complete; bookkeeping [x] after substantive REF
-- state: [p]
+- next_step: implementation terminal; claim retained on branch
+- state: [x]
+- substantive_ref: `144b3b3ba7197dfa7f3ea95c1958212407dde152`
 - validation: `python3 _src/tests/test_i18n_translation_provenance.py` → 6 tests OK
