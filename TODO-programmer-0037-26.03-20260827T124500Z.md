@@ -1,7 +1,7 @@
 # Claim: 0037-26.03
 
 - item: `0037-26.03`
-- state: `[p]`
+- state: `[x]`
 - owner_token: `agent:programmer-0037-26.03:0037-26.03:20260827T124500Z`
 - capability_class: `unprivileged`
 - execution_authority: direct tools; no runner; no Acceptance; no main; no DONE; no push
@@ -29,6 +29,9 @@
   - Synthetic fixtures stay `synthetic`/`development-test`; never relabeled production.
   - Legacy JSONL lines without envelope get explicit unknown/legacy disposition; no invented run/issue backfill.
 
-## Next step
+## Completion
 
-Commit this claim, mark TODO `[p]`, implement envelope writers + tests, validate, then `[x]` with real REF.
+- substantive REF: `8ac92acee0afa2197cc2ee5fd08cb4ebafc76d35`
+- validation: `python3 -m unittest _src.tests.test_evidence_version_provenance _src.tests.test_curation_item_versioning` 16/16 OK
+- next: none; implementation terminal; Acceptance not in scope
+
