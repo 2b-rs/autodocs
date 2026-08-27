@@ -53,3 +53,7 @@ Integration complete. Independent verdict: supported. Data's 16-path candidate r
 Validation: `git diff --check` passed; process-document doctor returned `ok: true` with 154 documents, 32 findings, one pre-existing error, and no audit-dossier finding; legacy task doctor reproduced Data's disclosed 878 findings plus the one expected non-Task identity mismatch for this management-prescribed integration claim. Candidate hygiene passed across 209 worktrees. Root preflight passed across 211 worktrees, `main` fast-forwarded to `d90ca75a43f1c865ce8f4f8f15a2bc897faa05dc`, and immediate root postflight passed across 211 worktrees.
 
 No classification, product file, `TODO.md`, `DONE.md`, automation-safety content, Acceptance, external state, foreign worktree, or finding was changed outside the authorized scope.
+
+## Closure retry provenance
+
+The supported verdict and existing claim content remain unchanged. The authorized claim-only closure retry is traceable to Jean-Luc OFFER `agent-inbox:1787872853884-a862e51f`, Geordi ACCEPT `agent-inbox:1787872887847-d1d934ba`, Jean-Luc AWARD `agent-inbox:1787872919696-165ecefa`, Geordi baseline/candidate clarification `agent-inbox:1787872981653-f0ae8db1`, and Jean-Luc Instruction B `agent-inbox:1787873003319-9a3e400e`. Instruction B authorizes exactly one successor commit atop `80453d6b892d71f0aacf004b56f7a0d987add0a9` changing only this claim, followed by a stop for independent verification and an exact-candidate pin before hygiene, root preflight, or merge.
