@@ -1352,7 +1352,7 @@ HOW TO USE:
   - **Acceptance criteria:** Record source model/labels/theme/tool/config, issue/criterion/run, rendered artifact digest, language, invalidation/regeneration relation, and source-to-SVG members; do not inject uncontrolled provenance into SVG markup.
   - **Definition of Done:** Source/label/theme changes mark exact SVGs stale, regeneration links replacements, and queries trace canonical and translated diagrams bidirectionally.
 
-- [ ] **0037-27.03** PREREQ: 0037-27.03:0037-17, 0037-27.03:0037-19, 0037-27.03:0037-27.01 Extend user-guide/process-page authoring and page composition with typed claims and common provenance.
+- [p] **0037-27.03** PREREQ: 0037-27.03:0037-17, 0037-27.03:0037-19, 0037-27.03:0037-27.01 Extend user-guide/process-page authoring and page composition with typed claims and common provenance. Claim: `TODO-philippa-saru-0037-27.03-20260827T130400Z.md` (`owner_token: agent:philippa-saru-0037-27.03:0037-27.03:20260827T130400Z`).
   - **Acceptance criteria:** Link guide/page fragment to exact records/evidence/claims/instructions/policy/config, authoring issue/criterion/run, composition input/output hashes, review decision, and invalidation cause; generated HTML remains derived from `_src/` sources.
   - **Definition of Done:** A guide/page fixture traces every published claim to approved source/decision and input change creates bounded linked regeneration work.
 
