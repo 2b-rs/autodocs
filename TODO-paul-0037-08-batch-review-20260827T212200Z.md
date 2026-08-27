@@ -9,7 +9,7 @@ base_commit: f3f17f66f5e18177ce779b356a8ff8b0a8399afb
 capability_class: privileged
 execution_authority: direct
 startup_review: SANDBOX.md, AGENTS.md, docs/pipeline/task-acceptance.md reviewed
-state: [p]
+state: [x]
 write_scope:
   - TODO-paul-0037-08-batch-review-20260827T212200Z.md
   - docs/campaign-evidence/review-0037-08-batch-paul-20260827T212200Z/
@@ -56,4 +56,4 @@ Not Julian (08/39). Not Seven-Icheb (07). Not jean-luc (51). Not 0037-09.03 re-a
 
 ## Next step
 
-Evidence drafted at `docs/campaign-evidence/review-0037-08-batch-paul-20260827T212200Z/decision.md`. Work products for 49/51/07/39/08 accepted vs contract. Do not add `Acceptance: ✓` until explicit AWARD. Await michael amend/AWARD including 0037-49 and 0037-51.
+Evidence `b6d2bfdfe4850ad2cf7c1d898105088409e01378`. Bookkeeping `ceea85e8d3b6bfceb2199a25fc347df70ef5d524` adds `Acceptance: ✓` on this review branch for 0037-49, 0037-51, 0037-07, 0037-39, 0037-08. AWARD `1787865994204-934c578e`. Do not advance `main` from this worktree. Landing on main is a separate Integrator hygiene merge.
