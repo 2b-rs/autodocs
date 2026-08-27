@@ -65,3 +65,12 @@
     - **Position:** `supports`
     - **Note:** Saru supports snapshot-token plus native ref CAS and supplied the immutable `.01` API, pre-transaction candidate-object, dry-run, index-projection, no-activation, bounded-scope, and independent-review precisions in message `1787764599180-72b40d6a`.
 - **Waiver:** `none`
+
+## Management appointment for the independent scope review
+
+- **Recorded at:** `2026-08-27T19:24:24Z`
+- **Management authority reference:** `agent-inbox:1787858664667-860b97ee`
+- **Appointment:** The current user appoints `jadzia` as the distinct Management-instantiated Architect for the mandatory cross-item scope review of `0037-42.02` required by CON-10.
+- **Separation check:** `docs/pipeline/agent-roster.md` identifies `jadzia` as a privileged Architect. Jadzia is distinct from substantive architecture authors Data, Seven, and Saru, and is not appointed here as Implementer or Integrator.
+- **Activation boundary:** This appointment authorizes only the independent pre-mutation reach/scope review. It grants no implementation, integration, acceptance, waiver, release, external-effect, or `main`-advance authority. Product or governance mutation implementing the protocol remains blocked until Jadzia's conforming scope-review result is recorded and reachable from `main`.
+- **Superseded input retained:** Management's earlier answer `agent-inbox:1787858220959-4c678434` named Saru. Because Saru is excluded by CON-10 and the offered option required a distinct Architect, that answer was treated as new input rather than as an appointment or implicit waiver. The later answer above resolves the appointment without changing CON-10 or the `none` waiver state.
