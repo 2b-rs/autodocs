@@ -1315,7 +1315,7 @@ HOW TO USE:
   - **Acceptance criteria:** Every producer in the exact file/call-site/schema inventory approved by `0037-37` records issue/criterion/run/campaign inputs and output artifact sets without inventing legacy history; each Subtask changes only its enumerated producer family and all adapters use the shared schemas and query indexes.
   - **Definition of Done:** All six Subtasks pass cross-producer reverse-trace and backward-disposition tests.
 
-- [ ] **0037-26.01** PREREQ: 0037-26.01:0037-17, 0037-26.01:0037-19 Extend scrape and extraction reports with the common provenance envelope.
+- [p] **0037-26.01** PREREQ: 0037-26.01:0037-17, 0037-26.01:0037-19 Extend scrape and extraction reports with the common provenance envelope. Claim: `TODO-data-0037-26.01-20260827T124300Z-00372601.md` (`owner_token: agent:data:0037-26.01:20260827T124300Z-00372601`).
   - **Acceptance criteria:** Record source/tool/config commits, exact PDF/text/backend input artifact sets, issue/criterion/campaign/run refs, stable finding IDs, output reports/artifacts, trigger/cause, and evidence/privacy class; failures and backend disagreement produce linked findings.
   - **Definition of Done:** Integration tests trace a report/finding to exact source bytes and trigger and reject path-only, mtime-only, fabricated, or mismatched-run provenance.
 
