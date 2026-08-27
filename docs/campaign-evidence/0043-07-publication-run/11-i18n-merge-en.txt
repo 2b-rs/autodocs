@@ -1,0 +1,25 @@
+# fresh run, stage 1a: python3 _src/i18n_translate.py merge en
+RUN_ARCHIVE_REF=manual-20260824T072259Z-d6eece5d
+started: 2026-08-24T07:25:03Z
+----------------------------------------------------------------
+[en] übernommen: 4484, abgelehnt: 107, noch offen: 0  (Details: i18n/work/en/fehler.json)
+----------------------------------------------------------------
+shell exit_code: 1
+finished: 2026-08-24T07:25:04Z
+
+## F-TOM-VASQUEZ-002 (refined) — this stage does not exit 0
+
+The **shell** exit status is 1, not 0. Tom-Rivera's committed 01-i18n-merge-en.txt
+records 'exit_code: 0' for the same command on the same tree; that value is a
+mismeasurement (the predecessor captured the status of a wrapper, not of the
+interpreter). The subreport of his run already said exit_code=1, matching this run.
+Recorded here rather than corrected in his file: predecessor evidence stays verbatim.
+
+Cause: 107 stale 'unbekannte Segment-ID' entries in the tracked English translation
+work batches (_src/i18n/work/en/batch_*.out.jsonl), reported into
+_src/i18n/work/en/fehler.json. i18n_translate.py returns len(fehler) and sets the
+subreport exit_code to 1 whenever anything is rejected (_src/i18n_translate.py:257,263).
+The merge is idempotent — fehler.json is byte-identical to the committed one — so the
+condition is a stable pre-existing property of the translation data, not a build
+regression and not caused by Feature 0043. Consequence for this run: combine will
+record overall_success=false. That is the honest result and it is left standing.

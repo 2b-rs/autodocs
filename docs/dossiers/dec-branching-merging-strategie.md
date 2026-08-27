@@ -1171,3 +1171,145 @@ oder dem Header-Contract.
 
 **Aufgezeichnet von:** privilegierter Integrator `belanna` (Team Voyager) auf
 Beauftragung durch Projektleiter `kathryn`, 2026-08-23.
+
+### `DEC-0044-021` — Ephemerer Agent-Memory-Zustand und Integrator-geführte Hygiene
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-25T07:10:00Z`
+- **Deciding identity:** `authority:current-user:autodocs:2026-08-25`
+- **Role:** `Management`
+- **Authority reference:** `TODO-jean-luc-0044-memory-hygiene-exception-20260825T065000Z.md#coordination-claim--dec-0044-021`
+- **Subject:** Repository-weite Hygieneausnahme für ephemeren Agent-Memory-Zustand und eindeutige Rollenverteilung für Hygieneprüfung und Main-Integration; ersetzt den verworfenen, nicht publizierten Kandidaten mit der kollidierenden Kennung DEC-0044-020 aus Commit `18272308798679633add6311d61ed4b9bd4599c0`.
+- **Decision:** Unstaged getrackte Arbeitsbaumabweichungen ausschließlich unter dem NUL-sicher bestimmten kanonischen Kindpfad `logs/agent-memory/` dürfen für sich allein Integrationen nicht blockieren. Checker und harter Root-Preflight verwenden dafür dieselbe Implementierung des Pfadprädikats. Gestagte Memory-Abweichungen, gemischte Abweichungen mit mindestens einem Pfad außerhalb dieses Baums, Zielkandidaten mit überlappenden Memory-Pfaden und alle übrigen Hygiene-Findings bleiben blockierend. Der ausdrücklich zugewiesene privilegierte Integrator führt Hygieneprüfung, Integrationsbefund und Merge nach `main` aus; die Projektleitung koordiniert Baselines, Abhängigkeiten und Managemententscheidungen, führt aber weder den Hygienecheck noch den Main-Merge aus. Eine spätere persistente Übernahme von Agent-Memory benötigt eine Task-/Issue-Zuordnung in der Commit-Message, aber keinen eigenen Backlog-Knoten.
+- **Technical justification:** Agent-Memory ist absichtlich ephemerer geteilter Lernzustand und darf unabhängige Integrationen nicht global anhalten. Eine reine Checker-Ausnahme wäre unwirksam, solange der rohe Root-Preflight dieselbe Abweichung weiterhin blockiert; getrennte Pfadlogik könnte zudem auseinanderlaufen. Der gemeinsame NUL-sichere Predicate verhindert Sonderfälle durch Pfadpräfixe oder ungewöhnliche Dateinamen. Ein Abbruch bei Zielüberlappung verhindert, dass ein Merge vorhandenen Memory-Zustand überschreibt oder dessen Gleichheit fälschlich als Sicherheit wertet. Die eindeutige Integrator-Zuständigkeit stellt Vier-Augen-Prüfung und einen sichtbaren Integrationsbefund her.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Gemeinsame enge Memory-Ausnahme für Checker und Root-Preflight mit Integrator-geführter Integration.
+    - **Disposition:** `selected`
+    - **Reason:** Sie bewahrt die übrigen Fail-closed-Gates, verhindert Logikdrift und ordnet Prüfung und Merge derselben unabhängigen Rolle zu.
+  - **ALT-02:** Nur `MAIN_WORKTREE_DIRTY` im Python-Checker ausnehmen.
+    - **Disposition:** `rejected`
+    - **Reason:** Der rohe Root-Preflight würde weiterhin stoppen und eine zweite abweichende Pfadlogik erzeugen.
+  - **ALT-03:** Jede Root-Abweichung zulassen oder die Projektleitung weiterhin alternativ mergen lassen.
+    - **Disposition:** `rejected`
+    - **Reason:** Das würde den belegten Root-Quieszenzschutz beziehungsweise die klare unabhängige Integrator-Verantwortung aufheben.
+- **Consequences:**
+  - **CON-01:** Agenten können Lernzustand unter `logs/agent-memory/` teilen, ohne unabhängige Integrationen zu blockieren.
+  - **CON-02:** Checker, maschinenlesbarer Root-Preflight und Dokumentation benötigen eine gemeinsame kanonische Predicate-Implementierung samt hermetischer Positiv- und Negativtests.
+  - **CON-03:** Ein Kandidat, der irgendeinen aktuell abweichenden Memory-Pfad selbst verändert, wird vor dem Merge abgewiesen; Gleichheit der Bytes ist keine Ausnahme.
+  - **CON-04:** `INDEX_NOT_HEAD`, `FOREIGN_STAGED_TREE`, `STALE_AFTER_REF_MOVE`, `WORKTREE_UNAVAILABLE`, Exit `2`, Nicht-Memory-Divergenz, Merge-Konflikte und Root-Schreibverbote bleiben unverändert blockierend.
+  - **CON-05:** Die operative KM-Strategie, `AGENTS.md`, `branch-workflow.md`, `tools.md`, Rollen-SOP und Rollenmatrix müssen dieselbe Integrator-/Projektleitungszuordnung tragen; erst der geprüfte Stand auf `main` aktiviert die Regel.
+- **Affected work units:**
+  - `task:0044-memory-hygiene-exception`
+  - `path:_src/tools/check_integration_hygiene.py`
+  - `path:AGENTS.md`
+  - `path:docs/pipeline/branch-workflow.md`
+  - `path:docs/pipeline/tools.md`
+  - `path:docs/pipeline/process-roles.md`
+  - `path:docs/pipeline/roles/project-lead.md`
+  - `path:docs/pipeline/roles/integrator.md`
+  - `path:docs/pipeline/role_artifact_matrix.csv`
+- **Affected gates:**
+  - `validation:_src/tools/check_integration_hygiene.py`
+  - `integration:repository-main`
+- **Review participation:** `none`
+- **No-review reason:** Der konforme Kandidat muss vor jeder Gate-Mutation durch den bereits beauftragten, von der protokollierenden Projektleitung verschiedenen Management-instantiated Architect gegen den exakten Commit geprüft werden; dessen append-only Review wird anschließend als Teilnahme und bindende Implementierungsauflage referenziert.
+- **Waiver:** `none`
+
+### Independent Architect pre-mutation re-review — `DEC-0044-021`
+
+- **Recorded at:** `2026-08-25T07:12:44Z`
+- **Reviewing identity:** `agent:data:architect:0044-memory-hygiene-rereview:20260825T071244Z-29d37e749`
+- **Role:** `Architekt`
+- **Capability class:** `privileged`
+- **Authority reference:** Current runtime management-instantiated Architect profile; exact re-review scope coordinated in agent-inbox message `1787641797336-9764721a`.
+- **Independence:** Data is distinct from recorder and Project Lead Jean-Luc, did not author the corrected candidate, and will not implement or integrate it.
+- **Exact reviewed candidate:** `29d37e7496bf485acf9d6cc7f1a696f27962c951`, parent `18272308798679633add6311d61ed4b9bd4599c0`.
+- **Verdict:** `supports`
+
+The corrected candidate resolves both blockers in the prior rejection. It removes
+the unpublished colliding label, allocates `DEC-0044-021` without collision in
+the reviewed baseline, and records a structurally conforming
+`decision-record@v1`. Its decision, consequences, affected units, and gates
+bind the smallest safe repository-wide behavior identified by the prior review.
+
+This support is conditional on implementing the record literally and fail
+closed. The shared executable implementation must enumerate repository-relative
+Git paths NUL-safely and recognize only paths having the exact case-sensitive
+component prefix `logs/agent-memory/` plus at least one child. Only a non-empty
+set of exclusively unstaged tracked paths satisfying that predicate is
+excepted. Any staged Memory state, mixed Memory/non-Memory divergence, other
+hygiene finding, or unavailable/indeterminate check remains blocking. Before
+merge, the exact integration candidate's changed-path set must be intersected
+with the currently allowed dirty Memory paths; any overlap aborts even when
+bytes are already equal. The same classification implementation must drive the
+checker, hard preflight, and immediate post-merge verification.
+
+The dossier remains the authority record. Activation requires a consistent
+operative projection in `AGENTS.md`, `docs/pipeline/branch-workflow.md`,
+`docs/pipeline/tools.md`, `docs/pipeline/process-roles.md`, the Project Lead and
+Integrator SOPs, and the role matrix, plus hermetic tests covering the full
+positive and negative matrix recorded in the prior review at
+`b3dc4a736e341cab713efa190ef3b3a424342724`. Any inconsistency fails closed.
+The expressly assigned privileged Integrator owns the hygiene run, verdict,
+and authorized `main` merge; Project Lead coordinates only. Nothing in this
+decision authorizes root writes, cleanup, staging, Acceptance, bypass of a
+finding, or a merge by the Project Lead. The pre-existing root deviation is not
+grandfathered before the fully reviewed implementation reaches `main`.
+
+This is a pre-mutation scope review, not implementation validation, risk
+acceptance, Task Acceptance, an integration verdict, or authority to advance
+`main`.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-022`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-discovery-runtime-cursor.md`](dec-discovery-runtime-cursor.md),
+nicht in dieser Datei.
+
+`DEC-0044-022` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+(höchste belegte Nummer dort `DEC-0044-021`) und bezeichnet die
+Managemententscheidung: Team Discovery Runtime/Provider ist Cursor; Grok ist
+dekommissioniert; bei Rekommissionierung erhält Grok ein anderes Team.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 14:03 +02.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-023`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-as-verify-0038-34-registration-20260825.md`](dec-as-verify-0038-34-registration-20260825.md).
+
+`DEC-0044-023` ist geprüft gegen `main` `28d7a00918498685b1fc13b711840df415142ecf`
+und gegen `DEC-0044-022` auf diesem Branch. Gegenstand: nur die tote Registrierung
+`/private/tmp/as-verify-0038-34` nach `preserved/*`-Snapshot entfernen; das
+bestehende Hygiene-Gate (sekundäre Worktrees dürfen den kanonischen Checkout
+blockieren) bleibt.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 15:33 +02.
+
+---
+
+## Identifier allocation 2026-08-25 — `DEC-0044-024`
+
+**Art:** append-only Zuteilungsvermerk. Der vollständige `decision-record@v1`
+steht in [`dec-0044-024-governance-ff-main.md`](dec-0044-024-governance-ff-main.md).
+
+`DEC-0044-024` ist geprüft gegen `main`
+`6a937f8414440cc84233954012ff802eaf57924c` (höchste belegte Nummer dort
+`DEC-0044-021`) und gegen `DEC-0044-022` / `DEC-0044-023` auf diesem Branch.
+Gegenstand: ff-only Landung des Tips von `roster-discovery-cursor-20260825`,
+der diesen Datensatz enthält, auf `refs/heads/main` aus dem Root-Checkout;
+Hygiene plus Root-Preflight; nicht `42eb0e98b`; nicht `0020` zuerst; nicht
+`update-ref`; Ausführung nur nach exaktem Auftrag in der Paul-Session.
+
+**Aufgezeichnet von:** Projektleiter `michael` auf Live-Anweisung des aktuellen
+Users in der Michael-Cursor-Session, 2026-08-25 18:49 +02.

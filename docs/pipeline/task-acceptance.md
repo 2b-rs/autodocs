@@ -10,6 +10,11 @@ Task acceptance means that the exact reviewed work-product baseline satisfies th
 
 The word `accepted` in this document is namespaced to **Task/Feature work-product acceptance**. It is distinct from curation-item decisions, review-request acceptance, publication, or external approval processes elsewhere in `docs/pipeline/`.
 
+Case-A4 risk integrations use the separate bounded record and fail-closed state
+machine in [`risk-integration.md`](risk-integration.md). That record is evidence
+for an integration decision, never an `Acceptance: ✓` record or a substitute for
+the independent acceptance procedure here.
+
 ## Integration checkpoints and the architect
 
 Privileged **integration review is not independently triggered uniformly**. It is triggered exactly at the nodes an **architect** marks as integration checkpoints. The checkpoint identifies the initiating review node; it does not exempt unmarked required predecessors from the prerequisite-closed Task-Acceptance batch described in section 2. This keeps independently initiated review proportional to declared risk instead of implied by hierarchy. Checkpoints are selected at decomposition or later under the timing rule below, not frozen at decomposition.

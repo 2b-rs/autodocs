@@ -1,3 +1,4 @@
+import errno
 import importlib.util
 import json
 import os
@@ -1426,6 +1427,75 @@ class SafetySurfaceTests(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 2)
         self.assertIn("legacy_task_editor.py", completed.stdout)
+
+
+class OpenDirNofollowTests(unittest.TestCase):
+    """Pins the 0038-05.01 regression and the symlink-escape protection.
+
+    ``_open_dir_nofollow`` must follow a leading OS alias whose resolved target
+    stays under the current physical prefix (macOS ``/var`` -> ``/private/var``,
+    which every ``tempfile.mkdtemp()`` path traverses) while still refusing to
+    follow a directory symlink that leaves that prefix.
+    """
+
+    def test_path_below_symlinked_system_directory_opens(self):
+        # tempfile.gettempdir() is /var/folders/... on macOS; /var is a symlink.
+        temporary = tempfile.mkdtemp()
+        self.addCleanup(lambda: __import__("shutil").rmtree(temporary, ignore_errors=True))
+        unresolved = Path(temporary)
+        resolved = unresolved.resolve()
+        if unresolved == resolved:
+            # Portability: on platforms without the alias, build one explicitly
+            # so the "in-tree alias must be followed" contract is still tested.
+            inner = resolved / "inner"
+            inner.mkdir()
+            alias = resolved / "alias"
+            try:
+                alias.symlink_to(inner, target_is_directory=True)
+            except OSError as exc:  # pragma: no cover - symlink-less filesystem
+                self.skipTest(f"symlinks unavailable: {exc}")
+            unresolved = alias
+
+        descriptor = editor._open_dir_nofollow(unresolved)
+        try:
+            self.assertTrue(stat.S_ISDIR(os.fstat(descriptor).st_mode))
+            self.assertEqual(os.stat(descriptor).st_ino, os.stat(unresolved).st_ino)
+        finally:
+            os.close(descriptor)
+
+        # The write path that first surfaced the defect must work end to end.
+        target = unresolved / "nested" / "written.txt"
+        editor._atomic_write(target, b"payload\n")
+        self.assertEqual(target.read_bytes(), b"payload\n")
+
+    def test_escaping_directory_symlink_is_still_refused(self):
+        temporary = Path(tempfile.mkdtemp()).resolve()
+        self.addCleanup(lambda: __import__("shutil").rmtree(temporary, ignore_errors=True))
+        permitted = temporary / "permitted"
+        outside = temporary / "outside"
+        (permitted / "real").mkdir(parents=True)
+        (outside / "secret").mkdir(parents=True)
+        escape = permitted / "escape"
+        try:
+            escape.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:  # pragma: no cover - symlink-less filesystem
+            self.skipTest(f"symlinks unavailable: {exc}")
+
+        # Adversarial: the resolved target leaves the physical prefix reached so
+        # far, so the descent must fail rather than hand out a descriptor.
+        with self.assertRaises(OSError) as raised:
+            editor._open_dir_nofollow(escape / "secret")
+        self.assertIn(raised.exception.errno, {errno.ENOTDIR, errno.ELOOP})
+
+        # Also refused as an intermediate component of a create-mode write, so
+        # the escape cannot be laundered through _atomic_write.
+        with self.assertRaises(OSError):
+            editor._atomic_write(escape / "secret" / "planted.txt", b"nope\n")
+        self.assertEqual(list((outside / "secret").iterdir()), [])
+
+        # Control: a non-escaping sibling under the same parent still opens.
+        descriptor = editor._open_dir_nofollow(permitted / "real")
+        os.close(descriptor)
 
 
 if __name__ == "__main__":
