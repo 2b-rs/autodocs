@@ -24,3 +24,4 @@ Definition of Done: Source/label/theme changes mark exact SVGs stale, regenerati
 
 - 2026-08-27: claimed; implemented diagram-provenance@v1 workflow + renderer hooks (env-gated, no SVG injection).
 - 2026-08-27: implementation complete `[x]`. Product REF `9c4b59780da477aa714b4cbcf168e4df48843d64`. Tests 10/10. AE evidence PASS.
+- 2026-08-27: additive schema-bind follow-up (do not amend `9c4b59780`): writers validate against the five `provenance/_schema` files via `validate_against_bound_schema` (0037-26.01@45ef86d54 pattern). Extra-field reject `DP-SCHEMA-DEVIATION`.

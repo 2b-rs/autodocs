@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 _TOOLS = Path(__file__).resolve().parent
+_ROOT = _TOOLS.parent.parent
 if str(_TOOLS) not in sys.path:
     sys.path.insert(0, str(_TOOLS))
 
@@ -26,6 +27,15 @@ import provenance_views as pv  # noqa: E402
 import version_id as vid  # noqa: E402
 
 SCHEMA = "diagram-provenance@v1"
+# Bind writers to 0037-17/19 schema files; do not fork local copies.
+REPO_SCHEMA_DIR = _ROOT / "provenance" / "_schema"
+BOUND_SCHEMAS = {
+    "typed-reference": "typed-reference-v1.schema.json",
+    "run": "run-v1.schema.json",
+    "finding": "finding-v1.schema.json",
+    "artifact-set": "artifact-set-v1.schema.json",
+    "event": "provenance-event-v1.schema.json",
+}
 SOURCE_ROLES = ("source-model", "labels", "theme", "tool", "config")
 SVG_ROLE = "rendered-svg"
 MEMBER_ROLES = SOURCE_ROLES + (SVG_ROLE,)
@@ -51,6 +61,37 @@ class DiagramProvenanceError(Exception):
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def load_bound_schema(kind: str, schema_dir: Optional[Path] = None) -> Dict[str, Any]:
+    directory = Path(schema_dir) if schema_dir else REPO_SCHEMA_DIR
+    name = BOUND_SCHEMAS[kind]
+    path = directory / name
+    if not path.is_file():
+        raise DiagramProvenanceError(
+            "DP-SCHEMA-MISSING", f"required schema {name} absent at {path}"
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def validate_against_bound_schema(
+    kind: str, record: Mapping[str, Any], schema_dir: Optional[Path] = None
+) -> None:
+    """Fail closed on extra properties or missing required fields vs provenance/_schema."""
+    schema = load_bound_schema(kind, schema_dir)
+    allowed = set(schema.get("properties") or {})
+    extra = set(record) - allowed
+    if extra and schema.get("additionalProperties") is False:
+        raise DiagramProvenanceError(
+            "DP-SCHEMA-DEVIATION",
+            f"{kind} fields {sorted(extra)} are not in {BOUND_SCHEMAS[kind]} (finding, not a local fork)",
+        )
+    for key in schema.get("required") or []:
+        if key not in record:
+            raise DiagramProvenanceError(
+                "DP-SCHEMA-DEVIATION",
+                f"{kind} missing required {key} from {BOUND_SCHEMAS[kind]}",
+            )
 
 
 def theme_payload(constants: Mapping[str, str] | None = None) -> Dict[str, str]:
@@ -238,7 +279,9 @@ class DiagramProvenanceWorkflow:
         }
         if extra:
             payload.update(dict(extra))
-        return self.store.create_event(payload)
+        result = self.store.create_event(payload)
+        validate_against_bound_schema("event", result["record"])
+        return result
 
     def record_render(
         self,
@@ -367,6 +410,8 @@ class DiagramProvenanceWorkflow:
                 "outputs": [_ref("artifact-set", set_id)],
             }
         )
+        validate_against_bound_schema("run", run["record"])
+        validate_against_bound_schema("typed-reference", run["record"]["producer"])
         aset = self.store.create_artifact_set(
             {
                 "schema_version": "1.0",
@@ -378,6 +423,7 @@ class DiagramProvenanceWorkflow:
                 "members": members,
             }
         )
+        validate_against_bound_schema("artifact-set", aset["record"])
         svg_ref = _artifact_ref(svg_path, svg_digest)
         source_ref = _artifact_ref(source_path, source_digest)
         self._event(
@@ -461,6 +507,7 @@ class DiagramProvenanceWorkflow:
                 "evidence": [old_svg, new_svg],
             }
         )
+        validate_against_bound_schema("finding", finding["record"])
         self._event(
             relation="invalidated-by",
             source=old_svg,

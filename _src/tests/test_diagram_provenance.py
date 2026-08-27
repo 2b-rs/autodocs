@@ -95,6 +95,17 @@ class DiagramProvenanceTests(unittest.TestCase):
         self.assertNotIn("run_id", SVG)
         self.assertNotIn(rec["run_id"], SVG)
 
+    def test_writers_bind_existing_provenance_schema(self):
+        self.assertTrue((ROOT / "provenance/_schema/run-v1.schema.json").is_file())
+        rec = self._render()
+        run = json.loads(
+            (self.root / "provenance" / "runs" / f"{rec['run_id']}.json").read_text()
+        )
+        dp.validate_against_bound_schema("run", run)
+        with self.assertRaises(dp.DiagramProvenanceError) as ctx:
+            dp.validate_against_bound_schema("run", {**run, "local_fork_field": 1})
+        self.assertEqual(ctx.exception.code, "DP-SCHEMA-DEVIATION")
+
     def test_rejects_svg_provenance_injection(self):
         dirty = SVG.replace("</svg>", "<!-- diagram-provenance@v1 run_id=x --></svg>")
         with self.assertRaises(dp.DiagramProvenanceError) as ctx:
