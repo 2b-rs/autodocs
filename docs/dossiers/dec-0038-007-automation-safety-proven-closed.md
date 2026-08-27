@@ -1,0 +1,56 @@
+# Decision record for proven-closed disposition kind
+
+### `DEC-0038-007` — Authorize a durable `proven-closed` disposition anchored to immutable proof references
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-27T21:26:23Z`
+- **Deciding identity:** `agent:jadzia:automation-safety-proven-closed:20260827`
+- **Role:** `Architekt`
+- **Authority reference:** Management decision `agent-inbox:1787854883138-45083376` (item 4 = "A+B"); OFFER/AWARD `agent-inbox:1787864903627-53ee454d`
+- **Subject:** Introduction of a durable `proven-closed` disposition kind to `_src/tools/automation_safety_policy.json` to safely handle validated findings on terminal owner tasks without violating invariants.
+- **Decision:** Authorize the addition of a new disposition kind `proven-closed` to the automation safety schema. This disposition kind explicitly marks findings as validated false positives or explicitly acceptable because the task is confirmed closed and the state is proven. A `proven-closed` row must be anchored to an immutable `owner_ref` (reachable proof commit), an `evidence_sha256`, and a reviewable `proof_summary`. This DEC waives the terminal checks for both `owner_task` and `expires_after_task` ONLY for the `proven-closed` kind. Validity expires if the proof commit is unreachable, the digest no longer matches (`POLICY_STALE`), or a reviewer invalidates it—not when the custodian Task closes.
+- **Technical justification:** The automation safety checker (`automation_safety.py:2815` and `2816-2820`) unconditionally rejects any terminal `owner_task` and terminal `expires_after_task`. Currently, 33 confirmed terminal `[w]` owner tasks in `TODO.md:793` fail this check. Management decision `1787854883138-45083376` (item 4 = "A+B") instructed to fix the 33 entries and implement `proven-closed`. A distinct `proven-closed` kind cleanly separates open operational dispositions from durably closed, validated historical findings. Anchoring it to `owner_ref` and `evidence_sha256` prevents the "rubber stamp" risk by ensuring the proof is mechanically verifiable.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Implement `proven-closed` disposition anchored to `owner_ref`, `evidence_sha256`, and `proof_summary`, waiving terminal checks for `owner_task` and `expires_after_task`.
+    - **Disposition:** `selected`
+    - **Reason:** Cleanly differentiates active dispositions from historically validated findings using immutable proof anchors, satisfying the management decision safely.
+  - **ALT-02:** Remove the terminal `owner_task`/`expires_after_task` checks completely.
+    - **Disposition:** `rejected`
+    - **Reason:** Weakens the safety invariant, allowing active operations to hide behind closed tasks improperly.
+  - **ALT-03:** Merely waive the terminal `owner_task` check for a new kind flag without proof anchors.
+    - **Disposition:** `rejected`
+    - **Reason:** Insufficient. Without `owner_ref` and `evidence_sha256`, this would act as a rubber stamp and fails to address the terminal `expires_after_task` check which the 33 entries also trip.
+- **Consequences:**
+  - **CON-01:** The schema for automation safety dispositions must be updated to accept the `proven-closed` kind.
+  - **CON-02:** The automation safety checker must be modified to exempt BOTH `owner_task` and `expires_after_task` terminal checks when the disposition kind is `proven-closed`.
+  - **CON-03:** A `proven-closed` disposition requires `owner_ref`, `evidence_sha256`, and `proof_summary`. Unmatched digests must still correctly trigger `POLICY_STALE`.
+  - **CON-04:** This DEC record only authorizes the governance change; product implementation must be performed separately after this DEC is merged.
+- **Affected work units:**
+  - `task:0038-16`
+  - `task:0039-01`
+  - `task:0041-05`
+  - `feature:0038`
+  - `path:_src/tools/automation_safety.py`
+  - `path:_src/tools/automation_safety_policy.json`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `validation:automation-safety`
+  - `task-start:0039-01`
+- **Review participation:** `none`
+- **No-review reason:** Awaiting independent review by Saru as arranged by Project Lead Kathryn.
+- **Waiver:** `none`
+
+## Revision history
+
+- **2026-08-27, r1 (`14c6b1791`):** initial candidate. Reviewed by `saru`, verdict `scope-not-supported`
+  (`docs/dossiers/automation-safety-proven-closed-scope-review-saru.md` on
+  `review-automation-safety-proven-closed-saru-20260827`, tip `4f51a4963`): F-02 non-conforming ID,
+  F-03 unaddressed `expires_after_task` terminal check and missing proof-anchor fields, F-04 wrong
+  file citation (`DONE.md:793` instead of `TODO.md:793`), F-05 incomplete blast-radius list.
+- **2026-08-27, r2 (this record):** corrected ID (`DEC-0038-007`, verified unused on `main`), added
+  `owner_ref`/`evidence_sha256`/`proof_summary` anchoring and explicit `expires_after_task` waiver
+  (ALT-03 added to reject the unanchored alternative), corrected citation to `TODO.md:793`, widened
+  affected work units/gates. Submitted for re-review by `saru`.
