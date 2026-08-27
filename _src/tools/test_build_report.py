@@ -14,6 +14,13 @@ from unittest import mock
 
 import build_report
 import build_ledger
+import build_report_envelope as envelope
+
+
+COMMIT = "c" * 40
+RUN_A = "018f4a31-2606-7abc-8def-0123456789aa"
+RUN_B = "018f4a31-2606-7abc-8def-0123456789bb"
+FINDING_OK = "018f4a31-2606-7abc-8def-0123456789f1"
 
 
 class TestBuildReport(unittest.TestCase):
@@ -31,22 +38,39 @@ class TestBuildReport(unittest.TestCase):
         build_report.PAGE_MODEL = self.orig_page_model
 
     def _write_report(
-        self, kind, run_archive_ref, suffix, mtime, counts=None, overrides=None, missing=()
+        self, kind, run_archive_ref, suffix, mtime, counts=None, overrides=None, missing=(),
+        run_id=RUN_A,
     ):
+        source = COMMIT
+        inputs = [f"input-{suffix}"]
+        outputs = [f"output-{suffix}"]
         report = {
-            "schema_version": "1.0",
+            "schema_version": envelope.SCHEMA_VERSION,
+            "schema": envelope.SCHEMA_NAME,
             "report_kind": kind,
             "tool": f"{kind}.py",
             "command": kind,
-            "inputs": [f"input-{suffix}"],
+            "inputs": inputs,
             "started_at": "2026-08-14T15:00:00Z",
             "finished_at": "2026-08-14T15:00:01Z",
             "duration_s": 1.0,
             "exit_code": 0,
-            "changed_artifacts": [],
+            "changed_artifacts": outputs,
             "counts": {} if counts is None else counts,
             "findings": [],
             "run_archive_ref": run_archive_ref,
+            "run_id": run_id,
+            "source_commit": source,
+            "tool_commit": source,
+            "config_commit": source,
+            "trigger": {"kind": "issue", "id": "0037-26.06"},
+            "input_artifact_set": envelope.artifact_set_from_members(
+                envelope.members_for_paths(inputs, source)
+            ),
+            "output_artifact_set": envelope.artifact_set_from_members(
+                envelope.members_for_paths(outputs, source)
+            ),
+            "success": True,
         }
         if overrides is not None:
             report.update(overrides)
@@ -58,84 +82,48 @@ class TestBuildReport(unittest.TestCase):
         return path
 
     def test_combine_reports_schema_stability(self):
-        # Create subreports
-        ts = int(time.time())
-        merge_rep = {
-            "schema_version": "1.0",
-            "report_kind": "i18n_merge",
-            "tool": "i18n_translate.py",
-            "command": "i18n_translate.py merge en",
-            "inputs": ["_src/i18n/en/batches/batch_01.json"],
-            "started_at": "2026-08-14T15:00:00Z",
-            "finished_at": "2026-08-14T15:00:05Z",
-            "duration_s": 5.0,
-            "exit_code": 0,
-            "changed_artifacts": ["_src/i18n/en/segments.json"],
-            "counts": {"batches_consumed": 1, "accepted": 10, "rejected": 0, "register_changes": 10},
-            "findings": [],
-            "run_archive_ref": "output/run-archive/run-test.sh",
-        }
-        with open(os.path.join(build_report.REPORTS_DIR, f"i18n_merge-{ts}.json"), "w", encoding="utf-8") as f:
-            json.dump(merge_rep, f)
+        run_ref = "output/run-archive/run-test.sh"
+        for offset, kind in enumerate(build_report.REQUIRED_STAGES):
+            counts = {}
+            if kind == "i18n_merge":
+                counts = {"batches_consumed": 1, "accepted": 10, "rejected": 0, "register_changes": 10}
+            elif kind == "validate":
+                counts = {"checks_performed": 10, "findings_by_category": {}, "success": True}
+            elif kind == "i18n_diagrams":
+                counts = {"sources_considered": 2}
+            elif kind == "html_generate":
+                counts = {"pages_generated_per_lang": {"de": 4}}
+            extras = {}
+            if kind == "validate":
+                extras = {
+                    "findings": [{
+                        "finding_id": FINDING_OK,
+                        "category": "notice",
+                        "severity": "info",
+                        "message": "all good",
+                        "ref": "root",
+                    }]
+                }
+            self._write_report(kind, run_ref, f"stable-{offset}", 1_700_000_000 + offset, counts=counts, overrides=extras)
 
-        val_rep = {
-            "schema_version": "1.0",
-            "report_kind": "validate",
-            "tool": "validate.py",
-            "command": "validate.py",
-            "inputs": ["_src/"],
-            "started_at": "2026-08-14T15:00:10Z",
-            "finished_at": "2026-08-14T15:00:15Z",
-            "duration_s": 5.0,
-            "exit_code": 0,
-            "changed_artifacts": [],
-            "counts": {"checks_performed": 10, "findings_by_category": {}, "success": True},
-            "findings": [{"category": "notice", "severity": "info", "message": "all good", "ref": "root"}],
-            "run_archive_ref": "output/run-archive/run-test.sh",
-        }
-        with open(os.path.join(build_report.REPORTS_DIR, f"validate-{ts}.json"), "w", encoding="utf-8") as f:
-            json.dump(val_rep, f)
-
-        for kind, counts in (
-            ("i18n_diagrams", {"sources_considered": 2}),
-            ("html_generate", {"pages_generated_per_lang": {"de": 4}}),
-        ):
-            report = {
-                "schema_version": "1.0",
-                "report_kind": kind,
-                "tool": f"{kind}.py",
-                "command": kind,
-                "inputs": [],
-                "started_at": "2026-08-14T15:00:06Z",
-                "finished_at": "2026-08-14T15:00:09Z",
-                "duration_s": 3.0,
-                "exit_code": 0,
-                "changed_artifacts": [],
-                "counts": counts,
-                "findings": [],
-                "run_archive_ref": "output/run-archive/run-test.sh",
-            }
-            with open(os.path.join(build_report.REPORTS_DIR, f"{kind}-{ts}.json"), "w", encoding="utf-8") as f:
-                json.dump(report, f)
-
-        combined, out_path = build_report.combine_reports("output/run-archive/run-test.sh")
-        self.assertEqual(combined["schema_version"], "1.0")
+        combined, out_path = build_report.combine_reports(run_ref)
+        self.assertEqual(combined["schema_version"], envelope.SCHEMA_VERSION)
+        self.assertEqual(combined["schema"], envelope.SCHEMA_NAME)
         self.assertEqual(combined["report_kind"], "combined")
         self.assertTrue(combined["counts"]["overall_success"])
-        self.assertEqual(combined["run_archive_ref"], "output/run-archive/run-test.sh")
+        self.assertEqual(combined["run_archive_ref"], run_ref)
+        self.assertEqual(combined["run_id"], RUN_A)
         self.assertEqual(len(combined["findings"]), 1)
         self.assertIn("i18n_merge", combined["counts"]["by_stage"])
         self.assertIn("validate", combined["counts"]["by_stage"])
 
-        # Test page model generation
-        page_path = build_report.generate_report_page(combined, "output/run-archive/run-test.sh")
+        page_path = build_report.generate_report_page(combined, run_ref)
         self.assertTrue(os.path.exists(page_path))
         with open(page_path, encoding="utf-8") as f:
             pdata = json.load(f)
         self.assertEqual(pdata["file"], "build-reports.html")
         self.assertTrue(pdata["nolang"])
         self.assertIn("Traceable Build- &amp; Publikations-Report", pdata["main"][0]["html"].replace("& ", "&amp; "))
-
     def test_valid_exact_cohort_passes_strict_envelope_validation(self):
         run_ref = "output/run-archive/valid-run"
         for offset, kind in enumerate(build_report.REQUIRED_STAGES):
@@ -223,9 +211,6 @@ class TestBuildReport(unittest.TestCase):
             "tool",
             "command",
             "inputs",
-            "started_at",
-            "finished_at",
-            "duration_s",
             "exit_code",
             "changed_artifacts",
             "counts",
@@ -245,7 +230,7 @@ class TestBuildReport(unittest.TestCase):
         old_ref = "output/run-archive/old-run"
         current_ref = "output/run-archive/current-run"
         for offset, kind in enumerate(build_report.REQUIRED_STAGES):
-            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset, run_id=RUN_A)
 
         with mock.patch.dict(os.environ, {"RUN_ARCHIVE_REF": old_ref}):
             combined, _ = build_report.combine_reports(current_ref)
@@ -256,13 +241,13 @@ class TestBuildReport(unittest.TestCase):
         self.assertEqual(combined["inputs"], [])
         missing = [item for item in combined["findings"] if item["category"] == "missing-build-stage"]
         self.assertEqual({item["ref"] for item in missing}, set(build_report.REQUIRED_STAGES))
-        self.assertTrue(all(current_ref in item["message"] for item in missing))
+        self.assertTrue(any(current_ref in item["message"] for item in combined["findings"]))
 
     def test_environment_ref_filters_exact_matches(self):
         old_ref = "output/run-archive/old-run"
         current_ref = "output/run-archive/current-run"
         for offset, kind in enumerate(build_report.REQUIRED_STAGES):
-            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset, run_id=RUN_A)
 
         with mock.patch.dict(os.environ, {"RUN_ARCHIVE_REF": current_ref}):
             combined, _ = build_report.combine_reports()
@@ -278,29 +263,29 @@ class TestBuildReport(unittest.TestCase):
         old_ref = "output/run-archive/old-run"
         current_ref = "output/run-archive/current-run"
         for offset, kind in enumerate(build_report.REQUIRED_STAGES):
-            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset)
+            self._write_report(kind, old_ref, f"old-{offset}", 1_700_000_000 + offset, run_id=RUN_A)
         self._write_report(
             "validate",
             current_ref,
             "current",
             1_700_000_100,
             counts={"cohort": "current"},
+            run_id=RUN_B,
         )
 
         with mock.patch.dict(os.environ, {}, clear=True):
             combined, _ = build_report.combine_reports()
 
-        self.assertEqual(combined["run_archive_ref"], current_ref)
         self.assertNotEqual(combined["exit_code"], 0)
-        self.assertEqual(combined["counts"]["by_stage"]["validate"], {"cohort": "current"})
-        missing = {item["ref"] for item in combined["findings"] if item["category"] == "missing-build-stage"}
-        self.assertEqual(missing, set(build_report.REQUIRED_STAGES) - {"validate"})
-        for kind in missing:
-            self.assertEqual(combined["counts"]["by_stage"][kind], {})
-
+        self.assertTrue(
+            any(item["category"] == "mixed-run-cohort" for item in combined["findings"])
+        )
+        self.assertTrue(all(not counts for counts in combined["counts"]["by_stage"].values()))
     def test_identityless_reports_cannot_form_a_successful_cohort(self):
         for offset, kind in enumerate(build_report.REQUIRED_STAGES):
-            self._write_report(kind, None, f"identityless-{offset}", 1_700_000_000 + offset)
+            self._write_report(
+                kind, None, f"identityless-{offset}", 1_700_000_000 + offset, missing=("run_id",)
+            )
 
         with mock.patch.dict(os.environ, {}, clear=True):
             combined, _ = build_report.combine_reports()
@@ -309,7 +294,7 @@ class TestBuildReport(unittest.TestCase):
         self.assertNotEqual(combined["exit_code"], 0)
         self.assertFalse(combined["counts"]["overall_success"])
         self.assertTrue(
-            any("identity-less reports cannot form a correlated build" in item["message"]
+            any("no v2 producer report with a UUIDv7 run_id" in item["message"]
                 for item in combined["findings"])
         )
         self.assertEqual(

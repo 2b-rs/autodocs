@@ -37,6 +37,7 @@ from pathlib import Path
 from lxml import html as LH
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 from lib_docmodel import (SRC, ROOT, PAGES_DIR, LANGS, RTL, render_page,
                           load_templates, iter_pages)
 
@@ -721,7 +722,8 @@ def _eligible_publication_cohorts(build_report):
             if data.get("diagnostic_no_ledger") is True:
                 diagnostic_refs.add(ref)
             continue
-        if build_report._validate_subreport(data, ref):
+        selected_run = data.get("run_id") if isinstance(data.get("run_id"), str) else None
+        if build_report._validate_subreport(data, selected_run):
             continue
         by_ref.setdefault(ref, {})[data["report_kind"]] = data
 
@@ -1064,7 +1066,6 @@ def main(argv=None):
     _t0 = time.time()
     run_checks(CHECKS)
 
-    finished_at = time.time()
     _exit_code = 1 if problems else 0
 
     findings_by_category = {}
@@ -1073,29 +1074,24 @@ def main(argv=None):
         findings_by_category[cat] = findings_by_category.get(cat, 0) + 1
 
     reports_dir = os.path.join(ROOT, "output", "build-reports")
-    os.makedirs(reports_dir, exist_ok=True)
-    report = {
-        "schema_version": "1.0",
-        "report_kind": "validate",
-        "tool": "validate.py",
-        "command": "validate.py " + " ".join(sys.argv[1:]),
-        "inputs": ["_src/", "output/"],
-        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_t0)),
-        "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
-        "duration_s": round(finished_at - _t0, 3),
-        "exit_code": _exit_code,
-        "changed_artifacts": [],
-        "counts": {
+    import build_report_envelope as envelope
+    envelope.emit_and_write_stage(
+        reports_dir,
+        ROOT,
+        report_kind="validate",
+        tool="validate.py",
+        command="validate.py " + " ".join(sys.argv[1:]),
+        inputs=["_src/"],
+        started_at=_t0,
+        exit_code=_exit_code,
+        changed_artifacts=[],
+        counts={
             "checks_performed": len(checks_performed),
             "findings_by_category": findings_by_category,
             "success": _exit_code == 0,
         },
-        "findings": structured_findings,
-        "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
-    }
-    report_file = os.path.join(reports_dir, f"validate-{int(finished_at)}.json")
-    with open(report_file, "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=1)
+        findings=structured_findings,
+    )
 
     if problems:
         print("PROBLEME:")

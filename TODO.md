@@ -1335,7 +1335,7 @@ HOW TO USE:
   - **Acceptance criteria:** Link stable finding, source report/evidence/version, issue/criterion/run/campaign, claim/queue transitions, curator decision/authority, applied change, invalidation/supersession, and published result without treating requester identity as approval.
   - **Definition of Done:** Lifecycle integration tests trace open→claim→decision→apply/publish and reject unauthorized, stale, duplicate, fabricated, or orphaned transitions.
 
-- [ ] **0037-26.06** PREREQ: 0037-26.06:0037-17, 0037-26.06:0037-19 Extend validation and build reports with stable findings, common run identity, and artifact manifests.
+- [p] **0037-26.06** PREREQ: 0037-26.06:0037-17, 0037-26.06:0037-19 Extend validation and build reports with stable findings, common run identity, and artifact manifests. Claim: `TODO-worf-0037-26.06-20260827T124500Z-worf2606.md` (`owner_token: agent:worf-0037-26-06:0037-26.06:20260827T124500Z-worf2606`).
   - **Acceptance criteria:** Migrate build-report `1.0` explicitly; require shared run ID, source/tool/config commits, exact stage inputs/outputs, stable finding IDs, issue/criterion/campaign trigger, and success/failure; combining reports requires the same run/artifact lineage and all required stages, never latest mtime.
   - **Definition of Done:** Integration tests reject mixed runs, missing/malformed stages, unstable findings, incomplete artifact sets, and self-validating report injection and support reverse trace from final report to trigger/input.
 

@@ -43,7 +43,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 I18N = os.path.join(HERE, "i18n")
 WORK = os.path.join(I18N, "work")
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "tools"))
 from lib_docmodel import LANGS
+import build_report_envelope as envelope
 
 REPORTS_DIR = os.path.join(HERE, "..", "output", "build-reports")
 SITE_PATH = os.path.join(HERE, "site.json")
@@ -68,28 +70,20 @@ GRAPH_UI_REQUIRED = {
 
 def _write_report(report_kind, tool, command, inputs, started_at, exit_code,
                    changed_artifacts, counts, findings):
-    """Emit a build-report JSON conforming to docs/pipeline/build-report-schema.md."""
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    finished_at = time.time()
-    report = {
-        "schema_version": "1.0",
-        "report_kind": report_kind,
-        "tool": tool,
-        "command": command,
-        "inputs": inputs,
-        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started_at)),
-        "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
-        "duration_s": round(finished_at - started_at, 3),
-        "exit_code": exit_code,
-        "changed_artifacts": changed_artifacts,
-        "counts": counts,
-        "findings": findings,
-        "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
-    }
-    fname = "%s-%d.json" % (report_kind, int(finished_at))
-    with open(os.path.join(REPORTS_DIR, fname), "w", encoding="utf-8") as f:
-        json.dump(report, f, ensure_ascii=False, indent=1)
-    return report
+    """Emit a build-report@v2 JSON (explicit successor of schema 1.0)."""
+    return envelope.emit_and_write_stage(
+        REPORTS_DIR,
+        os.path.dirname(HERE),
+        report_kind=report_kind,
+        tool=tool,
+        command=command,
+        inputs=inputs,
+        started_at=started_at,
+        exit_code=exit_code,
+        changed_artifacts=changed_artifacts,
+        counts=counts,
+        findings=findings,
+    )
 
 _PH = re.compile(r"\u27e6\d+\u27e7")
 _IDS = re.compile(

@@ -29,6 +29,7 @@ for _p in (SRC, os.path.join(SRC, "tools")):
 
 import build_ledger  # noqa: E402
 import build_report  # noqa: E402
+import build_report_envelope as envelope  # noqa: E402
 import validate  # noqa: E402
 
 
@@ -60,20 +61,36 @@ def _ledger_entry(recorded_at, ref, digest, backfilled=False):
 
 
 def _subreport(kind, ref, finished_at="2026-08-20T10:30:00Z"):
+    commit = "c" * 40
+    inputs = ["_src/"]
+    outputs = [f"out/{kind}.txt"]
     return {
-        "schema_version": "1.0",
+        "schema_version": envelope.SCHEMA_VERSION,
+        "schema": envelope.SCHEMA_NAME,
         "report_kind": kind,
         "tool": f"{kind}.py",
         "command": f"{kind}.py",
-        "inputs": ["_src/"],
+        "inputs": inputs,
         "started_at": "2026-08-20T10:00:00Z",
         "finished_at": finished_at,
         "duration_s": 1.0,
         "exit_code": 0,
-        "changed_artifacts": [],
+        "changed_artifacts": outputs,
         "counts": {},
         "findings": [],
         "run_archive_ref": ref,
+        "run_id": "018f4a31-2606-7abc-8def-0123456789aa",
+        "source_commit": commit,
+        "tool_commit": commit,
+        "config_commit": commit,
+        "trigger": {"kind": "issue", "id": "0037-26.06"},
+        "input_artifact_set": envelope.artifact_set_from_members(
+            envelope.members_for_paths(inputs, commit)
+        ),
+        "output_artifact_set": envelope.artifact_set_from_members(
+            envelope.members_for_paths(outputs, commit)
+        ),
+        "success": True,
     }
 
 
