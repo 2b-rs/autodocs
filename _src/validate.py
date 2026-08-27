@@ -843,20 +843,60 @@ def check_automation_safety():
         )
 
 
+# Ordered list of (name, callable) pairs run by main(). Kept as an explicit,
+# introspectable sequence (rather than 12 bare calls) so progress reporting and
+# tests can iterate it without re-deriving check order from source text.
+CHECKS = [
+    ("check_automation_safety", check_automation_safety),
+    ("check_build", check_build),
+    ("check_links", check_links),
+    ("check_langs", check_langs),
+    ("check_requirement_review_schema", check_requirement_review_schema),
+    ("check_namespaces", check_namespaces),
+    ("check_home_links", check_home_links),
+    ("check_no_hardcoded_german", check_no_hardcoded_german),
+    ("check_client_rendered_german", check_client_rendered_german),
+    ("check_record_status", check_record_status),
+    ("check_workflow_lifecycle", check_workflow_lifecycle),
+    ("check_report_freshness", check_report_freshness),
+]
+
+
+def run_checks(checks, out=None, clock=time.time):
+    """Run an ordered (name, callable) sequence, emitting one deterministic
+    progress line before and after each check: "n/total start <name>" and
+    "n/total done <name> <elapsed>s". Returns a list of
+    (name, elapsed_seconds) tuples in run order.
+
+    Exists so a caller with a bounded timeout (e.g. an integration checkpoint)
+    can distinguish "slow but progressing" from "stuck" — see
+    _src/validate.py's non-termination investigation
+    (validate-py-nontermination-20260827): validate.py previously produced no
+    output at all until every check had finished, which was indistinguishable
+    from a hang to a bounded caller even though the run was merely slow.
+
+    `out` defaults to sys.stdout at call time (not at import time) so tests
+    can pass an io.StringIO() or a list-collecting callable without needing to
+    patch sys.stdout.
+    """
+    if out is None:
+        out = sys.stdout
+    total = len(checks)
+    timings = []
+    for index, (name, fn) in enumerate(checks, start=1):
+        print("[validate] %d/%d start %s" % (index, total, name), file=out, flush=True)
+        started = clock()
+        fn()
+        elapsed = clock() - started
+        timings.append((name, elapsed))
+        print("[validate] %d/%d done  %s (%.2fs)" % (index, total, name, elapsed),
+              file=out, flush=True)
+    return timings
+
+
 def main():
     _t0 = time.time()
-    check_automation_safety()
-    check_build()
-    check_links()
-    check_langs()
-    check_requirement_review_schema()
-    check_namespaces()
-    check_home_links()
-    check_no_hardcoded_german()
-    check_client_rendered_german()
-    check_record_status()
-    check_workflow_lifecycle()
-    check_report_freshness()
+    run_checks(CHECKS)
 
     finished_at = time.time()
     _exit_code = 1 if problems else 0
