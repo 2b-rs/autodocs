@@ -1319,7 +1319,7 @@ HOW TO USE:
   - **Acceptance criteria:** Record source/tool/config commits, exact PDF/text/backend input artifact sets, issue/criterion/campaign/run refs, stable finding IDs, output reports/artifacts, trigger/cause, and evidence/privacy class; failures and backend disagreement produce linked findings.
   - **Definition of Done:** Integration tests trace a report/finding to exact source bytes and trigger and reject path-only, mtime-only, fabricated, or mismatched-run provenance.
 
-- [ ] **0037-26.02** PREREQ: 0037-26.02:0037-17, 0037-26.02:0037-19 Extend `_src/spec/campaigns/*.json` writers with immutable campaign snapshots and content manifests.
+- [p] **0037-26.02** PREREQ: 0037-26.02:0037-17, 0037-26.02:0037-19 Extend `_src/spec/campaigns/*.json` writers with immutable campaign snapshots and content manifests. Claim: `TODO-programmer-0037-26.02-20260827T124300Z.md` (`owner_token: agent:programmer-0037-26-02:0037-26.02:20260827T124300Z`).
   - **Acceptance criteria:** Adapt `campaign-manifest@v1` without rewriting history; replace listing/mtime `corpus_hash` as evidence identity with a sorted content artifact set while retaining it only as a staleness hint; link trigger issue/criterion, runs, queue snapshot, decisions, published reports, source/tool/config commits, and scope.
   - **Definition of Done:** Migration and producer tests prove old manifests receive explicit legacy disposition, new snapshots are immutable/queryable, content changes alter identity, and mtime-only changes do not.
 
