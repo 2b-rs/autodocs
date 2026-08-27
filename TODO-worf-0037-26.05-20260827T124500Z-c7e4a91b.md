@@ -13,7 +13,7 @@ base_pin: 2064704457f98c66fb6f77ad3c263415864fe2ff (0037-19 [x] remasured 2026-0
 merged_prereq_tips:
   - 0037-17 package tip ancestor of 0037-19 (REF 7be6c50137bf726b291d1485c8fa7f588cc54046)
   - 0037-19 2064704457f98c66fb6f77ad3c263415864fe2ff
-state: [p]
+state: [x]
 startup_review: 0037-19 [x] on branch 0037-19 / worktree /Users/tobias.anton/devel/.worktrees/0037-19; 0037-17 [x]; Task 0037-26 parent branch does not exist — Subtask cut from 0037-19 per dispatcher start pin. No sibling 26/27 merge. Requester identity is not approval.
 
 ## Task text (verbatim)
@@ -35,4 +35,5 @@ Acceptance; main; DONE; 0037-16 STOP lift; sibling 26/27; 16/19/20/38/42 product
 
 ## Progress
 
-- Claim created; next: implement envelope adapter + lifecycle tests.
+- Implementation complete at REF `6edd1f709b26676fd90ed99cc68fc41705453297`.
+- Validation: `python3 -m unittest _src.tests.test_curation_provenance` 9/9 OK.
