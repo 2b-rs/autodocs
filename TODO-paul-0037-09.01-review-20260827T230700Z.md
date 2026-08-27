@@ -10,7 +10,7 @@ product_ref: 7b36370e84c5c793e705a1d418e2b5db2b7cc965
 capability_class: privileged
 execution_authority: direct
 startup_review: SANDBOX.md, AGENTS.md, docs/pipeline/task-acceptance.md reviewed
-state: [p]
+state: [x]
 write_scope:
   - docs/campaign-evidence/review-0037-09.01-paul-20260827T230700Z/
   - TODO-paul-0037-09.01-review-20260827T230700Z.md
@@ -31,4 +31,4 @@ ACCEPT `1787871785038-d47b85a4` of michael OFFER `1787871554232-7418d522`. Expli
 
 ## Next step
 
-Commit review evidence, report verdict to michael, wait for later AWARD before any Acceptance bookkeeping.
+Evidence `debf8e26c41897453366330dd1032cdde2bdba7b`. Work-product verdict `accepted`. No `Acceptance: ✓`. Do not land this branch on main until a later AWARD names Acceptance bookkeeping. Await that AWARD.
