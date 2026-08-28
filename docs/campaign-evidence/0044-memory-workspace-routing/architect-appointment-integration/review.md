@@ -24,4 +24,3 @@
 - `process_doc_doctor.py --json`: completed with `ok: true`; the candidate introduces no new reported structural error. The existing unrelated `DOC001` finding for `docs/dossiers/0044-03-gate-scope-proposal.md` and the existing `DOC005` warning for DEC-0044-029 remain outside this scope.
 
 The candidate is suitable for unchanged carry and conditional integration, subject to the required hygiene and guarded root transaction.
-
