@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hermetic tests for `_src/tools/provision_tmp_worktree.sh` (Task 0038-22).
+"""Hermetic tests for `_src/tools/provision_tmp_worktree.sh` (Tasks 0038-22/0044-17).
 
 Builds a throwaway "canonical repo" under a temp directory and drives the
 shell script against it via `AUTODOCS_DEVEL`/`AUTODOCS_WORKTREES_ROOT` env
@@ -95,6 +95,42 @@ class FixtureRepo:
         target.parent.mkdir(parents=True, exist_ok=True)
         self.git("worktree", "add", str(target), branch)
         return target
+
+    def record_item(
+        self,
+        target: Path,
+        item: str,
+        *,
+        accepted: bool,
+        claim_prefix: str,
+        extra_claim_item: Optional[str] = None,
+    ) -> Path:
+        acceptance = " **Acceptance: ✓**" if accepted else ""
+        (target / "TODO.md").write_text(
+            f"## Feature: {item[:4]} — Fixture\n\n"
+            f"- [x] **{item}** Fixture item.{acceptance}\n",
+            encoding="utf-8",
+        )
+        claim = target / f"{claim_prefix}-owner-{item}-request.md"
+        claim.write_text(
+            f"task_id: {item}\nrequest_id: request\nowner_token: agent:owner:{item}:request\n",
+            encoding="utf-8",
+        )
+        paths = ["TODO.md", claim.name]
+        if extra_claim_item:
+            extra = target / f"TODO-other-{extra_claim_item}-request.md"
+            extra.write_text(
+                f"task_id: {extra_claim_item}\nrequest_id: other\n"
+                f"owner_token: agent:other:{extra_claim_item}:other\n",
+                encoding="utf-8",
+            )
+            paths.append(extra.name)
+        self.git("add", *paths, cwd=target)
+        self.git("commit", "-q", "-m", f"record {item}", cwd=target)
+        return claim
+
+    def merge_to_main(self, branch: str) -> None:
+        self.git("merge", "--no-ff", "-m", f"merge {branch}", branch)
 
 
 class ProvisionOneTests(unittest.TestCase):
@@ -235,48 +271,92 @@ class ReapSweepTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.repo.close()
 
-    def test_reaps_clean_claimless_scratch_worktree(self) -> None:
+    def test_keeps_clean_claimless_worktree_without_terminal_evidence(self) -> None:
         scratch = self.repo.make_extra_worktree("0200-01")
-        self.assertTrue(scratch.exists())
-
         result = self.repo.run_script(["0100"])
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("reaped orphaned scratch worktree", result.stderr)
-        self.assertFalse(scratch.exists())
-        listing = self.repo.git("worktree", "list").stdout
-        self.assertNotIn("0200-01", listing)
+        self.assertTrue(scratch.exists())
 
-    def test_surfaces_dirty_claimless_scratch_worktree_without_deleting(self) -> None:
+    def test_reaps_accepted_clean_main_reachable_worktree(self) -> None:
         scratch = self.repo.make_extra_worktree("0200-02")
-        (scratch / "uncommitted.txt").write_text("wip\n", encoding="utf-8")
+        self.repo.record_item(scratch, "0200-02", accepted=True, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-02")
 
-        result = self.repo.run_script(["0100"])
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("SURFACE", result.stderr)
-        self.assertIn(str(scratch), result.stderr)
-        self.assertTrue(scratch.exists(), "a worktree with uncommitted content must never be deleted")
-        self.assertTrue((scratch / "uncommitted.txt").exists())
+        self.assertIn("reaped accepted worktree", result.stderr)
+        self.assertFalse(scratch.exists())
+        self.assertEqual(
+            self.repo.git("rev-parse", "--verify", "refs/heads/0200-02").returncode,
+            0,
+        )
 
-    def test_never_reaps_worktree_carrying_a_claim_file(self) -> None:
+    def test_historical_prerequisite_claim_does_not_block_terminal_item(self) -> None:
         scratch = self.repo.make_extra_worktree("0200-03")
-        claim = scratch / "TODO-someone-0200-03-req1.md"
-        claim.write_text("# claim\n", encoding="utf-8")
-        self.repo.git("add", "TODO-someone-0200-03-req1.md", cwd=scratch)
-        self.repo.git("commit", "-q", "-m", "claim", cwd=scratch)
-        # Fully clean from Git's perspective, but must still be protected.
-        self.assertTrue(self.repo.git("status", "--porcelain", cwd=scratch).stdout.strip() == "")
+        self.repo.record_item(
+            scratch,
+            "0200-03",
+            accepted=True,
+            claim_prefix="DONE",
+            extra_claim_item="0199-01",
+        )
+        self.repo.merge_to_main("0200-03")
 
-        result = self.repo.run_script(["0100"])
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(scratch.exists())
+
+    def test_keeps_exact_item_todo_claim(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-04")
+        self.repo.record_item(scratch, "0200-04", accepted=True, claim_prefix="TODO")
+        self.repo.merge_to_main("0200-04")
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(scratch.exists())
-        self.assertTrue(claim.exists())
+
+    def test_keeps_accepted_but_unmerged_worktree(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-05")
+        self.repo.record_item(scratch, "0200-05", accepted=True, claim_prefix="DONE")
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(scratch.exists())
+
+    def test_surfaces_dirty_accepted_worktree_without_deleting(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-06")
+        self.repo.record_item(scratch, "0200-06", accepted=True, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-06")
+        (scratch / "uncommitted.txt").write_text("wip\n", encoding="utf-8")
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("uncommitted or untracked", result.stderr)
+        self.assertTrue(scratch.exists())
+
+    def test_keeps_unaccepted_done_claim(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-07")
+        self.repo.record_item(scratch, "0200-07", accepted=False, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-07")
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("no unique current Acceptance", result.stderr)
+        self.assertTrue(scratch.exists())
+
+    def test_keeps_locked_accepted_worktree(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-08")
+        self.repo.record_item(scratch, "0200-08", accepted=True, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-08")
+        self.repo.git("worktree", "lock", str(scratch))
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(scratch.exists())
 
     def test_never_touches_worktrees_outside_configured_root(self) -> None:
         outside = Path(self.repo.temporary.name) / "outside-root"
-        self.repo.branch("0200-04", "main")
-        self.repo.git("worktree", "add", str(outside), "0200-04")
+        self.repo.branch("0200-09", "main")
+        self.repo.git("worktree", "add", str(outside), "0200-09")
+        self.repo.record_item(outside, "0200-09", accepted=True, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-09")
 
-        result = self.repo.run_script(["0100"])
+        result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(outside.exists())
 
@@ -287,7 +367,9 @@ class ReapSweepTests(unittest.TestCase):
         self.assertTrue(target.exists(), "freshly provisioned target must survive its own reap sweep")
 
     def test_reap_only_mode_does_not_provision(self) -> None:
-        scratch = self.repo.make_extra_worktree("0200-05")
+        scratch = self.repo.make_extra_worktree("0200-10")
+        self.repo.record_item(scratch, "0200-10", accepted=True, claim_prefix="DONE")
+        self.repo.merge_to_main("0200-10")
         result = self.repo.run_script(["--reap-only", str(self.repo.wt_root)])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(scratch.exists())
@@ -308,6 +390,110 @@ class ReapSweepTests(unittest.TestCase):
         ).stdout.strip()
         self.assertEqual(branch_a, "0100")
         self.assertEqual(branch_b, "0101")
+
+
+class AcceptedLifecycleTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.repo = FixtureRepo()
+
+    def tearDown(self) -> None:
+        self.repo.close()
+
+    def test_finalize_renames_only_exact_item_claim_byte_identically(self) -> None:
+        target = self.repo.make_extra_worktree("0300-01")
+        claim = self.repo.record_item(
+            target,
+            "0300-01",
+            accepted=True,
+            claim_prefix="TODO",
+            extra_claim_item="0299-01",
+        )
+        before = claim.read_bytes()
+        unrelated = target / "TODO-other-0299-01-request.md"
+
+        result = self.repo.run_script(["--finalize-accepted", "0300-01", str(target)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        done = target / "DONE-owner-0300-01-request.md"
+        self.assertFalse(claim.exists())
+        self.assertEqual(done.read_bytes(), before)
+        self.assertTrue(unrelated.exists())
+        self.assertIn("R  TODO-owner-0300-01-request.md -> DONE-owner-0300-01-request.md", self.repo.git("status", "--short", cwd=target).stdout)
+
+    def test_finalize_collision_refuses_before_any_rename(self) -> None:
+        target = self.repo.make_extra_worktree("0300-02")
+        claim = self.repo.record_item(target, "0300-02", accepted=True, claim_prefix="TODO")
+        destination = target / "DONE-owner-0300-02-request.md"
+        destination.write_text("collision\n", encoding="utf-8")
+        result = self.repo.run_script(["--finalize-accepted", "0300-02", str(target)])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("destination", result.stderr)
+        self.assertTrue(claim.exists())
+        self.assertEqual(destination.read_text(encoding="utf-8"), "collision\n")
+
+    def test_finalize_refuses_without_acceptance(self) -> None:
+        target = self.repo.make_extra_worktree("0300-03")
+        claim = self.repo.record_item(target, "0300-03", accepted=False, claim_prefix="TODO")
+        result = self.repo.run_script(["--finalize-accepted", "0300-03", str(target)])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Acceptance", result.stderr)
+        self.assertTrue(claim.exists())
+
+    def test_finalize_runs_on_acceptance_branch_distinct_from_item_branch(self) -> None:
+        target = self.repo.make_extra_worktree("0300")
+        claim = self.repo.record_item(target, "0300-09", accepted=True, claim_prefix="TODO")
+        result = self.repo.run_script(["--finalize-accepted", "0300-09", str(target)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(claim.exists())
+        self.assertTrue((target / "DONE-owner-0300-09-request.md").exists())
+
+    def test_remove_completed_removes_only_worktree_and_retains_branch(self) -> None:
+        target = self.repo.make_extra_worktree("0300-04")
+        self.repo.record_item(target, "0300-04", accepted=True, claim_prefix="DONE")
+        tip = self.repo.git("rev-parse", "0300-04").stdout.strip()
+        result = self.repo.run_script(["--remove-completed", "0300-04", str(target), "0300-04"])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(target.exists())
+        self.assertEqual(self.repo.git("rev-parse", "0300-04").stdout.strip(), tip)
+
+    def test_remove_completed_refuses_dirty_worktree(self) -> None:
+        target = self.repo.make_extra_worktree("0300-05")
+        self.repo.record_item(target, "0300-05", accepted=True, claim_prefix="DONE")
+        (target / "dirty.txt").write_text("keep\n", encoding="utf-8")
+        result = self.repo.run_script(["--remove-completed", "0300-05", str(target), "0300-05"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("uncommitted or untracked", result.stderr)
+        self.assertTrue((target / "dirty.txt").exists())
+
+    def test_remove_completed_refuses_active_exact_item_claim(self) -> None:
+        target = self.repo.make_extra_worktree("0300-06")
+        self.repo.record_item(target, "0300-06", accepted=True, claim_prefix="TODO")
+        result = self.repo.run_script(["--remove-completed", "0300-06", str(target), "0300-06"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("still carries TODO", result.stderr)
+        self.assertTrue(target.exists())
+
+    def test_remove_completed_refuses_locked_worktree(self) -> None:
+        target = self.repo.make_extra_worktree("0300-07")
+        self.repo.record_item(target, "0300-07", accepted=True, claim_prefix="DONE")
+        self.repo.git("worktree", "lock", str(target))
+        result = self.repo.run_script(["--remove-completed", "0300-07", str(target), "0300-07"])
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("locked", result.stderr)
+        self.assertTrue(target.exists())
+
+    def test_remove_completed_refuses_live_process_cwd(self) -> None:
+        target = self.repo.make_extra_worktree("0300-08")
+        self.repo.record_item(target, "0300-08", accepted=True, claim_prefix="DONE")
+        sleeper = subprocess.Popen(["sleep", "30"], cwd=target)
+        self.addCleanup(lambda: sleeper.poll() is None and sleeper.kill())
+        try:
+            result = self.repo.run_script(["--remove-completed", "0300-08", str(target), "0300-08"])
+        finally:
+            sleeper.kill()
+            sleeper.wait()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("live process", result.stderr)
+        self.assertTrue(target.exists())
 
 
 if __name__ == "__main__":

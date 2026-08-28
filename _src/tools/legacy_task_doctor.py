@@ -125,6 +125,7 @@ RULE_SEVERITY = {
     "LTD-CLAIM-STATE-DIVERGED": "error",
     "LTD-CLAIM-TASK-MISSING": "error",
     "LTD-CLAIM-TERMINAL-RETAINED": "error",
+    "LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE": "error",
     "LTD-CLAIM-IDENTITY-MISMATCH": "error",
     "LTD-CLAIM-BASE-ABBREVIATED": "warning",
     "LTD-CLAIM-BASE-INVALID": "error",
@@ -483,7 +484,7 @@ def _claim_names(root: Path) -> List[str]:
         names = [
             entry.name
             for entry in os.scandir(root)
-            if entry.name.startswith("TODO-") and entry.name.endswith(".md")
+            if entry.name.startswith(("TODO-", "DONE-")) and entry.name.endswith(".md")
         ]
     except OSError as exc:
         raise DoctorInputError(
@@ -548,9 +549,9 @@ def _verify_inputs(root: Path, blobs: Mapping[str, InputBlob], claim_names: Sequ
     changed: List[str] = []
     try:
         if _claim_names(root) != list(claim_names):
-            changed.append("TODO-*.md")
+            changed.append("TODO-/DONE-*.md")
     except DoctorInputError:
-        changed.append("TODO-*.md")
+        changed.append("TODO-/DONE-*.md")
     for relative, before in sorted(blobs.items()):
         try:
             after = _read_blob(root, relative)
@@ -1153,7 +1154,7 @@ def _ref_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], reac
 
 def _task_claim_pointer(blob: InputBlob, task: TaskRecord) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     block = "\n".join(blob.lines[task.line - 1:task.end_line])
-    path_match = re.search(r"via\s+`(?P<path>TODO-[^`]+\.md)`", block)
+    path_match = re.search(r"via\s+`(?P<path>(?:TODO|DONE)-[^`]+\.md)`", block)
     token_match = re.search(r"owner_token:\s*(?P<value>agent:[A-Za-z0-9:._-]+)", block)
     base_match = re.search(r"(?:base|base_commit)\s+`?(?P<value>[0-9a-f]{7,40}|pending-discovery)`?", block)
     return (
@@ -1204,8 +1205,9 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
                 mismatches.append("owner_token Task differs from task_id")
             if claim.request_id and owner_match.group("claim") != claim.request_id:
                 mismatches.append("request_id differs from immutable owner-token claim ID")
+            expected_prefix = "DONE" if claim.path.startswith("DONE-") else "TODO"
             expected_filename = (
-                f"TODO-{owner_match.group('agent')}-"
+                f"{expected_prefix}-{owner_match.group('agent')}-"
                 f"{owner_match.group('task')}-"
                 f"{owner_match.group('claim')}.md"
             )
@@ -1310,11 +1312,12 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
 
         if claim.task_id and claim.task_id in tasks_by_id:
             task = sorted(tasks_by_id[claim.task_id], key=lambda value: (value.path, value.line))[0]
+            accepted = _task_has_acceptance_mark(blobs[task.path], task)
+            if not accepted and claim.path.startswith("DONE-"):
+                findings.append(_make_finding("LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE", "claim", claim.path, 1, claim.task_id, "DONE-* claim requires a current Acceptance: ✓ on the authoritative Task", blobs, related_paths=(task.path,)))
             if claim.state is not None and claim.state != task.marker:
                 line = claim.field_lines.get("state", (1,))[0]
                 findings.append(_make_finding("LTD-CLAIM-STATE-DIVERGED", "claim", claim.path, line, claim.task_id, f"claim state [{claim.state}] disagrees with authoritative Task state [{task.marker}]", blobs, related_paths=(task.path,)))
-            if task.marker in TERMINAL_MARKERS:
-                findings.append(_make_finding("LTD-CLAIM-TERMINAL-RETAINED", "claim", claim.path, 1, claim.task_id, f"claim file remains after authoritative Task reached [{task.marker}]", blobs, related_paths=(task.path,)))
 
     for task_id, task_records in sorted(tasks_by_id.items()):
         task = sorted(task_records, key=lambda value: (value.path, value.line))[0]

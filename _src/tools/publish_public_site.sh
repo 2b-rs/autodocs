@@ -56,7 +56,7 @@ while IFS= read -r file; do
 
   # Exclude specific files and patterns
   case "$file" in
-    AGENTS.md|SANDBOX.md|PRIVILEGED.md|SCRIPTING.md|SENTINEL.md|SENTINTEL.md|DONE.md|TODO.md|TODO-*.md|TODO-perplexity.md)
+    AGENTS.md|SANDBOX.md|PRIVILEGED.md|SCRIPTING.md|SENTINEL.md|SENTINTEL.md|DONE.md|TODO.md|TODO-*.md|DONE-*.md|TODO-perplexity.md)
       continue
       ;;
     agent-workflow.json|fs-test-manual.sh|run.sh|run-*.sh)
