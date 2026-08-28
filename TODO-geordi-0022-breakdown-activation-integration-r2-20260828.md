@@ -1,5 +1,11 @@
 # Integrator claim — Feature `0022` breakdown activation R2
 
+state: [p]
+owner_token: agent:geordi:0022-breakdown-activation-integration-r2:1787920490987-561d6f92
+request_id: 1787920490987-561d6f92
+capability_class: privileged
+base_commit: b0555ae79d36f853130f81eaa784aaa358e3c9be
+
 - **Owner token:** `agent:geordi:0022-breakdown-activation-integration-r2:1787920490987-561d6f92`
 - **Capability class:** `privileged`
 - **Authority:** atomic priority-offer award `1787920490987-561d6f92`.
