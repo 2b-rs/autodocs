@@ -1115,7 +1115,7 @@ HOW TO USE:
   - **Acceptance criteria:** Detect DAG cycles, undeclared/multiple writers, missing required stages, stale/hand-edited outputs, mixed content-generation IDs, byte/semantic comparator violations, self-consuming reports, and unexplained generated files; integrate all issue checks into `_src/validate.py` with explicit staged/candidate modes.
   - **Definition of Done:** Cycle/writer/staleness/determinism fixtures, repeated runs, integration tests, and mutation guards pass without modifying authoritative or generated files.
 
-- [ ] **0037-17** PREREQ: 0037-17:0037-17.01, 0037-17:0037-17.02, 0037-17:0037-17.03 Complete immutable provenance storage, indexing, and query support.
+- [p] **0037-17** PREREQ: 0037-17:0037-17.01, 0037-17:0037-17.02, 0037-17:0037-17.03 Complete immutable provenance storage, indexing, and query support. **Claim:** `TODO-dax-0037-17-parent-20260828T060352Z.md` (`owner_token: agent:dax-0037-17-parent-20260828:0037-17:20260828T060352Z`).
   - **Acceptance criteria:** Storage remains authoritative/immutable, indexes remain disposable, and every reverse result is derivable from one validated forward event rather than duplicated links.
   - **Definition of Done:** All three Subtasks pass shared causal-chain fixtures and no writer can mutate an existing event/artifact-set identity.
 
