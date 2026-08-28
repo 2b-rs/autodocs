@@ -1,9 +1,30 @@
 # Claim: 0022-breakdown-activation
 
-- **state:** `[p]`
-- **owner_token:** `agent:tuvok:0022-breakdown-activation:20260828T1202Z`
+state: [p]
+owner_token: agent:tuvok:0022-breakdown-activation:20260828T1202Z
+request_id: 1787918503462-a563fbcf
+capability_class: unprivileged
+base_commit: 3c8538727d85f3d6851cb625b5583b00603094b2
+execution_authority: direct local Git and read-only validators in this item-owned worktree; no runner queue; no main movement
+startup_review: AGENTS.md (claim/marker contract, autonomous backlog repair limits), SANDBOX.md (unprivileged capability class), docs/pipeline/feature-breakdown.md (Gate A1), docs/dossiers/dec-0022-001.md, docs/dossiers/0022-feature-breakdown-proposal.md, TODO.md Feature 0022 block
+
+Note on identity: this is a governance/backlog **activation** activity, not a
+`TODO.md` Task, so no `task_id` is declared. Per `AGENTS.md`, a directed activity
+that is not an existing Task may use a coordination claim, and must not falsely
+mark an unrelated Task `[p]`. Declaring a `task_id` here would invent one.
+
+**Known residual finding, accepted deliberately.** `legacy_task_doctor` reports one
+`LTD-CLAIM-IDENTITY-MISMATCH` against this file: `OWNER_TOKEN_RE`
+(`_src/tools/legacy_task_doctor.py:33-37`) requires the `<task>` segment to match
+`[0-9]{4}-[0-9]{2}(\.[0-9]{2})?`, so an owner token for a non-Task activity cannot
+satisfy it. The two ways to clear it are both worse than the finding: binding the
+token to `0022-01`, the Task this contract explicitly forbids me to implement, or
+inventing a Task ID that exists nowhere in `TODO.md`. Either would make the claim
+assert something untrue to satisfy a checker. **The finding is left standing and
+reported as a schema gap** — the canonical claim schema has no representation for
+the non-Task coordination claim that `AGENTS.md` expressly permits.
+
 - **persona:** Tuvok, Security Engineer, Team Voyager — Implementer of the backlog activation only
-- **capability_class:** `unprivileged`
 - **award:** offer `1787918503462-a563fbcf`, coordinator `jean-luc`, notice `agent-inbox:1787918503463-119d5bf6`
 - **branch:** `activate-0022-breakdown-tuvok-20260828`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/activate-0022-breakdown-tuvok-20260828`
@@ -47,3 +68,14 @@ widening. Stop on baseline drift, decision/review mismatch, or ambiguity.
 - 2026-08-28T12:02Z AWARDED via offer_reply; announced busy until 12:50Z.
 - 2026-08-28T12:05Z Base pin verified equal to `main`; no prior involvement with Feature `0022`.
 - 2026-08-28T12:20Z Claim and A1 field recorded **before** any `TODO.md` mutation. Next step: mutate the Feature `0022` block per `CON-01`, then validate identifiers, endpoints, direction, cycles, and markers.
+
+## Write scope (exact paths)
+
+- `TODO.md` — only within the Feature `0022` block
+- `TODO-tuvok-0022-breakdown-activation-20260828T1202Z.md` — this claim
+
+## Next step
+
+Report the candidate tip to coordinator `jean-luc` and hand off for privileged
+governance integration. No further mutation by this session: Acceptance,
+checkpoint crossing, integration, and the `main` move are outside this claim.
