@@ -2,7 +2,7 @@
 
 - **item_id:** `DEC-0044-029-architect-scope-review`
 - **owner_token:** `agent:data:DEC-0044-029-architect-scope-review:1787902704512-2b68a101`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / Management-instantiated Architect, scope review only
 - **execution_authority:** direct local execution in this item-owned worktree; no implementation, Acceptance, integration, or `main` authority
 - **assignment / authority:** Management appointment `agent-inbox:1787900955164-f5d818a8`, main-visible at `8685b9bfd910c629dec21f95f392cf22d2f23d97`; Project Lead AWARD `agent-inbox:1787902704512-2b68a101`
@@ -43,5 +43,12 @@
 
 ## Progress
 
-- `[p]` Claim-first startup in progress; substantive review has not begun.
-
+- `[x]` Claim-first commit: `f67285f5d62a8171d1a8c8797f7fbfe4f337fe25`.
+- `[x]` Substantive review REF: `9636d2d838b03d6496e5aa9095a6fc45e4f5872b`.
+- `[x]` Verdict: `supports-with-conditions`, bound to exact `main@8685b9bfd910c629dec21f95f392cf22d2f23d97`, appointment `agent-inbox:1787900955164-f5d818a8`, and current external interface baseline `agent-inbox@1d75e4573cf1f0cd6768b74d96b902593321322c`.
+- `[x]` Work product: `docs/campaign-evidence/0044-memory-workspace-routing/architect-scope-review-data-20260828.md`; append-only provenance recorded in `docs/dossiers/dec-0044-029-memory-workspace-routing.md`.
+- `[x]` Scope result: supports explicit active-item-worktree appends and ordinary branch carriage; requires tool-enforced root/default/unresolved/path-escape rejection before mutation, whole-profile/tool-epoch activation, signing-identity separation, fail-closed rollback, no grandfathering, and re-review for candidate deviation/widening.
+- `[x]` Validation: `process_doc_doctor.py --json` exited `0` with `ok: true`; the existing unrelated `DOC001` error for `docs/dossiers/0044-03-gate-scope-proposal.md` remains outside this scope. `git diff --check`, new-file whitespace check, staged path inspection, and staged diff check passed before the substantive commit.
+- `[x]` No implementation, activation, Acceptance, integration, checkpoint crossing, `main` movement, root mutation/cleanup, signing change, Memory cleanup, or `memory_append`/`memory_store.py append` call occurred. The hold remains operative.
+- `[x]` Durable review learning retained here under the hold: profile activation must be traced beyond generated text because the current generator command also synchronizes profile-hash-derived signing keys, `allowed_signers`, and hooks; routing activation must exclude or separately authorize that security boundary.
+- **next authorized action:** Project Lead/Integrator may review and integrate this exact review candidate. A later Implementer must pin its actual candidate to the supported envelope before mutation and return for scope review on deviation.
