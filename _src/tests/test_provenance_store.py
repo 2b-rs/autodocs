@@ -258,6 +258,266 @@ class StoreTests(unittest.TestCase):
             self.store.create_run(self._run())
         self.assertFalse(self.store.run_path(RUN_ID).exists())
 
+    def _ae4(self, code, fn, *, neighbor, expected, why_adjacent):
+        """Named AE-4 adjacent case: record neighbor, expected/observed, adjacency."""
+        with self.assertRaises(ps.ProvenanceError) as ctx:
+            fn()
+        observed = ctx.exception.code
+        self.assertEqual(
+            observed,
+            code,
+            msg=(
+                f"AE-4 neighbor={neighbor} expected={expected} "
+                f"observed={observed} why_adjacent={why_adjacent}"
+            ),
+        )
+        return {
+            "neighboring_dimension": neighbor,
+            "expected_result": expected,
+            "observed_result": observed,
+            "why_adjacent": why_adjacent,
+        }
+
+    def test_ae4_pv_schema_missing_field_per_record_type(self):
+        """AE-4 / PV-SCHEMA: missing required field on each record type.
+
+        Neighbor: happy-path create_* with complete payloads (existing
+        test_create_and_read_run_finding_event_artifact_set). Adjacent because
+        only one required key is omitted; other fields remain valid.
+        """
+        run = self._run()
+        del run["run_id"]
+        self._ae4(
+            "PV-SCHEMA",
+            lambda: self.store.create_run(run),
+            neighbor="complete run payload",
+            expected="PV-SCHEMA",
+            why_adjacent="omits only run_id; remaining run fields stay valid",
+        )
+        finding = self._finding()
+        del finding["finding_id"]
+        self._ae4(
+            "PV-SCHEMA",
+            lambda: self.store.create_finding(finding),
+            neighbor="complete finding payload",
+            expected="PV-SCHEMA",
+            why_adjacent="omits only finding_id; remaining finding fields stay valid",
+        )
+        event = self._event()
+        del event["event_id"]
+        self._ae4(
+            "PV-SCHEMA",
+            lambda: self.store.create_event(event),
+            neighbor="complete event payload",
+            expected="PV-SCHEMA",
+            why_adjacent="omits only event_id; remaining event fields stay valid",
+        )
+        aset = self._artifact_set()
+        del aset["set_id"]
+        self._ae4(
+            "PV-SCHEMA",
+            lambda: self.store.create_artifact_set(aset),
+            neighbor="complete artifact-set payload",
+            expected="PV-SCHEMA",
+            why_adjacent="omits only set_id; remaining artifact-set fields stay valid",
+        )
+
+    def test_ae4_pv_uuid_rejects_non_uuidv7(self):
+        """AE-4 / PV-UUID: identity is present but not a UUIDv7.
+
+        Neighbor: PV-SCHEMA missing run_id. Adjacent because the field is
+        present (schema-complete) yet fails identity matching.
+        """
+        payload = self._run(run_id="not-a-uuidv7")
+        self._ae4(
+            "PV-UUID",
+            lambda: self.store.create_run(payload),
+            neighbor="PV-SCHEMA missing run_id",
+            expected="PV-UUID",
+            why_adjacent="run_id is present so schema passes; value is not UUIDv7",
+        )
+
+    def test_ae4_pv_endpoint_self_edge_and_wrong_kind(self):
+        """AE-4 / PV-ENDPOINT: self-edge and wrong-kind endpoints.
+
+        Neighbor 1: allowed derived-from record-version self-edge exception.
+        Neighbor 2: typed-ref URI/kind mismatch vs relation kind table.
+        Task Acceptance names typed endpoints.
+        """
+        self_edge = self._event(
+            relation="supersedes",
+            source=_ref("finding", FINDING_ID),
+            target=_ref("finding", FINDING_ID),
+        )
+        self._ae4(
+            "PV-ENDPOINT",
+            lambda: self.store.create_event(self_edge),
+            neighbor="derived-from record-version self-edge exception in product",
+            expected="PV-ENDPOINT",
+            why_adjacent="same source/target URI on a relation that is not the record-version exception",
+        )
+        wrong_kind = self._event(
+            relation="detected-during",
+            source=_ref("run", RUN_ID),
+            target=_ref("campaign", "camp-1"),
+        )
+        self._ae4(
+            "PV-ENDPOINT",
+            lambda: self.store.create_event(wrong_kind),
+            neighbor="detected-during finding→run (happy path)",
+            expected="PV-ENDPOINT",
+            why_adjacent="relation is valid; source kind run is not in allowed_src {finding}",
+        )
+
+    def test_ae4_pv_context_one_per_record_type(self):
+        """AE-4 / PV-CONTEXT: missing typed issue/criterion/run/campaign context.
+
+        Neighbor: happy-path records that include those kinds. Adjacent because
+        remaining schema, uuid, datetime, env, and privacy fields stay valid.
+        """
+        run = self._run(
+            inputs=[_ref("commit", COMMIT)],
+        )
+        self._ae4(
+            "PV-CONTEXT",
+            lambda: self.store.create_run(run),
+            neighbor="run with issue/criterion/campaign plus commit inputs",
+            expected="PV-CONTEXT",
+            why_adjacent="commit input still satisfies PV-COMMIT; context kinds are gone",
+        )
+        finding = self._finding(
+            subject=_ref("artifact", "report@sha256:" + "ab" * 32, digest="sha256:" + "ab" * 32),
+        )
+        del finding["detected_during"]
+        self._ae4(
+            "PV-CONTEXT",
+            lambda: self.store.create_finding(finding),
+            neighbor="finding with issue subject and run detected_during",
+            expected="PV-CONTEXT",
+            why_adjacent="required subject remains; kinds are only artifact, not run/campaign/issue/criterion",
+        )
+        event = self._event(
+            relation="derived-from",
+            source=_ref("artifact", "a"),
+            target=_ref("artifact", "b"),
+        )
+        del event["run"]
+        self._ae4(
+            "PV-CONTEXT",
+            lambda: self.store.create_event(event),
+            neighbor="event with run typed-ref context",
+            expected="PV-CONTEXT",
+            why_adjacent="relation and endpoint kinds are valid; no run/campaign/issue/criterion remains",
+        )
+
+    def test_ae4_pv_commit_requires_source_tool_config_commit(self):
+        """AE-4 / PV-COMMIT: run with context but no commit input.
+
+        Neighbor: PV-CONTEXT (commit-only inputs). Adjacent because this is the
+        complementary missing dimension named by Task Acceptance.
+        """
+        payload = self._run(
+            inputs=[
+                _ref("issue", "0037-17.01"),
+                _ref("criterion", "AC-001"),
+                _ref("campaign", "camp-1"),
+            ]
+        )
+        self._ae4(
+            "PV-COMMIT",
+            lambda: self.store.create_run(payload),
+            neighbor="PV-CONTEXT commit-only inputs",
+            expected="PV-COMMIT",
+            why_adjacent="issue/criterion/campaign context present; commit input omitted",
+        )
+
+    def test_ae4_pv_member_duplicate_path_and_traversal(self):
+        """AE-4 / PV-MEMBER: duplicate path and path traversal.
+
+        Neighbor: order-independent two-member artifact-set (existing tree-digest
+        test). Adjacent uniqueness/safety cases on the same members list.
+        """
+        dup = self._artifact_set()
+        member = dict(dup["members"][0])
+        dup["members"] = [dup["members"][0], member]
+        self._ae4(
+            "PV-MEMBER",
+            lambda: self.store.create_artifact_set(dup),
+            neighbor="two distinct member paths (tree-digest canonicalization)",
+            expected="PV-MEMBER",
+            why_adjacent="same path twice in one set; digest/size otherwise valid",
+        )
+        trav = self._artifact_set()
+        trav["members"][0] = dict(trav["members"][0], path="../secret.md")
+        self.files["../secret.md"] = b"hello\n"
+        self._ae4(
+            "PV-MEMBER",
+            lambda: self.store.create_artifact_set(trav),
+            neighbor="relative in-tree member path",
+            expected="PV-MEMBER",
+            why_adjacent="path contains a .. part; other member fields stay valid",
+        )
+
+    def test_ae4_pv_relation_unknown_name(self):
+        """AE-4 / PV-RELATION: unknown relation string.
+
+        Neighbor: PV-ENDPOINT wrong-kind with a known relation. Adjacent because
+        endpoints stay typed-valid; only the relation name is off-catalog.
+        """
+        payload = self._event(relation="not-a-catalog-relation")
+        self._ae4(
+            "PV-RELATION",
+            lambda: self.store.create_event(payload),
+            neighbor="PV-ENDPOINT incompatible kinds on a known relation",
+            expected="PV-RELATION",
+            why_adjacent="source/target refs remain schema-valid; relation is not in RELATIONS",
+        )
+
+    def test_ae4_pv_env_invalid_environment(self):
+        """AE-4 / PV-ENV: environment outside the allowlist.
+
+        Neighbor: PV-PRIVACY invalid classification on an otherwise complete run.
+        Adjacent: same record, different allowlisted string field.
+        """
+        payload = self._run(environment="staging")
+        self._ae4(
+            "PV-ENV",
+            lambda: self.store.create_run(payload),
+            neighbor="PV-PRIVACY invalid classification",
+            expected="PV-ENV",
+            why_adjacent="classification remains internal; environment is not in ENVIRONMENTS",
+        )
+
+    def test_ae4_pv_datetime_naive_stamp(self):
+        """AE-4 / PV-DATETIME: timezone-naive started_at.
+
+        Neighbor: valid Zulu stamps on the happy-path run. Adjacent because the
+        civil time is parseable; only tzinfo is missing.
+        """
+        payload = self._run(started_at="2026-08-16T08:01:00")
+        self._ae4(
+            "PV-DATETIME",
+            lambda: self.store.create_run(payload),
+            neighbor="timezone-aware started_at Zulu stamp",
+            expected="PV-DATETIME",
+            why_adjacent="ISO local datetime without tzinfo; remaining run fields stay valid",
+        )
+
+    def test_ae4_pv_privacy_invalid_classification(self):
+        """AE-4 / PV-PRIVACY: classification outside the allowlist.
+
+        Neighbor: PV-REDACTION restricted-without-reason (existing test). Adjacent
+        because this is the invalid-token path rather than the redaction-required path.
+        """
+        payload = self._run(classification="secret")
+        self._ae4(
+            "PV-PRIVACY",
+            lambda: self.store.create_run(payload),
+            neighbor="PV-REDACTION restricted finding without redaction_reason",
+            expected="PV-PRIVACY",
+            why_adjacent="token is not in CLASSIFICATIONS; not the restricted-redaction branch",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
