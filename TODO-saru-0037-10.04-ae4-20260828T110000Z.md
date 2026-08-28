@@ -31,3 +31,14 @@ Do not waive AE-4. AE-5 not triggered. Do not overwrite Burnham REF on the 10.04
 ## Progress
 
 - 2026-08-28T11:00:00Z worktree cut from pin; tests next.
+- 2026-08-28T11:12:00Z product REF `e4ee04bf33cbbb77c599366f1c8608e8c22e79de`. `issuectl.py` not edited. Julian venv `/tmp/autodocs-0037-08-venv-julian/bin/python` missing (ENOENT). Validation actually run: `python3 _src/tests/test_issuectl.py` in this worktree — 19 tests OK.
+- 2026-08-28T11:13:00Z implementation follow-up [x]. Burnham TODO heading REF `7382aea9` not overwritten. No land / Acceptance / DONE.md.
+
+## Status
+
+- marker: [x] follow-up (tests only)
+- product_sha: e4ee04bf33cbbb77c599366f1c8608e8c22e79de
+- bookkeeping_sha: recorded after this bookkeeping commit in mail to gabriel
+- issuectl_py_edited: no
+- suite: python3 _src/tests/test_issuectl.py — 19 OK
+- vs_main_at_cut: 8948a602320c7c0781ed9a578a42b664dfd2eff4
