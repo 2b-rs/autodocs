@@ -99,6 +99,23 @@ soll.
 | `check_integration_hygiene.py` | Gemeinsame read-only Hygiene- und Root-Preflight-Implementierung (`DEC-0044-010`, `DEC-0044-015`, `DEC-0044-021`): prüft alle registrierten Worktrees, erlaubt ausschließlich ungestagte getrackte exakte Kinder von `logs/agent-memory/`, blockiert gemischte/gestagte/indeterminierte Zustände und Kandidatenüberlappung sowie alle bisherigen Findings |
 | `integration_hygiene_policy.py` | Reine gemeinsame Byte-Pfadklassifikation für Memory-Kindprädikat, NUL-Ausgabe, Root-Divergenz und exakte Kandidatenüberlappung; wird vom Checker, Root-Preflight und Post-Merge-Lauf verwendet |
 
+## Worktree-Lifecycle
+
+| Werkzeug | Zweck | Aufruf |
+|---|---|---|
+| `provision_tmp_worktree.sh` | Provisioniert Item-Worktrees; finalisiert bei Acceptance nur Claims des exakten Items als `DONE-*`; entfernt den eigenen abgeschlossenen Worktree nach harten Sicherheitsprüfungen; konservativer Flotten-Fallback für bereits nach `main` integrierte Worktrees. Branches und Tags werden nie gelöscht. | `_src/tools/provision_tmp_worktree.sh <item> [path]`; `--finalize-accepted <item> [acceptance-worktree]`; `--remove-completed <item> [owned-path] [accepted-ref]`; `--reap-only [managed-root]` |
+
+`--finalize-accepted` entfernt nichts: Es führt nach nachgewiesener Acceptance
+nur getrackte, exakt über `task_id`/`item_id` zugeordnete `TODO-*`-Claims per
+`git mv` nach `DONE-*` über. Der Reviewer prüft und committet diese Änderung.
+`--remove-completed` wird vom Owner von außerhalb des Ziel-Worktrees ausgeführt;
+der `accepted-ref` ist der exakte Feature-/Integrationstip mit Acceptance und
+`DONE-*` (nach Integration standardmäßig `main`).
+`--reap-only` ist das periodische Netz und verlangt zusätzlich, dass der
+Worktree-HEAD bereits aus `main` erreichbar ist. Dirty, aktive, unakzeptierte,
+unvollständig referenzierte, gesperrte, prozessbelegte und außerhalb des
+konfigurierten Roots liegende Worktrees bleiben erhalten.
+
 Aufruf vor Merge: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> --candidate-ref <candidate> [--json]`. Harter Root-Preflight unmittelbar vor und nach dem Root-Merge: `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
 
 Exit-Codes: `0` sauber, `1` Befunde, `2` die Prüfung selbst konnte nicht laufen —

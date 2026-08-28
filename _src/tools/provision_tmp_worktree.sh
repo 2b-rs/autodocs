@@ -48,8 +48,21 @@
 #                     default keeps the existing `.worktrees/` convention.
 #
 #   provision_tmp_worktree.sh --reap-only [worktrees-root]
-#     Runs only the orphan-reap sweep (no provisioning), useful for periodic
-#     cleanup. Defaults to the same worktrees root as above.
+#     Runs only the conservative accepted-worktree reap sweep (no
+#     provisioning), useful as a periodic fleet fallback. Defaults to the
+#     same worktrees root as above.
+#
+#   provision_tmp_worktree.sh --finalize-accepted <item> [worktree-path]
+#     After current Acceptance is recorded, renames only that item's root
+#     claim files from TODO-* to byte-identical DONE-* paths. This stages no
+#     commit and removes no worktree; the accepting agent reviews and commits
+#     the rename with the Acceptance record.
+#
+#   provision_tmp_worktree.sh --remove-completed <item> [worktree-path] [accepted-ref]
+#     Removes the caller's exact completed item worktree after checking its
+#     accepted backlog state, DONE claim, clean/unlocked state, live-process
+#     absence, durable branch ref, and accepted authority ref (default: main).
+#     It never deletes a branch or tag.
 #
 # Env overrides:
 #   AUTODOCS_DEVEL           canonical repo path (default: $HOME/devel/autodocs)
@@ -70,16 +83,14 @@
 # collision surfaces as a clear Git error rather than silent data loss; this
 # script does not attempt to force past that refusal.
 #
-# Orphan reap: after handling the requested target (if any), this script
-# scans every *other* registered worktree under the worktrees root and, for
-# each one whose directory still exists:
-#   - if it carries an active claim file (any tracked `TODO-*.md` other than
-#     `TODO.md`/`DONE.md` at its root) it is left alone unconditionally —
-#     that is provenance, not scratch;
-#   - else if `git status --porcelain` is non-empty (uncommitted or
-#     untracked content) it is SURFACED with a recovery pointer and never
-#     deleted;
-#   - else (no claim, fully clean) it is reaped via `git worktree remove`.
+# Accepted-worktree reap: after handling the requested target (if any), this
+# script scans every *other* registered worktree under the worktrees root.
+# It removes only an exact item branch whose own claims have been renamed to
+# DONE-* at Acceptance, whose backlog block contains current `Acceptance: ✓`,
+# whose HEAD is both pinned by its branch ref and reachable from `main`, and
+# whose tree is clean, unlocked, and unused as a process cwd. Historical
+# prerequisite TODO-* claims do not count as the item's live lease. Anything
+# ambiguous is kept; dirty candidates are surfaced with a recovery pointer.
 # Removing a worktree never deletes the branch or its commits — those remain
 # safe in the shared object store — so reaping is bounded to disposable
 # scratch checkouts, "when in doubt, surface rather than delete."
@@ -143,16 +154,105 @@ worktree_is_clean() {
   [[ -z "$(git -C "$1" status --porcelain 2>/dev/null)" ]]
 }
 
-worktree_has_claim() {
-  local dir="$1" f
-  for f in "$dir"/TODO-*.md; do
-    [[ -e "$f" ]] || continue
-    case "$(basename "$f")" in
-      TODO.md|DONE.md) continue ;;
-      *) return 0 ;;
-    esac
+claim_names_item() {
+  local file="$1" item="$2"
+  awk -F ':' -v want="$item" '
+    $1 == "task_id" || $1 == "item_id" {
+      value = substr($0, index($0, ":") + 1)
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      if (value == want) found = 1
+    }
+    END { exit !found }
+  ' "$file"
+}
+
+worktree_has_item_claim() {
+  local dir="$1" prefix="$2" item="$3" f
+  for f in "$dir"/"$prefix"-*.md; do
+    [[ -f "$f" ]] || continue
+    claim_names_item "$f" "$item" && return 0
   done
   return 1
+}
+
+item_is_accepted() {
+  local dir="$1" item="$2"
+  python3 - "$dir" "$item" <<'PY'
+import pathlib
+import re
+import sys
+
+root = pathlib.Path(sys.argv[1])
+item = re.escape(sys.argv[2])
+header = re.compile(rf"^- \[[xw]\] \*\*{item}\*\*", re.MULTILINE)
+next_item = re.compile(r"^- \[[ xwpdu]\] \*\*[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?\*\*", re.MULTILINE)
+matches = []
+for name in ("TODO.md", "DONE.md"):
+    path = root / name
+    if not path.is_file():
+        continue
+    text = path.read_text(encoding="utf-8")
+    for match in header.finditer(text):
+        following = next_item.search(text, match.end())
+        block = text[match.start():following.start() if following else len(text)]
+        matches.append(bool(re.search(r"Acceptance:(?:\*\*)?\s*✓", block)))
+sys.exit(0 if len(matches) == 1 and matches[0] else 1)
+PY
+}
+
+ref_has_item_claim() {
+  local ref="$1" prefix="$2" item="$3" relative
+  while IFS= read -r relative; do
+    [[ "$relative" != */* && "$relative" == "$prefix"-*.md ]] || continue
+    claim_names_item <(git -C "$DEVEL" show "$ref:$relative") "$item" && return 0
+  done < <(git -C "$DEVEL" ls-tree --name-only "$ref")
+  return 1
+}
+
+ref_item_is_accepted() {
+  local ref="$1" item="$2"
+  python3 - "$DEVEL" "$ref" "$item" <<'PY'
+import pathlib
+import re
+import subprocess
+import sys
+
+repo, ref, raw_item = sys.argv[1:]
+item = re.escape(raw_item)
+header = re.compile(rf"^- \[[xw]\] \*\*{item}\*\*", re.MULTILINE)
+next_item = re.compile(r"^- \[[ xwpdu]\] \*\*[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?\*\*", re.MULTILINE)
+matches = []
+for name in ("TODO.md", "DONE.md"):
+    result = subprocess.run(
+        ["git", "-C", repo, "show", f"{ref}:{name}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    if result.returncode:
+        continue
+    for match in header.finditer(result.stdout):
+        following = next_item.search(result.stdout, match.end())
+        block = result.stdout[match.start():following.start() if following else len(result.stdout)]
+        matches.append(bool(re.search(r"Acceptance:(?:\*\*)?\s*✓", block)))
+sys.exit(0 if len(matches) == 1 and matches[0] else 1)
+PY
+}
+
+worktree_branch_ref_pins_head() {
+  local dir="$1" branch="$2" head ref
+  head="$(git -C "$dir" rev-parse HEAD 2>/dev/null)" || return 1
+  ref="$(git -C "$DEVEL" rev-parse --verify "refs/heads/$branch" 2>/dev/null)" || return 1
+  [[ "$head" == "$ref" ]]
+}
+
+worktree_has_live_cwd() {
+  local dir="$1"
+  command -v lsof >/dev/null 2>&1 || {
+    note "SURFACE: cannot prove process-cwd absence for '$dir' because lsof is unavailable"
+    return 0
+  }
+  [[ -n "$(lsof -n -a -d cwd +D "$dir" 2>/dev/null || true)" ]]
 }
 
 # Parses `git worktree list --porcelain` (blank-line-separated records) and
@@ -168,6 +268,15 @@ list_unlocked_worktree_paths() {
     /^$/         { if (path != "" && !locked) print path; path = ""; locked = 0 }
     END          { if (path != "" && !locked) print path }
   '
+}
+
+worktree_is_unlocked() {
+  local target_real path
+  target_real="$(realpath_dir "$1")" || return 1
+  while IFS= read -r path; do
+    [[ "$path" == "$target_real" ]] && return 0
+  done < <(list_unlocked_worktree_paths)
+  return 1
 }
 
 restore_reaped_tracked_files() {
@@ -255,7 +364,79 @@ provision_one() {
   worktree_healthy "$target" || die "failed to bring '$target' to a healthy state"
 }
 
-# --- Orphan reap sweep over every OTHER worktree under $WT_ROOT ---
+# Rename the accepted item's own claims in-place. The accepting agent commits
+# these renames together with (or immediately after) the Acceptance record;
+# this function intentionally neither commits nor removes the worktree.
+finalize_accepted_claims() {
+  local item="$1" target="$2" f destination count=0
+  derive_parent "$item" >/dev/null \
+    || die "invalid item '$item' — expected XXXX, XXXX-YY, or XXXX-YY.ZZ"
+  worktree_healthy "$target" || die "'$target' is not a healthy worktree"
+  worktree_is_registered "$target" || die "'$target' is not registered under '$DEVEL'"
+  item_is_accepted "$target" "$item" \
+    || die "refusing: item '$item' does not have exactly one current terminal block with Acceptance: ✓"
+
+  # Complete the full preflight before the first rename so a collision cannot
+  # leave a partially finalized claim set.
+  for f in "$target"/TODO-*.md; do
+    [[ -f "$f" ]] || continue
+    claim_names_item "$f" "$item" || continue
+    git -C "$target" ls-files --error-unmatch -- "$(basename "$f")" >/dev/null 2>&1 \
+      || die "refusing: exact-item claim '$f' is not tracked"
+    destination="$target/DONE-${f##*/TODO-}"
+    [[ ! -e "$destination" ]] \
+      || die "refusing: destination '$destination' already exists"
+    count=$((count + 1))
+  done
+  [[ "$count" -gt 0 ]] || die "refusing: no TODO-* claim names exact item '$item'"
+
+  for f in "$target"/TODO-*.md; do
+    [[ -f "$f" ]] || continue
+    claim_names_item "$f" "$item" || continue
+    destination="DONE-${f##*/TODO-}"
+    git -C "$target" mv -- "$(basename "$f")" "$destination"
+    note "finalized accepted claim '$(basename "$f")' -> '$destination'"
+  done
+  note "staged $count accepted-claim rename(s); commit them before removing '$target'"
+}
+
+remove_completed_worktree() {
+  local item="$1" target="$2" authority_ref="$3" target_real root_real current
+  derive_parent "$item" >/dev/null \
+    || die "invalid item '$item' — expected XXXX, XXXX-YY, or XXXX-YY.ZZ"
+  worktree_healthy "$target" || die "'$target' is not a healthy worktree"
+  target_real="$(realpath_dir "$target")"
+  root_real="$(realpath_dir "$WT_ROOT")"
+  case "$target_real" in
+    "$root_real"/*) ;;
+    *) die "refusing: '$target_real' is outside configured worktrees root '$root_real'" ;;
+  esac
+  worktree_is_registered "$target" || die "'$target' is not registered under '$DEVEL'"
+  worktree_is_unlocked "$target" || die "refusing: '$target' is locked"
+  current="$(worktree_branch "$target")"
+  [[ "$current" == "$item" ]] \
+    || die "refusing: '$target' is on branch '$current', not exact item branch '$item'"
+  git -C "$DEVEL" rev-parse --verify "$authority_ref^{commit}" >/dev/null 2>&1 \
+    || die "refusing: accepted authority ref '$authority_ref' is not a commit"
+  ref_item_is_accepted "$authority_ref" "$item" \
+    || die "refusing: authority ref '$authority_ref' has no unique current Acceptance: ✓ for '$item'"
+  ! ref_has_item_claim "$authority_ref" TODO "$item" \
+    || die "refusing: authority ref '$authority_ref' still carries TODO-* for exact item '$item'"
+  ref_has_item_claim "$authority_ref" DONE "$item" \
+    || die "refusing: authority ref '$authority_ref' has no finalized DONE-* claim for exact item '$item'"
+  worktree_is_clean "$target" || die "refusing: '$target' has uncommitted or untracked content"
+  worktree_branch_ref_pins_head "$target" "$item" \
+    || die "refusing: branch ref '$item' does not pin '$target' HEAD"
+  ! worktree_has_live_cwd "$target" \
+    || die "refusing: a live process has its cwd inside '$target'"
+
+  git -C "$DEVEL" worktree remove "$target_real"
+  git -C "$DEVEL" show-ref --verify --quiet "refs/heads/$item" \
+    || die "postcondition failed: branch '$item' disappeared after worktree removal"
+  note "removed completed owned worktree '$target_real'; branch '$item' retained"
+}
+
+# --- Accepted-worktree fallback sweep over every OTHER worktree under $WT_ROOT ---
 reap_sweep() {
   local skip_target="${1:-}"
   [[ -d "$WT_ROOT" ]] || return 0
@@ -282,18 +463,35 @@ reap_sweep() {
       continue  # gone from disk; `worktree prune` above already handled it
     fi
 
-    if worktree_has_claim "$path"; then
-      continue  # active provenance — never reap
+    local branch
+    branch="$(worktree_branch "$path")"
+    derive_parent "$branch" >/dev/null 2>&1 || continue
+    ref_has_item_claim main TODO "$branch" && continue
+    ref_has_item_claim main DONE "$branch" || continue
+    if ! ref_item_is_accepted main "$branch"; then
+      note "SURFACE: main has a DONE-* claim for '$branch' but no unique current Acceptance: ✓"
+      continue
+    fi
+    if ! worktree_is_clean "$path"; then
+      note "SURFACE: accepted '$path' has uncommitted or untracked content; not reaped"
+      continue
+    fi
+    if ! worktree_branch_ref_pins_head "$path" "$branch"; then
+      note "SURFACE: branch ref '$branch' does not pin '$path' HEAD; not reaped"
+      continue
+    fi
+    if ! git -C "$DEVEL" merge-base --is-ancestor "$(git -C "$path" rev-parse HEAD)" main; then
+      continue  # accepted but not in main yet; its owner may use explicit self-cleanup
+    fi
+    if worktree_has_live_cwd "$path"; then
+      note "SURFACE: a live process has its cwd inside '$path'; not reaped"
+      continue
     fi
 
-    if worktree_is_clean "$path"; then
-      git -C "$DEVEL" worktree remove --force "$path"
-      note "reaped orphaned scratch worktree '$path' (no claim, clean)"
-    else
-      note "SURFACE: '$path' has uncommitted content and no active claim file." \
-           " Not reaped. Recovery: inspect with 'git -C \"$path\" status', commit/push" \
-           " or discard as appropriate, or add a claim file if this is active work."
-    fi
+    git -C "$DEVEL" worktree remove "$path"
+    git -C "$DEVEL" show-ref --verify --quiet "refs/heads/$branch" \
+      || die "postcondition failed: branch '$branch' disappeared after worktree removal"
+    note "reaped accepted worktree '$path' (clean, unlocked, main-reachable); branch '$branch' retained"
   done < <(list_unlocked_worktree_paths)
 }
 
@@ -305,8 +503,25 @@ if [[ "${1:-}" == "--reap-only" ]]; then
   exit 0
 fi
 
+if [[ "${1:-}" == "--finalize-accepted" ]]; then
+  item="${2:-}"
+  [[ -n "$item" ]] || die "usage: $0 --finalize-accepted <item> [worktree-path]"
+  target="${3:-$WT_ROOT/$item}"
+  finalize_accepted_claims "$item" "$target"
+  exit 0
+fi
+
+if [[ "${1:-}" == "--remove-completed" ]]; then
+  item="${2:-}"
+  [[ -n "$item" ]] || die "usage: $0 --remove-completed <item> [worktree-path]"
+  target="${3:-$WT_ROOT/$item}"
+  authority_ref="${4:-main}"
+  remove_completed_worktree "$item" "$target" "$authority_ref"
+  exit 0
+fi
+
 BRANCH="${1:-}"
-[[ -n "$BRANCH" ]] || die "usage: $0 <item-branch> [worktree-path]  |  $0 --reap-only [worktrees-root]"
+[[ -n "$BRANCH" ]] || die "usage: $0 <item-branch> [worktree-path] | --reap-only [root] | --finalize-accepted <item> [path] | --remove-completed <item> [path] [accepted-ref]"
 derive_parent "$BRANCH" >/dev/null \
   || die "invalid item branch '$BRANCH' — expected XXXX, XXXX-YY, or XXXX-YY.ZZ"
 
