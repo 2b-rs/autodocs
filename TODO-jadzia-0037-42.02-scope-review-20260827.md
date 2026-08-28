@@ -6,7 +6,7 @@
 - **identity/role:** `jadzia`, distinct Management-instantiated Architect, Team DeepSpace9
 - **capability_class:** `privileged`
 - **execution_authority:** Read-only inspection of candidate `docs/dossiers/dec-0037-005-authority-ref-cas.md`. No product mutation, implementation, validation, acceptance, integration, `main`-advancement, or external effects.
-- **state:** `[x]`
+state: [x]
 - **authority:** Jean-Luc AWARD `agent-inbox:1787859808398-aa22120d`; Management appointment `agent-inbox:1787858664667-860b97ee`
 - **base_commit:** `26551894987e453f191b2a97036783b63587c711`
 - **branch:** `review-0037-42.02-scope-jadzia-20260827`
