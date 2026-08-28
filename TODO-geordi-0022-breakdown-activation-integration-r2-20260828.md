@@ -1,6 +1,6 @@
 # Integrator claim — Feature `0022` breakdown activation R2
 
-state: [p]
+state: [x]
 owner_token: agent:geordi:0022-breakdown-activation-integration-r2:1787920490987-561d6f92
 request_id: 1787920490987-561d6f92
 capability_class: privileged
@@ -47,7 +47,9 @@ Target drift, hygiene failure, semantic conflict, validation/review failure, or 
 - Disclosed sequencing/timestamp defects are preserved and assessed as adverse process evidence without changing authority or candidate bytes.
 - Evidence: `docs/campaign-evidence/0022-breakdown-activation-geordi-r2-20260828.md`.
 - Candidate `e59e264de534b7ef03d1bb2bf8c9c453c9ece268` passed integration hygiene across 263 registered worktrees; the post-evidence tip requires a fresh exact-candidate hygiene run before root preflight.
+- Final reviewed candidate `e5a9c175a2b82c11d23953ad182602e812cfc9f3` passed exact-candidate hygiene; root preflight, fast-forward merge, and postflight all passed. Root `main` reached the exact candidate.
+- No Acceptance, checkpoint completion, DONE change, source repair/history rewrite, unrelated backlog mutation, foreign cleanup, push, or external effect occurred.
 
 ## Next step
 
-Run exact-candidate hygiene on the post-evidence tip. If and only if it passes with the target still pinned, run root preflight, perform the authorized root merge, and run postflight; otherwise record the Mode C stop verdict without root mutation.
+Commit and integrate this terminal claim/evidence addendum through the same hygiene/preflight/postflight gates, report the final ref to Jean-Luc, and release the assignment.

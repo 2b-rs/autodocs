@@ -41,3 +41,14 @@ This is integration review and carry evidence only. It is not Acceptance, `0022-
 ## Pre-merge hygiene
 
 `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0022-breakdown-activation-geordi-r2-20260828 --candidate-ref e59e264de534b7ef03d1bb2bf8c9c453c9ece268` exited `0`: `integration hygiene: PASS`; 263 registered worktrees inspected. Because this evidence commit changes the candidate, the same gate must pass again on the new exact tip immediately before root preflight and merge.
+
+The required second exact-candidate hygiene run on `e5a9c175a2b82c11d23953ad182602e812cfc9f3` also exited `0`: `integration hygiene: PASS`; 263 registered worktrees inspected.
+
+## Root integration execution
+
+- Immediately before root mutation, root `HEAD` and `main` both still equaled the pinned target `b0555ae79d36f853130f81eaa784aaa358e3c9be`.
+- Root preflight exited `0`: `integration hygiene: PASS`; 264 registered worktrees inspected.
+- `git -C /Users/tobias.anton/devel/autodocs merge --ff-only e5a9c175a2b82c11d23953ad182602e812cfc9f3` exited `0`; root advanced to the exact reviewed candidate.
+- Mandatory postflight exited `0`: `integration hygiene: PASS`; 264 registered worktrees inspected; root remained `e5a9c175a2b82c11d23953ad182602e812cfc9f3`.
+
+The activation integration is complete. A path-limited terminal claim/evidence addendum is committed separately and must pass the same exact-candidate hygiene/root-preflight/postflight sequence before it is carried to `main`.
