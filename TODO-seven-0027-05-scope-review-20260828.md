@@ -35,3 +35,20 @@ Not the author of either colliding record, not the later Implementer, not this F
 
 - **handover_to:** `none` — review complete and committed.
 - **handover_at:** n/a. Claim retained, never deleted, closed by `state: [x]`; written in an item-owned worktree, never the root.
+
+## Currency assessment addendum (2026-08-28, AWARD `1787907156037-8abb0606`)
+
+- **state:** `[x]` (unchanged — this addendum closes the currency assessment on the same item)
+- **corrected candidate:** `286a7c4933c6edb3e201814708ac85bc2125b414`, declared base `c27b8001f` **preserved, not rebased or repinned**
+- **artifact:** `docs/campaign-evidence/0027-05/scope-review-currency-dec-0027-002-seven-20260828.md`
+- **determination:** prior review `e4d6b3475` **REMAINS CURRENT**; C-1 and C-2 discharged; **no material architecture change**.
+
+**C-1** SUP.8 renumbered to `DEC-0027-002`; MAN.3 retains `DEC-0027-001`. Collision resolved. Which record kept the number was the Project Lead's call, not mine.
+
+**C-2** discharged in the stronger of the two forms I named: `DEC-0027-001` **owns the allocation**, this decision **consumes** it, and `ALT-05` was widened to reject *allocating a second terminal integration Task*. The rule is now defended by a named rejected alternative rather than merely obeyed.
+
+**No material change:** `Triggers`, `Affected work units`, `Affected gates` all **IDENTICAL** to the abandoned candidate; only `Considered alternatives` differs, in exactly the two allocation/consumption sentences. The title shift from *add* to *constrain* the floor is therefore accurate rather than cosmetic — a relationship correction, not an architecture change.
+
+**Drift** `c27b8001f`→`8beceeff8`: 4 files, +135/−0, all `0044`-line governance evidence. Touches nothing this review measured and is **attributable to neither candidate nor author** — stated explicitly because misattributing target drift to an implementer is the error I made against this same author's `0044-029` work earlier today and withdrew.
+
+**`C-3` stays open and advisory:** the allocation mechanism recurs because a `main`-only view cannot see unmerged candidates. This candidate neither caused nor cures it; the correction is evidence the mechanism is real, not that it is fixed.
