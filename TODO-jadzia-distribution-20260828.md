@@ -22,3 +22,8 @@ Type: Execution chain
 Awarded to: `obrien`
 Branch: `origin/0037-17.02-ae45-odo-20260828`
 Scope: Integration of 0037-17.02 bookkeeping commit
+
+### Integration 0037-frontend
+Awarded to: `obrien`
+Branch: `integrate-chain-0037-obrien`
+Scope: Integration of 0037-11.01, 0037-12, 0037-13
