@@ -1,0 +1,44 @@
+### `DEC-0044-029` — Keep memory writes paused until routing fails closed outside the shared root
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-28T06:22:22Z`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** Management decision `agent-inbox:1787898060256-d1495823`; originating decision request `agent-inbox:1787894015952-201f6995`; supporting Tuvok evidence reference `agent-inbox:1787893973173-8df13a51`
+- **Subject:** Whether agent, role, capability-set, and Feature memory writes may resume before their profile and tool defaults make implicit or shared-root workspace routing impossible
+- **Decision:** Select option A. The `memory_append` pause remains in force. Before any memory write may resume, the applicable profile instructions and tool defaults must fail closed so that an omitted, defaulted, unresolved, or shared-root workspace cannot become a write target. This record does not implement or activate that behavior.
+- **Technical justification:** Repeated observed routing incidents show that current defaults can direct a memory append to the shared root checkout even when an item worktree is active. A documentation-only expectation or caller convention cannot safely contain that cross-item effect because memory guidance is consumed by multiple roles and sessions, while root divergence can block unrelated validation and integration. Keeping writes paused and requiring fail-closed routing before resumption preserves existing evidence, prevents additional root mutation, and leaves the implementation architecture to a separately authorized scope review and implementation package.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Keep `memory_append` paused and require profile and tool defaults to fail closed against implicit, default, unresolved, or shared-root routing before writes resume.
+    - **Disposition:** `selected`
+    - **Reason:** This is Management-selected option A and is the only considered alternative that prevents another write while the routing target is ambiguous or unsafe.
+  - **ALT-02:** Resume or permit memory writes before fail-closed profile and tool routing is implemented, integrated, and verified.
+    - **Disposition:** `rejected`
+    - **Reason:** Caller discipline or explicit-workspace convention alone leaves the demonstrated default/root-routing failure mode available across work units.
+- **Consequences:**
+  - **CON-01:** The existing `memory_append` hold remains fully operative in every scope; ordinary profile guidance does not override it.
+  - **CON-02:** Existing divergence under `logs/agent-memory/**` remains preserved: no cleanup, staging, commit, revert, deletion, or new append is authorized by this decision.
+  - **CON-03:** This record alone changes no tool, profile, instruction, gate implementation, worktree, claim, Acceptance, integration state, or authority allocation.
+  - **CON-04:** Any mutation that implements or changes the cross-item routing or gate scope starts only after a distinct Management-instantiated Architect, separate from the Implementer, records the required supporting scope review.
+  - **CON-05:** Activation occurs only after this decision is reachable from `main`, the required Architect scope review exists, the implementation is integrated under its ordinary authority, and positive and negative validation prove that explicit safe-worktree routing succeeds while omitted, default, unresolved, shared-root, and path-escape targets fail before a write.
+  - **CON-06:** The affected interfaces are agent, role, capability-set, and Feature memory workspace selection; the profile instructions that request memory operations; and the `memory_append` tool boundary. Ordinary item scopes and Acceptance, integration, release, waiver, and specialist authorities remain unchanged.
+  - **CON-07:** Until activation, a durable learning needed for active work is recorded only in the active item claim, without calling `memory_append` or mutating memory files.
+  - **CON-08:** Rollback after any later activation disables memory writes and restores the hold before reverting the activating implementation; rollback must not route writes to the shared root or alter preserved divergence. This decision record and its provenance remain append-only.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0044`
+  - `path:logs/agent-memory`
+  - `path:docs/pipeline/core-rules.md`
+  - `path:docs/pipeline/roles/requirements-engineer.md`
+  - `external:agent-inbox-memory-append`
+- **Affected gates:**
+  - `validation:memory-workspace-routing-fail-closed`
+  - `integration:0044`
+  - `feature-closure:0044`
+- **Review participation:** `none`
+- **No-review reason:** Management requires a future, distinct Management-instantiated Architect scope review before any qualifying implementation mutation; no such review is represented as completed by this recording package.
+- **Waiver:** `none`
