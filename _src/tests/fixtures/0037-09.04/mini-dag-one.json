@@ -1,0 +1,21 @@
+{
+  "schema": "issue-regeneration-dag@v1",
+  "generation_id_rule": "sha256 over declared canonical input, schema, tool, and configuration digests",
+  "stages": [
+    {
+      "id": "build-internal-catalog",
+      "argv": ["python3", "_src/tools/issuectl.py", "render", "--catalog", "internal"],
+      "depends_on": [],
+      "inputs": [{"glob": "issues/**/*.md", "kind": "canonical"}],
+      "outputs": ["data/issue-catalog.internal.json"],
+      "sole_writer": "build-internal-catalog",
+      "required": true,
+      "retention": "committed",
+      "privacy": "internal",
+      "determinism": "byte",
+      "promotion_group": "issue-publication",
+      "cleanup": "atomic replace after validation",
+      "validator": "schema and canonical digest check"
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 # Architect amendment claim — 0037-51 Runner role
 
+state: [x]
+coordination_state: complete
+lease_active: false
+
 - **Item:** `0037-51-runner-role-amendment-20260824`
 - **Owner:** `data` (Architect, Team Enterprise)
 - **owner_token:** `agent:data:0037-51-runner-role-amendment:20260824T102013Z`
@@ -9,7 +13,7 @@
 - **Assignment source:** Project Lead `jean-luc`, mailbox thread `0037-51`, messages `1787566669522-d2e024d9` and `1787566813425-92cf5fd2`
 - **Prior review baseline:** `9f4d3f6ee04389a77dc296ed21a85f918d75739d`
 - **Review REF:** `5d5996d07d8e8be71a99722a12e3afcb1d57919a`
-- **State:** completed; review write-scope lease released after bookkeeping
+- **Terminal disposition:** completed; review write-scope lease released after bookkeeping
 - **Branch:** `review-0037-51-runner-role-amendment-data-20260824`
 - **Worktree:** `.review-worktrees/0037-51-runner-role-amendment-data-20260824`
 

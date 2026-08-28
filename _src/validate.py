@@ -20,6 +20,7 @@ Prüft:
      vollständige lokale Publikationskohorte hat einen Ledger-Eintrag
 Exit-Code 0 = alles in Ordnung.
 """
+import argparse
 import glob
 import json
 import multiprocessing
@@ -801,6 +802,83 @@ def check_report_freshness():
         )
 
 
+ISSUE_VALIDATE_ARGS = None
+
+
+def parse_validate_cli(argv):
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--issue-source",
+        choices=("working-tree", "staged-index", "candidate", "off"),
+        default="working-tree",
+    )
+    parser.add_argument("--issue-root")
+    parser.add_argument("--issue-dag")
+    parser.add_argument("--issue-generated-root")
+    parser.add_argument("--issue-authoritative-root")
+    known, rest = parser.parse_known_args(argv)
+    return known, rest
+
+
+def check_issue_store(options=None):
+    checks_performed.append("check_issue_store")
+    options = options if options is not None else ISSUE_VALIDATE_ARGS
+    if options is None or getattr(options, "issue_source", "working-tree") == "off":
+        return
+    tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import issue_validate as issue_validate_mod
+    source = options.issue_source
+    root = options.issue_root
+    if source == "candidate":
+        if not root:
+            record_finding(
+                "issue-validate-config",
+                "error",
+                "candidate issue mode requires --issue-root",
+            )
+            return
+        validate_source = "working-tree"
+    else:
+        validate_source = source
+    dag_path = options.issue_dag or os.path.join(ROOT, "docs/pipeline/issue-derived-artifacts-v1.json")
+    generated_root = options.issue_generated_root
+    issue_root = root
+    if validate_source == "working-tree" and issue_root is None:
+        issue_root = os.path.join(ROOT, "issues")
+        if not os.path.isdir(issue_root):
+            issue_root = None
+    try:
+        diagnostics, _parsed = issue_validate_mod.validate(
+            repo=ROOT,
+            source=validate_source,
+            root=issue_root if validate_source != "staged-index" else None,
+            authoritative_root=options.issue_authoritative_root,
+            compare_head=False,
+            dag_path=dag_path if os.path.exists(dag_path) else None,
+            generated_root=generated_root,
+        )
+    except issue_validate_mod.ConfigurationError as exc:
+        record_finding("issue-validate-config", "error", str(exc))
+        return
+    for diagnostic in diagnostics:
+        record_finding(
+            "issue-validate",
+            "error",
+            "%s %s:%s item=%s field=%s: %s" % (
+                diagnostic.rule,
+                diagnostic.path,
+                diagnostic.line,
+                diagnostic.item,
+                diagnostic.field,
+                diagnostic.message,
+            ),
+            ref=diagnostic.path or diagnostic.rule,
+        )
+
+
+
 def check_automation_safety():
     """Runs automation_safety.scan_repository() over every tracked *.py/*.sh
     source (see automation_safety.tracked_automation_paths).
@@ -885,6 +963,7 @@ def check_automation_safety():
 # tests can iterate it without re-deriving check order from source text.
 CHECKS = [
     ("check_automation_safety", check_automation_safety),
+    ("check_issue_store", check_issue_store),
     ("check_build", check_build),
     ("check_links", check_links),
     ("check_langs", check_langs),
@@ -931,7 +1010,12 @@ def run_checks(checks, out=None, clock=time.time):
     return timings
 
 
-def main():
+def main(argv=None):
+    global ISSUE_VALIDATE_ARGS
+    argv = sys.argv[1:] if argv is None else argv
+    ISSUE_VALIDATE_ARGS, rest = parse_validate_cli(argv)
+    if rest:
+        sys.argv = [sys.argv[0], *rest]
     _t0 = time.time()
     run_checks(CHECKS)
 

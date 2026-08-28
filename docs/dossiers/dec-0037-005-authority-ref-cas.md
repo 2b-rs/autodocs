@@ -1,0 +1,76 @@
+# Authority-Ref-CAS decision for stale-authority-safe writers
+
+### `DEC-0037-005` — Bind every authoritative mutation to one Authority-Ref-CAS transaction
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-26T17:19:17Z`
+- **Deciding identity:** `agent:data:0037-42.02-dec-0037-003:20260826T171732Z`
+- **Role:** `Architekt`
+- **Authority reference:** Project Lead recording assignment `agent-inbox:1787764652685-7b66c556`; three-Architect consensus packet `agent-inbox:1787764757364-71f9f2e6`
+- **Subject:** Authoritative identity, projection, compare-and-swap, failure, recovery, and writer-coverage boundary for stale-authority-safe `0037-42.02` mutations and the authority-switch consumers that must interoperate with them
+- **Decision:** The authoritative identity set is the Authority Ref object ID, the verified old authoritative resource-ref object IDs, and the committed transaction-manifest object ID; an actor's session, role, process, worktree, or projection path is never an authority identity by inference. The authority epoch and selector identity are an immutable Git object named by one dedicated Authority Ref. The existing `.01` doctor remains the sole selector/bundle parser; a writer composes `authority-snapshot-token@v1` from the Authority Ref object ID and the existing doctor result's selector and instruction-bundle digests. Every mutating writer performs exactly one `git update-ref --stdin -z` transaction that verifies the expected Authority Ref object ID and every expected old authoritative resource-ref object ID, then atomically updates the item and transaction-manifest refs. An expected-absent ref is verified with Git's null object ID rather than an omitted verification. The working-tree selector and bundle checkout, claim sidecar, JSONL journal, issue files, and index are not independently authoritative: each is either a projection of a named manifest tree or outside the authoritative state. No authoritative issue file, index, or journal may remain outside the ref transaction. On compare-and-swap loss, all authoritative refs and every object reachable from their prior tips remain unchanged; unreachable candidate blobs or trees written before the transaction are ordinary Git garbage, are not a violation, and require no synchronous cleanup. A committed manifest is the recover-forward boundary: any session with authority for the affected work unit can idempotently reproduce projections after interruption. Dry-run performs no ref transaction. Coverage is discovery-based and fails whenever any mutating command or path can bypass this transaction boundary. This decision neither activates a live selector nor expands `0037-42.02` into a general issue-store migration; implementation remains blocked until a distinct, independent Architect supplies the required cross-item scope review.
+- **Technical justification:** The pre-existing file/journal/ref sequence can persist a journal before stale-authority rejection, can change a ref after the last selector check, and cannot atomically roll back independently changed working-tree files. A process lock is a correctness boundary only if every authority changer participates, while independent file and ref authorities cannot provide an all-or-nothing stale-client invariant. Naming authority and every durable mutation through immutable Git objects and one native multi-ref transaction makes the expected Authority Ref itself part of compare-and-swap: every verify or update succeeds together or none does. Separating authoritative identity from rebuildable projections makes the negative state mechanically observable, supports cross-session recovery from the committed manifest, and avoids treating unreachable content-addressed candidate objects as published state. The decision records the common denominator agreed by Data (`1787764131540-6b30e0c4`, `1787764649033-189f0c75`), Seven (`1787764335922-d47a3f6d`, `1787764705894-ae3ad616`), and Saru (`1787764599180-72b40d6a`); that participation is substantive architecture authorship and disqualifies all three from the later independent scope review.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** One immutable authority object plus a dedicated Authority Ref, snapshot token, and one native multi-ref compare-and-swap transaction; all files, index state, and journals are projections or non-authoritative
+    - **Disposition:** `selected`
+    - **Reason:** It binds authority identity and every authoritative resource to Git's atomic ref transaction, yields a precise compare-and-swap-loss invariant, and permits deterministic cross-session recover-forward.
+  - **ALT-02:** A repository-wide application lock shared by writers and selector activation
+    - **Disposition:** `rejected`
+    - **Reason:** It is correct only if every current and future writer participates, adds stale-lock ownership and recovery state, and is unnecessary once the Authority Ref participates directly in the same native compare-and-swap as the resource refs.
+  - **ALT-03:** Keep files, index entries, or JSONL journals independently authoritative and add a final doctor re-read around the existing file/ref sequence
+    - **Disposition:** `rejected`
+    - **Reason:** No placement of the final read atomically covers independently committed files and refs; either drift can occur after the read or a negative path already contains an authoritative write.
+  - **ALT-04:** Narrow the negative invariant while retaining split authority
+    - **Disposition:** `rejected`
+    - **Reason:** It would weaken the parent stale-client requirement and leave recovery unable to determine which independently persisted representation is authoritative.
+- **Consequences:**
+  - **CON-01:** `authority-snapshot-token@v1` binds the Authority Ref object ID to the existing `.01` selector and bundle digests; the `.01` API and output schema remain immutable and no second selector parser is permitted.
+  - **CON-02:** The transaction uses `git update-ref --stdin -z`; every expected existing ref has an explicit verification, and every expected-absent ref uses the null object ID. A failed verification aborts the whole transaction without changing any authoritative ref.
+  - **CON-03:** Candidate blobs and trees may be written with `git hash-object -w` before the ref transaction. Objects left unreachable after compare-and-swap loss are ordinary Git garbage, not published authority and not a synchronous cleanup obligation. Existing `preserved/*` tags remain protected from pruning under their separate recovery contract.
+  - **CON-04:** The worktree selector/bundle checkout, claim sidecar, JSONL journal, issue files, and index cannot carry independent authority. If the index is used, it must be a projection of a named manifest tree; otherwise it is outside this protocol.
+  - **CON-05:** The committed transaction manifest is the sole recover-forward source. Projection is idempotent and may be completed by an authorized session other than the crashed writer; no crashed process retains exclusive recovery ownership.
+  - **CON-06:** Dry-run executes no ref transaction and cannot publish authoritative state.
+  - **CON-07:** Writer coverage must be discovered rather than maintained only as a hand-written allowlist: validation fails when a mutating command or path exists without routing through the Authority-Ref-CAS boundary. The terminal `0037-42.02` evidence enumerates the discovered commands and proves their routing.
+  - **CON-08:** Compare-and-swap-loss tests assert unchanged authoritative ref object IDs and unchanged objects reachable from their old tips, plus no published manifest for the losing operation. They do not require the Git object database or independently changed projections to be byte-empty or rolled back.
+  - **CON-09:** Authority-switch and activation work that produces the Authority Ref/object or projections must consume this identity/projection contract, but this decision does not itself activate a selector, change current-profile behavior, implement migration, or start `.03`–`.05`.
+  - **CON-10:** Data, Seven, and Saru are substantive authors of this architecture and are not independent candidates for the mandatory cross-item scope review. A different Management-instantiated Architect must review the affected reach before product or governance mutation implements the protocol.
+- **Affected work units:**
+  - `task:0037-42.02`
+  - `task:0037-42.05`
+  - `task:0037-34.02`
+  - `task:0037-40`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `task-start:0037-42.02`
+  - `validation:agent-bootstrap`
+  - `validation:issue-policy`
+  - `integration:0037-34.02`
+  - `integration:0037-40`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:seven:0037-42.02:1787764335922`
+    - **Role:** `Architekt`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Seven supports native Authority-Ref-CAS and supplied the null-object-ID, `-z`, cross-session recovery, discovery-based coverage, reachable-object invariant, independence, and preserved-tag precisions in messages `1787764335922-d47a3f6d` and `1787764705894-ae3ad616`.
+  - **PART-02:**
+    - **Identity:** `agent:saru:0037-42.02:1787764599180`
+    - **Role:** `Architekt`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Saru supports snapshot-token plus native ref CAS and supplied the immutable `.01` API, pre-transaction candidate-object, dry-run, index-projection, no-activation, bounded-scope, and independent-review precisions in message `1787764599180-72b40d6a`.
+- **Waiver:** `none`
+
+## Management appointment for the independent scope review
+
+- **Recorded at:** `2026-08-27T19:24:24Z`
+- **Management authority reference:** `agent-inbox:1787858664667-860b97ee`
+- **Appointment:** The current user appoints `jadzia` as the distinct Management-instantiated Architect for the mandatory cross-item scope review of `0037-42.02` required by CON-10.
+- **Separation check:** `docs/pipeline/agent-roster.md` identifies `jadzia` as a privileged Architect. Jadzia is distinct from substantive architecture authors Data, Seven, and Saru, and is not appointed here as Implementer or Integrator.
+- **Activation boundary:** This appointment authorizes only the independent pre-mutation reach/scope review. It grants no implementation, integration, acceptance, waiver, release, external-effect, or `main`-advance authority. Product or governance mutation implementing the protocol remains blocked until Jadzia's conforming scope-review result is recorded and reachable from `main`.
+- **Superseded input retained:** Management's earlier answer `agent-inbox:1787858220959-4c678434` named Saru. Because Saru is excluded by CON-10 and the offered option required a distinct Architect, that answer was treated as new input rather than as an appointment or implicit waiver. The later answer above resolves the appointment without changing CON-10 or the `none` waiver state.

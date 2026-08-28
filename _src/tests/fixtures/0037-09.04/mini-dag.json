@@ -1,0 +1,36 @@
+{
+  "schema": "issue-regeneration-dag@v1",
+  "generation_id_rule": "sha256 over declared canonical input, schema, tool, and configuration digests",
+  "stages": [
+    {
+      "id": "build-internal-catalog",
+      "argv": ["python3", "_src/tools/issuectl.py", "render", "--catalog", "internal"],
+      "depends_on": [],
+      "inputs": [{"glob": "issues/**/*.md", "kind": "canonical"}],
+      "outputs": ["data/issue-catalog.internal.json"],
+      "sole_writer": "build-internal-catalog",
+      "required": true,
+      "retention": "committed",
+      "privacy": "internal",
+      "determinism": "byte",
+      "promotion_group": "issue-publication",
+      "cleanup": "atomic replace after validation",
+      "validator": "schema and canonical digest check"
+    },
+    {
+      "id": "build-public-projection",
+      "argv": ["python3", "_src/tools/issuectl.py", "render", "--catalog", "public"],
+      "depends_on": ["build-internal-catalog"],
+      "inputs": [{"glob": "data/issue-catalog.internal.json", "kind": "derived"}],
+      "outputs": ["data/issue-catalog.public.json"],
+      "sole_writer": "build-public-projection",
+      "required": true,
+      "retention": "committed",
+      "privacy": "public",
+      "determinism": "semantic",
+      "promotion_group": "issue-publication",
+      "cleanup": "omit restricted fields then atomic replace",
+      "validator": "privacy projection validation"
+    }
+  ]
+}

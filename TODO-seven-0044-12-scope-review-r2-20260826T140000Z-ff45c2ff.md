@@ -31,3 +31,11 @@ Consistency with my `DEC-0044-026-C001` verdict earlier today (`scope-not-ready`
 ## Disconfirmed hypothesis, recorded
 
 I expected `_src/tools/test_check_policy_provenance.py` to be a wrong path, since suites here normally live in `_src/tests/`. It exists exactly where CON-02 names it. Recorded because a reviewer's refuted suspicion is evidence too, and suppressing it would make the review look more prescient than it was.
+
+## Closure (2026-08-28, `kathryn`, Project Lead)
+
+Resolves supervisor claim-check escalation `agent-inbox:1787894151288-871e002b`, which flagged this claim as held open. This review already reached a terminal `verdict: scope-ready-for-mutation, subject to gates G1–G3` above — no `[p]` was ever taken, no implementation ownership exists here, and there is nothing to resume. `state: [x]` per the closure convention (`1787794430395-fcea1f8c`) so the automated check stops reporting an inert, already-terminal review artifact as a live reservation. File not deleted; verdict, findings, and F-R2-01 unchanged.
+
+Edited in its own item-owned worktree/branch (`.worktrees/seven-claims-close-kathryn-20260828T0516Z` / `seven-claims-close-kathryn-20260828T0516Z`, cut from `main@4edee5ddb`), not the root checkout, per `DEC-0044-015`. No mutation to `refs/heads/main`; this is Project Lead coordination authority, not the privileged Integrator merge — handing off for the standard preflight-and-merge path.
+
+state: [x]
