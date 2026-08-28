@@ -2,7 +2,7 @@
 
 - **item_id:** `0044-12-g3`
 - **owner_token:** `agent:geordi:0044-12-g3-integration:1787906610153-087a8baf`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** exact-scope independent review and conditional integration only
 - **planned_duration:** 30 minutes
@@ -29,3 +29,7 @@ Review the pinned candidate independently against the pinned target. Stop and re
 - Activation identity passed: `054024476b55f02d60f2dc7a0d52c48c148c52bf` is an ancestor of pinned `main@c27b8001fcd7b6a504aaf7fe36c481711d5e9d81`, has the expected two parents, and carries exactly one `Policy-Origin-Branch: main` trailer. The correction, closure, and integration-carry commits also carry exactly one such trailer.
 - Evidence agrees with the correction and claim. `process_doc_doctor` remains `ok: true` with 33 findings on both baseline and candidate and no finding on either changed documentation path.
 - **VERDICT: REVIEW PASS; READY FOR FINAL CANDIDATE HYGIENE AND GUARDED ROOT INTEGRATION.**
+
+## Supervisor-restart terminalization
+
+The reviewed G3 composition `d6f9afd9e2171b050b081aa26375d629e88d3d2c` and integration evidence `8beceeff80dcdbc746b93b3f4d07ca0915d1d50b` are ancestors of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`. No scope in this historic claim remains actionable; a successor requires a fresh exact assignment.

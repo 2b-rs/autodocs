@@ -2,7 +2,7 @@
 
 - **item_id:** `0044-12`
 - **owner_token:** `agent:geordi:0044-12-integration-r2:1787904941886-44fdae32`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / Integrator
 - **execution_authority:** direct, exact-scope provenance-carry rebuild, review-currency reassessment, and conditional checkpoint integration
 - **planned_duration:** 35 minutes
@@ -27,3 +27,7 @@ Commit this claim before carriage. From the pinned target, make an explicit no-f
 - `policy-provenance-report@v2` reports no missing/malformed trailer. Its foreign-branch classifications are the intentionally reviewed historic carry and its no-ff descendants; their recorded trailers and declared no-ff absorption preserve the required topology. This differs from R1's new candidate-attributable missing-trailer finding.
 - Validation: isolated-cache `py_compile` passed; focused `python3 -m unittest test_check_policy_provenance -v` passed 21/21; `git diff --check` passed. Candidate hygiene (`check_integration_hygiene.py --candidate-ref HEAD`) returned `ok: true`, with no findings.
 - **VERDICT: READY FOR GUARDED ROOT INTEGRATION.** No Task Acceptance, G3 correction, product repair, Memory action, or unrelated mutation occurred.
+
+## Supervisor-restart terminalization
+
+The reviewed retry candidate `054024476b55f02d60f2dc7a0d52c48c148c52bf` and its carry evidence `c27b8001fcd7b6a504aaf7fe36c481711d5e9d81` are ancestors of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`. This historic retry has no remaining authorized root action; later G3 work is recorded separately. Any new change needs a fresh exact assignment.

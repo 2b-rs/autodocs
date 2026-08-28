@@ -18,6 +18,12 @@
 - prohibited: `uv.lock`; `0037-09.03`/`0037-09.04`; foreign claim edits; Acceptance; review verdicts; checkpoint crossing; Feature/main/DONE movement; push; root-checkout mutation; unrelated repair
 - status: `0037-09.02` and `0037-09.03` parent integrations complete after separately reviewed fixture-Git hardening R2 and full green revalidation; no Acceptance or review disposition made
 
+## Supervisor-restart terminalization
+
+- **state:** `[x]`
+- The assigned parent integration completed at `261ca9cc566e19ae851e3a9a2f029534613941fe`, which is reachable from current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`.
+- No parent-branch merge, review, Acceptance, checkpoint, or Feature action remains authorized under this historic merge-only assignment. A successor must receive a fresh exact scope.
+
 ## Required evidence
 
 - Claim commit SHA before integration mutation.

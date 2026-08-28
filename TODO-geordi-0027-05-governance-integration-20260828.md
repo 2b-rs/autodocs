@@ -2,7 +2,7 @@
 
 - **item_id:** `0027-05-governance-integration`
 - **owner_token:** `agent:geordi:0027-05-governance-integration:1787907575516-bd737347`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** direct exact-scope assembly, independent review, and conditional governance integration only
 - **planned_duration:** 30 minutes
@@ -26,3 +26,7 @@ Commit this claim before inspecting or carrying candidate history. Assemble only
 - **Assembly:** corrected candidate merge `c026eca89d`; exact review-patch carries `7216664d6f` → `e2ca9aacc1` → `b662b6874b`; excluded `aad2774215` remains unreachable.
 - **Evidence:** `docs/campaign-evidence/0027-05/governance-integration-geordi-20260828.md`.
 - **Verdict:** PASS; ready for final candidate hygiene and guarded root integration. No prohibited mutation occurred.
+
+## Supervisor-restart terminalization
+
+Current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4` contains the completed governance integration tip `a1afbae4aa2d7174318452f6ccf1212158176955`. No awarded work remains for this historic claim. Retained evidence is unchanged; any further mutation requires a fresh exact assignment.
