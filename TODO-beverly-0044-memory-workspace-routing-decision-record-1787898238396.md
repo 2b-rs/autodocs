@@ -7,7 +7,7 @@ base_commit: 7d6d71475796d3afdacff585d25059e2059e73b3
 capability_class: unprivileged
 execution_authority: direct
 startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; docs/pipeline/decision-record.md
-state: [p]
+state: [x]
 write_scopes: ["TODO-beverly-0044-memory-workspace-routing-decision-record-1787898238396.md", "docs/dossiers/dec-0044-029-memory-workspace-routing.md"]
 
 ## Assignment and provenance
@@ -35,8 +35,12 @@ write_scopes: ["TODO-beverly-0044-memory-workspace-routing-decision-record-17878
 ## Progress
 
 - Awarded branch and worktree were created from the exact baseline.
-- Claim-first commit is the next required lifecycle step.
+- Claim-first REF: `af9c7cbe087107172798180331548f0b6ba4e6f4`.
+- Substantive decision-record REF: `695dc4f611cea604cac1e2816d366cda669715f9`.
+- Validation PASS: canonical 16-field order; registered Management identity; valid timestamp; two contiguous alternatives with exactly one selected; eight contiguous consequences; closed trigger values; complete no-review variant; exactly one `DEC-0044-029` heading; exact two-path baseline diff; `git diff --check`.
+- The record preserves the hold, root/memory divergence, future distinct Architect review gate, implementation/integration boundary, fail-closed activation validation, authority and Tuvok evidence references, alternatives, consequences, affected interfaces and gates, and rollback boundary.
+- No implementation, activation, review, Acceptance, integration, `main` advance, memory append, or root/memory cleanup occurred.
 
 ## Next step
 
-Commit this claim alone, then author and validate the conforming `decision-record@v1` within the remaining awarded path.
+Project Lead may arrange the separately authorized governance integration. This recorder retains no integration, Architect-review, Acceptance, activation, or `main`-advance authority.
