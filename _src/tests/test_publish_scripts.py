@@ -140,6 +140,9 @@ class PublishPublicSiteEndToEndTests(unittest.TestCase):
         (src / "index.html").write_text("<html>%s</html>" % content, encoding="utf-8")
         (src / "docs").mkdir(exist_ok=True)
         (src / "docs" / "internal.md").write_text("internal, must be excluded", encoding="utf-8")
+        (src / "DONE-owner-9999-01-request.md").write_text(
+            "accepted claim provenance, must be excluded", encoding="utf-8"
+        )
         _run_git(["add", "-A"], cwd=src, env=self.env)
         _run_git(
             ["-c", "user.name=Source", "-c", "user.email=source@example.invalid",
@@ -187,6 +190,7 @@ class PublishPublicSiteEndToEndTests(unittest.TestCase):
         export_dir = src / "output" / "publish-export" / "tree"
         self.assertTrue((export_dir / "index.html").exists())
         self.assertFalse((export_dir / "docs").exists())
+        self.assertFalse((export_dir / "DONE-owner-9999-01-request.md").exists())
         author = _run_git(
             ["log", "-1", "--format=%an <%ae>"],
             cwd=export_dir,
