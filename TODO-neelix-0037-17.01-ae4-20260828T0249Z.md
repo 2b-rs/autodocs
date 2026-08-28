@@ -32,3 +32,4 @@ PV-SCHEMA (missing field run/finding/event/artifact-set), PV-UUID, PV-ENDPOINT (
 ## Progress
 
 - 2026-08-28T02:49Z: worktree/branch cut from remesured main; implementing tests.
+- 2026-08-28: **[x] follow-up.** Substantive REF `bafc61ff1c645dfcba1b65b758628016b6955ca2`. Tests: `python3 _src/tests/test_provenance_store.py -v` → **23/23** (13 prior + 10 AE-4). `provenance_store.py` **not edited**. Culber REF `995c025b1` untouched. Did not land, did not stamp Acceptance.
