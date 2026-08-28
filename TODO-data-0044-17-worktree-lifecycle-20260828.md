@@ -29,6 +29,8 @@ Implement the current user's accepted lifecycle design:
 
 > Mir fiele noch ein: Bei Item-Abschluss (acceptance) das TODO-+-item in DONE-* umbenennen. Mir gefallen 2+3. Kannst du das umsetzen? Löschen macht die Flotte selbst.
 
+> Bring es rein.
+
 ## Intended write scope
 
 - `_src/tools/provision_tmp_worktree.sh`
