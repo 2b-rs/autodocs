@@ -8,8 +8,10 @@ import shutil
 import sys
 import hashlib
 import os
+import random
 import tempfile
 import unittest
+from collections import deque
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
@@ -1079,6 +1081,213 @@ class IssuectlMutateTests(unittest.TestCase):
         self.assertEqual(ctl.item_path(self.issues, "0100").read_bytes(), original)
         leftovers = list(self.issues.joinpath("0100").glob(".issuectl-*.tmp"))
         self.assertEqual(leftovers, [])
+
+    def test_prereq_self_target_ic1108_distinct_from_two_node_cycle(self):
+        """AE-4: cmd_prereq target==id short-circuit, not detect_cycle IC1108."""
+        self._create("0100")
+        digest = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "prereq",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--action",
+                "add",
+                "--target",
+                "0100",
+                "--expected-digest",
+                digest,
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1108", err)
+        self.assertIn("self prerequisite is forbidden", err)
+        self.assertNotIn("dependency cycle", err)
+
+    def test_criterion_move_missing_destination_ic1114_distinct_from_same_id(self):
+        """AE-4: dest-missing IC1114, not source==dest IC1114."""
+        self._create("0100")
+        digest = self._digest("0100")
+        code, _out, err = _run_main(
+            [
+                "criterion-move",
+                "--repo",
+                str(self.repo),
+                "--issues-root",
+                str(self.issues),
+                "--id",
+                "0100",
+                "--ac",
+                "AC-001",
+                "--to-id",
+                "0199",
+                "--expected-digest",
+                digest,
+                "--expected-digest-dest",
+                digest,
+                "--reason",
+                "rehome",
+            ]
+        )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1114", err)
+        self.assertIn("must both exist", err)
+        self.assertNotIn("must differ", err)
+
+    def test_criterion_move_crash_on_second_os_replace_rolls_back(self):
+        """AE-4: multi-file atomic_promote crash after first os.replace succeeds."""
+        self._create("0100")
+        self._create("0101")
+        src_path = ctl.item_path(self.issues, "0100")
+        dst_path = ctl.item_path(self.issues, "0101")
+        src_orig = src_path.read_bytes()
+        dst_orig = dst_path.read_bytes()
+        src_d = self._digest("0100")
+        dst_d = self._digest("0101")
+        calls = {"n": 0}
+        real = os.replace
+
+        def boom(src, dst):
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return real(src, dst)
+            raise OSError("injected crash on second replace")
+
+        with mock.patch.object(ctl.os, "replace", boom):
+            code, _out, err = _run_main(
+                [
+                    "criterion-move",
+                    "--repo",
+                    str(self.repo),
+                    "--issues-root",
+                    str(self.issues),
+                    "--id",
+                    "0100",
+                    "--ac",
+                    "AC-001",
+                    "--to-id",
+                    "0101",
+                    "--expected-digest",
+                    src_d,
+                    "--expected-digest-dest",
+                    dst_d,
+                    "--reason",
+                    "reclassified",
+                ]
+            )
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertGreaterEqual(calls["n"], 2)
+        self.assertEqual(src_path.read_bytes(), src_orig)
+        self.assertEqual(dst_path.read_bytes(), dst_orig)
+        leftovers = list(self.issues.joinpath("0100").glob(".issuectl-*.tmp")) + list(
+            self.issues.joinpath("0101").glob(".issuectl-*.tmp")
+        )
+        self.assertEqual(leftovers, [])
+
+
+def _kahn_is_dag(graph):
+    """Independent oracle: Kahn topological sort; DAG iff every node is emitted."""
+    nodes = set(graph)
+    for successors in graph.values():
+        nodes.update(successors)
+    indegree = {node: 0 for node in nodes}
+    for successors in graph.values():
+        for nxt in successors:
+            indegree[nxt] += 1
+    queue = deque(sorted(node for node, deg in indegree.items() if deg == 0))
+    emitted = 0
+    while queue:
+        node = queue.popleft()
+        emitted += 1
+        for nxt in graph.get(node, ()):
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+    return emitted == len(nodes)
+
+
+def _assert_cycle_report(graph, cycle):
+    """Returned report must witness a repeated vertex (cycle in the DFS walk).
+
+    detect_cycle appends the closing node after slicing from cycle_start, so a
+    3-cycle a→b→c→a is reported as [a, b, c, a, a]. The invariant under test is
+    classification vs Kahn, not a unique closed-walk encoding.
+    """
+    if cycle is None:
+        return
+    if len(cycle) < 2:
+        raise AssertionError(f"detect_cycle returned too-short report: {cycle!r}")
+    if len(set(cycle)) == len(cycle):
+        raise AssertionError(f"detect_cycle returned an acyclic walk: {cycle!r}")
+    nodes = set(graph)
+    for successors in graph.values():
+        nodes.update(successors)
+    if any(node not in nodes for node in cycle):
+        raise AssertionError(f"detect_cycle named an unknown node: {cycle!r}")
+
+
+class DetectCyclePropertyTests(unittest.TestCase):
+    """AE-5 property evidence for detect_cycle.
+
+    Invariant/oracle: detect_cycle(G) is None iff Kahn's algorithm classifies G
+    as a DAG. When a cycle is returned, it is a closed walk using only G's edges.
+
+    Domain/boundary: labeled nodes n0..n{N-1} for N in {3,4,5}; explicit 3-node
+    cycle, 6-node longer-chain cycle, 12-node deep acyclic chain; plus all
+    directed k-cycles and Hamiltonian paths on those N; plus 40 successor-or-none
+    graphs per N (each node 0 or 1 successor, uniform including self) with
+    seed 20260828.
+    """
+
+    def _check(self, graph):
+        found = ctl.detect_cycle(graph)
+        dag = _kahn_is_dag(graph)
+        if dag:
+            self.assertIsNone(found, graph)
+        else:
+            self.assertIsNotNone(found, graph)
+            _assert_cycle_report(graph, found)
+        return 1
+
+    def test_detect_cycle_property_named_and_enumerated(self):
+        executed = 0
+        three = {"a": ["b"], "b": ["c"], "c": ["a"]}
+        executed += self._check(three)
+        self.assertIsNotNone(ctl.detect_cycle(three))
+        longer = {"a": ["b"], "b": ["c"], "c": ["d"], "d": ["e"], "e": ["f"], "f": ["a"]}
+        executed += self._check(longer)
+        self.assertIsNotNone(ctl.detect_cycle(longer))
+        deep_acyclic = {f"p{i}": [f"p{i+1}"] for i in range(12)}
+        deep_acyclic["p12"] = []
+        executed += self._check(deep_acyclic)
+        self.assertIsNone(ctl.detect_cycle(deep_acyclic))
+
+        for n in (3, 4, 5):
+            labels = [f"n{i}" for i in range(n)]
+            for k in range(3, n + 1):
+                cycle = {labels[i]: [labels[(i + 1) % k]] for i in range(k)}
+                for extra in labels[k:]:
+                    cycle[extra] = []
+                executed += self._check(cycle)
+            chain = {labels[i]: [labels[i + 1]] for i in range(n - 1)}
+            chain[labels[-1]] = []
+            executed += self._check(chain)
+            rng = random.Random(20260828 + n)
+            for _ in range(40):
+                graph = {}
+                for node in labels:
+                    if rng.randrange(2) == 0:
+                        graph[node] = []
+                    else:
+                        graph[node] = [rng.choice(labels)]
+                executed += self._check(graph)
+
+        # 3 named + n=3:1 cycle+1 chain+40 + n=4:2+1+40 + n=5:3+1+40 = 132
+        self.assertEqual(executed, 132)
 
 
 if __name__ == "__main__":
