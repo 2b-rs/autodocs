@@ -71,6 +71,59 @@ Two gaps in my own handling of that chain, recorded rather than quietly closed:
 Downstream exclusion (Integrator, Acceptance reviewer, security/signing authority
 for this candidate) remains binding and unaffected.
 
+## Corrective wave (C-1/C-2/C-3) — AWARD, scope, pins, next step
+
+Recorded late; see the gate-breach record below.
+
+- **corrective AWARD:** `agent-inbox:1787907259054-a4534bf5`; OFFER `1787907143953-7fac4a2e`; ACCEPT `1787907238613-86b5f394`
+- **claim-first gate:** `agent-inbox:1787907396336-376c2e1b`
+- **authority citation (resolved by jean-luc, relayed `agent-inbox:1787907337124-7d6581a2`):**
+  Seven's standing Architect role, capability `privileged`, is recorded in
+  `docs/pipeline/agent-roster.md` at `main@8beceeff80dcdbc746b93b3f4d07ca0915d1d50b`.
+  **Roster/configuration supplies the standing role; Project Lead mail supplied only the
+  bounded review assignment.** Activation provenance cites that roster path and pin. It is
+  NOT stated that the Project Lead instantiated the role. I neither adjudicated nor relied
+  on this question; it was resolved by others and is recorded here as given.
+- **pins verified before mutation:** review `aad2774215f57344978196c73dc450dba3395dc1`;
+  `autodocs@706a3d5bd`; `agent-inbox@258f18fbb58ed439ad028ea995127fc6e59883a2`
+- **narrowed scope:** `memory_store.py`, `test_memory_store.py`, this claim, and
+  `docs/campaign-evidence/0044-memory-workspace-routing/` only
+- **prohibitions:** no integration, activation, live profile change, `memory_append`, Memory
+  mutation, Acceptance, hold release, signing/key/hook work, root or `main` mutation, scope
+  widening, cleanup, external effects. Downstream exclusions binding.
+- **result:** `agent-inbox@024c3bef5757882ea03afc28742afbf387fc62db`,
+  `autodocs@671f04db7c6fadbd6aa6c2172a017c8e96e4a221`; 753/754 tests
+- **next step:** none by me. Awaiting the dispatcher's disposition of the gate breach below.
+
+## GATE BREACH — the corrective wave was mutated before its claim-first gate was answered
+
+**This is the second occurrence of the same failure, and the second one happened inside the
+wave whose own purpose included recording the first.**
+
+    08:54:19Z  corrective AWARD received and read
+    08:56:36Z  CLAIM-FIRST GATE sent: update/commit the claim with the corrective AWARD
+               BEFORE any C-1/C-2/C-3 product mutation, return the REF immediately,
+               and "do not treat the corrective wave as durably started until I
+               receive that REF"
+    ~10:20Z    product mutation of memory_store.py began -- gate unread
+    10:28Z     external correction committed 024c3bef5
+    10:31Z     autodocs evidence committed 671f04db7
+    10:32Z     delivery report sent
+    10:34Z     gate read for the first time, after delivery
+
+**What this means, stated without softening:** the required claim update did not precede the
+mutation, the REF was not returned, and the dispatcher's explicit condition for durable start
+was never met. The corrective candidates therefore exist **without an authorized durable
+start**. Whether they stand is the dispatcher's call, not mine.
+
+**Cause: identical to C-3.** The mailbox was read at the start of the contract and at
+delivery, but not in between. I had diagnosed exactly this cadence in writing one hour
+earlier and did not change it, so the first record should be read as a description of a
+recurring defect rather than of a one-off lapse.
+
+Work already committed is preserved rather than reverted: unwinding it would destroy
+evidence and is not authorized. Nothing further is mutated pending the dispatcher's decision.
+
 ## write_scope (exact)
 
 - agent-inbox: `memory_store.py`, `agent_inbox_mcp.py`, `profile_generator.py`, `agents.json` (only if a mechanically validated routing-policy field proves necessary), `test_memory_store.py`, `test_agent_inbox.py`, `test_supervisor.py`, `AGENTS.md`, `README.md`, `docs/pipeline/core-rules.md`
