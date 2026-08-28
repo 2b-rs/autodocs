@@ -19,3 +19,11 @@
 ## Integration contract
 
 Prior R2 evidence remains append-only. Carry only the awarded two blobs; re-pin on main advance; stop on any collision, drift, unexpected path, or nonzero gate. No root action before a passing exact candidate hygiene and immediate root preflight.
+
+## Independent R3 review
+
+- **Pin and identity — PASS.** Current `main` re-measured exactly at `e38a688c56f01fd3d8ab825593ee899ea0c7b4f2`; both awarded paths were absent and the assembled tree has exactly one `DEC-0020-002` header.
+- **Exact scope — PASS.** Carry `f37b5f13c36339a110371b664ab257dc4ab109e3` preserves the awarded decision and review blobs byte-for-byte; the R3 delta is only those two paths and this claim.
+- **Decision/review consistency — PASS.** The decision and independent Architect review agree on refusal at named use/freeze consumers only, retain `docs/ASPICE` as informative, and forbid default shared validation or new start gates. No enforcement/product mutation is carried.
+- **Provenance and documentation — PASS.** `check_policy_provenance.py` reports source-origin with the valid review-origin trailer and no finding. `git diff --check` passed. `process_doc_doctor.py` exited `0`, `ok: true`; its pre-existing broken `0044-03` link is outside the carried paths.
+- **VERDICT: REVIEW PASS; READY FOR EXACT-CANDIDATE HYGIENE AND GOVERNED ROOT INTEGRATION.**
