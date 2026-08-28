@@ -42,12 +42,15 @@ Byte comparisons after assembly showed:
 
 ## Gates and disposition
 
-The final candidate SHA and final candidate-aware hygiene result are recorded
-in the follow-up commit that completes this report. Root preflight is run
-immediately before the authorized root fast-forward; root postflight is run
-immediately afterward and reported through assignment record
-`1787954659242-3d75cb1b` because it necessarily occurs after this candidate is
-already on `main`.
+The assembled evidence candidate
+`6cc7463919e9307215bd1a352db1bb8c6a5e042b` passed candidate-aware hygiene
+across `291` registered worktrees. This follow-up evidence commit is itself the
+final integration candidate, so candidate-aware hygiene is rerun against its
+exact SHA before any root action. Root preflight is then run immediately before
+the authorized root fast-forward; root postflight is run immediately afterward.
+The exact final candidate/main SHA and those final gate results are reported
+through assignment record `1787954659242-3d75cb1b`, because the postflight
+necessarily occurs after this candidate is already on `main`.
 
 No hook, generated configuration, transaction log, pending record, supervisor
 process, foreign worktree, TODO/DONE marker, unrelated ref, or fleet-release
