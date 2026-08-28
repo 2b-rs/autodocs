@@ -5,6 +5,9 @@ owner_token: agent:geordi:0022-breakdown-activation-integration-r2:1787920490987
 request_id: 1787920490987-561d6f92
 capability_class: privileged
 base_commit: b0555ae79d36f853130f81eaa784aaa358e3c9be
+execution_authority: direct
+startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/integrator.md; docs/pipeline/core-rules.md
+write_scope: ["TODO-geordi-0022-breakdown-activation-integration-r2-20260828.md", "docs/campaign-evidence/0022-breakdown-activation-geordi-r2-20260828.md"]
 
 - **Owner token:** `agent:geordi:0022-breakdown-activation-integration-r2:1787920490987-561d6f92`
 - **Capability class:** `privileged`
@@ -17,9 +20,14 @@ base_commit: b0555ae79d36f853130f81eaa784aaa358e3c9be
 - **Prior attempt (evidence only):** `f782ef0d60289ce4e8b008267fe6eb28e18fdaef`; no verdict inherited.
 - **Branch / worktree:** `integrate-0022-breakdown-activation-geordi-r2-20260828` / `/Users/tobias.anton/devel/autodocs/.worktrees/integrate-0022-breakdown-activation-geordi-r2-20260828`.
 - **Exact source delta:** `TODO.md`; `TODO-tuvok-0022-breakdown-activation-20260828T1202Z.md`.
-- **Write scope:** this claim; integration review evidence under `docs/campaign-evidence/`; exact source carry onto this integration branch; conditional authorized root merge and postflight if every gate passes and target remains pinned.
+- **Mutation boundary:** this claim; the exact review-evidence path below; exact source carry onto this integration branch; conditional authorized root merge and postflight if every gate passes and target remains pinned.
 - **Execution authority:** direct local Git, validators, tests, hygiene, and conditional root merge within the awarded boundary.
 - **External resources:** none authorized; no network, credentials, push, or external effects.
+
+## Intended write scope
+
+- `TODO-geordi-0022-breakdown-activation-integration-r2-20260828.md`
+- `docs/campaign-evidence/0022-breakdown-activation-geordi-r2-20260828.md`
 
 ## Review and integration plan
 
@@ -35,3 +43,7 @@ Target drift, hygiene failure, semantic conflict, validation/review failure, or 
 ## Final disposition
 
 - **Verdict:** pending independent inspection.
+
+## Next step
+
+Complete the exact-candidate review and hygiene gates. If and only if they pass with the target still pinned, perform the authorized root merge and postflight; otherwise record the Mode C stop verdict without root mutation.
