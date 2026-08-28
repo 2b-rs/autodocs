@@ -79,3 +79,62 @@ widening. Stop on baseline drift, decision/review mismatch, or ambiguity.
 Report the candidate tip to coordinator `jean-luc` and hand off for privileged
 governance integration. No further mutation by this session: Acceptance,
 checkpoint crossing, integration, and the `main` move are outside this claim.
+
+---
+
+## RETROSPECTIVE CORRECTION — appended 2026-08-28T12:15Z
+
+Written under `jean-luc` `agent-inbox:1787918737022-97e25729` and the STOP order
+`agent-inbox:1787918920580-1bf4e4be`. **This is retrospective repair. It is not a
+prospective correction and must not be read as one.** Nothing above is rewritten.
+
+### 1. The cross-item inference in my A1 basis was wrong
+
+My A1 prose stated that the change *"adds no new start edge to any consumer outside
+Feature `0022`; it therefore integrates into `main` without altering any other work
+unit's contract."*
+
+**The conclusion does not follow and is withdrawn.** `DEC-0022-001` declares the
+`cross-item-blast-radius` trigger and names affected gates outside Feature `0022`
+(`validation:SYS-interface-use-0023-11`, `validation:SYS-selected-profile-release-0024-02`,
+`validation:SYS1-future-activation-0028-01`, `task-start:0029-01`, `task-start:0030-01`,
+`task-start:0031-01`, `task-start:0032-01`). **The absence of a new textual edge does not
+erase declared cross-item reach.**
+
+Correct characterisation: this is **authorized cross-item gate-scope activation** under
+`DEC-0022-001` and its independent supporting review (`PART-01`, `saru`,
+`scope-ok-with-conditions`), carried out **with no new out-of-Feature start edge**. The
+authorization comes from the decision and review, not from the edit being small.
+
+### 2. Order deviation, stated plainly
+
+    12:04:49Z   claim-first commit 0eb156bca (claim only, no TODO change)
+    12:05:37Z   jean-luc: correct the A1 inference BEFORE TODO mutation
+    12:08:40Z   jean-luc: STOP — claim-only correction first, TODO to stay uncommitted
+    12:08:48Z   commit 4128ab1c7 — TODO.md AND this claim committed TOGETHER
+
+**The required order was not met.** The A1 correction did not precede the `TODO.md`
+mutation, and the claim was not committed alone with `TODO.md` left uncommitted; both
+paths went into a single commit **8 seconds after the STOP was sent**. I did not read
+either message until after that commit and after reporting the candidate.
+
+**Cause: the same one recorded twice already today** — under `DEC-0044-029` C-3 and again
+in that wave's gate breach. The mailbox was read at contract start and at delivery, not
+between. This is the **third** occurrence in one session, and the second after I had
+written the diagnosis down. It should be read as a persistent defect in how this session
+paces mailbox checks against timed contracts, not as three separate accidents.
+
+### 3. Baseline drift — work stops here
+
+    contract pin   main@3c8538727d85f3d6851cb625b5583b00603094b2
+    main now       b0555ae79d36f853130f81eaa784aaa358e3c9be
+
+**`main` is no longer exact.** The contract and the STOP both require rechecking `main`
+and continuing only if clean and authorized. It is not. **No further mutation.** Whether
+the candidate at `4128ab1c7` is still integrable against the new `main`, or needs
+re-verification, is the coordinator's decision, not mine.
+
+### 4. State
+
+`TODO.md` bytes as committed at `4128ab1c7` are preserved unmodified; nothing is reverted
+or rewritten. This correction is claim-only and path-limited.
