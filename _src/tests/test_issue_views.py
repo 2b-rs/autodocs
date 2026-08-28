@@ -5,7 +5,9 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib.util
+import itertools
 import json
+import math
 from pathlib import Path
 import shutil
 import tempfile
@@ -163,6 +165,207 @@ class IssueViewsTest(unittest.TestCase):
         }, sort_keys=True, separators=(",", ":")) + "\n"
         expected = "sha256:" + hashlib.sha256(payload.encode("utf-8")).hexdigest()
         self.assertEqual(self.catalog["generation_id"], expected)
+
+    def test_archive_status_closed_disposition_literals(self):
+        """AE-4 adjacent: each closed-only disposition when state==closed.
+
+        Neighboring dimension: disposition literal (completed/wontfix/superseded/
+        duplicate/cancelled) vs the already-asserted archived-not-accepted path.
+        Expected: _archive_status returns that exact literal.
+        Observed: asserted below.
+        Why adjacent: same second-branch membership, different literal; a typo in
+        one member would pass the archived-not-accepted fixture alone.
+        """
+        closed_only = ("completed", "wontfix", "superseded", "duplicate", "cancelled")
+        for disposition in closed_only:
+            observed = VIEWS._archive_status("closed", {"disposition": disposition})
+            self.assertEqual(observed, disposition, disposition)
+
+    def test_archive_status_open_state_guard(self):
+        """AE-4 adjacent: state==closed guard for those five literals.
+
+        Neighboring dimension: state (open vs closed) with the same disposition.
+        Expected: None (not archived) when state is not closed.
+        Observed: asserted below.
+        Why adjacent: dropping the state==closed guard would still pass the
+        closed-literal cases and the 0082 archived-not-accepted fixture.
+        """
+        closed_only = ("completed", "wontfix", "superseded", "duplicate", "cancelled")
+        for disposition in closed_only:
+            observed = VIEWS._archive_status("open", {"disposition": disposition})
+            self.assertIsNone(observed, disposition)
+            observed_progress = VIEWS._archive_status(
+                "in_progress", {"disposition": disposition})
+            self.assertIsNone(observed_progress, disposition)
+
+    def test_archive_status_archived_not_accepted_unconditional(self):
+        """AE-4 adjacent: archived-not-accepted ignores the closed guard.
+
+        Neighboring dimension: first-branch special case vs second-branch guard.
+        Expected: 'archived-not-accepted' even when state is open.
+        Observed: asserted below.
+        Why adjacent: the five closed-only literals require closed; this one does
+        not. Collapsing both branches would fail this case.
+        """
+        observed_open = VIEWS._archive_status(
+            "open", {"disposition": "archived-not-accepted"})
+        self.assertEqual(observed_open, "archived-not-accepted")
+        observed_closed = VIEWS._archive_status(
+            "closed", {"disposition": "archived-not-accepted"})
+        self.assertEqual(observed_closed, "archived-not-accepted")
+
+    def test_archive_status_unrecognized_and_malformed(self):
+        """AE-4 adjacent: non-member disposition and malformed closure.
+
+        Neighboring dimension: recognized vs unrecognized / malformed payload.
+        Expected: None.
+        Observed: asserted below.
+        Why adjacent: an unknown string must not be echoed as archive_status.
+        """
+        self.assertIsNone(VIEWS._archive_status("closed", {"disposition": "unknown"}))
+        self.assertIsNone(VIEWS._archive_status("closed", {"malformed": True}))
+        self.assertIsNone(VIEWS._archive_status("closed", None))
+
+    def test_reject_browser_keys_positive_raise_all_members(self):
+        """AE-4 adjacent: every real BROWSER_KEYS member raises at top level.
+
+        Neighboring dimension: which of the 11 keys is present (not fillcolor).
+        Expected: IssueViewsError naming that key at $.
+        Observed: asserted below.
+        Why adjacent: test_no_browser_semantics only checks absence on clean
+        output; deleting _reject_browser_keys would still pass that test.
+        """
+        expected_keys = (
+            "color", "fill", "fontcolor", "stroke", "dot", "svg", "style",
+            "shape", "penwidth", "html_label", "cluster_color",
+        )
+        self.assertEqual(set(expected_keys), set(VIEWS.BROWSER_KEYS))
+        self.assertNotIn("fillcolor", VIEWS.BROWSER_KEYS)
+        for key in expected_keys:
+            with self.subTest(key=key, position="top"):
+                with self.assertRaises(VIEWS.IssueViewsError) as ctx:
+                    VIEWS._reject_browser_keys({key: "x"})
+                message = str(ctx.exception)
+                self.assertIn(key, message)
+                self.assertIn("at $", message)
+
+    def test_reject_browser_keys_nested_raise_all_members(self):
+        """AE-4 adjacent: same 11 keys nested (dict-in-list-in-dict).
+
+        Neighboring dimension: nesting depth / path, same key set.
+        Expected: IssueViewsError with path $.{wrapper}[0].{key}.
+        Observed: asserted below.
+        Why adjacent: a top-level-only intersection would miss nested keys.
+        """
+        for key in sorted(VIEWS.BROWSER_KEYS):
+            nested = {"wrapper": [{key: True}]}
+            with self.subTest(key=key, position="nested"):
+                with self.assertRaises(VIEWS.IssueViewsError) as ctx:
+                    VIEWS._reject_browser_keys(nested)
+                message = str(ctx.exception)
+                self.assertIn(key, message)
+                self.assertIn("$.wrapper[0]", message)
+
+    def test_reject_browser_keys_fillcolor_is_not_a_member(self):
+        """AE-4 adjacent: fillcolor must not be treated as a BROWSER_KEYS member.
+
+        Neighboring dimension: substring/lookalike vs actual set membership
+        (fill and color exist separately; fillcolor does not).
+        Expected: no raise for fillcolor at top level or nested.
+        Observed: asserted below.
+        Why adjacent: the shipped absence check listed fillcolor, which could
+        never appear as a rejected key even if enforcement were broken.
+        """
+        VIEWS._reject_browser_keys({"fillcolor": "#fff"})
+        VIEWS._reject_browser_keys({"wrapper": [{"fillcolor": "#fff"}]})
+        VIEWS._reject_browser_keys({"authority": "generated-view"})
+
+    def test_catalog_and_graph_order_and_id_dedup_property(self):
+        """AE-5 property: catalog/graph set-or-sequence invariants.
+
+        Invariant/oracle:
+          - catalog items are uniquely keyed by id in the fixture store;
+          - catalog item sequence is sorted by (id, source.path);
+          - source_sha256 follows sorted source path order;
+          - graph nodes are one-per-id (last write wins) and sorted by id;
+          - graph edges are sorted by (source, kind, target).
+        Generation domain / finite enumeration boundary:
+          - every permutation of parsed load_store records (6! for this fixture);
+          - every permutation of malformed load_store records (1!);
+          - every permutation of source_files for digest order (7!);
+          - every permutation of the 7 catalog items through build_graph (7!);
+          - plus 7 duplicate-id injections (one extra copy of each item).
+        Seed/replay: none (exhaustive enumeration, no RNG).
+        Executed case count: recorded on AE5_CASE_COUNT below.
+        """
+        parsed, malformed, source_files = VIEWS.load_store(ISSUES, ROOT)
+        baseline_catalog = VIEWS.build_catalog(parsed, malformed, source_files, ROOT)
+        baseline_ids = [item["id"] for item in baseline_catalog["items"]]
+        self.assertEqual(len(baseline_ids), len(set(baseline_ids)))
+        cases = 0
+
+        combined = list(parsed) + list(malformed)
+        for perm in itertools.permutations(range(len(parsed))):
+            shuffled_parsed = [parsed[i] for i in perm]
+            catalog = VIEWS.build_catalog(shuffled_parsed, malformed, source_files, ROOT)
+            ids = [item["id"] for item in catalog["items"]]
+            paths = [item["source"]["path"] for item in catalog["items"]]
+            self.assertEqual(ids, sorted(ids))
+            self.assertEqual(
+                list(zip(ids, paths)),
+                sorted(zip(ids, paths), key=lambda pair: (pair[0] or "", pair[1])),
+            )
+            self.assertEqual(ids, baseline_ids)
+            cases += 1
+
+        for perm in itertools.permutations(range(len(malformed))):
+            shuffled_malformed = [malformed[i] for i in perm]
+            catalog = VIEWS.build_catalog(parsed, shuffled_malformed, source_files, ROOT)
+            ids = [item["id"] for item in catalog["items"]]
+            self.assertEqual(ids, baseline_ids)
+            cases += 1
+
+        for perm in itertools.permutations(range(len(source_files))):
+            shuffled_sources = [source_files[i] for i in perm]
+            catalog = VIEWS.build_catalog(parsed, malformed, shuffled_sources, ROOT)
+            expected = [
+                VIEWS._digest_bytes(f"{entry['path']}:{entry['sha256']}".encode("utf-8"))
+                for entry in sorted(source_files, key=lambda value: value["path"])
+            ]
+            self.assertEqual(catalog["digests"]["source_sha256"], expected)
+            cases += 1
+
+        items = list(baseline_catalog["items"])
+        for perm in itertools.permutations(items):
+            shuffled = {"items": list(perm)}
+            nodes, edges = VIEWS.build_graph(shuffled)
+            node_ids = [node["id"] for node in nodes]
+            self.assertEqual(len(node_ids), len(set(node_ids)))
+            self.assertEqual(node_ids, sorted(node_ids))
+            edge_keys = [(edge["source"], edge["kind"], edge["target"]) for edge in edges]
+            self.assertEqual(edge_keys, sorted(edge_keys))
+            cases += 1
+
+        for item in items:
+            duplicated = {"items": items + [item]}
+            nodes, _edges = VIEWS.build_graph(duplicated)
+            node_ids = [node["id"] for node in nodes]
+            self.assertEqual(len(node_ids), len(set(node_ids)))
+            self.assertEqual(node_ids.count(item["id"]), 1)
+            cases += 1
+
+        expected_cases = (
+            math.factorial(len(parsed))
+            + math.factorial(len(malformed))
+            + math.factorial(len(source_files))
+            + math.factorial(len(items))
+            + len(items)
+        )
+        self.assertEqual(cases, expected_cases)
+        self.assertEqual(len(parsed), 6)
+        self.assertEqual(len(malformed), 1)
+        self.assertEqual(len(source_files), 7)
+        self.assertEqual(len(items), 7)
 
 
 if __name__ == "__main__":
