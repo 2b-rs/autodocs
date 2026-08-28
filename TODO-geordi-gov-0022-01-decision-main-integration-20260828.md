@@ -14,3 +14,10 @@
 
 - Fresh isolated worktree is clean at the exact pinned baseline.
 - Next: independently inspect source paths and digests, DEC identifier/conformance, authority blobs, Saru review identity/pins/binding conditions, and no-activation boundary. Stop and report any drift, conflict, collision, material mismatch, unexpected path, or nonzero gate.
+
+## Review result before guarded merge
+
+- Exact five-path carry verified byte-for-byte against source tip; no unexpected source path is staged.
+- DEC identifier is unique at the pinned baseline; the `decision-record@v1` fields, independent Saru review identity/pin/verdict, all eight binding conditions, and the two required current-main `DEC-0020-002` authority blobs were independently rechecked.
+- Review evidence: `docs/campaign-evidence/0022-01/governance-integration-geordi-20260828.md`.
+- Conditional next: commit this bounded candidate, then run exact-candidate hygiene, root preflight, guarded root merge, and immediate postflight. Any nonzero gate stops without repair or cleanup.
