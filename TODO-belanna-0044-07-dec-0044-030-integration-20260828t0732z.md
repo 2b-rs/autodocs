@@ -54,3 +54,15 @@ integration.
   not a gate named in this AWARD. Verdict: **PASS**. Full evidence at
   `docs/campaign-evidence/0044-07/dec-0044-030-integration-belanna-20260828/review.md`. Proceeding to candidate
   hygiene, root preflight, ff-only merge, postflight.
+- 2026-08-28T07:44Z — **R2 rebuild.** Immediately before the merge, `main` had drifted to
+  `8685b9bfd910c629dec21f95f392cf22d2f23d97` via Geordi's unrelated `DEC-0044-029` architect-appointment
+  integration retry (zero path overlap with this line, confirmed via `git diff --stat` between the old and new
+  `main` tips: six unrelated `0044-029` paths only). Stopped per the AWARD's "stop on drift/finding"; reported
+  to `jean-luc` (`1787903022325-116b728d`); received RETRY AWARD R2 (`1787903057841-9c6e9aab`). Independently
+  reverified the new `main` pin, confirmed `b67d171fb` still exists and is not already landed, cut a fresh
+  branch/worktree `integrate-0044-07-dec-0044-030-belanna-r2-20260828t0743z` from the new `main`, and carried
+  the PASS-reviewed line forward by explicit `--no-ff` merge of `b67d171fb` (clean, no conflict, exactly the
+  expected 9 files: the 7 original candidate paths plus my own claim and review evidence). The underlying
+  content, verdict, and evidence from the R1 review are unchanged and not re-litigated; this note documents
+  only the rebuild mechanics. Proceeding to fresh candidate hygiene, root preflight, ff-only merge, postflight
+  against `main@8685b9bfd`.
