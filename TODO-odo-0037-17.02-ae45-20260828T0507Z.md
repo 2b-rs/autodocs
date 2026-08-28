@@ -20,4 +20,9 @@ Belanna review `2a44cb7a72897de1a26ff67034bb240eb4318862` INCONCLUSIVE (AWARD 17
 
 ## Status
 
-`[x]` implementation of additive tests (pending commit hashes below).
+Implementation `[x]` on this follow-up branch (does not restamp TODO.md 17.02 REF).
+
+- **product/REF:** `28eb2ba9ba4c19e4fba449ddcba4febe9837ebac`
+- **`provenance_views.py` edited:** no
+- **validation:** `python3 -m unittest _src.tests.test_provenance_views -v` (worktree cwd) → **15/15 OK** in 1.509s (8 prior + 6 AE-4 + 1 AE-5). AE-5 executed **64** graphs (`AE5_ENUMERATED_GRAPH_COUNT`), 0 Kahn-oracle mismatches; `walk_without_loops` unique-node for every start on each graph.
+- **base vs then-current main:** left-right after product commit recorded in bookkeeping commit.
