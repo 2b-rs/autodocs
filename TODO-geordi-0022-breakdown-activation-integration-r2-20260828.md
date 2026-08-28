@@ -42,8 +42,11 @@ Target drift, hygiene failure, semantic conflict, validation/review failure, or 
 
 ## Final disposition
 
-- **Verdict:** pending independent inspection.
+- **Verdict:** independent review supports `PASS / integrable`, conditional on exact-candidate hygiene, unchanged target, root preflight, authorized root merge, and postflight.
+- Exact source delta and branch carry are semantically identical; marker/prerequisite graph matches `DEC-0022-001` and Saru's binding conditions; no external start edge was added.
+- Disclosed sequencing/timestamp defects are preserved and assessed as adverse process evidence without changing authority or candidate bytes.
+- Evidence: `docs/campaign-evidence/0022-breakdown-activation-geordi-r2-20260828.md`.
 
 ## Next step
 
-Complete the exact-candidate review and hygiene gates. If and only if they pass with the target still pinned, perform the authorized root merge and postflight; otherwise record the Mode C stop verdict without root mutation.
+Run exact-candidate hygiene on the committed review candidate. If and only if it passes with the target still pinned, run root preflight, perform the authorized root merge, and run postflight; otherwise record the Mode C stop verdict without root mutation.
