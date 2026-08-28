@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import importlib.util
+import itertools
 import json
 import shutil
 import sys
 import tempfile
 import unittest
+from collections import deque
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +36,47 @@ STAMP = "2026-08-16T08:01:00Z"
 ISSUE = "issue:0037-17.02"
 CRITERION = "criterion:AC-001"
 CAMPAIGN = "campaign:camp-1"
+
+# AE-5: 3 labeled nodes, every subset of the 6 simple directed edges (no
+# self-loops) — 2^6 = 64 graphs. Exhaustive; no RNG.
+AE5_CYCLE_NODES = ("A", "B", "C")
+AE5_DIRECTED_EDGES = (
+    ("A", "B"),
+    ("B", "A"),
+    ("A", "C"),
+    ("C", "A"),
+    ("B", "C"),
+    ("C", "B"),
+)
+AE5_ENUMERATED_GRAPH_COUNT = 2 ** len(AE5_DIRECTED_EDGES)
+AE5_INVARIANT = "cycles are data, traversal never loops"
+AE5_SEED = None
+
+
+def _kahn_has_cycle(nodes, edge_list):
+    """Independent topological-sort oracle (Kahn). Not the product 3-color DFS."""
+    indeg = {node: 0 for node in nodes}
+    adj = {node: [] for node in nodes}
+    for src, dst in edge_list:
+        adj[src].append(dst)
+        indeg[dst] += 1
+    queue = deque(node for node in nodes if indeg[node] == 0)
+    seen = 0
+    while queue:
+        node = queue.popleft()
+        seen += 1
+        for nxt in adj[node]:
+            indeg[nxt] -= 1
+            if indeg[nxt] == 0:
+                queue.append(nxt)
+    return seen < len(nodes)
+
+
+def _adjacency_from_edges(nodes, edge_list):
+    adjacency = {node: [] for node in nodes}
+    for src, dst in edge_list:
+        adjacency[src].append(dst)
+    return adjacency
 
 
 def _ref(kind, ident, **extra):
@@ -419,6 +462,142 @@ class ProvenanceViewsTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         rc = pv.main(["--repository-root", str(self.root), "--verify"])
         self.assertEqual(rc, 0)
+
+    def test_ae4_pv_corrupt_malformed_json(self):
+        """AE-4 adjacent: PV-CORRUPT / malformed JSON.
+
+        Neighboring dimension: JSON *syntax* (not schema). Expected: collect_sources
+        raises PV-CORRUPT. Observed: same. Adjacent to non-object JSON because both
+        trip _load_json, but this site is JSONDecodeError rather than isinstance.
+        """
+        directory = self.root / "provenance" / "events" / "2026" / "08"
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "malformed.json").write_text("{not-json\n", encoding="utf-8")
+        with self.assertRaises(pv.ProvenanceViewsError) as ctx:
+            pv.collect_sources(self.root / "provenance")
+        self.assertEqual(ctx.exception.code, "PV-CORRUPT")
+        self.assertIn("invalid JSON", ctx.exception.message)
+
+    def test_ae4_pv_corrupt_non_object_json(self):
+        """AE-4 adjacent: PV-CORRUPT / non-object JSON.
+
+        Neighboring dimension: JSON *value kind* after a successful parse (array).
+        Expected: PV-CORRUPT non-object. Observed: same. Adjacent to malformed JSON
+        because parse succeeds here; the second _load_json site fires.
+        """
+        directory = self.root / "provenance" / "runs" / "2026" / "08"
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "list.json").write_text("[]\n", encoding="utf-8")
+        with self.assertRaises(pv.ProvenanceViewsError) as ctx:
+            pv.collect_sources(self.root / "provenance")
+        self.assertEqual(ctx.exception.code, "PV-CORRUPT")
+        self.assertIn("non-object JSON", ctx.exception.message)
+
+    def test_ae4_pv_unresolvable_empty_uri(self):
+        """AE-4 adjacent: PV-UNRESOLVABLE-ENDPOINT / empty-uri dict ref.
+
+        Neighboring dimension: dict ref with uri==''. Expected: finding code
+        PV-UNRESOLVABLE-ENDPOINT. Observed: same. Adjacent to non-dict endpoints
+        (same code, different resolve_endpoint vs event-loop branch).
+        """
+        self.store.create_run(self._run())
+        source = _ref("finding", FINDING_ID)
+        source["uri"] = ""
+        payload = self._event(
+            event_id="018f4a31-60aa-7abc-8def-0123456789ab",
+            source=source,
+            target=_ref("run", RUN_ID),
+        )
+        self._write_raw_event(payload)
+        graph, _reverse = pv.build_views(self.root)
+        codes = [item["code"] for item in graph["findings"]]
+        self.assertIn("PV-UNRESOLVABLE-ENDPOINT", codes)
+        unresolvable = [item for item in graph["findings"] if item["code"] == "PV-UNRESOLVABLE-ENDPOINT"]
+        self.assertTrue(any(item.get("field") == "source" for item in unresolvable))
+        self.assertTrue(any(item.get("identifier") == "" for item in unresolvable))
+
+    def test_ae4_pv_unresolvable_non_dict_endpoint(self):
+        """AE-4 adjacent: PV-UNRESOLVABLE-ENDPOINT / non-dict source.
+
+        Neighboring dimension: source is a JSON list, not a mapping. Expected:
+        PV-UNRESOLVABLE-ENDPOINT on field source. Observed: same. Adjacent to
+        empty-uri because both are unresolvable, but this path skips ensure_node.
+        """
+        self.store.create_run(self._run())
+        payload = self._event(
+            event_id="018f4a31-60ab-7abc-8def-0123456789ab",
+            source=["not-a-ref"],
+            target=_ref("run", RUN_ID),
+        )
+        self._write_raw_event(payload)
+        graph, _reverse = pv.build_views(self.root)
+        unresolvable = [item for item in graph["findings"] if item["code"] == "PV-UNRESOLVABLE-ENDPOINT"]
+        self.assertTrue(unresolvable)
+        self.assertTrue(any(item.get("field") == "source" for item in unresolvable))
+
+    def test_ae4_pv_reconcile_count_mismatch(self):
+        """AE-4 adjacent: PV-RECONCILE / count mismatch.
+
+        Neighboring dimension: cardinality (counts.events vs len(buckets)). Expected:
+        PV-RECONCILE event count mismatch. Observed: same. Adjacent to identity
+        mismatch (same code, second reconcile_counts predicate).
+        """
+        self._seed_closed_item()
+        graph, _reverse = pv.build_views(self.root)
+        buckets = pv.collect_sources(self.root / "provenance")
+        forged = json.loads(json.dumps(graph))
+        forged["counts"]["events"] = forged["counts"]["events"] + 1
+        with self.assertRaises(pv.ProvenanceViewsError) as ctx:
+            pv.reconcile_counts(forged, buckets)
+        self.assertEqual(ctx.exception.code, "PV-RECONCILE")
+        self.assertIn("count", ctx.exception.message)
+
+    def test_ae4_pv_reconcile_identity_mismatch(self):
+        """AE-4 adjacent: PV-RECONCILE / identity mismatch.
+
+        Neighboring dimension: event_id set equality with matching counts. Expected:
+        PV-RECONCILE event identity mismatch. Observed: same. Adjacent to count
+        mismatch (same gate, different predicate).
+        """
+        self._seed_closed_item()
+        graph, _reverse = pv.build_views(self.root)
+        buckets = pv.collect_sources(self.root / "provenance")
+        forged = json.loads(json.dumps(graph))
+        self.assertGreaterEqual(len(forged["events"]), 1)
+        forged["events"][0]["event_id"] = "forged-event-id"
+        self.assertEqual(forged["counts"]["events"], len(buckets["events"]))
+        with self.assertRaises(pv.ProvenanceViewsError) as ctx:
+            pv.reconcile_counts(forged, buckets)
+        self.assertEqual(ctx.exception.code, "PV-RECONCILE")
+        self.assertIn("identity", ctx.exception.message)
+
+    def test_ae5_detect_cycles_exhaustive_three_node_edge_subsets(self):
+        """AE-5 property: detect_cycles vs Kahn oracle on all 64 3-node digraphs.
+
+        Invariant/oracle: AE5_INVARIANT; oracle is _kahn_has_cycle (independent of
+        the product 3-color DFS). Generation domain: all subsets of AE5_DIRECTED_EDGES
+        on AE5_CYCLE_NODES (finite enumeration; AE5_SEED is None). Executed case
+        count: AE5_ENUMERATED_GRAPH_COUNT (64), asserted below.
+        """
+        self.assertEqual(AE5_ENUMERATED_GRAPH_COUNT, 64)
+        executed = 0
+        mismatches = []
+        for mask in itertools.product((False, True), repeat=len(AE5_DIRECTED_EDGES)):
+            executed += 1
+            edges = tuple(edge for edge, present in zip(AE5_DIRECTED_EDGES, mask) if present)
+            adjacency = _adjacency_from_edges(AE5_CYCLE_NODES, edges)
+            oracle_cycle = _kahn_has_cycle(AE5_CYCLE_NODES, edges)
+            detected = pv.detect_cycles(adjacency)
+            product_cycle = bool(detected)
+            if oracle_cycle != product_cycle:
+                mismatches.append((edges, oracle_cycle, detected))
+            for start in AE5_CYCLE_NODES:
+                walked = pv.walk_without_loops(adjacency, start)
+                self.assertEqual(len(walked), len(set(walked)), (start, edges, walked))
+                self.assertLessEqual(len(walked), len(AE5_CYCLE_NODES))
+                self.assertTrue(set(walked) <= set(AE5_CYCLE_NODES))
+        self.assertEqual(executed, AE5_ENUMERATED_GRAPH_COUNT)
+        self.assertEqual(mismatches, [])
 
 
 if __name__ == "__main__":
