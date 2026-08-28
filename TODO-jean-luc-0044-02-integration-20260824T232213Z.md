@@ -61,3 +61,9 @@ candidate records substantive REF
   `37c2e0132aeb3815572293b8c3ff4f2673f80fc1`. Post-merge checks confirmed a
   clean tracked root/index, source-tip ancestry on `main`, and Task `0044-02`
   rendered `[x]` with its substantive REF and no-checkpoint justification.
+
+## Restart-recovery disposition — 2026-08-28
+
+- `terminal: yes`; the governed integration completed and this lease remains released.
+- `main evidence:` integration REF `37c2e0132aeb3815572293b8c3ff4f2673f80fc1` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; Task `0044-02` remains `[x]`.
+- `handoff:` any later Task Acceptance or Feature closure requires a separate exact assignment; none is owned here.

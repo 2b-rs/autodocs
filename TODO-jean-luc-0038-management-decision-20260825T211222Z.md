@@ -9,3 +9,9 @@
 - **write_scope:** `docs/dossiers/dec-0038-005-restore-terminal-integration-task.md`; this claim file.
 - **prohibitions:** No Task decomposition, Architect decision, Acceptance, integration review, Feature closure, `TODO.md`/`DONE.md` mutation, or `main` advance.
 - **result:** Recorded the user's decision to restore the terminal integration task rather than grant a waiver. Architect implementation remains separately assigned to `data` after this record is integrated.
+
+## Restart-recovery disposition — 2026-08-28
+
+- **status:** terminal; coordination lease released.
+- **main evidence:** decision REF `96e7a8b71a` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; `docs/dossiers/dec-0038-005-restore-terminal-integration-task.md` and the restored `0038-35` contract are main-visible.
+- **handoff:** Architect decomposition and later Feature work belong to separate claims; this decision-recording owner token has no remaining action and must not be resumed.

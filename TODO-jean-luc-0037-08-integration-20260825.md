@@ -28,3 +28,9 @@
 - Focused automation-safety: PASS, zero findings/policy errors/unresolved critical findings.
 - Candidate `git diff --check`: PASS.
 - No Acceptance or Feature closure was created.
+
+## Restart-recovery disposition — 2026-08-28
+
+- `terminal: yes`; the checkpoint-free integration coordination is complete and its lease is released.
+- `main evidence:` substantive REF `4376be766decd03830a5feeec7dcc6b41cfd87ce` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; Task `0037-08` is `[x]` with current Acceptance recorded separately.
+- `handoff:` no main advance, review, or Acceptance action remains under this owner token; do not resume it.

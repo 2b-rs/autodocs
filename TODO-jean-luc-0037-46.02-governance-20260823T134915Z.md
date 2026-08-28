@@ -34,3 +34,10 @@ Record the Management selection as conforming `decision-record@v1`, reopen the r
   - `git diff --check`: exit 0
   - each of `0037-50`, `.01`, `.02`, `.03`, `.04`, `.05` occurs exactly once as a Task header
 - `handoff: after the governance branch is current on main, 0037-50.02 and 0037-50.03 are the first parallel-eligible implementation packages; each requires its own exact claim, item branch/worktree, and implementer distinct from data and geordi`
+
+## Restart-recovery disposition — 2026-08-28
+
+- `terminal: yes`; this coordination scope is complete and its lease remains released.
+- `main evidence:` decision REF `0ffac017ef05ef14dd6e622f94bc1580d3e4f1f5` and later superseding execution-model REF `f3522aaaa80d851f3ba28744b08956a52eb63275` are ancestors of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`.
+- `current disposition:` Task `0037-46.02` is `[w]`; no corrective implementation or integration action remains under this owner token.
+- `handoff:` downstream work was re-planned and completed under separate claims; this claim must not be resumed.
