@@ -1,0 +1,42 @@
+{
+  "affected_processes": [
+    "Execution of new tasks",
+    "Branch checkout",
+    "git operations"
+  ],
+  "affected_work_products": [
+    "autodocs"
+  ],
+  "assignment_id": "1787955775857-edde1d1d",
+  "created_at": "2026-08-28T22:25:23Z",
+  "deciding_role": "Management",
+  "decision_id": "decision-1787955923495-34429e02",
+  "item": "0044-18",
+  "observed_fact": "Disk /dev/disk3s5 has only 140Mi available out of 460Gi, causing '100% full' and preventing new git worktrees from being checked out.",
+  "options": [
+    {
+      "consequences": "Frees up space without requiring host modifications, but may destroy local state in unused worktrees if they contained uncommitted changes.",
+      "id": "A",
+      "summary": "Perform a global git worktree prune or mass deletion of idle worktrees."
+    },
+    {
+      "consequences": "Preserves all existing worktrees and uncommitted changes, but requires host intervention which delays the pipeline.",
+      "id": "B",
+      "summary": "Manually increase disk capacity or clean up external non-autodocs files."
+    }
+  ],
+  "paused_action": "Checking out a git worktree for task 0044-18",
+  "permanent_records": [
+    "df -h output showing 100% full"
+  ],
+  "question": "How should we address the disk space exhaustion that is blocking the checkout of new worktrees for tasks like 0044-18?",
+  "recommendation": {
+    "option_id": "A",
+    "reason": "Pruning old worktrees is the standard Git-native way to reclaim space for new feature work in a CI/CD-style environment without needing host infrastructure changes."
+  },
+  "record_path": "/Users/tobias.anton/devel/autodocs/logs/agent-inbox/decision-requests/decision-1787955923495-34429e02.json",
+  "requester": "jadzia",
+  "requester_role": "Project Lead",
+  "risk_if_continued": "All new dispatch tasks requiring worktrees will fail, completely halting pipeline progress.",
+  "schema": "decision-request@v1"
+}
