@@ -2,7 +2,7 @@
 
 - **item_id:** `DEC-0044-029-architect-scope-review-integration`
 - **owner_token:** `agent:geordi:DEC-0044-029-architect-scope-review-integration:1787903745596-b3b28077`
-- **state / status:** `[x]` / `[x]`
+- **state / status:** `[p]` / `[p]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** direct exact-scope review and conditional integration only
 - **planned_duration:** 35 minutes
@@ -31,3 +31,10 @@ Independently inspect Data's `supports-with-conditions` verdict and every stated
 ## Final integration step
 
 Commit this terminal claim alone, then run exact-candidate hygiene and the guarded root preflight/equality/fast-forward/postflight sequence. Stop and reopen `[p]` additively on any finding or drift.
+
+## VERDICT: BLOCKED — target baseline drift before root preflight
+
+- Exact claim-bearing candidate `fc0e123cb2964bf1fadcee57e805b6746ff921a1` passed candidate hygiene across 201 registered worktrees.
+- The guarded root command first required `main@fba14acfd4b09bdca3e334c63860958785f91bc6`; it observed `main@3b98ad147cbe7f10016501b4103efb591b95e688` instead and exited before starting root preflight.
+- No root preflight, merge, postflight, cleanup, memory action, condition change, or prohibited mutation occurred.
+- This candidate remains pinned to the stale target and is not a root merge target without a fresh exact-baseline rebuild instruction.
