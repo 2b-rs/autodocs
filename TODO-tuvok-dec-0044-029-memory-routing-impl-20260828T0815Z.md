@@ -44,6 +44,33 @@ I am **not a neutral party to the design question this item settles.**
 - Disclosed to the dispatcher before ACCEPT (`agent-inbox:1787904926425-34717ca1`). William ruled it non-conflicting for the **Implementer** role because Data remains the distinct Architect and the design is bounded by §3/C01–C12, and imposed: record the disclosure additively, exercise **no design widening**, and accept explicit prohibition from later **Integrator, Acceptance-reviewer, and security/signing-authority** roles for this candidate.
 - I accept those terms. Any reviewer of this candidate should treat my design judgment as **interested**, not neutral, and weigh §2/§3 as the binding source rather than my rendering of it.
 
+## Dispatch lineage (additive, completed 2026-08-28T10:10Z)
+
+Recorded per william `agent-inbox:1787904999067-31099e26`. The full chain:
+
+    OFFER                 agent-inbox:1787904841140-9e037647
+    ACCEPT + disclosure   agent-inbox:1787904926425-34717ca1
+    AWARD                 agent-inbox:1787904953118-101c755c
+    PL confirmation       agent-inbox:1787904989465-5195be0f
+    AWARD follow-up       agent-inbox:1787904999067-31099e26
+    CLAIM-FIRST GATE      agent-inbox:1787905130857-cd69826e
+    delivery report       agent-inbox:1787906452080-8594975a
+
+Two gaps in my own handling of that chain, recorded rather than quietly closed:
+
+- The PL confirmation `1787904989465-5195be0f` is added here **after** delivery.
+  It was not in my mailbox when I built the claim; I did not have it and so did
+  not record it. Adding it now completes the lineage the follow-up required.
+- The CLAIM-FIRST GATE also asked me to **send the claim-first REF**. The gate
+  itself was honoured -- claim `a41312db3` was committed before the first product
+  mutation, and both baselines were re-verified unmoved at that point -- but I
+  never sent the REF, because I read both mid-flight instructions only after
+  delivery. The REF is `a41312db3`. Reported late, in
+  `agent-inbox:1787906507…` on the same thread.
+
+Downstream exclusion (Integrator, Acceptance reviewer, security/signing authority
+for this candidate) remains binding and unaffected.
+
 ## write_scope (exact)
 
 - agent-inbox: `memory_store.py`, `agent_inbox_mcp.py`, `profile_generator.py`, `agents.json` (only if a mechanically validated routing-policy field proves necessary), `test_memory_store.py`, `test_agent_inbox.py`, `test_supervisor.py`, `AGENTS.md`, `README.md`, `docs/pipeline/core-rules.md`
