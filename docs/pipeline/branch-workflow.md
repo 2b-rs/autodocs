@@ -242,11 +242,14 @@ delete the claim at `[x]`" behavior for branch-based work:
   claim files on the merged branch are merged in as well. The parent branch
   therefore accumulates the complete set of predecessor claim files, preserving
   who did what and under which authority.
-- Claim files are **not** deleted at `[x]`/`[w]`. They are reconciled and removed
-  only by the privileged integrator during **Feature integration** (below), after
-  their durable information has been folded into the acceptance records and
-  check-in provenance. This keeps coordination visible for the whole life of the
-  Feature and prevents the "orphaned claim, code committed elsewhere" split.
+- Claim files are **not** deleted at `[x]`/`[w]`. When current Acceptance is
+  recorded for an exact item, its carried claims are renamed byte-identically
+  from `TODO-*` to `DONE-*` in the Feature/integration branch as terminal
+  provenance; predecessor claims for other items are untouched. The accepting
+  agent uses `_src/tools/provision_tmp_worktree.sh --finalize-accepted <item>
+  <acceptance-worktree>` and commits the inspected rename with the Acceptance
+  bookkeeping. This keeps coordination visible without making a historical
+  claim look like a live lease.
 
 Everything else about claim files — immutable `owner_token`, no cross-session
 appropriation, no ownership inferred from a shared display name or filename —
@@ -450,9 +453,11 @@ Feature branch and performs the Feature-level review. The integrator:
    own decision and, on approval, its own `Acceptance: ✓` record bottom-up. An
    unmarked node does not independently trigger review, and missing Acceptance
    does not block ordinary successor implementation.
-5. Reconciles and removes the predecessor claim files whose information is now
-   captured in acceptance records and check-in provenance
-   ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).
+5. Records each accepted item in the Feature/integration branch and renames that
+   exact item's carried `TODO-*` claims to `DONE-*`, updating its claim-path
+   pointer; the byte-identical terminal claims remain check-in provenance. The
+   worktree owner receives the exact accepted ref for its independent cleanup
+   preflight; the already-integrated item branch is not rewritten.
 6. On full approval, integrates the Feature branch into `main` — using the
    root-checkout advance procedure of `DEC-0044-015` described above, never
    `git update-ref` — and moves the Feature to `DONE.md` via the path-isolated
@@ -528,9 +533,12 @@ explicit downstream work and is not implied to exist yet:
   that runs Git directly: given a caller-supplied item branch, it bases a new
   branch off its derived parent when the branch does not exist yet, provisions
   or idempotently heals a worktree at the caller's chosen location (defaulting
-  to the existing `.worktrees/<item>` convention), and reaps orphaned scratch
-  worktrees under that root that carry neither an active claim file nor
-  uncommitted content — surfacing, never deleting, one that does. It has
+  to the existing `.worktrees/<item>` convention). Task `0044-17` adds accepted
+  claim finalization (`--finalize-accepted`), owner self-cleanup
+  (`--remove-completed`), and a conservative periodic fallback (`--reap-only`).
+  The fallback requires exact-item `DONE-*` provenance, current Acceptance,
+  clean/unlocked/process-free state, a branch ref pinning `HEAD`, and reachability
+  from `main`; it surfaces rather than removes anything ambiguous. It has
   **worktree lifecycle only**: it does not merge the prerequisite closure or
   make any other branch/authority policy decision; that remains the runner
   transaction engine's job below. This is a different tool from

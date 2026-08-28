@@ -9,7 +9,8 @@ Status: implemented legacy safety adapter for Feature `0038`, Tasks `0038-04`, `
 - `TODO.md`;
 - `DONE.md`;
 - `agent-workflow.json`;
-- sorted top-level `TODO-*.md` claim/coordination files;
+- sorted top-level `TODO-*.md` live/not-yet-accepted claims and `DONE-*.md`
+  accepted terminal-provenance files;
 - `AGENTS.md`, `SANDBOX.md`, `PRIVILEGED.md`, the selected instruction bundle, and `SENTINEL.md` when present.
 
 The tool is limited to the `legacy-lists` era. It neither creates a second issue store nor becomes the permanent bootstrap authority. Task `0037-42` owns the future `agent-doctor` implementation; Task `0038-16` maps or retires this legacy adapter during queue/issue-store handoff.
@@ -19,7 +20,11 @@ The tool is limited to the `legacy-lists` era. It neither creates a second issue
 `AGENTS.md` authorizes a temporary `TODO-<agent-id>.md` coordination record for
 a user-directed activity that is not an existing Task, provided it does not
 falsely mark an unrelated Task `[p]`. The legacy doctor nevertheless models all
-top-level `TODO-*.md` records as Task claims. The exact known false positive is:
+top-level `TODO-*.md` and `DONE-*.md` records as Task claims. `DONE-*` is valid
+only for an exact Task carrying current `Acceptance: ✓`; a premature `DONE-*`
+claim is a finding. Historical accepted `TODO-*` records predating Task
+`0044-17` remain readable without forcing a repository-wide migration. The exact
+known false positive is:
 
 - path: `TODO-claude-re-intake-20260818T003223Z-845170c0e4da.md`;
 - immutable token:
@@ -70,7 +75,7 @@ Without `--json`, stdout is a summary of at most ten lines. With `--json`, stdou
 ## Read-only and consistency model
 
 1. The adapter accepts only regular, non-symlink UTF-8 inputs under the supplied root and bounds each input at 12 MiB.
-2. It discovers claims only as sorted top-level names matching `TODO-*.md`; it never recurses through logs, output, evidence, or archives.
+2. It discovers claims only as sorted top-level names matching `TODO-*.md` or `DONE-*.md`; it never recurses through logs, output, evidence, or archives.
 3. Parsing and analysis operate on immutable bytes already read into memory.
 4. Authoritative full commit IDs and exact full claim bases are checked before and after analysis through the same fixed read-only command:
 
@@ -172,7 +177,7 @@ When a machine field named `write_scope` or `write_scopes` is present, its comma
 | `LTD-CLAIM-BASE-UNREACHABLE` | A full base is not reachable from a local ref. |
 | `LTD-CLAIM-STATE-DIVERGED` | Claim state and authoritative Task marker disagree. |
 | `LTD-CLAIM-TASK-MISSING` | A claim declares a Task absent from both authoritative lists. |
-| `LTD-CLAIM-TERMINAL-RETAINED` | A claim remains after its Task reached `[x]` or `[w]`. |
+| `LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE` | A claim uses terminal `DONE-*` provenance without current Acceptance on its Task. |
 | `LTD-CLAIM-SCOPE-MISSING` | An active claim has no exact path-bearing scope. |
 | `LTD-CLAIM-SCOPE-MISMATCH` | Optional machine scope and human scope section disagree. |
 | `LTD-CLAIM-SCOPE-INVALID` | A scope escapes the root, uses a glob, names `.git`, or treats root `run.sh` as Task write scope. |
