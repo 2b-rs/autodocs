@@ -1,7 +1,7 @@
 # Dispatcher coordination claim — 0033-02 through 0033-04 recovery preparation
 
 - **owner_token:** `agent:william:0033-02-04-recovery:1787959173731-a7980aed`
-- **state:** `[p]`
+- **state:** `[x]`
 - **capability_class:** `unprivileged`
 - **role:** Dispatcher, Team Enterprise
 - **authority:** Atomic AWARD `1787959173731-a7980aed`; exact scope clarification `agent-inbox:1787959339773-a1b03432`
@@ -30,3 +30,9 @@
 - All three exact source tips and the current recovery baseline have diverged mutually. Current `main` has Tasks `0033-02`, `0033-03`, and `0033-04` open with no current Acceptance/checkpoint attribute; source Task tips were `[x]`, while the later Acceptance records inherited by `0033-04` are distinct ancestry rather than intrinsic state of the exact 0033-02/03 tips.
 - Permanent deliverables prepared at `docs/campaign-evidence/0033-recovery/0033-02-04-inventory.md` and `docs/dossiers/0033-02-04-recovery-decision-packet.md`. Recommended recovery is current-baseline reconstruction after authenticated Management selection and distinct Architect scope binding; no bulk merge/cherry-pick.
 - Validation: every pinned source object resolved as a commit; `git diff --check` passed; writable-path set is limited to the three authorized present paths; Lore and Gabriel claim paths remain absent; no source, governance, TODO, product, review, Acceptance, integration, or external state was mutated.
+
+## Terminal handoff
+
+- Substantive recovery inventory and decision packet REF: `2a319b25ae1210c517410cbcc61bcb4f3b79c01e`.
+- This coordination chain ends before `0033-04.01`. Next action belongs to Jean-Luc: route the exact packet for authenticated Management selection, then obtain a distinct Management-instantiated Architect scope record before any operative mutation.
+- No implementation scope or source-branch ownership remains with this claim. Historical branches/worktrees remain preserved and no cleanup authority is inferred.
