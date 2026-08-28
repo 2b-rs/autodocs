@@ -27,3 +27,13 @@
 ## Verdict
 
 **PASS — ready for exact-candidate hygiene and the guarded root integration sequence.** This is an integration verdict only. It performs no Acceptance, backlog/interface activation, `0027-11` creation, Feature/`DONE.md` movement, cleanup, or scope expansion.
+
+## Guarded integration result
+
+- Exact candidate `c7bbdeb108fb4f89aff3d75f655ac0d695771180`: `check_integration_hygiene.py --candidate-ref` exited `0`, PASS, across 222 registered worktrees.
+- Immediate root preflight exited `0`, PASS, across 222 registered worktrees.
+- While the review ran, `main` advanced disjointly through `22acd85fddd7b3449e3c4078d79b813d3094f9a4`; its changes were confined to the `DEC-0044-029` claim/evidence package and `docs/pipeline/core-rules.md`, with no awarded-path overlap. The exact-candidate overlap gate passed against that live root.
+- Provenance-preserving root merge: `1f0bace76f835ffb9b51f340ca34b8ee98fc6bce`, first parent `22acd85fddd7b3449e3c4078d79b813d3094f9a4`, second parent `c7bbdeb108fb4f89aff3d75f655ac0d695771180`.
+- Immediate post-merge root preflight exited `0`, PASS, across 222 registered worktrees.
+
+**Final verdict: INTEGRATED / PASS.** C-1 remains assigned to the later backlog-activation owner; no marker or interface mutation was carried.

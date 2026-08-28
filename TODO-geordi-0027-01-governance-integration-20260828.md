@@ -2,7 +2,7 @@
 
 - **item_id:** `0027-01-governance-integration`
 - **owner_token:** `agent:geordi:0027-01-governance-integration:1787908518545-c161f96f`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** exact-scope assembly, independent integration review, and conditional guarded governance integration only
 - **planned_duration:** 25 minutes
@@ -32,3 +32,4 @@ Carry only the four named corrected candidate/review paths. Stop and record a bl
 - **Assembly:** exact candidate blobs carried in `b6d32a1643`; exact corrected review blobs carried in `87bad005cd`. Candidate `TODO.md` and zero-byte superseded review content were not carried.
 - **Evidence:** `docs/campaign-evidence/0027-01/governance-integration-geordi-20260828.md`.
 - **Verdict:** PASS; ready for exact-candidate hygiene and conditional guarded root integration. No prohibited mutation occurred.
+- **Integration:** candidate hygiene PASS; root preflight PASS; `main` merge `1f0bace76f835ffb9b51f340ca34b8ee98fc6bce`; immediate root postflight PASS. Final concurrent drift through first parent `22acd85fdd` was disjoint from all six awarded paths and the machine overlap gate passed.
