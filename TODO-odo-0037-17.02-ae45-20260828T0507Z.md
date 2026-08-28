@@ -26,3 +26,4 @@ Implementation `[x]` on this follow-up branch (does not restamp TODO.md 17.02 RE
 - **`provenance_views.py` edited:** no
 - **validation:** `python3 -m unittest _src.tests.test_provenance_views -v` (worktree cwd) → **15/15 OK** in 1.509s (8 prior + 6 AE-4 + 1 AE-5). AE-5 executed **64** graphs (`AE5_ENUMERATED_GRAPH_COUNT`), 0 Kahn-oracle mismatches; `walk_without_loops` unique-node for every start on each graph.
 - **base vs then-current main:** left-right after product commit recorded in bookkeeping commit.
+- **handover:** Terminal state reached. Review and integration required. Handoff to Integrator (Jadzia) via `jadzia`.
