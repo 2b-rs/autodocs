@@ -31,8 +31,10 @@ write_scope: ["TODO-geordi-recovery-belanna-drift-addendum-main-carry-in-r3-2026
 
 ## Final disposition
 
-- **Verdict:** pending independent review.
+- **Verdict:** independent review supports `PASS / integrable`, conditional on exact-candidate hygiene, unchanged target, root preflight, fast-forward, and postflight.
+- The carried claim blob is exactly `868444f5c1f8aafe94cb7f79a0f27529b49720fb`; the preimage is `70b6be1bd850a05de20d05b4ca28fada142dfe47`; no semantic drift is observed.
+- Evidence: `docs/campaign-evidence/recovery-belanna-drift-addendum-geordi-r3-20260828.md`.
 
 ## Next step
 
-Commit this claim first, then inspect the exact source blob and candidate delta before any carry or integration action.
+Run hygiene on the committed review candidate. If and only if it passes with the target still pinned, run root preflight, fast-forward, and postflight; otherwise record the Mode C stop verdict without root mutation.
