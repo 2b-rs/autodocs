@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import itertools
 import json
 import shutil
 import sys
@@ -403,6 +404,226 @@ class ProvenanceQueryTests(unittest.TestCase):
         )
         self.assertTrue(shallow["found"])
         self.assertTrue(all(h["kind"] in {"artifact", "commit", "issue"} for h in typed["hops"]))
+
+    def test_ae4_record_version_missing_vs_resolved(self):
+        """AE-4 adjacent: query kind record-version.
+
+        Neighboring dimension: QUERY_KINDS identity (record-version vs issue).
+        Expected: unknown identifier → found=False + missing diagnostic; after a
+        verifies edge onto a record-version URI → found=True and that URI in hops.
+        Observed: same. Adjacent to curation-item because both were zero-coverage
+        kinds in the original 7-test suite, with distinct RELATIONS wiring.
+        """
+        missing = pq.query_trace(
+            self.root, kind="record-version", identifier="rv-absent-17-03"
+        )
+        self.assertFalse(missing["found"])
+        self.assertTrue(any(d["status"] == "missing" for d in missing["diagnostics"]))
+        self.assertTrue(
+            any("record-version:rv-absent-17-03" in d["identifier"] for d in missing["diagnostics"])
+        )
+
+        self.store.create_run(self._run())
+        self.store.create_event(
+            self._event(
+                event_id="018f4a31-70ac-7abc-8def-0123456789ab",
+                relation="verifies",
+                source=_ref("evidence", "bundle-1"),
+                target=_ref("record-version", "rv-present-17-03"),
+            )
+        )
+        pv.write_views(*pv.build_views(self.root), self.root)
+        found = pq.query_trace(
+            self.root, kind="record-version", identifier="rv-present-17-03"
+        )
+        self.assertTrue(found["found"])
+        self.assertTrue(
+            any(h["uri"] == "record-version:rv-present-17-03" for h in found["hops"])
+        )
+
+    def test_ae4_curation_item_missing_vs_resolved(self):
+        """AE-4 adjacent: query kind curation-item.
+
+        Neighboring dimension: QUERY_KINDS identity (curation-item vs record-version).
+        Expected: unknown identifier → found=False + missing; after reported-by
+        from a finding onto a curation-item URI → found=True and URI in hops.
+        Observed: same. Adjacent to record-version: same missing/found pair, but
+        the live edge is reported-by (finding→curation-item), not verifies.
+        """
+        missing = pq.query_trace(
+            self.root, kind="curation-item", identifier="curate-absent-17-03"
+        )
+        self.assertFalse(missing["found"])
+        self.assertTrue(any(d["status"] == "missing" for d in missing["diagnostics"]))
+
+        self.store.create_run(self._run())
+        self.store.create_finding(self._finding())
+        self.store.create_event(
+            self._event(
+                event_id="018f4a31-70ad-7abc-8def-0123456789ab",
+                relation="reported-by",
+                source=_ref("finding", FINDING_ID),
+                target=_ref("curation-item", "curate-present-17-03"),
+            )
+        )
+        pv.write_views(*pv.build_views(self.root), self.root)
+        found = pq.query_trace(
+            self.root, kind="curation-item", identifier="curate-present-17-03"
+        )
+        self.assertTrue(found["found"])
+        self.assertTrue(
+            any(h["uri"] == "curation-item:curate-present-17-03" for h in found["hops"])
+        )
+
+    def test_ae4_unresolvable_distinct_from_missing_dangling_redacted(self):
+        """AE-4 adjacent: diagnostic status unresolvable.
+
+        Neighboring dimension: four-way diagnostic-status gate (empty-uri endpoint
+        vs dangling unknown finding vs redacted vs missing artifact-set).
+        Expected: unresolvable present, disjoint from missing/dangling/redacted.
+        Observed: same. Adjacent to the existing broken-link test, which covered
+        only missing/dangling/redacted and never named unresolvable.
+        """
+        self.store.create_run(self._run())
+        empty_source = _ref("finding", FINDING_ID)
+        empty_source["uri"] = ""
+        self._write_raw_event(
+            self._event(
+                event_id="018f4a31-70ae-7abc-8def-0123456789ab",
+                source=empty_source,
+                target=_ref("run", RUN_ID),
+            )
+        )
+        dangling = self._event(
+            event_id="018f4a31-70af-7abc-8def-0123456789ab",
+            source=_ref("finding", "018f4a31-ffff-7abc-8def-0123456789ab"),
+            target=_ref("run", RUN_ID),
+        )
+        self._write_raw_event(dangling)
+        redacted = self._event(
+            event_id="018f4a31-70b0-7abc-8def-0123456789ab",
+            relation="reported-by",
+            source=_ref("finding", FINDING_ID, classification="restricted", redacted=True),
+            target=_ref("issue", "0037-17.03"),
+        )
+        self._write_raw_event(redacted)
+        pv.write_views(*pv.build_views(self.root), self.root)
+
+        result = pq.query_trace(self.root, kind="issue", identifier="0037-17.03")
+        statuses = {d["status"] for d in result["diagnostics"]}
+        self.assertIn("unresolvable", statuses)
+        self.assertIn("dangling", statuses)
+        self.assertIn("redacted", statuses)
+        self.assertNotIn("missing", statuses)
+        unresolvable = [d for d in result["diagnostics"] if d["status"] == "unresolvable"]
+        dangling_items = [d for d in result["diagnostics"] if d["status"] == "dangling"]
+        self.assertTrue(unresolvable)
+        self.assertTrue(any(d.get("identifier") == "" for d in unresolvable))
+        self.assertTrue(any("ffff" in d["identifier"] for d in dangling_items))
+        self.assertFalse(
+            any(d["status"] == "unresolvable" and d["status"] == "dangling" for d in result["diagnostics"])
+        )
+
+        missing = pq.query_trace(
+            self.root,
+            kind="artifact-set",
+            identifier="018f4a31-dead-7abc-8def-0123456789ab",
+        )
+        self.assertFalse(missing["found"])
+        missing_items = [d for d in missing["diagnostics"] if d["status"] == "missing"]
+        self.assertTrue(any(d["kind"] == "artifact-set" for d in missing_items))
+        # Graph-level unresolvable/dangling/redacted findings still surface on
+        # any query; missing is the extra, query-local status and stays distinct.
+        self.assertTrue(
+            any(d["status"] == "unresolvable" for d in missing["diagnostics"])
+        )
+        self.assertFalse(any(d["status"] == "unresolvable" for d in missing_items))
+
+    def test_ae5_add_unique_duplicate_convergence_via_commit_query(self):
+        """AE-5: two independent traversal paths collapse via _add_unique.
+
+        Neighboring dimension: custom O(n) canonical-JSON uniqueness on files
+        and commits (not hops.seen). A commit query records each member once at
+        seed collection and again when collect_from_uri visits commit:/artifact:
+        URIs. Expected: more than one _add_unique invocation with the same
+        canonical file record, and exactly one entry in result['files'] and
+        result['commits'] for that identity. Observed: same.
+        """
+        _aset, digest = self._seed_causal()
+        calls = []
+        orig = pq._add_unique
+
+        def counting(seq, item):
+            calls.append((id(seq), pq._canonical_json(item)))
+            return orig(seq, item)
+
+        pq._add_unique = counting
+        try:
+            result = pq.query_trace(
+                self.root, kind="commit", identifier=COMMIT, direction="reverse"
+            )
+        finally:
+            pq._add_unique = orig
+
+        file_keys = [
+            key
+            for _sid, key in calls
+            if '"artifact_set"' in key and '"path":"docs/evidence.md"' in key
+        ]
+        self.assertGreaterEqual(
+            len(file_keys),
+            2,
+            msg="commit query must hit record_file_commit twice for the same member",
+        )
+        self.assertEqual(len(set(file_keys)), 1)
+        commit_keys = [
+            key
+            for _sid, key in calls
+            if '"commit":"' + COMMIT in key and '"artifact_set"' not in key
+        ]
+        self.assertGreaterEqual(len(commit_keys), 2)
+        self.assertEqual(len(set(commit_keys)), 1)
+        matching_files = [
+            rec
+            for rec in result["files"]
+            if rec.get("path") == "docs/evidence.md" and rec.get("digest") == digest
+        ]
+        self.assertEqual(len(matching_files), 1)
+        matching_commits = [
+            rec
+            for rec in result["commits"]
+            if rec.get("commit") == COMMIT and rec.get("path") == "docs/evidence.md"
+        ]
+        self.assertEqual(len(matching_commits), 1)
+        self.assertIn(ISSUE, result["issues"])
+
+    def test_ae5_add_unique_property_finite_enumeration(self):
+        """AE-5 property: _add_unique vs canonical-JSON set oracle.
+
+        Invariant/oracle: after any sequence of inserts, len(seq) equals the
+        number of distinct _canonical_json keys (multiplicity collapsed).
+        Generation domain: all tuples of length 0..3 over three dict instances
+        {A, A_clone, B} where A and A_clone share canonical JSON (finite
+        enumeration; seed/replay=None). Executed case count: 40, asserted below.
+        """
+        item_a = {"status": "unresolvable", "kind": "finding", "identifier": ""}
+        item_a_clone = dict(item_a)
+        item_b = {"status": "dangling", "kind": "finding", "identifier": "x"}
+        population = (item_a, item_a_clone, item_b)
+        executed = 0
+        for length in range(4):
+            for combo in itertools.product(population, repeat=length):
+                executed += 1
+                seq = []
+                for item in combo:
+                    pq._add_unique(seq, item)
+                oracle = {pq._canonical_json(item) for item in combo}
+                self.assertEqual(len(seq), len(oracle))
+                self.assertEqual(
+                    {pq._canonical_json(item) for item in seq},
+                    oracle,
+                )
+        self.assertEqual(executed, 40)
 
 
 if __name__ == "__main__":
