@@ -20,3 +20,9 @@
 ## Integration contract
 
 Commit this claim before inspecting or carrying candidate history. Assemble only the named corrected candidate and three exact review patches in the awarded logical order, excluding `aad2774215f57344978196c73dc450dba3395dc1`. Stop and record a blocking verdict on conflict, overlap, unexpected path, drift, material change, or nonzero gate. Only a passing final candidate may advance `main` through the repository-authorized guarded merge and immediate postflight.
+
+## Review result
+
+- **Assembly:** corrected candidate merge `c026eca89d`; exact review-patch carries `7216664d6f` → `e2ca9aacc1` → `b662b6874b`; excluded `aad2774215` remains unreachable.
+- **Evidence:** `docs/campaign-evidence/0027-05/governance-integration-geordi-20260828.md`.
+- **Verdict:** PASS; ready for final candidate hygiene and guarded root integration. No prohibited mutation occurred.
