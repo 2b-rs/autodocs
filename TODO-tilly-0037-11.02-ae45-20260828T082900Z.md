@@ -5,7 +5,7 @@
 - **persona:** Sylvia Tilly, unprivileged Programmer (not gabriel, not Joann, not a dispatcher)
 - **capability_class:** `unprivileged`
 - **execution_authority:** direct Git/tests in the item-owned worktree; not runner; not privileged
-- **git author on this host:** `geordi <geordi@enterprise.starfleet.network>` (Cursor user identity). Persona remains Tilly; not Joann tokens `agent:gabriel-joann-20260825t082200z:0037-11.02:20260825T082200Z` or `20260825T081500Z`.
+- **git author on this host:** commits were created as `gabriel <gabriel@discovery.starfleet.network>` (host/Cursor user identity). **Persona is Tilly**; not dispatcher gabriel; not Joann tokens `agent:gabriel-joann-20260825t082200z:0037-11.02:20260825T082200Z` or `20260825T081500Z`. Pre-cut `main` tip author was `geordi`; do not confuse with this session's committer.
 - **item:** 0037-11.02 AE-4+AE-5 follow-up (additive named tests only)
 - **branch:** `0037-11.02-ae45-tilly-20260828`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0037-11.02-ae45-tilly-20260828`
@@ -17,6 +17,7 @@
 ## Disposition: implementation complete `[x]` (follow-up; do not land)
 
 - **product SHA:** `e83281b2be14b64625239360076b0072524df52e`
+- **bookkeeping SHA (claim body):** `36ba1e76c0080c20d81541a1736c4189643e3800`; git-author disclosure may follow in a third commit on this branch
 - **`issue_views.py` blob:** `d21d4a4dc41e50901e28e6d0a4b29bbb21698b34` (unchanged; STOP not required)
 - **Belanna:** `65321285a` INCONCLUSIVE — AE-4/AE-5 gaps closed in tests only
 
