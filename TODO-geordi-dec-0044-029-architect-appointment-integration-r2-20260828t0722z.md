@@ -2,7 +2,7 @@
 
 - **item_id:** `DEC-0044-029-architect-appointment-integration-r2`
 - **owner_token:** `agent:geordi:DEC-0044-029-architect-appointment-integration-r2:1787901763291-f284e26d`
-- **state / status:** `[x]` / `[x]`
+- **state / status:** `[p]` / `[p]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** direct exact-scope retry integration only
 - **planned_duration:** 30 minutes
@@ -31,3 +31,10 @@ The `memory_append` hold remains fully operative.
 ## Final integration step
 
 Commit this terminal retry evidence, run exact-candidate hygiene, and perform the guarded root preflight/equality/fast-forward/postflight sequence. Stop and reopen `[p]` additively on any finding or drift.
+
+## VERDICT: BLOCKED — unavailable registered worktree
+
+- Exact R2 candidate `7e7973c14e7a18d49cfa4fd1b5028d815b5566ea` contains current baseline `cf56c7e2e7f9c2383f87c4d4eaa57f954311486a` and passed the fast-forward ancestry guard.
+- Candidate hygiene failed across 226 registered worktrees with `WORKTREE_UNAVAILABLE` for `/Users/tobias.anton/devel/autodocs/.review-worktrees/review-0037-09.04-ae5-belanna-20260828T0042Z`: the registered path is absent.
+- No root preflight, merge, postflight, foreign cleanup, memory action, or prohibited mutation occurred.
+- The finding requires owner-authorized resolution and a fresh exact retry instruction; this blocked candidate is not a root merge target.
