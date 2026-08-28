@@ -46,7 +46,24 @@
   author signature, and stable reference. Do not store transcripts, mailbox
   bodies, task progress, secrets, personal data, or normative facts duplicated
   elsewhere.
-- Shared agent/role/capability paths resolve against the common repository root;
-  feature memory resolves against the active feature worktree. Memory
-  maintenance is incidental permission for these paths only and never widens
-  task scope or authority.
+- Memory writes are held by `DEC-0044-029` until its activation gate passes. While
+  the hold is in force, do not call `memory_append` or `memory_store.py append` in
+  any scope; record durable facts in the active item claim, preserve existing
+  `logs/agent-memory/**` divergence, and self-report any accidental call with its
+  exact path, status, and digest.
+- Every memory write requires an explicit active item-owned linked worktree. There
+  is no default write target: an omitted or empty workspace, the shared/primary
+  checkout, a standalone clone, a symlink resolving to the repository root, and an
+  unresolved or non-Git path are each rejected before any lock, directory,
+  temporary file, or memory file is created.
+- All scopes write inside that proved worktree. Shared agent/role/capability
+  entries reach the common baseline only through the ordinary branch commit and
+  integration lifecycle -- never by writing the shared root checkout. Feature
+  memory remains bound to its active feature worktree.
+- Reads follow the same base: reading from a linked worktree returns the committed
+  common baseline plus that branch's own entries. Reading one feature memory
+  requires that feature's worktree.
+- The tool is the enforcement boundary. Profile wording is required guidance but
+  cannot authorize or rescue a rejected target, and a successful path check is
+  never task ownership, write-scope expansion, Acceptance, integration, release,
+  waiver, or specialist authority.

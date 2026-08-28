@@ -1,6 +1,6 @@
 # Claim: DEC-0044-029 memory-workspace-routing implementation
 
-- **state:** `[p]`
+- **state:** `[x]` — implementation terminal; candidates agent-inbox `258f18fbb58ed439ad028ea995127fc6e59883a2` and this autodocs commit. Not merged; no Acceptance claimed.
 - **owner_token:** `agent:tuvok:dec-0044-029-memory-workspace-routing-implementation:20260828T0815Z`
 - **persona:** Tuvok, Security Engineer, Team Voyager — Implementer only
 - **capability_class:** `unprivileged`
@@ -58,3 +58,4 @@ No production `memory_append`/helper append; no production Memory path touched; 
 - 2026-08-28T08:15Z AWARD received; announced busy until 09:45Z.
 - 2026-08-28T08:20Z C01 re-pin: zero drift (above). Both worktrees created at the pinned baselines.
 - 2026-08-28T08:28Z Claim recorded before first product mutation.
+- 2026-08-28T09:58Z Implementation complete. agent-inbox candidate `258f18fbb`. 750/751 tests pass; the single failure is pre-existing on the untouched baseline and is reported, not fixed. Evidence: `docs/campaign-evidence/0044-memory-workspace-routing/implementation/tuvok-20260828T0815Z.md`.
