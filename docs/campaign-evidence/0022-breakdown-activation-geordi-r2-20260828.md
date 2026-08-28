@@ -37,3 +37,7 @@ These defects do not alter the activation bytes, pre-existing decision authority
 ## Boundary
 
 This is integration review and carry evidence only. It is not Acceptance, `0022-01` or `0022-03` checkpoint completion, Task implementation, Feature closure, DONE movement, source repair, or risk/waiver authority. Root mutation remains prohibited unless every conditional hygiene and target-pin gate passes.
+
+## Pre-merge hygiene
+
+`python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0022-breakdown-activation-geordi-r2-20260828 --candidate-ref e59e264de534b7ef03d1bb2bf8c9c453c9ece268` exited `0`: `integration hygiene: PASS`; 263 registered worktrees inspected. Because this evidence commit changes the candidate, the same gate must pass again on the new exact tip immediately before root preflight and merge.
