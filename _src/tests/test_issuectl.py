@@ -20,6 +20,7 @@ QUERY_TOOL = ROOT / "_src/tools/provenance_query.py"
 STORE_TOOL = ROOT / "_src/tools/provenance_store.py"
 VIEW_TOOL = ROOT / "_src/tools/provenance_views.py"
 FIXTURES = ROOT / "_src/tests/fixtures/0037-11.02"
+OWNER_CLAIM_FIXTURE = ROOT / "_src/tests/fixtures/0037-10.04/claim.json"
 ACTIONS = ROOT / "_src/runner/issuectl-query-actions-v1.json"
 
 
@@ -168,6 +169,76 @@ class IssuectlViewGraphListTests(unittest.TestCase):
         code, out, _err = _run_main(["list", *common[1:], "--format", "human", "--query", "blocked"])
         self.assertEqual(code, 0)
         self.assertIn("0081-02", out)
+
+    def test_list_ae4_owner_unclear_prerequisite_adjacent_cases(self):
+        """AE-4 named adjacent cases for cmd_list (AE-1 counting/filter). AE-5 not triggered."""
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Path(temp)
+            issues = repo / "issues"
+            shutil.copytree(FIXTURES / "issues", issues)
+            (repo / "issues/_schema").mkdir(parents=True, exist_ok=True)
+            for rel in (
+                views.CATALOG_SCHEMA_PATH,
+                views.GRAPH_SCHEMA_PATH,
+                views.ITEM_SCHEMA_PATH,
+                views.STORE_TOOL_PATH,
+                views.TOOL_PATH,
+            ):
+                src = ROOT / rel
+                dest = repo / rel
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(src, dest)
+            claim_payload = json.loads(OWNER_CLAIM_FIXTURE.read_text(encoding="utf-8"))
+            owner_token = claim_payload["owner_token"]
+            miss_token = "agent:saru-ae4-fixture:0081-01:filter-miss"
+            (issues / "0081/0081-01/claim.json").write_text(
+                OWNER_CLAIM_FIXTURE.read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            common = [
+                "list",
+                "--repo",
+                str(repo),
+                "--issues-root",
+                str(issues),
+                "--format",
+                "json",
+            ]
+
+            # Adjacent case 1: owner unfiltered (any claim) vs filter-match vs filter-miss.
+            code, out, err = _run_main(common + ["--query", "owner"])
+            self.assertEqual(code, 0, err)
+            unfiltered = json.loads(out)["items"]
+            unfiltered_ids = {item["id"] for item in unfiltered}
+            self.assertIn("0081-01", unfiltered_ids)
+            self.assertEqual({item["owner"] for item in unfiltered}, {owner_token})
+            self.assertNotIn("0082", unfiltered_ids)
+
+            code, out, err = _run_main(common + ["--query", "owner", "--owner", owner_token])
+            self.assertEqual(code, 0, err)
+            matched = json.loads(out)["items"]
+            self.assertEqual({item["id"] for item in matched}, {"0081-01"})
+            self.assertEqual(matched[0]["owner"], owner_token)
+
+            code, out, err = _run_main(common + ["--query", "owner", "--owner", miss_token])
+            self.assertEqual(code, 0, err)
+            self.assertEqual(json.loads(out)["items"], [])
+
+            # Adjacent case 2: unclear negative — well-formed 0081-01 is excluded.
+            code, out, err = _run_main(common + ["--query", "unclear"])
+            self.assertEqual(code, 0, err)
+            unclear_ids = {item["id"] for item in json.loads(out)["items"]}
+            self.assertNotIn("0081-01", unclear_ids)
+            self.assertNotIn("0082", unclear_ids)
+            self.assertTrue(unclear_ids)
+
+            # Adjacent case 3: prerequisite negative — item without prereqs excluded.
+            code, out, err = _run_main(common + ["--query", "prerequisite"])
+            self.assertEqual(code, 0, err)
+            prereq_ids = {item["id"] for item in json.loads(out)["items"]}
+            self.assertNotIn("0082", prereq_ids)
+            self.assertNotIn("0081-04", prereq_ids)
+            self.assertTrue(any(item["prerequisites"] for item in json.loads(out)["items"]))
 
     def test_legacy_todo_rejected(self):
         code, _out, err = _run_main(
