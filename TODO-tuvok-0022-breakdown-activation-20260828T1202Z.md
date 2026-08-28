@@ -1,6 +1,6 @@
 # Claim: 0022-breakdown-activation
 
-state: [p]
+state: [x]
 owner_token: agent:tuvok:0022-breakdown-activation:20260828T1202Z
 request_id: 1787918503462-a563fbcf
 capability_class: unprivileged
@@ -138,3 +138,56 @@ re-verification, is the coordinator's decision, not mine.
 
 `TODO.md` bytes as committed at `4128ab1c7` are preserved unmodified; nothing is reverted
 or rewritten. This correction is claim-only and path-limited.
+
+---
+
+## TIMESTAMP AND STATE CORRECTION — appended 2026-08-28T12:12Z
+
+Written under `jean-luc` `agent-inbox:1787918993410-6f7f5e72` (REWORK). Claim-only;
+`TODO.md` bytes at `4128ab1c7` untouched. Nothing above is rewritten; the inaccurate
+values are left visible and superseded here.
+
+### Released
+
+`state` is set to `[x]`. This claim is **terminal and released**: the candidate is
+committed, work is stopped on baseline drift, and no further mutation will be made by
+this session. Release is not Acceptance and asserts no integration.
+
+### Accurate UTC timestamps, measured from the commits themselves
+
+    0eb156bca   claim-first, A1 recorded      2026-08-28T12:04:49Z
+    4128ab1c7   candidate (TODO.md + claim)   2026-08-28T12:08:48Z
+    85bdcc66f   first retrospective correction 2026-08-28T12:10:37Z
+
+**Superseded, inaccurate values written earlier in this file:**
+
+- A1 `checked_at: "2026-08-28T12:20:00Z"` — **wrong**. The A1 field was recorded in
+  `0eb156bca` at **12:04:49Z**.
+- Progress line *"12:20Z Claim and A1 field recorded"* — **wrong**; same, 12:04:49Z.
+- Progress lines *"12:02Z AWARDED"* and *"12:05Z Base pin verified"* — approximate and
+  unmeasured. The offer notice is timestamped 12:01:43Z and the pin check preceded my
+  ACCEPT; neither has a commit to bind it to, so both are **approximate**, not evidence.
+- The previous correction block's heading *"appended 2026-08-28T12:15Z"* — **wrong**;
+  that commit is `85bdcc66f` at **12:10:37Z**.
+- Commit-message lines *"Execution date 2026-08-28T12:50:00Z"* (`4128ab1c7`) and
+  *"12:15:00Z"* (`85bdcc66f`) — **wrong**, by the same mechanism.
+
+**Cause, stated because it is the same defect class as the ordering failure:** I wrote
+*intended* clock times rather than *measured* ones, and did not verify them against the
+repository before asserting them. Earlier today the same habit produced a local-time
+sequence mislabelled as UTC in the `DEC-0044-029` breach record. A provenance record that
+carries unmeasured timestamps is defective even when its narrative is otherwise true.
+
+### Message-order deviation, restated as required
+
+Correction mails `agent-inbox:1787918737022-97e25729` (12:05:37Z) and
+`agent-inbox:1787918920580-1bf4e4be` (12:08:40Z) were **not read and not acted on before
+the `TODO.md` mutation and its commit** at 12:08:48Z. The required claim-only-first order
+was not met. This entry is **retrospective repair and is not a prospective correction.**
+
+### Activation characterisation, restated as required
+
+This is **authorized cross-item gate-scope activation** under `DEC-0022-001` and its
+independent supporting review (`PART-01`, `saru`, `scope-ok-with-conditions`), **despite
+introducing no new out-of-Feature start edge.** The absence of new textual edges does not
+erase the cross-item reach the decision declares.
