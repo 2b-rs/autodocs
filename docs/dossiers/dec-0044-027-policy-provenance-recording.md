@@ -92,3 +92,28 @@ present; `DEC-0044-027` absent).
 - **Review participation:** `none`
 - **No-review reason:** Independent Architect `seven` is assigned to re-review this record after it exists (`1787751762460-6a7ad4b6`). Authoring participation by that reviewer would collapse the required distinctness from the later scope review. Project Lead `jean-luc` assigned the recording; a mailbox is not a `decision-record@v1` identity.
 - **Waiver:** `none`
+
+#### `DEC-0044-027-C001`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0044-027`
+- **Recorded at:** `2026-08-28T10:40:00+02:00`
+- **Correcting identity:** `agent:saru:0044-12-g3:20260828T083500Z`
+- **Role:** `Architekt`
+- **Authority reference:** `DEC-0044-027`; G3 `docs/campaign-evidence/0044-12/belanna-integration-review-20260826T154058Z.md:17`; Project Lead AWARD `agent-inbox:1787906004782-6a33f43c`; OFFER `agent-inbox:1787905707638-90b886eb`; confirmation `agent-inbox:1787906014875-c432350d`; activation/carry `054024476b55f02d60f2dc7a0d52c48c148c52bf`
+- **Correction reason:** The base CON-05 described activation as one Git commit without naming that commit, because the activation/carry SHA did not exist at original recording time. G3 requires an Architect-authored append-only `decision-record-correction@v1` naming that SHA against `DEC-0044-027`. This event records `054024476b55f02d60f2dc7a0d52c48c148c52bf` as that identity. It does not re-decide CON-02 paths, trailer families, non-retroactivity, rollback, implementer distinctness, or any gate list.
+- **Target field:** `Consequences`
+- **Previous effective block SHA-256:** `9ec6ffd34b85d8011d65b553445584af3d2a7861cebb818b6805969177cc8f15`
+- **Replacement block:**
+  ```markdown
+  - **Consequences:**
+    - **CON-01:** `DEC-0044-008` and `DEC-0044-011` remain the substantive Management decisions. This record does not re-decide them.
+    - **CON-02:** Exact mutation paths for `0044-12` (no others): `docs/pipeline/branch-workflow.md`, `AGENTS.md`, `_src/tools/check_policy_provenance.py`, `_src/tools/test_check_policy_provenance.py`, `docs/pipeline/tools.md`, and `docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md` (additive `DEC-0044-002`/`011` text only; original `DEC-0044-002` body is not deleted).
+    - **CON-03:** Trailer Family A: required key `Policy-Origin-Branch:`; value is the branch on which the policy-touching commit was authored (`main` when the commit is governance authored under `DEC-0044-012`); required on commits that touch the declared policy paths the tool already defaults or accepts via `--policy-path`. After activation, a missing, malformed, or contradictory Family A trailer on a required commit is a finding (fail-closed for the check). Family B remains exactly `Task-ID:` and `Base-Ref:` as `DEC-0041-006` on this `main` specifies, including ancestor `Base-Ref`. Overlap carries both families. No third trailer family. Origin is never reconstructed from merge-base or `git branch --contains`.
+    - **CON-04:** Non-retroactivity: no violation is asserted against history authored before 2026-08-21. Pre-decision commits without trailers are not findings. New or materially reopened post-activation work uses the new rule for its new delta.
+    - **CON-05:** Activation is one Git commit that updates every path in CON-02 that actually changes, together. The activation/carry commit that satisfies this consequence is `054024476b55f02d60f2dc7a0d52c48c148c52bf` (ancestor of awarded `main` `c27b8001fcd7b6a504aaf7fe36c481711d5e9d81`; trailer `Policy-Origin-Branch: main`). Until that commit, current `check_policy_provenance.py` topology classification and `DEC-0044-007`'s documented residual remain the mechanical behavior; binding `--no-ff` prose already in `branch-workflow.md` is not silently weakened. `0044-13` (hook) must not start from an unactivated suite.
+    - **CON-06:** Rollback before activation abandons the `0044-12` candidate without changing operative checks. Rollback after activation reverts the CON-02 paths together to one previously coherent contract, preserves evidence, and requires impact analysis for work completed under the activated rule. Partial revert that leaves prose requiring trailers while the tool still passes missing trailers is forbidden.
+    - **CON-07:** The Feature `0041` consumer-completeness dependency is **closed**. Correction `4a11a0d284d1ce643c233bf9d208ca9cccf7322d` and Jadzia transcription `6e967dd9a7f0b5bf3766735f497c149c6362acd6` are reachable from `main` `4d3f3fefae2d50fcff3d323db01451ed2d1079f9` (`git merge-base --is-ancestor` verified 2026-08-26). They remain not authority for `0044-12` CON-02 mutation.
+    - **CON-08:** The implementer of CON-02 is distinct from Architect `seven` and from `agent:saru:0044-12:gov-0044-12-decision-record:20260826T154400Z`. This record does not assign that implementer, does not appropriate an existing `0044-12` claim, does not write `Acceptance: ✓`, and does not move Feature `0044` to `DONE.md`.
+    - **CON-09:** `0044-04` planning-gate A1 is not a third provenance mechanism. `0044-12` is the trailer-and-check layer; `0044-13` remains the `reference-transaction` net; the integrator checkpoint remains the gate (`DEC-0044-009`).
+  ```
