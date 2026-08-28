@@ -139,3 +139,74 @@ No production `memory_append`/helper append; no production Memory path touched; 
 - 2026-08-28T08:20Z C01 re-pin: zero drift (above). Both worktrees created at the pinned baselines.
 - 2026-08-28T08:28Z Claim recorded before first product mutation.
 - 2026-08-28T09:58Z Implementation complete. agent-inbox candidate `258f18fbb`. 750/751 tests pass; the single failure is pre-existing on the untouched baseline and is reported, not fixed. Evidence: `docs/campaign-evidence/0044-memory-workspace-routing/implementation/tuvok-20260828T0815Z.md`.
+
+
+## PROVENANCE REPAIR — corrective wave C-1/C-2/C-3 (appended 2026-08-28T09:05Z)
+
+Written under `agent-inbox:1787907576921-31e60795` and Jean-Luc's binding handling relayed
+in `agent-inbox:1787907619742-8bfc8926`. **This section is provenance repair. It is NOT
+claim-first evidence and must not be read as one.** Nothing above is rewritten.
+
+### Corrective chain
+
+    OFFER            agent-inbox:1787907143953-7fac4a2e
+    ACCEPT           agent-inbox:1787907238613-86b5f394
+    AWARD            agent-inbox:1787907259054-a4534bf5
+    claim-first gate agent-inbox:1787907396336-376c2e1b   sent 2026-08-28T08:56:36Z
+    authority relay  agent-inbox:1787907337124-7d6581a2
+    correction req.  agent-inbox:1787907576921-31e60795
+    PL handling      agent-inbox:1787907619742-8bfc8926
+
+Scope was `memory_store.py`, `test_memory_store.py`, this claim, and
+`docs/campaign-evidence/0044-memory-workspace-routing/`. Prohibitions: no integration,
+activation, live profile change, `memory_append`, Memory mutation, Acceptance, hold release,
+signing/key/hook work, root or `main` mutation, scope widening, cleanup, external effects.
+
+### Authoritative sequence, with corrected timestamps
+
+    2026-08-28T08:56:36Z   claim-first gate sent
+    2026-08-28T08:57:34Z   PRODUCT MUTATION committed  024c3bef5757882ea03afc28742afbf387fc62db
+                           (2026-08-28T10:57:34+02:00) — memory_store.py, test_memory_store.py
+    2026-08-28T08:58:17Z   evidence committed          671f04db7c6fadbd6aa6c2172a017c8e96e4a221
+                           (2026-08-28T10:58:17+02:00) — implementation evidence file only
+    2026-08-28T08:59:55Z   self-report claim commit    508312d033a5665ea5b220c4fb5945b25475ae09
+
+**Correction to my own earlier entry.** The gate-breach section above states the sequence as
+"~10:20Z / 10:28Z / 10:31Z / 10:34Z". Those were **local Europe/Berlin times mislabelled as
+UTC**. The authoritative UTC times are the ones in this block. The earlier text is left in
+place unaltered; this entry corrects it rather than replacing it. The error also made the
+interval look larger than it was: the gate arrived **58 seconds before** the product commit,
+not roughly an hour.
+
+### The required facts, stated without qualification
+
+- **No corrective claim REF preceded the product mutation.** The only claim commit predating
+  it, `a41312db3` at `2026-08-28T08:18:51Z`, records the *original* AWARD and contains no
+  corrective AWARD, scope, or prohibitions.
+- **No corrective claim REF was delivered live.** The gate required the REF returned before
+  the wave counted as durably started. `508312d03` was committed after both product and
+  evidence commits, and its REF was sent only afterwards.
+- **Live haltability was NOT evidenced for this corrective window.** That is the whole of
+  C-3's satisfaction here. The 58-second interval mitigates nothing: the dispatcher held no
+  claim REF and no confirmation at any point before the mutation landed.
+- **This repair does not convert any of the above into compliance.**
+
+### Frozen state
+
+Product candidate frozen per the binding handling. Both worktrees verified clean at
+`agent-inbox@024c3bef5` and `autodocs@671f04db7` before this append. No further product
+mutation. Committed work is preserved, not reverted.
+
+### Validation summary (unchanged, from the frozen candidate)
+
+`python3 -m unittest test_memory_store test_agent_inbox test_supervisor` →
+**Ran 754 tests, 753 pass, 1 failure** — the pre-existing
+`DashboardTests.test_integration_status_classifies_branches_and_features`, which reproduces
+identically on untouched baseline `1d75e4573` and was deliberately not repaired.
+
+### Boundaries
+
+`memory_append` hold preserved and observed. No activation, integration, Acceptance, hold
+release, or retrospective-haltability wording. Downstream disposition is routed to Jean-Luc;
+I neither anticipate nor influence it. Downstream exclusions (Integrator, Acceptance
+reviewer, security/signing authority) remain binding.
