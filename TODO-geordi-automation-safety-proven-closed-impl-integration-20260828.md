@@ -2,7 +2,7 @@
 
 - **item_id:** `automation-safety-proven-closed-impl-integration`
 - **owner_token:** `agent:geordi:automation-safety-proven-closed-impl-integration:20260828T013900Z`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / Integrator
 - **execution_authority:** direct execution and exact assigned integration boundary only
 - **branch:** `integration-automation-safety-proven-closed-geordi-20260828`
@@ -32,3 +32,11 @@ Commit this claim as the sole successor delta, report the exact claim commit, th
 - **Ordering finding:** Kathryn's OFFER `agent-inbox:1787873736154-6121dbc3`, Geordi ACCEPT `agent-inbox:1787873761520-6934ba4d`, and Kathryn AWARD `agent-inbox:1787873790507-4f76242a` existed before work, but the required durable item-owned Geordi claim did not. The automatic rebuild merge `ec088e8323c514316a49fc8118d70d74fc8cb2db` was committed at `2026-08-28T01:37:50+02:00`; independent inspection, validation, and the first candidate-hygiene run followed; the claim was only committed later as `2a8e5b006e9c6d10ad29b7119ef38684781a146d` at `2026-08-28T01:44:40+02:00`. No manual product edit or conflict resolution occurred in the rebuild. This append-only correction records but does not waive, cure retroactively, erase, or minimize the claim-before-review/mutation process breach.
 - **Supervisor correction authority:** Jean-Luc STOP/corrective instruction `agent-inbox:1787874347574-3b4d6894` requires this sole-path corrective successor and a new exact pin before further hygiene or root action.
 - **VERDICT: BLOCKED.** The claim-bearing candidate hygiene run initiated before delivery of that STOP completed nonzero across 214 registered worktrees: `FOREIGN_STAGED_TREE` at `/Users/tobias.anton/devel/autodocs/.worktrees/integrate-0037-09.04-paul-20260827T233900Z`, whose index still differed from `HEAD` after the mandatory 2.000-second resample (reported index age 142.836 seconds; mtime `2026-08-27T23:43:56.367Z`). No foreign cleanup, root preflight, or root merge occurred. The blocked verdict is retained pending owner resolution, a fresh hygiene run, and a new exact candidate/baseline instruction.
+
+## Final integration disposition
+
+The historical blocked verdict and claim-ordering breach above remain append-only evidence. Paul resolved his own staged worktree at `1f0c2498aff4173343617c08e24ce3587796bac6`; Kathryn supplied the fresh exact retry/baseline instruction `agent-inbox:1787874756851-2f517797`; Jean-Luc independently substantiated the claim/branch and retry boundary in `agent-inbox:1787874909957-85a0c5f1`.
+
+Exact candidate hygiene for `7c6662808e11c3263e717ad3d339ffebfead64f7` passed across 214 registered worktrees. Mandatory root preflight passed across 214 worktrees; root then fast-forwarded from exact baseline `807b1456f63f2e07667512e51b79df1ab85d36c8` to `7c6662808e11c3263e717ad3d339ffebfead64f7`; immediate root postflight passed across 214 worktrees. Independent validation retained: 136/136 tests passed, syntax compilation passed with an explicit `/tmp` bytecode cache, live policy scan reproduced the expected `FAIL` with exactly 40 `POLICY_ENTRY` errors, 11 unresolved critical and 13 disposed critical findings, and the 13 migrated proof rows cite reachable commits.
+
+**Final verdict: integration supported and completed.** No implementation repair, DEC governance edit, Acceptance, `DONE.md` move, foreign cleanup, or unrelated mutation occurred. This claim-only terminalization is the remaining bookkeeping successor; it does not alter the implementation verdict or erase prior findings.
