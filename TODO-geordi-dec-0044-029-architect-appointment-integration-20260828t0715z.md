@@ -2,7 +2,7 @@
 
 - **item_id:** `DEC-0044-029-architect-appointment-integration`
 - **owner_token:** `agent:geordi:DEC-0044-029-architect-appointment-integration:1787901337860-3c88a827`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** direct exact-scope review and conditional integration only
 - **planned_duration:** 30 minutes
@@ -20,3 +20,14 @@ Independently inspect the exact candidate's appointment and provenance against t
 
 The existing `memory_append` hold remains operative.
 
+## Completion evidence
+
+- Claim-first commit: `5295037c607aac9636b282c7c8ef1c8ba13b1ddd`.
+- Independent review verdict: `PASS`, recorded in `docs/campaign-evidence/0044-memory-workspace-routing/architect-appointment-integration/review.md` by commit `c888fbfff`.
+- Exact source chain carried without conflicts as `1b19e3bc4`, `ad22b4e50`, and `1c89fc149`; carried blobs exactly match source candidate `444f2aa731a9a19807e740608b5597f30e892cee`: dossier `ae912c35de68acd61b8c3db554e770d44f1817b7`, Beverly claim `6ff963ed2de6a4e3d096d7de046b8b16fa5d64a9`.
+- Baseline-to-candidate scope contains exactly the two unchanged source paths, this integration claim, and the awarded review-evidence path. `git diff --check` passes.
+- The appointment/provenance record preserves the memory hold and records no Architect review, implementation, activation, Acceptance, checkpoint crossing, cleanup, policy widening, or external effect.
+
+## Final integration step
+
+Commit this terminal claim alone, then run exact-candidate hygiene and the guarded root preflight/equality/fast-forward/postflight sequence. On any finding or drift, reopen `[p]` and append the blocked verdict without integrating.
