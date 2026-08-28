@@ -3,7 +3,7 @@
 - **owner_token:** `agent:belanna:0044-07-dec-0044-030-integration:20260828T0732Z`
 - **Task:** `0044-07` — independent review and conditional integration of the DEC-0044-030 option-B governance
   package only. Task marker intentionally remains `[u]` until this package is `main`-visible (per dispatch).
-- **Status:** `[p]` — in progress
+- **Status:** `[x]` — review PASS, evidence committed; proceeding to hygiene/merge
 - **Capability class:** `privileged` (explicit OFFER/ACCEPT/AWARD by `jean-luc` under Management decision
   `1787901177228-90a8b1db`: OFFER `1787902203655-bd73da47`, ACCEPT `1787902313800-e309e94f`, AWARD
   `1787902348742-756a29a9`, thread `0044-07`)
@@ -43,3 +43,14 @@ integration.
 - 2026-08-28T07:32Z — claim opened. Pins independently reverified (main exact match, ff relation confirmed,
   7-file scope confirmed). Worktree cut. Proceeding to independent content review of the seven candidate
   files.
+- 2026-08-28T07:45Z — merged candidate `57612af8f7` unchanged (clean, no conflict). Read all seven candidate
+  files. Reviewed decision authority, distinct Architect scope review, affected gates, non-activation, and
+  preserved three-class/runner invariants. Independently reran `process_doc_doctor.py` (156 docs, 33 findings,
+  1 pre-existing unrelated error, expected `DOC005` for the new decision) and `legacy_task_doctor.py`,
+  isolating exact attribution across three runs (main alone: 678 errors; main+candidate: 680 errors — exact
+  match to Data's claimed count; full worktree incl. my own claim: 681). The +2 candidate-attributable errors
+  are the same non-canonical claim-field pattern already under separate investigation this session
+  (Tuvok's `state:`/`status:` thread) — disclosed as non-blocking bookkeeping noise, not a package defect, and
+  not a gate named in this AWARD. Verdict: **PASS**. Full evidence at
+  `docs/campaign-evidence/0044-07/dec-0044-030-integration-belanna-20260828/review.md`. Proceeding to candidate
+  hygiene, root preflight, ff-only merge, postflight.
