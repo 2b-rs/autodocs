@@ -27,3 +27,8 @@ Scope: Integration of 0037-17.02 bookkeeping commit
 Awarded to: `obrien`
 Branch: `integrate-chain-0037-obrien`
 Scope: Integration of 0037-11.01, 0037-12, 0037-13
+
+### Integration 0020-compliance
+Awarded to: `obrien`
+Branch: `integrate-chain-0020-obrien`
+Scope: Integration of 0020-02, 0020-03, 0011-01, 0020-04, 0020-07, 0011-02
