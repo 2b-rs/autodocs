@@ -1,0 +1,83 @@
+### `DEC-0027-002` — Decompose ECU SUP.8 and constrain the shared Feature integration floor
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-28T10:43:00+02:00`
+- **Deciding identity:** `agent:data:0027-05:20260828T081812Z-2afa2a68`
+- **Role:** `Architekt`
+- **Authority reference:** `task:0027-05`; `docs/pipeline/process-roles.md#architect`; `9ac3743069cd3e762eede282070f15d1e2611de6:docs/campaign-evidence/0027-05/sup8-architecture-and-package-graph.md`; `agent-inbox:1787906519329-e38ca275`
+- **Subject:** Pre-mutation decomposition, shared interface reach, prerequisite graph and integration checkpoints for Task `0027-05` ECU SUP.8 and its contribution to Feature `0027`'s single terminal Task `0027-11`
+- **Decision:** Replace the monolithic implementation shape of `0027-05` with six ordered child packages: `.01` defines the versioned SUP.8 records and per-class store/control contract; `.02` implements local schemas, validators and atomic record transitions; `.03` qualifies selected store, access, retention, availability, backup and restore behavior in controlled scenarios; `.04` inventories and migrates the actual approved ECU configuration-item population and atomically establishes its initial baseline; `.05` operates authorized ECU configuration changes and status accounting without claiming the later full SUP.10 lifecycle; and `.06` independently audits and restores an exact ECU baseline. Actual ECU inventory/baselining in `.04` also requires `0020-09`, while local definition and mechanism work do not. Parent `0027-05` becomes a mandatory integration checkpoint and remains the existing downstream shared SUP.8 gate. The earlier MAN.3 decision `DEC-0027-001` owns the allocation of Feature `0027`'s exactly-one terminal integrating Task `0027-11`; this decision consumes that same Task and contributes the completed SUP.8 parent prerequisite, SUP.8 reconciliation criteria and mandatory Feature-composition checkpoint constraints to its single merged contract. The shared interfaces are the versioned logical records `ecu-configuration-item-catalog@v1`, `ecu-baseline-manifest@v1`, `ecu-configuration-change@v1`, `ecu-configuration-status@v1`, `ecu-configuration-audit@v1`, and `ecu-backup-restore-record@v1`, with the exact ECU identity/origin/refusal boundary inherited from `DEC-0020-001` and `DEC-0020-002`. This decision does not select a concrete non-Git repository, credential, named baseline owner, retention/access value, recovery objective, ECU population, migration authority, or specialist approval; each remains an explicit later authority/resource gate.
+- **Technical justification:** `0020-08` identifies the required SUP.8 work products and records that Git exists but no ECU CI catalogue or baseline has been operated. The current Task combines materially different definition, implementation, security/storage qualification, migration, live operation, audit and recovery risks in one sentence and therefore cannot be assigned or independently verified as one bounded work unit. Git and existing provenance/evidence mechanisms can pin text, digests and immutable records, but ignored reports, binary/firmware, calibration, external tools/environments and restricted evidence require an explicit per-class controlled-store decision and tested recovery path. Separating controlled-scenario qualification from actual ECU migration preserves the `0020-02` origin boundary and prevents a green mechanism test from being credited as ECU execution. Requiring `0020-09` only at `.04` preserves safe preparation while preventing real operation before the selected-profile execution register exists. Parent `0027-05` already blocks or changes several downstream work units and therefore needs an integration checkpoint at the shared SUP.8 boundary. The already-allocated `0027-11` is the one composition point where MAN.3 and SUP.8 requirements reconcile with the remaining management/support process evidence; consuming it avoids a duplicate terminal floor while preserving both decisions' substantive scope.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Six ordered SUP.8 packages, a mandatory parent SUP.8 checkpoint, and contribution to the one MAN.3-allocated terminal Feature integrating Task.
+    - **Disposition:** `selected`
+    - **Reason:** It isolates policy, mechanism, security/storage qualification, migration, live control and audit/recovery while preserving the existing downstream parent gate and one shared Feature composition review.
+  - **ALT-02:** Keep `0027-05` as one implementation Task and review only when it is complete.
+    - **Disposition:** `rejected`
+    - **Reason:** One assignee would need to resolve architecture, credentials, external stores, migration, live ECU evidence and independent audit in one unit; intermediate failures and authority boundaries would be unbounded and inseparable.
+  - **ALT-03:** Implement generic Feature `0015` configuration management first and credit its documentation/mechanism results directly to `0027-05`.
+    - **Disposition:** `rejected`
+    - **Reason:** Reusable mechanisms are desirable, but `DEC-0020-002` prohibits documentation or mechanism evidence from substituting for actual execution on the approved ECU product/project/process instance and baseline.
+  - **ALT-04:** Make `0020-09` a new prerequisite of parent `0027-05` and stop all SUP.8 preparation until it closes.
+    - **Disposition:** `rejected`
+    - **Reason:** The selected-profile register is necessary for actual ECU population and execution, but not for bounded schema, repository-control and controlled-scenario qualification; moving it to the parent would serialize safe independent preparation without reducing execution risk.
+  - **ALT-05:** Allocate another terminal integration Task for SUP.8 or add checkpoints to every child package.
+    - **Disposition:** `rejected`
+    - **Reason:** `0027-11` is already the single Feature composition boundary; `.03` is the distinct external/security/recovery boundary and parent `0027-05` is the shared consumer boundary. A second terminal Task or ritual per-child checkpoints would duplicate reach without a separate material-risk boundary.
+- **Consequences:**
+  - **CON-01:** Future backlog activation must create `0027-05.01` through `.06`, preserve the declared hard edges, and amend the one `0027-11` contract allocated by `DEC-0027-001`; it must not create a second `0027-11` or weaken MAN.3, SUP.8, or existing downstream prerequisites.
+  - **CON-02:** `.03`, parent `0027-05`, and the shared `0027-11` carry `Integration review: mandatory`. Each unflagged child remains bounded behind one of those immediate checkpoints and cannot independently activate an external/store or shared-consumer boundary.
+  - **CON-03:** The records named in this decision become the shared producer/consumer interface only after governance integration and reviewed backlog activation. Their implementation must enforce the `0020-02` product/project/process-instance/baseline metadata and refuse cross-product, cross-instance, foreign-owner and non-ECU-origin substitution.
+  - **CON-04:** `0020-09` becomes a hard start prerequisite of `.04`; it does not block `.01` through `.03`. No dependency on successor `0027-08` is added, avoiding a cycle; `.05` covers SUP.8 configuration control and later SUP.10 links to it.
+  - **CON-05:** No concrete external store, credential, owner, confidentiality/access/retention value, availability target, recovery objective, migration authority, audit authority or ECU population is decided here. Their absence blocks only the package that needs them and is never filled by placeholders or silence.
+  - **CON-06:** Controlled-scenario and mechanism evidence remains non-ECU evidence. `.04` through `.06` may record `origin=ecu-execution` only for observed authorized operations on the exact approved ECU product/project/process instance and baseline.
+  - **CON-07:** There is no implicit grandfathering after activation. Pre-existing records offered to a consumer must either pass the new identity/control contract, be migrated with append-only provenance, or remain explicitly excluded/foreign; they are not silently credited.
+  - **CON-08:** Delivery cost rises to seven bounded SUP.8 units including the parent, contribution to one shared Feature integration unit, three mandatory integration reviews, separately assigned architecture/implementation/QA/integration/Acceptance roles, and external repository/observation time where required. Advisory aggregate execution is 40–84 person-hours plus real ECU observation and external I/O; the critical cognitive-demand packages are `.01`, `.03`–`.06`, parent `0027-05`, and `0027-11`.
+  - **CON-09:** Rollback before ECU operation removes the unactivated backlog/interface changes while preserving this decision, its scope review and architecture history. After ECU records exist, rollback never deletes history: it supersedes the candidate baseline, restores the last approved baseline, records failed transitions/findings append-only and revalidates every affected consumer gate.
+  - **CON-10:** A supporting scope review by a management-instantiated Architect distinct from the later Implementer is mandatory before any qualifying backlog/interface mutation. Data is the decisive Architect and must not accept its own decomposition; implementation, specialist approval, integration and Acceptance require separately authorized identities.
+  - **CON-11:** The abandoned SUP.8 allocation `897487036cd97c12784e67c5e68e7c687f6afade:docs/dossiers/dec-0027-001-sup8-package-and-gates.md` is provenance only. It never integrates as a live dossier record; `DEC-0027-001` remains exclusively the earlier MAN.3 decision at `8772645587`.
+- **Affected work units:**
+  - `task:0027-05`
+  - `subtask:0027-05.01`
+  - `subtask:0027-05.02`
+  - `subtask:0027-05.03`
+  - `subtask:0027-05.04`
+  - `subtask:0027-05.05`
+  - `subtask:0027-05.06`
+  - `task:0027-06`
+  - `task:0027-07`
+  - `task:0027-08`
+  - `task:0027-11`
+  - `feature:0022`
+  - `feature:0023`
+  - `feature:0024`
+  - `feature:0026`
+  - `feature:0027`
+  - `feature:0029`
+  - `feature:0030`
+  - `feature:0031`
+  - `feature:0032`
+- **Affected gates:**
+  - `task-start:0027-06`
+  - `task-start:0027-07`
+  - `task-start:0027-08`
+  - `task-start:0023-11`
+  - `task-start:0024-01`
+  - `integration:0027-05`
+  - `integration:0027-11`
+  - `feature-closure:0022`
+  - `feature-closure:0023`
+  - `feature-closure:0026`
+  - `feature-closure:0027`
+  - `feature-closure:0029`
+  - `feature-closure:0030`
+  - `feature-closure:0031`
+  - `feature-closure:0032`
+- **Review participation:** `none`
+- **No-review reason:** Seven's review `e4d6b34757950962040628d8c1e3974bf05dd91e` supports the substantive decomposition with binding identity/allocation conditions. This corrected candidate implements those conditions only and is stopped for explicit review-currency assessment before governance integration or backlog/interface activation.
+- **Waiver:** `none`
