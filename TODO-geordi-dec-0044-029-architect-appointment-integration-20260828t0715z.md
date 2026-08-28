@@ -2,7 +2,7 @@
 
 - **item_id:** `DEC-0044-029-architect-appointment-integration`
 - **owner_token:** `agent:geordi:DEC-0044-029-architect-appointment-integration:1787901337860-3c88a827`
-- **state / status:** `[x]` / `[x]`
+- **state / status:** `[p]` / `[p]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** direct exact-scope review and conditional integration only
 - **planned_duration:** 30 minutes
@@ -31,3 +31,10 @@ The existing `memory_append` hold remains operative.
 ## Final integration step
 
 Commit this terminal claim alone, then run exact-candidate hygiene and the guarded root preflight/equality/fast-forward/postflight sequence. On any finding or drift, reopen `[p]` and append the blocked verdict without integrating.
+
+## VERDICT: BLOCKED — target baseline drift before root preflight
+
+- Exact claim-bearing candidate `a06cbdd0a3eeab80f552f189659f25bf12f48e2b` passed candidate hygiene across 229 registered worktrees.
+- The guarded root command first required `main@6b35e9af521154ec29962d7698dc72d76598bd23`; it observed `main@cf56c7e2e7f9c2383f87c4d4eaa57f954311486a` instead and exited before starting root preflight.
+- No root preflight, merge, postflight, cleanup, memory action, or prohibited mutation occurred.
+- This candidate remains pinned to the stale baseline and is not a merge target without a fresh exact-baseline rebuild instruction.
