@@ -115,3 +115,24 @@ Read-only. No integration, no `TODO`/backlog/interface mutation, no activation, 
 `main`/`DONE.md` movement, no scope expansion, no rebase or repin of the candidate. Write scope was
 this artefact and the claim on this item-owned branch. This assessment pins the corrected candidate
 exactly and does not extend to any successor commit.
+
+## Provenance correction — Architect authority (additive, 2026-08-28)
+
+Recorded on Project Lead instruction `1787907325932-f7e2278b`, **within** the awarded review scope. **Additive: the prior wording is preserved as history and is not rewritten.**
+
+**What the earlier wording said.** My review artifacts describe me as *"management-instantiated by Project Lead `jean-luc`"* and name the OFFER/ACCEPT/AWARD triple as the authority reference.
+
+**Why that is wrong.** An assignment is not an instantiation. **`docs/pipeline/agent-roster.md` at current `main@8beceeff80dcdbc746b93b3f4d07ca0915d1d50b` is the standing role instantiation** — verified: it records `seven` as Team Voyager **Architect**, capability `privileged`. The OFFER `1787906997940-3488ce0b` and AWARD `1787907156037-8abb0606` **assign this bounded review scope only**; they neither confer nor create Architect authority.
+
+**Corrected reading, for this and every artifact of mine carrying the earlier phrase:**
+
+```
+Role instantiation :  docs/pipeline/agent-roster.md @ main@8beceeff8  (standing)
+Scope assignment   :  OFFER 1787906997940 / AWARD 1787907156037       (bounded, this review)
+```
+
+**Why the distinction is load-bearing and not pedantry.** If an assignment could instantiate authority, then any dispatcher could manufacture an Architect by writing an OFFER — and the independence separations this review series depends on would rest on mail rather than on the roster. **`AGENTS.md` is explicit that mail coordinates work and grants no authority.** My own artifacts asserted the weaker, wrong provenance while relying on the stronger, correct one.
+
+**Scope of the correction.** The same phrase appears in my other current review artifacts. **I do not amend those here** — they are committed history on their own branches, this addendum is bounded to the awarded review, and a reviewer rewriting past artifacts on a provenance point would be doing exactly the retroactive editing this repository forbids. **The corrected reading above applies to them by reference.**
+
+**Nothing in the determination changes.** Verdict, conditions, measurements and drift assessment stand exactly as recorded; only the provenance of the reviewer's authority is corrected.
