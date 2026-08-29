@@ -117,3 +117,21 @@ either stopped attempt.
 
 The resulting candidate proceeds only through exact-candidate hygiene and the
 immediate root target-equality/preflight/merge/postflight chain.
+
+## R3 root integration result
+
+- Exact candidate: `cf46ec4bff4a71bc50e7f013ac3bfa2979a70adc`.
+- Candidate hygiene: exit `0`, `ok: true`, `findings: []`; root snapshot still
+  pinned to `main@2e8e8399944e25715443e61d1675dbe2835d0e29`.
+- Immediate root preflight: PASS across 90 registered worktrees.
+- Equality guards: target and candidate both matched their exact pins.
+- Root command: `git -C /Users/tobias.anton/devel/autodocs merge --ff-only cf46ec4bff4a71bc50e7f013ac3bfa2979a70adc`.
+- Root result: fast-forward from `2e8e8399944e25715443e61d1675dbe2835d0e29`
+  to `cf46ec4bff4a71bc50e7f013ac3bfa2979a70adc`.
+- Immediate root postflight: PASS across 90 registered worktrees.
+- Final equality assertion: `main` equals the exact candidate.
+
+**VERDICT: INTEGRATED.** The `0044-20` governance package alone is now
+main-visible. This verdict is not Task implementation, Acceptance, Feature
+closure, or permission to resume `0020-10`; those remain under their separate
+contracts and authority gates.
