@@ -1,0 +1,62 @@
+# Decision — Feature 0020 terminal integration floor
+
+### `DEC-0020-003` — Add one prerequisite-closed terminal integration Task to Feature 0020
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-29T18:56:00Z`
+- **Deciding identity:** `agent:data:0020-feature-closure-architecture:1788029226494-1b18733c`
+- **Role:** `Architekt`
+- **Authority reference:** `agent-inbox:1788029226494-1b18733c`; `docs/pipeline/feature-breakdown.md`; `AGENTS.md` autonomous backlog repair and terminal integration-floor rules
+- **Subject:** Feature `0020` has nine implementation-terminal Tasks but no Architect-designated terminal integrating Task or integration-review floor, while downstream Feature-closure contracts depend on Feature `0020`.
+- **Decision:** Add exactly one new terminal integrating Task, `0020-10`, prerequisite-closed over `0020-01` through `0020-09`. Its implementation contract is limited to package consistency, aggregation, validation, manifests/digests, findings disposition, recovery, and a prerequisite-closed review handoff. It is marked `Integration review: mandatory`. It does not implement ECU process performance, assign a capability rating, change the selected profile or responsibility model, grant Acceptance, authorize release, cross its own checkpoint, or close the Feature.
+- **Technical justification:** The nine existing Tasks independently define the ECU scope, evidence boundary, responsibilities, applicability, assessment input, evidence catalogue, and selected-profile register. Their `[x]` markers prove implementation completion only; none owns whole-package consistency or the mandatory Feature review floor. Automatic parent closure would let contradictory scope, responsibility, evidence-origin, catalogue, and register states reach all Features whose start or closure depends on `0020`. A new terminal node preserves the completed child contracts, exposes the integration work as a bounded independently reviewable package, and supplies the one review floor required by the normative breakdown process.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Add `0020-10` as the single prerequisite-closed terminal integrating Task with mandatory integration review.
+    - **Disposition:** `selected`
+    - **Reason:** Provides explicit package ownership and an independent review floor without rewriting any completed child contract.
+  - **ALT-02:** Recast implemented Task `0020-09` as the terminal integrator.
+    - **Disposition:** `rejected`
+    - **Reason:** `0020-09` owns the selected-profile register, not whole-package aggregation; changing its contract after implementation would mix authored product and independent integration responsibility.
+  - **ALT-03:** Treat `0020-01` through `0020-09` being `[x]` as automatic Feature integration and closure.
+    - **Disposition:** `rejected`
+    - **Reason:** `[x]` is implementation-terminal, not Acceptance or package consistency evidence, and supplies no integration checkpoint.
+- **Consequences:**
+  - **CON-01:** Feature `0020` remains open until `0020-10` is implemented, independently reviewed at its mandatory checkpoint, and all prerequisite-closed Acceptance requirements are satisfied.
+  - **CON-02:** Features `0027`, `0022`–`0026`, and `0028`–`0032` retain their existing Feature-level dependency on `0020`; this decision changes no child start edge but makes the parent closure gate explicit.
+  - **CON-03:** `0020-01` through `0020-09` remain byte- and contract-preserved; a finding requiring child repair is returned through a separately owned correction rather than silently edited by `0020-10`.
+  - **CON-04:** No ECU execution, `PA 1.1`, capability level, ISO/SAE 21434 or ISO 26262 claim, release approval, residual-risk acceptance, or Feature closure is created by this decision or by a green package check.
+  - **CON-05:** Before this candidate is integrated, rollback is omission of the new open Task and its unpublished decision/review candidate. After integration, changing the floor requires a new append-only decision and independently reviewed backlog correction; this record is not rewritten.
+- **Affected work units:**
+  - `feature:0020`
+  - `task:0020-10`
+  - `feature:0022`
+  - `feature:0023`
+  - `feature:0024`
+  - `feature:0025`
+  - `feature:0026`
+  - `feature:0027`
+  - `feature:0028`
+  - `feature:0029`
+  - `feature:0030`
+  - `feature:0031`
+  - `feature:0032`
+- **Affected gates:**
+  - `integration:0020-10`
+  - `feature-closure:0020`
+  - `task-start:0027`
+  - `task-start:0022`
+  - `task-start:0023`
+  - `task-start:0024`
+  - `task-start:0025`
+  - `task-start:0026`
+  - `task-start:0028`
+  - `task-start:0029`
+  - `task-start:0030`
+  - `task-start:0031`
+  - `task-start:0032`
+- **Review participation:** `none`
+- **No-review reason:** The assigned management-instantiated Architect is recording the correction and the separate pre-mutation scope-review artifact; no Implementer exists yet. The later `0020-10` Implementer and mandatory-checkpoint Integrator must both be distinct from this Architect and from each other.
+- **Waiver:** `none`
