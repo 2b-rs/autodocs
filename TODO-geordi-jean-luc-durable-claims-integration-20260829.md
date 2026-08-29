@@ -19,7 +19,7 @@ This integration may revalidate and land only the eleven Jean-Luc coordination c
 
 Current `main@d49295a09be2bdb032bb8d27a31c13a33db3bce5` is the direct parent of candidate claim-first REF `73a4b71ebec0124eea206618a8b4c99fed042e1b`; the final candidate is two commits ahead. Relative to current main, its delta is exactly the eleven paths authorized by offer `1787989763780-71110142`. The two Benjamin claim changes between the original `main@26f34aa56` offer baseline and current main are already on main and are not candidate-attributable.
 
-## Next action
+## Executed integration plan
 
 Absorb the exact candidate after this claim, add only the awarded evidence path, validate the final candidate path set, then run candidate hygiene and immediate root preflight/equality/merge/postflight gates. Stop on any finding or drift.
 
@@ -28,3 +28,10 @@ Absorb the exact candidate after this claim, add only the awarded evidence path,
 The claim-only candidate `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86` passed candidate hygiene across 294 registered worktrees. Immediate root preflight passed at `main@d49295a09be2bdb032bb8d27a31c13a33db3bce5`; the guarded root fast-forward advanced main to `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`; immediate root postflight passed across the same 294 worktrees. No scope outside the thirteen awarded paths changed.
 
 This completion remains coordination-only and creates no Task Acceptance, invalidation, Feature closure, implementation resume, decision resolution, or external authority.
+
+The terminal evidence candidate `a9daae857301ec00eebfa72565172f00143e764e`
+then passed candidate hygiene across 294 registered worktrees. Immediate root
+preflight passed at `main@a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`;
+the guarded root fast-forward advanced main to `a9daae857301ec00eebfa72565172f00143e764e`;
+immediate root postflight passed across the same 294 worktrees. This claim is
+terminal with no remaining action.

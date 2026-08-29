@@ -8,7 +8,7 @@
 - `branch: recovery-jean-luc-durable-claims-20260829`
 - `worktree: /Users/tobias.anton/devel/autodocs/.worktrees/recovery-jean-luc-durable-claims-20260829`
 - `base: main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`
-- `status: implementation-complete; integration pending`
+- `status: terminal; integrated on main@a9daae857301ec00eebfa72565172f00143e764e`
 
 ## Exact write scope
 
@@ -48,11 +48,16 @@ artifacts.
   `4688eb1cc9863600c6951ba02164a4a21a193068`; Task implementation and
   Acceptance remain separate from that claim.
 
-## Next action
+## Historical handoff action — completed
 
 Commit this claim-first record, append current revalidation to every named
 claim, validate exact path scope and ancestry, then hand the claim-only candidate
 to an independent Integrator for main carry-in. No other action is authorized.
+
+That handoff completed through Integrator assignment
+`1787989763780-71110142`. The terminal claim/evidence candidate
+`a9daae857301ec00eebfa72565172f00143e764e` is now on `main`; no remaining
+integration or implementation action is authorized by this claim.
 
 ## Result
 
@@ -65,5 +70,6 @@ to an independent Integrator for main carry-in. No other action is authorized.
   `0044-13` containment token remains terminal and separate from Task work.
 - No Task marker, Acceptance record, product/governance artifact, external
   system, or existing branch/ref was changed.
-- Next: independent Integrator claim-only carry-in; this implementation lease is
-  released after the candidate is committed.
+- Independent Integrator claim-only carry-in completed at
+  `main@a9daae857301ec00eebfa72565172f00143e764e`; the implementation lease is
+  released and this recovery claim has no remaining action.
