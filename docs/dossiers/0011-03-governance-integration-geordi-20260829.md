@@ -58,22 +58,24 @@ foreign source material was authored.
 
 ## Validation and integration evidence
 
-The following evidence is completed immediately before integration and updated
-with immutable references in the integration commit:
+The report-bearing candidate freezes the review evidence below. Checks that
+must evaluate that very commit or the root checkout necessarily follow the
+report freeze; their immutable command results and final references are bound
+in the atomic-award delivery record.
 
 | Check | Result |
 |---|---|
-| Exact five-path candidate delta | pending |
+| Exact five-path candidate delta | PASS: claim-first `f9e97e265`; preliminary report-bearing application `cd096e308`; no path outside the award |
 | Source-postimage identity for three awarded paths | PASS |
 | Decision-record structural review | PASS |
-| `process_doc_doctor.py` | pending |
-| Placeholder scan | pending |
-| Relative-link validation | pending |
-| `git diff --check` | pending |
-| Candidate integration hygiene | pending |
-| Root preflight before fast-forward | pending |
-| Exact target equality and `--ff-only` merge | pending |
-| Root postflight | pending |
+| `process_doc_doctor.py` | NON-REGRESSION PASS: no candidate-path error; the command retains one target-existing `DOC001` in `docs/dossiers/0044-03-gate-scope-proposal.md:146` plus 32 advisory findings |
+| Placeholder scan | PASS: no added `TBD`, `FIXME`, `PLACEHOLDER`, `XXX`, or `TODO:` token |
+| Relative-link validation | PASS for candidate paths through the document-doctor scan |
+| `git diff --check` | PASS |
+| Preliminary candidate integration hygiene | PASS at `cd096e308`; 300 registered worktrees |
+| Final candidate integration hygiene | Required on the report-bearing tip; result bound in the delivery record |
+| Root preflight, exact-target equality, `--ff-only` merge, root postflight | Required after report freeze; results and final `main` bound in the delivery record |
 
-Candidate commit and final `main` reference are recorded by the path-isolated
-completion commit after these checks.
+The final report-bearing commit is the candidate supplied to the last hygiene
+scan. The separately recorded delivery names that commit and the resulting
+`main` reference without creating a self-referential commit hash here.
