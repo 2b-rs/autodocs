@@ -2,6 +2,7 @@
 """Tests for branch-aware frontier query (Task 0044-19 / DEC-0044-019).
 
 Verifies AE-3, AE-4, AE-5, three-state prerequisites, and 5-state fail-closed partition.
+Conforms to updated specification in docs/pipeline/frontier-query-spec.md §11.
 """
 
 import json
@@ -61,32 +62,42 @@ class TestFrontierQuery(unittest.TestCase):
         self.assertEqual(classify_prereq_state(contested), 'terminal-contested')
         self.assertEqual(classify_prereq_state(open_item), 'non-terminal')
 
-    def test_ae3_falsification_chain_in_flight(self):
-        """AE-3 Falsification case: 0041-05 on chain-0041-benjamin is in-flight, not available."""
+    def test_ae3_falsification_off_main_without_id_named_branch(self):
+        """AE-3 Falsification case (§11): 0038-16 carried on chain-wave-integration with no 0038-16 in branch name.
+
+        A naive name-glob query reports 0038-16 as available; the E2/E3 query correctly reports in-flight.
+        Also verifies task/subtask boundary: 0038-16.01 commits do not satisfy 0038-16.
+        """
         todo_content = """
-- [x] **0041-01** Baseline setup. Acceptance: ✓
-- [ ] **0041-05** PREREQ: 0041-05:0041-01 Feature integration.
+- [x] **0038-01** Base coordinator. Acceptance: ✓
+- [ ] **0038-16** PREREQ: 0038-16:0038-01 Core batch processor.
+- [ ] **0038-16.01** PREREQ: 0038-16.01:0038-16 Subtask verification.
 """
         (self.repo_dir / "TODO.md").write_text(todo_content)
         self._commit("initial main")
 
-        # Create branch chain-0041-benjamin with a claim for 0041-05
-        subprocess.run(["git", "checkout", "-b", "chain-0041-benjamin"], cwd=self.repo_dir, check=True, capture_output=True)
-        claim_content = """# Claim: Task 0041-05
-item: `0041-05`
-owner_token: `agent:benjamin:0041-05`
+        # Create branch with non-matching name 'chain-wave-integration' carrying a claim for 0038-16
+        subprocess.run(["git", "checkout", "-b", "chain-wave-integration"], cwd=self.repo_dir, check=True, capture_output=True)
+        claim_content = """# Claim: Task 0038-16
+item: `0038-16`
+owner_token: `agent:seven:0038-16`
 state: in_progress
 """
-        (self.repo_dir / "TODO-benjamin-0041-05.md").write_text(claim_content)
-        self._commit("0041-05: claim and initial work")
+        (self.repo_dir / "TODO-seven-0038-16.md").write_text(claim_content)
+        self._commit("0038-16: implement batch processor in chain")
 
         # Return to main
         subprocess.run(["git", "checkout", "main"], cwd=self.repo_dir, check=True, capture_output=True)
 
         res = query_frontier(self.repo_dir, self.inbox_dir)
-        self.assertIn("0041-05", res.in_flight_items)
-        self.assertNotIn("0041-05", res.available_items)
-        self.assertEqual(res.items["0041-05"].state, "in-flight")
+        # 0038-16 must be in-flight (E2/E3 on chain-wave-integration), not available
+        self.assertIn("0038-16", res.in_flight_items)
+        self.assertNotIn("0038-16", res.available_items)
+        self.assertEqual(res.items["0038-16"].state, "in-flight")
+
+        # 0038-16.01 is blocked on prerequisite 0038-16 (which is in-flight / non-terminal)
+        self.assertIn("0038-16.01", res.blocked_prereq_items)
+        self.assertEqual(res.items["0038-16.01"].state, "blocked-prereq")
 
     def test_ae4_adjacent_cases(self):
         """AE-4 Adjacent cases: (a) merged branch is not in-flight, (b) live award without branch is in-flight."""
