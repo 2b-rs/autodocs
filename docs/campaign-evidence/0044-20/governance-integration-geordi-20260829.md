@@ -65,3 +65,18 @@ non-pass or target drift stops the integration.
 root preflight or merge. No root mutation, postflight claim, candidate rebuild,
 foreign cleanup, Feature `0020` action, implementation, Acceptance, or external
 effect occurred. A fresh exact-baseline award is required to continue.
+
+## R2 recovery result
+
+Fresh recovery assignment `1788040319615-0a706b4b` authorized the canonical
+Integrator claim path, adopted preserved candidate `ce9bcbd77826a9d74f6eb18ba91eee30124e2a0b`,
+and pinned exact target `main@ac63e74fadf1ea45fd2de7e74c7dd98ba0635770`.
+The prior cancelled assignment and both of its findings remain append-only.
+
+Before R2 reconciliation, `main` had advanced to
+`4945dbf8b375257656a2153d876b82cd2c1b9d6e`; the complete intervening delta
+was the single added path `TODO-jadzia-0044-07-integration-20260829.md`.
+
+**VERDICT: BLOCKED — further target drift.** The equality rule stopped R2
+before any target merge, conflict resolution, candidate hygiene, root
+preflight, root merge, or postflight. No foreign or root state was changed.
