@@ -2,7 +2,7 @@
 
 - **item_id:** `jean-luc-durable-claims-integration-20260829`
 - **owner_token:** `agent:geordi:jean-luc-durable-claims-integration:1787989763780-71110142`
-- **state / status:** `[p]` / `in_progress`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / Integrator
 - **execution_authority:** atomic AWARD `1787989763780-71110142`
 - **branch / worktree:** `integrate-jean-luc-durable-claims-geordi-20260829` / `/Users/tobias.anton/devel/autodocs/.worktrees/integrate-jean-luc-durable-claims-geordi-20260829`
@@ -22,3 +22,9 @@ Current `main@d49295a09be2bdb032bb8d27a31c13a33db3bce5` is the direct parent of 
 ## Next action
 
 Absorb the exact candidate after this claim, add only the awarded evidence path, validate the final candidate path set, then run candidate hygiene and immediate root preflight/equality/merge/postflight gates. Stop on any finding or drift.
+
+## Completion
+
+The claim-only candidate `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86` passed candidate hygiene across 294 registered worktrees. Immediate root preflight passed at `main@d49295a09be2bdb032bb8d27a31c13a33db3bce5`; the guarded root fast-forward advanced main to `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`; immediate root postflight passed across the same 294 worktrees. No scope outside the thirteen awarded paths changed.
+
+This completion remains coordination-only and creates no Task Acceptance, invalidation, Feature closure, implementation resume, decision resolution, or external authority.

@@ -19,3 +19,13 @@ The two Benjamin claim changes between the original offer baseline `main@26f34aa
 ## Gate closure
 
 Exact candidate hygiene, immediate root preflight, guarded root fast-forward, and immediate root postflight are executed only after this evidence becomes part of the final candidate. Their actual results are appended after execution; no prospective result is claimed here.
+
+The exact final candidate was `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`.
+
+- Candidate hygiene: `PASS`, exit `0`, 294 registered worktrees.
+- Immediate root preflight: `PASS`, exit `0`, at `main@d49295a09be2bdb032bb8d27a31c13a33db3bce5`, 294 registered worktrees.
+- Equality guard: main remained exactly `d49295a09be2bdb032bb8d27a31c13a33db3bce5`; candidate remained exactly `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`.
+- Authorized root operation: `git merge --ff-only integrate-jean-luc-durable-claims-geordi-20260829`; main advanced to `a4ec5b1d3d85175d4c1a6696c012cf3d601b4e86`.
+- Immediate root postflight: `PASS`, exit `0`, 294 registered worktrees.
+
+The terminal claim/evidence update containing this actual closure is separately subjected to candidate hygiene and root pre/postflight before it becomes main-visible; those final gate results are returned through assignment `1787989763780-71110142` without inventing prospective evidence.
