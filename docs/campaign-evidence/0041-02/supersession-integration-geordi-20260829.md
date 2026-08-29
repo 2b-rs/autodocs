@@ -28,3 +28,12 @@ This is neither Task Acceptance nor an implementation/integration checkpoint ver
 - Candidate path delta — exactly `docs/dossiers/0041-02-blackout-supersession-scope-review.md` before this evidence/claim commit.
 - `git merge-base --is-ancestor 8b1afb933f HEAD` — expected non-zero; historical activation candidate remains excluded.
 - Machine integration hygiene and root pre/postflight results are appended only after they are actually executed.
+
+## Integration and hygiene closure
+
+- Candidate hygiene passed with zero findings for `96b8d9c5c9989f7eda5e9586583bb663636b8bf2`, then again for refreshed candidate `3f8f270f84ee9bd58762c1f669d74fd55bde6fc0`.
+- The root preflight passed with zero findings at `main@73bd1b34d80017a95c63ca216daa05bba950f54e` immediately before integration.
+- The authorized root fast-forward advanced `main` from `73bd1b34d80017a95c63ca216daa05bba950f54e` to `3f8f270f84ee9bd58762c1f669d74fd55bde6fc0`.
+- The immediate root postflight passed with zero findings at `main@3f8f270f84ee9bd58762c1f669d74fd55bde6fc0`.
+
+The preflight's concurrent `main` claim-only movement was absorbed by a no-conflict refresh merge into the Integrator branch before the final candidate hygiene; the landing delta against final pre-merge `main` remained exactly the three allowed paths.
