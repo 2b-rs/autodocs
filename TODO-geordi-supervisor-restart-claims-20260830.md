@@ -28,3 +28,11 @@ The existing terminal records for `0013-02`, `0019-02`, `0041-02`, and
 `0044-13` are already main-visible. This candidate adds the remaining explicit
 handover records and corrects no historical evidence. Exact five-path scope and
 `git diff --check` pass. Commit, then run the integration gates.
+
+## Mail follow-up recorded
+
+- `0044-07` rework offer `1788045202336-aa12d7ba` requires a separate
+  offer acceptance; no offer-control capability is available in this session.
+- `0028` integration assignment `1788044381578-802268e0` remains an owned
+  exact claim and resumes after this bounded reconciliation reaches a terminal
+  integration result.
