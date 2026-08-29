@@ -10,3 +10,4 @@ write_scope:
 
 ## Contract
 Coordinate the integration of Task 0011-03 from branch 0011-03-aspice-claims into main.
+- **state**: Terminal (Integrated into main at b97f597c1)
