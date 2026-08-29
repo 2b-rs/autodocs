@@ -4,7 +4,7 @@
 - **persona:** Geordi La Forge, privileged Integrator, Team Enterprise
 - **item_id:** `0013-02-terminal-claim-integration`
 - **process:** Process Claim provenance integration
-- **state:** `[p]`
+- **state:** `integration-ready`
 - **assignment:** priority offer `1788031628485-f483f778`; atomic award accepted by Geordi
 - **capability_class:** `privileged`
 - **execution_authority:** direct, limited to the awarded integration and mandatory hygiene gates
@@ -26,3 +26,9 @@
 - Integrate only Beverly's terminal claim handoff from candidate `04e0770da70c8b635379ca71e61b4fc2d766bf5e`, plus this claim and exact integration evidence.
 - Verify exact paths and semantic boundary, run candidate hygiene, run the immediate root preflight, advance `main` through the authorized root merge, and run the immediate postflight.
 - Prohibited: product/source/authority decisions, baseline approval, Acceptance, `TODO.md` mutation, starting `0013-03`, Feature or `DONE.md` closure, cleanup, push, or scope expansion.
+
+## Result
+
+- Beverly's terminal claim postimage exactly matches candidate `04e0770da70c8b635379ca71e61b4fc2d766bf5e`.
+- Baseline product integration `179e8dce47c14835f476bc0c1870984e5b16fa9c` is reachable and Task `0013-02` remains `[u]` with no approval or Acceptance.
+- Exact scope and semantic-boundary checks pass. Mandatory hygiene evidence and the resulting integration REF will be reported through the assignment lifecycle after the root merge.
