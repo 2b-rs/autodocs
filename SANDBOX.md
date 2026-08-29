@@ -59,6 +59,35 @@ roles in [`docs/pipeline/process-roles.md`](docs/pipeline/process-roles.md).
 
 Feature `0037` is designed to be implemented entirely by sandboxed/grunt agents. A Task that cannot be completed through non-execution tools plus the runner is not execution-ready.
 
+## Reference-transaction early warning
+
+`_src/tools/reference_transaction_hook.py` implements the local early-warning
+layer from `DEC-0044-009`. An operator with permission for the local Git-side
+effect installs and checks the exact versioned bytes from an item-owned
+worktree:
+
+```sh
+python3 _src/tools/reference_transaction_hook.py install --repo .
+python3 _src/tools/reference_transaction_hook.py check --repo .
+```
+
+Installation writes only the active `reference-transaction` hook under the
+common Git directory (or an absolute configured `core.hooksPath`). It refuses a
+relative `core.hooksPath`, symlinked hook paths, and any existing hook with
+different bytes; it never silently overwrites another hook. `check` returns `0`
+only for an executable digest match, `1` for missing/stale/inactive bytes, and
+`2` when it cannot establish the active path. Git-hook execution itself is the
+opposite: every analysis, pending-record, and log failure returns `0`, so this
+warning layer cannot block or corrupt a reference transaction.
+
+The presence result, a log entry, or the absence of a warning grants no
+capability, authority, provenance verdict, Acceptance, or integration credit.
+Hooks are local, unversioned after installation, removable, and bypassable.
+The privileged integrator's binding checkpoint verification remains required;
+a missing, stale, failed, or bypassed hook never counts as “checked”. See
+[`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md) and the
+tool registration for evidence and recovery details.
+
 ## Current backlog authority
 
 Until Feature `0037` completes its authorized cutover:
