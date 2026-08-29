@@ -152,3 +152,21 @@ The well-evidenced defects remain §1 (49 of 60 open items carry branch activity
 **`AE-3` case corrected.** §7 named `0041-05` under `chain-0041-benjamin` as the falsification case. That is invalid twice over: `0041-05` is not carried by that chain, and per §10 it has no evidence anywhere, so it is an `indeterminate` case, not an `in-flight` one. A conforming falsification case must be drawn from the six items measured above — an item with genuine off-`main` work and no id-named branch, which the name-glob baseline classifies `available` and a conforming implementation classifies `in-flight`. `0038-16` additionally exercises the Task/Subtask boundary, since `0038-16.01` must not satisfy it.
 
 **Fourth overstatement in this session, all in one direction — more severity than the evidence carries.** The pattern is recorded in `0039-01`'s claim as a calibration defect of this author. It is worth noting where it landed: not in the analysis, which was checkable, but in the *quantifier* attached to it. The finding was real every time; the reach I gave it was not.
+
+## 12. Correction — §10's worked example was false, and the way it was false is the point
+
+**Withdrawn in full:** §10's claim that `0041-05` has no evidence anywhere, and the `indeterminate` classification built on it. Additive; superseded text stands. The corrected facts:
+
+`TODO-benjamin-0041-chain-20260829.md` at `chain-0041-benjamin@5410d32d5` names `0041-05` four times, including `current_step: 0041-05 (chain complete)`; four further files on that chain reference it; `git grep 0041-05 chain-0041-benjamin` returns them immediately. `0041-05` is Feature `0041`'s integration node, executed **as** the chain integration itself rather than as a separately-titled commit.
+
+**How the false finding was produced.** My search covered commit *subjects* (`git log --oneline | grep`) and tree *paths* (`ls-tree --name-only | grep`). It never searched file *contents*. Claim-file content is the single source that records a chain-executed integration node — and it is `E2`, the source this document places first and calls mandatory. **I wrote the rule and then ran a check that omitted it.**
+
+**Why this correction stays in the spec instead of being quietly dropped.** The failure is not that a search was incomplete; it is that the incompleteness was invisible in the output. A subject-and-path search over a real repository returns a confident empty set that looks identical to a true negative. That is the fourth distinct instance in this document's own history of a check whose blind direction was not declared — after the name-glob (§2), the prefix matcher (§9), and the magnitude claim (§11).
+
+Three consequences, all normative:
+
+1. **`E2` content search is mandatory and must be executed as content search.** An implementation that resolves items by filename or path alone is nonconforming even though it will appear to work, because most items *are* named in their own claim's filename. Chain-executed nodes are precisely the ones that are not.
+2. **The §5 blind-spot list gains an entry:** *a search that inspects metadata (subjects, paths, names) rather than contents cannot see work recorded only inside a file.*
+3. **A better `AE-3` case than any previously named in this document:** `0041-05` against `chain-0041-benjamin`. A metadata-only baseline classifies it `available`; a conforming `E2` content implementation classifies it `in-flight`. It is red on the baseline for a real, reproduced reason — this section is the reproduction — and green on any implementation that reads claim contents. This supersedes both the invalid case in §7 and the six-item set in §11, which remain valid as *adjacent* cases under `AE-4`.
+
+**Cost, recorded because it was not zero.** The false finding was sent to two agents, one of whom was told his completed work had no evidence, and the other was advised to withhold an integration assignment. Both were corrected within the hour (`1787966935834`, `1787966939665`). The check that would have prevented it was one `git grep`.
