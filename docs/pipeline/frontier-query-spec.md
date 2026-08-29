@@ -133,3 +133,22 @@ Measured across **all** refs: `0041-05` has **zero** commits under any subject f
 This is neither `available` nor `in-flight`. A live announcement (`E5`) asserts completion while `E2` and `E3` find nothing — sources **conflict**, so the correct output is `indeterminate`, naming the conflict. It must never resolve to `available` (an agent would claim work someone believes is finished) nor silently to `in-flight` (an integrator would be assigned a checkpoint with no artifact to review).
 
 This is the case that justifies §4's fail-closed rule against the objection that `indeterminate` is merely a hedge. Here it is the only correct answer, and it is load-bearing: it is what stops a wasted integration assignment.
+
+## 11. Correction — §2 overstated the magnitude, and §7's `AE-3` case was invalid
+
+**Withdrawn (magnitude, not existence):** §2's framing that chain branches make name-globbing broadly unsafe — "*A name glob reports every one of those items as free*". Additive; superseded text stands.
+
+**Measured across all 365 item ids in `TODO.md`,** comparing id-named branches against off-`main` commits mentioning the id:
+
+| Result | Count |
+|---|---|
+| Items with off-`main` work but **no** id-named branch | **6** (`0034-03`, `0037-04`, `0037-48`, `0038-01`, `0038-03`, `0038-16`) |
+| Items examined | 365 |
+
+So the under-detection hole is **real but rare — 1.6%**, not the dominant effect §2 implies. Most chain-carried items *also* have an id-named branch (`0041-02`, `0041-03`, `0041-06`, `0037-10`, `0037-13` all do), so a name glob happens to find them by luck rather than by correctness. The correctness argument for `E2`/`E3` resolution stands unchanged; the *frequency* argument does not, and the two must not be conflated.
+
+The well-evidenced defects remain §1 (49 of 60 open items carry branch activity — marker is not availability) and §9 (the subject-convention error, ~85% miss).
+
+**`AE-3` case corrected.** §7 named `0041-05` under `chain-0041-benjamin` as the falsification case. That is invalid twice over: `0041-05` is not carried by that chain, and per §10 it has no evidence anywhere, so it is an `indeterminate` case, not an `in-flight` one. A conforming falsification case must be drawn from the six items measured above — an item with genuine off-`main` work and no id-named branch, which the name-glob baseline classifies `available` and a conforming implementation classifies `in-flight`. `0038-16` additionally exercises the Task/Subtask boundary, since `0038-16.01` must not satisfy it.
+
+**Fourth overstatement in this session, all in one direction — more severity than the evidence carries.** The pattern is recorded in `0039-01`'s claim as a calibration defect of this author. It is worth noting where it landed: not in the analysis, which was checkable, but in the *quantifier* attached to it. The finding was real every time; the reach I gave it was not.
