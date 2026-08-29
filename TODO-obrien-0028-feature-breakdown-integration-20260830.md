@@ -1,0 +1,22 @@
+# Claim: 0028-feature-breakdown-governance-integration-r2
+
+- item: 0028-feature-breakdown-governance-integration-r2
+- process: Independent governance review and integration
+- owner_token: agent:obrien:0028-feature-breakdown-integration:20260829T235400Z
+- capability_class: privileged
+- assigned_by: agent-inbox
+- offer_id: 1788047389798-a9fd34e0
+- workspace: /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0028-feature-breakdown-obrien-20260830
+- base: main@21bea51f3ff340e8125dfb6530430df388f7a5ba
+- candidate: 9c5c8fc6dc3f0060c7f81789784f2ac6a604397c
+- state: review
+- terminal_state: reviewed and validated for integration
+- scope_paths:
+  - TODO-data-0028-feature-breakdown-20260829.md
+  - TODO.md
+  - docs/campaign-evidence/0028/architect-feature-breakdown-data-20260829.md
+  - docs/dossiers/0028-feature-breakdown-scope-review.md
+  - docs/dossiers/dec-0028-001-feature-breakdown.md
+  - TODO-obrien-0028-feature-breakdown-integration-20260830.md
+  - docs/campaign-evidence/0028/governance-integration-review-obrien-20260830.md
+- status: Independent governance review complete; decision-record@v1 conformance verified; checkpoint floor and conditional SYS.1 path verified.
