@@ -26,6 +26,8 @@ The marker is not lying. It is answering a different question than the reader is
 
 ## 2. Why the obvious implementation is unsafe
 
+> **PARTIALLY SUPERSEDED — read §11 before relying on this section.** Its *existence* claim stands; its *magnitude* claim is withdrawn (measured at 6 of 365 items, 1.6%). The `0041-05` example in this section is false — see §12.
+
 The naive query — glob branch names for the item id — fails in **both** directions, and each failure has a different cost.
 
 **Under-detection (dangerous).** Chain branches carry items whose ids do not appear in the branch name. `chain-0041-benjamin` carries `0041-02` … `0041-06`; `chain-0037-10`, `0044-chain`, `0019-chain` are the same shape. A name glob reports every one of those items as free. This is the failure that causes collision, and it is the failure I committed while producing the measurement in §1 — `0041-05` appeared in my own "branch-free" list while `chain-0041-benjamin` was carrying it.
@@ -42,10 +44,12 @@ The query resolves an item to work-in-flight evidence from all of the following.
 |---|---|---|
 | E1 | `TODO.md` / `DONE.md` markers on `main` | declared lifecycle state, prerequisites |
 | E2 | Claim files (`TODO-*.md` / `DONE-*.md`) reachable from any branch tip, keyed on their canonical `task_id` and `owner_token` | who claims the item, and whether the claim is terminal |
-| E3 | Branch tips and their commit subjects (repository convention: `<item-id>: <subject>`) | which branch carries work for the item |
+| E3 | Branch tips and their commit subjects — ⚠ **the convention stated here is WRONG; see §9** | which branch carries work for the item |
 | E4 | Registered worktrees | active checkouts, including dirty state |
 | E5 | agent-inbox offers/awards (`offer_status`) | live awards not yet expressed as a branch |
 | E6 | Governance holds — containment records, freezes, reservation gates | items that must not be started regardless of E1–E5 |
+
+> **SUPERSEDED IN PART — see §9 and §12.** "Prefixed with" is wrong (§9: match anywhere on a word boundary), and `E2` must be executed as a **content** search, not a filename/path search (§12).
 
 **Item→branch resolution is E2/E3-driven, never name-driven.** A branch carries an item if a claim file on it names that item, or a commit subject on it is prefixed with that item id. Branch *name* matching may be used only as an additional signal that widens the candidate set, never as the sole test and never to narrow it.
 
@@ -91,6 +95,8 @@ Implementation-start gates are satisfied by `terminal-recorded`; Acceptance-clos
 
 ## 7. Obligations on the implementer
 
+> **`AE-3` CASE SUPERSEDED — see §12.** The `0041-05`/`chain-0041-benjamin` case named below is invalid as written. §12 supplies the corrected and stronger form of the same case.
+
 This change alters **blocking/gate classification** and asserts an **invariant over a set** (every item receives exactly one state). Therefore `AE-1` applies and the following are mandatory, not optional:
 
 - **AE-3** — a falsification case derived from the changed contract, red on the pre-change baseline and green on the candidate. The natural case: `0041-05` under `chain-0041-benjamin`, which the name-glob baseline classifies `available` and a conforming implementation classifies `in-flight`.
@@ -125,6 +131,8 @@ So a prefix matcher misses roughly **85%** of item-referencing commits. Written 
 **Corrected rule.** `E3` matches an item id **anywhere in the subject on a word boundary**, never as a prefix, and must not let a Subtask id (`XXXX-YY.ZZ`) satisfy a Task id (`XXXX-YY`) or vice versa. Any implementation MUST carry a **self-test against known-occupied items** and fail loudly when they come back clean; both of my detector versions returned a confident, wrong, empty answer, and only the self-test exposed it.
 
 ## 10. Second worked example: declared-complete with zero evidence
+
+> **WITHDRAWN IN FULL — see §12.** The factual premise of this section is false: `0041-05` *does* have evidence. Retained unaltered as the record of a real error, not as guidance. **Do not implement from this section.**
 
 `benjamin` announced (`agent-inbox 1787961063321-95d3982e`) that `chain-0041-benjamin@5410d32d5` completes `0041-02 → 0041-03 → 0041-04 → 0041-06 → 0041-05`, naming `0041-02` and `0041-05` as integration checkpoints.
 
