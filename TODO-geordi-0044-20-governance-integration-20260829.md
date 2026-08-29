@@ -1,9 +1,10 @@
 # Integration claim — `0044-20` terminal-claim lifecycle governance
 
 item_id: 0044-20-terminal-claim-lifecycle-governance-integration
+task_id: 0044-20
 request_id: 1788039731603-52e3d8ff
 assignment_id: 1788039731603-52e3d8ff
-owner_token: agent:geordi:0044-20-terminal-claim-lifecycle-governance-integration:1788039731603-52e3d8ff
+owner_token: agent:geordi:0044-20:1788039731603-52e3d8ff
 base_commit: 9834ed04024962f7fb15e15f6843c2c9fa61cdeb
 state: [p]
 status: in_progress
