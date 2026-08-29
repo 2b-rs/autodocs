@@ -19,3 +19,10 @@
 - The sole R1 defect was removed mechanically without wording change.
 - Exact-candidate diff validation, document validation, and repository-wide hygiene passed.
 - This verdict is not Jadzia's scope-review verdict and is not Task Acceptance.
+
+## Supervisor-restart terminal reconciliation — 2026-08-29
+
+The supported exact candidate `c586f4aca1d71d60c4649d0c8ec0df0bdc652f15` and
+review record `f3f17f66f5e18177ce779b356a8ff8b0a8399afb` are ancestors of
+current `main`. This bounded integration claim is terminal and grants no further
+scope-review, Acceptance, or item action.

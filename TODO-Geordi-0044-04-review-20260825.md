@@ -22,3 +22,10 @@
   Result: **accepted**; review evidence is
   `docs/campaign-evidence/0044-04/integration-review-geordi-20260825.md`.
   Separate Acceptance bookkeeping and hygiene/preflight remain pending.
+
+## Supervisor-restart terminal reconciliation — 2026-08-29
+
+**State:** `[x]` terminal historical review record. Review `982602e81e`,
+integration `361f0ce447`, and Acceptance bookkeeping `6a937f8414` are ancestors
+of current `main`. This claim grants no further Acceptance, integration,
+`DONE.md`, or root action; any new work needs a fresh exact assignment.

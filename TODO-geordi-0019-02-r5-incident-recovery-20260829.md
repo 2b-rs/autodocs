@@ -22,3 +22,13 @@ The smallest rule-conforming recovery is additive because the binding rule requi
 Exit `0`: `integration hygiene: PASS`; `registered worktrees: 284`.
 
 The exact additive candidate, immediate root preflight, root merge, and immediate root postflight remain Integrator-owned execution gates. Their durable results are recorded in assignment `1787976396198-320ac09f`; any drift, non-zero/indeterminate hygiene result, or unrelated root state is a stop.
+
+## Supervisor-restart terminal handover — 2026-08-29
+
+**State / status:** `[w]` / `terminal handover`. The historical recovery
+candidate is no longer actionable on its pinned baseline. Current `main`
+contains recovery commit `5b06f31d7f7fbc69649406518773c3b5a72b57c2`, but no
+record demonstrates the required candidate hygiene, immediate root preflight,
+authorized merge, and root postflight for that recovery candidate. Those checks
+cannot be inferred or recreated. The preserved R5 paths are unchanged; any
+remediation needs a fresh exact assignment and current baseline.

@@ -29,3 +29,10 @@ Claim-first commit `a66fbf067a6f3f95dd3a8eddca070ee812d38a9a` preceded the carri
 ## Final next step
 
 Run exact-candidate hygiene and guarded root preflight against current baseline `8275b2a2ed7a30a94cc06e57576e8a59a8e79b4a`; fast-forward only on exact equality and passing gates, then run immediate root postflight.
+
+## Supervisor-restart terminal reconciliation — 2026-08-29
+
+This lifecycle-only retry is terminal. Its carried change
+`59dee303e1a2a89c0b565a3a6c943e43fe6af0a5` and status-close commit
+`9b51e1a09771c8aa5b6fe9a97a34c5fc967623d4` are ancestors of current `main`.
+This records no new scope-review verdict, Task Acceptance, or checkpoint credit.

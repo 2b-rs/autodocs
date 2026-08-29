@@ -20,3 +20,10 @@
 - `python3 _src/tools/process_doc_doctor.py --root . --json`: exit `0`, `ok: true`; 150 documents and 32 findings. Its one error is the pre-existing broken relative link at `docs/dossiers/0044-03-gate-scope-proposal.md:146`; the new record has only the non-blocking DOC005 reachability warning.
 - The record body equals `1da019f377f622b230ad93aa98bcc7f6d6b421f6:docs/dossiers/dec-0037-003-authority-ref-cas.md` after the sole `DEC-0037-003` → `DEC-0037-005` allocation substitution.
 - Pending: commit this two-path allocation, then run the required root hygiene preflight before any authorized `main` fast-forward. A hygiene finding will be recorded and left unresolved; no foreign state will be changed.
+
+## Supervisor-restart terminal reconciliation — 2026-08-29
+
+**State:** `[x]` terminal historical claim. Allocation `5512f736b0698a72ba82f2ce1279e508da39ea9d`
+and integration `719d09794a` are ancestors of current `main`. The original
+boundary is concluded; this claim authorizes no additional allocation or root
+action. Any successor requires a fresh exact assignment.

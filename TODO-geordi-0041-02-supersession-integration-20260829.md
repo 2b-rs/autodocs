@@ -27,3 +27,11 @@ No Task Acceptance, two-commit cutover activation, merge of `8b1afb933f`, succes
 ## Next action
 
 Commit this claim before candidate/product/root mutation, then perform the exact-scope landing and record independent validation/hygiene evidence.
+
+## Supervisor-restart terminal reconciliation — 2026-08-29
+
+The exact landing and hygiene evidence are already on current `main` through
+`26f34aa56ce6287424d5bcb9440cd394b47b60ad`; assignment
+`1787977931427-cd2293a6` is accepted. This closes only the bounded,
+non-activating integration. Task `0041-02`, candidate `8b1afb933f`, and its
+successors remain blocked under their recorded authority boundary.

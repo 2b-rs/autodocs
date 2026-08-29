@@ -39,3 +39,12 @@ mutation, foreign-state cleanup, push, fleet release, or movement of `main`.
   preflight is permanently non-recreatable and is not claimed as a pass.
 - Next: report the exact audit commit to the coordinator. The fleet HARD STOP
   remains active; this audit grants no Task Acceptance or release authority.
+
+## Supervisor-restart terminal handover — 2026-08-29
+
+**State:** terminal advisory audit. The retained-main post-hoc audit remains
+evidence only: its original pre-landing preflight is permanently
+non-recreatable, and no replay is authorized. Task `0044-13` has separately
+recorded implementation and independent checkpoint-review evidence in current
+`TODO.md`; this claim grants no Task Acceptance, release, cleanup, or further
+root action. Any new audit must receive a fresh exact assignment.
