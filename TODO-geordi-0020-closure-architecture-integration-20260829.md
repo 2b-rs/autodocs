@@ -35,3 +35,16 @@ or inferring a source pin would exceed this Integrator's authority. No candidate
 merge, scope reconciliation, validation, hygiene, root preflight, or root merge
 has been performed. A corrected exact substantive pin or explicit authority to
 disregard it is required before work can resume.
+
+## Corrected pin and resume
+
+Project Lead correction `agent-inbox:1788031351413-707e424b` voids only the
+transcription-error SHA and pins substantive commit
+`a795e5fea4ec4735932c4dc80457352b34f76c5e`; assignment resume
+`agent-inbox:1788031356505-da217701` preserves the same six-path scope and
+authority. The original stop and claim commit `08a21b629` remain append-only.
+
+The corrected commit resolves, is an ancestor of the candidate exactly once,
+has subject `arch(0020): define terminal integration floor`, and changes exactly
+the four awarded source paths. Integration work may resume from the pinned
+current-main worktree; all original prohibitions remain binding.
