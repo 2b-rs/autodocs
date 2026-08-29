@@ -9,4 +9,5 @@ write_scope:
 ---
 
 ## Contract
-Coordinate the integration of Task 0011-04 from branch chain-0011-04 into main.
+Coordinate the integration of Task 0011-04 into main.
+- **state**: Blocked (Pending Management decision decision-1787975752721-e04e6f5f)
