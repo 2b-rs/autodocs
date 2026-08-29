@@ -148,3 +148,19 @@ integrated package. That commit changes only
 ran. The governance package remains main-visible at and through
 `cf46ec4bff4a71bc50e7f013ac3bfa2979a70adc`; only this durable closure update
 requires a fresh exact-baseline repin.
+
+## R3 closure-recovery award
+
+- Recovery assignment: `1788041169607-46ab0766`; parent:
+  `1788040585988-e67acf77`.
+- Exact target: `main@cc3edeff7fdd3d4a7b162933af52e186951fc781`.
+- Landing scope: only the existing canonical Geordi claim and this evidence
+  path; no new claim file.
+- Foreign carry: preserve `TODO-jadzia-0044-07-integration-20260829.md` at
+  target blob `55387c42509e181be2c0087bb389f1d69b11c9a0`; bounded hold:
+  `agent-inbox:1788041158716-ac846eab`.
+
+The rework requires a fresh candidate-hygiene pass and immediate guarded root
+equality/preflight/fast-forward/postflight sequence. Any changed target, foreign
+blob, extra path, or non-pass is a stop; no repair, Acceptance, Feature action,
+external effect, or Memory action is authorized.
