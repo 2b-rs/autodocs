@@ -31,8 +31,10 @@ handover records and corrects no historical evidence. Exact five-path scope and
 
 ## Mail follow-up recorded
 
-- `0044-07` rework offer `1788045202336-aa12d7ba` requires a separate
-  offer acceptance; no offer-control capability is available in this session.
+- `0044-07` rework assignment `1788045202336-aa12d7ba` was subsequently
+  atomically awarded. Jean-Luc's ordering message `1788045260825-7f84c274`
+  requires completion or an explicit hold of `0028` before any `0044-07`
+  mutation or validation; this reconciliation therefore remains separate.
 - `0028` integration assignment `1788044381578-802268e0` remains an owned
   exact claim and resumes after this bounded reconciliation reaches a terminal
   integration result.
