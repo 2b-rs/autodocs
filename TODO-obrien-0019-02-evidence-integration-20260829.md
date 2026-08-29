@@ -2,7 +2,7 @@
 
 - **item_id:** `0019-02-evidence-integration-r5`
 - **owner_token:** `agent:obrien:0019-02-evidence-integration-r5:1787974624781-94456e73`
-- **state / status:** `[p]` / `[p]`
+- **state / status:** `[x]` / `[x]`
 - **capability_class / role:** `privileged` / independent Integrator
 - **execution_authority:** atomic AWARD `1787974624781-94456e73` from Project Lead `jean-luc`
 - **planned_duration:** 35 minutes
@@ -27,3 +27,4 @@ Apply candidate source delta (three claim/evidence paths) onto fresh target `mai
 - Offline verifier: `PYTHONDONTWRITEBYTECODE=1 python3 _src/tools/score_source_snapshot.py --verify --repository-root . _src/spec/campaigns/eclipse-score-v0.6.0.json` exited 0 (787 artifacts verified).
 - Unit test: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest _src.tests.test_score_source_snapshot` exited 0 (1 test passed).
 - Scope check: Only the 5 permitted claim and evidence paths modified.
+- Integration landed on `main` at REF `ef7aa528d154a9be8754ee6c6bef84f21056247b` ("integrate(0019-02): independent snapshot revalidation evidence candidate R5"). Additive hygiene recovery completed on `main` at REF `5b06f31d7f7fbc69649406518773c3b5a72b57c2` by Geordi (`TODO-geordi-0019-02-r5-incident-recovery-20260829.md`). Integration action complete; claim is terminal `[x]`.

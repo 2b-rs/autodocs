@@ -11,7 +11,8 @@ branch: integrate-0037-14-obrien-20260829
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0037-14-obrien-20260829
 target_baseline: main@c7ab768e63a1f410825b72f1514af9de7d8e93e6
 candidate_source: 0037-14@3a64f48d8a48172ac1f2be004c7ba626edb0537f / implementation REF fb6c8d5956635de502d9e4eeeb62901c418c6a4e
-status: complete
+status: [x]
+state: [x]
 write_scope:
   - _src/tools/issue_import_legacy.py
   - _src/tests/test_issue_import_legacy.py
@@ -30,3 +31,4 @@ write_scope:
   - `python3 -m unittest discover -s _src/tests -p "test_issue*.py"` -> 126/126 tests PASS.
 - **Integration Hygiene:** Shared machine pre-integration hygiene check verified.
 - **Acceptance & Bookkeeping:** `TODO.md` updated to `[x]` with `Acceptance: ✓` citing implementation REF `fb6c8d5956635de502d9e4eeeb62901c418c6a4e` and award `1788002410956-91037acc`.
+- **Integration Status:** Integration committed to `main` at REF `d7ba08955` ("integrate(0037-14): deterministic legacy issue importer into disposable roots"). Claim is terminal.
