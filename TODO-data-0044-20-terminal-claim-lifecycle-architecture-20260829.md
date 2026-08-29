@@ -9,10 +9,18 @@ owner_token: agent:data:0044-20:1788038395542-d19fafda
 base_commit: 2ffc0d2a26eea939b74ceb4754309ff2de22e5fb
 capability_class: privileged
 execution_authority: direct
+startup_review: ["AGENTS.md", "SANDBOX.md", "TODO.md", "docs/pipeline/feature-breakdown.md", "docs/pipeline/decision-record.md", "docs/pipeline/task-acceptance.md", "docs/pipeline/branch-workflow.md", "docs/pipeline/process-roles.md"]
 state: [p]
 coordination_state: in_progress
 lease_active: true
 write_scope: ["TODO.md", "TODO-data-0044-20-terminal-claim-lifecycle-architecture-20260829.md", "docs/dossiers/dec-0044-033-terminal-claim-lifecycle.md", "docs/dossiers/0044-20-terminal-claim-lifecycle-scope-review.md"]
+
+## Intended write scope
+
+- `TODO.md`
+- `TODO-data-0044-20-terminal-claim-lifecycle-architecture-20260829.md`
+- `docs/dossiers/dec-0044-033-terminal-claim-lifecycle.md`
+- `docs/dossiers/0044-20-terminal-claim-lifecycle-scope-review.md`
 
 ## Award and boundary
 
