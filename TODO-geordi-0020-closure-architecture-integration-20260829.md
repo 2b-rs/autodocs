@@ -1,5 +1,12 @@
 # Integration claim — `0020` feature-closure architecture
 
+item_id: 0020-feature-closure-architecture-integration
+request_id: 1788030928537-0b6ec4c2
+owner_token: agent:geordi:0020-feature-closure-architecture-integration:1788030928537-0b6ec4c2
+base_commit: dcaf1757ff1fc5828fec6fb2e02e019d49502aec
+capability_class: privileged
+state: [p]
+
 - **item_id:** `0020-feature-closure-architecture-integration`
 - **owner_token / assignment_id:** `1788030928537-0b6ec4c2`
 - **state / status:** `[p]` / `blocked pending exact-source pin`
