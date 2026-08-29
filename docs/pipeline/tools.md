@@ -154,6 +154,54 @@ Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
 Tests: `_src/tools/test_check_integration_hygiene.py` (hermetische Git-Fixtures;
 Aufruf aus `_src/tools/`: `python3 -m unittest test_check_integration_hygiene -v`).
 
+## Reference-transaction-Frühwarnung
+
+| Werkzeug | Zweck |
+|---|---|
+| `reference_transaction_hook.py` | Versionierter, stdlib-only Installer, Präsenzcheck und fail-open `reference-transaction`-Hook nach `DEC-0044-009`. Erkennt bei Fast-Forward-Ref-Änderungen eingehende Commits, die zum Transaktionszeitpunkt auf fremden lokalen Branches liegen, und protokolliert nur tatsächlich `committed` gemeldete Befunde. |
+
+Installation und exakter Präsenzcheck aus einem vorgangseigenen Worktree:
+
+```sh
+python3 _src/tools/reference_transaction_hook.py install --repo .
+python3 _src/tools/reference_transaction_hook.py check --repo .
+```
+
+`install` gibt den aktiven Pfad und SHA-256 als JSON aus, ist bei identischen
+Bytes idempotent und überschreibt nie einen abweichenden bestehenden Hook. Ein
+relativer `core.hooksPath` oder ein Symlinkpfad wird abgelehnt, weil daraus kein
+einziger gemeinsamer, nachprüfbarer Hookpfad für alle Worktrees folgt. `check`
+liefert `0` nur bei vorhandenem, ausführbarem Digest-Match, `1` bei
+fehlenden/veralteten/inaktiven Bytes und `2`, wenn der aktive Pfad nicht sicher
+bestimmt werden kann.
+
+Hook-Evidenz liegt privat unter dem gemeinsamen Git-Verzeichnis:
+`autodocs/reference-transactions.jsonl` (`reference-transaction-log@v1`) plus
+kurzlebige vorbereitete Datensätze. Sie enthält Ref-Namen und Objekt-IDs, keine
+Dateiinhalte, Credentials oder Akteursidentität. Ein Befund wird in `prepared`
+ermittelt, aber erst nach `committed` ins JSONL geschrieben; `aborted` verwirft
+ihn. Fehler beim Analysieren oder Schreiben liefern im Hookpfad immer Exit `0`
+und dürfen die Ref-Transaktion nie beschädigen. Zurückgebliebene Pending-Dateien
+meldet `check` als Anzahl; sie sind vor expliziter Entfernung zu untersuchen.
+Die Analyse ist auf 256 eingehende Commits, 256 passende lokale Refs je Abfrage,
+2 MiB Pending-Evidenz, acht Sekunden insgesamt und fünf Sekunden je
+Git-Plumbing-Aufruf begrenzt. Eine Grenzüberschreitung ist ein fail-open
+Hookfehler ohne positive Aussage; sie verlagert keine Prüfpflicht vom
+verbindlichen Integrator-Checkpoint auf das Warnnetz.
+
+**Autoritätsgrenze:** Das Werkzeug ist ein Warnnetz, kein Gate. Installation,
+Präsenz, Log-Abwesenheit oder ein Befund sind weder Integrationsverdikt noch
+Acceptance. Ein fehlender, entfernter, veralteter, fehlgeschlagener oder
+umgangener Hook gilt nie als „geprüft“; die verbindliche Checkpoint-Prüfung des
+Integrators bleibt erforderlich. Verfahrenseinbindung und direkte
+Vorgänger-/Nachfolger-Carve-outs stehen in
+[`branch-workflow.md`](branch-workflow.md).
+
+Tests: `_src/tools/test_reference_transaction_hook.py` (hermetische
+Git-Repositories; Fast-Forward-Merge, `update-ref`, direkte Ketten-Carve-outs,
+Installer/Präsenz und fail-open Fehlerpfad). Aufruf aus `_src/tools/`:
+`PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test_reference_transaction_hook -v`.
+
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
 | Werkzeug | Zweck |
