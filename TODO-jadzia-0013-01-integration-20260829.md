@@ -10,3 +10,4 @@ write_scope:
 
 ## Contract
 Coordinate the integration of Task 0013-01 from branch 0013-01-stakeholders into main.
+- **state**: Handover (offered to obrien)
