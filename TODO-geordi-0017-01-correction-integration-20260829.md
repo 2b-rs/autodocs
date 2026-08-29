@@ -4,7 +4,8 @@
 - **persona:** Geordi La Forge, privileged Integrator, Team Enterprise
 - **item_id:** `0017-01-correction-integration`
 - **process:** Task bookkeeping correction integration
-- **state:** `integration-ready`
+- **state:** `terminal`
+- **status:** exact correction integrated on `main` at `0713b8031422d009a36f5a60061367b1ce7e9fbb`; implementation ownership released pending independent assignment acceptance
 - **assignment:** priority offer `1788031760990-45e2f3f6`; atomically awarded to Geordi
 - **capability_class:** `privileged`
 - **execution_authority:** direct, limited to the awarded integration and mandatory hygiene gates
@@ -33,3 +34,6 @@
 - Candidate tip delta is exactly `TODO.md` and Tasha's claim; the claim blob matches the source candidate.
 - The `TODO.md` change only replaces two stale governance paths with canonical paths that exist on the baseline.
 - `0017-01` and `0017-02` remain `[x]` with explicit no-Acceptance boundaries; `0017-03` remains unstarted.
+- Candidate hygiene command `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0017-01-correction-geordi-20260829 --candidate-ref 0713b8031422d009a36f5a60061367b1ce7e9fbb` exited `0`: PASS across 81 registered worktrees.
+- The root gate chain ran `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight`, verified exact base `7dc7e48e20d0866767b1ee5c0972d2b6ff42e47b`, ran `git merge --ff-only 0713b8031422d009a36f5a60061367b1ce7e9fbb`, and immediately reran the root preflight. The complete chain exited `0`: preflight PASS, fast-forward merge PASS, postflight PASS.
+- Final realized correction integration REF: `main@0713b8031422d009a36f5a60061367b1ce7e9fbb`.
