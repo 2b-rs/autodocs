@@ -92,3 +92,31 @@ root preflight must pass. The root merge must use the authorized repository
 merge operation, followed immediately by the same hard root preflight. Any
 nonzero, indeterminate, drift, conflict, or scope result changes this verdict to
 blocked and stops integration.
+
+## Realized root integration — final evidence
+
+The conditional gates above were executed against exact candidate
+`bd92b0188b9ddac3e557e9edd596a2ad7fad7328` and pinned baseline
+`dcaf1757ff1fc5828fec6fb2e02e019d49502aec`:
+
+- Candidate hygiene command:
+  `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0020-closure-architecture-geordi-20260829 --candidate-ref bd92b0188b9ddac3e557e9edd596a2ad7fad7328`
+  — exit `0`, `integration hygiene: PASS`, 79 registered worktrees.
+- Immediate root preflight command:
+  `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight`
+  — exit `0`, `integration hygiene: PASS`, 79 registered worktrees.
+- Equality and cleanliness gates immediately before merge: root `HEAD` equaled
+  `dcaf1757ff1fc5828fec6fb2e02e019d49502aec`; root tracked status and candidate
+  status were empty; the baseline-to-candidate delta contained exactly six paths.
+- Authorized root command:
+  `git -C /Users/tobias.anton/devel/autodocs merge --ff-only bd92b0188b9ddac3e557e9edd596a2ad7fad7328`
+  — exit `0`; root advanced from `dcaf1757ff1f` to `bd92b0188b`.
+- Immediate post-merge root preflight: the same root-preflight command exited
+  `0`, reported `integration hygiene: PASS` across 79 worktrees, and final
+  `main` was `bd92b0188b9ddac3e557e9edd596a2ad7fad7328`.
+
+**Final verdict:** `PASS / integrated`. No Task Acceptance, `0020-10`
+implementation, checkpoint crossing, Feature closure, child-product mutation,
+selected-profile change, ECU evidence/rating/release claim, or successor action
+occurred. Rework award `1788032193461-7874178a` adds this realized evidence and
+terminal claim state without altering the four reviewed source paths.

@@ -7,11 +7,11 @@ base_commit: dcaf1757ff1fc5828fec6fb2e02e019d49502aec
 capability_class: privileged
 execution_authority: direct
 startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/integrator.md; docs/pipeline/core-rules.md; docs/pipeline/branch-workflow.md
-state: [p]
+state: [x]
 
 - **item_id:** `0020-feature-closure-architecture-integration`
 - **owner_token / assignment_id:** `1788030928537-0b6ec4c2`
-- **state / status:** `[p]` / `blocked pending exact-source pin`
+- **state / status:** `[x]` / `integration complete; evidence rework finalized`
 - **capability_class / role:** `privileged` / independent Integrator
 - **authority:** atomic award `1788030928537-0b6ec4c2`
 - **branch / worktree:** `integrate-0020-closure-architecture-geordi-20260829` /
@@ -60,6 +60,23 @@ current-main worktree; all original prohibitions remain binding.
 
 ## Next step
 
-Complete independent validation, record the six-path evidence candidate, and
-run exact-candidate hygiene plus the guarded root preflight/merge/postflight
-sequence. Stop on any scope, baseline, validation, or hygiene finding.
+Return the exact realized-gate evidence update for coordinator review. No
+`0020-10` implementation, Acceptance, checkpoint, Feature closure, or successor
+action is authorized by this terminal integration claim.
+
+## Realized integration result
+
+The exact six-path candidate
+`bd92b0188b9ddac3e557e9edd596a2ad7fad7328` passed repository-wide candidate
+hygiene across 79 registered worktrees. Immediately before the root merge,
+`main` still equaled pinned baseline
+`dcaf1757ff1fc5828fec6fb2e02e019d49502aec`, root tracked state was clean, and
+the hard root preflight passed across 79 worktrees. The authorized root
+fast-forward advanced `main` to the exact candidate. The immediate post-merge
+hard root preflight passed across 79 worktrees and final `main` remained
+`bd92b0188b9ddac3e557e9edd596a2ad7fad7328`.
+
+Rework award `1788032193461-7874178a` authorizes this terminal-state and
+realized-evidence update within the existing six-path scope only. The original
+invalid-pin stop, corrected-pin provenance, source candidate, decision, scope
+review, and `0020-10` contract remain unchanged.
