@@ -1,12 +1,12 @@
-# 0044-07 Post-Hoc Incident Recovery (Option B)
+# 0044-07 Post-Hoc Incident Recovery (Option B & Rework Iteration 1)
 
 ## Authority and Context
 
-- **Authority:** Resolved Management decision `decision-1788015759354-013fa663` Option B (notice `1788043258174-c6e5be7b`).
-- **Atomic Award:** `1788043474998-7a121231` (thread `0044-07-posthoc-recovery-after-unapproved-clearing`).
+- **Authority:** Resolved Management decision `decision-1788015759354-013fa663` Option B (notice `1788043258174-c6e5be7b`) cumulative with `decision-1788011983733-189cac2b` Option A.
+- **Atomic Award:** `1788043474998-7a121231`, rework iteration 1 `1788043981549-534fe085` (thread `0044-07-posthoc-recovery-after-unapproved-clearing`).
 - **Integrator:** Miles O'Brien (`obrien`), privileged Integrator, Team DeepSpace9.
 - **Independence:** Independent of prior `0044-07` candidate author `geordi` and root actor `jadzia`.
-- **Target Baseline:** `main@d30b27ab1da5cbbb9a650573190fcbd9b7b207e1`.
+- **Target Baseline:** `main@2517572c293a6927718efdf92411ba5f679ab44b`.
 - **Item Worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0044-07-posthoc-recovery-b-obrien-20260829`.
 
 ## Background & Incident Summary
@@ -14,9 +14,9 @@
 Two unapproved clearings and an unauthorized direct-to-main landing occurred:
 1. Root checkout divergence on `main@a0a8b0929ccf971be1d55ec6e08f196430e111cd` containing three unstaged one-line claim edits (`TODO-jadzia-0012-01-integration-20260829.md`, `TODO-jadzia-0013-01-integration-20260829.md`, `TODO-jadzia-0037-14-integration-20260829.md`) was cleared without a `preserved/*` snapshot.
 2. In worktree `.worktrees/integrate-0044-07-accepted-geordi-20260829` (`6561c4d15b4ec05404b2ea30b8d2c52710ebd0e1`), eight out-of-scope tracked documentation/design files reduced to 0 bytes by interrupted sparse-checkout materialization were cleared without a `preserved/*` snapshot.
-3. Commit `34341f89b212d0655fd152c620f736ea092e8fbc` landed unreviewed coordination edits directly on `main` affecting `TODO-jadzia-0011-03-chain-20260829.md` and `TODO-jadzia-0011-04-chain-20260829.md`.
+3. Commit `34341f89b212d0655fd152c620f736ea092e8fbc` landed unreviewed coordination edits directly on `main` affecting `TODO-jadzia-0011-03-chain-20260829.md` and `TODO-jadzia-0011-04-chain-20260829.md`. The earlier unbranched root edits on `main@515f57ba0c5a23e5441dd47a76e23c2b47747b46` that preceded `34341f89` also required a preserved snapshot under `decision-1788011983733-189cac2b` Option A.
 
-Management resolved `decision-1788015759354-013fa663` selecting Option B to reconstruct byte-exact `preserved/*` snapshots for both cleared states, record them in `docs/pipeline/branch-workflow.md`, append-only revert commit `34341f89b212d0655fd152c620f736ea092e8fbc`, and restore full integration hygiene.
+Management resolved `decision-1788015759354-013fa663` selecting Option B and `decision-1788011983733-189cac2b` Option A to reconstruct byte-exact `preserved/*` snapshots for all three cleared states, record them in `docs/pipeline/branch-workflow.md`, append-only revert commit `34341f89b212d0655fd152c620f736ea092e8fbc`, and restore full integration hygiene.
 
 ## Reconstructed Preserved Snapshots
 
@@ -40,6 +40,12 @@ Management resolved `decision-1788015759354-013fa663` selecting Option B to reco
      * `docs/dossiers/0011-03-governance-integration-geordi-20260829.md`
    - **Reachability:** Tag-only (reachable from no branch ref).
 
+3. **`preserved/root-jadzia-0011-claim-edits-20260829-obrien`**
+   - **Commit SHA:** `2e3929639e4c7bd112bb446a8d5592159d62ba00`
+   - **Parent:** `515f57ba0c5a23e5441dd47a76e23c2b47747b46`
+   - **Contents:** Exact two unstaged Jadzia 0011 claim-file edits on `main@515f57ba` on `TODO-jadzia-0011-03-chain-20260829.md` (blob `90f64d7d3191a2a67830cff6776a7eac85ce4636`) and `TODO-jadzia-0011-04-chain-20260829.md` (blob `af49bb03ca3cff3d2097d14642f775ed802ec0d9`).
+   - **Reachability:** Tag-only (reachable from no branch ref).
+
 ## Append-Only Revert of `34341f89`
 
 - `TODO-jadzia-0011-03-chain-20260829.md` reverted to pre-34341f89 content (blob `33bc1f4122d46df3473ba74932ea48e89f81640a`).
@@ -48,7 +54,7 @@ Management resolved `decision-1788015759354-013fa663` selecting Option B to reco
 
 ## Preserved-Snapshot Registry Update
 
-`docs/pipeline/branch-workflow.md` table updated with both preserved tag entries.
+`docs/pipeline/branch-workflow.md` table updated with all three preserved tag entries.
 
 ## Stop Boundary & Next Action
 

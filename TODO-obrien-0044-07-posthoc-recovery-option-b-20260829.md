@@ -14,11 +14,11 @@ write_scope:
 ---
 
 ## Contract
-Execute 0044-07 post-hoc recovery Option B under decision-1788015759354-013fa663 (offer 1788043474998-7a121231):
-- Reconstruct preserved snapshot commits and tags for cleared Jadzia root claim edits (`preserved/root-jadzia-claim-edits-20260829-obrien`) and cleared zero-byte sparse checkout artifacts (`preserved/staged-0044-07-zero-byte-artifacts-20260829-obrien`).
+Execute 0044-07 post-hoc recovery Option B under decision-1788015759354-013fa663 and decision-1788011983733-189cac2b (rework iteration 1 offer 1788043981549-534fe085):
+- Reconstruct preserved snapshot commits and tags for cleared Jadzia root claim edits (`preserved/root-jadzia-claim-edits-20260829-obrien`), cleared zero-byte sparse checkout artifacts (`preserved/staged-0044-07-zero-byte-artifacts-20260829-obrien`), and unbranched Jadzia 0011 claim states (`preserved/root-jadzia-0011-claim-edits-20260829-obrien`).
 - Update preserved-snapshot registry in `docs/pipeline/branch-workflow.md`.
 - Append-only revert 34341f89 changes on `TODO-jadzia-0011-03-chain-20260829.md` and `TODO-jadzia-0011-04-chain-20260829.md`.
-- Create dossier and campaign evidence.
+- Update dossier and campaign evidence.
 - Verify hygiene, document doctor, diff check, and execute ff-only merge to main.
 
 - **state**: Terminal (Recovery completed and verified, handed over to Jean-Luc)
