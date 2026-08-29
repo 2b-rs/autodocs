@@ -402,6 +402,49 @@ time, and the mechanical provenance checks are Feature `0044` work
   ([`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md))
   for the full analysis and residual-limitation record.
 
+### Reference-transaction early-warning net (`DEC-0044-009`)
+
+The versioned `_src/tools/reference_transaction_hook.py` can be installed into
+the active common Git hooks directory and verified from an item-owned
+worktree:
+
+```sh
+python3 _src/tools/reference_transaction_hook.py install --repo .
+python3 _src/tools/reference_transaction_hook.py check --repo .
+```
+
+At the `prepared` phase the hook examines existing branch refs and the incoming
+`old..new` commits of fast-forward branch updates. A move to the exact tip of
+the receiving item's documented direct chain is a carve-out: parent/child item
+branches and direct `PREREQ` neighbors are derived from `TODO.md` at the old
+target commit; Feature→`main` uses the corresponding canonical Feature ref.
+Other local branches that already contain an incoming commit are retained as
+`foreign_origin[].also_on` evidence. New-branch creation, deletion, tags, and
+non-fast-forward updates are outside this warning's declared classification.
+Analysis is deliberately bounded to 256 incoming commits, 256 matching local
+refs per query, a 2 MiB pending record, an eight-second overall budget, and five
+seconds per Git plumbing call. Exceeding a bound is a hook failure: it returns
+zero and records no positive assurance. The binding integrator check is what
+covers this and every other hook blind spot.
+
+Prepared findings are held below the common Git directory and become one
+`reference-transaction-log@v1` JSONL entry only when Git reports `committed`;
+`aborted` removes the matching pending record. The committed entry contains
+only transaction identity/time, target ref, old/new object IDs, allowed carrier
+refs, and the matching commit/ref names. It contains no file content,
+credentials, actor identity, or working-tree path. The `check` result reports
+the private log path and the count of pending records. A pending record left by
+a logging failure is recovery evidence: inspect it before any explicit removal;
+the hook never silently treats its existence or removal as a provenance
+decision.
+
+This hook is deliberately **a net, not the gate**. Hook mode catches every
+internal failure and exits zero. Installation is a local Git-side effect and is
+never performed implicitly by validation. Hook presence, log absence, or a
+warning does not authorize or reject an integration and never replaces the
+integrator's binding checkpoint verification. A missing, removed, stale,
+failed, or `core.hooksPath`-bypassed copy never counts as “checked”.
+
 ## Merge authority and direction
 
 Merges only ever move work **up** the tree (Subtask→Task→Feature). Authority
