@@ -10,4 +10,4 @@ write_scope:
 
 ## Contract
 Coordinate the integration of Task 0017-01 from branch 0017-01 into main.
-- **state**: Open (Available for integration)
+- **state**: Terminal (Integrated into main at 2e4bc1ebd)
