@@ -10,3 +10,4 @@ write_scope:
 
 ## Contract
 Coordinate the implementation of Task 0011-04.
+- **state**: Open (Delegated to Worf for implementation)
