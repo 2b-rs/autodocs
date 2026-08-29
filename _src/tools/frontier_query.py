@@ -171,10 +171,9 @@ def discover_branch_claims(repo: Path) -> Tuple[Dict[str, List[Dict[str, str]]],
         if code == 0:
             for subj in log_out.splitlines():
                 subj = subj.strip()
-                sm = re.match(r'^([0-9]{4}(?:-[0-9]{2,3}(?:\.[0-9]{2})?)?):', subj)
-                if sm:
-                    target_item = sm.group(1)
-                    item_claims.setdefault(target_item, []).append({
+                # Match item ID anywhere on word boundary (e.g. 'merge(0041-06): ...' or '0041-06: ...')
+                for item_match in set(re.findall(r'\b([0-9]{4}(?:-[0-9]{2,3}(?:\.[0-9]{2})?)?)\b', subj)):
+                    item_claims.setdefault(item_match, []).append({
                         'branch': branch,
                         'source': 'E3:commit_subject',
                         'detail': subj,
