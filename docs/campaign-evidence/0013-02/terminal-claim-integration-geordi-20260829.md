@@ -31,4 +31,25 @@ The integration candidate is restricted to:
 
 ## Integrator verdict
 
-PASS — the terminal claim handoff is provenance-only, matches the awarded source exactly, preserves the existing `[u]` authority boundary, and is eligible for integration subject to the mandatory candidate and root hygiene gates.
+PASS — the terminal claim handoff is provenance-only, matches the awarded source exactly, and preserves the existing `[u]` authority boundary.
+
+## Realized integration gates and result
+
+1. Candidate hygiene:
+   - Command: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0013-02-terminal-claim-geordi-20260829 --candidate-ref 0d589a30967a65c52ed69f9c9d0886d4090f2e50`
+   - Exit: `0`
+   - Result: `integration hygiene: PASS`; 80 registered worktrees.
+2. Immediate root preflight:
+   - Command: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight`
+   - Exit within the successful `&&` gate chain: `0`
+   - Result: PASS; exact root base then verified as `51de9c0113e8dc11303308c99fdc1db36898c983`.
+3. Root integration:
+   - Command: `git -C /Users/tobias.anton/devel/autodocs merge --ff-only 0d589a30967a65c52ed69f9c9d0886d4090f2e50`
+   - Exit within the successful `&&` gate chain: `0`
+   - Result: fast-forwarded `main` to the exact candidate.
+4. Immediate root postflight:
+   - Command: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight`
+   - Exit within the successful `&&` gate chain: `0`
+   - Result: PASS.
+
+The complete ordered root gate chain exited `0`. Final realized integration REF is `main@0d589a30967a65c52ed69f9c9d0886d4090f2e50`. Task `0013-02` remains `[u]`; no approval, Acceptance, `TODO.md` mutation, or `0013-03` start occurred.
