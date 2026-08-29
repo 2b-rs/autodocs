@@ -41,3 +41,9 @@ Record the Management selection as conforming `decision-record@v1`, reopen the r
 - `main evidence:` decision REF `0ffac017ef05ef14dd6e622f94bc1580d3e4f1f5` and later superseding execution-model REF `f3522aaaa80d851f3ba28744b08956a52eb63275` are ancestors of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`.
 - `current disposition:` Task `0037-46.02` is `[w]`; no corrective implementation or integration action remains under this owner token.
 - `handoff:` downstream work was re-planned and completed under separate claims; this claim must not be resumed.
+
+## Supervisor restart recovery revalidation — 2026-08-29
+
+- `terminal: yes`; do not resume this governance token.
+- `current evidence:` decision REF `0ffac017ef05ef14dd6e622f94bc1580d3e4f1f5` and superseding REF `f3522aaaa80d851f3ba28744b08956a52eb63275` remain ancestors of `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`; `0037-46.02` remains `[w]`.
+- `handoff:` none under this token; every downstream disposition has separate ownership.

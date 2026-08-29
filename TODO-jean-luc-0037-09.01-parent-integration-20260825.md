@@ -30,4 +30,10 @@
 
 - `terminal: yes`; the checkpoint-free parent integration completed at merge REF `545dccbe5` and this lease is released.
 - `main evidence:` substantive REF `7b36370e84c5c793e705a1d418e2b5db2b7cc965` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; Task `0037-09.01` is `[x]` with current Acceptance recorded separately.
+
+## Supervisor restart recovery revalidation — 2026-08-29
+
+- `terminal: yes`; do not resume this parent-integration token.
+- `current evidence:` substantive REF `7b36370e84c5c793e705a1d418e2b5db2b7cc965` remains an ancestor of `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`; `0037-09.01` remains `[x]` with current Acceptance.
+- `handoff:` none. Successors retain their own claims and gates.
 - `handoff:` no integration, review, or Acceptance action remains under this owner token; do not resume it.

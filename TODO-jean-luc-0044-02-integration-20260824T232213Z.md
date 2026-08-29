@@ -66,4 +66,10 @@ candidate records substantive REF
 
 - `terminal: yes`; the governed integration completed and this lease remains released.
 - `main evidence:` integration REF `37c2e0132aeb3815572293b8c3ff4f2673f80fc1` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; Task `0044-02` remains `[x]`.
+
+## Supervisor restart recovery revalidation — 2026-08-29
+
+- `terminal: yes`; do not resume this integration token.
+- `current evidence:` integration REF `37c2e0132aeb3815572293b8c3ff4f2673f80fc1` remains an ancestor of `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`; `0044-02` remains `[x]`.
+- `handoff:` none under this token; Acceptance and Feature integration retain separate authority.
 - `handoff:` any later Task Acceptance or Feature closure requires a separate exact assignment; none is owned here.
