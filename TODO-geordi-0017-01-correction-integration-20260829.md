@@ -4,7 +4,7 @@
 - **persona:** Geordi La Forge, privileged Integrator, Team Enterprise
 - **item_id:** `0017-01-correction-integration`
 - **process:** Task bookkeeping correction integration
-- **state:** `[p]`
+- **state:** `integration-ready`
 - **assignment:** priority offer `1788031760990-45e2f3f6`; atomically awarded to Geordi
 - **capability_class:** `privileged`
 - **execution_authority:** direct, limited to the awarded integration and mandatory hygiene gates
@@ -27,3 +27,9 @@
 - Reconcile only the candidate's canonical governance-path correction and Tasha's terminal implementation handoff, plus this claim and exact evidence.
 - Preserve `0017-01` and `0017-02` at `[x]`, preserve both explicit no-Acceptance boundaries, and leave `0017-03` unstarted.
 - Prohibited: Acceptance, marker changes beyond the exact path correction, risk-strategy or risk-register mutation, `0017-02` reopening, `0017-03` start, Feature or `DONE.md` closure, foreign cleanup, push, or scope expansion.
+
+## Verified candidate
+
+- Candidate tip delta is exactly `TODO.md` and Tasha's claim; the claim blob matches the source candidate.
+- The `TODO.md` change only replaces two stale governance paths with canonical paths that exist on the baseline.
+- `0017-01` and `0017-02` remain `[x]` with explicit no-Acceptance boundaries; `0017-03` remains unstarted.
