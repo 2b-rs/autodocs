@@ -98,3 +98,22 @@ byte-identical:
 
 R1 and R2 findings remain append-only; R3 does not retroactively authorize
 either stopped attempt.
+
+## R3 reconciliation and pre-integration validation
+
+- Target reconciliation merge: `373b8998d37a1f5a2c86937c7dd817d3074b3f4f`.
+- Candidate delta from the original governance target contains exactly ten
+  paths: the six governance/integration paths and four authorized Jadzia carry
+  paths.
+- All four carry blobs equal their exact
+  `main@2e8e8399944e25715443e61d1675dbe2835d0e29` blobs.
+- `git diff --check`: PASS.
+- Process-document doctor: exit `0`, `ok: true`, 196 documents and 34 inherited
+  findings, including two inherited errors outside the candidate.
+- Legacy Task doctor: global exit `1` with inherited findings; the required
+  filter returns zero findings containing `0044-20`.
+- Focused decision, scope-review, Task/prerequisite, mandatory-checkpoint, and
+  `0044-08` dependency assertions: PASS.
+
+The resulting candidate proceeds only through exact-candidate hygiene and the
+immediate root target-equality/preflight/merge/postflight chain.
