@@ -3,11 +3,12 @@
 item_id: 0044-20-terminal-claim-lifecycle-governance-integration
 request_id: 1788039731603-52e3d8ff
 assignment_id: 1788039731603-52e3d8ff
-owner_token: agent:geordi:0044-20-governance-integration:1788039731603-52e3d8ff
+owner_token: agent:geordi:0044-20-terminal-claim-lifecycle-governance-integration:1788039731603-52e3d8ff
 base_commit: 9834ed04024962f7fb15e15f6843c2c9fa61cdeb
 state: [p]
 status: in_progress
 capability_class: privileged
+execution_authority: direct
 role: independent Integrator
 branch: integrate-0044-20-governance-geordi-20260829
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0044-20-governance-geordi-20260829
