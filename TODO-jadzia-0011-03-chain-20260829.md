@@ -10,4 +10,5 @@ write_scope:
 
 ## Contract
 Coordinate the implementation of Task 0011-03.
-- **state**: Terminal (Implementation completed, queued for independent review/integration by Jean-Luc. Note: Jean-Luc aborted.)
+- **state**: Open (Delegated to Worf for rework)
+- **correction**: Tasha read-only review confirmed no Benjamin product REF/branch/path delta exists in main. Implementation remains incomplete. Geordi integration was governance only. Re-opening for implementation.
