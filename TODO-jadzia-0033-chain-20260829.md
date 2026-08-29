@@ -1,8 +1,8 @@
 ---
 item: 0033-chain
 owner: jadzia
-team: Voyager
-status: active
+team: DeepSpace9
+status: on_hold
 ---
 Dispatching 0033-chain (0033-02 -> 0033-03 -> 0033-04) to Voyager dispatchers.
 Chain ends before the approval merge node 0033-04.01.
