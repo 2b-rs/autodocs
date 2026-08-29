@@ -10,9 +10,9 @@ base_commit: 2ffc0d2a26eea939b74ceb4754309ff2de22e5fb
 capability_class: privileged
 execution_authority: direct
 startup_review: ["AGENTS.md", "SANDBOX.md", "TODO.md", "docs/pipeline/feature-breakdown.md", "docs/pipeline/decision-record.md", "docs/pipeline/task-acceptance.md", "docs/pipeline/branch-workflow.md", "docs/pipeline/process-roles.md"]
-state: [p]
-coordination_state: in_progress
-lease_active: true
+state: [x]
+coordination_state: review
+lease_active: false
 write_scope: ["TODO.md", "TODO-data-0044-20-terminal-claim-lifecycle-architecture-20260829.md", "docs/dossiers/dec-0044-033-terminal-claim-lifecycle.md", "docs/dossiers/0044-20-terminal-claim-lifecycle-scope-review.md"]
 
 ## Intended write scope
@@ -82,6 +82,22 @@ revert by a new commit; never rewrite the decision history, touch Feature
 
 ## Next step
 
-Author `DEC-0044-033`, the separate Architect scope review, and the smallest
-bounded `0044-20` implementation contract needed for consistent automation;
-validate exact scope and return the committed candidate to Jean-Luc.
+Separate privileged integration of candidate `b760c07c1`; after governance is
+reachable from `main`, award the bounded `0044-20` implementation to an
+Implementer distinct from this Architect and its later Integrator. Feature
+`0020` remains untouched; `0020-10` may resume only under the exact conditions
+in `DEC-0044-033`.
+
+## Completion
+
+- Architecture REF: `b760c07c1`.
+- Products: conforming `DEC-0044-033`, separate Architect gate-scope review,
+  bounded `0044-20` implementation contract, and `0044-08:0044-20` integration
+  prerequisite.
+- Validation: `git diff --check` passed; `process_doc_doctor.py --root .`
+  returned `0`; the current-main legacy Doctor parsed the backlog and exposed
+  only claim-schema findings caused by the award-mandated noncanonical
+  architecture filename and the deliberate separation between this completed
+  architecture claim and the still-open implementation Task. No code, Feature
+  `0020`, Acceptance, checkpoint, integration, `main`, or `DONE.md` mutation
+  occurred.
