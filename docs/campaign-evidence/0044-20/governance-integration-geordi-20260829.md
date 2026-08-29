@@ -49,3 +49,19 @@ is changed.
 Pre-integration candidate hygiene, the immediate root preflight/equality/merge,
 and immediate root postflight are recorded below after actual execution. Any
 non-pass or target drift stops the integration.
+
+## Integration gate result
+
+- Candidate: `0bd235d4af98ebfc51c920db11c318c7106bb30a`.
+- `check_integration_hygiene.py --candidate-ref 0bd235d4a --json`: exit `0`,
+  `ok: true`, `findings: []`, 89 registered worktrees.
+- Equality observation: current `main` was
+  `ac63e74fadf1ea45fd2de7e74c7dd98ba0635770`, not awarded target
+  `9834ed04024962f7fb15e15f6843c2c9fa61cdeb`.
+- Intervening delta: one disjoint added path,
+  `TODO-jadzia-distribution-20260829-03.md`.
+
+**VERDICT: BLOCKED — target drift.** The exact-target gate stopped before the
+root preflight or merge. No root mutation, postflight claim, candidate rebuild,
+foreign cleanup, Feature `0020` action, implementation, Acceptance, or external
+effect occurred. A fresh exact-baseline award is required to continue.
