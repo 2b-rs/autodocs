@@ -5,6 +5,7 @@
 - **Implementer:** `benjamin` (`agent:benjamin:0044-13:20260829T030700Z`, Team DeepSpace9)
 - **Four-Eyes Verification:** Author `benjamin` != Integrator `obrien`. Independent identities confirmed.
 - **Architect Decision (TODO.md `0044-13`):** Confirmed mandatory by Architect `seven` (2026-08-24).
+- **Review Kind:** Mandatory-checkpoint privileged Integrator review + conditional integration (not Task Acceptance; prerequisite `0044-12` does not yet carry a formal `Acceptance: ✓` record).
 
 ---
 
@@ -16,15 +17,14 @@
 | Predecessor baseline / merge-base | `c8ba7c1a2713a522719a746c76e0ea6a415b1a9f` |
 | Target baseline at AWARD | `main@1cc214b03caa017263abcbe51dc0cd2be188bd6a` |
 | Reconciliation merge commit | `84bcebbbf56e2978eeeaebfa0e3c152771b9be39` (clean, 0 conflicts) |
-| Acceptance bookkeeping commit | `a33d86e25ca6b7bc1ae66085a53beeeafdbdf0bc` |
 | Fast-forward target on main | `main@a33d86e25ca6b7bc1ae66085a53beeeafdbdf0bc` |
 
 ---
 
-## 2. Prerequisite Closure
+## 2. Prerequisite Inspection
 
 - **Prerequisite:** `0044-12` (recorded policy provenance convention).
-- **Status:** Verified complete on `main` (`TODO.md` line 304: `[x]`, REF `b458fb33227cc554b57a4328a46b72391f222273`, independent review by `belanna`).
+- **Status:** Verified complete on `main` (`TODO.md` line 304: `[x]`, REF `b458fb33227cc554b57a4328a46b72391f222273`, integration review by `belanna` at `docs/campaign-evidence/0044-12/belanna-integration-review-20260826T154058Z.md`). Formal `Acceptance: ✓` for `0044-12` is not yet recorded, so Task Acceptance for `0044-13` is deferred to preserve prerequisite-closed acceptance integrity per `task-acceptance.md` §2.
 
 ---
 
@@ -36,7 +36,6 @@
 - `docs/pipeline/branch-workflow.md` (+43 lines)
 - `docs/pipeline/tools.md` (+48 lines)
 - `TODO-benjamin-0044-13-20260829.md` (claim, new)
-- `TODO.md` (acceptance bookkeeping)
 
 Scope is strictly additive and bounded to the reference-transaction hook implementation and documentation per `DEC-0044-009`.
 
@@ -70,8 +69,12 @@ All validation steps were independently executed in the item worktree and on the
    - Command: `python3 -m unittest test_check_policy_provenance test_check_integration_hygiene` (cwd: `_src/tools/`)
    - Result: **38/38 PASS** in 88.2s
 
-5. **Post-Merge Root Preflight:**
-   - Command: `python3 -m unittest test_reference_transaction_hook -v` (cwd: `_src/tools/` from root `main@a33d86e25`)
+5. **Pre-Integration and Post-Integration Shared Checkout Hygiene:**
+   - Command: `python3 _src/tools/check_integration_hygiene.py --repo . --root-preflight --json`
+   - Exit code: `0` (PASS, `ok: true`, 0 findings)
+
+6. **Post-Merge Root Hook Verification:**
+   - Command: `python3 -m unittest test_reference_transaction_hook -v` (cwd: `_src/tools/` from root `main`)
    - Result: **8/8 PASS** in 17.8s
 
 ---
@@ -79,7 +82,7 @@ All validation steps were independently executed in the item worktree and on the
 ## 5. Scope Boundaries Observed
 
 - Hook is documented as early-warning net, not authorization gate (`DEC-0044-009`).
-- No task beyond `0044-13` accepted.
+- No Task Acceptance recorded; checkpoint review passed for integration only.
 - No `0044-08` integration or Feature closure attempted.
 - Root checkout remained untouched until post-review ff-only merge.
 
@@ -87,5 +90,5 @@ All validation steps were independently executed in the item worktree and on the
 
 ## 6. Verdict
 
-**ACCEPTED** (Integrator `obrien`, 2026-08-29).
+**ACCEPTED for Checkpoint Integration** (Integrator `obrien`, 2026-08-29).
 Candidate merged to `main` via fast-forward at `a33d86e25ca6b7bc1ae66085a53beeeafdbdf0bc`.

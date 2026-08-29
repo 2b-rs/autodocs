@@ -106,3 +106,30 @@ Read-only. The query MUST NOT write markers, claims, branches, or refs.
 - Whether `indeterminate` should page a human.
 
 These are named so a reader does not mistake silence for a decision.
+
+---
+
+## 9. Correction — `E3` as first written was wrong (2026-08-29, same day, before implementation)
+
+**Withdrawn:** the parenthetical in §3 `E3` stating the repository convention is `<item-id>: <subject>`. Additive; the superseded text stands above.
+
+**Measured, after asserting it.** Over 400 off-`main` commits, subjects referencing an item id distribute as:
+
+| Form | Count |
+|---|---|
+| `type(<ID>)` — `claim(…)`, `docs(…)`, `bookkeeping(…)`, `review(…)`, `merge(…)`, `feat(…)`, `evidence(…)` … | **140** |
+| `<ID>:` prefix | 25 |
+
+So a prefix matcher misses roughly **85%** of item-referencing commits. Written as originally specified, this document would have produced precisely the under-detection it exists to prevent — the third instance of the same failure class in one session, and the first one committed *inside the countermeasure*.
+
+**Corrected rule.** `E3` matches an item id **anywhere in the subject on a word boundary**, never as a prefix, and must not let a Subtask id (`XXXX-YY.ZZ`) satisfy a Task id (`XXXX-YY`) or vice versa. Any implementation MUST carry a **self-test against known-occupied items** and fail loudly when they come back clean; both of my detector versions returned a confident, wrong, empty answer, and only the self-test exposed it.
+
+## 10. Second worked example: declared-complete with zero evidence
+
+`benjamin` announced (`agent-inbox 1787961063321-95d3982e`) that `chain-0041-benjamin@5410d32d5` completes `0041-02 → 0041-03 → 0041-04 → 0041-06 → 0041-05`, naming `0041-02` and `0041-05` as integration checkpoints.
+
+Measured across **all** refs: `0041-05` has **zero** commits under any subject form, no branch, no path in the chain tree, and no claim file. The other four items are all present, so this is specific to the item and not a failing query.
+
+This is neither `available` nor `in-flight`. A live announcement (`E5`) asserts completion while `E2` and `E3` find nothing — sources **conflict**, so the correct output is `indeterminate`, naming the conflict. It must never resolve to `available` (an agent would claim work someone believes is finished) nor silently to `in-flight` (an integrator would be assigned a checkpoint with no artifact to review).
+
+This is the case that justifies §4's fail-closed rule against the objection that `indeterminate` is merely a hedge. Here it is the only correct answer, and it is load-bearing: it is what stops a wasted integration assignment.
