@@ -2086,3 +2086,7 @@ HOW TO USE:
 - [ ] **0007-04** PREREQ: 0007-04:0007-03 Freeze and enforce the independently approved benchmark as the extraction regression oracle.
   - **Acceptance criteria:** The frozen artifact has a stable ID/content hash and cannot be silently regenerated over reviewed expectations; a deterministic clean run compares all 200 benchmark entries/cases and reports semantic field/heading/page/completeness drift; negative tests prove changed, missing, duplicate, or unresolved entries fail.
   - **Definition of Done:** The draft status/path is retired or clearly superseded, the automated benchmark gate and operator documentation are committed, and a retained passing report identifies the exact source/tool/benchmark versions.
+
+- [ ] **0044-19** Implement the branch-aware frontier query according to `docs/pipeline/frontier-query-spec.md`.
+  - **Acceptance criteria:** Implement the query returning a five-state fail-closed partition (available / in-flight / blocked-prereq / held / indeterminate). Must use claim files and commit subjects for item-to-branch resolution, not branch names. Must include the blind-spot declaration. Must distinguish terminal-accepted, terminal-recorded, and terminal-contested prerequisites. Must provide AE-3, AE-4, and AE-5 falsification and property evidence.
+  - **Definition of Done:** Python script implemented in `_src/tools/` passing all falsification cases, with unit tests covering the five-state matrix, blind-spot printing, and three-state prereq logic.
