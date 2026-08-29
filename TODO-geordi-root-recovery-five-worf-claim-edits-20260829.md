@@ -39,3 +39,15 @@ commit will not be placed in the registry branch ancestry.
 5. Integrate only the registry/claim candidate, then run immediate root
    postflight. Stop on drift, unexpected tracked state, or any nonzero or
    indeterminate gate.
+
+## Snapshot evidence
+
+- **tag:** `preserved/root-worf-claim-edits-20260829-geordi`
+- **commit:** `2567f2ef17a3c1eedef0fb7c019c48e8ae8c1292`
+- **tree:** `2b17471c58ff1fbdd4720c82a806f26c395372b9`
+- The snapshot differs from the pinned baseline at exactly the five awarded
+  paths. Each snapshot blob matched the corresponding shared-root working-tree
+  blob at capture time.
+- The snapshot commit is not an ancestor of this registry branch. It is retained
+  only by the named `preserved/*` tag and must not be deleted or pruned without
+  explicit current-user authority for that exact tag.
