@@ -135,3 +135,16 @@ immediate root target-equality/preflight/merge/postflight chain.
 main-visible. This verdict is not Task implementation, Acceptance, Feature
 closure, or permission to resume `0020-10`; those remain under their separate
 contracts and authority gates.
+
+## Closure bookkeeping gate
+
+The two-path closure candidate `454bb5b4b146642b7373fc67bf24cd9c50bd9e5f`
+passed exact-candidate hygiene with `findings: []`. Its root snapshot observed
+`main@cc3edeff7fdd3d4a7b162933af52e186951fc781`, one commit after the
+integrated package. That commit changes only
+`TODO-jadzia-0044-07-integration-20260829.md` to record its terminal state.
+
+**VERDICT: BLOCKED — closure target drift.** No second root preflight or merge
+ran. The governance package remains main-visible at and through
+`cf46ec4bff4a71bc50e7f013ac3bfa2979a70adc`; only this durable closure update
+requires a fresh exact-baseline repin.
