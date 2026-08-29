@@ -80,3 +80,21 @@ was the single added path `TODO-jadzia-0044-07-integration-20260829.md`.
 **VERDICT: BLOCKED — further target drift.** The equality rule stopped R2
 before any target merge, conflict resolution, candidate hygiene, root
 preflight, root merge, or postflight. No foreign or root state was changed.
+
+## R3 recovery pins
+
+Fresh recovery assignment `1788040585988-e67acf77` adopts preserved candidate
+`6e2b05c2337725ceb7b5e85ab265da8a9a0587cc` and pins exact held target
+`main@2e8e8399944e25715443e61d1675dbe2835d0e29`. Jadzia confirmed the bounded
+hold in `agent-inbox:1788040529307-14707a46`.
+
+The target carry is exactly four added paths, which R3 requires to remain
+byte-identical:
+
+- `TODO-jadzia-distribution-20260829-03.md`
+- `TODO-jadzia-0044-07-integration-20260829.md`
+- `TODO-jadzia-0017-03-integration-20260829.md`
+- `TODO-jadzia-0037-23-integration-20260829.md`
+
+R1 and R2 findings remain append-only; R3 does not retroactively authorize
+either stopped attempt.
