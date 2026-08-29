@@ -478,3 +478,13 @@ The versioned curation toolchain now spans `version_id.py`, `version_store.py`,
 cover id minting, immutable storage, version-pinning, graph semantics,
 invalidation/confidence, typed synthesized claims, trigger orchestration, and
 historical/delta queries.
+
+## Branch- und ketten-bewusste Arbeitsverfügbarkeits-Prüfung (0044-19)
+
+| Werkzeug | Zweck |
+|---|---|
+| `_src/tools/frontier_query.py` | Read-only fünfstufige Arbeitsverfügbarkeits- und Frontier-Prüfung (`available`, `in-flight`, `blocked-prereq`, `held`, `indeterminate`) gemäß `docs/pipeline/frontier-query-spec.md`. Löst Items über E1–E6 (TODO.md, Branch-Claims, Commit-Subjekte, Worktrees, agent-inbox Offers und Governance-Holds) auf und deklariert die fünf obligatorischen Blindstellen. |
+
+Aufruf: `python3 _src/tools/frontier_query.py [--repo <path>] [--inbox-data <path>] [--json] [--available-only]`
+
+Tests: `_src/tools/test_frontier_query.py` (AE-3 Falsifikation `0041-05` unter `chain-0041-benjamin`, AE-4 adjazente Fälle und AE-5 Partitionseigenschaft).
