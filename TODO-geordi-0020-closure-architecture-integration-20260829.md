@@ -5,6 +5,8 @@ request_id: 1788030928537-0b6ec4c2
 owner_token: agent:geordi:0020-feature-closure-architecture-integration:1788030928537-0b6ec4c2
 base_commit: dcaf1757ff1fc5828fec6fb2e02e019d49502aec
 capability_class: privileged
+execution_authority: direct
+startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/integrator.md; docs/pipeline/core-rules.md; docs/pipeline/branch-workflow.md
 state: [p]
 
 - **item_id:** `0020-feature-closure-architecture-integration`
@@ -55,3 +57,9 @@ The corrected commit resolves, is an ancestor of the candidate exactly once,
 has subject `arch(0020): define terminal integration floor`, and changes exactly
 the four awarded source paths. Integration work may resume from the pinned
 current-main worktree; all original prohibitions remain binding.
+
+## Next step
+
+Complete independent validation, record the six-path evidence candidate, and
+run exact-candidate hygiene plus the guarded root preflight/merge/postflight
+sequence. Stop on any scope, baseline, validation, or hygiene finding.
