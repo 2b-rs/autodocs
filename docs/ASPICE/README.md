@@ -6,6 +6,21 @@
 
 **Assessment type:** internal repository and readiness gap analysis; not a formal process assessment and not a capability rating
 
+## Current-authority overlay
+
+This survey remains a dated observation of the `2026-08-15` baseline. Later
+authority does not rewrite what was known then. Current readers must also use
+`DEC-0020-001`, the approved 14-process applicability matrix from `0020-04`,
+the `0020-07` assessment method, and `DEC-0011-001` for the
+documentation-evidence association boundary.
+
+Feature `0019` evidence is `documentation-execution` and may be traced only as
+candidate evidence with exact instance, origin, baseline, limitations,
+validity, and contrary evidence. Neither that association nor this survey
+assigns outcome achievement, `N`/`P`/`L`/`F`, CL1, or CL2. The historical
+`0010` to active `0019` renumbering remains provenance, while completed
+historical `0010` remains Performance Package 2.
+
 ## Program context
 
 The program intends to develop software for automotive electronic control units (ECUs). The present repository documents publicly available specification elements and implements extraction, curation, generation, validation, and publication tooling. That work is an enabling first step, not the final assessed ECU product.
