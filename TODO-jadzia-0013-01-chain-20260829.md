@@ -10,3 +10,4 @@ write_scope:
 
 ## Contract
 Coordinate the implementation of Task 0013-01.
+- **state**: Terminal (Implementation completed by benjamin)
