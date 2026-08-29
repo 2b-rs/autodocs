@@ -40,3 +40,12 @@ The candidate implements `DEC-0044-021` and Data's binding Architect review lite
 - Candidate-aware machine root preflight: **PASS**, exit `0`, 209 registered worktrees.
 
 This is an implementation integration review and hygiene verdict, not Task Acceptance or checkpoint Acceptance.
+
+## Supervisor-restart reconciliation — 2026-08-30
+
+**State:** terminal historical review/integration record. Integration merge
+`b3b1f403b56fdab9555af98a445d7b98bf78e7b3` is an ancestor of
+`main@731d31ed493bb34c54b9c04a7a056b957e262827`. The historical final gates are
+not replayed or inferred; the preserved evidence remains the only statement of
+their result. This claim grants no cleanup, Acceptance, or further root action;
+any successor requires a fresh exact assignment.

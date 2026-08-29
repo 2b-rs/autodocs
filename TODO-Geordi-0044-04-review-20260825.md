@@ -29,3 +29,10 @@
 integration `361f0ce447`, and Acceptance bookkeeping `6a937f8414` are ancestors
 of current `main`. This claim grants no further Acceptance, integration,
 `DONE.md`, or root action; any new work needs a fresh exact assignment.
+
+## Supervisor-restart reconciliation — 2026-08-30
+
+**State:** terminal confirmed. The preceding terminal record is adopted without
+replaying its historical gates; its cited review, integration, and Acceptance
+bookkeeping remain reachable from `main@731d31ed493bb34c54b9c04a7a056b957e262827`.
+No checkpoint, Acceptance, or root action is active under this claim.

@@ -56,3 +56,12 @@ credential, Memory write, push, cleanup, or Feature closure is authorized.
 Final action is exact-candidate hygiene plus the immediate root
 preflight/equality/fast-forward/postflight sequence. Any drift or non-zero gate
 blocks the merge without repair.
+
+## Supervisor-restart terminal reconciliation — 2026-08-30
+
+**State:** terminal historical integration record. The accepted R3 review
+`f57faba37c4c8bcc7c68becdf732e694e0f377e4` and its integrated composition
+`037ffd2886` are ancestors of `main@731d31ed493bb34c54b9c04a7a056b957e262827`.
+Task `0017-01` remains `[x]` with its explicit no-Acceptance boundary. This
+claim confers no further integration, Acceptance, risk activation, or root
+action; any successor requires a fresh exact assignment.
