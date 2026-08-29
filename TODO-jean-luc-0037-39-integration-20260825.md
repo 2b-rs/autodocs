@@ -34,4 +34,10 @@
 
 - `terminal: yes`; the checkpoint-free integration coordination is complete and its lease is released.
 - `main evidence:` substantive REF `7dcaf135c4323bf9f566baa2d9739e02c43bf0be` is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`; Task `0037-39` is `[x]` with current Acceptance recorded separately.
+
+## Supervisor restart recovery revalidation — 2026-08-29
+
+- `terminal: yes`; do not resume this integration token.
+- `current evidence:` substantive REF `7dcaf135c4323bf9f566baa2d9739e02c43bf0be` remains an ancestor of `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`; `0037-39` remains `[x]` with current Acceptance.
+- `handoff:` none. Toolchain consumers proceed only under their own claims.
 - `handoff:` no main advance, review, or Acceptance action remains under this owner token; do not resume it.

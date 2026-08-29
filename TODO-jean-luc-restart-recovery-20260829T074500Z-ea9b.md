@@ -8,7 +8,7 @@
 - `branch: recovery-jean-luc-durable-claims-20260829`
 - `worktree: /Users/tobias.anton/devel/autodocs/.worktrees/recovery-jean-luc-durable-claims-20260829`
 - `base: main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`
-- `status: in_progress`
+- `status: implementation-complete; integration pending`
 
 ## Exact write scope
 
@@ -53,3 +53,17 @@ artifacts.
 Commit this claim-first record, append current revalidation to every named
 claim, validate exact path scope and ancestry, then hand the claim-only candidate
 to an independent Integrator for main carry-in. No other action is authorized.
+
+## Result
+
+- All ten runtime-projected `TODO-jean-luc-*` claims associated with the nine
+  named work items were revalidated against
+  `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`.
+- No old implementation or integration token is actionable. Eight claims remain
+  terminal with reachable refs; the `0044-07` marker-repair token hands off to
+  Beverly's separate review-state candidate and pending Management request; the
+  `0044-13` containment token remains terminal and separate from Task work.
+- No Task marker, Acceptance record, product/governance artifact, external
+  system, or existing branch/ref was changed.
+- Next: independent Integrator claim-only carry-in; this implementation lease is
+  released after the candidate is committed.

@@ -28,4 +28,10 @@ No implementation, Acceptance, checkpoint integration, Feature closure, deployme
 - `terminal: yes`; disposition-complete without a separate repair commit under this claim.
 - `reason:` superseded by the governed `0037-51` execution-model rewrite at REF `f3522aaaa80d851f3ba28744b08956a52eb63275`, which is an ancestor of current `main@8948a602320c7c0781ed9a578a42b664dfd2eff4`.
 - `current evidence:` Task `0037-39` now states direct item-worktree execution with optional Dispatcher-selected Runner job control and has current Acceptance at substantive REF `7dcaf135c4323bf9f566baa2d9739e02c43bf0be`.
+
+## Supervisor restart recovery revalidation — 2026-08-29
+
+- `terminal: yes`; the `[w]` supersession remains final for this repair token.
+- `current evidence:` superseding REF `f3522aaaa80d851f3ba28744b08956a52eb63275` and accepted `0037-39` REF `7dcaf135c4323bf9f566baa2d9739e02c43bf0be` remain ancestors of `main@26f34aa56ce6287424d5bcb9440cd394b47b60ad`.
+- `handoff:` none; do not reopen or duplicate the superseded repair.
 - `handoff:` no TODO repair or implementation action remains under this owner token; lease released and claim must not be resumed.
