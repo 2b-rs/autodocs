@@ -1,10 +1,17 @@
 # Claim — Feature 0020 closure architecture
 
-- **task_id:** `0020-feature-closure-architecture`
-- **owner_token:** `agent:data:0020-feature-closure-architecture:1788029226494-1b18733c`
+item_id: 0020-feature-closure-architecture
+request_id: 1788029226494-1b18733c
+owner_token: agent:data:0020-feature-closure-architecture:1788029226494-1b18733c
+base_commit: 20110ed033c4bcd783e4093b1a8d310fad5658fc
+capability_class: privileged
+execution_authority: direct
+startup_review: AGENTS.md; SANDBOX.md; TODO.md; docs/pipeline/roles/architect.md; docs/pipeline/core-rules.md; docs/pipeline/feature-breakdown.md; docs/pipeline/branch-workflow.md; docs/pipeline/decision-record.md
+state: [p]
+write_scope: ["TODO-data-0020-closure-architecture-20260829.md", "TODO.md", "docs/dossiers/dec-0020-003-feature-integration-floor.md", "docs/dossiers/0020-feature-closure-architecture-review.md"]
+
 - **assignment:** `agent-inbox:1788029226494-1b18733c` (atomic award; execution wake `1788029258073-54e8caad`)
 - **identity/role:** `data`, management-instantiated Architect, Team Enterprise
-- **capability_class:** `privileged`
 - **status:** `[p]` — claim-first baseline verification and governance decomposition in progress
 - **branch:** `governance-0020-closure-architecture`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/governance-0020-closure-architecture`
@@ -13,7 +20,7 @@
 - **feature_input:** `0020@032fcb6ccc`
 - **due_at:** `2026-08-29T19:17:38Z`
 
-## Exact scope and result
+## Exact write scope and result
 
 Record the missing Feature `0020` terminal integration floor and exact closure
 contract. Verify the terminal implementation population `0020-01` through
