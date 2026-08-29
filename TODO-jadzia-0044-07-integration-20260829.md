@@ -2,7 +2,7 @@
 item: 0044-07-integration
 owner: jadzia
 team: DeepSpace9
-status: active
+status: terminal
 write_scope:
   - TODO-jadzia-0044-07-integration-20260829.md
 ---
