@@ -164,3 +164,19 @@ The rework requires a fresh candidate-hygiene pass and immediate guarded root
 equality/preflight/fast-forward/postflight sequence. Any changed target, foreign
 blob, extra path, or non-pass is a stop; no repair, Acceptance, Feature action,
 external effect, or Memory action is authorized.
+
+## R3 closure-recovery integration result
+
+- Candidate hygiene: PASS with `findings: []` across 90 registered worktrees
+  for `b8c6af4239107617eab48a346ac729be3a1105d3`.
+- Immediate root preflight: PASS; the held
+  `main@cc3edeff7fdd3d4a7b162933af52e186951fc781` equality guard passed.
+- Root fast-forward: PASS; only the two authorized closure paths landed.
+- Immediate root postflight: PASS across 90 registered worktrees.
+
+**VERDICT: INTEGRATED — closure records landed.** The final equality assertion
+subsequently observed `main@7e3fe2093e0aae794179daf6975b3bad20001beb`, a
+foreign terminal-claim handover after the passing postflight. No extra root
+mutation or repair followed. The coordinator receives this branch-only terminal
+record; the main-visible closure commit is already an ancestor of the observed
+main.
