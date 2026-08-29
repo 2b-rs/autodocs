@@ -51,3 +51,18 @@ commit will not be placed in the registry branch ancestry.
 - The snapshot commit is not an ancestor of this registry branch. It is retained
   only by the named `preserved/*` tag and must not be deleted or pruned without
   explicit current-user authority for that exact tag.
+
+## Restoration and preliminary gates
+
+Immediately before restoration, the shared root remained pinned to the awarded
+baseline, its index was clean, the only tracked working-tree differences were
+the five awarded paths, and every working-tree blob still matched the preserved
+snapshot. `git restore --source=<pinned-main> --worktree -- <five paths>` then
+restored only those paths; tracked root status became empty.
+
+The claim-and-registry candidate `9d534d2651c61611e97da8906704f87595b93e79`
+then passed exact-candidate hygiene across 73 registered worktrees. The hard
+root preflight also passed across the same 73 worktrees. These preliminary gates
+precede this evidence update; the final committed candidate must receive fresh
+candidate hygiene and an immediate root preflight before any root merge, plus
+an immediate post-merge root preflight.
