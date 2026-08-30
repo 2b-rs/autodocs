@@ -46,3 +46,11 @@
 ## Checkpoint Verdict
 - **Verdict:** `PASS`
 - Non-operative candidate satisfies all checkpoint criteria and is approved for upward integration to `main`.
+
+## Rework Iteration 1 — Ancestry & Byte Integrity Reconciliation (2026-08-30)
+- **Rework Offer:** `1788089345376-4eac7813` (Parent Assignment `1788082092992-9ba4e12d`)
+- **Action:** Reconciled exact candidate branch `ab7dc3f99a65041d17837a7b93f9e075bc12793c` into `main` ancestry via merge commit `85ff59d7a`.
+- **Ancestry Verification:** Confirmed `ab7dc3f99a65041d17837a7b93f9e075bc12793c` is a verified direct ancestor of `main`.
+- **Exact Path Diff:** `git diff ab7dc3f99..main` across all four candidate paths (`docs/dossiers/0041-02-atomic-checkin-contract.md`, `docs/pipeline/fixtures/0041-02/atomic-cutover-manifest.json`, `docs/pipeline/fixtures/0041-02/README.md`, `TODO-beverly-0041-02-atomic-contract-20260830.md`) is 0 bytes.
+- **Activation Blockers:** 0041-03 remains gated; both 0041-06 path mismatches remain recorded as strict activation blockers.
+- **Final Verdict:** `PASS` — exact candidate ancestry, provenance, and byte parity verified and integrated.

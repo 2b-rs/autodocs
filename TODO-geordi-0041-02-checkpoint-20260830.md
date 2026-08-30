@@ -17,7 +17,7 @@
 - substantive_ref: 2b7eaa8662fc840cb527b89cb2594762ec4bfb6f
 - state: [x]
 - checkpoint_verdict: PASS
-- terminal_state: checkpoint inspection PASS; candidate integrated to main
+- terminal_state: checkpoint inspection PASS; candidate integrated to main (rework iteration 1 ancestry reconciled)
 - scope_paths:
   - docs/dossiers/0041-02-atomic-checkin-contract.md
   - docs/pipeline/fixtures/0041-02/atomic-cutover-manifest.json
@@ -25,4 +25,4 @@
   - TODO-beverly-0041-02-atomic-contract-20260830.md
   - TODO-geordi-0041-02-checkpoint-20260830.md
   - docs/campaign-evidence/0041-02/checkpoint-review-geordi-20260830.md
-- status: Independent verification of 0041-02 non-operative atomic check-in contract and cutover manifest fixture complete; PASS verdict recorded; candidate integrated cleanly to main.
+- status: Independent verification of 0041-02 non-operative atomic check-in contract and cutover manifest fixture complete; rework iteration 1 reconciled candidate ab7dc3f99 into main ancestry with 0-byte diff; PASS verdict recorded; integrated to main.
