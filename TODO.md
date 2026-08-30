@@ -1234,7 +1234,7 @@ HOW TO USE:
   - **Acceptance criteria:** Read named files from an exact Git commit/archive; preserve IDs/text/source locators/dependencies; assign `AC-NNN` by legacy document order; map states/archives under the approved contract; retain real refs and typed unresolved placeholders without fabricated evidence; emit no claim/closure/approval absent source support; create stable blocking findings for ambiguity; and refuse live `issues/`, provenance, queue, evidence, or generated-output roots.
   - **Definition of Done:** Repeated imports of one source commit are byte-identical; malicious/path-confusion and malformed fixtures fail safely; mutation guards prove writes remain under the supplied temporary root.
 
-- [ ] **0037-15** PREREQ: 0037-15:0037-15.01, 0037-15:0037-15.02, 0037-15:0037-15.03 Complete moving-source, moving-schema, and authorized-event reconciliation.
+- [x] **0037-15** PREREQ: 0037-15:0037-15.01, 0037-15:0037-15.02, 0037-15:0037-15.03 Complete moving-source, moving-schema, and authorized-event reconciliation.
   - **Acceptance criteria:** The combined candidate equals a clean latest-source import targeting the latest schema plus exactly-once replay of compatible authorized events; no manual shadow state can win.
   - **Definition of Done:** All three Subtasks pass one scenario with intervening legacy commits and one target-schema upgrade, with no lost/duplicated item/event.
 
