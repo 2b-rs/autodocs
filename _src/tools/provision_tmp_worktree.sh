@@ -201,12 +201,12 @@ PY
 }
 
 ref_has_item_claim() {
-  local ref="$1" prefix="$2" item="$3" relative
-  while IFS= read -r relative; do
-    [[ "$relative" != */* && "$relative" == "$prefix"-*.md ]] || continue
-    claim_names_item <(git -C "$DEVEL" show "$ref:$relative") "$item" && return 0
-  done < <(git -C "$DEVEL" ls-tree --name-only "$ref")
-  return 1
+  local ref="$1" prefix="$2" item="$3" item_regex
+  # Escape the validated subtask separator so the anchored ERE matches exact identity.
+  item_regex="${item//./[.]}"
+  git -C "$DEVEL" grep -q -E \
+    "^(task_id|item_id):[[:space:]]*${item_regex}[[:space:]]*$" \
+    "$ref" -- ":(top)${prefix}-*.md"
 }
 
 ref_item_is_accepted() {
