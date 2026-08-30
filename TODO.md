@@ -1330,27 +1330,27 @@ HOW TO USE:
   - **Acceptance criteria:** Every producer in the exact file/call-site/schema inventory approved by `0037-37` records issue/criterion/run/campaign inputs and output artifact sets without inventing legacy history; each Subtask changes only its enumerated producer family and all adapters use the shared schemas and query indexes.
   - **Definition of Done:** All six Subtasks pass cross-producer reverse-trace and backward-disposition tests.
 
-- [ ] **0037-26.01** PREREQ: 0037-26.01:0037-17, 0037-26.01:0037-19 Extend scrape and extraction reports with the common provenance envelope.
+- [x] **0037-26.01** PREREQ: 0037-26.01:0037-17, 0037-26.01:0037-19 Extend scrape and extraction reports with the common provenance envelope.
   - **Acceptance criteria:** Record source/tool/config commits, exact PDF/text/backend input artifact sets, issue/criterion/campaign/run refs, stable finding IDs, output reports/artifacts, trigger/cause, and evidence/privacy class; failures and backend disagreement produce linked findings.
   - **Definition of Done:** Integration tests trace a report/finding to exact source bytes and trigger and reject path-only, mtime-only, fabricated, or mismatched-run provenance.
 
-- [ ] **0037-26.02** PREREQ: 0037-26.02:0037-17, 0037-26.02:0037-19 Extend `_src/spec/campaigns/*.json` writers with immutable campaign snapshots and content manifests.
+- [x] **0037-26.02** PREREQ: 0037-26.02:0037-17, 0037-26.02:0037-19 Extend `_src/spec/campaigns/*.json` writers with immutable campaign snapshots and content manifests.
   - **Acceptance criteria:** Adapt `campaign-manifest@v1` without rewriting history; replace listing/mtime `corpus_hash` as evidence identity with a sorted content artifact set while retaining it only as a staleness hint; link trigger issue/criterion, runs, queue snapshot, decisions, published reports, source/tool/config commits, and scope.
   - **Definition of Done:** Migration and producer tests prove old manifests receive explicit legacy disposition, new snapshots are immutable/queryable, content changes alter identity, and mtime-only changes do not.
 
-- [ ] **0037-26.03** PREREQ: 0037-26.03:0037-17, 0037-26.03:0037-19 Extend raw evidence and record-version writers with issue/run/campaign/artifact provenance.
+- [x] **0037-26.03** PREREQ: 0037-26.03:0037-17, 0037-26.03:0037-19 Extend raw evidence and record-version writers with issue/run/campaign/artifact provenance.
   - **Acceptance criteria:** Preserve append-only source evidence/version history; attach exact input artifact set, source version, producing run/campaign/tool/config, issue/criterion trigger, and evidence/privacy class; never relabel synthetic fixture data as production or backfill unknown legacy context.
   - **Definition of Done:** Integration tests prove immutable raw evidence, exact version linkage, legacy-unknown handling, duplicate prevention, and reverse trace to source bytes and trigger.
 
-- [ ] **0037-26.04** PREREQ: 0037-26.04:0037-17, 0037-26.04:0037-19 Extend database rebuild, migration, and version/snapshot writers with deterministic provenance.
+- [x] **0037-26.04** PREREQ: 0037-26.04:0037-17, 0037-26.04:0037-19 Extend database rebuild, migration, and version/snapshot writers with deterministic provenance.
   - **Acceptance criteria:** Record schema/migration/tool/config commits, ordered input artifact sets, changed/added/deleted records and versions, output snapshot/tree digest, trigger issue/finding/campaign/run, and rollback/rebuild relation; identical inputs/config produce the same semantic identity.
   - **Definition of Done:** Rebuild/migration fixtures detect input/config/schema drift, trace each changed record to evidence and trigger, prove deterministic identity, and prevent partial snapshot promotion.
 
-- [ ] **0037-26.05** PREREQ: 0037-26.05:0037-17, 0037-26.05:0037-19 Extend curation items, queues, decisions, and findings with the common provenance envelope.
+- [x] **0037-26.05** PREREQ: 0037-26.05:0037-17, 0037-26.05:0037-19 Extend curation items, queues, decisions, and findings with the common provenance envelope.
   - **Acceptance criteria:** Link stable finding, source report/evidence/version, issue/criterion/run/campaign, claim/queue transitions, curator decision/authority, applied change, invalidation/supersession, and published result without treating requester identity as approval.
   - **Definition of Done:** Lifecycle integration tests trace open→claim→decision→apply/publish and reject unauthorized, stale, duplicate, fabricated, or orphaned transitions.
 
-- [ ] **0037-26.06** PREREQ: 0037-26.06:0037-17, 0037-26.06:0037-19 Extend validation and build reports with stable findings, common run identity, and artifact manifests.
+- [x] **0037-26.06** PREREQ: 0037-26.06:0037-17, 0037-26.06:0037-19 Extend validation and build reports with stable findings, common run identity, and artifact manifests.
   - **Acceptance criteria:** Migrate build-report `1.0` explicitly; require shared run ID, source/tool/config commits, exact stage inputs/outputs, stable finding IDs, issue/criterion/campaign trigger, and success/failure; combining reports requires the same run/artifact lineage and all required stages, never latest mtime.
   - **Definition of Done:** Integration tests reject mixed runs, missing/malformed stages, unstable findings, incomplete artifact sets, and self-validating report injection and support reverse trace from final report to trigger/input.
 
