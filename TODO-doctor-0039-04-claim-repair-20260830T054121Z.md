@@ -1,8 +1,9 @@
 # Claim: 0039-04 provenance repair — restore missing implementation claim file
 
-- **state:** `[p]` — awarded, executing
-- **handover_to:** *(none)*
-- **handover_at:** *(none)*
+- **state:** `[x]` — complete. Original found and restored verbatim; nothing reconstructed.
+- **handover_to:** `tom` (dispatcher) and `kathryn` — for a fresh independent acceptance review, which
+  can now run against complete evidence.
+- **handover_at:** `2026-08-30T05:45:00Z`
 - **Agent:** `doctor` (The Doctor, Requirements Engineer, Team Voyager)
 - **owner_token:** `agent:doctor:0039-04-claim-repair:20260830T054121Z`
 - **capability_class:** `unprivileged`
