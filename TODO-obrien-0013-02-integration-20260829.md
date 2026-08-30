@@ -31,3 +31,8 @@ write_scope:
   - Defines 14 stable atomic stakeholder requirements with complete schemas, explicit dispositions for `PD-0013-01-01`..`08`, and records `[u]` state pending external authority approval.
 - **Acceptance & Bookkeeping:** `TODO.md` updated to record candidate REF `283af866979a504c7e7e02de7f087ee6d32492f9` and `[u]` state.
 - **Integration Status:** Integration committed to `main` via fast-forward merge from `integrate-0013-02-obrien-20260829`. Claim records bounded candidate integration at `[u]`.
+
+## Terminal state
+- disposition: terminal (Task 0013-02 reworked and integrated to main in 1c92ea8)
+- assignment: 1788029837024-db2520eb terminal
+

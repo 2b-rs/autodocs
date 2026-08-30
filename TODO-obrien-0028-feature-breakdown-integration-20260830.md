@@ -9,7 +9,7 @@
 - workspace: /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0028-feature-breakdown-obrien-20260830
 - base: main@21bea51f3ff340e8125dfb6530430df388f7a5ba
 - candidate: 9c5c8fc6dc3f0060c7f81789784f2ac6a604397c
-- state: review
+- state: [x]
 - terminal_state: reviewed and validated for integration
 - scope_paths:
   - TODO-data-0028-feature-breakdown-20260829.md
@@ -20,3 +20,8 @@
   - TODO-obrien-0028-feature-breakdown-integration-20260830.md
   - docs/campaign-evidence/0028/governance-integration-review-obrien-20260830.md
 - status: Independent governance review complete; decision-record@v1 conformance verified; checkpoint floor and conditional SYS.1 path verified.
+
+## Terminal state
+- disposition: terminal (Feature 0028 governance breakdown reviewed and integrated to main)
+- assignment: 1788047389798-a9fd34e0 terminal
+
