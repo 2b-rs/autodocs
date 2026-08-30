@@ -7,8 +7,8 @@ owner: tasha
 owner_token: agent:tasha:0041-04:1788079889737-376a6f6e
 request_id: 1788079889737-376a6f6e
 assignment_id: 1788079889737-376a6f6e
-status: [p]
-state: [p]
+status: [x]
+state: [x]
 capability_class: unprivileged
 execution_authority: direct local execution in this item-owned worktree and disposable local repositories only
 startup_review: ["AGENTS.md", "SANDBOX.md", "docs/pipeline/roles/security-engineer.md", "docs/pipeline/core-rules.md", "TODO.md", "docs/dossiers/dec-0041-007-atomic-cutover-task-graph.md"]
@@ -57,3 +57,44 @@ base_commit: 838904e70ff307cce3175ddd8fbc7a1527d276f8
 Pin prerequisite and architecture evidence, write red-first hermetic tests,
 implement the smallest fail-closed publisher and registered documentation,
 validate, and transition the exact candidate to review without self-acceptance.
+
+## Review-ready product and evidence — 2026-08-30
+
+- Product REF `610b0dae880aa80e0217fad810326e0a38681d9e`
+  contains only the three authorized product/test/documentation paths. The
+  prior claim-first REF is `748fcf80995857223941f0b2859f4344f32afd25`.
+- Red-first baseline: `python3 -m unittest
+  _src.tools.test_publish_item_branch` failed before implementation with
+  `ModuleNotFoundError: No module named 'publish_item_branch'`.
+- Exact committed-product validation:
+  - `python3 -m unittest -v _src.tools.test_publish_item_branch`: 17/17 PASS
+    in 49.947 seconds. Disposable local repositories cover success,
+    absent-target creation, dry-run, protected/noncanonical/mismatched refs,
+    missing/ambiguous remotes, malformed/stale expected objects, dirty state,
+    non-fast-forward history, local and remote CAS races,
+    interruption/retry, push rejection, idempotence, and canonical-worktree
+    preservation.
+  - `python3 -m py_compile _src/tools/publish_item_branch.py
+    _src/tools/test_publish_item_branch.py`: PASS.
+  - `python3 _src/tools/automation_safety.py --path
+    _src/tools/publish_item_branch.py --json`: PASS; zero findings, zero
+    unresolved criticals, and zero policy errors.
+  - `git diff --check HEAD^ HEAD`: PASS; worktree clean at the product REF.
+  - `python3 _src/tools/process_doc_doctor.py --json`: `ok: true`; no finding
+    attributable to `docs/pipeline/item-branch-publication.md`. The global
+    result retains two errors and 34 findings already outside this award.
+- No network URL, external remote, credential, protected ref, project ref,
+  canonical root, Acceptance, checkpoint, integration, release, or `0041-05`
+  action was used or mutated. All publication tests used disposable local
+  repositories under temporary directories.
+- The atomic award excludes `TODO.md`; its authoritative `0041-04` marker
+  therefore remains `[ ]`. This claim records the completed review candidate
+  but does not invent Task bookkeeping, Acceptance, or integration authority.
+
+## Handoff
+
+Route product REF `610b0dae880aa80e0217fad810326e0a38681d9e` plus this
+claim-only evidence commit to independent review. The coordinator/integrator
+must separately pin current target state and use their own exact authority for
+any Task bookkeeping or integration. Tasha does not self-review or publish the
+candidate.
