@@ -1,0 +1,30 @@
+{
+  "approval_state": "candidate-not-approved",
+  "cases": [
+    {
+      "id": "v1-resolvable-to-v2",
+      "description": "Historical review-request-package@v1 export with a currently-resolvable target migrates to v2 by minting a fresh UUIDv7 event_id; the v1 payload is preserved as source evidence, never silently discarded.",
+      "disposition": "migrate-with-provenance"
+    },
+    {
+      "id": "v1-unresolvable-target",
+      "description": "Historical v1 export whose target no longer resolves to any current canonical page.",
+      "disposition": "quarantine-actionable-rejection"
+    },
+    {
+      "id": "v1-malformed-persisted",
+      "description": "Already-persisted legacy queue item that fails v1's own schema (predates strict validation).",
+      "disposition": "quarantine-actionable-rejection"
+    },
+    {
+      "id": "v2-unknown-future-version",
+      "description": "A package declaring a kind newer than review-request-package@v2 that this candidate does not recognize.",
+      "disposition": "reject-unsupported-version"
+    },
+    {
+      "id": "v2-same-event-retry",
+      "description": "Exact retry: same event_id and identical canonical package bytes resubmitted after a transport failure.",
+      "disposition": "idempotent-return-prior-result"
+    }
+  ]
+}
