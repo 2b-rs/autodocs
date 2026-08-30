@@ -1,0 +1,201 @@
+# `DEC-0044-034` — Correct unsupported misc-chain completion projections
+
+This pre-mutation record governs one bounded backlog-integrity correction. It
+does not change a marker, supply missing completion evidence, grant Acceptance,
+authorize a checkpoint or external effect, re-plan work, integrate a branch, or
+advance `main`.
+
+### `DEC-0044-034` — Reopen the exact 54 unsupported misc-chain Tasks atomically
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-30T08:55:11Z`
+- **Deciding identity:** `agent:data:DEC-0044-034-mass-marker-governance-preparation-20260830:1788079870082-7f388409`
+- **Role:** `Architekt`
+- **Authority reference:** agent-inbox AWARD `1788079870082-7f388409`; Project Lead cross-item confirmation `1788079082806-e52e14be`; inventory parent AWARD `1788078667558-99919afc`; distinct Architect scope-review AWARD `1788078984596-2daa44e0`; `docs/pipeline/decision-record.md`; `docs/campaign-evidence/mass-marker-evidence-gap-20260830/architect-scope-review-data.md@68e9e71fa`
+- **Subject:** Exact correction scope, activation boundary, compare-and-swap preconditions, downstream gate effects, verification, recovery, and drift handling for the 54 `TODO.md` completion markers introduced by misc-chain incident commits 12 through 23 and unsupported by task-bound product, validation, authority, independence, or Acceptance evidence.
+- **Decision:** A later, separately authorized Implementer MUST change exactly the 54 named Task markers from `[x]` to `[ ]` in one atomic current-`main` transaction, preserving every Task byte except the marker characters, all prerequisites, checkpoint attributes, claims, summaries, incident commits, and review history. Activation is prohibited until this record and the distinct Architect review `68e9e71fa` are reachable from current `main` and the Project Lead has issued a re-plan for the corrected chains. The mutation is a compare-and-swap: immediately before editing, the Implementer MUST bind the current `TODO.md` digest and verify that it equals `73d1d64d18b2b4ed237751f36dff9e0695cd94b67e7d4d4f80e046b124acf9bd`, all 54 expected old markers remain `[x]`, the complete Task text, prerequisite graph, checkpoint attributes, Acceptance state, and affected gate contracts are unchanged from this decision baseline, and no superseding decision exists. Any mismatch aborts the transaction and requires renewed impact analysis and, when the cross-item reach changes, a new or append-only superseding decision and distinct Architect scope review. The correction re-closes all named successor, validation, future prerequisite-closed Acceptance, integration, publication, release, external-effect, and Feature-closure gates; it does not claim that underlying code is absent. Successors resume only through fresh or properly resumed claims after their prerequisites independently regain truthful completion evidence. Verification MUST prove an exact 54-pair marker-only `TODO.md` diff, zero other Task or governance changes, 94 preserved internal prerequisite edges, 50 closed successor Task-start gates, the two preserved direct Feature edges, all named checkpoint and closure effects, clean diff structure, and current canonical repository-doctor results. If the correction transaction itself is later proven wrong, recovery is a separately authorized append-only restoration bound to exact task evidence and then-current graph state; history is never rewritten and unsupported markers are never restored merely to recover scheduling.
+- **Technical justification:** The 12 incident commits `161ae0b7d42a`, `cf61ea33c23f`, `df0b9981a911`, `71d47c4abcfe`, `0524aa42d9ee`, `1ae357aa0813`, `cd7da8fdae06`, `15aad8b2d1cf`, `ce6f03bf3ecc`, `ba6a16f6f556`, `7e7b3f8233a2`, and `bb25c5d06aa7` changed only 54 marker pairs in `TODO.md`; their companion material supplies claims or prose summaries rather than criterion-bound product/test revisions, retained validation, approvals, signatures, or independent authority evidence. The verified inventory at `9875ede2c6ae9bbdfbde8422b05809b747948646` and distinct review `68e9e71fa` find zero complete retention cases, 94 internal prerequisite edges, 50 successor Task gates, direct edges `0025-10 -> feature:0018` and `0023-10 -> feature:0026`, and mandatory checkpoints `0037-34.02` and `0037-40`. Correcting a subset would leave at least one unsupported completion projection able to open downstream work; adding any other marker or changing contracts would exceed the evidence. The `0023-09` side-branch product `d2e9bbd26f168c9cb34c75b7ca6b480bc78c8572` and content review `b0b0b9dac606c0881172f1876dc462fdcc0d7e6f` are not reachable from the reviewed lineage, and final verdict `000baeba43028af729a7bdf934f6e62fcf794205` is blocked and grants neither approval nor Acceptance, so it is not a retention exception. Exact CAS and drift re-analysis prevent this incident decision from overriding later legitimate evidence or contract changes.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `public-release`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Reopen exactly all 54 unsupported Task markers as one compare-and-swap unit after the decision, distinct scope review, and Project Lead re-plan are reachable.
+    - **Disposition:** `selected`
+    - **Reason:** It is the smallest scope that removes every known unsupported completion projection while preserving contracts, evidence history, and a coherent prerequisite graph.
+  - **ALT-02:** Retain all 54 markers and allow downstream work to proceed.
+    - **Disposition:** `rejected`
+    - **Reason:** No marker has the complete reachable task-bound evidence and authority package its unchanged criterion requires; retention would continue to bypass validation, Acceptance, release, and closure gates.
+  - **ALT-03:** Reopen only markers without any pre-existing implementation fragments and retain the rest.
+    - **Disposition:** `rejected`
+    - **Reason:** A code fragment, prose summary, or blocked side-branch review is not a complete terminal Task disposition; partial correction would leave unsupported states and a split graph baseline.
+  - **ALT-04:** Rewrite or delete incident commits, claims, summaries, or Task contracts.
+    - **Disposition:** `rejected`
+    - **Reason:** History and provenance are evidence of the incident; changing them would exceed the correction and obscure rather than repair the authoritative projection.
+- **Consequences:**
+  - **CON-01:** The exact 54 Tasks become honestly open again; `[ ]` means completion is not established on the authoritative lineage, not that every underlying capability is absent.
+  - **CON-02:** Ninety-four internal prerequisite edges continue unchanged while 50 successor Task-start gates and two direct Feature dependencies fail closed until ordinary completion evidence is restored.
+  - **CON-03:** Future prerequisite-closed Acceptance batches, checkpoints `0037-34.02` and `0037-40`, affected release/publication/external-effect actions, and nine Feature closures cannot consume the unsupported markers.
+  - **CON-04:** The Project Lead must re-plan the corrected chains before successor dispatch; each resumed item needs a real claim, committed work products, criterion-appropriate validation, real REF, and every required approval or independent review.
+  - **CON-05:** The transaction has an exact activation checksum and compare-and-swap contract. Any drift in marker, Task, prerequisite, checkpoint, Acceptance, decision, or affected-gate state stops application and triggers renewed impact analysis.
+  - **CON-06:** Verification costs include an exact 54-marker-only diff audit, graph recount, checkpoint/closure assertions, canonical document checks, and recorded validator provenance; a repository-wide test count alone is insufficient.
+  - **CON-07:** Recovery preserves append-only history. A proven erroneous correction may be restored only by separate authority and exact current evidence; no reset, history rewrite, or scheduling-driven restoration is permitted.
+  - **CON-08:** Permanent HERKUNFT remains bound to parent AWARD `1788078667558-99919afc`, inventory evidence tip `9875ede2c6ae9bbdfbde8422b05809b747948646`, Project Lead projections `1788078876588-b955a927` and `1788079082806-e52e14be`, scope-review AWARD `1788078984596-2daa44e0`, review REF `68e9e71fa`, evidence-carriage source `17732d971`, and this decision AWARD `1788079870082-7f388409`.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `path:TODO.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260830/marker-inventory-and-correction-plan.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260830/architect-scope-review-data.md`
+  - `feature:0015`
+  - `feature:0018`
+  - `feature:0023`
+  - `feature:0024`
+  - `feature:0025`
+  - `feature:0026`
+  - `feature:0033`
+  - `feature:0035`
+  - `feature:0037`
+  - `task:0037-31`
+  - `task:0033-07.01`
+  - `task:0033-07.02`
+  - `task:0023-09`
+  - `task:0035-01`
+  - `task:0035-02`
+  - `task:0035-03`
+  - `task:0033-07.04`
+  - `task:0033-08`
+  - `task:0033-09`
+  - `task:0033-10`
+  - `task:0033-11`
+  - `task:0033-12`
+  - `task:0033-13`
+  - `task:0037-34.01`
+  - `task:0023-10`
+  - `task:0037-32`
+  - `task:0024-01`
+  - `task:0024-02`
+  - `task:0037-33`
+  - `task:0025-02`
+  - `task:0025-03`
+  - `task:0025-04`
+  - `task:0037-34.02`
+  - `task:0037-34`
+  - `task:0033-07.03`
+  - `task:0033-14`
+  - `task:0033-15.01`
+  - `task:0033-15`
+  - `task:0033-16`
+  - `task:0025-05`
+  - `task:0025-06`
+  - `task:0025-07`
+  - `task:0025-08`
+  - `task:0025-09`
+  - `task:0025-10`
+  - `task:0018-01`
+  - `task:0018-02`
+  - `task:0018-03`
+  - `task:0037-35.01`
+  - `task:0037-35.02`
+  - `task:0037-35`
+  - `task:0037-36`
+  - `task:0037-40`
+  - `task:0015-10`
+  - `task:0018-04`
+  - `task:0018-05`
+  - `task:0018-06`
+  - `task:0018-07`
+  - `task:0018-08`
+  - `task:0018-09`
+  - `task:0018-10`
+  - `task:0033-15.02`
+  - `task:0033-16.01`
+- **Affected gates:**
+  - `task-start:0015-10`
+  - `task-start:0018-01`
+  - `task-start:0018-02`
+  - `task-start:0018-03`
+  - `task-start:0018-04`
+  - `task-start:0018-05`
+  - `task-start:0018-06`
+  - `task-start:0018-07`
+  - `task-start:0018-08`
+  - `task-start:0018-09`
+  - `task-start:0018-10`
+  - `task-start:0023-10`
+  - `task-start:0024-01`
+  - `task-start:0024-02`
+  - `task-start:0025-02`
+  - `task-start:0025-03`
+  - `task-start:0025-04`
+  - `task-start:0025-05`
+  - `task-start:0025-06`
+  - `task-start:0025-07`
+  - `task-start:0025-08`
+  - `task-start:0025-09`
+  - `task-start:0025-10`
+  - `task-start:0033-07.03`
+  - `task-start:0033-07.04`
+  - `task-start:0033-08`
+  - `task-start:0033-09`
+  - `task-start:0033-10`
+  - `task-start:0033-11`
+  - `task-start:0033-12`
+  - `task-start:0033-13`
+  - `task-start:0033-14`
+  - `task-start:0033-15`
+  - `task-start:0033-15.01`
+  - `task-start:0033-15.02`
+  - `task-start:0033-16`
+  - `task-start:0033-16.01`
+  - `task-start:0035-01`
+  - `task-start:0035-02`
+  - `task-start:0035-03`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `task-start:0037-34`
+  - `task-start:0037-34.01`
+  - `task-start:0037-34.02`
+  - `task-start:0037-35`
+  - `task-start:0037-35.01`
+  - `task-start:0037-35.02`
+  - `task-start:0037-36`
+  - `task-start:0037-40`
+  - `validation:task-completion-evidence-54-marker-population`
+  - `validation:prerequisite-closed-task-acceptance`
+  - `validation:0033-08-real-store-security-side-effect-regression`
+  - `validation:0025-02-selected-profile-readiness`
+  - `validation:0037-31-frozen-migration-candidate`
+  - `validation:0037-35.01-clean-post-cutover-rebuild`
+  - `validation:0037-35.02-isolated-rollback-rehearsal`
+  - `validation:0025-03-frozen-ecu-evidence-index`
+  - `validation:0025-04-ecu-assessment-evidence`
+  - `validation:0018-04-frozen-ecu-evidence-index`
+  - `validation:0018-05-internal-r1-assessment`
+  - `integration:0037-34.02`
+  - `integration:0037-40`
+  - `release:0024-02-release-delivery-receipt`
+  - `release:0025-09-assessment-publication`
+  - `release:0025-10-level1-cl2-handoff`
+  - `release:0018-09-result-publication`
+  - `release:0018-10-cl2-claim`
+  - `release:0033-15.02-website-release-decision`
+  - `external:0033-16.01-post-decision-audit-closure`
+  - `external:0037-34.02-authority-cutover`
+  - `external:0037-40-closure-activation-write-freeze-lift`
+  - `feature-closure:0015`
+  - `feature-closure:0018`
+  - `feature-closure:0023`
+  - `feature-closure:0024`
+  - `feature-closure:0025`
+  - `feature-closure:0026`
+  - `feature-closure:0033`
+  - `feature-closure:0035`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:mass-marker-evidence-reconciliation-architect-review-data-20260830:1788078984596-2daa44e0`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** The distinct pre-mutation scope review at `68e9e71fa` supports the exact 54-marker atomic compare-and-swap unit, finds no retention exception, enumerates the downstream gates, and requires this decision plus Project Lead re-plan before mutation; it is not Acceptance, integration, or release authority.
+- **Waiver:** `none`

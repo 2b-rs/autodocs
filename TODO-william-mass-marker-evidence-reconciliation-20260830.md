@@ -1,0 +1,25 @@
+# Claim: mass-marker-evidence-reconciliation-enterprise-20260830
+
+- item: mass-marker-evidence-reconciliation-enterprise-20260830
+- owner: william (William T. Riker, unprivileged Dispatcher, Team Enterprise)
+- owner_token: agent:william:mass-marker-evidence-reconciliation-enterprise-20260830:1788078667558-99919afc
+- capability_class: unprivileged
+- execution_authority: direct execution only within the awarded item worktree and exhaustive path scope; no integration or governance-marker mutation authority
+- assigned_by: agent-inbox atomic award 1788078667558-99919afc
+- branch: mass-marker-evidence-reconciliation-enterprise-20260830
+- base: main@4ad2a5ffe22ca733659ff0d07c9fa348065680fb
+- worktree: /Users/tobias.anton/devel/autodocs/.worktrees/mass-marker-evidence-reconciliation-enterprise-20260830
+- state: review
+- startup_review: pinned base verified; root checkout left read-only; paused-state facts verified through Project Lead projection `1788078876588-b955a927` of O'Brien `1788078586020-1000ed3c`, Worf `1788078592657-e1a651e4`, and Benjamin `1788078597766-b9b562bc`
+- intended_write_scope:
+  - TODO-william-mass-marker-evidence-reconciliation-20260830.md
+  - TODO-lore-mass-marker-evidence-reconciliation-20260830.md
+  - docs/campaign-evidence/mass-marker-evidence-gap-20260830/
+- external_resource_needs: independent Architect review through an agent-inbox child priority offer to Data
+- assumptions: misc-chain 12-23 means the twelve commits whose subjects identify those chain numbers on the pinned baseline; each marker will be traced to its exact TODO diff and repository evidence before the correction plan is proposed
+- prohibited: TODO.md or DONE.md mutation; Task Acceptance; integration checkpoint crossing; Feature movement; history rewrite/revert; root cleanup; release/risk authority inference
+- inventory_ref: 9875ede2c6ae9bbdfbde8422b05809b747948646
+- architect_review_ref: 68e9e71fa
+- architect_terminal_tip: c0fb9afac
+- result: exact 54-marker smallest correction unit documented; 94 internal edges, 50 successor Task gates, two direct Feature edges, no retention exceptions; decision-record and Project Lead re-plan remain mandatory before mutation
+- next_step: return inventory and Architect review to Project Lead for conforming decision-record@v1 and re-plan; perform no marker correction or integration under this award
