@@ -2055,21 +2055,21 @@ Architecture: `DEC-0028-001`; full contracts:
   - **Definition of Done:** Manifest/schema validation and a reproducibility check pass; the manifest is committed; the source set is sufficient to re-fetch or verify every imported artifact without referring to `main`.
   - **Completion evidence (2026-08-19):** The committed `score-source-bom@v1` pins `eclipse-score/score@v0.6.0` (`db1f5bb87ad7f41b40b6aca4b96a889d8798735e`, path `docs`) and the release-declared `process_description@v1.6.0` (`04e9cd30bc657033a764dbb75f07e03e4ccbbc12`, path `process`), with Apache-2.0 licence paths and deterministic `git archive` SHA-256 values. Build/render-only `tooling` and `docs-as-code` dependencies are explicitly excluded. `python3 _src/tests/test_score_campaign_manifest.py` passed 11 tests; `python3 _src/tools/score_campaign_manifest.py --require-complete _src/spec/campaigns/eclipse-score-v0.6.0.json` passed; and local clone verification checked every origin, commit, and archive hash. No acceptance review is claimed.
 
-- [ ] **0019-02** PREREQ: 0019-02:0019-01 Create an immutable local source snapshot and evidence inventory for the v0.6.0 BOM.
+- [x] **0019-02** PREREQ: 0019-02:0019-01 Create an immutable local source snapshot and evidence inventory for the v0.6.0 BOM.
   - **Acceptance criteria:** Each manifest source resolves to the declared SHA; immutable source contents or a deterministic local archive/snapshot plus inventory with SHA-256 hashes are retained for every in-scope source; every source artifact selected for extraction has repository, ref, commit, path, and locator evidence; absent/unavailable artifacts block completion or are explicitly removed from scope with rationale in `0019-01`, never omitted silently.
   - **Definition of Done:** A clean-environment verification reconstructs the same source inventory and hashes without depending on upstream availability; the snapshot/inventory report is committed or retained in an immutable controlled store and linked from the campaign manifest.
 
-- [ ] **0019-03** PREREQ: 0019-03:0019-01 Define and test the S-Core import profile: source selectors, supported artifact classes, field mapping, status defaults, and explicit non-goals.
+- [x] **0019-03** PREREQ: 0019-03:0019-01 Define and test the S-Core import profile: source selectors, supported artifact classes, field mapping, status defaults, and explicit non-goals.
   - **Acceptance criteria:** A versioned import-profile document/config maps each supported source class to `module`, `component`, `design-doc`, or `process-doc`; it identifies mandatory fields, source locators, status/traceability defaults, duplicate/conflict behavior, and conditions that must create a review/curation item; sample artifacts from every in-scope repository demonstrate the mapping.
   - **Definition of Done:** Profile is reviewed against `score-identity-scheme.md`, `data-model.md`, `status-model.md`, and `processes.md`; automated fixtures cover every supported class and every defined rejection/queue condition.
 
 ### Campaign B — Extraction and Normalization
 
-- [ ] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter.
+- [x] **0019-04** PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter.
   - **Acceptance criteria:** The adapter accepts only a manifest-pinned source set, extracts the profile’s supported artifacts, and emits deterministic raw extraction output; it does not fall back to moving refs such as `main`; failures identify repo/ref/path/locator and leave no partial canonical corpus presented as complete.
   - **Definition of Done:** Unit and integration tests cover successful extraction, missing source, invalid ref/hash, malformed Sphinx-needs item, duplicate identity, and unsupported artifact; repeated extraction from the same snapshot produces identical normalized raw output.
 
-- [ ] **0019-05** PREREQ: 0019-05:0019-04 Normalize raw S-Core extraction output into canonical versioned records.
+- [x] **0019-05** PREREQ: 0019-05:0019-04 Normalize raw S-Core extraction output into canonical versioned records.
   - **Acceptance criteria:** Every emitted record conforms to `ECLIPSE/S-CORE/<kind>/<id>@rel:<release>#<content-hash8>`, carries all non-canonical provenance required by `score-identity-scheme.md`, contains source-backed traceability, has an initial status/reason and history entry, and records content hashes deterministically; identity collisions and source contradictions emit deterministic structured exception candidates for `0019-07` rather than being overwritten or prematurely queued.
   - **Definition of Done:** Schema, canonical-ID, version-ID, provenance, and deterministic-content-hash tests pass; a fixture corpus demonstrates each of the four supported kinds plus collision and contradiction handling.
 
