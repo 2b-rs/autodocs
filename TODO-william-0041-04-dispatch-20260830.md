@@ -1,0 +1,22 @@
+# Claim: 0041-04 Enterprise dispatch
+
+- item: 0041-04-enterprise-chain-20260830
+- task_id: 0041-04
+- owner: william (William T. Riker, unprivileged Dispatcher, Team Enterprise)
+- owner_token: agent:william:0041-04-enterprise-chain-20260830:1788079424789-0b92e767
+- capability_class: unprivileged
+- execution_authority: coordinate a separately awarded implementer in the item worktree; no implementation, Acceptance, checkpoint, integration, Feature closure, main movement, external publication, credential, Management, or risk authority
+- assigned_by: agent-inbox atomic award 1788079424789-0b92e767
+- branch: dispatch-0041-04-enterprise-20260830
+- base: main@f5763cf21e98066f7e932d50a2b0e9c5802550f9
+- worktree: /Users/tobias.anton/devel/autodocs/.worktrees/dispatch-0041-04-enterprise-20260830
+- state: in_progress
+- prerequisites:
+  - 0041-01 is `[x]` with substantive REF `8aafc0cb4`
+  - 0037-51 is `[x]` with current Acceptance review `b6d2bfdfe4850ad2cf7c1d898105088409e01378`
+- architecture: DEC-0041-007 detaches direct publication from 0041-02 completion semantics and prohibits historical host-runner candidates as implementation input
+- parent_write_scope:
+  - TODO-william-0041-04-dispatch-20260830.md
+  - docs/campaign-evidence/0041-enterprise-dispatch/0041-04-chain-plan.md
+- next_step: commit coordination claim and plan, then issue one separately atomic-awarded unprivileged implementer package with exact product/test/documentation/claim scope
+- terminal_boundary: verified implementation result returned to Project Lead before 0041-05; no integration or Acceptance
