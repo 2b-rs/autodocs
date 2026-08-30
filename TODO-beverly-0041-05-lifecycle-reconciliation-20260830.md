@@ -50,3 +50,15 @@ No alternate or foreign claim is modified.
 ## Next step
 
 Coordinator reviews the exact candidate. A later, separately assigned `0041-05` implementer may start only after all unchanged prerequisites are current and terminal; independent privileged checkpoint review remains separately required.
+
+## Completion evidence and validation
+
+- Claim-first REF: `c40f8b8cf7e573661e6c25deb0412900e87e95d0`.
+- Substantive reconciliation REF: `b1202a53023a7ebe17125cb4ef9d6ae0e3b6aef6`.
+- Exact substantive paths: `TODO.md`, this claim, and `docs/campaign-evidence/0041-05/lifecycle-reconciliation-20260830.md`.
+- `git diff --cached --check` before the substantive commit: passed.
+- Exact-scope assertion before commit: passed; no fourth path was staged or committed.
+- Prerequisite validation: all five `0041-05` endpoints exist; the original edge direction and text are unchanged; focused Doctor output reports no affected unknown endpoint, self-edge, or cycle.
+- Focused post-commit `legacy_task_doctor.py --root . --json`: the prior `LTD-REF-MISSING` and all four `LTD-TERMINAL-UNSATISFIED-PREREQ` findings for `0041-05` cleared. The sole remaining target finding is `LTD-CLAIM-IDENTITY-MISMATCH`, because the award mandates this claim path while the Doctor derives `TODO-beverly-0041-05-1788071483077-647ed4af.md`; the assigned path is preserved and no extra path is created.
+- `git show --check b1202a53023a7ebe17125cb4ef9d6ae0e3b6aef6`: passed.
+- Worktree after the substantive commit: clean.
