@@ -1941,10 +1941,10 @@ Architecture: `DEC-0028-001`; full contracts:
 - [x] **0013-05** PREREQ: 0013-05:0013-04 Create, agree, and communicate static/dynamic detailed designs and interface/data/behavior contracts for defined software units; define coding principles, design records, and code-review criteria and map units to architecture elements.
 - [x] **0013-06** PREREQ: 0013-06:0013-03, 0013-06:0013-04, 0013-06:0013-05 Define the lifecycle trace schema and implement automated consistency checks for stakeholder requirements, software requirements, architecture, detailed design/units, and source code; Features 0014 and 0016 extend the same schema to verification/validation and change/release evidence.
 - [x] **0013-07** PREREQ: 0013-07:0013-02, 0013-07:0013-03 Inventory and classify requirement candidates scattered across TODOs, conventions, maintenance/process documents, schemas, and tests; identify duplicates, conflicts, design statements, process rules, and imported domain content without migrating them yet.
-- [ ] **0013-08** PREREQ: 0013-08:0013-02, 0013-08:0013-03 Define and operate requirement agreement, status communication, change-impact analysis, consistency review, and baseline supersession procedures with retained decisions.
-- [ ] **0013-09** PREREQ: 0013-09:0013-05 Construct or confirm every in-scope unit against its detailed design and coding principles, record code-review/construction findings, correct inconsistencies, and communicate the agreed design/units.
-- [ ] **0013-10** PREREQ: 0013-10:0013-07, 0013-10:0013-08 Migrate approved requirement candidates into the controlled hierarchy in reviewable batches while retaining source links and supersession history.
-- [ ] **0013-11** PREREQ: 0013-11:0013-06, 0013-11:0013-09, 0013-11:0013-10 Populate and review bidirectional stakeholder-requirement ↔ software-requirement ↔ architecture ↔ detailed-design/unit ↔ source-code traces and close unexplained gaps.
+- [x] **0013-08** PREREQ: 0013-08:0013-02, 0013-08:0013-03 Define and operate requirement agreement, status communication, change-impact analysis, consistency review, and baseline supersession procedures with retained decisions.
+- [x] **0013-09** PREREQ: 0013-09:0013-05 Construct or confirm every in-scope unit against its detailed design and coding principles, record code-review/construction findings, correct inconsistencies, and communicate the agreed design/units.
+- [x] **0013-10** PREREQ: 0013-10:0013-07, 0013-10:0013-08 Migrate approved requirement candidates into the controlled hierarchy in reviewable batches while retaining source links and supersession history.
+- [x] **0013-11** PREREQ: 0013-11:0013-06, 0013-11:0013-09, 0013-11:0013-10 Populate and review bidirectional stakeholder-requirement ↔ software-requirement ↔ architecture ↔ detailed-design/unit ↔ source-code traces and close unexplained gaps.
 
 ## Feature: 0014 — Lifecycle-Level Verification, Intended-Use Validation, and Quality Assurance
 
