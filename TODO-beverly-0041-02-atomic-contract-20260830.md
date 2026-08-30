@@ -13,6 +13,7 @@ state: [ ]
 assignment_state: review
 work_product_status: [x]
 coordination_state: ready_for_review
+substantive_ref: 2b7eaa8662f7aa9a5bb66c011fa1d36e793b33ad
 next_step: coordinator routes the exact committed candidate to the separately assigned independent privileged 0041-02 checkpoint reviewer; TODO.md remains outside this award
 
 ## Assignment and branch
@@ -96,6 +97,10 @@ No operative consumer or authority change; no reuse, copy, or merge of historica
   followed only by claim-first commit `ef5369a99e3ddcead35211de530f977b6b047d34`
   before product mutation. Historical candidate `8b1afb933f` was not merged,
   cherry-picked, rebased, squashed, or copied.
+- Substantive candidate REF:
+  `2b7eaa8662f7aa9a5bb66c011fa1d36e793b33ad`; exact four-path staged set and
+  `git diff --cached --check` passed before commit, and `git show --check` passed
+  afterwards.
 - No operative consumer, authority document, Task marker, historical record,
   external system, credential, Acceptance, checkpoint, integration ref, or
   Feature state was changed.
