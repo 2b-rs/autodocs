@@ -507,7 +507,7 @@ HOW TO USE:
     branch: {parent: "0041", name: "0041-03", create: "pre-provision from current Feature/main governance baseline and merge reviewed 0041-02 product; no stale lineage"}
     ```
 
-- [ ] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0037-51 Implement direct item-scoped branch publication with protected-ref and compare-and-swap guards.
+- [x] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0037-51 Implement direct item-scoped branch publication with protected-ref and compare-and-swap guards. REF: `610b0dae880aa80e0217fad810326e0a38681d9e`.
   - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened and detached from `0041-02`; publication does not consume completion semantics. Accepted `0037-51` is the binding direct-execution predecessor. Historical host-runner candidates are prohibited inputs.
   - **Requirements covered:** `RQ-WT-03`, `RQ-WT-06`; resolves the open point of section 5 of the requirements baseline.
   - **Context:** Publication remains an item-bound Git operation, but `0037-51` removed host-runner transport as a mandatory layer. A direct agent needs one deterministic interface that binds assigned item, source branch, expected remote target, and expected old target object before mutation.
