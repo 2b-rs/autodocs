@@ -10,10 +10,12 @@ base_commit: 4022945cb123d4d619da5dd60527ab3e7bd61428
 capability_class: privileged
 execution_authority: direct
 startup_review: AGENTS.md; SANDBOX.md; TODO.md; docs/pipeline/roles/architect.md; docs/pipeline/core-rules.md; docs/pipeline/feature-breakdown.md; docs/pipeline/decision-record.md; DEC-0041-006; Saru review 8ba8521b02c3e9c4674347a5731676365f331131; Beverly rederivation 861d87b721c9b3dbb57612e1d84234c8575c2c3e; accepted 0037-51 direct-execution disposition reviewed before substantive mutation
-state: [p]
-recorded_task_state: [x]
-coordination_state: in_progress
-lease_active: true
+state: [ ]
+recorded_task_state: [ ]
+coordination_state: complete
+lease_active: false
+architect_work_product_status: [x]
+substantive_ref: 14ca63e94d8d1a06d8f15f047b8b2d299d41eff1
 branch: 0041-02-atomic-cutover-graph-repair-data-20260830
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0041-02-atomic-cutover-graph-repair-data-20260830
 write_scope: ["TODO.md", "TODO-data-0041-02-atomic-cutover-graph-repair-20260830.md", "docs/dossiers/dec-0041-006-atomic-implementation-checkin.md", "docs/dossiers/dec-0041-007-atomic-cutover-task-graph.md", "docs/dossiers/0041-02-atomic-cutover-graph-repair-scope-review.md"]
@@ -86,10 +88,40 @@ candidate only; Data does not implement, accept, integrate, or activate it.
 
 - Claim-first record created before substantive architecture analysis.
 - Inbox MCP was unavailable when the award arrived; the award body was read
-  from Data's authorized read-only mailbox projection. Announce and ack remain
-  pending until the connector returns.
+  from Data's authorized read-only mailbox projection. The connector later
+  returned; Data announced busy, transitioned the assignment to `in_progress`,
+  acted on all delivered mail, and acknowledged it.
+
+## Result and validation
+
+- Claim-first REF: `745f2a9db1f41a6563e6d3aba1703eec40279dc0`.
+- Substantive architecture REF:
+  `14ca63e94d8d1a06d8f15f047b8b2d299d41eff1`.
+- Exact substantive paths: `TODO.md`, this claim,
+  `docs/dossiers/dec-0041-007-atomic-cutover-task-graph.md`, and
+  `docs/dossiers/0041-02-atomic-cutover-graph-repair-scope-review.md`.
+- `DEC-0041-007` was absent from exact base
+  `4022945cb123d4d619da5dd60527ab3e7bd61428`; the new record is cited by
+  `TODO.md` and the scope review.
+- `git diff --cached --check` before substantive commit: PASS.
+- `process_doc_doctor.py --root . --json`: exit `0`, `ok: true`, zero
+  findings attributable to either new dossier; two inherited link errors.
+- `legacy_task_doctor.py --root . --json`: no cycle, unknown-endpoint,
+  self-edge, or malformed affected-task finding. Disclosed target findings:
+  the award-mandated claim filename differs from the Doctor's derived filename;
+  two older `0041-02` architecture claims retain historical `[x]`; and existing
+  `0041-05 [x]` now reports four terminal-unsatisfied-prerequisite findings
+  after the four authorized predecessors reopen, in addition to its inherited
+  missing-REF finding. The exact `0041-05` lifecycle impact and required
+  separately scoped reconciliation are recorded in the scope review; this
+  assignment did not mutate `0041-05` or foreign claims.
+- No `DEC-0041-006` byte, implementation/tool path, other Feature/claim,
+  Acceptance, checkpoint verdict, `DONE.md`, root/main ref, credential,
+  external resource, or external system was mutated.
 
 ## Next step
 
-Validate and reconcile the exact architecture candidate, finalize this claim,
-commit the four-path substantive delta, and return the immutable REF to Lore.
+Lore reviews `14ca63e94d8d1a06d8f15f047b8b2d299d41eff1`, routes the separately
+scoped `0041-05` lifecycle reconciliation recorded by the scope review, and
+then assembles an authorized integration candidate. No successor starts from
+this architecture branch.
