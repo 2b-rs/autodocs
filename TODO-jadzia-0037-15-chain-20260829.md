@@ -1,6 +1,9 @@
 ---
 item: 0037-15-chain
 owner: jadzia
+state: [x]
+handover_to: jean-luc
+handover_at: 2026-08-30T00:41:00Z
 team: DeepSpace9
 status: terminal
 write_scope:
