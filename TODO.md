@@ -1293,7 +1293,7 @@ HOW TO USE:
   - **Acceptance criteria:** Consume the sanitized payload; generate language-tree-correct assets/links and stable `issues.html#<item-id>` anchors; provide pre-rendered Graphviz SVG plus accessible list/count summary and no-JS fallback; make missing/stale payload a visible validation/build failure on required deployments; retain internal maintainer tooling outside published payloads.
   - **Definition of Done:** Page-model, generation, DOM/link/accessibility, no-JS, client-render, missing-data, and canonical/translated-tree tests pass and generated HTML contains no internal-catalog path or restricted fixture token.
 
-- [ ] **0037-24** PREREQ: 0037-24:0037-24.01, 0037-24:0037-24.02 Complete issue-title and graph-UI internationalization under the approved policy.
+- [x] **0037-24** PREREQ: 0037-24:0037-24.01, 0037-24:0037-24.02 Complete issue-title and graph-UI internationalization under the approved policy.
   - **Acceptance criteria:** Translation records are keyed by stable issue/UI identity plus source hash; no identity-bearing token is translated; all language requirements derive dynamically from `_src/site.json`.
   - **Definition of Done:** Both Subtasks pass fixture-level completeness, stale-source, protected-token, LTR/RTL, and language-local-link tests and may report production translations incomplete; only `0037-38` may make the repository-wide all-language completeness gate pass.
 
