@@ -416,35 +416,196 @@ HOW TO USE:
   - **Definition of Done:** Committed; the old shared-checkout path is removed or explicitly refused rather than left as a silent second mechanism; the header comment no longer advertises shared-object-store durability; `docs/pipeline/` documents who runs it and when.
   - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the change is confined to provisioning of a disposable checkout and is objectively checkable (canonical tree unaffected); it is re-examined at `0041-05`.
 
-- [x] **0041-02** PREREQ: 0041-02:0041-01 Establish the self-describing check-in and remove the separate bookkeeping commit from the authority documents.
+- [ ] **0041-02** PREREQ: 0041-02:0041-01 Specify the non-operative atomic-check-in contract and exact synchronous activation manifest.
   - **Hold — do not integrate (2026-08-25/26, Discovery Project Lead `michael`; visibility record, not a new checkpoint and not Task ownership):** Re-pinned onto `main` `d401aeb069371934ed349f5b59b9cae5051dbfbc` after the Culber preservation commit landed; the earlier hold candidate `d84a783e266936b3a0d6ae962836da81c7fd3c87` was based on `8a364e000` and is not an ancestor of this tip. Branch `0041-02` tip `8b1afb933f0f9029d09c2fd3e9660aad3a8fa9a3` is `[x]` on that branch only. Authoritative `main` still has this Task `[ ]`. Independent Architect verdict `scope-not-ready-for-mutation` is commit `1bc504e4bafbc21d23474cfdc3b6ec2eede1d23c` on `review-0041-02-scope-data-20260823T160421Z`, report `docs/dossiers/0041-02-gate-scope-review.md`. That review is not an ancestor of this `main` tip or of `8b1afb933f`. `0041-03`/`0041-04`/`0041-06` currently sit on historical `47fb026016`, not on `8b1afb933f` and not on this `main`; do not treat them as start-ready. Do not merge `8b1afb933f`. Lift only when a conforming `decision-record@v1` exists on current `main` and the Architect stop is superseded or explicitly waived by recorded Management authority. Does not overwrite claim `TODO-Gabriel-Keyla-0041-02-20260825T000800Z.md`. Does not change `Integration review: mandatory`.
+  - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened for current-main re-derivation. Historical `[x]` candidates remain append-only evidence and are prohibited implementation inputs. This Task now produces a non-operative shared contract/manifest; it does not activate authority documents or satisfy a successor through stale work.
   - **Requirements covered:** `RQ-CI-01` … `RQ-CI-05`.
   - **Context (finding H):** The two-commit closure is structurally fragile — the second commit depends on the first one's hash, so it can only be written afterwards, and nothing forces it. Four Tasks sit in exactly that state today: `0007-01`, `0037-37`, `0038-02` and `0038-18`. This removes the cause rather than monitoring it.
-  - **Acceptance criteria:** A defined, machine-readable trailer in the substantive commit message carries the ticket ID and the base-ref the change was made against; the format is specified once and used everywhere. `AGENTS.md` ("Completing implementation work"), the `TODO.md` header and `branch-workflow.md` no longer require a separate bookkeeping commit and no longer describe the hash-injection dance. Where a document previously required the two-step, it states the replacement instead of merely deleting the requirement.
-  - **Definition of Done:** Committed; no authority document still demands a separate bookkeeping commit for `[p]` → `[x]`/`[w]`; the trailer format is documented with at least one worked example; existing terminal Tasks are not retroactively invalidated.
-  - **Integration review:** **mandatory.** **Rationale (architect):** this changes the binding closure procedure that every agent follows. An error here either leaves two contradictory closure procedures in force or silently drops the traceability the trailer is meant to carry.
+  - **Acceptance criteria:** Produce versioned `atomic-checkin-contract@v1` and `atomic-cutover-manifest@v1`. The contract defines exact single `Task-ID`/full-object-id `Base-Ref` grammar, duplicate/malformed/wrong-item/stale/non-ancestor failures, carrying-tree invariants, claim finalization, `[x]`/`[w]` semantics without self-reference, Acceptance ownership of implementation/review commit identities, historical/reopened-work migration, and error vocabulary. The manifest exhaustively names every normative, editing, transaction, diagnostic, hygiene, test, and matching-guidance consumer; binds current blob digests and candidate outputs; declares one activation ref advance, validation order, rollback set, and old-writer absence proof. Provide positive, negative, migration, and rollback examples. No operative consumer changes in this Task.
+  - **Definition of Done:** Contract, manifest, examples, whole-consumer discovery evidence, and own claim are committed on a fresh current-main branch; schemas/digests validate; every `DEC-0041-006` consequence and Beverly blocker is mapped; the old two-commit rule remains byte-operative; historical candidates are not merged, copied, or represented as current work.
+  - **Integration review:** **mandatory.** **Rationale (architect):** retained as the shared-interface checkpoint. Multiple packages consume this grammar/manifest; an ambiguity would propagate into governance and executable gates before `0041-06` can detect it. This checkpoint reviews a non-operative contract, not activation.
+  - **Task contract (`feature-breakdown@v1`):**
+    ```yaml
+    task_id: "0041-02"
+    feature_id: "0041"
+    role: implementer
+    architecture_decisions:
+      - decision: "Produce non-operative atomic-checkin-contract@v1 and atomic-cutover-manifest@v1"
+        derives_from:
+          requirements: ["RQ-CI-01", "RQ-CI-02", "RQ-CI-03", "RQ-CI-04", "RQ-CI-05", "REQ-0041-02-RD-01", "REQ-0041-02-RD-02", "REQ-0041-02-RD-03", "REQ-0041-02-RD-04", "REQ-0041-02-RD-05", "REQ-0041-02-RD-06"]
+          decision_records: ["DEC-0041-006", "DEC-0041-007"]
+          existing_architecture: ["docs/dossiers/0041-02-current-main-rederivation.md@861d87b721c9b3dbb57612e1d84234c8575c2c3e"]
+          repository_evidence: ["docs/dossiers/0041-02-blackout-supersession-scope-review.md@8ba8521b02c3e9c4674347a5731676365f331131"]
+        authority_or_assumption: authority
+    prerequisites:
+      - task_id: "0041-01"
+        derives_from: "completed clone/provisioning interface and original Feature baseline"
+    planned_order:
+      position: 1
+      order: ["0041-02", "0041-03", "0041-06", "0041-05"]
+      order_matters_because: "all completion consumers require one reviewed grammar before candidate preparation and synchronous activation"
+    write_scope: ["docs/dossiers/0041-02-atomic-checkin-contract.md", "docs/pipeline/fixtures/0041-02/atomic-cutover-manifest.json", "docs/pipeline/fixtures/0041-02/README.md", "TODO-<owner>-0041-02-<request>.md"]
+    test_scope:
+      derives_from: ["trailer grammar", "consumer completeness", "migration and rollback invariants"]
+      kind: integration
+      evidence: "schema/duplicate/consumer-manifest validator, fixture cases, digest inventory, git diff --check"
+    capability_profile:
+      capability_class: unprivileged
+      rights: ["read repository and history", "write declared non-operative paths", "commit on item branch"]
+      data: ["current-main consumer bytes", "DEC and review refs", "no external data"]
+      tools: ["Git", "stdlib Python", "repository validators"]
+      execution_needs: direct
+      cognitive_demand: high
+      independence: "implementer is distinct from Architect Data and checkpoint Integrator; no Acceptance/integration authority"
+    cognitive_estimate: {estimator: "cognitive-demand-estimator@v1", scope_breadth: high, reasoning_depth: high, context_volume: high, ambiguity: medium, verification_hardness: high}
+    advisory_estimate: {tokens: "30k-55k", tests: "10-20 min", runtime_cpu: "low", planned_duration: "120-210 min", uncertainty: "20-35%", risk: high}
+    branch: {parent: "0041", name: "0041-02", create: "pre-provision from current Feature/main governance baseline; never reuse historical 8b1afb933f"}
+    ```
 
-- [x] **0041-03** PREREQ: 0041-03:0041-02 Move `REF` tagging from implementation completion to the acceptance transition.
+- [ ] **0041-03** PREREQ: 0041-03:0041-02 Prepare the Acceptance-owned commit-reference transition against the reviewed atomic-check-in contract.
+  - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened for current-main re-derivation. Its candidate remains non-operative until `0041-06` integrates the complete synchronous cutover.
   - **Requirements covered:** `RQ-REF-01` … `RQ-REF-03`.
   - **Context (finding K):** The `TODO.md` header currently defines `[x]` as requiring a "real substantive `REF`", and `AGENTS.md` and `task-acceptance.md` repeat it. Changing one and not the others reproduces `T8` — documentation and binding instruction disagreeing, with the instruction winning.
-  - **Acceptance criteria:** `[x]`/`[w]` no longer require a `REF`. The `[x]` → `✓` transition owns it, and the documents state explicitly in which cases it stays mandatory and in which it is optional, rather than leaving "often optional" to interpretation. `TODO.md` header, `AGENTS.md` and `task-acceptance.md` agree word for word on the new gate.
-  - **Definition of Done:** Committed; a grep for the old requirement across the authority documents returns nothing that still binds; existing `REF` records stay valid and are not rewritten.
-  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the change relaxes a gate rather than granting capability, and its consistency is mechanically checkable by the grep named in the Definition of Done. Re-examined at `0041-05`.
+  - **Acceptance criteria:** Prepare candidate bytes and fixtures that remove implementation-header `REF` and the separate implementation-bookkeeping step from `TODO.md` header, `AGENTS.md`, `core-rules.md`, `branch-workflow.md`, and `task-acceptance.md`; retain the separate Acceptance evidence/bookkeeping commit and require it to pin exact carrying and review-decision commits, baseline, prerequisite closure, manifests, and digests. `SANDBOX.md` and `PRIVILEGED.md` must either align in the candidate or have committed byte-specific compatibility evidence. Bind every change to the reviewed `atomic-checkin-contract@v1` version/digest. Do not integrate any candidate path separately.
+  - **Definition of Done:** One exact governance candidate, wording matrix, old/new negative grep, historical compatibility fixtures, and own claim are committed; no unrelated authority or role rule changes; existing terminal/accepted records remain valid; candidate is handed to `0041-06` and the operative main rule remains unchanged.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** this is bounded non-operative preparation against a checkpoint-reviewed contract; `0041-06` owns the mandatory activation review and rejects byte or semantic drift.
+  - **Task contract (`feature-breakdown@v1`):**
+    ```yaml
+    task_id: "0041-03"
+    feature_id: "0041"
+    role: implementer
+    architecture_decisions:
+      - decision: "Prepare Acceptance-owned REF governance candidate without separate activation"
+        derives_from:
+          requirements: ["RQ-REF-01", "RQ-REF-02", "RQ-REF-03", "REQ-0041-02-RD-03", "REQ-0041-02-RD-06"]
+          decision_records: ["DEC-0041-006", "DEC-0041-007"]
+          existing_architecture: ["atomic-checkin-contract@v1 from 0041-02"]
+          repository_evidence: ["docs/dossiers/0041-fundstellen.md", "docs/dossiers/0041-02-current-main-rederivation.md@861d87b721c9b3dbb57612e1d84234c8575c2c3e"]
+        authority_or_assumption: authority
+    prerequisites:
+      - task_id: "0041-02"
+        derives_from: "reviewed atomic-checkin-contract@v1 grammar and activation manifest"
+    planned_order:
+      position: 2
+      order: ["0041-02", "0041-03", "0041-06", "0041-05"]
+      order_matters_because: "candidate wording must consume the stable grammar and remain non-operative until activation"
+    write_scope: ["AGENTS.md", "SANDBOX.md", "PRIVILEGED.md", "TODO.md", "docs/pipeline/core-rules.md", "docs/pipeline/branch-workflow.md", "docs/pipeline/task-acceptance.md", "docs/dossiers/0041-03-acceptance-ref-transition.md", "docs/pipeline/fixtures/0041-03/**", "TODO-<owner>-0041-03-<request>.md"]
+    test_scope:
+      derives_from: ["authority parity", "Acceptance separation", "historical compatibility"]
+      kind: integration
+      evidence: "old/new phrase matrix, parser fixtures, process/legacy doctors, exact diff and digest handoff"
+    capability_profile:
+      capability_class: privileged
+      rights: ["read repository/history", "author declared governance candidate paths in item worktree", "commit candidate only"]
+      data: ["0041-02 contract/manifest", "current authority bytes", "historical terminal fixtures"]
+      tools: ["Git", "stdlib Python", "repository validators"]
+      execution_needs: direct
+      cognitive_demand: high
+      independence: "implementer distinct from Architect and activation Integrator; may not integrate or accept"
+    cognitive_estimate: {estimator: "cognitive-demand-estimator@v1", scope_breadth: high, reasoning_depth: high, context_volume: high, ambiguity: medium, verification_hardness: high}
+    advisory_estimate: {tokens: "35k-65k", tests: "15-30 min", runtime_cpu: "low", planned_duration: "180-300 min", uncertainty: "25-40%", risk: high}
+    branch: {parent: "0041", name: "0041-03", create: "pre-provision from current Feature/main governance baseline and merge reviewed 0041-02 product; no stale lineage"}
+    ```
 
-- [x] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0041-02 Give the runner tooling a push path with an item-scoped guard.
+- [ ] **0041-04** PREREQ: 0041-04:0041-01, 0041-04:0037-51 Implement direct item-scoped branch publication with protected-ref and compare-and-swap guards.
+  - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened and detached from `0041-02`; publication does not consume completion semantics. Accepted `0037-51` is the binding direct-execution predecessor. Historical host-runner candidates are prohibited inputs.
   - **Requirements covered:** `RQ-WT-03`, `RQ-WT-06`; resolves the open point of section 5 of the requirements baseline.
-  - **Context:** Publication by push is the only way work leaves the clone, and no tool implements it today. The guard needs the assigned item ID; whether `perplexity-cpu-loop.js` already carries that value is to be determined during implementation, and if it does not, it becomes a new provisioner input.
-  - **Acceptance criteria:** The host side can push the worker branch to the canonical repository. A push whose target branch does not match the assigned item ID is refused with a clear message and a non-zero exit. The refusal is covered by a test or a documented reproducible check. No force-push to a protected ref is possible through this path.
-  - **Definition of Done:** Committed; the guard demonstrably refuses a mismatched target; where the item ID had to become a new input, the change is documented at the provisioner and its caller.
-  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the Task adds a narrowly scoped publication path with a refusing guard and no acceptance authority; its failure mode is a refused push, which is loud rather than silent. Re-examined at `0041-05`.
+  - **Context:** Publication remains an item-bound Git operation, but `0037-51` removed host-runner transport as a mandatory layer. A direct agent needs one deterministic interface that binds assigned item, source branch, expected remote target, and expected old target object before mutation.
+  - **Acceptance criteria:** `_src/tools/publish_item_branch.py` accepts explicit repository, assigned item ID, source branch, target branch, remote, and expected old object; verifies the target is the canonical bare item branch for that item; refuses protected refs, force/non-fast-forward updates, missing/mismatched assignment, dirty/unrelated candidate state, stale expected old object, ambiguous remote, and source/target identity mismatch before push. It performs no credential discovery or authority inference, preserves canonical worktree bytes, emits machine-readable outcome/recovery evidence, and supports a dry-run. Tests use disposable local repositories and cover success, every refusal, CAS race, interruption/retry, and idempotent already-published state.
+  - **Definition of Done:** Tool, hermetic tests, registered direct-publication documentation, compatibility note for `0041-01`, and own claim are committed; focused suite and automation safety pass; no external remote, credentials, protected ref, Acceptance, integration, or release action occurs during implementation.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** the interface is fail-closed, item-scoped, non-force, CAS-bound, and hermetically testable; it grants no review or Acceptance authority and is exercised again by terminal `0041-05`.
+  - **Task contract (`feature-breakdown@v1`):**
+    ```yaml
+    task_id: "0041-04"
+    feature_id: "0041"
+    role: implementer
+    architecture_decisions:
+      - decision: "Use direct item-scoped publication; do not restore host-runner transport"
+        derives_from:
+          requirements: ["RQ-WT-03", "RQ-WT-06"]
+          decision_records: ["DEC-0037-002", "DEC-0041-007"]
+          existing_architecture: ["docs/pipeline/worker-clone-provisioning.md", "direct execution model from 0037-51"]
+          repository_evidence: ["docs/dossiers/0037-51-de-sandboxing-scope-review.md@f3522aaaa80d851f3ba28744b08956a52eb63275"]
+        authority_or_assumption: authority
+    prerequisites:
+      - task_id: "0041-01"
+        derives_from: "clone/provisioning branch interface"
+      - task_id: "0037-51"
+        derives_from: "accepted direct-execution architecture and required 0041 rewrite edge"
+    planned_order:
+      position: 2
+      order: ["0041-01", "0041-04", "0041-05"]
+      order_matters_because: "publication is independent of completion activation but must exist before end-to-end integration"
+    write_scope: ["_src/tools/publish_item_branch.py", "_src/tests/test_publish_item_branch.py", "docs/pipeline/item-branch-publication.md", "docs/pipeline/tools.md", "TODO-<owner>-0041-04-<request>.md"]
+    test_scope:
+      derives_from: ["item/branch guard", "protected-ref boundary", "CAS/recovery", "canonical-tree non-mutation"]
+      kind: integration
+      evidence: "disposable-local-repository suite plus automation_safety and before/after canonical status digest"
+    capability_profile:
+      capability_class: unprivileged
+      rights: ["read repository/history", "write declared paths", "direct Git against disposable local remotes"]
+      data: ["assigned item/branch", "explicit remote/expected old object", "no credentials"]
+      tools: ["Git", "stdlib Python", "repository validators"]
+      execution_needs: direct
+      cognitive_demand: high
+      independence: "implementer has no protected-ref, checkpoint, Acceptance, credential, or release authority"
+    cognitive_estimate: {estimator: "cognitive-demand-estimator@v1", scope_breadth: medium, reasoning_depth: high, context_volume: medium, ambiguity: medium, verification_hardness: high}
+    advisory_estimate: {tokens: "25k-45k", tests: "20-40 min", runtime_cpu: "medium", planned_duration: "180-300 min", uncertainty: "20-35%", risk: high}
+    branch: {parent: "0041", name: "0041-04", create: "pre-provision from current Feature branch with accepted 0037-51 reachable; no historical host-runner candidate"}
+    ```
 
-- [x] **0041-06** PREREQ: 0041-06:0041-02, 0041-06:0041-03, 0041-06:0038-02 Align the transaction runner and legacy diagnostics with the atomic implementation check-in.
+- [ ] **0041-06** PREREQ: 0041-06:0041-02, 0041-06:0041-03, 0041-06:0037-51, 0041-06:0038-02 Assemble, validate, and atomically activate every completion-contract consumer.
+  - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened as the sole synchronous activation owner. It consumes fresh `0041-02`/`0041-03` products, not historical lineages; candidate preparation remains non-operative until its mandatory checkpoint and authorized main-ref advance.
   - **Origin:** `DEC-0041-005`; discovered during `0041-04` integration preflight.
-  - **Acceptance criteria:** Replace the implementation two-commit contract in `_src/tools/runner_transaction.py` with one check-in whose committed tree contains deliverables/disposition, finalized claim, and terminal marker, and whose message carries validated `Task-ID`/`Base-Ref` trailers. Reject mismatched Task IDs, non-ancestor/missing Base-Refs, nonterminal committed markers, stale refs, partial trees, and any manifest that requests the removed implementation-bookkeeping phase. Preserve journal, rollback, compare-and-swap, path isolation, provenance, and post-publication recovery guarantees from `0038-02`. Update `_src/tools/legacy_task_doctor.py` so terminal implementation state validates trailers/check-in reachability instead of requiring an implementation `REF`; keep Review-REF validation for actual `Acceptance: ✓` records. Reconcile `0038-25` and the runner documentation/tests so there is one semantic owner and no parallel old-contract repair.
-  - **Definition of Done:** Focused hermetic fixtures cover atomic success, missing/mismatched trailers, non-ancestor Base-Ref, marker mismatch, failed validation, CAS loss, hard-kill/recovery, dirty/unrelated work preservation, and acceptance-boundary rejection. The current runner and Doctor accept the committed `0041-02`/`0041-03` examples and reject old manifests that silently rely on a second implementation-bookkeeping commit. Committed with a self-describing implementation check-in.
-  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** this Task aligns technical enforcement with already-decided semantics and grants no new authority; hermetic negative/recovery validation is required, and the immediately following mandatory `0041-05` checkpoint exercises the whole path end to end.
+  - **Acceptance criteria:** Bind exact reviewed `0041-02` contract/manifest and `0041-03` candidate digests; integrate their governance candidate bytes with fresh direct-execution changes to `_src/tools/legacy_task_editor.py`, `_src/tools/runner_transaction.py`, `_src/tools/legacy_task_doctor.py`, any evidenced `_src/tools/check_integration_hygiene.py` dependency, registered tool docs, and all matching guidance. Produce one activation tree where every live writer/parser/gate uses `Task-ID`/`Base-Ref`, terminal tree/claim invariants, and Acceptance-owned commit references; no reachable path requires or creates implementation-header `REF` or a second implementation-bookkeeping commit. Reject mismatched/duplicate trailers, non-ancestor or stale Base-Ref, marker/claim/partial-tree mismatch, stale/CAS-lost state, old manifests, ambiguous history, and unauthorized Acceptance/checkpoint transitions. Preserve path isolation, journal, rollback, crash recovery, provenance, dirty/unrelated work, historical contracts, and direct-execution boundaries. Activation is exactly one separately reviewed main-ref advance; candidate commits do not activate.
+  - **Definition of Done:** Exact activation and rollback manifests, merged candidate tree, consumer/digest inventory, old-writer proof, migration matrix, and complete hermetic evidence are committed. Focused fixtures cover success, every negative above, failed validation, CAS loss, hard-kill/recovery, dirty/unrelated preservation, historical and reopened work, Acceptance separation, hygiene candidate/root pre/post checks, and rollback. Process/legacy doctors and exact-scope/diff checks pass or only disclose pinned unrelated baseline findings. Independent mandatory checkpoint passes before any main advance.
+  - **Integration review:** **mandatory.** **Rationale (architect):** this is the repository-wide activation point. A missed consumer can block all later Task completion or silently accept invalid terminal state; rollback and history compatibility span every work unit. The Integrator must pin and review the exact combined tree, not isolated predecessor results.
+  - **Task contract (`feature-breakdown@v1`):**
+    ```yaml
+    task_id: "0041-06"
+    feature_id: "0041"
+    role: implementer
+    architecture_decisions:
+      - decision: "Own the sole synchronous atomic-checkin activation tree and checkpoint"
+        derives_from:
+          requirements: ["RQ-CI-01", "RQ-CI-02", "RQ-CI-03", "RQ-CI-04", "RQ-CI-05", "RQ-REF-01", "RQ-REF-02", "RQ-REF-03", "REQ-0041-02-RD-01", "REQ-0041-02-RD-02", "REQ-0041-02-RD-03", "REQ-0041-02-RD-04", "REQ-0041-02-RD-05", "REQ-0041-02-RD-06"]
+          decision_records: ["DEC-0037-002", "DEC-0041-006", "DEC-0041-007"]
+          existing_architecture: ["atomic-checkin-contract@v1", "acceptance-ref-transition@v1", "runner transaction/recovery contract from 0038-02"]
+          repository_evidence: ["docs/dossiers/0041-02-current-main-rederivation.md@861d87b721c9b3dbb57612e1d84234c8575c2c3e", "docs/dossiers/0041-02-atomic-cutover-graph-repair-scope-review.md"]
+        authority_or_assumption: authority
+    prerequisites:
+      - task_id: "0041-02"
+        derives_from: "checkpoint-reviewed contract and activation manifest"
+      - task_id: "0041-03"
+        derives_from: "governance candidate and Acceptance transition fixtures"
+      - task_id: "0037-51"
+        derives_from: "accepted direct-execution architecture"
+      - task_id: "0038-02"
+        derives_from: "journal/CAS/rollback/path-isolation transaction guarantees"
+    planned_order:
+      position: 3
+      order: ["0041-02", "0041-03", "0041-06", "0041-05"]
+      order_matters_because: "preparation must remain non-operative until the complete consumer tree can cross one checkpoint and activate together"
+    write_scope: ["AGENTS.md", "SANDBOX.md", "PRIVILEGED.md", "TODO.md", "_src/tools/legacy_task_editor.py", "_src/tools/runner_transaction.py", "_src/tools/legacy_task_doctor.py", "_src/tools/check_integration_hygiene.py", "_src/tests/test_legacy_task_editor.py", "_src/tests/test_runner_transaction.py", "_src/tests/test_legacy_task_doctor.py", "_src/tests/test_check_integration_hygiene.py", "docs/pipeline/core-rules.md", "docs/pipeline/branch-workflow.md", "docs/pipeline/task-acceptance.md", "docs/pipeline/runner-transaction.md", "docs/pipeline/agent-execution.md", "docs/pipeline/issue-lifecycle.md", "docs/pipeline/legacy-handoff-manifest.md", "docs/pipeline/legacy-task-doctor.md", "docs/pipeline/tools.md", "docs/dossiers/0041-06-atomic-cutover-activation.md", "docs/pipeline/fixtures/0041-06/**", "TODO-<owner>-0041-06-<request>.md"]
+    test_scope:
+      derives_from: ["complete consumer manifest", "atomic tree/trailers", "journal/CAS/recovery", "migration/rollback", "integration hygiene", "Acceptance separation"]
+      kind: integration
+      evidence: "whole manifest-bound hermetic matrix, old-writer discovery, process/legacy doctors, candidate/root hygiene, pre/post activation and rollback rehearsal"
+    capability_profile:
+      capability_class: privileged
+      rights: ["read repository/history", "write declared activation paths in item worktree", "assemble predecessor candidates", "run direct Git/tests"]
+      data: ["reviewed predecessor refs/digests", "current-main consumer bytes", "historical fixtures", "no credentials"]
+      tools: ["Git", "stdlib Python", "repository validators and hygiene checker"]
+      execution_needs: direct
+      cognitive_demand: critical
+      independence: "implementation owner cannot perform mandatory checkpoint, Acceptance, Feature closure, or main integration; separately assigned privileged Integrator required"
+    cognitive_estimate: {estimator: "cognitive-demand-estimator@v1", scope_breadth: critical, reasoning_depth: critical, context_volume: critical, ambiguity: high, verification_hardness: critical}
+    advisory_estimate: {tokens: "70k-130k", tests: "45-120 min", runtime_cpu: "high", planned_duration: "480-900 min", uncertainty: "35-55%", risk: critical}
+    branch: {parent: "0041", name: "0041-06", create: "pre-provision from current Feature/main governance baseline; merge exact reviewed 0041-02 and fresh 0041-03 products; never reuse historical lineage"}
+    ```
 
-- [x] **0041-05** PREREQ: 0041-05:0041-01, 0041-05:0041-02, 0041-05:0041-03, 0041-05:0041-04, 0041-05:0041-06 Integrate the Feature and confirm the pipeline actually runs end to end.
+- [ ] **0041-05** PREREQ: 0041-05:0041-01, 0041-05:0041-02, 0041-05:0041-03, 0041-05:0041-04, 0041-05:0041-06 Integrate the Feature and confirm the pipeline actually runs end to end.
+  - **Lifecycle reconciliation (2026-08-30):** Historical implementation evidence at `5c49801c7eae19b97c4247d28d37214cd3e6badb` and marker-only commit `65e0d24c574123b6600eb3ce50a80ab04cb3bc7f` are preserved, not accepted, erased, or reused. `DEC-0041-007` reopened `0041-02`, `0041-03`, `0041-04`, and `0041-06` for fresh current-main work, making this terminal marker depend on four nonterminal prerequisites; the historical Task line also has no visible authoritative REF and its summary retains no real end-to-end run evidence. Task `0041-05` is therefore reopened pending current completion of its unchanged prerequisite closure and a fresh end-to-end package. Evidence: `docs/campaign-evidence/0041-05/lifecycle-reconciliation-20260830.md`. This correction is not Acceptance, an integration verdict, checkpoint crossing, successor start, or Feature closure.
   - **Integration review: mandatory.** **Rationale (architect):** the Feature's integrating task and its review floor. It is the only point at which provisioning, check-in semantics, `REF` gating and the push path are examined as one workflow — and a workflow that is correct in four documents and broken in composition is exactly the failure this Feature exists to end.
   - **Acceptance criteria:** One real item is carried end to end: branch and clone provisioned by the host, work performed in the clone, published by push, marker advanced without a separate bookkeeping commit, and the canonical working tree demonstrably untouched throughout. Every requirement ID from the baseline has a disposition. Contradictions between authority documents are reported, not smoothed over.
   - **Definition of Done:** Committed; the end-to-end run is retained as evidence; no leftover `.git` symlink or stray non-conforming branch remains.
