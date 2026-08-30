@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:autodocs:0033-03-candidate:review-request-package-v2",
+  "title": "review-request-package@v2 (Class R candidate, not operative)",
+  "description": "Reconstructed proposal for Task 0033-03. Not approved. Not the docs/pipeline/ operative schema. Landing this content to docs/pipeline/ is exclusively 0033-04.01's act after approval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "event_id", "target_canonical_id", "category", "rationale"],
+  "properties": {
+    "kind": { "const": "review-request-package@v2" },
+    "event_id": {
+      "type": "string",
+      "description": "RFC 9562 UUIDv7. One immutable intentional package version.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "concern_key": {
+      "type": ["string", "null"],
+      "description": "SHA-256 hex digest over the exact target/category/rationale canonical projection, or null when not yet computed by the ingestion adapter."
+    },
+    "target_canonical_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The corpus's canonical identifier for the eligible published page. Never absent, never a free-text URL."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["factual-error", "outdated-content", "broken-link", "accessibility", "other"]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "evidence_url": {
+      "type": ["string", "null"],
+      "description": "Optional single evidence URL; scheme/host allowlist enforced by 0033-06, not by this schema."
+    },
+    "envelope_kind": {
+      "type": ["string", "null"],
+      "enum": ["review-request-envelope@v1", "review-request-local-envelope@v1", null]
+    },
+    "trust_profile": {
+      "type": ["string", "null"],
+      "enum": [
+        "github-api-refetch-v1",
+        "github-webhook-sha256-v1",
+        "github-webhook-sha256+api-refetch-v1",
+        "local-import-v1",
+        null
+      ]
+    }
+  },
+  "not": {
+    "anyOf": [
+      { "required": ["verified"] },
+      { "required": ["status"] },
+      { "required": ["pat_token"] },
+      { "required": ["session_token"] },
+      { "required": ["signature_secret"] },
+      { "required": ["decided_by"] },
+      { "required": ["applied_at"] }
+    ]
+  }
+}
