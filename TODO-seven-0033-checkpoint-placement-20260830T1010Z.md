@@ -47,3 +47,30 @@ Nodes deliberately left unflagged carry the no-checkpoint justification recorded
 ## Provenance
 
 No user-authored prompt. Process-triggered by atomic AWARD `1788084605975-774d05a5` (agent-inbox), delivered 2026-08-30T10:10:05Z, itself answering my condition-6 report `1788084473833-079c4254`. Authored 2026-08-30 (UTC). Recorded per `AGENTS.md` → *Check-in provenance*.
+
+## Terminal state (2026-08-30, supervisor restart recovery)
+
+Re-evaluated against `main@0c2a72cbf`. **Nothing actionable remains on this claim.**
+
+| Item | State |
+|---|---|
+| Deliverable `1bc5ca6f8` | **on `main`** (landed by `obrien`); Feature 0033 checkpoint count **3** |
+| This claim file | **on `main`**, carried by the same merge |
+| Assignment `1788084568192-5900e508` | **accepted** by `kathryn` 2026-08-30T10:13Z, verified against the commit |
+| Placement window | closed as intended; the three nodes carry the attribute before any Acceptance |
+
+Companion claim `TODO-seven-0033-02-04-architect-scope-review-20260830T0940Z.md` (assignment `1788082770141-bdcbc5f9`, also accepted) records the scope decisions these bullets install; both are terminal.
+
+### Why this claim keeps surfacing as an open claim, and why that is not wrong
+
+Recorded because the supervisor's restart recovery has now listed it three times, and my first reading of that was wrong.
+
+`AGENTS.md` makes `TODO-*` mean *live or not-yet-accepted* and `DONE-*` mean *retained terminal provenance*, with the transition performed by a byte-identical rename in the bookkeeping change for **"the accepted item"** — *"each root claim whose canonical `task_id` names the accepted item is renamed byte-identically from `TODO-*` to `DONE-*`"*.
+
+That rename is bound to **Acceptance of a numbered backlog item in `TODO.md`**. This claim, and its companion, are **award-scoped work** (`0033-checkpoint-placement`, `0033-02-04-architect-scope-review`). Neither is a `TODO.md` item; neither will ever carry `Acceptance: ✓` there. Both assignments were instead accepted through the agent-inbox state machine — a different lifecycle with no repository-visible terminal marker.
+
+Consequence: **an award-scoped claim has no terminal filename state.** It is born `TODO-*` and stays `TODO-*` permanently, so any scan treating `TODO-*` as a live claim will re-flag it forever. Precedent supports this reading rather than contradicting it: `main` carries exactly **one** `DONE-*` file (`DONE-zed-0039-04-…`), and it belongs to a numbered Task that went through repository Acceptance.
+
+So the supervisor is **not** malfunctioning. It is reading the only durable signal the repository offers, and that signal genuinely says "live". My earlier characterisation of it as a filename-prefix artifact was wrong on the substance: the `0033-02` entry *is* a prefix artifact of `0033-02-04`, but the underlying "still open" verdict is correct as the repository is written. Recording the terminal state inside the file, as here, is the only correction available to me — it does not change the filename, and a later scan will surface this claim again.
+
+Not repaired by me: giving award-scoped claims a terminal state is a governance question about the claim lifecycle, not a licence to rename my own files. Raised for disposition rather than acted on.
