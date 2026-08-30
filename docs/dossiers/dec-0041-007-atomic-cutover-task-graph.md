@@ -1,0 +1,65 @@
+# Feature 0041 atomic-cutover task graph
+
+### `DEC-0041-007` — Separate non-operative preparation from one synchronous activation
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-30T08:16:27+02:00`
+- **Deciding identity:** `agent:data:0041-02:20260830`
+- **Role:** `Architekt`
+- **Authority reference:** `decision-1788047962210-6bdc03d2`; atomic award `1788070303437-da755a3f`
+- **Subject:** Prerequisite direction, package ownership, checkpoint placement, activation boundary, and stale-lineage disposition for Tasks `0041-02`, `0041-03`, `0041-04`, and `0041-06` implementing the synchronous `DEC-0041-006` cutover.
+- **Decision:** Replace the deadlocked Feature `0041` subgraph with ordered, non-operative preparation followed by one synchronous activation. Reopen `0041-02`, `0041-03`, `0041-04`, and `0041-06` for current-main manual re-derivation; their historical `[x]` lineages remain evidence and are prohibited implementation inputs. `0041-02` produces the canonical atomic-check-in contract, trailer grammar, consumer manifest, migration/rollback plan, and branch-ready candidate slices without activating any consumer. `0041-03` consumes that contract and prepares the Acceptance-owned commit-reference transition while the old two-commit rule remains operative. `0041-04` is independent of the completion contract, depends on `0041-01` and accepted `0037-51`, and implements direct item-scoped publication without host-runner transport. `0041-06` depends on `0041-02`, `0041-03`, accepted `0037-51`, and `0038-02`; it assembles all normative, editing, transaction, diagnostic, hygiene, and matching-guidance changes and activates them through one reviewed main-ref advance. `0041-02` retains its mandatory contract checkpoint; `0041-06` gains a mandatory atomic-activation checkpoint. `0041-05` is unchanged and remains the Feature's sole terminal integrating Task and mandatory review floor.
+- **Technical justification:** `DEC-0041-006` CON-05 requires governance, editor, runner, doctor, hygiene, and matching guidance to change in one reviewed cutover, while the current graph makes `0041-06` wait for `0041-02` to finish activating authority prose. That order permits either an early split-brain activation or no legal successor start. Beverly's bounded re-derivation at `861d87b721c9b3dbb57612e1d84234c8575c2c3e` identifies a safe non-operative contract packet and the complete synchronous consumer set. Saru's review `8ba8521b02c3e9c4674347a5731676365f331131` permits such preparation but forbids early activation. Accepted `0037-51` requires rewritten `0041-04` and `0041-06` to use direct execution and to depend on `0037-51`. Assigning activation to `0041-06` preserves bounded producer packages, makes every hard edge follow an artifact dependency, and leaves `0041-05` free to validate the already-activated workflow end to end.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Prepare under `0041-02`/`0041-03`, dispatch independent direct publication under `0041-04`, and activate all completion consumers synchronously under checkpointed `0041-06`.
+    - **Disposition:** `selected`
+    - **Reason:** It removes the prerequisite deadlock, preserves bounded ownership, and supplies one explicit activation owner and checkpoint before the unchanged end-to-end floor.
+  - **ALT-02:** Keep the existing graph and let `0041-02` activate authority prose before `0041-06` starts.
+    - **Disposition:** `rejected`
+    - **Reason:** It violates `DEC-0041-006` CON-05 by making the normative contract operative while executable consumers still enforce the old rule.
+  - **ALT-03:** Reverse every successor edge and make `0041-02` the final activation package.
+    - **Disposition:** `rejected`
+    - **Reason:** It needlessly couples the independent push path to completion activation and turns the contract producer into a broad implementation integrator.
+  - **ALT-04:** Move atomic activation into terminal Task `0041-05` without changing `0041-02` through `0041-06`.
+    - **Disposition:** `rejected`
+    - **Reason:** It leaves the current deadlock unresolved and conflates repository-rule activation with the separately required real-workflow end-to-end proof.
+- **Consequences:**
+  - **CON-01:** `0041-02`, `0041-03`, `0041-04`, and `0041-06` markers reopen to `[ ]`; no historical implementation or Acceptance is erased, reused, or grandfathered.
+  - **CON-02:** The operative two-commit/implementation-`REF` rule remains authoritative throughout `0041-02`, `0041-03`, and every unintegrated `0041-06` preparation commit.
+  - **CON-03:** `0041-02` exports one versioned contract and exact activation manifest. Every downstream candidate binds that version/digest; drift requires revalidation rather than local reinterpretation.
+  - **CON-04:** `0041-03` may prepare governance candidate bytes and tests, but those bytes do not reach `main` separately; `0041-06` owns their synchronous assembly and compatibility proof.
+  - **CON-05:** `0041-04` no longer waits on `0041-02`; it depends on `0041-01` and `0037-51`, uses direct item-scoped Git execution, retains branch/protected-ref guards, and grants no Acceptance or integration authority.
+  - **CON-06:** `0041-06` is the only activation owner. A single reviewed main-ref advance changes every named consumer together; partial integration, separate governance landing, or a reachable old writer blocks the checkpoint.
+  - **CON-07:** `0041-02` retains its mandatory contract checkpoint because every consumer depends on its shared grammar and manifest. `0041-06` receives an additional mandatory checkpoint because it changes repository-wide start, completion, validation, and integration behavior. `0041-05` remains the sole terminal integrating Task and review floor.
+  - **CON-08:** Pre-activation rollback abandons candidate branches and leaves the old rule untouched. Post-activation rollback reverts the entire manifest-bound consumer set together to the pinned prior contract, preserves atomic-era evidence, and performs impact analysis before new work resumes.
+  - **CON-09:** `0041-05` is not changed by this decision. Its existing `[x]` state becomes terminal-over-nonterminal when the four affected prerequisites reopen and is not Acceptance or closure proof. The architecture award does not permit silently rewriting it; a separately scoped lifecycle reconciliation must occur before this graph candidate integrates, and Feature closure still requires current prerequisite-closed Acceptance and both mandatory checkpoints.
+  - **CON-10:** This record and its supporting scope review authorize architecture recording only. They do not implement, activate, accept, integrate, release, move `main`, or start any successor.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0041`
+  - `task:0041-02`
+  - `task:0041-03`
+  - `task:0041-04`
+  - `task:0041-05`
+  - `task:0041-06`
+  - `path:TODO.md`
+  - `path:docs/dossiers/dec-0041-006-atomic-implementation-checkin.md`
+- **Affected gates:**
+  - `task-start:0041-03`
+  - `task-start:0041-04`
+  - `task-start:0041-06`
+  - `validation:_src/tools/runner_transaction.py`
+  - `validation:_src/tools/legacy_task_editor.py`
+  - `validation:_src/tools/legacy_task_doctor.py`
+  - `validation:_src/tools/check_integration_hygiene.py`
+  - `integration:0041-02`
+  - `integration:0041-06`
+  - `integration:0041-05`
+  - `feature-closure:0041`
+- **Review participation:** `none`
+- **No-review reason:** The assigned Architect is recording the bounded task-graph decision and a separate supporting gate-scope review in the same architecture package; no second participant was assigned, and later checkpoint/Acceptance review remains independently required.
+- **Waiver:** `none`

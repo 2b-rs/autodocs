@@ -8,7 +8,8 @@ assignment_id: 1788070303437-da755a3f
 owner_token: agent:data:0041-02:20260830
 base_commit: 4022945cb123d4d619da5dd60527ab3e7bd61428
 capability_class: privileged
-execution_authority: direct-local-execution
+execution_authority: direct
+startup_review: AGENTS.md; SANDBOX.md; TODO.md; docs/pipeline/roles/architect.md; docs/pipeline/core-rules.md; docs/pipeline/feature-breakdown.md; docs/pipeline/decision-record.md; DEC-0041-006; Saru review 8ba8521b02c3e9c4674347a5731676365f331131; Beverly rederivation 861d87b721c9b3dbb57612e1d84234c8575c2c3e; accepted 0037-51 direct-execution disposition reviewed before substantive mutation
 state: [p]
 recorded_task_state: [x]
 coordination_state: in_progress
@@ -31,6 +32,14 @@ It permits architecture and backlog repair only. It prohibits implementation
 or activation of governance/tools, Acceptance, integration or checkpoint
 review, upward/main merge, Feature/DONE closure, successor start, unrelated
 claim or Feature mutation, external resources/effects, and foreign cleanup.
+
+## Intended write scope
+
+- `TODO.md`
+- `TODO-data-0041-02-atomic-cutover-graph-repair-20260830.md`
+- `docs/dossiers/dec-0041-006-atomic-implementation-checkin.md`
+- `docs/dossiers/dec-0041-007-atomic-cutover-task-graph.md`
+- `docs/dossiers/0041-02-atomic-cutover-graph-repair-scope-review.md`
 
 ## Startup review
 
@@ -79,3 +88,8 @@ candidate only; Data does not implement, accept, integrate, or activate it.
 - Inbox MCP was unavailable when the award arrived; the award body was read
   from Data's authorized read-only mailbox projection. Announce and ack remain
   pending until the connector returns.
+
+## Next step
+
+Validate and reconcile the exact architecture candidate, finalize this claim,
+commit the four-path substantive delta, and return the immutable REF to Lore.
