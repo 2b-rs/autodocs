@@ -13,6 +13,7 @@ startup_review: AGENTS.md; SANDBOX.md; TODO.md; docs/pipeline/roles/architect.md
 state: [ ]
 recorded_task_state: [ ]
 coordination_state: complete
+restart_recovery_state: terminal
 lease_active: false
 architect_work_product_status: [x]
 substantive_ref: 14ca63e94d8d1a06d8f15f047b8b2d299d41eff1
@@ -125,3 +126,18 @@ Lore reviews `14ca63e94d8d1a06d8f15f047b8b2d299d41eff1`, routes the separately
 scoped `0041-05` lifecycle reconciliation recorded by the scope review, and
 then assembles an authorized integration candidate. No successor starts from
 this architecture branch.
+
+## Supervisor restart recovery — 2026-08-30
+
+- **Disposition:** Data's architecture coordination is terminal and released;
+  do not resume this owner token. `state: [ ]` and `recorded_task_state: [ ]`
+  preserve the distinct current implementation Task state, while
+  `coordination_state: complete` and `restart_recovery_state: terminal` record
+  the final disposition of this architecture-only claim.
+- The architecture handoff tip is `52b90dad40be8386b253f952ed5763966db2a7c3`.
+  The mandatory checkpoint review is `94a681be11118e6e8e3c6bb42c63150d7286d9a8`,
+  and current `main@f5763cf21e98066f7e932d50a2b0e9c5802550f9`
+  carries the reviewed candidate.
+- Implementation of `0041-02` belongs to the separately awarded Enterprise
+  chain. This recovery grants Data no implementation, Acceptance, checkpoint,
+  integration, or successor-start authority.
