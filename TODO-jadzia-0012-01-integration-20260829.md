@@ -4,6 +4,7 @@ task: 0012-01
 owner: jadzia
 owner_token: agent:jadzia:0012-01-integration:20260829
 capability_class: privileged
+status: terminal
 write_scope:
   - TODO-jadzia-0012-01-integration-20260829.md
 ---

@@ -4,6 +4,7 @@ task: 0013-02
 owner: jadzia
 owner_token: agent:jadzia:0013-02-chain:20260829
 capability_class: unprivileged
+status: terminal
 write_scope:
   - TODO-jadzia-0013-02-chain-20260829.md
 ---
