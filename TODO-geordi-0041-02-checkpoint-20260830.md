@@ -1,0 +1,28 @@
+# Claim: `0041-02` mandatory checkpoint review and integration
+
+- item: `0041-02-mandatory-checkpoint-integration-20260830`
+- task_id: 0041-02
+- feature_id: 0041
+- process: Privileged integration checkpoint review
+- coordinator: Lore (Dispatcher)
+- original_assignee: Geordi (privileged Integrator)
+- active_contractor: Miles O'Brien (`obrien`, privileged Integrator, Team DeepSpace9)
+- assignment_id: 1788082092992-9ba4e12d
+- delegation_offer_id: 1788087835629-2e5ec1eb
+- owner_token: agent:obrien:0041-02-checkpoint:20260830T110435Z
+- workspace: /Users/tobias.anton/devel/autodocs/.worktrees/0041-02-checkpoint-geordi-20260830
+- base_commit: main@f5763cf21e98066f7e932d50a2b0e9c5802550f9
+- current_main_pinned: main@1bc5ca6f8e4934c6fe5fb5fa55795541100da94c
+- candidate_commit: ab7dc3f99a65041d17837a7b93f9e075bc12793c
+- substantive_ref: 2b7eaa8662fc840cb527b89cb2594762ec4bfb6f
+- state: [x]
+- checkpoint_verdict: PASS
+- terminal_state: checkpoint inspection PASS; candidate integrated to main
+- scope_paths:
+  - docs/dossiers/0041-02-atomic-checkin-contract.md
+  - docs/pipeline/fixtures/0041-02/atomic-cutover-manifest.json
+  - docs/pipeline/fixtures/0041-02/README.md
+  - TODO-beverly-0041-02-atomic-contract-20260830.md
+  - TODO-geordi-0041-02-checkpoint-20260830.md
+  - docs/campaign-evidence/0041-02/checkpoint-review-geordi-20260830.md
+- status: Independent verification of 0041-02 non-operative atomic check-in contract and cutover manifest fixture complete; PASS verdict recorded; candidate integrated cleanly to main.
