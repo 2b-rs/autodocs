@@ -3,6 +3,8 @@
 - **Item:** 0045-00
 - **Team:** DeepSpace9
 - **Project Lead:** jadzia
+- **Owner:** worf
+- owner_token: agent:worf:0045-00-chain:20260901
 - **Tasks included:** 0045-00
 - **Start condition:** No prior tasks required.
 - **Wait conditions:** None.
