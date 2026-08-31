@@ -1,5 +1,5 @@
 > [!NOTE]
-> **Future/Target State:** The manual operator guidance and limitations described below represent the historical 0021 implementation. Feature 0045 will introduce an automated event-driven architecture that supersedes the manual ingestion and AI proposal steps, while preserving the Kurator's exclusive authority to accept or apply changes. See [score-feedback-loop.md](score-feedback-loop.md) for the target automated process contract.
+> **Future/Target State (Proposed):** The manual operator guidance and limitations described below represent the historical 0021 implementation. Pending the completion of task `0045-00` (Architect scope review and decision record), Feature 0045 proposes an automated event-driven architecture that would supersede the manual ingestion and AI proposal steps, while preserving the Kurator's exclusive authority to accept or apply changes. See [score-feedback-loop.md](score-feedback-loop.md) for the proposed process contract.
 
 # Website-Initiated Specification Review Flags — Process Definition (0021-01)
 

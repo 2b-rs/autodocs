@@ -2338,56 +2338,63 @@ Architecture: `DEC-0028-001`; full contracts:
 
 - [ ] **0045-00** (P0) Prepare decision-record@v1 and obtain distinct management-instantiated Architect scope review for Supervisor→PL offer policy changes.
   - **Source derivation:** Feature 0045 cross-item gate requirements.
-  - **Edge derivation:** N/A (Start node).
-  - **Test/Capability/Branch/Write Scope:** Manual inspection of decision record. Capability: privileged. Branch: feature-0045-00. Scope: docs/decisions.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "gate scope requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** N/A (Single start node).
+  - **Test/Capability/Branch/Write Scope:** Test: manual inspection of decision record. Capability: `capability_class=privileged`, `execution_needs=none`, `cognitive=high`, `independence=Architect`. Branch: `0045-00` (parent=0045). Scope: `docs/decisions/DEC-0045-01.md`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "gate scope requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** Required before operative pipeline mutation.
-  - **DoD:** decision-record@v1 is approved and management-instantiated Architect scope review is recorded.
+  - **Acceptance criteria:** The decision-record@v1 is approved and management-instantiated Architect scope review is formally recorded.
+  - **DoD:** `DEC-0045-01.md` exists and is signed off by Architect.
 
 - [ ] **0045-01** (A/P0) Implement navigable publication baseline linking AUTOSAR Adaptive and S-Core.
   - **Source derivation:** Feature 0045 product target (official 2b-rs.github site). Incorporates 0019-13 repair.
-  - **Edge derivation:** PREREQ: 0045-01:0019-13 (must include the link repair from 0019).
-  - **Test/Capability/Branch/Write Scope:** End-to-end static generation test. Capability: unprivileged. Branch: feature-0045-01. Scope: website index generator, docs templates.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "product target requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** PREREQ: 0045-01:0045-00 (must wait for operative pipeline approval), 0045-01:0019-13 (must include the link repair from 0019).
+  - **Test/Capability/Branch/Write Scope:** Test: end-to-end static generation test. Capability: `capability_class=unprivileged`, `execution_needs=direct`, `cognitive=medium`, `independence=none`. Branch: `0045-01` (parent=0045). Scope: `autodocs/_templates/`, `autodocs/build_site.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "product target requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** Publication baseline requires independent validation before deployment.
-  - **DoD:** Site generated from latest snapshot in all languages, links to both trees work, no-JS fallback works.
+  - **Acceptance criteria:** Site is generated from the latest authoritative DB snapshot in all languages; index links to both trees work; no-JS fallback works; 0019-13 link repairs are applied.
+  - **DoD:** Generated output meets static fallback guarantees and passes validation script.
 
 - [ ] **0045-02** (B/P0) Define and implement event and scheduling contract (GitHub events, Supervisor detection, priority-gated PL offer, handoff).
   - **Source derivation:** Feature 0045 cycle scheduling policy.
-  - **Edge derivation:** PREREQ: 0045-02:0045-00 (decision record required before mutation), PREREQ: 0045-02:0045-01.
-  - **Test/Capability/Branch/Write Scope:** Integration test for event pipeline. Capability: privileged. Branch: feature-0045-02. Scope: supervisor configuration, event handling.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "scheduling contract", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** PREREQ: 0045-02:0045-00 (must wait for operative pipeline approval).
+  - **Test/Capability/Branch/Write Scope:** Test: integration test for event pipeline. Capability: `capability_class=privileged`, `execution_needs=direct`, `cognitive=high`, `independence=none`. Branch: `0045-02` (parent=0045). Scope: `agent-inbox/supervisor.py`, `agent-inbox/event_handlers.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "scheduling contract", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** Core pipeline component.
-  - **DoD:** Events trigger priority-gated PL offers, duplicate handling works, runner assignments route correctly.
+  - **Acceptance criteria:** Typed GitHub events correctly map to priority-gated PL offers; duplicate/similar-item coordination works; runner assignments are explicitly typed.
+  - **DoD:** Supervisor tests pass for PL offer generation and runner assignment.
 
 - [ ] **0045-03** (C/P0) Implement Feedback ingestion recipe.
   - **Source derivation:** Two-cycle model phase 1.
-  - **Edge derivation:** PREREQ: 0045-03:0045-02 (relies on event contract), PREREQ: 0045-03:0033-07 (integrates queue write requirements).
-  - **Test/Capability/Branch/Write Scope:** Unit/Integration test for queue item creation. Capability: runner. Branch: feature-0045-03. Scope: feedback ingestion scripts.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "ingestion recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** PREREQ: 0045-03:0045-02 (relies on event and scheduling contract). PREREQ: 0045-03:0033-07 (integrates queue write requirements).
+  - **Test/Capability/Branch/Write Scope:** Test: unit/integration test for queue item creation. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=medium`, `independence=none`. Branch: `0045-03` (parent=0045). Scope: `agent-inbox/recipes/feedback_ingestion.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "ingestion recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** Must validate trusted envelope properly.
-  - **DoD:** Validated envelope creates idempotent queue item and emits scheduling event.
+  - **Acceptance criteria:** Validates trusted envelope; creates idempotent committed queue item without factual mutation; rejects stale/duplicate requests; emits event triggering PL scheduling.
+  - **DoD:** Idempotence contract tests pass for feedback ingestion.
 
 - [ ] **0045-04** (D/P1) Implement AI proposal and live conversation recipe.
   - **Source derivation:** Two-cycle model phase 1 (AI proposal).
-  - **Edge derivation:** PREREQ: 0045-04:0045-03
-  - **Test/Capability/Branch/Write Scope:** Integration test. Capability: runner. Branch: feature-0045-04. Scope: AI agent recipe.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "AI recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** PREREQ: 0045-04:0045-03 (consumes committed queue item from ingestion).
+  - **Test/Capability/Branch/Write Scope:** Test: integration test. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=medium`, `independence=none`. Branch: `0045-04` (parent=0045). Scope: `agent-inbox/recipes/ai_proposal.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "AI recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** AI interaction needs verification against unintended authority.
-  - **DoD:** Pinned record + assignment yields evidence-bearing committed proposal pushed to GitHub.
+  - **Acceptance criteria:** Generates evidence-bearing committed proposal pushed to GitHub; live streamed discussion is explicitly non-authoritative; AI cannot apply its own proposal.
+  - **DoD:** Idempotence contract tests pass for proposal recipe.
 
 - [ ] **0045-05** (E/P1) Implement Curator decision UI and durable decision.
   - **Source derivation:** Two-cycle model phase 2 (Curator action).
-  - **Edge derivation:** PREREQ: 0045-05:0045-04, PREREQ: 0045-05:0033-07.01 (authentications/roles), PREREQ: 0045-05:0045-00 (decision record).
-  - **Test/Capability/Branch/Write Scope:** End-to-end interaction test. Capability: unprivileged. Branch: feature-0045-05. Scope: UI/HUD code.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "curator UI", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
-  - **Review rationale:** Checkpoint rationale: Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
-  - **DoD:** Displays diff, chat, evidence. Enables durable accept/reject decision to GitHub.
+  - **Edge derivation:** PREREQ: 0045-05:0045-04 (consumes AI proposal), PREREQ: 0045-05:0033-07.01 (integrates roles/authentications for decisions).
+  - **Test/Capability/Branch/Write Scope:** Test: end-to-end interaction test. Capability: `capability_class=unprivileged`, `execution_needs=direct`, `cognitive=high`, `independence=none`. Branch: `0045-05` (parent=0045). Scope: `agent-inbox/supervisor-gui.py`, `agent-inbox/roster-gui.js`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "curator UI", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
+  - **Review rationale:** Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
+  - **Acceptance criteria:** UI correctly displays pretty-printed diff, evidence, and chat provenance; accepts/rejects/requests-revision; stores durable decision to GitHub.
+  - **DoD:** Covers 0035 UI overlaps and records durable GitHub-backed decision.
 
 - [ ] **0045-06** (F/P0) Terminal integration: Apply, regenerate, validate, and publish end-to-end.
   - **Source derivation:** Two-cycle model phase 2 (Apply/publish).
-  - **Edge derivation:** PREREQ: 0045-06:0045-05, PREREQ: 0045-06:0033-16 (terminal review).
-  - **Test/Capability/Branch/Write Scope:** End-to-end static generation. Capability: runner. Branch: feature-0045-06. Scope: publication pipeline.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "terminal integration", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Edge derivation:** PREREQ: 0045-06:0045-01 (consumes publication branch), PREREQ: 0045-06:0045-05 (consumes curator decision branch), PREREQ: 0045-06:0033-16 (consumes pre-release audit requirements).
+  - **Test/Capability/Branch/Write Scope:** Test: end-to-end static generation. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=high`, `independence=none`. Branch: `0045-06` (parent=0045). Scope: `agent-inbox/recipes/apply_publish.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "terminal integration", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
   - **Review rationale:** Integration review: mandatory. Exactly-one terminal integrating node and review floor for Feature 0045.
-  - **DoD:** Revalidates decision, applies DB version, refreshes projection, generates full tree, publishes.
+  - **Acceptance criteria:** Revalidates non-stale accepted decision; applies DB version transactionally; regenerates full multilingual tree; validates/publishes to publication branch. End-to-end proof of GitHub round trips including stale/duplicate/retry/failure cases.
+  - **DoD:** Terminal integration passes with real-world end-to-end scenarios.
