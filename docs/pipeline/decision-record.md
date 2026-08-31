@@ -104,6 +104,36 @@ The following cardinalities apply:
 
 This format requires recorded participation, but does not automatically require a positive review. Dissent remains visible; the absence of a second instance is recorded openly with `Review participation: none` and a reason.
 
+### 3.3 Preparing the unresolved request
+
+A `decision-request@v1` is the durable request for a decision; it is not the
+decision and it does not allocate a `DEC-*` identifier. Preparers MUST follow
+[`decision-request-preparation.md`](decision-request-preparation.md) before
+submitting a request that may later produce a record under this document.
+
+The preparation rules preserve the boundary between question and answer:
+
+- one durable request contains exactly one decision question;
+- a binary question contains exactly the mutually exclusive `YES` and `NO`
+  effects;
+- a question with more than two valid outcomes contains one mutually exclusive
+  option set, not one yes/no request for each option;
+- the submitter and the authorized resolver are named separately; submitting a
+  request does not grant authority to resolve it;
+- known later decisions or reviews are identified as subsequent signature
+  waves, not hidden inside the current question; and
+- handoff occurs only after the exact created decision ID reports `pending`;
+  continuation after an answer uses that same exact ID and requires a
+  `resolved` status.
+
+Mail and graphical views are informational projections. Their presence,
+absence, title, or visual state is never the durable request status, the
+resolution, the deciding authority, or a final `decision-record@v1`.
+
+This preparation clarification changes neither the field order in section 3.2
+nor decision authority, gate reach, tool schema, assignment state-machine
+behavior, or the append-only recording rules below.
+
 ## 4. Authority tailoring and waivers
 
 Every authority tailoring and waiver triggers `authority-tailoring-or-waiver`. A bounded waiver replaces the final line of the base format with exactly this block:
