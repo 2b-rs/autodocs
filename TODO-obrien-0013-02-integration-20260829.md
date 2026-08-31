@@ -11,8 +11,8 @@ branch: integrate-0013-02-obrien-20260829
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/integrate-0020-09-obrien-20260829
 target_baseline: main@874e6209e51c8a14ecb3fcfeb77c6ca78ca769a6
 candidate_source: 0013-02@1cf16d29ab3b1c9c9558fb18cbd80a62b3a0f032 / substantive candidate REF 283af866979a504c7e7e02de7f087ee6d32492f9
-status: [u]
-state: [u]
+state: [x]
+status: [x]
 write_scope:
   - docs/dossiers/req-0013-02-stakeholder-requirements-baseline.md
   - TODO-beverly-0013-02-1787972130857-fe98737a.md

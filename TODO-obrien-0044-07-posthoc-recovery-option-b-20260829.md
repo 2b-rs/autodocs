@@ -21,4 +21,7 @@ Execute 0044-07 post-hoc recovery Option B under decision-1788015759354-013fa663
 - Update dossier and campaign evidence.
 - Verify hygiene, document doctor, diff check, and execute ff-only merge to main.
 
-- **state**: Terminal (Recovery completed and verified, handed over to Jean-Luc)
+- state: [x]
+- handover_to: jean-luc
+- handover_at: 2026-08-29T23:50:00Z
+- terminal_state: Recovery completed and verified, handed over to Jean-Luc
