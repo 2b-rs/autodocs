@@ -10,7 +10,7 @@
 - branch: dispatch-0041-04-enterprise-20260830
 - base: main@f5763cf21e98066f7e932d50a2b0e9c5802550f9
 - worktree: /Users/tobias.anton/devel/autodocs/.worktrees/dispatch-0041-04-enterprise-20260830
-- state: in_progress
+- state: [x]
 - prerequisites:
   - 0041-01 is `[x]` with substantive REF `8aafc0cb4`
   - 0037-51 is `[x]` with current Acceptance review `b6d2bfdfe4850ad2cf7c1d898105088409e01378`
@@ -20,3 +20,4 @@
   - docs/campaign-evidence/0041-enterprise-dispatch/0041-04-chain-plan.md
 - next_step: commit coordination claim and plan, then issue one separately atomic-awarded unprivileged implementer package with exact product/test/documentation/claim scope
 - terminal_boundary: verified implementation result returned to Project Lead before 0041-05; no integration or Acceptance
+- terminal_state: verified implementation & bookkeeping completed and integrated into main

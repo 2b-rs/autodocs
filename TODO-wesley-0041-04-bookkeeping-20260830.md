@@ -9,8 +9,9 @@ execution_authority: atomic award 1788094532225-04dd94f5
 branch: 0041-04-enterprise-implementer-20260830
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0041-04-enterprise-implementer-20260830
 baseline: d3416df52f9ce13cf0d05e2d239c53f8cb138a19
-status: review
+status: completed
 state: [x]
+terminal_state: verified bookkeeping integrated into main
 write_scope:
   - TODO.md
   - TODO-wesley-0041-04-bookkeeping-20260830.md
