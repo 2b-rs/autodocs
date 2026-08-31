@@ -73,6 +73,20 @@ A user-directed activity that is not an existing Task may use `TODO-<agent-id>.m
 
 ## Dispatching a subagent
 
+### Flow control and integration ownership
+
+Dispatch is admission-controlled by downstream capacity, not by the number of idle implementers.
+
+1. A dispatcher may start a new implementation chain only when a named Integrator has reserved one integration slot for it. One Integrator may reserve at most one active chain at a time.
+2. Each team may have at most two implementation-complete but not canonically integrated chains. At that limit, all dispatchers stop creating implementation offers and help drain review, repair rejected candidates, or reconcile claims.
+3. The dispatcher remains accountable for the chain until a canonical integration receipt proves the candidate is an ancestor of the current source-history `main`. Submission for review, assignment acceptance, `[x]`, or a branch-local Acceptance record does not finish the dispatcher's flow obligation.
+4. Integrators pull the next review-ready chain from the bounded queue. Dispatchers do not push unreserved work into review and do not open replacement work merely because implementation finished.
+5. A failed, rejected, or stale integration returns to the same reserved slot and blocks new dispatch for that team until repaired or explicitly cancelled.
+6. Generated publication output never becomes source-history `main`. It is published only to a dedicated publication branch such as `published` or `gh-pages`, or to a separate deployment repository.
+7. Every successful source integration records the repository common-dir identity, candidate commit, `main` before, `main` after, a successful `git merge-base --is-ancestor <candidate> <main-after>` result, and the observed remote `main` after push when a push is in scope.
+
+The operative queue and receipt details are in [`docs/pipeline/integration-flow-control.md`](docs/pipeline/integration-flow-control.md). A Management fleet freeze overrides autonomous pickup and offer creation until its explicit release.
+
 A session that spawns another agent is its **dispatcher** and is answerable for
 the briefing being complete. A subagent never inherits the dispatcher's
 capability class, authority, claim, or write scope implicitly.

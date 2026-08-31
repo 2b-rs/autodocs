@@ -28,9 +28,11 @@ authority. Merging a done-but-unaccepted predecessor into a successor branch doe
 **not** accept it; task-acceptance `✓` and Feature closure remain exactly as
 defined in [`task-acceptance.md`](task-acceptance.md).
 
+A chain is not integrated merely because equivalent bytes were reconstructed or cherry-picked onto an unrelated history. Canonical integration requires the exact candidate commit to be an ancestor of source-history `main`, proven and retained in the receipt defined by [`integration-flow-control.md`](integration-flow-control.md).
+
 ## Branch topology and naming
 
-The integration baseline is `main`. Every backlog item has exactly one canonical
+The integration baseline is the **source-history** branch `main`. Generated publication output must never replace, reset, or become the root of `main`; it is written only to a dedicated publication branch such as `published` or `gh-pages`, or to a separate deployment repository. Every backlog item has exactly one canonical
 branch whose name **is the item's ID**:
 
 | Item | Branch name | Cut from (base) |
