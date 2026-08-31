@@ -5,8 +5,8 @@ request_id: 1788205915982-a0f32d17
 base_commit: 5b884f0c6cd69b833e33a9d975d425cb153a7ff3
 capability_class: unprivileged
 execution_authority: direct local execution in the assigned item-owned worktree and exact paths only
-startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; awards 1788209078240-210b23ed and 1788209988480-5e2e4a30; exact worktree/branch/status; agent-inbox main ancestry
-state: [p]
+startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; awards 1788209078240-210b23ed, 1788209988480-5e2e4a30, and 1788210713675-9ed81074; exact worktree/branch/status; agent-inbox main ancestry; stale-candidate rejection 31b4f4ed7
+state: [x]
 
 - coordination_kind: user-directed non-backlog requirements package under
   `AGENTS.md`; no unrelated TODO Task marker or Task identity is claimed
@@ -16,12 +16,13 @@ state: [p]
 - branch: `score-feedback-loop-requirements-20260831`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/score-feedback-loop-requirements-20260831`
 - inherited_candidate: `1dcb3cdc73e8323c936814c1aa60add48a2a680d`
-- assignment_state: `in_progress`
+- assignment_state: `review-ready`; contractor transition follows this
+  claim-finalization commit
 - prior_implementation_ref: `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135`
+- implementation_ref: `38a46ac062dac9a897c2967a526f70642fbf0571`
 - integration_reservation: Integrator `luap`, formally `on_hold` for this rework per Zed message `1788206051221-630084ca`
-- current_step: reconcile the reviewed producer branch onto then-current main,
-  preserve the main-only Jadzia claim and all reviewed 0045 contract content,
-  and record exact two-parent ancestry proof
+- current_step: stale-baseline reconciliation complete; submit the exact clean
+  descendant and ancestry proof for coordinator review
 
 ## Exhaustive write scope
 
@@ -149,13 +150,27 @@ No production code, external GitHub mutation, credentials, publication, Acceptan
 
 ## Next step
 
-Reconcile the branch, prove both the reviewed producer tip and then-current
-main are ancestors of a clean candidate, then transition assignment
-`1788210713675-9ed81074` to review and notify Zed with the exact tip. Luap's
-integration assignment remains on hold until Zed records the review
-disposition and resumes it with an exact SHA.
+Transition assignment `1788210713675-9ed81074` to review and notify Zed with
+the exact claim-finalization tip and ancestry proof. Luap's integration
+assignment remains on hold until Zed records the review disposition and
+resumes it with an exact SHA.
 
 ## Narrow-rework validation
+
+- Stale-baseline reconciliation merge
+  `38a46ac062dac9a897c2967a526f70642fbf0571` has parents
+  `939ed700f786872230f6e5b2b0cca40da71bf96e` (the reopened claim line,
+  descended from reviewed producer `1dcb3cdc73e8323c936814c1aa60add48a2a680d`)
+  and then-current main `ec2282ddc7bb9400aad621ff82a1ad14cfec8354`.
+- `git merge-base --is-ancestor` passes for both reviewed producer
+  `1dcb3cdc73e8323c936814c1aa60add48a2a680d` and main
+  `ec2282ddc7bb9400aad621ff82a1ad14cfec8354` against the merge candidate.
+  `TODO-jadzia-chain-0033-04.01-20260831.md` is byte-identical to main.
+- `TODO.md`, the score-feedback-loop dossier and process contract, and
+  `website-review-flag.md` are byte-identical between reviewed producer
+  `1dcb3cdc73e8323c936814c1aa60add48a2a680d` and the merge candidate. The only
+  changed paths across that reconciliation are this claim and the main-only
+  Jadzia claim; no integration-evidence path or main ref was changed.
 
 - Final mechanical product commit
   `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135` changes only `TODO.md` and
