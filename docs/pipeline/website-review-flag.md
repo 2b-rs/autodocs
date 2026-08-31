@@ -1,5 +1,13 @@
 > [!NOTE]
-> **Future/Target State (Proposed):** The manual operator guidance and limitations described below represent the historical 0021 implementation. Pending the completion of task `0045-00` (Architect scope review and decision record), Feature 0045 proposes an automated event-driven architecture that would supersede the manual ingestion and AI proposal steps, while preserving the Kurator's exclusive authority to accept or apply changes. See [score-feedback-loop.md](score-feedback-loop.md) for the proposed process contract.
+> **Future/Target State (Proposed):** The manual operator guidance and
+> limitations below remain the historical Feature 0021 implementation. Pending
+> Task `0045-00` (resolved Management decision request, distinct Architect
+> scope review, and approved shared interface baseline), Feature 0045 proposes
+> an event-driven continuation while preserving the Curator's exclusive
+> authority to accept or apply changes. Feature 0035 remains the
+> requester/submission-dialog UX acceptance set; it does not own the new
+> Curator-decision UI. See [score-feedback-loop.md](score-feedback-loop.md) for
+> the non-operative proposal.
 
 # Website-Initiated Specification Review Flags — Process Definition (0021-01)
 

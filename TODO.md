@@ -90,6 +90,511 @@ HOW TO USE:
 - **Authority follows the attribute, not the level.** Merging a checkpoint node's work across its boundary requires the privileged integrator; merges that cross no checkpoint stay grunt-eligible. The attribute is orthogonal to the `[ ]/[p]/[x]/[w]` marker and to `Acceptance: ✓`: the attribute is the *requirement* that a review occur, and `Acceptance: ✓` is its *fulfillment*.
 - A Feature moves to `DONE.md` once its work is terminal and every integration checkpoint within it — including the Feature node itself, if flagged — has a current passing integration review; the `DONE.md` move is always a privileged act. See [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md) and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md).
 
+## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
+
+**Goal:** Prioritize and implement the operational website loop connecting
+browser feedback, GitHub queue, AI proposal, Curator decision, and static
+publication. From the official 2b-rs.github index, users can reach both the
+existing AUTOSAR Adaptive documentation and a first pretty-printed S-Core tree;
+both are generated from the latest authoritative database snapshot in every
+configured language. No S-Core component library is required.
+
+**Requirements baseline:** `docs/dossiers/score-feedback-loop-requirements-20260831.md`.
+**Proposed interface contract:** `docs/pipeline/score-feedback-loop.md`. The
+contract is non-operative until `0045-00`. Exactly one start node (`0045-00`)
+fans out to `0045-01` and `0045-02`; exactly one terminal integration node
+(`0045-06`) joins publication and Curator-decision branches plus the Feature
+0033 integration floor.
+
+**Operational priority:** this block intentionally precedes the formerly first
+Feature 0044 block because the authoritative legacy startup scan is
+top-to-bottom; `P0`/`P1` remain human labels, not machine priority. Foreign
+Feature blocks retain their prior relative order and content.
+
+- [ ] **0045-00** (P0; single start) Prepare the Management gate decision,
+  obtain the distinct Architect scope review, and bind one approved shared
+  Feature/interface baseline.
+  - **Task record:**
+    `task_id: "0045-00"; feature_id: "0045"; role: architect-elaboration`
+  - **Architecture decisions and sources:** Prepare, but do not decide, the
+    cross-item Supervisor→priority-gated-Project-Lead policy in
+    `REQ-0045-04`/`REQ-0045-05` and the typed-recipe/authoritative-selector
+    compatibility decision in `REQ-0045-16`. Authoritative sources:
+    `AGENTS.md` cross-item gate-scope exception,
+    `docs/pipeline/decision-record.md`, and
+    `docs/pipeline/score-feedback-loop.md`. Repository evidence: no
+    `docs/decisions/` directory exists and no `DEC-*` identifier may be
+    allocated on this branch. The approved baseline is a consumer contract,
+    not an authority grant.
+  - **Prerequisites:** none; this is the single start node.
+  - **Planned order:** `position: 1; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
+    Order matters because both fan-out branches must consume the same resolved
+    policy and reviewed interface digest before any operative gate mutation.
+  - **Test scope:** `kind: manual_inspection`, derived from the decision-record
+    and cross-item blast-radius authority contracts. Evidence: retained
+    decision-request status, Management resolution, named distinct Architect
+    review, schema-valid `score-feedback-loop-approved-baseline.json`, and
+    digest comparison against the proposed contract, current
+    `agent-workflow.json` selector, and agent-inbox assignment Runner. The
+    inspection must prove no preallocated decision ID/path, no assumed absent
+    registry, and no self-decision/self-review.
+  - **Capability profile:** `capability_class=privileged; rights=["read both repositories and durable decision state", "write declared autodocs governance-preparation paths", "invoke the assigned decision-request route", "record resolved references without deciding them"]; data=["requirements dossier", "pipeline contract", "agent-workflow.json selector", "agent-inbox assignment Runner contract", "Management resolution", "Architect review", "Git history"]; tools=["Git", "agent-inbox decision_request/status", "stdlib JSON validator"]; execution_needs=direct; cognitive_demand=critical; independence="preparer, Management decider, and management-instantiated Architect reviewer are three distinct authorities; implementer may not create the decision or review"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("shared scheduling policy and two repositories"); reasoning_depth=critical ("cross-item authority/gate semantics"); context_volume=high ("requirements, governance, overlap, and interfaces"); ambiguity=high ("Management must select policy"); verification_hardness=critical ("identity, resolution, review, and digest must all be independently proven")`. Peak `critical` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-00"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (autodocs repository):**
+    `docs/dossiers/score-feedback-loop-gate-decision-preparation.md` (new),
+    `docs/dossiers/score-feedback-loop-architect-scope-review.md` (new), and
+    `docs/pipeline/score-feedback-loop-approved-baseline.json` (new). No
+    `DEC-*` path is in scope.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-04/05 plus AGENTS.md cross-item gate-scope exception; preparation is non-operative until Management resolution and distinct Architect review", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** mandatory authority and cross-item scope review before
+    either fan-out task can implement the approved contract.
+  - **Acceptance criteria:** The durable decision request cites permanent
+    evidence, deciding role, options/consequences, affected work products and
+    processes, and paused action; Management resolves it; a distinct
+    management-instantiated Architect supports the resulting scope; and one
+    approved JSON baseline binds exact resolution/review/interface references
+    and digests for `0045-01` and `0045-02`; it also chooses and justifies the
+    typed-recipe binding compatible with the authoritative selector, without
+    treating the absent registry files or superseded `0037-46.01`/`.02` as
+    current producers.
+  - **Definition of Done:** The three scoped preparation/baseline artifacts are
+    committed; durable resolution and distinct-review evidence is reachable;
+    digest verification passes; no operative gate mutation or private
+    `DEC-*` allocation occurred.
+
+- [ ] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
+  AUTOSAR Adaptive plus S-Core publication baseline.
+  - **Task record:**
+    `task_id: "0045-01"; feature_id: "0045"; role: implementer`
+  - **Architecture decisions and sources:** Implement `REQ-0045-01`,
+    `REQ-0045-02`, `REQ-0045-03`, and `REQ-0045-09` using the existing
+    generator/index/site/view/export boundaries. `0019-13` is repository
+    evidence for the two S-Core link-defect classes; it is incorporated in the
+    next publication candidate without altering historic digests.
+  - **Prerequisites:** `0045-00` is a hard start gate because this task consumes
+    the approved shared interface baseline; `0019-13` is a hard producer edge
+    because its link repairs must be present in the generated S-Core tree.
+  - **Planned order:** `position: 2; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
+    It may execute in parallel with `0045-02` after `0045-00`; its immutable
+    candidate is joined only at `0045-06`.
+  - **Test scope:** `kind: end_to_end`, derived from navigation, multilingual,
+    no-JS, link-integrity, and snapshot/digest risks. Evidence:
+    `pytest -q _src/tests/test_generate_parallel_languages.py _src/tests/test_prepare_score_curation_export.py _src/tests/test_score_curation_views.py _src/tests/test_validate_parallel_links.py`
+    plus a retained generation/validation report naming database snapshot,
+    configured languages, index links, and output digests.
+  - **Capability profile:** `capability_class=unprivileged; rights=["read repository and prerequisite candidates", "write declared autodocs paths", "run local generation and tests", "commit item candidate"]; data=["approved interface baseline", "authoritative database snapshot", "site language configuration", "0019-13 candidate"]; tools=["Git", "Python", "pytest", "autodocs generator/validator"]; execution_needs=direct; cognitive_demand=high; independence="implementer cannot accept, integrate, publish, or certify release"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("index, generator, languages, views, export"); reasoning_depth=medium ("existing boundaries with link repair"); context_volume=high ("full-tree multilingual output"); ambiguity=low ("approved baseline and product target are explicit"); verification_hardness=high ("complete navigation/digest/no-JS proof")`. Peak `high` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-01"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (autodocs repository):**
+    `_src/generate.py`, `_src/sources/pages/index.json`, `_src/site.json`,
+    `_src/tools/score_curation_views.py`,
+    `_src/tools/prepare_score_curation_export.py`,
+    `_src/tests/test_generate_parallel_languages.py`,
+    `_src/tests/test_prepare_score_curation_export.py`,
+    `_src/tests/test_score_curation_views.py`, and
+    `_src/tests/test_validate_parallel_links.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-01/02/03/09, approved shared baseline, and existing generator/index/site contracts", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** generated publication inputs require independent
+    completeness and link-integrity review before terminal integration.
+  - **Acceptance criteria:** The root index reaches both trees; both derive from
+    the same latest authoritative snapshot in every configured language; the
+    two `0019-13` link classes are fixed; output works without JavaScript; and
+    database, language, output, and digest evidence is retained.
+  - **Definition of Done:** Scoped source/tests and the retained report are
+    committed on the task branch; the stated end-to-end suite passes; no
+    publication target or source-history `main` is advanced.
+
+- [ ] **0045-02** (B/P0; fan-out B) Implement the typed GitHub event,
+  Supervisor detection, priority-gated Project Lead offer, and durable
+  scheduling-decision contract.
+  - **Task record:**
+    `task_id: "0045-02"; feature_id: "0045"; role: implementer`
+  - **Architecture decisions and sources:** Implement `REQ-0045-04`,
+    `REQ-0045-05`, `REQ-0045-08`, `REQ-0045-16`, and the event continuation
+    contract from the `0045-00` approved baseline. Current
+    `agent-workflow.json` declares `runner-request@v1`; the absent
+    `_src/tools/runner_dispatch.py` and `_src/runner/actions-v1.json` and
+    superseded `0037-46.01`/`.02` are negative repository evidence. Existing `supervisor.py` and
+    `assignment-state-machine.json` are evidentiary interfaces, not authority
+    to choose a policy absent `0045-00`.
+  - **Prerequisites:** `0045-00` is a hard start gate and supplies the exact
+    approved scheduling/gate interface consumed here.
+  - **Planned order:** `position: 3; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
+    It may execute in parallel with `0045-01`; it must finish before ingestion
+    can emit an operative offer.
+  - **Test scope:** `kind: integration`, derived from external-event
+    authentication, offer lifecycle, Project Lead choice, duplicate/similar
+    item, selector compatibility, restart, and durable continuation risks.
+    Evidence: `pytest -q test_supervisor.py test_github_event_adapter.py` with
+    a pinned authoritative-selector fixture and fixtures
+    for all three Project Lead branches, expired/declined offers, duplicate
+    delivery, retry, and no runner execution before an award.
+  - **Capability profile:** `capability_class=privileged; rights=["read agent-inbox repository and approved baseline", "write declared scheduler/state-machine paths", "run local integration tests", "commit candidate without deploying"]; data=["approved policy/interface digest", "authoritative selector and agent-inbox Runner contract", "typed GitHub event fixtures", "assignment lifecycle fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox state-machine validator"]; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot supply the Management decision, Architect review, assignment acceptance, integration verdict, or release approval"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("event adapter, supervisor, state machine"); reasoning_depth=critical ("cross-item scheduling gates and restart semantics"); context_volume=high ("offer and assignment lifecycles"); ambiguity=medium ("policy fixed by approved baseline"); verification_hardness=critical ("false offer/execution can misassign work across items")`. Peak `critical` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-02"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (agent-inbox repository):**
+    `supervisor.py`, `test_supervisor.py`,
+    `assignment-state-machine.json`, `github_event_adapter.py` (new), and
+    `test_github_event_adapter.py` (new).
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-04/05/08 and the resolved, reviewed 0045-00 shared scheduling baseline", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** mandatory independent scheduler/security review because
+    false positives, implicit decisions, or replay defects can start or route
+    foreign work.
+  - **Acceptance criteria:** Trusted typed events create one priority-gated
+    Project Lead offer; the awarded Project Lead durably selects similar-item
+    handoff, dependent typed-runner assignment, or trivial same-item runner
+    handoff; all outcomes name the next handler; no Supervisor/runner product
+    decision or pre-award execution is possible; restart/replay is idempotent;
+    the concrete recipe binding matches the authoritative selector and does not
+    depend on an absent or retired registry.
+  - **Definition of Done:** State-machine and integration tests pass; new event
+    schema/adapter and durable decision results are committed; compatibility
+    and recovery evidence is retained; nothing is deployed.
+
+- [ ] **0045-03** (C/P0 parent package) Verify and aggregate the
+  per-repository feedback-ingestion candidates without crossing a repository
+  write boundary.
+  - **Task record:**
+    `task_id: "0045-03"; feature_id: "0045"; role: qa`
+  - **Architecture decisions and sources:** Package-level consistency for
+    `REQ-0045-06`, `REQ-0045-08`, `REQ-0045-12`, and `REQ-0045-16`. The parent
+    owns no product implementation path; it verifies the versioned
+    `feedback-recipe-contract@v1`/`feedback-ingestion-result@v1` handoff and
+    immutable repository candidate references.
+  - **Prerequisites:** `0045-03.01` produces the agent-inbox recipe/schema
+    candidate; `0045-03.02` produces the autodocs ingestion/queue candidate.
+    Both are hard package-completion edges.
+  - **Planned order:** `position: 6; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. The parent runs only
+    after both per-repository candidates and before `0045-04`.
+  - **Test scope:** `kind: integration`, derived from cross-repository
+    schema/digest compatibility and restart reconstruction. Evidence: validate
+    both canonical candidate commits, schema/version, normalized input digest,
+    feedback idempotence key, durable result/receipt, and retry ancestry; rerun
+    the focused suites named by both Subtasks and retain an aggregation report.
+  - **Capability profile:** `capability_class=unprivileged; rights=["read both immutable candidates", "write one declared autodocs evidence path", "run local read-only compatibility validation", "commit parent aggregation"]; data=["feedback recipe schema/result", "agent-inbox candidate commit", "autodocs candidate commit", "focused test receipts"]; tools=["Git", "stdlib JSON validator", "pytest"]; execution_needs=direct; cognitive_demand=high; independence="parent aggregator cannot rewrite either product candidate, assign work, accept, integrate canonical main, or publish"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("two immutable repository candidates"); reasoning_depth=high ("producer/consumer and replay compatibility"); context_volume=medium ("two schemas, commits, and receipts"); ambiguity=low ("Subtask contracts are pinned"); verification_hardness=high ("false aggregation can unblock proposal work on incompatible state")`. Peak `high` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-03"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (autodocs repository):**
+    `docs/campaign-evidence/0045-03/aggregation.md` (new).
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-06/08/12/16 and immutable handoff contracts from 0045-03.01/.02", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** independent package review prevents a same-name recipe
+    or green local test from masking an incompatible cross-repository handoff.
+  - **Acceptance criteria:** Both Subtask candidates are immutable and
+    canonically reachable in their own repositories; schema/version, input
+    digest, exact feedback key, result/receipt, and retry ancestry agree; the
+    aggregate names no absent registry and reconstructs the next Project Lead
+    handler after restart.
+  - **Definition of Done:** The single scoped aggregation report and real
+    candidate/test references are committed; no parent mutation occurred in
+    agent-inbox and neither Subtask candidate was silently edited.
+
+  - [ ] **0045-03.01** (C1/P0; agent-inbox) Implement the selector-compatible
+    feedback typed-recipe producer and immutable handoff schema.
+    - **Task record:**
+      `task_id: "0045-03.01"; feature_id: "0045"; role: implementer`
+    - **Architecture decisions and sources:** Implement the recipe-producer side
+      of `REQ-0045-04`, `REQ-0045-05`, `REQ-0045-08`, `REQ-0045-12`, and
+      `REQ-0045-16`. It consumes the `0045-02` scheduler binding and does not
+      presume a registry.
+    - **Prerequisites:** `0045-02` is a hard producer edge for trusted event,
+      priority-gated offer, awarded Project Lead decision, and concrete
+      selector-compatible recipe binding.
+    - **Planned order:** `position: 4; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. It precedes the
+      autodocs consumer `0045-03.02`.
+    - **Test scope:** `kind: integration`, derived from selector, award,
+      idempotence, restart, and typed-handoff risks. Evidence:
+      `pytest -q test_feedback_ingestion_recipe.py` with awarded/not-awarded,
+      same-key replay, key conflict, malformed event, retry ancestry, restart,
+      and selector-mismatch fixtures.
+    - **Capability profile:** `capability_class=unprivileged; rights=["read agent-inbox scheduler and approved interface", "write declared agent-inbox recipe/schema/test paths", "run local tests", "commit candidate without dispatch or external mutation"]; data=["approved selector binding", "typed GitHub event fixtures", "award fixtures", "idempotence ledger fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox assignment Runner test harness"]; execution_needs=direct; cognitive_demand=high; independence="implementer cannot award, choose the PL branch, mutate autodocs facts, integrate, or publish"`.
+    - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=medium ("recipe, schema, scheduler interface"); reasoning_depth=high ("selector and replay semantics"); context_volume=medium ("event/award/result fixtures"); ambiguity=low ("0045-00/02 bind the interface"); verification_hardness=high ("pre-award or duplicate execution must be impossible")`. Peak `high` determines the class.
+    - **Branch:** `parent: "0045-03"; name: "0045-03.01"; create: "pre-provision from parent in the agent-inbox repository; do not create from a stale checkout"`.
+    - **Exhaustive write scope (agent-inbox repository):**
+      `recipes/feedback_ingestion.py` (new),
+      `schemas/feedback-recipe-contract-v1.json` (new), and
+      `test_feedback_ingestion_recipe.py` (new).
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-04/05/08/12/16 and selector-compatible scheduling contract from 0045-02", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **Review rationale:** independent selector/award/idempotence review at the
+      agent-inbox execution boundary.
+    - **Acceptance criteria:** The approved selector can invoke the logical
+      recipe without an invented registry; no execution occurs before an award;
+      the exact feedback key governs replay; every result conforms to the
+      versioned handoff and names the autodocs consumer or typed failure.
+    - **Definition of Done:** Recipe, schema, and tests are committed in
+      agent-inbox; focused tests pass; the immutable candidate/ref and schema
+      digest are handed to `0045-03.02`.
+
+  - [ ] **0045-03.02** (C2/P0; autodocs) Consume the feedback handoff and
+    implement trusted review/curation ingestion to one committed queue item.
+    - **Task record:**
+      `task_id: "0045-03.02"; feature_id: "0045"; role: implementer`
+    - **Architecture decisions and sources:** Implement the autodocs consumer
+      side of `REQ-0045-06`, `REQ-0045-08`, and `REQ-0045-12` using existing
+      review/curation ingestion and Feature 0033 trust/queue contracts.
+    - **Prerequisites:** `0045-03.01` produces the immutable versioned handoff;
+      `0033-06` produces authoritative target/trusted transport verification;
+      `0033-07` produces atomic conformant queue write/idempotence. All are
+      hard start gates.
+    - **Planned order:** `position: 5; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. It follows the
+      agent-inbox schema producer and precedes parent aggregation.
+    - **Test scope:** `kind: integration`, derived from the
+      handoff→trusted-envelope→queue contract. Evidence:
+      `pytest -q _src/tests/test_feedback_recipe_contract.py _src/tests/test_review_request_ingest.py _src/tests/test_score_curation.py`
+      with valid, untrusted, malformed, stale, duplicate, replay, conflict,
+      restart, and no-factual-mutation fixtures.
+    - **Capability profile:** `capability_class=unprivileged; rights=["read immutable agent-inbox handoff and autodocs contracts", "write declared autodocs adapter/ingestion/test paths", "run local tests", "commit candidate without external mutation"]; data=["feedback handoff schema/result", "trusted GitHub envelope fixtures", "published record/version fixtures", "queue schema"]; tools=["Git", "Python", "pytest", "autodocs ingestion tools"]; execution_needs=direct; cognitive_demand=high; independence="consumer implementer cannot award, decide, mutate canonical facts, integrate, or publish"`.
+    - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=medium ("adapter and two ingestion boundaries"); reasoning_depth=high ("trust, stale, duplicate, replay semantics"); context_volume=medium ("bounded records and fixtures"); ambiguity=low ("producer schema is immutable"); verification_hardness=high ("must prove exactly one queue item and no factual mutation")`. Peak `high` determines the class.
+    - **Branch:** `parent: "0045-03"; name: "0045-03.02"; create: "pre-provision from parent in the autodocs repository; do not create from a stale checkout"`.
+    - **Exhaustive write scope (autodocs repository):**
+      `_src/tools/feedback_recipe_contract.py` (new),
+      `_src/tools/review_request_ingest.py`,
+      `_src/tools/curation_ingest.py`,
+      `_src/tests/test_feedback_recipe_contract.py` (new),
+      `_src/tests/test_review_request_ingest.py`, and
+      `_src/tests/test_score_curation.py`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-06/08/12, immutable 0045-03.01 handoff, 0033-06 trusted transport, and 0033-07 atomic queue contract", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **Review rationale:** independent trust/idempotence review protects the
+      canonical database boundary from external input.
+    - **Acceptance criteria:** A conforming trusted current handoff creates
+      exactly one committed queue item and next-event receipt; malformed,
+      untrusted, stale, duplicate-conflicting, or selector-mismatched input is
+      typed and effect-free; canonical record bytes do not change.
+    - **Definition of Done:** Adapter/ingestion/tests are committed in
+      autodocs; focused tests pass; candidate and result digests are handed to
+      the parent `0045-03`.
+
+- [ ] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
+  conversation, and structured GitHub handoff.
+  - **Task record:**
+    `task_id: "0045-04"; feature_id: "0045"; role: implementer`
+  - **Architecture decisions and sources:** Implement `REQ-0045-06`,
+    `REQ-0045-08`, and proposal/chat portions of `REQ-0045-12`. The committed
+    queue item and Project Lead scheduling decision are authoritative inputs;
+    streamed conversation remains non-authoritative until structured handoff.
+  - **Prerequisites:** `0045-03` is a hard producer edge for the committed queue
+    item, exact baseline binding, and scheduling event.
+  - **Planned order:** `position: 7; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
+    Proposal generation cannot start before an atomic award on the ingested
+    item and must finish before Curator review.
+  - **Test scope:** `kind: integration`, derived from causal chat, pinned
+    baseline, evidence, Git commit/push handoff, restart, and authority risks.
+    Evidence: `pytest -q test_ai_proposal_recipe.py test_supervisor.py` with
+    fixtures for awarded/not-awarded, stale baseline, causal turn replay,
+    same-key conflict, incomplete handoff, push failure, retry ancestry, and
+    proof that no decision/apply transition is exposed.
+  - **Capability profile:** `capability_class=unprivileged; rights=["read awarded queue item and pinned baseline", "write declared recipe/supervisor tests", "run local tests", "commit candidate; external push only through separately authorized fixture/runner"]; data=["queue item", "baseline record version", "evidence fixtures", "conversation and handoff records"]; tools=["Git", "Python", "pytest", "typed recipe harness"]; execution_needs=direct; cognitive_demand=high; independence="proposal author cannot accept, apply, integrate, publish, or act as sole validation producer"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=medium ("proposal, chat, handoff, supervisor continuation"); reasoning_depth=high ("causality and authority separation"); context_volume=high ("evidence and conversation context"); ambiguity=high ("research result may require explicit gaps"); verification_hardness=high ("push/restart/replay and forbidden transition proof")`. Peak `high` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-04"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (agent-inbox repository):**
+    `recipes/ai_proposal.py` (new), `test_ai_proposal_recipe.py` (new),
+    `supervisor.py`, and `test_supervisor.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-06/08/12 and the committed queue-item/scheduling producer contract from 0045-03", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** independent provenance/authority review prevents live
+    discussion or AI output from being mistaken for an accepted change.
+  - **Acceptance criteria:** The exact proposal and chat keys govern replay;
+    only an awarded item produces an evidence-bearing proposal bound to a
+    pinned baseline; the GitHub handoff is durable and causal; every terminal
+    result names Curator notification or typed failure; AI cannot decide or
+    apply the proposal.
+  - **Definition of Done:** Recipe and integration tests pass; retained evidence
+    covers restart, replay, conflict, push failure, and structured handoff; the
+    committed candidate performs no production push without separate authority.
+
+- [ ] **0045-05** (E/P1) Implement the bounded S-Core Curator-decision UI and
+  durable GitHub decision contract.
+  - **Task record:**
+    `task_id: "0045-05"; feature_id: "0045"; role: implementer`
+  - **Architecture decisions and sources:** Implement `REQ-0045-07`,
+    `REQ-0045-09`, `REQ-0045-10`, `REQ-0045-13`, and `REQ-0045-14`.
+    Agent-inbox HUD files are read-only design evidence, not a reusable package
+    or write scope. Feature 0035 remains requester/submission-dialog UX.
+  - **Prerequisites:** `0045-04` produces the exact proposal/handoff;
+    `0033-07.01` produces authenticated role-enforced lifecycle transitions;
+    `0033-10` browser packaging/staging; `0033-11` truthful
+    receipt/stale/duplicate/failure presentation; `0033-12` accessibility and
+    no-JS; `0033-13` the realistic browser/transport matrix including
+    `0035-01..03` regressions. All are hard producer edges.
+  - **Planned order:** `position: 8; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
+    The UI follows proposal production and precedes the terminal join.
+  - **Test scope:** `kind: end_to_end`, derived from human authority,
+    exact-diff/baseline binding, accessibility, no-JS, stale/retry, and durable
+    GitHub decision risks. Evidence:
+    `pytest -q _src/tests/test_score_curation_views.py _src/tests/test_score_curation.py _src/tests/test_score_curator_decision.py`
+    plus the `0033-13` browser/transport matrix and retained manual
+    accessibility/keyboard inspection for accept, reject, request-revision,
+    stale, conflict, receipt, and recovery.
+  - **Capability profile:** `capability_class=unprivileged; rights=["read exact proposal/baseline and predecessor evidence", "write declared autodocs UI/view/ingestion/test paths", "run local tests and browser fixture", "commit candidate without deciding a real proposal"]; data=["proposal and baseline fixtures", "Curator authority fixture", "GitHub decision/receipt fixtures", "0033 browser matrix"]; tools=["Git", "Python", "pytest", "browser test harness", "JavaScript"]; execution_needs=direct; cognitive_demand=critical; independence="implementer/test identity is not Curator authority and cannot accept work, apply facts, integrate, or release"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("views, UI, ingestion, browser contracts"); reasoning_depth=critical ("human authority and stale decision binding"); context_volume=high ("proposal, evidence, chat, receipt, accessibility"); ambiguity=medium ("bounded UI, no generic HUD extraction"); verification_hardness=critical ("a false or stale acceptance could mutate canonical facts")`. Peak `critical` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-05"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Exhaustive write scope (autodocs repository):**
+    `_src/tools/score_curation_views.py`, `_src/tools/curation_ingest.py`,
+    `review.js`, `score_curator.js` (new),
+    `_src/tests/test_score_curation_views.py`,
+    `_src/tests/test_score_curation.py`, and
+    `_src/tests/test_score_curator_decision.py` (new).
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-07/09/10/13/14 plus 0033 authenticated browser contracts; 0035 remains requester UX", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** mandatory independent UX/accessibility/security review
+    because the surface captures the sole human product decision.
+  - **Acceptance criteria:** The Curator sees exact proposal, pinned published
+    baseline, pretty diff, evidence, chat provenance, and current state; can
+    durably accept, reject, or request revision; the exact decision key
+    `decision:<proposal-id>:<curator-decision-revision>` is replay-safe;
+    stale/conflicting/unauthorized decisions are effect-free; no Feature 0035
+    ownership or generic HUD package is claimed.
+  - **Definition of Done:** Scoped UI/view/ingestion/tests and retained
+    accessibility/browser evidence are committed; all stated tests pass; no
+    real Curator decision or factual apply is fabricated.
+
+- [ ] **0045-06** (F/P0; exactly one terminal parent) Integrate the
+  canonical per-repository candidates and record the authorized cross-repository
+  source/publication proof without using one assignment to write both
+  repositories.
+  - **Task record:**
+    `task_id: "0045-06"; feature_id: "0045"; role: integrator`
+  - **Integration review:** mandatory. **Rationale (provisional; Architect
+    confirmation is an acceptance requirement of `0045-00`):** this is the
+    Feature's only terminal join and it gates/records evidence for canonical
+    integration and an external public release. This requirements record does not claim
+    Architect authority; the approved shared baseline must bind the current
+    Architect checkpoint decision before implementation starts.
+  - **Architecture decisions and sources:** Terminal aggregation for
+    `REQ-0045-02`, `REQ-0045-07`, `REQ-0045-08`, `REQ-0045-09`,
+    `REQ-0045-11`, `REQ-0045-12`, and `REQ-0045-16`. Publication output never
+    becomes source-history `main`. The parent consumes immutable agent-inbox
+    recipe and autodocs apply/generation candidates plus canonical integration
+    receipts; it does not rewrite their product files.
+  - **Prerequisites:** `0045-06.01` produces the agent-inbox
+    apply/publish-contract candidate; `0045-06.02` produces the autodocs
+    transactional apply/generation/publication candidate; `0045-01` supplies
+    the publication baseline; `0045-05` the Curator decision; `0033-16.01` the
+    Feature 0033 terminal integration/review floor. All are hard terminal-join
+    edges. `0033-16` alone is insufficient.
+  - **Planned order:** `position: 11; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. This is the only
+    terminal node and no Feature 0045 node may succeed it.
+  - **Test scope:** `kind: end_to_end`, derived from cross-repository canonical
+    ancestry, authority, restart, release, and digest risks. Evidence: verify
+    each candidate is an ancestor of its repository's canonical source main;
+    rerun the focused Subtask suites; retain an authorized two-round-trip report
+    proving feedback→proposal and decision→publication, exact database commit,
+    configured languages, digest manifest, publication receipt,
+    stale/duplicate/conflict, retryable/terminal failure, and recovery.
+  - **Capability profile:** `capability_class=privileged; rights=["read both canonical repositories and exact accepted decision", "write one declared autodocs terminal-evidence path", "run integration/release validation", "integrate or publish only under separately verified exact authority"]; data=["canonical agent-inbox receipt", "canonical autodocs receipt", "accepted decision authority proof", "database/publication digest ledger", "authorized publication target handle"]; tools=["Git", "integration hygiene checker", "pytest", "autodocs validator", "publication script"]; execution_needs=direct; cognitive_demand=critical; independence="Integrator/release authority must be current and independent of proposal author and Curator; implementers may not self-accept, self-integrate, or self-release"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=critical ("two canonical repositories and publication target"); reasoning_depth=critical ("ancestry, authority, retry, and release state"); context_volume=high ("all predecessor receipts/digests"); ambiguity=medium ("target fixed by exact release authority"); verification_hardness=critical ("false proof or wrong public release is difficult to reverse")`. Peak `critical` determines the class.
+  - **Branch:** `parent: "0045"; name: "0045-06"; create: "pre-provision from parent in the autodocs repository; merge every done-but-unintegrated autodocs prerequisite; do not create from a stale checkout"`.
+  - **Exhaustive write scope (autodocs repository):**
+    `docs/campaign-evidence/0045-06/terminal-integration.md` (new). Generated
+    publication output is limited to the separately authorized publication
+    branch/repository; the parent has no agent-inbox write scope.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-02/07/08/09/11/12/16, per-repository 0045-06.01/.02 candidates, publication 0045-01, Curator decision 0045-05, and 0033-16.01 floor", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **Review rationale:** mandatory independent Feature integration/release
+    review over both canonical receipts and the external publication proof.
+  - **Acceptance criteria:** Both repository candidates are independently
+    integrated and proven ancestors of their canonical source mains; the exact
+    apply/publish keys and accepted-decision binding agree across receipts;
+    database commit, configured-language output, validation, static publication
+    commit, and digest manifest agree; exact release authority and target are
+    recorded; success is impossible on partial, stale, conflicting, retrying,
+    or terminal-failure state.
+  - **Definition of Done:** The single scoped terminal report records repository
+    common-dir identities, candidate commits, main-before/main-after and
+    ancestor proofs, exact authority, two-cycle evidence, database/publication
+    receipts, digest manifest, and recovery proof; source integration and
+    external publication were performed only by separately authorized roles.
+
+  - [ ] **0045-06.01** (F1/P0; agent-inbox) Implement the
+    accepted-decision→apply/publication typed-recipe producer and immutable
+    handoff schema.
+    - **Task record:**
+      `task_id: "0045-06.01"; feature_id: "0045"; role: implementer`
+    - **Architecture decisions and sources:** Implement the recipe-producer side
+      of `REQ-0045-07`, `REQ-0045-08`, `REQ-0045-11`, `REQ-0045-12`, and
+      `REQ-0045-16` under the approved selector binding. The recipe validates
+      awarded intent and emits a typed command/result contract; it grants no
+      Curator, integration, or release authority.
+    - **Prerequisites:** `0045-05` produces the durable Curator decision;
+      `0045-02` produces the selector-compatible offer/assignment contract.
+      Both are hard start gates.
+    - **Planned order:** `position: 9; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. It produces the
+      immutable handoff consumed by `0045-06.02`.
+    - **Test scope:** `kind: integration`, derived from accepted-decision,
+      award, selector, apply/publish idempotence, restart, and failure risks.
+      Evidence: `pytest -q test_apply_publish_recipe.py` with unauthorized,
+      unawarded, rejected, revision-requested, stale, same-key replay, conflict,
+      partial result, retry ancestry, selector mismatch, and restart fixtures.
+    - **Capability profile:** `capability_class=unprivileged; rights=["read agent-inbox assignment and durable decision contracts", "write declared agent-inbox recipe/schema/test paths", "run local fixture tests", "commit candidate without database or external publication effects"]; data=["accepted-decision fixtures", "approved selector binding", "assignment fixtures", "idempotence/retry ledger fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox assignment Runner test harness"]; execution_needs=direct; cognitive_demand=critical; independence="recipe implementer is not Curator, Integrator, or release authority and cannot execute real database/publication effects"`.
+    - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("decision, assignment, apply and publication handoff"); reasoning_depth=critical ("authority and partial-effect state"); context_volume=medium ("bounded schemas/fixtures"); ambiguity=low ("selector and decision contracts are pinned"); verification_hardness=critical ("false command can target canonical data or public release")`. Peak `critical` determines the class.
+    - **Branch:** `parent: "0045-06"; name: "0045-06.01"; create: "pre-provision from parent in the agent-inbox repository; do not create from a stale checkout"`.
+    - **Exhaustive write scope (agent-inbox repository):**
+      `recipes/apply_publish.py` (new),
+      `schemas/apply-publish-contract-v1.json` (new), and
+      `test_apply_publish_recipe.py` (new).
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-07/08/11/12/16, selector-compatible 0045-02 contract, and durable Curator decision 0045-05", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **Review rationale:** independent authority/idempotence review prevents a
+      logical recipe from becoming an implicit release grant.
+    - **Acceptance criteria:** Only an awarded, authorized, accepted, current
+      decision produces a conforming handoff; exact apply/publish keys govern
+      replay; rejected/revision/stale/conflicting input is effect-free; every
+      result names the autodocs consumer, safe retry boundary, or terminal
+      failure; no absent registry is assumed.
+    - **Definition of Done:** Recipe, schema, and focused tests are committed in
+      agent-inbox; immutable candidate/ref and schema digest are handed to
+      `0045-06.02`; no real database or publication effect occurred.
+
+  - [ ] **0045-06.02** (F2/P0; autodocs) Consume the authorized handoff,
+    transactionally apply the accepted proposal, regenerate/validate the
+    complete multilingual site, and prepare the publication candidate.
+    - **Task record:**
+      `task_id: "0045-06.02"; feature_id: "0045"; role: implementer`
+    - **Architecture decisions and sources:** Implement the autodocs consumer
+      side of `REQ-0045-02`, `REQ-0045-07`, `REQ-0045-09`,
+      `REQ-0045-11`, and `REQ-0045-12` through existing
+      `score_curation.py` apply/publish, `curation_flags.py` completion,
+      generator/validator, and `publish_public_site.sh` boundaries. It prepares
+      a candidate and receipt; the terminal parent owns canonical
+      integration/release proof.
+    - **Prerequisites:** `0045-06.01` produces the immutable authorized handoff;
+      `0045-01` the publication baseline; `0045-05` the Curator decision;
+      `0033-16.01` the Feature 0033 terminal integration/review floor. All are
+      hard start gates.
+    - **Planned order:** `position: 10; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. It precedes the
+      terminal parent and performs no canonical integration by itself.
+    - **Test scope:** `kind: end_to_end`, derived from transactional database,
+      full-tree generation, validation, digest, publication-candidate, retry,
+      and recovery risks. Evidence:
+      `pytest -q _src/tests/test_apply_publish_contract.py _src/tests/test_score_curation.py _src/tests/test_generate_parallel_languages.py _src/tests/test_validate_parallel_links.py _src/tests/test_publish_scripts.py`
+      plus a retained fixture report for current/stale decision, rollback,
+      partial generation, digest mismatch, all configured languages,
+      same-key replay/conflict, retry, and terminal failure.
+    - **Capability profile:** `capability_class=privileged; rights=["read immutable handoff and predecessor candidates", "write declared autodocs contract/database/generation/validation/test paths", "run local transactional and publication-fixture tests", "commit candidate without canonical integration or external release"]; data=["accepted decision and authority proof", "authoritative database", "configured languages", "publication-target fixture", "handoff and retry ledger"]; tools=["Git", "Python", "pytest", "autodocs curation/generator/validator", "publication script in fixture mode"]; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot self-accept, integrate canonical main, or perform external release; terminal Integrator/release authority remains distinct"`.
+    - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=critical ("database, generator, languages, validation, publication candidate"); reasoning_depth=critical ("transaction, rollback, and partial-effect recovery"); context_volume=high ("records, decision, site, and digest ledger"); ambiguity=medium ("accepted record set is decision-bound"); verification_hardness=critical ("canonical data corruption or false publication proof")`. Peak `critical` determines the class.
+    - **Branch:** `parent: "0045-06"; name: "0045-06.02"; create: "pre-provision from parent in the autodocs repository; merge done prerequisite candidates; do not create from a stale checkout"`.
+    - **Exhaustive write scope (autodocs repository):**
+      `_src/tools/apply_publish_contract.py` (new),
+      `_src/tools/score_curation.py`, `_src/tools/curation_flags.py`,
+      `_src/spec/records/**`, `_src/data/curation-items.json`,
+      `_src/generate.py`, `_src/validate.py`,
+      `_src/tools/publish_public_site.sh`,
+      `_src/tests/test_apply_publish_contract.py` (new),
+      `_src/tests/test_score_curation.py`,
+      `_src/tests/test_generate_parallel_languages.py`,
+      `_src/tests/test_validate_parallel_links.py`, and
+      `_src/tests/test_publish_scripts.py`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-02/07/09/11/12, immutable 0045-06.01 handoff, publication 0045-01, Curator decision 0045-05, and 0033-16.01 floor", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **Review rationale:** independent transactional/data/publication-candidate
+      review before the terminal Integrator can cross canonical or external
+      boundaries.
+    - **Acceptance criteria:** A conforming accepted current handoff is applied
+      transactionally and committed on the candidate branch; rollback is
+      complete on failure; live state and full AUTOSAR plus S-Core output derive
+      from that exact database commit in every configured language; validation
+      and digest manifest agree; the typed result is complete; no external
+      publication or canonical integration is claimed.
+    - **Definition of Done:** Contract consumer, database candidate,
+      generator/validator/script changes, tests, fixture receipts, digest
+      manifest, and recovery proof are committed in autodocs; immutable
+      candidate/ref is handed to terminal parent `0045-06`.
+
 ## Feature: 0044 — Process Improvement: Integration Policy, Architecture Process, and Capability-Based Task Matching
 
 **Authority:** Customer brainstorming essay of 2026-08-20, recorded verbatim as `RQ-SRC-04` with decisions `DEC-0044-001..004` in [`docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`](docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md).
@@ -2331,70 +2836,3 @@ Architecture: `DEC-0028-001`; full contracts:
   - **Integration review (2026-08-29, Integrator `obrien`, independent of Implementer `benjamin` and Spec Author `seven`):** Checkpoint passed; frontier query and test suite integrated. Review REF: `039fef24e100ae983574971c26b5278c2e6f4773`; Review evidence: `docs/campaign-evidence/0044-19/integration-review-obrien-20260829.md`. Task Acceptance deferred to feature integration.
   - **Acceptance criteria:** Implement the query returning a five-state fail-closed partition (available / in-flight / blocked-prereq / held / indeterminate). Must use claim files and commit subjects for item-to-branch resolution, not branch names. Must include the blind-spot declaration. Must distinguish terminal-accepted, terminal-recorded, and terminal-contested prerequisites. Must provide AE-3, AE-4, and AE-5 falsification and property evidence.
   - **Definition of Done:** Python script implemented in `_src/tools/` passing all falsification cases, with unit tests covering the five-state matrix, blind-spot printing, and three-state prereq logic.
-
-## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
-
-**Goal:** Prioritize and implement the operational website loop connecting the browser feedback, GitHub queue, AI proposal, Curator decision, and static publication, integrating existing AUTOSAR and new S-Core tree. The management-approved product target is the next incarnation of the official 2b-rs.github site: from its index, users can reach BOTH (a) the existing AUTOSAR Adaptive documentation and (b) a first pretty-printed S-Core documentation tree; both are generated from the latest authoritative database snapshot and translated into every configured project language. There is NO requirement to use or reuse an S-Core component library.
-
-- [ ] **0045-00** (P0) Prepare decision-record@v1 and obtain distinct management-instantiated Architect scope review for Supervisor→PL offer policy changes.
-  - **Source derivation:** Feature 0045 cross-item gate requirements.
-  - **Edge derivation:** N/A (Single start node).
-  - **Test/Capability/Branch/Write Scope:** Test: manual inspection of decision record. Capability: `capability_class=privileged`, `execution_needs=none`, `cognitive=high`, `independence=Architect`. Branch: `0045-00` (parent=0045). Scope: `docs/decisions/DEC-0045-01.md`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "gate scope requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Required before operative pipeline mutation.
-  - **Acceptance criteria:** The decision-record@v1 is approved and management-instantiated Architect scope review is formally recorded.
-  - **DoD:** `DEC-0045-01.md` exists and is signed off by Architect.
-
-- [ ] **0045-01** (A/P0) Implement navigable publication baseline linking AUTOSAR Adaptive and S-Core.
-  - **Source derivation:** Feature 0045 product target (official 2b-rs.github site). Incorporates 0019-13 repair.
-  - **Edge derivation:** PREREQ: 0045-01:0045-00 (must wait for operative pipeline approval), 0045-01:0019-13 (must include the link repair from 0019).
-  - **Test/Capability/Branch/Write Scope:** Test: end-to-end static generation test. Capability: `capability_class=unprivileged`, `execution_needs=direct`, `cognitive=medium`, `independence=none`. Branch: `0045-01` (parent=0045). Scope: `autodocs/_templates/`, `autodocs/build_site.py`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "product target requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Publication baseline requires independent validation before deployment.
-  - **Acceptance criteria:** Site is generated from the latest authoritative DB snapshot in all languages; index links to both trees work; no-JS fallback works; 0019-13 link repairs are applied.
-  - **DoD:** Generated output meets static fallback guarantees and passes validation script.
-
-- [ ] **0045-02** (B/P0) Define and implement event and scheduling contract (GitHub events, Supervisor detection, priority-gated PL offer, handoff).
-  - **Source derivation:** Feature 0045 cycle scheduling policy.
-  - **Edge derivation:** PREREQ: 0045-02:0045-00 (must wait for operative pipeline approval).
-  - **Test/Capability/Branch/Write Scope:** Test: integration test for event pipeline. Capability: `capability_class=privileged`, `execution_needs=direct`, `cognitive=high`, `independence=none`. Branch: `0045-02` (parent=0045). Scope: `agent-inbox/supervisor.py`, `agent-inbox/event_handlers.py`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "scheduling contract", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Core pipeline component.
-  - **Acceptance criteria:** Typed GitHub events correctly map to priority-gated PL offers; duplicate/similar-item coordination works; runner assignments are explicitly typed.
-  - **DoD:** Supervisor tests pass for PL offer generation and runner assignment.
-
-- [ ] **0045-03** (C/P0) Implement Feedback ingestion recipe.
-  - **Source derivation:** Two-cycle model phase 1.
-  - **Edge derivation:** PREREQ: 0045-03:0045-02 (relies on event and scheduling contract). PREREQ: 0045-03:0033-07 (integrates queue write requirements).
-  - **Test/Capability/Branch/Write Scope:** Test: unit/integration test for queue item creation. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=medium`, `independence=none`. Branch: `0045-03` (parent=0045). Scope: `agent-inbox/recipes/feedback_ingestion.py`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "ingestion recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Must validate trusted envelope properly.
-  - **Acceptance criteria:** Validates trusted envelope; creates idempotent committed queue item without factual mutation; rejects stale/duplicate requests; emits event triggering PL scheduling.
-  - **DoD:** Idempotence contract tests pass for feedback ingestion.
-
-- [ ] **0045-04** (D/P1) Implement AI proposal and live conversation recipe.
-  - **Source derivation:** Two-cycle model phase 1 (AI proposal).
-  - **Edge derivation:** PREREQ: 0045-04:0045-03 (consumes committed queue item from ingestion).
-  - **Test/Capability/Branch/Write Scope:** Test: integration test. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=medium`, `independence=none`. Branch: `0045-04` (parent=0045). Scope: `agent-inbox/recipes/ai_proposal.py`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "AI recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** AI interaction needs verification against unintended authority.
-  - **Acceptance criteria:** Generates evidence-bearing committed proposal pushed to GitHub; live streamed discussion is explicitly non-authoritative; AI cannot apply its own proposal.
-  - **DoD:** Idempotence contract tests pass for proposal recipe.
-
-- [ ] **0045-05** (E/P1) Implement Curator decision UI and durable decision.
-  - **Source derivation:** Two-cycle model phase 2 (Curator action).
-  - **Edge derivation:** PREREQ: 0045-05:0045-04 (consumes AI proposal), PREREQ: 0045-05:0033-07.01 (integrates roles/authentications for decisions).
-  - **Test/Capability/Branch/Write Scope:** Test: end-to-end interaction test. Capability: `capability_class=unprivileged`, `execution_needs=direct`, `cognitive=high`, `independence=none`. Branch: `0045-05` (parent=0045). Scope: `agent-inbox/supervisor-gui.py`, `agent-inbox/roster-gui.js`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "curator UI", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
-  - **Acceptance criteria:** UI correctly displays pretty-printed diff, evidence, and chat provenance; accepts/rejects/requests-revision; stores durable decision to GitHub.
-  - **DoD:** Covers 0035 UI overlaps and records durable GitHub-backed decision.
-
-- [ ] **0045-06** (F/P0) Terminal integration: Apply, regenerate, validate, and publish end-to-end.
-  - **Source derivation:** Two-cycle model phase 2 (Apply/publish).
-  - **Edge derivation:** PREREQ: 0045-06:0045-01 (consumes publication branch), PREREQ: 0045-06:0045-05 (consumes curator decision branch), PREREQ: 0045-06:0033-16 (consumes pre-release audit requirements).
-  - **Test/Capability/Branch/Write Scope:** Test: end-to-end static generation. Capability: `capability_class=sandboxed-grunt`, `execution_needs=runner`, `cognitive=high`, `independence=none`. Branch: `0045-06` (parent=0045). Scope: `agent-inbox/recipes/apply_publish.py`.
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "terminal integration", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia:score-feedback-loop-requirements-20260831:20260831T213700Z" }`
-  - **Review rationale:** Integration review: mandatory. Exactly-one terminal integrating node and review floor for Feature 0045.
-  - **Acceptance criteria:** Revalidates non-stale accepted decision; applies DB version transactionally; regenerates full multilingual tree; validates/publishes to publication branch. End-to-end proof of GitHub round trips including stale/duplicate/retry/failure cases.
-  - **DoD:** Terminal integration passes with real-world end-to-end scenarios.
