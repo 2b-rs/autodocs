@@ -14,10 +14,13 @@ Requirements:
 - Strict idempotence contracts on all actions.
 
 ## 2. Overlap & Gap Analysis
-- **0019 (S-Core Import)**: `0019-13` links repair must be incorporated into the final publication task (`0045-06`).
-- **0033 (Website Review Request Contract)**: Overlaps significantly with feedback ingestion (`0033-07`), Curator UI (`0033-07.01`), and end-to-end integration (`0033-16`). Feature 0045 nodes integrate these 0033 tasks explicitly as prerequisites.
+- **0019 (S-Core Import)**: `0019-13` links repair must be incorporated into the final publication task (`0045-01`).
+- **0033 (Website Review Request Contract)**: 
+  - `0033-07` is a producer for `0045-03` (feedback ingestion relies on the atomic review-request queue write).
+  - `0033-07.01` is a producer for `0045-05` (Curator decision UI relies on role-enforced claim/propose/accept transitions).
+  - `0033-16` is a producer for `0045-06` (terminal integration incorporates the pre-release audit).
 - **0035 (Review-Request Dialog)**: Relates to the submission/transport. Covered under the DHTML read-side and trusted feedback ingestion contract (`0045-03`).
-- **0021 (Review Flags)**: The original manual-only implication is superseded. `docs/pipeline/website-review-flag.md` is updated to link the new automated process.
+- **0021 (Review Flags)**: The historical 0021 guidance remains valid for manual operation. `docs/pipeline/website-review-flag.md` is updated with a non-destructive future/target-state link to the new automated process.
 
 ## 3. Open Assumptions
 - The live interaction (HUD) can reuse `agent-inbox` protocol concepts natively without deep architectural changes to the existing S-Core models.
@@ -31,6 +34,6 @@ D/P1: `0045-04` (AI proposal recipe)
 E/P1: `0045-05` (Curator decision UI)
 F/P0: `0045-06` (Terminal integration)
 
-## 5. A1 Target-Policy Integrability
-The pipeline and target tasks align with current `main` branch policy. 
-**Gate-Scope Flag**: Task `0045-05` requires an independent UI/UX and security review before integration, triggering a cross-item gate-scope decision prior to qualifying mutation.
+## 5. Gate-Scope & Operative Pipeline Mutation
+**Important:** The Supervisor→PL offer policy changes cross-item gates for future curation/review work. 
+Therefore, this text remains **explicitly proposed and non-operative** until a `decision-record@v1` is prepared and a distinct management-instantiated Architect scope review is obtained. Tasks `0045-02` and `0045-05` will require this decision record and Architect scope review as explicit prerequisites before any operative mutation occurs.

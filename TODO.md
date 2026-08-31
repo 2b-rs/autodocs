@@ -2332,16 +2332,62 @@ Architecture: `DEC-0028-001`; full contracts:
   - **Acceptance criteria:** Implement the query returning a five-state fail-closed partition (available / in-flight / blocked-prereq / held / indeterminate). Must use claim files and commit subjects for item-to-branch resolution, not branch names. Must include the blind-spot declaration. Must distinguish terminal-accepted, terminal-recorded, and terminal-contested prerequisites. Must provide AE-3, AE-4, and AE-5 falsification and property evidence.
   - **Definition of Done:** Python script implemented in `_src/tools/` passing all falsification cases, with unit tests covering the five-state matrix, blind-spot printing, and three-state prereq logic.
 
-
 ## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
 
-**Goal:** Prioritize and implement the operational website loop connecting the browser feedback, GitHub queue, AI proposal, Curator decision, and static publication, integrating existing AUTOSAR and new S-Core tree.
+**Goal:** Prioritize and implement the operational website loop connecting the browser feedback, GitHub queue, AI proposal, Curator decision, and static publication, integrating existing AUTOSAR and new S-Core tree. The management-approved product target is the next incarnation of the official 2b-rs.github site: from its index, users can reach BOTH (a) the existing AUTOSAR Adaptive documentation and (b) a first pretty-printed S-Core documentation tree; both are generated from the latest authoritative database snapshot and translated into every configured project language. There is NO requirement to use or reuse an S-Core component library.
 
-- [ ] **0045-01** (A/P0) Implement navigable publication baseline linking AUTOSAR Adaptive and S-Core, including 0019-13 link repair, static fallback, generated from DB snapshot in all languages. PREREQ: 0045-01:0019-13
-- [ ] **0045-02** (B/P0) Define and implement event and scheduling contract (GitHub events, validation, Supervisor detection, PL offer, duplicate handling, typed runner assignments). PREREQ: 0045-02:0045-01
-- [ ] **0045-03** (C/P0) Implement Feedback ingestion recipe: validate trusted envelope, create idempotent queue item, emit scheduling event. (Supersedes or integrates 0033-07). PREREQ: 0045-03:0045-02, 0045-03:0033-07
-- [ ] **0045-04** (D/P1) Implement AI proposal and live conversation recipe: evidence-bearing proposal, live chat interaction, bound to pinned record. PREREQ: 0045-04:0045-03
-- [ ] **0045-05** (E/P1) Implement Curator decision UI and durable decision (diff rendering, chat provenance, durable GitHub-backed accept/reject decision). PREREQ: 0045-05:0045-04, 0045-05:0033-07.01
-  - **Checkpoint rationale:** Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
-- [ ] **0045-06** (F/P0) Terminal integration: Apply, regenerate, validate, and publish end-to-end. Revalidate decision, apply DB version, refresh live projection, generate static tree, publish. (Integrates 0033-16 terminal). PREREQ: 0045-06:0045-05, 0045-06:0033-16
-  - **Integration review:** mandatory. Exactly-one terminal integrating node and review floor for Feature 0045.
+- [ ] **0045-00** (P0) Prepare decision-record@v1 and obtain distinct management-instantiated Architect scope review for Supervisor→PL offer policy changes.
+  - **Source derivation:** Feature 0045 cross-item gate requirements.
+  - **Edge derivation:** N/A (Start node).
+  - **Test/Capability/Branch/Write Scope:** Manual inspection of decision record. Capability: privileged. Branch: feature-0045-00. Scope: docs/decisions.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "gate scope requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Required before operative pipeline mutation.
+  - **DoD:** decision-record@v1 is approved and management-instantiated Architect scope review is recorded.
+
+- [ ] **0045-01** (A/P0) Implement navigable publication baseline linking AUTOSAR Adaptive and S-Core.
+  - **Source derivation:** Feature 0045 product target (official 2b-rs.github site). Incorporates 0019-13 repair.
+  - **Edge derivation:** PREREQ: 0045-01:0019-13 (must include the link repair from 0019).
+  - **Test/Capability/Branch/Write Scope:** End-to-end static generation test. Capability: unprivileged. Branch: feature-0045-01. Scope: website index generator, docs templates.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "product target requirement", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Publication baseline requires independent validation before deployment.
+  - **DoD:** Site generated from latest snapshot in all languages, links to both trees work, no-JS fallback works.
+
+- [ ] **0045-02** (B/P0) Define and implement event and scheduling contract (GitHub events, Supervisor detection, priority-gated PL offer, handoff).
+  - **Source derivation:** Feature 0045 cycle scheduling policy.
+  - **Edge derivation:** PREREQ: 0045-02:0045-00 (decision record required before mutation), PREREQ: 0045-02:0045-01.
+  - **Test/Capability/Branch/Write Scope:** Integration test for event pipeline. Capability: privileged. Branch: feature-0045-02. Scope: supervisor configuration, event handling.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "scheduling contract", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Core pipeline component.
+  - **DoD:** Events trigger priority-gated PL offers, duplicate handling works, runner assignments route correctly.
+
+- [ ] **0045-03** (C/P0) Implement Feedback ingestion recipe.
+  - **Source derivation:** Two-cycle model phase 1.
+  - **Edge derivation:** PREREQ: 0045-03:0045-02 (relies on event contract), PREREQ: 0045-03:0033-07 (integrates queue write requirements).
+  - **Test/Capability/Branch/Write Scope:** Unit/Integration test for queue item creation. Capability: runner. Branch: feature-0045-03. Scope: feedback ingestion scripts.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "ingestion recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Must validate trusted envelope properly.
+  - **DoD:** Validated envelope creates idempotent queue item and emits scheduling event.
+
+- [ ] **0045-04** (D/P1) Implement AI proposal and live conversation recipe.
+  - **Source derivation:** Two-cycle model phase 1 (AI proposal).
+  - **Edge derivation:** PREREQ: 0045-04:0045-03
+  - **Test/Capability/Branch/Write Scope:** Integration test. Capability: runner. Branch: feature-0045-04. Scope: AI agent recipe.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "AI recipe", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** AI interaction needs verification against unintended authority.
+  - **DoD:** Pinned record + assignment yields evidence-bearing committed proposal pushed to GitHub.
+
+- [ ] **0045-05** (E/P1) Implement Curator decision UI and durable decision.
+  - **Source derivation:** Two-cycle model phase 2 (Curator action).
+  - **Edge derivation:** PREREQ: 0045-05:0045-04, PREREQ: 0045-05:0033-07.01 (authentications/roles), PREREQ: 0045-05:0045-00 (decision record).
+  - **Test/Capability/Branch/Write Scope:** End-to-end interaction test. Capability: unprivileged. Branch: feature-0045-05. Scope: UI/HUD code.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "curator UI", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Checkpoint rationale: Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
+  - **DoD:** Displays diff, chat, evidence. Enables durable accept/reject decision to GitHub.
+
+- [ ] **0045-06** (F/P0) Terminal integration: Apply, regenerate, validate, and publish end-to-end.
+  - **Source derivation:** Two-cycle model phase 2 (Apply/publish).
+  - **Edge derivation:** PREREQ: 0045-06:0045-05, PREREQ: 0045-06:0033-16 (terminal review).
+  - **Test/Capability/Branch/Write Scope:** End-to-end static generation. Capability: runner. Branch: feature-0045-06. Scope: publication pipeline.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "terminal integration", checked_at: "2026-08-31T19:43:00Z", recorded_by: "agent:jadzia" }`
+  - **Review rationale:** Integration review: mandatory. Exactly-one terminal integrating node and review floor for Feature 0045.
+  - **DoD:** Revalidates decision, applies DB version, refreshes projection, generates full tree, publishes.
