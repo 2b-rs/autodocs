@@ -154,10 +154,12 @@ Architect, and one approved shared Feature/interface baseline.
 
 Agent-inbox ancestry is repository-native: `0045-02` branches from current
 agent-inbox `main`; `0045-03.01` branches from the exact `0045-02` agent-inbox
-candidate; and `0045-06.01` branches from the exact `0045-03.01` agent-inbox
-candidate. Autodocs outputs such as the approved `0045-00` baseline and the
-`0045-05` Curator-decision contract are consumed by immutable ref and digest;
-they are not parent branches in the agent-inbox repository.
+candidate; `0045-04` branches from the exact `0045-03.01` agent-inbox
+candidate; and `0045-06.01` branches from the exact `0045-04` agent-inbox
+candidate. Autodocs outputs such as the approved `0045-00` baseline, the
+`0045-03` queue-item/aggregation artifacts, and the `0045-05`
+Curator-decision contract are consumed by immutable ref and digest; they are
+not parent branches in the agent-inbox repository.
 
 ## Assumptions, exclusions, and open authority
 
