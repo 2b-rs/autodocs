@@ -2,6 +2,8 @@
 item: 0011-04-integration
 task: 0011-04
 owner: jadzia
+handover_to: kathryn
+handover_at: 2026-08-31T01:15:30Z
 owner_token: agent:jadzia:0011-04-integration:20260829
 capability_class: privileged
 status: blocked

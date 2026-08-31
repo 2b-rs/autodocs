@@ -2,6 +2,8 @@
 item: 0012-01-integration
 task: 0012-01
 owner: jadzia
+handover_to: kathryn
+handover_at: 2026-08-31T01:15:30Z
 owner_token: agent:jadzia:0012-01-integration:20260829
 capability_class: privileged
 status: terminal
