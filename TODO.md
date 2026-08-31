@@ -111,7 +111,7 @@ Feature 0044 block because the authoritative legacy startup scan is
 top-to-bottom; `P0`/`P1` remain human labels, not machine priority. Foreign
 Feature blocks retain their prior relative order and content.
 
-- [ ] **0045-00** (P0; single start) Prepare the Management gate decision,
+- [x] **0045-00** (P0; single start) Prepare the Management gate decision,
   obtain the distinct Architect scope review, and bind one approved shared
   Feature/interface baseline.
   - **Task record:**
