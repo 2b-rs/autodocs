@@ -21,7 +21,7 @@ Sandboxed agents reach the runner through the versioned queue, using non-executi
 
 Requests with disjoint write scopes run in parallel; overlapping scopes are rejected (`RD-SCOPE-COLLISION`), as are unprivileged writes to governance documents (`RD-GOVERNANCE-SCOPE`). The legacy singleton `run.sh` is retired — `SANDBOX.md` retains its description for reading archived runs, not for new work.
 
-Feature, Task, and Subtask work is carried on Git branches named after the item ID, merged upward, with claim files committed alongside work products. The branch topology, the binding base-and-merge start rule, merge authority by level, Feature integration, and the Feature-level `[u]` integration verdict are defined in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md); the acceptance meanings it references are unchanged.
+Feature, Task, and Subtask execution follows the authoritative DAG model in [`docs/pipeline/dag-execution.md`](docs/pipeline/dag-execution.md). Nodes advance only when an immutable candidate is proven an ancestor of its declared aggregate target. Claims are scheduling leases and worktrees are disposable execution caches; neither is completion authority. Useful partial work must be committed as WIP or may be lost. Branch mechanics remain described in [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md), but may not create a parallel lifecycle.
 
 ### Governance changes go on `main`; agents coordinate through the agent-inbox
 
