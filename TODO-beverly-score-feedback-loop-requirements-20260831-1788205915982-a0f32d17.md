@@ -5,23 +5,23 @@ request_id: 1788205915982-a0f32d17
 base_commit: 5b884f0c6cd69b833e33a9d975d425cb153a7ff3
 capability_class: unprivileged
 execution_authority: direct local execution in the assigned item-owned worktree and exact paths only
-startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; award 1788209078240-210b23ed; exact worktree/branch/status; agent-inbox main ancestry
+startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; awards 1788209078240-210b23ed and 1788209988480-5e2e4a30; exact worktree/branch/status; agent-inbox main ancestry
 state: [x]
 
 - coordination_kind: user-directed non-backlog requirements package under
   `AGENTS.md`; no unrelated TODO Task marker or Task identity is claimed
-- assignment_id: `1788209078240-210b23ed`
-- parent_assignment: `1788205915982-a0f32d17`
+- assignment_id: `1788209988480-5e2e4a30`
+- parent_assignment: `1788209078240-210b23ed`
 - process: Requirements Engineering and Project Planning
 - branch: `score-feedback-loop-requirements-20260831`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/score-feedback-loop-requirements-20260831`
-- inherited_candidate: `5b884f0c6cd69b833e33a9d975d425cb153a7ff3`
+- inherited_candidate: `e11b831b9bae2e1feb504929003185561d7844ba`
 - assignment_state: `review-ready`; contractor transition follows this
   claim-finalization commit
-- prior_implementation_ref: `be9b7fe128dee24daee3ae4d50cd0ae66d5ed612`
-- implementation_ref: `20184a7a19ca537e924089c54fdedc06ad40e924`
+- prior_implementation_ref: `20184a7a19ca537e924089c54fdedc06ad40e924`
+- implementation_ref: `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135`
 - integration_reservation: Integrator `luap`, formally `on_hold` for this rework per Zed message `1788206051221-630084ca`
-- current_step: narrow correction complete; submit the exact final tip for
+- current_step: final mechanical ancestry correction complete; submit the exact final tip for
   independent coordinator review while the held integration chain remains
   paused
 
@@ -34,6 +34,12 @@ state: [x]
 - `TODO.md` Feature `0045` block only
 
 ## Rework requirements
+
+- Coordinator rework `1788209988480-5e2e4a30` requires the agent-inbox
+  proposal Task `0045-04` to branch from the exact `0045-03.01` candidate and
+  name agent-inbox `main` in A1; `0045-06.01` must branch from the exact
+  `0045-04` candidate; the dossier must state that repository-native chain.
+  No other product/process/DAG change is authorized.
 
 - Coordinator rework `1788209078240-210b23ed` requires every durable
   curation/review arrival envelope to open the priority-gated Project Lead
@@ -138,11 +144,16 @@ No production code, external GitHub mutation, credentials, publication, Acceptan
 
 ## Next step
 
-Transition assignment `1788209078240-210b23ed` to review and notify Zed with
+Transition assignment `1788209988480-5e2e4a30` to review and notify Zed with
 the exact claim-finalization tip. Luap's integration assignment remains on hold
 until Zed records the review disposition and resumes it with an exact SHA.
 
 ## Narrow-rework validation
+
+- Final mechanical product commit
+  `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135` changes only `TODO.md` and
+  the requirements dossier: three branch/A1 fields and the matching ancestry
+  paragraph. `git show --check` and focused ancestry assertions pass.
 
 - Product commit `20184a7a19ca537e924089c54fdedc06ad40e924`
   changes only `TODO.md`, the requirements dossier, and the proposed process
