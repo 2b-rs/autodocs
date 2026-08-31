@@ -9,10 +9,11 @@
 - branch: `score-feedback-loop-requirements-20260831`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/score-feedback-loop-requirements-20260831`
 - inherited_candidate: `0ffb5e906441eeca21b6939519b48582fbfe8ee5`
-- state: `[p]`
-- assignment_state: `in_progress`
+- state: `[x]`
+- assignment_state: `review-ready`; contractor transition follows this claim-finalization commit
+- implementation_ref: `be9b7fe128dee24daee3ae4d50cd0ae66d5ed612`
 - integration_reservation: Integrator `luap`, formally `on_hold` for this rework per Zed message `1788206051221-630084ca`
-- current_step: final provenance/diff review, then commit and submit the selector-compatible per-repository DAG for independent review
+- current_step: implementation complete; submit exact final tip for independent review and resume the held integration chain only after reviewer disposition
 
 ## Exhaustive write scope
 
