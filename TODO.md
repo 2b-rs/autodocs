@@ -2331,3 +2331,17 @@ Architecture: `DEC-0028-001`; full contracts:
   - **Integration review (2026-08-29, Integrator `obrien`, independent of Implementer `benjamin` and Spec Author `seven`):** Checkpoint passed; frontier query and test suite integrated. Review REF: `039fef24e100ae983574971c26b5278c2e6f4773`; Review evidence: `docs/campaign-evidence/0044-19/integration-review-obrien-20260829.md`. Task Acceptance deferred to feature integration.
   - **Acceptance criteria:** Implement the query returning a five-state fail-closed partition (available / in-flight / blocked-prereq / held / indeterminate). Must use claim files and commit subjects for item-to-branch resolution, not branch names. Must include the blind-spot declaration. Must distinguish terminal-accepted, terminal-recorded, and terminal-contested prerequisites. Must provide AE-3, AE-4, and AE-5 falsification and property evidence.
   - **Definition of Done:** Python script implemented in `_src/tools/` passing all falsification cases, with unit tests covering the five-state matrix, blind-spot printing, and three-state prereq logic.
+
+
+## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
+
+**Goal:** Prioritize and implement the operational website loop connecting the browser feedback, GitHub queue, AI proposal, Curator decision, and static publication, integrating existing AUTOSAR and new S-Core tree.
+
+- [ ] **0045-01** (A/P0) Implement navigable publication baseline linking AUTOSAR Adaptive and S-Core, including 0019-13 link repair, static fallback, generated from DB snapshot in all languages. PREREQ: 0045-01:0019-13
+- [ ] **0045-02** (B/P0) Define and implement event and scheduling contract (GitHub events, validation, Supervisor detection, PL offer, duplicate handling, typed runner assignments). PREREQ: 0045-02:0045-01
+- [ ] **0045-03** (C/P0) Implement Feedback ingestion recipe: validate trusted envelope, create idempotent queue item, emit scheduling event. (Supersedes or integrates 0033-07). PREREQ: 0045-03:0045-02, 0045-03:0033-07
+- [ ] **0045-04** (D/P1) Implement AI proposal and live conversation recipe: evidence-bearing proposal, live chat interaction, bound to pinned record. PREREQ: 0045-04:0045-03
+- [ ] **0045-05** (E/P1) Implement Curator decision UI and durable decision (diff rendering, chat provenance, durable GitHub-backed accept/reject decision). PREREQ: 0045-05:0045-04, 0045-05:0033-07.01
+  - **Checkpoint rationale:** Requires independent UI/UX and security review before integration, per docs/pipeline/feature-breakdown.md.
+- [ ] **0045-06** (F/P0) Terminal integration: Apply, regenerate, validate, and publish end-to-end. Revalidate decision, apply DB version, refresh live projection, generate static tree, publish. (Integrates 0033-16 terminal). PREREQ: 0045-06:0045-05, 0045-06:0033-16
+  - **Integration review:** mandatory. Exactly-one terminal integrating node and review floor for Feature 0045.

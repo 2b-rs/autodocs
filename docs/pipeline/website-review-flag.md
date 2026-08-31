@@ -108,45 +108,18 @@ website-originated re-review request, tying together the process rules
 above with the concrete tools/reports that implement them.
 
 1. **Submit** (requester, no Kurator action). A reader uses "Flag for
-   review" on any record page (`review-request-ux.md`). Depending on
-   identity path and network access, the result is either a created GitHub
-   issue (`submitted`) or a downloaded JSON package the requester must
-   hand-deliver (`exported` — explicitly *not* yet submitted; see
-   `review-request-ux.md`, Success/error/stale states).
-2. **Discover** (Kurator). Open items surface in two places, kept
-   consistent by `curation_item.py`'s shared normalization:
-   record pages show an open request inline in the history/provenance area
-   (0021-06 rendering), and `curation-report.html` /
-   `open-reviews.html` list every open and recently decided item across
-   both queues (`reports.md`, Kurationsbericht / Offene-Reviews-Bericht).
-3. **Ingest** (Kurator or automation, via `review_request_ingest.py`). Run
-   `review_request_ingest.py --apply <paket.json>` for a JSON export, or
-   feed a GitHub issue body through the same ingestion path for a
-   `submitted` request. This step validates schema, target
-   version/content-hash freshness, and duplicate status per Non-bypass
-   rule 4 above — a stale or duplicate submission is rejected here and
-   never reaches the queue (verified end-to-end by
-   `_src/tests/test_review_request_ingest.py`).
+   review" on any record page (`review-request-ux.md`). The result is a
+   durable GitHub issue (or JSON package if network fails).
+2. **Discover & Ingest** (Supervisor/Runner). The Supervisor detects the GitHub event and issues a priority-gated offer to the Project Lead. The PL assigns the *feedback ingestion recipe* to the Runner, which validates the request and creates a committed queue item. (See `score-feedback-loop.md` for the automated pipeline).
+3. **Propose** (AI/Runner). The PL assigns the *AI proposal recipe* to the Runner, which generates a committed proposal and pushes it to GitHub.
 4. **Triage/weigh trust** (Kurator). Before acting on the request, check
    `decision_basis.authoritative_actor` and the identity-kind badge
-   (`github_authenticated` vs. `self_declared`) surfaced on both the record
-   page and in the report. A `self_declared` request is a valid input to
-   consider, never a directive — Non-bypass rule 5 and this document's
-   Actors table make clear the requester cannot approve, reject, or change
-   record status themselves.
+   (`github_authenticated` vs. `self_declared`). A `self_declared` request is a valid input to consider, never a directive.
 5. **Decide** (Kurator, exclusive authority). Exactly as for any other
-   curation item: review the linked record/version/rationale/evidence,
-   then accept or reject. Accepting still requires the normal
-   apply-then-`complete_flag()` step (Actors table, Kurator row); rejecting
-   requires only `complete_flag()` with the rejected outcome. Neither the
+   curation item: review the proposed diff and exact baseline,
+   then accept or reject via a durable GitHub decision. Neither the
    requester nor any AI agent may perform this step (Non-bypass rule 2).
-6. **Follow** (requester and Kurator). The requester has no push
-   notification; they follow progress by revisiting the record page (open
-   request state is visible until decided) or the linked GitHub issue if
-   `submitted` via that transport. The Kurator's decision is durably
-   recorded in `history[]` (status-model.md) and remains visible in
-   `curation-report.html` after closure, including `rejected` outcomes,
-   which are shown rather than dropped from the report.
+6. **Apply & Publish** (Runner). Once accepted, the Supervisor detects the decision and the PL assigns the *apply/publish recipe* to the Runner. The Runner transactionally applies the DB version, refreshes the projection, regenerates the static tree, and publishes it.
 
 ### Authority and confidence framing (report views)
 
