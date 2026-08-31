@@ -306,6 +306,49 @@ class ReapSweepTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(scratch.exists())
 
+    def test_reap_claim_lookup_does_not_show_each_unrelated_claim(self) -> None:
+        scratch = self.repo.make_extra_worktree("0200-11.01")
+        self.repo.record_item(scratch, "0200-11.01", accepted=True, claim_prefix="DONE")
+
+        near_collision = scratch / "TODO-near-collision.md"
+        near_collision.write_text("item_id: 0200-11x01\n", encoding="utf-8")
+        noise_names = [near_collision.name]
+        for index in range(64):
+            noise_item = f"9{index:03d}-01"
+            noise = scratch / f"TODO-noise-{index:03d}.md"
+            noise.write_text(f"task_id: {noise_item}\n", encoding="utf-8")
+            noise_names.append(noise.name)
+        self.repo.git("add", *noise_names, cwd=scratch)
+        self.repo.git("commit", "-q", "-m", "add unrelated claims", cwd=scratch)
+        self.repo.merge_to_main("0200-11.01")
+
+        real_git = shutil.which("git")
+        self.assertIsNotNone(real_git)
+        shim_dir = Path(self.repo.temporary.name) / "shim-bin"
+        shim_dir.mkdir()
+        call_log = Path(self.repo.temporary.name) / "git-calls.log"
+        shim = shim_dir / "git"
+        shim.write_text(
+            "#!/bin/sh\n"
+            "printf '%s\\n' \"$*\" >> \"$GIT_CALL_LOG\"\n"
+            f"exec {real_git} \"$@\"\n",
+            encoding="utf-8",
+        )
+        shim.chmod(0o755)
+
+        result = self.repo.run_script(
+            ["--reap-only", str(self.repo.wt_root)],
+            env_overrides={
+                "PATH": f"{shim_dir}{os.pathsep}{os.environ['PATH']}",
+                "GIT_CALL_LOG": str(call_log),
+            },
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(scratch.exists())
+        calls = call_log.read_text(encoding="utf-8").splitlines()
+        per_claim_shows = [line for line in calls if " show main:TODO-" in f" {line}"]
+        self.assertEqual(per_claim_shows, [], per_claim_shows[:5])
+
     def test_keeps_exact_item_todo_claim(self) -> None:
         scratch = self.repo.make_extra_worktree("0200-04")
         self.repo.record_item(scratch, "0200-04", accepted=True, claim_prefix="TODO")

@@ -85,7 +85,8 @@ claims.
 |---|---|---|---|---|
 | **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement before current Acceptance of the affected node | A scope decision reaching beyond the Feature without a TK-2 record; silent checkpoint change after current Acceptance; acceptance of its own breakdown |
 | **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
-| **Integrator** | Merge work across **integration checkpoints** and review it there; execute repository hygiene for assigned `main` integrations | Boundary merge, hygiene verdict, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes and whether the exact assigned merge satisfies the machine hygiene gate | Resolve its own `[u]` verdict; skip a checkpoint; delegate the hygiene verdict to Project Lead |
+| **Dispatcher** | Admit work only against reserved downstream capacity and keep the chain moving through canonical integration | Capacity reservation, complete briefing, handoffs, repair routing, canonical integration receipt | Which eligible chain to offer within the WIP limit | Declare flow complete at implementation or review handoff; create work without an Integrator reservation; overfill the review queue |
+| **Integrator** | Pull reserved work across **integration checkpoints**, review it there, and execute repository hygiene for assigned `main` integrations | Capacity reservation, boundary merge, hygiene verdict, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation, canonical integration receipt | Whether a reviewed checkpoint passes and whether the exact assigned merge satisfies the machine hygiene and ancestry gates | Resolve its own `[u]` verdict; skip a checkpoint; delegate the hygiene verdict to Project Lead; accept more than one active reserved chain |
 
 Checkpoint-free item-branch merges, typically Subtask→Task, are implementer
 work and may be performed by a sandboxed-grunt agent through the runner. The
@@ -123,6 +124,7 @@ authority, **never an agent role**.
 |---|---|---|
 | Architect | `sandboxed-grunt` | — |
 | Implementer | `sandboxed-grunt`; `unprivileged` where the Task's execution scope requires direct execution | The class follows the Task's need, not the session's preference |
+| Dispatcher | `unprivileged` | Dispatch grants no Acceptance or integration authority; it carries end-to-end flow accountability |
 | Integrator | **`privileged`** | Neither `sandboxed-grunt` nor `unprivileged` may be Integrator; both lack authority, not capability |
 | Requirements Engineer | `sandboxed-grunt` | — |
 | QA Manager | `sandboxed-grunt` is sufficient | More rights do **not** increase independence. `unprivileged` is permitted when direct verification runs are required |
