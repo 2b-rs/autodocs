@@ -24,15 +24,21 @@ JavaScript-disabled path.
 
 - **Git/GitHub** supplies durable request, proposal, decision, commit, and
   publication provenance.
-- **Supervisor** detects a trusted typed event and opens a priority-gated
-  Project Lead offer. It does not choose the product disposition or contractor.
+- **Supervisor** detects a durable typed arrival envelope that passes only the
+  minimum validation needed for safe routing and opens a priority-gated
+  Project Lead offer before trusted ingestion or decision-recipe execution. It
+  does not treat that routing check as factual trust, mutate queue/history, or
+  choose the product disposition or contractor.
 - **Awarded Project Lead** makes the explicit scheduling decision: hand off to
   a Project Lead already handling a materially similar item; create a dependent
   typed-runner assignment; or hand the same item to a runner when the action is
   trivial. The chosen branch and its durable reason are part of the result.
-- **Runner recipe** validates and executes a typed awarded transition. It
-  cannot assign work, select a decision branch, accept a proposal, grant
-  authority, integrate, or authorize publication.
+- **Runner recipe** executes only the transition selected after the Project
+  Lead award. It performs the full transport/trust, authority, binding,
+  staleness, and duplicate validation before any allowed mutation, and emits a
+  durable continuation result. It cannot assign work, select a decision
+  branch, accept a proposal, grant authority, integrate, or authorize
+  publication.
 - **AI contractor** may research and propose. Streamed conversation is
   non-authoritative until a structured handoff/proposal is committed.
 - **Curator** alone may accept, reject, or request revision of the proposal.
@@ -84,14 +90,17 @@ both repositories.
 
 ## Event-driven continuation
 
-Every recipe result is durable and names either the next event/handler or a
-terminal failure disposition:
+Every arrival and recipe result is durable and names either the next
+event/handler or a terminal failure disposition:
 
-1. trusted feedback ingestion complete → priority-gated proposal scheduling;
-2. proposal committed and pushed → Curator notification/decision intake;
-3. accepted, non-stale decision ingested → priority-gated apply/publication
-   scheduling;
-4. publication result committed → workflow closure or durable retry/failure.
+1. minimally validated feedback arrival → priority-gated Project Lead offer;
+2. trusted feedback ingestion complete → proposal-scheduling continuation;
+3. proposal committed and pushed → Curator notification/decision intake;
+4. minimally validated Curator-decision arrival → priority-gated Project Lead
+   offer;
+5. accepted, non-stale decision ingested → apply/publication-scheduling
+   continuation; and
+6. publication result committed → workflow closure or durable retry/failure.
 
 No dispatcher may stop at “submitted” or an in-memory callback. The next step
 must be reconstructible from the durable result after restart.
@@ -102,25 +111,36 @@ must be reconstructible from the durable result after restart.
 
 1. Browser feedback creates a durable GitHub issue/comment envelope bound to
    the exact published record/version.
-2. Trusted ingestion validates transport, target, schema, staleness, and
-   duplication; it commits one queue item without changing factual data.
-3. Supervisor emits a priority-gated Project Lead offer.
-4. The awarded Project Lead records one of the three scheduling branches above.
-5. An awarded AI contractor/runner produces an evidence-bearing proposal and
+2. An arrival adapter validates only the durable event identity, supported
+   kind, and routing information needed to open an offer; this creates no
+   queue/history item and establishes no factual trust.
+3. Supervisor emits a priority-gated Project Lead offer before any trusted
+   ingestion recipe runs.
+4. The awarded Project Lead records one of the three scheduling branches above
+   and selects or hands off the dependent/trivial ingestion recipe.
+5. That recipe validates transport, target, schema, authority, staleness, and
+   duplication; only success commits one queue item without changing factual
+   data, then emits the durable proposal-scheduling continuation.
+6. An awarded AI contractor/runner produces an evidence-bearing proposal and
    structured handoff, then pushes the proposal version to GitHub.
-6. The result notifies the Curator and preserves causal chat/proposal links.
+7. The result notifies the Curator and preserves causal chat/proposal links.
 
 ### Cycle 2 — Curator decision to publication
 
 1. The Curator sees the exact published baseline, proposal, pretty-printed
    diff, evidence, provenance, and live conversation state.
 2. The Curator writes a durable accept, reject, or request-revision decision.
-3. Trusted ingestion validates authority, binding, revision, and staleness.
-4. Rejection closes without factual mutation; request-revision returns through
-   a priority-gated proposal offer; acceptance opens a priority-gated
-   apply/publication offer.
-5. The awarded Project Lead again records handoff, dependent recipe, or trivial
-   same-item runner execution.
+3. An arrival adapter validates only the durable decision identity, supported
+   kind, and routing information needed to open an offer; it neither trusts the
+   decision nor mutates proposal, queue, history, or facts.
+4. Supervisor opens a priority-gated Project Lead offer before trusted decision
+   ingestion. The awarded Project Lead records handoff, dependent recipe, or
+   trivial same-item runner execution and selects the decision-ingestion
+   recipe.
+5. That recipe validates Curator authority, proposal/baseline binding, revision,
+   and staleness. Rejection closes without factual mutation;
+   request-revision emits proposal-scheduling continuation; acceptance emits
+   apply/publication-scheduling continuation.
 6. An authorized apply/publication execution revalidates the decision,
    transactionally mutates the database, commits the database version,
    refreshes the live projection, regenerates and validates every configured
@@ -169,7 +189,7 @@ is an output of `0045-00`/`0045-02`, not a presumed current registry.
 
 | Recipe | Validates and performs | Must not decide |
 | --- | --- | --- |
-| `feedback_ingestion` | Trusted GitHub envelope → idempotent committed queue item and scheduling event. | Record truth, assignee, or product disposition. |
+| `feedback_ingestion` | Post-award trusted GitHub envelope → idempotent committed queue item and durable proposal-scheduling continuation. | Record truth, assignee, or product disposition. |
 | `ai_proposal` | Awarded queue item + pinned baseline → evidence-bearing proposal, causal chat handoff, GitHub commit/push, Curator event. | Its own acceptance, apply, or publication. |
 | `apply_publish` | Accepted non-stale decision → transactional database apply/commit, live refresh, full multilingual regeneration, validation, publication receipt. | Curator disposition, integration verdict, release authorization, or target policy. |
 

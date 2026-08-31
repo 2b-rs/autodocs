@@ -21,11 +21,15 @@ Architect, and one approved shared Feature/interface baseline.
   snapshot and the generated digest set.
 - **REQ-0045-03 — No component-library constraint.** Feature 0045 shall not
   require use, reuse, or creation of an S-Core component library.
-- **REQ-0045-04 — Priority-gated scheduling.** Every newly ingested
-  curation/review input shall produce a priority-gated Project Lead offer. The
-  awarded Project Lead may hand the item to a Project Lead already handling a
-  materially similar item, create a dependent typed-runner assignment, or hand
-  the same item to a runner when the action is trivial.
+- **REQ-0045-04 — Priority-gated scheduling.** Every durable curation/review
+  arrival envelope that passes the minimum validation needed to route it shall
+  produce a priority-gated Project Lead offer **before** trusted ingestion or
+  decision-recipe execution. The awarded Project Lead may hand the item to a
+  Project Lead already handling a materially similar item, create a dependent
+  typed-runner assignment, or hand the same item to a runner when the action is
+  trivial. The selected recipe shall still perform full trust, authority,
+  binding, staleness, and duplicate checks before any queue, history, factual,
+  or publication mutation.
 - **REQ-0045-05 — Central Project Lead decisions.** Similar-item handling,
   dependency creation, trivial-runner handoff, proposal disposition, and
   publication continuation shall remain explicit Project Lead decision
@@ -148,6 +152,13 @@ Architect, and one approved shared Feature/interface baseline.
 | `0045-06.02` | Autodocs Subtask; consumes `0045-06.01`, `0045-01`, `0045-05`, and `0033-16.01` to apply, regenerate, validate, and publish under separate authority. |
 | `0045-06` | Exactly one terminal parent; consumes canonical receipts from both per-repository Subtasks and records the cross-repository terminal proof without itself mutating both repositories. |
 
+Agent-inbox ancestry is repository-native: `0045-02` branches from current
+agent-inbox `main`; `0045-03.01` branches from the exact `0045-02` agent-inbox
+candidate; and `0045-06.01` branches from the exact `0045-03.01` agent-inbox
+candidate. Autodocs outputs such as the approved `0045-00` baseline and the
+`0045-05` Curator-decision contract are consumed by immutable ref and digest;
+they are not parent branches in the agent-inbox repository.
+
 ## Assumptions, exclusions, and open authority
 
 - **Assumption A-0045-01:** GitHub remains the durable transport/provenance
@@ -161,9 +172,10 @@ Architect, and one approved shared Feature/interface baseline.
   Management-approved interface is intentionally unresolved. `0045-00` decides
   the contract; `0045-02` proves selector compatibility. Downstream tasks may
   not guess.
-- **Exclusions:** no Publisher role, no generic HUD/component-library
-  extraction, no browser direct canonical writes, no AI self-acceptance, no
-  source-history publication output, and no Feature 0035 redesign.
+- **Exclusions:** no Publisher role for now/in this initial Feature, no generic
+  HUD/component-library extraction, no browser direct canonical writes, no AI
+  self-acceptance, no source-history publication output, and no Feature 0035
+  redesign.
 - **Open authority:** only Management can resolve the cross-item scheduling
   policy; only a distinct management-instantiated Architect can supply the
   required scope review; only an authorized Curator can decide a proposal; and

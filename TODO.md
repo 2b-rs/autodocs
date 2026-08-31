@@ -221,8 +221,8 @@ Feature blocks retain their prior relative order and content.
   - **Prerequisites:** `0045-00` is a hard start gate and supplies the exact
     approved scheduling/gate interface consumed here.
   - **Planned order:** `position: 3; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`.
-    It may execute in parallel with `0045-01`; it must finish before ingestion
-    can emit an operative offer.
+    It may execute in parallel with `0045-01`; it must finish before a durable
+    arrival envelope can emit an operative offer.
   - **Test scope:** `kind: integration`, derived from external-event
     authentication, offer lifecycle, Project Lead choice, duplicate/similar
     item, selector compatibility, restart, and durable continuation risks.
@@ -232,22 +232,26 @@ Feature blocks retain their prior relative order and content.
     delivery, retry, and no runner execution before an award.
   - **Capability profile:** `capability_class=privileged; rights=["read agent-inbox repository and approved baseline", "write declared scheduler/state-machine paths", "run local integration tests", "commit candidate without deploying"]; data=["approved policy/interface digest", "authoritative selector and agent-inbox Runner contract", "typed GitHub event fixtures", "assignment lifecycle fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox state-machine validator"]; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot supply the Management decision, Architect review, assignment acceptance, integration verdict, or release approval"`.
   - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("event adapter, supervisor, state machine"); reasoning_depth=critical ("cross-item scheduling gates and restart semantics"); context_volume=high ("offer and assignment lifecycles"); ambiguity=medium ("policy fixed by approved baseline"); verification_hardness=critical ("false offer/execution can misassign work across items")`. Peak `critical` determines the class.
-  - **Branch:** `parent: "0045"; name: "0045-02"; create: "pre-provision from parent; do not create from a stale checkout"`.
+  - **Branch:** `parent: "agent-inbox:refs/heads/main"; name: "0045-02"; create: "create in the agent-inbox repository from its current main after pinning the immutable autodocs 0045-00 baseline ref/digest; never use or merge an autodocs branch as the parent"`.
   - **Exhaustive write scope (agent-inbox repository):**
     `supervisor.py`, `test_supervisor.py`,
     `assignment-state-machine.json`, `github_event_adapter.py` (new), and
     `test_github_event_adapter.py` (new).
-  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-04/05/08 and the resolved, reviewed 0045-00 shared scheduling baseline", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main@071c1cb1365ec90a9c4f70748275e615b9df475d", basis: "REQ-0045-04/05/08, the resolved reviewed 0045-00 baseline consumed by immutable autodocs ref/digest, and observed absence of an agent-inbox 0045 parent branch", checked_at: "2026-08-31T20:52:11Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
   - **Review rationale:** mandatory independent scheduler/security review because
     false positives, implicit decisions, or replay defects can start or route
     foreign work.
-  - **Acceptance criteria:** Trusted typed events create one priority-gated
-    Project Lead offer; the awarded Project Lead durably selects similar-item
-    handoff, dependent typed-runner assignment, or trivial same-item runner
-    handoff; all outcomes name the next handler; no Supervisor/runner product
-    decision or pre-award execution is possible; restart/replay is idempotent;
-    the concrete recipe binding matches the authoritative selector and does not
-    depend on an absent or retired registry.
+  - **Acceptance criteria:** Each durable curation/review arrival envelope that
+    passes only the minimum safe-routing validation creates one priority-gated
+    Project Lead offer before trusted ingestion or decision-recipe execution;
+    the awarded Project Lead durably selects similar-item handoff, dependent
+    typed-runner assignment, or trivial same-item runner handoff; the selected
+    recipe performs full trust/authority/binding/staleness/duplicate checks
+    before any mutation and emits its durable continuation; all outcomes name
+    the next handler; no Supervisor/runner product decision, pre-award recipe
+    execution, or pre-recipe mutation is possible; restart/replay is
+    idempotent; the concrete recipe binding matches the authoritative selector
+    and does not depend on an absent or retired registry.
   - **Definition of Done:** State-machine and integration tests pass; new event
     schema/adapter and durable decision results are committed; compatibility
     and recovery evidence is retained; nothing is deployed.
@@ -309,12 +313,12 @@ Feature blocks retain their prior relative order and content.
       and selector-mismatch fixtures.
     - **Capability profile:** `capability_class=unprivileged; rights=["read agent-inbox scheduler and approved interface", "write declared agent-inbox recipe/schema/test paths", "run local tests", "commit candidate without dispatch or external mutation"]; data=["approved selector binding", "typed GitHub event fixtures", "award fixtures", "idempotence ledger fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox assignment Runner test harness"]; execution_needs=direct; cognitive_demand=high; independence="implementer cannot award, choose the PL branch, mutate autodocs facts, integrate, or publish"`.
     - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=medium ("recipe, schema, scheduler interface"); reasoning_depth=high ("selector and replay semantics"); context_volume=medium ("event/award/result fixtures"); ambiguity=low ("0045-00/02 bind the interface"); verification_hardness=high ("pre-award or duplicate execution must be impossible")`. Peak `high` determines the class.
-    - **Branch:** `parent: "0045-03"; name: "0045-03.01"; create: "pre-provision from parent in the agent-inbox repository; do not create from a stale checkout"`.
+    - **Branch:** `parent: "agent-inbox:0045-02 exact candidate ref"; name: "0045-03.01"; create: "create in the agent-inbox repository from the pinned 0045-02 candidate so its scheduler contract is ancestral; consume autodocs artifacts only by immutable ref/digest"`.
     - **Exhaustive write scope (agent-inbox repository):**
       `recipes/feedback_ingestion.py` (new),
       `schemas/feedback-recipe-contract-v1.json` (new), and
       `test_feedback_ingestion_recipe.py` (new).
-    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-04/05/08/12/16 and selector-compatible scheduling contract from 0045-02", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main@071c1cb1365ec90a9c4f70748275e615b9df475d", basis: "REQ-0045-04/05/08/12/16 and the exact ancestral selector-compatible 0045-02 agent-inbox candidate", checked_at: "2026-08-31T20:52:11Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
     - **Review rationale:** independent selector/award/idempotence review at the
       agent-inbox execution boundary.
     - **Acceptance criteria:** The approved selector can invoke the logical
@@ -356,10 +360,13 @@ Feature blocks retain their prior relative order and content.
     - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-06/08/12, immutable 0045-03.01 handoff, 0033-06 trusted transport, and 0033-07 atomic queue contract", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
     - **Review rationale:** independent trust/idempotence review protects the
       canonical database boundary from external input.
-    - **Acceptance criteria:** A conforming trusted current handoff creates
-      exactly one committed queue item and next-event receipt; malformed,
-      untrusted, stale, duplicate-conflicting, or selector-mismatched input is
-      typed and effect-free; canonical record bytes do not change.
+    - **Acceptance criteria:** Only the feedback-ingestion recipe selected after
+      the priority-gated Project Lead award may supply the consumer; a
+      conforming trusted current handoff creates exactly one committed queue
+      item and next-event receipt; malformed, untrusted, stale,
+      duplicate-conflicting, or selector-mismatched input is typed and
+      effect-free; no queue/history mutation occurs from arrival validation or
+      before the selected recipe; canonical record bytes do not change.
     - **Definition of Done:** Adapter/ingestion/tests are committed in
       autodocs; focused tests pass; candidate and result digests are handed to
       the parent `0045-03`.
@@ -405,7 +412,8 @@ Feature blocks retain their prior relative order and content.
   durable GitHub decision contract.
   - **Task record:**
     `task_id: "0045-05"; feature_id: "0045"; role: implementer`
-  - **Architecture decisions and sources:** Implement `REQ-0045-07`,
+  - **Architecture decisions and sources:** Implement `REQ-0045-04`,
+    `REQ-0045-07`,
     `REQ-0045-09`, `REQ-0045-10`, `REQ-0045-13`, and `REQ-0045-14`.
     Agent-inbox HUD files are read-only design evidence, not a reusable package
     or write scope. Feature 0035 remains requester/submission-dialog UX.
@@ -438,10 +446,14 @@ Feature blocks retain their prior relative order and content.
     because the surface captures the sole human product decision.
   - **Acceptance criteria:** The Curator sees exact proposal, pinned published
     baseline, pretty diff, evidence, chat provenance, and current state; can
-    durably accept, reject, or request revision; the exact decision key
+    durably accept, reject, or request revision; that durable decision is an
+    arrival envelope, not yet trusted ingestion or apply authority, and its
+    minimum safe-routing validation opens a priority-gated Project Lead offer
+    before the selected downstream decision recipe runs; the exact decision key
     `decision:<proposal-id>:<curator-decision-revision>` is replay-safe;
     stale/conflicting/unauthorized decisions are effect-free; no Feature 0035
-    ownership or generic HUD package is claimed.
+    ownership or generic HUD package is claimed; no arrival check mutates
+    proposal, queue, history, facts, or publication state.
   - **Definition of Done:** Scoped UI/view/ingestion/tests and retained
     accessibility/browser evidence are committed; all stated tests pass; no
     real Curator decision or factual apply is fabricated.
@@ -508,35 +520,42 @@ Feature blocks retain their prior relative order and content.
     - **Task record:**
       `task_id: "0045-06.01"; feature_id: "0045"; role: implementer`
     - **Architecture decisions and sources:** Implement the recipe-producer side
-      of `REQ-0045-07`, `REQ-0045-08`, `REQ-0045-11`, `REQ-0045-12`, and
-      `REQ-0045-16` under the approved selector binding. The recipe validates
-      awarded intent and emits a typed command/result contract; it grants no
-      Curator, integration, or release authority.
-    - **Prerequisites:** `0045-05` produces the durable Curator decision;
+      of `REQ-0045-04`, `REQ-0045-05`, `REQ-0045-07`, `REQ-0045-08`,
+      `REQ-0045-10`, `REQ-0045-11`, `REQ-0045-12`, and `REQ-0045-16` under
+      the approved selector binding. The recipe runs only after the arrival
+      offer and awarded Project Lead branch selection, performs full decision
+      trust/binding validation, and emits a typed command/result contract; it
+      grants no Curator, integration, or release authority.
+    - **Prerequisites:** `0045-05` produces the durable Curator-decision arrival
+      envelope and immutable autodocs contract;
       `0045-02` produces the selector-compatible offer/assignment contract.
       Both are hard start gates.
     - **Planned order:** `position: 9; order: [0045-00, 0045-01, 0045-02, 0045-03.01, 0045-03.02, 0045-03, 0045-04, 0045-05, 0045-06.01, 0045-06.02, 0045-06]`. It produces the
       immutable handoff consumed by `0045-06.02`.
-    - **Test scope:** `kind: integration`, derived from accepted-decision,
-      award, selector, apply/publish idempotence, restart, and failure risks.
+    - **Test scope:** `kind: integration`, derived from arrival-before-offer,
+      accepted-decision, award, selector, apply/publish idempotence, restart,
+      and failure risks.
       Evidence: `pytest -q test_apply_publish_recipe.py` with unauthorized,
       unawarded, rejected, revision-requested, stale, same-key replay, conflict,
       partial result, retry ancestry, selector mismatch, and restart fixtures.
     - **Capability profile:** `capability_class=unprivileged; rights=["read agent-inbox assignment and durable decision contracts", "write declared agent-inbox recipe/schema/test paths", "run local fixture tests", "commit candidate without database or external publication effects"]; data=["accepted-decision fixtures", "approved selector binding", "assignment fixtures", "idempotence/retry ledger fixtures"]; tools=["Git", "Python", "pytest", "agent-inbox assignment Runner test harness"]; execution_needs=direct; cognitive_demand=critical; independence="recipe implementer is not Curator, Integrator, or release authority and cannot execute real database/publication effects"`.
     - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high ("decision, assignment, apply and publication handoff"); reasoning_depth=critical ("authority and partial-effect state"); context_volume=medium ("bounded schemas/fixtures"); ambiguity=low ("selector and decision contracts are pinned"); verification_hardness=critical ("false command can target canonical data or public release")`. Peak `critical` determines the class.
-    - **Branch:** `parent: "0045-06"; name: "0045-06.01"; create: "pre-provision from parent in the agent-inbox repository; do not create from a stale checkout"`.
+    - **Branch:** `parent: "agent-inbox:0045-03.01 exact candidate ref"; name: "0045-06.01"; create: "create in the agent-inbox repository from the pinned 0045-03.01 candidate (and therefore 0045-02 ancestry); consume the autodocs 0045-05 decision contract only by immutable ref/digest"`.
     - **Exhaustive write scope (agent-inbox repository):**
       `recipes/apply_publish.py` (new),
       `schemas/apply-publish-contract-v1.json` (new), and
       `test_apply_publish_recipe.py` (new).
-    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0045-07/08/11/12/16, selector-compatible 0045-02 contract, and durable Curator decision 0045-05", checked_at: "2026-08-31T20:01:01Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main@071c1cb1365ec90a9c4f70748275e615b9df475d", basis: "REQ-0045-04/05/07/08/10/11/12/16, ancestral 0045-02 and 0045-03.01 agent-inbox candidates, and the immutable autodocs 0045-05 decision contract", checked_at: "2026-08-31T20:52:11Z", recorded_by: "agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17" }`
     - **Review rationale:** independent authority/idempotence review prevents a
       logical recipe from becoming an implicit release grant.
-    - **Acceptance criteria:** Only an awarded, authorized, accepted, current
-      decision produces a conforming handoff; exact apply/publish keys govern
-      replay; rejected/revision/stale/conflicting input is effect-free; every
-      result names the autodocs consumer, safe retry boundary, or terminal
-      failure; no absent registry is assumed.
+    - **Acceptance criteria:** A minimally validated decision arrival creates
+      the Project Lead offer without trusted ingestion or mutation; only the
+      recipe selected after that award may fully validate the decision; only an
+      authorized, accepted, current decision then produces a conforming
+      handoff; exact decision/apply/publish keys govern replay;
+      rejected/revision/stale/conflicting input is effect-free; every result
+      names the autodocs consumer, safe retry boundary, or terminal failure; no
+      absent registry is assumed.
     - **Definition of Done:** Recipe, schema, and focused tests are committed in
       agent-inbox; immutable candidate/ref and schema digest are handed to
       `0045-06.02`; no real database or publication effect occurred.
