@@ -6,24 +6,22 @@ base_commit: 5b884f0c6cd69b833e33a9d975d425cb153a7ff3
 capability_class: unprivileged
 execution_authority: direct local execution in the assigned item-owned worktree and exact paths only
 startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; awards 1788209078240-210b23ed and 1788209988480-5e2e4a30; exact worktree/branch/status; agent-inbox main ancestry
-state: [x]
+state: [p]
 
 - coordination_kind: user-directed non-backlog requirements package under
   `AGENTS.md`; no unrelated TODO Task marker or Task identity is claimed
-- assignment_id: `1788209988480-5e2e4a30`
-- parent_assignment: `1788209078240-210b23ed`
+- assignment_id: `1788210713675-9ed81074`
+- parent_assignment: `1788209988480-5e2e4a30`
 - process: Requirements Engineering and Project Planning
 - branch: `score-feedback-loop-requirements-20260831`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/score-feedback-loop-requirements-20260831`
-- inherited_candidate: `e11b831b9bae2e1feb504929003185561d7844ba`
-- assignment_state: `review-ready`; contractor transition follows this
-  claim-finalization commit
-- prior_implementation_ref: `20184a7a19ca537e924089c54fdedc06ad40e924`
-- implementation_ref: `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135`
+- inherited_candidate: `1dcb3cdc73e8323c936814c1aa60add48a2a680d`
+- assignment_state: `in_progress`
+- prior_implementation_ref: `b8fe2352c6f4c4a14c5c73b59d63ec62d299c135`
 - integration_reservation: Integrator `luap`, formally `on_hold` for this rework per Zed message `1788206051221-630084ca`
-- current_step: final mechanical ancestry correction complete; submit the exact final tip for
-  independent coordinator review while the held integration chain remains
-  paused
+- current_step: reconcile the reviewed producer branch onto then-current main,
+  preserve the main-only Jadzia claim and all reviewed 0045 contract content,
+  and record exact two-parent ancestry proof
 
 ## Exhaustive write scope
 
@@ -34,6 +32,13 @@ state: [x]
 - `TODO.md` Feature `0045` block only
 
 ## Rework requirements
+
+- Integration rejection `31b4f4ed7f0f5c6f7dd1890dec395b81314d0173`
+  requires the reviewed producer tip
+  `1dcb3cdc73e8323c936814c1aa60add48a2a680d` to be reconciled onto
+  then-current main `ec2282ddc7bb9400aad621ff82a1ad14cfec8354`, preserving
+  `TODO-jadzia-chain-0033-04.01-20260831.md`, the full reviewed Feature 0045
+  contract, and the integration evidence without altering main.
 
 - Coordinator rework `1788209988480-5e2e4a30` requires the agent-inbox
   proposal Task `0045-04` to branch from the exact `0045-03.01` candidate and
@@ -144,9 +149,11 @@ No production code, external GitHub mutation, credentials, publication, Acceptan
 
 ## Next step
 
-Transition assignment `1788209988480-5e2e4a30` to review and notify Zed with
-the exact claim-finalization tip. Luap's integration assignment remains on hold
-until Zed records the review disposition and resumes it with an exact SHA.
+Reconcile the branch, prove both the reviewed producer tip and then-current
+main are ancestors of a clean candidate, then transition assignment
+`1788210713675-9ed81074` to review and notify Zed with the exact tip. Luap's
+integration assignment remains on hold until Zed records the review
+disposition and resumes it with an exact SHA.
 
 ## Narrow-rework validation
 
