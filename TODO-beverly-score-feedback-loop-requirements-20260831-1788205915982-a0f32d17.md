@@ -1,19 +1,29 @@
 # Claim: score-feedback-loop-requirements-20260831 rework
 
-- owner_token: `agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17`
-- assignment_id: `1788205915982-a0f32d17`
-- parent_assignment: `1788205548746-d2b529b5`
+owner_token: agent:beverly:score-feedback-loop-requirements-20260831:1788205915982-a0f32d17
+request_id: 1788205915982-a0f32d17
+base_commit: 5b884f0c6cd69b833e33a9d975d425cb153a7ff3
+capability_class: unprivileged
+execution_authority: direct local execution in the assigned item-owned worktree and exact paths only
+startup_review: AGENTS.md; SANDBOX.md; docs/pipeline/roles/requirements-engineer.md; docs/pipeline/core-rules.md; award 1788209078240-210b23ed; exact worktree/branch/status; agent-inbox main ancestry
+state: [x]
+
+- coordination_kind: user-directed non-backlog requirements package under
+  `AGENTS.md`; no unrelated TODO Task marker or Task identity is claimed
+- assignment_id: `1788209078240-210b23ed`
+- parent_assignment: `1788205915982-a0f32d17`
 - process: Requirements Engineering and Project Planning
-- capability_class: `unprivileged`
-- execution_authority: direct local execution in the assigned item-owned worktree and exact paths only
 - branch: `score-feedback-loop-requirements-20260831`
 - worktree: `/Users/tobias.anton/devel/autodocs/.worktrees/score-feedback-loop-requirements-20260831`
-- inherited_candidate: `0ffb5e906441eeca21b6939519b48582fbfe8ee5`
-- state: `[x]`
-- assignment_state: `review-ready`; contractor transition follows this claim-finalization commit
-- implementation_ref: `be9b7fe128dee24daee3ae4d50cd0ae66d5ed612`
+- inherited_candidate: `5b884f0c6cd69b833e33a9d975d425cb153a7ff3`
+- assignment_state: `review-ready`; contractor transition follows this
+  claim-finalization commit
+- prior_implementation_ref: `be9b7fe128dee24daee3ae4d50cd0ae66d5ed612`
+- implementation_ref: `20184a7a19ca537e924089c54fdedc06ad40e924`
 - integration_reservation: Integrator `luap`, formally `on_hold` for this rework per Zed message `1788206051221-630084ca`
-- current_step: implementation complete; submit exact final tip for independent review and resume the held integration chain only after reviewer disposition
+- current_step: narrow correction complete; submit the exact final tip for
+  independent coordinator review while the held integration chain remains
+  paused
 
 ## Exhaustive write scope
 
@@ -24,6 +34,24 @@
 - `TODO.md` Feature `0045` block only
 
 ## Rework requirements
+
+- Coordinator rework `1788209078240-210b23ed` requires every durable
+  curation/review arrival envelope to open the priority-gated Project Lead
+  offer before the awarded Project Lead selects or hands off the trusted
+  ingestion/decision recipe. Minimal routing validation may precede the offer;
+  full trust, authority, staleness, duplicate, and no-mutation checks remain in
+  the selected recipe, whose result emits the durable continuation event.
+- Agent-inbox tasks must use executable agent-inbox ancestry: `0045-02` starts
+  from agent-inbox `main`; `0045-03.01` starts from the exact `0045-02`
+  candidate; and `0045-06.01` starts from the exact `0045-03.01` candidate.
+  Autodocs prerequisites cross that repository boundary only as immutable
+  artifact refs/digests, never as parent branches.
+- Read-only verification found agent-inbox `main` at
+  `071c1cb1365ec90a9c4f70748275e615b9df475d` with no local `0045*` branch;
+  the corrected branch contracts therefore do not presume a cross-repository
+  or pre-existing Feature parent.
+- Limit the Publisher exclusion to the initial Feature rather than recording a
+  permanent role prohibition.
 
 - Remove private-branch `DEC-0045-01` allocation and nonexistent `docs/decisions` path. Task `0045-00` prepares the durable decision request and distinct Architect scope review without preallocating an identifier, and produces one approved Feature/interface baseline consumed by both fan-out nodes.
 - Replace invented or incomplete paths with verified repository-relative autodocs and agent-inbox paths, including exhaustive test paths and the actual database/regeneration consumers.
@@ -107,3 +135,29 @@
 ## Boundaries
 
 No production code, external GitHub mutation, credentials, publication, Acceptance, integration-checkpoint crossing, `main` advance, Feature closure, new DEC allocation, or operative cross-item gate activation. The pipeline text remains proposed/non-operative until Task `0045-00` records the Management decision and distinct Architect scope review.
+
+## Next step
+
+Transition assignment `1788209078240-210b23ed` to review and notify Zed with
+the exact claim-finalization tip. Luap's integration assignment remains on hold
+until Zed records the review disposition and resumes it with an exact SHA.
+
+## Narrow-rework validation
+
+- Product commit `20184a7a19ca537e924089c54fdedc06ad40e924`
+  changes only `TODO.md`, the requirements dossier, and the proposed process
+  contract; `git show --check` passes.
+- Focused assertions pass for arrival-before-offer-before-recipe ordering in
+  both feedback and Curator-decision cycles; all three agent-inbox branch
+  contracts use repository-native ancestry; Feature `0045` remains the first
+  Feature block; and the Publisher exclusion is explicitly limited to this
+  initial Feature.
+- `process_doc_doctor.py --root . --json` reports zero findings on the changed
+  product paths. The two repository-wide errors remain on unchanged paths.
+- `legacy_task_doctor.py --root . --json` retains the intentional
+  `LTD-CHECKPOINT-MISSING-AUTHORITY` finding for `0045-06`; Task `0045-00`
+  requires the distinct management-instantiated Architect to supply that
+  rationale. The doctor also rejects this temporary claim's nonnumeric
+  user-directed item identity; `AGENTS.md` expressly permits such a
+  coordination record, and substituting an unrelated TODO Task ID would be
+  false bookkeeping.
