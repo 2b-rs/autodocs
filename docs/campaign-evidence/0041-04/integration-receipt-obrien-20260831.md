@@ -4,26 +4,26 @@
 - **Item:** `0041-04-dag-integration-20260831`
 - **Process:** Integration (Canonical DAG Integration of 0041-04)
 - **Integrator:** Miles O'Brien (`obrien`), privileged Integrator, Team DeepSpace9
-- **Award Authority:** Atomic priority award `1788168416877-06dcb444` / rework iteration 1 `1788169253309-a4f42856`
-- **Timestamp:** `2026-08-31T09:44:00Z`
+- **Award Authority:** Atomic priority award `1788168416877-06dcb444` / rework iteration 1 `1788169253309-a4f42856` / rework iteration 2 `1788169510137-f29c5dc0`
+- **Timestamp:** `2026-08-31T09:46:00Z`
 - **Common-Dir Identity:** `/Users/tobias.anton/devel/autodocs/.git`
 - **Candidate Commit:** `2ef20b5c184b46334cfaeb0f0dfa566c542dca04`
 - **Main Before:** `18bfbb5775be4d31f19a1481d283732cd50aa323`
-- **Reconciliation Merge Commit:** `faa7e26654f5fc51586f4a30e84b81d830bca2d8`
-- **Candidate Tip Landed:** `2b7d284acd955d5bb2b450702678da47f70b79dc`
-- **Main After (Post-FF Merge):** `main@2b7d284acd955d5bb2b450702678da47f70b79dc` (and updated receipt commit on `main`)
+- **Reconciliation Merge Commit:** `faa7e2665435a6b29c397d30c8b8cdd11e8f5359`
+- **Candidate Tip Landed:** `2b7d284acd8710ee70dd4d298acbdc30601a314a`
+- **Main After:** `2b7d284acd8710ee70dd4d298acbdc30601a314a`
 
 ## Ancestry Proof & DAG Lineage
 1. Candidate branch base `f5763cf21e98066f7e932d50a2b0e9c5802550f9` verified as ancestor of `main@18bfbb5775be4d31f19a1481d283732cd50aa323` (`git merge-base --is-ancestor f5763cf21e 18bfbb5775` returns 0).
 2. Candidate commit `2ef20b5c184b46334cfaeb0f0dfa566c542dca04` linearly contains:
-   - `838904e70f` `claim(0041-04): start Enterprise dispatch`
-   - `748fcf8099` `claim(0041-04): record direct publication award`
-   - `610b0dae88` `feat(0041-04): guard direct item branch publication`
-   - `d3416df52f` `claim(0041-04): record review-ready publication evidence`
-   - `2ef20b5c18` `chore(0041-04): finalize implementation marker`
-3. Current source baseline `main@18bfbb5775` was reconciled onto the candidate branch via merge commit `faa7e26654` without changing product intent or files.
-4. Integration receipt, coordination claim, and terminal child claim updates were committed at `2b7d284acd`.
-5. Fast-forward merge of branch tip onto `main` successfully advanced `main` from `18bfbb5775` to `2b7d284acd`.
+   - `838904e70ff307cce3175ddd8fbc7a1527d276f8` `claim(0041-04): start Enterprise dispatch`
+   - `748fcf80995857223941f0b2859f4344f32afd25` `claim(0041-04): record direct publication award`
+   - `610b0dae880aa80e0217fad810326e0a38681d9e` `feat(0041-04): guard direct item branch publication`
+   - `d3416df52f9ce13cf0d05e2d239c53f8cb138a19` `claim(0041-04): record review-ready publication evidence`
+   - `2ef20b5c184b46334cfaeb0f0dfa566c542dca04` `chore(0041-04): finalize implementation marker`
+3. Current source baseline `main@18bfbb5775be4d31f19a1481d283732cd50aa323` was reconciled onto the candidate branch via merge commit `faa7e2665435a6b29c397d30c8b8cdd11e8f5359` without changing product intent or files.
+4. Integration receipt, coordination claim, and terminal child claim updates were committed at `2b7d284acd8710ee70dd4d298acbdc30601a314a`.
+5. Fast-forward merge of branch tip onto `main` successfully advanced `main` from `18bfbb5775be4d31f19a1481d283732cd50aa323` to `2b7d284acd8710ee70dd4d298acbdc30601a314a`.
 
 ## Mandatory Checkpoint & Acceptance Policy
 - Task `0041-04` has no mandatory checkpoint floor.
@@ -47,7 +47,7 @@
 ### B. Post-Merge Observations (Immediately After Root Merge)
 1. **Root Preflight (After Merge):**
    - Command: `python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight --json`
-   - Baseline Verified: `2b7d284acd955d5bb2b450702678da47f70b79dc`
+   - Baseline Verified: `2b7d284acd8710ee70dd4d298acbdc30601a314a`
    - Result: `ok: true`, `findings: []` (working tree clean, index equals HEAD).
 2. **Post-Merge Test Verification:**
    - Command: `python3 -m unittest _src/tools/test_publish_item_branch.py`
