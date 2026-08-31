@@ -3,8 +3,9 @@
 owner_token: agent:beverly:decision-template-clarity-20260901:1788218125381-26c2d7f5
 assignment_id: 1788218125381-26c2d7f5
 coordination_kind: user-directed governance-documentation package; no unrelated `TODO.md` Task is claimed
-state: [p]
+state: [x]
 base_commit: 87144c00363b12f39d97633876b9b3f324e0f1f8
+implementation_ref: fab2108fedb41f8e940135c5ed1d4f87ce6bcebd
 branch: decision-template-clarity-20260901
 worktree: /Users/tobias.anton/devel/autodocs/.worktrees/decision-template-clarity-20260901
 capability_class: unprivileged
@@ -77,7 +78,9 @@ the candidate SHA for independent review/integration.
 
 ## Current step
 
-The documentation candidate and claim evidence are ready for the substantive
-path-limited commit. After that commit, finalize this claim with the exact
-implementation REF in a separate bookkeeping commit and transition the
-assignment to review.
+Implementation is complete at
+`fab2108fedb41f8e940135c5ed1d4f87ce6bcebd`. Commit this claim finalization as
+the path-isolated bookkeeping tip, transition assignment
+`1788218125381-26c2d7f5` to review, and hand the exact branch tip plus
+substantive REF to the coordinator. Independent authorized integration remains
+separate; Beverly claims no Acceptance or governance landing.
