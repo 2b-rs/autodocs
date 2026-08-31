@@ -12,7 +12,7 @@
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0045-00-data-20260831`
 - **startup_review:** `AGENTS.md`, `SANDBOX.md`, `TODO.md` Feature `0045` and Task `0045-00`, `docs/pipeline/decision-record.md`, `docs/pipeline/score-feedback-loop.md`, `docs/dossiers/score-feedback-loop-requirements-20260831.md`
 - **write_scope:** `docs/dossiers/score-feedback-loop-gate-decision-preparation.md`, `docs/pipeline/score-feedback-loop-approved-baseline.json`, this claim
-- **current_phase_scope:** preparation dossier and this claim only; the approved baseline remains forbidden until the supervisor supplies both the resolved Management-decision reference and the distinct Architect-review reference
+- **current_phase_scope:** approved-baseline finalization and this claim only; Management option A and distinct Architect review `afdfd2f599d1611d738e27b0dd893ed484e85574` were supplied through the formal assignment resume
 - **external_resources:** read-only inspection of the current agent-inbox repository selector/assignment Runner contract; mailbox coordination only
 
 ## Contract and boundaries
@@ -75,3 +75,45 @@ plus the dossier's form-ready decision fields to Supervisor. Then transition
 the assignment to review/hold. Resume baseline finalization only after
 Supervisor supplies both the resolved Management-decision reference and the
 distinct Architect-review reference.
+
+## Resumed baseline finalization
+
+- Formal resume messages `1788218015986-28b79b65` and
+  `1788218024960-ec1722aa` supplied Management resolution
+  `decision-0045-00-feedback-loop-gate-20260831`, option A, and distinct
+  Architect review `afdfd2f599d1611d738e27b0dd893ed484e85574` by Kira.
+- The durable decision archive independently reports `resolved`, option A, at
+  `2026-08-31T23:08:32Z`. The exact request record SHA-256 is
+  `e4d7faf68649c1e42e72609726d07656701d841f6e8455fd4d2bc8ce8a6a0d75`.
+- The review commit is a direct child of preparation candidate `89d40b931d`;
+  it was fast-forwarded unchanged onto this item branch. Its review-file blob
+  is `c63469a669583e7062f770c326b8572f1c8e8941`, SHA-256
+  `499caf09bc7be06753742fdbe4fc1170236df118ec452a46031ac6784870d450`.
+- The approved baseline binds ALT-01, both repository pins, exact interface and
+  evidence digests, logical recipe names, adapter requirements, fail-closed
+  conditions, and the non-authority/activation boundary. It creates no live
+  adapter, registry, assignment, Acceptance, integration, publication, or
+  release state.
+- `python3 -m json.tool` and deterministic structural assertions: PASS for
+  `score-feedback-loop-approved-baseline@v1`, resolved option A, distinct
+  supporting review, ALT-01, all three logical recipes, eight fail-closed
+  conditions, and the non-activation boundary.
+- Independent Git-object and SHA-256 remeasurement: PASS for the preparation,
+  review, proposed contract, requirements, selector, agent-inbox Runner source,
+  Supervisor, Supervisor tests, conflicting README, and canonical Runner
+  projection; the decision-request digest and exact review parent also pass.
+- Negative evidence: PASS; `_src/tools/runner_dispatch.py` and
+  `_src/runner/actions-v1.json` remain absent at the pinned autodocs baseline.
+- `process_doc_doctor.py --root . --json`: PASS (`ok: true`).
+- `git diff --check` and exact scope: PASS; only this claim and
+  `docs/pipeline/score-feedback-loop-approved-baseline.json` differ from the
+  reviewed parent after the unchanged review fast-forward.
+- Later coordination identified sibling review
+  `91feafe942988383a1c6a0b8eb153cc15aeaa62d` by Jadzia. Independent inspection
+  confirmed that it is also a direct child of `89d40b931d`, with the same
+  SUPPORT text and evidence except reviewer identity. The approved baseline
+  remains bound to Kira `afdfd2f599` because that is the exact ref named by the
+  atomic resume of assignment `1788212597555-9ecd6db1`; the sibling mail did
+  not supersede the assignment or authorize rebase/`TODO.md` mutation.
+- Canonical-ref clarification was requested from Supervisor in
+  `1788218465033-52036a42`; no reply arrived during the bounded 60-second wait.
