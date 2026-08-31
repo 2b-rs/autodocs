@@ -1,6 +1,8 @@
 ---
 item: jadzia-distribution-20260829-03
 owner: jadzia
+handover_to: kathryn
+handover_at: 2026-08-31T01:15:30Z
 team: DeepSpace9
 status: active
 write_scope:
