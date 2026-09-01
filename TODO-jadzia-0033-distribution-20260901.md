@@ -121,3 +121,8 @@ NOTES: Dispatched implementation of 0033-16.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0033-16.
+
+
+## 0033-15.02
+STATUS: WAITING FOR MANAGEMENT
+NOTES: Requested release authorization decision from Management.
