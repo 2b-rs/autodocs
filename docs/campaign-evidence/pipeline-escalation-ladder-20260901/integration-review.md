@@ -6,8 +6,8 @@
 - **Exact candidate:** `37386abe2b428e49d2792f29e47c0e04a9e8ef43`
 - **Main before:** `fe90c1e0ef0915b8f25c5d72c29f2d072d0b9910`
 - **Integration branch:** `pipeline-escalation-ladder-integration-20260901`
-- **Verdict:** `accepted`
-- **Timestamp:** `2026-09-01T00:41:00Z`
+- **Product verdict (content):** `accepted` at `2026-09-01T00:41:00Z` against resume main `fe90c1e0ef`
+- **Integration verdict:** `rejected` at `2026-09-01T00:42:30Z` — stale vs then-current main; no merge
 
 ## Independence
 
@@ -55,8 +55,12 @@ The same four-step order appears in `integration-flow-control.md` (normative lad
 
 ## Verdict
 
-`accepted`. Integrate exact candidate `37386abe2b` (with this review evidence) by fast-forward of `main` only if hygiene and root preflight pass.
+Product/contract review of `37386abe2b` vs resume main `fe90c1e0ef`: **accepted**.
+
+Merge gate independently remesured after hygiene PASS (46 worktrees) and root-preflight PASS: `refs/heads/main` had moved to `bc9ecec881` (`jadzia`, `chore: Check off 0045-03.01`). Current main is **not** an ancestor of evidence tip `87e94ded74`. Candidate `37386abe2b` is **not** an ancestor of current main. Fast-forward would drop the 0045-03.01 bookkeeping commit.
+
+**Integration verdict: `rejected`.** No merge. Actionable same-slot rework: producer rebases the exact policy candidate onto then-current main without dropping `bc9ecec881`. This is not `[u]`. Reviewer will not rebase or repair the candidate.
 
 ## Explicit non-actions
 
-No policy authorship. No Architect-finding repair. No publication. No Feature `DONE.md` move beyond what the candidate already carries from current main. No `git update-ref` on `main`.
+No policy authorship. No Architect-finding repair. No rebase of the producer candidate. No publication. No Feature `DONE.md` move. No `git update-ref` on `main`. No merge.
