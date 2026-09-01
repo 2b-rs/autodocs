@@ -2,7 +2,7 @@
 
 ## 1. Exact affected work units/gates
 - **Affected work units:** `repository:autodocs`
-- **Affected gates:** `integration:pipeline`, `technical-disagreement:escalation`, `management-escalation:delegable`
+- **Affected gates:** `integration:pipeline`, `validation:docs/pipeline/process-roles.md`, `validation:docs/pipeline/task-acceptance.md`
 
 ## 2. Smallest safe text changes
 - **`docs/pipeline/integration-flow-control.md`**: Define the new escalation ladder (Integrator decision -> actionable same-slot rework -> trilateral round -> Management for non-delegable).

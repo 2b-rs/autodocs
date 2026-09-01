@@ -26,8 +26,8 @@
   - `repository:autodocs`
 - **Affected gates:**
   - `integration:pipeline`
-  - `technical-disagreement:escalation`
-  - `management-escalation:delegable`
+  - `validation:docs/pipeline/process-roles.md`
+  - `validation:docs/pipeline/task-acceptance.md`
 - **Review participation:**
   - **PART-01:**
     - **Identity:** `agent:kira:architect:pipeline-escalation-ladder-20260901`
