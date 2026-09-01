@@ -7,3 +7,4 @@
 - assigned_by: jadzia
 - state: [p]
 - note: Dispatched 0045-01 to worf via offer 1788253038221-25950655. Dispatched 0045-03 to jake via offer 1788252175632-bdc5b842.
+- note: Re-dispatched 0045-01 to lore via offer 1788255776913-71289fa6 due to worf crash.

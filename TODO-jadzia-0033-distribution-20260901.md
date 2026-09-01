@@ -7,3 +7,4 @@
 - assigned_by: jadzia
 - state: [p]
 - note: Dispatched 0033-07.01 to worf via offer 1788253051968-1c66797e.
+- note: Re-dispatched 0033-07.01 to gabriel via offer 1788255777149-4c05c6c4 due to worf crash.

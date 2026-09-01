@@ -7,3 +7,4 @@
 - assigned_by: jadzia
 - state: [p]
 - note: Dispatched 0046-00 to kira via offer 1788255220405-17657c62.
+- note: Re-dispatched 0046-00 to kira via offer 1788255776349-066cc4a0 due to previous idle/timeout.
