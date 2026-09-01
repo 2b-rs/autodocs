@@ -38,3 +38,15 @@ NOTES: Dispatched implementation of browser package builder.
 OFFERED: priority 1: worf
 STATUS: OPEN
 NOTES: Dispatched implementation of strict envelope to replace dict-based to_dict.
+
+
+## 0033-11-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed integration, merged to main, validated tests, and marked 0033-11 as DONE in TODO.md.
+
+
+## 0033-12
+OFFERED: priority 1: worf, priority 2: quark
+STATUS: OPEN
+NOTES: Dispatched implementation of 0033-12.
