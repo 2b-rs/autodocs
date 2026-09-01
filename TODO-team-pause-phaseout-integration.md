@@ -55,8 +55,8 @@ No agent-inbox product implementation. No live Supervisor mutation. No Feature `
 
 ## Resume 2026-09-01T13:26Z
 
-Independently remesured: canonical root is `main@9e1aaf217b`. Reconciled that tip into the integration worktree (`efe3fb9f0d`). Candidate `aaf9c728ad` remains an ancestor.
+Independently remesured root on `main@9e1aaf217b`, reconciled to `efe3fb9f0d`, then `2d50bf4b92`. Candidate hygiene then **FAIL** `MAIN_WORKTREE_DIRTY` (`TODO-jadzia-0033-distribution-20260901.md`). Integrator did not tidy the root. During the scan, `refs/heads/main` moved to `3737fabe8a` and the shared checkout switched to branch `0045-06`. No worktree has branch `main`. Re-reconciled `3737fabe8a` → integration tip `a03405d1df`. No merge. Not `[u]`.
 
 ## Next
 
-Hygiene + root preflight; remesure then-current main still ancestor; ff-only only if PASS. Receipt.
+Keep slot. Remesure when a checkout of branch `main` at the canonical root is stable; then hygiene, root preflight, ff-only if PASS.
