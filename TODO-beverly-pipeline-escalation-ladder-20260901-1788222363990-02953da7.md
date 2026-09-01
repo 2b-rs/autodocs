@@ -3,7 +3,7 @@
 owner_token: agent:beverly:pipeline-escalation-ladder-20260901:1788222363990-02953da7
 assignment_id: 1788222363990-02953da7
 coordination_kind: user-directed governance-pipeline implementation; no unrelated `TODO.md` Task is claimed
-state: [p]
+state: [x]
 base_commit: eaffe1eee8afda0a759d6879be3a0fe34b1c476c
 main_reconciliation_ref: 75a963722184592fbe38e6318bbb66bebd60e31c
 reconciled_main: 80dd40696b97553413d6be1f696ebda9f1ba68ad
@@ -43,11 +43,30 @@ policy, material-architecture, authority, material-risk, external-effect,
 public-release, or waiver question. Preserve canonical receipt, WIP, hygiene,
 independence, Acceptance, security, release, and role-authority controls.
 
-## Boundaries and next step
+## Completion evidence
+
+substantive_ref: f9200677cf4cc8ba5a12acefb4327f9c648035b3
+
+- All seven declared normative files use the delegated escalation ladder and
+  link to its canonical definition.
+- Direct-to-user checkpoint rejection was replaced with `rejected` or
+  `inconclusive`, same-slot rework, the documented trilateral round, and the
+  narrow non-delegable `[u]` boundary.
+- The ladder expressly preserves canonical receipt, WIP, independence,
+  hygiene, Acceptance, security, release, and specialist-authority gates.
+- `git diff --check` passed before the substantive commit.
+- `_src/tools/process_doc_doctor.py --root . --json` returned `ok: true` on the
+  candidate. Its two errors are the same pre-existing `DOC001` findings on
+  reconciled `main` (`0044-03-gate-scope-proposal.md:146` and
+  `man5-risk-register.md:6`); candidate links added no error.
+- The committed path population equals the exhaustive awarded scope: seven
+  normative files plus this claim. No decision/review dossier was changed.
+
+## Boundaries and handoff
 
 Do not change tool/GUI/state-machine behavior, the accepted decision/review
 dossiers, or any authority allocation. Inspect all seven normative files for
-direct-to-user, dissent, `[u]`, rework, and decision-record wording; derive the
-smallest consistent terminology and examples; validate cross-file coverage,
-links, process documentation, and diff scope; then commit the candidate and
-route it to independent review/integration.
+direct-to-user, dissent, `[u]`, rework, and decision-record wording. The
+candidate is ready for independent privileged review and integration; Beverly
+does not self-accept, integrate, publish, advance `main`, or move a Feature to
+`DONE.md`.
