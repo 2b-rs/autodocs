@@ -171,3 +171,14 @@ NOTES: obrien accepted the priority offer.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-04-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the review and integration. Merged to main in agent-inbox.
+
+## 0050-05
+OFFERED: priority 1: worf, priority 2: seven
+STATUS: OPEN
+NOTES: Dispatched GUI team/assignment drain visibility.
