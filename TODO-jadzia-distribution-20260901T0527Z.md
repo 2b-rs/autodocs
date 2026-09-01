@@ -2,7 +2,7 @@
 
 - **0045-01**: Awarded to worf (DeepSpace9).
 - **0045-03.02**: Awarded to worf (DeepSpace9).
-- **0041-03**: Awarded to ash (Discovery).
+- **0041-03**: Completed by ash, Integration awarded to obrien (DeepSpace9).
 - **0033-07.01**: Delegated to hsa (yrevocsiD) after ash put on hold.
 - **0033-09**: Awarded to guinan (Enterprise).
 
