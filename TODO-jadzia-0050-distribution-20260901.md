@@ -315,3 +315,14 @@ NOTES: Dispatched architecture task to add 0050-09 for missing test coverage.
 AWARDED: seven
 STATUS: AWARDED
 NOTES: seven accepted the priority offer.
+
+
+## 0050-09-architecture
+AWARDED: seven
+STATUS: REVIEW
+NOTES: seven submitted 0050-09-architecture for review.
+
+## 0050-09-architecture-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-09-architecture.
