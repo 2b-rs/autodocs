@@ -285,3 +285,9 @@ NOTES: seven submitted 0050-07 for review. QA report indicates blocking findings
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-07 QA report.
+
+
+## 0050-07
+AWARDED: seven
+STATUS: ON_HOLD (ESCALATED)
+NOTES: seven submitted 0050-07 QA report which found blocking issues. Escalated to Management for decision.
