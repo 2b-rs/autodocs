@@ -69,3 +69,9 @@ NOTES: obrien completed integration, merged to main, validated tests, and marked
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched terminal integration of 0045-06.
+
+
+## 0045-07 (Rework)
+OFFERED: priority 1: quark, priority 2: worf
+STATUS: OPEN
+NOTES: mancons rejected 0045 completion due to missing live activation (supervisor.py missing github_event_adapter, Issue #4 not routed). Dispatched rework.
