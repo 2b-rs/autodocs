@@ -239,6 +239,57 @@ def render_record(record: Mapping[str, Any]) -> bytes:
     return document(str(record["title"]), body, local_prefix="../", root_prefix="../", review_request=True).encode("utf-8")
 
 
+def render_curator_decision_page(proposal: Mapping[str, Any], baseline: Mapping[str, Any]) -> str:
+    """Render bounded Curator decision UI page bound to exact proposal and pinned baseline."""
+    proposal_id = html.escape(str(proposal.get("id", "proposal-unknown")))
+    baseline_digest = html.escape(str(baseline.get("digest", "unspecified")))
+    diff_text = html.escape(str(proposal.get("diff", "(No diff attached)")))
+    evidence_digest = html.escape(str(proposal.get("evidence_digest", "none")))
+    chat_provenance = "".join(f"<li><strong>{html.escape(str(msg.get('sender', 'agent')))}:</strong> {html.escape(str(msg.get('text', '')))}</li>" for msg in proposal.get("chat_history", []))
+
+    body = f'''<h1>S-Core Curator Decision Console</h1>
+<section id="curator-baseline-binding" data-baseline-digest="{baseline_digest}">
+<h2>Pinned Baseline Binding</h2>
+<p>Bound to published baseline digest: <code>{baseline_digest}</code></p>
+</section>
+<section id="proposal-provenance" data-proposal-id="{proposal_id}" data-evidence-digest="{evidence_digest}">
+<h2>Proposal Summary & Evidence</h2>
+<p><strong>Proposal ID:</strong> <code>{proposal_id}</code></p>
+<p><strong>Evidence Digest:</strong> <code>{evidence_digest}</code></p>
+<div class="diff-container">
+<h3>Unified Proposal Diff</h3>
+<pre class="proposal-diff" tabindex="0" aria-label="Proposal Diff">{diff_text}</pre>
+</div>
+<h3>Chat & Deliberation Provenance</h3>
+<ul class="chat-provenance-list">{chat_provenance or "<li>No prior chat recorded.</li>"}</ul>
+</section>
+<section id="curator-decision-section" class="curator-decision-console" role="region" aria-label="Curator Decision Form">
+<h2>Submit Curator Decision</h2>
+<form method="POST" action="/curator/decision" class="curator-decision-form" id="curator-form" novalidate>
+<input type="hidden" name="proposal_id" value="{proposal_id}" />
+<input type="hidden" name="baseline_digest" value="{baseline_digest}" />
+<input type="hidden" name="evidence_digest" value="{evidence_digest}" />
+<fieldset class="curator-outcome-fieldset">
+<legend>Curator Decision Outcome <span aria-hidden="true">*</span></legend>
+<label><input type="radio" name="outcome" value="accept" required /> Approve & Accept Proposal</label><br/>
+<label><input type="radio" name="outcome" value="reject" required /> Reject Proposal</label><br/>
+<label><input type="radio" name="outcome" value="request_revision" required /> Request Revision</label>
+</fieldset>
+<div class="form-group">
+<label for="curator-rationale">Curator Rationale <span aria-hidden="true">*</span></label><br/>
+<textarea id="curator-rationale" name="rationale" rows="4" cols="60" required aria-required="true" aria-describedby="rationale-hint"></textarea>
+<small id="rationale-hint" class="form-hint">Provide verifiable reasoning for this decision.</small>
+</div>
+<div id="curator-live-status" class="curator-status-region" role="status" aria-live="polite"></div>
+<div class="curator-actions">
+<button type="submit" class="btn btn-primary">Submit Curator Decision</button>
+</div>
+</form>
+</section>
+<script src="/score_curator.js"></script>'''
+    return document(f"Curator Decision — {proposal_id}", body, local_prefix="", root_prefix="")
+
+
 def render(model: Mapping[str, Any]) -> dict[str, bytes]:
     records = model["records"]
     cards = "".join(f'<article data-kind="{html.escape(kind)}"><h2>{html.escape(kind)}</h2><p>{count} unvalidated candidates</p></article>' for kind, count in model["counts"]["by_kind"].items())

@@ -46,7 +46,52 @@ VALID_IDENTITY = ("github_authenticated", "self_declared")
 CODE_FENCE_RE = re.compile(r"```json\s*(\{.*?\})\s*```", re.S)
 
 
+CURATOR_ENVELOPE_SCHEMA = "curator-decision-envelope@v1"
+CURATOR_VALID_OUTCOMES = ("accept", "reject", "request_revision")
+DECISION_KEY_RE = re.compile(r"^decision:[^:]+:[^:]+$")
+
 from canonical_id import parse_canonical_id  # noqa: E402 (0006-02 propagation)
+
+
+def validate_curator_envelope(envelope: dict, current_baseline_digest: str | None = None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if envelope.get("schema") != CURATOR_ENVELOPE_SCHEMA:
+        errors.append(f"unbekanntes Schema: {envelope.get('schema')!r}")
+        return errors, warnings
+
+    decision_key = envelope.get("decision_key")
+    if not decision_key or not DECISION_KEY_RE.match(str(decision_key)):
+        errors.append(f"ungueltiges decision_key Format: {decision_key!r}")
+
+    proposal_id = envelope.get("proposal_id")
+    if not proposal_id or not str(proposal_id).strip():
+        errors.append("proposal_id fehlt oder ist leer")
+
+    baseline_digest = envelope.get("baseline_digest")
+    if not baseline_digest or not str(baseline_digest).strip():
+        errors.append("baseline_digest fehlt oder ist leer")
+    elif current_baseline_digest and baseline_digest != current_baseline_digest:
+        errors.append(f"baseline_digest veraltet/stale: {baseline_digest} != {current_baseline_digest}")
+
+    curator = envelope.get("curator")
+    if not isinstance(curator, dict) or not curator.get("identity"):
+        errors.append("curator.identity fehlt oder ist leer")
+    elif curator.get("auth_mode") == "self_declared":
+        warnings.append("Nicht authentifizierte Curator-Entscheidung (self_declared)")
+
+    decision = envelope.get("decision")
+    if not isinstance(decision, dict):
+        errors.append("decision Block fehlt")
+    else:
+        outcome = decision.get("outcome")
+        if outcome not in CURATOR_VALID_OUTCOMES:
+            errors.append(f"ungueltiges outcome: {outcome!r}, muss eins von {CURATOR_VALID_OUTCOMES} sein")
+        if not decision.get("rationale") or not str(decision.get("rationale")).strip():
+            errors.append("decision.rationale fehlt oder ist leer")
+
+    return errors, warnings
 
 
 def load_package(pfad: Path, from_issue_body: bool) -> dict:
@@ -84,6 +129,37 @@ def ingest(paket_pfad: Path, apply: bool, from_issue_body: bool) -> dict:
     paket = load_package(paket_pfad, from_issue_body)
     bericht = {"paket": str(paket_pfad), "identity": paket.get("identity"),
                "angewandt": apply, "fehler": [], "ergebnisse": []}
+
+    if isinstance(paket, dict) and paket.get("schema") == CURATOR_ENVELOPE_SCHEMA:
+        errors, warnings = validate_curator_envelope(paket)
+        bericht["schema"] = CURATOR_ENVELOPE_SCHEMA
+        bericht["fehler"] = errors
+        bericht["warnungen"] = warnings
+        bericht["decision_key"] = paket.get("decision_key")
+        bericht["proposal_id"] = paket.get("proposal_id")
+        bericht["outcome"] = (paket.get("decision") or {}).get("outcome")
+        if not errors:
+            bericht["status"] = "ok"
+            bericht["routing"] = {
+                "pl_offer_required": True,
+                "target_recipe": "curator_decision_routing",
+                "envelope_bound": True
+            }
+            bericht["ergebnisse"].append({
+                "id": paket.get("target_canonical_id") or paket.get("proposal_id"),
+                "status": "ok",
+                "decision_key": paket.get("decision_key"),
+                "outcome": (paket.get("decision") or {}).get("outcome"),
+                "dry_run": not apply,
+            })
+        else:
+            bericht["status"] = "rejected"
+            bericht["ergebnisse"].append({
+                "id": paket.get("target_canonical_id") or paket.get("proposal_id") or "unknown",
+                "status": "rejected",
+                "fehler": errors,
+            })
+        return bericht
 
     if isinstance(paket, dict) and paket.get("schema") == "feedback-recipe-contract@v1":
         import feedback_recipe_contract as frc
