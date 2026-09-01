@@ -198,7 +198,7 @@ work.
   - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-05; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-05`.
   - **Exhaustive write scope (agent-inbox):** `supervisor-gui.py`, `test_supervisor.py`, `test_team_pause_phaseout.py`.
   - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-16/17/19 and existing GUI command projection", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
-  - **No-checkpoint justification (architect):** projection-only UI; canonical API enforcement is reviewed at `0050-03/04` and end-to-end parity at `0050-08`.
+  - **Integration review:** not mandatory. **No-checkpoint justification (architect):** projection-only UI; canonical API enforcement is reviewed at `0050-03/04` and end-to-end parity at `0050-08`.
   - **Acceptance criteria:** Required fields/counts/coordinator are visible; controls invoke canonical APIs; runtime stop is distinctly labeled; stale/unauthorized operations show fail-closed errors.
   - **Definition of Done:** GUI/tests committed; no live pause or external effect.
 
