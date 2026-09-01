@@ -17,3 +17,8 @@ It establishes a firm boundary between private runtime properties and the redact
 
 ## 3. Decision
 - The architecture scope and cross-item gates are **supported**.
+
+## 4. Management Decision (1788275566904-b49e8dfe)
+- **Resolved escalation:** decision-1788255952638-4fea62a7. Option 1.
+- **Direction:** anonymous submissions require curator's approval before ingestion. authenticated users input can be ingested after approval in CCB (consensus decision of 3 privileged agents). With 2:1 vote, curator's approval is required here as well.
+- **Impact:** Feature implementation is now unblocked. Tasks 0046-01 through 0046-06 may proceed in accordance with the specified approval and ingestion gates.
