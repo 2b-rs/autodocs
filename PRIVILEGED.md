@@ -135,7 +135,7 @@ Before committing:
 - use the configured repository identity;
 - write a comprehensive Feature/Task-oriented commit message.
 
-For substantive Task completion, create the substantive commit before recording its real hash in authoritative bookkeeping. Commit bookkeeping separately unless an approved transaction safely creates both commits without self-reference or partial-state ambiguity.
+For substantive Task completion, create one carrying commit whose tree contains the deliverable, terminal marker, and finalized claim, and whose message contains `Task-ID` and `Base-Ref` trailers. Do not record the carrying commit's object ID in that tree. Never amend a commit to add its own hash.
 
 Do not mark implementation complete merely because direct execution succeeded. Acceptance criteria, Definition of Done, validation, evidence, claim reconciliation, and required approvals must all be satisfied for `[x]`/`[w]`. Do not mark work-product acceptance merely because implementation completed; acceptance requires the separate assigned review above.
 
