@@ -2781,6 +2781,13 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
   - **Completion evidence (2026-09-01):** Implemented unified test runner `./test.py` supporting layered execution and machine-readable JSON output in dedicated worktree. Tests: 100 passed across unified review-request test suite via `./test.py --layer review-request --json`.
 
 - [x] **0033-15** PREREQ: 0033-15:0033-13, 0033-15:0033-14, 0033-15:0033-15.01 Establish clean-checkout, all-language, deterministic, and review-scoped validation evidence for the repaired feature.
+  Claim: `DONE-worf-0033-15-20260901.md`; owner_token:
+  `agent:worf:0033-15:1788275288073-b8528967`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788276295860-b301853d` (Offer `1788276295860-b301853d` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T15:30:00Z`
   - **Baseline findings:** `RRB-VALID-001`, `RRB-REGEN-001`, `RRB-PROV-001`.
   - **Previous implementation flaws:** Task `0021-05` changed 4,503 files and silently deployed older stale history rendering; `generate.py --check` covered 428 canonical German pages rather than all translated trees/byte scope; the full validator referenced an uncommitted `check_client_rendered_german.cjs`; and passing output did not detect invalid production-bound request metadata.
   - **Acceptance criteria:** Every required validator/helper/browser script is tracked and restored from a clean checkout; verify the already committed migration/quarantine/actionable-rejection dispositions for delayed legacy exports and historical/malformed queue items without mutating the evidence baseline—newly discovered items reopen bounded remediation and require a fresh run; the full validator, strict request gates, reports, and generation checks run with no missing optional stage silently counted as success. Define whether determinism is byte-for-byte or canonical-semantic and test all configured language trees, assets, page depths, and relevant generated reports. Inventory validation checks review-request metadata corpus-wide. Regeneration is isolated and reviewed: expected Feature `0033` output is separated from unrelated stale generator changes, with any unavoidable baseline migration already identified, approved through `0033-07.03` where privacy-relevant, committed before this validation run, and verified rather than performed here. No ignored transient output is the sole evidence, and no synthetic test artifact or queue/report model leaks into generated production files.
