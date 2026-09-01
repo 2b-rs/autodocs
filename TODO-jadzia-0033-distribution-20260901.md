@@ -137,3 +137,9 @@ NOTES: Management approved release of Feature 0033 (decision-1788277519616-0d475
 OFFERED: priority 1: quark, priority 2: worf
 STATUS: OPEN
 NOTES: Dispatched implementation of 0033-16.01 (post-decision audit addendum).
+
+
+## 0033-16.01-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched terminal integration of 0033-16.01 (final merge and move to DONE.md).
