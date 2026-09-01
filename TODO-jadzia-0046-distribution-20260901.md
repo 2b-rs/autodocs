@@ -46,3 +46,9 @@ NOTES: obrien completed the review and integration. Merged to main.
 OFFERED: priority 1: data
 STATUS: OPEN
 NOTES: Dispatched UX/API validation.
+
+
+## 0046-01.02
+OFFERED: priority 1: seven
+STATUS: OPEN
+NOTES: Dispatched append-only feedback journal implementation.
