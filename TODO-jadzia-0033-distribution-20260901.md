@@ -171,3 +171,30 @@ NOTES: worf completed implementation.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0033-07.01.
+
+
+## 0033-07.01-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien rejected the integration due to test_review_request_baseline_audit.py failing against DONE.md.
+
+## 0033-07.01 (Rework)
+OFFERED: priority 1: worf
+STATUS: OPEN
+NOTES: Dispatched rework to fix the test failure.
+
+
+## 0033-07.01 (Rework)
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf started rework.
+
+
+## 0033-07.01 (Rework)
+STATUS: REVIEW
+NOTES: worf completed rework implementation.
+
+## 0033-07.01-integration (Retry)
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0033-07.01 rework.
