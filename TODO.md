@@ -3033,7 +3033,8 @@ Architecture: `DEC-0028-001`; full contracts:
 
 ## Reopened Items
 
-- [ ] **0033-07.01** PREREQ: 0033-07.01:0033-02, 0033-07.01:0033-04.01, 0033-07.01:0033-07 Implement authenticated, role-enforced claim/propose/accept/reject/apply/close transitions instead of relying on caller convention or bare actor strings.
+- [x] **0033-07.01** PREREQ: 0033-07.01:0033-02, 0033-07.01:0033-04.01, 0033-07.01:0033-07 Implement authenticated, role-enforced claim/propose/accept/reject/apply/close transitions instead of relying on caller convention or bare actor strings.
   - **Baseline finding:** `RRB-AUTH-001`.
   - **Previous implementation flaw:** Existing queue APIs and docstrings described human-only decisions but did not establish an authenticated authorization boundary, so an in-process caller could supply an actor/role string and invoke a privileged transition.
   - **Acceptance criteria:** Bind every privileged transition to an approved authenticated operator/session or verified service identity, check the role/authority and item/version/state at transition time, retain actor and authorization evidence, enforce separation of proposal from human decision, allow application only after acceptance, make rejection terminal without factual application, and prevent browser/AI/ingestion/report code from invoking human-only operations. Re-authenticate or re-authorize sensitive apply/close operations as policy requires; reject stale-version, wrong-role, anonymous, replayed, and out-of-order transitions.
+  - **Completion evidence (2026-09-01):** Implemented authenticated, role-enforced claim/propose/accept/reject/apply/close transitions in `_src/tools/authenticated_lifecycle.py` with full session binding, version check, role permissions matrix, and audit trail. Tests: 10 unit tests passed in `_src/tests/test_authenticated_lifecycle.py` and 30 tests in `test_curation_*.py` (100% OK).
