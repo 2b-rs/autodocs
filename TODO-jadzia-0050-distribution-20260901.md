@@ -377,3 +377,9 @@ NOTES: obrien completed the review and integration. Merged to main in agent-inbo
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched terminal integration task for 0050.
+
+
+## 0050-08
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on terminal integration for 0050.
