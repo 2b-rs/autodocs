@@ -165,7 +165,7 @@ Feature blocks retain their prior relative order and content.
 
 - [x] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
   AUTOSAR Adaptive plus S-Core publication baseline.
-  Claim: `TODO-lore-0045-01-1788255929330-d8ef0b05.md`; owner_token:
+  Claim: `DONE-lore-0045-01-1788255929330-d8ef0b05.md`; owner_token:
   `agent:lore:0045-01:1788255929330-d8ef0b05`.
   REF: `d3eb4e29a60b529933b0b0b6afe47fbcfc4e4561`.
   - **Acceptance:** ✓
