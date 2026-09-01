@@ -148,3 +148,14 @@ NOTES: Dispatched supervisor typed drain/deadline escalation.
 AWARDED: worf
 STATUS: IN_PROGRESS
 NOTES: worf is working on implementation.
+
+
+## 0050-04
+AWARDED: worf
+STATUS: REVIEW
+NOTES: worf submitted 0050-04 for review.
+
+## 0050-04-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-04.
