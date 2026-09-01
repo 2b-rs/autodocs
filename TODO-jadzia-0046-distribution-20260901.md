@@ -28,3 +28,9 @@ NOTES: Cancelled because kira already completed it on branch 0046-00. Dispatchin
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0046-00 (completed by kira).
+
+
+## 0046-00-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien accepted the offer and is verifying the integration.
