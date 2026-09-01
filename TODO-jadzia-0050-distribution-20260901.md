@@ -234,3 +234,14 @@ NOTES: Dispatched blackout recovery logic.
 AWARDED: worf
 STATUS: IN_PROGRESS
 NOTES: worf is working on implementation.
+
+
+## 0050-06
+AWARDED: worf
+STATUS: REVIEW
+NOTES: worf submitted 0050-06 for review.
+
+## 0050-06-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-06.
