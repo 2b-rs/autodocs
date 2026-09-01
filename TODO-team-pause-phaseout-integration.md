@@ -53,6 +53,10 @@ No agent-inbox product implementation. No live Supervisor mutation. No Feature `
 
 **Integration verdict:** merge **blocked**. Product review remains `accepted`. Same-slot wait for a checkout of branch `main` at the canonical root so `--root-preflight` and `git merge --ff-only` can run together. Not `[u]`.
 
+## Resume 2026-09-01T13:26Z
+
+Independently remesured: canonical root is `main@9e1aaf217b`. Reconciled that tip into the integration worktree (`efe3fb9f0d`). Candidate `aaf9c728ad` remains an ancestor.
+
 ## Next
 
-Wait for coordinator restoration of a `main` checkout at the root, then remesure, preflight, and ff-only if PASS. Slot kept.
+Hygiene + root preflight; remesure then-current main still ancestor; ff-only only if PASS. Receipt.
