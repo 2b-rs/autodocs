@@ -34,3 +34,9 @@ NOTES: Dispatched integration of 0046-00 (completed by kira).
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien accepted the offer and is verifying the integration.
+
+
+## 0046-00-integration
+AWARDED: obrien
+STATUS: REVIEW
+NOTES: obrien completed the review and integration. Merged to main.
