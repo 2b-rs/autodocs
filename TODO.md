@@ -543,9 +543,16 @@ Feature blocks retain their prior relative order and content.
     receipts, digest manifest, and recovery proof; source integration and
     external publication were performed only by separately authorized roles.
 
-  - [ ] **0045-06.01** (F1/P0; agent-inbox) Implement the
+  - [x] **0045-06.01** (F1/P0; agent-inbox) Implement the
     accepted-decision→apply/publication typed-recipe producer and immutable
     handoff schema.
+    Claim: `agent-inbox:DONE-quark-0045-06.01-20260901.md`; owner_token:
+    `agent:quark:0045-06.01:1788268005826-89ca343d`.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+      - **Authority reference:** `agent-inbox:jadzia→obrien:1788268477907-a2f9dcc9` (Offer `1788268477907-a2f9dcc9` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+      - **Accepted at:** `2026-09-01T13:16:00Z`
     - **Task record:**
       `task_id: "0045-06.01"; feature_id: "0045"; role: implementer`
     - **Architecture decisions and sources:** Implement the recipe-producer side
