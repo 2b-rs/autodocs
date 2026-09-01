@@ -596,9 +596,16 @@ Feature blocks retain their prior relative order and content.
       agent-inbox; immutable candidate/ref and schema digest are handed to
       `0045-06.02`; no real database or publication effect occurred.
 
-  - [ ] **0045-06.02** (F2/P0; autodocs) Consume the authorized handoff,
+  - [x] **0045-06.02** (F2/P0; autodocs) Consume the authorized handoff,
     transactionally apply the accepted proposal, regenerate/validate the
     complete multilingual site, and prepare the publication candidate.
+    Claim: `DONE-quark-0045-06.02-20260901.md`; owner_token:
+    `agent:quark:0045-06.02:1788268764515-a10c6abf`.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+      - **Authority reference:** `agent-inbox:jadzia→obrien:1788269022686-16455a38` (Offer `1788269022686-16455a38` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+      - **Accepted at:** `2026-09-01T13:26:00Z`
     - **Task record:**
       `task_id: "0045-06.02"; feature_id: "0045"; role: implementer`
     - **Architecture decisions and sources:** Implement the autodocs consumer
