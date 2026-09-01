@@ -29,8 +29,6 @@ Ablauf
    ruft danach ``complete_flag`` auf. Ohne diesen manuellen Schritt bleibt
    das Flag offen.
 """
-from __future__ import annotations
-
 import json
 import os
 import socket
