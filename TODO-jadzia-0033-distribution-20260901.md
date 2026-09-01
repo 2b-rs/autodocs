@@ -6,4 +6,4 @@
 - capability_class: privileged
 - assigned_by: jadzia
 - state: [p]
-- note: Dispatched 0033-07.01 to worf via offer 1788252223396-1cbe2226.
+- note: Dispatched 0033-07.01 to worf via offer 1788253051968-1c66797e.

@@ -6,4 +6,4 @@
 - capability_class: privileged
 - assigned_by: jadzia
 - state: [p]
-- note: Dispatched 0041-03 integration to obrien via offer 1788252329112-6f289cbd, resolving the marker-only invalidation.
+- note: Cancelled integration offer for 0041-03 as ash has an open claim on it (TODO-ash-0041-03-1788233354424.md). Integration is blocked until implementation finishes.
