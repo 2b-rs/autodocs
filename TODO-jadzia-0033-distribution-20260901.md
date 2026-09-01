@@ -11,3 +11,4 @@
 - note: Re-dispatched 0033-07.01 to gabriel via offer 1788255929656-cdcd9851 (corrected scope).
 - note: Re-dispatched 0033-07.01 to guinan via offer 1788256048355-0ce268d7 due to Gabriel rejecting (not a programmer).
 - note: Re-dispatched 0033-07 to worf via offer 1788260493074-f1030c09 after reverting it from [x].
+- note: Dispatched 0033-07.01 to worf via offer 1788260896526-03cf7530.
