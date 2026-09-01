@@ -20,3 +20,9 @@ NOTES: Dispatched integration and independent review of 0039-01 (Feature definit
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien accepted the offer and is verifying the review.
+
+
+## 0039-01-integration
+AWARDED: obrien
+STATUS: REVIEW
+NOTES: obrien completed the review and integration. Merged to main.

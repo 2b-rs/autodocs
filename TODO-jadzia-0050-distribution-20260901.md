@@ -16,3 +16,9 @@ NOTES: seven accepted the architect elaboration/review offer.
 AWARDED: seven
 STATUS: IN_PROGRESS
 NOTES: seven raised questions about existing review file. I clarified to append and mark hers as operative.
+
+
+## 0050-00-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-00 architect review. Integrator will address finding S-01 (add Integration review flag to 0050-02).
