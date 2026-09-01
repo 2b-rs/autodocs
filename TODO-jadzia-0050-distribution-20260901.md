@@ -85,3 +85,14 @@ NOTES: worf is working on implementation.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-02
+AWARDED: worf
+STATUS: REVIEW
+NOTES: worf submitted 0050-02 for review.
+
+## 0050-02-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-02.
