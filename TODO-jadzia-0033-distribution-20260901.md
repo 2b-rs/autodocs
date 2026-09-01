@@ -15,3 +15,4 @@
 - note: Accepted completed 0033-07.01 by worf and dispatched 0033-07.04 via offer 1788261079520-1b1b8ae4.
 - note: worf crashed on 0033-07.04; re-dispatched via offer 1788261335539-d15bfb84.
 - note: Accepted completed 0033-07.04 by worf (despite crash warn). Put lore retry on hold. Dispatched 0033-08 via offer 1788261450659-5ab6598e.
+- note: Cancelled 0033-08 offer 1788261450659-5ab6598e because PREREQ 0033-07 is still open.
