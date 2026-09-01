@@ -182,3 +182,9 @@ NOTES: obrien completed the review and integration. Merged to main in agent-inbo
 OFFERED: priority 1: worf, priority 2: seven
 STATUS: OPEN
 NOTES: Dispatched GUI team/assignment drain visibility.
+
+
+## 0050-05
+AWARDED: worf
+STATUS: AWARDED
+NOTES: worf accepted the priority offer.
