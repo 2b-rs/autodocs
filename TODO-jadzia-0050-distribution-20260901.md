@@ -309,3 +309,9 @@ NOTES: obrien completed the review and integration. Merged to main in autodocs.
 OFFERED: priority 1: seven, priority 2: data
 STATUS: OPEN
 NOTES: Dispatched architecture task to add 0050-09 for missing test coverage.
+
+
+## 0050-09-architecture
+AWARDED: seven
+STATUS: AWARDED
+NOTES: seven accepted the priority offer.
