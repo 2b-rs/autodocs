@@ -17,6 +17,15 @@ A decision record captures **who**, under **which authority**, made which proces
 
 A decision MUST be recorded as `decision-record@v1` as soon as at least one of the following triggers applies. **Triggers** lists every applicable value from this closed set:
 
+The trigger answers **whether a durable record is mandatory**, not **which role
+decides**. The deciding role and authority reference still come from the
+existing contract and authority model. A trigger therefore does not by itself
+create a Management escalation. Technical disagreement first follows the
+delegated ladder in [`integration-flow-control.md`](integration-flow-control.md);
+only an exact remaining non-delegable question is eligible for the Management
+request prepared under
+[`decision-request-preparation.md`](decision-request-preparation.md).
+
 | Trigger value | Mandatory criterion |
 |---|---|
 | `cross-item-blast-radius` | The decision can block the start, validation, acceptance, integration, release, or closure of at least one **other** work unit, or change that unit's contract. This applies regardless of whether the deciding node is marked as an integration checkpoint. |

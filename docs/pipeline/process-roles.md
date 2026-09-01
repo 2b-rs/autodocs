@@ -86,7 +86,7 @@ claims.
 | **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement before current Acceptance of the affected node | A scope decision reaching beyond the Feature without a TK-2 record; silent checkpoint change after current Acceptance; acceptance of its own breakdown |
 | **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
 | **Dispatcher** | Admit work only against reserved downstream capacity and keep the chain moving through canonical integration | Capacity reservation, complete briefing, handoffs, repair routing, canonical integration receipt | Which eligible chain to offer within the WIP limit | Declare flow complete at implementation or review handoff; create work without an Integrator reservation; overfill the review queue |
-| **Integrator** | Pull reserved work across **integration checkpoints**, review it there, and execute repository hygiene for assigned `main` integrations | Capacity reservation, boundary merge, hygiene verdict, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation, canonical integration receipt | Whether a reviewed checkpoint passes and whether the exact assigned merge satisfies the machine hygiene and ancestry gates | Resolve its own `[u]` verdict; skip a checkpoint; delegate the hygiene verdict to Project Lead; accept more than one active reserved chain |
+| **Integrator** | Pull reserved work across **integration checkpoints**, review it there, and execute repository hygiene for assigned `main` integrations | Capacity reservation, boundary merge, hygiene verdict, review findings, Acceptance or non-passing integration verdict, claim reconciliation, canonical integration receipt | Whether a reviewed checkpoint passes, local technical questions inside the accepted contract, and whether the exact assigned merge satisfies the machine hygiene and ancestry gates | Change product scope; waive a gate; resolve a non-delegable `[u]` question; skip a checkpoint; delegate the hygiene verdict to Project Lead; accept more than one active reserved chain |
 
 Checkpoint-free item-branch merges, typically Subtask→Task, are implementer
 work and may be performed by a sandboxed-grunt agent through the runner. The
@@ -173,6 +173,15 @@ and irreversible, external, security, credential, release, and material-risk
 decisions. Acceptance records and integration verdicts remain specialized
 formats; a TK-2 decision on which either depends receives a separate `DEC-…`
 record.
+
+The presence of a TK-2 or other `decision-record@v1` trigger determines that a
+durable record is required; it does not automatically select Management as the
+deciding role. Technical dissent follows the delegated escalation ladder in
+[`integration-flow-control.md`](integration-flow-control.md): same-slot rework,
+then a documented trilateral round among producer, reviewer, and Coordinator or
+Architect. That round may interpret the existing contract and select bounded
+correction inside existing authority, but cannot change product scope or waive
+independence, hygiene, Acceptance, security, release, or specialist gates.
 
 For pre-mutation review of gate scopes, apply only the canonical
 [`cross-item-blast-radius`](decision-record.md#2-when-a-record-is-mandatory)

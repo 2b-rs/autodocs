@@ -27,6 +27,30 @@ option, recommendation, assignment-hold, and authority fields. They do not
 authorize the preparer to decide, resolve, waive, accept, integrate, or release
 anything.
 
+## 1.1 Management-request eligibility
+
+For an integration or Acceptance dispute, use the delegated escalation ladder
+in [`integration-flow-control.md`](integration-flow-control.md) before preparing
+a Management request: same-slot actionable rework, then one documented
+trilateral technical-resolution round among producer, reviewer, and Coordinator
+or Architect. The round records shared facts, positions, attempted options or
+corrections, the authority boundary, its outcome, and the exact remaining
+question.
+
+Prepare a Management request only if that remaining question is non-delegable:
+a product or policy choice, material architecture, authority, material risk,
+external effect, public release, or waiver. A `decision-record@v1` trigger
+requires a durable record but does not automatically make Management the
+resolver. Do not create a generic request for a stale branch, failed hygiene or
+tests, an ordinary finding, bounded rework, reviewer selection, capacity, or a
+contract correction determinable inside existing authority.
+
+Examples: “Which of these two incompatible product behaviors is authorized?”
+may be eligible after the trilateral record proves the contract does not answer
+it. “Should the Implementer fix the failing recovery test?” is not eligible; it
+returns to same-slot `[p]` rework. “May independence be waived?” is eligible
+only as an explicit waiver question and the round itself cannot answer it.
+
 ## 2. Model one question
 
 ### Binary question
