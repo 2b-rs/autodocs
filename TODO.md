@@ -224,7 +224,14 @@ work.
   - **Acceptance criteria:** Blackout uses identical receipts; preservation failure is visible and nondestructive; migration has no grandfathering; stale roster/status projections are not ownership; unknown pre-migration identifiers remain visible and receive typed reconciliation receipts; quiescence is iff zero proof; resume/rollback never resurrect ownership.
   - **Definition of Done:** Recovery/migration/property evidence committed; mandatory independent review passes.
 
-- [ ] **0050-07** (P0) Independently verify the complete all-team, mixed-provider race, deadline, recovery, privacy and abuse matrix against exact candidates.
+- [x] **0050-07** (P0) Independently verify the complete all-team, mixed-provider race, deadline, recovery, privacy and abuse matrix against exact candidates.
+  Claim: `DONE-seven-0050-07-20260901T2045Z.md`; owner_token:
+  `agent:seven:0050-07:20260901T2045Z`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788296181871-26fb5c2a` (Offer `1788296181871-26fb5c2a` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T20:58:00Z`
   - **Task record:** `task_id: "0050-07"; feature_id: "0050"; role: qa`.
   - **Architecture decisions and sources:** every `REQ-0050-*`, reviewed interface and candidate manifests.
   - **Prerequisites:** `0050-06`.
