@@ -51,3 +51,9 @@ NOTES: worf started implementation.
 AWARDED: data
 STATUS: ACCEPTED
 NOTES: data accepted offer.
+
+
+## 0050-01-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-01 (append-only team generation).
