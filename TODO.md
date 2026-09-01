@@ -614,6 +614,144 @@ Feature blocks retain their prior relative order and content.
       manifest, and recovery proof are committed in autodocs; immutable
       candidate/ref is handed to terminal parent `0045-06`.
 
+## Feature: 0046 — Controlled Agent/Profile Feedback Lifecycle
+
+**Goal:** A user can submit feedback about a named agent/profile revision and obtain a controlled, auditable path through durable attribution, AI analysis/proposal, authorized human decision, authoritative source promotion, validated private runtime regeneration and Supervisor activation, and an allow-listed public projection published atomically to `2b-rs/autodocs`. Direct feedback-to-profile mutation is impossible; privacy, abuse resistance, rollback, restart recovery and exact-revision receipts are first-class.
+
+**Requirements baseline:** `docs/dossiers/agent-profile-feedback-loop-requirements.md`.
+**Architecture contract:** `docs/pipeline/agent-profile-feedback-loop.md`.
+**Architect scope review:** `docs/dossiers/agent-profile-feedback-loop-architect-review.md`.
+**Material provenance:** user prompts are retained verbatim in the requirements dossier and architecture claim. The contract is non-operative until its decision/scope gates pass. `DEC-0044-029` remains in force.
+
+The DAG has one start node (`0046-00`) and exactly one terminal integrating node (`0046-06`). `0046-01.01`/`.02` split UX/schema from the durable store; `0046-03.01`/`.02` split human decision from authoritative source promotion. Private runtime and public deployment proceed as separately receipted branches and join only at `0046-06`.
+
+- [ ] **0046-00** (P0; single start; Integration review: mandatory) Bind the material architecture, cross-item decision record, exact source/publication baselines, and distinct Architect scope review before operative mutation.
+  - **Task record:** `task_id: "0046-00"; feature_id: "0046"; role: architect-elaboration`.
+  - **Architecture decisions and sources:** REQ-0046-02/06/07/09/10/11/17/18; `decision-record@v1`; `DEC-0044-029`; requirements, architecture and scope-review products above. Allocate any new `DEC-*` only on current `main`; do not invent a Management decision when bounded architecture work remains.
+  - **Prerequisites:** none.
+  - **Planned order:** `position: 1; order: [0046-00, 0046-01.01, 0046-01.02, 0046-01, 0046-02, 0046-03.01, 0046-03.02, 0046-03, 0046-04, 0046-05, 0046-06]`.
+  - **Test scope:** `manual_inspection`; validate conforming decision record, exact affected units/gates, independent management-instantiated Architect support, source/schema/generator/Supervisor/publication baselines and digests, with no operative mutation.
+  - **Capability profile:** `capability_class=privileged; rights=["read both repositories and durable decision state", "write declared governance preparation and baseline products", "commit architecture candidate"]; data=["requirements", "architecture", "agents.json/schema/generator evidence", "Supervisor/provider/publication contracts", "DEC-0044-029"]; tools=["Git", "agent-inbox decision route", "schema validators"]; execution_needs=direct; cognitive_demand=critical; independence="preparer/decider/reviewer/implementer/integrator separations remain explicit"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=high; verification_hardness=critical`. Peak `critical`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-00"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-00"; pre-provision from current main-backed Feature branch`.
+  - **Exhaustive write scope:** `docs/dossiers/0046-feedback-profile-decision-preparation.md`, `docs/dossiers/0046-feedback-profile-architect-scope-review.md`, and `docs/pipeline/agent-profile-feedback-approved-baseline.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-17/18 and the canonical pre-mutation cross-item review contract; planning remains non-operative", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** mandatory authority/scope checkpoint before profile-wide gate behavior can mutate.
+  - **Acceptance criteria:** One resolved, conforming record and exact-baseline independent scope review bind anonymous/attribution policy, approval authority, authoritative source, public/private boundary, promotion/activation/completion/rollback gates, affected consumers and the preserved memory hold.
+  - **Definition of Done:** Approved baseline/digests and evidence are committed; no product, source, profile, Supervisor or deployment state changed.
+
+- [ ] **0046-01** (P0 parent package) Deliver the bounded submission and append-only feedback-record boundary.
+  - **Prerequisites:** `0046-00`.
+  - **Planned order:** positions `2–4`; `.01` and `.02` may execute in parallel after `0046-00`, then this parent aggregates them.
+  - **Test scope:** `integration`; schema/idempotence/identity/privacy and UX-to-store contract including malformed, oversized, duplicate, replay and anonymous-policy fixtures.
+  - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high; independence="implementers cannot approve, promote, accept or publish"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-01"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-01"`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-01-feedback-ingress-aggregation.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-01/02/03 and the approved non-operative ingress/store boundary", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **No-checkpoint rationale:** package aggregates non-operative ingress/store candidates; `0046-00` already gates scope and `0046-06` gates integration.
+  - **Acceptance criteria:** Both child candidates share the exact schema/baseline and prove bounded, idempotent, append-only ingestion with privacy metadata.
+  - **Definition of Done:** aggregation manifest and focused cross-boundary tests are committed; no authoritative profile mutation occurs.
+  - [ ] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+    - **Prerequisites:** `0046-00`.
+    - **Test scope:** `unit+integration`; accessibility, target resolution, consent/visibility, bounds, injection-safe rendering and error cases.
+    - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high`.
+    - **Branch/worktree:** `parent: "0046-01"; name: "0046-01.01"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-01.01"`.
+    - **Exhaustive write scope (autodocs):** `_src/templates/agent_feedback.html`, `_src/static/agent-feedback.js`, `_src/tools/agent_feedback_form.py`, `_src/tests/test_agent_feedback_form.py`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-01/02 and existing static-site/tool boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **No-checkpoint rationale:** no external or authoritative mutation; downstream package and terminal integration review the boundary.
+    - **Acceptance criteria:** UX pins target and observed revision, previews submission, exposes no restricted profile data, and emits only schema-valid bounded envelopes.
+    - **Definition of Done:** source/tests committed and focused tests pass.
+  - [ ] **0046-01.02** Implement append-only feedback journal, identity/anonymous policy result, idempotency and additive redaction/retention events.
+    - **Prerequisites:** `0046-00`.
+    - **Test scope:** `property+integration`; duplicate/replay/concurrency/restart, attribution, visibility and retention transitions.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="store implementer cannot decide policy or approve profile changes"`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-01"; name: "0046-01.02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-01.02"`.
+    - **Exhaustive write scope (agent-inbox):** `agent_profile_feedback.py`, `test_agent_profile_feedback.py`, `agent-profile-feedback-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-02/03/14/15/16 and append-only assignment-store conventions", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** privacy/security boundary for attributed and potentially anonymous user data.
+    - **Acceptance criteria:** journal is append-only, idempotent and restart-safe; correction/redaction/expiry never erase audit identity; anonymous input has no approval authority.
+    - **Definition of Done:** schema/store/tests committed; no analyzer or profile mutation runs.
+
+- [ ] **0046-02** (P0) Implement isolated classification and baseline-bound AI proposal generation with diff preview and rationale.
+  - **Prerequisites:** `0046-01`.
+  - **Planned order:** position `5`.
+  - **Test scope:** `integration+adversarial`; all six classes, untrusted prompt injection, evidence/rationale/diff bindings, conflict and stale baseline.
+  - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=critical; independence="AI/proposal producer has no approval or mutation authority"`.
+  - **Branch/worktree:** `parent: "agent-inbox:0046"; name: "0046-02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-02"`.
+  - **Exhaustive write scope (agent-inbox):** `agent_profile_analysis.py`, `test_agent_profile_analysis.py`, `agent-profile-proposal-schema.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-04/05 and the non-mutating proposal separation", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **No-checkpoint rationale:** produces non-operative proposals only; approval/source promotion is the mandatory `0046-03` checkpoint.
+  - **Acceptance criteria:** deterministic record bindings, controlled classification, diff/rationale/evidence/conflict/validation/rollback preview; no write path to authoritative sources.
+  - **Definition of Done:** analyzer/schema/tests committed and adversarial suite passes.
+
+- [ ] **0046-03** (P0 parent; Integration review: mandatory) Join authorized human decision and compare-and-swap authoritative-source promotion.
+  - **Prerequisites:** `0046-02`.
+  - **Planned order:** positions `6–8`; `.01` precedes `.02`, then parent validates the authority boundary.
+  - **Test scope:** `security+integration`; unauthorized approval, stale/replayed/revised decisions, concurrent conflicts, schema/policy failure and atomic source promotion.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementers cannot supply policy decision, accept checkpoint or integrate"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-03"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-03"`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-03-approval-promotion-aggregation.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-06/07/17 and the approved cross-item authority/source-promotion baseline", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** decisive human-authority and cross-item source-promotion boundary.
+  - **Acceptance criteria:** exact approved proposal is the sole promotable input; authority/freshness/schema/policy guards fail closed; immutable source candidate/digests result.
+  - **Definition of Done:** children and aggregation evidence committed; checkpoint review remains separate.
+  - [ ] **0046-03.01** Implement authorized human approve/reject/revise workflow and durable decision records.
+    - **Prerequisites:** `0046-02`.
+    - **Test scope:** `security+integration`; least privilege, proposal/diff digest binding, revise flow, replay and restart.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-03"; name: "0046-03.01"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-03.01"`.
+    - **Exhaustive write scope (agent-inbox):** `agent_profile_approval.py`, `test_agent_profile_approval.py`, `agent-profile-decision-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-05/06 and existing role/authority separation contracts", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** authorization and separation-of-duty boundary.
+    - **Acceptance criteria:** only authorized human decisions advance state; AI and submitter cannot self-approve; revise produces a new bound proposal/decision chain.
+    - **Definition of Done:** workflow/schema/tests committed; no source mutation.
+  - [ ] **0046-03.02** Implement exact-baseline authoritative `agents.json` promotion and source-candidate manifest.
+    - **Prerequisites:** `0046-03.01`.
+    - **Test scope:** `property+integration`; compare-and-swap, schema/reference/policy validation, duplicate/conflict/replay and atomic failure.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-03"; name: "0046-03.02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-03.02"`.
+    - **Exhaustive write scope (agent-inbox):** `agents.json`, `agent_profile_promotion.py`, `test_agent_profile_promotion.py`, `agent-profile-source-candidate-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-07/17, exact approved baseline, agents.json and role/capability policy validators", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** operative shared profile/role/capability mutation with cross-item reach; `0046-00` record/review is a hard start gate.
+    - **Acceptance criteria:** only current approved decisions promote; all structural/policy gates pass before atomic candidate; exact ref/tree/digests retained.
+    - **Definition of Done:** code/tests/candidate schema committed; no runtime activation or public deployment.
+
+- [ ] **0046-04** (P0; Integration review: mandatory) Generate, validate and promote private runtime profiles; make Supervisor activate the exact published revision with restart-safe health receipt and rollback.
+  - **Prerequisites:** `0046-03`.
+  - **Planned order:** position `9`; may run in parallel with `0046-05` after source candidate.
+  - **Test scope:** `end_to_end`; schema/size/determinism, partial regeneration, provider promotion, wrong revision, restart between request/receipt, health failure and rollback.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot accept checkpoint or authorize activation policy"`.
+  - **Branch/worktree:** `parent: "agent-inbox:0046"; name: "0046-04"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-04"`.
+  - **Exhaustive write scope (agent-inbox):** `generate_profiles.py`, `test_generate_profiles.py`, `supervisor.py`, `test_supervisor.py`, `agent-profile-private-manifest-schema.json`, `agent-profile-activation-receipt-schema.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-08/11/13/16/17 and Supervisor exact-revision/restart boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** runtime authority, provider configuration, restart and every-future-Task behavior boundary.
+  - **Acceptance criteria:** mixed output cannot promote; Supervisor loads exact promoted private revision, proves health, reconciles restart idempotently and can restore named last-known-good.
+  - **Definition of Done:** generator/Supervisor/tests/schemas and retained receipts committed; no public output exported.
+
+- [ ] **0046-05** (P0; Integration review: mandatory) Produce the redacted public agent-description projection, validate privacy/abuse controls, and atomically publish it through the canonical item-owned staging path to `2b-rs/autodocs`.
+  - **Prerequisites:** `0046-03`.
+  - **Planned order:** position `10`; may run in parallel with `0046-04`.
+  - **Test scope:** `end_to_end+security`; whole-output forbidden-content scan, manifest/digest/source binding, dry-run retention, partial rebuild/publish, stale candidate, remote failure, restart and rollback.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot approve content, certify release, accept checkpoint or deploy without explicit publication authority"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-05"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-05"`; publisher runs only in this item-owned worktree.
+  - **Exhaustive write scope (autodocs source):** `_src/tools/render_public_agent_profiles.py`, `_src/tests/test_render_public_agent_profiles.py`, `_src/tools/publish_public_site.sh`, `_src/tests/test_publish_public_site.py`, `_src/templates/public_agent_profile.html`, `docs/pipeline/agent-profile-public-manifest-schema.json`, `docs/pipeline/agent-profile-publication-receipt-schema.json`, `output/publish-export/files_to_export.txt`, `output/publish-export/tree/**`; external promotion scope is only the generated public tree on `2b-rs/autodocs:publish-main` under separately explicit publication authority.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-09/10/12/13/14/15 and canonical item-owned public publisher boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** public release, privacy/security and external-effect checkpoint.
+  - **Acceptance criteria:** only allow-listed redacted HTML/assets enter the fresh standalone staging repo; raw sources/prompts/profiles/secrets/internal controls/private provenance are absent; source/export/digests/remote receipt bind exactly; generated output never enters source-history `main`; failure/rollback are recoverable.
+  - **Definition of Done:** source/tests/schemas and dry-run evidence committed; actual external promotion occurs only under explicit authority and records exact remote/public receipt.
+
+- [ ] **0046-06** (P0; terminal integrating Task; Integration review: mandatory) Integrate the exact source-promotion, private activation and public-publication candidates; verify dual receipts, audit/recovery and Feature closure without publishing generated output to source-history `main`.
+  - **Prerequisites:** `0046-04`, `0046-05`.
+  - **Planned order:** position `11`, the sole terminal node.
+  - **Test scope:** `end_to_end+integration-review`; complete happy path plus stale/duplicate/unauthorized/malformed/replay/conflict/partial-regeneration/partial-publication/restart/health/rollback/privacy/abuse matrix; verify exact ancestry and both repository receipts.
+  - **Capability profile:** `capability_class=privileged; rights=["review exact candidates", "run hygiene and independent validation", "integrate only within reserved authority", "record canonical receipts"]; execution_needs=direct; cognitive_demand=critical; independence="reserved Integrator must be independent from decisive architects/implementers and cannot change product scope"`.
+  - **Branch/worktree:** `parent: "main"; name: "0046-06"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-06"; created by reserved Integrator from current target after exact candidate pinning`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-06-integration-report.md`, `docs/campaign-evidence/0046-06-completion-manifest.json`, `TODO.md`, and exact accepted root claim renames required by bookkeeping; no generated public asset is written to source-history `main`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-12/13/16/17, dual-receipt contract, and mandatory Feature integration floor", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** exactly one terminal checkpoint joins two repositories, private runtime activation, public external deployment, authority/privacy/security boundaries and Feature closure.
+  - **Acceptance criteria:** exact candidates and prerequisites are ancestral; both receipts bind the same approved source candidate; Supervisor loaded the exact private revision with health proof; public projection is reachable from exact remote commit with no forbidden content; restart/rollback/audit tests pass; all findings and required decisions are dispositioned.
+  - **Definition of Done:** integration evidence and completion manifest are committed; source-history `main` contains only source/contracts/evidence; generated output remains on publication infrastructure; canonical receipts prove integration and any authorized Feature closure.
+
 ## Feature: 0044 — Process Improvement: Integration Policy, Architecture Process, and Capability-Based Task Matching
 
 **Authority:** Customer brainstorming essay of 2026-08-20, recorded verbatim as `RQ-SRC-04` with decisions `DEC-0044-001..004` in [`docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md`](docs/dossiers/re-intake-prozessverbesserung-integration-und-capabilities.md).
