@@ -10,3 +10,9 @@ NOTES: Dispatched architect elaboration/review to seven (distinct from author da
 AWARDED: seven
 STATUS: ACCEPTED
 NOTES: seven accepted the architect elaboration/review offer.
+
+
+## 0046-00
+AWARDED: seven
+STATUS: IN_PROGRESS
+NOTES: seven started the architect elaboration/review.
