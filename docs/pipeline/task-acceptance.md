@@ -4,7 +4,7 @@
 
 ## Purpose and boundary
 
-Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a real `REF` while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
+Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a carrying commit with `Task-ID`/`Base-Ref` trailers while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
 
 Task acceptance means that the exact reviewed work-product baseline satisfies the Task contract under the recorded review scope. It does **not** grant or imply product approval, architecture approval, release authorization, safety acceptance, cybersecurity/privacy residual-risk acceptance, external-service authorization, process-baseline approval, or an Automotive SPICE capability rating. The reviewer verifies that any separately required decision exists and is correctly bound; the reviewer does not manufacture that authority.
 
@@ -54,7 +54,9 @@ The minimum legacy rendering is:
     - **Contract SHA-256:** `<64 lowercase hexadecimal>`
     - **Work-product manifest SHA-256:** `<64 lowercase hexadecimal>`
     - **Prerequisite-acceptance SHA-256:** `<64 lowercase hexadecimal>`
-    - **Review REF:** `<full reachable 40-hex commit>`
+    - **Carrying commit:** `<full reachable 40-hex carrying commit>`
+    - **Review-decision commit:** `<full reachable 40-hex review evidence commit>`
+    - **Review REF:** `<full reachable 40-hex commit of the Acceptance bookkeeping record, or the review-decision commit when bookkeeping has not yet been created>`
 ```
 
 A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process.
@@ -68,7 +70,7 @@ Sandboxed/grunt agents may implement, investigate, validate, commit, prepare acc
 - asking a generic runner action to perform acceptance promotion;
 - moving a Feature to `DONE.md`;
 - setting, clearing, or moving the `Integration review: mandatory` attribute (architect authority);
-- treating privilege, a green command, or a Task `REF` as acceptance.
+- treating privilege, a green command, or an implementation carrying-commit identity as acceptance.
 
 Only a session that is both currently privileged **and explicitly assigned by the current user or registered acceptance authority to the exact review scope** may decide Task or Feature acceptance. Privilege alone is not acceptance authority. A model name, Git author, claim filename, terminal access, or role self-assertion is not proof.
 
@@ -78,12 +80,12 @@ Specialist competence is part of assignment. One reviewer need not possess every
 
 ## Implementation completion and review handoff
 
-The implementation owner completes the existing claim at `[x]` or `[w]`, commits the substantive result and bookkeeping, finalizes the implementation claim, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
+The implementation owner completes the existing claim at `[x]` or `[w]`, commits the carrying result (trailers `Task-ID` and `Base-Ref`), finalizes the implementation claim in that same tree, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
 
 The acceptance package must identify:
 
 1. Task and Feature identity, exact normative Task text, acceptance criteria, Definition of Done, and contract digest;
-2. exact substantive and bookkeeping commits, candidate tree, expected parent/base, and authority epoch;
+2. exact carrying commit, candidate tree, expected parent/`Base-Ref`, and authority epoch; Acceptance later pins the independent review-decision commit and the Acceptance bookkeeping commit;
 3. a complete authoritative work-product manifest with paths, roles, source/generated classification, media types, and digests;
 4. declared and observed direct, derived, external, and evidence scopes, including proof that unrelated work was excluded;
 5. a criterion matrix mapping every normative condition to implementation, validation, evidence, findings, and disposition;
