@@ -58,7 +58,8 @@
 - 2026-09-01T00:38Z: Formal resume names exact SHA `37386abe2b`. `in_progress`. Independently remesured: current main `fe90c1e0ef` is ancestor of candidate; `7d0eb2a587` and `eaffe1eee8` are ancestors of candidate; `diff --check` pass.
 - 2026-09-01T00:41Z: Product review **accepted** vs resume main `fe90c1e0ef`. Evidence written.
 - 2026-09-01T00:42Z: Hygiene PASS (46 worktrees), root-preflight PASS. Then-current main moved to `bc9ecec881`. Candidate not descendant. **Integration rejected.** No merge. Same-slot rework: rebase onto then-current main.
+- 2026-09-01T00:44Z: Supervisor `review → on_hold` (`1788223487122-e9b30478`). Independently remesured `offer_status` `state=on_hold`, winner=luap. Ancestry-only producer rework; no Management question; no replacement chain. No inspection. No merge. Main still `bc9ecec881`.
 
 ## Next
 
-Wait for supervisor resume of a descendant of then-current main. Slot kept.
+Wait for supervisor formal resume naming an exact SHA that is a descendant of then-current main. Slot kept.
