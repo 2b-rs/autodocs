@@ -131,3 +131,9 @@ NOTES: Requested release authorization decision from Management.
 ## 0033-15.02
 STATUS: RESOLVED
 NOTES: Management approved release of Feature 0033 (decision-1788277519616-0d475c14).
+
+
+## 0033-16.01
+OFFERED: priority 1: quark, priority 2: worf
+STATUS: OPEN
+NOTES: Dispatched implementation of 0033-16.01 (post-decision audit addendum).
