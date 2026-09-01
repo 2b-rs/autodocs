@@ -15,6 +15,9 @@ where possible, to the associated implementation or evidence.
 - [`decision-record.md`](./decision-record.md) — normative
   `decision-record@v1` Markdown contract, mandatory triggers, waivers, and
   append-only corrections
+- [`decision-request-preparation.md`](./decision-request-preparation.md) —
+  one-question decision-template modeling, binary versus multi-option rules,
+  preparer checklist, exact-ID state verification, and projection boundaries
 - [`processes.md`](./processes.md) — campaign process phases (0–6)
 - [`campaigns.md`](./campaigns.md) — campaign types used in this repository
 - [`actions.md`](./actions.md) — individual actions (ingest review, ingest
