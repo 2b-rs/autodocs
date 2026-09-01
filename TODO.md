@@ -381,7 +381,7 @@ Feature blocks retain their prior relative order and content.
       the parent `0045-03`.
     - **Implementation completion (2026-09-01, philippa, unprivileged, AWARD `1788255929989-0769655a`):** Product REF `7847886c76e88797f9a6a9f2a2d034c4817c5b90` on `chain-0045-03.02`. Claim `TODO-philippa-0045-03.02-20260901T094900Z.md` (worf claim retained). Focused pytest 56 passed / 4 subtests. No Acceptance. Not on `main`.
 
-- [ ] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
+- [x] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
   conversation, and structured GitHub handoff.
   - **Task record:**
     `task_id: "0045-04"; feature_id: "0045"; role: implementer`
@@ -1135,7 +1135,7 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
     branch: {parent: "0041", name: "0041-02", create: "pre-provision from current Feature/main governance baseline; never reuse historical 8b1afb933f"}
     ```
 
-- [ ] **0041-03** PREREQ: 0041-03:0041-02 Prepare the Acceptance-owned commit-reference transition against the reviewed atomic-check-in contract.
+- [x] **0041-03** PREREQ: 0041-03:0041-02 Prepare the Acceptance-owned commit-reference transition against the reviewed atomic-check-in contract.
   - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened for current-main re-derivation. Its candidate remains non-operative until `0041-06` integrates the complete synchronous cutover.
   - **Requirements covered:** `RQ-REF-01` … `RQ-REF-03`.
   - **Context (finding K):** The `TODO.md` header currently defines `[x]` as requiring a "real substantive `REF`", and `AGENTS.md` and `task-acceptance.md` repeat it. Changing one and not the others reproduces `T8` — documentation and binding instruction disagreeing, with the instruction winning.
