@@ -3,11 +3,14 @@
 - **Assignment:** `1788221240358-d224650d`
 - **Reviewer:** `luap` (Team yrevocsiD Integrator)
 - **Process:** Independent Governance Integration Review
-- **Exact candidate:** `37386abe2b428e49d2792f29e47c0e04a9e8ef43`
-- **Main before:** `fe90c1e0ef0915b8f25c5d72c29f2d072d0b9910`
+- **Exact candidate (first):** `37386abe2b428e49d2792f29e47c0e04a9e8ef43`
+- **Exact candidate (ancestry-repaired):** `84e2fa2ba591c3af832020622ef2cd839e149f61`
+- **Main at first resume:** `fe90c1e0ef0915b8f25c5d72c29f2d072d0b9910`
+- **Main at second resume / intended merge-before:** `bc9ecec8811c75316d00dbe27c7dd99919c32179`
 - **Integration branch:** `pipeline-escalation-ladder-integration-20260901`
-- **Product verdict (content):** `accepted` at `2026-09-01T00:41:00Z` against resume main `fe90c1e0ef`
-- **Integration verdict:** `rejected` at `2026-09-01T00:42:30Z` — stale vs then-current main; no merge
+- **Product verdict (content):** `accepted` at `2026-09-01T00:41:00Z` against `37386abe2b`; reused after byte-identity remesure
+- **First integration verdict:** `rejected` at `2026-09-01T00:42:30Z` — stale vs `bc9ecec881`
+- **Second integration verdict:** pending merge-gate remesure of `84e2fa2ba5`
 
 ## Independence
 
@@ -59,8 +62,23 @@ Product/contract review of `37386abe2b` vs resume main `fe90c1e0ef`: **accepted*
 
 Merge gate independently remesured after hygiene PASS (46 worktrees) and root-preflight PASS: `refs/heads/main` had moved to `bc9ecec881` (`jadzia`, `chore: Check off 0045-03.01`). Current main is **not** an ancestor of evidence tip `87e94ded74`. Candidate `37386abe2b` is **not** an ancestor of current main. Fast-forward would drop the 0045-03.01 bookkeeping commit.
 
-**Integration verdict: `rejected`.** No merge. Actionable same-slot rework: producer rebases the exact policy candidate onto then-current main without dropping `bc9ecec881`. This is not `[u]`. Reviewer will not rebase or repair the candidate.
+**First integration verdict: `rejected`.** No merge of `37386abe2b`. Same-slot ancestry rework.
+
+## Ancestry-repaired candidate `84e2fa2ba5` (2026-09-01T00:48Z)
+
+Independently remesured:
+
+| Check | Result |
+|---|---|
+| `84e2fa2ba5` exists | `beverly`, bookkeeping second ancestry rework |
+| `bc9ecec881` ancestor of `84e2fa2ba5` | yes |
+| `37386abe2b` ancestor of `84e2fa2ba5` | yes |
+| current `main` ancestor of `84e2fa2ba5` | yes (`main` still `bc9ecec881` at remesure) |
+| `git diff --check main..84e2fa2ba5` | pass |
+| Governance bytes vs `37386abe2b` | identical (`git diff --exit-code` 0 on the nine declared policy/dossier paths) |
+
+Prior product accept is reused. Merge only if candidate hygiene and root preflight PASS **and** then-current `main` is still an ancestor of the evidence tip.
 
 ## Explicit non-actions
 
-No policy authorship. No Architect-finding repair. No rebase of the producer candidate. No publication. No Feature `DONE.md` move. No `git update-ref` on `main`. No merge.
+No policy authorship. No Architect-finding repair. No rebase of the producer candidate. No publication. No Feature `DONE.md` move. No `git update-ref` on `main`.
