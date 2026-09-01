@@ -318,3 +318,213 @@ numeric issue paths: `0`; catalog items: `0`; cutover refs:
 `0`. Before staging, the review worktree contained only the untracked
 authorized review path. The staged-path and diff checks below were required to
 pass before the carrying commit.
+
+---
+
+# Exact-candidate follow-up — reconstructed Feature 0037 recovery governance
+
+- **Follow-up verdict:** **SUPPORT** for exact candidate `419a924226f48af14f5c22e6665dc05be8e9fa14` as the governance/review ancestor of a later separately prepared marker-only transaction.
+- **Reviewer persona:** `Guinan`, independent Architect, continuing the prior review lineage.
+- **Dispatching identity:** `supervisor-zed-0037-cutover-20260901`.
+- **Capability class:** `privileged`.
+- **Review type:** exact-candidate cross-item gate-scope follow-up; not Task Acceptance, integration review, cutover approval, signature, publication, marker mutation, or Feature closure.
+- **Reviewed candidate:** `419a924226f48af14f5c22e6665dc05be8e9fa14` on reconstruction branch `0037-cutover-governance-rebind-20260901`.
+- **Candidate topology:** merge commit with first parent/current-main base `374926174a09af1d0d3d33255a8b08993ff71dfc` and second parent/prior-review lineage `24262277f03f8d36333902fed4b6b25042028402`.
+- **Follow-up branch/worktree:** `0037-cutover-governance-followup-review-20260901`; `/Users/tobias.anton/devel/autodocs/.worktrees/0037-cutover-governance-followup-review-20260901`.
+
+## Follow-up decision
+
+Candidate `419a9242...` satisfies the architectural pre-mutation governance
+requirements from the prior review. It genuinely joins the exact current-main
+baseline and the independent prior-review lineage, changes exactly the three
+reported governance/evidence paths from its first parent, and performs no
+`TODO.md`, marker, Acceptance, selector, authority, issue-store, checkpoint,
+integration, ref, or Feature-closure mutation.
+
+`DEC-0044-035` resolves the prior blocking defect:
+
+1. It is a separately identified `decision-record@v1` Management disposition,
+   appended after the preserved original `DEC-0044-034` record.
+2. `authority:repository-owner:autodocs` is the deciding Management identity.
+   The authority-reference field explicitly limits Data to Governance Decision
+   Recorder and Implementer and denies Data the deciding, Architect-review,
+   integration, acceptance-review, and cutover-signing roles.
+3. It binds first parent `374926174a09af1d0d3d33255a8b08993ff71dfc`
+   and full `TODO.md` SHA-256
+   `eea63e0ec7e2ca78d90a5ea1e9d477f805da5c5d186acfb97d0aa35fa5f73a42`.
+4. It creates exactly one independent 13-marker transaction, explicitly names
+   `0037-29` and `0037-30` as outside the original 54-marker population, and
+   identifies the other 11 as the relevant Feature `0037` members.
+5. It supersedes the old exact-54/no-partial atomicity rule only to authorize
+   this exact-13 transaction. It expressly makes no truth, retention,
+   reopening, repair, credit, or later-disposition decision for the remaining
+   original markers.
+6. It requires exact `[x]` to `[ ]` header-marker-only CAS, exact base and
+   full-file digest, complete-block equality, zero target Acceptance, unchanged
+   authority/item/catalog/ref premises, genuine decision/review ancestry, and a
+   no-write stop on any mismatch.
+7. It fully names the 13 work units, 12 affected successor Task-start gates,
+   criterion-bound validations, prerequisite-closed Acceptance, mandatory
+   checkpoints `0037-34.02` and `0037-40`, authority/write-freeze/source gates,
+   release activation, and Feature `0037` closure.
+8. It preserves Task text, prerequisites, checkpoints/verdicts, Acceptance
+   history, accepted foundations, incident summaries, claims, selectors,
+   issues, integration/closure state, and all unrelated markers.
+
+The record’s field order/cardinality, timestamp, registered-authority identity,
+Management role, alternatives (one selected and three rejected), consequences,
+work-unit/gate references, review participation, and `Waiver: none` conform to
+the checked `decision-record@v1` structure. Its
+`authority-tailoring-or-waiver` trigger is read narrowly as Management’s
+explicit override of the prior decision’s transaction-authorization constraint;
+it is not a role, independence, credential, signing, Acceptance, or integration
+waiver. The record itself confirms `Waiver: none` and preserves those authority
+boundaries. This review grants no broader interpretation.
+
+## Exact plan and preservation findings
+
+The current-baseline plan contains exactly 13 fenced complete Task blocks. A
+deterministic extraction using the next Task or Feature heading as the block
+boundary proved every block byte-identical to `TODO.md` at `37492617...`:
+
+`0037-29`, `0037-30`, `0037-31`, `0037-32`, `0037-33`, `0037-34`,
+`0037-34.01`, `0037-34.02`, `0037-35`, `0037-35.01`, `0037-35.02`,
+`0037-36`, and `0037-40`.
+
+All 13 begin with exact `[x]`; none contains current `Acceptance: ✓`. The
+candidate’s `TODO.md` is byte-identical to its first parent and has the bound
+SHA-256. The candidate preserves all 38 current accepted Feature `0037`
+Task/Subtask blocks observed on the base; none is a target. Accepted foundations
+including `0037-03`, `0037-14`, `0037-49`, and every other accepted Feature
+`0037` node remain unchanged.
+
+At the exact base:
+
+- selector schema/profile: `agent-workflow-bootstrap@v1` / `legacy-lists`;
+- authority epoch/write phase: `legacy-writable` / `legacy-writable`;
+- runner protocol: `runner-request@v1`;
+- tracked canonical numeric issue paths: `0`;
+- catalog items: `0`;
+- refs below `refs/autodocs/cutover/0037`: `0`.
+
+These facts independently confirm that the authoritative source remains the
+legacy lists and that prose summaries or `[x]` markers are not production
+cutover evidence.
+
+## Ancestry, changed paths, and prohibited-state verification
+
+Both ancestry checks returned success:
+
+- `374926174a09af1d0d3d33255a8b08993ff71dfc` is candidate parent 1 and an
+  ancestor of `419a9242...`;
+- `24262277f03f8d36333902fed4b6b25042028402` is candidate parent 2 and an
+  ancestor of `419a9242...`.
+
+Exactly three paths differ from parent 1:
+
+- `docs/campaign-evidence/mass-marker-evidence-gap-20260901/architect-scope-review.md`;
+- `docs/campaign-evidence/mass-marker-evidence-gap-20260901/current-baseline-0037-marker-plan.md`;
+- `docs/dossiers/dec-0044-034-mass-marker-evidence-correction.md`.
+
+A path-restricted diff found no change to `TODO.md`, `DONE.md`, `AGENTS.md`,
+`SANDBOX.md`, `PRIVILEGED.md`, `agent-workflow.json`, `issues/**`, or
+`docs/pipeline/**`. `DEC-0044-035` was absent from the first parent and occurs
+as one decision heading in the candidate dossier; other candidate mentions are
+references from the plan.
+
+## Live-main drift
+
+Initial follow-up measurement found live `main` exactly equal to the candidate
+base `374926174a09af1d0d3d33255a8b08993ff71dfc`, with matching `TODO.md`
+digest, byte-identical target blocks, all target markers `[x]`, zero target
+Acceptance, unchanged legacy authority projection, zero canonical numeric issue
+paths, zero catalog items, and zero cutover refs. No initial drift was present.
+
+The mandatory final live-main re-read immediately before the follow-up carrying
+commit is recorded below. SUPPORT remains valid only if any later drift is
+unrelated and leaves every target block/marker/Acceptance, authority selector,
+canonical issue/catalog/ref state, governing decision, and affected gate
+unchanged. Full-file `TODO.md` drift still invalidates the candidate’s exact CAS
+binding even when architecturally unrelated: in that case the scope remains
+supported but marker mutation requires a freshly rebound transaction package.
+
+## Fail-closed boundary
+
+This SUPPORT verdict authorizes no marker write or integration. A later marker
+candidate must stop without writing unless it descends from the exact Management
+disposition, candidate `419a9242...`, this follow-up review, and the integration
+base; matches a freshly applicable full-file `TODO.md` digest; contains exactly
+13 `[x]` to `[ ]` header-marker replacements and no other byte change; and
+reproves complete-block equality, zero target Acceptance, unchanged target
+contracts/gates, legacy authority/item/catalog/ref premises, and required
+independent integration authority.
+
+Any target-block, marker, Acceptance, selector/authority, canonical issue,
+catalog, cutover-ref, governing-decision, affected-gate, or ancestry drift
+invalidates this exact-candidate support for integration. Harmless unrelated
+drift may leave the architectural scope supported, but it never waives the
+full-file CAS: reconstruction/rebinding and renewed exact-candidate review are
+required before mutation. No partial completion, manual compensation, history
+rewrite, added marker, restored `[x]`, or self-integration is permitted.
+
+## Follow-up methods and validation
+
+Read-only verification used `git show`, `git diff`, `git diff-tree`, `git log`,
+`git grep`, `git rev-parse`, `git merge-base --is-ancestor`, `git ls-tree`,
+`git for-each-ref`, SHA-256 calculation, and deterministic Python parsing of
+the decision fields/lists and exact Task blocks. `git diff --check` passed for
+the candidate delta. The candidate commit carries `Task-ID` and `Base-Ref`
+trailers and a tracked verbatim provenance receipt. No test suite was required
+because the candidate changes governance/evidence prose only; behavioral
+validation consisted of exact-tree, exact-block, exact-digest, structural, and
+operational-state checks.
+
+## Follow-up briefing — verbatim
+
+```text
+Follow-up Architect review assignment. Review the exact reconstructed candidate `419a924226f48af14f5c22e6665dc05be8e9fa14` on branch `0037-cutover-governance-rebind-20260901`.
+
+Remain persona `Guinan`, independent Architect, capability class `privileged`, under the same bounded scope and prohibitions as the prior assignment. Supervisor identity remains `supervisor-zed-0037-cutover-20260901`. This is assignment-scoped recovery; create no TODO Task.
+
+Candidate facts reported by the recorder, which you must verify independently:
+- first parent/current-main base: `374926174a09af1d0d3d33255a8b08993ff71dfc`;
+- second-parent review lineage: `24262277f03f8d36333902fed4b6b25042028402`;
+- bound `TODO.md` digest: `eea63e0ec7e2ca78d90a5ea1e9d477f805da5c5d186acfb97d0aa35fa5f73a42`;
+- exactly three paths changed from first parent;
+- stale preparer addendum replaced with conforming append-only Management disposition `DEC-0044-035` in the existing decision dossier;
+- the disposition explicitly creates the independent exact-13 transaction, includes `0037-29` and `0037-30`, and supersedes original DEC-0044-034 exact-54/no-partial atomicity only as needed for this 13-marker recovery;
+- no `TODO.md`, marker, selector, issue item, Acceptance or authority mutation.
+
+Task:
+1. Independently inspect the exact candidate and both parents.
+2. Verify `DEC-0044-035` conforms to `decision-record@v1`, faithfully records Management authority rather than assigning it to the recorder, resolves the old 54-vs-13 conflict, does not silently adjudicate the remaining old markers, binds the exact base/digest, and completely names the 13-item blast radius and fail-closed semantics.
+3. Verify the current-baseline plan is byte-accurate for all 13 complete Task blocks at base `37492617…`, all are `[x]`, none has current Acceptance, foundational accepted work is preserved, and selector/item/catalog/cutover-ref facts are accurate.
+4. Verify genuine ancestry of both the current-main base and your prior review commit.
+5. Re-read live current `main` immediately before your follow-up commit. Distinguish harmless unrelated drift from material invalidation. If the candidate baseline has already drifted in any target block, target marker, target Acceptance, selector/authority/canonical issue state, governing decision, or affected gate, return INCONCLUSIVE/REJECT as appropriate and do not bless integration.
+6. Append (do not rewrite) a clearly labeled exact-candidate follow-up section to your existing file only: `docs/campaign-evidence/mass-marker-evidence-gap-20260901/architect-scope-review.md`. Record exact candidate, methods, findings, live-main drift, verdict SUPPORT/REJECT/INCONCLUSIVE, fail-closed boundary, and this follow-up briefing verbatim.
+7. Commit that sole-path append on the existing review/rebind lineage. You may create a follow-up branch/worktree if needed, but do not alter the reconstruction branch destructively. Return exact branch/tip/base, changed path, verdict, live-main observation, validation, ancestry, and clean status.
+
+You MUST NOT edit any other path, `TODO.md`, markers, Acceptance, selectors, issues, decision/plan files, claims, tools, tests, schemas, main, or refs; must not integrate, push, publish, cut over, sign, accept, or close Feature 0037. This remains Architect scope review, not integration review or Task Acceptance.
+
+Management prompt remains verbatim:
+> Dann nimm es jetzt in Betrieb. Eine gute Gelegenheit, die fälschlicherweise nicht ge[x]ten Tasks loszuwerden. Du kriegst von mir dafür alle nötigen Management-Freigaben. Steuere alles ein über Assignments, die du als supervisor verschickst. Keine neuen TODO-Tasks erstellen während des übergangs, sonst bremsen wir uns nur wieder selber aus.
+
+Immediate continuation prompt:
+> go ahead
+```
+
+## Final follow-up pre-commit observation
+
+Immediately before path-limited staging and commit, live `main` was re-read as
+`374926174a09af1d0d3d33255a8b08993ff71dfc` and exactly matched the candidate base. Its `TODO.md` SHA-256 was
+`eea63e0ec7e2ca78d90a5ea1e9d477f805da5c5d186acfb97d0aa35fa5f73a42`. Target blocks equaled the bound base:
+`true`; all target markers were `[x]`:
+`true`; target Acceptance count remained zero:
+`true`. Selector/authority state equaled the bound
+base: `true`
+(`legacy-lists` / `legacy-writable` /
+`legacy-writable` / `runner-request@v1`); canonical numeric issue
+paths: `0`; catalog items: `0`; cutover refs: `0`.
+Relevant base-to-live-main changed paths: `none`. No material invalidation
+was present. Before staging, the follow-up worktree differed from candidate
+`419a9242...` only by this append to the authorized review file.
