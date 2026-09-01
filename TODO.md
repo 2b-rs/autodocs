@@ -293,7 +293,7 @@ Feature blocks retain their prior relative order and content.
     candidate/test references are committed; no parent mutation occurred in
     agent-inbox and neither Subtask candidate was silently edited.
 
-  - [ ] **0045-03.01** (C1/P0; agent-inbox) Implement the selector-compatible
+  - [x] **0045-03.01** (C1/P0; agent-inbox) Implement the selector-compatible
     feedback typed-recipe producer and immutable handoff schema.
     - **Task record:**
       `task_id: "0045-03.01"; feature_id: "0045"; role: implementer`
