@@ -142,3 +142,9 @@ NOTES: obrien is working on integration review.
 OFFERED: priority 1: worf, priority 2: seven
 STATUS: OPEN
 NOTES: Dispatched supervisor typed drain/deadline escalation.
+
+
+## 0050-04
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf is working on implementation.
