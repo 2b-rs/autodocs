@@ -74,3 +74,14 @@ NOTES: obrien completed the review and integration. Merged to main.
 OFFERED: priority 1: worf
 STATUS: OPEN
 NOTES: Dispatched team offer delivery block implementation.
+
+
+## 0050-02
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf is working on implementation.
+
+## 0046-01.02-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on integration review.
