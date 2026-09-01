@@ -149,3 +149,9 @@ NOTES: Dispatched terminal integration of 0033-16.01 (final merge and move to DO
 AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien merged 0033-16.01, finalized acceptance bookkeeping, and successfully moved Feature 0033 to DONE.md. Feature 0033 is now completely finished.
+
+
+## 0033-07.01
+OFFERED: priority 1: worf, priority 2: quark
+STATUS: OPEN
+NOTES: Reopened because it was previously marked [x] without actual implementation or integration. Dispatched to worf.
