@@ -1,0 +1,30 @@
+### `DEC-ESCALATION-20260901` — Restore delegated escalation pipeline
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-01T00:11:23Z`
+- **Deciding identity:** `authority:user:current`
+- **Role:** `Management`
+- **Authority reference:** `current-user direction in briefing`
+- **Subject:** Delegated escalation pipeline restoration
+- **Decision:** Restore the pipeline so a privileged Integrator decides within the accepted contract; findings route to actionable same-slot rework; unresolved technical disagreement receives a documented trilateral Implementer/Integrator/Coordinator-or-Architect round; only a remaining non-delegable product, policy, authority, material-risk, external-effect, or waiver question reaches Management.
+- **Technical justification:** Required by current-user direction to establish an actionable pipeline escalation ladder and reduce unnecessary Management load.
+- **Triggers:**
+  - `material-architecture-or-repository-behavior`
+  - `authority-tailoring-or-waiver`
+- **Considered alternatives:**
+  - **ALT-01:** Direct Management escalation for all disagreements
+    - **Disposition:** `rejected`
+    - **Reason:** Generates unmanageable load for delegable technical issues.
+  - **ALT-02:** Trilateral round before Management
+    - **Disposition:** `selected`
+    - **Reason:** Resolves technical disagreements while respecting boundaries; escalates only non-delegable scope.
+- **Consequences:**
+  - **CON-01:** Integrators must decide within the contract and route findings to rework.
+  - **CON-02:** Unresolved technical disagreements require a trilateral round.
+  - **CON-03:** Management is reserved for product, policy, authority, risk, external, or waiver questions.
+- **Affected work units:**
+  - `repository:autodocs`
+- **Affected gates:**
+  - `integration`
+- **Review participation:** `none`
+- **Waiver:** `none`
