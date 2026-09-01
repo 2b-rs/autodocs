@@ -75,3 +75,14 @@ NOTES: Re-dispatched with correct agent-inbox paths.
 AWARDED: seven
 STATUS: ACCEPTED
 NOTES: seven accepted the corrected offer.
+
+
+## 0046-01.02
+AWARDED: seven
+STATUS: REVIEW
+NOTES: seven submitted 0046-01.02 for review.
+
+## 0046-01.02-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0046-01.02.
