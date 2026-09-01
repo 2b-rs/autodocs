@@ -171,7 +171,7 @@ Feature blocks retain their prior relative order and content.
   - **Acceptance:** ✓
     - **Disposition:** `completed`
     - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
-    - **Authority reference:** `agent-inbox:jadzia→obrien:1788257454160-780bf01c` (Offer `1788257454160-780bf01c` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788261995744-e39a6e85` (Offer `1788261995744-e39a6e85` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
     - **Accepted at:** `2026-09-01T10:16:30Z`
     - **Contract SHA-256:** `9cbe87dfc33b7495b341c2c310468e82ef4e87dc7532d8ff5a329d5ecfec8614`
     - **Work-product manifest SHA-256:** `29fa2a0ebda68dfbf18c991c28c8bc983c27da259d287e07662c1998f828a2a9`
