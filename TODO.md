@@ -644,10 +644,17 @@ Feature blocks retain their prior relative order and content.
     accessibility/browser evidence are committed; all stated tests pass; no
     real Curator decision or factual apply is fabricated.
 
-- [ ] **0045-06** (F/P0; exactly one terminal parent) Integrate the
+- [x] **0045-06** (F/P0; exactly one terminal parent) Integrate the
   canonical per-repository candidates and record the authorized cross-repository
   source/publication proof without using one assignment to write both
   repositories.
+  Claim: `DONE-obrien-0045-06-20260901.md`; owner_token:
+  `agent:obrien:0045-06:1788269285465-a61aff7c`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788269285465-a61aff7c` (Offer `1788269285465-a61aff7c` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T13:29:00Z`
   - **Task record:**
     `task_id: "0045-06"; feature_id: "0045"; role: integrator`
   - **Integration review:** mandatory. **Rationale (provisional; Architect
