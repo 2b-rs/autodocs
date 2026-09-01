@@ -8,11 +8,14 @@ Database Import").
 This is **not an Automotive SPICE Level-1 assessment definition**. PAM 4.0
 rates Level 1 for a named process, and its base practices are process-specific.
 The six practices below are project-defined controls intended to preserve
-useful documentation-campaign evidence. Feature `0011-03` may map that
-evidence to approved named documentation-process outcomes, while Feature
-`0020-02` must classify it as `documentation-execution`. It is not objective
-execution evidence for a future ECU process instance and cannot support ECU
-capability wording.
+useful documentation-campaign evidence. Under `DEC-0011-001`, an artifact may
+be associated only as **candidate evidence** for a named documentation-process
+outcome category, and only with its exact documentation product, project,
+process instance, origin, baseline, limitations, validity, and contrary
+evidence. Association does not establish outcome achievement, a process
+attribute rating, or a capability level. Feature `0020-02` classifies this
+evidence as `documentation-execution`; it is not objective execution evidence
+for a future ECU process instance.
 
 ## Scope
 
@@ -31,6 +34,24 @@ under the `ECLIPSE/S-CORE` project namespace defined in
 | LP4 — Perform the import and produce records | Scraper run emits one record per unit with canonical ID, version ID (`@rel:<release>#<hash8>`), and provenance metadata; nothing is hand-edited outside `legacy`/manual-override rules | `_src/spec/records/ECLIPSE_S-CORE/**/*.json` |
 | LP5 — Check consistency and structure | Automated structural validation (dangling refs, orphaned modules, malformed sphinx-needs IDs) runs on every import before records are eligible for `valid/*` | `validate_score.py` output / campaign report |
 | LP6 — Review, confirm, and communicate results | Import results are summarized (counts by kind/status) and made visible in the curation/review report, not only in commit messages | `curation-report.html` entry, campaign close commit |
+
+## Candidate named-process associations
+
+These associations are trace categories, not achieved outcomes or ratings:
+
+| Local control/evidence | Candidate category | Required limitation |
+|---|---|---|
+| Campaign scope, plan, and status | `MAN.3`-adjacent | Documentation campaign instance only; no ECU project-performance claim |
+| Release-pinned source/configuration inventory and versioned records | `SUP.8`-adjacent | Configuration evidence for the documentation campaign only |
+| Structural validation, curator review, and finding disposition | `SUP.1`-adjacent | Review evidence is not automatically independent QA or proof of content correctness |
+| Persisted problems/exceptions and closure links | `SUP.9`-adjacent | Requires a real problem lifecycle with cause, correction, verification, and closure |
+| Controlled change and curation decisions | `SUP.10`-adjacent | Request, decision, and application remain distinct; queue state alone proves nothing |
+| Authorized documentation publication package and close report | `SPL.2`-adjacent | Documentation release only; not ECU software or product-release evidence |
+
+No import extraction is relabeled as ECU `SWE.*`, and public S-CORE content is
+not treated as the assessed unit's requirements. Only an authorized assessment
+of the named process instance may judge outcome achievement or assign
+`N`/`P`/`L`/`F`, CL1, or CL2.
 
 ## Minimum acceptance bar for campaign-evidence completeness
 
@@ -51,11 +72,11 @@ the following hold:
    operational lifecycle in `docs/pipeline/processes.md`, so campaign
    boundaries stay auditable.
 
-These conditions do not establish a capability level. ECU CL1 requires a
-validated `PA 1.1 = L` or `F` result for each named process under Feature
-`0025`; ECU CL2 additionally requires `PA 1.1 = F` and `PA 2.1`/`PA 2.2` at
-`L` or `F` under Feature `0018`. Managed planning, monitoring/adjustment,
-resources/competencies, interfaces, and work-product management are outside
-Feature 0019. CL2 monitoring may be qualitative and/or quantitative;
-statistical quantitative process analysis/control belongs to PA 4.1/PA 4.2,
-not CL2.
+These conditions do not establish a capability level. ECU CL1 ratings belong
+to the authorized named-process assessment under Feature `0025`; ECU CL2
+ratings belong to Feature `0018`. The recorded conflict between the dated CL2
+survey rule and the `0011-02` method remains outside this contract, so this
+campaign neither selects nor relies on a CL2 aggregation threshold. Managed
+planning, monitoring/adjustment, resources/competencies, interfaces, and
+work-product management are outside Feature `0019`. Statistical quantitative
+process analysis/control belongs to PA 4.1/PA 4.2, not CL2.

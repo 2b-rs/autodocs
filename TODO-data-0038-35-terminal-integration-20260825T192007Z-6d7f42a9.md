@@ -6,7 +6,10 @@ task_id: 0038-35
 request_id: terminal-integration-20260825T192007Z-6d7f42a9
 owner_token: agent:data:0038-35:terminal-integration-20260825T192007Z-6d7f42a9
 base_commit: 6037b5febb36609f48580a9a797be618ddc27223
-state: [ ]
+state: [x]
+recorded_task_state: [ ]
+coordination_state: complete
+lease_active: false
 architect_work_product_status: [x]
 capability_class: privileged
 process_role: Architect

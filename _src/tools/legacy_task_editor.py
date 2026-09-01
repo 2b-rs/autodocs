@@ -61,7 +61,7 @@ FIELD_LEGACY_RE = re.compile(
     r":\s*(?P<value>.+?)\s*$"
 )
 CLAIM_POINTER_RE = re.compile(
-    r"^  - \*\*Claim(?: \([^)]*\))?:\*\*.*?via `(?P<path>TODO-[^`]+\.md)`, "
+    r"^  - \*\*Claim(?: \([^)]*\))?:\*\*.*?via `(?P<path>(?:TODO|DONE)-[^`]+\.md)`, "
     r"`owner_token: (?P<owner>agent:[A-Za-z0-9:._-]+)`.*?"
     r"(?:base|base_commit) `(?P<base>[0-9a-f]{40}|pending-discovery)`.*$"
 )

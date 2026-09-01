@@ -7,7 +7,8 @@ owner_token: agent:data:0044-06:cognitive-demand-20260825T214726Z-0d41a19f
 base_commit: 433b41b04cd4b353f9681947a9e3c7897a751855
 capability_class: privileged
 execution_authority: direct
-state: [ ]
+state: [x]
+recorded_task_state: [ ]
 coordination_state: complete
 architect_work_product_status: [x]
 write_scope: ["TODO-data-0044-06-cognitive-demand-architecture-20260825.md", "docs/dossiers/dec-0044-026-cognitive-demand-scope.md", "docs/dossiers/0044-06-cognitive-demand-scope-review.md"]

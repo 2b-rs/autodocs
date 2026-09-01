@@ -20,6 +20,7 @@ Prüft:
      vollständige lokale Publikationskohorte hat einen Ledger-Eintrag
 Exit-Code 0 = alles in Ordnung.
 """
+import argparse
 import glob
 import json
 import multiprocessing
@@ -801,7 +802,121 @@ def check_report_freshness():
         )
 
 
+ISSUE_VALIDATE_ARGS = None
+
+
+def parse_validate_cli(argv):
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--issue-source",
+        choices=("working-tree", "staged-index", "candidate", "off"),
+        default="working-tree",
+    )
+    parser.add_argument("--issue-root")
+    parser.add_argument("--issue-dag")
+    parser.add_argument("--issue-generated-root")
+    parser.add_argument("--issue-authoritative-root")
+    known, rest = parser.parse_known_args(argv)
+    return known, rest
+
+
+def check_issue_store(options=None):
+    checks_performed.append("check_issue_store")
+    options = options if options is not None else ISSUE_VALIDATE_ARGS
+    if options is None or getattr(options, "issue_source", "working-tree") == "off":
+        return
+    tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import issue_validate as issue_validate_mod
+    source = options.issue_source
+    root = options.issue_root
+    if source == "candidate":
+        if not root:
+            record_finding(
+                "issue-validate-config",
+                "error",
+                "candidate issue mode requires --issue-root",
+            )
+            return
+        validate_source = "working-tree"
+    else:
+        validate_source = source
+    dag_path = options.issue_dag or os.path.join(ROOT, "docs/pipeline/issue-derived-artifacts-v1.json")
+    generated_root = options.issue_generated_root
+    issue_root = root
+    if validate_source == "working-tree" and issue_root is None:
+        issue_root = os.path.join(ROOT, "issues")
+        if not os.path.isdir(issue_root):
+            issue_root = None
+    try:
+        diagnostics, _parsed = issue_validate_mod.validate(
+            repo=ROOT,
+            source=validate_source,
+            root=issue_root if validate_source != "staged-index" else None,
+            authoritative_root=options.issue_authoritative_root,
+            compare_head=False,
+            dag_path=dag_path if os.path.exists(dag_path) else None,
+            generated_root=generated_root,
+        )
+    except issue_validate_mod.ConfigurationError as exc:
+        record_finding("issue-validate-config", "error", str(exc))
+        return
+    for diagnostic in diagnostics:
+        record_finding(
+            "issue-validate",
+            "error",
+            "%s %s:%s item=%s field=%s: %s" % (
+                diagnostic.rule,
+                diagnostic.path,
+                diagnostic.line,
+                diagnostic.item,
+                diagnostic.field,
+                diagnostic.message,
+            ),
+            ref=diagnostic.path or diagnostic.rule,
+        )
+
+
+
 def check_automation_safety():
+    """Runs automation_safety.scan_repository() over every tracked *.py/*.sh
+    source (see automation_safety.tracked_automation_paths).
+
+    Runtime budget (measured, validate-py-nontermination-20260827):
+    a full cProfile run against this repository's 116 real tracked automation
+    paths, on the investigating host, took 384.26s wall-clock end to end —
+    NOT the ~95s naive extrapolation (116 files * ~0.82s/file from a 20-file
+    sample) that motivated this investigation. The dominant cost (~330s
+    cumulative, ~250s self time, 19.5M calls) is
+    automation_safety._shell_structural_text, reached via
+    _shell_symbol -> scan_shell -> scan_text, concentrated in only 11 shell
+    scripts (not spread evenly across all 116 files) — i.e. a handful of
+    shell scripts drive nearly the entire runtime. This is inside scan_text's
+    shell-scanning path, which this investigation is explicitly not
+    authorized to change (cross-item gate-scope boundary: scan_text affects
+    what the automation-safety gate detects). Recorded as a finding for a
+    separate, future, gate-scope-reviewed task — not fixed here.
+
+    Reproduce with:
+        python3 -c "
+        import cProfile, pstats, sys, time, io
+        sys.path.insert(0, '_src/tools')
+        import automation_safety
+        from pathlib import Path
+        pr = cProfile.Profile(); t0 = time.time(); pr.enable()
+        automation_safety.scan_repository(Path('.'),
+            policy_path=Path('_src/tools/automation_safety_policy.json'))
+        pr.disable(); print('TOTAL_TIME', time.time() - t0)
+        pstats.Stats(pr).sort_stats('cumulative').print_stats(25)
+        "
+    (run from the repository root; ~6-7 minutes on comparable hardware)
+
+    A bounded caller (e.g. an integration checkpoint) should budget at least
+    ~10 minutes for this single check alone, or rely on validate.py's
+    run_checks() progress output (see main()) to distinguish "slow but
+    progressing" from "stuck" instead of a tight timeout.
+    """
     checks_performed.append("check_automation_safety")
     tools_dir = os.path.join(SRC, "tools")
     if tools_dir not in sys.path:
@@ -843,20 +958,66 @@ def check_automation_safety():
         )
 
 
-def main():
+# Ordered list of (name, callable) pairs run by main(). Kept as an explicit,
+# introspectable sequence (rather than 12 bare calls) so progress reporting and
+# tests can iterate it without re-deriving check order from source text.
+CHECKS = [
+    ("check_automation_safety", check_automation_safety),
+    ("check_issue_store", check_issue_store),
+    ("check_build", check_build),
+    ("check_links", check_links),
+    ("check_langs", check_langs),
+    ("check_requirement_review_schema", check_requirement_review_schema),
+    ("check_namespaces", check_namespaces),
+    ("check_home_links", check_home_links),
+    ("check_no_hardcoded_german", check_no_hardcoded_german),
+    ("check_client_rendered_german", check_client_rendered_german),
+    ("check_record_status", check_record_status),
+    ("check_workflow_lifecycle", check_workflow_lifecycle),
+    ("check_report_freshness", check_report_freshness),
+]
+
+
+def run_checks(checks, out=None, clock=time.time):
+    """Run an ordered (name, callable) sequence, emitting one deterministic
+    progress line before and after each check: "n/total start <name>" and
+    "n/total done <name> <elapsed>s". Returns a list of
+    (name, elapsed_seconds) tuples in run order.
+
+    Exists so a caller with a bounded timeout (e.g. an integration checkpoint)
+    can distinguish "slow but progressing" from "stuck" — see
+    _src/validate.py's non-termination investigation
+    (validate-py-nontermination-20260827): validate.py previously produced no
+    output at all until every check had finished, which was indistinguishable
+    from a hang to a bounded caller even though the run was merely slow.
+
+    `out` defaults to sys.stdout at call time (not at import time) so tests
+    can pass an io.StringIO() or a list-collecting callable without needing to
+    patch sys.stdout.
+    """
+    if out is None:
+        out = sys.stdout
+    total = len(checks)
+    timings = []
+    for index, (name, fn) in enumerate(checks, start=1):
+        print("[validate] %d/%d start %s" % (index, total, name), file=out, flush=True)
+        started = clock()
+        fn()
+        elapsed = clock() - started
+        timings.append((name, elapsed))
+        print("[validate] %d/%d done  %s (%.2fs)" % (index, total, name, elapsed),
+              file=out, flush=True)
+    return timings
+
+
+def main(argv=None):
+    global ISSUE_VALIDATE_ARGS
+    argv = sys.argv[1:] if argv is None else argv
+    ISSUE_VALIDATE_ARGS, rest = parse_validate_cli(argv)
+    if rest:
+        sys.argv = [sys.argv[0], *rest]
     _t0 = time.time()
-    check_automation_safety()
-    check_build()
-    check_links()
-    check_langs()
-    check_requirement_review_schema()
-    check_namespaces()
-    check_home_links()
-    check_no_hardcoded_german()
-    check_client_rendered_german()
-    check_record_status()
-    check_workflow_lifecycle()
-    check_report_freshness()
+    run_checks(CHECKS)
 
     finished_at = time.time()
     _exit_code = 1 if problems else 0

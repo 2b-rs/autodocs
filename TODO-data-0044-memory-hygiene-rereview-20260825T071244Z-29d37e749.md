@@ -3,7 +3,10 @@
 item: 0044-memory-hygiene-gate-scope-rereview
 owner: data
 owner_token: agent:data:architect:0044-memory-hygiene-rereview:20260825T071244Z-29d37e749
+state: [x]
 status: [x]
+coordination_state: complete
+lease_active: false
 capability_class: privileged
 process_role: Architect scope reviewer only
 authority_reference: current runtime management-instantiated Architect profile; exact assignment coordinated in agent-inbox message `1787641797336-9764721a`

@@ -28,9 +28,11 @@ authority. Merging a done-but-unaccepted predecessor into a successor branch doe
 **not** accept it; task-acceptance `✓` and Feature closure remain exactly as
 defined in [`task-acceptance.md`](task-acceptance.md).
 
+A chain is not integrated merely because equivalent bytes were reconstructed or cherry-picked onto an unrelated history. Canonical integration requires the exact candidate commit to be an ancestor of source-history `main`, proven and retained in the receipt defined by [`integration-flow-control.md`](integration-flow-control.md).
+
 ## Branch topology and naming
 
-The integration baseline is `main`. Every backlog item has exactly one canonical
+The integration baseline is the **source-history** branch `main`. Generated publication output must never replace, reset, or become the root of `main`; it is written only to a dedicated publication branch such as `published` or `gh-pages`, or to a separate deployment repository. Every backlog item has exactly one canonical
 branch whose name **is the item's ID**:
 
 | Item | Branch name | Cut from (base) |
@@ -214,6 +216,10 @@ Current tags (`git tag -l 'preserved/*'`):
 | `preserved/root-git-config-incident-20260825-jean-luc` | `1252503ae1cdcad5b387d2351965da9063964d3f` | the three uncommitted physical-root divergences found after repairing the shared `core.worktree`/test-identity contamination; preserved as evidence without adopting their contents into `main` |
 | `preserved/as-verify-0038-34-index-20260825` | `d825cff53560878bcfeb4e504113945a21ae0abc` | stale index of the missing worktree `/private/tmp/as-verify-0038-34` (detached HEAD `9bcf87edb`, already `[x]` on branch `0038-34`); captured before authorized removal of that registration only |
 | `preserved/staged-0033-02-tom-culber-20260825` | `6db991be89d60d5f751b739e25fa8c1b3dbb7092` | foreign staged 12-path index from cancelled `.worktrees/0033-02-tom-culber-20260825T215200Z` (HEAD was `8a364e000`); captured by Dispatcher `tom` before `git reset --hard`; Landry catch-up worktree not touched. Recover with `git show --stat preserved/staged-0033-02-tom-culber-20260825` or `git worktree add /tmp/recover-culber-0033-02 preserved/staged-0033-02-tom-culber-20260825` — never check the tag out over a live worktree. |
+| `preserved/root-worf-claim-edits-20260829-geordi` | `2567f2ef17a3c1eedef0fb7c019c48e8ae8c1292` | exact five unstaged Worf claim-file edits found only in the shared root at `main@a0a8b0929`; captured through an isolated index before authorized restoration. Inspect with `git show --stat preserved/root-worf-claim-edits-20260829-geordi` or recover one file into an item worktree with `git checkout preserved/root-worf-claim-edits-20260829-geordi -- <path>`; never check the tag out over a live worktree. |
+| `preserved/root-jadzia-claim-edits-20260829-obrien` | `859a8c85332e5060509ab614f757ce4c8d24a4e9` | exact three unstaged Jadzia claim-file edits found at `main@a0a8b0929` adding `- **state**: Terminal (Integration completed)` to `TODO-jadzia-{0012-01,0013-01,0037-14}-integration-20260829.md`; reconstructed under decision-1788015759354-013fa663 Option B. Inspect with `git show --stat preserved/root-jadzia-claim-edits-20260829-obrien` or inspect in an isolated worktree; never check the tag out over a live worktree. |
+| `preserved/staged-0044-07-zero-byte-artifacts-20260829-obrien` | `9fa2276870e6fe47c590f24a9b0baba56f68ff91` | eight out-of-scope tracked documentation/design files reduced to zero bytes after interrupted sparse-checkout materialization at `integrate-0044-07-accepted-geordi-20260829@6561c4d15`; reconstructed under decision-1788015759354-013fa663 Option B. Inspect with `git show --stat preserved/staged-0044-07-zero-byte-artifacts-20260829-obrien` or inspect in an isolated worktree; never check the tag out over a live worktree. |
+| `preserved/root-jadzia-0011-claim-edits-20260829-obrien` | `2e3929639e4c7bd112bb446a8d5592159d62ba00` | exact two unstaged Jadzia claim-file edits found at `main@515f57ba` on `TODO-jadzia-0011-03-chain-20260829.md` (blob `90f64d7d3`) and `TODO-jadzia-0011-04-chain-20260829.md` (blob `af49bb03c`); reconstructed under decision-1788011983733-189cac2b Option A / decision-1788015759354-013fa663 Option B. Inspect with `git show --stat preserved/root-jadzia-0011-claim-edits-20260829-obrien` or inspect in an isolated worktree; never check the tag out over a live worktree. |
 
 To recover from a snapshot, inspect and extract it — never check it out over a
 live worktree:
@@ -242,11 +248,14 @@ delete the claim at `[x]`" behavior for branch-based work:
   claim files on the merged branch are merged in as well. The parent branch
   therefore accumulates the complete set of predecessor claim files, preserving
   who did what and under which authority.
-- Claim files are **not** deleted at `[x]`/`[w]`. They are reconciled and removed
-  only by the privileged integrator during **Feature integration** (below), after
-  their durable information has been folded into the acceptance records and
-  check-in provenance. This keeps coordination visible for the whole life of the
-  Feature and prevents the "orphaned claim, code committed elsewhere" split.
+- Claim files are **not** deleted at `[x]`/`[w]`. When current Acceptance is
+  recorded for an exact item, its carried claims are renamed byte-identically
+  from `TODO-*` to `DONE-*` in the Feature/integration branch as terminal
+  provenance; predecessor claims for other items are untouched. The accepting
+  agent uses `_src/tools/provision_tmp_worktree.sh --finalize-accepted <item>
+  <acceptance-worktree>` and commits the inspected rename with the Acceptance
+  bookkeeping. This keeps coordination visible without making a historical
+  claim look like a live lease.
 
 Everything else about claim files — immutable `owner_token`, no cross-session
 appropriation, no ownership inferred from a shared display name or filename —
@@ -353,6 +362,30 @@ time, and the mechanical provenance checks are Feature `0044` work
   mutation, service-control, or residual-risk authority. The canonical record
   schema and fail-closed state machine are in
   [`risk-integration.md`](risk-integration.md).
+- **Recorded policy origin (`DEC-0044-008`/`DEC-0044-011`, effective
+  2026-08-21T11:20:51+02:00; no retroactive requirement):** Every later commit
+  that changes a declared policy path MUST include exactly one Git commit-message
+  trailer in this form:
+
+  ```text
+  Policy-Origin-Branch: <canonical-branch-name>
+  ```
+
+  `<canonical-branch-name>` is the valid Git branch name where the policy change
+  was authored. The person introducing the commit supplies this evidence;
+  reviewers must not infer origin from topology or a surviving branch name. A
+  policy-path commit at or before the effective decision record is legacy history
+  and does not need retrofitting. The read-only `check_policy_provenance.py`
+  check reports a missing, duplicated, empty, or malformed required trailer as a
+  finding. A valid trailer documents origin but does not excuse a foreign-origin
+  policy commit.
+- **No fast-forward absorption of non-predecessor policy content:** A policy-path
+  commit from outside the receiving item direct predecessor/successor chain MUST
+  be introduced by an explicit `--no-ff` merge commit, never by `git merge
+  --ff-only` or `git update-ref`. The merge commit preserves inspectable topology;
+  the introduced policy commit still requires its `Policy-Origin-Branch:` trailer.
+  This is the repository-wide recorded-provenance rule and retains the narrower
+  `DEC-0044-007` control below.
 - **Fast-forward absorption of foreign content is prohibited (mechanical-check
   blind spot, `DEC-0044-007`):** `git merge --ff-only` and `git update-ref`
   advance a branch tip without ever creating a merge commit, so an absorbed
@@ -374,6 +407,49 @@ time, and the mechanical provenance checks are Feature `0044` work
   commits recorded within that chain's own history. See `DEC-0044-007`
   ([`0044-01-branch-workflow-prose-scope-review.md`](../dossiers/0044-01-branch-workflow-prose-scope-review.md))
   for the full analysis and residual-limitation record.
+
+### Reference-transaction early-warning net (`DEC-0044-009`)
+
+The versioned `_src/tools/reference_transaction_hook.py` can be installed into
+the active common Git hooks directory and verified from an item-owned
+worktree:
+
+```sh
+python3 _src/tools/reference_transaction_hook.py install --repo .
+python3 _src/tools/reference_transaction_hook.py check --repo .
+```
+
+At the `prepared` phase the hook examines existing branch refs and the incoming
+`old..new` commits of fast-forward branch updates. A move to the exact tip of
+the receiving item's documented direct chain is a carve-out: parent/child item
+branches and direct `PREREQ` neighbors are derived from `TODO.md` at the old
+target commit; Feature→`main` uses the corresponding canonical Feature ref.
+Other local branches that already contain an incoming commit are retained as
+`foreign_origin[].also_on` evidence. New-branch creation, deletion, tags, and
+non-fast-forward updates are outside this warning's declared classification.
+Analysis is deliberately bounded to 256 incoming commits, 256 matching local
+refs per query, a 2 MiB pending record, an eight-second overall budget, and five
+seconds per Git plumbing call. Exceeding a bound is a hook failure: it returns
+zero and records no positive assurance. The binding integrator check is what
+covers this and every other hook blind spot.
+
+Prepared findings are held below the common Git directory and become one
+`reference-transaction-log@v1` JSONL entry only when Git reports `committed`;
+`aborted` removes the matching pending record. The committed entry contains
+only transaction identity/time, target ref, old/new object IDs, allowed carrier
+refs, and the matching commit/ref names. It contains no file content,
+credentials, actor identity, or working-tree path. The `check` result reports
+the private log path and the count of pending records. A pending record left by
+a logging failure is recovery evidence: inspect it before any explicit removal;
+the hook never silently treats its existence or removal as a provenance
+decision.
+
+This hook is deliberately **a net, not the gate**. Hook mode catches every
+internal failure and exits zero. Installation is a local Git-side effect and is
+never performed implicitly by validation. Hook presence, log absence, or a
+warning does not authorize or reject an integration and never replaces the
+integrator's binding checkpoint verification. A missing, removed, stale,
+failed, or `core.hooksPath`-bypassed copy never counts as “checked”.
 
 ## Merge authority and direction
 
@@ -450,9 +526,11 @@ Feature branch and performs the Feature-level review. The integrator:
    own decision and, on approval, its own `Acceptance: ✓` record bottom-up. An
    unmarked node does not independently trigger review, and missing Acceptance
    does not block ordinary successor implementation.
-5. Reconciles and removes the predecessor claim files whose information is now
-   captured in acceptance records and check-in provenance
-   ([`../../AGENTS.md`](../../AGENTS.md) → *Check-in provenance*).
+5. Records each accepted item in the Feature/integration branch and renames that
+   exact item's carried `TODO-*` claims to `DONE-*`, updating its claim-path
+   pointer; the byte-identical terminal claims remain check-in provenance. The
+   worktree owner receives the exact accepted ref for its independent cleanup
+   preflight; the already-integrated item branch is not rewritten.
 6. On full approval, integrates the Feature branch into `main` — using the
    root-checkout advance procedure of `DEC-0044-015` described above, never
    `git update-ref` — and moves the Feature to `DONE.md` via the path-isolated
@@ -528,9 +606,12 @@ explicit downstream work and is not implied to exist yet:
   that runs Git directly: given a caller-supplied item branch, it bases a new
   branch off its derived parent when the branch does not exist yet, provisions
   or idempotently heals a worktree at the caller's chosen location (defaulting
-  to the existing `.worktrees/<item>` convention), and reaps orphaned scratch
-  worktrees under that root that carry neither an active claim file nor
-  uncommitted content — surfacing, never deleting, one that does. It has
+  to the existing `.worktrees/<item>` convention). Task `0044-17` adds accepted
+  claim finalization (`--finalize-accepted`), owner self-cleanup
+  (`--remove-completed`), and a conservative periodic fallback (`--reap-only`).
+  The fallback requires exact-item `DONE-*` provenance, current Acceptance,
+  clean/unlocked/process-free state, a branch ref pinning `HEAD`, and reachability
+  from `main`; it surfaces rather than removes anything ambiguous. It has
   **worktree lifecycle only**: it does not merge the prerequisite closure or
   make any other branch/authority policy decision; that remains the runner
   transaction engine's job below. This is a different tool from

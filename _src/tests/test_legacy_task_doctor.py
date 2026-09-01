@@ -122,7 +122,6 @@ class LegacyTaskDoctorFixtureTests(unittest.TestCase):
         observed = rules(report)
         for rule in (
             "LTD-CLAIM-STATE-DIVERGED",
-            "LTD-CLAIM-TERMINAL-RETAINED",
             "LTD-CLAIM-IDENTITY-MISMATCH",
             "LTD-CLAIM-BASE-ABBREVIATED",
             "LTD-CLAIM-SCOPE-INVALID",
@@ -134,6 +133,42 @@ class LegacyTaskDoctorFixtureTests(unittest.TestCase):
             "LTD-TASK-CLAIM-POINTER-MISMATCH",
         ):
             self.assertIn(rule, observed)
+
+    def test_accepted_claim_uses_done_prefix_and_remains_machine_readable(self):
+        repo = FixtureRepository(CASES["clean"])
+        self.addCleanup(repo.close)
+        todo = repo.root / "TODO.md"
+        todo.write_text(
+            todo.read_text(encoding="utf-8").replace(
+                "- [p] **1000-01**",
+                "- [x] **1000-01**",
+            ).replace(
+                "Claimed via `TODO-fixture-1000-01-clean-claim.md`",
+                "Claimed via `DONE-fixture-1000-01-clean-claim.md`",
+            )
+            + "\n  - **Acceptance:** ✓\n",
+            encoding="utf-8",
+        )
+        source = repo.root / "TODO-fixture-1000-01-clean-claim.md"
+        destination = repo.root / "DONE-fixture-1000-01-clean-claim.md"
+        payload = source.read_text(encoding="utf-8").replace("state: [p]", "state: [x]")
+        destination.write_text(payload, encoding="utf-8")
+        source.unlink()
+
+        report = repo.scan()
+        observed = rules(report)
+        self.assertNotIn("LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE", observed)
+        self.assertNotIn("LTD-CLAIM-IDENTITY-MISMATCH", observed)
+        self.assertEqual(report["normalized"]["claims"][0]["path"], destination.name)
+
+    def test_done_claim_without_acceptance_is_rejected(self):
+        repo = FixtureRepository(CASES["clean"])
+        self.addCleanup(repo.close)
+        source = repo.root / "TODO-fixture-1000-01-clean-claim.md"
+        destination = repo.root / "DONE-fixture-1000-01-clean-claim.md"
+        source.rename(destination)
+        report = repo.scan()
+        self.assertIn("LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE", rules(report))
 
     def test_prerequisite_case_detects_graph_and_parent_state(self):
         repo = FixtureRepository(CASES["prerequisites-and-parent"])

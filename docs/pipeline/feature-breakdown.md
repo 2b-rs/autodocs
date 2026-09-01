@@ -202,3 +202,30 @@ The pilot-first condition is explicit: general effectiveness of A1/A2 is not
 claimed merely because this document is linked from an authority file. The
 pilot evidence and later mandatory `0044-08` review determine whether the
 instruction is complete in practice.
+
+## 8. Cognitive demand estimation
+
+For each Task, the Architect estimates peak intrinsic reasoning demand in the
+existing `capability_profile.cognitive_demand` field using the five observable
+dimensions and deterministic aggregation in
+[`0044-06-cognitive-demand-study.md`](../dossiers/0044-06-cognitive-demand-study.md):
+scope breadth, reasoning depth, context volume, ambiguity, and verification
+hardness. The closed vocabulary remains:
+
+- `low`: isolated routine work or a strict checklist with a local oracle;
+- `medium`: defined implementation with localized multi-path context;
+- `high`: architecture/process reasoning, ambiguity, or broad verification;
+- `critical`: security/authority boundaries, irreversible migrations, or
+  coupled state orchestration with catastrophic failure modes.
+
+Record all five ratings, evidence, and estimator version. Missing evidence is
+`unknown` and makes the prediction incomplete; it never scores `low`. The
+highest dimension determines the class. The same contract produces the same
+prediction regardless of the intended agent.
+
+The deterministic matcher reports `COGNITIVE_CLASS_UNSERVED` when a descriptor's
+`cognitive_classes_served` omits the declared class. That is scheduling evidence
+only. Under `DEC-0044-026`, estimator operation is shadow-only: it does not
+rewrite existing values, change eligibility, assign/reject an agent, stop a
+Task, or grant authority. Record disagreements for calibration; enforcement
+requires a later cross-item decision and independent review after `0044-08`.
