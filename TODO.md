@@ -112,7 +112,14 @@ projections agree; and the terminal integration proves authoritative zero state
 without deleting evidence or treating silence/quota exhaustion as proof of no
 work.
 
-- [ ] **0050-00** (P0; single start; Integration review: mandatory) Bind the material user direction, `DEC-0050-001`, exact requirements/interface digests and a supporting scope review by a management-instantiated Architect distinct from the implementers before any operative mutation.
+- [x] **0050-00** (P0; single start; Integration review: mandatory) Bind the material user direction, `DEC-0050-001`, exact requirements/interface digests and a supporting scope review by a management-instantiated Architect distinct from the implementers before any operative mutation.
+  Claim: `DONE-seven-0050-00-20260901T1915Z.md`; owner_token:
+  `agent:seven:0050-00:20260901T1915Z`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788290546334-65b4a851` (Offer `1788290546334-65b4a851` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T19:25:00Z`
   - **Task record:** `task_id: "0050-00"; feature_id: "0050"; role: architect-elaboration`.
   - **Architecture decisions and sources:** `REQ-0050-01..20`, `DEC-0050-001`, `docs/pipeline/decision-record.md`, `docs/pipeline/team-pause-phaseout.md`, and agent-inbox baseline `b94b609e2a7d8d572cdbef091894156e0ac52f38`; authority, evidence and assumptions are distinguished in the dossiers.
   - **Prerequisites:** none; this is the single start node.
@@ -142,7 +149,7 @@ work.
   - **Acceptance criteria:** Monotonic generations, deterministic fold, stable errors, bounded fields, append-only events and idempotent APIs match the reviewed contract; malformed or partial histories fail closed.
   - **Definition of Done:** Source/schema/tests and retained property evidence committed; no live team is paused.
 
-- [ ] **0050-02** (P0) Atomically block team offer delivery/acceptance and freeze affected pre-award rounds without advancing ownership.
+- [ ] **0050-02** (P0; Integration review: mandatory) Atomically block team offer delivery/acceptance and freeze affected pre-award rounds without advancing ownership.
   - **Task record:** `task_id: "0050-02"; feature_id: "0050"; role: implementer`.
   - **Architecture decisions and sources:** `REQ-0050-01/02/11/18`, `DEC-0050-001` admission and generation consequences.
   - **Prerequisites:** `0050-01` produces the generation/fold API.
