@@ -256,7 +256,7 @@ Feature blocks retain their prior relative order and content.
     schema/adapter and durable decision results are committed; compatibility
     and recovery evidence is retained; nothing is deployed.
 
-- [ ] **0045-03** (C/P0 parent package) Verify and aggregate the
+- [x] **0045-03** (C/P0 parent package) Verify and aggregate the
   per-repository feedback-ingestion candidates without crossing a repository
   write boundary.
   - **Task record:**
@@ -371,7 +371,7 @@ Feature blocks retain their prior relative order and content.
       autodocs; focused tests pass; candidate and result digests are handed to
       the parent `0045-03`.
 
-- [ ] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
+- [x] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
   conversation, and structured GitHub handoff.
   - **Task record:**
     `task_id: "0045-04"; feature_id: "0045"; role: implementer`
