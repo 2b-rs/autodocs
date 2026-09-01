@@ -16,3 +16,9 @@ NOTES: seven accepted the architect elaboration/review offer.
 AWARDED: seven
 STATUS: IN_PROGRESS
 NOTES: seven started the architect elaboration/review.
+
+
+## 0046-00
+AWARDED: seven
+STATUS: CANCELLED
+NOTES: Cancelled because kira already completed it on branch 0046-00. Dispatching integration.
