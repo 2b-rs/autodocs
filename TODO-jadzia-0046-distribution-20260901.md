@@ -40,3 +40,9 @@ NOTES: obrien accepted the offer and is verifying the integration.
 AWARDED: obrien
 STATUS: REVIEW
 NOTES: obrien completed the review and integration. Merged to main.
+
+
+## 0046-01.01
+OFFERED: priority 1: data
+STATUS: OPEN
+NOTES: Dispatched UX/API validation.
