@@ -26,5 +26,8 @@
   - `repository:autodocs`
 - **Affected gates:**
   - `integration`
+  - `technical-disagreement`
+  - `management-escalation`
 - **Review participation:** `none`
+- **No-review reason:** This is a direct Management instruction from the current user which explicitly acts as its own review.
 - **Waiver:** `none`

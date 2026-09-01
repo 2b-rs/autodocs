@@ -2,13 +2,15 @@
 
 ## 1. Exact affected work units/gates
 - **Affected work units:** `repository:autodocs`
-- **Affected gates:** `integration` (specifically the rejection/rework and escalation pathways).
+- **Affected gates:** `integration` (rejection, rework, and escalation pathways), `TK-2 dissent resolution`, `Feature aggregate review`.
 
 ## 2. Smallest safe text changes
-- Update `docs/pipeline/integration-flow-control.md` to define the escalation ladder.
-- Add text specifying that an Integrator must decide within the accepted contract and that findings route to actionable same-slot rework.
-- Add text establishing the documented trilateral (Implementer/Integrator/Coordinator-or-Architect) round for unresolved technical disagreements.
-- State clearly that only non-delegable product, policy, authority, material-risk, external-effect, or waiver questions reach Management.
+- **`docs/pipeline/integration-flow-control.md`**: Define the new escalation ladder (Integrator decision -> actionable same-slot rework -> trilateral round -> Management for non-delegable).
+- **`AGENTS.md`**: Update the "integration verdict" rules to reflect that `[u]` hands resolution to actionable rework or a trilateral round before reaching Management, aligning with the new escalation ladder.
+- **`docs/pipeline/process-roles.md`**: Update the `TK-2 dissent` resolution path so that technical dissent resolves via the trilateral round before escalating to Management.
+- **`docs/pipeline/task-acceptance.md`**: Update the Feature rejection (`[u]` verdict) rules to integrate the new escalation ladder instead of immediately demanding explicit user (Management) interaction for delegable issues.
+- **`docs/pipeline/decision-record.md`**: Clarify trigger interpretation to reflect the new boundaries for when an escalation triggers a Management review versus a trilateral round.
+- **`PRIVILEGED.md`**: Checked for consistency; ensure no contradictory direct-to-user escalation pathways bypass the trilateral round.
 
 ## 3. Retained hygiene/independence/Acceptance/security/release controls
 - **Hygiene/Independence:** The Integrator role remains completely independent from the Implementer. The four-eyes principle (TK-1) is strictly maintained.
