@@ -326,3 +326,9 @@ NOTES: seven submitted 0050-09-architecture for review.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-09-architecture.
+
+
+## 0050-09-architecture-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on integration review.
