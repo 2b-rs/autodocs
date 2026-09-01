@@ -366,3 +366,14 @@ NOTES: Dispatched integration of 0050-09.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-09-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the review and integration. Merged to main in agent-inbox.
+
+## 0050-08
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched terminal integration task for 0050.
