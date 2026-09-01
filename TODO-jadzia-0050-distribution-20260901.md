@@ -136,3 +136,9 @@ NOTES: Dispatched integration of 0050-03.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-04
+OFFERED: priority 1: worf, priority 2: seven
+STATUS: OPEN
+NOTES: Dispatched supervisor typed drain/deadline escalation.
