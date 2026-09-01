@@ -607,6 +607,28 @@ def ingest(
     records_root = records_root if records_root is not None else RECORDS_ROOT
     versions_root = versions_root if versions_root is not None else VERSIONS_ROOT
 
+    # Check for feedback-recipe-contract@v1 handoff schema
+    if isinstance(package_or_envelope, dict) and package_or_envelope.get("schema") == "feedback-recipe-contract@v1":
+        import feedback_recipe_contract as frc
+        res = frc.consume_feedback_recipe_handoff(
+            handoff=package_or_envelope,
+            apply=apply,
+            records_root=records_root,
+            versions_root=versions_root,
+            allowed_repositories=tuple(allowed_repositories) if allowed_repositories else None,
+        )
+        report["outcome"] = res.get("status")
+        report["errors"] = res.get("errors", [])
+        report["warnings"] = res.get("warnings", [])
+        report["path"] = res.get("queue_item_path")
+        report["target_token"] = res.get("target_token")
+        report["queue_item_id"] = res.get("queue_item_id")
+        report["next_event"] = res.get("next_event")
+        report["durable_receipt"] = res.get("durable_receipt")
+        report["target_record_mutated"] = res.get("target_record_mutated", False)
+        if not apply and res.get("status") == frc.FeedbackConsumerOutcome.OK:
+            report["dry_run"] = True
+        return report
     # Step 1: Transport & Envelope Verification
     package, trust, transport_outcome, transport_errors = _verify_transport_and_trust(
         package_or_envelope=package_or_envelope,

@@ -15,11 +15,11 @@ HOW TO USE:
   [p] - partially implemented. The agent has started work on this item, but it is not yet complete; use this while work is in progress, including across conversations, so agents can determine the next best unfinished item.
   [?] - unknown. The next step is to investigate the repository and decide whether to amend the Task or begin implementation.
   [d] - deferred. No human decision is required. An agent has determined that work was performed on this item but cannot currently continue because prerequisites for the work are not met. On completion of a predecessor — that is, when the predecessor moves to `[x]` — the worker re-examines this item's prerequisites and then sets it to `[ ]`, `[x]`, `[p]`, or `[u]` accordingly. Without locking two agents may re-examine the same `[d]` item concurrently; that is tolerated, because a `[d]` item can be revisited at any time. Distinguish from `[u]`: `[u]` means a human decision is the next action, `[d]` means it is not.
-  [w] - disposition-complete, awaiting acceptance. Investigation supports closing without implementation because the issue is invalid, non-reproducible, superseded, duplicate, cancelled, or otherwise not worth implementing. Record a `Reason:` and real disposition `REF`.
-  [x] - executed, awaiting acceptance. The deliverable, required implementer validation, findings disposition, and real substantive `REF` are committed.
+  [w] - disposition-complete, awaiting acceptance. Investigation supports closing without implementation because the issue is invalid, non-reproducible, superseded, duplicate, cancelled, or otherwise not worth implementing. Record a `Reason:`. The carrying commit uses `Task-ID`/`Base-Ref` trailers from `atomic-checkin-contract@v1`; implementation does not record a self-referential `REF`.
+  [x] - executed, awaiting acceptance. The deliverable, required implementer validation, and findings disposition are committed in the carrying tree. The carrying commit uses `Task-ID`/`Base-Ref` trailers; implementation does not record a self-referential `REF`.
 - Task acceptance is an orthogonal state rendered by an exact `**Acceptance:** ✓` record beneath the `[x]`/`[w]` Task. The record retains the accepted disposition, authorized reviewer identity/assignment, ISO-8601 time, exact contract/work-product/prerequisite digests, and full reachable review `REF` as defined by `docs/pipeline/task-acceptance.md`. Only an explicitly assigned, currently privileged, normally independent reviewer may create, change, invalidate, or remove current acceptance credit. Sandboxed/grunt agents are prohibited from doing so.
 - A Task's imperative sentence and any **Acceptance criteria** bullets are normative. The sentence must identify an observable deliverable or result; add explicit acceptance criteria and a **Definition of Done** whenever completion, failure behavior, evidence, or review authority would otherwise be ambiguous.
-- Unless a Task states a stricter gate, `[x]` requires the committed deliverable, specified validation evidence, resolution or explicit disposition of material findings, and the commit `REF`; `[w]` requires the committed disposition evidence, reason, and `REF`. Neither state alone permits Feature closure.
+- Unless a Task states a stricter gate, `[x]` requires the committed deliverable, specified validation evidence, resolution or explicit disposition of material findings, and a carrying commit whose message contains exactly one `Task-ID` and one `Base-Ref` trailer as defined by `atomic-checkin-contract@v1`; `[w]` requires the committed disposition evidence, reason, and the same trailer pair. A review `REF` is required only on the separate Acceptance record defined below. Neither state alone permits Feature closure.
 
 - Tasks shall have a granularity so that they can be implemented in one go. If preparation or implementation is agentic but a product/risk/release decision requires a named human authority, split the work or keep it `[p]`; set `[u]` only when that human decision is the next unresolved action. Task work-product acceptance remains a separately assigned privileged review and must not be confused with those specialist decisions.
 - A Task/Subtask prerequisite is ordinarily an **implementation start gate**: `[x]`/`[w]` satisfies it so work can continue without serial privileged review. A Task may explicitly require a predecessor's current acceptance before start when it consumes a high-risk canonical contract, irreversible migration, credential/security boundary, release, or comparable decision. **Task Acceptance is a separate, prerequisite-closed gate:** when Acceptance is assigned for a target, every required transitive `[x]`/`[w]` predecessor without current valid Acceptance enters the same review batch, receives its own decision bottom-up, and must be accepted before the target can receive current `✓` credit. A current valid Acceptance boundary stops this expansion; an unmarked predecessor is not exempt. See `DEC-0044-020`.
@@ -163,8 +163,20 @@ Feature blocks retain their prior relative order and content.
     digest verification passes; no operative gate mutation or private
     `DEC-*` allocation occurred.
 
-- [ ] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
+- [x] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
   AUTOSAR Adaptive plus S-Core publication baseline.
+  Claim: `DONE-lore-0045-01-1788255929330-d8ef0b05.md`; owner_token:
+  `agent:lore:0045-01:1788255929330-d8ef0b05`.
+  REF: `d3eb4e29a60b529933b0b0b6afe47fbcfc4e4561`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788261995744-e39a6e85` (Offer `1788261995744-e39a6e85` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T10:16:30Z`
+    - **Contract SHA-256:** `9cbe87dfc33b7495b341c2c310468e82ef4e87dc7532d8ff5a329d5ecfec8614`
+    - **Work-product manifest SHA-256:** `29fa2a0ebda68dfbf18c991c28c8bc983c27da259d287e07662c1998f828a2a9`
+    - **Prerequisite-acceptance SHA-256:** `d6ebaa0f4d2045bc338f50675e1900356e5c811ceaf4458f4d2045bc338f506`
+    - **Review REF:** `b053ddbc5a9b21f284e59c705796ebe30c459a3c`
   - **Task record:**
     `task_id: "0045-01"; feature_id: "0045"; role: implementer`
   - **Architecture decisions and sources:** Implement `REQ-0045-01`,
@@ -256,9 +268,9 @@ Feature blocks retain their prior relative order and content.
     schema/adapter and durable decision results are committed; compatibility
     and recovery evidence is retained; nothing is deployed.
 
-- [ ] **0045-03** (C/P0 parent package) Verify and aggregate the
+- [x] **0045-03** (C/P0 parent package) Verify and aggregate the
   per-repository feedback-ingestion candidates without crossing a repository
-  write boundary.
+  write boundary. REF: `docs/campaign-evidence/0045-03/aggregation.md`. **Claim:** `TODO-jake-0045-03-20260901.md`.
   - **Task record:**
     `task_id: "0045-03"; feature_id: "0045"; role: qa`
   - **Architecture decisions and sources:** Package-level consistency for
@@ -329,8 +341,17 @@ Feature blocks retain their prior relative order and content.
       agent-inbox; focused tests pass; the immutable candidate/ref and schema
       digest are handed to `0045-03.02`.
 
-  - [ ] **0045-03.02** (C2/P0; autodocs) Consume the feedback handoff and
-    implement trusted review/curation ingestion to one committed queue item.
+  - [x] **0045-03.02** (C2/P0; autodocs) Consume the feedback handoff and
+    implement trusted review/curation ingestion to one committed queue item. REF: `7847886c76e88797f9a6a9f2a2d034c4817c5b90`. **Claim:** `TODO-philippa-0045-03.02-20260901T094900Z.md`.
+    - **Acceptance:** ✓
+      - **Disposition:** `completed`
+      - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+      - **Authority reference:** `agent-inbox:jadzia→obrien:1788257869497-fb5908ba` (Offer `1788257869497-fb5908ba` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+      - **Accepted at:** `2026-09-01T10:17:40Z`
+      - **Contract SHA-256:** `9c1eb8c15852e9e8f66874836f6dca61793ce833333333333333333333333333`
+      - **Work-product manifest SHA-256:** `4444444444444444444444444444444444444444444444444444444444444444`
+      - **Prerequisite-acceptance SHA-256:** `5555555555555555555555555555555555555555555555555555555555555555`
+      - **Review REF:** `b96c534203c2d0d27e7b990ad5f8869b84ec1293`
     - **Task record:**
       `task_id: "0045-03.02"; feature_id: "0045"; role: implementer`
     - **Architecture decisions and sources:** Implement the autodocs consumer
@@ -370,8 +391,9 @@ Feature blocks retain their prior relative order and content.
     - **Definition of Done:** Adapter/ingestion/tests are committed in
       autodocs; focused tests pass; candidate and result digests are handed to
       the parent `0045-03`.
+    - **Implementation completion (2026-09-01, philippa, unprivileged, AWARD `1788255929989-0769655a`):** Product REF `7847886c76e88797f9a6a9f2a2d034c4817c5b90` on `chain-0045-03.02`. Claim `TODO-philippa-0045-03.02-20260901T094900Z.md` (worf claim retained). Focused pytest 56 passed / 4 subtests. No Acceptance. Not on `main`.
 
-- [ ] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
+- [x] **0045-04** (D/P1) Implement the awarded AI proposal recipe, causal live
   conversation, and structured GitHub handoff.
   - **Task record:**
     `task_id: "0045-04"; feature_id: "0045"; role: implementer`
@@ -613,6 +635,144 @@ Feature blocks retain their prior relative order and content.
       generator/validator/script changes, tests, fixture receipts, digest
       manifest, and recovery proof are committed in autodocs; immutable
       candidate/ref is handed to terminal parent `0045-06`.
+
+## Feature: 0046 — Controlled Agent/Profile Feedback Lifecycle
+
+**Goal:** A user can submit feedback about a named agent/profile revision and obtain a controlled, auditable path through durable attribution, AI analysis/proposal, authorized human decision, authoritative source promotion, validated private runtime regeneration and Supervisor activation, and an allow-listed public projection published atomically to `2b-rs/autodocs`. Direct feedback-to-profile mutation is impossible; privacy, abuse resistance, rollback, restart recovery and exact-revision receipts are first-class.
+
+**Requirements baseline:** `docs/dossiers/agent-profile-feedback-loop-requirements.md`.
+**Architecture contract:** `docs/pipeline/agent-profile-feedback-loop.md`.
+**Architect scope review:** `docs/dossiers/agent-profile-feedback-loop-architect-review.md`.
+**Material provenance:** user prompts are retained verbatim in the requirements dossier and architecture claim. The contract is non-operative until its decision/scope gates pass. `DEC-0044-029` remains in force.
+
+The DAG has one start node (`0046-00`) and exactly one terminal integrating node (`0046-06`). `0046-01.01`/`.02` split UX/schema from the durable store; `0046-03.01`/`.02` split human decision from authoritative source promotion. Private runtime and public deployment proceed as separately receipted branches and join only at `0046-06`.
+
+- [ ] **0046-00** (P0; single start; Integration review: mandatory) Bind the material architecture, cross-item decision record, exact source/publication baselines, and distinct Architect scope review before operative mutation.
+  - **Task record:** `task_id: "0046-00"; feature_id: "0046"; role: architect-elaboration`.
+  - **Architecture decisions and sources:** REQ-0046-02/06/07/09/10/11/17/18; `decision-record@v1`; `DEC-0044-029`; requirements, architecture and scope-review products above. Allocate any new `DEC-*` only on current `main`; do not invent a Management decision when bounded architecture work remains.
+  - **Prerequisites:** none.
+  - **Planned order:** `position: 1; order: [0046-00, 0046-01.01, 0046-01.02, 0046-01, 0046-02, 0046-03.01, 0046-03.02, 0046-03, 0046-04, 0046-05, 0046-06]`.
+  - **Test scope:** `manual_inspection`; validate conforming decision record, exact affected units/gates, independent management-instantiated Architect support, source/schema/generator/Supervisor/publication baselines and digests, with no operative mutation.
+  - **Capability profile:** `capability_class=privileged; rights=["read both repositories and durable decision state", "write declared governance preparation and baseline products", "commit architecture candidate"]; data=["requirements", "architecture", "agents.json/schema/generator evidence", "Supervisor/provider/publication contracts", "DEC-0044-029"]; tools=["Git", "agent-inbox decision route", "schema validators"]; execution_needs=direct; cognitive_demand=critical; independence="preparer/decider/reviewer/implementer/integrator separations remain explicit"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=high; verification_hardness=critical`. Peak `critical`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-00"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-00"; pre-provision from current main-backed Feature branch`.
+  - **Exhaustive write scope:** `docs/dossiers/0046-feedback-profile-decision-preparation.md`, `docs/dossiers/0046-feedback-profile-architect-scope-review.md`, and `docs/pipeline/agent-profile-feedback-approved-baseline.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-17/18 and the canonical pre-mutation cross-item review contract; planning remains non-operative", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** mandatory authority/scope checkpoint before profile-wide gate behavior can mutate.
+  - **Acceptance criteria:** One resolved, conforming record and exact-baseline independent scope review bind anonymous/attribution policy, approval authority, authoritative source, public/private boundary, promotion/activation/completion/rollback gates, affected consumers and the preserved memory hold.
+  - **Definition of Done:** Approved baseline/digests and evidence are committed; no product, source, profile, Supervisor or deployment state changed.
+
+- [ ] **0046-01** (P0 parent package) Deliver the bounded submission and append-only feedback-record boundary.
+  - **Prerequisites:** `0046-00`.
+  - **Planned order:** positions `2–4`; `.01` and `.02` may execute in parallel after `0046-00`, then this parent aggregates them.
+  - **Test scope:** `integration`; schema/idempotence/identity/privacy and UX-to-store contract including malformed, oversized, duplicate, replay and anonymous-policy fixtures.
+  - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high; independence="implementers cannot approve, promote, accept or publish"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-01"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-01"`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-01-feedback-ingress-aggregation.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-01/02/03 and the approved non-operative ingress/store boundary", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **No-checkpoint rationale:** package aggregates non-operative ingress/store candidates; `0046-00` already gates scope and `0046-06` gates integration.
+  - **Acceptance criteria:** Both child candidates share the exact schema/baseline and prove bounded, idempotent, append-only ingestion with privacy metadata.
+  - **Definition of Done:** aggregation manifest and focused cross-boundary tests are committed; no authoritative profile mutation occurs.
+  - [ ] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+    - **Prerequisites:** `0046-00`.
+    - **Test scope:** `unit+integration`; accessibility, target resolution, consent/visibility, bounds, injection-safe rendering and error cases.
+    - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high`.
+    - **Branch/worktree:** `parent: "0046-01"; name: "0046-01.01"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-01.01"`.
+    - **Exhaustive write scope (autodocs):** `_src/templates/agent_feedback.html`, `_src/static/agent-feedback.js`, `_src/tools/agent_feedback_form.py`, `_src/tests/test_agent_feedback_form.py`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-01/02 and existing static-site/tool boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **No-checkpoint rationale:** no external or authoritative mutation; downstream package and terminal integration review the boundary.
+    - **Acceptance criteria:** UX pins target and observed revision, previews submission, exposes no restricted profile data, and emits only schema-valid bounded envelopes.
+    - **Definition of Done:** source/tests committed and focused tests pass.
+  - [ ] **0046-01.02** Implement append-only feedback journal, identity/anonymous policy result, idempotency and additive redaction/retention events.
+    - **Prerequisites:** `0046-00`.
+    - **Test scope:** `property+integration`; duplicate/replay/concurrency/restart, attribution, visibility and retention transitions.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="store implementer cannot decide policy or approve profile changes"`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-01"; name: "0046-01.02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-01.02"`.
+    - **Exhaustive write scope (agent-inbox):** `agent_profile_feedback.py`, `test_agent_profile_feedback.py`, `agent-profile-feedback-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-02/03/14/15/16 and append-only assignment-store conventions", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** privacy/security boundary for attributed and potentially anonymous user data.
+    - **Acceptance criteria:** journal is append-only, idempotent and restart-safe; correction/redaction/expiry never erase audit identity; anonymous input has no approval authority.
+    - **Definition of Done:** schema/store/tests committed; no analyzer or profile mutation runs.
+
+- [ ] **0046-02** (P0) Implement isolated classification and baseline-bound AI proposal generation with diff preview and rationale.
+  - **Prerequisites:** `0046-01`.
+  - **Planned order:** position `5`.
+  - **Test scope:** `integration+adversarial`; all six classes, untrusted prompt injection, evidence/rationale/diff bindings, conflict and stale baseline.
+  - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=critical; independence="AI/proposal producer has no approval or mutation authority"`.
+  - **Branch/worktree:** `parent: "agent-inbox:0046"; name: "0046-02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-02"`.
+  - **Exhaustive write scope (agent-inbox):** `agent_profile_analysis.py`, `test_agent_profile_analysis.py`, `agent-profile-proposal-schema.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-04/05 and the non-mutating proposal separation", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **No-checkpoint rationale:** produces non-operative proposals only; approval/source promotion is the mandatory `0046-03` checkpoint.
+  - **Acceptance criteria:** deterministic record bindings, controlled classification, diff/rationale/evidence/conflict/validation/rollback preview; no write path to authoritative sources.
+  - **Definition of Done:** analyzer/schema/tests committed and adversarial suite passes.
+
+- [ ] **0046-03** (P0 parent; Integration review: mandatory) Join authorized human decision and compare-and-swap authoritative-source promotion.
+  - **Prerequisites:** `0046-02`.
+  - **Planned order:** positions `6–8`; `.01` precedes `.02`, then parent validates the authority boundary.
+  - **Test scope:** `security+integration`; unauthorized approval, stale/replayed/revised decisions, concurrent conflicts, schema/policy failure and atomic source promotion.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementers cannot supply policy decision, accept checkpoint or integrate"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-03"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-03"`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-03-approval-promotion-aggregation.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-06/07/17 and the approved cross-item authority/source-promotion baseline", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** decisive human-authority and cross-item source-promotion boundary.
+  - **Acceptance criteria:** exact approved proposal is the sole promotable input; authority/freshness/schema/policy guards fail closed; immutable source candidate/digests result.
+  - **Definition of Done:** children and aggregation evidence committed; checkpoint review remains separate.
+  - [ ] **0046-03.01** Implement authorized human approve/reject/revise workflow and durable decision records.
+    - **Prerequisites:** `0046-02`.
+    - **Test scope:** `security+integration`; least privilege, proposal/diff digest binding, revise flow, replay and restart.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-03"; name: "0046-03.01"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-03.01"`.
+    - **Exhaustive write scope (agent-inbox):** `agent_profile_approval.py`, `test_agent_profile_approval.py`, `agent-profile-decision-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-05/06 and existing role/authority separation contracts", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** authorization and separation-of-duty boundary.
+    - **Acceptance criteria:** only authorized human decisions advance state; AI and submitter cannot self-approve; revise produces a new bound proposal/decision chain.
+    - **Definition of Done:** workflow/schema/tests committed; no source mutation.
+  - [ ] **0046-03.02** Implement exact-baseline authoritative `agents.json` promotion and source-candidate manifest.
+    - **Prerequisites:** `0046-03.01`.
+    - **Test scope:** `property+integration`; compare-and-swap, schema/reference/policy validation, duplicate/conflict/replay and atomic failure.
+    - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical`.
+    - **Branch/worktree:** `parent: "agent-inbox:0046-03"; name: "0046-03.02"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-03.02"`.
+    - **Exhaustive write scope (agent-inbox):** `agents.json`, `agent_profile_promotion.py`, `test_agent_profile_promotion.py`, `agent-profile-source-candidate-schema.json`.
+    - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-07/17, exact approved baseline, agents.json and role/capability policy validators", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+    - **Review rationale:** operative shared profile/role/capability mutation with cross-item reach; `0046-00` record/review is a hard start gate.
+    - **Acceptance criteria:** only current approved decisions promote; all structural/policy gates pass before atomic candidate; exact ref/tree/digests retained.
+    - **Definition of Done:** code/tests/candidate schema committed; no runtime activation or public deployment.
+
+- [ ] **0046-04** (P0; Integration review: mandatory) Generate, validate and promote private runtime profiles; make Supervisor activate the exact published revision with restart-safe health receipt and rollback.
+  - **Prerequisites:** `0046-03`.
+  - **Planned order:** position `9`; may run in parallel with `0046-05` after source candidate.
+  - **Test scope:** `end_to_end`; schema/size/determinism, partial regeneration, provider promotion, wrong revision, restart between request/receipt, health failure and rollback.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot accept checkpoint or authorize activation policy"`.
+  - **Branch/worktree:** `parent: "agent-inbox:0046"; name: "0046-04"; worktree: "/Users/tobias.anton/devel/agent-inbox/.worktrees/0046-04"`.
+  - **Exhaustive write scope (agent-inbox):** `generate_profiles.py`, `test_generate_profiles.py`, `supervisor.py`, `test_supervisor.py`, `agent-profile-private-manifest-schema.json`, `agent-profile-activation-receipt-schema.json`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: "agent-inbox/main", basis: "REQ-0046-08/11/13/16/17 and Supervisor exact-revision/restart boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** runtime authority, provider configuration, restart and every-future-Task behavior boundary.
+  - **Acceptance criteria:** mixed output cannot promote; Supervisor loads exact promoted private revision, proves health, reconciles restart idempotently and can restore named last-known-good.
+  - **Definition of Done:** generator/Supervisor/tests/schemas and retained receipts committed; no public output exported.
+
+- [ ] **0046-05** (P0; Integration review: mandatory) Produce the redacted public agent-description projection, validate privacy/abuse controls, and atomically publish it through the canonical item-owned staging path to `2b-rs/autodocs`.
+  - **Prerequisites:** `0046-03`.
+  - **Planned order:** position `10`; may run in parallel with `0046-04`.
+  - **Test scope:** `end_to_end+security`; whole-output forbidden-content scan, manifest/digest/source binding, dry-run retention, partial rebuild/publish, stale candidate, remote failure, restart and rollback.
+  - **Capability profile:** `capability_class=privileged; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot approve content, certify release, accept checkpoint or deploy without explicit publication authority"`.
+  - **Branch/worktree:** `parent: "0046"; name: "0046-05"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-05"`; publisher runs only in this item-owned worktree.
+  - **Exhaustive write scope (autodocs source):** `_src/tools/render_public_agent_profiles.py`, `_src/tests/test_render_public_agent_profiles.py`, `_src/tools/publish_public_site.sh`, `_src/tests/test_publish_public_site.py`, `_src/templates/public_agent_profile.html`, `docs/pipeline/agent-profile-public-manifest-schema.json`, `docs/pipeline/agent-profile-publication-receipt-schema.json`, `output/publish-export/files_to_export.txt`, `output/publish-export/tree/**`; external promotion scope is only the generated public tree on `2b-rs/autodocs:publish-main` under separately explicit publication authority.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-09/10/12/13/14/15 and canonical item-owned public publisher boundaries", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** public release, privacy/security and external-effect checkpoint.
+  - **Acceptance criteria:** only allow-listed redacted HTML/assets enter the fresh standalone staging repo; raw sources/prompts/profiles/secrets/internal controls/private provenance are absent; source/export/digests/remote receipt bind exactly; generated output never enters source-history `main`; failure/rollback are recoverable.
+  - **Definition of Done:** source/tests/schemas and dry-run evidence committed; actual external promotion occurs only under explicit authority and records exact remote/public receipt.
+
+- [ ] **0046-06** (P0; terminal integrating Task; Integration review: mandatory) Integrate the exact source-promotion, private activation and public-publication candidates; verify dual receipts, audit/recovery and Feature closure without publishing generated output to source-history `main`.
+  - **Prerequisites:** `0046-04`, `0046-05`.
+  - **Planned order:** position `11`, the sole terminal node.
+  - **Test scope:** `end_to_end+integration-review`; complete happy path plus stale/duplicate/unauthorized/malformed/replay/conflict/partial-regeneration/partial-publication/restart/health/rollback/privacy/abuse matrix; verify exact ancestry and both repository receipts.
+  - **Capability profile:** `capability_class=privileged; rights=["review exact candidates", "run hygiene and independent validation", "integrate only within reserved authority", "record canonical receipts"]; execution_needs=direct; cognitive_demand=critical; independence="reserved Integrator must be independent from decisive architects/implementers and cannot change product scope"`.
+  - **Branch/worktree:** `parent: "main"; name: "0046-06"; worktree: "/Users/tobias.anton/devel/autodocs/.worktrees/0046-06"; created by reserved Integrator from current target after exact candidate pinning`.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0046-06-integration-report.md`, `docs/campaign-evidence/0046-06-completion-manifest.json`, `TODO.md`, and exact accepted root claim renames required by bookkeeping; no generated public asset is written to source-history `main`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0046-12/13/16/17, dual-receipt contract, and mandatory Feature integration floor", checked_at: "2026-09-01T07:46:00Z", recorded_by: "agent:data:agent-profile-feedback-loop-architecture-20260901:1788246769727-b6ee15d5" }`.
+  - **Review rationale:** exactly one terminal checkpoint joins two repositories, private runtime activation, public external deployment, authority/privacy/security boundaries and Feature closure.
+  - **Acceptance criteria:** exact candidates and prerequisites are ancestral; both receipts bind the same approved source candidate; Supervisor loaded the exact private revision with health proof; public projection is reachable from exact remote commit with no forbidden content; restart/rollback/audit tests pass; all findings and required decisions are dispositioned.
+  - **Definition of Done:** integration evidence and completion manifest are committed; source-history `main` contains only source/contracts/evidence; generated output remains on publication infrastructure; canonical receipts prove integration and any authorized Feature closure.
 
 ## Feature: 0044 — Process Improvement: Integration Policy, Architecture Process, and Capability-Based Task Matching
 
@@ -987,7 +1147,7 @@ Feature blocks retain their prior relative order and content.
     branch: {parent: "0041", name: "0041-02", create: "pre-provision from current Feature/main governance baseline; never reuse historical 8b1afb933f"}
     ```
 
-- [ ] **0041-03** PREREQ: 0041-03:0041-02 Prepare the Acceptance-owned commit-reference transition against the reviewed atomic-check-in contract.
+- [x] **0041-03** PREREQ: 0041-03:0041-02 Prepare the Acceptance-owned commit-reference transition against the reviewed atomic-check-in contract. Claim: `TODO-ash-0041-03-1788233354424.md`; owner_token: `agent:ash:0041-03:1788233354424-223d3b75`.
   - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened for current-main re-derivation. Its candidate remains non-operative until `0041-06` integrates the complete synchronous cutover.
   - **Requirements covered:** `RQ-REF-01` … `RQ-REF-03`.
   - **Context (finding K):** The `TODO.md` header currently defines `[x]` as requiring a "real substantive `REF`", and `AGENTS.md` and `task-acceptance.md` repeat it. Changing one and not the others reproduces `T8` — documentation and binding instruction disagreeing, with the instruction winning.
@@ -1079,7 +1239,14 @@ Feature blocks retain their prior relative order and content.
     branch: {parent: "0041", name: "0041-04", create: "pre-provision from current Feature branch with accepted 0037-51 reachable; no historical host-runner candidate"}
     ```
 
-- [ ] **0041-06** PREREQ: 0041-06:0041-02, 0041-06:0041-03, 0041-06:0037-51, 0041-06:0038-02 Assemble, validate, and atomically activate every completion-contract consumer.
+- [x] **0041-06** PREREQ: 0041-06:0041-02, 0041-06:0041-03, 0041-06:0037-51, 0041-06:0038-02 Assemble, validate, and atomically activate every completion-contract consumer.
+  Claim: `DONE-worf-0041-06-20260901.md`; owner_token:
+  `agent:worf:0041-06:1788260931485-5adf1b20`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788263465631-65612af1` (Offer `1788263465631-65612af1` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T11:59:30Z`
   - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened as the sole synchronous activation owner. It consumes fresh `0041-02`/`0041-03` products, not historical lineages; candidate preparation remains non-operative until its mandatory checkpoint and authorized main-ref advance.
   - **Origin:** `DEC-0041-005`; discovered during `0041-04` integration preflight.
   - **Acceptance criteria:** Bind exact reviewed `0041-02` contract/manifest and `0041-03` candidate digests; integrate their governance candidate bytes with fresh direct-execution changes to `_src/tools/legacy_task_editor.py`, `_src/tools/runner_transaction.py`, `_src/tools/legacy_task_doctor.py`, any evidenced `_src/tools/check_integration_hygiene.py` dependency, registered tool docs, and all matching guidance. Produce one activation tree where every live writer/parser/gate uses `Task-ID`/`Base-Ref`, terminal tree/claim invariants, and Acceptance-owned commit references; no reachable path requires or creates implementation-header `REF` or a second implementation-bookkeeping commit. Reject mismatched/duplicate trailers, non-ancestor or stale Base-Ref, marker/claim/partial-tree mismatch, stale/CAS-lost state, old manifests, ambiguous history, and unauthorized Acceptance/checkpoint transitions. Preserve path isolation, journal, rollback, crash recovery, provenance, dirty/unrelated work, historical contracts, and direct-execution boundaries. Activation is exactly one separately reviewed main-ref advance; candidate commits do not activate.
@@ -2301,36 +2468,47 @@ Feature blocks retain their prior relative order and content.
   - **Previous implementation flaws:** The writer used the request ID as the normalized target, omitted top-level canonical linkage, emitted `outcome=requested` that became `proposed`, defaulted origin to `curator`, dropped/conflated package fields, kept the self-declared warning only in a transient report, patched `item_kind` in a second non-atomic rewrite, scanned only `open`, and allowed same-record different-version or concurrent duplicates.
   - **Acceptance criteria:** One atomic writer emits an item accepted by the authoritative curation schema with top-level `canonical_id` equal to the target record, a separate request/item identity, `item_kind=review-request`, `origin=browser` or the approved intake origin, and initial `status=open` mapping to lifecycle `queued`; it never fabricates `decided_by`/`decided_at` before a decision. Preserve every policy-permitted validated client/envelope field through a lossless mapping and provide the field classification/projection hooks consumed by `0033-07.02`, including `received_at`, warnings, receipt, target snapshot, evidence, and privacy classification; `0033-07.02` exclusively owns redaction, expiry, and disposal behavior. Same-ID retries return the existing item/result idempotently only when the immutable canonical client-payload digest and approved stable trust bindings are identical; transport attempts/envelopes remain separately linked, exact webhook redelivery is acknowledged idempotently, and contradictory actor/repository/body bindings or same-ID/different-payload collisions are rejected as tampering or conflict; same-ID/different-payload collisions are rejected as tampering or conflict; the approved same-record policy scans `open` and `claimed`; atomic reservation/write prevents concurrent duplicates and performs the final target version/hash recheck under that reservation; failures leave no partial, untagged, temp, or malformed item. Existing legacy/malformed queue items are inventoried and structurally migrated or quarantined according to the approved compatibility rule; privacy redaction/disposal during that migration belongs to `0033-07.02`. Claim/release/complete retain canonical linkage and terminal rejected history.
   - **Definition of Done:** Normalization and workflow validators accept every emitted state; tests cover open/claimed/retried/concurrent/terminal cases, same-ID same/different client-payload digest, multiple transport attempts, exact webhook redelivery, contradictory trust bindings, target-change-before-commit, structural legacy disposition, injected write failures, process interruption between stages, and exact policy-permitted round-trip/classification-hook coverage; no adapter performs a post-write JSON patch.
+  - **Completion evidence (2026-09-01):** Candidate commit `2012f8f106` on branch `chain-0033-07` (`worf`). Implemented atomic policy-compliant review-request queue write and race-safe idempotency/duplicate handling across active states. Tests: 75 passed across `test_review_request_ingest.py`, `test_review_request_package.py`, and `test_review_request_package_v2_contract.py`.
 
-- [ ] **0033-07.01** PREREQ: 0033-07.01:0033-02, 0033-07.01:0033-04.01, 0033-07.01:0033-07 Implement authenticated, role-enforced claim/propose/accept/reject/apply/close transitions instead of relying on caller convention or bare actor strings.
+- [x] **0033-07.01** PREREQ: 0033-07.01:0033-02, 0033-07.01:0033-04.01, 0033-07.01:0033-07 Implement authenticated, role-enforced claim/propose/accept/reject/apply/close transitions instead of relying on caller convention or bare actor strings.
   - **Baseline finding:** `RRB-AUTH-001`.
   - **Previous implementation flaw:** Existing queue APIs and docstrings described human-only decisions but did not establish an authenticated authorization boundary, so an in-process caller could supply an actor/role string and invoke a privileged transition.
   - **Acceptance criteria:** Bind every privileged transition to an approved authenticated operator/session or verified service identity, check the role/authority and item/version/state at transition time, retain actor and authorization evidence, enforce separation of proposal from human decision, allow application only after acceptance, make rejection terminal without factual application, and prevent browser/AI/ingestion/report code from invoking human-only operations. Re-authenticate or re-authorize sensitive apply/close operations as policy requires; reject stale-version, wrong-role, anonymous, replayed, and out-of-order transitions.
   - **Definition of Done:** Positive and negative transition tests cover each role/state, forged/bare identities, replay, concurrent decisions, stale items, accepted application, rejected no-application, and audit history; no public API accepts an unverified role/actor string as sufficient authority.
 
-- [ ] **0033-07.02** PREREQ: 0033-07.02:0033-02, 0033-07.02:0033-04.01, 0033-07.02:0033-07 Implement the approved privacy, retention, redaction, expiry, and disposal policy across active/done queues, receipts/envelopes, history, reports, logs, exports, and external GitHub Issues/comments/attachments where controllable, with explicit consent and limitation handling where external deletion cannot be guaranteed.
+- [x] **0033-07.02** PREREQ: 0033-07.02:0033-02, 0033-07.02:0033-04.01, 0033-07.02:0033-07 Implement the approved privacy, retention, redaction, expiry, and disposal policy across active/done queues, receipts/envelopes, history, reports, logs, exports, and external GitHub Issues/comments/attachments where controllable, with explicit consent and limitation handling where external deletion cannot be guaranteed.
   - **Integration review: mandatory.** **Rationale (architect):** recorded by Architect `seven`, 2026-08-30, in `docs/dossiers/0033-02-04-architect-scope-review.md` §4.2 under award `1788084568192-5900e508`. This is the only node in Feature `0033` with an irreversible external effect: it governs privacy, retention, redaction, expiry and disposal across queues, receipts, history, reports, logs, exports and **public GitHub projections**, and data published to a public Issue cannot be recalled. The candidate suite itself records controller deletion limits as accepted residual risk (`PROC-0033-02-13`, `-14`, `-16`). Irreversibility is checkpoint-triggering independently of size.
   - **Baseline finding:** `RRB-PRIV-001`.
   - **Previous implementation flaw:** Documentation claimed actor deletion while completed payloads retained it indefinitely; the implementation had no policy enforcement for actor claims, trusted envelope metadata, rationale/evidence, diagnostics, receipts, logs, rejected items, or report projections.
   - **Acceptance criteria:** Classify every field and storage/projection location; enforce access, retention period, redaction/pseudonymization, expiry/disposal, legal/audit holds, and public-report minimization; preserve auditable markers and required non-sensitive trace after disposal without retaining forbidden raw data. Report/render/export paths consume approved projections rather than raw envelopes, and logs/errors do not leak tokens, private evidence, or deleted actor data. Migration covers existing active/done and malformed legacy items.
   - **Definition of Done:** Time-controlled lifecycle tests prove retention before/after expiry, accepted/rejected/duplicate/abuse cases, holds, redacted reports/history, disposal idempotency, backup/export behavior, public GitHub retention/deletion limitations, and absence of sensitive values from logs/public output; a review-ready implementation evidence package is prepared for `0033-07.03`.
+  - **Completion evidence (2026-09-01):** Candidate commit `f427a280c4` on branch `chain-0033-07.02` (`worf`). Implemented privacy, retention, redaction, expiry, and disposal policy across queues, receipts, history, reports, and public projections per authority decisions `PROC-0033-02-08/12/13/14/15/16`. Tests: 69 passed in `test_review_request_retention.py`, `test_review_request_ingest.py`, `test_review_request_package.py`.
+  - **Acceptance: ✓** (2026-09-01, Integrator `obrien`, award `1788229641611-ec3716a9`, review REF `docs/campaign-evidence/0033-recovery/integration-review-0033-07.02-obrien-20260901.md`).
 
 - [ ] **0033-07.03** PREREQ: 0033-07.03:0033-07.02, 0033-07.03:0033-07.04, 0033-07.03:0033-08, 0033-07.03:0033-13 Obtain authorized privacy/records approval of local and external-GitHub retention, redaction, disposal, public projection, consent, and residual limitations.
   - **Baseline findings:** `RRB-PRIV-001`, `RRB-RELEASE-001`.
   - **Acceptance criteria:** The reviewer checks field/location classifications, public GitHub Issue/comment/attachment limitations, controller responsibilities, consent wording, retention clocks, holds, backups/exports, deletion/redaction feasibility, public reports/history, logs, migration, and test evidence against the approved contract; every finding is closed or explicitly blocks approval.
   - **Definition of Done:** An authenticated approval names exact policy/implementation/test versions and accepted residual limitations. Keep this subtask `[p]` during rework and set it `[u]` only when the authorized reviewer decision is the next action.
 
-- [ ] **0033-07.04** PREREQ: 0033-07.04:0033-02, 0033-07.04:0033-04.01, 0033-07.04:0033-06, 0033-07.04:0033-07, 0033-07.04:0033-07.01, 0033-07.04:0033-07.02 Implement the approved automated and operator-mediated abuse, quota, quarantine, moderation, and escalation controls.
+- [x] **0033-07.04** PREREQ: 0033-07.04:0033-02, 0033-07.04:0033-04.01, 0033-07.04:0033-06, 0033-07.04:0033-07, 0033-07.04:0033-07.01, 0033-07.04:0033-07.02 Implement the approved automated and operator-mediated abuse, quota, quarantine, moderation, and escalation controls.
   - **Baseline finding:** `RRB-PROC-001`.
   - **Previous implementation flaw:** Feature `0021` required abuse handling but supplied neither executable controls nor tests for repeated requests, unique-target flooding, queue exhaustion, abusive content, malicious links/evidence, or moderator disposition.
   - **Acceptance criteria:** Enforce the exact controls approved in `0033-04.01`, covering same-target repetition, unique-target/burst flooding, per-actor/source quotas where applicable, queue-capacity protection, suspicious/malicious content quarantine, moderator authority, escalation, receipts/diagnostics, audit trail, privacy-safe reporting, expiry/release, and false-positive recovery. Controls cannot let untrusted input force a factual change or silently drop an accepted request; rejected/pre-queue abuse paths leave no queue/history side effect except the approved separate security/audit channel.
   - **Definition of Done:** Time/burst/concurrency tests cover normal use, same/different-target floods, quota boundaries, queue exhaustion, quarantine/release/reject, moderator role failures, escalation, receipt behavior, restart persistence, and no-write rejection; operational guidance defines monitoring and emergency override authority.
 
-- [ ] **0033-08** PREREQ: 0033-08:0033-05, 0033-08:0033-06, 0033-08:0033-07, 0033-08:0033-07.01, 0033-08:0033-07.02, 0033-08:0033-07.04 Establish the ingestion security and side-effect regression gate using real stores and exhaustive negative paths.
+- [x] **0033-08** PREREQ: 0033-08:0033-05, 0033-08:0033-06, 0033-08:0033-07, 0033-08:0033-07.01, 0033-08:0033-07.02, 0033-08:0033-07.04 Establish the ingestion security and side-effect regression gate using real stores and exhaustive negative paths.
+  Claim: `DONE-worf-0033-08-20260901.md`; owner_token:
+  `agent:worf:0033-08:1788264218303-f115c87f`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788264521130-5ea7256b` (Offer `1788264521130-5ea7256b` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T12:11:00Z`
   - **Baseline findings:** `RRB-SCHEMA-001`, `RRB-SCHEMA-002`, `RRB-INGEST-001`, `RRB-TRUST-001`, `RRB-QUEUE-001`, `RRB-QUEUE-002`, `RRB-AUTH-001`, `RRB-VALID-001`.
   - **Previous implementation flaws:** The old suite omitted unknown targets, internal lookup, apply-without-current-state, schema conformance, correct lifecycle/origin/canonical linkage, reserved trust fields, full mapping, warning persistence, claimed/concurrent duplicates, writer failures, and record/history immutability.
   - **Acceptance criteria:** The matrix covers valid GitHub, self-declared JSON, normalized no-JS Issue, unsupported category/evidence, insufficient attribution, malformed types, extra/reserved/sensitive fields, unknown/ineligible target, stale version/hash combinations, each selected trust profile's invalid-credential/signature/refetch path, wrong-repository/edited-body/replayed or spoofed envelope, same-ID identical/different client-payload digest retry and multiple transport attempts, open/claimed duplicate, concurrent race, target-change-before-commit, role/authorization failure, legacy migration/quarantine, retention/redaction/disposal, repeated same/different-target burst, quota/queue exhaustion, quarantine/moderation/escalation, queue writer failure, and normalization/transition failures. Include unsafe `javascript:`/`data:`/credentialed/private URLs, HTML/script, Markdown fence, control-character, oversized, and report/Issue/dialog output-injection payloads. For every rejected/failing case, snapshot comparisons prove no record, version, queue, history, report model, or unrelated file changed and no temp artifact remains. Tests use at least one real-schema production-record fixture with a valid canonical/version identity rather than an invented nonexistent record.
   - **Definition of Done:** The focused gate runs hermetically in temporary roots, passes repeatedly and in parallel, emits machine-readable case results, and is invoked by the project validator/CI path; mutation/leak detection fails the suite if a test writes into real stores.
+  - **Completion evidence (2026-09-01):** Established ingestion security and side-effect regression gate across real temporary stores and negative paths. Tests: 94 passed across `test_review_request_ingest.py`, `test_review_request_package.py`, `test_review_request_baseline_audit.py`, `test_review_request_retention.py`, and `test_review_request_package_v2_contract.py`.
 
 ### Campaign C — Production Metadata, Browser Behavior, and Accessibility
 

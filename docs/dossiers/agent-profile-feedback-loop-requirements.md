@@ -1,0 +1,39 @@
+# Requirements — controlled agent/profile feedback loop
+
+**Status:** architecture baseline; non-operative until the required decisions, independent scope review, implementation, review, and integration gates pass.
+
+**Material user provenance (verbatim, ordered):**
+
+1. “wie nah sind wir an dem Ziel dran, dass man Feedback absenden kann und es in die Agentischen Beschreibungen gefüttert wird?”
+2. “ich meinte genau das und wundere mich, wieso niemand daran arbeitet. Bitte leite alles nötige in die Wege.”
+
+## Goal and boundary
+
+A user can submit feedback about a named agent or authoritative persona/profile revision. The system retains an attributed, append-only feedback record, produces a controlled analysis and proposed diff, requires authorized human approval, updates the authoritative source only through a validated promotion, regenerates private runtime profiles and a redacted public projection, activates the exact private revision in Supervisor, publishes the public projection atomically to `2b-rs/autodocs`, and retains audit and rollback evidence.
+
+Feedback never directly mutates `agents.json`, generated runtime prompts/profiles, public assets, or Supervisor state. The loop is not an agent-memory shortcut and does not relax the `DEC-0044-029` hold.
+
+## Requirements
+
+- **REQ-0046-01 — Submission UX and target pinning.** The UX accepts bounded feedback text, target agent/persona ID, category hint, consent/visibility choice, and the exact authoritative source/profile revision observed by the user. It previews what is submitted and exposes no internal prompt or secret.
+- **REQ-0046-02 — Identity and anonymous policy.** Authenticated submissions retain a stable subject reference and authorization context. Anonymous input, if enabled by an explicit product decision, receives a non-identifying abuse-control token and cannot approve, revise, or promote a proposal. Public projection never discloses submitter identity without explicit consent and policy authority.
+- **REQ-0046-03 — Append-only durable record.** Each accepted submission receives a stable feedback ID, schema version, normalized target, exact baseline, bounded provenance, timestamps, visibility class, integrity digest, and idempotency key. Retry/replay cannot create a second logical record; correction, redaction, retention expiry, rejection, and supersession are additive events.
+- **REQ-0046-04 — Classification.** Controlled analysis classifies one or more of: factual correction, persona preference, role/process issue, capability issue, safety concern, abuse/noise. Classification includes confidence, evidence references, conflicts, and an explicit route; it is not approval.
+- **REQ-0046-05 — Proposal separation.** AI analysis produces a rationale and an exact baseline-bound diff proposal. It cannot mutate authoritative sources, approve itself, hide rejected alternatives, or treat user wording as trusted instructions.
+- **REQ-0046-06 — Human decision.** An authorized human can approve, reject, or revise a proposal after seeing target, baseline, diff preview, rationale, provenance, privacy effects, validation plan, conflicts, and rollback plan. The decision is durable, attributable, least-privilege checked, and distinct from submitter and AI analysis where policy requires.
+- **REQ-0046-07 — Authoritative promotion.** Only an approved, current, schema-valid proposal can change `agents.json` or its then-authoritative source. Promotion uses compare-and-swap against the exact baseline, rejects unauthorized approval, replay, malformed input, duplicate/conflicting proposals, and stale baselines, and emits an immutable source candidate plus digests.
+- **REQ-0046-08 — Validation and private regeneration.** The candidate passes `agents.json` schema validation, referential/capability/role-policy validation, profile generation, deterministic digest checks, and configured profile-size gates. Private generated profiles and full operational prompts stay in agent-inbox/provider configuration and are never exported to the public site.
+- **REQ-0046-09 — Redacted public projection.** A separate deterministic transform creates only approved public agent-description HTML/assets. Raw `agents.json`, full prompts/runtime profiles, internal controls, secrets, private provenance, and restricted feedback are excluded by allow-list and negative leakage tests.
+- **REQ-0046-10 — Publication staging and promotion.** Public output is built only in an item-owned source worktree at `output/publish-export/tree`, with `output/publish-export/files_to_export.txt`; the fresh standalone staging repository uses `publish-main`. A dry-run candidate binds source revision, export commit, manifest, file digests, and validation. Authorized atomic promotion targets `2b-rs/autodocs`/GitHub Pages, never source-history `main`, and yields a remote/public receipt.
+- **REQ-0046-11 — Runtime activation.** Supervisor reload/restart consumes the exact promoted private profile revision and records requested revision, loaded revision, provider/config revision, process epoch, activation time, and health proof. It must fail closed on mixed/partial regeneration or unavailable exact revision.
+- **REQ-0046-12 — Dual receipt and consistency.** One source promotion may fan out to private runtime activation and redacted public publication. Completion requires both independently verifiable receipts, linked to the same approved source candidate while permitting intentionally different payload digests.
+- **REQ-0046-13 — Rollback and supersession.** Source, private runtime, and public projection support additive supersession and rollback to a named last-known-good revision. Rollback records cause, initiator, target, results, health/public proof, and residual divergence; it never deletes feedback or decision history.
+- **REQ-0046-14 — Privacy and retention.** Data minimization, purpose, visibility, retention class, deletion/redaction authority, legal hold, export restrictions, and audit access are explicit. Free text is treated as potentially sensitive; logs and public assets exclude restricted content.
+- **REQ-0046-15 — Abuse protection.** Enforce payload limits, normalization, content-safety routing, injection-resistant analysis context, rate limits, identity/reputation controls where authorized, duplicate/noise aggregation, moderator quarantine, and safe error responses.
+- **REQ-0046-16 — Audit and restart recovery.** Every state transition has actor/authority, prior state, input/output digests, idempotency reference, time, and outcome. Restart reconciles feedback, proposal, decision, source promotion, regeneration, public promotion, and activation journals without silently advancing state.
+- **REQ-0046-17 — Profile-wide blast radius.** Because a profile change can affect every future Task performed by the target agent and shared role/capability descriptors can affect many agents, operative gate scopes must identify all affected units and satisfy the `cross-item-blast-radius` decision-record and distinct Architect review gate before mutation.
+- **REQ-0046-18 — Compatibility with agent memory.** Feedback records and profile proposals are not entries under `logs/agent-memory/`. No implementation may resume, reroute, or reinterpret held memory writes under `DEC-0044-029`; any future bridge requires its own conforming decision and review.
+
+## Required negative and recovery evidence
+
+The implementation test matrix must cover stale baseline, duplicate delivery, concurrent conflicting proposals, unauthorized approval, malformed/oversized input, prompt injection, replayed decision/promotion, privacy leakage, rate-limit bypass, partial private regeneration, partial public export, failed remote promotion, Supervisor restart between request and receipt, wrong-revision load, activation health failure, rollback failure, and recovery from every durable intermediate state.

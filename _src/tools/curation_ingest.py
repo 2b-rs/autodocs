@@ -85,6 +85,31 @@ def ingest(paket_pfad: Path, apply: bool, from_issue_body: bool) -> dict:
     bericht = {"paket": str(paket_pfad), "identity": paket.get("identity"),
                "angewandt": apply, "fehler": [], "ergebnisse": []}
 
+    if isinstance(paket, dict) and paket.get("schema") == "feedback-recipe-contract@v1":
+        import feedback_recipe_contract as frc
+        res = frc.consume_feedback_recipe_handoff(paket, apply=apply)
+        bericht["schema"] = "feedback-recipe-contract@v1"
+        bericht["status"] = res.get("status")
+        bericht["queue_item_id"] = res.get("queue_item_id")
+        bericht["queue_item_path"] = res.get("queue_item_path")
+        bericht["next_event"] = res.get("next_event")
+        bericht["fehler"] = res.get("errors", [])
+        bericht["warnungen"] = res.get("warnings", [])
+        if res.get("status") == frc.FeedbackConsumerOutcome.OK:
+            bericht["ergebnisse"].append({
+                "id": res.get("target_canonical_id"),
+                "status": "ok",
+                "pfad": res.get("queue_item_path"),
+                "dry_run": not apply,
+            })
+        else:
+            bericht["ergebnisse"].append({
+                "id": res.get("target_canonical_id") or "unknown",
+                "status": res.get("status"),
+                "fehler": res.get("errors", []),
+            })
+        return bericht
+
     bericht["fehler"] = validate_package(paket)
     if bericht["fehler"]:
         return bericht

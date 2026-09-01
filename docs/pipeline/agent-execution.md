@@ -10,11 +10,11 @@ Status: review-ready contract for Task `0037-45`.
 
 Bootstrap uses a singleton root request only for discovery. After discovery, a versioned request queue uses request IDs, owner tokens, expected base and authority epoch, read/write scopes, leases, typed allowlisted actions, digest-bound preflight, resources, cleanup, idempotence, cancellation, structured progress/logs/results, and recovery. Conflicting scopes, stale base/epoch, unknown actions, missing dependencies/credential handles, and queue/lease races reject before mutation.
 
-Allowed runner transactions are read-only discovery, focused validation, generation, external-service configuration, signing verification, path-limited substantive commit, and optional separate bookkeeping commit that injects a real prior `REF`. The legacy pending-discovery claim exception is allowed only before discovery; all later requests require runner-issued reservations. No step requires user or privileged-agent execution.
+Allowed runner transactions are read-only discovery, focused validation, generation, external-service configuration, signing verification, and path-limited implementation check-in. An implementation terminal transition is one atomic commit containing deliverables/disposition, terminal marker, finalised retained claim, validation/findings, and validated `Task-ID`/`Base-Ref` trailers; a separate implementation-bookkeeping commit is prohibited. A named non-closing validation commit may not alter the Task marker or remove its active claim. The legacy pending-discovery claim exception is allowed only before discovery; all later requests require runner-issued reservations. No step requires user or privileged-agent execution.
 
 ## Threat controls
 
 - Fail closed on absent/unknown capability class, protocol version, base, epoch, scope, action, dependency, credential handle, or digest.
 - Preserve result integrity with request binding, observed base/epoch, declared outputs, immutable result digest, and tamper rejection.
 - Recover partial mutations only through a named recovery transaction; retries reuse an idempotence key and link `retry_of`.
-- Reject overlapping writes and ensure a bookkeeping commit may reference only the actual substantive commit returned by the preceding runner result.
+- Reject overlapping writes; require an atomic terminal check-in to bind its exact pre-substantive Base-Ref and matching Task-ID trailers to the actual committed tree.

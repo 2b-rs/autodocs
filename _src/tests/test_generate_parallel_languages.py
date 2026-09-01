@@ -36,6 +36,12 @@ class FakeStat:
 
 
 class GenerateLanguagesTests(unittest.TestCase):
+    def test_publication_chooser_links_are_language_specific(self):
+        canonical = generate.publication_links("@@AUTOSAR_TREE_HREF@@ @@SCORE_TREE_HREF@@")
+        translated = generate.publication_links("@@AUTOSAR_TREE_HREF@@ @@SCORE_TREE_HREF@@", "fr")
+        self.assertEqual(canonical, "index.html eclipse-score-v0.6.0-curation-review/de/index.html")
+        self.assertEqual(translated, "index.html ../eclipse-score-v0.6.0-curation-review/fr/index.html")
+
     def test_languages_use_bounded_pool_and_report_in_input_order(self):
         calls = []
 

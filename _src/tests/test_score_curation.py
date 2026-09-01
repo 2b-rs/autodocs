@@ -169,6 +169,113 @@ class ScoreCurationLifecycleTests(unittest.TestCase):
         finally:
             curation_report.SPEC, curation_report.RECORDS_CSV, curation_report.PAGE_MODEL, curation_report.DATASET_JSON = original
 
+    def test_feedback_recipe_handoff_curation_lifecycle_integration(self) -> None:
+        """Verify that feedback-recipe-contract@v1 handoff ingests into curation-queue
+        and progresses through AI claim/proposal and curator decision without mutating record bytes."""
+        import feedback_recipe_contract as frc
+        import curation_flags as cf_module
+
+        # Redirect queue
+        orig_queue = cf_module.QUEUE
+        orig_open = cf_module.OPEN_DIR
+        orig_claimed = cf_module.CLAIMED_DIR
+        orig_done = cf_module.DONE_DIR
+        cf_module.QUEUE = self.queue
+        cf_module.OPEN_DIR = self.queue / "open"
+        cf_module.CLAIMED_DIR = self.queue / "claimed"
+        cf_module.DONE_DIR = self.queue / "done"
+
+        # Redirect records and versions
+        records_dir = Path(self.temporary.name) / "records"
+        versions_dir = Path(self.temporary.name) / "versions"
+        records_dir.mkdir(parents=True, exist_ok=True)
+        versions_dir.mkdir(parents=True, exist_ok=True)
+
+        rec_file = records_dir / "ECLIPSE/S-CORE/record" / "score_module.json"
+        rec_file.parent.mkdir(parents=True, exist_ok=True)
+        rec_data = {
+            "id": "score_module",
+            "canonical_id": "ECLIPSE/S-CORE/record/score_module",
+            "status": {"state": "valid/published"},
+            "version_id": "ECLIPSE/S-CORE/record/score_module@rel:v0.6.0#12345678",
+            "target_content_hash": "12345678",
+            "source_url": "https://github.com/eclipse-score/score/blob/v0.6.0/docs/module.md",
+        }
+        rec_bytes_initial = json.dumps(rec_data, indent=2).encode("utf-8")
+        rec_file.write_bytes(rec_bytes_initial)
+
+        payload_data = {"text": "Clarify S-Core module requirements", "suggested_change": "Update section"}
+        payload_digest = hashlib.sha256((json.dumps(payload_data, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+
+        handoff = {
+            "schema": "feedback-recipe-contract@v1",
+            "contract_version": "v1.0.0",
+            "producer_repository": "2b-rs/agent-inbox",
+            "producer_commit": "9776291cc5f02086db6be5830176301367ee565d",
+            "consumer_baseline": "5c6068537aa4a304c940ca82f62b466a08d72136",
+            "scheduling_decision_id": "dec-score-202",
+            "assignment_id": "asg-recipe-202",
+            "idempotence_key": "feedback:eclipse-score/score:issue-10:ECLIPSE/S-CORE/record/score_module",
+            "normalized_input_digest": payload_digest,
+            "status": "succeeded",
+            "recipe_name": "feedback_ingestion",
+            "trusted_envelope": {
+                "schema": "github-event-envelope@v1",
+                "event_id": "018f2e1a-9999-7c21-9a4e-2f6b1d8c9a01",
+                "event_kind": "curation_feedback",
+                "repository": "eclipse-score/score",
+                "source_id": "issue-10",
+                "record_id": "ECLIPSE/S-CORE/record/score_module",
+                "record_version": "ECLIPSE/S-CORE/record/score_module@rel:v0.6.0#12345678",
+                "sender": "contributor-bob",
+                "created_at": NOW,
+                "payload": payload_data,
+            },
+            "ingestion_result": {
+                "schema": "feedback-ingestion-result@v1",
+                "queue_item_id": "queue-item-score_module-018f2e1a",
+                "queue_item_version": "v1.0.0",
+                "deduplication_disposition": "new",
+                "submitted_record_version": "ECLIPSE/S-CORE/record/score_module@rel:v0.6.0#12345678",
+                "current_record_version": "ECLIPSE/S-CORE/record/score_module@rel:v0.6.0#12345678",
+            },
+            "durable_receipt": {
+                "receipt_id": "rcpt-asg-recipe-202",
+                "receipt_digest": "3b7d6e8b2c1f9a0e3d5b7c8a1e2f3d4c5b6a7e8f9a0b1c2d3e4f5a6b7c8d9e01",
+                "recorded_at": NOW,
+            },
+            "retry_ancestry": [],
+            "next_event": "proposal_scheduling_continuation:queue-item-score_module-018f2e1a",
+            "error_details": None,
+            "created_at": NOW,
+        }
+
+        try:
+            report = frc.consume_feedback_recipe_handoff(
+                handoff=handoff,
+                apply=True,
+                records_root=records_dir,
+                versions_root=versions_dir,
+                allowed_repositories=("eclipse-score/score",),
+            )
+            self.assertEqual(report["status"], frc.FeedbackConsumerOutcome.OK)
+            self.assertFalse(report["target_record_mutated"])
+            self.assertEqual(rec_file.read_bytes(), rec_bytes_initial)
+
+            # Check committed queue flag
+            queue_item_path = Path(report["queue_item_path"])
+            self.assertTrue(queue_item_path.exists())
+            flag_data = json.loads(queue_item_path.read_text(encoding="utf-8"))
+            c_item = curation_item.from_curation_flag(flag_data)
+            self.assertTrue(curation_item.is_conformant(c_item))
+            self.assertEqual(c_item["status"], "open")
+            self.assertEqual(c_item["canonical_id"], "ECLIPSE/S-CORE/record/score_module")
+        finally:
+            cf_module.QUEUE = orig_queue
+            cf_module.OPEN_DIR = orig_open
+            cf_module.CLAIMED_DIR = orig_claimed
+            cf_module.DONE_DIR = orig_done
+
 
 if __name__ == "__main__":
     unittest.main()
