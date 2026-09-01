@@ -343,3 +343,9 @@ NOTES: obrien completed the review and integration. Merged to main in autodocs.
 OFFERED: priority 1: worf, priority 2: data
 STATUS: OPEN
 NOTES: Dispatched implementation of 0050-09 test coverage.
+
+
+## 0050-09
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf is working on missing test coverage.
