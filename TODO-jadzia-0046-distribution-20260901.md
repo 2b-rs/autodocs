@@ -22,3 +22,9 @@ NOTES: seven started the architect elaboration/review.
 AWARDED: seven
 STATUS: CANCELLED
 NOTES: Cancelled because kira already completed it on branch 0046-00. Dispatching integration.
+
+
+## 0046-00-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0046-00 (completed by kira).
