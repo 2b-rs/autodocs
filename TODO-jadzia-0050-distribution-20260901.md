@@ -245,3 +245,9 @@ NOTES: worf submitted 0050-06 for review.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-06.
+
+
+## 0050-06-integration
+AWARDED: obrien
+STATUS: AWARDED
+NOTES: obrien accepted the priority offer.
