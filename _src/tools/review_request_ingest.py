@@ -629,7 +629,6 @@ def ingest(
         if not apply and res.get("status") == frc.FeedbackConsumerOutcome.OK:
             report["dry_run"] = True
         return report
-
     # Step 1: Transport & Envelope Verification
     package, trust, transport_outcome, transport_errors = _verify_transport_and_trust(
         package_or_envelope=package_or_envelope,

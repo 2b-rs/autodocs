@@ -4,7 +4,7 @@
 
 ## Purpose and boundary
 
-Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a real `REF` while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
+Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a carrying commit with `Task-ID`/`Base-Ref` trailers while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
 
 Task acceptance means that the exact reviewed work-product baseline satisfies the Task contract under the recorded review scope. It does **not** grant or imply product approval, architecture approval, release authorization, safety acceptance, cybersecurity/privacy residual-risk acceptance, external-service authorization, process-baseline approval, or an Automotive SPICE capability rating. The reviewer verifies that any separately required decision exists and is correctly bound; the reviewer does not manufacture that authority.
 
@@ -54,7 +54,9 @@ The minimum legacy rendering is:
     - **Contract SHA-256:** `<64 lowercase hexadecimal>`
     - **Work-product manifest SHA-256:** `<64 lowercase hexadecimal>`
     - **Prerequisite-acceptance SHA-256:** `<64 lowercase hexadecimal>`
-    - **Review REF:** `<full reachable 40-hex commit>`
+    - **Carrying commit:** `<full reachable 40-hex carrying commit>`
+    - **Review-decision commit:** `<full reachable 40-hex review evidence commit>`
+    - **Review REF:** `<full reachable 40-hex commit of the Acceptance bookkeeping record, or the review-decision commit when bookkeeping has not yet been created>`
 ```
 
 A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process.
@@ -68,7 +70,7 @@ Sandboxed/grunt agents may implement, investigate, validate, commit, prepare acc
 - asking a generic runner action to perform acceptance promotion;
 - moving a Feature to `DONE.md`;
 - setting, clearing, or moving the `Integration review: mandatory` attribute (architect authority);
-- treating privilege, a green command, or a Task `REF` as acceptance.
+- treating privilege, a green command, or an implementation carrying-commit identity as acceptance.
 
 Only a session that is both currently privileged **and explicitly assigned by the current user or registered acceptance authority to the exact review scope** may decide Task or Feature acceptance. Privilege alone is not acceptance authority. A model name, Git author, claim filename, terminal access, or role self-assertion is not proof.
 
@@ -78,12 +80,12 @@ Specialist competence is part of assignment. One reviewer need not possess every
 
 ## Implementation completion and review handoff
 
-The implementation owner completes the existing claim at `[x]` or `[w]`, commits the substantive result and bookkeeping, finalizes the implementation claim, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
+The implementation owner completes the existing claim at `[x]` or `[w]`, commits the carrying result (trailers `Task-ID` and `Base-Ref`), finalizes the implementation claim in that same tree, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
 
 The acceptance package must identify:
 
 1. Task and Feature identity, exact normative Task text, acceptance criteria, Definition of Done, and contract digest;
-2. exact substantive and bookkeeping commits, candidate tree, expected parent/base, and authority epoch;
+2. exact carrying commit, candidate tree, expected parent/`Base-Ref`, and authority epoch; Acceptance later pins the independent review-decision commit and the Acceptance bookkeeping commit;
 3. a complete authoritative work-product manifest with paths, roles, source/generated classification, media types, and digests;
 4. declared and observed direct, derived, external, and evidence scopes, including proof that unrelated work was excluded;
 5. a criterion matrix mapping every normative condition to implementation, validation, evidence, findings, and disposition;
@@ -148,7 +150,7 @@ The review has exactly one outcome for the reviewed baseline:
 - `rejected`: evidence demonstrates a material nonconformity;
 - `inconclusive`: identity, evidence, environment, scope, or authority is insufficient to determine conformity.
 
-Rejected and inconclusive attempts remain append-only evidence. Rejection normally returns the Task to `[p]` when corrective implementation work is actionable. Inconclusive normally leaves `[x]`/`[w]` awaiting corrected review evidence; it becomes `[p]` only when substantive rework is required. `[u]` remains reserved for a genuine human decision as the sole next action.
+Rejected and inconclusive attempts remain append-only evidence. Rejection normally returns the Task to `[p]` when corrective implementation work is actionable. Inconclusive normally leaves `[x]`/`[w]` awaiting corrected review evidence; it becomes `[p]` only when substantive rework is required. Correction and re-review remain in the same reserved slot. Persistent technical disagreement follows the documented trilateral round in [`integration-flow-control.md`](integration-flow-control.md). `[u]` is used only when that round leaves an exact non-delegable product, policy, material-architecture, authority, material-risk, external-effect, public-release, or waiver decision as the sole next action.
 
 The review evidence is committed first. A separate path-isolated bookkeeping commit adds `Acceptance: ✓` and references the real review commit. Immediately before bookkeeping, the reviewer must compare-and-swap the expected Task block, checkpoint attribute, contract digest, prerequisite graph, prerequisite-Acceptance set, and Acceptance state. If an Architect added or changed a checkpoint, or any other bound input drifted after the review baseline was pinned, the review is stale and must not be promoted; the changed scope is reviewed first. The acceptance commit must preserve unrelated work and use expected-base protection. The reviewer never fabricates a self-referential hash.
 
@@ -180,7 +182,7 @@ A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`), **eve
 
 Only after every required integration checkpoint has passed — and the Feature aggregate review too, when the Feature node is flagged — may a privileged agent authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
 
-Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, reviews marked checkpoints, expands their Acceptance assignments through every required transitive predecessor until current valid Acceptance boundaries, adds an individual decision and record for every accepted batch member, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `[u]` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, rejected tasks, reason, integration-branch tip) and hands resolution to an explicit user interaction. The `[u]` verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
+Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, reviews marked checkpoints, expands their Acceptance assignments through every required transitive predecessor until current valid Acceptance boundaries, adds an individual decision and record for every accepted batch member, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `rejected` or `inconclusive` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, affected tasks, reason, integration-branch tip) and follows the delegated escalation ladder in [`integration-flow-control.md`](integration-flow-control.md). Actionable findings return to same-slot `[p]` rework; unresolved technical disagreement receives the documented trilateral round. Only its exact remaining non-delegable question is recorded as `[u]` and submitted through the durable Management-request workflow. A non-passing verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
 
 ## Interim legacy enforcement and required migration
 

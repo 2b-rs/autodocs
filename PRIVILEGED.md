@@ -117,7 +117,7 @@ Follow [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md) in
 7. record exactly `accepted`, `rejected`, or `inconclusive`, preserving findings and prior attempts append-only;
 8. commit review evidence first, then use a separate path-isolated bookkeeping commit for `Acceptance: ✓` with the real review REF and required digests.
 
-Critical/major findings, unmet criteria, non-accepted prerequisites, missing authority, stale/mixed evidence, or unbounded scope prohibit acceptance. `Rejected` normally routes actionable corrective work back to `[p]`; `inconclusive` retains `[x]`/`[w]` unless substantive rework is required. Neither outcome is `[u]` unless the sole next action is a genuine human decision.
+Critical/major findings, unmet criteria, non-accepted prerequisites, missing authority, stale/mixed evidence, or unbounded scope prohibit acceptance. `Rejected` normally routes actionable corrective work back to `[p]`; `inconclusive` retains `[x]`/`[w]` unless substantive rework is required. The same reserved slot remains occupied. If producer and reviewer cannot resolve a technical disagreement through evidence and bounded correction, use the documented trilateral round in [`docs/pipeline/integration-flow-control.md`](docs/pipeline/integration-flow-control.md). Neither outcome is `[u]` unless that round leaves an exact non-delegable product, policy, material-architecture, authority, material-risk, external-effect, public-release, or waiver question as the sole next action. Ordinary findings, test or hygiene failures, stale candidates, bounded rework, reviewer selection, and capacity are not Management questions.
 
 Acceptance binds exact contract, work products, validation, prerequisites, reviewer assignment, and authority epoch. A relevant change or new material finding creates an additive invalidation and impact analysis; it never deletes history. Invalidation propagates to affected dependent acceptance and Feature aggregate acceptance.
 
@@ -135,7 +135,7 @@ Before committing:
 - use the configured repository identity;
 - write a comprehensive Feature/Task-oriented commit message.
 
-For substantive Task completion, create the substantive commit before recording its real hash in authoritative bookkeeping. Commit bookkeeping separately unless an approved transaction safely creates both commits without self-reference or partial-state ambiguity.
+For substantive Task completion, create one carrying commit whose tree contains the deliverable, terminal marker, and finalized claim, and whose message contains `Task-ID` and `Base-Ref` trailers. Do not record the carrying commit's object ID in that tree. Never amend a commit to add its own hash.
 
 Do not mark implementation complete merely because direct execution succeeded. Acceptance criteria, Definition of Done, validation, evidence, claim reconciliation, and required approvals must all be satisfied for `[x]`/`[w]`. Do not mark work-product acceptance merely because implementation completed; acceptance requires the separate assigned review above.
 

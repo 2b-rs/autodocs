@@ -197,6 +197,18 @@
         '<p class="rv-empty-hint">' + esc(t.emptyHint) + '</p></div>';
     } else {
       body.innerHTML = '<ul class="rv-list">' + items.map(function (d) {
+        if (d.item_kind === "review-request" || d.kind === "review-request") {
+          var cid = d.canonical_id || d.id;
+          return '<li class="rv-item rv-item-request">' +
+            '<div class="rv-item-head">' +
+              '<span class="rv-chip is-request">Review Request</span>' +
+              '<a class="rv-item-id" href="#' + esc(cid) + '" title="' + esc(t.edit) + '">' + esc(cid) + '</a>' +
+              '<button type="button" class="rv-icon-btn rv-icon-btn-sm" data-remove="' + esc(d.id) + '" aria-label="' + esc(t.remove) + '">' + ICON.x + '</button>' +
+            '</div>' +
+            '<p class="rv-item-why">' + esc(d.rationale) + '</p>' +
+            '<p class="rv-item-meta">' + esc((d.actor_claim && d.actor_claim.display_name) || d.decided_by || "local-only") + ' · ' + esc(new Date(d.created_at || d.decided_at || Date.now()).toLocaleString(lang)) + ' (local-only)</p>' +
+          '</li>';
+        }
         var ok = d.outcome === "accept";
         return '<li class="rv-item">' +
           '<div class="rv-item-head">' +
