@@ -199,3 +199,106 @@ advance `main`.
     - **Position:** `supports`
     - **Note:** The distinct pre-mutation scope review at `68e9e71fa` supports the exact 54-marker atomic compare-and-swap unit, finds no retention exception, enumerates the downstream gates, and requires this decision plus Project Lead re-plan before mutation; it is not Acceptance, integration, or release authority.
 - **Waiver:** `none`
+
+## Append-only Management disposition — independent Feature 0037 marker recovery
+
+### `DEC-0044-035` — Authorize an exact 13-marker Feature 0037 recovery transaction
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-01T21:57:45Z`
+- **Deciding identity:** `authority:repository-owner:autodocs`
+- **Role:** `Management`
+- **Authority reference:** Current repository-owner authorization quoted verbatim in this record; Supervisor assignment `0037-cutover-governance-rebind-20260901`; Data acts only as the privileged Governance Decision Recorder and Implementer, not as deciding Management, Architect reviewer, Integrator, acceptance reviewer, or cutover signer.
+- **Subject:** Management disposition for one independently reviewed, exact-current-baseline recovery transaction that may later reopen exactly 13 unsupported Feature `0037` completion projections while preserving the original `DEC-0044-034` record and all non-target history and state.
+- **Decision:** Management authorizes one independent exact-13 transaction, bound to `refs/heads/main` object `374926174a09af1d0d3d33255a8b08993ff71dfc` and full `TODO.md` SHA-256 `eea63e0ec7e2ca78d90a5ea1e9d477f805da5c5d186acfb97d0aa35fa5f73a42`, that may change only the header markers of `0037-29`, `0037-30`, `0037-31`, `0037-32`, `0037-33`, `0037-34`, `0037-34.01`, `0037-34.02`, `0037-35`, `0037-35.01`, `0037-35.02`, `0037-36`, and `0037-40` atomically from exact `[x]` to exact `[ ]`. `0037-29` and `0037-30` were not members of the original 54-marker population governed by `DEC-0044-034`; the other 11 targets are the Feature `0037` members of that original population relevant to this recovery. This decision expressly supersedes the original `DEC-0044-034` exact-54/no-partial atomicity rule only to the minimum extent necessary to authorize this separate exact-13 transaction. Every other marker from the original population is outside this transaction, is neither changed nor newly credited by it, and has no truth, retention, reopening, repair, or later-disposition decision made here. The transaction is marker-only compare-and-swap: immediately before any write, the operator must prove the exact base object, full-file digest, exact inventory, exact complete target blocks, expected old markers, absence of current target Acceptance, unchanged selector/item/catalog/ref premises, and required decision/review ancestry; any mismatch is a no-write stop. It preserves accepted foundational Feature `0037` work and every byte of Task text, prerequisites, checkpoint attributes and verdicts, Acceptance history, incident summaries, claims, authority selectors/configuration, issue artifacts, integration state, Feature closure state, and unrelated markers. This governance package itself changes no marker, selector, authority, issue item, Acceptance, checkpoint verdict, integration state, write freeze, cutover ref, or Feature closure. Required ancestry is genuine rather than textual: the eventual marker candidate must descend from this Management disposition, the independent Guinan scope-review lineage at `24262277f03f8d36333902fed4b6b25042028402`, a later supporting exact-candidate review requested by the Supervisor, and the exact current-main baseline; only the separately assigned Integrator may cross the applicable checkpoint or advance `main`.
+- **Technical justification:** Guinan's independent Architect review supports the exact 13-marker scope but finds stale candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` non-integration-ready: its digest no longer matched `main`, its free-form addendum incorrectly described all 13 as members of the original population, and it did not resolve the original exact-54/no-partial rule. Current-baseline recomputation at `374926174a09af1d0d3d33255a8b08993ff71dfc` finds all 13 exact complete Task blocks present with `[x]`, no current `Acceptance: ✓` in any target block, selector `agent-workflow-bootstrap@v1` / `legacy-lists` / `legacy-writable` / `legacy-writable` / `runner-request@v1`, zero tracked canonical numeric issue files, zero catalog items, and zero refs below `refs/autodocs/cutover/0037/`. The repository-owner authorization is: “Dann nimm es jetzt in Betrieb. Eine gute Gelegenheit, die fälschlicherweise nicht ge[x]ten Tasks loszuwerden. Du kriegst von mir dafür alle nötigen Management-Freigaben. Steuere alles ein über Assignments, die du als supervisor verschickst. Keine neuen TODO-Tasks erstellen während des übergangs, sonst bremsen wir uns nur wieder selber aus.” Exact marker-only reopening removes unsupported scheduling projections without deleting implementation fragments or asserting that underlying capabilities are absent. A full-file and block-level CAS, no-partial-write rule, genuine review ancestry, and separate integration authority prevent the recovery from overriding concurrent legitimate evidence or silently crossing cutover gates.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+  - `irreversible-or-external-effect`
+  - `public-release`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Authorize one newly bound exact-13 marker-only transaction with explicit disposition of `0037-29` and `0037-30`, narrowly superseding only the original atomicity conflict.
+    - **Disposition:** `selected`
+    - **Reason:** This is the smallest scope supported by the independent Architect review that truthfully covers the complete Feature `0037` production-cutover evidence gap and preserves all non-target state.
+  - **ALT-02:** Integrate stale preparation candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` unchanged.
+    - **Disposition:** `rejected`
+    - **Reason:** Its full-file digest is stale, it misstates original-population membership, and it leaves the exact-54/no-partial conflict unresolved; Guinan expressly found it non-integration-ready.
+  - **ALT-03:** Apply the original exact-54 transaction before or together with Feature `0037` recovery.
+    - **Disposition:** `rejected`
+    - **Reason:** The other original markers are outside the authorized transition scope, and their current truth or repair disposition has not been decided by this Management action.
+  - **ALT-04:** Reopen fewer than 13 targets, widen beyond the 13, or alter Task contracts, Acceptance, selectors, issue artifacts, or integration state in the same transaction.
+    - **Disposition:** `rejected`
+    - **Reason:** A smaller set leaves a reviewed unsupported cutover projection; a larger or mixed-behavior change exceeds the reviewed blast radius and defeats marker-only CAS isolation.
+- **Consequences:**
+  - **CON-01:** A later authorized operator may prepare exactly 13 `[x]` to `[ ]` header-marker replacements; `[ ]` means terminal completion is not established on the authoritative lineage and does not erase or deny underlying work.
+  - **CON-02:** Task-start, validation, prerequisite-closed Acceptance, mandatory integration, authority-switch, write-freeze-lift, and Feature-closure gates that consume the 13 projections fail closed until truthful completion evidence is restored through their unchanged contracts.
+  - **CON-03:** The other original `DEC-0044-034` markers remain untouched and receive no new completion, retention, reopening, or remediation credit from this decision.
+  - **CON-04:** Any drift in `main`, `TODO.md`, a complete target block, marker, Acceptance, prerequisite, checkpoint, selector, issue/catalog/ref state, governance, or required ancestry aborts before write and requires a newly pinned package plus renewed review wherever exact evidence or reach changed.
+  - **CON-05:** A failed CAS, interrupted preparation, or unintegrated partial candidate is never completed by hand or compensated with extra markers; the integration target remains unchanged, evidence is retained, and retry starts from a fresh current-main binding.
+  - **CON-06:** If an integrated correction is later proven wrong, restoration requires separate append-only Management authority bound to exact then-current task evidence and graph state; no reset, history rewrite, or scheduling-only restoration of `[x]` is permitted.
+  - **CON-07:** The present package is governance preparation only. It grants no Acceptance, Architect exact-candidate verdict, integration approval, cutover signature, publication, authority switch, external mutation, or Feature closure.
+  - **CON-08:** The Supervisor must obtain the promised follow-up independent exact-candidate review, then separately dispatch the reserved Integrator persona `Picard`; Data must not self-review, self-accept, integrate, advance `main`, push, publish, or sign a cutover ref.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `path:TODO.md`
+  - `path:docs/dossiers/dec-0044-034-mass-marker-evidence-correction.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260901/current-baseline-0037-marker-plan.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260901/architect-scope-review.md`
+  - `feature:0037`
+  - `task:0037-29`
+  - `task:0037-30`
+  - `task:0037-31`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `task:0037-34`
+  - `subtask:0037-34.01`
+  - `subtask:0037-34.02`
+  - `task:0037-35`
+  - `subtask:0037-35.01`
+  - `subtask:0037-35.02`
+  - `task:0037-36`
+  - `task:0037-40`
+- **Affected gates:**
+  - `task-start:0037-30`
+  - `task-start:0037-31`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `task-start:0037-34`
+  - `task-start:0037-34.01`
+  - `task-start:0037-34.02`
+  - `task-start:0037-35`
+  - `task-start:0037-35.01`
+  - `task-start:0037-35.02`
+  - `task-start:0037-36`
+  - `task-start:0037-40`
+  - `validation:0037-shadow-migration`
+  - `validation:0037-quiescence-freeze`
+  - `validation:0037-frozen-candidate`
+  - `validation:0037-pre-cutover-audit`
+  - `validation:0037-cutover-decision`
+  - `validation:0037-authority-tree-and-rollback-package`
+  - `validation:0037-authority-switch`
+  - `validation:0037-clean-regeneration`
+  - `validation:0037-rollback-event-replay`
+  - `validation:0037-post-cutover-audit`
+  - `validation:0037-final-activation-reference`
+  - `validation:0037-prerequisite-closed-acceptance`
+  - `integration:0037-34.02`
+  - `integration:0037-40`
+  - `external:0037-authority-switch`
+  - `external:0037-issue-claim-write-freeze`
+  - `external:0037-write-freeze-lift`
+  - `external:0037-source-authority`
+  - `release:0037-cutover-activation`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:guinan:0037-cutover-governance-review-20260901:24262277f03f8d36333902fed4b6b25042028402`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Guinan supports the exact 13-marker scope only, finds stale candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` non-integration-ready, and requires fresh current-main binding plus an authorized append-only decision that includes `0037-29` and `0037-30` and resolves the original exact-54/no-partial conflict. This participation is not Acceptance, integration review, cutover approval, signature, or Feature closure.
+- **Waiver:** `none`
