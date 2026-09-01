@@ -194,3 +194,14 @@ NOTES: worf accepted the priority offer.
 AWARDED: worf
 STATUS: IN_PROGRESS
 NOTES: worf is working on implementation.
+
+
+## 0050-05
+AWARDED: worf
+STATUS: REVIEW
+NOTES: worf submitted 0050-05 for review.
+
+## 0050-05-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-05.
