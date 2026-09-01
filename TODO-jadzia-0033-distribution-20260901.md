@@ -20,3 +20,21 @@
 - note: worf completed 0033-08. Dispatched 0033-08-integration to obrien via offer 1788264521130-5ea7256b.
 - note: Dispatched 0033-09 to worf/quark via offer 1788264555785-c8a8d50a.
 - note: Accepted 0033-08-integration from obrien.
+
+
+## 0033-09-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed integration, merged to main, validated tests, and marked 0033-09 as DONE in TODO.md.
+
+
+## 0033-10
+OFFERED: priority 1: quark, priority 2: worf
+STATUS: OPEN
+NOTES: Dispatched implementation of browser package builder.
+
+
+## 0033-11
+OFFERED: priority 1: worf
+STATUS: OPEN
+NOTES: Dispatched implementation of strict envelope to replace dict-based to_dict.
