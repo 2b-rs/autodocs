@@ -840,6 +840,13 @@ Feature blocks retain their prior relative order and content.
 The DAG has one start node (`0046-00`) and exactly one terminal integrating node (`0046-06`). `0046-01.01`/`.02` split UX/schema from the durable store; `0046-03.01`/`.02` split human decision from authoritative source promotion. Private runtime and public deployment proceed as separately receipted branches and join only at `0046-06`.
 
 - [x] **0046-00** (P0; single start; Integration review: mandatory) Bind the material architecture, cross-item decision record, exact source/publication baselines, and distinct Architect scope review before operative mutation.
+  Claim: `DONE-kira-0046-00-20260901.md`; owner_token:
+  `agent:kira:0046-00:20260901T093700Z`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788290960503-b47b012a` (Offer `1788290960503-b47b012a` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T19:30:00Z`
   - **Task record:** `task_id: "0046-00"; feature_id: "0046"; role: architect-elaboration`.
   - **Architecture decisions and sources:** REQ-0046-02/06/07/09/10/11/17/18; `decision-record@v1`; `DEC-0044-029`; requirements, architecture and scope-review products above. Allocate any new `DEC-*` only on current `main`; do not invent a Management decision when bounded architecture work remains.
   - **Prerequisites:** none.
