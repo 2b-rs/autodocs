@@ -130,3 +130,9 @@ NOTES: worf submitted 0050-03 for review.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-03.
+
+
+## 0050-03-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on integration review.
