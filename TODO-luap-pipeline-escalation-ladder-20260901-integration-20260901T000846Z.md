@@ -55,7 +55,9 @@
 
 - 2026-09-01T00:07Z: AWARD verified (`status=awarded` then `on_hold`, winner=luap). Announced busy.
 - 2026-09-01T00:08Z: Independently remesured `offer_status` `state=on_hold`. Worktree provisioned at `f4d2045bc`. Claim committed. No candidate inspection. No merge.
+- 2026-09-01T00:38Z: Formal resume names exact SHA `37386abe2b`. `in_progress`. Independently remesured: current main `fe90c1e0ef` is ancestor of candidate; `7d0eb2a587` and `eaffe1eee8` are ancestors of candidate; `diff --check` pass.
+- 2026-09-01T00:41Z: Independent review **accepted**. Evidence `docs/campaign-evidence/pipeline-escalation-ladder-20260901/integration-review.md`. Merge only after hygiene and root-preflight PASS.
 
 ## Next
 
-Wait for supervisor formal resume naming an exact candidate SHA. Then independently remesure, review, hygiene, and integrate only if PASS.
+Hygiene + root preflight, then ff-only `main` if PASS. Report complete receipt. Coordinator acceptance.
