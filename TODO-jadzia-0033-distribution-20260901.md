@@ -188,3 +188,13 @@ NOTES: Dispatched rework to fix the test failure.
 AWARDED: worf
 STATUS: IN_PROGRESS
 NOTES: worf started rework.
+
+
+## 0033-07.01 (Rework)
+STATUS: REVIEW
+NOTES: worf completed rework implementation.
+
+## 0033-07.01-integration (Retry)
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0033-07.01 rework.
