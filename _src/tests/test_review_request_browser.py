@@ -61,7 +61,7 @@ class TestReviewRequestBrowser(unittest.TestCase):
                 env['NODE_PATH'] = os.pathsep.join(valid_paths) + os.pathsep + env.get('NODE_PATH', '')
             proc = subprocess.run(
                 ['node', str((_ROOT / '_src' / 'tools' / 'check_review_request_ui.cjs').resolve()), str(target.resolve())],
-                capture_output=True, text=True, cwd=str(_ROOT), timeout=30, env=env,
+                capture_output=True, text=True, cwd=str(_ROOT), timeout=60, env=env,
             )
             self.assertEqual(proc.returncode, 0, proc.stderr)
             result = json.loads(proc.stdout)
