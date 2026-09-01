@@ -22,3 +22,9 @@ NOTES: seven raised questions about existing review file. I clarified to append 
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-00 architect review. Integrator will address finding S-01 (add Integration review flag to 0050-02).
+
+
+## 0050-00-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien accepted the offer and is verifying the integration.
