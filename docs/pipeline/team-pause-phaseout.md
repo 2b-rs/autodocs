@@ -21,7 +21,7 @@ Assignment ownership remains the existing atomic-award ownership. `draining` is 
 3. `assignment_drain_checkpoint@v1`: coordinator, contractor, check time, handoff deadline and checkpoint/preservation references.
 4. `assignment_deadline_escalation@v1`: exact deadline, evidence classification, accountable coordinator, delivery attempts and idempotence key.
 5. `assignment_reclamation_decision@v1`: evidence digest, exactly one outcome, reason, precondition generation/state, successor/preservation fields and recovery action.
-6. `team_quiescence_receipt@v1`: empty-set manifests, source revisions, digest and `quiesced_at`.
+6. `team_quiescence_receipt@v1`: empty-set manifests, source revisions, legacy-reconciliation receipts, digest and `quiesced_at`.
 7. `team_resume@v1`: prior pause generation, new resume generation, actor, reason and validation receipt.
 
 Events append under the same mailbox lock used by offer and assignment transitions. Folding rejects missing parents, generation regression, duplicate semantic idempotence keys, two outcomes for one escalation, or a successor start without an accepted child or closed prior owner.
@@ -66,7 +66,7 @@ Team cards show state/generation, pause reason/requester, drain deadline, active
 
 ## Recovery, migration and rollback
 
-Startup folds the append-only journal, recomputes inventories from exact source revisions, resends undelivered escalations, and refuses quiescence when claims or child offers are indeterminate. Pre-activation active assignments migrate into generation zero and are included on the first pause; no live work is grandfathered away. Rollback appends a supersession event, disables new commands only after reconciling all active generations, and preserves every receipt.
+Startup folds the append-only journal, recomputes inventories from exact source revisions, resends undelivered escalations, and refuses quiescence when claims, child offers or pre-migration records are indeterminate. Stale roster/status prose is displayed as a projection finding but never counted as an award or claim. Each unknown legacy identifier produces a visible typed reconciliation finding and must receive an append-only `imported|terminal|superseded|live` receipt before zero proof; it is neither silently ignored nor allowed to block forever without an accountable reconciliation action. Pre-activation active assignments migrate into generation zero and are included on the first pause; no live work is grandfathered away. Rollback appends a supersession event, disables new commands only after reconciling all active generations, and preserves every receipt.
 
 ## Validation contract
 

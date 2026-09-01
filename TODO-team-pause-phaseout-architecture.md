@@ -5,9 +5,9 @@ request_id: 1788258791125-23f83bfb
 assignment_id: 1788258791125-23f83bfb
 coordination_kind: user-directed architecture and requirements decomposition; no unrelated pre-existing TODO Task is claimed
 feature_context: new Feature 0050, team-independent pause, draining, phase-out, token-exhaustion, escalation, coordinator reclamation and explicit resume
-state: [p]
-coordination_state: in_progress
-lease_active: true
+state: [x]
+coordination_state: review
+lease_active: false
 capability_class: privileged
 execution_authority: direct
 process_role: Architect
@@ -38,7 +38,11 @@ assumptions: the user-set product direction is sufficient for an Architect decis
 - Architecture, requirements, decision record and bounded DAG are in preparation only; no operative gate mutation has begun.
 - Reviewable architecture baseline committed at `179e8d6de12a069531aa67df6edc69a24df02b56`.
 - Distinct Architect `jadzia` atomically accepted scope-review offer `1788259491547-821018e3`; review branch/worktree is pinned to the substantive baseline with one-file scope `docs/dossiers/team-pause-phaseout-architect-review.md`.
+- Independent scope review verdict is `scope-supported`, conditions none; corrected reviewer provenance is carried from `387e520390eeff55d969ea38ddb43bff423f2784`.
+- Validation: `git diff --check` passes; Feature 0050 contains exactly nine nodes `0050-00..08` and exactly one terminal integrating Task; all prerequisite endpoints resolve and the intended checkpoint set is explicit.
+- Diagnostic note: the legacy claim doctor retains one scoped warning because the immutable owner token was minted for the user-directed assignment before Feature/Task ID allocation; it is preserved rather than rewritten. Remaining reported findings are pre-existing `DONE.md` findings outside scope.
+- Voyager audit addendum from coordinator `zed` is incorporated: stale self-status is separated from authoritative ownership, and unknown pre-migration identifiers require visible typed reconciliation receipts before zero proof.
 
 ## Next step
 
-Author the requirements, decision record, interface/state-machine architecture and Feature `0050` DAG; obtain a separately assigned distinct Architect scope review; validate and commit the exact scoped candidate; then report the immutable tip to `zed` and reserved Integrator `geordi`.
+Reserved Integrator `geordi` verifies and integrates the exact immutable candidate reported through agent-inbox; coordinator `zed` retains chain accountability until the integration receipt proves ancestry on `main`.

@@ -214,7 +214,7 @@ work.
   - **Exhaustive write scope (agent-inbox):** `supervisor.py`, `agent_inbox_mcp.py`, `assignment-state-machine.json`, `team-state-machine.json`, `test_supervisor.py`, `test_agent_inbox.py`, `test_team_pause_phaseout.py`.
   - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-06/10/12/14/15/18/20 and unified receipt model", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
   - **Review rationale:** emergency and rollback paths can bypass ordinary ownership and destroy the only useful work copy.
-  - **Acceptance criteria:** Blackout uses identical receipts; preservation failure is visible and nondestructive; migration has no grandfathering; quiescence is iff zero proof; resume/rollback never resurrect ownership.
+  - **Acceptance criteria:** Blackout uses identical receipts; preservation failure is visible and nondestructive; migration has no grandfathering; stale roster/status projections are not ownership; unknown pre-migration identifiers remain visible and receive typed reconciliation receipts; quiescence is iff zero proof; resume/rollback never resurrect ownership.
   - **Definition of Done:** Recovery/migration/property evidence committed; mandatory independent review passes.
 
 - [ ] **0050-07** (P0) Independently verify the complete all-team, mixed-provider race, deadline, recovery, privacy and abuse matrix against exact candidates.
@@ -244,7 +244,7 @@ work.
   - **Exhaustive write scope:** `docs/campaign-evidence/0050-08/integration-report.md`, `docs/campaign-evidence/0050-08/completion-manifest.json`, `TODO.md`, and exact accepted root-claim renames required by bookkeeping; agent-inbox ref activation is separately exact and receipt-bound.
   - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "DEC-0050-001, complete prerequisite closure and mandatory Feature integration floor", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
   - **Review rationale:** exactly one terminal checkpoint integrates a cross-repository, fleet-wide ownership and preservation gate.
-  - **Acceptance criteria:** Exact candidates and reviews are ancestral; all teams/races/recovery paths pass; activation receipt binds agent-inbox revision and schema digests; rollback is proven; zero proof uses authoritative sets; no evidence or useful work is deleted.
+  - **Acceptance criteria:** Exact candidates and reviews are ancestral; all teams/races/recovery paths pass, including stale status and unknown legacy-record reconciliation; activation receipt binds agent-inbox revision and schema digests; rollback is proven; zero proof uses authoritative sets plus typed legacy reconciliation receipts; no evidence or useful work is deleted.
   - **Definition of Done:** Integration and activation receipts committed, no generated/live state enters source-history `main`, and any Feature closure follows separate current Acceptance authority.
 
 ## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
