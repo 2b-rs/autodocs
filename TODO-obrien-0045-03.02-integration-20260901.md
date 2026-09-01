@@ -3,8 +3,8 @@
 - **item:** `0045-03.02-integration`
 - **process:** Integration
 - **agent:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
-- **owner_token:** `agent:obrien:0045-03.02-integration:1788257454396-fae92e52`
-- **offer_id:** `1788257454396-fae92e52` (atomically awarded)
+- **owner_token:** `agent:obrien:0045-03.02-integration:1788257869497-fb5908ba`
+- **offer_id:** `1788257869497-fb5908ba` (atomically awarded)
 - **capability_class:** `privileged`
 - **branch:** `chain-0045-03.02`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/chain-0045-03.02`
