@@ -383,3 +383,9 @@ NOTES: Dispatched terminal integration task for 0050.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on terminal integration for 0050.
+
+
+## 0050-08
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the terminal integration for 0050. Feature 0050 is complete!
