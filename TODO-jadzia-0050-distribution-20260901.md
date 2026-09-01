@@ -257,3 +257,14 @@ NOTES: obrien accepted the priority offer.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-06-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the review and integration. Merged to main in agent-inbox.
+
+## 0050-07
+OFFERED: priority 1: seven, priority 2: data
+STATUS: OPEN
+NOTES: Dispatched QA.
