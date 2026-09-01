@@ -44,6 +44,15 @@ Nine nodes `0050-00`..`0050-08`. Single start `0050-00`. Exactly one terminal in
 
 No agent-inbox product implementation. No live Supervisor mutation. No Feature `DONE.md` move. No `git update-ref` on `main`.
 
+## Merge gate
+
+- Candidate hygiene: PASS (74 worktrees) at evidence `c155dd4364`.
+- Root preflight `--repo /Users/tobias.anton/devel/autodocs --root-preflight`: **FAIL** `ROOT_NOT_MAIN` — shared checkout is on `0033-12` at `2f631771eb`; `refs/heads/main` is the same SHA but **no worktree has branch `main` checked out**.
+- Main moved during hygiene from `d9b40bae8c` to `2f631771eb`. Re-reconciled: merge `2f631771eb` into integration worktree → `e9f27dfbbb`. Current main **is** an ancestor of that tip; candidate remains an ancestor.
+- Integrator will not `git checkout main` in the shared root (DEC-0044-015 abort, not tidy). No `git update-ref` on `main`. No merge.
+
+**Integration verdict:** merge **blocked**. Product review remains `accepted`. Same-slot wait for a checkout of branch `main` at the canonical root so `--root-preflight` and `git merge --ff-only` can run together. Not `[u]`.
+
 ## Next
 
-Candidate hygiene and root preflight; remesure then-current main still ancestor; ff-only only if PASS. Receipt to coordinator.
+Wait for coordinator restoration of a `main` checkout at the root, then remesure, preflight, and ff-only if PASS. Slot kept.
