@@ -115,3 +115,9 @@ NOTES: obrien merged 0033-15 to main.
 OFFERED: priority 1: quark, priority 2: worf
 STATUS: OPEN
 NOTES: Dispatched implementation of 0033-16.
+
+
+## 0033-16-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0033-16.
