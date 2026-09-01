@@ -291,3 +291,9 @@ NOTES: Dispatched integration of 0050-07 QA report.
 AWARDED: seven
 STATUS: ON_HOLD (ESCALATED)
 NOTES: seven submitted 0050-07 QA report which found blocking issues. Escalated to Management for decision.
+
+
+## 0050-07-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on integration review.
