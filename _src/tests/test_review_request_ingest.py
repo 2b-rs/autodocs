@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 
 import canonical_id as cid  # noqa: E402
 import curation_flags as cf  # noqa: E402
+import curation_item as ci  # noqa: E402
 import review_request_ingest as rri  # noqa: E402
 import review_request_package as rrp  # noqa: E402
 import version_id as vid_util  # noqa: E402
@@ -572,6 +573,46 @@ class ReviewRequestIngestTests(unittest.TestCase):
         payload = json.loads(Path(report["path"]).read_text(encoding="utf-8"))
         self.assertEqual(payload["decision_basis"]["authoritative_actor"], "reviewer-alice")
         self.assertEqual(payload["decision_basis"]["target_canonical_id"], "AUTOSAR/AP/record/ExecutionClient")
+        self.assertEqual(payload["canonical_id"], "AUTOSAR/AP/record/ExecutionClient")
+        self.assertEqual(payload["item_kind"], "review-request")
+        self.assertEqual(payload["origin"], "browser")
+        self.assertIsNone(payload["decided_by"])
+        self.assertIsNone(payload["decided_at"])
+
+        # Check normalization into unified curation-item
+        curation_item = ci.from_curation_flag(payload)
+        self.assertEqual(curation_item["canonical_id"], "AUTOSAR/AP/record/ExecutionClient")
+        self.assertEqual(curation_item["item_kind"], "review-request")
+        self.assertEqual(curation_item["status"], "open")
+        self.assertTrue(ci.is_conformant(curation_item))
+
+    def test_duplicate_submission_in_claimed_queue_rejected(self):
+        pkg = load("valid_github_issue.json")
+        first = rri.ingest(pkg, apply=True, authoritative_actor="jdoe")
+        self.assertEqual(first["outcome"], rri.IngestOutcome.OK)
+        first_path = Path(first["path"])
+
+        # Claim the flag
+        claimed_path = cf.claim_flag(first_path, agent="test-agent")
+        self.assertIsNotNone(claimed_path)
+        self.assertTrue(claimed_path.exists())
+
+        # Second submission of same target must be rejected against claimed item
+        pkg2 = dict(pkg)
+        pkg2["request_id"] = "review-request:018f2e1a-bbbb-7c21-9a4e-2f6b1d8c9a88"
+        second = rri.ingest(pkg2, apply=True, authoritative_actor="jdoe")
+        self.assertEqual(second["outcome"], rri.IngestOutcome.REJECTED_DUPLICATE)
+
+    def test_target_changed_before_atomic_commit_rejected_stale(self):
+        # Update live record to a newer release/version/hash
+        self._seed_record(
+            canonical_id="AUTOSAR/AP/record/tsync-user-guide",
+            release="R26-03",
+            content_hash="99999999",
+        )
+        pkg = load("valid_github_issue.json")
+        report = rri.ingest(pkg, apply=True, authoritative_actor="jdoe")
+        self.assertEqual(report["outcome"], rri.IngestOutcome.REJECTED_STALE)
 
 
 if __name__ == "__main__":

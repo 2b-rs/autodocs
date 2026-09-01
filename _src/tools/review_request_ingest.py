@@ -551,10 +551,10 @@ def _verify_transport_and_trust(
 # Queue Deduplication Helper
 # ============================================================================
 
-def _existing_open_dedup_keys() -> dict:
-    """Map dedup_key -> flag path, scanned from currently open curation-queue items."""
+def _existing_active_dedup_keys() -> dict:
+    """Map dedup_key -> flag path, scanned from currently active (open + claimed) curation-queue items."""
     keys = {}
-    for path in cf.list_open_flags():
+    for path in cf.list_active_flags():
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
@@ -562,7 +562,10 @@ def _existing_open_dedup_keys() -> dict:
         if payload.get("item_kind") != ITEM_KIND:
             continue
         basis = payload.get("decision_basis") or {}
-        key = (basis.get("target_canonical_id"), basis.get("target_version_id"))
+        # Match both by target_canonical_id + target_version_id and top-level canonical_id
+        target_cid = basis.get("target_canonical_id") or payload.get("canonical_id")
+        target_vid = basis.get("target_version_id")
+        key = (target_cid, target_vid)
         keys[key] = path
     return keys
 
@@ -600,6 +603,9 @@ def ingest(
         "path": None,
         "target_token": None,
     }
+
+    records_root = records_root if records_root is not None else RECORDS_ROOT
+    versions_root = versions_root if versions_root is not None else VERSIONS_ROOT
 
     # Step 1: Transport & Envelope Verification
     package, trust, transport_outcome, transport_errors = _verify_transport_and_trust(
@@ -695,13 +701,13 @@ def ingest(
                 "forwarded to Kurator rather than rejected (0021-02 Staleness rule)."
             )
 
-    # Step 7: Deduplication against Open Queue
+    # Step 7: Deduplication against Active Queue (Open + Claimed)
     dedup_key = rrp.dedup_key(package)
-    existing = _existing_open_dedup_keys()
+    existing = _existing_active_dedup_keys()
     if dedup_key in existing:
         report["outcome"] = IngestOutcome.REJECTED_DUPLICATE
         report["errors"] = [
-            "an open review-request queue item already exists for this record (0021-02 Duplicate rule): %s"
+            "an active review-request queue item already exists for this record (0021-02 Duplicate rule): %s"
             % existing[dedup_key]
         ]
         return report
@@ -712,7 +718,7 @@ def ingest(
         report["dry_run"] = True
         return report
 
-    # Step 9: Enqueue Item (Apply=True)
+    # Step 9: Atomic Enqueue Item (Apply=True)
     request_id = package.get("request_id") or package.get("event_id") or rrp.new_request_id()
     if not str(request_id).startswith("review-request:"):
         request_id = f"review-request:{request_id}"
@@ -722,16 +728,41 @@ def ingest(
         or datetime.now(timezone.utc).isoformat()
     )
 
-    decision = {
+    # Perform final target version/hash recheck under reservation before commit
+    final_recheck = resolve_live_target(
+        canonical_id_str=target_canonical_id,
+        records_root=records_root,
+        versions_root=versions_root,
+    )
+    if (
+        not final_recheck["found"]
+        or final_recheck["target_token"] != target_token
+        or final_recheck["current_content_hash"] != auth_content_hash
+        or final_recheck["current_version_id"] != auth_version_id
+    ):
+        report["outcome"] = IngestOutcome.REJECTED_STALE
+        report["errors"] = [
+            "target record version or content hash changed before atomic queue reservation"
+        ]
+        return report
+
+    item_payload = {
+        "schema": cf.SCHEMA,
         "id": request_id,
+        "canonical_id": target_canonical_id,
+        "item_kind": ITEM_KIND,
+        "origin": "browser",
+        "status": "open",
+        "created": created_at,
+        "campaign": campaign,
         "outcome": "requested",
-        "decided_by": (package.get("actor_claim") or {}).get("display_name"),
+        "decided_by": None,
         "identity": trust.get("identity_kind") or "self_declared",
-        "decided_at": created_at,
+        "decided_at": None,
         "rationale": package.get("rationale") or "",
         "decision_basis": {
             "item_kind": ITEM_KIND,
-            "target_canonical_id": package.get("target_canonical_id"),
+            "target_canonical_id": target_canonical_id,
             "target_version_id": package.get("target_version_id") or auth_version_id,
             "target_content_hash": package.get("target_content_hash") or auth_content_hash,
             "target_status_snapshot": package.get("target_status_snapshot") or auth_status,
@@ -744,22 +775,15 @@ def ingest(
             "authoritative_actor": trust.get("authoritative_actor"),
             "request_id": request_id,
             "target_token": target_token,
+            "warnings": report.get("warnings", []),
         },
     }
 
-    path = cf.write_curation_flag(decision, campaign=campaign, project=None, kind=None)
+    path = cf.write_review_request_flag(item_payload)
     if path is None:
         report["outcome"] = IngestOutcome.REJECTED_DUPLICATE
-        report["errors"] = ["write_curation_flag reported an existing flag for this request id"]
+        report["errors"] = ["write_review_request_flag reported an existing flag for this request id"]
         return report
-
-    # Tag item_kind at top level too for efficient scanning
-    try:
-        flag_payload = json.loads(path.read_text(encoding="utf-8"))
-        flag_payload["item_kind"] = ITEM_KIND
-        path.write_text(json.dumps(flag_payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    except Exception:
-        pass
 
     report["outcome"] = IngestOutcome.OK
     report["path"] = str(path)

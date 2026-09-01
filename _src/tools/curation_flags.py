@@ -108,6 +108,41 @@ def list_open_flags():
     return sorted(OPEN_DIR.glob("*.json"))
 
 
+def list_claimed_flags():
+    _ensure_dirs()
+    return sorted(CLAIMED_DIR.glob("*.json"))
+
+
+def list_active_flags():
+    """List all flags in open and claimed directories."""
+    return list_open_flags() + list_claimed_flags()
+
+
+def write_review_request_flag(item: dict, reservation_id: str | None = None) -> Path | None:
+    """Atomically write a conformant review-request queue item to open/.
+
+    Top-level fields match the authoritative curation-item schema with:
+    - schema: "curation-flag@v1"
+    - canonical_id: matching target record
+    - id: request/event identity
+    - item_kind: "review-request"
+    - origin: "browser"
+    - outcome: "requested" (status="open")
+    - created: UTC timestamp
+    - decided_by: None (never fabricated before a decision)
+    - decided_at: None (never fabricated before a decision)
+    - decision_basis: validated client/envelope details
+    """
+    _ensure_dirs()
+    rid = item["id"]
+    filename = f"{rid}.json"
+    path = OPEN_DIR / filename
+    if path.exists():
+        return None
+    _atomic_write(path, item)
+    return path
+
+
 def claim_flag(path, agent=None):
     _ensure_dirs()
     path = Path(path)
