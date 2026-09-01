@@ -1240,6 +1240,13 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
     ```
 
 - [x] **0041-06** PREREQ: 0041-06:0041-02, 0041-06:0041-03, 0041-06:0037-51, 0041-06:0038-02 Assemble, validate, and atomically activate every completion-contract consumer.
+  Claim: `DONE-worf-0041-06-20260901.md`; owner_token:
+  `agent:worf:0041-06:1788260931485-5adf1b20`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788263465631-65612af1` (Offer `1788263465631-65612af1` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T11:59:30Z`
   - **Architecture graph repair (2026-08-30, `DEC-0041-007`):** Reopened as the sole synchronous activation owner. It consumes fresh `0041-02`/`0041-03` products, not historical lineages; candidate preparation remains non-operative until its mandatory checkpoint and authorized main-ref advance.
   - **Origin:** `DEC-0041-005`; discovered during `0041-04` integration preflight.
   - **Acceptance criteria:** Bind exact reviewed `0041-02` contract/manifest and `0041-03` candidate digests; integrate their governance candidate bytes with fresh direct-execution changes to `_src/tools/legacy_task_editor.py`, `_src/tools/runner_transaction.py`, `_src/tools/legacy_task_doctor.py`, any evidenced `_src/tools/check_integration_hygiene.py` dependency, registered tool docs, and all matching guidance. Produce one activation tree where every live writer/parser/gate uses `Task-ID`/`Base-Ref`, terminal tree/claim invariants, and Acceptance-owned commit references; no reachable path requires or creates implementation-header `REF` or a second implementation-bookkeeping commit. Reject mismatched/duplicate trailers, non-ancestor or stale Base-Ref, marker/claim/partial-tree mismatch, stale/CAS-lost state, old manifests, ambiguous history, and unauthorized Acceptance/checkpoint transitions. Preserve path isolation, journal, rollback, crash recovery, provenance, dirty/unrelated work, historical contracts, and direct-execution boundaries. Activation is exactly one separately reviewed main-ref advance; candidate commits do not activate.
