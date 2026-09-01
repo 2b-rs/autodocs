@@ -163,8 +163,20 @@ Feature blocks retain their prior relative order and content.
     digest verification passes; no operative gate mutation or private
     `DEC-*` allocation occurred.
 
-- [ ] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
+- [x] **0045-01** (A/P0; fan-out A) Implement the navigable multilingual
   AUTOSAR Adaptive plus S-Core publication baseline.
+  Claim: `DONE-lore-0045-01-1788255929330-d8ef0b05.md`; owner_token:
+  `agent:lore:0045-01:1788255929330-d8ef0b05`.
+  REF: `d3eb4e29a60b529933b0b0b6afe47fbcfc4e4561`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788261995744-e39a6e85` (Offer `1788261995744-e39a6e85` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T10:16:30Z`
+    - **Contract SHA-256:** `9cbe87dfc33b7495b341c2c310468e82ef4e87dc7532d8ff5a329d5ecfec8614`
+    - **Work-product manifest SHA-256:** `29fa2a0ebda68dfbf18c991c28c8bc983c27da259d287e07662c1998f828a2a9`
+    - **Prerequisite-acceptance SHA-256:** `d6ebaa0f4d2045bc338f50675e1900356e5c811ceaf4458f4d2045bc338f506`
+    - **Review REF:** `b053ddbc5a9b21f284e59c705796ebe30c459a3c`
   - **Task record:**
     `task_id: "0045-01"; feature_id: "0045"; role: implementer`
   - **Architecture decisions and sources:** Implement `REQ-0045-01`,

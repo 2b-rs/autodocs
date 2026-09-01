@@ -49,6 +49,16 @@ EXPECTED = {
 }
 
 
+def publication_languages() -> tuple[str, ...]:
+    site = load(ROOT / "_src" / "site.json")
+    languages = site.get("sprachen", {})
+    canonical_language = languages.get("kanonisch")
+    targets = languages.get("ziele")
+    if not isinstance(canonical_language, str) or not isinstance(targets, list) or not all(isinstance(item, str) for item in targets):
+        raise ValueError("site language publication contract is malformed")
+    return tuple(dict.fromkeys((canonical_language, *targets)))
+
+
 def canonical(value: Any) -> bytes:
     return (json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
 
@@ -194,10 +204,10 @@ def view_model(corpus: Mapping[str, Any], report: Mapping[str, Any], queue: Mapp
     }
 
 
-def document(title: str, body: str, *, local_prefix: str, root_prefix: str, review_request: bool = False) -> str:
+def document(title: str, body: str, *, local_prefix: str, root_prefix: str, review_request: bool = False, language: str = "en") -> str:
     review_script = f'<script src="{root_prefix}review_request.js" defer></script>' if review_request else ""
     return f'''<!doctype html>
-<html lang="en">
+<html lang="{html.escape(language, quote=True)}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="review-github-repo" content="2b-rs/autodocs"><title>{html.escape(title)}</title>
 <link rel="stylesheet" href="{local_prefix}style.css">{review_script}</head>
@@ -263,17 +273,20 @@ def render(model: Mapping[str, Any]) -> dict[str, bytes]:
     snapshot = lambda title: f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="100%" height="100%" fill="#fff"/><text x="50" y="90" font-family="sans-serif" font-size="36">{html.escape(title)}</text><text x="50" y="170" font-family="sans-serif" font-size="24">{UNVALIDATED_MARKER}</text><text x="50" y="220" font-family="sans-serif" font-size="24">2,239 release-pinned curation candidates; one unresolved collision</text></svg>\n'''.encode()
     files: dict[str, bytes] = {
         "index.html": document("S-Core candidate review summary", summary, local_prefix="", root_prefix="../../../").encode(),
-        "en/index.html": document("S-Core candidate review summary", summary.replace('href="records/index.html"', 'href="../records/index.html"'), local_prefix="../", root_prefix="../../../../").encode(),
         "records/index.html": document("All S-Core candidates", all_candidates, local_prefix="../", root_prefix="../../../../").encode(),
         "participate.html": document("Participate in S-Core curation", participate, local_prefix="", root_prefix="../../../").encode(),
         "process.html": document("S-Core curation process", process_report, local_prefix="", root_prefix="").encode(),
         "unresolved.html": document("S-Core unresolved collision", detail, local_prefix="", root_prefix="../../../").encode(),
-        "en/unresolved.html": document("S-Core unresolved collision", detail.replace(f'href="{unresolved["candidate_page"]}"', f'href="../{unresolved["candidate_page"]}"'), local_prefix="../", root_prefix="../../../../").encode(),
         "evidence.json": evidence, "validation.json": validation_evidence, "dom-assertions.json": assertions,
         "style.css": css, "assets/view.js": js,
         "screenshots/summary.svg": snapshot("S-Core candidate review summary"),
         "screenshots/unresolved.svg": snapshot("S-Core unresolved collision"),
     }
+    language_summary = summary.replace('href="records/index.html"', 'href="../records/index.html"')
+    language_detail = detail.replace(f'href="{unresolved["candidate_page"]}"', f'href="../{unresolved["candidate_page"]}"')
+    for language in publication_languages():
+        files[f"{language}/index.html"] = document("S-Core candidate review summary", language_summary, local_prefix="../", root_prefix="../../../../", language=language).encode()
+        files[f"{language}/unresolved.html"] = document("S-Core unresolved collision", language_detail, local_prefix="../", root_prefix="../../../../", language=language).encode()
     review_client = (ROOT / "review_request.js").read_bytes()
     if hashlib.sha256(review_client).hexdigest() != "bd6e23ae7454e7dee4daba98a104fa76db0ef9cdf54713ef35569a6c992ef0e2":
         raise ValueError("canonical review_request.js identity mismatch")

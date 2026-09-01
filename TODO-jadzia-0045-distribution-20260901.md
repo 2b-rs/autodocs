@@ -31,3 +31,5 @@
 - note: 0045-05 awarded to quark.
 - note: 0045-01 integration awarded to obrien.
 - note: Accepted 0045-03 QA from jake and dispatched 0045-03-integration to geordi via offer 1788262563054-9ad2b91d.
+- note: Accepted completed 0045-01-integration by obrien.
+- note: quark completed 0045-05. Dispatched 0045-05-integration to geordi/obrien via offer 1788263673418-be788631.
