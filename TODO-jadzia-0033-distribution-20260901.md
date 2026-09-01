@@ -155,3 +155,9 @@ NOTES: obrien merged 0033-16.01, finalized acceptance bookkeeping, and successfu
 OFFERED: priority 1: worf, priority 2: quark
 STATUS: OPEN
 NOTES: Reopened because it was previously marked [x] without actual implementation or integration. Dispatched to worf.
+
+
+## 0033-07.01
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf accepted the offer and is working.
