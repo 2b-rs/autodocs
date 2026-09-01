@@ -2,7 +2,7 @@
 
 ## 1. Exact affected work units/gates
 - **Affected work units:** `repository:autodocs`
-- **Affected gates:** `integration` (rejection, rework, and escalation pathways), `TK-2 dissent resolution`, `Feature aggregate review`.
+- **Affected gates:** `integration:pipeline`, `technical-disagreement:escalation`, `management-escalation:delegable`
 
 ## 2. Smallest safe text changes
 - **`docs/pipeline/integration-flow-control.md`**: Define the new escalation ladder (Integrator decision -> actionable same-slot rework -> trilateral round -> Management for non-delegable).

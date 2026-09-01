@@ -1,10 +1,10 @@
-### `DEC-ESCALATION-20260901` — Restore delegated escalation pipeline
+### `DEC-0045-001` — Restore delegated escalation pipeline
 
 - **Record format:** `decision-record@v1`
 - **Recorded at:** `2026-09-01T00:11:23Z`
 - **Deciding identity:** `authority:user:current`
 - **Role:** `Management`
-- **Authority reference:** `current-user direction in briefing`
+- **Authority reference:** `user-directive:pipeline-escalation-ladder-20260901`
 - **Subject:** Delegated escalation pipeline restoration
 - **Decision:** Restore the pipeline so a privileged Integrator decides within the accepted contract; findings route to actionable same-slot rework; unresolved technical disagreement receives a documented trilateral Implementer/Integrator/Coordinator-or-Architect round; only a remaining non-delegable product, policy, authority, material-risk, external-effect, or waiver question reaches Management.
 - **Technical justification:** Required by current-user direction to establish an actionable pipeline escalation ladder and reduce unnecessary Management load.
@@ -25,9 +25,14 @@
 - **Affected work units:**
   - `repository:autodocs`
 - **Affected gates:**
-  - `integration`
-  - `technical-disagreement`
-  - `management-escalation`
-- **Review participation:** `none`
-- **No-review reason:** This is a direct Management instruction from the current user which explicitly acts as its own review.
+  - `integration:pipeline`
+  - `technical-disagreement:escalation`
+  - `management-escalation:delegable`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:kira:architect:pipeline-escalation-ladder-20260901`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** The identified scope, gates, and smallest text changes conform to the explicit user directive without mutating active authority files.
 - **Waiver:** `none`
