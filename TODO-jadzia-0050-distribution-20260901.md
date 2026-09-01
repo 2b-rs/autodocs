@@ -303,3 +303,9 @@ NOTES: obrien is working on integration review.
 AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien completed the review and integration. Merged to main in autodocs.
+
+
+## 0050-09-architecture
+OFFERED: priority 1: seven, priority 2: data
+STATUS: OPEN
+NOTES: Dispatched architecture task to add 0050-09 for missing test coverage.
