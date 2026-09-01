@@ -262,7 +262,14 @@ work.
   - **Independence:** the author must not be `seven`, who wrote the `0050-07` QA that identified these gaps and authored this decomposition. Marking one's own findings covered is self-verification.
   - **Acceptance criteria:** Each of `Q-01`, `Q-02`, `Q-03` has at least one executed case with an observed result and a named neighbouring case; provider exhaustion mid-drain, a negative-authorization/privacy denial, and an abuse/quota boundary are each demonstrably exercised rather than asserted in prose; `AE-3` red-on-broken evidence is produced by fault injection for at least one invariant per finding; the existing 18 cases still pass at exit 0.
   - **Definition of Done:** Coverage committed in `agent-inbox` with checked exit statuses and a short evidence note mapping each new case to `Q-01`/`Q-02`/`Q-03`; any defect discovered is recorded as a finding against its owning node; `0050-07`'s report is not edited — it stands as the record of what was missing when it was measured.
-- [ ] **0050-08** (P0; terminal integrating Task; Integration review: mandatory) Integrate the reviewed agent-inbox lifecycle and autodocs evidence, activate only the exact validated candidate, and prove all-team quiescence, restart recovery and rollback without destructive cleanup.
+- [x] **0050-08** (P0; terminal integrating Task; Integration review: mandatory) Integrate the reviewed agent-inbox lifecycle and autodocs evidence, activate only the exact validated candidate, and prove all-team quiescence, restart recovery and rollback without destructive cleanup.
+  Claim: `DONE-obrien-0050-08-20260901.md`; owner_token:
+  `agent:obrien:0050-08:1788297753802-f3b2ad09`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788297753802-f3b2ad09` (Offer `1788297753802-f3b2ad09` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T21:30:00Z`
   - **Task record:** `task_id: "0050-08"; feature_id: "0050"; role: integrator`.
   - **Architecture decisions and sources:** `DEC-0050-001`, every `REQ-0050-*`, `0050-00` review, implementation manifests and `0050-07` QA evidence.
   - **Prerequisites:** `0050-07`, `0050-09`; its closure includes `0050-00..06`.
