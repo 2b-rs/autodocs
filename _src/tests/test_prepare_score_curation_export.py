@@ -72,16 +72,22 @@ class PrepareScoreCurationExportTests(unittest.TestCase):
             (source / "en").mkdir()
             (source / "en/index.html").write_text(f'<html>{export.MARKER}<a href="../unresolved.html">collision</a></html>', encoding="utf-8")
             (source / "en/unresolved.html").write_text(f"<html>{export.MARKER}</html>", encoding="utf-8")
+            (source / export.CANONICAL_LANGUAGE).mkdir(exist_ok=True)
+            (source / export.CANONICAL_LANGUAGE / "unresolved.html").write_text(f"<html>{export.MARKER}</html>", encoding="utf-8")
             with patch.object(export, "EXPECTED", expected), patch.object(export, "EXPECTED_RECORDS", self.RECORDS):
                 first = export.prepare(source, destination)
                 second = export.prepare(source, destination)
             self.assertEqual(first, second)
-            self.assertIn('href="en/unresolved.html"', (destination / "index.html").read_text(encoding="utf-8"))
+            self.assertIn(f'href="{export.CANONICAL_LANGUAGE}/unresolved.html"', (destination / "index.html").read_text(encoding="utf-8"))
             self.assertIn('href="unresolved.html"', (destination / "en/index.html").read_text(encoding="utf-8"))
             self.assertFalse((destination / "dom-assertions.json").exists())
             self.assertFalse((destination / "integration-review.md").exists())
             self.assertFalse((destination / ".provenance-receipt").exists())
             self.assertEqual(set(export.public_files(export.regular_files(source))), set(export.regular_files(destination)))
+
+    def test_every_configured_language_directory_is_public(self):
+        for language in export.PUBLIC_LANGUAGES:
+            self.assertTrue(export.is_public_export_path(f"{language}/index.html"))
 
     def test_scope_leak_unmanaged_destination_and_overlap_refuse(self):
         with tempfile.TemporaryDirectory() as directory:
