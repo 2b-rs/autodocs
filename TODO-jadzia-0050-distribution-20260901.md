@@ -268,3 +268,9 @@ NOTES: obrien completed the review and integration. Merged to main in agent-inbo
 OFFERED: priority 1: seven, priority 2: data
 STATUS: OPEN
 NOTES: Dispatched QA.
+
+
+## 0050-07
+AWARDED: seven
+STATUS: AWARDED
+NOTES: seven accepted the priority offer for QA.
