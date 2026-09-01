@@ -7,7 +7,7 @@
 - state: `[x]`
 - coordination_state: `review`
 - lease_active: `false`
-- substantive_ref: `14326ccdcc8c8b3402b7f9768899291017a922aa`
+- substantive_ref: `14326ccdccf7a62c0d0870567c9843937d995577`
 - capability_class: `privileged`
 - execution_authority: direct local Git and validation; architecture authority only
 - process_role: Architect
@@ -50,7 +50,7 @@ Architecture refinements received from coordinator `zed` and incorporated:
 
 ## Completion and handoff
 
-- Architecture candidate: `14326ccdcc8c8b3402b7f9768899291017a922aa`.
+- Architecture candidate: `14326ccdccf7a62c0d0870567c9843937d995577`.
 - Deliverables cover the complete requested lifecycle through private regeneration/promotion, exact-revision Supervisor activation, redacted atomic publication to `2b-rs/autodocs`, dual receipts, audit, restart recovery and rollback.
 - Feature `0046` preserves `0045`’s explicit top-to-bottom operational priority and adds 11 bounded nodes with exactly one terminal integrating Task (`0046-06`).
 - Product code, `agents.json`, generators, Supervisor, GUI, public assets, external repositories and source-history `main` were not mutated.
