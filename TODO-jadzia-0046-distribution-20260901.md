@@ -58,3 +58,14 @@ NOTES: Dispatched append-only feedback journal implementation.
 AWARDED: seven
 STATUS: ACCEPTED
 NOTES: seven accepted offer.
+
+
+## 0046-01.02
+AWARDED: seven
+STATUS: CANCELLED
+NOTES: Cancelled due to wrong paths in offer. Re-offering.
+
+## 0046-01.02
+OFFERED: priority 1: seven
+STATUS: OPEN
+NOTES: Re-dispatched with correct agent-inbox paths.
