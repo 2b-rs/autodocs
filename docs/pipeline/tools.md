@@ -43,8 +43,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `extraction_report.py` | Extraktionsbericht mit vollständiger Abweichungsliste (vier Fehlerklassen), zeigt Kurationsanfragen | Subkommandos u. a. `category`, `output`, `document`, `page` |
 | `spec_extraction_campaign.py` | Reproduzierbare Side-by-Side-Extraktionskampagnenberichte; führt selbst keine Extraktion aus | `create`, `report` |
 | `spec_extraction_benchmark.py` | Baut deterministischen, review-first 200-Record-Benchmark-Entwurf | — |
-| `build_report.py` | Aggregiert Subreports zu kanonischem Gesamtbericht, erzeugt statisches HTML-Seitenmodell `build-reports.html` und trägt den Lauf ins getrackte Build-Ledger ein | `python3 _src/tools/build_report.py combine` / `publish` / `mint-ref` / `--no-ledger` |
-| `build_ledger.py` | Getracktes, append-only Build-Ledger `docs/evidence/build-ledger.jsonl` (ein Eintrag je Veröffentlichungslauf; `DEC-0043-001`); prüft Schema, Duplikate und — gegen eine Git-Baseline — die Append-only-Eigenschaft byte-genau (siehe `build-ledger.md`) | `python3 _src/tools/build_ledger.py verify [--baseline=HEAD]` / `list` / `backfill-historic` |
+| `build_report.py` | Aggregiert Subreports zu kanonischem Gesamtbericht und erzeugt statisches HTML-Seitenmodell `build-reports.html` | `python3 _src/tools/build_report.py combine` / `publish` |
 | `traceability_report.py` | Baut Traceability-Seitenmodell aus `crosscheck --json` + Log | `--json <crosscheck.json> --log <crosscheck.log>` |
 | `upstream_evidence.py` | Persistiert rohe Backend-Beobachtungen je Dokument/ID/Backend ("Preserve raw evidence") | schreibt `_src/spec/upstream/evidence/<doc>/<id>/<backend>.json` |
 | `text_repair.py` | Repariert PDF-Extraktionsartefakte mit belegter Herkunft; jede Änderung ist eine versionierte, protokollierte Regel; unbeweisbare Fälle werden als `suspects` gemeldet, nicht geraten | Bibliothek |
@@ -63,144 +62,6 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `scan_bezeichner.py` | Punkt 3: Bezeichner-Scan — findet Label-Einträge, deren Schlüssel wie ein API-Identifier aussieht (CamelCase, etc.) |
 | `scan_lazycopy.py` | Punkt 1: Lazy-Copy-Scan — findet Übersetzungseinträge, identisch zum deutschen Original |
 | `scan_restdeutsch.py` | Punkt 2: Rest-Deutsch-Scan — sucht verbliebenes Deutsch in Übersetzungsregistern (`i18n/<lang>/segments.json`, `labels.json`) |
-
-## Prozessdokumentations-Prüfung
-
-| Werkzeug | Zweck |
-|---|---|
-| `process_doc_doctor.py` | Read-only-Konsistenzprüfung des Prozessdokumentations-Korpus: `DOC001` tote relative Links, `DOC002` Index-Abdeckung, `DOC003` zitiertes Prozessdokument ohne Rückanker, `DOC004` unverlinkte Dokumente (aggregiert, informativ), `DOC005` unzitierte Entscheidungsdatensätze, `DOC006` unerreichbares Task-gebundenes Kontraktdokument |
-
-Aufruf: `python3 _src/tools/process_doc_doctor.py [--json] [--strict]`
-
-Es prüft **Struktur, nicht Wahrheit**: ob die Dokumente, die einen Prozess
-definieren, zusammenhängen und erreichbar sind — nicht, ob der Prozess auch
-gelebt wird. Letzteres bleibt Aufgabe einer QA-Rolle
-([`process-roles.md`](process-roles.md)).
-
-Unverlinkt zu sein ist bei **Nachschlagewerken kein Mangel** — niemand navigiert
-zu einem Schema, man schlägt es nach. `DOC004` fasst diese Fälle deshalb zu
-einem informativen Befund zusammen. Aussagekräftig ist allein `DOC006`: ein
-Dokument, das sich selbst über eine `Status:`-Zeile als Kontrakt oder
-Spezifikation eines Backlog-Items ausweist und trotzdem von nirgends erreichbar
-ist. Es bindet entweder noch und niemand findet es, oder es bindet nicht mehr
-und sagt das nirgends.
-
-Es repariert nichts, schreibt nichts und ist **standardmäßig beratend**: ohne
-`--strict` ist der Exit-Code immer `0`. Es in ein blockierendes Tor zu hängen,
-ist eine Entscheidung mit Reichweite über die eigene Arbeitseinheit hinaus und
-verlangt deshalb einen Entscheidungsdatensatz nach `TK-2`. Genau diese Kopplung
-ohne Datensatz war der Fehler von Task `0038-03`, den Feature `0040` beseitigen
-soll.
-
-## Integrations-Hygieneprüfung
-
-| Werkzeug | Zweck |
-|---|---|
-| `check_integration_hygiene.py` | Gemeinsame read-only Hygiene- und Root-Preflight-Implementierung (`DEC-0044-010`, `DEC-0044-015`, `DEC-0044-021`): prüft alle registrierten Worktrees, erlaubt ausschließlich ungestagte getrackte exakte Kinder von `logs/agent-memory/`, blockiert gemischte/gestagte/indeterminierte Zustände und Kandidatenüberlappung sowie alle bisherigen Findings |
-| `integration_hygiene_policy.py` | Reine gemeinsame Byte-Pfadklassifikation für Memory-Kindprädikat, NUL-Ausgabe, Root-Divergenz und exakte Kandidatenüberlappung; wird vom Checker, Root-Preflight und Post-Merge-Lauf verwendet |
-
-## Worktree-Lifecycle
-
-| Werkzeug | Zweck | Aufruf |
-|---|---|---|
-| `provision_tmp_worktree.sh` | Provisioniert Item-Worktrees; finalisiert bei Acceptance nur Claims des exakten Items als `DONE-*`; entfernt den eigenen abgeschlossenen Worktree nach harten Sicherheitsprüfungen; konservativer Flotten-Fallback für bereits nach `main` integrierte Worktrees. Branches und Tags werden nie gelöscht. | `_src/tools/provision_tmp_worktree.sh <item> [path]`; `--finalize-accepted <item> [acceptance-worktree]`; `--remove-completed <item> [owned-path] [accepted-ref]`; `--reap-only [managed-root]` |
-
-`--finalize-accepted` entfernt nichts: Es führt nach nachgewiesener Acceptance
-nur getrackte, exakt über `task_id`/`item_id` zugeordnete `TODO-*`-Claims per
-`git mv` nach `DONE-*` über. Der Reviewer prüft und committet diese Änderung.
-`--remove-completed` wird vom Owner von außerhalb des Ziel-Worktrees ausgeführt;
-der `accepted-ref` ist der exakte Feature-/Integrationstip mit Acceptance und
-`DONE-*` (nach Integration standardmäßig `main`).
-`--reap-only` ist das periodische Netz und verlangt zusätzlich, dass der
-Worktree-HEAD bereits aus `main` erreichbar ist. Dirty, aktive, unakzeptierte,
-unvollständig referenzierte, gesperrte, prozessbelegte und außerhalb des
-konfigurierten Roots liegende Worktrees bleiben erhalten.
-
-Aufruf vor Merge: `python3 _src/tools/check_integration_hygiene.py --repo <integrations-worktree> --candidate-ref <candidate> [--json]`. Harter Root-Preflight unmittelbar vor und nach dem Root-Merge: `python3 _src/tools/check_integration_hygiene.py --repo <root> --root-preflight`.
-
-Exit-Codes: `0` sauber, `1` Befunde, `2` die Prüfung selbst konnte nicht laufen —
-eine `2` ist ein **Fehlschlag, kein Bestehen**. `--json` liefert
-`integration-hygiene-report@v1`.
-
-Das Werkzeug schreibt **nichts**: keine Dateien, Refs, Indizes oder Objekte. Es
-findet Zustand, den die Git-Historie grundsätzlich nicht zeigen kann — genau die
-Schadensklasse, die den Root-Checkout mit einem gestagten Baum aus der Zeit vor
-dem Abschluss von Feature `0040` zurückließ.
-
-Zwei Eigenschaften müssen mitgelesen werden, sonst wird der Prüfung mehr
-zugetraut, als sie leistet:
-
-- `FOREIGN_STAGED_TREE` ist **kein Vorwurf**. Dass ein anderer Agent in seinem
-  eigenen Worktree etwas staged, ist der Normalfall. Ein initialer Kandidat wird
-  nach genau 2,0 Sekunden einmal neu gemessen; ist sein Index inzwischen wieder
-  gleich `HEAD`, entsteht kein Befund. Bleibt er divergent, bleibt
-  `FOREIGN_STAGED_TREE` unverändert blockierend und nennt zusätzlich
-  `index_mtime_utc`, `index_age_seconds` und `resample_delay_seconds`. Der
-  Zustand wird dadurch weder advisory noch auf integrationsnahe Worktrees
-  beschränkt. Aufgelöst wird er vom Eigentümer (committen oder stashen) —
-  **niemals** durch ein Zurücksetzen eines fremden Worktrees.
-- `MAIN_WORKTREE_DIRTY` bleibt für jede Nicht-Memory- oder gemischte getrackte
-  Root-Abweichung blockierend. Nur eine nichtleere Menge ausschließlich
-  ungestagter, NUL-sicher bestimmter und exakt groß-/kleinschreibungstreuer
-  Kinder von `logs/agent-memory/` ist erlaubt. `CANDIDATE_MEMORY_OVERLAP`
-  blockiert, wenn der Kandidat einen solchen aktuell abweichenden Pfad ändert —
-  auch bei gleichen Bytes. `--root-preflight` ersetzt die frühere rohe
-  Shell-Rezeptur und prüft Branch, Index und dieselbe Pfadklassifikation.
-
-Einbindung in die Integrationsprozedur, der bestätigte Mechanismus hinter
-`STALE_AFTER_REF_MOVE` und die `preserved/*`-Momentaufnahmen:
-[`branch-workflow.md`](branch-workflow.md).
-
-Tests: `_src/tools/test_check_integration_hygiene.py` (hermetische Git-Fixtures;
-Aufruf aus `_src/tools/`: `python3 -m unittest test_check_integration_hygiene -v`).
-
-## Reference-transaction-Frühwarnung
-
-| Werkzeug | Zweck |
-|---|---|
-| `reference_transaction_hook.py` | Versionierter, stdlib-only Installer, Präsenzcheck und fail-open `reference-transaction`-Hook nach `DEC-0044-009`. Erkennt bei Fast-Forward-Ref-Änderungen eingehende Commits, die zum Transaktionszeitpunkt auf fremden lokalen Branches liegen, und protokolliert nur tatsächlich `committed` gemeldete Befunde. |
-
-Installation und exakter Präsenzcheck aus einem vorgangseigenen Worktree:
-
-```sh
-python3 _src/tools/reference_transaction_hook.py install --repo .
-python3 _src/tools/reference_transaction_hook.py check --repo .
-```
-
-`install` gibt den aktiven Pfad und SHA-256 als JSON aus, ist bei identischen
-Bytes idempotent und überschreibt nie einen abweichenden bestehenden Hook. Ein
-relativer `core.hooksPath` oder ein Symlinkpfad wird abgelehnt, weil daraus kein
-einziger gemeinsamer, nachprüfbarer Hookpfad für alle Worktrees folgt. `check`
-liefert `0` nur bei vorhandenem, ausführbarem Digest-Match, `1` bei
-fehlenden/veralteten/inaktiven Bytes und `2`, wenn der aktive Pfad nicht sicher
-bestimmt werden kann.
-
-Hook-Evidenz liegt privat unter dem gemeinsamen Git-Verzeichnis:
-`autodocs/reference-transactions.jsonl` (`reference-transaction-log@v1`) plus
-kurzlebige vorbereitete Datensätze. Sie enthält Ref-Namen und Objekt-IDs, keine
-Dateiinhalte, Credentials oder Akteursidentität. Ein Befund wird in `prepared`
-ermittelt, aber erst nach `committed` ins JSONL geschrieben; `aborted` verwirft
-ihn. Fehler beim Analysieren oder Schreiben liefern im Hookpfad immer Exit `0`
-und dürfen die Ref-Transaktion nie beschädigen. Zurückgebliebene Pending-Dateien
-meldet `check` als Anzahl; sie sind vor expliziter Entfernung zu untersuchen.
-Die Analyse ist auf 256 eingehende Commits, 256 passende lokale Refs je Abfrage,
-2 MiB Pending-Evidenz, acht Sekunden insgesamt und fünf Sekunden je
-Git-Plumbing-Aufruf begrenzt. Eine Grenzüberschreitung ist ein fail-open
-Hookfehler ohne positive Aussage; sie verlagert keine Prüfpflicht vom
-verbindlichen Integrator-Checkpoint auf das Warnnetz.
-
-**Autoritätsgrenze:** Das Werkzeug ist ein Warnnetz, kein Gate. Installation,
-Präsenz, Log-Abwesenheit oder ein Befund sind weder Integrationsverdikt noch
-Acceptance. Ein fehlender, entfernter, veralteter, fehlgeschlagener oder
-umgangener Hook gilt nie als „geprüft“; die verbindliche Checkpoint-Prüfung des
-Integrators bleibt erforderlich. Verfahrenseinbindung und direkte
-Vorgänger-/Nachfolger-Carve-outs stehen in
-[`branch-workflow.md`](branch-workflow.md).
-
-Tests: `_src/tools/test_reference_transaction_hook.py` (hermetische
-Git-Repositories; Fast-Forward-Merge, `update-ref`, direkte Ketten-Carve-outs,
-Installer/Präsenz und fail-open Fehlerpfad). Aufruf aus `_src/tools/`:
-`PYTHONDONTWRITEBYTECODE=1 python3 -m unittest test_reference_transaction_hook -v`.
 
 ## PDF-/Geometrie-Diagnose-Werkzeuge
 
@@ -230,23 +91,15 @@ Installer/Präsenz und fail-open Fehlerpfad). Aufruf aus `_src/tools/`:
 | Mechanismus | Zweck |
 |---|---|
 | `run.sh` | Einmalige, parameterlose Runner-Hülle; bei Task-Abschluss nur noch als dünner Aufruf des Transaktionswerkzeugs zulässig |
-| `runner-host/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
-| `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → substantive commit → REF bookkeeping → claim finalization` (`close-task-v1`, `verify-and-commit-v1`); feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, Recovery-Journal und strukturierte Ergebnisse; seit `0038-05.02` zusätzlich das feste `legacy-editor-candidate-v1`-Profil, das einen bereits geplanten `legacy_task_editor.py`-Kandidaten (Pickup/Progress/Closure/Wontfix/Parent-Aggregation/REF-Injection/Claim-Handoff/-Finalisierung) über dieselbe Journal-/Lock-/Promote-/Rollback-Maschinerie autoritativ mehrdateiig promotet, statt einer zweiten Schreiboberfläche; sowie, als `branch-merge-v1` (`0038-20`, implementiert den `0038-19`-Vertrag), die typisierten `base-branch`/`merge-prereqs`-Aktionen: sequentielle Nicht-Oktopus-2-Parent-Merges in einem Wegwerf-Worktree, CAS-Publikation nur auf die eigene, noch nicht integrierte Item-Branch, Append-only-Claim-Union bei identischem `owner_token`, strukturelle Ablehnung jedes Task→Feature-/Feature→`main`-/`integrate-checkpoint`-Versuchs; siehe [`runner-transaction.md`](runner-transaction.md) |
+| `_src/run-loop.sh` | Legacy-Watch-/One-Shot-Runner mit Sandbox, Umgebungs-Selbsttest und expliziter Erstinitialisierung über `--init`; normale Selbsttests installieren oder aktualisieren keine Abhängigkeiten |
+| `_src/tools/runner_transaction.py` | Fail-closed Legacy-Transaktion für `generate → validate → promote → einen atomaren Implementierungs-Check-in`; feste Action-IDs, Kandidaten-Worktree, temporärer Git-Index, CAS-Publikation, trailer- und tree-gebundene `[x]`/`[w]`-Transition mit behaltenem finalisiertem Claim, Recovery-Journal und strukturierte Ergebnisse; siehe [`runner-transaction.md`](runner-transaction.md) |
 | `_src/tools/environment_doctor.py` | Rein lesende, portable Diagnose der Ausführungsumgebung; erzeugt ein digest-gebundenes `prepared-environment@v1` mit Capability-/Protokoll-Gates und optional verifiziertem Cache; Aufruf: `python3 _src/tools/environment_doctor.py --root <root> --requirements <requirements.json> --profile <profile.json> [--observations <observations.json>] [--cache-root <dir>] [--write-cache]`; siehe [`environment-doctor.md`](environment-doctor.md) |
-| `_src/tools/task_evidence_pack.py` | Baut ein kompaktes, content-addressed `task-evidence-pack@v1`-Manifest je Task-Versuch: dedupliziert Blob-Store für Beleg-Bytes, `tracked-ref`-Verweise auf committete Quell-/Probe-Skripte statt Kopien in Zeitstempel-Logs, gebundenes Excerpt, Kriterien-Mapping; weist Geheimnisse, Wildcard-Pfade, fremde Task-Evidenz und ignorierte Scratch-Pfade als alleinigen Abschlussnachweis fail-closed zurück; Aufruf: `python3 _src/tools/task_evidence_pack.py build --root <root> --blob-root <dir> --out-manifest <pack.json> --task-id <id> --action <name> --base-commit <sha> --tool-name <name> --exit-status <n> --items-json <json>` / `verify --manifest <pack.json>`; siehe [`task-evidence-pack.md`](task-evidence-pack.md) |
-| `_src/tools/artifact_retention.py` | Claim-bewusste Quarantäne, Aufbewahrung und Dry-run-first Garbage Collection für Task-Artefakte (`0038-11`): `quarantine` verschiebt einen partiellen/fehlgeschlagenen Export/Report/Scratch-Versuch mit strukturiertem Zustand/Fehler/Digest/Retry-Flag unter einen laufversuchseigenen `.partial`-Wurzelpfad; `plan`/`gc` klassifizieren jeden `output/logs/<task-id>/<request-id>`-Versuch in eine Aufbewahrungsstufe (`successful-log`/`failed-trace`/`cache`/`scratch`/`permanent-manifest`) und schlagen Löschungen nur für terminale, unbeanspruchte, TTL-abgelaufene Artefakte vor; verweigert aktive Claims, nicht abgeschlossene Transaktions-Journale (`0038-10`), unbekannte Zustände und den `current.json`-Zeiger, respektiert `task-evidence-pack@v1`-Referenzen (`0038-12`) und schützt vor Uhr-Drift; echte Löschung nur mit explizitem `--apply`; Aufruf: `python3 _src/tools/artifact_retention.py quarantine --root <root> --task-id <id> --request-id <id> --source <pfad> --kind <art> --state {partial,failed,interrupted,superseded}` / `gc --root <root> [--apply] [--json]` |
 | `_src/tools/task_validation.py` | Wertet einen unveränderlichen Validierungslauf gegen ein `task-validation-profile@v1` aus; erzwingt Freshness, Stage-/Input-/Output-Verträge, Coverage-Canaries und strukturierte Fehler statt blindem Vertrauen in Exit 0; Aufruf: `python3 _src/tools/task_validation.py --profile <profile.json> --run <result.json>`; siehe [`task-validation.md`](task-validation.md) | 
-| `_src/tools/candidate_budget.py` | Isoliert generierte Kandidaten und erzwingt Ausgabe-/Diff-/Realismus-Budgets (`0038-13`): generiert ausschließlich in laufversuchseigene `output/logs/<task-id>/<request-id>/.candidates/`-Wurzeln (wie `0038-11`s `.partial`-Muster); ein `candidate-budget@v1`-Vertrag deklariert `sole_writer`, erlaubte Pfadmuster, Datei-/Byte-Budgets, erforderliche Teilbäume (z. B. Sprachbäume), Realismus-Byte-Untergrenzen je Kategorie (gerendert/heruntergeladen/übermittelt), optionale Negativ-Pfad-Pflicht, ein Duplikat-Digest-Verhältnis gegen synthetisches Platzhalter-Material sowie eine Soll-Manifest-Diff-Toleranz; `evaluate()` liefert PASS/FAIL/INCONCLUSIVE wie `0038-08`; `promote()` blockiert bei Nicht-PASS, verweigert Überschreiben eines fremden `sole_writer` an einem festen Exportpfad, kopiert nie eine nicht deklarierte Dateifamilie und ist über einen atomaren `current.json`-Zeiger (Muster wie `0038-10`) atomar/recoverable; Aufruf: `python3 _src/tools/candidate_budget.py manifest --root <root> --task-id <id> --request-id <id>` / `evaluate --budget <budget.json> --task-id <id> --request-id <id> --out-report <report.json>` / `promote --budget <budget.json> --task-id <id> --request-id <id> --destination <pfad> --report <report.json> [--apply]` |
-| `_src/tools/chore_tool_inventory.py` | Lifecycle-Vertrags-Klassifikation der getrackten mutierenden Chore-Werkzeuge (`0038-14`): wiederverwendet `automation_safety.tracked_automation_paths()` als lebende Enumeration statt eigenen Git-Scans; lädt `chore_tool_inventory_data.json` und trennt strikt `classified` (Kategorie, Write-Set, Commit-Points, Idempotenz-Schlüssel, Journal, Cleanup, Failure-Aggregation, Ownership, Retention, Test-Referenz) von `enumerated` (nur Heuristik-Kategorie, ausdrücklich nicht klassifiziert); `--check` validiert Schema plus Abgleich gegen die lebende Skript-Liste (meldet fehlende/veraltete Einträge) und ist exit-0 nur bei null Fehlern; Aufruf: `python3 _src/tools/chore_tool_inventory.py --check [--json] [--list {classified,enumerated,missing,stale}] [--category <kategorie>]` |
-| `_src/tools/legacy_task_doctor.py` | Read-only, deterministic diagnosis for legacy `TODO.md`/`DONE.md`, claims, REFs, prerequisites, and agent bootstrap; invoke with `python3 _src/tools/legacy_task_doctor.py [--json]`; emits at most ten summary lines or `legacy-task-doctor-report@v1` JSON and never repairs, takes over, or deletes anything; see [`legacy-task-doctor.md`](legacy-task-doctor.md) |
+| `_src/tools/legacy_task_doctor.py` | Rein lesende, deterministische Diagnose für Legacy-`TODO.md`/`DONE.md`, Claims, REFs, Prerequisites und Agent-Bootstrap; Aufruf: `python3 _src/tools/legacy_task_doctor.py [--json]`; gibt höchstens zehn Zusammenfassungszeilen oder `legacy-task-doctor-report@v1`-JSON aus und repariert/übernimmt/löscht nichts; siehe [`legacy-task-doctor.md`](legacy-task-doctor.md) |
 | `_src/tools/legacy_scope_planner.py` | Rein lesender, fail-closed Kollisionsplaner für direkte und abgeleitete Schreibbereiche; kombiniert normalisierte aktive Claims, den autoritativen `issue-regeneration-dag@v1` und exakt gebundene Git-/Runner-/Generator-/i18n-/Publikations-Snapshots, erklärt Producer-Ketten und liefert `PARALLEL`, `SERIALIZE`, `BLOCK` oder `INCOMPLETE`; siehe [`legacy-scope-planner.md`](legacy-scope-planner.md) |
-| `_src/tools/task_context_capsule.py` | Rein lesender, größenbudgetierter Task-Kontext-/Resume-Capsule-Generator; komponiert `legacy_task_doctor.py`, `legacy_scope_planner.py` und die unveränderlichen `runner_transaction.py`-Attempt-Ergebnisse (`0038-10`) zu kompaktem `task-context-capsule@v1`-JSON plus Zehn-Zeilen-Zusammenfassung, damit ein Agent nach Kontext-/Tool-Budget-Grenzen ohne Wiederholung erledigter Arbeit fortsetzen kann; Aufruf: `python3 _src/tools/task_context_capsule.py --root . --task-id <id> [--claim-path <pfad>] [--max-bytes <n>] [--json]`; siehe [`task-context-capsule.md`](task-context-capsule.md) |
 | `_src/tools/legacy_task_editor.py` | Digest-gebundener struktureller Planer für Pickup, Fortschritt, Closure/Wontfix, Parent-Aggregation, REF-Korrektur und Claim-Handoff/-Finalisierung; erzeugt immer content-addressed Candidate+Diff, verifiziert Promotion-Preimages erneut und liefert bis `0038-05.02` ausschließlich `verified-coordinator-required` ohne autoritative Mutation; siehe [`legacy-task-editor.md`](legacy-task-editor.md) |
 | `_src/tools/task_bookkeeping_closure.py` | **Stillgelegt:** frühere freie TODO-/Claim-Direktschreiboberfläche; APIs/CLI schlagen ohne Dateizugriff fehl und verweisen auf `legacy_task_editor.py`. |
-| `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für Abbruch, Rollback, Index-Isolation, Zwei-Commit-Closure, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz; `BranchMergeTransactionTests` (`0038-20`) deckt zusätzlich `base-branch`/`merge-prereqs` ab: Basis-off-Parent, sequentielle Mehrquellen-Merges, Claim-Union bei gleichem `owner_token`, Ablehnung bei fremdem `owner_token`/veraltetem Source-Tip/nicht deklarierter Quelle/Sandboxed-Task→Feature-Versuch, sowie Publish-dann-Crash-Recovery |
-| `_src/tools/check_policy_provenance.py` | Rein lesende, stdlib-only Herkunftsprüfung für Integrations-Policy-Commits (`policy-provenance-report@v2`, `RQ-IP-04`, `DEC-0044-002`/`011`, `0044-01`/`0044-12`): klassifiziert die Policy-Pfad-Commits eines Merge-Kandidaten (`--source-branch`, `--target-branch`) weiterhin als `source-origin`, `target-pull-in-eligible` oder `foreign-branch` und prüft für Commits nach dem Beschlusszeitpunkt zusätzlich genau einen nichtleeren, syntaktisch gültigen Trailer `Policy-Origin-Branch:`. Vorbeschlussliche Historie bleibt ausdrücklich ohne Nachrüstung; ein fehlender, leerer, duplizierter oder fehlerhafter Pflicht-Trailer sowie ein `foreign-branch`-Befund führen zu Exit `1`. Das Werkzeug mutiert weder Refs noch Working Tree und trifft keine Acceptance-/Integrationsentscheidung. Aufruf: `python3 _src/tools/check_policy_provenance.py --source-branch <b> --target-branch <b> [--policy-path <pfad>...] [--repo <pfad>] [--json]`; Tests: `_src/tools/test_check_policy_provenance.py` |
-| `_src/tools/legacy_handoff_manifest.py` | Rein lesende, stdlib-only Prüfung des Pre-Activation-Handoff-Manifests (`0038-16.01`): bindet das exakte `0037-37`-Review-Paket (Datei-Digest, `base_commit`, alle 17 Kontrakt-Digests, gegen den Arbeitsbaum nachgerechnet) und beweist über `docs/pipeline/legacy-handoff-manifest-v1.json`, dass jedes überlebende Legacy-Primitiv (action, schema, result, scope, evidence, recovery, context, validation, approval-readiness) **genau eine** Disposition trägt — entweder eine typisierte `0037-46.01`-Aktion/Kontrakt oder einen expliziten `0037-46.02`-Retirement-Trigger — und dass kein `authority_key` und keine Aktions-ID doppelt beansprucht wird; die Abdeckung wird gegen die lebende Mechanismen-Tabelle dieses Abschnitts geprüft, nicht gegen eine Kopie; aktiviert keine Queue und ändert keine Autorität (prüft im Gegenteil auf echte Queue-Liveness: dass kein `.runner/`-Runtime-Root existiert und der lebende Bootstrap-Selektor `agent-workflow.json` weiterhin das Pre-Activation-Protokoll `runner-request@v1` deklariert; die bloße Existenz der `_src/runner/`-Registry ist seit Task `0038-30` bewusst kein Aktivierungssignal); Aufruf: `python3 _src/tools/legacy_handoff_manifest.py --check [--json] [--root <root>]`; siehe [`legacy-handoff-manifest.md`](legacy-handoff-manifest.md) |
-| `_src/tools/capability_match.py` | Deterministischer, stdlib-only, kein-KI-Matcher (`0044-05`, `RQ-CB-01..03`, `DEC-0044-004`/`DEC-0044-025`): vergleicht ein `task-requirement-profile@v1` gegen einen oder mehrere `agent-capability-descriptor@v1` und liefert die vollständige sortierte Menge geeigneter Deskriptoren mit stabil geordneten, erklärbaren Ablehnungsgründen; wählt selbst keinen Agenten aus (das bleibt dem Orchestrator vorbehalten) und aktiviert nichts — liest nie Wall-Clock, Git-Zustand, Netzwerk oder Credentials; legacy `agent-capability-v1.schema.json` bleibt unverändert und wird als nicht unterstütztes Schema abgelehnt (Exit 2, nie ein Nicht-Treffer); Aufruf: `python3 _src/tools/capability_match.py --profile <profil.json> --descriptor <deskriptor.json> [--descriptor <pfad> ...] [--agent-id <exakte-id>] [--json]`; siehe [`capability-matching.md`](capability-matching.md) |
+| `_src/tools/test_runner_transaction.py` | Hermetische Git-/Fehler-Injektions-Tests für atomare Check-ins, Trailer/Marker-/Claim-Bindung, Abbruch, Rollback, Index-Isolation, CAS-Rennen, Symlink-/Pfadschutz und Ergebnis-Persistenz |
 | `output/logs/<task-id>/<request-id>/` | Ignorierte, request-spezifische Voll-Logs, strukturierte Ergebnisse, validierte Report-Kopien und Recovery-Journale des Transaktionswerkzeugs |
 | `output/run-archive/run-<timestamp>-n<seq>.sh` + `.log` | Vollständiges Archiv jedes `run.sh`-Aufrufs — Skript + Ausgabe, sequenziell durchnummeriert |
 | `output/run-current.log` | Veränderlicher Zeiger/Log des jeweils letzten (oder laufenden) Legacy-Aufrufs; nie als alleiniger Abschlussnachweis verwenden |
@@ -258,14 +111,14 @@ explizit gestartet. Standardmäßig fragt der Runner vor jeder fehlenden Install
 nach Bestätigung:
 
 ```sh
-runner-host/run-loop.sh --init /tmp/autodocs/run.sh
+_src/run-loop.sh --init /tmp/autodocs/run.sh
 ```
 
 Für unbeaufsichtigte Provisionierung muss zusätzlich `--batch` beziehungsweise `-b`
 angegeben werden; `--batch` ohne `--init` wird abgewiesen:
 
 ```sh
-runner-host/run-loop.sh --init --batch /tmp/autodocs/run.sh
+_src/run-loop.sh --init --batch /tmp/autodocs/run.sh
 ```
 
 Die Initialisierung prüft funktionsfähig statt nur nach Pfad-Präsenz: Python 3 mit
@@ -280,179 +133,6 @@ manuell beim benötigten GitHub-Konto oder Repository registriert werden.
 `--init` führt nach erfolgreicher Einrichtung den Sandbox-Selbsttest aus und beendet
 sich. Ohne `--batch` ist ein interaktives Terminal erforderlich. Normale Aufrufe und
 `--self-test-only` führen keine Paket- oder Browserinstallation aus.
-
-## Publikationswerkzeuge — welches gilt wann
-
-Es gibt **zwei** Publikationswerkzeuge mit **zwei verschiedenen Auswahllogiken**.
-Sie ersetzen einander nicht. Wer publiziert, wählt zuerst hier aus, bevor er ein
-Skript aufruft.
-
-| Werkzeug | Was es auswählt | Dry-Run | Schreibt/veröffentlicht | Wann es gilt |
-|---|---|---|---|---|
-| `_src/tools/publish_public_site.sh` | **gesamter getrackter Baum minus Ausschlussliste** (`_src/`, `docs/`, `logs/`, Agentendateien, …); Dateiliste **und** Inhalte kommen beide aus der angegebenen Revision (`git ls-tree`/`git archive "$REVISION"` — siehe Konsolidierungshinweis unten) | ja (`--dry-run`) | Orphan-Export, Commit, Push; optional Force-Push nur mit `PUBLISH_ALLOW_FORCE_PUSH=1` **und** `PUBLISH_FORCE_APPROVAL_REF` | **Ganzseiten-Publisher.** Der einzige reguläre Weg für den vollständigen Website-Abgleich nach einer Regenerierung, für jede angegebene Revision — auch eine nicht ausgecheckte. |
-| `_src/tools/publish_approved_subtree.py` | **genau ein vom Aufrufer benannter Teilbaum**, gebunden an einen Pflicht-Tree-Digest | ja (`--dry-run`, Offenlegungsmodus) | **nur Dateisystem**: materialisiert den Teilbaum in ein Zielverzeichnis. Kein Git, kein Netz, kein Commit, kein Push. | **Begrenzte Freigabe** (`0038-29`): das Management hat *einen* Teilbaum mit *einem* Digest freigegeben, und nur der soll ins Ziel. |
-
-**Faustregel:** Lautet die Freigabe „der gesamte Stand" → `_src/tools/publish_public_site.sh`.
-Lautet sie „dieser Teilbaum, dieser Digest" → `publish_approved_subtree.py`,
-danach ein separat autorisierter Commit-/Push-Schritt durch den Operator.
-Der dritte Fall — Freigabe für einen Teilbaum, Ausführung über einen
-Ganzseiten-Publisher — ist der Fall, den `0038-29` beseitigt: er hätte das
-Freigegebene **nicht** publiziert und stattdessen 4.133 ungeprüfte Pfade
-mitgenommen.
-
-> **Konsolidierung `0038-32` (2026-08-22): `_src/publish.sh` retiriert, der
-> `publish_public_site.sh`-Defekt behoben.** Bis zu diesem Datum trug das
-> Repository **drei** Ganzseiten-/Teilbaum-Publikationswerkzeuge mit
-> unterschiedlicher Auswahllogik; am 2026-08-22 kostete genau diese
-> Mehrdeutigkeit einen Arbeitstag (`0038-29`-Vorfall, s.o.). Entscheidung und
-> Begründung:
->
-> 1. **`_src/publish.sh` wurde retiriert** (Datei entfernt, keine inerte
->    Kopie danebengelassen). Es wählte über eine **feste Verzeichnisliste**
->    (`PUBLIC_DIRS`/`PUBLIC_FILES`) aus — exakt die Struktur, die den
->    `0019`-Vorfall verursachte: ein neu freigegebener Teilbaum kam in keiner
->    festen Liste vor und wäre **nicht** publiziert worden. Es hatte außerdem
->    keinen Dry-Run, den die Aufgabe für den Überlebenden verlangt, und keinen
->    Revisionsparameter. `rsync -a --delete` in einen persistenten Klon blieb
->    als Mechanismus zwar robust, löst aber das strukturelle Problem nicht.
-> 2. **`_src/tools/publish_public_site.sh` bleibt der einzige
->    Ganzseiten-Publisher**, weil sein Auswahlprinzip — „gesamter getrackter
->    Baum minus Ausschlussliste" — ein neu freigegebenes Verzeichnis
->    automatisch mitnimmt, ohne dass jemand zuerst eine feste Liste pflegen
->    muss; es hatte bereits Dry-Run und die von `0038-26` verlangte
->    Force-Push-Freigabeschranke (`PUBLISH_ALLOW_FORCE_PUSH=1` **und**
->    `PUBLISH_FORCE_APPROVAL_REF`, unverändert übernommen — sie verschwindet
->    nicht und bleibt nicht stillschweigend erreichbar).
-> 3. **Der bestätigte Zeile-80-Defekt ist behoben, nicht dokumentiert
->    belassen.** Die Datei**liste** kam schon vorher korrekt aus
->    `git ls-tree "$REVISION"`; die Datei**inhalte** las die alte Zeile 80
->    (`tar -cf - -C "$REPO_ROOT" -T "$EXPORT_LIST" | tar -xf - -C
->    "$EXPORT_DIR"`) jedoch aus dem gerade ausgecheckten Arbeitsverzeichnis,
->    unabhängig von `$REVISION` — mit einer **nicht ausgecheckten** Revision
->    entstand dadurch lautlos ein unvollständiger Export, weil in der Pipe nur
->    der Status des zweiten `tar` zählte. Der Fix liest die Inhalte jetzt über
->    `git archive "$REVISION"` direkt aus dem Git-Objekt und filtert
->    anschließend weiterhin über `tar -T "$EXPORT_LIST"` auf die erlaubte
->    Dateiliste — das Revisionsargument bedeutet jetzt, was es sagt, auch für
->    eine nicht ausgecheckte Revision. Test:
->    `_src/tests/test_publish_scripts.py::PublishPublicSiteEndToEndTests::test_export_reads_content_from_a_revision_other_than_the_worktree`.
->
-> `_src/tools/publish_approved_subtree.py` (`0038-29`) war an dieser
-> Konsolidierung nicht beteiligt: begrenzte digest-gebundene Publikation und
-> Ganzseiten-Publikation bleiben zwei getrennte Werkzeuge mit getrennten
-> Zusagen. Wer die alte Drei-Werkzeug-Lage aus der Git-Historie
-> wiederherstellen möchte, lese zuerst diesen Absatz und Task `0038-32` in
-> `TODO.md`: das entfernte `_src/publish.sh` trug genau den strukturellen
-> Fehler, den der `0019`-Vorfall aufdeckte.
-
-### `_src/tools/publish_approved_subtree.py`
-
-Veröffentlicht genau einen benannten Teilbaum in ein explizit benanntes
-Zielverzeichnis. Aufruf:
-
-```sh
-python3 _src/tools/publish_approved_subtree.py \
-  --source <quellverzeichnis> \
-  --destination-root <zielwurzel> \
-  --subtree <relativer/posix/pfad> \
-  --expected-tree-digest <64-stelliger hex-sha256> \
-  --authorization-ref <commit-oder-datensatz-id> \
-  --evidence <pfad/zur/evidence.json> \
-  [--journal <pfad/zum/journal.jsonl>] [--sample <n>] \
-  (--dry-run | --apply)
-```
-
-Verhalten und Schranken:
-
-- **Digest ist Pflichtargument.** Er wird beim Planen *und* unmittelbar vor dem
-  ersten Schreibvorgang erneut über das tatsächliche Quellverzeichnis berechnet;
-  bei Abweichung wird verweigert und **nichts** geschrieben. Ändert sich die
-  Quelle zwischen Plan und Schreiben, wird ebenfalls verweigert.
-- **Nichts außerhalb des Teilbaums.** Pfade außerhalb
-  `<destination-root>/<subtree>` werden nie angelegt, geändert oder gelöscht.
-- **Löschungen nur innerhalb, und vorher gemeldet.** Gelöscht wird nur, was die
-  Quelle nicht mehr enthält; die vollständige Liste wird vor der ersten Löschung
-  ausgegeben.
-- **`--dry-run` ist der Offenlegungsmodus.** Er meldet die vollständige
-  beabsichtigte Wirkung (angelegt / geändert / gelöscht, mit Zahlen und einer
-  begrenzten Stichprobe; der Rest wird ausdrücklich als „… n more" ausgewiesen)
-  und schreibt nichts.
-- **Schutzschranken.** Kein privater Pfadbestandteil (`_src`, `output`,
-  `.gitignore`, `.git`) darf ins Ziel — weder als Teilbaum noch als Quellpfad.
-  Symlinks und nicht-reguläre Dateien in der Quelle werden abgelehnt; Quelle und
-  Ziel dürfen sich nicht überlappen; `--subtree` darf nicht absolut sein und
-  nicht nach oben traversieren.
-- **Keine erfundene Autorität.** `--authorization-ref` ist Pflicht und wird in die
-  JSON-Publikationsevidenz geschrieben. Vorhandene Evidenz wird nie überschrieben;
-  Evidenz und Journal dürfen nicht im publizierten Teilbaum liegen.
-- **Keine eingebetteten Vorgaben.** Ziel und Teilbaum sind Pflichtargumente ohne
-  Default. Eine Commit-Identität kommt nicht vor, weil das Werkzeug keinen Commit
-  erzeugt und keine VCS-/Netzoperation ausführt: die `PUBLISH_IDENTITY_*`- und
-  `PUBLISH_REMOTE`-Pflicht aus `0038-26` gilt unverändert für den nachgelagerten,
-  separat autorisierten Commit-/Push-Schritt der beiden anderen Publisher.
-- Jeder mutierende Schritt hängt einen dauerhaften Ergebnis-/Recovery-Satz an das
-  optionale `--journal` an. Nach dem Schreiben wird der Digest des Zielteilbaums
-  erneut berechnet und muss dem freigegebenen entsprechen.
-- **Ein bereits vorhandener Symlink irgendwo im Zielteilbaum blockiert die
-  Publikation** (Verweigerung, Exit 1) — er wird nicht ersetzt und nicht gelöscht.
-  Das ist fail-closed und beabsichtigt, überrascht aber bei einem gewachsenen
-  Deploy-Verzeichnis: solche Links müssen vorher vom Operator aufgelöst werden.
-  Verweigerungen, die aus dem Ziel stammen, benennen auch das Ziel
-  („destination subtree …"), nicht die Quelle.
-- **Dateirechte werden nicht übernommen.** Kopiert werden ausschließlich Bytes;
-  Modus und Executable-Bit gehen verloren. Für einen HTML-Baum bedeutungslos,
-  relevant nur, falls das Werkzeug je für ausführbare Artefakte benutzt würde.
-- Der Restlistenhinweis des Dry-Runs verweist nur dann auf die Evidenz, wenn
-  `--evidence` tatsächlich angegeben wurde; sonst weist er aus, dass die
-  vollständige Liste in diesem Lauf nirgends festgehalten wird.
-
-Exit-Codes: `0` Erfolg, `1` Verweigerung, `2` Aufruffehler.
-
-`1` heißt in **jedem Schrankenfall** zugleich „es wurde nichts geschrieben" —
-alle Pfad-, Symlink-, Überlappungs-, Autoritäts-, Evidenz- und Digest-Schranken
-greifen vor dem ersten Schreibvorgang. Es gibt genau **eine** Ausnahme, und sie
-sagt es selbst: schlägt die **Nachverifikation** des Zielteilbaums fehl (oder
-tritt mitten in der Schreibphase ein Dateisystemfehler auf), wurde das Ziel
-bereits verändert. Der Lauf endet ebenfalls mit `1`, meldet aber ausdrücklich
-„the destination WAS modified" und schreibt — sofern `--evidence` angegeben ist —
-einen Evidenzsatz mit `"state": "incomplete"`, `"published": false` und den
-Listen `written`/`removed`, damit der Zustand des Ziels rekonstruierbar bleibt.
-Ein nacktes Exit `1` darf deshalb **nicht** als „das Ziel ist unberührt" gelesen
-werden; die Meldung entscheidet.
-
-#### Tree-Digest-Verfahren (von Hand nachrechenbar)
-
-Identisch mit `_src/tools/prepare_score_curation_export.py` (Branch `0019`,
-Commit `58b35f1e5`) — es gibt bewusst nur *ein* Verfahren:
-
-1. Jede reguläre Datei unterhalb des Quellverzeichnisses auflisten.
-2. Jede als **relativen POSIX-Pfad** ausdrücken und die Pfade sortieren
-   (Code-Point-Ordnung, entspricht `LC_ALL=C sort`).
-3. In dieser Reihenfolge je Datei anhängen: die **UTF-8-Bytes des relativen
-   Pfades**, ein **NUL-Byte** (`0x00`), dann den **rohen 32-Byte-SHA-256** des
-   Dateiinhalts (nicht dessen Hex-Darstellung).
-4. Der Tree-Digest ist der Hex-SHA-256 über diesen zusammenhängenden Bytestrom.
-
-Nachrechnen ohne das Werkzeug:
-
-```sh
-cd <quellverzeichnis>
-find . -type f | sed 's|^\./||' | LC_ALL=C sort | while read -r p; do
-  printf '%s\0' "$p"
-  shasum -a 256 -b "$p" | cut -d' ' -f1 | xxd -r -p
-done | shasum -a 256
-```
-
-Tests: `_src/tools/test_publish_approved_subtree.py` (stdlib-`unittest`, kein
-`pytest` nötig; `python3 _src/tools/test_publish_approved_subtree.py`). Abgedeckt
-sind mindestens: Digest stimmt, Digest stimmt **nicht** (muss verweigern),
-Quelländerung zwischen Plan und Schreiben, unbeteiligter Zielinhalt bleibt
-**byteidentisch**, Löschung innerhalb des Teilbaums wird vor der Ausführung
-gemeldet, Privatpfad- und Symlink-Schranke, Teilbaum-Ausbruch, Quelle/Ziel-Überlappung,
-Vollständigkeit und Begrenztheit der Dry-Run-Ausgabe, Autoritätsreferenz-Pflicht,
-Evidenz-Pflicht und Überschreibschutz, Beschriftung ziel-verursachter
-Verweigerungen sowie der Nachverifikationsfehler (Fehlerinjektion: das Ziel ist
-mutiert, es wird ein `incomplete`-Evidenzsatz geschrieben).
 
 ## Werkzeuge des vereinheitlichten Kurations-/Review-Modells (0006-14)
 
@@ -479,12 +159,3 @@ cover id minting, immutable storage, version-pinning, graph semantics,
 invalidation/confidence, typed synthesized claims, trigger orchestration, and
 historical/delta queries.
 
-## Branch- und ketten-bewusste Arbeitsverfügbarkeits-Prüfung (0044-19)
-
-| Werkzeug | Zweck |
-|---|---|
-| `_src/tools/frontier_query.py` | Read-only fünfstufige Arbeitsverfügbarkeits- und Frontier-Prüfung (`available`, `in-flight`, `blocked-prereq`, `held`, `indeterminate`) gemäß `docs/pipeline/frontier-query-spec.md`. Löst Items über E1–E6 (TODO.md, Branch-Claims, Commit-Subjekte, Worktrees, agent-inbox Offers und Governance-Holds) auf und deklariert die fünf obligatorischen Blindstellen. |
-
-Aufruf: `python3 _src/tools/frontier_query.py [--repo <path>] [--inbox-data <path>] [--json] [--available-only]`
-
-Tests: `_src/tools/test_frontier_query.py` (AE-3 Falsifikation `0041-05` unter `chain-0041-benjamin`, AE-4 adjazente Fälle und AE-5 Partitionseigenschaft).

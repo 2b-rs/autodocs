@@ -35,6 +35,24 @@ from lib_docmodel import (SRC, ROOT, LANGS, render_page, load_templates,
 WORKERS = min(12, os.cpu_count() or 12)
 
 
+def publication_links(html_text, lang=None):
+    """Resolve root chooser links for the canonical or translated tree."""
+    config = json.load(open(os.path.join(SRC, "site.json"), encoding="utf-8"))
+    publication = config["publikation"]
+    canonical = config["sprachen"]["kanonisch"]
+    language = lang or canonical
+    prefix = "" if lang is None else "../"
+    replacements = {
+        "@@AUTOSAR_TREE_HREF@@": "index.html",
+        "@@SCORE_TREE_HREF@@": "%s%s/%s/index.html" % (
+            prefix, publication["score_tree"], language
+        ),
+    }
+    for token, target in replacements.items():
+        html_text = html_text.replace(token, target)
+    return html_text
+
+
 def _missing_count(stat):
     return len(stat.fehlend) + len(getattr(stat, "fehlende_labels", {}))
 
@@ -47,7 +65,7 @@ _MP_CTX = multiprocessing.get_context("fork")
 
 def _render_one(args):
     page, footers, page_tmpl, check = args
-    html_text = render_page(page, footers, page_tmpl)
+    html_text = publication_links(render_page(page, footers, page_tmpl))
     target = os.path.join(ROOT, page["file"])
     if check:
         errs = compare_html(target, html_text) if os.path.exists(target) else ["Datei fehlt"]
@@ -70,7 +88,7 @@ def generate_lang(lang, only=None, check=False, announce=True):
             continue          # nur-deutsche Seite (z. B. Traceability-Bericht)
         uebers = uebersetze_seite(page, lang, seg, ui, stat, lab=lab)
         html_text = render_page(uebers, footers, page_tmpl, lang=lang, notice_ui=ui.get("review_notice"))
-        html_text = globale_ersetzungen(html_text, ui)
+        html_text = publication_links(globale_ersetzungen(html_text, ui), lang)
         target = os.path.join(ROOT, lang, page["file"])
         if check:
             cur = open(target, encoding="utf-8").read() if os.path.exists(target) else None

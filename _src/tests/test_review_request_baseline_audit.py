@@ -19,6 +19,7 @@ FIXTURE = (
 )
 DOC = ROOT / "docs" / "pipeline" / "review-request-baseline-audit.md"
 TODO = ROOT / "TODO.md"
+DONE = ROOT / "DONE.md"
 
 sys.path.insert(0, str(TOOLS))
 import review_request_baseline_audit as audit  # noqa: E402
@@ -67,7 +68,9 @@ class ReviewRequestBaselineManifestTests(unittest.TestCase):
 
     def test_finding_matrix_and_backlog_reference_every_finding_and_later_task(self):
         document = DOC.read_text(encoding="utf-8")
-        backlog = TODO.read_text(encoding="utf-8")
+        todo_text = TODO.read_text(encoding="utf-8") if TODO.exists() else ""
+        done_text = DONE.read_text(encoding="utf-8") if DONE.exists() else ""
+        backlog = todo_text + "\n" + done_text
         for finding in self.manifest["findings"]:
             self.assertIn("`%s`" % finding["id"], document)
         for task_id in self.manifest["later_task_ids"]:

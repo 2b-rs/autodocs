@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 """curation_flags.py — Warteschlange fuer KI-gestuetzte Kurations-Anfragen.
 
 Eine Kurations-Anfrage entsteht, wenn die Extraktion einen Fall nicht

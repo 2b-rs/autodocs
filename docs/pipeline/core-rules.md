@@ -5,7 +5,7 @@
   * Requirements: `REQ-<feature>-<id>`
   * Architecture & Decisions: `DEC-<feature>-<id>`
   * Tasks: `TASK-<feature>-<id>` or `<feature>-<step>`
-  * Commits & Merges: Reference requirement/task ID (`REF: <id>`, `PREREQ: <id>`).
+  * Commits & Merges: Reference requirement/task ID (`REQ`/`Task-ID`, `PREREQ: <id>`). After `atomic-checkin-contract@v1` activation, implementation completion uses trailers `Task-ID` and `Base-Ref` rather than an implementation-header git `REF`. Acceptance still records a review `REF` on the separate Acceptance bookkeeping commit.
 - Bidirectional traceability must exist from customer/user requirement down to code, unit test, review, and verification evidence.
 
 ## 2. Worktree & Branching Isolation

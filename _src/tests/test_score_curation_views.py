@@ -34,6 +34,16 @@ class ScoreCurationViewsTests(unittest.TestCase):
             views.validate_tree(output, self.files, client=False)
             self.assertEqual(2239, len([path for path in (output / "records").glob("*.html") if path.name != "index.html"]))
 
+    def test_static_entry_exists_for_every_configured_language(self):
+        for language in views.publication_languages():
+            with self.subTest(language=language):
+                entry = self.files[f"{language}/index.html"].decode("utf-8")
+                self.assertIn(f'<html lang="{language}">', entry)
+                self.assertIn(views.UNVALIDATED_MARKER, entry)
+                self.assertIn('href="../records/index.html"', entry)
+                self.assertIn(f"{language}/unresolved.html", self.files)
+
+
     def test_unmanaged_provenance_receipt_is_rejected_from_generated_tree(self):
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp) / "view"

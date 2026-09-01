@@ -49,6 +49,16 @@ EXPECTED = {
 }
 
 
+def publication_languages() -> tuple[str, ...]:
+    site = load(ROOT / "_src" / "site.json")
+    languages = site.get("sprachen", {})
+    canonical_language = languages.get("kanonisch")
+    targets = languages.get("ziele")
+    if not isinstance(canonical_language, str) or not isinstance(targets, list) or not all(isinstance(item, str) for item in targets):
+        raise ValueError("site language publication contract is malformed")
+    return tuple(dict.fromkeys((canonical_language, *targets)))
+
+
 def canonical(value: Any) -> bytes:
     return (json.dumps(value, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
 
@@ -194,10 +204,10 @@ def view_model(corpus: Mapping[str, Any], report: Mapping[str, Any], queue: Mapp
     }
 
 
-def document(title: str, body: str, *, local_prefix: str, root_prefix: str, review_request: bool = False) -> str:
+def document(title: str, body: str, *, local_prefix: str, root_prefix: str, review_request: bool = False, language: str = "en") -> str:
     review_script = f'<script src="{root_prefix}review_request.js" defer></script>' if review_request else ""
     return f'''<!doctype html>
-<html lang="en">
+<html lang="{html.escape(language, quote=True)}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="review-github-repo" content="2b-rs/autodocs"><title>{html.escape(title)}</title>
 <link rel="stylesheet" href="{local_prefix}style.css">{review_script}</head>
@@ -239,6 +249,57 @@ def render_record(record: Mapping[str, Any]) -> bytes:
     return document(str(record["title"]), body, local_prefix="../", root_prefix="../", review_request=True).encode("utf-8")
 
 
+def render_curator_decision_page(proposal: Mapping[str, Any], baseline: Mapping[str, Any]) -> str:
+    """Render bounded Curator decision UI page bound to exact proposal and pinned baseline."""
+    proposal_id = html.escape(str(proposal.get("id", "proposal-unknown")))
+    baseline_digest = html.escape(str(baseline.get("digest", "unspecified")))
+    diff_text = html.escape(str(proposal.get("diff", "(No diff attached)")))
+    evidence_digest = html.escape(str(proposal.get("evidence_digest", "none")))
+    chat_provenance = "".join(f"<li><strong>{html.escape(str(msg.get('sender', 'agent')))}:</strong> {html.escape(str(msg.get('text', '')))}</li>" for msg in proposal.get("chat_history", []))
+
+    body = f'''<h1>S-Core Curator Decision Console</h1>
+<section id="curator-baseline-binding" data-baseline-digest="{baseline_digest}">
+<h2>Pinned Baseline Binding</h2>
+<p>Bound to published baseline digest: <code>{baseline_digest}</code></p>
+</section>
+<section id="proposal-provenance" data-proposal-id="{proposal_id}" data-evidence-digest="{evidence_digest}">
+<h2>Proposal Summary & Evidence</h2>
+<p><strong>Proposal ID:</strong> <code>{proposal_id}</code></p>
+<p><strong>Evidence Digest:</strong> <code>{evidence_digest}</code></p>
+<div class="diff-container">
+<h3>Unified Proposal Diff</h3>
+<pre class="proposal-diff" tabindex="0" aria-label="Proposal Diff">{diff_text}</pre>
+</div>
+<h3>Chat & Deliberation Provenance</h3>
+<ul class="chat-provenance-list">{chat_provenance or "<li>No prior chat recorded.</li>"}</ul>
+</section>
+<section id="curator-decision-section" class="curator-decision-console" role="region" aria-label="Curator Decision Form">
+<h2>Submit Curator Decision</h2>
+<form method="POST" action="/curator/decision" class="curator-decision-form" id="curator-form" novalidate>
+<input type="hidden" name="proposal_id" value="{proposal_id}" />
+<input type="hidden" name="baseline_digest" value="{baseline_digest}" />
+<input type="hidden" name="evidence_digest" value="{evidence_digest}" />
+<fieldset class="curator-outcome-fieldset">
+<legend>Curator Decision Outcome <span aria-hidden="true">*</span></legend>
+<label><input type="radio" name="outcome" value="accept" required /> Approve & Accept Proposal</label><br/>
+<label><input type="radio" name="outcome" value="reject" required /> Reject Proposal</label><br/>
+<label><input type="radio" name="outcome" value="request_revision" required /> Request Revision</label>
+</fieldset>
+<div class="form-group">
+<label for="curator-rationale">Curator Rationale <span aria-hidden="true">*</span></label><br/>
+<textarea id="curator-rationale" name="rationale" rows="4" cols="60" required aria-required="true" aria-describedby="rationale-hint"></textarea>
+<small id="rationale-hint" class="form-hint">Provide verifiable reasoning for this decision.</small>
+</div>
+<div id="curator-live-status" class="curator-status-region" role="status" aria-live="polite"></div>
+<div class="curator-actions">
+<button type="submit" class="btn btn-primary">Submit Curator Decision</button>
+</div>
+</form>
+</section>
+<script src="/score_curator.js"></script>'''
+    return document(f"Curator Decision — {proposal_id}", body, local_prefix="", root_prefix="")
+
+
 def render(model: Mapping[str, Any]) -> dict[str, bytes]:
     records = model["records"]
     cards = "".join(f'<article data-kind="{html.escape(kind)}"><h2>{html.escape(kind)}</h2><p>{count} unvalidated candidates</p></article>' for kind, count in model["counts"]["by_kind"].items())
@@ -263,17 +324,20 @@ def render(model: Mapping[str, Any]) -> dict[str, bytes]:
     snapshot = lambda title: f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="100%" height="100%" fill="#fff"/><text x="50" y="90" font-family="sans-serif" font-size="36">{html.escape(title)}</text><text x="50" y="170" font-family="sans-serif" font-size="24">{UNVALIDATED_MARKER}</text><text x="50" y="220" font-family="sans-serif" font-size="24">2,239 release-pinned curation candidates; one unresolved collision</text></svg>\n'''.encode()
     files: dict[str, bytes] = {
         "index.html": document("S-Core candidate review summary", summary, local_prefix="", root_prefix="../../../").encode(),
-        "en/index.html": document("S-Core candidate review summary", summary.replace('href="records/index.html"', 'href="../records/index.html"'), local_prefix="../", root_prefix="../../../../").encode(),
         "records/index.html": document("All S-Core candidates", all_candidates, local_prefix="../", root_prefix="../../../../").encode(),
         "participate.html": document("Participate in S-Core curation", participate, local_prefix="", root_prefix="../../../").encode(),
         "process.html": document("S-Core curation process", process_report, local_prefix="", root_prefix="").encode(),
         "unresolved.html": document("S-Core unresolved collision", detail, local_prefix="", root_prefix="../../../").encode(),
-        "en/unresolved.html": document("S-Core unresolved collision", detail.replace(f'href="{unresolved["candidate_page"]}"', f'href="../{unresolved["candidate_page"]}"'), local_prefix="../", root_prefix="../../../../").encode(),
         "evidence.json": evidence, "validation.json": validation_evidence, "dom-assertions.json": assertions,
         "style.css": css, "assets/view.js": js,
         "screenshots/summary.svg": snapshot("S-Core candidate review summary"),
         "screenshots/unresolved.svg": snapshot("S-Core unresolved collision"),
     }
+    language_summary = summary.replace('href="records/index.html"', 'href="../records/index.html"')
+    language_detail = detail.replace(f'href="{unresolved["candidate_page"]}"', f'href="../{unresolved["candidate_page"]}"')
+    for language in publication_languages():
+        files[f"{language}/index.html"] = document("S-Core candidate review summary", language_summary, local_prefix="../", root_prefix="../../../../", language=language).encode()
+        files[f"{language}/unresolved.html"] = document("S-Core unresolved collision", language_detail, local_prefix="../", root_prefix="../../../../", language=language).encode()
     review_client = (ROOT / "review_request.js").read_bytes()
     if hashlib.sha256(review_client).hexdigest() != "bd6e23ae7454e7dee4daba98a104fa76db0ef9cdf54713ef35569a6c992ef0e2":
         raise ValueError("canonical review_request.js identity mismatch")
