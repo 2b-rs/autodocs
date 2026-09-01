@@ -665,6 +665,5 @@ class ReviewRequestIngestTests(unittest.TestCase):
         self.assertFalse(report.get("target_record_mutated", True))
         self.assertEqual(len(list(cf.list_open_flags())), 1)
 
-
 if __name__ == "__main__":
     unittest.main()

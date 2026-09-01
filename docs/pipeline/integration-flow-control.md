@@ -2,6 +2,12 @@
 
 Status: normative emergency recovery process, effective 2026-08-31.
 
+The delegated escalation ladder below implements Management decision
+`DEC-0045-001` and its distinct Architect scope review in
+[`../dossiers/pipeline-escalation-ladder-management-direction-20260901.md`](../dossiers/pipeline-escalation-ladder-management-direction-20260901.md)
+and
+[`../dossiers/pipeline-escalation-ladder-architect-scope-review-20260901.md`](../dossiers/pipeline-escalation-ladder-architect-scope-review-20260901.md).
+
 ## Problem addressed
 
 Implementation capacity exceeded integration capacity. Dispatchers could open work without downstream reservation, leave responsibility at review handoff, and immediately open replacement work. The result was a growing review queue, hundreds of branches and worktrees, and no feedback pressure to finish integration. A separate publication job then reset `main` onto an unrelated orphan history, making normal integration structurally impossible while reconstructed commits were incorrectly described as integrated.
@@ -22,6 +28,17 @@ Sequencing implementation, unit testing, and integration in prose is insufficien
 The dispatcher owns flow, not technical approval. Its obligation ends only when the canonical receipt below exists and the chain's active claims are reconciled. The Implementer still owns implementation and correction. The independent Integrator still owns review, hygiene, Acceptance where assigned, and the source integration. These duties may not be collapsed merely to improve throughput.
 
 Implementation completion, `[x]`, assignment acceptance, review submission, branch-local Acceptance, and byte-equivalent reconstruction are intermediate states. None is canonical integration.
+
+## Delegated escalation ladder
+
+The privileged Integrator decides `accepted`, `rejected`, or `inconclusive` for the exact reviewed baseline and resolves local technical questions inside the accepted contract. A non-passing verdict does not itself create a Management question:
+
+1. An actionable finding returns to the Implementer as explicit rework in the same reserved slot. The affected item is `[p]` when substantive correction is required; the slot remains occupied through correction and re-review. This is neither `[u]` nor permission to open a replacement chain.
+2. If producer and reviewer still disagree technically after evidence and bounded corrections have been tried, they conduct one documented **trilateral technical-resolution round**: Implementer or other producer, Integrator or other reviewer, and the responsible Coordinator or Architect. Its durable record names the item and candidate, shared facts and evidence, each participant's position, options or corrections tried, the existing authority boundary, the outcome, and the exact remaining question.
+3. The round may interpret the accepted contract and choose a bounded technical correction inside existing authority. It must not change product scope or waive independence, hygiene, Acceptance, security, release, public-effect, or other specialist-authority gates. Resolution returns the chain to same-slot correction or re-review.
+4. Only an unresolved question whose answer is non-delegable—product or policy choice, material architecture, authority, material risk, external effect, public release, or waiver—becomes `[u]` and one durable request to the authorized Management resolver. Prepare and verify that request under [`decision-request-preparation.md`](decision-request-preparation.md).
+
+A `decision-record@v1` trigger requires a durable record; it does not by itself make Management the deciding role. Existing authority determines the resolver. Stale branches, hygiene or test failures, ordinary findings, bounded rework, reviewer selection, capacity pressure, and determinable contract corrections must not be converted into generic Management requests. This ladder changes neither the WIP limit nor the canonical-receipt, independence, hygiene, Acceptance, security, or release postconditions.
 
 ## Canonical source integration receipt
 
