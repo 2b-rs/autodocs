@@ -26,3 +26,5 @@
 - note: Re-dispatched 0045-01 integration to obrien via offer 1788260525990-ef60bbf4 due to server restart/crash.
 - note: Accepted completed 0045-04 by worf. 0045-05 PREREQ not met.
 - note: belanna crashed on 0045-01-integration; re-dispatched to paul via offer 1788261341055-d046df3d.
+- note: Dispatched 0045-05 to worf via offer 1788261995445-1758ca49.
+- note: Cancelled 0045-01 integration offer for paul. Re-dispatched 0045-01 integration to obrien via offer 1788261995744-e39a6e85.
