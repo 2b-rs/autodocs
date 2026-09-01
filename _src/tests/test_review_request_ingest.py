@@ -54,7 +54,7 @@ class ReviewRequestIngestTests(unittest.TestCase):
         rri.reset_replay_tracker()
 
         # Seed authoritative record for the standard fixture: AUTOSAR/AP/record/tsync-user-guide
-        self._seed_record(
+        self._rec_file, self._version_id = self._seed_record(
             canonical_id="AUTOSAR/AP/record/tsync-user-guide",
             release="R25-11",
             content_hash="3f9a21bc",
@@ -613,6 +613,57 @@ class ReviewRequestIngestTests(unittest.TestCase):
         pkg = load("valid_github_issue.json")
         report = rri.ingest(pkg, apply=True, authoritative_actor="jdoe")
         self.assertEqual(report["outcome"], rri.IngestOutcome.REJECTED_STALE)
+
+    def test_feedback_recipe_contract_v1_ingestion_integration(self):
+        """Verify review_request_ingest seamlessly handles feedback-recipe-contract@v1."""
+        payload_data = {"text": "Integration check", "suggested_change": "Refine text"}
+        payload_digest = hashlib.sha256((json.dumps(payload_data, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+        handoff = {
+            "schema": "feedback-recipe-contract@v1",
+            "contract_version": "v1.0.0",
+            "producer_repository": "2b-rs/agent-inbox",
+            "producer_commit": "9776291cc5f02086db6be5830176301367ee565d",
+            "consumer_baseline": "5c6068537aa4a304c940ca82f62b466a08d72136",
+            "scheduling_decision_id": "dec-score-101",
+            "assignment_id": "asg-recipe-001",
+            "idempotence_key": "feedback:AUTOSAR/autodocs:issue-42:AUTOSAR/AP/record/tsync-user-guide",
+            "normalized_input_digest": payload_digest,
+            "status": "succeeded",
+            "recipe_name": "feedback_ingestion",
+            "trusted_envelope": {
+                "schema": "github-event-envelope@v1",
+                "event_id": "018f2e1a-7b3c-7c21-9a4e-2f6b1d8c9a01",
+                "event_kind": "curation_feedback",
+                "repository": "AUTOSAR/autodocs",
+                "source_id": "issue-42",
+                "record_id": "AUTOSAR/AP/record/tsync-user-guide",
+                "record_version": self._version_id,
+                "sender": "contributor-alice",
+                "created_at": "2026-09-01T00:00:00Z",
+                "payload": payload_data,
+            },
+            "ingestion_result": {
+                "schema": "feedback-ingestion-result@v1",
+                "queue_item_id": "queue-item-tsync-user-guide-018f2e1a",
+                "queue_item_version": "v1.0.0",
+                "deduplication_disposition": "new",
+                "submitted_record_version": self._version_id,
+                "current_record_version": self._version_id,
+            },
+            "durable_receipt": {
+                "receipt_id": "rcpt-asg-recipe-001",
+                "receipt_digest": "4a7d6e8b2c1f9a0e3d5b7c8a1e2f3d4c5b6a7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+                "recorded_at": "2026-09-01T00:00:01Z",
+            },
+            "retry_ancestry": [],
+            "next_event": "proposal_scheduling_continuation:queue-item-tsync-user-guide-018f2e1a",
+            "error_details": None,
+            "created_at": "2026-09-01T00:00:01Z",
+        }
+        report = rri.ingest(handoff, apply=True)
+        self.assertEqual(report["outcome"], rri.IngestOutcome.OK)
+        self.assertFalse(report.get("target_record_mutated", True))
+        self.assertEqual(len(list(cf.list_open_flags())), 1)
 
 
 if __name__ == "__main__":
