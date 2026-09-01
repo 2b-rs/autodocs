@@ -119,3 +119,14 @@ NOTES: Dispatched coordinator decisions and handoff mechanics.
 AWARDED: worf
 STATUS: IN_PROGRESS
 NOTES: worf is working on implementation.
+
+
+## 0050-03
+AWARDED: worf
+STATUS: REVIEW
+NOTES: worf submitted 0050-03 for review.
+
+## 0050-03-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-03.
