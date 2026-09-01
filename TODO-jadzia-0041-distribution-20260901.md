@@ -11,3 +11,4 @@
 - note: Accepted completed 0041-03 by worf and dispatched 0041-06 via offer 1788260931485-5adf1b20.
 - note: 0041-06 implemented by worf; dispatched 0041-06 integration to paul via offer 1788261231225-e7266d53.
 - note: Cancelled 0041-06 integration offer 1788261231225-e7266d53 for paul due to merge conflicts. Sent 0041-06 to rework for worf via offer 1788262205507-b218c256.
+- note: 0041-06 rework complete by worf. Dispatched 0041-06-integration to obrien via offer 1788263465631-65612af1.
