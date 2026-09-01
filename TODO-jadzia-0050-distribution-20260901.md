@@ -332,3 +332,14 @@ NOTES: Dispatched integration of 0050-09-architecture.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-09-architecture-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the review and integration. Merged to main in autodocs.
+
+## 0050-09
+OFFERED: priority 1: worf, priority 2: data
+STATUS: OPEN
+NOTES: Dispatched implementation of 0050-09 test coverage.
