@@ -85,3 +85,15 @@ NOTES: Management explicitly approved the policy. Checked off in TODO.md.
 OFFERED: priority 1: quark, priority 2: worf
 STATUS: OPEN
 NOTES: Dispatched implementation of 0033-15.01.
+
+
+## 0033-15.01-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien merged 0033-15.01 to main.
+
+
+## 0033-15
+OFFERED: priority 1: worf, priority 2: quark
+STATUS: OPEN
+NOTES: Dispatched implementation of 0033-15.
