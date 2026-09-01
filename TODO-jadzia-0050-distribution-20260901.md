@@ -40,3 +40,14 @@ NOTES: obrien completed the review and integration. Merged to main.
 OFFERED: priority 1: worf
 STATUS: OPEN
 NOTES: Dispatched append-only team generation and foundation.
+
+
+## 0050-01
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf started implementation.
+
+## 0046-01.01
+AWARDED: data
+STATUS: ACCEPTED
+NOTES: data accepted offer.
