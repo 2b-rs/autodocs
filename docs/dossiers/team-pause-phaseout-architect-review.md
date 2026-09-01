@@ -1,8 +1,9 @@
 # Team Pause, Drain and Phase-Out — Architect Scope Review
 
 ## Identity and Authority
-- **Reviewing Agent:** jadzia (Project Lead, Team DeepSpace9)
-- **Role:** Independent Architect
+- **Reviewing Agent:** jadzia
+- **Role:** Architect
+- **Authority:** Award 1788259491547-821018e3
 - **Task Item:** `team-pause-phaseout-scope-review-20260901`
 - **Exact Candidate (autodocs):** `179e8d6de12a069531aa67df6edc69a24df02b56`
 - **Agent-Inbox Evidence Baseline:** `b94b609e2a7d8d572cdbef091894156e0ac52f38`
