@@ -13,3 +13,4 @@
 - note: Re-dispatched 0033-07 to worf via offer 1788260493074-f1030c09 after reverting it from [x].
 - note: Dispatched 0033-07.01 to worf via offer 1788260896526-03cf7530.
 - note: Accepted completed 0033-07.01 by worf and dispatched 0033-07.04 via offer 1788261079520-1b1b8ae4.
+- note: worf crashed on 0033-07.04; re-dispatched via offer 1788261335539-d15bfb84.
