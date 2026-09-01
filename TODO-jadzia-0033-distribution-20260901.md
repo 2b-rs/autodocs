@@ -19,3 +19,4 @@
 - note: Dispatched 0033-08 to worf/quark via offer 1788264218303-f115c87f.
 - note: worf completed 0033-08. Dispatched 0033-08-integration to obrien via offer 1788264521130-5ea7256b.
 - note: Dispatched 0033-09 to worf/quark via offer 1788264555785-c8a8d50a.
+- note: Accepted 0033-08-integration from obrien.
