@@ -188,3 +188,9 @@ NOTES: Dispatched GUI team/assignment drain visibility.
 AWARDED: worf
 STATUS: AWARDED
 NOTES: worf accepted the priority offer.
+
+
+## 0050-05
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf is working on implementation.
