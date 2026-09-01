@@ -199,6 +199,48 @@ not prune, garbage-collect around, or "clean up" `preserved/*` tags; they are
 retained indefinitely unless the current user explicitly authorizes removal of a
 named tag.
 
+### Two triggers, not one
+
+`preserved/*` was introduced for state that exists **in no branch** — a foreign staged
+index, a diverged working tree. That is the first trigger and it is unchanged.
+
+There is a second, and it is the one that actually cost something. State can exist
+**only in a branch that somebody is entitled to delete**. Nothing about it is loose or
+uncommitted; it is properly committed, on a real ref, and a single `git branch -D`
+destroys it. `doctor` found exactly this: a 170-line customer-authority dossier
+reachable only from a branch, with no rule then prohibiting that branch's deletion
+(`556216e4b`, `d697930b4`).
+
+The two triggers point in opposite directions — *no branch holds it* versus *only a
+branch holds it* — which is why the first could not be stretched to cover the second,
+and why `AGENTS.md` point 5 states the prohibition directly rather than relying on this
+section to imply it.
+
+**The operative test in both cases is reachability from an integrated ref**, not merge
+status and not lifecycle bookkeeping:
+
+```
+git merge-base --is-ancestor <ref> main    # yes -> the bytes survive without <ref>
+```
+
+A `[x]` marker, an accepted assignment, a finalized `DONE-*` claim, and a removed
+worktree are all compatible with the branch still being the only copy. This is not
+hypothetical, and the margin is wide: measured 2026-09-01 over 120 sampled local
+branches, **81 were not ancestors of `main`**. Several of those hold work that is fully
+landed — content reached `main` through a fresh commit rather than a merge of the
+authoring branch, so the branch tip is not an ancestor even though nothing is missing
+(for example `41762f045`, whose dossier is present on `main` byte-identical while the
+commit itself is not reachable from it).
+
+That cuts both ways, which is the point. A merge-status test would call those branches
+disposable and be wrong about *why* they are safe; the same test applied to a branch
+whose content never landed would call it disposable and destroy it. Only reachability
+distinguishes the two, and it costs one command.
+
+When the answer is no, or cannot be established: retain the ref. If it must still be
+cleared, capture it under `preserved/*` first and append its row below in the same
+commit — the same discipline the first trigger already requires.
+
 Current tags (`git tag -l 'preserved/*'`):
 
 | Tag | Commit | What it holds |
