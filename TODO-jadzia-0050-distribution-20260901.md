@@ -34,3 +34,9 @@ NOTES: obrien accepted the offer and is verifying the integration.
 AWARDED: obrien
 STATUS: REVIEW
 NOTES: obrien completed the review and integration. Merged to main.
+
+
+## 0050-01
+OFFERED: priority 1: worf
+STATUS: OPEN
+NOTES: Dispatched append-only team generation and foundation.
