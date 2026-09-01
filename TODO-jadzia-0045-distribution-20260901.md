@@ -45,3 +45,15 @@ NOTES: Dispatched implementation of 0045-06.01 in agent-inbox repository.
 AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien completed integration, merged to main, validated tests, and marked 0045-05 as DONE in TODO.md.
+
+
+## 0045-06.01-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed integration, merged to main, validated tests, and marked 0045-06.01 as DONE in TODO.md.
+
+
+## 0045-06.02
+OFFERED: priority 1: quark, priority 2: worf
+STATUS: OPEN
+NOTES: Dispatched implementation of 0045-06.02.
