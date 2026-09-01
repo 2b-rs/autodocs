@@ -13,3 +13,4 @@
 - note: Re-dispatched 0045-03.02 to philippa via offer 1788255929989-0769655a (corrected scope).
 - note: Dispatched 0045-01 integration to obrien via offer 1788256572004-e2c6374c after Lore completion.
 - note: Dispatched 0045-03.02 integration to obrien via offer 1788256730953-413bf325 after Philippa completion.
+- note: Re-dispatched 0045-01 integration to obrien via offer 1788256853705-a6739b22 after crash.
