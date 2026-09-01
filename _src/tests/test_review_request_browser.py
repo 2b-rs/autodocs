@@ -50,9 +50,15 @@ class TestReviewRequestBrowser(unittest.TestCase):
             target.write_text(html, encoding='utf-8')
 
             env = dict(os.environ)
-            npm_prefix_modules = '/tmp/autodocs/output/npm-prefix/node_modules'
-            if os.path.isdir(npm_prefix_modules):
-                env['NODE_PATH'] = npm_prefix_modules + os.pathsep + env.get('NODE_PATH', '')
+            candidate_node_paths = [
+                '/tmp/autodocs/output/npm-prefix/node_modules',
+                '/Users/tobias.anton/devel/autodocs/output/npm-prefix/node_modules',
+                '/Users/tobias.anton/devel/autodocs/node_modules',
+                str(_ROOT / 'node_modules'),
+            ]
+            valid_paths = [p for p in candidate_node_paths if os.path.isdir(p)]
+            if valid_paths:
+                env['NODE_PATH'] = os.pathsep.join(valid_paths) + os.pathsep + env.get('NODE_PATH', '')
             proc = subprocess.run(
                 ['node', str((_ROOT / '_src' / 'tools' / 'check_review_request_ui.cjs').resolve()), str(target.resolve())],
                 capture_output=True, text=True, cwd=str(_ROOT), timeout=30, env=env,
