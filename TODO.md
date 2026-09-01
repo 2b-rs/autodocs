@@ -90,6 +90,163 @@ HOW TO USE:
 - **Authority follows the attribute, not the level.** Merging a checkpoint node's work across its boundary requires the privileged integrator; merges that cross no checkpoint stay grunt-eligible. The attribute is orthogonal to the `[ ]/[p]/[x]/[w]` marker and to `Acceptance: ✓`: the attribute is the *requirement* that a review occur, and `Acceptance: ✓` is its *fulfillment*.
 - A Feature moves to `DONE.md` once its work is terminal and every integration checkpoint within it — including the Feature node itself, if flagged — has a current passing integration review; the `DONE.md` move is always a privileged act. See [`docs/pipeline/branch-workflow.md`](docs/pipeline/branch-workflow.md) and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md).
 
+## Feature: 0050 — Team-Independent Pause, Drain and Phase-Out
+
+**Goal:** A pause or phase-out blocks new work for every member of any team,
+drains existing awards through bounded checkpoint and coordinator-owned
+reclamation, preserves useful work, reaches an auditable zero-assignment/claim
+state, and resumes explicitly without resurrecting reclaimed ownership.
+
+**Requirements baseline:**
+`docs/dossiers/team-pause-phaseout-requirements.md`.
+**Architecture and decision:** `docs/pipeline/team-pause-phaseout.md` and
+`DEC-0050-001` in
+`docs/dossiers/team-pause-phaseout-management-direction.md`. The contract is
+non-operative until `0050-00` binds a supporting distinct Architect review.
+
+**Feature Definition of Done:** All configured teams share one generation-bound
+pause lifecycle; offer acceptance is atomically gated; active work drains with
+one-owner exclusivity and bounded coordinator decisions; blackout, restart,
+preservation failure and resume converge through the same receipts; GUI and API
+projections agree; and the terminal integration proves authoritative zero state
+without deleting evidence or treating silence/quota exhaustion as proof of no
+work.
+
+- [ ] **0050-00** (P0; single start; Integration review: mandatory) Bind the material user direction, `DEC-0050-001`, exact requirements/interface digests and a supporting scope review by a management-instantiated Architect distinct from the implementers before any operative mutation.
+  - **Task record:** `task_id: "0050-00"; feature_id: "0050"; role: architect-elaboration`.
+  - **Architecture decisions and sources:** `REQ-0050-01..20`, `DEC-0050-001`, `docs/pipeline/decision-record.md`, `docs/pipeline/team-pause-phaseout.md`, and agent-inbox baseline `b94b609e2a7d8d572cdbef091894156e0ac52f38`; authority, evidence and assumptions are distinguished in the dossiers.
+  - **Prerequisites:** none; this is the single start node.
+  - **Planned order:** `position: 1; order: [0050-00, 0050-01, 0050-02, 0050-03, 0050-04, 0050-05, 0050-06, 0050-07, 0050-08]`; every operative consumer requires this immutable baseline.
+  - **Test scope:** `kind: manual_inspection`; validate decision-record shape, digests, global ID/ref/claim inventory, cross-item affected units/gates, distinct reviewer identity/authority and exact no-self-review boundary.
+  - **Capability profile:** `capability_class=privileged; rights=["read both repositories and durable assignment evidence", "write declared architecture paths", "commit reviewed baseline"]; data=["material prompts", "Git history", "agent-inbox committed interfaces", "Architect review"]; tools=["Git", "stdlib validators"]; execution_needs=direct; cognitive_demand=critical; independence="decision/decomposition Architect cannot supply the required distinct scope review or later implement/accept decisive code"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=medium; verification_hardness=critical`; cross-team gates and ownership safety determine `critical`.
+  - **Branch/worktree:** `parent: main; name: 0050-00; worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0050-00`.
+  - **Exhaustive write scope:** `docs/dossiers/team-pause-phaseout-management-direction.md`, `docs/dossiers/team-pause-phaseout-requirements.md`, `docs/pipeline/team-pause-phaseout.md`, `docs/dossiers/team-pause-phaseout-architect-review.md`, `TODO.md`, and the exact item claim.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "material user direction, DEC-0050-001, decision-record cross-item gate and current assignment lifecycle evidence", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** this is the pre-mutation cross-item gate for every future team and assignment.
+  - **Acceptance criteria:** Exact digests and affected gates are bound; the independent review supports or rejects the reach with conditions; no code or live state changes before a supporting verdict is reachable.
+  - **Definition of Done:** Reviewed baseline committed; implementation branches consume the exact ref/digests; no Management decision is fabricated and no operative gate is activated.
+
+- [ ] **0050-01** (P0) Implement the append-only team generation, pause inventory, fold, schema and canonical API foundation.
+  - **Task record:** `task_id: "0050-01"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-05/06/16/18/19/20`, `DEC-0050-001`, and the record/API contract in `docs/pipeline/team-pause-phaseout.md`.
+  - **Prerequisites:** `0050-00` is a hard acceptance-before-start gate because this code activates the reviewed cross-item state contract.
+  - **Planned order:** `position: 2`; foundation for every later task.
+  - **Test scope:** `kind: unit`; schema/fold/idempotence/generation regression/partial-event/privacy negative cases plus exhaustive finite-state fold properties.
+  - **Capability profile:** `capability_class=privileged; rights=["read/write declared agent-inbox paths", "run tests", "commit candidate"]; data=["reviewed 0050 baseline", "assignment journal fixtures"]; tools=["Git", "Python", "pytest"]; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot review scope, accept checkpoint or activate/deploy"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=low; verification_hardness=critical`; append-only concurrency determines `critical`.
+  - **Branch/worktree:** `parent: agent-inbox/main; name: 0050-01; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-01`.
+  - **Exhaustive write scope (agent-inbox):** `team-state-machine.json` (new), `agent_inbox_mcp.py`, `test_agent_inbox.py`, `test_team_pause_phaseout.py` (new).
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-05/06/16/18/19/20 and reviewed 0050-00 interface", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **No-checkpoint justification (architect):** non-operative record/fold foundation; composition and activation are reviewed at `0050-03` and `0050-08`.
+  - **Acceptance criteria:** Monotonic generations, deterministic fold, stable errors, bounded fields, append-only events and idempotent APIs match the reviewed contract; malformed or partial histories fail closed.
+  - **Definition of Done:** Source/schema/tests and retained property evidence committed; no live team is paused.
+
+- [ ] **0050-02** (P0) Atomically block team offer delivery/acceptance and freeze affected pre-award rounds without advancing ownership.
+  - **Task record:** `task_id: "0050-02"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-01/02/11/18`, `DEC-0050-001` admission and generation consequences.
+  - **Prerequisites:** `0050-01` produces the generation/fold API.
+  - **Planned order:** `position: 3`.
+  - **Test scope:** `kind: integration`; pause-versus-accept race, mixed-team offer, tier freeze/resume, stale generation, duplicate request and restart fixtures.
+  - **Capability profile:** `capability_class=privileged; rights=["edit declared offer paths", "run concurrency tests", "commit candidate"]; data=["0050-01 candidate", "offer fixtures"]; tools=["Git", "Python", "pytest"]; execution_needs=direct; cognitive_demand=critical; independence="cannot accept or integrate own admission gate"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=medium; reasoning_depth=critical; context_volume=high; ambiguity=low; verification_hardness=critical`; atomic race safety determines `critical`.
+  - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-02; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-02`.
+  - **Exhaustive write scope (agent-inbox):** `agent_inbox_mcp.py`, `test_agent_inbox.py`, `test_team_pause_phaseout.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-01/02/11/18 and canonical mailbox lock", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** admission is a repository-wide ownership gate; independently review with `0050-03` before activation.
+  - **Acceptance criteria:** Pause and ACCEPT serialize; no paused member receives or accepts new work; unaffected paths are explicit; frozen rounds neither expire nor advance until authorized resume/cancellation.
+  - **Definition of Done:** Race/integration evidence committed; feature remains non-operative until checkpoint integration.
+
+- [ ] **0050-03** (P0; Integration review: mandatory) Implement draining, checkpoint, evidence-bound coordinator decisions, atomic delegation and cancellation/revocation ownership transitions.
+  - **Task record:** `task_id: "0050-03"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-03/04/08..13/18..20` and one-owner/reclamation contract.
+  - **Prerequisites:** `0050-02` supplies the admission/freeze boundary.
+  - **Planned order:** `position: 4`.
+  - **Test scope:** `kind: integration`; exact deadline, handoff then exhaustion, quota known/unknown/stale, recovery before/after revocation, duplicate outcome, extension abuse, delegation race and preservation-failure cases.
+  - **Capability profile:** `capability_class=privileged; rights=["edit assignment lifecycle", "run race/recovery tests", "commit candidate"]; data=["reviewed contract", "assignment/claim/worktree fixtures"]; tools=["Git", "Python", "pytest"]; execution_needs=direct; cognitive_demand=critical; independence="implementer cannot supply checkpoint verdict or waive preservation/ownership rules"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=medium; verification_hardness=critical`.
+  - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-03; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-03`.
+  - **Exhaustive write scope (agent-inbox):** `assignment-state-machine.json`, `agent_inbox_mcp.py`, `test_agent_inbox.py`, `test_team_pause_phaseout.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-03/04/08..13/18..20 and existing offer_control/assignment_transition authority model", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** false reclamation can lose work or create double ownership across every team.
+  - **Acceptance criteria:** Exactly one reasoned outcome per escalation; current owner persists until successor ACCEPT or prior closure; extension bounds, evidence freshness and preservation failures fail closed; no automatic deletion.
+  - **Definition of Done:** State-machine/API/tests and adversarial race/property evidence committed; mandatory independent review passes before upward integration.
+
+- [ ] **0050-04** (P0; Integration review: mandatory) Make Supervisor schedule typed drain/deadline escalation, verify coordinator response and converge restart/retry behavior without choosing the outcome.
+  - **Task record:** `task_id: "0050-04"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-07/08/10/13/17/18`, current deadline and claim nudges, and Supervisor evidence at agent-inbox `b94b609e2`.
+  - **Prerequisites:** `0050-03` provides typed outcomes and lifecycle fold.
+  - **Planned order:** `position: 5`.
+  - **Test scope:** `kind: integration`; boundary timestamps, delivery retry, ignored/misread escalation, repeated escalation, coordinator transfer, restart during drain and stale evidence.
+  - **Capability profile:** `capability_class=privileged; rights=["edit Supervisor paths", "run restart/time tests", "commit candidate"]; data=["0050-03 API", "synthetic time/quota/claim fixtures"]; tools=["Git", "Python", "pytest"]; execution_needs=direct; cognitive_demand=critical; independence="Supervisor routes; it cannot make coordinator product decisions or accept checkpoint"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=high; ambiguity=low; verification_hardness=critical`.
+  - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-04; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-04`.
+  - **Exhaustive write scope (agent-inbox):** `supervisor.py`, `test_supervisor.py`, `test_team_pause_phaseout.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-07/08/10/13/17/18 and existing Supervisor escalation/fold interfaces", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** missed or duplicated escalation can strand or wrongly reclaim assignments fleet-wide.
+  - **Acceptance criteria:** One idempotent escalation per boundary; delivery/retry and coordinator accountability are durable; missing action re-escalates; Supervisor never selects an outcome.
+  - **Definition of Done:** Source/tests and restart/time evidence committed; mandatory independent review passes.
+
+- [ ] **0050-05** (P1) Add GUI team/assignment drain visibility and canonical pause, decision and resume controls without conflating runtime stop with quiescence.
+  - **Task record:** `task_id: "0050-05"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-16/17/19`, canonical APIs and current Supervisor GUI assignment controls.
+  - **Prerequisites:** `0050-04` supplies authoritative projection fields and escalation state.
+  - **Planned order:** `position: 6`.
+  - **Test scope:** `kind: integration`; API/GUI parity, all states/counts, stable errors, keyboard/focus/accessibility, stale command and no-JavaScript/operator fallback.
+  - **Capability profile:** `capability_class=unprivileged; rights=["edit declared GUI/test paths", "run local UI tests", "commit candidate"]; data=["0050-04 snapshot fixtures"]; tools=["Git", "Python", "browser test harness"]; execution_needs=direct; cognitive_demand=high; independence="GUI implementer cannot authorize pause/revocation or certify integration"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=medium; context_volume=high; ambiguity=low; verification_hardness=high`.
+  - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-05; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-05`.
+  - **Exhaustive write scope (agent-inbox):** `supervisor-gui.py`, `test_supervisor.py`, `test_team_pause_phaseout.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-16/17/19 and existing GUI command projection", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **No-checkpoint justification (architect):** projection-only UI; canonical API enforcement is reviewed at `0050-03/04` and end-to-end parity at `0050-08`.
+  - **Acceptance criteria:** Required fields/counts/coordinator are visible; controls invoke canonical APIs; runtime stop is distinctly labeled; stale/unauthorized operations show fail-closed errors.
+  - **Definition of Done:** GUI/tests committed; no live pause or external effect.
+
+- [ ] **0050-06** (P0; Integration review: mandatory) Reconcile emergency blackout, claim/WIP preservation, migration, zero proof, resume and additive rollback with the same ownership receipts.
+  - **Task record:** `task_id: "0050-06"; feature_id: "0050"; role: implementer`.
+  - **Architecture decisions and sources:** `REQ-0050-06/10/12/14/15/18/20`, blackout behavior at agent-inbox `b94b609e2` and `DEC-0050-001` no-destruction consequence.
+  - **Prerequisites:** `0050-04`, `0050-05`.
+  - **Planned order:** `position: 7`.
+  - **Test scope:** `kind: end_to_end`; mixed-provider blackout, WIP failure, stale claims, restart in every team state, zero-proof indeterminacy, resume generation and rollback/supersession.
+  - **Capability profile:** `capability_class=privileged; rights=["edit declared recovery paths", "run end-to-end fixtures", "commit candidate"]; data=["all prior 0050 candidates", "Git/worktree/claim fixtures"]; tools=["Git", "Python", "pytest"]; execution_needs=direct; cognitive_demand=critical; independence="cannot accept preservation loss, waive authority or integrate own recovery gate"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=high; reasoning_depth=critical; context_volume=critical; ambiguity=medium; verification_hardness=critical`.
+  - **Branch/worktree:** `parent: agent-inbox/0050; name: 0050-06; worktree: /Users/tobias.anton/devel/agent-inbox/.worktrees/0050-06`.
+  - **Exhaustive write scope (agent-inbox):** `supervisor.py`, `agent_inbox_mcp.py`, `assignment-state-machine.json`, `team-state-machine.json`, `test_supervisor.py`, `test_agent_inbox.py`, `test_team_pause_phaseout.py`.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: agent-inbox/main, basis: "REQ-0050-06/10/12/14/15/18/20 and unified receipt model", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** emergency and rollback paths can bypass ordinary ownership and destroy the only useful work copy.
+  - **Acceptance criteria:** Blackout uses identical receipts; preservation failure is visible and nondestructive; migration has no grandfathering; quiescence is iff zero proof; resume/rollback never resurrect ownership.
+  - **Definition of Done:** Recovery/migration/property evidence committed; mandatory independent review passes.
+
+- [ ] **0050-07** (P0) Independently verify the complete all-team, mixed-provider race, deadline, recovery, privacy and abuse matrix against exact candidates.
+  - **Task record:** `task_id: "0050-07"; feature_id: "0050"; role: qa`.
+  - **Architecture decisions and sources:** every `REQ-0050-*`, reviewed interface and candidate manifests.
+  - **Prerequisites:** `0050-06`.
+  - **Planned order:** `position: 8`.
+  - **Test scope:** `kind: end_to_end`; execute the requirements matrix plus property invariants, negative authorization/privacy cases, seeds/replay inputs and whole-population team coverage.
+  - **Capability profile:** `capability_class=privileged; rights=["read exact candidates", "run isolated validation", "write QA evidence", "commit evidence"]; data=["candidate manifests", "fixtures", "logs by reference"]; tools=["Git", "Python", "pytest", "browser harness"]; execution_needs=direct; cognitive_demand=critical; independence="QA is distinct from decisive implementers and cannot integrate or accept residual risk"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=critical; reasoning_depth=high; context_volume=critical; ambiguity=low; verification_hardness=critical`.
+  - **Branch/worktree:** `parent: 0050; name: 0050-07; worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0050-07`.
+  - **Exhaustive write scope (autodocs):** `docs/campaign-evidence/0050-07/qa-report.md`, `docs/campaign-evidence/0050-07/case-manifest.json`, and exact item claim.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "REQ-0050 verification matrix and exact cross-repository candidates", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **No-checkpoint justification (architect):** evidence-only QA node; its exact report is a hard prerequisite of terminal `0050-08`.
+  - **Acceptance criteria:** Every team and named failure/race path has observed results; property boundaries and counts are retained; critical/major findings remain blocking and are not converted to Management questions.
+  - **Definition of Done:** Reproducible QA evidence committed against exact candidate digests.
+
+- [ ] **0050-08** (P0; terminal integrating Task; Integration review: mandatory) Integrate the reviewed agent-inbox lifecycle and autodocs evidence, activate only the exact validated candidate, and prove all-team quiescence, restart recovery and rollback without destructive cleanup.
+  - **Task record:** `task_id: "0050-08"; feature_id: "0050"; role: integrator`.
+  - **Architecture decisions and sources:** `DEC-0050-001`, every `REQ-0050-*`, `0050-00` review, implementation manifests and `0050-07` QA evidence.
+  - **Prerequisites:** `0050-07`; its closure includes `0050-00..06`.
+  - **Planned order:** `position: 9`; sole terminal node.
+  - **Test scope:** `kind: end_to_end`; independently rerun admission races, deadline decisions, blackout/preservation, restart, zero proof, resume and rollback against exact integrated candidates.
+  - **Capability profile:** `capability_class=privileged; rights=["review exact candidates", "run hygiene/independent validation", "integrate under reserved authority", "record activation/rollback receipts"]; data=["complete prerequisite closure", "QA evidence", "journal fixtures"]; tools=["Git", "Python", "pytest", "browser harness"]; execution_needs=direct; cognitive_demand=critical; independence="Integrator is independent from decisive Architects/implementers/sole QA producer and cannot alter product direction"`.
+  - **Cognitive evidence:** `estimator=0044-06@v1; scope_breadth=critical; reasoning_depth=critical; context_volume=critical; ambiguity=low; verification_hardness=critical`.
+  - **Branch/worktree:** `parent: main; name: 0050-08; worktree: /Users/tobias.anton/devel/autodocs/.worktrees/0050-08`; reserved Integrator creates from current target after pinning candidates.
+  - **Exhaustive write scope:** `docs/campaign-evidence/0050-08/integration-report.md`, `docs/campaign-evidence/0050-08/completion-manifest.json`, `TODO.md`, and exact accepted root-claim renames required by bookkeeping; agent-inbox ref activation is separately exact and receipt-bound.
+  - **A1:** `target_policy_check: { field: A1-target-policy-integrability, verdict: fits, checked_target: main, basis: "DEC-0050-001, complete prerequisite closure and mandatory Feature integration floor", checked_at: "2026-09-01T10:38:08Z", recorded_by: "agent:data:team-pause-phaseout-architecture-20260901:1788258791125-23f83bfb" }`.
+  - **Review rationale:** exactly one terminal checkpoint integrates a cross-repository, fleet-wide ownership and preservation gate.
+  - **Acceptance criteria:** Exact candidates and reviews are ancestral; all teams/races/recovery paths pass; activation receipt binds agent-inbox revision and schema digests; rollback is proven; zero proof uses authoritative sets; no evidence or useful work is deleted.
+  - **Definition of Done:** Integration and activation receipts committed, no generated/live state enters source-history `main`, and any Feature closure follows separate current Acceptance authority.
+
 ## Feature: 0045 — S-Core/AUTOSAR Feedback Loop
 
 **Goal:** Prioritize and implement the operational website loop connecting
