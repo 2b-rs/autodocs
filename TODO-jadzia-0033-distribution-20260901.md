@@ -74,3 +74,14 @@ NOTES: obrien completed integration, merged to main, validated tests, and marked
 OFFERED: priority 1: worf, priority 2: quark
 STATUS: OPEN
 NOTES: Dispatched implementation of 0033-14.
+
+
+## 0033-07.03
+STATUS: ACCEPTED
+NOTES: Management explicitly approved the policy. Checked off in TODO.md.
+
+
+## 0033-15.01
+OFFERED: priority 1: quark, priority 2: worf
+STATUS: OPEN
+NOTES: Dispatched implementation of 0033-15.01.
