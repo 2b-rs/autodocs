@@ -182,3 +182,9 @@ NOTES: obrien rejected the integration due to test_review_request_baseline_audit
 OFFERED: priority 1: worf
 STATUS: OPEN
 NOTES: Dispatched rework to fix the test failure.
+
+
+## 0033-07.01 (Rework)
+AWARDED: worf
+STATUS: IN_PROGRESS
+NOTES: worf started rework.
