@@ -478,30 +478,141 @@ def _get_known_curation_ids(srcdir=SRC):
                 pass
     return _KNOWN_CURATION_IDS
 
-def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, srcdir=SRC):
-    """0021-05: Render the record-page re-review trigger + bound payload data.
+from canonical_id import parse_canonical_id, resolve_legacy, is_valid
 
-    Pure server-side HTML/JSON emission; client JS in review_request.js owns all
-    dialog behavior and transport. This keeps generated HTML deterministic while
-    binding the exact record identity/status/version/hash/source URL into the
-    page with no user re-entry.
+_HREF_URL_RE = re.compile(r'href=[\"\x27](https?://[^\s\"\x27]+)[\"\x27]')
+_REL_RE = re.compile(r"standards/(R[0-9]{2}-[0-9]{2})/")
+
+
+def _extract_blocks_text(blocks):
+    texts = []
+    if isinstance(blocks, str):
+        t = re.sub(r"<[^>]+>", " ", blocks)
+        t = " ".join(t.split())
+        if t:
+            texts.append(t)
+    elif isinstance(blocks, list):
+        for item in blocks:
+            texts.extend(_extract_blocks_text(item))
+    elif isinstance(blocks, dict):
+        for k, v in blocks.items():
+            if k not in ("attrs", "status", "history", "upstream", "namespace_meta", "t", "src"):
+                texts.extend(_extract_blocks_text(v))
+    return texts
+
+
+def _extract_source_url(blocks):
+    if isinstance(blocks, str):
+        m = _HREF_URL_RE.search(blocks)
+        if m:
+            return m.group(1)
+    elif isinstance(blocks, list):
+        for item in blocks:
+            u = _extract_source_url(item)
+            if u:
+                return u
+    elif isinstance(blocks, dict):
+        for k, v in blocks.items():
+            if k not in ("status", "history", "namespace_meta"):
+                u = _extract_source_url(v)
+                if u:
+                    return u
+    return ""
+
+
+def _find_record_data_on_disk(record_id, srcdir=SRC):
+    if not record_id:
+        return None
+    bare_id = str(record_id).split("/")[-1]
+    records_root = os.path.join(srcdir, "spec", "records")
+    if not os.path.isdir(records_root):
+        return None
+    parts = bare_id.split("_")
+    candidate_modules = []
+    if len(parts) >= 2:
+        candidate_modules.append(parts[0] + "_" + parts[1])
+        candidate_modules.append(parts[0])
+    for mod in candidate_modules:
+        p = os.path.join(records_root, mod, bare_id + ".json")
+        if os.path.isfile(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    for root_dir, _, files in os.walk(records_root):
+        if (bare_id + ".json") in files:
+            try:
+                with open(os.path.join(root_dir, bare_id + ".json"), "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+    return None
+
+
+def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, srcdir=SRC, rec_blocks=None):
+    """0021-05 / 0033-09: Render the record-page re-review trigger + bound payload data.
+
+    Derives full canonical identity through project/kind registry, authoritative
+    latest version through version store / content hash algorithm, and stable deep
+    source locator without requiring synthetic per-record metadata.
     """
     rec_meta = dict(rec_meta or {})
     if not record_id:
         return ""
 
-    queue_state = _review_request_state_for_record(record_id, rec_meta, srcdir)
+    parsed_cid = parse_canonical_id(str(record_id))
+    if parsed_cid is not None:
+        canonical_id = str(record_id)
+    else:
+        canonical_id = resolve_legacy(str(record_id))
+
+    queue_state = _review_request_state_for_record(canonical_id, rec_meta, srcdir)
     if queue_state:
         rec_meta["has_open_review_request"] = True
         rec_meta.setdefault("existing_request_url", "")
 
-    canonical_id = rec_meta.get("canonical_id") or record_id
+    disk_record = None
+    if not rec_meta.get("source_url") or not rec_meta.get("content_text"):
+        disk_record = _find_record_data_on_disk(record_id, srcdir)
+
+    source_url = rec_meta.get("source_url") or ""
+    if not source_url:
+        if rec_blocks:
+            source_url = _extract_source_url(rec_blocks)
+        if not source_url and disk_record:
+            source_url = _extract_source_url(disk_record.get("blocks", []))
+
     release = rec_meta.get("release")
+    if not release and source_url:
+        m_rel = _REL_RE.search(source_url)
+        if m_rel:
+            release = m_rel.group(1)
+    if not release:
+        release = "R25-11"
+
     content_text = rec_meta.get("content_text") or rec_meta.get("text") or rec_meta.get("value") or ""
+    if not content_text:
+        if rec_blocks:
+            content_text = " ".join(_extract_blocks_text(rec_blocks)).strip()
+        if not content_text and disk_record:
+            content_text = " ".join(_extract_blocks_text(disk_record.get("blocks", []))).strip()
+
     content_hash = rec_meta.get("content_hash") or (content_hash8(content_text) if content_text else None)
     version_id = rec_meta.get("version_id") or (requirement_version_id(canonical_id, release, content_text) if release and content_text else None)
-    source_url = rec_meta.get("source_url") or ""
-    current_state = (status or {}).get("state", "unspecified")
+
+    current_state = (status or {}).get("state")
+    if not current_state and disk_record:
+        current_state = (disk_record.get("status") or {}).get("state")
+    if not current_state:
+        current_state = "unspecified"
+
+    title = rec_meta.get("title")
+    if not title and disk_record:
+        title = disk_record.get("title") or canonical_id
+    if not title:
+        title = canonical_id
+
     has_open_request = bool(rec_meta.get("has_open_review_request"))
 
     payload = {
@@ -510,7 +621,7 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, 
         "content_hash": content_hash,
         "status": current_state,
         "source_url": source_url,
-        "title": rec_meta.get("title") or canonical_id,
+        "title": title,
         "category_default": "missing-context" if str(current_state).startswith("invalid/") else "",
         "has_open_review_request": has_open_request,
         "existing_request_url": rec_meta.get("existing_request_url") or "",
@@ -526,7 +637,7 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, 
             '<div class="review-request-queue-state"><p><strong>Open review request in queue.</strong> '
             'Current queue state: <code>%s</code>. Request ID: <code>%s</code>.</p>'
             '<dl class="review-request-bound">'
-            '%s%s%s%s'
+            '%s%s%s'
             '</dl></div>'
             % (
                 esc(queue_state.get("queue_state") or "open"),
@@ -534,7 +645,6 @@ def _render_review_request_panel(record_id, rec_meta, status, page_dir_depth=0, 
                 ('<dt>Target version</dt><dd><code>%s</code></dd>' % esc(queue_state.get("target_version_id"))) if queue_state.get("target_version_id") else '',
                 ('<dt>Status snapshot</dt><dd><code>%s</code></dd>' % esc(queue_state.get("target_status_snapshot"))) if queue_state.get("target_status_snapshot") else '',
                 ('<dt>Requester trust</dt><dd><code>%s</code>%s</dd>' % (esc(queue_state.get("identity") or '-'), (' / ' + esc(queue_state.get("authoritative_actor"))) if queue_state.get("authoritative_actor") else '')),
-                ('<dt>Queue file</dt><dd><code>%s</code></dd>' % esc(os.path.relpath(queue_state.get("queue_path"), ROOT))) if queue_state.get("queue_path") else '',
             )
         )
 
@@ -634,7 +744,7 @@ def render_blocks(blocks, page_dir_depth, srcdir=SRC, record_id=None, requiremen
         elif t == "rec":
             rec_requirement_meta = b.get("requirement_meta") or requirement_meta
             rec_id = dict(b.get("attrs", [])).get("id") or record_id
-            review_request_html = _render_review_request_panel(rec_id, b.get("review_request") or {}, b.get("status"), page_dir_depth, srcdir)
+            review_request_html = _render_review_request_panel(rec_id, b.get("review_request") or {}, b.get("status"), page_dir_depth, srcdir, rec_blocks=b.get("blocks"))
             history_html = _render_rec_history_html(rec_id, b.get("status"), b.get("history"), page_dir_depth, srcdir)
             out.append(open_tag("article", b["attrs"]))
             out.append(esc(b.get("lead", "")))
