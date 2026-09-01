@@ -274,3 +274,14 @@ NOTES: Dispatched QA.
 AWARDED: seven
 STATUS: AWARDED
 NOTES: seven accepted the priority offer for QA.
+
+
+## 0050-07
+AWARDED: seven
+STATUS: REVIEW
+NOTES: seven submitted 0050-07 for review. QA report indicates blocking findings.
+
+## 0050-07-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0050-07 QA report.
