@@ -57,3 +57,9 @@ NOTES: data accepted offer.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0050-01 (append-only team generation).
+
+
+## 0050-01-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien is working on the integration review.
