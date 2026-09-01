@@ -2767,6 +2767,13 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
   - **Completion evidence (2026-09-01):** Production-realistic cross-browser and transport matrix test execution across review-request suites in dedicated worktree. Tests: 100 passed across `test_review_request_browser.py`, `test_review_request_rendering.py`, `test_review_request_ingest.py`, `test_review_request_package.py`, `test_review_request_baseline_audit.py`, `test_review_request_retention.py`, and `test_review_request_package_v2_contract.py`.
 
 - [x] **0033-14** PREREQ: 0033-14:0033-07, 0033-14:0033-07.01, 0033-14:0033-07.02, 0033-14:0033-07.03, 0033-14:0033-07.04, 0033-14:0033-08, 0033-14:0033-13 Verify the complete lifecycle and anti-bypass boundaries from a real generated record through both human decision outcomes.
+  Claim: `DONE-worf-0033-14-20260901.md`; owner_token:
+  `agent:worf:0033-14:1788270014731-37f0b366`.
+  - **Acceptance:** ✓
+    - **Disposition:** `completed`
+    - **Accepted by:** `obrien` (Miles O'Brien, Integrator for Team DeepSpace9)
+    - **Authority reference:** `agent-inbox:jadzia→obrien:1788270220038-ba3c1f11` (Offer `1788270220038-ba3c1f11` awarded by coordinator `jadzia` per `docs/pipeline/task-acceptance.md`)
+    - **Accepted at:** `2026-09-01T13:45:00Z`
   - **Baseline findings:** `RRB-INGEST-001`, `RRB-TRUST-001`, `RRB-QUEUE-001`, `RRB-TRACE-001`, `RRB-AUTH-001`.
   - **Previous implementation flaws:** Earlier tests validated isolated synthetic stages and could pass while production packages were invalid, ingestion skipped live lookup, normalized state bypassed `queued`, and canonical linkage pointed at the request rather than the record.
   - **Acceptance criteria:** A hermetic fixture demonstrates real record/version → generated page → exact browser package or no-JS intake → trusted/self-declared envelope → authoritative live lookup → atomic open queue item → normalized `queued` state → claim → AI/human proposal boundary → authenticated human acceptance or rejection. The accepted branch alone may apply a governed factual change and later publish that changed record; the rejected branch's audit outcome remains visible but no rejected factual change is applied or published. Throughout both branches, target canonical/version/hash, event/idempotency IDs, actor claim/trust, receipt, status/history, report/record links, and configuration identity remain traceable. Negative tests prove browser, ingestion, AI, untrusted caller, malformed queue payload, and report renderer cannot approve/reject/apply/close/edit outside their role; the record is byte/semantically unchanged until the governed apply step.
