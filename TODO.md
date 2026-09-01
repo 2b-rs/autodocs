@@ -256,9 +256,9 @@ Feature blocks retain their prior relative order and content.
     schema/adapter and durable decision results are committed; compatibility
     and recovery evidence is retained; nothing is deployed.
 
-- [ ] **0045-03** (C/P0 parent package) Verify and aggregate the
+- [x] **0045-03** (C/P0 parent package) Verify and aggregate the
   per-repository feedback-ingestion candidates without crossing a repository
-  write boundary.
+  write boundary. REF: `docs/campaign-evidence/0045-03/aggregation.md`. **Claim:** `TODO-jake-0045-03-20260901.md`.
   - **Task record:**
     `task_id: "0045-03"; feature_id: "0045"; role: qa`
   - **Architecture decisions and sources:** Package-level consistency for
