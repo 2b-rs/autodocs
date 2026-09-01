@@ -102,3 +102,14 @@ NOTES: Dispatched integration of 0050-02.
 AWARDED: obrien
 STATUS: IN_PROGRESS
 NOTES: obrien is working on integration review.
+
+
+## 0050-02-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed the review and integration. Merged to main in agent-inbox.
+
+## 0050-03
+OFFERED: priority 1: worf
+STATUS: OPEN
+NOTES: Dispatched coordinator decisions and handoff mechanics.
