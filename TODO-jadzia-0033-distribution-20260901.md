@@ -62,3 +62,15 @@ NOTES: obrien completed integration, merged to main, validated tests, and marked
 OFFERED: priority 1: worf, priority 2: quark
 STATUS: OPEN
 NOTES: Dispatched implementation of 0033-13.
+
+
+## 0033-13-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien completed integration, merged to main, validated tests, and marked 0033-13 as DONE in TODO.md.
+
+
+## 0033-14
+OFFERED: priority 1: worf, priority 2: quark
+STATUS: OPEN
+NOTES: Dispatched implementation of 0033-14.
