@@ -69,3 +69,9 @@ NOTES: Cancelled due to wrong paths in offer. Re-offering.
 OFFERED: priority 1: seven
 STATUS: OPEN
 NOTES: Re-dispatched with correct agent-inbox paths.
+
+
+## 0046-01.02
+AWARDED: seven
+STATUS: ACCEPTED
+NOTES: seven accepted the corrected offer.
