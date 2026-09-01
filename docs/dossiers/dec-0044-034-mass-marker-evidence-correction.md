@@ -199,3 +199,69 @@ advance `main`.
     - **Position:** `supports`
     - **Note:** The distinct pre-mutation scope review at `68e9e71fa` supports the exact 54-marker atomic compare-and-swap unit, finds no retention exception, enumerates the downstream gates, and requires this decision plus Project Lead re-plan before mutation; it is not Acceptance, integration, or release authority.
 - **Waiver:** `none`
+
+## Current-baseline addendum — Feature 0037 recovery subset (2026-09-01)
+
+This append-only addendum narrows a current-baseline recovery preparation to
+13 unsupported Feature `0037` markers already contained in the original
+54-marker decision population. It does not rewrite the decision above, mutate
+a marker, activate the correction, grant an Architect review, approve a
+checkpoint, supply a signature or Acceptance decision, integrate a branch, or
+close Feature `0037`.
+
+- **Preparation identity and role:** Supervisor-assigned unprivileged governance
+  Implementer/decision preparer on branch
+  `0037-cutover-governance-prep-20260901`; not Architect, reviewer, signer, or
+  Integrator.
+- **Exact baseline:** `refs/heads/main` and branch base
+  `3834400c0275d8afeb79e530d4db4dbbbb28b9b4`; `TODO.md` SHA-256
+  `761c011a82e64102cf546635634541cd959c58a12e0d5788e4ae34ee7b7d30d8`.
+- **Exact current evidence:** `agent-workflow.json` selects
+  `legacy-lists` with authority epoch/write phase `legacy-writable`; there are
+  zero canonical issue item files under `issues/<numeric-id>/`, zero items in
+  `issues/_views/catalog.json`, and zero refs below
+  `refs/autodocs/cutover/0037`. Commit
+  `3879067ee534099b7767db83d784239dd7ca7954` adds only a claim and the prose
+  `0037-34` authority-cutover/lifecycle summary; commit
+  `424e62116b60e351f4b74da0a44fef0b75a7eb28` adds only a claim and the prose
+  post-cutover verification/activation summary. Neither commit supplies the
+  canonical items, catalog, cutover refs, signed authority records, retained
+  executions, or criterion-bound evidence required by these markers.
+- **Exact recovery subset:** only `0037-29`, `0037-30`, `0037-31`,
+  `0037-32`, `0037-33`, `0037-34`, `0037-34.01`, `0037-34.02`, `0037-35`,
+  `0037-35.01`, `0037-35.02`, `0037-36`, and `0037-40` may later change
+  atomically from `[x]` to `[ ]`. Their exact before blocks and markers are
+  recorded verbatim in
+  `docs/campaign-evidence/mass-marker-evidence-gap-20260901/current-baseline-0037-marker-plan.md`.
+  The later operator must CAS both the exact `main` SHA and exact `TODO.md`
+  digest, prove every recorded block remains byte-identical, and preserve all
+  Task text, prerequisites, checkpoint attributes, Acceptance history,
+  incident summaries, and unrelated markers. Any difference aborts without a
+  write; this addendum does not authorize expanding or shrinking the set.
+- **Management direction (verbatim):**
+
+  > Dann nimm es jetzt in Betrieb. Eine gute Gelegenheit, die fälschlicherweise nicht ge[x]ten Tasks loszuwerden. Du kriegst von mir dafür alle nötigen Management-Freigaben. Steuere alles ein über Assignments, die du als supervisor verschickst. Keine neuen TODO-Tasks erstellen während des übergangs, sonst bremsen wir uns nur wieder selber aus.
+
+  This direction authorizes the recovery program and assignment-based
+  coordination without new `TODO.md` Tasks. Exact digest-bound approvals,
+  distinct checkpoint reviews, signatures, Acceptance decisions, and
+  integration/closure records remain later artifacts; none is fabricated or
+  implied here.
+- **Affected gates:** Task-start gates across the subset chain from `0037-30`
+  through `0037-40`; the criterion-bound shadow-migration, quiescence,
+  frozen-candidate, pre-cutover-audit, cutover-approval, authority-switch,
+  regeneration, rollback, post-cutover-audit, and activation validations;
+  mandatory integration checkpoints `0037-34.02` and `0037-40`; the authority
+  switch, write-freeze lift, and Feature `0037` closure. Existing prerequisite
+  and checkpoint text is preserved and remains the controlling contract.
+- **Drift, rollback, and retry:** Immediately before mutation, rebind current
+  `main`, recompute `TODO.md`, re-extract all 13 exact blocks, recheck
+  selector/item/catalog/cutover-ref evidence and superseding governance, and
+  abort on any mismatch. A CAS failure or partial/unintegrated candidate grants
+  no permission to finish by hand: retain failure evidence, leave the target
+  unchanged, and retry only from a newly pinned baseline with renewed
+  digest-bound approval/review where changed reach requires it. If an
+  integrated correction is later proven wrong, restoration is separately
+  authorized and append-only against exact then-current task evidence and graph
+  state; history is never reset or rewritten, and `[x]` is never restored only
+  to unblock scheduling.
