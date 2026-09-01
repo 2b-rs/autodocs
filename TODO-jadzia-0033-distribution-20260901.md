@@ -17,3 +17,4 @@
 - note: Accepted completed 0033-07.04 by worf (despite crash warn). Put lore retry on hold. Dispatched 0033-08 via offer 1788261450659-5ab6598e.
 - note: Cancelled 0033-08 offer 1788261450659-5ab6598e because PREREQ 0033-07 is still open.
 - note: Dispatched 0033-08 to worf/quark via offer 1788264218303-f115c87f.
+- note: worf completed 0033-08. Dispatched 0033-08-integration to obrien via offer 1788264521130-5ea7256b.
