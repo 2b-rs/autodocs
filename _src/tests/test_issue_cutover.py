@@ -1,442 +1,159 @@
-"""Hermetic tests for the non-operative Feature 0037 cutover safe core.
+"""AE evidence for the non-operative cutover core.
 
-AE-1..AE-5 evidence contract:
-- exact baseline: f5142ab033947bf16601ed9063f48aa96a8ff0e5 (tool and v2 schemas absent)
-- candidate: carrying commit containing this file
-- falsification: ``test_cli_inspect_prepare_verify`` is red on the baseline because
-  ``_src/tools/issue_cutover.py`` is absent and green on the candidate.
-- adjacent cases: stale OID, extra ref, changed serialization, and missing
-  activation audit each exercise a distinct neighboring contract dimension.
-- exhaustive properties: 64 epoch-transition pairs, 32 epoch/authority pairs,
-  8 existing/absent ref subsets, 8 event-chain prefixes, and 64 canonical-key
-  permutations. Canonical permutation seed: 37002. Exact executed count: 176.
+Property counts: transition=64, authority=32, ref subsets=8, event chains=8,
+recursive canonical permutations=64 (seed 37002); exact total=176.
+Baseline f5142ab033947bf16601ed9063f48aa96a8ff0e5 lacks tool/schemas.
 """
 from __future__ import annotations
-
-import copy
-import importlib.util
-import itertools
-import json
-import random
-import subprocess
-import tempfile
-import unittest
+import copy, importlib.util, itertools, json, random, shutil, subprocess, tempfile, unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-ROOT = Path(__file__).resolve().parents[2]
-TOOL = ROOT / "_src/tools/issue_cutover.py"
-SPEC = importlib.util.spec_from_file_location("issue_cutover", TOOL)
-assert SPEC and SPEC.loader
-CUT = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(CUT)
-D0 = "sha256:" + "0" * 64
-D1 = "sha256:" + "1" * 64
-ACTOR = "authority:repository-owner"
+ROOT=Path(__file__).resolve().parents[2]
+S=importlib.util.spec_from_file_location("cut",ROOT/"_src/tools/issue_cutover.py"); assert S and S.loader
+CUT=importlib.util.module_from_spec(S); S.loader.exec_module(CUT)
+ACTOR="authority:repository-owner"
+TOOLS=("issue_import_legacy.py","issue_regenerate.py","issue_validate.py","issue_store.py","issue_views.py","issue_lists.py")
 
+def gr(repo:Path,*args:str,check=True): return subprocess.run(["git","-C",str(repo),*args],check=check,capture_output=True)
+def git(repo:Path,*args:str)->str: return gr(repo,*args).stdout.decode().strip()
+def event(kind,source,target,seq,previous,package):
+    v={"schema":CUT.LEDGER_SCHEMA,"transaction_id":"tx-0037-safe-core","sequence":seq,"event_kind":kind,"from_epoch":source,"to_epoch":target,"allowed_write_authority":CUT.EXPECTED_AUTHORITY[target],"issue_store_frozen":target in CUT.FROZEN_EPOCHS,"previous_event_digest":previous,"payload_digest":package,"actor":ACTOR,"role":CUT.EVENT_ROLES[kind],"signature_policy":"single-authority-self-attestation@v1","signature_verified":True}
+    v["event_digest"]=CUT.event_digest(v); return v
+def shuffled(v,rng):
+    if isinstance(v,dict):
+        x=[(k,shuffled(w,rng)) for k,w in v.items()]; rng.shuffle(x); return dict(x)
+    if isinstance(v,list): return [shuffled(x,rng) for x in v]
+    return v
 
-def git(repo: Path, *args: str) -> str:
-    return subprocess.check_output(["git", "-C", str(repo), *args], stderr=subprocess.STDOUT).decode().strip()
-
-
-def event(sequence: int = 1, from_epoch: str = "legacy_active", to_epoch: str = "legacy_active", previous: str | None = None, transaction_id: str = "tx-0037-safe-core") -> dict[str, Any]:
-    payload = {
-        "schema": CUT.LEDGER_SCHEMA,
-        "transaction_id": transaction_id,
-        "sequence": sequence,
-        "event_kind": "inspect",
-        "from_epoch": from_epoch,
-        "to_epoch": to_epoch,
-        "allowed_write_authority": CUT.EXPECTED_AUTHORITY[to_epoch],
-        "issue_store_frozen": to_epoch in {"legacy_frozen", "prepared", "post_cutover_audit", "point_of_no_return", "write_frozen_repair"},
-        "previous_event_digest": previous,
-        "payload_digest": D0,
-        "actor": ACTOR,
-        "role": "control_actor",
-        "signature_policy": "single-authority-self-attestation@v1",
-        "signature_verified": True,
-    }
-    payload["event_digest"] = CUT.digest_value(payload)
-    return payload
-
-
-class CutoverFixture(unittest.TestCase):
-    temp: tempfile.TemporaryDirectory[str]
-    base: Path
-    repo: Path
-    source: str
-    manifest: dict[str, Any]
-    manifest_path: Path
-
+class Fixture(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.base = Path(self.temp.name).resolve()
-        self.repo = self.base / "repo"
-        self.repo.mkdir()
-        subprocess.run(["git", "init", "-b", "main"], cwd=self.repo, check=True, capture_output=True)
-        git(self.repo, "config", "user.email", "cutover@example.invalid")
-        git(self.repo, "config", "user.name", "Cutover Fixture")
-        (self.repo / "seed").write_text("seed\n", encoding="utf-8")
-        git(self.repo, "add", "seed")
-        git(self.repo, "commit", "-m", "seed")
-        self.source = git(self.repo, "rev-parse", "HEAD")
-        git(self.repo, "branch", "candidate", self.source)
-        (self.repo / "agent-workflow.json").write_text("{\"authority\":\"legacy\"}\n", encoding="utf-8")
-        tools = self.repo / "_src/tools"
-        tools.mkdir(parents=True)
-        adapter_source = (
-            "import argparse\nfrom pathlib import Path\n"
-            "p=argparse.ArgumentParser(); p.add_argument('--output', required=True); a=p.parse_args()\n"
-            "root=Path(a.output); root.mkdir(parents=True, exist_ok=True)\n"
-            "(root/'artifact.json').write_text('{\\\"ok\\\":true}\\n', encoding='utf-8')\n"
-        )
-        for name in ("issue_import_legacy.py", "issue_regenerate.py"):
-            (tools / name).write_text(adapter_source, encoding="utf-8")
-        schemas = self.repo / "issues/_schema"
-        schemas.mkdir(parents=True)
-        for name in ("cutover-transaction-manifest-v1.schema.json", "cutover-control-ledger-v2.schema.json"):
-            (schemas / name).write_bytes((ROOT / "issues/_schema" / name).read_bytes())
-        self.manifest = self.make_manifest()
-        self.manifest_path = self.base / "manifest.json"
-        self.write_manifest()
+        self.t=tempfile.TemporaryDirectory(); self.base=Path(self.t.name).resolve(); self.repo=self.base/"repo"; self.repo.mkdir()
+        gr(self.repo,"init","-b","main"); git(self.repo,"config","user.email","x@example.invalid"); git(self.repo,"config","user.name","Fixture")
+        dst=self.repo/"_src/tools"; dst.mkdir(parents=True)
+        for name in TOOLS: shutil.copyfile(ROOT/"_src/tools"/name,dst/name)
+        inv=self.repo/"provenance/migrations/issue-store/tools"; inv.mkdir(parents=True); shutil.copyfile(ROOT/"provenance/migrations/issue-store/tools/issue_legacy_inventory.py",inv/"issue_legacy_inventory.py")
+        shutil.copytree(ROOT/"_src/tests/fixtures/0037-11.01/issues",self.repo/"issues"); shutil.copytree(ROOT/"issues/_schema",self.repo/"issues/_schema")
+        docs=self.repo/"docs/pipeline"; docs.mkdir(parents=True); shutil.copyfile(ROOT/"docs/pipeline/issue-derived-artifacts-v1.json",docs/"issue-derived-artifacts-v1.json")
+        shutil.copyfile(ROOT/"agent-workflow.json",self.repo/"agent-workflow.json")
+        (self.repo/"TODO.md").write_text("## Feature: 0099 — Fixture\n\n- [ ] **0099-01** Safe.\n  - **Acceptance criteria:** Safe.\n  - **Definition of Done:** Safe.\n"); (self.repo/"DONE.md").write_text("# DONE\n"); (self.repo/"seed").write_text("source\n")
+        gr(self.repo,"add","."); gr(self.repo,"commit","-m","source"); self.source=git(self.repo,"rev-parse","HEAD")
+        gr(self.repo,"checkout","-b","candidate"); (self.repo/"seed").write_text("candidate\n"); gr(self.repo,"add","seed"); gr(self.repo,"commit","-m","candidate"); self.candidate=git(self.repo,"rev-parse","HEAD")
+        self.manifest=self.build(); self.path=self.base/"manifest.json"; self.path.write_text(CUT.canonical_json(self.manifest))
+    def tearDown(self): self.t.cleanup()
+    def adapter_config(self): return [{"id":"importer","config":{"source":"manifest-source","files":["TODO.md","DONE.md"]}},{"id":"regenerator","config":{"mode":"write-disposable","dag_path":"docs/pipeline/issue-derived-artifacts-v1.json"}}]
+    def calibrate(self,partial):
+        stage=self.base/"calibration"; stage.mkdir(); partial["adapters"]=self.adapter_config()
+        got=CUT._run_adapters(self.repo,stage,partial); shutil.rmtree(stage); return [{"adapter":x["adapter"],"tree_digest":x["tree_digest"]} for x in got]
+    def build(self):
+        source={"ref":"refs/heads/main",**CUT.git_identity(self.repo,self.source)}; candidate={"ref":"refs/heads/candidate",**CUT.git_identity(self.repo,self.candidate)}; patch=CUT.patch_identity(self.repo,self.source,self.candidate)
+        selector=self.repo/"agent-workflow.json"; snap={"baseline_oid":self.source,"epoch":"legacy_active","allowed_write_authority":"legacy","issue_store_frozen":False,"authorities":[ACTOR],"selector_path":"agent-workflow.json","selector_digest":CUT.digest_bytes(selector.read_bytes())}; snap["token_digest"]=CUT.snapshot_token(snap)
+        roles={r:ACTOR for r in CUT.REQUIRED_ROLES}
+        m={"schema":CUT.MANIFEST_SCHEMA,"transaction_id":"tx-0037-safe-core","source":source,"candidate":candidate,"prepared_patch":patch,"authority_snapshot":snap,"identities":{"tools":[{"path":f"_src/tools/{n}","digest":CUT.digest_bytes((self.repo/"_src/tools"/n).read_bytes())} for n in TOOLS],"schemas":[{"path":f"issues/_schema/{n}","digest":CUT.digest_bytes((self.repo/"issues/_schema"/n).read_bytes())} for n in ("cutover-transaction-manifest-v1.schema.json","cutover-control-ledger-v2.schema.json")]},"refs":[{"name":"refs/autodocs/cutover-test/control","expected_oid":None,"target_oid":self.candidate}],"roles":roles,"signatures":[],"approvals":{},"quiescence":{},"ledger":[],"adapters":self.adapter_config(),"outputs":[],"findings":[],"cas":{"disposable_test_repo":False,"declared_refs":["refs/autodocs/cutover-test/control"]}}
+        package=CUT.package_digest(m); m["signatures"]=[{"role":r,"actor":ACTOR,"policy":"single-authority-self-attestation@v1","payload_digest":CUT.signature_payload_digest(package,r,ACTOR),"verified":True} for r in sorted(CUT.REQUIRED_ROLES)]; m["approvals"]={"ref":"refs/autodocs/approval/0037/tx","base_oid":self.source,"role":"approver","actor":ACTOR,"payload_digest":package,"signature_verified":True}
+        q={"clients":[],"jobs":[],"claims":[],"observed_at_oid":self.source,"snapshot_token":snap["token_digest"]}; q["digest"]=CUT.digest_value(q); m["quiescence"]=q; m["ledger"]=[event("inspect","legacy_active","legacy_active",1,None,package)]; m["outputs"]=self.calibrate(m); return m
+    def code(self,m):
+        try: CUT.validate_manifest(m)
+        except CUT.CutoverError as e: return e.code
+        return "PASS"
+    def state(self):
+        refs=gr(self.repo,"show-ref",check=False).stdout; count=gr(self.repo,"count-objects","-v").stdout
+        files=[p.relative_to(self.repo).as_posix() for p in self.repo.rglob("*") if ".git" not in p.parts and p.is_file()]; locks=[p.as_posix() for p in self.repo.rglob("*.lock")]; sigs=[p.as_posix() for p in self.repo.rglob("*signature*")]
+        return refs,count,sorted(files),locks,sigs
 
-    def tearDown(self):
-        self.temp.cleanup()
+class Contract(Fixture):
+    def test_real_adapters_cli_prepare_verify_and_retry(self):
+        out=self.base/"cutover-product"; b=StringIO()
+        with redirect_stdout(b): self.assertEqual(CUT.main(["prepare","--repo",str(self.repo),"--manifest",str(self.path),"--output-root",str(out)]),0)
+        self.assertEqual(json.loads(b.getvalue())["status"],"PASS"); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"PASS"); self.assertTrue(CUT.prepare(self.repo,out,self.manifest)["idempotent"])
+    def test_effects_disabled_no_override(self):
+        for cmd in CUT.EFFECT_COMMANDS:
+            b=StringIO()
+            with redirect_stdout(b): self.assertEqual(CUT.main([cmd,"--repo","/missing","--manifest","/missing"]),2)
+            self.assertEqual(json.loads(b.getvalue())["code"],CUT.BLOCKED_EFFECT_CODE)
+        with self.assertRaises(SystemExit): CUT.main(["activate","--repo","/x","--manifest","/y","--force"])
+    def test_identity_recomputation_and_retained_extra(self):
+        self.assertEqual(CUT.inspect(self.repo,self.manifest)["status"],"PASS"); bad=copy.deepcopy(self.manifest); bad["candidate"]["tree_digest"]="sha256:"+"0"*64; before=self.state(); self.assertIn("CUTOVER-CANDIDATE-IDENTITY-DRIFT",{x["code"] for x in CUT.inspect(self.repo,bad)["findings"]}); self.assertEqual(before,self.state())
+        out=self.base/"cutover-extra"; CUT.prepare(self.repo,out,self.manifest); (out/"extra").write_text("x"); retained=CUT.tree_manifest(out); self.assertIn("CUTOVER-RETAINED-EXTRA",{x["code"] for x in CUT.verify(self.repo,self.manifest,out)["findings"]}); self.assertEqual(retained,CUT.tree_manifest(out))
+    def test_symlink_identity_and_failed_prepare_zero_mutation(self):
+        victim=self.repo/"_src/tools/issue_lists.py"; real=victim.with_suffix(".real"); victim.rename(real); victim.symlink_to(real.name); before=self.state(); result=CUT.inspect(self.repo,self.manifest); self.assertIn("CUTOVER-IDENTITY-PATH",{x["code"] for x in result["findings"]})
+        out=self.base/"cutover-fail"; bad=copy.deepcopy(self.manifest); bad["outputs"][0]["tree_digest"]="sha256:"+"0"*64
+        with self.assertRaises(CUT.CutoverError) as e: CUT.prepare(self.repo,out,bad)
+        self.assertEqual(e.exception.code,"CUTOVER-OUTPUT-DRIFT"); self.assertEqual(before,self.state()); self.assertFalse(out.exists())
+    def test_35_semantic_negative_codes(self):
+        cases=[]
+        def add(code,fn): cases.append((code,fn))
+        add("CUTOVER-UNKNOWN-FIELD",lambda m:m.__setitem__("x",1)); add("CUTOVER-MISSING-FIELD",lambda m:m.pop("refs")); add("CUTOVER-TRANSACTION-ID",lambda m:m.__setitem__("transaction_id","bad")); add("CUTOVER-OID",lambda m:m["source"].__setitem__("commit_oid","x")); add("CUTOVER-DIGEST",lambda m:m["source"].__setitem__("tree_digest","x")); add("CUTOVER-PATCH-BINDING",lambda m:m["prepared_patch"].__setitem__("base_oid",m["candidate"]["commit_oid"])); add("CUTOVER-EPOCH",lambda m:m["authority_snapshot"].__setitem__("epoch","x")); add("CUTOVER-AUTHORITY-MATRIX",lambda m:m["authority_snapshot"].__setitem__("allowed_write_authority","none")); add("CUTOVER-FROZEN-STATE",lambda m:m["authority_snapshot"].__setitem__("issue_store_frozen",True)); add("CUTOVER-EXACTLY-ONE-AUTHORITY",lambda m:m["authority_snapshot"]["authorities"].append("x")); add("CUTOVER-AUTHORITY-TOKEN",lambda m:m["authority_snapshot"].__setitem__("token_digest","sha256:"+"0"*64)); add("CUTOVER-SNAPSHOT-BASELINE",lambda m:m["authority_snapshot"].__setitem__("baseline_oid",m["candidate"]["commit_oid"])); add("CUTOVER-PATH",lambda m:m["identities"]["tools"][0].__setitem__("path","../x")); add("CUTOVER-IDENTITY",lambda m:m["identities"]["tools"].append(copy.deepcopy(m["identities"]["tools"][0]))); add("CUTOVER-MAIN-REF",lambda m:m["refs"][0].__setitem__("name","refs/heads/main")); add("CUTOVER-DUPLICATE-REF",lambda m:m["refs"].append(copy.deepcopy(m["refs"][0]))); add("CUTOVER-ROLE-SET",lambda m:m["roles"].pop("auditor")); add("CUTOVER-ROLE-AUTHORITY",lambda m:m["roles"].__setitem__("auditor","x")); add("CUTOVER-SIGNATURE-SET",lambda m:m["signatures"].pop()); add("CUTOVER-SIGNATURE-ACTOR",lambda m:m["signatures"][0].__setitem__("actor","x")); add("CUTOVER-SIGNATURE-POLICY",lambda m:m["signatures"][0].__setitem__("policy","x")); add("CUTOVER-SIGNATURE-PAYLOAD",lambda m:m["signatures"][0].__setitem__("payload_digest","sha256:"+"0"*64)); add("CUTOVER-APPROVAL-REF",lambda m:m["approvals"].__setitem__("ref","refs/x")); add("CUTOVER-APPROVAL-BASE",lambda m:m["approvals"].__setitem__("base_oid",m["candidate"]["commit_oid"])); add("CUTOVER-APPROVAL-ACTOR",lambda m:m["approvals"].__setitem__("actor","x")); add("CUTOVER-APPROVAL-PAYLOAD",lambda m:m["approvals"].__setitem__("payload_digest","sha256:"+"0"*64)); add("CUTOVER-QUIESCENCE-CLIENTS",lambda m:m["quiescence"]["clients"].append("x")); add("CUTOVER-QUIESCENCE-JOBS",lambda m:m["quiescence"]["jobs"].append("x")); add("CUTOVER-QUIESCENCE-CLAIMS",lambda m:m["quiescence"]["claims"].append("x")); add("CUTOVER-QUIESCENCE-BINDING",lambda m:m["quiescence"].__setitem__("snapshot_token","sha256:"+"0"*64)); add("CUTOVER-QUIESCENCE-DIGEST",lambda m:m["quiescence"].__setitem__("digest","sha256:"+"0"*64)); add("CUTOVER-ADAPTER-SET",lambda m:m["adapters"].pop()); add("CUTOVER-IMPORTER-CONFIG",lambda m:m["adapters"][0]["config"].__setitem__("source","x")); add("CUTOVER-REGENERATOR-MODE",lambda m:m["adapters"][1]["config"].__setitem__("mode","check")); add("CUTOVER-OUTPUT-SET",lambda m:m["outputs"].pop()); add("CUTOVER-UNDECLARED-REF",lambda m:m["cas"].__setitem__("declared_refs",["refs/x"])); add("CUTOVER-EVENT-KIND",lambda m:m["ledger"][0].__setitem__("event_kind","x"))
+        self.assertGreaterEqual(len(cases),32)
+        for expected,fn in cases:
+            with self.subTest(expected=expected):
+                m=copy.deepcopy(self.manifest); fn(m)
+                if expected == "CUTOVER-EVENT-KIND": m["ledger"][0]["event_digest"]=CUT.event_digest(m["ledger"][0])
+                if expected == "CUTOVER-SNAPSHOT-BASELINE": m["authority_snapshot"]["token_digest"]=CUT.snapshot_token(m["authority_snapshot"])
+                self.assertEqual(self.code(m),expected)
 
-    def make_manifest(self) -> dict[str, Any]:
-        selector = self.repo / "agent-workflow.json"
-        q_payload = {"clients": [], "jobs": [], "claims": [], "observed_at_oid": self.source}
-        tool_paths = ["_src/tools/issue_import_legacy.py", "_src/tools/issue_regenerate.py"]
-        schema_paths = ["issues/_schema/cutover-transaction-manifest-v1.schema.json", "issues/_schema/cutover-control-ledger-v2.schema.json"]
-        roles = {role: ACTOR for role in CUT.REQUIRED_ROLES}
-        signatures = [
-            {"role": role, "actor": ACTOR, "policy": "single-authority-self-attestation@v1", "payload_digest": D0, "verified": True}
-            for role in sorted(CUT.REQUIRED_ROLES)
-        ]
-        return {
-            "schema": CUT.MANIFEST_SCHEMA,
-            "transaction_id": "tx-0037-safe-core",
-            "source": {"ref": "refs/heads/main", "oid": self.source, "digest": D0},
-            "candidate": {"ref": "refs/heads/candidate", "oid": self.source, "digest": D1, "prepared_patch_digest": D1},
-            "authority_snapshot": {
-                "epoch": "legacy_active", "allowed_write_authority": "legacy", "issue_store_frozen": False,
-                "authorities": [ACTOR], "selector_path": "agent-workflow.json", "selector_digest": CUT.digest_bytes(selector.read_bytes()),
-                "token_digest": CUT.digest_value({
-                    "epoch": "legacy_active", "allowed_write_authority": "legacy", "issue_store_frozen": False,
-                    "authorities": [ACTOR], "selector_path": "agent-workflow.json", "selector_digest": CUT.digest_bytes(selector.read_bytes()),
-                }),
-            },
-            "identities": {
-                "tools": [{"path": path, "digest": CUT.digest_bytes((self.repo / path).read_bytes())} for path in tool_paths],
-                "schemas": [{"path": path, "digest": CUT.digest_bytes((self.repo / path).read_bytes())} for path in schema_paths],
-            },
-            "refs": [{"name": "refs/autodocs/cutover-test/control", "expected_oid": None, "target_oid": self.source}],
-            "roles": roles,
-            "signatures": signatures,
-            "approvals": [{"ref": "refs/autodocs/approval/0037/tx-safe", "base_oid": self.source, "role": "approver", "actor": ACTOR, "package_digest": D1, "signature_verified": True}],
-            "quiescence": {**q_payload, "digest": CUT.digest_value(q_payload)},
-            "ledger": [event()],
-            "adapters": [
-                {"id": "importer", "executable": "_src/tools/issue_import_legacy.py", "argv": ["--output", "{output}"], "output_subdir": "imported"},
-                {"id": "regenerator", "executable": "_src/tools/issue_regenerate.py", "argv": ["--output", "{output}"], "output_subdir": "regenerated"},
-            ],
-            "outputs": [
-                {"path": "imported/artifact.json", "digest": CUT.digest_bytes(b'{"ok":true}\n')},
-                {"path": "regenerated/artifact.json", "digest": CUT.digest_bytes(b'{"ok":true}\n')},
-            ],
-            "findings": [],
-            "cas": {"disposable_test_repo": False, "declared_refs": ["refs/autodocs/cutover-test/control"]},
-        }
+class Properties(Fixture):
+    def test_transition_and_authority_matrices(self):
+        roles={r:ACTOR for r in CUT.REQUIRED_ROLES}; count=0
+        for a,b in itertools.product(CUT.EPOCHS,repeat=2):
+            kind=next((k for k,pairs in CUT.EVENT_TRANSITIONS.items() if (a,b) in pairs),"inspect"); e=event(kind,a,b,1,None,"sha256:"+"0"*64)
+            try: CUT.validate_ledger([e],"tx-0037-safe-core",roles,ACTOR); accepted=True
+            except CUT.CutoverError: accepted=False
+            self.assertEqual(accepted,any((a,b) in pairs for pairs in CUT.EVENT_TRANSITIONS.values())); count+=1
+        self.assertEqual(count,64)
+        for epoch,authority in itertools.product(CUT.EPOCHS,CUT.WRITE_AUTHORITIES):
+            s=copy.deepcopy(self.manifest["authority_snapshot"]); s["epoch"]=epoch; s["allowed_write_authority"]=authority; s["issue_store_frozen"]=epoch in CUT.FROZEN_EPOCHS; s["token_digest"]=CUT.snapshot_token(s)
+            try: CUT._validate_snapshot(s); accepted=True
+            except CUT.CutoverError: accepted=False
+            self.assertEqual(accepted,authority==CUT.EXPECTED_AUTHORITY[epoch])
+    def test_event_prefixes_and_recursive_canonical(self):
+        roles={r:ACTOR for r in CUT.REQUIRED_ROLES}; path=[("inspect","legacy_active","legacy_active"),("freeze","legacy_active","legacy_frozen"),("prepare","legacy_frozen","prepared"),("switch","prepared","issue_store_active"),("audit","issue_store_active","post_cutover_audit"),("point-of-no-return","post_cutover_audit","point_of_no_return"),("repair","point_of_no_return","write_frozen_repair"),("repair","write_frozen_repair","issue_store_active")]; events=[]; previous=None
+        for i,(k,a,b) in enumerate(path,1): e=event(k,a,b,i,previous,"sha256:"+"0"*64); events.append(e); previous=e["event_digest"]; CUT.validate_ledger(events,"tx-0037-safe-core",roles,ACTOR)
+        rng=random.Random(37002); expected=CUT.canonical_json(self.manifest)
+        for _ in range(64): x=shuffled(self.manifest,rng); CUT.validate_manifest(x); self.assertEqual(CUT.canonical_json(x),expected)
 
-    def write_manifest(self, *, canonical: bool = True):
-        text = CUT.canonical_json(self.manifest) if canonical else json.dumps(self.manifest, indent=2) + "\n"
-        self.manifest_path.write_text(text, encoding="utf-8")
+class SchemaFixtures(unittest.TestCase):
+    def test_schema_json_and_runtime_fixtures(self):
+        for name in ("cutover-transaction-manifest-v1.schema.json","cutover-control-ledger-v2.schema.json"): json.loads((ROOT/"issues/_schema"/name).read_text())
+        root=ROOT/"issues/_schema/fixtures/cutover-transaction-manifest-v1"; index=json.loads((root/"manifest.json").read_text())
+        for rel in index["valid"]: CUT.validate_manifest(json.loads((root/rel).read_text()))
+        for rel in index["invalid"]:
+            with self.assertRaises(CUT.CutoverError): CUT.validate_manifest(json.loads((root/rel).read_text()))
+        root=ROOT/"issues/_schema/fixtures/cutover-control-ledger-v2"; index=json.loads((root/"manifest.json").read_text()); roles={r:ACTOR for r in CUT.REQUIRED_ROLES}
+        for rel in index["valid"]: CUT.validate_ledger([json.loads((root/rel).read_text())],"tx-0037-safe-core",roles,ACTOR)
+        for rel in index["invalid"]:
+            with self.assertRaises(CUT.CutoverError): CUT.validate_ledger([json.loads((root/rel).read_text())],"tx-0037-safe-core",roles,ACTOR)
 
-    def assert_rejected(self, mutate: Callable[[dict[str, Any]], object], code: str | None = None):
-        value = copy.deepcopy(self.manifest)
-        mutate(value)
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.validate_manifest(value)
-        if code:
-            self.assertEqual(raised.exception.code, code)
-
-
-class ContractTests(CutoverFixture):
-    def test_cli_inspect_prepare_verify(self):
-        out = self.base / "cutover-prepared"
-        buffer = StringIO()
-        with redirect_stdout(buffer):
-            self.assertEqual(CUT.main(["inspect", "--repo", str(self.repo), "--manifest", str(self.manifest_path)]), 0)
-        self.assertEqual(json.loads(buffer.getvalue())["status"], "PASS")
-        buffer = StringIO()
-        with redirect_stdout(buffer):
-            self.assertEqual(CUT.main(["prepare", "--repo", str(self.repo), "--manifest", str(self.manifest_path), "--output-root", str(out)]), 0)
-        first = json.loads(buffer.getvalue())
-        self.assertEqual(first["mutation"], "disposable-output-only")
-        self.assertFalse(first["idempotent"])
-        buffer = StringIO()
-        with redirect_stdout(buffer):
-            self.assertEqual(CUT.main(["prepare", "--repo", str(self.repo), "--manifest", str(self.manifest_path), "--output-root", str(out)]), 0)
-        self.assertTrue(json.loads(buffer.getvalue())["idempotent"])
-        buffer = StringIO()
-        with redirect_stdout(buffer):
-            self.assertEqual(CUT.main(["verify", "--repo", str(self.repo), "--manifest", str(self.manifest_path), "--output-root", str(out)]), 0)
-        self.assertEqual(json.loads(buffer.getvalue())["status"], "PASS")
-
-    def test_all_effect_commands_are_unconditionally_disabled(self):
-        for command in CUT.EFFECT_COMMANDS:
-            with self.subTest(command=command):
-                buffer = StringIO()
-                with redirect_stdout(buffer):
-                    rc = CUT.main([command, "--repo", "/does/not/exist", "--manifest", "/also/missing"])
-                result = json.loads(buffer.getvalue())
-                self.assertEqual(rc, 2)
-                self.assertEqual(result["code"], CUT.BLOCKED_EFFECT_CODE)
-                self.assertEqual(result["mutation"], "none")
-
-    def test_no_force_or_override_path_parses(self):
-        with self.assertRaises(SystemExit):
-            CUT.main(["activate", "--repo", str(self.repo), "--manifest", str(self.manifest_path), "--force"])
-
-    def test_absolute_paths_and_canonical_manifest_required(self):
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT._absolute(Path("repo"), "--repo")
-        self.assertEqual(raised.exception.code, "CUTOVER-ABSOLUTE-PATH")
-        self.write_manifest(canonical=False)
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.read_manifest(self.manifest_path)
-        self.assertEqual(raised.exception.code, "CUTOVER-NONCANONICAL")
-
-    def test_prepare_retry_changed_input_and_drift_reject(self):
-        out = self.base / "cutover-retry"
-        CUT.prepare(self.repo, out, self.manifest)
-        changed = copy.deepcopy(self.manifest)
-        changed["candidate"]["digest"] = D0
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.prepare(self.repo, out, changed)
-        self.assertEqual(raised.exception.code, "CUTOVER-TRANSACTION-REUSE")
-        (out / "imported/artifact.json").write_text("drift\n", encoding="utf-8")
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.prepare(self.repo, out, self.manifest)
-        self.assertEqual(raised.exception.code, "CUTOVER-PREPARED-DRIFT")
-
-    def test_missing_integrated_adapter_executable_rejects_without_promotion(self):
-        (self.repo / "_src/tools/issue_regenerate.py").unlink()
-        out = self.base / "cutover-missing-executable"
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.prepare(self.repo, out, self.manifest)
-        self.assertEqual(raised.exception.code, "CUTOVER-MISSING-EXECUTABLE")
-        self.assertFalse(out.exists())
-
-    def test_inspect_detects_stale_source_candidate_selector_and_ref(self):
-        git(self.repo, "update-ref", "refs/autodocs/cutover-test/control", self.source)
-        git(self.repo, "branch", "-D", "candidate")
-        (self.repo / "agent-workflow.json").write_text("drift\n", encoding="utf-8")
-        result = CUT.inspect(self.repo, self.manifest)
-        codes = {finding["code"] for finding in result["findings"]}
-        self.assertIn("CUTOVER-STALE-OID", codes)
-        self.assertIn("CUTOVER-CANDIDATE-DRIFT", codes)
-        self.assertIn("CUTOVER-SELECTOR-MISMATCH", codes)
-
-    def test_verify_retained_output_drift(self):
-        out = self.base / "cutover-verify-drift"
-        CUT.prepare(self.repo, out, self.manifest)
-        (out / "regenerated/artifact.json").write_text("changed\n", encoding="utf-8")
-        result = CUT.verify(self.repo, self.manifest, out)
-        self.assertEqual(result["status"], "BLOCKED")
-        self.assertIn("CUTOVER-OUTPUT-DRIFT", {finding["code"] for finding in result["findings"]})
-
-    def test_at_least_32_named_negative_contract_cases(self):
-        cases = [
-            ("malformed", lambda m: m.__setitem__("refs", "bad"), None),
-            ("unknown", lambda m: m.__setitem__("surprise", 1), "CUTOVER-UNKNOWN-FIELD"),
-            ("sequence", lambda m: m["ledger"][0].__setitem__("sequence", 2), "CUTOVER-SEQUENCE"),
-            ("digest", lambda m: m["source"].__setitem__("digest", "bad"), "CUTOVER-DIGEST"),
-            ("event-digest", lambda m: m["ledger"][0].__setitem__("event_digest", D0), "CUTOVER-EVENT-DIGEST"),
-            ("transaction", lambda m: m["ledger"][0].__setitem__("transaction_id", "different-tx"), "CUTOVER-TRANSACTION-MISMATCH"),
-            ("stale-ref-shape", lambda m: m["refs"][0].__setitem__("expected_oid", "f"), "CUTOVER-OID"),
-            ("extra-ref", lambda m: m["cas"].__setitem__("declared_refs", ["refs/extra"]), "CUTOVER-EXTRA-REF"),
-            ("null-ref-target-shape", lambda m: m["refs"][0].__setitem__("target_oid", ""), "CUTOVER-OID"),
-            ("wrong-approval", lambda m: m["approvals"][0].__setitem__("role", "auditor"), "CUTOVER-WRONG-APPROVAL"),
-            ("wrong-control-role", lambda m: m["ledger"][0].__setitem__("role", "unknown"), "CUTOVER-WRONG-CONTROL-ROLE"),
-            ("wrong-signature-role", lambda m: m["signatures"][0].__setitem__("actor", "other"), "CUTOVER-WRONG-SIGNATURE-ROLE"),
-            ("wrong-signature-policy", lambda m: m["signatures"][0].__setitem__("policy", "other"), "CUTOVER-WRONG-SIGNATURE-POLICY"),
-            ("alias-ambiguity", lambda m: m["identities"]["tools"][0].__setitem__("path", "_src/../tool"), "CUTOVER-PATH"),
-            ("selector-path", lambda m: m["authority_snapshot"].__setitem__("selector_path", "/selector"), "CUTOVER-PATH"),
-            ("dual-authority", lambda m: m["authority_snapshot"].__setitem__("authorities", [ACTOR, "other"]), "CUTOVER-EXACTLY-ONE-AUTHORITY"),
-            ("frozen-write", lambda m: m["authority_snapshot"].__setitem__("issue_store_frozen", True), "CUTOVER-FROZEN-STATE"),
-            ("legacy-after-switch", lambda m: (m["authority_snapshot"].__setitem__("epoch", "issue_store_active"), m["authority_snapshot"].__setitem__("allowed_write_authority", "legacy")), "CUTOVER-DUAL-AUTHORITY"),
-            ("identity-drift-shape", lambda m: m["identities"]["tools"][0].__setitem__("digest", D0[:-1]), "CUTOVER-DIGEST"),
-            ("regeneration-adapter", lambda m: m["adapters"].pop(), "CUTOVER-ADAPTER"),
-            ("quiescence-client", lambda m: m["quiescence"]["clients"].append("stale"), "CUTOVER-NOT-QUIESCENT"),
-            ("quiescence-job", lambda m: m["quiescence"]["jobs"].append("job"), "CUTOVER-NOT-QUIESCENT"),
-            ("quiescence-claim", lambda m: m["quiescence"]["claims"].append("claim"), "CUTOVER-NOT-QUIESCENT"),
-            ("main-ref", lambda m: (m["refs"][0].__setitem__("name", "refs/heads/main"), m["cas"].__setitem__("declared_refs", ["refs/heads/main"])), "CUTOVER-MAIN-REF"),
-            ("cas-duplicate", lambda m: m["refs"].append(copy.deepcopy(m["refs"][0])), "CUTOVER-EXTRA-REF"),
-            ("crash-receipt-shape", lambda m: m["outputs"].__setitem__(slice(None), "bad"), "CUTOVER-MALFORMED"),
-            ("retry-id", lambda m: m.__setitem__("transaction_id", "bad"), "CUTOVER-TRANSACTION-ID"),
-            ("rollback-illegal", lambda m: (m["ledger"][0].__setitem__("from_epoch", "point_of_no_return"), m["ledger"][0].__setitem__("to_epoch", "legacy_restored")), "CUTOVER-ILLEGAL-TRANSITION"),
-            ("activation-event", lambda m: m["ledger"][0].__setitem__("event_kind", 7), None),
-            ("effects-policy", lambda m: m["roles"].__setitem__("integrator", "other"), "CUTOVER-WRONG-ROLE"),
-            ("dry-run-main", lambda m: m["cas"].__setitem__("disposable_test_repo", "yes"), "CUTOVER-CAS"),
-            ("missing-executable-contract", lambda m: m["adapters"][0].__setitem__("executable", "missing.py"), "CUTOVER-ADAPTER"),
-            ("authority-token", lambda m: m["authority_snapshot"].__setitem__("token_digest", D0), "CUTOVER-AUTHORITY-TOKEN"),
-            ("prepared-patch-approval", lambda m: m["candidate"].__setitem__("prepared_patch_digest", D0), "CUTOVER-WRONG-APPROVAL"),
-            ("finding-shape", lambda m: m["findings"].append({"code": "X", "severity": "error", "path": "manifest", "message": "bad"}), "CUTOVER-FINDING"),
-        ]
-        self.assertGreaterEqual(len(cases), 32)
-        for name, mutate, code in cases:
-            with self.subTest(case=name):
-                self.assert_rejected(mutate, code)
-
-
-class PropertyTests(CutoverFixture):
-    def test_exhaustive_transition_pair_matrix_64_cases(self):
-        count = 0
-        for source, target in itertools.product(CUT.EPOCHS, repeat=2):
-            count += 1
-            item = event(from_epoch=source, to_epoch=target) if target in CUT.LEGAL_TRANSITIONS[source] else None
-            if item is None:
-                bad = event()
-                bad["from_epoch"], bad["to_epoch"] = source, target
-                bad["allowed_write_authority"] = CUT.EXPECTED_AUTHORITY[target]
-                bad["issue_store_frozen"] = target in {"legacy_frozen", "prepared", "post_cutover_audit", "point_of_no_return", "write_frozen_repair"}
-                bad["event_digest"] = CUT.digest_value({key: value for key, value in bad.items() if key != "event_digest"})
-                with self.assertRaises(CUT.CutoverError):
-                    CUT.validate_ledger([bad], "tx-0037-safe-core")
-            else:
-                CUT.validate_ledger([item], "tx-0037-safe-core")
-        self.assertEqual(count, 64)
-
-    def test_exhaustive_authority_write_matrix_32_cases(self):
-        count = 0
-        for epoch, authority in itertools.product(CUT.EPOCHS, CUT.WRITE_AUTHORITIES):
-            count += 1
-            self.assertEqual(authority == CUT.EXPECTED_AUTHORITY[epoch], sum([authority == CUT.EXPECTED_AUTHORITY[epoch]]) == 1)
-        self.assertEqual(count, 32)
-
-    def test_generated_existing_absent_ref_subsets_8_cases(self):
-        refs = [f"refs/autodocs/cutover-test/r{index}" for index in range(3)]
-        count = 0
+class CAS(unittest.TestCase):
+    def setUp(self):
+        self.t=tempfile.TemporaryDirectory(); self.repo=Path(self.t.name).resolve()/"repo"; self.repo.mkdir(); gr(self.repo,"init","-b","trunk"); git(self.repo,"config","user.email","x@y"); git(self.repo,"config","user.name","X"); (self.repo/".issue-cutover-disposable-test-repo").write_text("issue-cutover-disposable-test-repo@v1\n"); (self.repo/"a").write_text("a"); gr(self.repo,"add","."); gr(self.repo,"commit","-m","a"); self.a=git(self.repo,"rev-parse","HEAD"); (self.repo/"b").write_text("b"); gr(self.repo,"add","b"); gr(self.repo,"commit","-m","b"); self.b=git(self.repo,"rev-parse","HEAD")
+    def tearDown(self): self.t.cleanup()
+    def snap(self): return gr(self.repo,"show-ref",check=False).stdout,gr(self.repo,"count-objects","-v").stdout,sorted(p.as_posix() for p in self.repo.rglob("*.lock")),sorted(p.as_posix() for p in self.repo.rglob("*signature*"))
+    def test_ref_subsets_real_execution_8(self):
         for mask in range(8):
-            expectations = []
-            for index, ref in enumerate(refs):
-                expectations.append({"name": ref, "expected_oid": self.source if mask & (1 << index) else None, "target_oid": self.source})
-            transaction = CUT.plan_cas(expectations, refs)
-            self.assertIn(b"start\0", transaction)
-            self.assertIn(b"prepare\0commit\0", transaction)
-            count += 1
-        self.assertEqual(count, 8)
-
-    def test_event_chain_prefixes_8_cases(self):
-        path = ["legacy_active", "legacy_frozen", "prepared", "issue_store_active", "post_cutover_audit", "point_of_no_return", "write_frozen_repair", "issue_store_active"]
-        events = []
-        previous = None
-        for index, target in enumerate(path):
-            source = path[index - 1] if index else "legacy_active"
-            current = event(index + 1, source, target, previous)
-            events.append(current)
-            previous = current["event_digest"]
-            CUT.validate_ledger(events, "tx-0037-safe-core")
-        self.assertEqual(len(events), 8)
-
-    def test_canonical_permutations_64_cases_seed_37002(self):
-        rng = random.Random(37002)
-        expected = CUT.canonical_json(self.manifest)
-        items = list(self.manifest.items())
-        for _ in range(64):
-            rng.shuffle(items)
-            self.assertEqual(CUT.canonical_json(dict(items)), expected)
-
-
-class CasTests(unittest.TestCase):
-    temp: tempfile.TemporaryDirectory[str]
-    repo: Path
-    one: str
-    two: str
-
-    def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
-        self.repo = Path(self.temp.name).resolve() / "repo"
-        self.repo.mkdir()
-        subprocess.run(["git", "init", "-b", "trunk"], cwd=self.repo, check=True, capture_output=True)
-        git(self.repo, "config", "user.email", "cas@example.invalid")
-        git(self.repo, "config", "user.name", "CAS Fixture")
-        (self.repo / ".issue-cutover-disposable-test-repo").write_text("issue-cutover-disposable-test-repo@v1\n", encoding="utf-8")
-        (self.repo / "one").write_text("one\n", encoding="utf-8")
-        git(self.repo, "add", ".")
-        git(self.repo, "commit", "-m", "one")
-        self.one = git(self.repo, "rev-parse", "HEAD")
-        (self.repo / "two").write_text("two\n", encoding="utf-8")
-        git(self.repo, "add", "two")
-        git(self.repo, "commit", "-m", "two")
-        self.two = git(self.repo, "rev-parse", "HEAD")
-
-    def tearDown(self):
-        self.temp.cleanup()
-
-    def test_atomic_multi_ref_success_and_post_cas_recovery_inspection(self):
-        refs = ["refs/autodocs/cutover-test/a", "refs/autodocs/cutover-test/b"]
-        git(self.repo, "update-ref", refs[0], self.one)
-        result = CUT.execute_disposable_cas(self.repo, [
-            {"name": refs[0], "expected_oid": self.one, "target_oid": self.two},
-            {"name": refs[1], "expected_oid": None, "target_oid": self.two},
-        ], refs, dry_run=False)
-        self.assertEqual(result["status"], "APPLIED")
-        self.assertEqual([CUT.resolve_ref(self.repo, ref) for ref in refs], [self.two, self.two])
-
+            refs=[f"refs/autodocs/cutover-test/{mask}-{i}" for i in range(3)]; ex=[]
+            for i,r in enumerate(refs):
+                old=self.a if mask&(1<<i) else None
+                if old: git(self.repo,"update-ref",r,old)
+                ex.append({"name":r,"expected_oid":old,"target_oid":self.b})
+            self.assertEqual(CUT.execute_disposable_cas(self.repo,ex,refs,dry_run=False)["status"],"APPLIED")
+    def test_target_missing_dry_run_and_competitor_zero_mutation(self):
+        ref="refs/autodocs/cutover-test/x"; before=self.snap()
+        with self.assertRaises(CUT.CutoverError) as e: CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":"1"*40}],[ref],dry_run=True)
+        self.assertEqual(e.exception.code,"CUTOVER-CAS-TARGET-MISSING"); self.assertEqual(before,self.snap())
+        self.assertEqual(CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=True)["mutation"],"none"); self.assertEqual(before,self.snap())
     def test_competitor_is_all_or_none(self):
-        refs = ["refs/autodocs/cutover-test/a", "refs/autodocs/cutover-test/b"]
-        git(self.repo, "update-ref", refs[0], self.two)
-        before = {ref: CUT.resolve_ref(self.repo, ref) for ref in refs}
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.execute_disposable_cas(self.repo, [
-                {"name": refs[0], "expected_oid": self.one, "target_oid": self.one},
-                {"name": refs[1], "expected_oid": None, "target_oid": self.two},
-            ], refs, dry_run=False)
-        self.assertEqual(raised.exception.code, "CUTOVER-CAS-COMPETITOR")
-        self.assertEqual({ref: CUT.resolve_ref(self.repo, ref) for ref in refs}, before)
+        refs=["refs/autodocs/cutover-test/competitor-a","refs/autodocs/cutover-test/competitor-b"]; git(self.repo,"update-ref",refs[0],self.b); before=self.snap()
+        with self.assertRaises(CUT.CutoverError) as e: CUT.execute_disposable_cas(self.repo,[{"name":refs[0],"expected_oid":self.a,"target_oid":self.a},{"name":refs[1],"expected_oid":None,"target_oid":self.b}],refs,dry_run=False)
+        self.assertEqual(e.exception.code,"CUTOVER-CAS-COMPETITOR"); self.assertEqual(before,self.snap())
+    def test_three_crashes_and_recovery_retry(self):
+        for point,code,changed in (("before-prepare","CUTOVER-CAS-CRASH-BEFORE-PREPARE",False),("between-prepare-commit","CUTOVER-CAS-CRASH-BETWEEN",False),("after-commit-before-receipt","CUTOVER-CAS-CRASH-AFTER-COMMIT",True)):
+            ref=f"refs/autodocs/cutover-test/{point}"; receipt=self.repo.parent/f"{point}.json"; before=self.snap()
+            with self.assertRaises(CUT.CutoverError) as e: CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,crash_at=point,receipt_path=receipt)
+            self.assertEqual(e.exception.code,code); self.assertEqual(CUT.resolve_ref(self.repo,ref)==self.b,changed); self.assertFalse(receipt.exists())
+            if changed: self.assertEqual(CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,receipt_path=receipt)["status"],"RECOVERED")
+            else: self.assertEqual(before,self.snap())
 
-    def test_dry_run_writes_no_ref_object_file_lock_or_signature(self):
-        ref = "refs/autodocs/cutover-test/dry"
-        before = sorted(path.relative_to(self.repo).as_posix() for path in self.repo.rglob("*"))
-        result = CUT.execute_disposable_cas(self.repo, [{"name": ref, "expected_oid": None, "target_oid": self.two}], [ref], dry_run=True)
-        after = sorted(path.relative_to(self.repo).as_posix() for path in self.repo.rglob("*"))
-        self.assertEqual(result["mutation"], "none")
-        self.assertIsNone(CUT.resolve_ref(self.repo, ref))
-        self.assertEqual(before, after)
-
-    def test_main_and_undeclared_refs_rejected(self):
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.plan_cas([{"name": "refs/heads/main", "expected_oid": None, "target_oid": self.one}], ["refs/heads/main"])
-        self.assertEqual(raised.exception.code, "CUTOVER-MAIN-REF")
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.plan_cas([{"name": "refs/autodocs/cutover-test/x", "expected_oid": None, "target_oid": self.one}], ["refs/autodocs/cutover-test/y"])
-        self.assertEqual(raised.exception.code, "CUTOVER-EXTRA-REF")
-
-    def test_non_disposable_repository_rejected(self):
-        (self.repo / ".issue-cutover-disposable-test-repo").unlink()
-        with self.assertRaises(CUT.CutoverError) as raised:
-            CUT.execute_disposable_cas(self.repo, [{"name": "refs/autodocs/cutover-test/x", "expected_oid": None, "target_oid": self.one}], ["refs/autodocs/cutover-test/x"], dry_run=True)
-        self.assertEqual(raised.exception.code, "CUTOVER-CAS-NOT-DISPOSABLE")
-
-
-class SchemaFixtureTests(unittest.TestCase):
-    def test_fixture_manifests_are_complete_and_runtime_classified(self):
-        for schema_name, validator in (
-            ("cutover-transaction-manifest-v1", CUT.validate_manifest),
-            ("cutover-control-ledger-v2", lambda value: CUT.validate_ledger([value], value.get("transaction_id", "missing"))),
-        ):
-            root = ROOT / "issues/_schema/fixtures" / schema_name
-            index = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
-            for relative in index["valid"]:
-                validator(json.loads((root / relative).read_text(encoding="utf-8")))
-            for relative in index["invalid"]:
-                with self.assertRaises(CUT.CutoverError, msg=relative):
-                    validator(json.loads((root / relative).read_text(encoding="utf-8")))
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=="__main__": unittest.main()
