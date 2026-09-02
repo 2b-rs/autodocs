@@ -1,6 +1,7 @@
 # Controlled agent/profile feedback lifecycle
 
 **Status:** proposed architecture for Feature `0046`; non-operative. This contract does not authorize profile mutation, approval, publication, Supervisor reload, or relaxation of `DEC-0044-029`.
+**Supersession:** This rederivation explicitly supersedes earlier architecture proposals per Management decision `decision-1788390190360-3c7e959d` Option A (Anonymous allowed, Management approval required).
 
 ## Lifecycle and trust boundaries
 
@@ -43,15 +44,15 @@ Every transition is compare-and-swap guarded and idempotent. `complete` requires
 - Approval is proposal- and baseline-specific, single-use and replay protected.
 - Public projection is allow-list based. A deny-list alone is insufficient. Raw sources, prompts, provider profiles, internal policy, credentials, private identities and restricted feedback are forbidden exports.
 - Redaction/retention events preserve integrity and audit metadata while minimizing retained personal content.
-- Anonymous input, if later authorized, cannot exercise approval or promotion authority.
+- Anonymous input is allowed. Management approval gates promotion, runtime activation, and public publication.
 - `DEC-0044-029` remains a hard compatibility boundary: neither feedback nor proposal records use agent-memory storage.
 
 ## Cross-item decision and review gate
 
 Before the first operative mutation that establishes or changes any of these gate scopes, a conforming `decision-record@v1` and supporting review by a Management-instantiated Architect distinct from the Implementer must be reachable:
 
-- who may submit anonymously and what attribution/retention applies;
-- who may approve/revise/reject and the required independence;
+- who may submit anonymously and what attribution/retention applies; (Resolved: Anonymous submissions allowed)
+- who may approve/revise/reject and the required independence; (Resolved: Management approval required)
 - authoritative source and compare-and-swap promotion semantics;
 - shared role/capability descriptor changes affecting multiple agents or future Tasks;
 - public/private projection boundary and publication eligibility;
