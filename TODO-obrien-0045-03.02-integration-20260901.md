@@ -6,6 +6,12 @@
 - **owner_token:** `agent:obrien:0045-03.02-integration:1788257869497-fb5908ba`
 - **offer_id:** `1788257869497-fb5908ba` (atomically awarded)
 - **capability_class:** `privileged`
+- **state:** `[x]`
+- **recorded_task_state:** `[x]`
+- **coordination_state:** `accepted`
+- **restart_recovery_state:** `terminal`
+- **lease_active:** `false`
+- **substantive_ref:** `b96c534203c2d0d27e7b990ad5f8869b84ec1293`
 - **branch:** `chain-0045-03.02`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/chain-0045-03.02`
 - **candidate_commit:** `7847886c76e88797f9a6a9f2a2d034c4817c5b90`
@@ -43,3 +49,14 @@
 
 - **Verdict:** ACCEPTED
 - **Conclusion:** Consumer adapter and review/curation queue ingestion fully satisfy REQ-0045-06, REQ-0045-08, REQ-0045-12. Conforming handoffs create exactly one committed queue item, malformed/duplicate input is typed/effect-free, and database byte invariants hold.
+
+---
+
+## 3. Supervisor restart recovery — 2026-09-02
+
+- **Disposition:** terminal and released; do not resume this owner token.
+- Miles O'Brien's integration review of candidate `7847886c76e88797f9a6a9f2a2d034c4817c5b90` (authors: Philippa Georgiou, Worf) was completed with passing verdict ACCEPTED at commit `b96c534203c2d0d27e7b990ad5f8869b84ec1293` on branch `chain-0045-03.02`.
+- Formal Task Acceptance was recorded under offer `1788257869497-fb5908ba` in `TODO.md` (`Acceptance: ✓`, `completed`, commit `a320194cce27034a15b58588926e9edcdd27077a`).
+- All 56 tests passed, policy provenance passed, and process doc doctor passed.
+- Upstream Feature 0045 has fully integrated this candidate to `main`. Authoritative `TODO.md` records Task `0045-03.02` as `[x]`.
+- No active lease, checkpoint, or integration action remains under this claim. Any new work requires a fresh exact assignment and claim.

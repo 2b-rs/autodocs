@@ -198,3 +198,5 @@ NOTES: worf completed rework implementation.
 OFFERED: priority 1: obrien, priority 2: geordi
 STATUS: OPEN
 NOTES: Dispatched integration of 0033-07.01 rework.
+- note: Integrators obrien and geordi failed. Re-dispatching 0033-07.01-integration to paul.
+- note: paul started IN_PROGRESS on 0033-07.01-integration.

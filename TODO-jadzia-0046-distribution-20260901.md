@@ -98,3 +98,5 @@ NOTES: obrien is working on integration review.
 AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien completed the review and integration. Merged to main in agent-inbox.
+- note: Architect data failed. Re-dispatching 0046-01.01 to worf and quark.
+- note: 0046-01.01 awarded to quark via offer 1788344635757-5777397d.
