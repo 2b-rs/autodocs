@@ -34,8 +34,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-root")
     parser.add_argument("--dag")
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--write", action="store_true")
-    mode.add_argument("--check", "--dry-run", dest="check", action="store_true")
+    mode.add_argument("--write", dest="write", action="store_const", const=True)
+    mode.add_argument("--check", "--dry-run", dest="write", action="store_const", const=False)
+    parser.set_defaults(write=None)
     parser.add_argument("--format", choices=("json", "human"), default="json")
     return parser
 
@@ -51,9 +52,9 @@ def main(argv: Iterable[str] | None = None) -> int:
         delegated.extend(("--output-root", args.output_root))
     if args.dag:
         delegated.extend(("--dag", args.dag))
-    if args.write:
+    if args.write is True:
         delegated.append("--write")
-    elif args.check:
+    elif args.write is False:
         delegated.append("--check")
     return issuectl.main(delegated)
 

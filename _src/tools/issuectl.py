@@ -94,11 +94,13 @@ def cmd_validate(args: argparse.Namespace) -> int:
             repo=args.repo,
             output_root=None,
             dag=None,
-            write=True,
+            write=args.write,
             format=args.format,
             command="validate",
         )
         return _standalone_stage(stage_args, "validate-canonical")
+    if args.write is not None:
+        raise IssuectlError("IC1304", "--write/--check modes require --canonical")
     root = Path(args.root) if args.root else None
     provenance_root = args.provenance_root
     _reject_legacy_authority(root)
@@ -204,8 +206,6 @@ def _standalone_stage_locked(
 
 def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
     repo = Path(args.repo).resolve()
-    if args.output_root is None:
-        args.write = True
     selector = regenerate.load_selector(repo)
     output_root = regenerate.authorize_output_root(
         repo,
@@ -1086,6 +1086,10 @@ def build_parser() -> argparse.ArgumentParser:
         default="working-tree",
     )
     p_val.add_argument("--canonical", action="store_true", help="validate canonical issues and provenance")
+    validation_mode = p_val.add_mutually_exclusive_group()
+    validation_mode.add_argument("--write", dest="write", action="store_const", const=True)
+    validation_mode.add_argument("--check", "--dry-run", dest="write", action="store_const", const=False)
+    p_val.set_defaults(write=None)
     p_val.add_argument("--root", help="explicit candidate issue root")
     p_val.add_argument("--authoritative-root")
     p_val.add_argument("--no-compare-head", action="store_true")
@@ -1112,9 +1116,9 @@ def build_parser() -> argparse.ArgumentParser:
         command_parser.add_argument("--output-root")
         command_parser.add_argument("--dag")
         mode = command_parser.add_mutually_exclusive_group()
-        mode.add_argument("--write", action="store_true")
-        mode.add_argument("--check", "--dry-run", dest="write", action="store_false")
-        command_parser.set_defaults(write=False)
+        mode.add_argument("--write", dest="write", action="store_const", const=True)
+        mode.add_argument("--check", "--dry-run", dest="write", action="store_const", const=False)
+        command_parser.set_defaults(write=None)
         command_parser.add_argument("--format", choices=("json", "human"), default="json")
 
     p_render = sub.add_parser("render", help="render one declared derived-artifact stage")

@@ -218,8 +218,8 @@ class RegenerationExecutionTests(RegenerationFixture):
 
 
 class RealManifestContractTests(RegenerationFixture):
-    def _literal_repo(self) -> Path:
-        repo = self.base / "literal-repo"
+    def _literal_repo(self, name: str) -> Path:
+        repo = self.base / name
         (repo / "issues/_schema").mkdir(parents=True)
         (repo / "provenance").mkdir()
         (repo / "docs/pipeline").mkdir(parents=True)
@@ -245,50 +245,97 @@ class RealManifestContractTests(RegenerationFixture):
             shutil.copyfile(ROOT / relative, destination)
         return repo
 
-    def test_every_literal_manifest_argv_executes_isolated_without_mocks(self):
-        """F3: execute all seven literal argv arrays against a disposable repo."""
-        repo = self._literal_repo()
-        manifest_path = repo / "docs/pipeline/issue-derived-artifacts-v1.json"
-        stages = json.loads(manifest_path.read_text(encoding="utf-8"))["stages"]
-        target = repo / "generated-issues"
-        fixture = ROOT / "_src/tests/fixtures/0037-11.01/generated/run-manifest.json"
-        fixture_before = fixture.read_bytes()
-        index_before = (ROOT / "index.html").read_bytes()
-        environment = dict(os.environ, ISSUECTL_REPO=str(repo))
-
-        help_run = subprocess.run(
-            ["python3", "_src/tools/generate.py", "--help"],
+    def _run(self, repo: Path, argv: list[str]) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            argv,
             cwd=ROOT,
-            env=environment,
+            env=dict(os.environ, ISSUECTL_REPO=str(repo)),
             capture_output=True,
             text=True,
             timeout=30,
             check=False,
         )
+
+    def _prime(self, repo: Path) -> None:
+        completed = self._run(
+            repo,
+            ["python3", "_src/tools/issuectl.py", "regenerate", "--all", "--write"],
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
+    def _stages(self, repo: Path) -> list[dict[str, object]]:
+        path = repo / "docs/pipeline/issue-derived-artifacts-v1.json"
+        return json.loads(path.read_text(encoding="utf-8"))["stages"]
+
+    def test_every_literal_manifest_argv_is_implicit_check_without_mutation(self):
+        """All seven literal argv arrays check a complete disposable tree."""
+        repo = self._literal_repo("literal-contract")
+        target = repo / "generated-issues"
+        fixture = ROOT / "_src/tests/fixtures/0037-11.01/generated/run-manifest.json"
+        fixture_before = fixture.read_bytes()
+        index_before = (ROOT / "index.html").read_bytes()
+
+        help_run = self._run(repo, ["python3", "_src/tools/generate.py", "--help"])
         self.assertEqual(help_run.returncode, 0, help_run.stderr)
         self.assertIn("--issues", help_run.stdout)
         self.assertFalse(target.exists())
 
+        self._prime(repo)
+        stages = self._stages(repo)
+        expected_paths = {path for stage in stages for path in stage["outputs"]}
+        self.assertEqual(set(regen.tree_manifest(target)), expected_paths)
         for stage in stages:
-            completed = subprocess.run(
-                stage["argv"],
-                cwd=ROOT,
-                env=environment,
-                capture_output=True,
-                text=True,
-                timeout=30,
-                check=False,
-            )
+            before = regen.tree_manifest(target)
+            completed = self._run(repo, list(stage["argv"]))
             self.assertEqual(completed.returncode, 0, f"{stage['id']}: {completed.stderr}")
+            self.assertEqual(regen.tree_manifest(target), before)
             self.assertLessEqual(len(completed.stdout.splitlines()), 1)
             self.assertLessEqual(len(completed.stderr.splitlines()), 1)
 
-        expected_paths = {path for stage in stages for path in stage["outputs"]}
-        self.assertEqual(set(regen.tree_manifest(target)), expected_paths)
         self.assertEqual(len(expected_paths), 17)
         self.assertEqual(fixture.read_bytes(), fixture_before)
         self.assertEqual((ROOT / "index.html").read_bytes(), index_before)
         self.assertFalse((ROOT / "generated-issues").exists())
+
+    def test_generate_implicit_write_check_and_dry_run_tree_manifests(self):
+        stage_id = "render-html"
+        cases = (("implicit", [], False), ("write", ["--write"], True), ("check", ["--check"], False), ("dry", ["--dry-run"], False))
+        for label, flags, writes in cases:
+            with self.subTest(mode=label):
+                repo = self._literal_repo(f"generate-{label}")
+                self._prime(repo)
+                stage = next(item for item in self._stages(repo) if item["id"] == stage_id)
+                target = repo / "generated-issues"
+                missing = target / str(stage["outputs"][0])
+                missing.unlink()
+                before = regen.tree_manifest(target)
+                completed = self._run(repo, list(stage["argv"]) + flags)
+                after = regen.tree_manifest(target)
+                if writes:
+                    self.assertEqual(completed.returncode, 0, completed.stderr)
+                    self.assertNotEqual(after, before)
+                    self.assertTrue(missing.is_file())
+                else:
+                    self.assertEqual(completed.returncode, 1, completed.stderr)
+                    self.assertEqual(json.loads(completed.stdout)["status"], "STALE")
+                    self.assertEqual(after, before)
+                    self.assertFalse(missing.exists())
+
+    def test_render_and_report_check_modes_preserve_missing_output_trees(self):
+        for stage_id in ("build-internal-catalog", "render-reports"):
+            for flag in ("--check", "--dry-run"):
+                with self.subTest(stage=stage_id, flag=flag):
+                    repo = self._literal_repo(f"{stage_id}-{flag[2:]}")
+                    self._prime(repo)
+                    stage = next(item for item in self._stages(repo) if item["id"] == stage_id)
+                    target = repo / "generated-issues"
+                    for relative in stage["outputs"]:
+                        (target / str(relative)).unlink()
+                    before = regen.tree_manifest(target)
+                    completed = self._run(repo, list(stage["argv"]) + [flag])
+                    self.assertEqual(completed.returncode, 1, completed.stderr)
+                    self.assertEqual(json.loads(completed.stdout)["status"], "STALE")
+                    self.assertEqual(regen.tree_manifest(target), before)
 
 
 class HermeticRelatedSuiteTests(unittest.TestCase):
