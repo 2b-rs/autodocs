@@ -21,3 +21,4 @@ AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien accepted the priority offer for 0041-05 integration.
 - note: obrien started IN_PROGRESS on 0041-05-integration.
+- note: obrien completed REVIEW on 0041-05-integration (commit d1a97ca). Assignment accepted.
