@@ -23,7 +23,7 @@ PREPARATION_RECEIPT_KEYS = frozenset({
     "prepared_patch", "adapters", "outputs", "mutation",
     "prepared_tree_digest", "receipt_digest",
 })
-PREPARATION_ADAPTER_KEYS = frozenset({"adapter", "tree_digest", "stdout_digest"})
+PREPARATION_ADAPTER_KEYS = frozenset({"adapter", "tree_digest"})
 CAS_RECEIPT_MARKER = ".issue-cutover-disposable-receipt-root"
 CAS_RECEIPT_MARKER_VALUE = "issue-cutover-disposable-receipt-root@v1\n"
 BLOCKED_EFFECT_CODE = "CUTOVER-EFFECTS-NOT-ACTIVATED"
@@ -340,7 +340,6 @@ def validate_preparation_receipt(receipt: Any, manifest: Mapping[str, Any]) -> d
         _require(adapter_id in ADAPTER_EXECUTABLES and adapter_id not in seen, "CUTOVER-PREPARATION-ADAPTERS", "receipt adapter is unknown or duplicated")
         seen.add(adapter_id)
         _digest(adapter["tree_digest"], "preparation receipt adapter tree_digest")
-        _digest(adapter["stdout_digest"], "preparation receipt adapter stdout_digest")
     _require(seen == set(ADAPTER_EXECUTABLES), "CUTOVER-PREPARATION-ADAPTERS", "receipt adapter set differs")
     _require(value["receipt_digest"] == preparation_receipt_digest(value), "CUTOVER-PREPARATION-DIGEST", "preparation receipt digest differs")
     return value
@@ -599,7 +598,7 @@ def _run_adapters(repo: Path, staging: Path, manifest: Mapping[str, Any]) -> lis
             if temporary_input is not None:
                 temporary_input.cleanup()
         _require(result.returncode == 0, "CUTOVER-ADAPTER-FAILED", f"{adapter['id']} failed ({result.returncode}): {result.stderr.decode('utf-8', 'replace')[:1000]}")
-        summaries.append({"adapter": adapter["id"], "tree_digest": adapter_tree_digest(adapter["id"], destination), "stdout_digest": digest_bytes(result.stdout)})
+        summaries.append({"adapter": adapter["id"], "tree_digest": adapter_tree_digest(adapter["id"], destination)})
     return summaries
 
 

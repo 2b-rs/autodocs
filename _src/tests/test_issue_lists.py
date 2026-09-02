@@ -32,30 +32,32 @@ class IssueListsTest(unittest.TestCase):
         self.assertIn(self.catalog["generation_id"], self.documents["todo"])
 
     def test_golden_and_reconciliation(self):
-        GOLDEN.mkdir(parents=True, exist_ok=True)
-        written, manifest = LISTS.write_lists(self.documents, GOLDEN, ROOT, run_id="fixture-run")
-        self.assertTrue(manifest["run_id"])
-        self.assertNotIn(manifest["run_id"], self.documents["todo"])
-        LISTS.verify_lists(GOLDEN, ISSUES, ROOT)
-        todo_ids = {item["id"] for item in self.groups["todo"]}
-        done_ids = {item["id"] for item in self.groups["done"]}
-        unclear_ids = {item["id"] for item in self.groups["unclear"]}
-        all_ids = {item["id"] for item in self.catalog["items"]}
-        self.assertEqual(todo_ids | done_ids | unclear_ids, all_ids)
-        self.assertIn("0081", todo_ids)
-        self.assertIn("0081-01", todo_ids)
-        self.assertIn("0081-02", todo_ids)
-        self.assertIn("0082", done_ids)
-        self.assertIn("0081-04", done_ids)
-        self.assertIn("0081-03", unclear_ids)
-        self.assertIn("AC-001", self.documents["todo"])
-        self.assertIn("archived-not-accepted", self.documents["done"])
-        self.assertIn("**gabriel**: 0081-01", self.documents["owners"])
-        for kind, rel in LISTS.OUTPUT_NAMES.items():
-            if kind == "manifest":
-                continue
-            self.assertEqual((GOLDEN / rel).read_text(encoding="utf-8"), self.documents[kind])
-        self.assertIn("generated", written["todo"])
+        with tempfile.TemporaryDirectory() as temp:
+            disposable_golden = Path(temp) / "generated"
+            shutil.copytree(GOLDEN, disposable_golden)
+            written, manifest = LISTS.write_lists(self.documents, disposable_golden, ROOT, run_id="fixture-run")
+            self.assertTrue(manifest["run_id"])
+            self.assertNotIn(manifest["run_id"], self.documents["todo"])
+            LISTS.verify_lists(disposable_golden, ISSUES, ROOT)
+            todo_ids = {item["id"] for item in self.groups["todo"]}
+            done_ids = {item["id"] for item in self.groups["done"]}
+            unclear_ids = {item["id"] for item in self.groups["unclear"]}
+            all_ids = {item["id"] for item in self.catalog["items"]}
+            self.assertEqual(todo_ids | done_ids | unclear_ids, all_ids)
+            self.assertIn("0081", todo_ids)
+            self.assertIn("0081-01", todo_ids)
+            self.assertIn("0081-02", todo_ids)
+            self.assertIn("0082", done_ids)
+            self.assertIn("0081-04", done_ids)
+            self.assertIn("0081-03", unclear_ids)
+            self.assertIn("AC-001", self.documents["todo"])
+            self.assertIn("archived-not-accepted", self.documents["done"])
+            self.assertIn("**gabriel**: 0081-01", self.documents["owners"])
+            for kind, rel in LISTS.OUTPUT_NAMES.items():
+                if kind == "manifest":
+                    continue
+                self.assertEqual((disposable_golden / rel).read_text(encoding="utf-8"), self.documents[kind])
+            self.assertIn("generated", written["todo"])
 
     def test_refuses_live_todo_done(self):
         with self.assertRaises(LISTS.IssueListsError):

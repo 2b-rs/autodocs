@@ -107,6 +107,7 @@ class Contract(Fixture):
             with self.subTest(index=index):
                 receipt=copy.deepcopy(original); mutate(receipt); path.write_text(CUT.canonical_json(receipt)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"BLOCKED")
         receipt=copy.deepcopy(original); receipt["adapters"][0]["tree_digest"]="sha256:"+"0"*64; receipt["receipt_digest"]=CUT.preparation_receipt_digest(receipt); path.write_text(CUT.canonical_json(receipt)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"BLOCKED")
+        receipt=copy.deepcopy(original); receipt["adapters"][0]["stdout_digest"]=CUT.digest_bytes(b"unverifiable"); receipt["receipt_digest"]=CUT.preparation_receipt_digest(receipt); path.write_text(CUT.canonical_json(receipt)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"BLOCKED")
         path.write_text(CUT.canonical_json(original)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"PASS")
     def test_importer_paths_are_unique_and_canonical(self):
         for files in (["TODO.md","TODO.md"],["a//b"],["a/../b"],["a\\b"]):
