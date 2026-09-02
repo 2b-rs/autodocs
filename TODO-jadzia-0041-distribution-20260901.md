@@ -14,3 +14,4 @@
 - note: 0041-06 rework complete by worf. Dispatched 0041-06-integration to obrien via offer 1788263465631-65612af1.
 - note: Accepted 0041-06-integration. Dispatched terminal task 0041-05 via offer 1788264118091-9a6bc3d4.
 - note: 0041-05 implementation submitted by obrien. Dispatched 0041-05-integration to geordi via offer 1788264324520-0f62aab5.
+- note: Integrator geordi failed. Re-dispatching 0041-05-integration to paul.
