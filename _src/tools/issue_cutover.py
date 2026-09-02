@@ -17,6 +17,15 @@ from typing import Any, Iterable, Mapping, Sequence
 MANIFEST_SCHEMA = "cutover-transaction-manifest@v1"
 LEDGER_SCHEMA = "cutover-control-ledger@v2"
 RESULT_SCHEMA = "issue-cutover-result@v1"
+PREPARATION_SCHEMA = "cutover-preparation@v1"
+PREPARATION_RECEIPT_KEYS = frozenset({
+    "schema", "transaction_id", "manifest_digest", "source", "candidate",
+    "prepared_patch", "adapters", "outputs", "mutation",
+    "prepared_tree_digest", "receipt_digest",
+})
+PREPARATION_ADAPTER_KEYS = frozenset({"adapter", "tree_digest", "stdout_digest"})
+CAS_RECEIPT_MARKER = ".issue-cutover-disposable-receipt-root"
+CAS_RECEIPT_MARKER_VALUE = "issue-cutover-disposable-receipt-root@v1\n"
 BLOCKED_EFFECT_CODE = "CUTOVER-EFFECTS-NOT-ACTIVATED"
 ZERO_OID = "0" * 40
 OID_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -133,7 +142,7 @@ def _digest(value: Any, where: str) -> str:
 def _relative(value: Any, where: str) -> str:
     text = _string(value, where)
     path = PurePosixPath(text)
-    _require(not path.is_absolute() and path.as_posix() == text and all(part not in ("", ".", "..") for part in path.parts), "CUTOVER-PATH", f"{where} must be a canonical relative POSIX path")
+    _require("\\" not in text and not path.is_absolute() and path.as_posix() == text and all(part not in ("", ".", "..") for part in path.parts), "CUTOVER-PATH", f"{where} must be a canonical relative POSIX path")
     return text
 
 
@@ -247,15 +256,110 @@ def event_digest(event: Mapping[str, Any]) -> str:
     return digest_value({key: value for key, value in event.items() if key != "event_digest"})
 
 
+def _schema_type(value: Any, expected: str) -> bool:
+    return {"object": isinstance(value, dict), "array": isinstance(value, list), "string": isinstance(value, str), "integer": isinstance(value, int) and not isinstance(value, bool), "boolean": isinstance(value, bool), "null": value is None}.get(expected, False)
+
+
+def validate_schema_instance(instance: Any, schema: Mapping[str, Any], registry: Mapping[str, Mapping[str, Any]] | None = None, root: Mapping[str, Any] | None = None, path: str = "$") -> None:
+    registry = registry or {}
+    root = root or schema
+    if "$ref" in schema:
+        ref = schema["$ref"]
+        if ref.startswith("#/"):
+            target: Any = root
+            for part in ref[2:].split("/"):
+                target = target[part.replace("~1", "/").replace("~0", "~")]
+        else:
+            _require(ref in registry, "CUTOVER-SCHEMA-REF", f"unresolved schema ref {ref}")
+            target = registry[ref]
+        validate_schema_instance(instance, target, registry, target if not ref.startswith("#/") else root, path)
+        return
+    if "type" in schema:
+        _require(_schema_type(instance, schema["type"]), "CUTOVER-SCHEMA-INSTANCE", f"{path} expected {schema['type']}")
+    if "const" in schema:
+        _require(instance == schema["const"], "CUTOVER-SCHEMA-INSTANCE", f"{path} differs from const")
+    if "enum" in schema:
+        _require(instance in schema["enum"], "CUTOVER-SCHEMA-INSTANCE", f"{path} is outside enum")
+    if isinstance(instance, str):
+        if "minLength" in schema: _require(len(instance) >= schema["minLength"], "CUTOVER-SCHEMA-INSTANCE", f"{path} is too short")
+        if "pattern" in schema: _require(re.search(schema["pattern"], instance) is not None, "CUTOVER-SCHEMA-INSTANCE", f"{path} does not match pattern")
+    if isinstance(instance, int) and not isinstance(instance, bool):
+        if "minimum" in schema: _require(instance >= schema["minimum"], "CUTOVER-SCHEMA-INSTANCE", f"{path} is below minimum")
+        if "maximum" in schema: _require(instance <= schema["maximum"], "CUTOVER-SCHEMA-INSTANCE", f"{path} is above maximum")
+    if isinstance(instance, list):
+        if "minItems" in schema: _require(len(instance) >= schema["minItems"], "CUTOVER-SCHEMA-INSTANCE", f"{path} has too few items")
+        if "maxItems" in schema: _require(len(instance) <= schema["maxItems"], "CUTOVER-SCHEMA-INSTANCE", f"{path} has too many items")
+        if schema.get("uniqueItems"): _require(len({canonical_json(item) for item in instance}) == len(instance), "CUTOVER-SCHEMA-INSTANCE", f"{path} items are not unique")
+        if "items" in schema:
+            for index, item in enumerate(instance): validate_schema_instance(item, schema["items"], registry, root, f"{path}[{index}]")
+    if isinstance(instance, dict):
+        required = set(schema.get("required", ())); _require(required <= set(instance), "CUTOVER-SCHEMA-INSTANCE", f"{path} missing {sorted(required-set(instance))}")
+        properties = schema.get("properties", {})
+        if schema.get("additionalProperties") is False: _require(set(instance) <= set(properties), "CUTOVER-SCHEMA-INSTANCE", f"{path} has unknown fields {sorted(set(instance)-set(properties))}")
+        for key, child in properties.items():
+            if key in instance: validate_schema_instance(instance[key], child, registry, root, f"{path}.{key}")
+    for child in schema.get("allOf", ()): validate_schema_instance(instance, child, registry, root, path)
+    if "oneOf" in schema:
+        matches = 0
+        for child in schema["oneOf"]:
+            try: validate_schema_instance(instance, child, registry, root, path); matches += 1
+            except CutoverError: pass
+        _require(matches == 1, "CUTOVER-SCHEMA-INSTANCE", f"{path} matched {matches} oneOf branches")
+    if "not" in schema:
+        try: validate_schema_instance(instance, schema["not"], registry, root, path)
+        except CutoverError: pass
+        else: raise CutoverError("CUTOVER-SCHEMA-INSTANCE", f"{path} matched forbidden schema")
+    if "if" in schema:
+        try:
+            validate_schema_instance(instance, schema["if"], registry, root, path)
+        except CutoverError:
+            if "else" in schema: validate_schema_instance(instance, schema["else"], registry, root, path)
+        else:
+            if "then" in schema: validate_schema_instance(instance, schema["then"], registry, root, path)
+
+
+def preparation_receipt_digest(receipt: Mapping[str, Any]) -> str:
+    return digest_value({key: value for key, value in receipt.items() if key != "receipt_digest"})
+
+
+def validate_preparation_receipt(receipt: Any, manifest: Mapping[str, Any]) -> dict[str, Any]:
+    value = _object(receipt, PREPARATION_RECEIPT_KEYS, PREPARATION_RECEIPT_KEYS, "preparation receipt")
+    _require(value["schema"] == PREPARATION_SCHEMA, "CUTOVER-PREPARATION-SCHEMA", "unsupported preparation receipt schema")
+    _require(value["transaction_id"] == manifest["transaction_id"], "CUTOVER-TRANSACTION-REUSE", "receipt transaction differs")
+    _require(value["manifest_digest"] == digest_value(manifest), "CUTOVER-PREPARED-DRIFT", "receipt manifest differs")
+    for name in ("source", "candidate", "prepared_patch", "outputs"):
+        _require(value[name] == manifest[name], "CUTOVER-PREPARED-DRIFT", f"receipt {name} differs from manifest")
+    _require(value["mutation"] == "disposable-output-only", "CUTOVER-PREPARATION-MUTATION", "receipt mutation class differs")
+    _digest(value["prepared_tree_digest"], "preparation receipt prepared_tree_digest")
+    _digest(value["receipt_digest"], "preparation receipt receipt_digest")
+    _require(isinstance(value["adapters"], list) and len(value["adapters"]) == len(ADAPTER_EXECUTABLES), "CUTOVER-PREPARATION-ADAPTERS", "receipt adapter set is incomplete")
+    seen = set()
+    for raw in value["adapters"]:
+        adapter = _object(raw, PREPARATION_ADAPTER_KEYS, PREPARATION_ADAPTER_KEYS, "preparation receipt adapter")
+        adapter_id = adapter["adapter"]
+        _require(adapter_id in ADAPTER_EXECUTABLES and adapter_id not in seen, "CUTOVER-PREPARATION-ADAPTERS", "receipt adapter is unknown or duplicated")
+        seen.add(adapter_id)
+        _digest(adapter["tree_digest"], "preparation receipt adapter tree_digest")
+        _digest(adapter["stdout_digest"], "preparation receipt adapter stdout_digest")
+    _require(seen == set(ADAPTER_EXECUTABLES), "CUTOVER-PREPARATION-ADAPTERS", "receipt adapter set differs")
+    _require(value["receipt_digest"] == preparation_receipt_digest(value), "CUTOVER-PREPARATION-DIGEST", "preparation receipt digest differs")
+    return value
+
+
 def read_manifest(path: Path) -> dict[str, Any]:
     _absolute(path, "--manifest")
     _require(not path.is_symlink(), "CUTOVER-MANIFEST-SYMLINK", "manifest must not be a symlink")
     try:
         raw = path.read_bytes()
         value = json.loads(raw.decode("utf-8"))
+        schema_root = Path(__file__).resolve().parents[2] / "issues/_schema"
+        manifest_schema = json.loads((schema_root / "cutover-transaction-manifest-v1.schema.json").read_text(encoding="utf-8"))
+        ledger_schema = json.loads((schema_root / "cutover-control-ledger-v2.schema.json").read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise CutoverError("CUTOVER-MANIFEST-READ", f"cannot read manifest: {exc}") from exc
+        raise CutoverError("CUTOVER-MANIFEST-READ", f"cannot read manifest/schema: {exc}") from exc
     _require(raw == canonical_json(value).encode(), "CUTOVER-NONCANONICAL", "manifest bytes are not canonical JSON")
+    _require(isinstance(manifest_schema, dict) and isinstance(ledger_schema, dict) and ledger_schema.get("$id") == LEDGER_SCHEMA, "CUTOVER-SCHEMA-REF", "cutover schema registry is invalid")
+    validate_schema_instance(value, manifest_schema, {LEDGER_SCHEMA: ledger_schema})
     return validate_manifest(value)
 
 
@@ -378,7 +482,9 @@ def validate_manifest(value: Any) -> dict[str, Any]:
         if adapter_id == "importer":
             config = _object(record["config"], {"source", "files"}, {"source", "files"}, "importer.config")
             _require(config["source"] == "manifest-source", "CUTOVER-IMPORTER-CONFIG", "importer source must be manifest-source")
-            _require(isinstance(config["files"], list) and all(isinstance(item, str) and _relative(item, "importer file") for item in config["files"]), "CUTOVER-IMPORTER-CONFIG", "importer files invalid")
+            _require(isinstance(config["files"], list), "CUTOVER-IMPORTER-CONFIG", "importer files invalid")
+            files = [_relative(item, "importer file") for item in config["files"]]
+            _require(len(files) == len(set(files)), "CUTOVER-IMPORTER-CONFIG", "importer files must be unique")
         else:
             config = _object(record["config"], {"mode", "dag_path"}, {"mode", "dag_path"}, "regenerator.config")
             _require(config["mode"] == "write-disposable", "CUTOVER-REGENERATOR-MODE", "regenerator must use explicit disposable write mode")
@@ -426,6 +532,7 @@ def inspect(repo: Path, manifest: Mapping[str, Any]) -> dict[str, Any]:
         if observed != record["commit_oid"]:
             findings.append({"code": f"CUTOVER-{name.upper()}-REF-DRIFT", "path": record["ref"], "message": "ref differs from pinned commit"}); continue
         try:
+            assert observed is not None
             actual = git_identity(repo, observed)
             if any(actual[key] != record[key] for key in ("commit_oid", "tree_oid", "tree_digest")):
                 findings.append({"code": f"CUTOVER-{name.upper()}-IDENTITY-DRIFT", "path": record["ref"], "message": "Git/tree identity differs"})
@@ -497,12 +604,17 @@ def _run_adapters(repo: Path, staging: Path, manifest: Mapping[str, Any]) -> lis
 
 
 def prepare(repo: Path, output: Path, manifest: Mapping[str, Any]) -> dict[str, Any]:
-    output = _authorize_output(repo, output); fingerprint = digest_value(manifest); receipt_path = output / "preparation.json"
+    preflight = inspect(repo, manifest)
+    _require(preflight["status"] == "PASS", "CUTOVER-PREPARE-PREFLIGHT", f"prepare preflight blocked: {[item['code'] for item in preflight['findings']]}")
+    output = _authorize_output(repo, output)
+    fingerprint = digest_value(manifest)
+    receipt_path = output / "preparation.json"
     if output.exists():
         _require(receipt_path.is_file() and not receipt_path.is_symlink(), "CUTOVER-RETRY-CONFLICT", "existing output lacks safe receipt")
-        receipt = json.loads(receipt_path.read_text())
-        _require(receipt.get("transaction_id") == manifest["transaction_id"] and receipt.get("manifest_digest") == fingerprint, "CUTOVER-TRANSACTION-REUSE", "transaction reused with changed input")
-        _require(receipt.get("prepared_tree_digest") == tree_digest(output, exclude=frozenset({"preparation.json"})), "CUTOVER-PREPARED-DRIFT", "complete retained tree differs")
+        raw = receipt_path.read_bytes()
+        receipt = json.loads(raw.decode("utf-8"))
+        _require(raw == canonical_json(receipt).encode("utf-8"), "CUTOVER-PREPARATION-NONCANONICAL", "preparation receipt bytes are not canonical JSON")
+        receipt = validate_preparation_receipt(receipt, manifest)
         _verify_retained(output, manifest, receipt)
         return {**receipt, "command": "prepare", "status": "PASS", "idempotent": True, "mutation": "none"}
     staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=output.parent))
@@ -510,23 +622,29 @@ def prepare(repo: Path, output: Path, manifest: Mapping[str, Any]) -> dict[str, 
         summaries = _run_adapters(repo, staging, manifest)
         expected = {item["adapter"]: item["tree_digest"] for item in manifest["outputs"]}
         _require({item["adapter"]: item["tree_digest"] for item in summaries} == expected, "CUTOVER-OUTPUT-DRIFT", "adapter output tree identity differs")
-        receipt = {"schema": "cutover-preparation@v1", "transaction_id": manifest["transaction_id"], "manifest_digest": fingerprint, "source": manifest["source"], "candidate": manifest["candidate"], "prepared_patch": manifest["prepared_patch"], "adapters": summaries, "prepared_tree_digest": tree_digest(staging), "mutation": "disposable-output-only"}
-        (staging / "preparation.json").write_text(canonical_json(receipt))
+        receipt = {"schema": PREPARATION_SCHEMA, "transaction_id": manifest["transaction_id"], "manifest_digest": fingerprint, "source": manifest["source"], "candidate": manifest["candidate"], "prepared_patch": manifest["prepared_patch"], "adapters": summaries, "outputs": manifest["outputs"], "prepared_tree_digest": tree_digest(staging), "mutation": "disposable-output-only"}
+        receipt["receipt_digest"] = preparation_receipt_digest(receipt)
+        validate_preparation_receipt(receipt, manifest)
+        (staging / "preparation.json").write_text(canonical_json(receipt), encoding="utf-8")
         os.rename(staging, output)
         return {**receipt, "command": "prepare", "status": "PASS", "idempotent": False}
     except Exception:
-        shutil.rmtree(staging, ignore_errors=True); raise
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
 
 
 def _verify_retained(output: Path, manifest: Mapping[str, Any], receipt: Mapping[str, Any]) -> None:
+    receipt = validate_preparation_receipt(receipt, manifest)
     entries = tree_manifest(output)
     top = {path.split("/", 1)[0] for path in entries}
     _require(top == {"imported", "regenerated", "preparation.json"}, "CUTOVER-RETAINED-EXTRA", "retained tree has missing or undeclared top-level paths")
     complete = tree_digest(output, exclude=frozenset({"preparation.json"}))
     _require(receipt.get("prepared_tree_digest") == complete, "CUTOVER-PREPARED-DRIFT", "complete retained tree digest differs")
     expected = {item["adapter"]: item["tree_digest"] for item in manifest["outputs"]}
+    recorded = {item["adapter"]: item["tree_digest"] for item in receipt["adapters"]}
     for adapter, child in ADAPTER_CHILDREN.items():
-        _require(adapter_tree_digest(adapter, output / child) == expected[adapter], "CUTOVER-OUTPUT-DRIFT", f"retained {adapter} tree differs")
+        actual = adapter_tree_digest(adapter, output / child)
+        _require(actual == expected[adapter] == recorded[adapter], "CUTOVER-OUTPUT-DRIFT", f"retained {adapter} tree differs")
 
 
 def verify(repo: Path, manifest: Mapping[str, Any], output: Path | None = None) -> dict[str, Any]:
@@ -535,8 +653,8 @@ def verify(repo: Path, manifest: Mapping[str, Any], output: Path | None = None) 
         try:
             _absolute(output, "--output-root"); _require(not _has_symlink(output, output.parent), "CUTOVER-RETAINED-PATH", "unsafe retained output")
             receipt_path = output / "preparation.json"; _require(receipt_path.is_file() and not receipt_path.is_symlink(), "CUTOVER-MISSING-PREPARATION", "preparation receipt missing")
-            receipt = json.loads(receipt_path.read_text())
-            _require(receipt.get("manifest_digest") == digest_value(manifest), "CUTOVER-PREPARED-DRIFT", "receipt manifest differs")
+            raw = receipt_path.read_bytes(); receipt = json.loads(raw.decode("utf-8"))
+            _require(raw == canonical_json(receipt).encode("utf-8"), "CUTOVER-PREPARATION-NONCANONICAL", "preparation receipt bytes are not canonical JSON")
             _verify_retained(output, manifest, receipt)
         except (CutoverError, OSError, json.JSONDecodeError) as exc:
             code = exc.code if isinstance(exc, CutoverError) else "CUTOVER-PREPARATION-READ"
@@ -562,15 +680,62 @@ def plan_cas(expectations: Sequence[Mapping[str, Any]], declared_refs: Sequence[
     return b"".join(chunks)
 
 
+def _authorize_cas_receipt(repo: Path, path: Path | None, root: Path | None) -> Path | None:
+    _require((path is None) == (root is None), "CUTOVER-CAS-RECEIPT", "receipt path and disposable root must be supplied together")
+    if path is None:
+        return None
+    assert root is not None
+    root = _absolute(root, "CAS receipt root")
+    _require(root.is_dir() and not root.is_symlink(), "CUTOVER-CAS-RECEIPT", "receipt root must be a real directory")
+    _require(not _has_symlink(root, root.parent), "CUTOVER-CAS-RECEIPT", "receipt root contains a symlink")
+    marker = root / CAS_RECEIPT_MARKER
+    _require(marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == CAS_RECEIPT_MARKER_VALUE, "CUTOVER-CAS-RECEIPT", "receipt root lacks disposable marker")
+    _require(not root.is_relative_to(repo) and not repo.is_relative_to(root), "CUTOVER-CAS-RECEIPT", "receipt root overlaps repository")
+    temporary_roots = (Path(tempfile.gettempdir()).resolve(), Path("/tmp").resolve())
+    _require(any(root != candidate and root.is_relative_to(candidate) for candidate in temporary_roots), "CUTOVER-CAS-RECEIPT", "receipt root must be below a temporary root")
+    path = _absolute(path, "CAS receipt", must_exist=False)
+    _require(path != root and path.is_relative_to(root), "CUTOVER-CAS-RECEIPT", "receipt path escapes disposable root")
+    _require(path.parent.is_dir() and not _has_symlink(path.parent, root), "CUTOVER-CAS-RECEIPT", "receipt parent is unsafe")
+    _require(not path.is_symlink() and (not path.exists() or path.is_file()), "CUTOVER-CAS-RECEIPT", "receipt path is unsafe")
+    return path
+
+
+def _read_canonical_receipt(path: Path) -> dict[str, Any]:
+    try:
+        raw = path.read_bytes()
+        value = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise CutoverError("CUTOVER-CAS-RECEIPT-CONFLICT", f"cannot read existing receipt: {exc}") from exc
+    _require(isinstance(value, dict) and raw == canonical_json(value).encode("utf-8"), "CUTOVER-CAS-RECEIPT-CONFLICT", "existing receipt is noncanonical")
+    return value
+
+
 def _write_cas_receipt(path: Path | None, payload: Mapping[str, Any]) -> None:
-    if path is None: return
-    _absolute(path, "CAS receipt", must_exist=False); _require(path.parent.is_dir() and not path.is_symlink(), "CUTOVER-CAS-RECEIPT", "unsafe receipt path")
-    path.write_text(canonical_json(payload))
+    if path is None:
+        return
+    data = canonical_json(payload).encode("utf-8")
+    if path.exists():
+        _require(path.read_bytes() == data, "CUTOVER-CAS-RECEIPT-CONFLICT", "existing receipt differs")
+        return
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError:
+            _require(path.is_file() and not path.is_symlink() and path.read_bytes() == data, "CUTOVER-CAS-RECEIPT-CONFLICT", "concurrent receipt differs")
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
-def execute_disposable_cas(repo: Path, expectations: Sequence[Mapping[str, Any]], declared_refs: Sequence[str], *, dry_run: bool, crash_at: str | None = None, receipt_path: Path | None = None) -> dict[str, Any]:
+def execute_disposable_cas(repo: Path, expectations: Sequence[Mapping[str, Any]], declared_refs: Sequence[str], *, dry_run: bool, crash_at: str | None = None, receipt_path: Path | None = None, receipt_root: Path | None = None) -> dict[str, Any]:
     repo = _absolute(repo, "CAS repo"); _require((repo / ".git").is_dir(), "CUTOVER-CAS-NOT-DISPOSABLE", "CAS repo must be standalone")
     marker = repo / ".issue-cutover-disposable-test-repo"; _require(marker.is_file() and marker.read_text() == "issue-cutover-disposable-test-repo@v1\n", "CUTOVER-CAS-NOT-DISPOSABLE", "missing disposable marker")
+    receipt_path = _authorize_cas_receipt(repo, receipt_path, receipt_root)
     transaction = plan_cas(expectations, declared_refs)
     for item in expectations:
         target = item["target_oid"]
@@ -578,10 +743,18 @@ def execute_disposable_cas(repo: Path, expectations: Sequence[Mapping[str, Any]]
             exists = _git(repo, "cat-file", "-e", f"{target}^{{object}}", check=False)
             _require(exists.returncode == 0, "CUTOVER-CAS-TARGET-MISSING", f"target object missing: {target}")
     before = {name: resolve_ref(repo, name) for name in declared_refs}; targets = {item["name"]: item["target_oid"] for item in expectations}
+    expected_before = {item["name"]: item["expected_oid"] for item in expectations}
+    transaction_digest = digest_bytes(transaction)
+    applied_receipt = {"schema": "cutover-cas-result@v1", "status": "APPLIED", "dry_run": False, "before": expected_before, "after": targets, "transaction_digest": transaction_digest, "mutation": "disposable-refs-only"}
+    recovered_receipt = {"schema": "cutover-cas-result@v1", "status": "RECOVERED", "dry_run": False, "before": targets, "after": targets, "transaction_digest": transaction_digest, "mutation": "receipt-only"}
+    existing_receipt = _read_canonical_receipt(receipt_path) if receipt_path is not None and receipt_path.exists() else None
+    if existing_receipt is not None:
+        _require(existing_receipt in (applied_receipt, recovered_receipt) and before == targets, "CUTOVER-CAS-RECEIPT-CONFLICT", "existing receipt is not the identical completed transaction")
+        return {**existing_receipt, "idempotent": True}
     if dry_run:
-        return {"schema": "cutover-cas-result@v1", "status": "PLANNED", "dry_run": True, "before": before, "after": before, "transaction_digest": digest_bytes(transaction), "mutation": "none"}
+        return {"schema": "cutover-cas-result@v1", "status": "PLANNED", "dry_run": True, "before": before, "after": before, "transaction_digest": transaction_digest, "mutation": "none"}
     if before == targets:
-        payload = {"schema": "cutover-cas-result@v1", "status": "RECOVERED", "dry_run": False, "before": before, "after": before, "transaction_digest": digest_bytes(transaction), "mutation": "receipt-only"}
+        payload = recovered_receipt
         _write_cas_receipt(receipt_path, payload); return payload
     if crash_at == "before-prepare": raise CutoverError("CUTOVER-CAS-CRASH-BEFORE-PREPARE", "injected crash before prepare")
     if crash_at == "between-prepare-commit":
@@ -595,7 +768,7 @@ def execute_disposable_cas(repo: Path, expectations: Sequence[Mapping[str, Any]]
         _require(after == before, "CUTOVER-CAS-PARTIAL", "failed CAS changed refs")
         raise CutoverError("CUTOVER-CAS-COMPETITOR", result.stderr.decode("utf-8", "replace").strip())
     if crash_at == "after-commit-before-receipt": raise CutoverError("CUTOVER-CAS-CRASH-AFTER-COMMIT", "injected crash after commit before receipt")
-    payload = {"schema": "cutover-cas-result@v1", "status": "APPLIED", "dry_run": False, "before": before, "after": after, "transaction_digest": digest_bytes(transaction), "mutation": "disposable-refs-only"}
+    payload = {"schema": "cutover-cas-result@v1", "status": "APPLIED", "dry_run": False, "before": before, "after": after, "transaction_digest": transaction_digest, "mutation": "disposable-refs-only"}
     _write_cas_receipt(receipt_path, payload); return payload
 
 

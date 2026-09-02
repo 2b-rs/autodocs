@@ -67,7 +67,9 @@ class Contract(Fixture):
     def test_real_adapters_cli_prepare_verify_and_retry(self):
         out=self.base/"cutover-product"; b=StringIO()
         with redirect_stdout(b): self.assertEqual(CUT.main(["prepare","--repo",str(self.repo),"--manifest",str(self.path),"--output-root",str(out)]),0)
-        self.assertEqual(json.loads(b.getvalue())["status"],"PASS"); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"PASS"); self.assertTrue(CUT.prepare(self.repo,out,self.manifest)["idempotent"])
+        result=json.loads(b.getvalue()); self.assertEqual(result["status"],"PASS")
+        receipt=json.loads((out/"preparation.json").read_text()); self.assertEqual(set(receipt),CUT.PREPARATION_RECEIPT_KEYS); self.assertEqual(receipt["receipt_digest"],CUT.preparation_receipt_digest(receipt))
+        self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"PASS"); self.assertTrue(CUT.prepare(self.repo,out,self.manifest)["idempotent"])
     def test_effects_disabled_no_override(self):
         for cmd in CUT.EFFECT_COMMANDS:
             b=StringIO()
@@ -81,7 +83,36 @@ class Contract(Fixture):
         victim=self.repo/"_src/tools/issue_lists.py"; real=victim.with_suffix(".real"); victim.rename(real); victim.symlink_to(real.name); before=self.state(); result=CUT.inspect(self.repo,self.manifest); self.assertIn("CUTOVER-IDENTITY-PATH",{x["code"] for x in result["findings"]})
         out=self.base/"cutover-fail"; bad=copy.deepcopy(self.manifest); bad["outputs"][0]["tree_digest"]="sha256:"+"0"*64
         with self.assertRaises(CUT.CutoverError) as e: CUT.prepare(self.repo,out,bad)
-        self.assertEqual(e.exception.code,"CUTOVER-OUTPUT-DRIFT"); self.assertEqual(before,self.state()); self.assertFalse(out.exists())
+        self.assertEqual(e.exception.code,"CUTOVER-PREPARE-PREFLIGHT"); self.assertEqual(before,self.state()); self.assertFalse(out.exists())
+    def test_prepare_preflight_rejects_every_stale_identity_before_output(self):
+        mutations=(
+            lambda m:m["source"].__setitem__("ref","refs/heads/missing-source"),
+            lambda m:m["candidate"].__setitem__("ref","refs/heads/missing-candidate"),
+            lambda m:m["source"].__setitem__("tree_digest","sha256:"+"0"*64),
+            lambda m:m["candidate"].__setitem__("tree_digest","sha256:"+"0"*64),
+            lambda m:m["prepared_patch"].__setitem__("digest","sha256:"+"0"*64),
+            lambda m:m["identities"]["tools"][0].__setitem__("digest","sha256:"+"0"*64),
+            lambda m:m["authority_snapshot"].__setitem__("selector_digest","sha256:"+"0"*64),
+            lambda m:m["refs"][0].__setitem__("expected_oid",m["source"]["commit_oid"]),
+        )
+        for index,mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                bad=copy.deepcopy(self.manifest); mutate(bad); out=self.base/f"cutover-stale-{index}"; before=self.state()
+                with self.assertRaises(CUT.CutoverError) as caught: CUT.prepare(self.repo,out,bad)
+                self.assertEqual(caught.exception.code,"CUTOVER-PREPARE-PREFLIGHT"); self.assertFalse(out.exists()); self.assertEqual(before,self.state())
+    def test_preparation_receipt_closed_shape_and_digest_tamper(self):
+        out=self.base/"cutover-receipt"; CUT.prepare(self.repo,out,self.manifest); path=out/"preparation.json"; original=json.loads(path.read_text())
+        mutations=(lambda r:r.__setitem__("unknown",1),lambda r:r.pop("outputs"),lambda r:r["source"].__setitem__("tree_oid","0"*40),lambda r:r.__setitem__("receipt_digest","sha256:"+"0"*64))
+        for index,mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                receipt=copy.deepcopy(original); mutate(receipt); path.write_text(CUT.canonical_json(receipt)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"BLOCKED")
+        receipt=copy.deepcopy(original); receipt["adapters"][0]["tree_digest"]="sha256:"+"0"*64; receipt["receipt_digest"]=CUT.preparation_receipt_digest(receipt); path.write_text(CUT.canonical_json(receipt)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"BLOCKED")
+        path.write_text(CUT.canonical_json(original)); self.assertEqual(CUT.verify(self.repo,self.manifest,out)["status"],"PASS")
+    def test_importer_paths_are_unique_and_canonical(self):
+        for files in (["TODO.md","TODO.md"],["a//b"],["a/../b"],["a\\b"]):
+            with self.subTest(files=files):
+                bad=copy.deepcopy(self.manifest); bad["adapters"][0]["config"]["files"]=files
+                self.assertIn(self.code(bad),{"CUTOVER-IMPORTER-CONFIG","CUTOVER-PATH"})
     def test_35_semantic_negative_codes(self):
         cases=[]
         def add(code,fn): cases.append((code,fn))
@@ -116,19 +147,27 @@ class Properties(Fixture):
 
 class SchemaFixtures(unittest.TestCase):
     def test_schema_json_and_runtime_fixtures(self):
-        for name in ("cutover-transaction-manifest-v1.schema.json","cutover-control-ledger-v2.schema.json"): json.loads((ROOT/"issues/_schema"/name).read_text())
+        manifest_schema=json.loads((ROOT/"issues/_schema/cutover-transaction-manifest-v1.schema.json").read_text()); ledger_schema=json.loads((ROOT/"issues/_schema/cutover-control-ledger-v2.schema.json").read_text()); registry={ledger_schema["$id"]:ledger_schema}
         root=ROOT/"issues/_schema/fixtures/cutover-transaction-manifest-v1"; index=json.loads((root/"manifest.json").read_text())
-        for rel in index["valid"]: CUT.validate_manifest(json.loads((root/rel).read_text()))
+        for rel in index["valid"]:
+            value=json.loads((root/rel).read_text()); CUT.validate_schema_instance(value,manifest_schema,registry); CUT.validate_manifest(value)
         for rel in index["invalid"]:
-            with self.assertRaises(CUT.CutoverError): CUT.validate_manifest(json.loads((root/rel).read_text()))
+            value=json.loads((root/rel).read_text())
+            with self.assertRaises(CUT.CutoverError): CUT.validate_schema_instance(value,manifest_schema,registry)
+            with self.assertRaises(CUT.CutoverError): CUT.validate_manifest(value)
         root=ROOT/"issues/_schema/fixtures/cutover-control-ledger-v2"; index=json.loads((root/"manifest.json").read_text()); roles={r:ACTOR for r in CUT.REQUIRED_ROLES}
-        for rel in index["valid"]: CUT.validate_ledger([json.loads((root/rel).read_text())],"tx-0037-safe-core",roles,ACTOR)
+        for rel in index["valid"]:
+            value=json.loads((root/rel).read_text()); CUT.validate_schema_instance(value,ledger_schema,registry); CUT.validate_ledger([value],"tx-0037-safe-core",roles,ACTOR)
         for rel in index["invalid"]:
-            with self.assertRaises(CUT.CutoverError): CUT.validate_ledger([json.loads((root/rel).read_text())],"tx-0037-safe-core",roles,ACTOR)
+            value=json.loads((root/rel).read_text())
+            # Event digest correctness and sequence contiguity are cross-instance
+            # runtime semantics; the structural per-event schema must still parse them.
+            CUT.validate_schema_instance(value,ledger_schema,registry)
+            with self.assertRaises(CUT.CutoverError): CUT.validate_ledger([value],"tx-0037-safe-core",roles,ACTOR)
 
 class CAS(unittest.TestCase):
     def setUp(self):
-        self.t=tempfile.TemporaryDirectory(); self.repo=Path(self.t.name).resolve()/"repo"; self.repo.mkdir(); gr(self.repo,"init","-b","trunk"); git(self.repo,"config","user.email","x@y"); git(self.repo,"config","user.name","X"); (self.repo/".issue-cutover-disposable-test-repo").write_text("issue-cutover-disposable-test-repo@v1\n"); (self.repo/"a").write_text("a"); gr(self.repo,"add","."); gr(self.repo,"commit","-m","a"); self.a=git(self.repo,"rev-parse","HEAD"); (self.repo/"b").write_text("b"); gr(self.repo,"add","b"); gr(self.repo,"commit","-m","b"); self.b=git(self.repo,"rev-parse","HEAD")
+        self.t=tempfile.TemporaryDirectory(); self.repo=Path(self.t.name).resolve()/"repo"; self.repo.mkdir(); gr(self.repo,"init","-b","trunk"); git(self.repo,"config","user.email","x@y"); git(self.repo,"config","user.name","X"); (self.repo/".issue-cutover-disposable-test-repo").write_text("issue-cutover-disposable-test-repo@v1\n"); (self.repo/"a").write_text("a"); gr(self.repo,"add","."); gr(self.repo,"commit","-m","a"); self.a=git(self.repo,"rev-parse","HEAD"); (self.repo/"b").write_text("b"); gr(self.repo,"add","b"); gr(self.repo,"commit","-m","b"); self.b=git(self.repo,"rev-parse","HEAD"); self.receipts=self.repo.parent/"cutover-receipts-cas"; self.receipts.mkdir(); (self.receipts/CUT.CAS_RECEIPT_MARKER).write_text(CUT.CAS_RECEIPT_MARKER_VALUE)
     def tearDown(self): self.t.cleanup()
     def snap(self): return gr(self.repo,"show-ref",check=False).stdout,gr(self.repo,"count-objects","-v").stdout,sorted(p.as_posix() for p in self.repo.rglob("*.lock")),sorted(p.as_posix() for p in self.repo.rglob("*signature*"))
     def test_ref_subsets_real_execution_8(self):
@@ -150,10 +189,27 @@ class CAS(unittest.TestCase):
         self.assertEqual(e.exception.code,"CUTOVER-CAS-COMPETITOR"); self.assertEqual(before,self.snap())
     def test_three_crashes_and_recovery_retry(self):
         for point,code,changed in (("before-prepare","CUTOVER-CAS-CRASH-BEFORE-PREPARE",False),("between-prepare-commit","CUTOVER-CAS-CRASH-BETWEEN",False),("after-commit-before-receipt","CUTOVER-CAS-CRASH-AFTER-COMMIT",True)):
-            ref=f"refs/autodocs/cutover-test/{point}"; receipt=self.repo.parent/f"{point}.json"; before=self.snap()
-            with self.assertRaises(CUT.CutoverError) as e: CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,crash_at=point,receipt_path=receipt)
+            ref=f"refs/autodocs/cutover-test/{point}"; receipt=self.receipts/f"{point}.json"; before=self.snap()
+            with self.assertRaises(CUT.CutoverError) as e: CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,crash_at=point,receipt_path=receipt,receipt_root=self.receipts)
             self.assertEqual(e.exception.code,code); self.assertEqual(CUT.resolve_ref(self.repo,ref)==self.b,changed); self.assertFalse(receipt.exists())
-            if changed: self.assertEqual(CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,receipt_path=receipt)["status"],"RECOVERED")
+            if changed:
+                recovered=CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,receipt_path=receipt,receipt_root=self.receipts); self.assertEqual(recovered["status"],"RECOVERED")
+                self.assertTrue(CUT.execute_disposable_cas(self.repo,[{"name":ref,"expected_oid":None,"target_oid":self.b}],[ref],dry_run=False,receipt_path=receipt,receipt_root=self.receipts)["idempotent"])
             else: self.assertEqual(before,self.snap())
+    def test_receipt_root_containment_no_clobber_and_zero_ref_mutation(self):
+        ref="refs/autodocs/cutover-test/receipt"; expectations=[{"name":ref,"expected_oid":None,"target_oid":self.b}]; before=self.snap()
+        alias=Path(str(self.receipts/".."/self.receipts.name)); link=self.repo.parent/"cutover-receipts-link"; link.symlink_to(self.receipts.name)
+        bad_paths=((self.repo/"receipt.json",self.repo),(self.repo.parent/"outside.json",self.receipts),(self.receipts,self.receipts),(alias/"alias.json",alias),(link/"link.json",link))
+        for path,root in bad_paths:
+            with self.subTest(path=path):
+                with self.assertRaises(CUT.CutoverError): CUT.execute_disposable_cas(self.repo,expectations,[ref],dry_run=False,receipt_path=path,receipt_root=root)
+                self.assertEqual(before,self.snap()); self.assertIsNone(CUT.resolve_ref(self.repo,ref))
+        receipt=self.receipts/"receipt.json"; receipt.write_text("{}\n")
+        with self.assertRaises(CUT.CutoverError): CUT.execute_disposable_cas(self.repo,expectations,[ref],dry_run=False,receipt_path=receipt,receipt_root=self.receipts)
+        self.assertEqual(receipt.read_text(),"{}\n"); self.assertEqual(before,self.snap()); self.assertIsNone(CUT.resolve_ref(self.repo,ref))
+        success_ref="refs/autodocs/cutover-test/receipt-success"; success=self.receipts/"success.json"; success_expectations=[{"name":success_ref,"expected_oid":None,"target_oid":self.b}]
+        CUT.execute_disposable_cas(self.repo,success_expectations,[success_ref],dry_run=False,receipt_path=success,receipt_root=self.receipts); original=success.read_bytes()
+        retry=CUT.execute_disposable_cas(self.repo,success_expectations,[success_ref],dry_run=False,receipt_path=success,receipt_root=self.receipts)
+        self.assertTrue(retry["idempotent"]); self.assertEqual(success.read_bytes(),original)
 
 if __name__=="__main__": unittest.main()
