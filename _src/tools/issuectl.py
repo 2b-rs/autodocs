@@ -87,15 +87,29 @@ def _emit(payload: Mapping[str, Any], *, fmt: str, human_lines: Sequence[str]) -
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
-    _reject_legacy_authority(Path(args.root) if args.root else None)
+    if args.canonical:
+        if args.root or args.authoritative_root or args.source != "working-tree":
+            raise IssuectlError("IC1303", "--canonical cannot be combined with candidate source/root options")
+        stage_args = argparse.Namespace(
+            repo=args.repo,
+            output_root=None,
+            dag=None,
+            write=True,
+            format=args.format,
+            command="validate",
+        )
+        return _standalone_stage(stage_args, "validate-canonical")
+    root = Path(args.root) if args.root else None
+    provenance_root = args.provenance_root
+    _reject_legacy_authority(root)
     _reject_legacy_authority(Path(args.authoritative_root) if args.authoritative_root else None)
     diagnostics, parsed = iv.validate(
         repo=Path(args.repo).resolve(),
         source=args.source,
-        root=Path(args.root) if args.root else None,
+        root=root,
         authoritative_root=Path(args.authoritative_root) if args.authoritative_root else None,
         compare_head=not args.no_compare_head,
-        provenance_root=args.provenance_root,
+        provenance_root=provenance_root,
         projection_path=args.projection,
         dag_path=args.dag,
         generated_root=args.generated_root,
@@ -137,12 +151,15 @@ def _copy_existing_declared(output_root: Path, staging: Path, declared: Sequence
     shutil.copytree(output_root, staging, dirs_exist_ok=True)
 
 
-def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
-    repo = Path(args.repo).resolve()
-    output_root = Path(args.output_root).resolve()
-    selector = regenerate.load_selector(repo)
-    regenerate.authorize_output_root(repo, output_root, selector)
-    loaded = regenerate.load_manifest(Path(args.dag).resolve() if args.dag else repo / regenerate.DEFAULT_DAG)
+def _standalone_stage_locked(
+    args: argparse.Namespace,
+    stage_id: str,
+    repo: Path,
+    output_root: Path,
+    selector: Mapping[str, Any],
+    loaded: Mapping[str, Any],
+    baseline: Mapping[str, str],
+) -> int:
     stage = loaded["by_id"][stage_id]
     declared = sorted(output for value in loaded["by_id"].values() for output in value.get("outputs") or [])
     output_root.parent.mkdir(parents=True, exist_ok=True)
@@ -159,6 +176,7 @@ def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
         diff = regenerate.compare_trees(staging, output_root)
         changed = False
         if args.write:
+            regenerate.assert_output_cas(output_root, baseline)
             changed = regenerate._promote(staging, output_root)
         else:
             shutil.rmtree(staging)
@@ -184,6 +202,23 @@ def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
         raise
 
 
+def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
+    repo = Path(args.repo).resolve()
+    if args.output_root is None:
+        args.write = True
+    selector = regenerate.load_selector(repo)
+    output_root = regenerate.authorize_output_root(
+        repo,
+        Path(args.output_root) if args.output_root else repo / "generated-issues",
+        selector,
+    )
+    loaded = regenerate.load_manifest(Path(args.dag).resolve() if args.dag else repo / regenerate.DEFAULT_DAG)
+    with regenerate.output_root_lease(output_root) as baseline:
+        return _standalone_stage_locked(
+            args, stage_id, repo, output_root, selector, loaded, baseline
+        )
+
+
 def cmd_render(args: argparse.Namespace) -> int:
     selected = [
         (args.catalog is not None, "build-internal-catalog" if args.catalog == "internal" else "build-public-projection"),
@@ -205,7 +240,7 @@ def cmd_regenerate(args: argparse.Namespace) -> int:
         raise IssuectlError("IC1302", "regenerate requires --all")
     result = regenerate.execute(
         repo=Path(args.repo),
-        output_root=Path(args.output_root),
+        output_root=Path(args.output_root) if args.output_root else Path(args.repo) / "generated-issues",
         dag_path=Path(args.dag) if args.dag else None,
         write=args.write,
         fail_stage=args.fail_stage,
@@ -1043,12 +1078,13 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_val = sub.add_parser("validate", help="validate issue store via issue_validate")
-    p_val.add_argument("--repo", default=str(ROOT))
+    p_val.add_argument("--repo", default=os.environ.get("ISSUECTL_REPO", str(ROOT)))
     p_val.add_argument(
         "--source",
         choices=("working-tree", "staged-index", "candidate"),
         default="working-tree",
     )
+    p_val.add_argument("--canonical", action="store_true", help="validate canonical issues and provenance")
     p_val.add_argument("--root", help="explicit candidate issue root")
     p_val.add_argument("--authoritative-root")
     p_val.add_argument("--no-compare-head", action="store_true")
@@ -1071,8 +1107,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_bootstrap.set_defaults(func=cmd_bootstrap)
 
     def add_derived_options(command_parser: argparse.ArgumentParser) -> None:
-        command_parser.add_argument("--repo", default=str(ROOT))
-        command_parser.add_argument("--output-root", required=True)
+        command_parser.add_argument("--repo", default=os.environ.get("ISSUECTL_REPO", str(ROOT)))
+        command_parser.add_argument("--output-root")
         command_parser.add_argument("--dag")
         mode = command_parser.add_mutually_exclusive_group()
         mode.add_argument("--write", action="store_true")

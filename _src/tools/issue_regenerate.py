@@ -9,6 +9,7 @@ explicit generated/shadow/check root.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import html
 import importlib.util
@@ -19,7 +20,7 @@ import shutil
 import sys
 import tempfile
 import uuid
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 TOOLS = Path(__file__).resolve().parent
@@ -35,6 +36,12 @@ LEGACY_PHASES = frozenset({"legacy-writable"})
 FROZEN_PHASES = frozenset({"issue-store-frozen"})
 WRITABLE_PHASES = frozenset({"issue-store-writable"})
 SAFE_ROOT_TOKENS = frozenset({"shadow", "check", "generated", "regenerated"})
+SAFE_ROOT_RE = re.compile(r"^(?:shadow|check|generated|regenerated)(?:[-_.][a-z0-9]+)*$")
+AUTHORITY_NAMES = frozenset({
+    "TODO.md", "DONE.md", "AGENTS.md", "SANDBOX.md", "PRIVILEGED.md",
+    "CLAUDE.md", "agent-workflow.json",
+})
+LOCK_SCHEMA = "issue-regeneration-collision@v1"
 
 
 def _load(name: str, path: Path):
@@ -101,32 +108,147 @@ def _inside(path: Path, parent: Path) -> bool:
         return False
 
 
-def authorize_output_root(repo: Path, output_root: Path, selector: Mapping[str, Any]) -> None:
+def _path_has_symlink(path: Path) -> bool:
+    absolute = path.absolute()
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current = current / part
+        if current.is_symlink():
+            return True
+    return False
+
+
+def _safe_root_name(path: Path) -> bool:
+    return bool(SAFE_ROOT_RE.fullmatch(path.name.lower()))
+
+
+def _strictly_inside(path: Path, parent: Path) -> bool:
+    return path != parent and _inside(path, parent)
+
+
+def authorize_output_root(
+    repo: Path, output_root: Path, selector: Mapping[str, Any]
+) -> Path:
+    del selector  # all authority phases share the same derived-output containment.
     repo = repo.resolve()
-    output_root = output_root.resolve()
-    if output_root == repo:
-        raise RegenerateError("IR1003", "output root must not be the repository root")
-    for forbidden in (repo / "issues", repo / "provenance"):
-        if output_root == forbidden or _inside(output_root, forbidden):
-            raise RegenerateError("IR1003", f"canonical root is never a regeneration target: {output_root}")
-    if output_root in {repo / "TODO.md", repo / "DONE.md"}:
-        raise RegenerateError("IR1003", "legacy authority files are never regeneration targets")
-    phase = selector.get("write_phase") or selector.get("authority_epoch")
-    if phase in LEGACY_PHASES:
-        if _inside(output_root, repo):
-            relative_tokens = {
-                token
-                for part in output_root.relative_to(repo).parts
-                for token in re.split(r"[^a-z0-9]+", part.lower())
-                if token
-            }
-            if not (relative_tokens & SAFE_ROOT_TOKENS):
-                raise RegenerateError(
-                    "IR1004",
-                    "legacy-writable output must be an explicit shadow/check/generated root",
-                )
-    # Frozen still allows derived regeneration; ordinary item/claim writers are
-    # fenced elsewhere.  Writable likewise never grants source-item rewriting.
+    if ".." in output_root.parts:
+        raise RegenerateError("IR1005", f"output root is a noncanonical alias: {output_root}")
+    supplied = output_root.expanduser().absolute()
+    if _path_has_symlink(supplied):
+        raise RegenerateError("IR1005", f"output root contains an unsafe symlink: {supplied}")
+    resolved = supplied.resolve(strict=False)
+    filesystem_root = Path(resolved.anchor)
+    home = Path.home().resolve()
+    in_foreign_home = _strictly_inside(resolved, home) and not _inside(resolved, repo)
+    if resolved == filesystem_root or resolved == home or in_foreign_home:
+        raise RegenerateError("IR1003", f"unsafe broad or home output root: {resolved}")
+    if resolved == repo or _inside(repo, resolved):
+        raise RegenerateError("IR1003", f"output root is the repository or its ancestor: {resolved}")
+    if resolved == repo.parent:
+        raise RegenerateError("IR1003", f"repository parent is not an output root: {resolved}")
+    if not _safe_root_name(resolved):
+        raise RegenerateError(
+            "IR1004", "output root basename must start with generated, shadow, check, or regenerated"
+        )
+    if _inside(resolved, repo):
+        first = resolved.relative_to(repo).parts[0]
+        if not _safe_root_name(Path(first)):
+            raise RegenerateError("IR1004", "in-repository output must live below an explicit derived root")
+    else:
+        temporary_roots = {Path(tempfile.gettempdir()).resolve(), Path("/tmp").resolve()}
+        if not any(_strictly_inside(resolved, root) for root in temporary_roots):
+            raise RegenerateError("IR1003", "outside-repository output roots are restricted to a temporary root")
+    if resolved.exists() and not resolved.is_dir():
+        raise RegenerateError("IR1003", f"output root is not a directory: {resolved}")
+    if not resolved.parent.is_dir():
+        raise RegenerateError("IR1003", f"output-root parent must already exist: {resolved.parent}")
+    forbidden = (
+        repo / "issues", repo / "provenance", repo / "docs/pipeline",
+        *(repo / name for name in AUTHORITY_NAMES),
+    )
+    for path in forbidden:
+        canonical = path.resolve(strict=False)
+        if resolved == canonical or _inside(resolved, canonical):
+            raise RegenerateError("IR1003", f"authority/canonical path is never an output target: {resolved}")
+    return resolved
+
+
+def output_state(root: Path) -> Dict[str, str]:
+    return tree_manifest(root)
+
+
+@contextlib.contextmanager
+def output_root_lease(output_root: Path):
+    """Serialize one output root and provide an optimistic-CAS baseline."""
+    lock = output_root.parent / f".{output_root.name}.issue-regeneration.lock"
+    if lock.exists() and lock.is_symlink():
+        raise RegenerateError("IR1034", f"regeneration collision at {output_root}")
+    payload = canonical_json({"schema": LOCK_SCHEMA, "output_root": str(output_root)})
+    try:
+        descriptor = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as exc:
+        raise RegenerateError("IR1034", f"regeneration collision at {output_root}") from exc
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        baseline = output_state(output_root)
+        yield baseline
+    finally:
+        try:
+            lock.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def assert_output_cas(output_root: Path, baseline: Mapping[str, str]) -> None:
+    if output_state(output_root) != dict(baseline):
+        raise RegenerateError("IR1035", f"output root changed during regeneration: {output_root}")
+
+
+def validate_relative_path(value: str, *, context: str) -> str:
+    if not value or "\x00" in value or value != value.strip():
+        raise RegenerateError("IR1018", f"{context} path is empty, contains NUL, or has surrounding whitespace")
+    if "\\" in value:
+        raise RegenerateError("IR1018", f"{context} path must use canonical POSIX separators: {value!r}")
+    windows = PureWindowsPath(value)
+    posix = PurePosixPath(value)
+    if posix.is_absolute() or windows.is_absolute() or windows.drive:
+        raise RegenerateError("IR1018", f"{context} path must be relative: {value!r}")
+    if value in {".", ".."} or any(part in {".", ".."} for part in posix.parts):
+        raise RegenerateError("IR1018", f"{context} path contains dot traversal: {value!r}")
+    if posix.as_posix() != value or not posix.parts:
+        raise RegenerateError("IR1018", f"{context} path is noncanonical: {value!r}")
+    return value
+
+
+def destination_under(root: Path, relative: str) -> Path:
+    relative = validate_relative_path(relative, context="output")
+    root = root.absolute()
+    resolved_root = root.resolve()
+    candidate = root / relative
+    current = candidate.parent
+    while current != root:
+        if current.is_symlink():
+            raise RegenerateError("IR1019", f"output parent is a symlink: {current}")
+        current = current.parent
+    resolved = candidate.resolve(strict=False)
+    try:
+        rel = resolved.relative_to(resolved_root)
+    except ValueError as exc:
+        raise RegenerateError("IR1019", f"output escapes staging root: {relative}") from exc
+    if not rel.parts:
+        raise RegenerateError("IR1019", "output must be strictly below staging root")
+    return candidate
+
+
+def derived_input_under(root: Path, relative: str) -> Path:
+    relative = validate_relative_path(relative, context="derived input")
+    candidate = destination_under(root, relative)
+    if candidate.is_symlink() or _path_has_symlink(candidate):
+        raise RegenerateError("IR1019", f"derived input contains a symlink: {relative}")
+    return candidate
 
 
 def load_manifest(path: Path) -> Dict[str, Any]:
@@ -153,6 +275,7 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         if not isinstance(outputs, list) or not all(isinstance(item, str) and item for item in outputs):
             raise RegenerateError("IR1012", f"stage {stage_id} outputs must be strings")
         for output in outputs:
+            validate_relative_path(output, context=f"stage {stage_id} output")
             if output in owners:
                 raise RegenerateError("IR1013", f"output {output} has multiple writers")
             owners[output] = stage_id
@@ -173,6 +296,8 @@ def load_manifest(path: Path) -> Dict[str, Any]:
         for entry in stage.get("inputs") or []:
             if not isinstance(entry, dict) or not isinstance(entry.get("glob"), str):
                 raise RegenerateError("IR1012", f"stage {stage_id} has malformed input")
+            if entry.get("kind") == "derived":
+                validate_relative_path(entry["glob"], context=f"stage {stage_id} derived input")
             if entry.get("kind") == "derived" and entry["glob"] not in owners:
                 raise RegenerateError("IR1016", f"derived input {entry['glob']} has no producer")
             if entry.get("kind") == "derived" and owners.get(entry["glob"]) not in dependencies:
@@ -203,17 +328,17 @@ def topological_order(
     return result
 
 
-def _write(path: Path, data: bytes) -> Dict[str, Any]:
+def _write(root: Path, relative: str, data: bytes) -> Dict[str, Any]:
+    path = destination_under(root, relative)
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.parent.is_symlink():
+        raise RegenerateError("IR1019", f"output parent became a symlink: {path.parent}")
     path.write_bytes(data)
-    return {"path": path.as_posix(), "sha256": digest_bytes(data), "bytes": len(data)}
+    return {"path": relative, "sha256": digest_bytes(data), "bytes": len(data)}
 
 
 def _write_json(root: Path, relative: str, value: Any) -> Dict[str, Any]:
-    data = canonical_json(value).encode("utf-8")
-    item = _write(root / relative, data)
-    item["path"] = relative
-    return item
+    return _write(root, relative, canonical_json(value).encode("utf-8"))
 
 
 def _public_catalog(catalog: Mapping[str, Any]) -> Dict[str, Any]:
@@ -294,7 +419,7 @@ def _stage_internal(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[
 
 
 def _fresh_internal_catalog(ctx: Dict[str, Any]) -> Dict[str, Any]:
-    path = ctx["staging"] / "data/issue-catalog.internal.json"
+    path = derived_input_under(ctx["staging"], "data/issue-catalog.internal.json")
     catalog = read_object(path, "IR1022")
     fresh, _ = _render_fresh(ctx)
     if canonical_json(catalog) != canonical_json(fresh):
@@ -320,15 +445,13 @@ def _stage_graphs(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[st
         suffix = Path(relative).suffix
         if suffix not in payloads:
             raise RegenerateError("IR1021", f"unsupported graph output {relative}")
-        item = _write(ctx["staging"] / relative, payloads[suffix])
-        item["path"] = relative
-        outputs.append(item)
+        outputs.append(_write(ctx["staging"], relative, payloads[suffix]))
     return outputs
 
 
 def _stage_pages(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[str, Any]]:
-    public = read_object(ctx["staging"] / "data/issue-catalog.public.json", "IR1022")
-    graph = read_object(ctx["staging"] / "data/issue-graph.json", "IR1022")
+    public = read_object(derived_input_under(ctx["staging"], "data/issue-catalog.public.json"), "IR1022")
+    graph = read_object(derived_input_under(ctx["staging"], "data/issue-graph.json"), "IR1022")
     catalog = _fresh_internal_catalog(ctx)
     if canonical_json(public) != canonical_json(_public_catalog(catalog)):
         raise RegenerateError("IR1022", "public catalog is stale or unexplained")
@@ -366,9 +489,7 @@ def _stage_html(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[str,
             f'<title>Issues</title></head><body data-generation-id="{pages.get("generation_id")}">'
             f'<h1>Issues</h1><p>count={len(pages.get("pages") or [])}</p></body></html>\n'
         ).encode("utf-8")
-        item = _write(ctx["staging"] / relative, body)
-        item["path"] = relative
-        outputs.append(item)
+        outputs.append(_write(ctx["staging"], relative, body))
     return outputs
 
 
@@ -391,8 +512,8 @@ def report_documents(validation: Mapping[str, Any], graph: Mapping[str, Any]) ->
 
 
 def _stage_report(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[str, Any]]:
-    validation = read_object(ctx["staging"] / "output/issue-validation.json", "IR1023")
-    graph = read_object(ctx["staging"] / "data/issue-graph.json", "IR1023")
+    validation = read_object(derived_input_under(ctx["staging"], "output/issue-validation.json"), "IR1023")
+    graph = read_object(derived_input_under(ctx["staging"], "data/issue-graph.json"), "IR1023")
     _, fresh_graph = _render_fresh(ctx)
     if canonical_json(graph) != canonical_json(fresh_graph):
         raise RegenerateError("IR1023", "report graph input is stale or unexplained")
@@ -403,9 +524,7 @@ def _stage_report(ctx: Dict[str, Any], stage: Mapping[str, Any]) -> List[Dict[st
     }
     outputs = []
     for relative in stage["outputs"]:
-        item = _write(ctx["staging"] / relative, values[relative])
-        item["path"] = relative
-        outputs.append(item)
+        outputs.append(_write(ctx["staging"], relative, values[relative]))
     return outputs
 
 
@@ -423,11 +542,13 @@ HANDLERS: Dict[str, Callable[[Dict[str, Any], Mapping[str, Any]], List[Dict[str,
 def tree_manifest(root: Path) -> Dict[str, str]:
     if not root.is_dir():
         return {}
-    return {
-        path.relative_to(root).as_posix(): digest_bytes(path.read_bytes())
-        for path in sorted(root.rglob("*"), key=lambda item: item.as_posix().encode("utf-8"))
-        if path.is_file()
-    }
+    result: Dict[str, str] = {}
+    for path in sorted(root.rglob("*"), key=lambda item: item.as_posix().encode("utf-8")):
+        if path.is_symlink():
+            raise RegenerateError("IR1005", f"generated tree contains a symlink: {path}")
+        if path.is_file():
+            result[path.relative_to(root).as_posix()] = digest_bytes(path.read_bytes())
+    return result
 
 
 def compare_trees(expected: Path, observed: Path) -> Dict[str, List[str]]:
@@ -461,20 +582,16 @@ def _promote(staging: Path, target: Path) -> bool:
     return True
 
 
-def execute(
+def _execute_locked(
     *,
     repo: Path,
     output_root: Path,
-    dag_path: Optional[Path] = None,
-    write: bool = False,
-    fail_stage: Optional[str] = None,
+    selector: Mapping[str, Any],
+    loaded: Mapping[str, Any],
+    baseline: Mapping[str, str],
+    write: bool,
+    fail_stage: Optional[str],
 ) -> Dict[str, Any]:
-    repo = repo.resolve()
-    output_root = output_root.resolve()
-    selector = load_selector(repo)
-    authorize_output_root(repo, output_root, selector)
-    dag = (dag_path or repo / DEFAULT_DAG).resolve()
-    loaded = load_manifest(dag)
     source_before = tree_manifest(repo / "issues")
     provenance_before = tree_manifest(repo / "provenance")
     staging_parent = output_root.parent
@@ -511,6 +628,7 @@ def execute(
         if write:
             if diff["unexplained"]:
                 raise RegenerateError("IR1028", "unexplained existing outputs: " + ",".join(diff["unexplained"][:MAX_FINDINGS]))
+            assert_output_cas(output_root, baseline)
             changed = _promote(staging, output_root)
         else:
             shutil.rmtree(staging)
@@ -542,6 +660,31 @@ def execute(
         raise
 
 
+def execute(
+    *,
+    repo: Path,
+    output_root: Path,
+    dag_path: Optional[Path] = None,
+    write: bool = False,
+    fail_stage: Optional[str] = None,
+) -> Dict[str, Any]:
+    repo = repo.resolve()
+    selector = load_selector(repo)
+    output_root = authorize_output_root(repo, output_root, selector)
+    dag = (dag_path or repo / DEFAULT_DAG).resolve()
+    loaded = load_manifest(dag)
+    with output_root_lease(output_root) as baseline:
+        return _execute_locked(
+            repo=repo,
+            output_root=output_root,
+            selector=selector,
+            loaded=loaded,
+            baseline=baseline,
+            write=write,
+            fail_stage=fail_stage,
+        )
+
+
 def bootstrap_refresh(
     *, repo: Path, output_root: Optional[Path], write: bool
 ) -> Dict[str, Any]:
@@ -566,23 +709,23 @@ def bootstrap_refresh(
     diff = {"missing": [], "stale": [], "unexplained": []}
     changed = False
     if output_root is not None:
-        output_root = output_root.resolve()
-        authorize_output_root(repo, output_root, selector)
-        output_root.parent.mkdir(parents=True, exist_ok=True)
-        staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent))
-        try:
-            for relative, data in expected.items():
-                _write(staging / relative, data)
-            diff = compare_trees(staging, output_root)
-            if write:
-                if diff["unexplained"]:
-                    raise RegenerateError("IR1032", "unexplained bootstrap outputs: " + ",".join(diff["unexplained"][:MAX_FINDINGS]))
-                changed = _promote(staging, output_root)
-            else:
-                shutil.rmtree(staging)
-        except Exception:
-            shutil.rmtree(staging, ignore_errors=True)
-            raise
+        output_root = authorize_output_root(repo, output_root, selector)
+        with output_root_lease(output_root) as baseline:
+            staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent))
+            try:
+                for relative, data in expected.items():
+                    _write(staging, relative, data)
+                diff = compare_trees(staging, output_root)
+                if write:
+                    if diff["unexplained"]:
+                        raise RegenerateError("IR1032", "unexplained bootstrap outputs: " + ",".join(diff["unexplained"][:MAX_FINDINGS]))
+                    assert_output_cas(output_root, baseline)
+                    changed = _promote(staging, output_root)
+                else:
+                    shutil.rmtree(staging)
+            except Exception:
+                shutil.rmtree(staging, ignore_errors=True)
+                raise
     elif write:
         raise RegenerateError("IR1033", "--output-root is required for persistent refresh")
     return {

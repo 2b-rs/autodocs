@@ -6,16 +6,18 @@ AE binding:
 - falsification: ``test_full_write_then_check_is_idempotent`` is red on the
   baseline because ``issue_regenerate.py`` and ``issuectl regenerate`` do not
   exist there, and green on the candidate.
-- adjacent cases: stale declared bytes and an unexplained extra output are
-  distinct neighboring output-set dimensions with different expected results.
+- adjacent cases: stale declared bytes, unexplained output, rejected path
+  aliases, and output-root collisions are distinct neighboring dimensions.
 - property evidence: ``test_topological_order_exhaustive_property`` enumerates
-  64 dependency masks and asserts dependency precedence plus exact membership.
+  64 dependency masks; the path/root matrices execute 15 and 27 cases.
 """
 from __future__ import annotations
 
 import importlib.util
 import io
+import json
 import tempfile
+import threading
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -117,6 +119,65 @@ class RegenerationExecutionTests(RegenerationFixture):
             self.execute(write=True, fail_stage="build-graphs")
         self.assertIn("IR1099", str(raised.exception))
         self.assertEqual(regen.tree_manifest(self.target), before)
+        self.assertFalse((self.base / ".generated-shadow.issue-regeneration.lock").exists())
+        self.assertEqual(self.execute(write=False)["status"], "PASS")
+
+    def test_output_root_lock_has_stable_collision_and_preserves_tree(self):
+        """AE concurrency: one generation owns the root; a peer fails IR1034."""
+        entered = threading.Event()
+        release = threading.Event()
+        original = self.handlers[STAGES[0]]
+
+        def blocking(ctx, stage):
+            if threading.current_thread().name == "regeneration-owner":
+                entered.set()
+                self.assertTrue(release.wait(5))
+            return original(ctx, stage)
+
+        handlers = dict(self.handlers)
+        handlers[STAGES[0]] = blocking
+        failures = []
+
+        def owner():
+            try:
+                with mock.patch.dict(regen.HANDLERS, handlers, clear=True):
+                    regen.execute(repo=self.repo, output_root=self.target, dag_path=self.dag, write=True)
+            except Exception as exc:  # pragma: no cover - asserted below
+                failures.append(exc)
+
+        thread = threading.Thread(target=owner, name="regeneration-owner")
+        thread.start()
+        self.assertTrue(entered.wait(5))
+        try:
+            with self.assertRaises(regen.RegenerateError) as raised:
+                self.execute(write=True)
+            self.assertEqual(raised.exception.code, "IR1034")
+            self.assertEqual(str(raised.exception), f"IR1034: regeneration collision at {self.target}")
+        finally:
+            release.set()
+            thread.join(5)
+        self.assertFalse(thread.is_alive())
+        self.assertEqual(failures, [])
+        self.assertEqual(self.execute(write=False)["status"], "PASS")
+
+    def test_output_root_cas_detects_uncoordinated_change_before_promotion(self):
+        self.execute(write=True)
+        prior = regen.tree_manifest(self.target)
+        changed_path = self.target / _manifest()["stages"][0]["outputs"][0]
+        original = self.handlers[STAGES[0]]
+
+        def interfering(ctx, stage):
+            changed_path.write_text("external-change\n", encoding="utf-8")
+            return original(ctx, stage)
+
+        handlers = dict(self.handlers)
+        handlers[STAGES[0]] = interfering
+        with mock.patch.dict(regen.HANDLERS, handlers, clear=True):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen.execute(repo=self.repo, output_root=self.target, dag_path=self.dag, write=True)
+        self.assertEqual(raised.exception.code, "IR1035")
+        self.assertNotEqual(regen.tree_manifest(self.target), prior)
+        self.assertEqual(changed_path.read_text(encoding="utf-8"), "external-change\n")
 
     def test_stale_declared_output_is_detected(self):
         """AE adjacent case 1: same declared path, wrong bytes => stale only."""
@@ -150,6 +211,35 @@ class RegenerationExecutionTests(RegenerationFixture):
             code = regen.emit(result, "human")
         self.assertEqual(code, 0)
         self.assertLessEqual(len(output.getvalue().splitlines()), 1)
+
+
+class RealManifestContractTests(RegenerationFixture):
+    def test_real_manifest_executes_all_declared_stages_and_outputs(self):
+        """F3: real DAG bytes + real handlers execute as one coherent contract."""
+        manifest_path = ROOT / "docs/pipeline/issue-derived-artifacts-v1.json"
+        validation = {"exit_code": 0, "item_count": 0, "diagnostics": [], "status": "PASS"}
+        catalog = {"items": [], "generation_id": "sha256:catalog"}
+        graph = {"nodes": [], "edges": [], "generation_id": "sha256:graph"}
+        with mock.patch.object(regen, "_validate_payload", return_value=validation), \
+             mock.patch.object(regen.views, "render", return_value=(catalog, graph)):
+            result = regen.execute(
+                repo=self.repo,
+                output_root=self.target,
+                dag_path=manifest_path,
+                write=True,
+            )
+            check = regen.execute(
+                repo=self.repo,
+                output_root=self.target,
+                dag_path=manifest_path,
+                write=False,
+            )
+        declared = json.loads(manifest_path.read_text(encoding="utf-8"))["stages"]
+        expected_paths = {path for stage in declared for path in stage["outputs"]}
+        self.assertEqual(result["stage_order"], [stage["id"] for stage in declared])
+        self.assertEqual(result["counts"]["outputs"], 17)
+        self.assertEqual(set(regen.tree_manifest(self.target)), expected_paths)
+        self.assertEqual(check["status"], "PASS")
 
 
 class BootstrapRefreshTests(RegenerationFixture):
@@ -195,25 +285,103 @@ class BootstrapRefreshTests(RegenerationFixture):
 
 
 class AuthorityMatrixTests(RegenerationFixture):
-    def test_legacy_frozen_writable_matrix(self):
-        cases = (
-            ("legacy-lists", "legacy-writable", self.repo / "unsafe", False),
-            ("legacy-lists", "legacy-writable", self.repo / "generated-shadow", True),
-            ("issue-store", "issue-store-frozen", self.repo / "derived", True),
-            ("issue-store", "issue-store-writable", self.repo / "derived", True),
+    def test_phase_and_inside_outside_root_matrix(self):
+        """AE root matrix: 3 phases × 3 safe/unsafe target classes = 27 checks."""
+        phases = (
+            ("legacy-lists", "legacy-writable"),
+            ("issue-store", "issue-store-frozen"),
+            ("issue-store", "issue-store-writable"),
         )
-        for profile, phase, target, allowed in cases:
-            with self.subTest(profile=profile, phase=phase, target=target.name):
-                self._selector(profile, phase)
-                selector = regen.load_selector(self.repo)
-                if allowed:
-                    regen.authorize_output_root(self.repo, target, selector)
-                else:
+        allowed = (
+            self.repo / "generated-shadow",
+            self.repo / "check-issues",
+            self.base / "generated-external",
+        )
+        rejected = (
+            self.repo / "unsafe",
+            self.repo / "ordinary" / "generated-shadow",
+            self.base / "ordinary-existing",
+            self.repo,
+            self.repo.parent,
+            Path.home(),
+        )
+        (self.base / "ordinary-existing").mkdir()
+        for profile, phase in phases:
+            self._selector(profile, phase)
+            selector = regen.load_selector(self.repo)
+            for target in allowed:
+                with self.subTest(profile=profile, phase=phase, target=target):
+                    self.assertEqual(regen.authorize_output_root(self.repo, target, selector), target.resolve())
+            for target in rejected:
+                with self.subTest(profile=profile, phase=phase, target=target):
                     with self.assertRaises(regen.RegenerateError):
                         regen.authorize_output_root(self.repo, target, selector)
-                for canonical in (self.repo / "issues", self.repo / "provenance"):
+
+    def test_authority_alias_and_symlink_roots_rejected(self):
+        selector = regen.load_selector(self.repo)
+        aliases = (
+            self.repo / "generated-shadow" / "..",
+            Path("/private/tmp") / "ordinary" / ".." / "generated-alias",
+            self.repo / "issues" / "generated-shadow",
+            self.repo / "docs" / "pipeline" / "generated-shadow",
+            self.repo / "generated-shadow" / "TODO.md",
+        )
+        for target in aliases:
+            with self.subTest(target=target):
+                with self.assertRaises(regen.RegenerateError):
+                    regen.authorize_output_root(self.repo, target, selector)
+        link = self.base / "generated-link"
+        link.symlink_to(self.repo / "generated-shadow", target_is_directory=True)
+        with self.assertRaises(regen.RegenerateError) as raised:
+            regen.authorize_output_root(self.repo, link, selector)
+        self.assertEqual(raised.exception.code, "IR1005")
+
+
+class ManifestContainmentTests(RegenerationFixture):
+    def test_invalid_output_and_derived_paths_create_no_bytes(self):
+        """AE containment matrix: 15 invalid spellings fail before staging/lock."""
+        invalid = ("", "/abs", "C:/drive", ".", "..", "a/../b", "a/./b", "a//b", "a/", " a", "a ", "a\\b", "C:\\drive", "a\x00b", "//host/share")
+        before = set(self.base.rglob("*"))
+        for value in invalid:
+            for field in ("output", "derived"):
+                manifest = _manifest()
+                if field == "output":
+                    manifest["stages"][0]["outputs"] = [value]
+                else:
+                    produced = manifest["stages"][0]["outputs"][0]
+                    manifest["stages"][1]["inputs"] = [{"kind": "derived", "glob": value}]
+                    if value == produced:
+                        continue
+                self.dag.write_text(regen.canonical_json(manifest), encoding="utf-8")
+                with self.subTest(value=repr(value), field=field):
                     with self.assertRaises(regen.RegenerateError):
-                        regen.authorize_output_root(self.repo, canonical, selector)
+                        self.execute(write=True)
+                    self.assertFalse(self.target.exists())
+                    self.assertFalse((self.base / ".generated-shadow.issue-regeneration.lock").exists())
+        after = set(self.base.rglob("*"))
+        self.assertEqual(after, before)
+
+    def test_symlinked_output_parent_cannot_create_outside_bytes(self):
+        staging = self.base / "staging"
+        outside = self.base / "outside"
+        staging.mkdir()
+        outside.mkdir()
+        (staging / "generated").symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(regen.RegenerateError) as raised:
+            regen._write(staging, "generated/escape.json", b"{}\n")
+        self.assertEqual(raised.exception.code, "IR1019")
+        self.assertEqual(list(outside.iterdir()), [])
+
+    def test_symlinked_derived_input_is_rejected_without_reading_alias(self):
+        staging = self.base / "derived-staging"
+        outside = self.base / "derived-outside"
+        staging.mkdir()
+        outside.mkdir()
+        (outside / "catalog.json").write_text("{}\n", encoding="utf-8")
+        (staging / "data").symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(regen.RegenerateError) as raised:
+            regen.derived_input_under(staging, "data/catalog.json")
+        self.assertEqual(raised.exception.code, "IR1019")
 
 
 class DagPropertyTests(unittest.TestCase):

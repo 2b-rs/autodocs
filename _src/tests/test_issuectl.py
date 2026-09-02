@@ -87,6 +87,40 @@ class IssuectlHelpAndRegistryTests(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertTrue(err or code == ctl.EXIT_USAGE or code == 2)
 
+    def test_real_manifest_issuectl_argv_are_executable_and_coherent(self):
+        """F3: execute every literal issuectl argv through the real CLI parser/dispatch."""
+        manifest = json.loads(
+            (ROOT / "docs/pipeline/issue-derived-artifacts-v1.json").read_text(encoding="utf-8")
+        )
+        executed = []
+
+        def stand_in(args, stage_id):
+            executed.append((args.command, stage_id, args.output_root, args.write))
+            return 0
+
+        with mock.patch.object(ctl, "_standalone_stage", side_effect=stand_in):
+            for stage in manifest["stages"]:
+                argv = stage["argv"]
+                if argv[1] != "_src/tools/issuectl.py":
+                    self.assertEqual(stage["id"], "render-html")
+                    self.assertIn(stage["id"], ctl.regenerate.HANDLERS)
+                    self.assertTrue((ROOT / "_src/generate.py").is_file())
+                    continue
+                code, _out, err = _run_main(argv[2:])
+                self.assertEqual(code, 0, f"{stage['id']}: {err}")
+        self.assertEqual(
+            [stage for _command, stage, _root, _write in executed],
+            [
+                "validate-canonical",
+                "build-internal-catalog",
+                "build-public-projection",
+                "build-graphs",
+                "build-page-models",
+                "render-reports",
+            ],
+        )
+        self.assertTrue(all(root is None for _command, _stage, root, _write in executed))
+
     def test_runner_actions_registered(self):
         payload = json.loads(ACTIONS.read_text(encoding="utf-8"))
         ids = {entry["id"] for entry in payload["actions"]}
