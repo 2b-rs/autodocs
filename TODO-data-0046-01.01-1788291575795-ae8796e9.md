@@ -3,16 +3,17 @@
 - **owner_token:** `agent:data:0046-01.01:1788291575795-ae8796e9`
 - **request_id:** `1788291575795-ae8796e9`
 - **assignment/award:** `agent-inbox:1788291607270-deb257f8`
-- **assignment_state:** `on_hold`
+- **assignment_state:** `in_progress`
 - **decision_request:** `decision-1788388089596-28a364de`
 - **process:** Implementation
-- **status:** `[u]` — exact recovery-parent authority is the sole remaining action
+- **status:** `[u]` — product candidate preserved; conflicting Feature-level decisions are the sole next-action gate
 - **capability_class:** `privileged`
 - **execution_authority:** direct local execution in the assigned item worktree; no Acceptance, checkpoint, integration, release, external-effect, `DONE.md`, or `main` authority
 - **branch:** `0046-01.01`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0046-01.01`
-- **base_commit:** `f5142ab033947bf16601ed9063f48aa96a8ff0e5`
-- **declared_parent:** `0046-01`
+- **base_commit:** `3ddc29eef522cf373bd401705eba0b3b957e02a5`
+- **declared_parent:** `0046-01-current-20260903-data-1788291575795`
+- **rederived_from:** `f5142ab033947bf16601ed9063f48aa96a8ff0e5`
 - **prerequisite:** accepted `0046-00@a47ae11b5d3f61ae305790a84b884691758be3f6`
 - **write_scope:** `_src/templates/agent_feedback.html`, `_src/static/agent-feedback.js`, `_src/tools/agent_feedback_form.py`, `_src/tests/test_agent_feedback_form.py`, and this claim
 - **external_resources:** none
@@ -85,3 +86,54 @@ collision-resistant current-baseline parent, preserves historical `0046-01`
 unchanged, and authorizes an explicit rederivation only after its lineage is
 verified. Until resolution, the assignment is `on_hold`, this claim remains
 `[u]`, and the four untracked product files remain preservation-only state.
+
+## Management resolution and lineage recovery
+
+Management resolved `decision-1788388089596-28a364de` with Option A at
+`2026-09-02T22:59:31Z`. The assignment resumed `in_progress`. At the
+pre-mutation checkpoint, current `main` was
+`3ddc29eef522cf373bd401705eba0b3b957e02a5`; it contains the accepted
+`0046-00` baseline. The collision-resistant parent branch
+`0046-01-current-20260903-data-1788291575795` was created at that exact
+commit, and the three claim/hold commits were rederived onto it. The resulting
+child tip was `acbddc8f431a736a1378a40755ae90aba107d22f` before this claim update.
+
+Post-rederivation ancestry passed, the historical
+`0046-01@6f5ba155337e19b40eabf714758ddab83147c305` ref remained unchanged, and
+all four preserved product SHA-256 digests still matched the values above.
+Resolved Feature-level decision `decision-1788255482182-030d2c67` Option
+`opt-2` separately confirms the operative mutation gate is open; it does not
+expand this assignment's exhaustive paths or grant Acceptance, integration,
+publication, or external-effect authority. Product validation and bounded
+correction may now proceed.
+
+## Conflicting-decision preservation hold
+
+At 2026-09-02T23:04:29Z, before staging or the planned completion commit,
+coordination message agent-inbox:1788390269672-7761e511 reported that the
+Feature-level mutation gate was re-blocked by pending Management decision
+decision-1788390190360-3c7e959d because prior options opt-1 and opt-2
+conflict. Durable decision_status confirms that request is pending. No
+further product mutation, completion bookkeeping, review transition, or
+integration may occur until Management resolves it.
+
+Before that re-block arrived, work had proceeded under resolved decisions
+decision-1788388089596-28a364de Option A and
+decision-1788255482182-030d2c67 Option opt-2. The recovered candidate
+corrected the embedded NUL byte, malformed Python expressions, server/client
+apostrophe escaping parity, and JSON CLI option precedence; it added CLI
+regressions. Validation completed before the new hold:
+
+- Python compilation on source and tests: PASS.
+- Focused unittest suite: PASS, 24 tests.
+- JavaScript syntax check: PASS.
+- Anonymous JSON CLI preview and JSON parse: PASS.
+- Git whitespace validation: PASS.
+
+Preservation digests at the stop point are
+agent-feedback.js=c82e4e90f909d0d76d651fbe80d5327eb901531e90e38a260989e5ea76322749,
+agent_feedback.html=d5eae7256cfd1ebef7065ac87cc210fd7086b72dd6bb97c700d4beba45863ba3,
+agent_feedback_form.py=a0ceed3385772148772a95c08137451b7df49ed4c8212ed8d1f861a9d8911f43,
+and
+test_agent_feedback_form.py=778e69c4f201f6c95726ba9b522c158f607e917c25be8c3674a1d27a4442c5e3.
+The next action is Management resolution only.
