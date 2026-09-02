@@ -13,9 +13,13 @@ AE binding:
 """
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import io
 import json
+import os
+import shutil
+import subprocess
 import tempfile
 import threading
 import unittest
@@ -214,32 +218,94 @@ class RegenerationExecutionTests(RegenerationFixture):
 
 
 class RealManifestContractTests(RegenerationFixture):
-    def test_real_manifest_executes_all_declared_stages_and_outputs(self):
-        """F3: real DAG bytes + real handlers execute as one coherent contract."""
-        manifest_path = ROOT / "docs/pipeline/issue-derived-artifacts-v1.json"
-        validation = {"exit_code": 0, "item_count": 0, "diagnostics": [], "status": "PASS"}
-        catalog = {"items": [], "generation_id": "sha256:catalog"}
-        graph = {"nodes": [], "edges": [], "generation_id": "sha256:graph"}
-        with mock.patch.object(regen, "_validate_payload", return_value=validation), \
-             mock.patch.object(regen.views, "render", return_value=(catalog, graph)):
-            result = regen.execute(
-                repo=self.repo,
-                output_root=self.target,
-                dag_path=manifest_path,
-                write=True,
+    def _literal_repo(self) -> Path:
+        repo = self.base / "literal-repo"
+        (repo / "issues/_schema").mkdir(parents=True)
+        (repo / "provenance").mkdir()
+        (repo / "docs/pipeline").mkdir(parents=True)
+        (repo / "_src/tools").mkdir(parents=True)
+        selector = {
+            "schema": "agent-workflow-bootstrap@v1",
+            "authority_profile": "legacy-lists",
+            "authority_epoch": "legacy-writable",
+            "write_phase": "legacy-writable",
+        }
+        (repo / "agent-workflow.json").write_text(regen.canonical_json(selector), encoding="utf-8")
+        copies = (
+            "docs/pipeline/issue-derived-artifacts-v1.json",
+            "issues/_schema/issue-item-v1.schema.json",
+            "issues/_schema/issue-catalog-v1.schema.json",
+            "issues/_schema/issue-dependency-graph-v1.schema.json",
+            "_src/tools/issue_store.py",
+            "_src/tools/issue_views.py",
+        )
+        for relative in copies:
+            destination = repo / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / relative, destination)
+        return repo
+
+    def test_every_literal_manifest_argv_executes_isolated_without_mocks(self):
+        """F3: execute all seven literal argv arrays against a disposable repo."""
+        repo = self._literal_repo()
+        manifest_path = repo / "docs/pipeline/issue-derived-artifacts-v1.json"
+        stages = json.loads(manifest_path.read_text(encoding="utf-8"))["stages"]
+        target = repo / "generated-issues"
+        fixture = ROOT / "_src/tests/fixtures/0037-11.01/generated/run-manifest.json"
+        fixture_before = fixture.read_bytes()
+        index_before = (ROOT / "index.html").read_bytes()
+        environment = dict(os.environ, ISSUECTL_REPO=str(repo))
+
+        help_run = subprocess.run(
+            ["python3", "_src/tools/generate.py", "--help"],
+            cwd=ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        self.assertEqual(help_run.returncode, 0, help_run.stderr)
+        self.assertIn("--issues", help_run.stdout)
+        self.assertFalse(target.exists())
+
+        for stage in stages:
+            completed = subprocess.run(
+                stage["argv"],
+                cwd=ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
             )
-            check = regen.execute(
-                repo=self.repo,
-                output_root=self.target,
-                dag_path=manifest_path,
-                write=False,
-            )
-        declared = json.loads(manifest_path.read_text(encoding="utf-8"))["stages"]
-        expected_paths = {path for stage in declared for path in stage["outputs"]}
-        self.assertEqual(result["stage_order"], [stage["id"] for stage in declared])
-        self.assertEqual(result["counts"]["outputs"], 17)
-        self.assertEqual(set(regen.tree_manifest(self.target)), expected_paths)
-        self.assertEqual(check["status"], "PASS")
+            self.assertEqual(completed.returncode, 0, f"{stage['id']}: {completed.stderr}")
+            self.assertLessEqual(len(completed.stdout.splitlines()), 1)
+            self.assertLessEqual(len(completed.stderr.splitlines()), 1)
+
+        expected_paths = {path for stage in stages for path in stage["outputs"]}
+        self.assertEqual(set(regen.tree_manifest(target)), expected_paths)
+        self.assertEqual(len(expected_paths), 17)
+        self.assertEqual(fixture.read_bytes(), fixture_before)
+        self.assertEqual((ROOT / "index.html").read_bytes(), index_before)
+        self.assertFalse((ROOT / "generated-issues").exists())
+
+
+class HermeticRelatedSuiteTests(unittest.TestCase):
+    def test_issue_lists_suite_uses_disposable_golden_and_preserves_fixture(self):
+        """Regression guard for the historical run-manifest fixture leak."""
+        module = importlib.import_module("_src.tests.test_issue_lists")
+        fixture = ROOT / "_src/tests/fixtures/0037-11.01/generated/run-manifest.json"
+        before = fixture.read_bytes()
+        with tempfile.TemporaryDirectory() as temporary:
+            golden = Path(temporary) / "generated"
+            shutil.copytree(module.GOLDEN, golden)
+            with mock.patch.object(module, "GOLDEN", golden):
+                suite = unittest.defaultTestLoader.loadTestsFromTestCase(module.IssueListsTest)
+                stream = io.StringIO()
+                result = unittest.TextTestRunner(stream=stream, verbosity=0).run(suite)
+            self.assertTrue(result.wasSuccessful(), stream.getvalue())
+        self.assertEqual(fixture.read_bytes(), before)
 
 
 class BootstrapRefreshTests(RegenerationFixture):

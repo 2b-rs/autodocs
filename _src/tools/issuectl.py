@@ -224,6 +224,7 @@ def cmd_render(args: argparse.Namespace) -> int:
         (args.catalog is not None, "build-internal-catalog" if args.catalog == "internal" else "build-public-projection"),
         (args.graphs, "build-graphs"),
         (args.page_models, "build-page-models"),
+        (args.html, "render-html"),
     ]
     stages = [stage for enabled, stage in selected if enabled]
     if len(stages) != 1:
@@ -1121,6 +1122,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("--catalog", choices=("internal", "public"))
     p_render.add_argument("--graphs", action="store_true")
     p_render.add_argument("--page-models", action="store_true")
+    p_render.add_argument("--html", action="store_true", help="render the declared issue HTML stage")
     p_render.set_defaults(func=cmd_render)
 
     p_report = sub.add_parser("report", help="render the bounded issue report set")
@@ -1243,6 +1245,13 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _is_issue_configuration_error(exc: BaseException) -> bool:
+    return (
+        exc.__class__.__name__ == "ConfigurationError"
+        and str(exc).startswith("IV0900:")
+    )
+
+
 def main(argv: Optional[Iterable[str]] = None) -> int:
     parser = build_parser()
     try:
@@ -1263,9 +1272,14 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     except (views.IssueViewsError, regenerate.lists.IssueListsError, pq.ProvenanceQueryError, pq.ProvenanceViewsError, OSError, json.JSONDecodeError, SystemExit) as exc:
         if isinstance(exc, SystemExit):
             code = exc.code
-            return int(code) if isinstance(code, int) else EXIT_USAGE
+            return code if isinstance(code, int) else EXIT_USAGE
         print(exc, file=sys.stderr)
         return EXIT_ERROR
+    except Exception as exc:
+        if _is_issue_configuration_error(exc):
+            print(exc, file=sys.stderr)
+            return EXIT_USAGE
+        raise
 
 
 if __name__ == "__main__":
