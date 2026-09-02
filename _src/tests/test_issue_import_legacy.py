@@ -3,20 +3,44 @@
 from __future__ import annotations
 
 import importlib.util
+import itertools
 import json
+import os
 import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
-    "issue_import_legacy", ROOT / "_src/tools/issue_import_legacy.py"
+    "issue_import_legacy",
+    Path(os.environ.get("ISSUE_IMPORT_LEGACY_TOOL", ROOT / "_src/tools/issue_import_legacy.py")),
 )
 IMP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(IMP)
 FIXTURE_13 = ROOT / "provenance/migrations/issue-store/fixtures/0037-13"
+
+
+def assert_closed_schema_shape(test, value, schema, root_schema):
+    if "$ref" in schema:
+        target = root_schema
+        for component in schema["$ref"].removeprefix("#/").split("/"):
+            target = target[component]
+        return assert_closed_schema_shape(test, value, target, root_schema)
+    if schema.get("type") == "object":
+        test.assertIsInstance(value, dict)
+        test.assertTrue(set(schema.get("required", ())).issubset(value))
+        if schema.get("additionalProperties") is False:
+            test.assertFalse(set(value) - set(schema.get("properties", {})))
+        for key, child in schema.get("properties", {}).items():
+            if key in value:
+                assert_closed_schema_shape(test, value[key], child, root_schema)
+    elif schema.get("type") == "array":
+        test.assertIsInstance(value, list)
+        for item in value:
+            assert_closed_schema_shape(test, item, schema.get("items", {}), root_schema)
 
 
 class ImportLegacyTests(unittest.TestCase):
@@ -24,6 +48,80 @@ class ImportLegacyTests(unittest.TestCase):
 
     def _import_fixture(self, dest: Path):
         return IMP.import_legacy(repo=ROOT, root=dest, source_tree=FIXTURE_13)
+
+    def _commit(self, repo: Path, message: str) -> str:
+        subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", message], cwd=repo, check=True, capture_output=True)
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo).decode().strip()
+
+    def _production_repo(self, parent: Path, *, placeholder: bool = False):
+        repo = parent / "repo"
+        repo.mkdir()
+        subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+        subprocess.run(["git", "config", "user.name", "Importer Test"], cwd=repo, check=True)
+        inventory = repo / "provenance/migrations/issue-store/tools"
+        inventory.mkdir(parents=True)
+        shutil.copy(
+            ROOT / "provenance/migrations/issue-store/tools/issue_legacy_inventory.py",
+            inventory / "issue_legacy_inventory.py",
+        )
+        tools = repo / "_src/tools"
+        tools.mkdir(parents=True)
+        shutil.copy(ROOT / "_src/tools/issue_import_legacy.py", tools / "issue_import_legacy.py")
+        schemas = repo / "issues/_schema"
+        schemas.mkdir(parents=True)
+        for name in (
+            "issue-item-v1.schema.json",
+            "issue-closure-v1.schema.json",
+            "migration-state-v1.schema.json",
+        ):
+            shutil.copy(ROOT / "issues/_schema" / name, schemas / name)
+        (repo / "TODO.md").write_text(
+            "## Feature: 0099 — Import\n\n- [ ] **0099-00** Seed.\n"
+            "  - **Acceptance criteria:** Seed.\n  - **Definition of Done:** Seeded.\n",
+            encoding="utf-8",
+        )
+        (repo / "DONE.md").write_text("# DONE\n", encoding="utf-8")
+        evidence = self._commit(repo, "evidence")
+        ref = "pending" if placeholder else evidence
+        (repo / "TODO.md").write_text(
+            "## Feature: 0099 — Import\n\n"
+            "- [x] **0099-01** Completed import target.\n"
+            "  - **Acceptance criteria:** First requirement; second requirement.\n"
+            "  - **Definition of Done:** Complete.\n"
+            "  - **Acceptance:** ✓\n"
+            "    - **Disposition:** `completed`\n"
+            "    - **Accepted by:** `reviewer:test`\n"
+            "    - **Accepted at:** `2026-09-02T10:00:00Z`\n"
+            f"    - **Carrying commit:** `{ref}`\n"
+            f"    - **Criterion evidence AC-001:** `commit:{ref}`\n"
+            f"    - **Criterion evidence AC-002:** `commit:{ref}`\n"
+            "- [w] **0099-02** Wontfix import target.\n"
+            "  - **Acceptance criteria:** Investigate.\n"
+            "  - **Definition of Done:** Disposition recorded.\n"
+            "  - **Reason:** Non-reproducible under the retained probe.\n"
+            "  - **Acceptance:** ✓\n"
+            "    - **Disposition:** `wontfix`\n"
+            "    - **Accepted by:** `reviewer:test`\n"
+            "    - **Accepted at:** `2026-09-02T10:01:00Z`\n"
+            f"    - **Carrying commit:** `{ref}`\n"
+            f"    - **Criterion evidence AC-001:** `commit:{ref}`\n",
+            encoding="utf-8",
+        )
+        source = self._commit(repo, "terminal source")
+        return repo, source, evidence
+
+    def _run(self, repo: Path, history: Path, run_id: str, source: str, **kwargs):
+        return IMP.run_migration(
+            repo=repo,
+            history_root=history,
+            run_id=run_id,
+            source_revision=source,
+            source_ref=kwargs.pop("source_ref", source),
+            baseline_commit=kwargs.pop("baseline_commit", source),
+            **kwargs,
+        )
 
     def test_repeated_imports_byte_identical(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -81,6 +179,13 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertIn("IMP-MARKER-UNDEFINED", rules)
             self.assertIn("IMP-TASK-HEADER-MALFORMED", rules)
             self.assertIn("IMP-REF-PENDING", rules)
+            placeholder_findings = [
+                finding
+                for finding in manifest["findings"]
+                if finding["rule"] in {"IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER"}
+            ]
+            self.assertTrue(placeholder_findings)
+            self.assertTrue(all(finding["severity"] == "blocking" for finding in placeholder_findings))
             self.assertFalse(manifest["claim_json_emitted"])
             self.assertFalse(manifest["closure_json_emitted"])
             self.assertTrue(any(p.startswith("legacy-claims/") for p in manifest["written"]))
@@ -159,6 +264,382 @@ class ImportLegacyTests(unittest.TestCase):
             for rel in manifest["written"] + ["import-manifest.json", "import-findings.json"]:
                 path = (dest / rel).resolve()
                 path.relative_to(root)
+
+    def test_production_contract_falsification_success_and_closures(self):
+        """AE-3 falsification: baseline lacks run_migration; candidate promotes evidence-complete x/w."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, evidence = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+            result = self._run(repo, history, "shadow-success-0001", source)
+            state = result["state"]
+            self.assertEqual(state["status"], "promoted")
+            self.assertEqual(state["counts"]["closures"], 2)
+            completed = json.loads(
+                (history / "shadow-success-0001/issues/issues/0099/0099-01/closure.json").read_text()
+            )
+            wontfix = json.loads(
+                (history / "shadow-success-0001/issues/issues/0099/0099-02/closure.json").read_text()
+            )
+            self.assertEqual(completed["disposition"], "completed")
+            self.assertEqual(wontfix["disposition"], "wontfix")
+            self.assertEqual(completed["commit_refs"], [evidence])
+            self.assertEqual(wontfix["reason"], "Non-reproducible under the retained probe.")
+            state_schema = json.loads(
+                (repo / "issues/_schema/migration-state-v1.schema.json").read_text()
+            )
+            assert_closed_schema_shape(self, state, state_schema, state_schema)
+            closure_schema = json.loads(
+                (repo / "issues/_schema/issue-closure-v1.schema.json").read_text()
+            )
+            assert_closed_schema_shape(self, completed, closure_schema, closure_schema)
+            assert_closed_schema_shape(self, wontfix, closure_schema, closure_schema)
+
+    def test_missing_criterion_bound_evidence_blocks_closure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            todo = repo / "TODO.md"
+            todo.write_text(
+                "\n".join(
+                    line for line in todo.read_text(encoding="utf-8").splitlines()
+                    if "Criterion evidence" not in line
+                ) + "\n",
+                encoding="utf-8",
+            )
+            source = self._commit(repo, "remove criterion evidence")
+            result = self._run(
+                repo, Path(tmp) / "history", "shadow-no-criterion-evidence-0001", source
+            )
+            self.assertEqual(result["state"]["status"], "rejected")
+            self.assertIn(
+                "IMP-CLOSURE-CRITERION-EVIDENCE-MISSING",
+                {finding["rule"] for finding in result["report"]["findings"]},
+            )
+            self.assertEqual(result["state"]["counts"]["closures"], 0)
+
+    def test_production_cli_mode_writes_immutable_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(repo / "_src/tools/issue_import_legacy.py"),
+                    "--repo",
+                    str(repo),
+                    "--root",
+                    str(history),
+                    "--run-id",
+                    "shadow-cli-success-0001",
+                    "--source-commit",
+                    source,
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)["status"], "promoted")
+            self.assertTrue(
+                (history / "shadow-cli-success-0001/reports/migration-report.json").is_file()
+            )
+
+    def test_adjacent_missing_placeholder_evidence_is_retained_rejection(self):
+        """AE-4 adjacent evidence dimension: placeholder vs reachable ref => rejected, no closure."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp), placeholder=True)
+            history = Path(tmp) / "history"
+            result = self._run(repo, history, "shadow-placeholder-0001", source)
+            self.assertEqual(result["state"]["status"], "rejected")
+            rules = {finding["rule"] for finding in result["report"]["findings"]}
+            self.assertIn("IMP-CLOSURE-EVIDENCE-PLACEHOLDER", rules)
+            self.assertFalse(list((history / "shadow-placeholder-0001/issues").rglob("closure.json")))
+
+    def test_adjacent_stale_source_is_retained_and_not_promotable(self):
+        """AE-4 adjacent identity dimension: watched ref drift => retained rejected state."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+
+            def advance_source(_staging):
+                with (repo / "TODO.md").open("a", encoding="utf-8") as stream:
+                    stream.write("\n- [ ] **0099-03** Later source item.\n")
+                self._commit(repo, "advance source")
+
+            result = self._run(
+                repo,
+                history,
+                "shadow-stale-source-0001",
+                source,
+                source_ref="main",
+                before_compare=advance_source,
+            )
+            self.assertEqual(result["state"]["status"], "rejected")
+            self.assertFalse(result["state"]["candidate"]["promotable"])
+            self.assertTrue((history / "shadow-stale-source-0001/reports/migration-state.json").is_file())
+            self.assertIn("stale-candidate", {f["code"] for f in result["state"]["findings"]})
+
+    def test_dirty_source_drift_staged_unstaged_and_untracked_is_retained(self):
+        for mode in ("unstaged", "staged", "untracked"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                repo, source, _ = self._production_repo(Path(tmp))
+                history = Path(tmp) / "history"
+
+                def dirty_source(_staging):
+                    if mode == "untracked":
+                        (repo / "TODO-new-claim.md").write_text("untracked\n", encoding="utf-8")
+                    else:
+                        with (repo / "TODO.md").open("a", encoding="utf-8") as stream:
+                            stream.write("\npost-preparation drift\n")
+                        if mode == "staged":
+                            subprocess.run(["git", "add", "TODO.md"], cwd=repo, check=True)
+
+                result = self._run(
+                    repo, history, f"shadow-dirty-{mode}-0001", source,
+                    before_compare=dirty_source,
+                )
+                self.assertEqual(result["state"]["status"], "rejected")
+                self.assertIn(
+                    "IMP-DIRTY-LEGACY-SOURCE-DRIFT",
+                    {finding["rule"] for finding in result["report"]["findings"]},
+                )
+                self.assertFalse(result["state"]["source"]["working_tree_clean"])
+
+    def test_report_write_drift_is_caught_by_immediate_pre_promotion_cas(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+            real_atomic_write = IMP.atomic_write
+            report_writes = 0
+
+            def drift_after_report_write(path, data, root):
+                nonlocal report_writes
+                real_atomic_write(path, data, root)
+                if path.name in {"migration-state.json", "migration-report.json"}:
+                    report_writes += 1
+                    if report_writes == 2:
+                        with (repo / "TODO.md").open("a", encoding="utf-8") as stream:
+                            stream.write("\nlate report-write drift\n")
+
+            with mock.patch.object(IMP, "atomic_write", side_effect=drift_after_report_write):
+                result = self._run(repo, history, "shadow-late-cas-drift-0001", source)
+            self.assertEqual(result["state"]["status"], "rejected")
+            self.assertIn(
+                "IMP-DIRTY-LEGACY-SOURCE-DRIFT",
+                {finding["rule"] for finding in result["report"]["findings"]},
+            )
+            self.assertFalse(result["state"]["candidate"]["promotable"])
+
+    def test_candidate_and_schema_drift_are_compare_and_swap_failures(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+
+            def mutate_candidate(staging):
+                target = staging / "issues/issues/0099/0099-01/index.md"
+                target.write_text(target.read_text() + "drift\n", encoding="utf-8")
+
+            candidate = self._run(
+                repo,
+                history,
+                "shadow-candidate-drift-0001",
+                source,
+                before_compare=mutate_candidate,
+            )
+            self.assertEqual(candidate["state"]["status"], "rejected")
+            self.assertIn("candidate-drift", {f["code"] for f in candidate["state"]["findings"]})
+
+            def mutate_schema(_staging):
+                schema = repo / "issues/_schema/issue-item-v1.schema.json"
+                schema.write_text(schema.read_text() + "\n", encoding="utf-8")
+
+            schema = self._run(
+                repo,
+                history,
+                "shadow-schema-drift-0001",
+                source,
+                before_compare=mutate_schema,
+            )
+            self.assertEqual(schema["state"]["status"], "rejected")
+            self.assertIn("importer-identity-drift", {f["code"] for f in schema["state"]["findings"]})
+
+    def test_increasing_watermarks_and_tool_rerun_are_separately_addressable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, first_source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+            first = self._run(repo, history, "shadow-watermark-0001", first_source)
+            with (repo / "TODO.md").open("a", encoding="utf-8") as stream:
+                stream.write("\n- [ ] **0099-03** Increasing watermark.\n")
+            second_source = self._commit(repo, "new legacy watermark")
+            second = self._run(
+                repo,
+                history,
+                "shadow-watermark-0002",
+                second_source,
+                baseline_commit=first_source,
+            )
+            tool = repo / "_src/tools/issue_import_legacy.py"
+            tool.write_text(tool.read_text() + "\n# identity rerun\n", encoding="utf-8")
+            self._commit(repo, "tool identity rerun")
+            third = self._run(
+                repo,
+                history,
+                "shadow-tool-rerun-0003",
+                second_source,
+                baseline_commit=first_source,
+            )
+            self.assertEqual(first["state"]["history"]["sequence"], 1)
+            self.assertEqual(second["state"]["history"]["sequence"], 2)
+            self.assertEqual(third["state"]["history"]["sequence"], 3)
+            self.assertEqual(third["state"]["source"]["commit"], second_source)
+            self.assertNotEqual(
+                second["state"]["importer"]["digest"], third["state"]["importer"]["digest"]
+            )
+            for run_id in ("shadow-watermark-0001", "shadow-watermark-0002", "shadow-tool-rerun-0003"):
+                self.assertTrue((history / run_id / "reports/migration-state.json").is_file())
+
+    def test_post_reservation_failure_retains_interrupted_state_without_partial_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+            with mock.patch.object(IMP, "import_legacy", side_effect=RuntimeError("injected")):
+                result = self._run(repo, history, "shadow-atomic-fail-0001", source)
+            run = history / "shadow-atomic-fail-0001"
+            self.assertEqual(result["state"]["status"], "interrupted")
+            self.assertTrue((run / "reports/migration-state.json").is_file())
+            self.assertFalse((run / "issues").exists())
+            self.assertFalse(list(history.glob(".shadow-atomic-fail-0001.staging-*")))
+            self.assertFalse((history / ".shadow-atomic-fail-0001.lock").exists())
+
+    def test_candidate_disappearance_retains_interrupted_report_only_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = Path(tmp) / "history"
+
+            def remove_candidate(staging):
+                (staging / "issues/issues/0099/0099-01/index.md").unlink()
+
+            result = self._run(
+                repo, history, "shadow-candidate-missing-0001", source,
+                before_compare=remove_candidate,
+            )
+            run = history / "shadow-candidate-missing-0001"
+            self.assertEqual(result["state"]["status"], "interrupted")
+            self.assertIn("candidate-drift", {f["code"] for f in result["state"]["findings"]})
+            self.assertFalse((run / "issues").exists())
+            self.assertTrue((run / "reports/migration-report.json").is_file())
+
+    def test_mixed_acceptance_history_excludes_noncurrent_base_and_unrelated_refs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, evidence = self._production_repo(Path(tmp))
+            (repo / "unrelated.txt").write_text("unrelated\n", encoding="utf-8")
+            unrelated = self._commit(repo, "unrelated reachable commit")
+            block = (
+                "- [x] **0099-01** Mixed history.\n"
+                "  - **Acceptance criteria:** Bound criterion.\n"
+                "  - **Acceptance:** rejected\n"
+                f"    - **Review REF:** `{unrelated}`\n"
+                "  - **Acceptance:** ✓\n"
+                "    - **Disposition:** `completed`\n"
+                "    - **Accepted by:** `reviewer:test`\n"
+                "    - **Accepted at:** `2026-09-02T10:00:00Z`\n"
+                f"    - **Base-Ref:** `{source}`\n"
+                f"    - **Rejected commit:** `{unrelated}`\n"
+                f"    - **Carrying commit:** `{evidence}`\n"
+                f"    - **Criterion evidence AC-001:** `commit:{evidence}`\n"
+            )
+            findings = []
+            closure = IMP.closure_from_legacy(
+                repo=repo, source_commit=unrelated,
+                item={"id": "0099-01", "marker": "x"}, block=block,
+                criteria_count=1, findings=findings, locator="TODO.md:1",
+            )
+            self.assertEqual(closure["commit_refs"], [evidence])
+            self.assertEqual(closure["criteria"][0]["evidence"], [f"commit:{evidence}"])
+            self.assertNotIn(source, closure["commit_refs"])
+            self.assertNotIn(unrelated, closure["commit_refs"])
+
+            noncurrent = block + "  - **Acceptance:** inconclusive\n"
+            findings = []
+            self.assertIsNone(
+                IMP.closure_from_legacy(
+                    repo=repo, source_commit=unrelated,
+                    item={"id": "0099-01", "marker": "x"}, block=noncurrent,
+                    criteria_count=1, findings=findings, locator="TODO.md:1",
+                )
+            )
+            self.assertIn("IMP-CLOSURE-ACCEPTANCE-MISSING", {f["rule"] for f in findings})
+
+    def test_deterministic_production_rerun_and_path_containment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            first = self._run(repo, Path(tmp) / "history-a", "shadow-deterministic-0001", source)
+            second = self._run(repo, Path(tmp) / "history-b", "shadow-deterministic-0001", source)
+            self.assertEqual(first["state"], second["state"])
+            self.assertEqual(first["report"], second["report"])
+            canonical = repo / "_src/output/issue-migration"
+            self.assertEqual(IMP._history_root(canonical, repo), canonical.resolve())
+            outside = Path(tmp) / "outside-history"
+            self.assertEqual(IMP._history_root(outside, repo), outside.resolve())
+            forbidden = [
+                repo,
+                repo / "docs",
+                repo / "_src/tools",
+                repo / "issues",
+                repo / "provenance",
+                repo / ".runner",
+            ]
+            for index, root in enumerate(forbidden):
+                with self.subTest(root=root), self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP._history_root(root, repo)
+                self.assertEqual(ctx.exception.code, "IMP-LIVE-ROOT")
+            canonical.mkdir(parents=True)
+            alias = repo / "migration-alias"
+            alias.symlink_to(canonical, target_is_directory=True)
+            with self.assertRaises(IMP.ImportErrorClosed):
+                IMP._history_root(alias, repo)
+
+    def test_property_positive_acceptance_ref_membership_exhaustive_64_cases(self):
+        """AE-5: exhaustive typed-field subsets; only three positive current bindings are members."""
+        fields = [
+            ("Carrying commit", "1" * 40, True),
+            ("Review-decision commit", "2" * 40, True),
+            ("Review REF", "3" * 40, True),
+            ("Base-Ref", "4" * 40, False),
+            ("Rejected commit", "5" * 40, False),
+            ("Unrelated commit", "6" * 40, False),
+        ]
+        cases = 0
+        for membership in itertools.product((False, True), repeat=len(fields)):
+            section = "\n".join(
+                f"- **{name}:** `{value}`"
+                for include, (name, value, _allowed) in zip(membership, fields)
+                if include
+            )
+            expected = sorted(
+                value
+                for include, (_name, value, allowed) in zip(membership, fields)
+                if include and allowed
+            )
+            self.assertEqual(IMP._positive_acceptance_ref_values(section), expected)
+            cases += 1
+        self.assertEqual(cases, 64)
+
+    def test_property_candidate_digest_set_and_sequence_invariant_24_cases(self):
+        """AE-5: exhaustive 4-path permutations; oracle is order-invariant exact membership digest."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = ["a", "b", "c", "d"]
+            for path in paths:
+                (root / path).write_text(path, encoding="utf-8")
+            oracle = IMP._candidate_digest(root, paths)
+            cases = 0
+            for permutation in itertools.permutations(paths):
+                self.assertEqual(IMP._candidate_digest(root, permutation), oracle)
+                cases += 1
+            self.assertEqual(cases, 24)
+            (root / "e").write_text("e", encoding="utf-8")
+            self.assertNotEqual(IMP._candidate_digest(root, paths + ["e"]), oracle)
 
 
 if __name__ == "__main__":
