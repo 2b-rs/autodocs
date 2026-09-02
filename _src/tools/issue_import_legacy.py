@@ -335,13 +335,99 @@ def _source_block(blobs: Mapping[str, Tuple[bytes, str]], path: str, line: int) 
     return "\n".join(chunk)
 
 
+def _normalized_legacy_field(raw: str) -> Tuple[str, str]:
+    normalized = raw.strip().lstrip("-").strip().replace("**", "")
+    key, separator, value = normalized.partition(":")
+    if not separator:
+        return "", ""
+    return key.strip(), value.strip().strip("`")
+
+
 def _legacy_field(block: str, name: str) -> Optional[str]:
     for raw in block.splitlines():
-        normalized = raw.strip().lstrip("-").strip().replace("**", "")
-        key, separator, value = normalized.partition(":")
-        if separator and key.strip().lower() == name.lower():
-            return value.strip().strip("`")
+        key, value = _normalized_legacy_field(raw)
+        if key.lower() == name.lower():
+            return value
     return None
+
+
+def _current_acceptance_section(block: str) -> Tuple[Optional[str], str]:
+    lines = block.splitlines()
+    starts = []
+    for index, raw in enumerate(lines):
+        key, value = _normalized_legacy_field(raw)
+        if key.lower() == "acceptance":
+            starts.append((index, value))
+    if not starts:
+        return None, ""
+    index, status = starts[-1]
+    return status, "\n".join(lines[index:])
+
+
+POSITIVE_ACCEPTANCE_REF_FIELDS = frozenset(
+    {"carrying commit", "review-decision commit", "review ref"}
+)
+
+
+def _positive_acceptance_ref_values(section: str) -> List[str]:
+    """Return only typed refs from the current positive Acceptance record."""
+    refs = []
+    for raw in section.splitlines():
+        key, value = _normalized_legacy_field(raw)
+        if key.lower() not in POSITIVE_ACCEPTANCE_REF_FIELDS:
+            continue
+        match = FULL_COMMIT_RE.fullmatch(value)
+        if match:
+            refs.append(match.group(0))
+    return sorted(set(refs))
+
+
+def _criterion_evidence_values(section: str) -> Dict[str, List[str]]:
+    evidence: Dict[str, List[str]] = {}
+    pattern = re.compile(r"^criterion evidence (AC-[0-9]{3,})$", re.IGNORECASE)
+    for raw in section.splitlines():
+        key, value = _normalized_legacy_field(raw)
+        match = pattern.fullmatch(key)
+        if not match:
+            continue
+        criterion = match.group(1).upper()
+        values = [part.strip().strip("`") for part in re.split(r"\s*[;,]\s*", value) if part.strip()]
+        evidence.setdefault(criterion, []).extend(values)
+    return {key: sorted(set(values)) for key, values in evidence.items()}
+
+
+def _validated_criterion_evidence(
+    *, repo: Path, source_commit: str, section: str, criteria_count: int,
+    positive_refs: Sequence[str],
+) -> Tuple[Optional[List[dict]], List[str]]:
+    bindings = _criterion_evidence_values(section)
+    criteria = []
+    missing = []
+    allowed_commits = set(positive_refs)
+    for index in range(1, max(criteria_count, 1) + 1):
+        criterion_id = f"AC-{index:03d}"
+        valid = []
+        for value in bindings.get(criterion_id, []):
+            if value.startswith("commit:"):
+                ref = value.removeprefix("commit:")
+                if ref in allowed_commits:
+                    valid.append(value)
+            elif re.fullmatch(r"sha256:[0-9a-f]{64}", value):
+                valid.append(value)
+            elif value.startswith("path:"):
+                rel = value.removeprefix("path:").split("#", 1)[0]
+                if rel and not Path(rel).is_absolute() and ".." not in Path(rel).parts:
+                    exists = subprocess.run(
+                        ["git", "cat-file", "-e", f"{source_commit}:{rel}"], cwd=repo,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False,
+                    )
+                    if exists.returncode == 0:
+                        valid.append(value)
+        if not valid:
+            missing.append(criterion_id)
+        else:
+            criteria.append({"id": criterion_id, "status": "checked", "evidence": sorted(set(valid))})
+    return (criteria if not missing else None), missing
 
 
 def _closure_finding(
@@ -369,23 +455,24 @@ def closure_from_legacy(
     marker = str(item.get("marker") or "")
     if marker not in {"x", "w"}:
         return None
-    if "Acceptance: ✓" not in block and "**Acceptance:** ✓" not in block:
+    acceptance_status, acceptance = _current_acceptance_section(block)
+    if acceptance_status != "✓":
         _closure_finding(findings, "IMP-CLOSURE-ACCEPTANCE-MISSING", item_id, locator,
-                         "terminal marker has no explicit legacy Acceptance record; closure not emitted")
+                         "terminal marker has no current positive legacy Acceptance record")
         return None
-    if PLACEHOLDER_EVIDENCE_RE.search(block):
+    if PLACEHOLDER_EVIDENCE_RE.search(acceptance):
         _closure_finding(findings, "IMP-CLOSURE-EVIDENCE-PLACEHOLDER", item_id, locator,
-                         "terminal legacy block contains pending/local placeholder evidence")
+                         "current positive Acceptance contains pending/local placeholder evidence")
         return None
-    disposition = (_legacy_field(block, "Disposition") or ("completed" if marker == "x" else "wontfix")).lower()
+    disposition = (_legacy_field(acceptance, "Disposition") or ("completed" if marker == "x" else "wontfix")).lower()
     expected = "completed" if marker == "x" else "wontfix"
     if disposition != expected:
         _closure_finding(findings, "IMP-CLOSURE-DISPOSITION-CONFLICT", item_id, locator,
                          f"marker [{marker}] conflicts with disposition {disposition!r}")
         return None
-    closed_by = _legacy_field(block, "Accepted by")
-    closed_at = _legacy_field(block, "Accepted at")
-    refs = sorted(set(FULL_COMMIT_RE.findall(block)))
+    closed_by = _legacy_field(acceptance, "Accepted by")
+    closed_at = _legacy_field(acceptance, "Accepted at")
+    refs = _positive_acceptance_ref_values(acceptance)
     reachable = []
     for ref in refs:
         result = subprocess.run(["git", "merge-base", "--is-ancestor", ref, source_commit], cwd=repo,
@@ -404,19 +491,27 @@ def closure_from_legacy(
             missing.append("valid ISO-8601 Accepted at")
     if not reachable:
         missing.append("reachable full commit evidence")
-    reason = _legacy_field(block, "Reason")
+    reason = _legacy_field(acceptance, "Reason") or _legacy_field(block, "Reason")
     if disposition == "wontfix" and not reason:
         missing.append("Reason")
     if missing:
         _closure_finding(findings, "IMP-CLOSURE-EVIDENCE-MISSING", item_id, locator,
                          "terminal legacy block lacks " + ", ".join(missing))
         return None
-    evidence = [f"commit:{ref}" for ref in reachable] + [f"legacy:{locator}#acceptance"]
+    criteria, missing_criteria = _validated_criterion_evidence(
+        repo=repo, source_commit=source_commit, section=acceptance,
+        criteria_count=criteria_count, positive_refs=reachable,
+    )
+    if criteria is None:
+        _closure_finding(
+            findings, "IMP-CLOSURE-CRITERION-EVIDENCE-MISSING", item_id, locator,
+            "current positive Acceptance lacks typed evidence for " + ", ".join(missing_criteria),
+        )
+        return None
     closure = {
         "schema_version": "1.0", "item_id": item_id, "disposition": disposition,
         "closed_at": closed_at, "closed_by": closed_by,
-        "criteria": [{"id": f"AC-{index:03d}", "status": "checked", "evidence": evidence}
-                     for index in range(1, max(criteria_count, 1) + 1)],
+        "criteria": criteria,
         "commit_refs": reachable,
         "validation": [{"name": "legacy-acceptance-record", "result": "pass",
                         "evidence": f"legacy:{locator}#acceptance"}],
@@ -805,8 +900,16 @@ def _source_identity(repo: Path, source_commit: str,
              "working_tree_clean": True, "artifacts": artifacts}, blobs)
 
 
-def _legacy_source_clean(repo: Path, source_commit: str, names: Sequence[str]) -> bool:
-    paths = sorted(set(names))
+def _source_pathspecs(named_files: Optional[Sequence[str]]) -> List[str]:
+    if named_files:
+        return sorted(set(named_files))
+    return ["TODO.md", "DONE.md", ":(glob)TODO-*.md"]
+
+
+def _legacy_source_clean(
+    repo: Path, source_commit: str, named_files: Optional[Sequence[str]]
+) -> bool:
+    paths = _source_pathspecs(named_files)
     unstaged = subprocess.run(["git", "diff", "--quiet", source_commit, "--", *paths], cwd=repo, check=False)
     staged = subprocess.run(["git", "diff", "--cached", "--quiet", source_commit, "--", *paths], cwd=repo, check=False)
     status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", *paths],
@@ -814,17 +917,27 @@ def _legacy_source_clean(repo: Path, source_commit: str, names: Sequence[str]) -
     return unstaged.returncode == 0 and staged.returncode == 0 and status.returncode == 0 and not status.stdout
 
 
+def _is_within(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
 def _history_root(root: Path, repo: Path) -> Path:
-    resolved, repo_resolved = root.expanduser().resolve(), repo.resolve()
-    if resolved == repo_resolved:
-        raise ImportErrorClosed("IMP-LIVE-ROOT", "refusing repository root as run history")
-    for rel in ("issues", "provenance", ".runner"):
-        live = (repo_resolved / rel).resolve()
-        try:
-            resolved.relative_to(live)
-            raise ImportErrorClosed("IMP-LIVE-ROOT", f"refusing authoritative/control root {live}")
-        except ValueError:
-            pass
+    repo_resolved = repo.resolve()
+    lexical = Path(os.path.abspath(os.path.expanduser(str(root))))
+    resolved = root.expanduser().resolve()
+    canonical = (repo_resolved / "_src/output/issue-migration").resolve()
+    lexical_in_repo = _is_within(lexical, repo_resolved)
+    resolved_in_repo = _is_within(resolved, repo_resolved)
+    if lexical_in_repo or resolved_in_repo:
+        if lexical != canonical or resolved != canonical:
+            raise ImportErrorClosed(
+                "IMP-LIVE-ROOT",
+                "in-repository history root must be exactly _src/output/issue-migration without aliases",
+            )
     return resolved
 
 
@@ -879,8 +992,26 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
     if not RUN_ID_RE.fullmatch(run_id):
         raise ImportErrorClosed("IMP-RUN-ID", f"invalid run ID {run_id!r}")
     history = _history_root(history_root, repo)
+    initial_source = _resolve_commit(repo, source_revision)
+    watched_ref = source_ref or source_revision
+    if _resolve_commit(repo, watched_ref) != initial_source:
+        raise ImportErrorClosed(
+            "IMP-SOURCE-STALE", "source revision and watched ref disagree before reservation"
+        )
+    baseline = _resolve_commit(repo, baseline_commit) if baseline_commit else initial_source
+    if subprocess.run(
+        ["git", "merge-base", "--is-ancestor", baseline, initial_source], cwd=repo,
+        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    ).returncode != 0:
+        raise ImportErrorClosed("IMP-BASELINE-REGRESSION", "baseline is not an ancestor of source")
+    source, _ = _source_identity(repo, initial_source, named_files)
+    importer_before = _importer_identity(repo)
+    preparation_clean = _legacy_source_clean(repo, initial_source, named_files)
+
     history.mkdir(parents=True, exist_ok=True)
     final_root, lock_path = history / run_id, history / f".{run_id}.lock"
+    if final_root.exists():
+        raise ImportErrorClosed("IMP-RUN-EXISTS", f"run already exists: {run_id}")
     try:
         lock_fd = os.open(lock_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     except FileExistsError as exc:
@@ -888,107 +1019,213 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
     os.close(lock_fd)
     staging = Path(tempfile.mkdtemp(prefix=f".{run_id}.staging-", dir=history))
     promoted = False
-    try:
-        if final_root.exists():
-            raise ImportErrorClosed("IMP-RUN-EXISTS", f"run already exists: {run_id}")
-        initial_source = _resolve_commit(repo, source_revision)
-        watched_ref = source_ref or source_revision
-        if _resolve_commit(repo, watched_ref) != initial_source:
-            raise ImportErrorClosed("IMP-SOURCE-STALE",
-                                    "source revision and watched source ref disagree at preparation")
-        baseline = _resolve_commit(repo, baseline_commit) if baseline_commit else initial_source
-        if subprocess.run(["git", "merge-base", "--is-ancestor", baseline, initial_source], cwd=repo,
-                          check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0:
-            raise ImportErrorClosed("IMP-BASELINE-REGRESSION", "baseline is not an ancestor of source")
-        source, _ = _source_identity(repo, initial_source, named_files)
-        names = [str(artifact["path"]) for artifact in source["artifacts"]]
-        findings = []
-        if not _legacy_source_clean(repo, initial_source, names):
-            findings.append({"code": "dirty-legacy-source", "rule": "IMP-DIRTY-LEGACY-SOURCE",
-                             "severity": "blocking", "message": "legacy source paths differ from watermark",
-                             "locator": initial_source})
-            source["working_tree_clean"] = False
-        prior_states = _load_prior_states(history)
-        prior = prior_states[-1][1] if prior_states else None
-        if prior and prior["source"]["commit"] != initial_source:
-            if subprocess.run(["git", "merge-base", "--is-ancestor", prior["source"]["commit"], initial_source],
-                              cwd=repo, check=False, stdout=subprocess.DEVNULL,
-                              stderr=subprocess.DEVNULL).returncode != 0:
-                findings.append({"code": "source-watermark-regression", "rule": "IMP-SOURCE-WATERMARK-REGRESSION",
-                                 "severity": "blocking", "message": "source is not a descendant of prior history",
-                                 "locator": initial_source})
-        importer_before = _importer_identity(repo)
-        logical_root = f"_src/output/issue-migration/{run_id}/"
-        candidate_root = staging / "issues"
-        manifest = import_legacy(repo=repo, root=candidate_root, source_commit=initial_source,
-                                 named_files=named_files, display_root=logical_root + "issues/",
-                                 emit_closures=True)
-        findings.extend(manifest["findings"])
-        candidate_paths = list(manifest["written"])
-        candidate_digest = _candidate_digest(candidate_root, candidate_paths)
-        if candidate_digest != manifest["tree_digest"]:
-            findings.append({"code": "candidate-digest-mismatch", "rule": "IMP-CANDIDATE-DIGEST-MISMATCH",
-                             "severity": "blocking", "message": "candidate differs from manifest",
-                             "locator": run_id})
-        if before_compare:
-            before_compare(staging)
-        latest_source = _resolve_commit(repo, watched_ref)
-        importer_after = _importer_identity(repo)
-        observed_digest = _candidate_digest(candidate_root, candidate_paths)
-        if latest_source != initial_source:
-            findings.append({"code": "stale-candidate", "rule": "IMP-STALE-CANDIDATE", "severity": "blocking",
-                             "message": "source ref drifted between preparation and promotion", "locator": watched_ref})
-        if importer_after != importer_before:
-            findings.append({"code": "importer-identity-drift", "rule": "IMP-IMPORTER-IDENTITY-DRIFT",
-                             "severity": "blocking", "message": "importer or schema drifted before promotion",
-                             "locator": TOOL_REL})
-        if observed_digest != candidate_digest:
-            findings.append({"code": "candidate-drift", "rule": "IMP-CANDIDATE-DRIFT", "severity": "blocking",
-                             "message": "candidate bytes drifted after preparation", "locator": run_id})
-        findings.sort(key=lambda f: (str(f.get("rule")), str(f.get("locator")), str(f.get("message"))))
-        blocking = any(f.get("severity") == "blocking" for f in findings)
-        previous_digest = _sha256_bytes(_canonical_json(prior).encode("utf-8")) if prior else None
-        history_link = {"sequence": len(prior_states) + 1,
-                        "previous_run_id": prior.get("run_id") if prior else None,
-                        "previous_source_commit": prior.get("source", {}).get("commit") if prior else None,
-                        "previous_state_digest": previous_digest}
-        counts = {"items": len(manifest["items"]),
-                  "closures": sum(1 for rel in candidate_paths if rel.endswith("/closure.json")),
-                  "written": len(candidate_paths), "findings": len(findings)}
+    prior_states: List[Tuple[Path, dict]] = []
+    prior = None
+    findings: List[dict] = []
+    manifest: Optional[dict] = None
+    candidate_paths: List[str] = []
+    empty_digest = _sha256_bytes(b"")
+    candidate_digest = empty_digest
+    observed_digest = empty_digest
+    latest_source = initial_source
+    source_after = source
+    logical_root = f"_src/output/issue-migration/{run_id}/"
+
+    def records(status: str, phase: str) -> Tuple[dict, dict]:
+        ordered = sorted(
+            findings,
+            key=lambda finding: (
+                str(finding.get("rule")), str(finding.get("locator")),
+                str(finding.get("message")),
+            ),
+        )
+        history_link = {
+            "sequence": len(prior_states) + 1,
+            "previous_run_id": prior.get("run_id") if prior else None,
+            "previous_source_commit": prior.get("source", {}).get("commit") if prior else None,
+            "previous_state_digest": (
+                _sha256_bytes(_canonical_json(prior).encode("utf-8")) if prior else None
+            ),
+        }
+        counts = {
+            "items": len(manifest["items"]) if manifest else 0,
+            "closures": sum(1 for rel in candidate_paths if rel.endswith("/closure.json")),
+            "written": len(candidate_paths),
+            "findings": len(ordered),
+        }
         candidate_identity = _sha256_bytes(
             f"migration-candidate@v1|{run_id}|{candidate_digest}".encode("utf-8")
         )
-        state = {"schema": "migration-state@v1", "run_id": run_id,
-                 "source": {key: source[key] for key in ("commit", "tree", "tree_digest", "files", "working_tree_clean")},
-                 "importer": {"commit": importer_before["commit"], "digest": importer_before["digest"],
-                              "schema_versions": importer_before["schema_versions"],
-                              "schema_digests": importer_before["schema_digests"]},
-                 "watermarks": {"baseline": baseline, "latest_source": latest_source, "candidate": initial_source},
-                 "candidate": {"root": logical_root, "issues_root": logical_root + "issues/",
-                               "reports_root": logical_root + "reports/", "tree": source["tree"],
-                               "identity": candidate_identity, "tree_digest": candidate_digest,
-                               "promotable": not blocking},
-                 "phase": "rejected" if blocking else "promoted",
-                 "status": "rejected" if blocking else "promoted", "counts": counts,
-                 "finding_summary": _finding_summary(findings), "history": history_link,
-                 "findings": _state_findings(findings)}
-        report = {"schema": "issue-import-legacy-report@v1", "run_id": run_id, "source": source,
-                  "importer": importer_before,
-                  "candidate": {"logical_root": logical_root, "identity": candidate_identity,
-                                "tree_digest": candidate_digest,
-                                "observed_tree_digest": observed_digest, "paths": candidate_paths},
-                  "counts": counts, "finding_summary": state["finding_summary"], "findings": findings,
-                  "history": history_link, "status": state["status"]}
+        source_state = {
+            key: source[key]
+            for key in ("commit", "tree", "tree_digest", "files", "working_tree_clean")
+        }
+        state = {
+            "schema": "migration-state@v1", "run_id": run_id, "source": source_state,
+            "importer": {
+                "commit": importer_before["commit"], "digest": importer_before["digest"],
+                "schema_versions": importer_before["schema_versions"],
+                "schema_digests": importer_before["schema_digests"],
+            },
+            "watermarks": {
+                "baseline": baseline, "latest_source": latest_source,
+                "candidate": initial_source,
+            },
+            "candidate": {
+                "root": logical_root, "issues_root": logical_root + "issues/",
+                "reports_root": logical_root + "reports/", "tree": source["tree"],
+                "identity": candidate_identity, "tree_digest": candidate_digest,
+                "promotable": status == "promoted",
+            },
+            "phase": phase, "status": status, "counts": counts,
+            "finding_summary": _finding_summary(ordered), "history": history_link,
+            "findings": _state_findings(ordered),
+        }
+        report = {
+            "schema": "issue-import-legacy-report@v1", "run_id": run_id,
+            "source": source, "source_compare": source_after, "importer": importer_before,
+            "candidate": {
+                "logical_root": logical_root, "identity": candidate_identity,
+                "tree_digest": candidate_digest, "observed_tree_digest": observed_digest,
+                "paths": candidate_paths,
+            },
+            "counts": counts, "finding_summary": state["finding_summary"],
+            "findings": ordered, "history": history_link, "status": status,
+        }
+        return state, report
+
+    def append_finding(finding: dict) -> None:
+        identity = (finding.get("rule"), finding.get("locator"), finding.get("message"))
+        if all(
+            (current.get("rule"), current.get("locator"), current.get("message")) != identity
+            for current in findings
+        ):
+            findings.append(finding)
+
+    def compare_promotion_inputs() -> None:
+        nonlocal latest_source, source_after, observed_digest
+        latest_source = _resolve_commit(repo, watched_ref)
+        source_after, _ = _source_identity(repo, latest_source, named_files)
+        comparison_clean = _legacy_source_clean(repo, latest_source, named_files)
+        source_after["working_tree_clean"] = comparison_clean
+        source["working_tree_clean"] = preparation_clean and comparison_clean
+        importer_after = _importer_identity(repo)
+        observed_digest = _candidate_digest(staging / "issues", candidate_paths)
+        comparable_keys = ("commit", "tree", "tree_digest", "artifacts")
+        if any(source_after[key] != source[key] for key in comparable_keys):
+            append_finding({
+                "code": "stale-candidate", "rule": "IMP-STALE-CANDIDATE",
+                "severity": "blocking", "message": "full source identity drifted before promotion",
+                "locator": watched_ref,
+            })
+        if not comparison_clean:
+            append_finding({
+                "code": "dirty-legacy-source-drift",
+                "rule": "IMP-DIRTY-LEGACY-SOURCE-DRIFT", "severity": "blocking",
+                "message": "staged, unstaged, or untracked source paths drifted after preparation",
+                "locator": watched_ref,
+            })
+        if importer_after != importer_before:
+            append_finding({
+                "code": "importer-identity-drift", "rule": "IMP-IMPORTER-IDENTITY-DRIFT",
+                "severity": "blocking", "message": "importer or schema drifted before promotion",
+                "locator": TOOL_REL,
+            })
+        if observed_digest != candidate_digest:
+            append_finding({
+                "code": "candidate-drift", "rule": "IMP-CANDIDATE-DRIFT",
+                "severity": "blocking", "message": "candidate bytes drifted after preparation",
+                "locator": run_id,
+            })
+
+    def retain(status: str, phase: str, *, discard_candidate: bool) -> dict:
+        nonlocal promoted
+        if discard_candidate:
+            shutil.rmtree(staging / "issues", ignore_errors=True)
+            candidate_paths.clear()
+        shutil.rmtree(staging / "reports", ignore_errors=True)
+        state, report = records(status, phase)
         atomic_write(staging / "reports/migration-state.json", _canonical_json(state).encode(), staging)
         atomic_write(staging / "reports/migration-report.json", _canonical_json(report).encode(), staging)
+        if status == "promoted":
+            compare_promotion_inputs()
+            if any(finding.get("severity") == "blocking" for finding in findings):
+                status = phase = "rejected"
+                shutil.rmtree(staging / "reports", ignore_errors=True)
+                state, report = records(status, phase)
+                atomic_write(
+                    staging / "reports/migration-state.json", _canonical_json(state).encode(), staging
+                )
+                atomic_write(
+                    staging / "reports/migration-report.json", _canonical_json(report).encode(), staging
+                )
         if final_root.exists():
             raise ImportErrorClosed("IMP-RUN-EXISTS", f"run appeared during promotion: {run_id}")
         os.rename(staging, final_root)
         promoted = True
         return {"root": str(final_root), "state": state, "report": report}
-    except Exception:
-        if not promoted and staging.exists():
-            shutil.rmtree(staging, ignore_errors=True)
+
+    try:
+        prior_states = _load_prior_states(history)
+        prior = prior_states[-1][1] if prior_states else None
+        source["working_tree_clean"] = preparation_clean
+        if not preparation_clean:
+            findings.append({
+                "code": "dirty-legacy-source", "rule": "IMP-DIRTY-LEGACY-SOURCE",
+                "severity": "blocking", "message": "legacy source paths differ at preparation",
+                "locator": initial_source,
+            })
+        if prior and prior["source"]["commit"] != initial_source:
+            if subprocess.run(
+                ["git", "merge-base", "--is-ancestor", prior["source"]["commit"], initial_source],
+                cwd=repo, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            ).returncode != 0:
+                findings.append({
+                    "code": "source-watermark-regression",
+                    "rule": "IMP-SOURCE-WATERMARK-REGRESSION", "severity": "blocking",
+                    "message": "source is not a descendant of prior history",
+                    "locator": initial_source,
+                })
+        candidate_root = staging / "issues"
+        manifest = import_legacy(
+            repo=repo, root=candidate_root, source_commit=initial_source,
+            named_files=named_files, display_root=logical_root + "issues/", emit_closures=True,
+        )
+        findings.extend(manifest["findings"])
+        candidate_paths = list(manifest["written"])
+        candidate_digest = _candidate_digest(candidate_root, candidate_paths)
+        observed_digest = candidate_digest
+        if candidate_digest != manifest["tree_digest"]:
+            findings.append({
+                "code": "candidate-digest-mismatch", "rule": "IMP-CANDIDATE-DIGEST-MISMATCH",
+                "severity": "blocking", "message": "candidate differs from manifest",
+                "locator": run_id,
+            })
+        if before_compare:
+            before_compare(staging)
+
+        compare_promotion_inputs()
+        blocking = any(finding.get("severity") == "blocking" for finding in findings)
+        return retain("rejected" if blocking else "promoted",
+                      "rejected" if blocking else "promoted", discard_candidate=False)
+    except Exception as exc:
+        code = exc.code if isinstance(exc, ImportErrorClosed) else "IMP-POST-RESERVATION-FAILURE"
+        findings.append({
+            "code": code.lower().replace("imp-", "").replace("_", "-"),
+            "rule": code, "severity": "blocking",
+            "message": f"post-reservation failure retained: {exc}", "locator": run_id,
+        })
+        try:
+            latest_source = _resolve_commit(repo, watched_ref)
+            source_after, _ = _source_identity(repo, latest_source, named_files)
+            source_after["working_tree_clean"] = _legacy_source_clean(
+                repo, latest_source, named_files
+            )
+        except Exception:
+            latest_source = initial_source
+            source_after = source
+        if staging.exists() and not final_root.exists():
+            return retain("interrupted", "interrupted", discard_candidate=True)
         raise
     finally:
         try:
