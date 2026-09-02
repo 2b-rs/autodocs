@@ -4,7 +4,7 @@
 - **request_id:** `1788291575795-ae8796e9`
 - **assignment/award:** `agent-inbox:1788291607270-deb257f8`
 - **process:** Implementation
-- **status:** `[p]` — startup branch-parent collision; product mutation halted
+- **status:** `[u]` — exact recovery-parent authority is the sole remaining action
 - **capability_class:** `privileged`
 - **execution_authority:** direct local execution in the assigned item worktree; no Acceptance, checkpoint, integration, release, external-effect, `DONE.md`, or `main` authority
 - **branch:** `0046-01.01`
@@ -62,3 +62,14 @@ is to consume it without deleting or rewriting the historical `0046-01` ref.
 After that authority exists, verify the new parent contains accepted `0046-00`,
 merge/rederive as authorized, recheck the four file digests, then validate and
 correct the product within the original exhaustive scope.
+
+## Exhausted-preparation update
+
+Repeated mailbox and ref checks through 2026-09-03 found no recovery-parent
+assignment and no topology change: `main`, `0046-01`, and `0046-00` remain at
+the exact objects recorded above, and `0046-01` remains outside this child's
+ancestry. All safe bounded preparation is complete. Because choosing or
+authorizing a replacement parent/ref contract would expand this assignment and
+could alter another work unit's branch contract, the claim is now `[u]` under
+the repository's authority-decision boundary. This is not a technical-failure
+classification and grants no permission to mutate the four product files.
