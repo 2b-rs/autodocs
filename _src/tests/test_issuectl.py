@@ -1189,6 +1189,86 @@ class IssuectlMutateTests(unittest.TestCase):
         self.assertEqual(leftovers, [])
 
 
+class IssuectlRecoveryCommandTests(unittest.TestCase):
+    """Focused contracts for bootstrap/render/report/regenerate dispatch."""
+
+    def test_help_exposes_recovery_commands(self):
+        parser = ctl.build_parser()
+        for name in ("bootstrap", "render", "report", "regenerate"):
+            with self.subTest(name=name):
+                output = io.StringIO()
+                with self.assertRaises(SystemExit) as raised:
+                    with redirect_stdout(output):
+                        parser.parse_args([name, "--help"])
+                self.assertEqual(raised.exception.code, 0)
+                self.assertIn(name, output.getvalue())
+
+    def test_bootstrap_refresh_check_and_write_contract(self):
+        result = {
+            "schema": "issue-bootstrap-refresh-result@v1",
+            "status": "PASS",
+            "mode": "check",
+            "counts": {"outputs": 8},
+            "exit_code": 0,
+        }
+        with mock.patch.object(ctl.regenerate, "bootstrap_refresh", return_value=result) as called:
+            code, out, err = _run_main(["bootstrap", "--refresh", "--repo", "/tmp/repo"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["schema"], result["schema"])
+        called.assert_called_once_with(repo=Path("/tmp/repo"), output_root=None, write=False)
+        code, _out, err = _run_main(["bootstrap"])
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1300", err)
+
+    def test_render_and_report_dispatch_exact_declared_stages(self):
+        cases = (
+            (["render", "--catalog", "internal", "--output-root", "/tmp/out"], "build-internal-catalog"),
+            (["render", "--catalog", "public", "--output-root", "/tmp/out"], "build-public-projection"),
+            (["render", "--graphs", "--output-root", "/tmp/out"], "build-graphs"),
+            (["render", "--page-models", "--output-root", "/tmp/out"], "build-page-models"),
+            (["report", "--output-root", "/tmp/out"], "render-reports"),
+        )
+        for argv, expected in cases:
+            with self.subTest(argv=argv):
+                with mock.patch.object(ctl, "_standalone_stage", return_value=0) as called:
+                    code, _out, err = _run_main(argv)
+                self.assertEqual(code, 0, err)
+                self.assertEqual(called.call_args.args[1], expected)
+        with mock.patch.object(ctl, "_standalone_stage", return_value=0):
+            code, _out, err = _run_main([
+                "render", "--graphs", "--page-models", "--output-root", "/tmp/out"
+            ])
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1301", err)
+
+    def test_regenerate_requires_all_and_forwards_modes(self):
+        result = {
+            "schema": "issue-regeneration-result@v1",
+            "status": "PASS",
+            "mode": "write",
+            "counts": {"stages": 7, "outputs": 16},
+            "exit_code": 0,
+        }
+        with mock.patch.object(ctl.regenerate, "execute", return_value=result) as called:
+            code, out, err = _run_main([
+                "regenerate", "--all", "--repo", "/tmp/repo",
+                "--output-root", "/tmp/generated", "--write",
+            ])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["mode"], "write")
+        self.assertEqual(called.call_args.kwargs["write"], True)
+        self.assertEqual(called.call_args.kwargs["output_root"], Path("/tmp/generated"))
+        with mock.patch.object(ctl.regenerate, "execute", return_value={**result, "mode": "check"}) as dry:
+            code, _out, err = _run_main([
+                "regenerate", "--all", "--output-root", "/tmp/generated", "--dry-run"
+            ])
+        self.assertEqual(code, 0, err)
+        self.assertFalse(dry.call_args.kwargs["write"])
+        code, _out, err = _run_main(["regenerate", "--output-root", "/tmp/generated"])
+        self.assertEqual(code, ctl.EXIT_ERROR)
+        self.assertIn("IC1302", err)
+
+
 def _kahn_is_dag(graph):
     """Independent oracle: Kahn topological sort; DAG iff every node is emitted."""
     nodes = set(graph)

@@ -16,6 +16,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -44,6 +45,7 @@ iv = _load("issue_validate", TOOLS / "issue_validate.py")
 views = _load("issue_views", TOOLS / "issue_views.py")
 pq = _load("provenance_query", TOOLS / "provenance_query.py")
 store = _load("issue_store", TOOLS / "issue_store.py")
+regenerate = _load("issue_regenerate", TOOLS / "issue_regenerate.py")
 
 MUTATE_SCHEMA = "issuectl-mutate-result@v1"
 APPROVED_SCALAR_FIELDS = frozenset({
@@ -110,6 +112,105 @@ def cmd_validate(args: argparse.Namespace) -> int:
     else:
         sys.stdout.write("\n".join(human) + "\n")
     return payload["exit_code"]
+
+
+def cmd_bootstrap(args: argparse.Namespace) -> int:
+    if not args.refresh:
+        raise IssuectlError("IC1300", "bootstrap requires --refresh")
+    result = regenerate.bootstrap_refresh(
+        repo=Path(args.repo),
+        output_root=Path(args.output_root) if args.output_root else None,
+        write=args.write,
+    )
+    return regenerate.emit(result, args.format)
+
+
+def _copy_existing_declared(output_root: Path, staging: Path, declared: Sequence[str]) -> None:
+    if not output_root.is_dir():
+        return
+    observed = regenerate.tree_manifest(output_root)
+    unexplained = sorted(set(observed) - set(declared))
+    if unexplained:
+        raise regenerate.RegenerateError(
+            "IR1028", "unexplained existing outputs: " + ",".join(unexplained[:regenerate.MAX_FINDINGS])
+        )
+    shutil.copytree(output_root, staging, dirs_exist_ok=True)
+
+
+def _standalone_stage(args: argparse.Namespace, stage_id: str) -> int:
+    repo = Path(args.repo).resolve()
+    output_root = Path(args.output_root).resolve()
+    selector = regenerate.load_selector(repo)
+    regenerate.authorize_output_root(repo, output_root, selector)
+    loaded = regenerate.load_manifest(Path(args.dag).resolve() if args.dag else repo / regenerate.DEFAULT_DAG)
+    stage = loaded["by_id"][stage_id]
+    declared = sorted(output for value in loaded["by_id"].values() for output in value.get("outputs") or [])
+    output_root.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.staging-", dir=output_root.parent))
+    try:
+        _copy_existing_declared(output_root, staging, declared)
+        context = {"repo": repo, "staging": staging, "loaded": loaded}
+        handler = regenerate.HANDLERS[stage_id]
+        outputs = handler(context, stage)
+        actual = [item["path"] for item in outputs]
+        expected = list(stage.get("outputs") or [])
+        if actual != expected:
+            raise regenerate.RegenerateError("IR1025", f"stage {stage_id} output set/order mismatch")
+        diff = regenerate.compare_trees(staging, output_root)
+        changed = False
+        if args.write:
+            changed = regenerate._promote(staging, output_root)
+        else:
+            shutil.rmtree(staging)
+        result = {
+            "schema": "issuectl-derived-command-result@v1",
+            "command": args.command,
+            "stage": stage_id,
+            "status": "PASS" if args.write or not any(diff.values()) else "STALE",
+            "mode": "write" if args.write else "check",
+            "authority": {
+                "profile": selector.get("authority_profile"),
+                "phase": selector.get("write_phase") or selector.get("authority_epoch"),
+                "canonical_sources_mutated": False,
+            },
+            "outputs": outputs,
+            "counts": {"outputs": len(outputs), "missing": len(diff["missing"]), "stale": len(diff["stale"])},
+            "changed": changed,
+            "exit_code": 0 if args.write or not any(diff.values()) else 1,
+        }
+        return regenerate.emit(result, args.format)
+    except Exception:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    selected = [
+        (args.catalog is not None, "build-internal-catalog" if args.catalog == "internal" else "build-public-projection"),
+        (args.graphs, "build-graphs"),
+        (args.page_models, "build-page-models"),
+    ]
+    stages = [stage for enabled, stage in selected if enabled]
+    if len(stages) != 1:
+        raise IssuectlError("IC1301", "render requires exactly one of --catalog, --graphs, or --page-models")
+    return _standalone_stage(args, stages[0])
+
+
+def cmd_report(args: argparse.Namespace) -> int:
+    return _standalone_stage(args, "render-reports")
+
+
+def cmd_regenerate(args: argparse.Namespace) -> int:
+    if not args.all:
+        raise IssuectlError("IC1302", "regenerate requires --all")
+    result = regenerate.execute(
+        repo=Path(args.repo),
+        output_root=Path(args.output_root),
+        dag_path=Path(args.dag) if args.dag else None,
+        write=args.write,
+        fail_stage=args.fail_stage,
+    )
+    return regenerate.emit(result, args.format)
 
 
 def _render_views(args: argparse.Namespace):
@@ -958,6 +1059,44 @@ def build_parser() -> argparse.ArgumentParser:
     p_val.add_argument("--format", choices=("json", "human"), default="json")
     p_val.set_defaults(func=cmd_validate)
 
+    p_bootstrap = sub.add_parser("bootstrap", help="refresh and validate bootstrap-facing derived state")
+    p_bootstrap.add_argument("--refresh", action="store_true")
+    p_bootstrap.add_argument("--repo", default=str(ROOT))
+    p_bootstrap.add_argument("--output-root")
+    bootstrap_mode = p_bootstrap.add_mutually_exclusive_group()
+    bootstrap_mode.add_argument("--write", action="store_true")
+    bootstrap_mode.add_argument("--check", "--dry-run", dest="write", action="store_false")
+    p_bootstrap.set_defaults(write=False)
+    p_bootstrap.add_argument("--format", choices=("json", "human"), default="json")
+    p_bootstrap.set_defaults(func=cmd_bootstrap)
+
+    def add_derived_options(command_parser: argparse.ArgumentParser) -> None:
+        command_parser.add_argument("--repo", default=str(ROOT))
+        command_parser.add_argument("--output-root", required=True)
+        command_parser.add_argument("--dag")
+        mode = command_parser.add_mutually_exclusive_group()
+        mode.add_argument("--write", action="store_true")
+        mode.add_argument("--check", "--dry-run", dest="write", action="store_false")
+        command_parser.set_defaults(write=False)
+        command_parser.add_argument("--format", choices=("json", "human"), default="json")
+
+    p_render = sub.add_parser("render", help="render one declared derived-artifact stage")
+    add_derived_options(p_render)
+    p_render.add_argument("--catalog", choices=("internal", "public"))
+    p_render.add_argument("--graphs", action="store_true")
+    p_render.add_argument("--page-models", action="store_true")
+    p_render.set_defaults(func=cmd_render)
+
+    p_report = sub.add_parser("report", help="render the bounded issue report set")
+    add_derived_options(p_report)
+    p_report.set_defaults(func=cmd_report)
+
+    p_regenerate = sub.add_parser("regenerate", help="execute the full declared regeneration DAG")
+    add_derived_options(p_regenerate)
+    p_regenerate.add_argument("--all", action="store_true")
+    p_regenerate.add_argument("--fail-stage", help=argparse.SUPPRESS)
+    p_regenerate.set_defaults(func=cmd_regenerate)
+
     p_view = sub.add_parser("view", help="render catalog or graph from shared issue_views")
     _add_shared(p_view)
     p_view.add_argument("--kind", choices=("catalog", "graph"), default="catalog")
@@ -1082,7 +1221,10 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     except store.IssueStoreError as exc:
         print(exc, file=sys.stderr)
         return EXIT_ERROR
-    except (views.IssueViewsError, pq.ProvenanceQueryError, pq.ProvenanceViewsError, OSError, json.JSONDecodeError, SystemExit) as exc:
+    except regenerate.RegenerateError as exc:
+        print(exc, file=sys.stderr)
+        return EXIT_ERROR
+    except (views.IssueViewsError, regenerate.lists.IssueListsError, pq.ProvenanceQueryError, pq.ProvenanceViewsError, OSError, json.JSONDecodeError, SystemExit) as exc:
         if isinstance(exc, SystemExit):
             code = exc.code
             return int(code) if isinstance(code, int) else EXIT_USAGE
