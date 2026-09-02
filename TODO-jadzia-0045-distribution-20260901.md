@@ -82,3 +82,5 @@ AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien merged the 0045-07 rework to main in agent-inbox. I have confirmed completion to mancons. 0045 is now fully completed!
 - note: Terminal state reached for 0045.
+
+- note: Terminal state / handover verified post supervisor restart.

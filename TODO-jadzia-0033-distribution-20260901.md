@@ -200,3 +200,5 @@ STATUS: OPEN
 NOTES: Dispatched integration of 0033-07.01 rework.
 - note: Integrators obrien and geordi failed. Re-dispatching 0033-07.01-integration to paul.
 - note: paul started IN_PROGRESS on 0033-07.01-integration.
+
+- note: Terminal state / handover verified post supervisor restart.

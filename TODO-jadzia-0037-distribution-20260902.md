@@ -10,3 +10,5 @@ AWARDED: worf
 STATUS: ACCEPTED
 NOTES: worf accepted the offer for 0037-29.
 - note: worf started IN_PROGRESS on 0037-29.
+
+- note: Terminal state / handover verified post supervisor restart.

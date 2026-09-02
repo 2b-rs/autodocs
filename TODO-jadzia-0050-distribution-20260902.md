@@ -9,3 +9,5 @@ NOTES: Dispatched implementation of team generation fold.
 AWARDED: worf
 STATUS: ACCEPTED
 NOTES: worf accepted the offer for 0050-01.
+
+- note: Terminal state / handover verified post supervisor restart.

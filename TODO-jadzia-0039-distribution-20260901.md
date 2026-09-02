@@ -27,3 +27,5 @@ AWARDED: obrien
 STATUS: REVIEW
 NOTES: obrien completed the review and integration. Merged to main.
 - note: Terminal state reached for 0039.
+
+- note: Terminal state / handover verified post supervisor restart.
