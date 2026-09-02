@@ -3,6 +3,8 @@
 - **owner_token:** `agent:data:0046-01.01:1788291575795-ae8796e9`
 - **request_id:** `1788291575795-ae8796e9`
 - **assignment/award:** `agent-inbox:1788291607270-deb257f8`
+- **assignment_state:** `on_hold`
+- **decision_request:** `decision-1788388089596-28a364de`
 - **process:** Implementation
 - **status:** `[u]` — exact recovery-parent authority is the sole remaining action
 - **capability_class:** `privileged`
@@ -73,3 +75,13 @@ authorizing a replacement parent/ref contract would expand this assignment and
 could alter another work unit's branch contract, the claim is now `[u]` under
 the repository's authority-decision boundary. This is not a technical-failure
 classification and grants no permission to mutate the four product files.
+
+## Durable authority request
+
+Decision request `decision-1788388089596-28a364de` now holds assignment
+`1788291575795-ae8796e9`. It asks Management to choose the exact non-colliding
+parent/ref and child-consumption contract. The recommended option creates a
+collision-resistant current-baseline parent, preserves historical `0046-01`
+unchanged, and authorizes an explicit rederivation only after its lineage is
+verified. Until resolution, the assignment is `on_hold`, this claim remains
+`[u]`, and the four untracked product files remain preservation-only state.
