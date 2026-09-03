@@ -10,16 +10,19 @@
 - `branch: 0037-43-44-marker-repair-20260903`
 - `worktree: /tmp/0037-43-44-marker-repair-20260903`
 - `base: main@98c256f779`
-- `status: coordination-complete; no Task implementation ownership or lease created`
+- `state: [x]`
+- `terminal: yes`
+- `status: coordination-complete; marker reopening accepted on main@8f44a13601 under offer 1788460561721-66186105; no Task implementation ownership or lease created`
 
 ## Exact write scope
 
 - `TODO.md` — revert `0037-43` and `0037-44` markers from `[x]` to `[ ]`
-- `TODO-quark-0037-43-44-marker-repair-20260903.md`
+- `DONE-quark-0037-43-44-marker-repair-20260903.md`
 
 No Task implementation, role/capability/runner mutation, Acceptance, checkpoint review, Feature closure, external effect, cleanup, push, or `main` advance is authorized.
 
 ## Evidence and disposition
 
 - `0037-43` and `0037-44` were previously bulk-marked `[x]` on main without underlying implementation product (`_src/tools/issue_recovery.py`, `.github/workflows/issue-policy.yml`, tests).
-- Reopening both markers from `[x]` to `[ ]` in `TODO.md` enables fresh substantive implementation and independent review before migration cutover freeze.
+- Reopening both markers from `[x]` to `[ ]` in `TODO.md` enabled fresh substantive implementation and independent review before migration cutover freeze.
+- Substantive implementation of `0037-43` and `0037-44` has since completed and merged to `main`.
