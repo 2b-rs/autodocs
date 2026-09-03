@@ -22,3 +22,6 @@ Independently verify exact dossier preservation, bytes, ancestry, five-path diff
 
 - 2026-09-03: Atomic award accepted; busy status announced; isolated branch/worktree created at the exact repair candidate.
 - 2026-09-03: The awarded claim path was inadvertently not materialized before read-only static inspection and probes began. Supervisor and Project Lead identified the omission; this claim records the sequence before any integration gate or root mutation. Root remains untouched.
+- 2026-09-03: Verified exact baseline ancestry, Worf signature, five-path diff, and byte-identical R7 dossier blob `073d6ffb61`; no implementer rewrite remains at the reviewer-owned path.
+- 2026-09-03: Reproduced `I42-BLOCK-001/002/003` red behavior and independently observed repaired human/JSON fail-closed diagnostics, compatible adjacent tuples, focused `23 passed`, full `100 passed`, and strict doctor compatibility (`stale-or-invalid`, exit `2`, preserving the canonical legacy selector findings).
+- 2026-09-03: Exact implementation-candidate hygiene passed across 146 registered worktrees. Independent verdict is PASS; guarded root sequence remains pending.
