@@ -28,7 +28,7 @@
 
 **VERDICT: PASS**
 
-The temporary local gate exception is validated as the smallest safe cross-item scope. 
+The temporary local gate exception is validated as the smallest safe cross-item scope.
 
 **Affected Work Units/Gates:**
 - `0037-43`: Unblocked for local integration (I43-BLOCK-003 satisfied via this temporary exception).
