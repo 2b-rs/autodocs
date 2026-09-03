@@ -25,7 +25,9 @@ class FixtureRepo:
     """A minimal bare-bones git repo used as the fake canonical `devel` repo."""
 
     def __init__(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(prefix="provision-tmp-worktree-test-")
+        self.temporary = tempfile.TemporaryDirectory(
+            prefix="provision-tmp-worktree-test-", dir="/tmp"
+        )
         self.root = Path(self.temporary.name) / "devel"
         self.root.mkdir()
         self.wt_root = Path(self.temporary.name) / "worktrees"
@@ -197,6 +199,34 @@ class ProvisionOneTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((custom / ".git").exists())
+
+    def test_default_without_override_is_under_tmp(self) -> None:
+        result = self.repo.run_script(
+            ["0100"],
+            env_overrides={
+                "AUTODOCS_WORKTREES_ROOT": "",
+                "AUTODOCS_NO_REAP": "1",
+                "TMPDIR": self.repo.temporary.name,
+            },
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        target = Path(result.stdout.removeprefix("OK: ").split(" on ", 1)[0]).resolve()
+        self.addCleanup(
+            lambda: subprocess.run(
+                ["git", "-C", str(self.repo.root), "worktree", "remove", "--force", str(target)],
+                capture_output=True,
+            )
+        )
+        self.assertTrue(target.is_relative_to(Path("/tmp").resolve()))
+
+    def test_rejects_explicit_non_tmp_target(self) -> None:
+        outside = Path("/var/tmp") / f"autodocs-persistent-worktree-{os.getpid()}"
+        result = self.repo.run_script(
+            ["0100", str(outside)], env_overrides={"AUTODOCS_NO_REAP": "1"}
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("outside /tmp", result.stderr)
+        self.assertFalse(outside.exists())
 
     def test_idempotent_reheal_restores_only_reaped_tracked_files(self) -> None:
         first = self.repo.run_script(["0100"], env_overrides={"AUTODOCS_NO_REAP": "1"})

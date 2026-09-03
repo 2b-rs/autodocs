@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import io
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -58,6 +59,36 @@ class IntegrationHygieneTests(unittest.TestCase):
         self.assertTrue(report.ok, report.to_dict())
         self.assertEqual(report.root_worktree, str(self.root.resolve()))
         self.assertEqual(report.findings, [])
+
+    def test_missing_disposable_registration_is_advisory(self) -> None:
+        missing = Path(self.temporary.name) / "missing-item"
+        _git(self.root, "worktree", "add", "-q", "-b", "0044-missing", str(missing))
+        shutil.rmtree(missing)
+
+        report = hygiene.check_integration_hygiene(self.root)
+
+        self.assertTrue(report.ok, report.to_dict())
+        finding = next(item for item in report.findings if item.code == "WORKTREE_UNAVAILABLE")
+        self.assertEqual(finding.worktree, str(missing.resolve()))
+        self.assertFalse(finding.blocking)
+
+    def test_missing_registration_does_not_mask_available_dirty_worktree(self) -> None:
+        missing = Path(self.temporary.name) / "missing-item"
+        dirty = Path(self.temporary.name) / "dirty-item"
+        _git(self.root, "worktree", "add", "-q", "-b", "0044-missing", str(missing))
+        _git(self.root, "worktree", "add", "-q", "-b", "0044-dirty", str(dirty))
+        shutil.rmtree(missing)
+        (dirty / "staged.txt").write_text("uncommitted evidence\n", encoding="utf-8")
+        _git(dirty, "add", "staged.txt")
+
+        report = hygiene.check_integration_hygiene(
+            self.root, foreign_resample_delay_seconds=0
+        )
+
+        self.assertFalse(report.ok)
+        findings = {item.code: item for item in report.findings}
+        self.assertFalse(findings["WORKTREE_UNAVAILABLE"].blocking)
+        self.assertTrue(findings["FOREIGN_STAGED_TREE"].blocking)
 
     def _commit_memory_file(self, relative: str = "logs/agent-memory/roles/Architect.md") -> Path:
         target = self.root / relative
