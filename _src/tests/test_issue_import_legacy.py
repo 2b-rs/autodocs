@@ -21,6 +21,20 @@ SPEC = importlib.util.spec_from_file_location(
 IMP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(IMP)
 FIXTURE_13 = ROOT / "provenance/migrations/issue-store/fixtures/0037-13"
+AUTHORITY_COMMIT = "89470b3b2aa804786eb525a9682410c783b77453"
+AUTHORITY_PATH = "docs/dossiers/dec-0037-007-legacy-migration-dispositions.md"
+AUTHORITY_BLOB_DIGEST = "sha256:54e5eeeaeea38620192dc0049a5f89fa71538fd159ec46009e7fd302ece633ee"
+AUTHORITY_PRINCIPAL = "obrien@deepspace9.starfleet.network"
+
+
+def _authority_material():
+    return {
+        "scheme": "git-ssh-commit-v1",
+        "commit": AUTHORITY_COMMIT,
+        "path": AUTHORITY_PATH,
+        "blob_digest": AUTHORITY_BLOB_DIGEST,
+        "principal": AUTHORITY_PRINCIPAL,
+    }
 
 
 def assert_closed_schema_shape(test, value, schema, root_schema):
@@ -674,6 +688,11 @@ def _pin_tree(parent: Path, tree: Path) -> tuple[Path, str]:
     subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
     subprocess.run(["git", "commit", "-m", "pin"], cwd=repo, check=True, capture_output=True)
     sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo).decode().strip()
+    subprocess.run(["git", "fetch", str(ROOT), AUTHORITY_COMMIT], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "gpg.ssh.allowedSignersFile", str(ROOT / "issues/_policy/allowed_signers")],
+        cwd=repo, check=True, capture_output=True,
+    )
     return repo, sha
 
 
@@ -684,6 +703,18 @@ def _baseline_importer():
     path = Path(tempfile.mkdtemp()) / "issue_import_legacy_cfe67e988f.py"
     path.write_bytes(raw)
     spec = importlib.util.spec_from_file_location("issue_import_legacy_cfe67e988f", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _rejected_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "eaab94cfc077fa826af3f47d7702a7e2e47816d1:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_eaab94cfc0.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_eaab94cfc0", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -707,12 +738,12 @@ def _entry_for(finding, blobs, commit, kind=None):
         "source_commit": commit,
         "kind": kind,
         "reason": "Hermetic bounded disposition; grants no closure or evidence credit.",
-        "deciding_identity": "authority:test-harness",
+        "deciding_identity": "authority:supervisor",
         "deciding_role": "Management",
         "authority_ref": "DEC-0037-007",
         "decided_at": "2026-09-03T01:00:00Z",
         "evidence_refs": ["hermetic:test"],
-        "signature_material": "self-attestation",
+        "signature_material": _authority_material(),
         "signature_verified": True,
     }
     if field_digest is not None:
@@ -724,7 +755,6 @@ def _entry_for(finding, blobs, commit, kind=None):
         entry["parser_independent_archival_safe"] = True
         entry["cannot_participate_in_active_state_reason"] = "Malformed structural syntax cannot be parsed into active issue state."
     entry["payload_digest"] = IMP.disposition_payload_digest(entry)
-    entry["signature_material"] = IMP.derived_signature_material(entry)
     return entry
 
 
@@ -785,7 +815,6 @@ class DispositionContractTests(unittest.TestCase):
                 entries[0].pop("source_blob_digest", None)
                 entries[0]["referenced_field_digest"] = "sha256:" + ("ab" * 32)
             entries[0]["payload_digest"] = IMP.disposition_payload_digest(entries[0])
-            entries[0]["signature_material"] = IMP.derived_signature_material(entries[0])
             path = Path(tmp) / "bad-digest.json"
             path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
@@ -794,7 +823,6 @@ class DispositionContractTests(unittest.TestCase):
             extra = dict(_entry_for(blocking[0], blobs, commit))
             extra["finding_id"] = "IMP-" + ("a" * 16)
             extra["payload_digest"] = IMP.disposition_payload_digest(extra)
-            extra["signature_material"] = IMP.derived_signature_material(extra)
             path2 = Path(tmp) / "unmatched.json"
             path2.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [_entry_for(f, blobs, commit) for f in blocking] + [extra]}))
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
@@ -813,7 +841,7 @@ class DispositionContractTests(unittest.TestCase):
             for permutation in itertools.permutations(entries[:3]):
                 document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": list(permutation) + entries[3:]}
                 coverage = IMP.apply_dispositions(
-                    document=document, findings=probe["findings"], blobs=blobs, source_commit=commit,
+                    document=document, findings=probe["findings"], blobs=blobs, source_commit=commit, repo=repo,
                 )
                 self.assertEqual(len(coverage["pairs"]), len(blocking))
                 self.assertEqual([p["finding_id"] for p in coverage["pairs"]], sorted(e["finding_id"] for e in entries))
@@ -840,6 +868,42 @@ class DispositionContractTests(unittest.TestCase):
             with self.assertRaises(IMP.ImportErrorClosed):
                 IMP.validate_disposition_document(value)
 
+    def test_rework_two_three_runtime_type_falsification_cases(self):
+        """AE-3: eaab94cfc0 accepts all three records; this candidate rejects each targeted field."""
+        rejected = _rejected_importer()
+        good = {
+            "finding_id": "IMP-aaaaaaaaaaaaaaaa",
+            "finding_rule": "IMP-CLAIM-OPAQUE",
+            "source_locator": "TODO-example.md",
+            "item": "0099-01",
+            "source_commit": "0" * 40,
+            "source_blob_digest": "sha256:" + ("0" * 64),
+            "kind": "retain-provenance-no-active-lease",
+            "reason": "bounded",
+            "deciding_identity": "authority:supervisor",
+            "deciding_role": "Management",
+            "authority_ref": "DEC-0037-007",
+            "decided_at": "2026-09-03T01:00:00Z",
+            "evidence_refs": ["hermetic:test"],
+            "signature_verified": True,
+        }
+        good["payload_digest"] = rejected.disposition_payload_digest(good)
+        good["signature_material"] = rejected.derived_signature_material(good)
+        cases = (
+            ("signature_verified", False, "DISP-UNVERIFIABLE"),
+            ("reason", 7, "DISP-MALFORMED"),
+            ("evidence_refs", [7], "DISP-MALFORMED"),
+        )
+        for field, value, code in cases:
+            broken = dict(good)
+            broken[field] = value
+            broken["payload_digest"] = rejected.disposition_payload_digest(broken)
+            broken["signature_material"] = rejected.derived_signature_material(broken)
+            rejected.validate_disposition_document({"schema": rejected.DISPOSITION_SCHEMA, "entries": [broken]})
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [broken]})
+            self.assertEqual(ctx.exception.code, code)
+
     def test_unsigned_and_archive_on_non_malformed(self):
         with tempfile.TemporaryDirectory() as tmp:
             dest = Path(tmp) / "d"
@@ -853,7 +917,6 @@ class DispositionContractTests(unittest.TestCase):
             entry["parser_independent_archival_safe"] = True
             entry["cannot_participate_in_active_state_reason"] = "y"
             entry["payload_digest"] = IMP.disposition_payload_digest(entry)
-            entry["signature_material"] = IMP.derived_signature_material(entry)
             others = [
                 _entry_for(f, blobs, commit)
                 for f in probe["findings"]
@@ -869,6 +932,25 @@ class DispositionContractTests(unittest.TestCase):
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
                 IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [unsigned]})
             self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+
+    def test_authority_material_verifies_signed_source_and_rejects_adjacent_mismatches(self):
+        entry = {
+            "deciding_identity": "authority:supervisor",
+            "deciding_role": "Management",
+            "authority_ref": "DEC-0037-007",
+            "signature_material": _authority_material(),
+        }
+        IMP.verify_authority_material(entry, ROOT)
+        wrong_principal = dict(entry)
+        wrong_principal["signature_material"] = dict(_authority_material(), principal="mallory@example.invalid")
+        with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+            IMP.verify_authority_material(wrong_principal, ROOT)
+        self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+        wrong_blob = dict(entry)
+        wrong_blob["signature_material"] = dict(_authority_material(), blob_digest="sha256:" + ("0" * 64))
+        with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+            IMP.verify_authority_material(wrong_blob, ROOT)
+        self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
 
     def test_local_placeholder_family_is_coverable(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -918,7 +1000,6 @@ class DispositionContractTests(unittest.TestCase):
             repaired = dict(good)
             repaired["kind"] = "source-repaired"
             repaired["payload_digest"] = IMP.disposition_payload_digest(repaired)
-            repaired["signature_material"] = IMP.derived_signature_material(repaired)
             others = [
                 _entry_for(f, blobs, "0" * 40)
                 for f in probe["findings"]
@@ -931,7 +1012,7 @@ class DispositionContractTests(unittest.TestCase):
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
                 IMP.apply_dispositions(
                     document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
-                    findings=probe["findings"], blobs=blobs, source_commit="0" * 40,
+                    findings=probe["findings"], blobs=blobs, source_commit="0" * 40, repo=ROOT,
                 )
             self.assertEqual(ctx.exception.code, "DISP-UNPROVEN-REPAIR")
             missing = Path(tmp) / "one.json"

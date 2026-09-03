@@ -592,11 +592,55 @@ def expected_finding_digests(finding: Mapping[str, object], blobs: Mapping[str, 
     return blob_digest, field_digest
 
 
-def derived_signature_material(entry: Mapping[str, object]) -> str:
-    payload = disposition_payload_digest(entry)
-    identity = entry["deciding_identity"]
-    authority = entry["authority_ref"]
-    return _digest_prefixed(f"{payload}|{identity}|{authority}".encode("utf-8"))
+def verify_authority_material(entry: Mapping[str, object], repo: Path) -> None:
+    material = entry.get("signature_material")
+    if not isinstance(material, dict):
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material must identify verifiable authority source")
+    required = {"scheme", "commit", "path", "blob_digest", "principal"}
+    if set(material) != required or material.get("scheme") != "git-ssh-commit-v1":
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material has unknown or incomplete verification fields")
+    commit = material.get("commit")
+    path = material.get("path")
+    blob_digest = material.get("blob_digest")
+    principal = material.get("principal")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority commit must be a full commit id")
+    if not isinstance(path, str) or not path or path.startswith("/") or ".." in Path(path).parts:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority path must be a safe non-empty repository path")
+    if not isinstance(blob_digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", blob_digest):
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority blob digest is malformed")
+    if not isinstance(principal, str) or not principal.strip():
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority signer principal is missing")
+    try:
+        verification = subprocess.run(
+            ["git", "-C", str(repo), "verify-commit", commit],
+            check=False, capture_output=True, text=True, timeout=15,
+        )
+        signature = subprocess.run(
+            ["git", "-C", str(repo), "show", "-s", "--format=%G?%n%GS", commit],
+            check=False, capture_output=True, text=True, timeout=15,
+        )
+        blob = subprocess.run(
+            ["git", "-C", str(repo), "show", f"{commit}:{path}"],
+            check=False, capture_output=True, timeout=15,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", f"authority verification unavailable: {exc}") from exc
+    sig_lines = signature.stdout.splitlines()
+    if verification.returncode or signature.returncode or len(sig_lines) < 2 or sig_lines[0] != "G":
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority commit does not have a valid allowed-signers signature")
+    if sig_lines[1] != principal:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority signer principal does not match verified commit")
+    if blob.returncode or _digest_prefixed(blob.stdout) != blob_digest:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source blob is absent or has the wrong digest")
+    try:
+        authority_text = blob.stdout.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source is not UTF-8") from exc
+    identity_marker = f"Deciding identity:** `{entry['deciding_identity']}`"
+    role_marker = f"Role:** `{entry['deciding_role']}`"
+    if entry["authority_ref"] not in authority_text or identity_marker not in authority_text or role_marker not in authority_text:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source does not bind reference, identity, and role")
 
 
 def disposition_payload_digest(entry: Mapping[str, object]) -> str:
@@ -657,12 +701,21 @@ def validate_disposition_document(document: Mapping[str, object]) -> None:
         seen.add(finding_id)
         if not isinstance(finding_id, str) or not re.fullmatch(r"IMP-[0-9a-f]{16}", finding_id):
             raise ImportErrorClosed("DISP-MALFORMED", "invalid finding_id")
-        if raw["kind"] not in DISPOSITION_KINDS:
+        if not isinstance(raw.get("finding_rule"), str) or not re.fullmatch(r"IMP-[A-Z0-9-]+", raw["finding_rule"]):
+            raise ImportErrorClosed("DISP-MALFORMED", "invalid finding_rule")
+        for field in ("source_locator", "item", "authority_ref", "decided_at"):
+            if not isinstance(raw.get(field), str) or not raw[field].strip():
+                raise ImportErrorClosed("DISP-MALFORMED", f"{field} must be a non-empty string")
+        if not isinstance(raw.get("source_commit"), str) or not re.fullmatch(r"[0-9a-f]{40}", raw["source_commit"]):
+            raise ImportErrorClosed("DISP-MALFORMED", "source_commit must be a full commit id")
+        if not isinstance(raw.get("kind"), str) or raw["kind"] not in DISPOSITION_KINDS:
             raise ImportErrorClosed("DISP-MALFORMED", f"unknown kind {raw['kind']!r}")
-        if not str(raw.get("reason") or "").strip():
-            raise ImportErrorClosed("DISP-MISSING", "reason is empty")
+        if not isinstance(raw.get("reason"), str) or not raw["reason"].strip():
+            raise ImportErrorClosed("DISP-MALFORMED", "reason must be a non-empty string")
         if not isinstance(raw.get("evidence_refs"), list) or not raw["evidence_refs"]:
             raise ImportErrorClosed("DISP-MISSING", "evidence_refs must be non-empty")
+        if any(not isinstance(ref, str) or not ref.strip() for ref in raw["evidence_refs"]):
+            raise ImportErrorClosed("DISP-MALFORMED", "evidence_refs items must be non-empty strings")
         if ("source_blob_digest" in raw) == ("referenced_field_digest" in raw):
             raise ImportErrorClosed("DISP-MALFORMED", "exactly one of source_blob_digest or referenced_field_digest is required")
         if not isinstance(raw.get("deciding_identity"), str) or not re.fullmatch(
@@ -671,16 +724,34 @@ def validate_disposition_document(document: Mapping[str, object]) -> None:
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "deciding_identity is not an authority grammar")
         if not isinstance(raw.get("deciding_role"), str) or not raw["deciding_role"].strip():
             raise ImportErrorClosed("DISP-MALFORMED", "deciding_role must be a non-empty string")
-        if not isinstance(raw.get("authority_ref"), str) or not raw["authority_ref"].strip():
-            raise ImportErrorClosed("DISP-MALFORMED", "authority_ref must be a non-empty string")
-        if not isinstance(raw.get("signature_material"), str) or not raw["signature_material"].strip():
-            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material missing")
+        for digest_field in ("payload_digest", "source_blob_digest", "referenced_field_digest"):
+            if digest_field in raw and (not isinstance(raw[digest_field], str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", raw[digest_field])):
+                raise ImportErrorClosed("DISP-MALFORMED", f"{digest_field} must be a sha256 digest")
+        if raw.get("signature_verified") is not True:
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_verified must be exactly true")
+        material = raw.get("signature_material")
+        if not isinstance(material, dict):
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material must be verifiable authority material")
+        if set(material) != {"scheme", "commit", "path", "blob_digest", "principal"}:
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material fields do not match git-ssh-commit-v1")
+        if material.get("scheme") != "git-ssh-commit-v1":
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "unsupported signature material scheme")
+        if not isinstance(material.get("commit"), str) or not re.fullmatch(r"[0-9a-f]{40}", material["commit"]):
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material commit must be a full commit id")
+        if not isinstance(material.get("path"), str) or not material["path"].strip():
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material path must be non-empty")
+        if not isinstance(material.get("blob_digest"), str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", material["blob_digest"]):
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material blob_digest must be sha256")
+        if not isinstance(material.get("principal"), str) or not material["principal"].strip():
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material principal must be non-empty")
+        for text_field in ("archive_retention_justification", "cannot_participate_in_active_state_reason"):
+            if text_field in raw and (not isinstance(raw[text_field], str) or not raw[text_field].strip()):
+                raise ImportErrorClosed("DISP-MALFORMED", f"{text_field} must be a non-empty string")
+        if "parser_independent_archival_safe" in raw and not isinstance(raw["parser_independent_archival_safe"], bool):
+            raise ImportErrorClosed("DISP-MALFORMED", "parser_independent_archival_safe must be boolean")
         expected = disposition_payload_digest(raw)
         if raw["payload_digest"] != expected:
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "payload_digest does not authenticate the entry")
-        derived = derived_signature_material(raw)
-        if raw["signature_material"] != derived:
-            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material is not derived from authenticated payload")
         if raw["kind"] == "archive-excluded-from-active-migration":
             if not str(raw.get("archive_retention_justification") or "").strip():
                 raise ImportErrorClosed("DISP-MALFORMED", "archive exclusion requires retention justification")
@@ -707,6 +778,7 @@ def apply_dispositions(
     findings: Sequence[Mapping[str, object]],
     blobs: Mapping[str, Tuple[bytes, object]],
     source_commit: Optional[str],
+    repo: Path,
 ) -> dict:
     validate_disposition_document(document)
     blocking = [finding for finding in findings if finding.get("severity") == "blocking"]
@@ -714,7 +786,12 @@ def apply_dispositions(
     if len(by_id) != len(blocking):
         raise ImportErrorClosed("DISP-CONFLICT", "blocking findings are not uniquely identified")
     pairs = []
+    verified_material = set()
     for entry in document["entries"]:
+        material_key = _canonical_json(entry["signature_material"])
+        if material_key not in verified_material:
+            verify_authority_material(entry, repo)
+            verified_material.add(material_key)
         finding_id = entry["finding_id"]
         finding = by_id.get(finding_id)
         if finding is None:
@@ -1058,7 +1135,7 @@ def import_legacy(
             raise ImportErrorClosed("DISP-WRONG-COMMIT", "dispositions require an exact source_commit")
         document = load_disposition_document(Path(dispositions))
         coverage = apply_dispositions(
-            document=document, findings=findings, blobs=blobs, source_commit=commit,
+            document=document, findings=findings, blobs=blobs, source_commit=commit, repo=repo,
         )
     blocking = [f for f in findings if f["severity"] == "blocking"]
     if coverage is not None:
