@@ -16,6 +16,15 @@ You are an AGENT and must follow the current operating contract below.
 
 A session is sandboxed/grunt unless the current runtime or user explicitly grants privileged capability. Tool availability does not grant privilege. A sandboxed/grunt agent may directly edit files under `/tmp`, but that is not execution authority: scripts, shell commands, Git, tests, generators, browsers, package managers, network clients, and every other execution-capable action must use its claim-bound runner. Runtime tool-policy denial is a host/platform control; repository checks can validate claim declarations but cannot configure or guarantee that denial.
 
+All new agent-created Git worktrees belong under `/tmp`; project- or
+development-local `.worktrees/` directories are legacy and are not a valid new
+default. These worktrees are disposable execution caches and may disappear.
+Useful state survives only when committed to a retained Git ref. A missing
+worktree path or stale registration alone is advisory/reapable, while dirty or
+staged state in an available worktree and indeterminate Git/ref or required
+committed-evidence state remain blocking. Worktree cleanup never deletes a
+branch, tag, ref, reflog, or object.
+
 ## Agent capability classes
 
 A capability class answers **two independent questions**, and both must be

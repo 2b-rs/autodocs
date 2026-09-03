@@ -90,9 +90,13 @@ detour, not the review.
 Decisions `DEC-0044-010`, `DEC-0044-012` and `DEC-0044-015` fix **where** a
 mutation may happen, independently of which branch it belongs on.
 
-**The rule.** An agent mutates only inside a **worktree it owns for its item**
-— normally `.worktrees/<item-id>` or an equally isolated path it provisioned
-itself (see `_src/tools/provision_tmp_worktree.sh`). The shared root checkout
+**The rule.** An agent mutates only inside a **worktree it owns for its item**.
+Every new agent-created worktree is provisioned below `/tmp` (normally
+`/tmp/autodocs-worktrees/<item-id>`; see `_src/tools/provision_tmp_worktree.sh`).
+Project- or development-local `.worktrees/` registrations are legacy only and
+need not be recreated or migrated. `/tmp` worktrees are disposable execution
+caches: they may disappear automatically, and useful work must therefore be
+committed to a retained Git ref. The shared root checkout
 `/Users/tobias.anton/devel/autodocs` is **not written to**: no authoring there,
 no `git add`, no `git commit`, no `commit -a`, no cleanup, no reset. It is a
 read reference and the place where `main` happens to be checked out. This
@@ -163,10 +167,18 @@ and a `2` is a failed check, never a pass. Findings:
 | `MAIN_WORKTREE_DIRTY` | tracked files in the worktree checking out `main` differ from its index; this is a blocking root-quiescence finding, not a rule for live item worktrees |
 | `CANDIDATE_MEMORY_OVERLAP` | the candidate changes a currently allowed dirty Memory path; overlap blocks even when bytes are equal |
 | `STALE_AFTER_REF_MOVE` | a worktree's branch ref advanced while its index and files still match the previous reflog tip — the signature described above |
-| `WORKTREE_UNAVAILABLE` | a registered worktree path no longer exists |
+| `WORKTREE_UNAVAILABLE` | advisory: a disposable registered path no longer exists and its stale registration may be reaped; this alone does not fail the gate |
 
 Two properties of the check must be understood, or it will be trusted for more
 than it does:
+
+- A disappeared worktree or unavailable registration is not provenance and is
+  not a pipeline blocker. Continue from the retained branch/tag/ref and required
+  committed evidence, or reap the stale registration. Failure to resolve that
+  ref or required evidence remains fail-closed. Available worktrees with index
+  divergence, dirty tracked root state, or candidate overlap retain their
+  blocking behavior. Reaping a registration never authorizes deletion of any
+  branch, tag, ref, reflog, or object.
 
 - `FOREIGN_STAGED_TREE` is **not** by itself an accusation. Another agent staging
   work in its own worktree is ordinary. The check waits a bounded 2.0 seconds and

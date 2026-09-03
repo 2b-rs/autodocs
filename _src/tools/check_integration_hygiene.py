@@ -15,7 +15,10 @@ fails when:
   preceding reflog tip after its branch ref advanced. This is the stale
   checkout signature produced by `git update-ref` on a checked-out branch.
 
-The checker never writes files, refs, indexes, or object data. A persistent
+An unavailable registered path is reported as advisory because disposable
+``/tmp`` worktrees may disappear normally; Git refs and required committed
+evidence remain authoritative. The checker never writes files, refs, indexes,
+or object data. A persistent
 foreign staged finding includes its index mtime and age; it remains blocking.
 The checker reports the stale signature rather than claiming to prove a
 particular command was used: the same observable state could be produced by an
@@ -155,6 +158,7 @@ class Finding:
     index_age_seconds: Optional[float] = None
     index_mtime_utc: Optional[str] = None
     resample_delay_seconds: Optional[float] = None
+    blocking: bool = True
 
 
 @dataclass(frozen=True)
@@ -176,7 +180,7 @@ class HygieneReport:
 
     @property
     def ok(self) -> bool:
-        return not self.findings
+        return not any(finding.blocking for finding in self.findings)
 
     def to_dict(self) -> dict:
         return {
@@ -214,7 +218,11 @@ def check_integration_hygiene(
     foreign_staged_candidates: list[Path] = []
     for path in paths:
         if not path.exists():
-            findings.append(Finding("WORKTREE_UNAVAILABLE", str(path), "registered worktree path is absent"))
+            findings.append(Finding(
+                "WORKTREE_UNAVAILABLE", str(path),
+                "registered disposable worktree path is absent; stale registration is reapable",
+                blocking=False,
+            ))
             continue
         head = _git(path, "rev-parse", "--verify", "HEAD^{commit}").stdout.strip()
         branch = _symbolic_branch(path)
@@ -278,7 +286,11 @@ def check_integration_hygiene(
         for path in foreign_staged_candidates:
             if not path.exists():
                 findings.append(
-                    Finding("WORKTREE_UNAVAILABLE", str(path), "registered worktree path disappeared during re-sample")
+                    Finding(
+                        "WORKTREE_UNAVAILABLE", str(path),
+                        "registered disposable worktree path disappeared during re-sample; stale registration is reapable",
+                        blocking=False,
+                    )
                 )
                 continue
             if _index_equals(path, "HEAD"):
@@ -313,7 +325,8 @@ def _render_text(report: HygieneReport) -> str:
     lines.append(f"integration worktree: {report.integration_worktree}")
     lines.append(f"registered worktrees: {len(report.worktrees)}")
     for finding in report.findings:
-        lines.append(f"{finding.code}: {finding.worktree}: {finding.detail}")
+        severity = "BLOCK" if finding.blocking else "ADVISORY"
+        lines.append(f"{severity} {finding.code}: {finding.worktree}: {finding.detail}")
     return "\n".join(lines)
 
 

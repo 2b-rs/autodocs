@@ -6,11 +6,9 @@
 # Scope: this is a **self-service** provisioner for an `unprivileged` or
 # `privileged` agent that runs Git directly (SANDBOX.md) and wants an
 # isolated working tree for one backlog item, sharing the canonical repo's
-# object store and refs the ordinary `git worktree` way. That is exactly the
-# `.worktrees/<item>` convention already in wide, live use across this repo
-# (e.g. `.worktrees/0019-01`, `.worktrees/0033-01`, `.worktrees/0039-01`,
-# `.worktrees/0042-02`, …) by sessions that create and manage their own
-# worktree with `git worktree add`.
+# object store and refs the ordinary `git worktree` way. New worktrees live
+# exclusively below `/tmp`; repository-local `.worktrees/` registrations are
+# legacy and are neither a provisioning default nor a migration requirement.
 #
 # This is NOT the sandboxed-grunt worker-clone scenario. A sandboxed/grunt
 # agent cannot run Git at all (SANDBOX.md) and must never invoke this script;
@@ -45,7 +43,7 @@
 #     worktree-path: optional explicit target directory. Defaults to
 #                     "<worktrees-root>/<item-branch>". Left to the caller's
 #                     discretion, matching the acceptance criteria; the
-#                     default keeps the existing `.worktrees/` convention.
+#                     target must resolve below `/tmp`.
 #
 #   provision_tmp_worktree.sh --reap-only [worktrees-root]
 #     Runs only the conservative accepted-worktree reap sweep (no
@@ -66,8 +64,9 @@
 #
 # Env overrides:
 #   AUTODOCS_DEVEL           canonical repo path (default: $HOME/devel/autodocs)
-#   AUTODOCS_WORKTREES_ROOT  default root under which per-item worktrees are
-#                            created/reaped (default: "$DEVEL/.worktrees")
+#   AUTODOCS_WORKTREES_ROOT  root under which per-item worktrees are
+#                            created/reaped (default: "/tmp/autodocs-worktrees");
+#                            it must resolve below /tmp
 #   AUTODOCS_NO_REAP=1       skip the orphan-reap sweep for this invocation
 #
 # Idempotence and reap recovery: re-running against a healthy existing
@@ -112,7 +111,17 @@ DEVEL_LOGICAL="${AUTODOCS_DEVEL:-$HOME/devel/autodocs}"
 [[ -d "$DEVEL_LOGICAL/.git" ]] || die "canonical repo not found at $DEVEL_LOGICAL"
 DEVEL="$(realpath_dir "$DEVEL_LOGICAL")"
 
-WT_ROOT="${AUTODOCS_WORKTREES_ROOT:-$DEVEL/.worktrees}"
+TMP_ROOT="$(realpath_dir /tmp)"
+WT_ROOT="${AUTODOCS_WORKTREES_ROOT:-${TMPDIR:-/tmp}/autodocs-worktrees}"
+
+require_tmp_path() {
+  local candidate="$1" candidate_real
+  candidate_real="$(python3 -c 'import os,sys; print(os.path.realpath(sys.argv[1]))' "$candidate")"
+  case "$candidate_real" in
+    "$TMP_ROOT"/*) ;;
+    *) die "refusing: new agent worktree path '$candidate_real' is outside /tmp" ;;
+  esac
+}
 
 # --- Branch/parent derivation (same convention as provision_worker_clone.sh
 #     and docs/pipeline/branch-workflow.md, "Branch topology and naming") ---
@@ -306,6 +315,8 @@ add_worktree_for_branch() {
 # --- Provision/heal one target worktree for one item branch ---
 provision_one() {
   local branch="$1" target="$2" parent=""
+
+  require_tmp_path "$target"
 
   git -C "$DEVEL" worktree prune
 
