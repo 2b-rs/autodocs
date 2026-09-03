@@ -767,8 +767,18 @@ def _entry_for(finding, blobs, commit, kind=None):
     if kind is None:
         if rule in IMP.DISPOSITION_MALFORMED_RULES:
             kind = "archive-excluded-from-active-migration"
-        elif rule == "IMP-REF-NO-EVIDENCE-CREDIT":
+        elif rule in {
+            "IMP-REF-NO-EVIDENCE-CREDIT", "IMP-REF-PENDING",
+            "IMP-REF-LOCAL-PLACEHOLDER", "IMP-CLOSURE-EVIDENCE-PLACEHOLDER",
+        }:
             kind = "retain-provenance-no-evidence-credit"
+        elif rule in {
+            "IMP-CLOSURE-ACCEPTANCE-MISSING", "IMP-CLOSURE-EVIDENCE-MISSING",
+            "IMP-CLOSURE-CRITERION-EVIDENCE-MISSING",
+        }:
+            kind = "import-open-legacy-terminal-unverified"
+        elif rule == "IMP-MARKER-UNDEFINED":
+            kind = "import-open-undefined-marker-investigate"
         else:
             kind = "retain-provenance-no-active-lease"
     blob_digest, field_digest = IMP.expected_finding_digests(finding, blobs)
@@ -879,6 +889,136 @@ class DispositionContractTests(unittest.TestCase):
             self.assertEqual(red_claims, green_claims)
             for rel in red_claims:
                 self.assertEqual((dest / rel).read_bytes(), (green_root / rel).read_bytes())
+
+    def test_dec_0037_008_q4_terminal_becomes_open_without_closure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tree = Path(tmp) / "src"
+            tree.mkdir()
+            (tree / "TODO.md").write_text(
+                "# none\n",
+                encoding="utf-8",
+            )
+            (tree / "DONE.md").write_text(
+                "## Feature: 0099 — Mini\n\n"
+                "- [x] **0099-01** Terminal without acceptance.\n"
+                "  - **Acceptance criteria:** Evidence exists.\n",
+                encoding="utf-8",
+            )
+            blobs = _tree_blobs(tree)
+            repo, commit = _pin_tree(Path(tmp) / "pin", tree)
+            red = IMP.import_legacy(
+                repo=repo, root=Path(tmp) / "red", source_commit=commit,
+                source_tree=tree, emit_closures=True,
+            )
+            target = [f for f in red["findings"] if f["rule"] == "IMP-CLOSURE-ACCEPTANCE-MISSING"]
+            self.assertEqual(len(target), 1)
+            entries = [_entry_for(f, blobs, commit) for f in red["findings"] if f["severity"] == "blocking"]
+            _bind_authority(repo, entries)
+            path = Path(tmp) / "d.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
+            out = Path(tmp) / "green"
+            green = IMP.import_legacy(
+                repo=repo, root=out, source_commit=commit, source_tree=tree,
+                emit_closures=True, dispositions=path,
+            )
+            item = next(value for value in green["items"] if value["id"] == "0099-01")
+            self.assertEqual(item["state"], "open")
+            self.assertIn("legacy-terminal-unverified", (out / item["path"]).read_text())
+            self.assertFalse(green["closure_json_emitted"])
+            self.assertFalse(list(out.rglob("closure.json")))
+
+    def test_dec_0037_008_q5_undefined_marker_is_open_investigation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tree = Path(tmp) / "src"
+            tree.mkdir()
+            (tree / "TODO.md").write_text(
+                "## Feature: 0099 — Mini\n\n- [~] **0099-01** Unknown legacy marker.\n",
+                encoding="utf-8",
+            )
+            (tree / "DONE.md").write_text("# none\n", encoding="utf-8")
+            red = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "red", source_tree=tree)
+            marker = next(f for f in red["findings"] if f["rule"] == "IMP-MARKER-UNDEFINED")
+            blobs = _tree_blobs(tree)
+            repo, commit = _pin_tree(Path(tmp) / "pin", tree)
+            entry = _entry_for(marker, blobs, commit)
+            _bind_authority(repo, [entry])
+            path = Path(tmp) / "d.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry]}))
+            out = Path(tmp) / "green"
+            green = IMP.import_legacy(repo=repo, root=out, source_commit=commit, source_tree=tree, dispositions=path)
+            item = next(value for value in green["items"] if value["id"] == "0099-01")
+            self.assertEqual(item["state"], "open")
+            self.assertIn("investigation-required", (out / item["path"]).read_text())
+
+    def test_generator_binds_exact_finding_and_authority_payload(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            finding = next(f for f in probe["findings"] if f["rule"] == "IMP-CLAIM-OPAQUE")
+            entry = IMP.generate_disposition_entry(
+                finding=finding, blobs=_tree_blobs(FIXTURE_13), source_commit="0" * 40,
+                kind="retain-provenance-no-active-lease", reason="bounded",
+                deciding_identity="authority:supervisor:management", deciding_role="Management",
+                authority_ref="DEC-0037-008", decided_at="2026-09-03T12:46:17Z",
+                evidence_refs=["commit:51be4db07c"], signature_material=_authority_material(),
+            )
+            self.assertEqual(entry["payload_digest"], IMP.disposition_payload_digest(entry))
+            self.assertEqual(IMP.generate_authority_record(entry), {
+                "authority_ref": "DEC-0037-008",
+                "deciding_identity": "authority:supervisor:management",
+                "deciding_role": "Management",
+                "payload_digest": entry["payload_digest"],
+            })
+
+    def test_signed_retain_kinds_cannot_cover_another_retain_family(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            blocking = [finding for finding in probe["findings"] if finding["severity"] == "blocking"]
+            cases = (
+                (
+                    next(f for f in blocking if f["rule"] == "IMP-CLAIM-OPAQUE"),
+                    "retain-provenance-no-evidence-credit",
+                ),
+                (
+                    next(f for f in blocking if f["rule"] == "IMP-REF-NO-EVIDENCE-CREDIT"),
+                    "retain-provenance-no-active-lease",
+                ),
+            )
+            for finding, wrong_kind in cases:
+                with self.subTest(rule=finding["rule"], kind=wrong_kind):
+                    entry = _entry_for(finding, blobs, commit, kind=wrong_kind)
+                    _bind_authority(repo, [entry])
+                    with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                        IMP.apply_dispositions(
+                            document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry]},
+                            findings=probe["findings"], blobs=blobs,
+                            source_commit=commit, repo=repo,
+                        )
+                    self.assertEqual(ctx.exception.code, "DISP-WRONG-KIND")
+
+    def test_ae5_exhaustive_real_watermark_identity_domain(self):
+        """AE-5 exhaustive domain: every finding identity in the pinned 910/911 runs."""
+        evidence_commit = "51be4db07c26bf48aa1eb00ff8cdbcea8fc81b45"
+        runs = (
+            ("real-7eebde81ec-0001", 910),
+            ("real-2554eac3ea-0002", 911),
+        )
+        family_rules = set().union(*IMP.DISPOSITION_KIND_RULES.values(), IMP.DISPOSITION_MALFORMED_RULES)
+        executed = 0
+        for run_id, expected_count in runs:
+            path = f"_src/output/issue-migration/{run_id}/issues/import-findings.json"
+            raw = subprocess.check_output(["git", "show", f"{evidence_commit}:{path}"], cwd=ROOT)
+            findings = json.loads(raw)
+            self.assertEqual(len(findings), expected_count)
+            identities = {
+                (f["id"], f["rule"], f["locator"], str(f["item"]))
+                for f in findings
+            }
+            self.assertEqual(len(identities), expected_count)
+            self.assertTrue(all(f["rule"] in family_rules for f in findings))
+            executed += len(identities)
+        self.assertEqual(executed, 1821)
 
     def test_adjacent_wrong_digest_and_unmatched_remain_blocking(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1121,7 +1261,11 @@ class DispositionContractTests(unittest.TestCase):
             repaired["kind"] = "source-repaired"
             repaired["payload_digest"] = IMP.disposition_payload_digest(repaired)
             others = [
-                _entry_for(f, blobs, "0" * 40)
+                _entry_for(
+                    f, blobs, "0" * 40,
+                    kind="retain-provenance-no-active-lease"
+                    if f["rule"] == "IMP-MARKER-UNDEFINED" else None,
+                )
                 for f in probe["findings"]
                 if f["severity"] == "blocking" and f["id"] != opaque["id"]
             ]

@@ -68,10 +68,28 @@ DISPOSITION_KINDS = (
     "retain-provenance-no-evidence-credit",
     "source-repaired",
     "archive-excluded-from-active-migration",
+    "import-open-legacy-terminal-unverified",
+    "import-open-undefined-marker-investigate",
 )
 DISPOSITION_MALFORMED_RULES = frozenset(
     {"IMP-FEATURE-HEADER-MALFORMED", "IMP-TASK-HEADER-MALFORMED"}
 )
+DISPOSITION_KIND_RULES = {
+    "retain-provenance-no-active-lease": frozenset({
+        "IMP-CLAIM-OPAQUE", "IMP-ID-DUPLICATE",
+    }),
+    "retain-provenance-no-evidence-credit": frozenset({
+        "IMP-REF-NO-EVIDENCE-CREDIT", "IMP-ARCHIVED-NOT-ACCEPTED",
+        "IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER",
+        "IMP-CLOSURE-EVIDENCE-PLACEHOLDER",
+    }),
+    "import-open-legacy-terminal-unverified": frozenset({
+        "IMP-CLOSURE-ACCEPTANCE-MISSING", "IMP-CLOSURE-EVIDENCE-MISSING",
+        "IMP-CLOSURE-CRITERION-EVIDENCE-MISSING",
+    }),
+    "import-open-undefined-marker-investigate": frozenset({"IMP-MARKER-UNDEFINED"}),
+    "archive-excluded-from-active-migration": DISPOSITION_MALFORMED_RULES,
+}
 DISPOSITION_FIELD_RULES = frozenset(
     {"IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER", "IMP-REF-NO-EVIDENCE-CREDIT"}
 )
@@ -690,6 +708,39 @@ def disposition_payload_digest(entry: Mapping[str, object]) -> str:
     return _digest_prefixed(_canonical_json(payload).encode("utf-8"))
 
 
+def generate_disposition_entry(
+    *, finding: Mapping[str, object], blobs: Mapping[str, Tuple[bytes, object]],
+    source_commit: str, kind: str, reason: str, deciding_identity: str,
+    deciding_role: str, authority_ref: str, decided_at: str,
+    evidence_refs: Sequence[str], signature_material: Mapping[str, object],
+    **archive_fields: object,
+) -> dict:
+    """Generate the canonical, source-bound payload; signing remains external authority work."""
+    blob_digest, field_digest = expected_finding_digests(finding, blobs)
+    entry = {
+        "finding_id": finding["id"], "finding_rule": finding["rule"],
+        "source_locator": finding["locator"], "item": finding["item"],
+        "source_commit": source_commit, "kind": kind, "reason": reason,
+        "deciding_identity": deciding_identity, "deciding_role": deciding_role,
+        "authority_ref": authority_ref, "decided_at": decided_at,
+        "evidence_refs": list(evidence_refs), "signature_material": dict(signature_material),
+        "signature_verified": True, **archive_fields,
+    }
+    if field_digest is not None:
+        entry["referenced_field_digest"] = field_digest
+    else:
+        entry["source_blob_digest"] = blob_digest
+    entry["payload_digest"] = disposition_payload_digest(entry)
+    return entry
+
+
+def generate_authority_record(entry: Mapping[str, object]) -> dict:
+    """Return the exact canonical action a signed authority blob must contain."""
+    return {key: entry[key] for key in (
+        "authority_ref", "deciding_identity", "deciding_role", "payload_digest",
+    )}
+
+
 def validate_disposition_document(document: Mapping[str, object]) -> None:
     if document.get("schema") != DISPOSITION_SCHEMA:
         raise ImportErrorClosed("DISP-MALFORMED", "schema must be migration-dispositions@v1")
@@ -827,6 +878,16 @@ def apply_dispositions(
                 "DISP-UNPROVEN-REPAIR",
                 "source-repaired cannot cover an extant blocking finding without independently proven source repair",
             )
+        allowed_rules = DISPOSITION_KIND_RULES.get(entry["kind"])
+        if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in allowed_rules:
+            raise ImportErrorClosed(
+                "DISP-MALFORMED",
+                "archive-excluded-from-active-migration is repair-first and only for malformed structural syntax",
+            )
+        if allowed_rules is None or finding["rule"] not in allowed_rules:
+            raise ImportErrorClosed(
+                "DISP-WRONG-KIND", f"{entry['kind']} cannot cover {finding['rule']}",
+            )
         blob_digest, field_digest = expected_finding_digests(finding, blobs)
         if "referenced_field_digest" in entry:
             if field_digest is None or entry["referenced_field_digest"] != field_digest:
@@ -834,11 +895,6 @@ def apply_dispositions(
         else:
             if blob_digest is None or entry["source_blob_digest"] != blob_digest:
                 raise ImportErrorClosed("DISP-WRONG-DIGEST", f"source-blob digest mismatch for {finding_id}")
-        if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in DISPOSITION_MALFORMED_RULES:
-            raise ImportErrorClosed(
-                "DISP-MALFORMED",
-                "archive-excluded-from-active-migration is repair-first and only for malformed structural syntax",
-            )
         pairs.append({
             "finding_id": finding_id,
             "rule": finding["rule"],
@@ -878,6 +934,8 @@ def classify_state(marker: str, findings: List[dict], item_id: str, locator: str
                 "locator": locator,
             }
         )
+        if marker == "~":
+            return "open"
         return None
     state = MARKER_STATE[marker]
     if marker == "?":
@@ -905,6 +963,42 @@ def classify_state(marker: str, findings: List[dict], item_id: str, locator: str
             }
         )
     return state
+
+
+def apply_disposition_effects(
+    *, dest: Path, coverage: Mapping[str, object], items_out: List[dict],
+    closures_written: List[str],
+) -> None:
+    """Apply only the state effects authorized by exact, verified coverage pairs."""
+    effects: Dict[str, set] = {}
+    for pair in coverage.get("pairs", []):
+        effects.setdefault(str(pair["item"]), set()).add(str(pair["kind"]))
+    for item in items_out:
+        kinds = effects.get(str(item["id"]), set())
+        labels = []
+        if "import-open-legacy-terminal-unverified" in kinds:
+            labels.append("legacy-terminal-unverified")
+        if "import-open-undefined-marker-investigate" in kinds:
+            labels.append("investigation-required")
+        if not labels:
+            continue
+        item["state"] = "open"
+        path = dest / str(item["path"])
+        text = path.read_text(encoding="utf-8")
+        text = text.replace('state: "closed"', 'state: "open"', 1)
+        if "labels:" not in text.split("---", 2)[1]:
+            anchor = 'work_type: "migration"'
+            rendered = "labels:\n" + "".join(f"  - {quote_yaml_scalar(label)}\n" for label in labels)
+            text = text.replace(anchor, rendered + anchor, 1)
+        else:
+            anchor = 'labels:\n'
+            additions = "".join(f"  - {quote_yaml_scalar(label)}\n" for label in labels if label not in text)
+            text = text.replace(anchor, anchor + additions, 1)
+        atomic_write(path, text.encode("utf-8"), dest)
+        closure_rel = str(Path(str(item["path"])).parent / "closure.json")
+        if closure_rel in closures_written:
+            (dest / closure_rel).unlink()
+            closures_written.remove(closure_rel)
 
 
 def import_legacy(
@@ -1156,6 +1250,10 @@ def import_legacy(
         document = load_disposition_document(Path(dispositions))
         coverage = apply_dispositions(
             document=document, findings=findings, blobs=blobs, source_commit=commit, repo=repo,
+        )
+        apply_disposition_effects(
+            dest=dest, coverage=coverage, items_out=items_out,
+            closures_written=closures_written,
         )
     blocking = [f for f in findings if f["severity"] == "blocking"]
     if coverage is not None:
