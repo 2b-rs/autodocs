@@ -35,3 +35,16 @@
 - recovery: registered dirty worktree moved losslessly with `git worktree move`;
   branch and `HEAD` remained `0037-29@80a8665bb308f2e3387a7510a47e756a4ea39869`
 - retained write scope is unchanged from the assignment above
+
+## Rework iteration 1 — 2026-09-03T16:34:07Z
+
+- parent assignment: `1788444691529-9600182d`
+- atomic rework award: `1788453201537-1e5a7159`
+- current owner: `data`
+- current branch: `0037-29-rework-1`
+- current worktree: `/tmp/autodocs-worktrees/0037-29-data-rework-1`
+- target baseline: `e17a47d98e18067bf06cf58e0439343216b6b404`
+- exact target-relative scope: `TODO-benjamin-0037-29-migration-dispositions-implementation-20260903.md`, `_src/tests/test_issue_import_legacy.py`, `_src/tools/issue_import_legacy.py`, `issues/_schema/migration-dispositions-v1.schema.json`, `provenance/migrations/issue-store/0037-29-disposition-policy-implementation-evidence.md`
+- excluded ancestral claims: `TODO-benjamin-0037-29-20260903.md`, `TODO-worf-0037-29-20260902.md`
+- validation: importer suite 37/37, disposition suite 14/14, DEC-0037-008 focused suite 4/4
+- state: `review`
