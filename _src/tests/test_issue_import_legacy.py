@@ -720,6 +720,18 @@ def _rejected_importer():
     return module
 
 
+def _unbound_authority_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "2765459ce6a787bc2000b437af62b3db80f13f42:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_2765459ce6.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_2765459ce6", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _entry_for(finding, blobs, commit, kind=None):
     rule = finding["rule"]
     if kind is None:
@@ -758,6 +770,40 @@ def _entry_for(finding, blobs, commit, kind=None):
     return entry
 
 
+def _bind_authority(repo: Path, entries) -> dict:
+    records = [
+        {
+            "authority_ref": entry["authority_ref"],
+            "deciding_identity": entry["deciding_identity"],
+            "deciding_role": entry["deciding_role"],
+            "payload_digest": entry["payload_digest"],
+        }
+        for entry in entries
+    ]
+    authority_path = repo / "authority/migration-dispositions.json"
+    authority_path.parent.mkdir(parents=True, exist_ok=True)
+    authority_path.write_text(
+        IMP._canonical_json({"schema": "migration-disposition-authority@v1", "entries": records}),
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", authority_path.relative_to(repo)], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "authorize migration dispositions"], cwd=repo, check=True, capture_output=True)
+    authority_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo).decode().strip()
+    principal = subprocess.check_output(
+        ["git", "show", "-s", "--format=%GS", authority_commit], cwd=repo
+    ).decode().strip()
+    material = {
+        "scheme": "git-ssh-commit-v1",
+        "commit": authority_commit,
+        "path": authority_path.relative_to(repo).as_posix(),
+        "blob_digest": IMP._digest_prefixed(authority_path.read_bytes()),
+        "principal": principal,
+    }
+    for entry in entries:
+        entry["signature_material"] = material
+    return material
+
+
 class DispositionContractTests(unittest.TestCase):
     BASELINE = "998dba844591db2aca9f51957de41b236b4b08c4"
 
@@ -785,6 +831,7 @@ class DispositionContractTests(unittest.TestCase):
                 for finding in red["findings"]
                 if finding["severity"] == "blocking"
             ]
+            _bind_authority(repo, entries)
             manifest_path = Path(tmp) / "dispositions.json"
             document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}
             manifest_path.write_text(IMP._canonical_json(document), encoding="utf-8")
@@ -815,6 +862,7 @@ class DispositionContractTests(unittest.TestCase):
                 entries[0].pop("source_blob_digest", None)
                 entries[0]["referenced_field_digest"] = "sha256:" + ("ab" * 32)
             entries[0]["payload_digest"] = IMP.disposition_payload_digest(entries[0])
+            _bind_authority(repo, entries)
             path = Path(tmp) / "bad-digest.json"
             path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
@@ -823,8 +871,10 @@ class DispositionContractTests(unittest.TestCase):
             extra = dict(_entry_for(blocking[0], blobs, commit))
             extra["finding_id"] = "IMP-" + ("a" * 16)
             extra["payload_digest"] = IMP.disposition_payload_digest(extra)
+            unmatched_entries = [_entry_for(f, blobs, commit) for f in blocking] + [extra]
+            _bind_authority(repo, unmatched_entries)
             path2 = Path(tmp) / "unmatched.json"
-            path2.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [_entry_for(f, blobs, commit) for f in blocking] + [extra]}))
+            path2.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": unmatched_entries}))
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
                 IMP.import_legacy(repo=repo, root=Path(tmp) / "out2", source_commit=commit, source_tree=FIXTURE_13, dispositions=path2)
             self.assertEqual(ctx.exception.code, "DISP-UNMATCHED")
@@ -837,6 +887,7 @@ class DispositionContractTests(unittest.TestCase):
             repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
             blocking = [f for f in probe["findings"] if f["severity"] == "blocking"]
             entries = [_entry_for(f, blobs, commit) for f in blocking]
+            _bind_authority(repo, entries)
             cases = 0
             for permutation in itertools.permutations(entries[:3]):
                 document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": list(permutation) + entries[3:]}
@@ -922,6 +973,7 @@ class DispositionContractTests(unittest.TestCase):
                 for f in probe["findings"]
                 if f["severity"] == "blocking" and f["id"] != opaque["id"]
             ]
+            _bind_authority(repo, [entry] + others)
             path = Path(tmp) / "arch.json"
             path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry] + others}))
             with self.assertRaises(IMP.ImportErrorClosed) as ctx:
@@ -934,23 +986,60 @@ class DispositionContractTests(unittest.TestCase):
             self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
 
     def test_authority_material_verifies_signed_source_and_rejects_adjacent_mismatches(self):
-        entry = {
-            "deciding_identity": "authority:supervisor",
-            "deciding_role": "Management",
-            "authority_ref": "DEC-0037-007",
-            "signature_material": _authority_material(),
-        }
-        IMP.verify_authority_material(entry, ROOT)
-        wrong_principal = dict(entry)
-        wrong_principal["signature_material"] = dict(_authority_material(), principal="mallory@example.invalid")
-        with self.assertRaises(IMP.ImportErrorClosed) as ctx:
-            IMP.verify_authority_material(wrong_principal, ROOT)
-        self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
-        wrong_blob = dict(entry)
-        wrong_blob["signature_material"] = dict(_authority_material(), blob_digest="sha256:" + ("0" * 64))
-        with self.assertRaises(IMP.ImportErrorClosed) as ctx:
-            IMP.verify_authority_material(wrong_blob, ROOT)
-        self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            entry = {
+                "finding_id": "IMP-aaaaaaaaaaaaaaaa",
+                "finding_rule": "IMP-CLAIM-OPAQUE",
+                "source_locator": "TODO-example.md",
+                "item": "0099-01",
+                "source_commit": commit,
+                "source_blob_digest": "sha256:" + ("0" * 64),
+                "kind": "retain-provenance-no-active-lease",
+                "reason": "bounded",
+                "deciding_identity": "authority:supervisor",
+                "deciding_role": "Management",
+                "authority_ref": "DEC-0037-007",
+                "decided_at": "2026-09-03T01:00:00Z",
+                "evidence_refs": ["hermetic:test"],
+            }
+            entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+            _bind_authority(repo, [entry])
+            IMP.verify_authority_material(entry, repo)
+            architecture_only = dict(entry)
+            architecture_only["signature_material"] = _authority_material()
+            unbound = _unbound_authority_importer()
+            unbound.verify_authority_material(architecture_only, ROOT)
+            contradictory = dict(architecture_only, reason="opposite disposition rationale")
+            contradictory["payload_digest"] = unbound.disposition_payload_digest(contradictory)
+            unbound.verify_authority_material(contradictory, ROOT)
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(architecture_only, ROOT)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            for field, value in (
+                ("finding_id", "IMP-bbbbbbbbbbbbbbbb"),
+                ("kind", "retain-provenance-no-evidence-credit"),
+                ("reason", "contradictory"),
+                ("evidence_refs", ["hermetic:other"]),
+                ("decided_at", "2026-09-03T01:00:01Z"),
+                ("source_commit", "1" * 40),
+            ):
+                replay = dict(entry)
+                replay[field] = value
+                replay["payload_digest"] = IMP.disposition_payload_digest(replay)
+                with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP.verify_authority_material(replay, repo)
+                self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            wrong_principal = dict(entry)
+            wrong_principal["signature_material"] = dict(entry["signature_material"], principal="mallory@example.invalid")
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(wrong_principal, repo)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            wrong_blob = dict(entry)
+            wrong_blob["signature_material"] = dict(entry["signature_material"], blob_digest="sha256:" + ("0" * 64))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(wrong_blob, repo)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
 
     def test_local_placeholder_family_is_coverable(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -970,6 +1059,7 @@ class DispositionContractTests(unittest.TestCase):
             blobs = _tree_blobs(tree)
             repo, commit = _pin_tree(Path(tmp) / "pin", tree)
             entries = [_entry_for(f, blobs, commit) for f in red["findings"] if f["severity"] == "blocking"]
+            _bind_authority(repo, entries)
             path = Path(tmp) / "d.json"
             path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
             green = IMP.import_legacy(repo=repo, root=Path(tmp) / "green", source_commit=commit, source_tree=tree, dispositions=path)
@@ -1009,11 +1099,12 @@ class DispositionContractTests(unittest.TestCase):
                 document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
                 findings=probe["findings"], blobs=blobs, source_commit=None,
             )
-            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
-                IMP.apply_dispositions(
-                    document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
-                    findings=probe["findings"], blobs=blobs, source_commit="0" * 40, repo=ROOT,
-                )
+            with mock.patch.object(IMP, "verify_authority_material", return_value=None):
+                with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP.apply_dispositions(
+                        document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
+                        findings=probe["findings"], blobs=blobs, source_commit="0" * 40, repo=ROOT,
+                    )
             self.assertEqual(ctx.exception.code, "DISP-UNPROVEN-REPAIR")
             missing = Path(tmp) / "one.json"
             missing.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [good]}))

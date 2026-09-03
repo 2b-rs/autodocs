@@ -634,13 +634,33 @@ def verify_authority_material(entry: Mapping[str, object], repo: Path) -> None:
     if blob.returncode or _digest_prefixed(blob.stdout) != blob_digest:
         raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source blob is absent or has the wrong digest")
     try:
-        authority_text = blob.stdout.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source is not UTF-8") from exc
-    identity_marker = f"Deciding identity:** `{entry['deciding_identity']}`"
-    role_marker = f"Role:** `{entry['deciding_role']}`"
-    if entry["authority_ref"] not in authority_text or identity_marker not in authority_text or role_marker not in authority_text:
-        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source does not bind reference, identity, and role")
+        authority_document = json.loads(blob.stdout.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ImportErrorClosed(
+            "DISP-UNVERIFIABLE",
+            "authority source must be a UTF-8 migration-disposition-authority@v1 document",
+        ) from exc
+    if not isinstance(authority_document, dict) or set(authority_document) != {"schema", "entries"}:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source has an unknown envelope")
+    if authority_document.get("schema") != "migration-disposition-authority@v1":
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source has the wrong schema")
+    records = authority_document.get("entries")
+    if not isinstance(records, list) or not records:
+        raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source has no signed disposition actions")
+    expected = {
+        "authority_ref": entry["authority_ref"],
+        "deciding_identity": entry["deciding_identity"],
+        "deciding_role": entry["deciding_role"],
+        "payload_digest": entry["payload_digest"],
+    }
+    for record in records:
+        if not isinstance(record, dict) or set(record) != set(expected):
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source contains a malformed disposition action")
+    if sum(record == expected for record in records) != 1:
+        raise ImportErrorClosed(
+            "DISP-UNVERIFIABLE",
+            "signed authority source does not uniquely bind the canonical disposition payload",
+        )
 
 
 def disposition_payload_digest(entry: Mapping[str, object]) -> str:
@@ -788,7 +808,7 @@ def apply_dispositions(
     pairs = []
     verified_material = set()
     for entry in document["entries"]:
-        material_key = _canonical_json(entry["signature_material"])
+        material_key = (_canonical_json(entry["signature_material"]), entry["payload_digest"])
         if material_key not in verified_material:
             verify_authority_material(entry, repo)
             verified_material.add(material_key)
