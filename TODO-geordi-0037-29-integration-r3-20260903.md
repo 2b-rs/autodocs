@@ -20,9 +20,12 @@
   passes.
 - Candidate is signed by Data and bears `Task-ID: 0037-29` and
   `Base-Ref: e17a47d98e...` trailers.
-- Closed non-`source-repaired` kind-family mapping, wrong-retain negative
-  coverage, reported suites, prior counterexample, hygiene, and guarded root
-  sequence remain pending.
+- Closed non-`source-repaired` kind-family mapping is enforced for every
+  disposition kind. The prior signed `IMP-CLAIM-OPAQUE` cross-family
+  counterexample now fails closed with `DISP-WRONG-KIND`.
+- Independent validation passes: full importer suite 38/38, disposition suite
+  15/15, focused DEC-0037-008 suite 5/5, and `git diff --check`.
+- Candidate hygiene and the guarded root sequence remain pending.
 
 ## Boundary
 
