@@ -1,0 +1,14 @@
+{
+  "schema": "issue-recovery-actions@v1",
+  "registry_version": 1,
+  "purpose": "Fixed emergency recovery actions; no generic command execution, credential discovery, activation, or legacy conversion.",
+  "actions": [
+    {"id":"issue-recovery.freeze@v1","argv":["python3","_src/tools/issue_recovery.py","freeze"],"required_args":["repo","control","expected-generation","actor"],"mutates":true,"requires":"authenticated emergency authority"},
+    {"id":"issue-recovery.export@v1","argv":["python3","_src/tools/issue_recovery.py","export"],"required_args":["repo","control","bundle"],"mutates":true,"requires":"frozen recovery generation"},
+    {"id":"issue-recovery.restore@v1","argv":["python3","_src/tools/issue_recovery.py","restore"],"required_args":["bundle","target"],"mutates":true,"requires":"validated export bundle and empty target"},
+    {"id":"issue-recovery.replay@v1","argv":["python3","_src/tools/issue_recovery.py","replay"],"required_args":["target","events"],"mutates":true,"requires":"immutable event list"},
+    {"id":"issue-recovery.repair@v1","argv":["python3","_src/tools/issue_recovery.py","repair"],"required_args":["target","control","plan"],"mutates":true,"requires":"frozen recovery generation and per-file CAS"},
+    {"id":"issue-recovery.regenerate@v1","argv":["python3","_src/tools/issue_recovery.py","regenerate"],"required_args":["repo","control","output-root"],"mutates":true,"requires":"frozen recovery generation"},
+    {"id":"issue-recovery.release@v1","argv":["python3","_src/tools/issue_recovery.py","release"],"required_args":["repo","control","release","expected-generation"],"mutates":true,"requires":"digest-bound verified release signature"}
+  ]
+}
