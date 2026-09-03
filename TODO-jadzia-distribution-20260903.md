@@ -26,3 +26,4 @@
 - note: 0046-01 parent package accepted.
 - note: Offered 0046-02 to quark, worf, benjamin (offer 1788436320866-73f5b00a).
 - note: HARD HOLD mandate (1788436590594-f26d3190). Paused 0050-01 and 0046-02. Only 0037-29 remains active.
+- note: Worf dropped 0037-29 during restart. Re-offered 0037-29 (offer 1788436803594-b7777d5e).
