@@ -1,0 +1,1 @@
+- [2026-09-03T10:59Z] (jadzia@Project Lead): Authored DEC-0044-038 decision record and scope review for disposable tmp worktrees. [Ref: docs/dossiers/dec-0044-038-disposable-tmp-worktrees.md]
