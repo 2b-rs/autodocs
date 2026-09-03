@@ -20,3 +20,4 @@
 - note: 0046-01.01 implementation review ready. Offered integration to obrien (offer 1788435625132-d294a044).
 - note: 0046-01.01-integration accepted. 
 - note: Offered 0046-01.02 to quark, worf, benjamin (offer 1788435942889-6510a736).
+- note: 0046-01.02 implementation review ready. Offered integration to obrien (offer 1788436008372-550fcc17).
