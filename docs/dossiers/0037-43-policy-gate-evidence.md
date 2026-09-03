@@ -14,6 +14,18 @@
   bundle path, complete member map, and selector digest, checked against
   candidate bytes through the shared bootstrap bundle walker.
 
+### Red/green evidence
+
+Against retained baseline `dc0acb2e`, direct probes reproduce the bypasses:
+the exact live legacy selector is rejected; unsupported metadata and false
+policy/source digests pass; a sibling non-ancestor base passes despite the Git
+ancestry check returning 1; and the explicit candidate CLI is unavailable.
+
+Against signed descendant `2e97f24145f439c8b2f6cd2608e702e9ba7db3d0`,
+the exact live gate passes with five evaluated files and zero violations.
+Focused tests report `25 passed`; the full suite reports `Ran 100 tests`, `OK`.
+Diff check, signature verification, and candidate hygiene pass.
+
 ## 1. Executive Summary & Governance
 Task `0037-43` provisions and proves a non-bypassable integration-policy gate before migration freeze in accordance with `DEC-0037-002`, `DEC-0044-014`, and resolved Management decision `decision-0037-43-hosted-enforcement-20260903` (receipt on `main@5357e0af0f1647897fd18ddf41c640f91c805735`).
 
