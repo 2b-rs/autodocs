@@ -12,3 +12,8 @@ NOTES: worf accepted the offer for 0037-29.
 - note: worf started IN_PROGRESS on 0037-29.
 
 - note: Terminal state / handover verified post supervisor restart.
+
+## 0037-29 (Re-offer)
+OFFERED: priority 1: benjamin, worf
+STATUS: OPEN
+NOTES: Re-dispatched shadow migrations via offer 1788420050946-98d33df3.
