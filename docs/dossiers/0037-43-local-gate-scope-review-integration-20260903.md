@@ -45,3 +45,19 @@ rewriting the reviewed commit. Return a fresh signed immutable candidate and a
 fresh exact review/integration award. Root recovery remains a separately
 guarded part of that integration; all refs and current untracked state remain
 preserved meanwhile.
+
+## Post-verdict root transition provenance
+
+After this blocked verdict, the shared-root reflog records:
+
+```text
+HEAD@{2026-09-03 22:30:05 +0200} c675f40362e11154bb47d04fd695d6cc22a8ae4a checkout: moving from review-0037-43-temporary-local-gate-r2-20260903 to main
+```
+
+The observed root now has `HEAD == refs/heads/main ==
+c675f40362e11154bb47d04fd695d6cc22a8ae4a`, branch `main`, tracked worktree
+diff exit `0`, and index diff exit `0`. Its untracked inventory remains
+`.worktrees/` and `allowed_signers`. This was a post-verdict checkout by Worf,
+not an integration by Geordi: candidate `68ff18a9b7` remains unmerged, and the
+blocked verdict is unchanged. No PASS, merge, cleanup, reset, stash, push, or
+ref rewrite is recorded or authorized by this addendum.

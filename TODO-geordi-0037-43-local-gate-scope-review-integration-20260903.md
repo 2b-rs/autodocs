@@ -29,5 +29,9 @@ remote, marker, selector, Acceptance, push, cleanup, or ref rewrite is allowed.
   preflight, merge, or postflight was attempted.
 - Durable verdict:
   `docs/dossiers/0037-43-local-gate-scope-review-integration-20260903.md`.
+- Post-verdict provenance verified: root reflog records Worf's checkout from
+  `68ff18a9b7` to `main@c675f40362` at `2026-09-03 22:30:05 +0200`; root
+  tracked/index diffs are clean, untracked inventory remains `.worktrees/` and
+  `allowed_signers`, and the candidate remains unmerged. Verdict stays BLOCKED.
 - Next: exact same-slot repair of the whitespace defect, followed by a fresh
   immutable candidate and independent award. Preserve all refs and root state.
