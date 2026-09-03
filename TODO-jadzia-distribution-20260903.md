@@ -10,3 +10,4 @@
 - note: 0033-07.01-integration offered and awarded to obrien (offer 1788432127707-3f41ed18).
 - note: 0046-01.01 offered and awarded to quark (offer 1788432128323-bcfd688a).
 - note: 0050-01 offered to benjamin and worf (offer 1788432128105-27518f58), waiting for reply.
+- note: 0033-07.01-integration accepted. Feature 0033 terminal cutover complete.
