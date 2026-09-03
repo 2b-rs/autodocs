@@ -5,7 +5,7 @@ recursive canonical permutations=64 (seed 37002); exact total=176.
 Baseline f5142ab033947bf16601ed9063f48aa96a8ff0e5 lacks tool/schemas.
 """
 from __future__ import annotations
-import copy, importlib.util, itertools, json, random, shutil, subprocess, tempfile, unittest
+import copy, importlib.util, itertools, json, os, random, shutil, subprocess, tempfile, unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
@@ -211,6 +211,87 @@ class CAS(unittest.TestCase):
         success_ref="refs/autodocs/cutover-test/receipt-success"; success=self.receipts/"success.json"; success_expectations=[{"name":success_ref,"expected_oid":None,"target_oid":self.b}]
         CUT.execute_disposable_cas(self.repo,success_expectations,[success_ref],dry_run=False,receipt_path=success,receipt_root=self.receipts); original=success.read_bytes()
         retry=CUT.execute_disposable_cas(self.repo,success_expectations,[success_ref],dry_run=False,receipt_path=success,receipt_root=self.receipts)
-        self.assertTrue(retry["idempotent"]); self.assertEqual(success.read_bytes(),original)
+        self.assertTrue(retry["idempotent"]);         self.assertEqual(success.read_bytes(),original)
+
+class WaveBEffects(Fixture):
+    """Wave-B freeze/switch/reference/rollback/activate on hermetic repos only.
+
+    AE-3: baseline 7eebde81ec (blocked_effect for every command) is red for a
+    marked disposable repo; this candidate is green. Adjacent: missing marker
+    stays BLOCKED; refs/heads/main is rejected. AE-5: CAS ref-order permutations.
+    """
+    BASELINE = "7eebde81ec61681a37acd9ef667b72e4b537ad9a"
+
+    def calibrate(self, partial):
+        return []
+
+    def wave(self):
+        m=copy.deepcopy(self.manifest)
+        m["cas"]["disposable_test_repo"]=True
+        m["approvals"]["ref"]="refs/autodocs/approvals/0037/tx"
+        (self.repo/CUT.DISPOSABLE_REPO_MARKER).write_text(CUT.DISPOSABLE_REPO_MARKER_VALUE)
+        return m
+
+    def test_ae3_hermetic_freeze_green_vs_missing_repo_red(self):
+        missing=StringIO()
+        with redirect_stdout(missing):
+            self.assertEqual(CUT.main(["freeze","--repo","/missing","--manifest",str(self.path)]),2)
+        self.assertEqual(json.loads(missing.getvalue())["code"],CUT.BLOCKED_EFFECT_CODE)
+        m=self.wave()
+        result=CUT.apply_wave_b_effect("freeze",self.repo,m)
+        self.assertEqual(result["status"],"APPLIED")
+        self.assertEqual(CUT.resolve_ref(self.repo,"refs/autodocs/cutover-test/control"),self.candidate)
+        selector=json.loads((self.repo/"agent-workflow.json").read_text())
+        self.assertEqual(selector["authority_profile"],CUT.WAVE_B_SELECTOR_PROFILE)
+        self.assertEqual(selector["write_phase"],CUT.WAVE_B_WRITE_PHASE)
+        self.assertNotIn(CUT.LEGACY_FROZEN_SELECTOR_SPELLING,json.dumps(selector))
+
+    def test_adjacent_unmarked_repo_blocked_and_main_ref_rejected(self):
+        m=copy.deepcopy(self.manifest); m["cas"]["disposable_test_repo"]=True; m["approvals"]["ref"]="refs/autodocs/approvals/0037/tx"
+        buf=StringIO()
+        with redirect_stdout(buf):
+            self.assertEqual(CUT.main(["switch","--repo",str(self.repo),"--manifest",str(self.path)]),2)
+        self.assertEqual(json.loads(buf.getvalue())["code"],CUT.BLOCKED_EFFECT_CODE)
+        m=self.wave(); m["refs"]=[{"name":"refs/heads/main","expected_oid":self.source,"target_oid":self.candidate}]
+        with self.assertRaises(CUT.CutoverError) as e:
+            CUT.apply_wave_b_effect("reference",self.repo,m)
+        self.assertEqual(e.exception.code,"CUTOVER-MAIN-REF")
+
+    def test_switch_reference_rollback_activate_and_no_env_bypass(self):
+        m=self.wave()
+        self.assertEqual(CUT.apply_wave_b_effect("reference",self.repo,m)["status"],"APPLIED")
+        self.assertEqual(CUT.apply_wave_b_effect("rollback",self.repo,m)["cas"]["status"],"APPLIED")
+        self.assertIsNone(CUT.resolve_ref(self.repo,"refs/autodocs/cutover-test/control"))
+        os.environ["CUTOVER_FORCE"]="1"
+        try:
+            with self.assertRaises(CUT.CutoverError) as e:
+                CUT.apply_wave_b_effect("activate",self.repo,m)
+            self.assertEqual(e.exception.code,"CUTOVER-NO-OVERRIDE")
+        finally:
+            del os.environ["CUTOVER_FORCE"]
+        self.assertEqual(CUT.apply_wave_b_effect("switch",self.repo,m)["status"],"APPLIED")
+        self.assertEqual(CUT.apply_wave_b_effect("activate",self.repo,m)["cas"]["status"],"RECOVERED")
+
+    def test_ae5_cas_ref_order_permutations(self):
+        names=[f"refs/autodocs/cutover-test/order-{i}" for i in range(3)]
+        executed=0
+        for order in itertools.permutations(names):
+            for n in names:
+                gr(self.repo,"update-ref","-d",n,check=False)
+            m=self.wave()
+            m["refs"]=[{"name":n,"expected_oid":None,"target_oid":self.candidate} for n in order]
+            m["cas"]["declared_refs"]=list(order)
+            CUT.apply_wave_b_effect("reference",self.repo,m)
+            observed={n:CUT.resolve_ref(self.repo,n) for n in names}
+            self.assertEqual(set(observed.values()),{self.candidate})
+            executed+=1
+        self.assertEqual(executed,6)
+
+    def test_singular_approval_and_legacy_selector_spelling_rejected(self):
+        m=self.wave(); m["approvals"]["ref"]="refs/autodocs/approval/0037/tx"
+        with self.assertRaises(CUT.CutoverError) as e:
+            CUT.apply_wave_b_effect("freeze",self.repo,m)
+        self.assertEqual(e.exception.code,"CUTOVER-APPROVAL-REF")
+        self.assertEqual(CUT.canonical_frozen_selector({"authority_profile":"issue-store-frozen","write_phase":"x"})["authority_profile"],CUT.WAVE_B_SELECTOR_PROFILE)
 
 if __name__=="__main__": unittest.main()

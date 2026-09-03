@@ -1,0 +1,51 @@
+### `DEC-0037-007` — Source-bound, fail-closed dispositions for legacy migration findings
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-03T00:48:30Z`
+- **Deciding identity:** `authority:supervisor`
+- **Role:** `Management`
+- **Authority reference:** Current-user authorization for the fastest safe Feature 0037 cutover and its necessary Management approvals; Architecture assignments `1788395547064-f0ac8300` and `1788396413757-c3dadfa1`, awarded to Architect/recorder `data`
+- **Subject:** Explicit disposition contract for blocking findings emitted by the Feature 0037 legacy importer
+- **Decision:** Introduce a schema-validated `migration-dispositions@v1` manifest through which an authorized decision can disposition a specific importer finding without altering or discarding its legacy source blob. Every entry binds one stable finding ID, finding rule, source locator, work-item identity, exact source commit, and either the exact source-blob digest or—when the finding is defined over a referenced field—the exact referenced-field-value digest. It also records one enumerated disposition kind, a non-empty reason, deciding identity, deciding role, authority reference, decision time, evidence references, and the signature or equivalent durable verification material required to authenticate that authority. Permitted kinds record only bounded facts such as `retain-provenance-no-active-lease`, `retain-provenance-no-evidence-credit`, `source-repaired`, or `archive-excluded-from-active-migration`. A disposition preserves the complete source material as provenance and grants zero Task closure, Acceptance, ownership, authority, lease, release status, or evidence credit. It cannot fabricate refs, promote a pending or local placeholder into evidence, infer claim ownership, synthesize `closure.json`, rewrite undefined markers, or make any Task complete. Missing, duplicate, conflicting, malformed, unsigned or otherwise unverifiable, wrong-source, wrong-commit, wrong-digest, and unmatched entries remain blocking. A disposition matches only the single bound finding and cannot suppress a different rule, locator, item, source version, blob, or field value. The importer emits a deterministic one-to-one coverage report relating every blocking finding to exactly one valid disposition or source repair, retains append-only run history, and preserves deterministic ordering. `claim-opaque`, pending/local placeholders, no-evidence-credit records, malformed headers, and undefined markers proceed only after source repair or an explicit bounded disposition satisfying this contract. Malformed structural syntax is repair-first; `archive-excluded-from-active-migration` is allowed only when the entry explicitly justifies why byte-exact, parser-independent archival retention is safe and why the malformed material cannot participate in active state. This decision defines the architecture contract only and has no production effect.
+- **Technical justification:** The real importer probe at `main@7eebde81ec61681a37acd9ef667b72e4b537ad9a` correctly blocks opaque legacy claims but supplies no input capable of recording an authorized, source-specific disposition. Weakening the finding rules would erase provenance and create implicit authority; editing legacy inputs would destroy the evidence needed to explain the migration. A digest-bound manifest instead separates immutable source capture from an explicit decision about active migration treatment. Binding both repository commit and content or field-value digest prevents a stale disposition from applying after source mutation. Stable finding identity and one-to-one coverage prevent blanket suppression. Fail-closed verification makes malformed, ambiguous, conflicting, or untrusted records harmless. Schema/runtime parity and property testing are required because a permissive parser or divergent schema would silently widen the gate.
+- **Triggers:**
+  - `material-architecture-or-repository-behavior`
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+- **Considered alternatives:**
+  - **ALT-01:** Source-commit- and digest-bound `migration-dispositions@v1`
+    - **Disposition:** `selected`
+    - **Reason:** It preserves every source byte, permits only explicit bounded treatment of individual findings, and keeps all authority and completion gates fail closed.
+  - **ALT-02:** Weaken or bypass opaque-claim and placeholder findings globally
+    - **Disposition:** `rejected`
+    - **Reason:** This would convert uncertainty into implicit migration permission, lose one-to-one provenance, and allow unrelated malformed records through the same exception.
+  - **ALT-03:** Normalize or delete legacy files until the importer passes
+    - **Disposition:** `rejected`
+    - **Reason:** This would overwrite historical evidence, conceal why a finding disappeared, and make reproduction against the original source impossible.
+  - **ALT-04:** Accept a free-form waiver list keyed only by path or item
+    - **Disposition:** `rejected`
+    - **Reason:** Such entries are stale-prone, cannot prove which bytes were reviewed, and can suppress multiple findings or later source versions unintentionally.
+- **Consequences:**
+  - **CON-01:** Later implementation is limited initially to the disposition schema and fixtures, importer/runtime validation and coverage reporting, manifest instance or instances, and directly corresponding tests and documentation; it does not mutate legacy source blobs or synthesize completion artifacts.
+  - **CON-02:** The schema and runtime accept and reject the same records, enforce enumerated kinds and all required authority/source bindings, and expose deterministic diagnostics.
+  - **CON-03:** Acceptance evidence includes an AE red baseline showing the unchanged importer blocking the real findings, a green candidate using only valid dispositions or source repairs, tests for each named finding family (`claim-opaque`, pending/local placeholders, no-evidence-credit, malformed headers, and undefined markers), and property tests covering missing fields, duplicates, conflicts, signature or verification failure, source/commit/digest mismatch, unmatched entries, ordering, and one-to-one coverage.
+  - **CON-04:** Each run appends its input identities, disposition-manifest digest, coverage output, and result without rewriting prior run evidence.
+  - **CON-05:** Linked holds resume only from the exact validated finding/disposition relationship; a manifest cannot itself close them.
+  - **CON-06:** Rollback before implementation abandons this candidate branch. Rollback after implementation disables disposition consumption while retaining manifests, source blobs, and append-only run history; all affected findings return to blocking.
+  - **CON-07:** The operational cost is a new schema, validation surface, manifest maintenance, and additional test matrix.
+  - **CON-08:** The principal risks are stale or over-broad suppression and authority laundering; exact source bindings, one-entry-to-one-finding matching, verification, enumerated non-credit dispositions, and fail-closed behavior bound them.
+  - **CON-09:** Independent scope review, implementation, validation, acceptance, promotion, authority switching, and integration remain separately assigned actions.
+  - **CON-10:** `data` is only the assigned Architect and recorder of this record; `authority:supervisor` is the Management decider, and authorship or assignment does not transfer that decision authority.
+- **Affected work units:**
+  - `task:0037-29`
+  - `task:0037-30`
+  - `task:0037-31`
+  - `subtask:0037-34.02`
+- **Affected gates:**
+  - `integration:0037-29`
+  - `task-start:0037-30`
+  - `task-start:0037-31`
+  - `task-start:0037-34.02`
+- **Review participation:** `none`
+- **No-review reason:** This is the Management-authorized decision candidate recorded by the assigned Architect. Independent scope review, implementation review, acceptance, and integration remain separate explicitly assigned actions.
+- **Waiver:** `none`

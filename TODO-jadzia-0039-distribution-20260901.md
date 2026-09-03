@@ -29,3 +29,9 @@ NOTES: obrien completed the review and integration. Merged to main.
 - note: Terminal state reached for 0039.
 
 - note: Terminal state / handover verified post supervisor restart.
+
+## 0039-03-integration
+OFFERED: priority 1: obrien, priority 2: geordi
+STATUS: OPEN
+NOTES: Dispatched integration of 0039-03 via offer 1788420082867-e9b49b40.
+- note: Cancelled 0039-03-integration due to 0037-CUTOVER fleet order.

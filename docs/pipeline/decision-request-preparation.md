@@ -8,7 +8,8 @@ GUI behavior, or the assignment state machine.
 **Provenance:** Management instruction in agent-inbox thread
 `decision-template-clarity-20260901` (2026-08-31); existing agent-inbox
 `decision_request`, `decision_request_from_preparation`, and `decision_status`
-contracts at `agent-inbox/main@d4095e64d174f546502b8cf93930084d455b5e35`.
+contracts at `agent-inbox/main@d4095e64d174f546502b8cf93930084d455b5e35`;
+Management decision `DEC-0044-036`.
 
 ## 1. Preparation requirements
 
@@ -21,13 +22,74 @@ contracts at `agent-inbox/main@d4095e64d174f546502b8cf93930084d455b5e35`.
 | `REQ-DTP-05` | The preparation MUST distinguish the submitter from the authorized resolver and name the immediate downstream continuation plus any known later decision or review. | No submitter is presented as resolver merely because they created the request; follow-on work is explicit. |
 | `REQ-DTP-06` | Before hold reporting or handoff, the preparer MUST verify that the exact created decision ID reports `pending`. After resolution, continuation MUST use that same ID and verify `resolved` plus the selected option. | Both checks are reproducible through `decision_status`; a title, mail, or GUI card is insufficient. |
 | `REQ-DTP-07` | The preparer MUST treat mail and GUI views as projections, never as the durable request or resolution authority. | Removing or misrendering a projection cannot change the status asserted by the durable exact-ID lookup. |
+| `REQ-DTP-08` | Before creating a request, the preparer MUST define its semantic identity and check durable request state for an existing match. | An unchanged question is reused rather than duplicated, while a materially changed question carries an explicit lifecycle relation. |
+| `REQ-DTP-09` | The request service MUST provide an atomic create-or-return operation for semantic identity. | Concurrent equivalent submissions return one durable request ID rather than allocating competing requests. |
+| `REQ-DTP-10` | Ambiguous identity matches or conflicting resolutions MUST fail closed. | No continuation, new request, or inferred answer occurs until the durable conflict is reconciled by the authorized resolver. |
 
 These requirements are additive to the existing tool's required evidence,
 option, recommendation, assignment-hold, and authority fields. They do not
 authorize the preparer to decide, resolve, waive, accept, integrate, or release
 anything.
 
-## 1.1 Management-request eligibility
+## 1.1 Semantic identity, reuse, and supersession
+
+Before invoking either request-creation operation, record a semantic identity
+for the decision. It consists of the exact affected `item`, normalized single
+`question`, `deciding_role`, `paused_action`, mutually exclusive option IDs and
+their meanings, affected work products and processes, and the material evidence
+that makes the authority choice necessary. Presentation-only wording, mail
+subjects, GUI grouping, timestamps, and the submitter's identity are not
+semantic differences.
+
+The preparer MUST query the durable request registry with `decision_list` and
+confirm candidate matches with `decision_status` before creation:
+
+1. An exact semantic match in `pending` state is reused. The preparer cites and
+   hands off the existing exact decision ID; creating another request is
+   prohibited.
+2. An exact semantic match in `resolved` state is already the answer. The
+   preparer records that exact ID and selected option and applies the ordinary
+   continuation checks; reopening or recreating the question is prohibited.
+3. A materially changed question MUST name exactly one predecessor ID and one
+   lifecycle relation: `supersedes`, `narrows`, `widens`, or
+   `replaces-question`. Its permanent preparation record explains the semantic
+   change and why the predecessor's answer no longer decides the new question.
+   A new title, submitter, assignment, mail thread, or recommendation alone is
+   not a material change.
+4. Multiple plausible matches, incompatible predecessor chains, or conflicting
+   resolved selections are ambiguous. Stop creation and continuation until the
+   authorized resolver reconciles the durable records. Do not select the most
+   convenient record or manufacture a supersession.
+
+This client-side check is mandatory but cannot prevent concurrent races. The
+request service therefore MUST enforce the same semantic identity at its
+transaction boundary with an atomic **create-or-return** operation: return the
+existing matching ID or create exactly one new ID. A check-then-create sequence
+without this service-boundary guarantee is not a conforming implementation.
+
+## 1.2 Authority distinctions
+
+Decision lifecycle state never creates authority. Apply these boundaries:
+
+- `authority:supervisor`, when present in an authoritative record, identifies
+  the Supervisor authority defined by that record. The current user may also
+  exercise authority explicitly within their own scope. Neither authority is
+  inferred from a sender name, mailbox delivery, GUI control, assignment,
+  offer, or task ownership.
+- A Supervisor assignment coordinates who prepares or executes work. It does
+  not authorize the assignee or Supervisor to choose an option, invent a
+  waiver, or supersede a decision unless the exact governing record separately
+  grants that decision authority.
+- Management-consultation (`mancons`) may triage a request and may record a
+  resolution only when an authorized instruction explicitly selects an option
+  or the governing record makes exactly one supplied option uniquely
+  predetermined. It MUST NOT invent a choice, waiver, supersession, or altered
+  question, and uncertainty fails closed to the named deciding role.
+- Mail, GUI state, submitter identity, assignment, and offer/award state are
+  coordination or projections. None proves authority, a durable request, a
+  resolution, Acceptance, or permission to continue.
+
+## 1.3 Management-request eligibility
 
 For an integration or Acceptance dispute, use the delegated escalation ladder
 in [`integration-flow-control.md`](integration-flow-control.md) before preparing
@@ -163,94 +225,7 @@ different resolved ID stops the handoff or continuation until the durable state
 is reconciled. It is not repaired by resending mail or creating a second
 request for the same unchanged question.
 
-## 6. Preparer checklist
-
-Before submission:
-
-- [ ] The permanent evidence proves a genuine remaining authority choice.
-- [ ] The title starts with the exact Feature/Task ID and states recommendation,
-  option count, and expected signature waves.
-- [ ] The request contains one question only.
-- [ ] The question is classified as binary or multi-option.
-- [ ] Binary uses exactly `YES` and `NO`; multi-option uses one mutually
-  exclusive set rather than separate yes/no cards.
-- [ ] Every option states effects, costs, downstream eligibility, and remaining
-  risk.
-- [ ] The recommendation names one supplied option and gives an evidence-based
-  reason.
-- [ ] Submitter, resolver, paused action, downstream continuation, and known
-  follow-on decisions/reviews are explicit.
-- [ ] Permanent records, affected work products, affected processes, and any
-  waiting assignment are exact.
-
-After submission and resolution:
-
-- [ ] The successful call returned an exact decision ID.
-- [ ] `decision_status(<exact ID>)` reported `pending` before handoff.
-- [ ] The handoff named that exact ID and the permanent preparation record.
-- [ ] After the answer, `decision_status(<same exact ID>)` reported `resolved`
-  and the selected option.
-- [ ] Every later signature wave was verified from its own authoritative record
-  before continuation.
-- [ ] No mail or GUI projection was treated as the durable state.
-
-## 7. Instructional examples from the `0045-00` failure pattern
-
-These examples allocate no decision ID and make no decision.
-
-### Bad — one yes/no request per competing option
-
-```text
-0045-00 — approve direct Supervisor routing? YES/NO
-0045-00 — approve a priority-gated Project Lead offer? YES/NO
-0045-00 — approve no automated routing? YES/NO
-```
-
-All three can be answered `YES` or all three `NO`; the result is not one
-exclusive scheduling policy. The cards also hide which answer is recommended,
-how many authority waves remain, and what resumes afterwards.
-
-### Good — one multi-option selection
-
-```text
-Title: 0045-00 — recommend PL-OFFER — 3 options — 2 signature waves — select one arrival-routing policy
-Submitter: Requirements Engineer preparing the evidence
-Resolver: Management
-Question: Which one policy shall govern a durable feedback-loop arrival?
-Options:
-  PL-OFFER — open a priority-gated Project Lead choice; work waits for an award.
-  DIRECT — allow direct Supervisor routing; removes the Project Lead choice and increases misrouting risk.
-  DISABLED — perform no automated routing; arrivals remain queued for manual handling.
-Downstream continuation: bind the selected policy in the reviewed interface baseline.
-More decisions follow: YES — the typed-recipe binding remains a separate question if the present resolution does not select it.
-Signature waves: 1 Management policy resolution; 2 distinct Architect scope review.
-```
-
-The actual request supplies these three alternatives as one `options[]` set and
-recommends `PL-OFFER` with evidence. The later Architect review is a wave, not a
-fourth Management option and not authority created by the request.
-
-### Bad — projection treated as state
-
-```text
-The card is visible and a mail arrived, so the request is pending.
-The card disappeared, so Management approved the recommendation.
-```
-
-Neither assertion identifies the durable record or selected option.
-
-### Good — exact-ID verification
-
-```text
-Created: decision-<exact-returned-id>
-Before handoff: decision_status(decision-<exact-returned-id>) -> status=pending
-After notice:  decision_status(decision-<same-exact-id>) -> status=resolved option=<selected-id>
-```
-
-Only the exact-ID status supports the corresponding handoff or continuation;
-the visual projection remains useful but non-authoritative.
-
-## 8. Scope boundary
+## 6. Scope boundary
 
 This playbook trains preparers and makes false request/handoff claims
 observable. It does not change the minimum number of tool options, add tool

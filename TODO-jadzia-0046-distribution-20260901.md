@@ -102,3 +102,9 @@ NOTES: obrien completed the review and integration. Merged to main in agent-inbo
 - note: 0046-01.01 awarded to quark via offer 1788344635757-5777397d.
 
 - note: Terminal state / handover verified post supervisor restart.
+
+## 0046-01.01 (Re-offer)
+OFFERED: priority 1: benjamin, worf
+STATUS: OPEN
+NOTES: Re-dispatched UX/API validation via offer 1788420035984-7f7f5bf7.
+- note: Cancelled 0046-01.01 due to 0037-CUTOVER fleet order.

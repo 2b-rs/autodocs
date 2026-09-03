@@ -6,7 +6,12 @@
 - **offer / authority:** priority award `1788212597555-9ecd6db1`; supervisor execution wake `1788212615693-b5107628`
 - **capability_class:** `privileged`
 - **execution_authority:** direct local read/Git/text validation in the item-owned worktree; preparation only
-- **coordination_state:** `in_progress`
+- **state:** `[x]`
+- **recorded_task_state:** `[x]`
+- **coordination_state:** `accepted`
+- **restart_recovery_state:** `terminal`
+- **lease_active:** `false`
+- **substantive_ref:** `9db4cf92b57f472ca362b55ee4b51b1472a908ab`
 - **base_commit:** `5c6068537aa4a304c940ca82f62b466a08d72136`
 - **branch:** `0045-00`
 - **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0045-00-data-20260831`
@@ -117,3 +122,22 @@ distinct Architect-review reference.
   not supersede the assignment or authorize rebase/`TODO.md` mutation.
 - Canonical-ref clarification was requested from Supervisor in
   `1788218465033-52036a42`; no reply arrived during the bounded 60-second wait.
+
+## Supervisor restart recovery — 2026-09-03
+
+- **Disposition:** terminal and released; do not resume this owner token.
+- Assignment `1788212597555-9ecd6db1` was durably recorded as accepted before
+  the mailbox-store restart. Approved-baseline candidate
+  `9db4cf92b57f472ca362b55ee4b51b1472a908ab` and the canonical distinct
+  Architect review `afdfd2f599d1611d738e27b0dd893ed484e85574` are ancestors of
+  pinned stabilized `main@f099610c1443ea16b187c72b60248bb29dd2a854`;
+  authoritative `TODO.md` records Task `0045-00` as `[x]`.
+- Earlier terminal claim-only corrections
+  `15f4db593ed7ca970d6bc4175e3c0535c7b0bcdf`,
+  `4f99a6d2f019a92eef9e985e5db337b72c460b7c`, and
+  `b3daeb61b9b3532e7420b19b671fa6c42c34be7a` record the same disposition but
+  are not ancestors of the pinned baseline; this additive current-main
+  rederivation preserves their evidence without merging unrelated history.
+- Assignment acceptance and Task implementation completion are not repository
+  `Acceptance: ✓`. Successor implementation, acceptance, integration,
+  activation, publication, and Feature closure belong to distinct assignments.

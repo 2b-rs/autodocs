@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/migration-dispositions-v1.schema.json",
+  "title": "migration-dispositions@v1",
+  "description": "Source-bound fail-closed dispositions for legacy importer findings. A disposition never grants Task closure, Acceptance, ownership, authority, lease, release, or evidence credit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "entries"],
+  "properties": {
+    "schema": {"const": "migration-dispositions@v1"},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": ["source_blob_digest"],
+          "not": {"required": ["referenced_field_digest"]}
+        },
+        {
+          "required": ["referenced_field_digest"],
+          "not": {"required": ["source_blob_digest"]}
+        }
+      ],
+      "if": {
+        "properties": {"kind": {"const": "archive-excluded-from-active-migration"}}
+      },
+      "then": {
+        "required": [
+          "archive_retention_justification",
+          "parser_independent_archival_safe",
+          "cannot_participate_in_active_state_reason"
+        ],
+        "properties": {"parser_independent_archival_safe": {"const": true}}
+      },
+      "required": [
+        "finding_id",
+        "finding_rule",
+        "source_locator",
+        "item",
+        "source_commit",
+        "kind",
+        "reason",
+        "deciding_identity",
+        "deciding_role",
+        "authority_ref",
+        "decided_at",
+        "evidence_refs",
+        "payload_digest",
+        "signature_material",
+        "signature_verified"
+      ],
+      "properties": {
+        "finding_id": {"type": "string", "pattern": "^IMP-[0-9a-f]{16}$"},
+        "finding_rule": {"type": "string", "pattern": "^IMP-[A-Z0-9-]+$"},
+        "source_locator": {"type": "string", "minLength": 1},
+        "item": {"type": "string", "minLength": 1},
+        "source_commit": {"$ref": "#/$defs/commit"},
+        "source_blob_digest": {"$ref": "#/$defs/sha256"},
+        "referenced_field_digest": {"$ref": "#/$defs/sha256"},
+        "kind": {
+          "enum": [
+            "retain-provenance-no-active-lease",
+            "retain-provenance-no-evidence-credit",
+            "source-repaired",
+            "archive-excluded-from-active-migration"
+          ]
+        },
+        "reason": {"type": "string", "minLength": 1},
+        "deciding_identity": {"type": "string", "pattern": "^(agent|authority|legacy-authority):.+$"},
+        "deciding_role": {"type": "string", "minLength": 1},
+        "authority_ref": {"type": "string", "minLength": 1},
+        "decided_at": {"type": "string", "minLength": 20},
+        "evidence_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "payload_digest": {"$ref": "#/$defs/sha256"},
+        "signature_material": {
+          "description": "Allowed-signers-verified commit and blob containing a migration-disposition-authority@v1 record that uniquely binds this entry's canonical payload_digest, deciding identity/role, and authority_ref.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scheme", "commit", "path", "blob_digest", "principal"],
+          "properties": {
+            "scheme": {"const": "git-ssh-commit-v1"},
+            "commit": {"$ref": "#/$defs/commit"},
+            "path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+            "blob_digest": {"$ref": "#/$defs/sha256"},
+            "principal": {"type": "string", "minLength": 1}
+          }
+        },
+        "signature_verified": {"const": true},
+        "archive_retention_justification": {"type": "string", "minLength": 1},
+        "parser_independent_archival_safe": {"type": "boolean"},
+        "cannot_participate_in_active_state_reason": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

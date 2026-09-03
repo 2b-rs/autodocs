@@ -27,6 +27,14 @@ PREPARATION_ADAPTER_KEYS = frozenset({"adapter", "tree_digest"})
 CAS_RECEIPT_MARKER = ".issue-cutover-disposable-receipt-root"
 CAS_RECEIPT_MARKER_VALUE = "issue-cutover-disposable-receipt-root@v1\n"
 BLOCKED_EFFECT_CODE = "CUTOVER-EFFECTS-NOT-ACTIVATED"
+WAVE_B_SELECTOR_PROFILE = "issue-store-write-frozen"
+WAVE_B_WRITE_PHASE = "frozen"
+LEGACY_FROZEN_SELECTOR_SPELLING = "issue-store-frozen"
+WAVE_B_APPROVAL_PREFIX = "refs/autodocs/approvals/"
+HISTORICAL_APPROVAL_PREFIX = "refs/autodocs/approval/"
+DISPOSABLE_REPO_MARKER = ".issue-cutover-disposable-test-repo"
+DISPOSABLE_REPO_MARKER_VALUE = "issue-cutover-disposable-test-repo@v1\n"
+FORCE_ENV_KEYS = ("CUTOVER_FORCE", "ISSUE_CUTOVER_FORCE", "CUTOVER_EFFECT_OVERRIDE")
 ZERO_OID = "0" * 40
 OID_RE = re.compile(r"^[0-9a-f]{40}$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -454,7 +462,15 @@ def validate_manifest(value: Any) -> dict[str, Any]:
         _require(record["policy"] == "single-authority-self-attestation@v1" and record["verified"] is True, "CUTOVER-SIGNATURE-POLICY", "signature policy/verification invalid")
         _require(record["payload_digest"] == signature_payload_digest(package, role, authority), "CUTOVER-SIGNATURE-PAYLOAD", "signature payload is unrelated")
     approval = _object(manifest["approvals"], {"ref", "base_oid", "role", "actor", "payload_digest", "signature_verified"}, {"ref", "base_oid", "role", "actor", "payload_digest", "signature_verified"}, "approval")
-    _require(isinstance(approval["ref"], str) and approval["ref"].startswith("refs/autodocs/approval/"), "CUTOVER-APPROVAL-REF", "approval prefix is invalid")
+    _require(
+        isinstance(approval["ref"], str)
+        and (
+            approval["ref"].startswith(WAVE_B_APPROVAL_PREFIX)
+            or approval["ref"].startswith(HISTORICAL_APPROVAL_PREFIX)
+        ),
+        "CUTOVER-APPROVAL-REF",
+        "approval prefix is invalid",
+    )
     _require(approval["base_oid"] == manifest["source"]["commit_oid"], "CUTOVER-APPROVAL-BASE", "approval base is not source")
     _require(approval["role"] == "approver" and approval["actor"] == roles["approver"] == authority and approval["signature_verified"] is True, "CUTOVER-APPROVAL-ACTOR", "approval actor/role/signature invalid")
     _require(approval["payload_digest"] == package, "CUTOVER-APPROVAL-PAYLOAD", "approval payload is unrelated")
@@ -772,7 +788,108 @@ def execute_disposable_cas(repo: Path, expectations: Sequence[Mapping[str, Any]]
 
 
 def blocked_effect(command: str) -> dict[str, Any]:
-    return {"schema": RESULT_SCHEMA, "command": command, "status": "BLOCKED", "code": BLOCKED_EFFECT_CODE, "message": "effect activation awaits governance normalization; no override exists", "mutation": "none"}
+    return {"schema": RESULT_SCHEMA, "command": command, "status": "BLOCKED", "code": BLOCKED_EFFECT_CODE, "message": "effect activation awaits a hermetic disposable repository and declared non-main CAS refs; no override exists", "mutation": "none"}
+
+
+def _force_requested() -> bool:
+    return any(os.environ.get(key) for key in FORCE_ENV_KEYS)
+
+
+def _is_disposable_cutover_repo(repo: Path) -> bool:
+    marker = repo / DISPOSABLE_REPO_MARKER
+    return repo.is_dir() and marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="utf-8") == DISPOSABLE_REPO_MARKER_VALUE
+
+
+def _assert_dedicated_cas_ref(name: str) -> None:
+    _require(isinstance(name, str) and REF_RE.fullmatch(name) is not None, "CUTOVER-REF", "invalid CAS ref")
+    _require(name != "refs/heads/main" and not name.startswith("refs/heads/"), "CUTOVER-MAIN-REF", "refs/heads/main and other heads refs are forbidden CAS targets")
+    _require(name.startswith("refs/autodocs/") or name.startswith("refs/issues/"), "CUTOVER-UNDECLARED-REF", f"CAS ref is not a dedicated authority/resource ref: {name}")
+    if name.startswith(HISTORICAL_APPROVAL_PREFIX) and not name.startswith(WAVE_B_APPROVAL_PREFIX):
+        raise CutoverError("CUTOVER-APPROVAL-REF", "Wave-B effects require refs/autodocs/approvals/...; historical singular refs grant no credit")
+
+
+def canonical_frozen_selector(current: Mapping[str, Any]) -> dict[str, Any]:
+    value = dict(current)
+    if value.get("authority_profile") == LEGACY_FROZEN_SELECTOR_SPELLING:
+        value["authority_profile"] = WAVE_B_SELECTOR_PROFILE
+    value["authority_profile"] = WAVE_B_SELECTOR_PROFILE
+    value["write_phase"] = WAVE_B_WRITE_PHASE
+    encoded = canonical_json(value)
+    _require(LEGACY_FROZEN_SELECTOR_SPELLING not in encoded, "CUTOVER-SELECTOR-LEGACY-SPELLING", "post-switch selector must not emit issue-store-frozen")
+    _require(value["authority_profile"] == WAVE_B_SELECTOR_PROFILE and value["write_phase"] == WAVE_B_WRITE_PHASE, "CUTOVER-SELECTOR-MISMATCH", "frozen selector vocabulary mismatch")
+    return value
+
+
+def _write_hermetic_frozen_selector(repo: Path, manifest: Mapping[str, Any]) -> None:
+    relative = manifest["authority_snapshot"]["selector_path"]
+    path = _safe_repo_file(repo, relative, "CUTOVER-SELECTOR-PATH")
+    _require(path.is_file() and not path.is_symlink(), "CUTOVER-SELECTOR-PATH", "selector missing")
+    current = json.loads(path.read_text(encoding="utf-8"))
+    _require(isinstance(current, dict), "CUTOVER-SELECTOR-MISMATCH", "selector is not an object")
+    updated = canonical_frozen_selector(current)
+    path.write_text(canonical_json(updated), encoding="utf-8")
+    _require(LEGACY_FROZEN_SELECTOR_SPELLING not in path.read_text(encoding="utf-8"), "CUTOVER-SELECTOR-LEGACY-SPELLING", "selector file retained legacy spelling")
+
+
+def apply_wave_b_effect(
+    command: str,
+    repo: Path,
+    manifest: Mapping[str, Any],
+    *,
+    crash_at: str | None = None,
+    receipt_path: Path | None = None,
+    receipt_root: Path | None = None,
+) -> dict[str, Any]:
+    _require(command in EFFECT_COMMANDS, "CUTOVER-EVENT-KIND", f"unsupported effect {command}")
+    _require(not _force_requested(), "CUTOVER-NO-OVERRIDE", "force/env bypass is forbidden")
+    repo = _absolute(repo, "--repo")
+    _require(_is_disposable_cutover_repo(repo), "CUTOVER-CAS-NOT-DISPOSABLE", "Wave-B effects run only in marked disposable repositories")
+    _require(manifest["cas"]["disposable_test_repo"] is True, "CUTOVER-CAS-NOT-DISPOSABLE", "manifest must declare disposable_test_repo")
+    approval_ref = manifest["approvals"]["ref"]
+    _require(isinstance(approval_ref, str) and approval_ref.startswith(WAVE_B_APPROVAL_PREFIX), "CUTOVER-APPROVAL-REF", "Wave-B effect manifests must bind refs/autodocs/approvals/...")
+    preflight = inspect(repo, manifest)
+    blocking = [
+        item
+        for item in preflight["findings"]
+        if item["code"] not in {"CUTOVER-STALE-OID", "CUTOVER-SELECTOR-MISMATCH"}
+    ]
+    _require(not blocking, "CUTOVER-EFFECT-PREFLIGHT", f"effect preflight blocked: {[item['code'] for item in blocking]}")
+    expectations: list[dict[str, Any]] = []
+    declared: list[str] = []
+    for record in manifest["refs"]:
+        name = record["name"]
+        _assert_dedicated_cas_ref(name)
+        declared.append(name)
+        if command == "rollback":
+            observed = resolve_ref(repo, name)
+            expectations.append({"name": name, "expected_oid": observed, "target_oid": record["expected_oid"]})
+        else:
+            expectations.append({"name": name, "expected_oid": record["expected_oid"], "target_oid": record["target_oid"]})
+    cas = execute_disposable_cas(
+        repo,
+        expectations,
+        declared,
+        dry_run=False,
+        crash_at=crash_at,
+        receipt_path=receipt_path,
+        receipt_root=receipt_root,
+    )
+    if command in ("freeze", "switch", "activate"):
+        _write_hermetic_frozen_selector(repo, manifest)
+        selector = json.loads(_safe_repo_file(repo, manifest["authority_snapshot"]["selector_path"]).read_text(encoding="utf-8"))
+        _require(selector.get("write_phase") == WAVE_B_WRITE_PHASE, "CUTOVER-FROZEN-WRITE", "item/claim writes must remain frozen")
+        _require(selector.get("authority_profile") == WAVE_B_SELECTOR_PROFILE, "CUTOVER-SELECTOR-MISMATCH", "issue store authority requires frozen write phase")
+    return {
+        "schema": RESULT_SCHEMA,
+        "command": command,
+        "status": cas["status"],
+        "transaction_id": manifest["transaction_id"],
+        "manifest_digest": digest_value(manifest),
+        "cas": cas,
+        "mutation": cas.get("mutation", "none"),
+        "code": None,
+        "findings": [],
+    }
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -786,7 +903,18 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: Iterable[str] | None = None) -> int:
     args = _parser().parse_args(list(argv) if argv is not None else None)
     if args.command in EFFECT_COMMANDS:
-        sys.stdout.write(canonical_json(blocked_effect(args.command))); return 2
+        repo_path = Path(args.repo)
+        try:
+            if _force_requested():
+                raise CutoverError("CUTOVER-NO-OVERRIDE", "force/env bypass is forbidden")
+            if not repo_path.is_absolute() or not _is_disposable_cutover_repo(repo_path.resolve(strict=False)):
+                sys.stdout.write(canonical_json(blocked_effect(args.command))); return 2
+            repo = _absolute(repo_path, "--repo")
+            manifest = read_manifest(Path(args.manifest))
+            result = apply_wave_b_effect(args.command, repo, manifest)
+            sys.stdout.write(canonical_json(result)); return 0 if result["status"] in {"APPLIED", "RECOVERED", "PASS"} else 2
+        except CutoverError as exc:
+            sys.stdout.write(canonical_json({"schema": RESULT_SCHEMA, "command": args.command, "status": "BLOCKED", "code": exc.code, "message": exc.message, "mutation": "none"})); return 2
     try:
         repo = _absolute(Path(args.repo), "--repo"); _require((repo / ".git").exists(), "CUTOVER-REPO", "not a Git worktree")
         manifest = read_manifest(Path(args.manifest))
