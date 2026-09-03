@@ -17,3 +17,4 @@ NOTES: worf accepted the offer for 0037-29.
 OFFERED: priority 1: benjamin, worf
 STATUS: OPEN
 NOTES: Re-dispatched shadow migrations via offer 1788420050946-98d33df3.
+- note: Cancelled offer 1788420050946-98d33df3 because Worf dropped it (unverified busy task). Re-dispatched 0037-29 to Worf via offer 1788420443941-64a35f2a.
