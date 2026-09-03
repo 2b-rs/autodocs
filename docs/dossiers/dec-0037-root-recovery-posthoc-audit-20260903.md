@@ -58,10 +58,10 @@
 2. **Patch Byte-Equivalence:**
    - Verified `git diff 8bc67331e6..f7d9386f9a` against `git diff 8f44a13601..63c6b52cff`.
    - Result: **100% byte-identical** across all 4 touched paths:
-     - `_src/tools/issuectl.py`
-     - `_src/tests/test_issuectl.py`
-     - `_src/tests/test_issuectl_closure.py`
-     - `_src/tests/test_issuectl_findings_decisions.py`
+     - `DONE-worf-0037-42-repair-20260903.md`
+     - `TODO-worf-0037-42-repair-20260903.md`
+     - `_src/tests/test_agent_bootstrap.py`
+     - `_src/tools/agent_bootstrap.py`
 3. **Ref & Object Reachability:**
    - `8bc67331e6`: Head of branch `0037-43-implementation-20260903` (reachable).
    - `63c6b52cff`: Head of branch `0037-42-repair-20260903` (reachable).
