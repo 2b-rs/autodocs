@@ -42,4 +42,14 @@ authorized.
 - Provenance merge `6384993add00516093be5afa8f67ed3a9944afed`
   merges SUPPORT `fd82621a4a` into the target without conflict and changes
   exactly the three reviewed package paths before this claim is added.
-- Validation and integration gates remain pending.
+- SHA-256 checks match the SUPPORT pins for the Data claim
+  (`22aaad599f6b500420d7a58864f3adb2db0270d3fa87a9e6fb2dc8605bb56d92`)
+  and decision record
+  (`8a8685f58c92a5438ed8f8c9505e52f3acf10e7b3dc2e1caef419d14b72f7b7a`).
+  The SUPPORT artifact digest is
+  `51f0228407720c4280e20352bb7023b2ab2cf366869c4c43a1082aa52b38abe3`.
+- `DEC-0037-006` is unique among candidate decision records. Durable authority
+  status is resolved Option A, and Data/Saru/Geordi are distinct identities.
+- `git diff --check` passes. `process_doc_doctor.py --root . --json` exits `0`
+  with `ok: true`; its two errors are inherited and outside assigned paths.
+- Candidate hygiene and the guarded root sequence remain pending.
