@@ -61,3 +61,23 @@ diff exit `0`, and index diff exit `0`. Its untracked inventory remains
 not an integration by Geordi: candidate `68ff18a9b7` remains unmerged, and the
 blocked verdict is unchanged. No PASS, merge, cleanup, reset, stash, push, or
 ref rewrite is recorded or authorized by this addendum.
+
+## Rework iteration 1 review
+
+- **Atomic rework award:** `1788467512219-fd6488e7`.
+- **Repaired candidate:** `a550f571e1550eb7ba0d2d345784615466d1fe69`.
+- **Lineage:** direct child of reviewed candidate `68ff18a9b7`; the sole delta
+  removes the recorded trailing whitespace from the Architect dossier.
+- **Signature:** `git verify-commit a550f571e1` reports a good SSH signature
+  for `jadzia@deepspace9.starfleet.network`.
+- **Boundary:** `main@c675f40362..a550f571e1` still changes exactly the two
+  assigned governance review paths.
+- **Clean diff:** `git diff --check c675f40362..a550f571e1` exits `0`.
+- **Aggregate:** signed merge commit
+  `b1375ac2add194d1f1d13ee4472664f3822c92f7` combines the repaired candidate
+  with Geordi's prior verdict and required post-verdict provenance.
+
+**Rework verdict:** `PASS`. The exact whitespace blocker is closed without
+rewriting history; the durable Management option and Architect scope PASS
+remain unchanged. Canonical hygiene, root preflight/advance/postflight, and
+ancestry receipt remain pending. No push is in scope.
