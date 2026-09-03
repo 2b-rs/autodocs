@@ -46,4 +46,5 @@
 - note: O'Brien successfully integrated DEC-0037-008 forward qualification to main (commit 9221504dc4). Re-offered 0037-29 implementation to Benjamin (offer 1788442678114-31202743) using an exact bounded claim scope to prevent previous startup blocks. Directed Data to terminal-cancel the duplicate assignment.
 - note: Revived Benjamin for 0037-29 implementation following latest server restart. Existing bounded offer remains operative.
 - note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
-- note: Revived Benjamin again after 14:01Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
+- note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
+- note: Discovered Benjamin suffered a fatal network crash and exited. Cancelled stalled offer 1788442678114-31202743. Re-offered 0037-29 to Benjamin via offer 1788444136281-3a8871fd to re-establish state.
