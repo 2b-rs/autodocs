@@ -40,3 +40,4 @@
 - note: Benjamin dropped 0037-30 reconciliation during 6th restart. However, 0037-30 is BLOCKED by incomplete 0037-29. Cancelled 0037-30. Re-offering 0037-29 (as 0037-cutover) to implement DEC-0037-008 disposition policy.
 - note: Data's duplicate award is blocked by startup scope issues. Re-offered 0037-29 implementation to Benjamin/Worf (offer 1788441433880-6dee3e48) to retain a valid active owner and unblock the cutover.
 - note: Cancelled 0037-29 implementation (Benjamin) after restart drop. Implementation MUST wait until Geordi integrates the DEC-0037-008 architecture policy onto main. DeepSpace9 stands down on 0037-29 implementation until canonical receipt.
+- note: DEC-0037-008 architecture integrated on main by Geordi. Resuming 0037-29 implementation. Re-offered 0037-29 (as 0037-cutover) to Benjamin/Worf with amended open scope.
