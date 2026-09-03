@@ -66,6 +66,9 @@ LEGACY_V1_CONTRACT = {
     "instruction_bundle": "docs/pipeline/agent-instructions/legacy/index.md",
 }
 V2_PHASES = {
+    "legacy-writable": ("legacy-lists", "legacy-writable", "legacy"),
+    "legacy-frozen": ("legacy-lists", "frozen", "current"),
+    "legacy-restored": ("legacy-lists", "legacy-restored", "legacy"),
     "issue-store-writable": ("issue-store", "issue-store-writable", "future"),
     "issue-store-write-frozen": ("issue-store", "write-frozen", "future"),
 }

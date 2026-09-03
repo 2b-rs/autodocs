@@ -29,13 +29,13 @@ Per Architect review and Management decision `decision-0037-43-hosted-enforcemen
 ## 3. Implemented Components & Strict Selector Contract (I43-BLOCK-002 / I43-BLOCK-003 Resolution)
 - **Integration Policy Gate**: `_src/tools/issue_integration_policy.py`
   * Strictly validates `agent-workflow.json` schema (`agent-workflow-bootstrap@v1` / `v2`) and required fields without loose defaults.
-  * Rejects all placeholder, sentinel, all-identical, or mismatched selector digests.
+  * Rejects placeholder, sentinel, all-identical, or mismatched selector digests except for the exact live transitional legacy-writable v1 tuple documented above.
   * Validates `authority_profile`, `authority_epoch`, `write_phase`, and instruction bundle consistency (source, digests, members).
-  * Accepts only supported profile/phase combinations: `(legacy-lists, legacy-writable)`, `(legacy-lists, frozen)`, `(legacy-lists, legacy-restored)`, `(issue-store, issue-store-writable)`, `(issue-store, write-frozen)`.
+  * Accepts only canonical epoch/profile/phase/bundle combinations and binds v1/v2 version, capability, and transport/execution metadata exactly.
   * Requires explicit valid base+candidate boundary and rejects derivation failure without fallback.
   * Rejects direct modifications to generated backlog views (`TODO.md`, `DONE.md`) and legacy claim files (`TODO-*.md`) under `issue-store` profile.
   * Enforces fail-closed behavior (exit 1 on rejection across human CLI and `--json` invocations).
 - **Workflow Protection Gate**: `.github/workflows/issue-policy.yml`
-  * Executes `_src/tools/issue_integration_policy.py --root . --base ${{ github.event.pull_request.base.sha || 'main' }}` on PRs and pushes to `main` and `0037-*`.
+  * Executes `_src/tools/issue_integration_policy.py` with explicit event-derived immutable base and candidate commit identities on PRs and pushes to `main` and `0037-*`.
 - **Automated Adversarial Test Suite**: `_src/tests/test_issue_integration_policy.py`
-  * 9/9 unit and subprocess tests verifying conforming changes, schema rejections, phase contradictions, placeholder/mismatched digest rejections, boundary derivation rejections, generated view rejections, claim rejections, and CLI exit codes.
+  * Adversarial unit and subprocess tests cover the live transitional success case, every rejected tuple field, selector/member digest drift, unsupported metadata, generated-view policy, missing/non-ancestor boundaries, candidate identity, dirty trees, and CLI requirements.
