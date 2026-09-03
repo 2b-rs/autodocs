@@ -30,3 +30,5 @@
 - note: 0037-29 implementation review ready. Offered integration to obrien as 0037-cutover (offer 1788436916615-5b271faa).
 - note: O'Brien dropped 0037-cutover during restart. Re-offered 0037-cutover (offer 1788437251698-ced6805f).
 - note: O'Brien dropped 0037-cutover during another restart. Re-offered 0037-cutover (offer 1788437678714-ce3b921e).
+- note: 0037-cutover (0037-29 integration) accepted. Worf's 0037-29 accepted.
+- note: Offered 0037-30 reconciliation (as 0037-cutover) to worf, benjamin (offer 1788437940615-b6740524) after restart drop.
