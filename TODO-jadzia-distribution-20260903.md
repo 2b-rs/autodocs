@@ -13,3 +13,7 @@
 - note: 0033-07.01-integration accepted. Feature 0033 terminal cutover complete.
 - note: DEC-0044-038-integration offered to obrien (offer 1788433737757-5c932465).
 - note: DEC-0044-038-integration accepted. Architecture record on main.
+- note: Cancelled previous offers for 0037-29, 0046-01.01, 0050-01 due to supervisor restart crashing workers.
+- note: Re-offered 0037-29 (offer 1788435564954-c1296510).
+- note: Re-offered 0046-01.01 (offer 1788435564989-f6677070).
+- note: Re-offered 0050-01 (offer 1788435565017-704bb274).
