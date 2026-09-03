@@ -81,3 +81,31 @@ ref rewrite is recorded or authorized by this addendum.
 rewriting history; the durable Management option and Architect scope PASS
 remain unchanged. Canonical hygiene, root preflight/advance/postflight, and
 ancestry receipt remain pending. No push is in scope.
+
+## Canonical integration receipt
+
+- **Repository common directory:**
+  `/Users/tobias.anton/devel/autodocs/.git`.
+- **Carrying candidate:**
+  `3deb72dec9c8773fb9842615a03627b03fa0ac97`.
+- **Main before:** `c675f40362e11154bb47d04fd695d6cc22a8ae4a`.
+- **Main after:** `3deb72dec9c8773fb9842615a03627b03fa0ac97`.
+- **Root advance:** `git -C /Users/tobias.anton/devel/autodocs merge --ff-only
+  3deb72dec9c8773fb9842615a03627b03fa0ac97`.
+- **Preconditions and postcondition:** exact-candidate hygiene passed; immediate
+  root preflight passed; root fast-forward succeeded; immediate root postflight
+  passed. Each hygiene pass inspected `125` registered worktrees.
+- **Ancestry:** `git merge-base --is-ancestor 3deb72dec9... main` exits `0`.
+  Because `a550f571e1` is a parent-side ancestor of the signed aggregate, the
+  repaired Architect candidate is also canonically reachable.
+- **Root state after:** branch `main`; `HEAD == refs/heads/main == 3deb72dec9`;
+  tracked and index diff checks exit `0`; untracked inventory remains
+  `.worktrees/` and `allowed_signers`.
+- **Remote:** push and remote observation were not in scope and were not
+  performed.
+
+This receipt closes the governance-only integration. It does not integrate or
+accept product work, activate the selector, change markers, configure remote
+policy, or authorize push/publication. Its carrying commit is a fresh closure
+candidate and must pass the same guarded root sequence before it becomes the
+final canonical receipt ref.

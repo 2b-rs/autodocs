@@ -3,7 +3,7 @@
 - **owner_token:** `agent:geordi:0037-43-local-gate-scope-review-integration:1788467188756-78efe352`
 - **assignment:** atomic award `1788467188756-78efe352`
 - **capability / role:** `privileged` / independent Integrator
-- **state:** `[x]` rework review passed; conditional canonical integration pending
+- **state:** `[x]` rework review and canonical integration complete
 - **branch:** `integrate-0037-43-local-gate-scope-review-20260903`
 - **worktree:** `/private/tmp/integrate-0037-43-local-gate-scope-review-20260903`
 - **baseline:** `main@c675f40362e11154bb47d04fd695d6cc22a8ae4a`
@@ -49,3 +49,21 @@ remote, marker, selector, Acceptance, push, cleanup, or ref rewrite is allowed.
   blocked-verdict provenance, and post-verdict root-transition addendum.
 - Next: exact aggregate hygiene and guarded root preflight / fast-forward /
   postflight, followed by canonical ancestry receipt. No push.
+
+## Canonical receipt
+
+- Common directory: `/Users/tobias.anton/devel/autodocs/.git`.
+- Integrated carrying candidate:
+  `3deb72dec9c8773fb9842615a03627b03fa0ac97`.
+- `main`: `c675f40362e11154bb47d04fd695d6cc22a8ae4a` →
+  `3deb72dec9c8773fb9842615a03627b03fa0ac97` by root `--ff-only` merge.
+- Exact-candidate hygiene, immediate root preflight, and immediate root
+  postflight each passed across `125` registered worktrees.
+- `git merge-base --is-ancestor 3deb72dec9... main` exits `0`; repaired source
+  candidate `a550f571e1` is therefore also an ancestor through the signed
+  aggregate merge.
+- Root branch/HEAD and `refs/heads/main` agree at `3deb72dec9`; tracked/index
+  diffs exit `0`; untracked inventory remains `.worktrees/` and
+  `allowed_signers`. No push was performed.
+- Next: commit this receipt as a fresh closure candidate, rerun its hygiene and
+  guarded root preflight/advance/postflight, then return the final ancestry ref.
