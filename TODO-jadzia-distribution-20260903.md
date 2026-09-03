@@ -41,3 +41,4 @@
 - note: Data's duplicate award is blocked by startup scope issues. Re-offered 0037-29 implementation to Benjamin/Worf (offer 1788441433880-6dee3e48) to retain a valid active owner and unblock the cutover.
 - note: Cancelled 0037-29 implementation (Benjamin) after restart drop. Implementation MUST wait until Geordi integrates the DEC-0037-008 architecture policy onto main. DeepSpace9 stands down on 0037-29 implementation until canonical receipt.
 - note: DEC-0037-008 architecture integrated on main by Geordi. Resuming 0037-29 implementation. Re-offered 0037-29 (as 0037-cutover) to Benjamin/Worf with amended open scope.
+- note: Integration of DEC-0037-008 by Geordi (commit 7c9e228c4c) was discovered to be invalid (failed hygiene exit 2, missing claim file). Cancelled Benjamin's 0037-29 implementation offer (1788441737676-7f78c694). DeepSpace9 again stands down on 0037-29 implementation until Enterprise reconciles the main branch conflict.
