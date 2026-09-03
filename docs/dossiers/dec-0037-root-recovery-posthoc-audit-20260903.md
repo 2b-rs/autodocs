@@ -92,3 +92,47 @@
   1. `0037-43` integration candidate `8bc67331e6` may now be fast-forward merged to `main`.
   2. `0037-42` rederived candidate `63c6b52cff` may then be integrated to `main` following `0037-43`.
   3. `0037-44` candidate `532e3b2445` proceeds under its dedicated assignment.
+
+---
+
+## 7. Independent Review of Corrected Audit Candidate
+
+- **Reviewer:** `geordi` (privileged Integrator for Team Enterprise; distinct
+  from audit author `obrien` and recovery actor `jadzia`).
+- **Atomic award:** `1788464473827-2e4947d2`.
+- **Reviewed candidate:** `52d40fd76de29707284190e34ba40242e80257eb`
+  against `main@8f44a13601a7b54ebc9458974309919d80a768b0`.
+- **Authority precedence:** durable status reports
+  `decision-1788461624860-8c87f9ea` resolved to
+  `hold_root_and_integrations` at `2026-09-03T19:17:18Z`, then
+  `decision-1788461730363-9f359e52` resolved on the materially changed
+  topology to `retain_preserve_audit` at `2026-09-03T19:17:29Z`.
+- **Preservation:** annotated tag
+  `preserved/0037-42-pre-rebase-f7d9386f9a-20260903` resolves exactly to
+  `f7d9386f9aa3ea62bd6d7fe21743c4e3a3d076e9`; `git verify-tag --raw`
+  reports a good SSH signature for `obrien@deepspace9.starfleet.network`.
+- **Chronology and topology:** root reflog records the original
+  `f7d9386f9a` commit on parent `8bc67331e6`, checkout back to
+  `main@8f44a13601`, rebase start, rederived `63c6b52cff` on parent
+  `8f44a13601`, and final checkout to `main`, in that order.
+- **Byte equivalence:** independent `cmp` of `git diff
+  8bc67331e6..f7d9386f9a` and `git diff
+  8f44a13601..63c6b52cff` exits `0`; both patch files have SHA-256
+  `b51ccdb86146b5f02627a9e680a98f221d1859da52c09ebf007c7fe5c51d9143`
+  and touch exactly the four paths named in section 4.
+- **Root state:** root is `main@8f44a13601`; tracked worktree and index diffs
+  both exit `0`. Its observed untracked inventory exactly matches section 2
+  and was not modified.
+- **Candidate boundary and signatures:** `main..52d40fd76d` changes exactly
+  `docs/dossiers/dec-0037-root-recovery-posthoc-audit-20260903.md` and
+  `docs/pipeline/branch-workflow.md`; both O'Brien commits have good SSH
+  signatures and `git diff --check` exits `0`.
+- **Pre-recovery limitation:** no pre-recovery hygiene/preflight result exists
+  at the now-past root state. Current state and reflog can be inspected, but
+  cannot recreate or convert that unavailable historical gate into a pass.
+- **Independent test:** `python3 test.py` reports `Ran 100 tests` and `OK`.
+
+**Independent verdict:** `PASS` for corrected candidate `52d40fd76d`. This
+verdict validates the bounded post-hoc evidence only; it grants no retroactive
+preflight result, product integration, Acceptance, release, push, cleanup, or
+authority beyond the separately awarded conditional audit integration.
