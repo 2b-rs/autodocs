@@ -594,6 +594,14 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertEqual(first["report"], second["report"])
             canonical = repo / "_src/output/issue-migration"
             self.assertEqual(IMP._history_root(canonical, repo), canonical.resolve())
+            repo_alias = Path(tmp) / "repo-alias"
+            repo_alias.symlink_to(repo, target_is_directory=True)
+            alias_canonical = repo_alias / "_src/output/issue-migration"
+            rejected_alias = _live_root_alias_importer()
+            with self.assertRaises(rejected_alias.ImportErrorClosed) as red:
+                rejected_alias._history_root(alias_canonical, repo_alias)
+            self.assertEqual(red.exception.code, "IMP-LIVE-ROOT")
+            self.assertEqual(IMP._history_root(alias_canonical, repo_alias), canonical.resolve())
             outside = Path(tmp) / "outside-history"
             self.assertEqual(IMP._history_root(outside, repo), outside.resolve())
             forbidden = [
@@ -611,8 +619,18 @@ class ImportLegacyTests(unittest.TestCase):
             canonical.mkdir(parents=True)
             alias = repo / "migration-alias"
             alias.symlink_to(canonical, target_is_directory=True)
-            with self.assertRaises(IMP.ImportErrorClosed):
+            with self.assertRaises(IMP.ImportErrorClosed) as internal_alias:
                 IMP._history_root(alias, repo)
+            self.assertEqual(internal_alias.exception.code, "IMP-LIVE-ROOT")
+            outside_alias = Path(tmp) / "outside-alias"
+            outside_alias.symlink_to(canonical, target_is_directory=True)
+            with self.assertRaises(IMP.ImportErrorClosed) as external_alias:
+                IMP._history_root(outside_alias, repo)
+            self.assertEqual(external_alias.exception.code, "IMP-LIVE-ROOT")
+            outside.mkdir()
+            safe_outside_alias = Path(tmp) / "safe-outside-alias"
+            safe_outside_alias.symlink_to(outside, target_is_directory=True)
+            self.assertEqual(IMP._history_root(safe_outside_alias, repo), outside.resolve())
 
     def test_property_positive_acceptance_ref_membership_exhaustive_64_cases(self):
         """AE-5: exhaustive typed-field subsets; only three positive current bindings are members."""
@@ -727,6 +745,18 @@ def _unbound_authority_importer():
     path = Path(tempfile.mkdtemp()) / "issue_import_legacy_2765459ce6.py"
     path.write_bytes(raw)
     spec = importlib.util.spec_from_file_location("issue_import_legacy_2765459ce6", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _live_root_alias_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "f22686fb6985c0371ac38f9a8325714d04147257:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_f22686fb69.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_f22686fb69", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

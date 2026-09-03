@@ -1286,18 +1286,21 @@ def _is_within(path: Path, parent: Path) -> bool:
 
 
 def _history_root(root: Path, repo: Path) -> Path:
+    repo_lexical = Path(os.path.abspath(os.path.expanduser(str(repo))))
     repo_resolved = repo.resolve()
     lexical = Path(os.path.abspath(os.path.expanduser(str(root))))
     resolved = root.expanduser().resolve()
-    canonical = (repo_resolved / "_src/output/issue-migration").resolve()
-    lexical_in_repo = _is_within(lexical, repo_resolved)
+    canonical_lexical = repo_lexical / "_src/output/issue-migration"
+    canonical_resolved = (repo_resolved / "_src/output/issue-migration").resolve()
+    lexical_in_repo = _is_within(lexical, repo_lexical)
     resolved_in_repo = _is_within(resolved, repo_resolved)
+    if lexical == canonical_lexical and resolved == canonical_resolved:
+        return resolved
     if lexical_in_repo or resolved_in_repo:
-        if lexical != canonical or resolved != canonical:
-            raise ImportErrorClosed(
-                "IMP-LIVE-ROOT",
-                "in-repository history root must be exactly _src/output/issue-migration without aliases",
-            )
+        raise ImportErrorClosed(
+            "IMP-LIVE-ROOT",
+            "in-repository history root must be exactly _src/output/issue-migration without aliases",
+        )
     return resolved
 
 
