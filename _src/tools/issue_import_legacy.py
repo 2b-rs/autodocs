@@ -61,10 +61,42 @@ PLACEHOLDER_EVIDENCE_RE = re.compile(r"(?:\bpending\b|\blocal-[A-Za-z0-9._-]+)",
 MIGRATION_SCHEMA_REL = "issues/_schema/migration-state-v1.schema.json"
 CLOSURE_SCHEMA_REL = "issues/_schema/issue-closure-v1.schema.json"
 ITEM_SCHEMA_REL = "issues/_schema/issue-item-v1.schema.json"
+DISPOSITION_SCHEMA_REL = "issues/_schema/migration-dispositions-v1.schema.json"
+DISPOSITION_SCHEMA = "migration-dispositions@v1"
+DISPOSITION_KINDS = (
+    "retain-provenance-no-active-lease",
+    "retain-provenance-no-evidence-credit",
+    "source-repaired",
+    "archive-excluded-from-active-migration",
+)
+DISPOSITION_MALFORMED_RULES = frozenset(
+    {"IMP-FEATURE-HEADER-MALFORMED", "IMP-TASK-HEADER-MALFORMED"}
+)
+DISPOSITION_FIELD_RULES = frozenset(
+    {"IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER", "IMP-REF-NO-EVIDENCE-CREDIT"}
+)
+DISPOSITION_ENTRY_REQUIRED = (
+    "finding_id",
+    "finding_rule",
+    "source_locator",
+    "item",
+    "source_commit",
+    "kind",
+    "reason",
+    "deciding_identity",
+    "deciding_role",
+    "authority_ref",
+    "decided_at",
+    "evidence_refs",
+    "payload_digest",
+    "signature_material",
+    "signature_verified",
+)
 SCHEMA_IDENTITIES = {
     "issue-item": ITEM_SCHEMA_REL,
     "issue-closure": CLOSURE_SCHEMA_REL,
     "migration-state": MIGRATION_SCHEMA_REL,
+    "migration-dispositions": DISPOSITION_SCHEMA_REL,
 }
 
 
@@ -530,6 +562,181 @@ def load_blobs(inv, repo: Path, source_commit: Optional[str], source_tree: Optio
     return blobs, source_commit
 
 
+def _blob_path_for_locator(locator: str) -> str:
+    return locator.split(":", 1)[0]
+
+
+def _digest_prefixed(raw: bytes) -> str:
+    return "sha256:" + _sha256_bytes(raw)
+
+
+def expected_finding_digests(finding: Mapping[str, object], blobs: Mapping[str, Tuple[bytes, object]]) -> Tuple[Optional[str], Optional[str]]:
+    locator = str(finding["locator"])
+    path = _blob_path_for_locator(locator)
+    blob = blobs.get(path)
+    blob_digest = _digest_prefixed(blob[0]) if blob is not None else None
+    field_digest = None
+    if str(finding.get("rule")) in DISPOSITION_FIELD_RULES:
+        field_digest = _digest_prefixed(locator.encode("utf-8"))
+    return blob_digest, field_digest
+
+
+def disposition_payload_digest(entry: Mapping[str, object]) -> str:
+    payload = {
+        key: entry[key]
+        for key in (
+            "finding_id",
+            "finding_rule",
+            "source_locator",
+            "item",
+            "source_commit",
+            "source_blob_digest",
+            "referenced_field_digest",
+            "kind",
+            "reason",
+            "deciding_identity",
+            "deciding_role",
+            "authority_ref",
+            "decided_at",
+            "evidence_refs",
+            "archive_retention_justification",
+            "parser_independent_archival_safe",
+            "cannot_participate_in_active_state_reason",
+        )
+        if key in entry
+    }
+    return _digest_prefixed(_canonical_json(payload).encode("utf-8"))
+
+
+def validate_disposition_document(document: Mapping[str, object]) -> None:
+    if document.get("schema") != DISPOSITION_SCHEMA:
+        raise ImportErrorClosed("DISP-MALFORMED", "schema must be migration-dispositions@v1")
+    entries = document.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise ImportErrorClosed("DISP-MALFORMED", "entries must be a non-empty array")
+    extra = set(document) - {"schema", "entries"}
+    if extra:
+        raise ImportErrorClosed("DISP-MALFORMED", f"unknown document fields {sorted(extra)}")
+    seen = set()
+    for raw in entries:
+        if not isinstance(raw, dict):
+            raise ImportErrorClosed("DISP-MALFORMED", "entry must be an object")
+        missing = [key for key in DISPOSITION_ENTRY_REQUIRED if key not in raw]
+        if missing:
+            raise ImportErrorClosed("DISP-MISSING", f"entry missing {missing}")
+        unknown = set(raw) - set(DISPOSITION_ENTRY_REQUIRED) - {
+            "source_blob_digest",
+            "referenced_field_digest",
+            "archive_retention_justification",
+            "parser_independent_archival_safe",
+            "cannot_participate_in_active_state_reason",
+        }
+        if unknown:
+            raise ImportErrorClosed("DISP-MALFORMED", f"unknown entry fields {sorted(unknown)}")
+        finding_id = raw["finding_id"]
+        if finding_id in seen:
+            raise ImportErrorClosed("DISP-DUPLICATE", f"duplicate finding_id {finding_id}")
+        seen.add(finding_id)
+        if not isinstance(finding_id, str) or not re.fullmatch(r"IMP-[0-9a-f]{16}", finding_id):
+            raise ImportErrorClosed("DISP-MALFORMED", "invalid finding_id")
+        if raw["kind"] not in DISPOSITION_KINDS:
+            raise ImportErrorClosed("DISP-MALFORMED", f"unknown kind {raw['kind']!r}")
+        if not str(raw.get("reason") or "").strip():
+            raise ImportErrorClosed("DISP-MISSING", "reason is empty")
+        if not isinstance(raw.get("evidence_refs"), list) or not raw["evidence_refs"]:
+            raise ImportErrorClosed("DISP-MISSING", "evidence_refs must be non-empty")
+        if ("source_blob_digest" in raw) == ("referenced_field_digest" in raw):
+            raise ImportErrorClosed("DISP-MALFORMED", "exactly one of source_blob_digest or referenced_field_digest is required")
+        identity = str(raw["deciding_identity"])
+        if not re.match(r"^(agent|authority|legacy-authority):.+$", identity):
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "deciding_identity is not an authority grammar")
+        if raw.get("signature_verified") is not True:
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_verified must be true")
+        if not str(raw.get("signature_material") or "").strip():
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material missing")
+        expected = disposition_payload_digest(raw)
+        if raw["payload_digest"] != expected:
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "payload_digest does not authenticate the entry")
+        if raw["kind"] == "archive-excluded-from-active-migration":
+            if not str(raw.get("archive_retention_justification") or "").strip():
+                raise ImportErrorClosed("DISP-MALFORMED", "archive exclusion requires retention justification")
+            if raw.get("parser_independent_archival_safe") is not True:
+                raise ImportErrorClosed("DISP-MALFORMED", "archive exclusion requires parser-independent archival safety")
+            if not str(raw.get("cannot_participate_in_active_state_reason") or "").strip():
+                raise ImportErrorClosed("DISP-MALFORMED", "archive exclusion requires why the bytes cannot be active state")
+
+
+def load_disposition_document(path: Path) -> dict:
+    try:
+        document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ImportErrorClosed("DISP-MALFORMED", f"cannot read dispositions: {exc}") from exc
+    if not isinstance(document, dict):
+        raise ImportErrorClosed("DISP-MALFORMED", "dispositions document must be an object")
+    validate_disposition_document(document)
+    return document
+
+
+def apply_dispositions(
+    *,
+    document: Mapping[str, object],
+    findings: Sequence[Mapping[str, object]],
+    blobs: Mapping[str, Tuple[bytes, object]],
+    source_commit: Optional[str],
+) -> dict:
+    validate_disposition_document(document)
+    blocking = [finding for finding in findings if finding.get("severity") == "blocking"]
+    by_id = {str(finding["id"]): finding for finding in blocking}
+    if len(by_id) != len(blocking):
+        raise ImportErrorClosed("DISP-CONFLICT", "blocking findings are not uniquely identified")
+    pairs = []
+    for entry in document["entries"]:
+        finding_id = entry["finding_id"]
+        finding = by_id.get(finding_id)
+        if finding is None:
+            raise ImportErrorClosed("DISP-UNMATCHED", f"disposition does not match a blocking finding: {finding_id}")
+        if entry["finding_rule"] != finding["rule"] or entry["source_locator"] != finding["locator"] or entry["item"] != finding["item"]:
+            raise ImportErrorClosed("DISP-UNMATCHED", f"disposition identity diverges from finding {finding_id}")
+        if source_commit and entry["source_commit"] != source_commit:
+            raise ImportErrorClosed("DISP-WRONG-COMMIT", f"disposition commit is not the import source for {finding_id}")
+        blob_digest, field_digest = expected_finding_digests(finding, blobs)
+        if "referenced_field_digest" in entry:
+            if field_digest is None or entry["referenced_field_digest"] != field_digest:
+                raise ImportErrorClosed("DISP-WRONG-DIGEST", f"referenced-field digest mismatch for {finding_id}")
+        else:
+            if blob_digest is None or entry["source_blob_digest"] != blob_digest:
+                raise ImportErrorClosed("DISP-WRONG-DIGEST", f"source-blob digest mismatch for {finding_id}")
+        if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in DISPOSITION_MALFORMED_RULES:
+            raise ImportErrorClosed(
+                "DISP-MALFORMED",
+                "archive-excluded-from-active-migration is repair-first and only for malformed structural syntax",
+            )
+        pairs.append({
+            "finding_id": finding_id,
+            "rule": finding["rule"],
+            "locator": finding["locator"],
+            "item": finding["item"],
+            "kind": entry["kind"],
+            "result": "covered",
+        })
+    covered = {pair["finding_id"] for pair in pairs}
+    if len(covered) != len(pairs):
+        raise ImportErrorClosed("DISP-MANY-TO-ONE", "one disposition covered more than one finding")
+    missing = sorted(set(by_id) - covered)
+    if missing:
+        raise ImportErrorClosed("DISP-MISSING", f"blocking findings lack dispositions: {missing}")
+    pairs.sort(key=lambda pair: (pair["finding_id"], pair["rule"], pair["locator"]))
+    return {
+        "schema": "migration-disposition-coverage@v1",
+        "disposition_manifest_digest": _digest_prefixed(_canonical_json(document).encode("utf-8")),
+        "source_commit": source_commit,
+        "pairs": pairs,
+        "blocking_after_coverage": False,
+        "closure_json_synthesized": False,
+        "credit_granted": False,
+    }
+
+
 def classify_state(marker: str, findings: List[dict], item_id: str, locator: str) -> Optional[str]:
     if marker not in MARKER_STATE:
         findings.append(
@@ -581,6 +788,7 @@ def import_legacy(
     named_files: Optional[Sequence[str]] = None,
     display_root: Optional[str] = None,
     emit_closures: bool = False,
+    dispositions: Optional[Path] = None,
 ) -> dict:
     inv = _load_inventory_module(repo)
     dest = resolve_disposable_root(root, repo)
@@ -813,7 +1021,15 @@ def import_legacy(
     items_out.sort(key=lambda i: i["id"])
     written.sort()
     closures_written.sort()
+    coverage = None
+    if dispositions is not None:
+        document = load_disposition_document(Path(dispositions))
+        coverage = apply_dispositions(
+            document=document, findings=findings, blobs=blobs, source_commit=commit,
+        )
     blocking = [f for f in findings if f["severity"] == "blocking"]
+    if coverage is not None:
+        blocking = []
     tree_digest = hashlib.sha256()
     for rel in sorted(written + claims_written + closures_written):
         payload = (dest / rel).read_bytes()
@@ -834,11 +1050,25 @@ def import_legacy(
         "claim_json_emitted": False,
         "closure_json_emitted": bool(closures_written),
         "approval_emitted": False,
+        "disposition_coverage": coverage,
     }
     atomic_write(dest / "import-manifest.json", _canonical_json(manifest).encode("utf-8"), dest)
     atomic_write(dest / "import-findings.json", _canonical_json(findings).encode("utf-8"), dest)
-    # Mutation guard: every written file remains under dest.
-    for rel in written + claims_written + closures_written + ["import-manifest.json", "import-findings.json"]:
+    extras = ["import-manifest.json", "import-findings.json"]
+    if coverage is not None:
+        atomic_write(dest / "import-disposition-coverage.json", _canonical_json(coverage).encode("utf-8"), dest)
+        history_path = dest / "import-disposition-runs.jsonl"
+        history_line = _canonical_json({
+            "schema": "migration-disposition-run@v1",
+            "source_commit": commit,
+            "disposition_manifest_digest": coverage["disposition_manifest_digest"],
+            "coverage_digest": _digest_prefixed(_canonical_json(coverage).encode("utf-8")),
+            "result": "covered",
+        }).rstrip("\n")
+        with history_path.open("a", encoding="utf-8") as stream:
+            stream.write(history_line + "\n")
+        extras.extend(["import-disposition-coverage.json", "import-disposition-runs.jsonl"])
+    for rel in written + claims_written + closures_written + extras:
         assert_under_root(dest / rel, dest)
     return manifest
 
@@ -1244,6 +1474,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--run-id", help="production mode; --root is immutable history root")
     parser.add_argument("--source-ref", help="production source CAS ref")
     parser.add_argument("--baseline-commit", help="production initial source watermark")
+    parser.add_argument("--dispositions", help="migration-dispositions@v1 document (hermetic/tooling only)")
     args = parser.parse_args(argv)
     try:
         if args.run_id:
@@ -1264,6 +1495,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             source_commit=args.source_commit,
             source_tree=Path(args.source_tree) if args.source_tree else None,
             named_files=args.files,
+            dispositions=Path(args.dispositions) if args.dispositions else None,
         )
         sys.stdout.write(_canonical_json({"tree_digest": manifest["tree_digest"], "blocking": manifest["blocking"]}))
         return 2 if manifest["blocking"] else 0

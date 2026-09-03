@@ -75,6 +75,7 @@ class ImportLegacyTests(unittest.TestCase):
             "issue-item-v1.schema.json",
             "issue-closure-v1.schema.json",
             "migration-state-v1.schema.json",
+            "migration-dispositions-v1.schema.json",
         ):
             shutil.copy(ROOT / "issues/_schema" / name, schemas / name)
         (repo / "TODO.md").write_text(
@@ -640,6 +641,213 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertEqual(cases, 24)
             (root / "e").write_text("e", encoding="utf-8")
             self.assertNotEqual(IMP._candidate_digest(root, paths + ["e"]), oracle)
+
+
+def _tree_blobs(tree: Path):
+    blobs = {}
+    for path in tree.rglob("*"):
+        if path.is_file():
+            blobs[path.relative_to(tree).as_posix()] = (path.read_bytes(), None)
+    return blobs
+
+
+def _entry_for(finding, blobs, commit, kind=None):
+    rule = finding["rule"]
+    if kind is None:
+        if rule in IMP.DISPOSITION_MALFORMED_RULES:
+            kind = "archive-excluded-from-active-migration"
+        elif rule == "IMP-REF-NO-EVIDENCE-CREDIT":
+            kind = "retain-provenance-no-evidence-credit"
+        else:
+            kind = "retain-provenance-no-active-lease"
+    blob_digest, field_digest = IMP.expected_finding_digests(finding, blobs)
+    entry = {
+        "finding_id": finding["id"],
+        "finding_rule": rule,
+        "source_locator": finding["locator"],
+        "item": finding["item"],
+        "source_commit": commit,
+        "kind": kind,
+        "reason": "Hermetic bounded disposition; grants no closure or evidence credit.",
+        "deciding_identity": "authority:test-harness",
+        "deciding_role": "Management",
+        "authority_ref": "DEC-0037-007",
+        "decided_at": "2026-09-03T01:00:00Z",
+        "evidence_refs": ["hermetic:test"],
+        "signature_material": "self-attestation",
+        "signature_verified": True,
+    }
+    if field_digest is not None:
+        entry["referenced_field_digest"] = field_digest
+    else:
+        entry["source_blob_digest"] = blob_digest
+    if kind == "archive-excluded-from-active-migration":
+        entry["archive_retention_justification"] = "Byte-exact archival retention is safe because the malformed header is stored unmodified."
+        entry["parser_independent_archival_safe"] = True
+        entry["cannot_participate_in_active_state_reason"] = "Malformed structural syntax cannot be parsed into active issue state."
+    entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+    return entry
+
+
+class DispositionContractTests(unittest.TestCase):
+    BASELINE = "998dba844591db2aca9f51957de41b236b4b08c4"
+
+    def test_ae3_red_baseline_blocks_and_green_dispositions_cover(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "red"
+            red = IMP.import_legacy(repo=ROOT, root=dest, source_tree=FIXTURE_13)
+            self.assertTrue(red["blocking"])
+            self.assertIsNone(red.get("disposition_coverage"))
+            rules = {finding["rule"] for finding in red["findings"]}
+            self.assertTrue(
+                {
+                    "IMP-CLAIM-OPAQUE",
+                    "IMP-REF-PENDING",
+                    "IMP-REF-NO-EVIDENCE-CREDIT",
+                    "IMP-FEATURE-HEADER-MALFORMED",
+                    "IMP-TASK-HEADER-MALFORMED",
+                    "IMP-MARKER-UNDEFINED",
+                }.issubset(rules)
+            )
+            blobs = _tree_blobs(FIXTURE_13)
+            commit = "0" * 40
+            entries = [
+                _entry_for(finding, blobs, commit)
+                for finding in red["findings"]
+                if finding["severity"] == "blocking"
+            ]
+            manifest_path = Path(tmp) / "dispositions.json"
+            document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}
+            manifest_path.write_text(IMP._canonical_json(document), encoding="utf-8")
+            green_root = Path(tmp) / "green"
+            green = IMP.import_legacy(
+                repo=ROOT, root=green_root, source_tree=FIXTURE_13, dispositions=manifest_path,
+            )
+            self.assertFalse(green["blocking"])
+            self.assertFalse(green["closure_json_emitted"])
+            self.assertFalse(list(green_root.rglob("closure.json")))
+            self.assertEqual(green["disposition_coverage"]["credit_granted"], False)
+            self.assertEqual(len(green["disposition_coverage"]["pairs"]), len(entries))
+            red_claims = sorted(p for p in red["written"] if p.startswith("legacy-claims/"))
+            green_claims = sorted(p for p in green["written"] if p.startswith("legacy-claims/"))
+            self.assertEqual(red_claims, green_claims)
+            for rel in red_claims:
+                self.assertEqual((dest / rel).read_bytes(), (green_root / rel).read_bytes())
+
+    def test_adjacent_wrong_digest_and_unmatched_remain_blocking(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            commit = "0" * 40
+            blocking = [f for f in probe["findings"] if f["severity"] == "blocking"]
+            entries = [_entry_for(f, blobs, commit) for f in blocking]
+            entries[0]["source_blob_digest"] = "sha256:" + ("ab" * 32)
+            if "referenced_field_digest" in entries[0]:
+                entries[0].pop("source_blob_digest", None)
+                entries[0]["referenced_field_digest"] = "sha256:" + ("ab" * 32)
+            entries[0]["payload_digest"] = IMP.disposition_payload_digest(entries[0])
+            path = Path(tmp) / "bad-digest.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=ROOT, root=Path(tmp) / "out", source_tree=FIXTURE_13, dispositions=path)
+            self.assertEqual(ctx.exception.code, "DISP-WRONG-DIGEST")
+            extra = dict(entries[0])
+            extra["finding_id"] = "IMP-" + ("a" * 16)
+            extra["payload_digest"] = IMP.disposition_payload_digest(extra)
+            path2 = Path(tmp) / "unmatched.json"
+            path2.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [_entry_for(f, blobs, commit) for f in blocking] + [extra]}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=ROOT, root=Path(tmp) / "out2", source_tree=FIXTURE_13, dispositions=path2)
+            self.assertEqual(ctx.exception.code, "DISP-UNMATCHED")
+
+    def test_ae5_entry_order_and_missing_field_property(self):
+        rng_seed = 37029
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            commit = "0" * 40
+            blocking = [f for f in probe["findings"] if f["severity"] == "blocking"]
+            entries = [_entry_for(f, blobs, commit) for f in blocking]
+            cases = 0
+            for permutation in itertools.permutations(entries[:3]):
+                document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": list(permutation) + entries[3:]}
+                coverage = IMP.apply_dispositions(
+                    document=document, findings=probe["findings"], blobs=blobs, source_commit=None,
+                )
+                self.assertEqual(len(coverage["pairs"]), len(blocking))
+                self.assertEqual([p["finding_id"] for p in coverage["pairs"]], sorted(e["finding_id"] for e in entries))
+                cases += 1
+            self.assertEqual(cases, 6)
+            missing_cases = 0
+            for field in ("reason", "authority_ref", "signature_material"):
+                broken = dict(entries[0])
+                broken.pop(field)
+                with self.assertRaises(IMP.ImportErrorClosed):
+                    IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [broken] + entries[1:]})
+                missing_cases += 1
+            self.assertEqual(missing_cases, 3)
+            self.assertEqual(rng_seed, 37029)
+
+    def test_schema_fixtures_parity(self):
+        root = ROOT / "issues/_schema/fixtures/migration-dispositions-v1"
+        index = json.loads((root / "manifest.json").read_text())
+        for rel in index["valid"]:
+            value = json.loads((root / rel).read_text())
+            IMP.validate_disposition_document(value)
+        for rel in index["invalid"]:
+            value = json.loads((root / rel).read_text())
+            with self.assertRaises(IMP.ImportErrorClosed):
+                IMP.validate_disposition_document(value)
+
+    def test_unsigned_and_archive_on_non_malformed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "d"
+            probe = IMP.import_legacy(repo=ROOT, root=dest, source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            opaque = next(f for f in probe["findings"] if f["rule"] == "IMP-CLAIM-OPAQUE")
+            entry = _entry_for(opaque, blobs, "0" * 40)
+            entry["kind"] = "archive-excluded-from-active-migration"
+            entry["archive_retention_justification"] = "x"
+            entry["parser_independent_archival_safe"] = True
+            entry["cannot_participate_in_active_state_reason"] = "y"
+            entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+            others = [
+                _entry_for(f, blobs, "0" * 40)
+                for f in probe["findings"]
+                if f["severity"] == "blocking" and f["id"] != opaque["id"]
+            ]
+            path = Path(tmp) / "arch.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry] + others}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=ROOT, root=Path(tmp) / "out", source_tree=FIXTURE_13, dispositions=path)
+            self.assertEqual(ctx.exception.code, "DISP-MALFORMED")
+            unsigned = _entry_for(opaque, blobs, "0" * 40)
+            unsigned["signature_verified"] = False
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [unsigned]})
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+
+    def test_local_placeholder_family_is_coverable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tree = Path(tmp) / "src"
+            tree.mkdir()
+            (tree / "TODO.md").write_text(
+                "## Feature: 0099 — Mini\n\n"
+                "- [ ] **0099-01** Task with local placeholder.\n"
+                "  - **Acceptance criteria:** A.\n"
+                "  - **REF:** `local-test-placeholder`\n",
+                encoding="utf-8",
+            )
+            (tree / "DONE.md").write_text("# none\n", encoding="utf-8")
+            dest = Path(tmp) / "red"
+            red = IMP.import_legacy(repo=ROOT, root=dest, source_tree=tree)
+            self.assertTrue(any(f["rule"] == "IMP-REF-LOCAL-PLACEHOLDER" for f in red["findings"]))
+            blobs = _tree_blobs(tree)
+            entries = [_entry_for(f, blobs, "0" * 40) for f in red["findings"] if f["severity"] == "blocking"]
+            path = Path(tmp) / "d.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
+            green = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "green", source_tree=tree, dispositions=path)
+            self.assertFalse(green["blocking"])
 
 
 if __name__ == "__main__":
