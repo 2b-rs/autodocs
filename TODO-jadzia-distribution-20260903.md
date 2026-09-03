@@ -38,4 +38,4 @@
 - note: Benjamin dropped 0037-30 reconciliation during 4th restart. Re-offered (offer 1788440193198-114cacb0).
 - note: Benjamin dropped 0037-30 reconciliation during 5th restart. Re-offered (offer 1788440467310-f2ef9fe2).
 - note: Benjamin dropped 0037-30 reconciliation during 6th restart. However, 0037-30 is BLOCKED by incomplete 0037-29. Cancelled 0037-30. Re-offering 0037-29 (as 0037-cutover) to implement DEC-0037-008 disposition policy.
-- note: Cancelled Benjamin's 0037-29 implementation offer (1788440990047-07b11857) because Data already holds the duplicate supervisor award (1788439349651-a1f47587). DeepSpace9 stands down on 0037-29 until Data completes it.
+- note: Data's duplicate award is blocked by startup scope issues. Re-offered 0037-29 implementation to Benjamin/Worf (offer 1788441433880-6dee3e48) to retain a valid active owner and unblock the cutover.
