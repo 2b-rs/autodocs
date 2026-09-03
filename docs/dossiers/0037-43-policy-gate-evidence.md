@@ -1,5 +1,19 @@
 # Feature 0037 Task 0037-43: Integration-Policy Gate Verification & Non-Bypass Evidence
 
+## I43-BLOCK-004 additive repair
+
+- Authorized repair base: `dc0acb2e497a63d30be31e0439ae8731d5ec9749`.
+- The base remains a transparent rejected intermediate; this repair claims no
+  retroactive approval. Signed incident record: `e1f32379f` on the retained
+  recovery branch.
+- The gate now requires explicit immutable base and candidate refs, resolves
+  both commits, proves ancestry, and derives paths only from that boundary.
+- Only the exact legacy-writable v1 tuple admits the known all-`a`
+  transitional digest. Every other mismatch or placeholder rejects.
+- V2 requires the canonical phase, version, direct execution model, capability,
+  bundle path, complete member map, and selector digest, checked against
+  candidate bytes through the shared bootstrap bundle walker.
+
 ## 1. Executive Summary & Governance
 Task `0037-43` provisions and proves a non-bypassable integration-policy gate before migration freeze in accordance with `DEC-0037-002`, `DEC-0044-014`, and resolved Management decision `decision-0037-43-hosted-enforcement-20260903` (receipt on `main@5357e0af0f1647897fd18ddf41c640f91c805735`).
 

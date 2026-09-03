@@ -1,175 +1,111 @@
 #!/usr/bin/env python3
-"""Tests for Task 0037-43: Integration policy gate verifier."""
-from __future__ import annotations
-
-import copy
-import importlib.util
-import json
-import shutil
-import subprocess
-import sys
-import tempfile
-import unittest
+"""Adversarial tests for the non-bypassable issue integration gate."""
+import importlib.util, json, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SPEC = importlib.util.spec_from_file_location(
-    "issue_integration_policy", ROOT / "_src/tools/issue_integration_policy.py"
-)
-POL = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(POL)
-
+SPEC = importlib.util.spec_from_file_location("issue_integration_policy", ROOT / "_src/tools/issue_integration_policy.py")
+POL = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(POL)
 
 class IssueIntegrationPolicyTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
+        self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
-        self._install_bundle("legacy")
-        self._install_bundle("future")
+        self.git("init", "-q"); self.git("config", "user.email", "test@example.invalid"); self.git("config", "user.name", "Test")
+        (self.root / "_src/tools").mkdir(parents=True)
+        shutil.copy2(ROOT / "_src/tools/agent_bootstrap.py", self.root / "_src/tools/agent_bootstrap.py")
+        for name in ("legacy", "future"):
+            dest = self.root / f"docs/pipeline/agent-instructions/{name}/index.md"; dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / f"docs/pipeline/agent-instructions/{name}/index.md", dest)
+        self.write_legacy(); self.base = self.commit("base")
 
-    def _install_bundle(self, profile: str) -> None:
-        src = ROOT / f"docs/pipeline/agent-instructions/{profile}/index.md"
-        dest = self.root / f"docs/pipeline/agent-instructions/{profile}/index.md"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest)
+    def git(self, *args, check=True):
+        return subprocess.run(["git", *args], cwd=self.root, text=True, capture_output=True, check=check)
 
-    def _write_selector(
-        self,
-        profile="legacy-lists",
-        epoch="legacy-writable",
-        phase="legacy-writable",
-        schema="agent-workflow-bootstrap@v1",
-        repair_digest=True,
-    ):
-        bundle_path = f"docs/pipeline/agent-instructions/{'legacy' if profile == 'legacy-lists' else 'future'}/index.md"
-        wf = {
-            "schema": schema,
-            "workflow_version": "1.0.0",
-            "authority_epoch": epoch,
-            "authority_profile": profile,
-            "write_phase": phase,
-            "required_capability": "unprivileged",
-            "instruction_bundle": bundle_path,
-        }
-        if schema == "agent-workflow-bootstrap@v1":
-            wf["runner_protocol"] = "runner-request@v1"
-        else:
-            wf["execution_model"] = "direct"
+    def commit(self, message):
+        self.git("add", "-A"); self.git("commit", "-q", "-m", message, "--allow-empty")
+        return self.git("rev-parse", "HEAD").stdout.strip()
 
-        if repair_digest:
-            wf["selector_digest"] = POL.compute_selector_digest(wf)
-        else:
-            wf["selector_digest"] = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    def write_legacy(self, **updates):
+        value = dict(POL.LEGACY_V1_CONTRACT); value["selector_digest"] = "sha256:" + "a" * 64; value.update(updates)
+        (self.root / "agent-workflow.json").write_text(json.dumps(value, sort_keys=True, separators=(",", ":")))
 
-        wf_path = self.root / "agent-workflow.json"
-        wf_path.write_text(json.dumps(wf, sort_keys=True, separators=(",", ":")), encoding="utf-8")
-        return wf_path
+    def write_v2(self, **updates):
+        bundle = "docs/pipeline/agent-instructions/future/index.md"
+        value = {"schema":"agent-workflow-bootstrap@v2","workflow_version":"2.0.0",
+                 "authority_epoch":"issue-store-writable","authority_profile":"issue-store",
+                 "write_phase":"issue-store-writable","required_capability":"unprivileged",
+                 "execution_model":"direct","instruction_bundle":{"path":bundle,"members":POL.validate_instruction_bundle(self.root,bundle)}}
+        value.update(updates); value["selector_digest"] = POL.compute_selector_digest(value)
+        (self.root / "agent-workflow.json").write_text(json.dumps(value, sort_keys=True, separators=(",", ":")))
 
-    def test_conforming_legacy_change_passes(self):
-        self._write_selector(profile="legacy-lists")
-        (self.root / "TODO.md").write_text("# Legacy TODO", encoding="utf-8")
-        (self.root / "TODO-worf-claim.md").write_text("# Claim", encoding="utf-8")
+    def evaluate(self, base=None, candidate=None, enforce=True):
+        return POL.evaluate_integration_policy(self.root, base_ref=base or self.base,
+            candidate_ref=candidate or "HEAD", enforce_rules=enforce)
 
-        res = POL.evaluate_integration_policy(self.root, changed_files=["TODO.md", "TODO-worf-claim.md"], enforce_rules=True)
-        self.assertEqual(res["status"], "passed")
-        self.assertEqual(res["violations_count"], 0)
-        self.assertEqual(res["authority_profile"], "legacy-lists")
+    def test_live_legacy_placeholder_candidate_passes_only_exact_contract(self):
+        (self.root/"TODO.md").write_text("# conforming\n"); candidate=self.commit("legacy")
+        result=self.evaluate(candidate=candidate); self.assertEqual("passed",result["status"])
 
-    def test_conforming_issue_store_change_passes(self):
-        self._write_selector(profile="issue-store", epoch="issue-store-writable", phase="issue-store-writable", schema="agent-workflow-bootstrap@v2")
-        issue_dir = self.root / "issues" / "0037" / "0037-43"
-        issue_dir.mkdir(parents=True)
-        (issue_dir / "index.md").write_text("---\nid: '0037-43'\nstate: 'open'\n---\n", encoding="utf-8")
+    def test_placeholder_rejects_every_noncanonical_legacy_tuple(self):
+        fields={"workflow_version":"9.9.9","authority_epoch":"legacy-restored","authority_profile":"issue-store",
+                "write_phase":"frozen","required_capability":"invented","runner_protocol":"invented@v9",
+                "instruction_bundle":"docs/pipeline/agent-instructions/future/index.md"}
+        for field,value in fields.items():
+            with self.subTest(field=field):
+                self.git("reset","--hard",self.base); self.write_legacy(**{field:value}); bad=self.commit(field)
+                with self.assertRaises(POL.IntegrationPolicyViolation): self.evaluate(candidate=bad)
 
-        res = POL.evaluate_integration_policy(self.root, changed_files=["issues/0037/0037-43/index.md"], enforce_rules=True)
-        self.assertEqual(res["status"], "passed")
-        self.assertEqual(res["violations_count"], 0)
-        self.assertEqual(res["authority_profile"], "issue-store")
+    def test_v2_binds_selector_and_complete_bundle_member_digests(self):
+        self.write_v2(); good=self.commit("v2"); self.assertEqual("passed",self.evaluate(candidate=good)["status"])
+        for mutation in ("selector","member","missing"):
+            with self.subTest(mutation=mutation):
+                self.git("reset","--hard",good); value=json.loads((self.root/"agent-workflow.json").read_text())
+                if mutation=="selector": value["selector_digest"]="sha256:"+"0"*64
+                elif mutation=="member":
+                    key=next(iter(value["instruction_bundle"]["members"])); value["instruction_bundle"]["members"][key]="sha256:"+"0"*64
+                    value["selector_digest"]=POL.compute_selector_digest(value)
+                else:
+                    value["instruction_bundle"]["members"]={}; value["selector_digest"]=POL.compute_selector_digest(value)
+                (self.root/"agent-workflow.json").write_text(json.dumps(value)); bad=self.commit(mutation)
+                with self.assertRaises(POL.IntegrationPolicyViolation): self.evaluate(base=good,candidate=bad)
 
-    def test_direct_todo_done_modification_rejected_under_issue_store(self):
-        self._write_selector(profile="issue-store", epoch="issue-store-writable", phase="issue-store-writable", schema="agent-workflow-bootstrap@v2")
-        (self.root / "TODO.md").write_text("# Legacy TODO", encoding="utf-8")
+    def test_v2_rejects_unsupported_metadata_and_false_policy_fields(self):
+        cases=(("workflow_version","9.9.9"),("required_capability","invented"),("execution_model","queue"),
+               ("transaction_id","wrong"),("policy_digest","sha256:"+"0"*64))
+        for field,value in cases:
+            with self.subTest(field=field):
+                self.git("reset","--hard",self.base); self.write_v2(**{field:value}); bad=self.commit(field)
+                with self.assertRaises(POL.IntegrationPolicyViolation): self.evaluate(candidate=bad)
 
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=["TODO.md"], enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "POLICY-PROHIBITED-GENERATED-EDIT")
+    def test_issue_store_rejects_generated_and_legacy_claim_edits(self):
+        self.write_v2(); (self.root/"TODO.md").write_text("bad"); (self.root/"TODO-worf.md").write_text("bad")
+        result=self.evaluate(candidate=self.commit("bad"),enforce=False)
+        self.assertEqual(("rejected",2),(result["status"],result["violations_count"]))
 
-    def test_legacy_claim_rejected_under_issue_store(self):
-        self._write_selector(profile="issue-store", epoch="issue-store-writable", phase="issue-store-writable", schema="agent-workflow-bootstrap@v2")
-        (self.root / "TODO-worf-legacy-claim.md").write_text("# Claim", encoding="utf-8")
+    def test_missing_invalid_and_nonancestor_boundaries_reject(self):
+        candidate=self.commit("candidate")
+        for kwargs in ({},{"base_ref":"missing","candidate_ref":candidate},{"base_ref":self.base,"candidate_ref":"missing"}):
+            with self.subTest(kwargs=kwargs),self.assertRaises(POL.IntegrationPolicyViolation):
+                POL.evaluate_integration_policy(self.root,**kwargs)
+        self.git("checkout","-q","--orphan","sibling"); self.git("rm","-q","-rf","."); self.write_legacy(); sibling=self.commit("sibling")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx: self.evaluate(base=candidate,candidate=sibling)
+        self.assertEqual("NON-ANCESTOR-BOUNDARY",ctx.exception.code)
 
-        res = POL.evaluate_integration_policy(self.root, changed_files=["TODO-worf-legacy-claim.md"], enforce_rules=False)
-        self.assertEqual(res["status"], "rejected")
-        self.assertTrue(any(v["code"] == "POLICY-LEGACY-CLAIM-PROHIBITED" for v in res["violations"]))
+    def test_candidate_identity_and_dirty_tree_reject(self):
+        candidate=self.commit("candidate"); self.commit("later")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx: self.evaluate(candidate=candidate)
+        self.assertEqual("CANDIDATE-TREE-MISMATCH",ctx.exception.code)
+        self.git("reset","--hard",candidate); (self.root/"agent-workflow.json").write_text("{}")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx: self.evaluate(candidate=candidate)
+        self.assertEqual("CANDIDATE-TREE-MISMATCH",ctx.exception.code)
 
-    def test_missing_or_unsupported_selector_schema_rejected(self):
-        wf = {"schema": "invalid-schema@v99"}
-        (self.root / "agent-workflow.json").write_text(json.dumps(wf), encoding="utf-8")
+    def test_cli_requires_explicit_refs(self):
+        candidate=self.commit("candidate"); tool=str(ROOT/"_src/tools/issue_integration_policy.py")
+        missing=subprocess.run([sys.executable,tool,"--root",str(self.root),"--json"],capture_output=True)
+        self.assertNotEqual(0,missing.returncode)
+        ok=subprocess.run([sys.executable,tool,"--root",str(self.root),"--base-ref",self.base,
+                           "--candidate-ref",candidate,"--json"],capture_output=True,text=True)
+        self.assertEqual(0,ok.returncode,ok.stderr)
 
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=[], enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "UNSUPPORTED-SCHEMA")
-
-    def test_profile_phase_contradiction_rejected(self):
-        wf = {
-            "schema": "agent-workflow-bootstrap@v1",
-            "workflow_version": "1.0.0",
-            "authority_epoch": "legacy-writable",
-            "authority_profile": "legacy-lists",
-            "write_phase": "issue-store-writable",
-            "required_capability": "unprivileged",
-            "runner_protocol": "runner-request@v1",
-            "instruction_bundle": "docs/pipeline/agent-instructions/legacy/index.md",
-        }
-        wf["selector_digest"] = POL.compute_selector_digest(wf)
-        (self.root / "agent-workflow.json").write_text(json.dumps(wf), encoding="utf-8")
-
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=[], enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "PROFILE-PHASE-CONTRADICTION")
-
-    def test_placeholder_or_mismatched_digest_rejected(self):
-        self._write_selector(profile="legacy-lists", repair_digest=False)
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=[], enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "SELECTOR-DIGEST-MISMATCH")
-
-    def test_missing_boundary_or_nonexistent_base_rejected(self):
-        self._write_selector(profile="legacy-lists")
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=None, base_ref=None, enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "MISSING-BOUNDARY")
-
-        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
-            POL.evaluate_integration_policy(self.root, changed_files=None, base_ref="nonexistent-ref-12345", enforce_rules=True)
-        self.assertEqual(ctx.exception.code, "INVALID-BASE-BOUNDARY")
-
-    def test_cli_exit_code_non_zero_on_rejection_both_human_and_json(self):
-        self._write_selector(profile="issue-store", epoch="issue-store-writable", phase="issue-store-writable", schema="agent-workflow-bootstrap@v2")
-        (self.root / "TODO.md").write_text("# Rejected TODO", encoding="utf-8")
-
-        tool_script = str(ROOT / "_src/tools/issue_integration_policy.py")
-
-        # 1. Human mode exit code check
-        proc_human = subprocess.run(
-            [sys.executable, tool_script, "--root", str(self.root), "--files", "TODO.md"],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(proc_human.returncode, 1, "Human mode must exit 1 on rejection")
-        self.assertIn("REJECTED", proc_human.stderr)
-
-        # 2. JSON mode exit code check
-        proc_json = subprocess.run(
-            [sys.executable, tool_script, "--root", str(self.root), "--files", "TODO.md", "--json"],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(proc_json.returncode, 1, "JSON mode must exit 1 on rejection")
-        data = json.loads(proc_json.stdout)
-        self.assertEqual(data["status"], "rejected")
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=="__main__": unittest.main()
