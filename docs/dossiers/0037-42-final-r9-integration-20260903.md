@@ -49,4 +49,19 @@ The canonical strict doctor remains compatible and unchanged: the exact document
 
 The exact signed repair candidate closes `I42-BLOCK-004` while preserving the complete reviewer-authored R7 record. It also substantively closes the earlier fail-open protocol/client findings without modifying the canonical strict doctor or selector state.
 
-This PASS authorizes only the assigned guarded local integration sequence. It is not Task Acceptance, push, publication, remote configuration, selector activation, Feature closure, or authority to delete or rewrite refs. Root integration and its receipt remain pending.
+This PASS authorizes only the assigned guarded local integration sequence. It is not Task Acceptance, push, publication, remote configuration, selector activation, Feature closure, or authority to delete or rewrite refs.
+
+## Canonical integration receipt
+
+- Repository common directory: `/Users/tobias.anton/devel/autodocs/.git`.
+- Integrated signed carrying commit: `cf220d8ae7ac0bfb2421f49c9711067c6082e912`.
+- Exact-candidate hygiene passed across `146` registered worktrees.
+- Immediate root preflight passed across `146` registered worktrees.
+- Root `main` advanced by `git merge --ff-only` from `867d12f6ac95301a6fa1aaf53649f778feb7c353` to `cf220d8ae7ac0bfb2421f49c9711067c6082e912`.
+- Immediate root postflight passed across `146` registered worktrees.
+- `git merge-base --is-ancestor cf220d8ae7 refs/heads/main` exits `0`; root `HEAD` and `refs/heads/main` both resolve to `cf220d8ae7`.
+- Root tracked/index state is clean; the pre-existing untracked inventory remains `.worktrees/` and `allowed_signers`.
+- Push was prohibited and not attempted, so no remote `main` observation applies.
+- No publication, remote configuration, selector activation, cleanup, ref deletion/force-update, Task Acceptance, or Feature closure occurred.
+
+This receipt update must itself pass exact hygiene and the guarded root fast-forward sequence before the assignment is terminal.
