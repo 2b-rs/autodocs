@@ -21,6 +21,20 @@ SPEC = importlib.util.spec_from_file_location(
 IMP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(IMP)
 FIXTURE_13 = ROOT / "provenance/migrations/issue-store/fixtures/0037-13"
+AUTHORITY_COMMIT = "89470b3b2aa804786eb525a9682410c783b77453"
+AUTHORITY_PATH = "docs/dossiers/dec-0037-007-legacy-migration-dispositions.md"
+AUTHORITY_BLOB_DIGEST = "sha256:54e5eeeaeea38620192dc0049a5f89fa71538fd159ec46009e7fd302ece633ee"
+AUTHORITY_PRINCIPAL = "obrien@deepspace9.starfleet.network"
+
+
+def _authority_material():
+    return {
+        "scheme": "git-ssh-commit-v1",
+        "commit": AUTHORITY_COMMIT,
+        "path": AUTHORITY_PATH,
+        "blob_digest": AUTHORITY_BLOB_DIGEST,
+        "principal": AUTHORITY_PRINCIPAL,
+    }
 
 
 def assert_closed_schema_shape(test, value, schema, root_schema):
@@ -75,6 +89,7 @@ class ImportLegacyTests(unittest.TestCase):
             "issue-item-v1.schema.json",
             "issue-closure-v1.schema.json",
             "migration-state-v1.schema.json",
+            "migration-dispositions-v1.schema.json",
         ):
             shutil.copy(ROOT / "issues/_schema" / name, schemas / name)
         (repo / "TODO.md").write_text(
@@ -579,6 +594,14 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertEqual(first["report"], second["report"])
             canonical = repo / "_src/output/issue-migration"
             self.assertEqual(IMP._history_root(canonical, repo), canonical.resolve())
+            repo_alias = Path(tmp) / "repo-alias"
+            repo_alias.symlink_to(repo, target_is_directory=True)
+            alias_canonical = repo_alias / "_src/output/issue-migration"
+            rejected_alias = _live_root_alias_importer()
+            with self.assertRaises(rejected_alias.ImportErrorClosed) as red:
+                rejected_alias._history_root(alias_canonical, repo_alias)
+            self.assertEqual(red.exception.code, "IMP-LIVE-ROOT")
+            self.assertEqual(IMP._history_root(alias_canonical, repo_alias), canonical.resolve())
             outside = Path(tmp) / "outside-history"
             self.assertEqual(IMP._history_root(outside, repo), outside.resolve())
             forbidden = [
@@ -596,8 +619,18 @@ class ImportLegacyTests(unittest.TestCase):
             canonical.mkdir(parents=True)
             alias = repo / "migration-alias"
             alias.symlink_to(canonical, target_is_directory=True)
-            with self.assertRaises(IMP.ImportErrorClosed):
+            with self.assertRaises(IMP.ImportErrorClosed) as internal_alias:
                 IMP._history_root(alias, repo)
+            self.assertEqual(internal_alias.exception.code, "IMP-LIVE-ROOT")
+            outside_alias = Path(tmp) / "outside-alias"
+            outside_alias.symlink_to(canonical, target_is_directory=True)
+            with self.assertRaises(IMP.ImportErrorClosed) as external_alias:
+                IMP._history_root(outside_alias, repo)
+            self.assertEqual(external_alias.exception.code, "IMP-LIVE-ROOT")
+            outside.mkdir()
+            safe_outside_alias = Path(tmp) / "safe-outside-alias"
+            safe_outside_alias.symlink_to(outside, target_is_directory=True)
+            self.assertEqual(IMP._history_root(safe_outside_alias, repo), outside.resolve())
 
     def test_property_positive_acceptance_ref_membership_exhaustive_64_cases(self):
         """AE-5: exhaustive typed-field subsets; only three positive current bindings are members."""
@@ -640,6 +673,488 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertEqual(cases, 24)
             (root / "e").write_text("e", encoding="utf-8")
             self.assertNotEqual(IMP._candidate_digest(root, paths + ["e"]), oracle)
+
+
+def _tree_blobs(tree: Path):
+    blobs = {}
+    for path in tree.rglob("*"):
+        if path.is_file():
+            blobs[path.relative_to(tree).as_posix()] = (path.read_bytes(), None)
+    return blobs
+
+
+def _pin_tree(parent: Path, tree: Path) -> tuple[Path, str]:
+    repo = parent / "pinned"
+    repo.mkdir(parents=True)
+    subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "disp@example.com"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "Disposition"], cwd=repo, check=True)
+    for path in tree.rglob("*"):
+        if path.is_file():
+            dest = repo / path.relative_to(tree)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(path, dest)
+    inventory = repo / "provenance/migrations/issue-store/tools"
+    inventory.mkdir(parents=True)
+    shutil.copy(
+        ROOT / "provenance/migrations/issue-store/tools/issue_legacy_inventory.py",
+        inventory / "issue_legacy_inventory.py",
+    )
+    tools = repo / "_src/tools"
+    tools.mkdir(parents=True)
+    shutil.copy(ROOT / "_src/tools/issue_import_legacy.py", tools / "issue_import_legacy.py")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "pin"], cwd=repo, check=True, capture_output=True)
+    sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo).decode().strip()
+    subprocess.run(["git", "fetch", str(ROOT), AUTHORITY_COMMIT], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "gpg.ssh.allowedSignersFile", str(ROOT / "issues/_policy/allowed_signers")],
+        cwd=repo, check=True, capture_output=True,
+    )
+    return repo, sha
+
+
+def _baseline_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "cfe67e988f9ccff7d9a2d08457fbc65b4bdd9cab:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_cfe67e988f.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_cfe67e988f", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _rejected_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "eaab94cfc077fa826af3f47d7702a7e2e47816d1:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_eaab94cfc0.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_eaab94cfc0", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _unbound_authority_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "2765459ce6a787bc2000b437af62b3db80f13f42:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_2765459ce6.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_2765459ce6", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _live_root_alias_importer():
+    raw = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", "f22686fb6985c0371ac38f9a8325714d04147257:_src/tools/issue_import_legacy.py"]
+    )
+    path = Path(tempfile.mkdtemp()) / "issue_import_legacy_f22686fb69.py"
+    path.write_bytes(raw)
+    spec = importlib.util.spec_from_file_location("issue_import_legacy_f22686fb69", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _entry_for(finding, blobs, commit, kind=None):
+    rule = finding["rule"]
+    if kind is None:
+        if rule in IMP.DISPOSITION_MALFORMED_RULES:
+            kind = "archive-excluded-from-active-migration"
+        elif rule == "IMP-REF-NO-EVIDENCE-CREDIT":
+            kind = "retain-provenance-no-evidence-credit"
+        else:
+            kind = "retain-provenance-no-active-lease"
+    blob_digest, field_digest = IMP.expected_finding_digests(finding, blobs)
+    entry = {
+        "finding_id": finding["id"],
+        "finding_rule": rule,
+        "source_locator": finding["locator"],
+        "item": finding["item"],
+        "source_commit": commit,
+        "kind": kind,
+        "reason": "Hermetic bounded disposition; grants no closure or evidence credit.",
+        "deciding_identity": "authority:supervisor",
+        "deciding_role": "Management",
+        "authority_ref": "DEC-0037-007",
+        "decided_at": "2026-09-03T01:00:00Z",
+        "evidence_refs": ["hermetic:test"],
+        "signature_material": _authority_material(),
+        "signature_verified": True,
+    }
+    if field_digest is not None:
+        entry["referenced_field_digest"] = field_digest
+    else:
+        entry["source_blob_digest"] = blob_digest
+    if kind == "archive-excluded-from-active-migration":
+        entry["archive_retention_justification"] = "Byte-exact archival retention is safe because the malformed header is stored unmodified."
+        entry["parser_independent_archival_safe"] = True
+        entry["cannot_participate_in_active_state_reason"] = "Malformed structural syntax cannot be parsed into active issue state."
+    entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+    return entry
+
+
+def _bind_authority(repo: Path, entries) -> dict:
+    records = [
+        {
+            "authority_ref": entry["authority_ref"],
+            "deciding_identity": entry["deciding_identity"],
+            "deciding_role": entry["deciding_role"],
+            "payload_digest": entry["payload_digest"],
+        }
+        for entry in entries
+    ]
+    authority_path = repo / "authority/migration-dispositions.json"
+    authority_path.parent.mkdir(parents=True, exist_ok=True)
+    authority_path.write_text(
+        IMP._canonical_json({"schema": "migration-disposition-authority@v1", "entries": records}),
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", authority_path.relative_to(repo)], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "authorize migration dispositions"], cwd=repo, check=True, capture_output=True)
+    authority_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo).decode().strip()
+    principal = subprocess.check_output(
+        ["git", "show", "-s", "--format=%GS", authority_commit], cwd=repo
+    ).decode().strip()
+    material = {
+        "scheme": "git-ssh-commit-v1",
+        "commit": authority_commit,
+        "path": authority_path.relative_to(repo).as_posix(),
+        "blob_digest": IMP._digest_prefixed(authority_path.read_bytes()),
+        "principal": principal,
+    }
+    for entry in entries:
+        entry["signature_material"] = material
+    return material
+
+
+class DispositionContractTests(unittest.TestCase):
+    BASELINE = "998dba844591db2aca9f51957de41b236b4b08c4"
+
+    def test_ae3_red_baseline_blocks_and_green_dispositions_cover(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "red"
+            red = IMP.import_legacy(repo=ROOT, root=dest, source_tree=FIXTURE_13)
+            self.assertTrue(red["blocking"])
+            self.assertIsNone(red.get("disposition_coverage"))
+            rules = {finding["rule"] for finding in red["findings"]}
+            self.assertTrue(
+                {
+                    "IMP-CLAIM-OPAQUE",
+                    "IMP-REF-PENDING",
+                    "IMP-REF-NO-EVIDENCE-CREDIT",
+                    "IMP-FEATURE-HEADER-MALFORMED",
+                    "IMP-TASK-HEADER-MALFORMED",
+                    "IMP-MARKER-UNDEFINED",
+                }.issubset(rules)
+            )
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            entries = [
+                _entry_for(finding, blobs, commit)
+                for finding in red["findings"]
+                if finding["severity"] == "blocking"
+            ]
+            _bind_authority(repo, entries)
+            manifest_path = Path(tmp) / "dispositions.json"
+            document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}
+            manifest_path.write_text(IMP._canonical_json(document), encoding="utf-8")
+            green_root = Path(tmp) / "green"
+            green = IMP.import_legacy(
+                repo=repo, root=green_root, source_commit=commit, source_tree=FIXTURE_13, dispositions=manifest_path,
+            )
+            self.assertFalse(green["blocking"])
+            self.assertFalse(green["closure_json_emitted"])
+            self.assertFalse(list(green_root.rglob("closure.json")))
+            self.assertEqual(green["disposition_coverage"]["credit_granted"], False)
+            self.assertEqual(len(green["disposition_coverage"]["pairs"]), len(entries))
+            red_claims = sorted(p for p in red["written"] if p.startswith("legacy-claims/"))
+            green_claims = sorted(p for p in green["written"] if p.startswith("legacy-claims/"))
+            self.assertEqual(red_claims, green_claims)
+            for rel in red_claims:
+                self.assertEqual((dest / rel).read_bytes(), (green_root / rel).read_bytes())
+
+    def test_adjacent_wrong_digest_and_unmatched_remain_blocking(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            blocking = [f for f in probe["findings"] if f["severity"] == "blocking"]
+            entries = [_entry_for(f, blobs, commit) for f in blocking]
+            entries[0]["source_blob_digest"] = "sha256:" + ("ab" * 32)
+            if "referenced_field_digest" in entries[0]:
+                entries[0].pop("source_blob_digest", None)
+                entries[0]["referenced_field_digest"] = "sha256:" + ("ab" * 32)
+            entries[0]["payload_digest"] = IMP.disposition_payload_digest(entries[0])
+            _bind_authority(repo, entries)
+            path = Path(tmp) / "bad-digest.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=repo, root=Path(tmp) / "out", source_commit=commit, source_tree=FIXTURE_13, dispositions=path)
+            self.assertEqual(ctx.exception.code, "DISP-WRONG-DIGEST")
+            extra = dict(_entry_for(blocking[0], blobs, commit))
+            extra["finding_id"] = "IMP-" + ("a" * 16)
+            extra["payload_digest"] = IMP.disposition_payload_digest(extra)
+            unmatched_entries = [_entry_for(f, blobs, commit) for f in blocking] + [extra]
+            _bind_authority(repo, unmatched_entries)
+            path2 = Path(tmp) / "unmatched.json"
+            path2.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": unmatched_entries}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=repo, root=Path(tmp) / "out2", source_commit=commit, source_tree=FIXTURE_13, dispositions=path2)
+            self.assertEqual(ctx.exception.code, "DISP-UNMATCHED")
+
+    def test_ae5_entry_order_and_missing_field_property(self):
+        rng_seed = 37029
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            blocking = [f for f in probe["findings"] if f["severity"] == "blocking"]
+            entries = [_entry_for(f, blobs, commit) for f in blocking]
+            _bind_authority(repo, entries)
+            cases = 0
+            for permutation in itertools.permutations(entries[:3]):
+                document = {"schema": IMP.DISPOSITION_SCHEMA, "entries": list(permutation) + entries[3:]}
+                coverage = IMP.apply_dispositions(
+                    document=document, findings=probe["findings"], blobs=blobs, source_commit=commit, repo=repo,
+                )
+                self.assertEqual(len(coverage["pairs"]), len(blocking))
+                self.assertEqual([p["finding_id"] for p in coverage["pairs"]], sorted(e["finding_id"] for e in entries))
+                cases += 1
+            self.assertEqual(cases, 6)
+            missing_cases = 0
+            for field in ("reason", "authority_ref", "signature_material"):
+                broken = dict(entries[0])
+                broken.pop(field)
+                with self.assertRaises(IMP.ImportErrorClosed):
+                    IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [broken] + entries[1:]})
+                missing_cases += 1
+            self.assertEqual(missing_cases, 3)
+            self.assertEqual(rng_seed, 37029)
+
+    def test_schema_fixtures_parity(self):
+        root = ROOT / "issues/_schema/fixtures/migration-dispositions-v1"
+        index = json.loads((root / "manifest.json").read_text())
+        for rel in index["valid"]:
+            value = json.loads((root / rel).read_text())
+            IMP.validate_disposition_document(value)
+        for rel in index["invalid"]:
+            value = json.loads((root / rel).read_text())
+            with self.assertRaises(IMP.ImportErrorClosed):
+                IMP.validate_disposition_document(value)
+
+    def test_rework_two_three_runtime_type_falsification_cases(self):
+        """AE-3: eaab94cfc0 accepts all three records; this candidate rejects each targeted field."""
+        rejected = _rejected_importer()
+        good = {
+            "finding_id": "IMP-aaaaaaaaaaaaaaaa",
+            "finding_rule": "IMP-CLAIM-OPAQUE",
+            "source_locator": "TODO-example.md",
+            "item": "0099-01",
+            "source_commit": "0" * 40,
+            "source_blob_digest": "sha256:" + ("0" * 64),
+            "kind": "retain-provenance-no-active-lease",
+            "reason": "bounded",
+            "deciding_identity": "authority:supervisor",
+            "deciding_role": "Management",
+            "authority_ref": "DEC-0037-007",
+            "decided_at": "2026-09-03T01:00:00Z",
+            "evidence_refs": ["hermetic:test"],
+            "signature_verified": True,
+        }
+        good["payload_digest"] = rejected.disposition_payload_digest(good)
+        good["signature_material"] = rejected.derived_signature_material(good)
+        cases = (
+            ("signature_verified", False, "DISP-UNVERIFIABLE"),
+            ("reason", 7, "DISP-MALFORMED"),
+            ("evidence_refs", [7], "DISP-MALFORMED"),
+        )
+        for field, value, code in cases:
+            broken = dict(good)
+            broken[field] = value
+            broken["payload_digest"] = rejected.disposition_payload_digest(broken)
+            broken["signature_material"] = rejected.derived_signature_material(broken)
+            rejected.validate_disposition_document({"schema": rejected.DISPOSITION_SCHEMA, "entries": [broken]})
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [broken]})
+            self.assertEqual(ctx.exception.code, code)
+
+    def test_unsigned_and_archive_on_non_malformed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = Path(tmp) / "d"
+            probe = IMP.import_legacy(repo=ROOT, root=dest, source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            opaque = next(f for f in probe["findings"] if f["rule"] == "IMP-CLAIM-OPAQUE")
+            entry = _entry_for(opaque, blobs, commit)
+            entry["kind"] = "archive-excluded-from-active-migration"
+            entry["archive_retention_justification"] = "x"
+            entry["parser_independent_archival_safe"] = True
+            entry["cannot_participate_in_active_state_reason"] = "y"
+            entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+            others = [
+                _entry_for(f, blobs, commit)
+                for f in probe["findings"]
+                if f["severity"] == "blocking" and f["id"] != opaque["id"]
+            ]
+            _bind_authority(repo, [entry] + others)
+            path = Path(tmp) / "arch.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry] + others}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.import_legacy(repo=repo, root=Path(tmp) / "out", source_commit=commit, source_tree=FIXTURE_13, dispositions=path)
+            self.assertEqual(ctx.exception.code, "DISP-MALFORMED")
+            unsigned = _entry_for(opaque, blobs, commit)
+            unsigned["signature_material"] = "arbitrary-self-asserted"
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [unsigned]})
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+
+    def test_authority_material_verifies_signed_source_and_rejects_adjacent_mismatches(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            entry = {
+                "finding_id": "IMP-aaaaaaaaaaaaaaaa",
+                "finding_rule": "IMP-CLAIM-OPAQUE",
+                "source_locator": "TODO-example.md",
+                "item": "0099-01",
+                "source_commit": commit,
+                "source_blob_digest": "sha256:" + ("0" * 64),
+                "kind": "retain-provenance-no-active-lease",
+                "reason": "bounded",
+                "deciding_identity": "authority:supervisor",
+                "deciding_role": "Management",
+                "authority_ref": "DEC-0037-007",
+                "decided_at": "2026-09-03T01:00:00Z",
+                "evidence_refs": ["hermetic:test"],
+            }
+            entry["payload_digest"] = IMP.disposition_payload_digest(entry)
+            _bind_authority(repo, [entry])
+            IMP.verify_authority_material(entry, repo)
+            architecture_only = dict(entry)
+            architecture_only["signature_material"] = _authority_material()
+            unbound = _unbound_authority_importer()
+            unbound.verify_authority_material(architecture_only, ROOT)
+            contradictory = dict(architecture_only, reason="opposite disposition rationale")
+            contradictory["payload_digest"] = unbound.disposition_payload_digest(contradictory)
+            unbound.verify_authority_material(contradictory, ROOT)
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(architecture_only, ROOT)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            for field, value in (
+                ("finding_id", "IMP-bbbbbbbbbbbbbbbb"),
+                ("kind", "retain-provenance-no-evidence-credit"),
+                ("reason", "contradictory"),
+                ("evidence_refs", ["hermetic:other"]),
+                ("decided_at", "2026-09-03T01:00:01Z"),
+                ("source_commit", "1" * 40),
+            ):
+                replay = dict(entry)
+                replay[field] = value
+                replay["payload_digest"] = IMP.disposition_payload_digest(replay)
+                with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP.verify_authority_material(replay, repo)
+                self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            wrong_principal = dict(entry)
+            wrong_principal["signature_material"] = dict(entry["signature_material"], principal="mallory@example.invalid")
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(wrong_principal, repo)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            wrong_blob = dict(entry)
+            wrong_blob["signature_material"] = dict(entry["signature_material"], blob_digest="sha256:" + ("0" * 64))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.verify_authority_material(wrong_blob, repo)
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+
+    def test_local_placeholder_family_is_coverable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tree = Path(tmp) / "src"
+            tree.mkdir()
+            (tree / "TODO.md").write_text(
+                "## Feature: 0099 — Mini\n\n"
+                "- [ ] **0099-01** Task with local placeholder.\n"
+                "  - **Acceptance criteria:** A.\n"
+                "  - **REF:** `local-test-placeholder`\n",
+                encoding="utf-8",
+            )
+            (tree / "DONE.md").write_text("# none\n", encoding="utf-8")
+            dest = Path(tmp) / "red"
+            red = IMP.import_legacy(repo=ROOT, root=dest, source_tree=tree)
+            self.assertTrue(any(f["rule"] == "IMP-REF-LOCAL-PLACEHOLDER" for f in red["findings"]))
+            blobs = _tree_blobs(tree)
+            repo, commit = _pin_tree(Path(tmp) / "pin", tree)
+            entries = [_entry_for(f, blobs, commit) for f in red["findings"] if f["severity"] == "blocking"]
+            _bind_authority(repo, entries)
+            path = Path(tmp) / "d.json"
+            path.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}))
+            green = IMP.import_legacy(repo=repo, root=Path(tmp) / "green", source_commit=commit, source_tree=tree, dispositions=path)
+            self.assertFalse(green["blocking"])
+
+    def test_rework_four_gaps_red_on_cfe67e988f_green_on_candidate(self):
+        """AE-3: each Geordi gap is accepted on cfe67e988f and rejected here."""
+        baseline = _baseline_importer()
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            opaque = next(f for f in probe["findings"] if f["rule"] == "IMP-CLAIM-OPAQUE" and f["severity"] == "blocking")
+            good = _entry_for(opaque, blobs, "0" * 40)
+            role = dict(good)
+            role["deciding_role"] = 7
+            role["payload_digest"] = IMP.disposition_payload_digest(role)
+            baseline.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [role]})
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [role]})
+            self.assertEqual(ctx.exception.code, "DISP-MALFORMED")
+            forged = dict(good)
+            forged["signature_material"] = "arbitrary"
+            forged["signature_verified"] = True
+            baseline.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [forged]})
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [forged]})
+            self.assertEqual(ctx.exception.code, "DISP-UNVERIFIABLE")
+            repaired = dict(good)
+            repaired["kind"] = "source-repaired"
+            repaired["payload_digest"] = IMP.disposition_payload_digest(repaired)
+            others = [
+                _entry_for(f, blobs, "0" * 40)
+                for f in probe["findings"]
+                if f["severity"] == "blocking" and f["id"] != opaque["id"]
+            ]
+            baseline.apply_dispositions(
+                document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
+                findings=probe["findings"], blobs=blobs, source_commit=None,
+            )
+            with mock.patch.object(IMP, "verify_authority_material", return_value=None):
+                with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP.apply_dispositions(
+                        document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [repaired] + others},
+                        findings=probe["findings"], blobs=blobs, source_commit="0" * 40, repo=ROOT,
+                    )
+            self.assertEqual(ctx.exception.code, "DISP-UNPROVEN-REPAIR")
+            missing = Path(tmp) / "one.json"
+            missing.write_text(IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": [good]}))
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx2:
+                IMP.import_legacy(repo=ROOT, root=Path(tmp) / "skip2", source_tree=FIXTURE_13, dispositions=missing)
+            self.assertEqual(ctx2.exception.code, "DISP-WRONG-COMMIT")
+            cases = 0
+            for role_value in (7, True, 3.14, {"r": "x"}):
+                bad = dict(good)
+                bad["deciding_role"] = role_value
+                with self.assertRaises(IMP.ImportErrorClosed):
+                    IMP.validate_disposition_document({"schema": IMP.DISPOSITION_SCHEMA, "entries": [bad]})
+                cases += 1
+            self.assertEqual(cases, 4)
+
+    def test_imp_live_root_history_alias_is_reported_not_weakened(self):
+        """Geordi IMP-LIVE-ROOT: in-repo history alias stays fail-closed; not a disposition gate."""
+        with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+            IMP._history_root(ROOT / "issues", ROOT)
+        self.assertEqual(ctx.exception.code, "IMP-LIVE-ROOT")
 
 
 if __name__ == "__main__":
