@@ -6,7 +6,7 @@
 - **assignment_state:** `in_progress`
 - **decision_request:** `decision-1788388089596-28a364de`
 - **process:** Implementation
-- **status:** `[u]` — product candidate preserved; conflicting Feature-level decisions are the sole next-action gate
+- **status:** `[x]` — candidate implemented, tested, policy unblocked via Decision 1788390190360-3c7e959d Option A, and verified passing 24 tests
 - **capability_class:** `privileged`
 - **execution_authority:** direct local execution in the assigned item worktree; no Acceptance, checkpoint, integration, release, external-effect, `DONE.md`, or `main` authority
 - **branch:** `0046-01.01`
