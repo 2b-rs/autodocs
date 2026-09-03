@@ -555,7 +555,18 @@ def closure_from_legacy(
 
 def load_blobs(inv, repo: Path, source_commit: Optional[str], source_tree: Optional[Path]):
     if source_tree is not None:
-        return inv.load_tree_blobs(source_tree), None
+        tree_blobs = inv.load_tree_blobs(source_tree)
+        if source_commit:
+            commit_blobs = inv.load_commit_blobs(repo, source_commit)
+            for name, (payload, _mode) in tree_blobs.items():
+                committed = commit_blobs.get(name)
+                if committed is None or committed[0] != payload:
+                    raise ImportErrorClosed(
+                        "DISP-WRONG-SOURCE",
+                        f"source_tree blob {name} does not match exact source_commit",
+                    )
+            return tree_blobs, source_commit
+        return tree_blobs, None
     if not source_commit:
         raise ImportErrorClosed("IMP-SOURCE-MISSING", "source commit or --source-tree is required")
     blobs = inv.load_commit_blobs(repo, source_commit)
@@ -579,6 +590,13 @@ def expected_finding_digests(finding: Mapping[str, object], blobs: Mapping[str, 
     if str(finding.get("rule")) in DISPOSITION_FIELD_RULES:
         field_digest = _digest_prefixed(locator.encode("utf-8"))
     return blob_digest, field_digest
+
+
+def derived_signature_material(entry: Mapping[str, object]) -> str:
+    payload = disposition_payload_digest(entry)
+    identity = entry["deciding_identity"]
+    authority = entry["authority_ref"]
+    return _digest_prefixed(f"{payload}|{identity}|{authority}".encode("utf-8"))
 
 
 def disposition_payload_digest(entry: Mapping[str, object]) -> str:
@@ -647,16 +665,22 @@ def validate_disposition_document(document: Mapping[str, object]) -> None:
             raise ImportErrorClosed("DISP-MISSING", "evidence_refs must be non-empty")
         if ("source_blob_digest" in raw) == ("referenced_field_digest" in raw):
             raise ImportErrorClosed("DISP-MALFORMED", "exactly one of source_blob_digest or referenced_field_digest is required")
-        identity = str(raw["deciding_identity"])
-        if not re.match(r"^(agent|authority|legacy-authority):.+$", identity):
+        if not isinstance(raw.get("deciding_identity"), str) or not re.fullmatch(
+            r"(agent|authority|legacy-authority):.+", raw["deciding_identity"]
+        ):
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "deciding_identity is not an authority grammar")
-        if raw.get("signature_verified") is not True:
-            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_verified must be true")
-        if not str(raw.get("signature_material") or "").strip():
+        if not isinstance(raw.get("deciding_role"), str) or not raw["deciding_role"].strip():
+            raise ImportErrorClosed("DISP-MALFORMED", "deciding_role must be a non-empty string")
+        if not isinstance(raw.get("authority_ref"), str) or not raw["authority_ref"].strip():
+            raise ImportErrorClosed("DISP-MALFORMED", "authority_ref must be a non-empty string")
+        if not isinstance(raw.get("signature_material"), str) or not raw["signature_material"].strip():
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material missing")
         expected = disposition_payload_digest(raw)
         if raw["payload_digest"] != expected:
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "payload_digest does not authenticate the entry")
+        derived = derived_signature_material(raw)
+        if raw["signature_material"] != derived:
+            raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material is not derived from authenticated payload")
         if raw["kind"] == "archive-excluded-from-active-migration":
             if not str(raw.get("archive_retention_justification") or "").strip():
                 raise ImportErrorClosed("DISP-MALFORMED", "archive exclusion requires retention justification")
@@ -697,8 +721,15 @@ def apply_dispositions(
             raise ImportErrorClosed("DISP-UNMATCHED", f"disposition does not match a blocking finding: {finding_id}")
         if entry["finding_rule"] != finding["rule"] or entry["source_locator"] != finding["locator"] or entry["item"] != finding["item"]:
             raise ImportErrorClosed("DISP-UNMATCHED", f"disposition identity diverges from finding {finding_id}")
-        if source_commit and entry["source_commit"] != source_commit:
+        if not source_commit:
+            raise ImportErrorClosed("DISP-WRONG-COMMIT", "dispositions require an exact source_commit")
+        if entry["source_commit"] != source_commit:
             raise ImportErrorClosed("DISP-WRONG-COMMIT", f"disposition commit is not the import source for {finding_id}")
+        if entry["kind"] == "source-repaired":
+            raise ImportErrorClosed(
+                "DISP-UNPROVEN-REPAIR",
+                "source-repaired cannot cover an extant blocking finding without independently proven source repair",
+            )
         blob_digest, field_digest = expected_finding_digests(finding, blobs)
         if "referenced_field_digest" in entry:
             if field_digest is None or entry["referenced_field_digest"] != field_digest:
@@ -1023,6 +1054,8 @@ def import_legacy(
     closures_written.sort()
     coverage = None
     if dispositions is not None:
+        if not commit:
+            raise ImportErrorClosed("DISP-WRONG-COMMIT", "dispositions require an exact source_commit")
         document = load_disposition_document(Path(dispositions))
         coverage = apply_dispositions(
             document=document, findings=findings, blobs=blobs, source_commit=commit,
