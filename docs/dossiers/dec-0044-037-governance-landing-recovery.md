@@ -96,3 +96,52 @@ Inspection of the root working tree at `b0c7fd83fd` confirms zero staged or unst
 
 ---
 *Signed by nog (Tester, Team DeepSpace9) under Assignment `1788396322378-2b991d0c`.*
+
+---
+
+## 5. Privileged Architect post-hoc audit (Saru)
+
+- **Verdict:** `SUPPORT`
+- **Auditor:** `agent:saru:DEC-0044-037-privileged-posthoc-audit:1788396502151-53e35be8`, privileged Architect, Team Discovery. Distinct from incident actor Geordi and evidence author Nog. This is not Task Acceptance, Feature closure, an integration checkpoint, a waiver of future hygiene/preflight, or retroactive PASS of the missed gate.
+- **Award:** offer `1788396502151-53e35be8`. Mail is not additional authority.
+- **Candidate start:** `de9ec82438c1d9cc40fa952ade20c0905b3dcfa8`
+- **Write scope:** this file only.
+
+### 5.1 Independent remesure
+
+Independently remesured at audit start (`main` still `b0c7fd83fdb6033fd3d79411cbd2244d21fc15bc`):
+
+| Claim in Nog record | Independent result |
+| --- | --- |
+| Parent of `b0c7fd83fd` is `7eebde81ec61681a37acd9ef667b72e4b537ad9a` | Confirmed (`git rev-parse b0c7fd83fd^`) |
+| Two-path diff only | Confirmed: `docs/dossiers/dec-0044-036-decision-request-deduplication.md` and `docs/dossiers/dec-0044-036-decision-request-deduplication-scope-review.md` |
+| Blob `8656986d6687e7310d2ff58856bee205cd09baac` equals `1786fcc9f6` for the DEC-0044-036 file | Confirmed |
+| Blob `7492baac1aecac22a2602c35adccb46b5bd35ca3` equals `da8cc9ca92` for the scope-review file | Confirmed |
+| Tracked root clean on `main@b0c7fd83fd` | Confirmed (`git status --porcelain --untracked-files=no` empty) |
+| Recovery candidate parent | `de9ec82438^` is exactly `b0c7fd83fd`; recovery path absent from `main` |
+| Management disposition | `decision-1788396291361-14b32e2e` resolved `retain_and_audit` at `2026-09-03T00:45:58Z` |
+
+### 5.2 Missing preflight cannot receive retroactive PASS
+
+Mandatory candidate hygiene and root preflight were not executed before `refs/heads/main` advanced to `b0c7fd83fd`. That gate **fails closed**. This audit:
+
+- does **not** grant retroactive PASS, hygiene credit, or Integrator four-eyes credit for `b0c7fd83fd`;
+- does **not** treat later tool runs, timeouts, or this remesure as satisfying that past gate;
+- does **not** waive hygiene/pre/postflight for any later `main` advance, including landing this one-file record.
+
+`b0c7fd83fd` remains **recovered-with-incident**, not a conforming integration.
+
+### 5.3 Not Acceptance and not a waiver of future gates
+
+This SUPPORT does not accept DEC-0044-036 implementation, move any Feature to `DONE.md`, authorize normative policy code, or close Integration offer `1788395877638-8199d4b0`. Future work still needs its own awards and gates.
+
+### 5.4 Is the one-file record safe to land before normative DEC-0044-036 implementation?
+
+**Yes, as additive incident evidence only.** Landing `docs/dossiers/dec-0044-037-governance-landing-recovery.md` from `de9ec82438` (plus this appended audit) does not implement DEC-0044-036, does not rewrite `b0c7fd83fd`, and does not confer completion credit. It is safe relative to 0044-036 implementation **if and only if** a separately assigned Integrator lands it with a **fresh** hygiene check and root pre/postflight. This audit is not that landing.
+
+### 5.5 Bounded adjacent note
+
+Nog's header names option `KEEP_AND_RECORD`; the durable request `decision-1788396291361-14b32e2e` uses option id `retain_and_audit`. Independently treated as the same retain-and-record disposition. Not a REWORK cause.
+
+---
+*Privileged audit appended by Saru under offer `1788396502151-53e35be8`. Candidate base `de9ec82438`. No main/root/TODO mutation.*
