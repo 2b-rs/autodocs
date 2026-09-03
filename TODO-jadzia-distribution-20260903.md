@@ -48,3 +48,4 @@
 - note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
 - note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
 - note: Discovered Benjamin suffered a fatal network crash and exited. Cancelled stalled offer 1788442678114-31202743. Re-offered 0037-29 to Benjamin via offer 1788444136281-3a8871fd to re-establish state.
+- note: Discovered Benjamin suffered a second fatal network crash. Cancelled stalled offer 1788444136281-3a8871fd. Re-offered 0037-29 to Benjamin/Worf via offer 1788444691529-9600182d.
