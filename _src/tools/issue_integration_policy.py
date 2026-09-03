@@ -17,12 +17,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set
+
+try:
+    from _src.tools import agent_bootstrap
+except ModuleNotFoundError:  # Direct script execution outside an installed package.
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from _src.tools import agent_bootstrap
 
 POLICY_SCHEMA = "issue-integration-policy@v1"
 SELECTOR_NAME = "agent-workflow.json"
@@ -50,12 +55,22 @@ V2_REQUIRED_KEYS = frozenset({
     "selector_digest", "instruction_bundle",
 })
 
-SUPPORTED_PHASE_COMBINATIONS = {
-    ("legacy-lists", "legacy-writable"),
-    ("legacy-lists", "frozen"),
-    ("legacy-lists", "legacy-restored"),
-    ("issue-store", "issue-store-writable"),
-    ("issue-store", "write-frozen"),
+LEGACY_V1_CONTRACT = {
+    "schema": "agent-workflow-bootstrap@v1",
+    "workflow_version": "1.0.0",
+    "authority_epoch": "legacy-writable",
+    "authority_profile": "legacy-lists",
+    "write_phase": "legacy-writable",
+    "required_capability": "sandboxed-grunt",
+    "runner_protocol": "runner-request@v1",
+    "instruction_bundle": "docs/pipeline/agent-instructions/legacy/index.md",
+}
+V2_PHASES = {
+    "legacy-writable": ("legacy-lists", "legacy-writable", "legacy"),
+    "legacy-frozen": ("legacy-lists", "frozen", "current"),
+    "legacy-restored": ("legacy-lists", "legacy-restored", "legacy"),
+    "issue-store-writable": ("issue-store", "issue-store-writable", "future"),
+    "issue-store-write-frozen": ("issue-store", "write-frozen", "future"),
 }
 
 
@@ -95,33 +110,12 @@ def _safe_repo_path(repo: Path, relative: str) -> Optional[Path]:
 
 
 def validate_instruction_bundle(repo: Path, bundle: str) -> Dict[str, str]:
-    """Validate bundle path and bundle members recursively."""
-    first = _safe_repo_path(repo, bundle)
-    if first is None or not first.is_file():
-        raise IntegrationPolicyViolation("BUNDLE-MISSING", f"Instruction bundle entry point is missing: {bundle}", bundle)
-
-    pending = [bundle]
-    seen: Set[str] = set()
-    members: Dict[str, str] = {}
-    while pending:
-        relative = pending.pop(0)
-        if relative in seen:
-            continue
-        seen.add(relative)
-        path = _safe_repo_path(repo, relative)
-        if path is None or not path.is_file():
-            raise IntegrationPolicyViolation("BUNDLE-MEMBER-MISSING", f"Instruction bundle member missing: {relative}", relative)
-        data = path.read_bytes()
-        members[relative] = "sha256:" + hashlib.sha256(data).hexdigest()
-        if path.suffix.lower() == ".md":
-            try:
-                text = data.decode("utf-8")
-            except UnicodeDecodeError:
-                raise IntegrationPolicyViolation("BUNDLE-MEMBER-NON-UTF8", f"Bundle member is not UTF-8: {relative}", relative)
-            for target in LINK_RE.findall(text):
-                linked = (PurePosixPath(relative).parent / target).as_posix()
-                if linked.startswith("docs/pipeline/agent-instructions/") and linked not in seen:
-                    pending.append(linked)
+    """Use the bootstrap doctor's canonical recursive bundle traversal."""
+    diagnostics: List[Dict[str, str]] = []
+    members = agent_bootstrap._bundle_members(repo, bundle, diagnostics)
+    if diagnostics:
+        first = diagnostics[0]
+        raise IntegrationPolicyViolation(first["id"], first["message"], bundle)
     return members
 
 
@@ -144,6 +138,9 @@ def load_and_validate_selector(candidate_root: Path, selector_path: Optional[Pat
         raise IntegrationPolicyViolation("UNSUPPORTED-SCHEMA", f"Unsupported or missing selector schema: {schema!r}", str(wf_file))
 
     req_keys = V2_REQUIRED_KEYS if schema == "agent-workflow-bootstrap@v2" else V1_REQUIRED_KEYS
+    unknown_keys = sorted(set(data) - req_keys)
+    if unknown_keys:
+        raise IntegrationPolicyViolation("UNKNOWN-SELECTOR-FIELDS", f"Unknown selector field(s): {', '.join(unknown_keys)}", str(wf_file))
     missing_keys = sorted(req_keys - set(data.keys()))
     if missing_keys:
         raise IntegrationPolicyViolation("MISSING-SELECTOR-FIELDS", f"Missing required selector field(s): {', '.join(missing_keys)}", str(wf_file))
@@ -160,62 +157,93 @@ def load_and_validate_selector(candidate_root: Path, selector_path: Optional[Pat
     if not profile or not phase or not epoch:
         raise IntegrationPolicyViolation("MISSING-AUTHORITY-FIELDS", "authority_profile, write_phase, and authority_epoch must not be empty", str(wf_file))
 
-    # Phase / profile consistency
-    if (profile, phase) not in SUPPORTED_PHASE_COMBINATIONS:
-        raise IntegrationPolicyViolation("PROFILE-PHASE-CONTRADICTION", f"Contradictory authority_profile '{profile}' and write_phase '{phase}'", str(wf_file))
+    # Bind every compatibility field to one supported transition contract.
+    if schema == "agent-workflow-bootstrap@v1":
+        mismatches = [key for key, expected in LEGACY_V1_CONTRACT.items() if data.get(key) != expected]
+        if mismatches:
+            raise IntegrationPolicyViolation("UNSUPPORTED-V1-CONTRACT", f"Unsupported v1 contract field(s): {', '.join(mismatches)}", str(wf_file))
+        bundle = data["instruction_bundle"]
+        declared_members = None
+    else:
+        expected_phase = V2_PHASES.get(str(epoch))
+        if expected_phase is None or (profile, phase) != expected_phase[:2]:
+            raise IntegrationPolicyViolation("PROFILE-PHASE-CONTRADICTION", "v2 authority epoch/profile/phase is unsupported", str(wf_file))
+        if ver != "2.0.0" or data.get("execution_model") != "direct" or data.get("required_capability") not in {"unprivileged", "privileged"}:
+            raise IntegrationPolicyViolation("UNSUPPORTED-V2-CONTRACT", "v2 requires version 2.0.0, direct execution, and an unprivileged/privileged capability", str(wf_file))
+        bundle_value = data.get("instruction_bundle")
+        if not isinstance(bundle_value, dict) or set(bundle_value) != {"path", "members"}:
+            raise IntegrationPolicyViolation("INVALID-BUNDLE-DECLARATION", "v2 instruction_bundle must contain exactly path and members", str(wf_file))
+        bundle = bundle_value.get("path")
+        declared_members = bundle_value.get("members")
+        expected_bundle = f"docs/pipeline/agent-instructions/{expected_phase[2]}/index.md"
+        if bundle != expected_bundle:
+            raise IntegrationPolicyViolation("UNSUPPORTED-BUNDLE-PATH", f"Expected bundle {expected_bundle}", str(wf_file))
 
-    # Digest verification: Reject ALL placeholders and mismatches strictly
+    # The live legacy selector's all-a digest is the sole transitional exception.
     claimed_digest = data.get("selector_digest", "")
     if not isinstance(claimed_digest, str) or not DIGEST_RE.fullmatch(claimed_digest):
         raise IntegrationPolicyViolation("SELECTOR-DIGEST-INVALID", f"Invalid selector digest format: {claimed_digest!r}", str(wf_file))
 
-    computed_digest = compute_selector_digest(data)
-    if claimed_digest != computed_digest:
+    computed_digest = agent_bootstrap.selector_digest(data)
+    legacy_placeholder = schema.endswith("@v1") and data == {**LEGACY_V1_CONTRACT, "selector_digest": claimed_digest} and claimed_digest == "sha256:" + "a" * 64
+    if claimed_digest != computed_digest and not legacy_placeholder:
         raise IntegrationPolicyViolation("SELECTOR-DIGEST-MISMATCH", f"Claimed digest {claimed_digest} != computed digest {computed_digest}", str(wf_file))
 
-    # Instruction bundle validation
-    bundle = data.get("instruction_bundle", "")
-    validate_instruction_bundle(candidate_root, bundle)
+    actual_members = validate_instruction_bundle(candidate_root, bundle)
+    if schema.endswith("@v2"):
+        if not isinstance(declared_members, dict) or declared_members != actual_members:
+            raise IntegrationPolicyViolation("BUNDLE-MEMBER-DIGEST-MISMATCH", "Declared bundle members do not exactly match candidate bytes", str(wf_file))
 
     return data
 
 
-def derive_changed_files_from_git(candidate_root: Path, base_ref: str) -> List[str]:
-    """Derive changed files relative to explicit base_ref without fallbacks."""
+def _resolve_commit(candidate_root: Path, ref: str, label: str) -> str:
+    res = subprocess.run(["git", "rev-parse", "--verify", f"{ref}^{{commit}}"], cwd=candidate_root, capture_output=True, text=True)
+    if res.returncode != 0:
+        raise IntegrationPolicyViolation(f"INVALID-{label}-REF", f"Cannot resolve immutable {label.lower()} commit", ref)
+    return res.stdout.strip()
+
+
+def derive_changed_files_from_git(candidate_root: Path, base_ref: str, candidate_ref: str) -> tuple[List[str], str, str]:
+    """Resolve and validate an explicit immutable ancestor boundary."""
+    base = _resolve_commit(candidate_root, base_ref, "BASE")
+    candidate = _resolve_commit(candidate_root, candidate_ref, "CANDIDATE")
+    ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", base, candidate], cwd=candidate_root)
+    if ancestor.returncode != 0:
+        raise IntegrationPolicyViolation("NON-ANCESTOR-BOUNDARY", "Base is not an ancestor of candidate", f"{base}..{candidate}")
+    head = _resolve_commit(candidate_root, "HEAD", "CANDIDATE")
+    dirty = subprocess.run(["git", "diff", "--quiet", candidate], cwd=candidate_root).returncode
+    if head != candidate or dirty != 0:
+        raise IntegrationPolicyViolation("CANDIDATE-TREE-MISMATCH", "Worktree tracked bytes do not match explicit candidate commit", candidate)
     res = subprocess.run(
-        ["git", "diff", "--name-only", base_ref, "HEAD"],
+        ["git", "diff", "--name-only", base, candidate],
         cwd=candidate_root,
         capture_output=True,
         text=True,
     )
     if res.returncode != 0:
         raise IntegrationPolicyViolation("INVALID-BASE-BOUNDARY", f"Failed to diff against base ref '{base_ref}': {res.stderr.strip()}", base_ref)
-    return [line.strip() for line in res.stdout.splitlines() if line.strip()]
+    return [line.strip() for line in res.stdout.splitlines() if line.strip()], base, candidate
 
 
 def evaluate_integration_policy(
     candidate_root: Path,
-    changed_files: Optional[List[str]] = None,
     workflow_path: Optional[Path] = None,
     base_ref: Optional[str] = None,
+    candidate_ref: Optional[str] = None,
     enforce_rules: bool = True,
 ) -> Dict[str, Any]:
     """Evaluate candidate tree against integration policy rules."""
     candidate_root = candidate_root.resolve()
+    if not base_ref or not candidate_ref:
+        raise IntegrationPolicyViolation("MISSING-BOUNDARY", "Explicit immutable base_ref and candidate_ref are required", str(candidate_root))
+    files_to_check, base_commit, candidate_commit = derive_changed_files_from_git(candidate_root, base_ref, candidate_ref)
     selector = load_and_validate_selector(candidate_root, workflow_path)
 
     profile = selector["authority_profile"]
     epoch = selector["authority_epoch"]
     phase = selector["write_phase"]
     schema = selector["schema"]
-
-    # Explicit boundary derivation: no fallback
-    if changed_files is not None:
-        files_to_check = changed_files
-    elif base_ref is not None:
-        files_to_check = derive_changed_files_from_git(candidate_root, base_ref)
-    else:
-        raise IntegrationPolicyViolation("MISSING-BOUNDARY", "Either changed_files or an explicit valid --base boundary must be supplied. Loose full-tree scanning is forbidden.", str(candidate_root))
 
     violations: List[Dict[str, str]] = []
 
@@ -258,6 +286,8 @@ def evaluate_integration_policy(
         "authority_epoch": epoch,
         "write_phase": phase,
         "selector_schema": schema,
+        "base_commit": base_commit,
+        "candidate_commit": candidate_commit,
         "evaluated_files_count": len(files_to_check),
         "violations_count": len(violations),
         "violations": violations,
@@ -268,8 +298,8 @@ def evaluate_integration_policy(
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Issue Integration Policy Gate Verifier (0037-43)")
     parser.add_argument("--root", type=Path, default=Path("."), help="Root path of candidate worktree")
-    parser.add_argument("--files", nargs="*", default=None, help="List of changed relative files to evaluate")
-    parser.add_argument("--base", type=str, default=None, help="Base commit/branch to diff against")
+    parser.add_argument("--base-ref", required=True, help="Explicit immutable base commit")
+    parser.add_argument("--candidate-ref", required=True, help="Explicit immutable candidate commit")
     parser.add_argument("--json", action="store_true", help="Output JSON result")
     parser.add_argument("--workflow", type=Path, default=None, help="Path to agent-workflow.json")
 
@@ -277,9 +307,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         res = evaluate_integration_policy(
             candidate_root=args.root,
-            changed_files=args.files,
             workflow_path=args.workflow,
-            base_ref=args.base,
+            base_ref=args.base_ref,
+            candidate_ref=args.candidate_ref,
             enforce_rules=False,
         )
         if args.json:

@@ -30,4 +30,8 @@ jobs:
 
       - name: Run Integration Policy Gate
         run: |
-          python3 _src/tools/issue_integration_policy.py --root . --json
+          python3 _src/tools/issue_integration_policy.py \
+            --root . \
+            --base-ref "${{ github.event.pull_request.base.sha || github.event.before }}" \
+            --candidate-ref "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --json
