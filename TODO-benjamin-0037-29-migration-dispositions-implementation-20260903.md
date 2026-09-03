@@ -48,3 +48,16 @@
 - excluded ancestral claims: `TODO-benjamin-0037-29-20260903.md`, `TODO-worf-0037-29-20260902.md`
 - validation: importer suite 37/37, disposition suite 14/14, DEC-0037-008 focused suite 4/4
 - state: `review`
+
+## Rework iteration 3 — 2026-09-03T17:33:47Z
+
+- assignment and atomic award: `1788456816107-ea719065`
+- finding evidence: `7a67ef8ad2522a29764963c7cfff01914bbc796f`
+- current owner: `data`
+- current branch: `0037-29-rework-r3-data-20260903`
+- current worktree: `/tmp/autodocs-worktrees/0037-29-rework-r3-data-20260903`
+- immutable rejected predecessor: `ba3616ca70845b492bdde1b5e63c63a9761c70c8`
+- target baseline: `e17a47d98e18067bf06cf58e0439343216b6b404`
+- correction: enforce the closed kind/rule mapping for every non-`source-repaired` disposition; reject signed cross-family retain mappings
+- validation: `python3 -m unittest _src.tests.test_issue_import_legacy` (38/38); `python3 -m unittest _src.tests.test_issue_import_legacy.DispositionContractTests` (15/15); five-test DEC-0037-008 focused command (5/5)
+- state: `review`

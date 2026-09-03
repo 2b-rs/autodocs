@@ -71,8 +71,13 @@ DISPOSITION_KINDS = (
     "import-open-legacy-terminal-unverified",
     "import-open-undefined-marker-investigate",
 )
+DISPOSITION_MALFORMED_RULES = frozenset(
+    {"IMP-FEATURE-HEADER-MALFORMED", "IMP-TASK-HEADER-MALFORMED"}
+)
 DISPOSITION_KIND_RULES = {
-    "retain-provenance-no-active-lease": frozenset({"IMP-CLAIM-OPAQUE"}),
+    "retain-provenance-no-active-lease": frozenset({
+        "IMP-CLAIM-OPAQUE", "IMP-ID-DUPLICATE",
+    }),
     "retain-provenance-no-evidence-credit": frozenset({
         "IMP-REF-NO-EVIDENCE-CREDIT", "IMP-ARCHIVED-NOT-ACCEPTED",
         "IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER",
@@ -83,10 +88,8 @@ DISPOSITION_KIND_RULES = {
         "IMP-CLOSURE-CRITERION-EVIDENCE-MISSING",
     }),
     "import-open-undefined-marker-investigate": frozenset({"IMP-MARKER-UNDEFINED"}),
+    "archive-excluded-from-active-migration": DISPOSITION_MALFORMED_RULES,
 }
-DISPOSITION_MALFORMED_RULES = frozenset(
-    {"IMP-FEATURE-HEADER-MALFORMED", "IMP-TASK-HEADER-MALFORMED"}
-)
 DISPOSITION_FIELD_RULES = frozenset(
     {"IMP-REF-PENDING", "IMP-REF-LOCAL-PLACEHOLDER", "IMP-REF-NO-EVIDENCE-CREDIT"}
 )
@@ -876,7 +879,12 @@ def apply_dispositions(
                 "source-repaired cannot cover an extant blocking finding without independently proven source repair",
             )
         allowed_rules = DISPOSITION_KIND_RULES.get(entry["kind"])
-        if entry["kind"].startswith("import-open-") and finding["rule"] not in allowed_rules:
+        if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in allowed_rules:
+            raise ImportErrorClosed(
+                "DISP-MALFORMED",
+                "archive-excluded-from-active-migration is repair-first and only for malformed structural syntax",
+            )
+        if allowed_rules is None or finding["rule"] not in allowed_rules:
             raise ImportErrorClosed(
                 "DISP-WRONG-KIND", f"{entry['kind']} cannot cover {finding['rule']}",
             )
@@ -887,11 +895,6 @@ def apply_dispositions(
         else:
             if blob_digest is None or entry["source_blob_digest"] != blob_digest:
                 raise ImportErrorClosed("DISP-WRONG-DIGEST", f"source-blob digest mismatch for {finding_id}")
-        if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in DISPOSITION_MALFORMED_RULES:
-            raise ImportErrorClosed(
-                "DISP-MALFORMED",
-                "archive-excluded-from-active-migration is repair-first and only for malformed structural syntax",
-            )
         pairs.append({
             "finding_id": finding_id,
             "rule": finding["rule"],

@@ -969,6 +969,34 @@ class DispositionContractTests(unittest.TestCase):
                 "payload_digest": entry["payload_digest"],
             })
 
+    def test_signed_retain_kinds_cannot_cover_another_retain_family(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            probe = IMP.import_legacy(repo=ROOT, root=Path(tmp) / "probe", source_tree=FIXTURE_13)
+            blobs = _tree_blobs(FIXTURE_13)
+            repo, commit = _pin_tree(Path(tmp) / "pin", FIXTURE_13)
+            blocking = [finding for finding in probe["findings"] if finding["severity"] == "blocking"]
+            cases = (
+                (
+                    next(f for f in blocking if f["rule"] == "IMP-CLAIM-OPAQUE"),
+                    "retain-provenance-no-evidence-credit",
+                ),
+                (
+                    next(f for f in blocking if f["rule"] == "IMP-REF-NO-EVIDENCE-CREDIT"),
+                    "retain-provenance-no-active-lease",
+                ),
+            )
+            for finding, wrong_kind in cases:
+                with self.subTest(rule=finding["rule"], kind=wrong_kind):
+                    entry = _entry_for(finding, blobs, commit, kind=wrong_kind)
+                    _bind_authority(repo, [entry])
+                    with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                        IMP.apply_dispositions(
+                            document={"schema": IMP.DISPOSITION_SCHEMA, "entries": [entry]},
+                            findings=probe["findings"], blobs=blobs,
+                            source_commit=commit, repo=repo,
+                        )
+                    self.assertEqual(ctx.exception.code, "DISP-WRONG-KIND")
+
     def test_ae5_exhaustive_real_watermark_identity_domain(self):
         """AE-5 exhaustive domain: every finding identity in the pinned 910/911 runs."""
         evidence_commit = "51be4db07c26bf48aa1eb00ff8cdbcea8fc81b45"

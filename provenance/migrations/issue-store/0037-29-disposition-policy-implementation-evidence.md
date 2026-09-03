@@ -18,9 +18,11 @@ activating the issue store or mutating legacy authority files.
 Validation:
 
 - `python3 -m unittest _src.tests.test_issue_import_legacy.DispositionContractTests`
-  — 14 tests passed (including Q4/Q5 red/green and generator binding).
+  — 15 tests passed (including Q4/Q5 red/green, generator binding, and signed
+  cross-family retain-kind rejection).
 - `python3 -m unittest _src.tests.test_issue_import_legacy`
-  — 36 tests passed before the exhaustive watermark test was added.
+  — 38 tests passed after the exhaustive watermark and closed-family negative
+  tests were added.
 - AE-5 invariant: every `(id, rule, locator, item)` tuple is unique within each
   pinned watermark and every rule belongs to an authorized disposition family.
   Domain: the complete 910- and 911-finding JSON arrays stored at the exact
