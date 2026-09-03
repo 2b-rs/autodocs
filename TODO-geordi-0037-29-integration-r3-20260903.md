@@ -25,7 +25,16 @@
   counterexample now fails closed with `DISP-WRONG-KIND`.
 - Independent validation passes: full importer suite 38/38, disposition suite
   15/15, focused DEC-0037-008 suite 5/5, and `git diff --check`.
-- Candidate hygiene and the guarded root sequence remain pending.
+- Exact aggregate hygiene passed across 111 registered worktrees.
+- Root preflight passed immediately before the guarded fast-forward; root
+  postflight passed immediately afterward across the same 111 registrations.
+- Canonical integration receipt: repository common-dir
+  `/Users/tobias.anton/devel/autodocs/.git`; implementation candidate
+  `28422d45c04ec07209cb5041285052909a0cf4b2`; integrated aggregate
+  `98875f46a4c4559f604ff7602fbab50f4d127c96`; `main` before
+  `e17a47d98e18067bf06cf58e0439343216b6b404`; `main` after product landing
+  `98875f46a4c4559f604ff7602fbab50f4d127c96`; both candidate and aggregate are
+  ancestors of that `main`. Push was out of scope and was not performed.
 
 ## Boundary
 
