@@ -20,5 +20,3 @@ NOTES: Re-dispatched shadow migrations via offer 1788420050946-98d33df3.
 - note: Cancelled offer 1788420050946-98d33df3 because Worf dropped it (unverified busy task). Re-dispatched 0037-29 to Worf via offer 1788420443941-64a35f2a.
 - note: Worf accepted re-offer 1788420443941-64a35f2a and started IN_PROGRESS for 0037-29.
 - state: [x]
-- handover_to: michael
-- handover_at: 2026-09-04T11:43:55Z
