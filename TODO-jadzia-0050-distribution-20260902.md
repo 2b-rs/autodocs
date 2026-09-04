@@ -25,3 +25,4 @@ NOTES: Dispatched 0050-02 (block team offer delivery/acceptance).
 OFFERED: priority 1: benjamin, priority 2: worf
 STATUS: OPEN
 NOTES: Dispatched 0050-03 (draining, checkpoint, evidence-bound decisions).
+- note: 0050-01-integration ACCEPTED. Review record: DONE-obrien-0050-01-integration-20260901.md.
