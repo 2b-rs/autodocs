@@ -109,3 +109,5 @@ STATUS: OPEN
 NOTES: Re-dispatched UX/API validation via offer 1788420035984-7f7f5bf7.
 - note: Cancelled 0046-01.01 due to 0037-CUTOVER fleet order.
 - state: [x]
+- handover_to: michael
+- handover_at: 2026-09-04T11:43:55Z
