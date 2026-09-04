@@ -22,3 +22,4 @@ NOTES: Dispatched implementation of 0046-05.
 OFFERED: priority 1: obrien
 STATUS: OPEN
 NOTES: Dispatched final integration of 0037-30 (from branch integrate-0037-30-final-r4-recovery-20260904) after Geordi's R4 review passed but failed to merge due to advanced main.
+- note: 0037-30-integration-r5 ACCEPTED. Integration landed on main at 3e755730167f8d2ceca94d0d8f378016656eec2e.
