@@ -214,3 +214,15 @@ Integrator. Neither privilege, a display name, a mailbox message, a worktree
 suffix, nor the Git author field alone establishes independence, assignment,
 Acceptance, or integration authority. The correction changes no technical
 scope, proof condition, validation result, gate, or reservation.
+
+Coordinator verification received at `2026-09-04T19:36:38Z`
+(`1788550598347-32a46eef`) supplies the assignment-state evidence: delegation
+`1788547915174-4a5b7bc0` is awarded to
+`miles2-0037-programmer-20260904`; parent `1788546750193-fb7f5f95` has the
+same winner and remains `on_hold`. The registered Programmer appointment is
+supervisor reference `1788548087047-84720986`; atomic transfer references are
+`1788548187638-a8247522` and `1788548187757-bf6ec1ff`. Data's direct status
+query was denied because Data is not a participant in that implementation
+offer; this is explicitly coordinator-verified state, not claimed direct
+inspection. The notice points to those appointment and award records; it does
+not itself create authority or waive the independent review requirement.
