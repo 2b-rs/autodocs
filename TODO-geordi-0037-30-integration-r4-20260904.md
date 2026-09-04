@@ -1,0 +1,24 @@
+# Claim: 0037-30 final scoped-freeze R4 aggregation, review and integration
+
+- owner_token: `agent:geordi:0037-30-integration-r4:1788480090547-5b9ed1ab`
+- assignment: `1788480090547-5b9ed1ab`
+- capability_class: `privileged`
+- process: Aggregation, Independent Review and Integration
+- status: `[p]` — aggregation pending; root integration not attempted
+- baseline: `main@0e7aa8fe37690139c2f49a889b03565256b947db`
+- scoped-freeze evidence tip: `f99a42c34bc9f1f9237e26dc68a900dd24d3de2c` (ancestor `5220d9fdb`)
+- Data compatibility tip: `9dccd87fe0028a0b9a63a3e1b6b67f7631f30aed`; only its `5220d9fdb..9dccd87fe0` two-path delta is carried
+- prior signed rejections: `532e475a5404a6db34e03ea25c341c6316e7976e`, `ce31c50f14cce6bf643a2bfbbbfa600c98fb2312`
+- decision / Architect / governance receipt: `decision-0037-30-legacy-frozen-write-gate-20260903` / `4584f3b27f` / `0e7aa8fe37690139c2f49a889b03565256b947db`
+- branch/worktree: `integrate-0037-30-final-r4-20260904` at `/tmp/integrate-0037-30-final-r4-20260904`
+- allowed write scope: the eleven exact paths in offer `1788480090547-5b9ed1ab`
+- activation bound: only `legacy-frozen`; never `issue-store-writable`
+- prohibited: issue import, `TODO.md`, `DONE.md`, push/publication/remote configuration, ref deletion/force/reset/prune, Feature closure
+
+## Review contract
+
+From exact current main, carry exact `f99a42c34b`, then only the two-path compatibility delta `5220d9fdb..9dccd87fe0`, preserving both latest claims and recording aggregate identity before review. Independently verify current bundle, single frozen legacy authority, human/JSON denial for ordinary legacy backlog/claims, machine-authorized 0037 cutover/recovery allowlisting, stale-client rejection, signed reports/watermark/refs, hermetic feedback behavior, historical red controls, adjacent allow/deny cases, property count, focused suites, live gate and full repository suite. Any finding produces a signed rejection and leaves root untouched. PASS alone permits signed R4 review/receipt and guarded exact-hygiene/root-preflight/ff-only/postflight integration.
+
+## Progress
+
+- 2026-09-04: Atomic R4 award accepted; R3 cancelled and preserved before substantive review; isolated branch created at exact current baseline. Aggregation pending.
