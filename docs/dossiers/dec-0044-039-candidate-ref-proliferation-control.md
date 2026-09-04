@@ -1,0 +1,59 @@
+### `DEC-0044-039` — Bound each assignment to one active candidate ref
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-04T13:24:00+02:00`
+- **Deciding identity:** `authority:management:supervisor:20260904`
+- **Role:** `Management`
+- **Authority reference:** Management directive “Kannst du die Prozesse und Agentenbeschreibungen so anpassen, dass keine Arbeitsproliferation mehr stattfindet.”; assignment `1788521332129-24414d5e`
+- **Subject:** Candidate-ref, correction, interruption, and exceptional evidence-ref lifecycle for repository work assignments
+- **Decision:** Every assignment or backlog item has exactly one active candidate ref. Corrections and same-slot rework continue linearly on that ref. A coordinator may replace it only through an explicit, atomic same-slot supersession that names the prior ref, preserves it, designates one replacement as the sole active candidate, and retains the assignment history and integration reservation. A separate immutable evidence ref is exceptional: a named decision, review, or incident artifact must cite its exact commit and state why that ref must be retained. Local uncommitted work is permitted only while safely recoverable; useful work at interruption is committed as WIP on the same active ref. These rules preserve red-on-baseline evidence, exact review pinning, no-force/no-delete and unique-content retention safeguards, worktree isolation, independent review, and canonical ancestry. They grant no authority to delete or force-update a ref, integrate `main`, record Acceptance, publish, change Task state or selector authority, or close a Feature.
+- **Technical justification:** The Jean-Luc R3–R6 correction incident demonstrates attempt proliferation without corresponding evidence value: R3 `db89a61c35103396c5203a724078789566801aed` and R4 `7067c07c2faf70087ad4cdc2434b6866a121047f` have the identical tree `05c80e44d6e95b9ff8544a51b725f7d41e09dd80`, while only R6 `8081c9a5099faed07d46dcee6174862af41ab3ba` carries the formal coordination evidence. Sibling correction branches and worktrees obscure which candidate owns the reserved slot, enlarge hygiene and retained-ref inventories, and encourage byte-equivalent reconstruction in place of exact ancestry. Linear correction preserves review and ancestry identity while existing retention rules protect unique work. Because the current `legacy-frozen` selector directs agents only through `docs/pipeline/agent-instructions/current/index.md`, the rule is not operative for that population unless the index and its member digest in `agent-workflow.json` are updated atomically with the four normative process documents; that synchronization must not change authority epoch, selector profile, or execution authority.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Enforce one active candidate ref per assignment, linear same-ref correction, explicit atomic supersession, and a narrow cited-evidence exception.
+    - **Disposition:** `selected`
+    - **Reason:** It removes redundant work surfaces while preserving exact ancestry, interruption recovery, independently pinned review evidence, and unique-content retention.
+  - **ALT-02:** Permit a new candidate branch for every correction or review response.
+    - **Disposition:** `rejected`
+    - **Reason:** R3 and R4 show that additional refs can be tree-identical while still multiplying lifecycle ambiguity, hygiene cost, and coordination state.
+  - **ALT-03:** Delete or force-update obsolete-looking candidate refs when a newer attempt appears.
+    - **Disposition:** `rejected`
+    - **Reason:** Appearance, merge status, or byte equality does not prove reachability of all unique content and cannot override the repository's no-delete, no-force, and preserved-history safeguards.
+  - **ALT-04:** Change only the four human-readable process documents and leave the frozen instruction bundle unchanged.
+    - **Disposition:** `rejected`
+    - **Reason:** Current agents validate and consume the selected bundle; leaving its index and selector digest stale would make the new rule non-operative or fail closed on digest mismatch.
+- **Consequences:**
+  - **CON-01:** Normative implementation must update `AGENTS.md`, `docs/pipeline/branch-workflow.md`, `docs/pipeline/process-roles.md`, and `docs/pipeline/integration-flow-control.md` with one consistent lifecycle and terminology.
+  - **CON-02:** To activate the rule for the current frozen population, implementation must also update `docs/pipeline/agent-instructions/current/index.md` and the corresponding member and selector digests in `agent-workflow.json` in the same candidate. It must not change the selected authority epoch, profile, capability class, runner action set, or authority grant.
+  - **CON-03:** Dispatchers and contractors must reject a second active candidate ref or correction worktree for the same assignment unless an explicit same-slot supersession transaction first makes the replacement the sole active candidate. A supersession is not deletion authority; the displaced ref remains governed by reachability and preservation rules.
+  - **CON-04:** Required red evidence remains reproducible from the named baseline and may be cited by exact commit without creating a ref per attempt. A durable evidence ref is created only when its named artifact states the retention purpose.
+  - **CON-05:** On interruption, useful recoverable state is committed as WIP to the assignment's active ref. Disposable local state may remain uncommitted only while the contractor can establish safe recovery; it does not justify a sibling candidate.
+  - **CON-06:** Review, acceptance, hygiene, and integration continue to pin one exact candidate commit. Tree equality, patch replay, reconstructed bytes, claim state, or a newer sibling ref never substitutes for proof that the reviewed candidate is an ancestor of canonical `main`.
+  - **CON-07:** Existing refs are not retroactively deleted, renamed, or declared redundant by this decision. Any inventory or cleanup is a separately authorized, reachability-proven operation under the existing preservation contract.
+  - **CON-08:** Validation must cover rejection of a second active ref, positive linear same-ref rework, explicit atomic supersession, interruption WIP on the active ref, the cited-evidence exception, selector/index digest coherence, and exact canonical ancestry. It must preserve negative tests for deletion, force update, implicit authority, and byte-equivalent ancestry substitution.
+  - **CON-09:** Rollback reverts the later six-path governance and selector-digest implementation as one bounded change. It does not erase this record, its scope review, incident commits, retained refs, WIP history, or integration receipts.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `path:AGENTS.md`
+  - `path:docs/pipeline/branch-workflow.md`
+  - `path:docs/pipeline/process-roles.md`
+  - `path:docs/pipeline/integration-flow-control.md`
+  - `path:docs/pipeline/agent-instructions/current/index.md`
+  - `path:agent-workflow.json`
+- **Affected gates:**
+  - `task-start:candidate-ref-admission`
+  - `validation:process-doc-doctor`
+  - `validation:agent-workflow-selector-digest`
+  - `integration:candidate-ancestry`
+  - `feature-closure:repository-governance`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:architect:dec-0044-039:1788521332129-24414d5e`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** The independent pre-mutation scope review supports the bounded lifecycle and requires atomic instruction-bundle synchronization; it is not implementation authority, Task Acceptance, or an integration verdict.
+- **Waiver:** `none`
