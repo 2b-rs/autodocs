@@ -4,7 +4,7 @@
 - Transaction: `0037-43-44-closure-delta-1788512992649-36e30730`
 - Assignment: `1788512992649-36e30730`
 - Decision: `DEC-0037-031`
-- Base: `e6db416ef8c41770cd09cba3dfef5ceb389a0e60`
+- Base: `cbc56026c51a12fa67004ce49db02e8f90ab41c7`
 - Original source watermark: `c170c8f34831f3a28b6d4dab67c02c61e3dad53e`
 - Authority epoch: `legacy-frozen`
 - Selector digest: `sha256:49c844c34df6609f4bdec4b618bb5461db4e3848ef7336ca1e7f4a843c122188`
