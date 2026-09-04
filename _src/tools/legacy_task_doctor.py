@@ -26,6 +26,11 @@ REPORT_SCHEMA = "legacy-task-doctor-report@v1"
 VALID_MARKERS = {" ", "u", "p", "?", "w", "x", "d"}
 TERMINAL_MARKERS = {"w", "x"}
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
+NONCANONICAL_KIND = "noncanonical-coordination"
+LIFECYCLE_FIELD_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*(?P<bold>claim_kind|claim_state|lease_active|task_id|item_id|state)(?::\*\*|\*\*:)|`(?P<code>claim_kind|claim_state|lease_active|task_id|item_id|state)`\s*:|(?P<plain>claim_kind|claim_state|lease_active|task_id|item_id|state)\s*:)\s*`?(?P<value>[^`\n]+?)`?\s*$",
+    re.IGNORECASE,
+)
 FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
 FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHORT_COMMIT_RE = re.compile(r"^[0-9a-f]{7,39}$")
@@ -319,6 +324,38 @@ class FieldOccurrence:
     value: str
     line: int
     canonical: bool
+
+
+def parse_noncanonical_claim_lifecycle(text: str) -> Dict[str, object]:
+    """Normalize DEC-0037-032 fields; every invalid tuple stays active."""
+    values: Dict[str, List[str]] = {}
+    for line in text.splitlines():
+        match = LIFECYCLE_FIELD_RE.match(line)
+        if match:
+            key = match.group("bold") or match.group("code") or match.group("plain")
+            values.setdefault(key.lower(), []).append(match.group("value").strip())
+    if not any(key in values for key in ("claim_kind", "claim_state", "lease_active")):
+        return {"classification": "legacy", "valid": True, "active": True, "errors": []}
+    errors: List[str] = []
+    for key in ("claim_kind", "claim_state", "lease_active"):
+        count = len(values.get(key, []))
+        if count != 1:
+            errors.append(f"{key}-{'missing' if count == 0 else 'duplicate'}")
+    kind = values.get("claim_kind", [None])[0]
+    claim_state = values.get("claim_state", [None])[0]
+    lease_raw = values.get("lease_active", [None])[0]
+    if kind is not None and kind != NONCANONICAL_KIND: errors.append("claim_kind-unknown")
+    if claim_state is not None and claim_state not in {"active", "terminal"}: errors.append("claim_state-unknown")
+    if lease_raw is not None and lease_raw not in {"true", "false"}: errors.append("lease_active-malformed")
+    identities = values.get("task_id", []) + values.get("item_id", [])
+    if len(identities) != 1: errors.append("identity-ambiguous")
+    elif TASK_ID_RE.fullmatch(identities[0]): errors.append("exact-task-cannot-be-noncanonical")
+    lease = {"true": True, "false": False}.get(lease_raw)
+    if claim_state == "active" and lease is not True: errors.append("active-requires-lease")
+    if claim_state == "terminal" and lease is not False: errors.append("terminal-requires-release")
+    if any(value == "terminal" for value in values.get("state", [])): errors.append("task-state-terminal-invalid")
+    valid = not errors
+    return {"classification": NONCANONICAL_KIND if kind == NONCANONICAL_KIND else "invalid", "claim_state": claim_state, "lease_active": lease, "valid": valid, "active": not (valid and claim_state == "terminal" and lease is False), "errors": sorted(set(errors))}
 
 
 @dataclass(frozen=True)
@@ -1177,6 +1214,11 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         grouped: Dict[str, List[FieldOccurrence]] = {}
         for item in items:
             grouped.setdefault(item.key, []).append(item)
+        lifecycle = parse_noncanonical_claim_lifecycle(blobs[claim.path].text)
+        if not lifecycle["valid"]:
+            findings.append(_make_finding("LTD-CLAIM-LIFECYCLE-INVALID", "claim", claim.path, 1, claim.task_id or claim.path, "invalid noncanonical lifecycle: " + ", ".join(lifecycle["errors"]), blobs))
+        elif lifecycle["classification"] == NONCANONICAL_KIND:
+            continue
         required = {"request_id", "owner_token", "base_commit", "capability_class", "state"}
         if claim.state == "p":
             required.update({"execution_authority", "startup_review"})

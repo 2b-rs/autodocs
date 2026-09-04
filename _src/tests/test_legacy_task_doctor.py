@@ -441,6 +441,40 @@ class LegacyTaskDoctorReadOnlyTests(unittest.TestCase):
 
 
 class LegacyTaskDoctorFocusedBehaviorTests(unittest.TestCase):
+    def test_noncanonical_lifecycle_matrix(self):
+        valid = "item_id: chain-alpha\nclaim_kind: noncanonical-coordination\nclaim_state: terminal\nlease_active: false\n"
+        self.assertTrue(doctor.parse_noncanonical_claim_lifecycle(valid)["valid"])
+        parsed = doctor.parse_noncanonical_claim_lifecycle(valid.replace("lease_active: false", "lease_active: true"))
+        self.assertFalse(parsed["valid"])
+        self.assertTrue(parsed["active"])
+
+        bold = "- **item_id:** chain-alpha\n- **claim_kind:** noncanonical-coordination\n- **claim_state:** terminal\n- **lease_active:** false\n"
+        code = "- `item_id`: `chain-alpha`\n- `claim_kind`: `noncanonical-coordination`\n- `claim_state`: `terminal`\n- `lease_active`: `false`\n"
+        self.assertTrue(doctor.parse_noncanonical_claim_lifecycle(bold)["valid"])
+        self.assertTrue(doctor.parse_noncanonical_claim_lifecycle(code)["valid"])
+
+    def test_exact_task_cannot_opt_out(self):
+        text = "task_id: 0037-51\nclaim_kind: noncanonical-coordination\nclaim_state: terminal\nlease_active: false\n"
+        parsed = doctor.parse_noncanonical_claim_lifecycle(text)
+        self.assertFalse(parsed["valid"])
+        self.assertIn("exact-task-cannot-be-noncanonical", parsed["errors"])
+
+    def test_noncanonical_lifecycle_negative_matrix(self):
+        base = "item_id: chain-alpha\nclaim_kind: noncanonical-coordination\nclaim_state: terminal\nlease_active: false\n"
+        cases = {
+            "missing": base.replace("claim_state: terminal\n", ""),
+            "duplicate": base + "lease_active: false\n",
+            "unknown": base.replace("claim_state: terminal", "claim_state: accepted"),
+            "malformed": base.replace("lease_active: false", "lease_active: no"),
+            "partial": "item_id: chain-alpha\nlease_active: false\n",
+            "task-state-terminal": base + "state: terminal\n",
+        }
+        for name, text in cases.items():
+            with self.subTest(name=name):
+                parsed = doctor.parse_noncanonical_claim_lifecycle(text)
+                self.assertFalse(parsed["valid"])
+                self.assertTrue(parsed["active"])
+
     def make_repo(self, todo, done="# DONE — Completed Features\n", extra=None, reachable=None):
         case = {
             "files": {"TODO.md": todo, "DONE.md": done, **(extra or {})},
