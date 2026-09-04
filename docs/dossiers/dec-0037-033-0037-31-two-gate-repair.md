@@ -1,0 +1,63 @@
+# `DEC-0037-033` — Narrow two-gate repair for the final frozen migration
+
+### `DEC-0037-033` — Permit only assignment-bound `0037-31` staging and claimless evidence
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-04T11:10:53Z`
+- **Deciding identity:** `authority:management:decision-1788519617751-91941e27`
+- **Role:** `Management`
+- **Authority reference:** `decision-1788519617751-91941e27`; selected option `instantiate_narrow_review`; Architect assignment `1788520101148-0c061647`
+- **Subject:** Repair the two contradictory gates proven by signed blocker `34ede49b3c44f878c0fd3bcbae269d11a72c64f2` so the claimless frozen operator for Task `0037-31` can create and integrate one final migration candidate without weakening live-root or frozen-authority protections.
+- **Decision:** Adopt a two-part, fail-closed exception. First, `_src/tools/issue_import_legacy.py` may pass its own import operation into an `issues/` directory only when `run_migration()` has already validated the lexical and resolved history root as the exact repository path `_src/output/issue-migration`, validated the run ID, acquired that run's exclusive reservation, created the fresh hidden staging directory directly below that history root, and proved the destination is exactly that staging directory's `issues/` child. This internal authorization is contextual and single-run; it does not make `_src/output`, the history root, a completed run, an alias, a sibling, or any other descendant a disposable destination, and direct `import_legacy()` or `resolve_disposable_root()` callers remain rejected. Second, `_src/tools/issue_integration_policy.py` may accept the three exact `0037-31` evidence paths without a prohibited top-level `TODO-*` claim only when `provenance/migrations/issue-store/0037-31-final-frozen-candidate.json` is the canonical manifest and contains one normalized assignment proof bound to atomic award `1788519031177-793919ee`, Task `0037-31`, claim mode `claimless-frozen-transaction`, authority epoch `legacy-frozen`, exact source commit `7dbc94db262979b41bc225d6571d610123a47814`, closure transaction `f5a806c52a63e00edac5c0aa8bb0793227ae3af1`, a fresh canonical run root below `_src/output/issue-migration/`, the exact allowed evidence/output paths, and the immutable candidate identities. Each companion blob must repeat and agree on Task and assignment identity or be digest-bound by that manifest. Missing, duplicate, stale, contradictory, broadened, or unrecognized proof fails with the existing frozen-authority diagnostic family. Existing claim-bound cutover proof remains valid where a claim is lawful; this decision creates no claim, completion, Acceptance, integration, authority-switch, or Feature-closure credit.
+- **Technical justification:** Blocker `34ede49b3c` demonstrates two internal contradictions at exact source `7dbc94db26`: `_history_root()` requires the canonical in-repository history root while the nested import rejects every staging descendant of `_src/output` as `IMP-LIVE-ROOT`; the frozen integration policy requires a top-level owner-token claim while the authorized transaction is expressly claimless and frozen policy prohibits creating that claim. The selected exception preserves the original safety invariants by deriving importer permission from an already validated and exclusively reserved call context, and by replacing only the impossible claim proof with a closed assignment/source/transaction/path manifest for this transaction. Neither exception relies on path prefixes alone, prose, filename inference, mailbox delivery, assignment state text, branch name, age, or worktree persistence.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Add the narrow contextual staging exception and exact claimless assignment/transaction manifest selected above.
+    - **Disposition:** `selected`
+    - **Reason:** It makes the already authorized `0037-31` production path executable while retaining fail-closed live-root and frozen-authority behavior everywhere outside the exact run and evidence set.
+  - **ALT-02:** Create a top-level `TODO-*` claim for the frozen operator and retain both gates unchanged.
+    - **Disposition:** `rejected`
+    - **Reason:** The frozen transaction contract expressly prohibits new claims; introducing one would violate quiescence and revive the authority path the cutover froze.
+  - **ALT-03:** Move the migration output outside the repository or broadly exempt `_src/output/issue-migration` from live-root checks.
+    - **Disposition:** `rejected`
+    - **Reason:** An external-root copy would not be the required production interface, while a broad prefix exemption would permit direct, aliased, stale, or completed-output mutation beyond one reserved staging run.
+  - **ALT-04:** Stop Task `0037-31` and leave both contradictions unresolved.
+    - **Disposition:** `rejected`
+    - **Reason:** Management selected the bounded repair; stopping would leave `0037-32` and Feature `0037` cutover blocked despite a falsifiable intent-preserving correction.
+- **Consequences:**
+  - **CON-01:** Lore's same-slot rework may change only `_src/tools/issue_import_legacy.py`, `_src/tools/issue_integration_policy.py`, their two named test modules, the fresh canonical run output, and the three exact evidence files authorized by its rework award; this record does not itself grant or widen that award.
+  - **CON-02:** The baseline command and policy evaluation from `34ede49b3c` are mandatory red evidence. The repaired candidate must turn only those two expected failures green and retain stable rejection for adjacent live roots, aliases, direct calls, claims, tasks, epochs, sources, transactions, run roots, path sets, and proof combinations.
+  - **CON-03:** Import staging authorization expires with the reserved run context. Interruption retains reports under the run contract; retry uses a new run ID and revalidates source, epoch, closure transaction, clean source, reservation, and manifest identities rather than reopening a partial or completed root.
+  - **CON-04:** The canonical manifest is a conjunctive proof. No one field, assignment message, Git author, signed commit, branch, dossier, companion file, or top-level claim substitutes for the whole assignment/source/transaction/path binding.
+  - **CON-05:** Cost is a small contextual interface and synchronized policy/parser test matrix. Residual risk is accidental over-breadth in path or proof parsing; exact lexical-plus-resolved containment, finite adjacent cases, exhaustive field-subset/property tests, and independent integration bound it.
+  - **CON-06:** Before integration, rollback is abandonment of the unintegrated implementation candidate. After integration but before a successful migration run, rollback reverts the two tool/test changes together and leaves the signed blocker and this decision intact. A produced run is immutable evidence; it is never edited in place or silently deleted by rollback.
+  - **CON-07:** No grandfathering applies. Earlier evidence remains rejected unless a fresh same-slot candidate satisfies the new contract against the exact current source and target-policy blobs.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0037`
+  - `task:0037-31`
+  - `task:0037-32`
+  - `path:_src/tools/issue_import_legacy.py`
+  - `path:_src/tools/issue_integration_policy.py`
+  - `path:_src/tests/test_issue_import_legacy.py`
+  - `path:_src/tests/test_issue_integration_policy.py`
+  - `path:_src/output/issue-migration`
+  - `path:provenance/migrations/issue-store/0037-31-final-frozen-candidate.json`
+  - `path:provenance/migrations/issue-store/0037-31-final-frozen-candidate.md`
+  - `path:docs/dossiers/0037-31-final-frozen-migration-20260904.md`
+- **Affected gates:**
+  - `validation:_src/tools/issue_import_legacy.py`
+  - `validation:_src/tools/issue_integration_policy.py`
+  - `integration:0037-31`
+  - `task-start:0037-32`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0037-31-two-gate-architect-review:1788520101148-0c061647`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent scope review in `docs/dossiers/0037-31-two-gate-scope-review-20260904.md` supports only the conjunctive, assignment-bound two-gate exception and its red/green, adjacent, property, rollback, and no-grandfathering conditions.
+- **Waiver:** `none`
