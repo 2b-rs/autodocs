@@ -21,10 +21,10 @@ SPEC = importlib.util.spec_from_file_location(
 IMP = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(IMP)
 FIXTURE_13 = ROOT / "provenance/migrations/issue-store/fixtures/0037-13"
-AUTHORITY_COMMIT = "89470b3b2aa804786eb525a9682410c783b77453"
-AUTHORITY_PATH = "docs/dossiers/dec-0037-007-legacy-migration-dispositions.md"
-AUTHORITY_BLOB_DIGEST = "sha256:54e5eeeaeea38620192dc0049a5f89fa71538fd159ec46009e7fd302ece633ee"
-AUTHORITY_PRINCIPAL = "obrien@deepspace9.starfleet.network"
+AUTHORITY_COMMIT = "5c71c05586534910c975f9efd9454c97b01a3c83"
+AUTHORITY_PATH = "docs/dossiers/dec-0037-034-bounded-final-migration-promotion-rework.md"
+AUTHORITY_BLOB_DIGEST = "sha256:8167c3ba94c5aafe7bbce1a2fc5dde07a7fad4ffc90ad4db2e7b136ce44e0b07"
+AUTHORITY_PRINCIPAL = "tobias.anton@accenture.com"
 
 
 def _authority_material():
@@ -1318,7 +1318,12 @@ class DispositionContractTests(unittest.TestCase):
             entry["payload_digest"] = IMP.disposition_payload_digest(entry)
             _bind_authority(repo, [entry])
             IMP.verify_authority_material(entry, repo)
-            architecture_only = dict(entry)
+            architecture_only = dict(
+                entry,
+                authority_ref="DEC-0037-034",
+                deciding_identity="authority:supervisor:management",
+            )
+            architecture_only["payload_digest"] = IMP.disposition_payload_digest(architecture_only)
             architecture_only["signature_material"] = _authority_material()
             unbound = _unbound_authority_importer()
             unbound.verify_authority_material(architecture_only, ROOT)
