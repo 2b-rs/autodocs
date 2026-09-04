@@ -647,8 +647,7 @@ def expected_finding_digests(finding: Mapping[str, object], blobs: Mapping[str, 
     return blob_digest, field_digest
 
 
-def verify_authority_material(entry: Mapping[str, object], repo: Path) -> None:
-    material = entry.get("signature_material")
+def _load_authority_records(material: Mapping[str, object], repo: Path) -> List[dict]:
     if not isinstance(material, dict):
         raise ImportErrorClosed("DISP-UNVERIFIABLE", "signature_material must identify verifiable authority source")
     required = {"scheme", "commit", "path", "blob_digest", "principal"}
@@ -702,21 +701,21 @@ def verify_authority_material(entry: Mapping[str, object], repo: Path) -> None:
     records = authority_document.get("entries")
     if not isinstance(records, list) or not records:
         raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source has no signed disposition actions")
-    expected = {
-        "authority_ref": entry["authority_ref"],
-        "deciding_identity": entry["deciding_identity"],
-        "deciding_role": entry["deciding_role"],
-        "payload_digest": entry["payload_digest"],
-    }
+    expected_fields = {"authority_ref", "deciding_identity", "deciding_role", "payload_digest"}
     for record in records:
-        if not isinstance(record, dict) or set(record) != set(expected):
+        if not isinstance(record, dict) or set(record) != expected_fields:
             raise ImportErrorClosed("DISP-UNVERIFIABLE", "authority source contains a malformed disposition action")
+    return records
+
+
+def verify_authority_material(entry: Mapping[str, object], repo: Path) -> None:
+    records = _load_authority_records(entry.get("signature_material"), repo)
+    expected = generate_authority_record(entry)
     if sum(record == expected for record in records) != 1:
         raise ImportErrorClosed(
             "DISP-UNVERIFIABLE",
             "signed authority source does not uniquely bind the canonical disposition payload",
         )
-
 
 def disposition_payload_digest(entry: Mapping[str, object]) -> str:
     payload = {
@@ -894,12 +893,17 @@ def apply_dispositions(
     if len(by_id) != len(blocking):
         raise ImportErrorClosed("DISP-CONFLICT", "blocking findings are not uniquely identified")
     pairs = []
-    verified_material = set()
+    verified_material: Dict[str, List[dict]] = {}
     for entry in document["entries"]:
-        material_key = (_canonical_json(entry["signature_material"]), entry["payload_digest"])
+        material_key = _canonical_json(entry["signature_material"])
         if material_key not in verified_material:
-            verify_authority_material(entry, repo)
-            verified_material.add(material_key)
+            verified_material[material_key] = _load_authority_records(entry["signature_material"], repo)
+        expected_authority = generate_authority_record(entry)
+        if sum(record == expected_authority for record in verified_material[material_key]) != 1:
+            raise ImportErrorClosed(
+                "DISP-UNVERIFIABLE",
+                "signed authority source does not uniquely bind the canonical disposition payload",
+            )
         finding_id = entry["finding_id"]
         finding = by_id.get(finding_id)
         if finding is None:
@@ -1405,9 +1409,13 @@ def _source_pathspecs(named_files: Optional[Sequence[str]]) -> List[str]:
 def _legacy_source_clean(
     repo: Path, source_commit: str, named_files: Optional[Sequence[str]]
 ) -> bool:
+    # The frozen source is read from source_commit and protected by source-ref/baseline
+    # CAS. Dirtiness is a worktree property, so compare source paths with current HEAD;
+    # a clean descendant checkout must not invalidate an immutable historical import.
+    del source_commit
     paths = _source_pathspecs(named_files)
-    unstaged = subprocess.run(["git", "diff", "--quiet", source_commit, "--", *paths], cwd=repo, check=False)
-    staged = subprocess.run(["git", "diff", "--cached", "--quiet", source_commit, "--", *paths], cwd=repo, check=False)
+    unstaged = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", *paths], cwd=repo, check=False)
+    staged = subprocess.run(["git", "diff", "--cached", "--quiet", "HEAD", "--", *paths], cwd=repo, check=False)
     status = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", *paths],
                             cwd=repo, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
     return unstaged.returncode == 0 and staged.returncode == 0 and status.returncode == 0 and not status.stdout

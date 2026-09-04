@@ -452,6 +452,21 @@ class ImportLegacyTests(unittest.TestCase):
             self.assertIn("IMP-CLOSURE-EVIDENCE-PLACEHOLDER", rules)
             self.assertFalse(list((history / "shadow-placeholder-0001/issues").rglob("closure.json")))
 
+    def test_clean_descendant_checkout_can_import_pinned_historical_source(self):
+        """AE-4 baseline neighbor: committed descendant source changes are not worktree dirt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            with (repo / "TODO.md").open("a", encoding="utf-8") as stream:
+                stream.write("\n- [ ] **0099-03** Later committed source item.\n")
+            descendant = self._commit(repo, "advance clean descendant")
+            self.assertNotEqual(source, descendant)
+            result = self._run(
+                repo, Path(tmp) / "history", "shadow-historical-source-0001", source,
+                source_ref=source,
+            )
+            self.assertEqual(result["state"]["status"], "promoted")
+            self.assertTrue(result["state"]["source"]["working_tree_clean"])
+
     def test_adjacent_stale_source_is_retained_and_not_promotable(self):
         """AE-4 adjacent identity dimension: watched ref drift => retained rejected state."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -834,6 +849,10 @@ def _pin_tree(parent: Path, tree: Path) -> tuple[Path, str]:
         ["git", "config", "gpg.ssh.allowedSignersFile", str(ROOT / "issues/_policy/allowed_signers")],
         cwd=repo, check=True, capture_output=True,
     )
+    for key in ("user.signingkey", "gpg.format"):
+        value = subprocess.check_output(["git", "config", "--get", key], cwd=ROOT, text=True).strip()
+        subprocess.run(["git", "config", key, value], cwd=repo, check=True)
+    subprocess.run(["git", "config", "commit.gpgsign", "true"], cwd=repo, check=True)
     return repo, sha
 
 
