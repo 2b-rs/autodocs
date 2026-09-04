@@ -1,0 +1,67 @@
+### `DEC-0037-034` — Source-bound disposition and fresh-run promotion for the frozen final migration
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-04T17:25:18Z`
+- **Deciding identity:** `authority:supervisor:management`
+- **Role:** `Management`
+- **Authority reference:** Resolved Management decision `decision-1788542374822-d1fb0ee1`, option `authorize_bounded_promotion_rework`; recorded through Architect assignment `1788542643434-6ef4c01c`. The decision request, mail, assignment, capability class, and this recorder do not independently grant implementation, Acceptance, integration, publication, or cutover authority.
+- **Subject:** Bounded remediation of all 930 blocking findings in the rejected Task `0037-31` migration run `0037-31-post-delta-7dbc94db-r2`, followed by one fresh immutable production migration run and append-only transaction evidence before `0037-34.01` may start.
+- **Decision:** Select ALT-01. One atomic same-slot implementation or explicit same-slot supersession may produce a signed `migration-disposition-authority@v1` source, a `migration-dispositions@v1` manifest covering each of the 930 blocking findings exactly once under `DEC-0037-007` and `DEC-0037-008`, the minimal production `run_migration()` disposition-input interface, only the synchronized tests or schema changes demonstrably required by that interface, one fresh immutable run and its output, refreshed candidate companions, and append-only cutover transaction-ref evidence. The implementation must retain every legacy source byte; preserve the warning-only `archived-not-accepted` finding without turning it into a blocker or credit; apply the deterministic family mapping in this record; emit no claim lease, `closure.json`, Acceptance, evidence credit, release, or Feature closure; and leave `0037-34.01` blocked until the fresh run has zero blocking findings, is promotable, and its exact signed evidence is independently integrated.
+- **Technical justification:** Canonical `main@551032a98e6a6eda1e13b786b0212de5e9ff7280` contains the signed, rejected run whose `migration-report.json` SHA-256 is `9b5660a92d50757dd20f950286c8a24b62978c2dd0ed3250177ba62343d2ea7e`. Its ten blocking populations total exactly 930: 418 `IMP-CLAIM-OPAQUE`; 443 `IMP-CLOSURE-ACCEPTANCE-MISSING`; 12 `IMP-CLOSURE-CRITERION-EVIDENCE-MISSING`; 16 `IMP-CLOSURE-EVIDENCE-MISSING`; 4 `IMP-CLOSURE-EVIDENCE-PLACEHOLDER`; 3 `IMP-FEATURE-HEADER-MALFORMED`; 1 `IMP-MARKER-UNDEFINED`; 14 `IMP-REF-LOCAL-PLACEHOLDER`; 11 `IMP-REF-PENDING`; and 8 `IMP-REF-NO-EVIDENCE-CREDIT`. The last two placeholder rules share the report code `unresolved-placeholder` but remain distinct rule populations. The same report has one separate warning, `IMP-ARCHIVED-NOT-ACCEPTED`. Existing runtime/schema code already defines the five selected non-credit disposition kinds and verifies source commit, locator, item, source-blob or referenced-field digest, payload digest, allowed-signers-backed Git SSH commit, unique finding match, and complete blocking coverage. The production orchestrator currently does not accept or apply a disposition manifest. A narrow source-bound input and a fresh run can therefore satisfy the existing fail-closed policy without waiving findings or changing legacy authority.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Authorize one source-bound, exhaustive disposition input and fresh production run
+    - **Disposition:** `selected`
+    - **Reason:** This uses the already selected `DEC-0037-007`/`008` model, keeps every unmatched or unverifiable entry blocking, and makes `0037-31` promotion objectively reproducible without inventing legacy completion.
+  - **ALT-02:** Waive the 930 blockers and let `0037-34.01` proceed from the rejected run
+    - **Disposition:** `rejected`
+    - **Reason:** No waiver was selected; doing so would weaken the fail-closed boundary and could promote unaccepted, malformed, or placeholder-bearing state.
+  - **ALT-03:** Stop the cutover and redesign the migration architecture
+    - **Disposition:** `rejected`
+    - **Reason:** The current schemas and verifier already express the required per-finding policy, so a broader redesign is unnecessary for the observed blocker set.
+  - **ALT-04:** Edit legacy source files or reuse the rejected run in place
+    - **Disposition:** `rejected`
+    - **Reason:** Source edits would destroy the evidence baseline, while in-place run mutation would violate immutable-run, CAS, and reproducibility guarantees.
+- **Consequences:**
+  - **CON-01:** Exactly 930 signed disposition entries are required, with one-to-one coverage and no extra, missing, duplicate, conflicting, or many-to-one entry; the warning-only `IMP-ARCHIVED-NOT-ACCEPTED` remains retained and receives no disposition credit.
+  - **CON-02:** Deterministic mapping is fixed: `IMP-CLAIM-OPAQUE` maps to `retain-provenance-no-active-lease`; `IMP-CLOSURE-ACCEPTANCE-MISSING`, `IMP-CLOSURE-CRITERION-EVIDENCE-MISSING`, and `IMP-CLOSURE-EVIDENCE-MISSING` map to `import-open-legacy-terminal-unverified`; `IMP-CLOSURE-EVIDENCE-PLACEHOLDER`, `IMP-REF-LOCAL-PLACEHOLDER`, `IMP-REF-PENDING`, and `IMP-REF-NO-EVIDENCE-CREDIT` map to `retain-provenance-no-evidence-credit`; `IMP-FEATURE-HEADER-MALFORMED` maps to `archive-excluded-from-active-migration` with all three archival-safety fields; and `IMP-MARKER-UNDEFINED` maps to `import-open-undefined-marker-investigate`.
+  - **CON-03:** Every entry binds the exact finding ID/rule, locator, item, source commit `7dbc94db262979b41bc225d6571d610123a47814`, and exactly one expected source-blob or referenced-field digest; its canonical payload digest is uniquely present in a signed authority document whose exact commit, path, blob digest, and allowed signer principal are verified.
+  - **CON-04:** The production interface is limited to passing one validated disposition path into the existing import/apply sequence inside `run_migration()`. It does not create a general input directory, broad output writability, network source, mutable authority lookup, alternate importer, or bypass around existing reservation, staging, source-ref, baseline, and promotion checks.
+  - **CON-05:** A new schema revision is not expected because `issues/_schema/migration-dispositions-v1.schema.json` already enumerates all selected kinds. Schema/fixture changes are permitted only if the implementation proves a concrete contract mismatch; any such change must land atomically with both producer and consumer tests and remain backward compatible with valid v1 fixtures.
+  - **CON-06:** The fresh run uses a never-before-used normalized run ID, the canonical `_src/output/issue-migration` history, the unchanged frozen source commit/tree, a source-ref and baseline CAS, and immutable output. Any source, selector epoch, authority blob, manifest, tool/schema, prior-run head, transaction head, or path-set drift invalidates the attempt before promotion and requires a fresh run ID.
+  - **CON-07:** Required evidence includes red reproduction of all ten blocking populations; green exact 930/930 coverage with zero blockers; adjacent negatives for each family and each binding/signature failure; and seeded exhaustive/property checks over family, kind, identity, locator, digest form, signature material, uniqueness, coverage, source/CAS, and output immutability. A terminal finding imported closed, any emitted `closure.json`, any active claim lease, or any evidence/Acceptance credit is always red.
+  - **CON-08:** Successful work refreshes the exact candidate JSON/Markdown and final-migration dossier with the new run ID, source/candidate/tree/report/manifest/authority digests, zero-blocking status, changed-path set, validation results, assignment identity, and transaction-ref CAS receipt. Prior rejected run evidence remains unchanged and reachable.
+  - **CON-09:** The active implementation candidate remains one ref and worktree for its assignment/item. Corrections append linearly; replacement requires explicit atomic same-slot supersession preserving the displaced ref, assignment history, and Geordi's integration reservation. No correction sibling, reconstruction, force-update, or deletion is authorized.
+  - **CON-10:** Before integration, rollback abandons the unintegrated active candidate while preserving its ref and WIP. After integration but before cutover, rollback reverts disposition-input consumption and companion promotion together, retains authority/manifests/runs, and returns every affected finding to blocking. A failed/interrupted production run is never edited or reused.
+  - **CON-11:** `0037-34.01` remains blocked until the promoted fresh run and append-only transaction evidence are independently verified and integrated. This decision creates no Task marker, Acceptance, integration verdict, source-history merge, authority switch, publication, push, cleanup, or Feature closure.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0037`
+  - `task:0037-31`
+  - `subtask:0037-34.01`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `subtask:0037-34.02`
+  - `task:0037-40`
+  - `path:_src/tools/issue_import_legacy.py`
+  - `path:_src/output/issue-migration/0037-31-post-delta-7dbc94db-r2/reports/migration-report.json`
+- **Affected gates:**
+  - `validation:0037-31-migration-disposition-coverage`
+  - `integration:0037-31`
+  - `task-start:0037-34.01`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `integration:0037-34.02`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:architect:0037-31:1788542643434-6ef4c01c`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Supporting pre-mutation scope review is recorded in `docs/dossiers/0037-31-promotion-rework-scope-review-20260904.md`; support is conditional on its exhaustive path, mapping, falsification, recovery, and separation constraints.
+- **Waiver:** `none`
