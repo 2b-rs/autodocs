@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Adversarial tests for the non-bypassable issue integration gate."""
-import importlib.util, json, shutil, subprocess, sys, tempfile, unittest
+import hashlib, importlib.util, itertools, json, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 
@@ -52,6 +52,47 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
     def evaluate(self, base=None, candidate=None, enforce=True):
         return POL.evaluate_integration_policy(self.root, base_ref=base or self.base,
             candidate_ref=candidate or "HEAD", enforce_rules=enforce)
+
+    def write_claimless_0037_31_candidate(self, **proof_updates):
+        evidence = {
+            "provenance/migrations/issue-store/0037-31-final-frozen-candidate.md":
+                "task_id: 0037-31\nassignment_id: 1788519031177-793919ee\n",
+            "docs/dossiers/0037-31-final-frozen-migration-20260904.md":
+                "task_id: 0037-31\nassignment_id: 1788519031177-793919ee\n",
+        }
+        for path, text in evidence.items():
+            target = self.root / path; target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text, encoding="utf-8")
+        reports = {}
+        for name in ("migration-report.json", "migration-state.json"):
+            path = f"{POL.CLAIMLESS_0037_31_RUN_ROOT}/reports/{name}"
+            target = self.root / path; target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(json.dumps({"schema": name, "status": "promoted"}) + "\n", encoding="utf-8")
+            reports[name.replace(".json", "").replace("-", "_") + "_sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+        proof = {
+            "schema": "claimless-frozen-assignment-proof@v1", "task_id": "0037-31",
+            "assignment_id": POL.CLAIMLESS_0037_31_ASSIGNMENT,
+            "atomic_award": POL.CLAIMLESS_0037_31_ASSIGNMENT,
+            "item_identity": POL.CLAIMLESS_0037_31_ITEM,
+            "claim_mode": "claimless-frozen-transaction", "authority_epoch": "legacy-frozen",
+            "source_commit": POL.CLAIMLESS_0037_31_SOURCE,
+            "source_tree": POL.CLAIMLESS_0037_31_SOURCE_TREE,
+            "closure_transaction": POL.CLAIMLESS_0037_31_TRANSACTION,
+            "run_id": POL.CLAIMLESS_0037_31_RUN_ID,
+            "run_root": POL.CLAIMLESS_0037_31_RUN_ROOT + "/",
+            "allowed_paths": sorted(POL.CLAIMLESS_0037_31_SCOPE),
+            "evidence_paths": sorted(POL.CLAIMLESS_0037_31_EVIDENCE),
+            "companion_sha256": {path: hashlib.sha256(text.encode()).hexdigest() for path, text in evidence.items()},
+        }
+        proof.update(proof_updates)
+        manifest = {"task_id": "0037-31", "assignment_id": POL.CLAIMLESS_0037_31_ASSIGNMENT,
+                    "authority_proof": proof,
+                    "candidate": {"root": POL.CLAIMLESS_0037_31_RUN_ROOT + "/",
+                                  "identity": "1" * 64, "tree_digest": "2" * 64,
+                                  "reports": reports}}
+        target = self.root / POL.CLAIMLESS_0037_31_MANIFEST
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
 
     def test_live_legacy_placeholder_candidate_passes_only_exact_contract(self):
         (self.root/"TODO.md").write_text("# conforming\n"); candidate=self.commit("legacy")
@@ -142,6 +183,46 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
         metadata.write_text("metadata\n")
         candidate=self.commit("adjacent allowed")
         self.assertEqual("passed",self.evaluate(candidate=candidate)["status"])
+
+    def test_claimless_0037_31_manifest_is_the_only_complete_green_row(self):
+        self.write_frozen(); self.base=self.commit("frozen")
+        self.write_claimless_0037_31_candidate(); candidate=self.commit("claimless exact")
+        self.assertEqual("passed", self.evaluate(candidate=candidate)["status"])
+
+    def test_claimless_0037_31_manifest_rejects_each_wrong_binding(self):
+        self.write_frozen(); frozen=self.commit("frozen")
+        mutations = {
+            "task_id": "0037-32", "assignment_id": "1788519031177-00000000",
+            "atomic_award": "1788519031177-00000000", "item_identity": "0037-31-other",
+            "claim_mode": "claim-bound", "authority_epoch": "issue-store-writable",
+            "source_commit": "0" * 40, "source_tree": "0" * 40,
+            "closure_transaction": "0" * 40, "run_id": "0037-31-other-run",
+            "run_root": "_src/output/issue-migration/other/", "allowed_paths": [],
+            "evidence_paths": [], "companion_sha256": {},
+        }
+        for field, value in mutations.items():
+            with self.subTest(field=field):
+                self.git("reset", "--hard", frozen); self.git("clean", "-fd")
+                self.write_claimless_0037_31_candidate(**{field: value})
+                result=self.evaluate(base=frozen,candidate=self.commit(field),enforce=False)
+                self.assertEqual("POLICY-FROZEN-AUTHORITY-PROOF-REQUIRED", result["violations"][0]["code"])
+
+    def test_claimless_0037_31_proof_field_subsets_fail_closed(self):
+        self.write_frozen(); frozen=self.commit("frozen")
+        required=("task_id", "assignment_id", "claim_mode", "authority_epoch")
+        cases=0
+        for present in itertools.product((False, True), repeat=len(required)):
+            self.git("reset", "--hard", frozen); self.git("clean", "-fd")
+            self.write_claimless_0037_31_candidate()
+            path=self.root/POL.CLAIMLESS_0037_31_MANIFEST
+            value=json.loads(path.read_text())
+            for keep, key in zip(present, required):
+                if not keep: value["authority_proof"].pop(key)
+            path.write_text(json.dumps(value)+"\n")
+            result=self.evaluate(base=frozen,candidate=self.commit(str(present)),enforce=False)
+            self.assertEqual("passed" if all(present) else "rejected", result["status"])
+            cases += 1
+        self.assertEqual(16, cases)
 
     def test_frozen_path_classifier_exhaustive_finite_domain(self):
         cases = {

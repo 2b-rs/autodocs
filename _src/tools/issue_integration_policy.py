@@ -44,6 +44,24 @@ FROZEN_METADATA_PATHS = frozenset({
     "_src/tests/test_issue_integration_policy.py",
 })
 FROZEN_CLOSURE_MANIFEST = runner_transaction.FROZEN_CLOSURE_MANIFEST_PATH
+CLAIMLESS_0037_31_MANIFEST = "provenance/migrations/issue-store/0037-31-final-frozen-candidate.json"
+CLAIMLESS_0037_31_ASSIGNMENT = "1788519031177-793919ee"
+CLAIMLESS_0037_31_ITEM = "0037-31-final-frozen-migration"
+CLAIMLESS_0037_31_SOURCE = "7dbc94db262979b41bc225d6571d610123a47814"
+CLAIMLESS_0037_31_SOURCE_TREE = "6a6c40de53f15245a084bbdc68b526f07ab5b534"
+CLAIMLESS_0037_31_TRANSACTION = "f5a806c52a63e00edac5c0aa8bb0793227ae3af1"
+CLAIMLESS_0037_31_RUN_ID = "0037-31-post-delta-7dbc94db-r2"
+CLAIMLESS_0037_31_RUN_ROOT = f"_src/output/issue-migration/{CLAIMLESS_0037_31_RUN_ID}"
+CLAIMLESS_0037_31_EVIDENCE = frozenset({
+    CLAIMLESS_0037_31_MANIFEST,
+    "provenance/migrations/issue-store/0037-31-final-frozen-candidate.md",
+    "docs/dossiers/0037-31-final-frozen-migration-20260904.md",
+})
+CLAIMLESS_0037_31_SCOPE = frozenset({
+    "_src/tools/issue_import_legacy.py", "_src/tools/issue_integration_policy.py",
+    "_src/tests/test_issue_import_legacy.py", "_src/tests/test_issue_integration_policy.py",
+    CLAIMLESS_0037_31_RUN_ROOT, *CLAIMLESS_0037_31_EVIDENCE,
+})
 SEMVER_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 LINK_RE = re.compile(r"\[[^]]*\]\(([^)#?]+)(?:#[^)]*)?\)")
@@ -246,13 +264,97 @@ def _candidate_blob(candidate_root: Path, candidate: str, relative: str) -> str:
     return result.stdout
 
 
-def frozen_authority_proof(candidate_root: Path, candidate: str, relative: str) -> bool:
+def _candidate_blob_sha256(candidate_root: Path, candidate: str, relative: str) -> Optional[str]:
+    result = subprocess.run(
+        ["git", "show", f"{candidate}:{relative}"], cwd=candidate_root, capture_output=True
+    )
+    return hashlib.sha256(result.stdout).hexdigest() if result.returncode == 0 else None
+
+
+def _claimless_0037_31_proof(
+    candidate_root: Path, candidate: str, relative: str, changed_files: Set[str]
+) -> bool:
+    """Validate DEC-0037-033's closed assignment/source/transaction proof."""
+    if relative not in CLAIMLESS_0037_31_EVIDENCE:
+        return False
+    try:
+        manifest = json.loads(_candidate_blob(candidate_root, candidate, CLAIMLESS_0037_31_MANIFEST))
+    except (TypeError, ValueError):
+        return False
+    if not isinstance(manifest, dict):
+        return False
+    proof = manifest.get("authority_proof")
+    expected_keys = {
+        "schema", "task_id", "assignment_id", "atomic_award", "item_identity",
+        "claim_mode", "authority_epoch", "source_commit", "source_tree",
+        "closure_transaction", "run_id", "run_root", "allowed_paths",
+        "evidence_paths", "companion_sha256",
+    }
+    if not isinstance(proof, dict) or set(proof) != expected_keys:
+        return False
+    expected = {
+        "schema": "claimless-frozen-assignment-proof@v1", "task_id": "0037-31",
+        "assignment_id": CLAIMLESS_0037_31_ASSIGNMENT,
+        "atomic_award": CLAIMLESS_0037_31_ASSIGNMENT,
+        "item_identity": CLAIMLESS_0037_31_ITEM,
+        "claim_mode": "claimless-frozen-transaction", "authority_epoch": "legacy-frozen",
+        "source_commit": CLAIMLESS_0037_31_SOURCE, "source_tree": CLAIMLESS_0037_31_SOURCE_TREE,
+        "closure_transaction": CLAIMLESS_0037_31_TRANSACTION,
+        "run_id": CLAIMLESS_0037_31_RUN_ID, "run_root": CLAIMLESS_0037_31_RUN_ROOT + "/",
+    }
+    if any(proof.get(key) != value for key, value in expected.items()):
+        return False
+    if proof.get("allowed_paths") != sorted(CLAIMLESS_0037_31_SCOPE):
+        return False
+    if proof.get("evidence_paths") != sorted(CLAIMLESS_0037_31_EVIDENCE):
+        return False
+    normalized = {path.replace("\\", "/") for path in changed_files}
+    if any(path not in CLAIMLESS_0037_31_SCOPE and not path.startswith(CLAIMLESS_0037_31_RUN_ROOT + "/")
+           for path in normalized):
+        return False
+    if not CLAIMLESS_0037_31_EVIDENCE.issubset(normalized):
+        return False
+    companions = proof.get("companion_sha256")
+    companion_paths = CLAIMLESS_0037_31_EVIDENCE - {CLAIMLESS_0037_31_MANIFEST}
+    if not isinstance(companions, dict) or set(companions) != companion_paths:
+        return False
+    for path in companion_paths:
+        text = _candidate_blob(candidate_root, candidate, path)
+        if "0037-31" not in text or CLAIMLESS_0037_31_ASSIGNMENT not in text:
+            return False
+        if companions[path] != _candidate_blob_sha256(candidate_root, candidate, path):
+            return False
+    candidate_info = manifest.get("candidate")
+    if not isinstance(candidate_info, dict) or candidate_info.get("root") != CLAIMLESS_0037_31_RUN_ROOT + "/":
+        return False
+    for key in ("identity", "tree_digest"):
+        if not isinstance(candidate_info.get(key), str) or not re.fullmatch(r"[0-9a-f]{64}", candidate_info[key]):
+            return False
+    reports = candidate_info.get("reports")
+    report_paths = {
+        "migration_report_sha256": CLAIMLESS_0037_31_RUN_ROOT + "/reports/migration-report.json",
+        "migration_state_sha256": CLAIMLESS_0037_31_RUN_ROOT + "/reports/migration-state.json",
+    }
+    if not isinstance(reports, dict) or set(reports) != set(report_paths):
+        return False
+    return all(reports[key] == _candidate_blob_sha256(candidate_root, candidate, path)
+               for key, path in report_paths.items())
+
+
+def frozen_authority_proof(
+    candidate_root: Path, candidate: str, relative: str,
+    changed_files: Optional[Set[str]] = None,
+) -> bool:
     """Require task and assignment binding in the immutable candidate blob."""
     task_match = FROZEN_CUTOVER_TASK_PATTERN.search(relative)
     if task_match is None:
         return False
     text = _candidate_blob(candidate_root, candidate, relative)
     task_id = task_match.group(0)
+    if task_id == "0037-31" and changed_files is not None and _claimless_0037_31_proof(
+        candidate_root, candidate, relative, changed_files
+    ):
+        return True
     if task_id not in text:
         return False
     assignment_ids = set(re.findall(
@@ -381,7 +483,9 @@ def evaluate_integration_policy(
                     "message": f"Ordinary legacy claim or completion record '{norm}' cannot land while authority epoch is legacy-frozen.",
                     "locator": norm,
                 })
-            elif path_class in {"cutover-record", "cutover-evidence"} and not frozen_authority_proof(candidate_root, candidate_commit, norm):
+            elif path_class in {"cutover-record", "cutover-evidence"} and not frozen_authority_proof(
+                candidate_root, candidate_commit, norm, set(files_to_check)
+            ):
                 violations.append({
                     "code": "POLICY-FROZEN-AUTHORITY-PROOF-REQUIRED",
                     "message": f"Frozen-window cutover record '{norm}' lacks task- and assignment-bound authority proof.",

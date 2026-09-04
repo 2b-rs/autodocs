@@ -19,7 +19,7 @@ import tempfile
 import unicodedata
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterable, List, Mapping, NamedTuple, Optional, Sequence, Tuple
 
 TOOL_REL = "_src/tools/issue_import_legacy.py"
 SCHEMA_VERSION = "1.0"
@@ -148,9 +148,46 @@ class ImportErrorClosed(RuntimeError):
         self.message = message
 
 
-def resolve_disposable_root(root: Path, repo: Path) -> Path:
+class _ReservedStagingCapability(NamedTuple):
+    """Single-call proof created only by ``run_migration`` after reservation."""
+
+    repo: Path
+    history: Path
+    staging: Path
+    issues: Path
+    lock: Path
+    run_id: str
+
+
+def resolve_disposable_root(
+    root: Path, repo: Path, *, _reserved_staging: Optional[_ReservedStagingCapability] = None
+) -> Path:
     resolved = root.expanduser().resolve()
     repo_resolved = repo.resolve()
+    if _reserved_staging is not None:
+        capability = _reserved_staging
+        canonical_history = (repo_resolved / "_src/output/issue-migration").resolve()
+        lexical_root = Path(os.path.abspath(os.path.expanduser(str(root))))
+        lexical_issues = capability.staging / "issues"
+        staging_name = capability.staging.name
+        expected_prefix = f".{capability.run_id}.staging-"
+        if (
+            capability.repo == repo_resolved
+            and capability.history == canonical_history
+            and capability.staging.parent == canonical_history
+            and capability.staging.resolve().parent == canonical_history
+            and staging_name.startswith(expected_prefix)
+            and capability.issues == lexical_issues
+            and lexical_root == lexical_issues
+            and resolved == lexical_issues.resolve()
+            and resolved.parent == capability.staging.resolve()
+            and capability.lock == canonical_history / f".{capability.run_id}.lock"
+            and capability.lock.is_file()
+            and capability.staging.is_dir()
+            and not (canonical_history / capability.run_id).exists()
+        ):
+            return resolved
+        raise ImportErrorClosed("IMP-LIVE-ROOT", "invalid reserved migration staging capability")
     live_roots = [
         repo_resolved / "issues",
         repo_resolved / "provenance",
@@ -1011,9 +1048,10 @@ def import_legacy(
     display_root: Optional[str] = None,
     emit_closures: bool = False,
     dispositions: Optional[Path] = None,
+    _reserved_staging: Optional[_ReservedStagingCapability] = None,
 ) -> dict:
     inv = _load_inventory_module(repo)
-    dest = resolve_disposable_root(root, repo)
+    dest = resolve_disposable_root(root, repo, _reserved_staging=_reserved_staging)
     dest.mkdir(parents=True, exist_ok=True)
     blobs, commit = load_blobs(inv, repo, source_commit, source_tree)
     if named_files:
@@ -1449,10 +1487,10 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
                   named_files: Optional[Sequence[str]] = None,
                   before_compare: Optional[Callable[[Path], None]] = None) -> dict:
     """Create one immutable production migration run under a non-authoritative history root."""
-    repo = repo.resolve()
     if not RUN_ID_RE.fullmatch(run_id):
         raise ImportErrorClosed("IMP-RUN-ID", f"invalid run ID {run_id!r}")
     history = _history_root(history_root, repo)
+    repo = repo.resolve()
     initial_source = _resolve_commit(repo, source_revision)
     watched_ref = source_ref or source_revision
     if _resolve_commit(repo, watched_ref) != initial_source:
@@ -1648,9 +1686,18 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
                     "locator": initial_source,
                 })
         candidate_root = staging / "issues"
+        canonical_history = (repo / "_src/output/issue-migration").resolve()
+        staging_capability = (
+            _ReservedStagingCapability(
+                repo=repo, history=history, staging=staging, issues=candidate_root,
+                lock=lock_path, run_id=run_id,
+            )
+            if history == canonical_history else None
+        )
         manifest = import_legacy(
             repo=repo, root=candidate_root, source_commit=initial_source,
             named_files=named_files, display_root=logical_root + "issues/", emit_closures=True,
+            _reserved_staging=staging_capability,
         )
         findings.extend(manifest["findings"])
         candidate_paths = list(manifest["written"])

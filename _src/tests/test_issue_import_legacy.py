@@ -632,6 +632,47 @@ class ImportLegacyTests(unittest.TestCase):
             safe_outside_alias.symlink_to(outside, target_is_directory=True)
             self.assertEqual(IMP._history_root(safe_outside_alias, repo), outside.resolve())
 
+    def test_reserved_canonical_staging_capability_is_conjunctive(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            history = repo / "_src/output/issue-migration"
+            history.mkdir(parents=True)
+            history = history.resolve()
+            run_id = "0037-31-post-delta-7dbc94db-r2"
+            lock = history / f".{run_id}.lock"
+            lock.write_text("", encoding="utf-8")
+            staging = Path(tempfile.mkdtemp(prefix=f".{run_id}.staging-", dir=history)).resolve()
+            issues = staging / "issues"
+            capability = IMP._ReservedStagingCapability(
+                repo.resolve(), history, staging, issues, lock, run_id
+            )
+            self.assertEqual(
+                issues.resolve(),
+                IMP.resolve_disposable_root(issues, repo, _reserved_staging=capability),
+            )
+            mutations = (
+                capability._replace(repo=Path(tmp)),
+                capability._replace(history=repo / "_src/output"),
+                capability._replace(staging=history / "sibling"),
+                capability._replace(issues=staging / "reports"),
+                capability._replace(lock=history / ".wrong.lock"),
+                capability._replace(run_id="wrong-run-id"),
+            )
+            for mutated in mutations:
+                with self.subTest(mutated=mutated), self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                    IMP.resolve_disposable_root(issues, repo, _reserved_staging=mutated)
+                self.assertEqual("IMP-LIVE-ROOT", ctx.exception.code)
+            with self.assertRaises(IMP.ImportErrorClosed):
+                IMP.resolve_disposable_root(issues, repo)
+
+    def test_canonical_run_uses_only_internal_reserved_staging(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, source, _ = self._production_repo(Path(tmp))
+            history = repo / "_src/output/issue-migration"
+            result = self._run(repo, history, "0037-31-post-delta-7dbc94db-r2", source)
+            self.assertEqual("promoted", result["state"]["status"])
+            self.assertTrue((history / "0037-31-post-delta-7dbc94db-r2/issues").is_dir())
+
     def test_property_positive_acceptance_ref_membership_exhaustive_64_cases(self):
         """AE-5: exhaustive typed-field subsets; only three positive current bindings are members."""
         fields = [
