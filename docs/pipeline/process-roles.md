@@ -96,6 +96,32 @@ post-merge verification even when no intermediate checkpoint is crossed. The
 acceptance reviewer in [`task-acceptance.md`](task-acceptance.md) is also the
 Integrator role.
 
+### 3.1.1 Candidate-lifecycle duties
+
+- **Dispatcher:** offers one active candidate ref/worktree for the assignment
+  and rejects a sibling correction surface. It routes review findings back to
+  that ref in the same reserved slot. Only an explicit atomic same-slot
+  supersession may designate one replacement while preserving the displaced
+  ref, assignment history, and reservation.
+- **Implementer/contractor:** appends corrections, validation repairs, and
+  same-slot rework linearly to the awarded ref. On interruption it commits
+  useful state as WIP there; safely recoverable disposable local state does not
+  justify a new branch, worktree, or claim.
+- **Reviewer:** pins the exact candidate commit and returns actionable findings
+  to the same ref. It may cite red or intermediate commits without creating
+  evidence refs. A separate evidence ref is valid only when a named decision,
+  review, or incident artifact cites its exact commit and retention purpose.
+- **Integrator:** retains the reservation through correction and re-review,
+  verifies the exact reviewed candidate's ancestry to the canonical target, and
+  rejects tree equality, patch replay, reconstructed bytes, or a sibling commit
+  as substitutes.
+
+These duties implement
+[`DEC-0044-039`](../dossiers/dec-0044-039-candidate-ref-proliferation-control.md)
+and grant no ref deletion, force update, Acceptance, integration, publication,
+Task-state, or Feature-closure authority. Existing preservation, independence,
+hygiene, and worktree boundaries continue to govern.
+
 ### 3.2 Two functions
 
 Functions are **hats**, not gated roles. A session may adopt one without a
@@ -309,7 +335,8 @@ typical failure, and a repository example.
   current state at the edit location → validation path.
 - **Result:** Deliverable, tests, validation evidence, `REF`, and current claim.
 - **Prohibitions:** Accept own work; silently widen write scope; claim validation
-  that did not run; install a blocking gate without a record.
+  that did not run; install a blocking gate without a record; create a sibling
+  correction candidate instead of continuing linearly on the awarded ref.
 - **Typical failure:** Treat green output as proof of correct scope. `0038-03`
   was green at closure — 99 files and zero open findings — while already carrying
   the defect.
@@ -324,7 +351,9 @@ typical failure, and a repository example.
 - **Result:** Boundary merge, machine hygiene and immediate post-merge verdict,
   review findings, `Acceptance: ✓` or `[u]` verdict, and reconciled claims.
 - **Prohibitions:** Resolve own `[u]` verdict; skip a checkpoint; repair findings
-  rather than issue a verdict; accept when TK-1 applies without a waiver.
+  rather than issue a verdict; accept when TK-1 applies without a waiver;
+  substitute byte-equivalent reconstruction for ancestry of the exact reviewed
+  candidate.
 - **Typical failure:** Wave work through because progress is blocked. `[u]`
   exists for exactly that situation.
 - **Good question:** “Would I accept this if someone else had produced it?”
