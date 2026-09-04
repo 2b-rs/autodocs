@@ -207,3 +207,4 @@ NOTES: Dispatched integration of 0033-07.01 rework.
 OFFERED: priority 1: obrien
 STATUS: OPEN
 NOTES: Re-dispatched because paul (Discovery) was killed/held.
+- note: 0033-07.01-integration offer 1788482260247-d9cb6b30 unfilled; obrien is busy with 0037-43-integration.
