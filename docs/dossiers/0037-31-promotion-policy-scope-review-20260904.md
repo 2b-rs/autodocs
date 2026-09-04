@@ -184,3 +184,33 @@ Governance integration, exact same-slot implementation award, independent
 implementation review, policy validation over current main, transaction CAS,
 hygiene, and canonical candidate ancestry remain separate gates. This review
 crosses none of them and grants no waiver.
+
+## Append-only identity correction — 2026-09-04
+
+This correction supersedes only the current-implementer identification in
+the opening identity paragraph. The original wording remains visible above
+and in commit `7130072fe8564f5e07c702f5b8a3b126606b9f06`; it must not be used
+as the effective independence declaration. Geordi identified the error in
+review finding `1788550441348-ef037d25`. Same-slot rework award
+`1788550461499-d7e80e5d`, attached to Architect assignment
+`1788549291503-3e8815ee`, requires this provenance-preserving correction.
+
+The current promotion Implementer is `miles2-0037-programmer-20260904`, under
+parent implementation assignment `1788546750193-fb7f5f95` and delegation
+`1788547915174-4a5b7bc0`, as identified by the rework contract. Lore is not
+the current delegated Implementer. The retained implementation worktree's
+`-lore` suffix is a historical location label, not ownership evidence.
+Candidate `6923deec89fc15575fb23047d8236a89b3fd286e` independently records
+the parent assignment and delegation in its commit trailers; its Git author
+name is not used as session-identity proof.
+
+The reviewer is the distinct Data session
+`agent:data:architect:0037-31:01a06c35-4fd7-74c2-81dc-97cf6cfb8f1f`,
+assigned to pre-mutation architecture review under `1788549291503-3e8815ee`.
+This session authored the architecture dossiers and performed read-only
+candidate checks; it did not implement the production promotion or mutate
+the implementation candidate. Geordi remains the separately assigned
+Integrator. Neither privilege, a display name, a mailbox message, a worktree
+suffix, nor the Git author field alone establishes independence, assignment,
+Acceptance, or integration authority. The correction changes no technical
+scope, proof condition, validation result, gate, or reservation.
