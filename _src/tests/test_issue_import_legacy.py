@@ -359,6 +359,88 @@ class ImportLegacyTests(unittest.TestCase):
                 (history / "shadow-cli-success-0001/reports/migration-report.json").is_file()
             )
 
+    def _production_dispositions(self, repo: Path, source: str, parent: Path):
+        probe = IMP.import_legacy(
+            repo=repo, root=parent / "probe", source_commit=source, emit_closures=True,
+        )
+        _, blobs = IMP._source_identity(repo, source, None)
+        entries = [
+            _entry_for(finding, blobs, source)
+            for finding in probe["findings"]
+            if finding["severity"] == "blocking"
+        ]
+        for key in ("user.signingkey", "gpg.format", "gpg.ssh.allowedSignersFile"):
+            value = subprocess.check_output(
+                ["git", "config", "--get", key], cwd=ROOT, text=True,
+            ).strip()
+            if key == "gpg.ssh.allowedSignersFile":
+                value = str((ROOT / value).resolve())
+            subprocess.run(["git", "config", key, value], cwd=repo, check=True)
+        subprocess.run(["git", "config", "commit.gpgsign", "true"], cwd=repo, check=True)
+        _bind_authority(repo, entries)
+        path = repo / "authority/production-dispositions.json"
+        path.write_text(
+            IMP._canonical_json({"schema": IMP.DISPOSITION_SCHEMA, "entries": entries}),
+            encoding="utf-8",
+        )
+        return path, entries
+
+    def test_production_dispositions_cover_and_promote_without_credit(self):
+        """AE-3: production omits dispositions on the baseline and promotes with exact coverage."""
+        with tempfile.TemporaryDirectory() as tmp:
+            parent = Path(tmp)
+            repo, source, _ = self._production_repo(parent, placeholder=True)
+            path, entries = self._production_dispositions(repo, source, parent)
+            history = repo / "_src/output/issue-migration"
+            result = self._run(
+                repo, history, "shadow-dispositions-green-0001", source,
+                dispositions=path,
+            )
+            self.assertEqual(result["state"]["status"], "promoted")
+            self.assertEqual(result["state"]["finding_summary"]["blocking"], 0)
+            coverage = result["report"]["disposition_coverage"]
+            self.assertEqual(len(coverage["pairs"]), len(entries))
+            self.assertFalse(coverage["credit_granted"])
+            self.assertFalse(coverage["closure_json_synthesized"])
+            self.assertFalse(list((history / "shadow-dispositions-green-0001").rglob("closure.json")))
+            self.assertIn("disposition-coverage", {finding["code"] for finding in result["state"]["findings"]})
+
+    def test_adjacent_production_disposition_drift_is_retained_rejection(self):
+        """AE-4 identity neighbor: a byte change after preflight fails the disposition CAS."""
+        with tempfile.TemporaryDirectory() as tmp:
+            parent = Path(tmp)
+            repo, source, _ = self._production_repo(parent, placeholder=True)
+            path, _ = self._production_dispositions(repo, source, parent)
+
+            def drift(_staging):
+                path.write_text(path.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+
+            result = self._run(
+                repo, repo / "_src/output/issue-migration",
+                "shadow-dispositions-drift-0001", source,
+                dispositions=path, before_compare=drift,
+            )
+            self.assertEqual(result["state"]["status"], "rejected")
+            self.assertIn(
+                "IMP-DISPOSITION-DRIFT",
+                {finding["rule"] for finding in result["report"]["findings"]},
+            )
+
+    def test_adjacent_production_disposition_symlink_alias_is_rejected(self):
+        """AE-4 path neighbor: repository aliases cannot select production authority input."""
+        with tempfile.TemporaryDirectory() as tmp:
+            parent = Path(tmp)
+            repo, source, _ = self._production_repo(parent, placeholder=True)
+            path, _ = self._production_dispositions(repo, source, parent)
+            alias = repo / "authority/alias.json"
+            alias.symlink_to(path.name)
+            with self.assertRaises(IMP.ImportErrorClosed) as ctx:
+                self._run(
+                    repo, repo / "_src/output/issue-migration",
+                    "shadow-dispositions-alias-0001", source, dispositions=alias,
+                )
+            self.assertEqual(ctx.exception.code, "IMP-DISPOSITION-PATH")
+
     def test_adjacent_missing_placeholder_evidence_is_retained_rejection(self):
         """AE-4 adjacent evidence dimension: placeholder vs reachable ref => rejected, no closure."""
         with tempfile.TemporaryDirectory() as tmp:

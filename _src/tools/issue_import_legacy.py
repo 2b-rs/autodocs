@@ -1440,6 +1440,33 @@ def _history_root(root: Path, repo: Path) -> Path:
     return resolved
 
 
+def _disposition_input_identity(repo: Path, path: Path) -> Tuple[Path, dict]:
+    repo = repo.resolve()
+    candidate = path if path.is_absolute() else repo / path
+    lexical = Path(os.path.abspath(os.path.expanduser(str(candidate))))
+    resolved = candidate.expanduser().resolve()
+    if lexical != resolved or not _is_within(resolved, repo):
+        raise ImportErrorClosed(
+            "IMP-DISPOSITION-PATH",
+            "production dispositions must be a canonical, non-symlink path inside the repository",
+        )
+    try:
+        stat = resolved.stat()
+        raw = resolved.read_bytes()
+    except OSError as exc:
+        raise ImportErrorClosed("IMP-DISPOSITION-PATH", f"cannot read production dispositions: {exc}") from exc
+    if not resolved.is_file():
+        raise ImportErrorClosed("IMP-DISPOSITION-PATH", "production dispositions must be a regular file")
+    return resolved, {
+        "path": resolved.relative_to(repo).as_posix(),
+        "digest": _digest_prefixed(raw),
+        "device": stat.st_dev,
+        "inode": stat.st_ino,
+        "size": stat.st_size,
+        "mtime_ns": stat.st_mtime_ns,
+    }
+
+
 def _load_prior_states(history_root: Path) -> List[Tuple[Path, dict]]:
     states = []
     if not history_root.is_dir():
@@ -1485,6 +1512,7 @@ def _finding_summary(findings: Sequence[Mapping[str, object]]) -> dict:
 def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revision: str,
                   source_ref: Optional[str] = None, baseline_commit: Optional[str] = None,
                   named_files: Optional[Sequence[str]] = None,
+                  dispositions: Optional[Path] = None,
                   before_compare: Optional[Callable[[Path], None]] = None) -> dict:
     """Create one immutable production migration run under a non-authoritative history root."""
     if not RUN_ID_RE.fullmatch(run_id):
@@ -1506,6 +1534,11 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
     source, _ = _source_identity(repo, initial_source, named_files)
     importer_before = _importer_identity(repo)
     preparation_clean = _legacy_source_clean(repo, initial_source, named_files)
+    disposition_path = None
+    disposition_before = None
+    if dispositions is not None:
+        disposition_path, disposition_before = _disposition_input_identity(repo, Path(dispositions))
+        load_disposition_document(disposition_path)
 
     history.mkdir(parents=True, exist_ok=True)
     final_root, lock_path = history / run_id, history / f".{run_id}.lock"
@@ -1580,6 +1613,18 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
             "finding_summary": _finding_summary(ordered), "history": history_link,
             "findings": _state_findings(ordered),
         }
+        if manifest and manifest.get("disposition_coverage"):
+            coverage = manifest["disposition_coverage"]
+            state["findings"].append({
+                "code": "disposition-coverage",
+                "severity": "info",
+                "message": (
+                    f"{len(coverage['pairs'])} blocking findings covered by "
+                    f"{coverage['disposition_manifest_digest']} with no closure or evidence credit"
+                ),
+            })
+            state["finding_summary"]["info"] += 1
+            state["finding_summary"]["total"] += 1
         report = {
             "schema": "issue-import-legacy-report@v1", "run_id": run_id,
             "source": source, "source_compare": source_after, "importer": importer_before,
@@ -1590,6 +1635,8 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
             },
             "counts": counts, "finding_summary": state["finding_summary"],
             "findings": ordered, "history": history_link, "status": status,
+            "disposition_coverage": manifest.get("disposition_coverage") if manifest else None,
+            "disposition_input": disposition_before,
         }
         return state, report
 
@@ -1636,6 +1683,17 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
                 "severity": "blocking", "message": "candidate bytes drifted after preparation",
                 "locator": run_id,
             })
+        if disposition_path is not None:
+            try:
+                _, disposition_after = _disposition_input_identity(repo, disposition_path)
+            except ImportErrorClosed:
+                disposition_after = None
+            if disposition_after != disposition_before:
+                append_finding({
+                    "code": "disposition-drift", "rule": "IMP-DISPOSITION-DRIFT",
+                    "severity": "blocking", "message": "disposition input identity drifted before promotion",
+                    "locator": disposition_before["path"],
+                })
 
     def retain(status: str, phase: str, *, discard_candidate: bool) -> dict:
         nonlocal promoted
@@ -1697,9 +1755,13 @@ def run_migration(*, repo: Path, history_root: Path, run_id: str, source_revisio
         manifest = import_legacy(
             repo=repo, root=candidate_root, source_commit=initial_source,
             named_files=named_files, display_root=logical_root + "issues/", emit_closures=True,
-            _reserved_staging=staging_capability,
+            dispositions=disposition_path, _reserved_staging=staging_capability,
         )
-        findings.extend(manifest["findings"])
+        covered = bool(manifest.get("disposition_coverage"))
+        findings.extend(
+            finding for finding in manifest["findings"]
+            if not covered or finding.get("severity") != "blocking"
+        )
         candidate_paths = list(manifest["written"])
         candidate_digest = _candidate_digest(candidate_root, candidate_paths)
         observed_digest = candidate_digest
@@ -1752,7 +1814,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--run-id", help="production mode; --root is immutable history root")
     parser.add_argument("--source-ref", help="production source CAS ref")
     parser.add_argument("--baseline-commit", help="production initial source watermark")
-    parser.add_argument("--dispositions", help="migration-dispositions@v1 document (hermetic/tooling only)")
+    parser.add_argument("--dispositions", help="repo-contained migration-dispositions@v1 document")
     args = parser.parse_args(argv)
     try:
         if args.run_id:
@@ -1760,7 +1822,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 raise ImportErrorClosed("IMP-CLI", "--run-id requires --source-commit and forbids --source-tree")
             result = run_migration(repo=Path(args.repo), history_root=Path(args.root), run_id=args.run_id,
                                    source_revision=args.source_commit, source_ref=args.source_ref,
-                                   baseline_commit=args.baseline_commit, named_files=args.files)
+                                   baseline_commit=args.baseline_commit, named_files=args.files,
+                                   dispositions=Path(args.dispositions) if args.dispositions else None)
             state = result["state"]
             sys.stdout.write(_canonical_json({"run_id": state["run_id"],
                                               "tree_digest": state["candidate"]["tree_digest"],
