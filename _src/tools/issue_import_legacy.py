@@ -895,6 +895,11 @@ def apply_dispositions(
     pairs = []
     verified_material: Dict[str, List[dict]] = {}
     for entry in document["entries"]:
+        if entry["kind"] == "source-repaired":
+            raise ImportErrorClosed(
+                "DISP-UNPROVEN-REPAIR",
+                "source-repaired cannot cover an extant blocking finding without independently proven source repair",
+            )
         material_key = _canonical_json(entry["signature_material"])
         if material_key not in verified_material:
             verified_material[material_key] = _load_authority_records(entry["signature_material"], repo)
@@ -914,11 +919,6 @@ def apply_dispositions(
             raise ImportErrorClosed("DISP-WRONG-COMMIT", "dispositions require an exact source_commit")
         if entry["source_commit"] != source_commit:
             raise ImportErrorClosed("DISP-WRONG-COMMIT", f"disposition commit is not the import source for {finding_id}")
-        if entry["kind"] == "source-repaired":
-            raise ImportErrorClosed(
-                "DISP-UNPROVEN-REPAIR",
-                "source-repaired cannot cover an extant blocking finding without independently proven source repair",
-            )
         allowed_rules = DISPOSITION_KIND_RULES.get(entry["kind"])
         if entry["kind"] == "archive-excluded-from-active-migration" and finding["rule"] not in allowed_rules:
             raise ImportErrorClosed(
