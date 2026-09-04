@@ -297,6 +297,44 @@ git checkout preserved/<tag> -- <path>               # take back one path, in an
 Anyone who captures a new snapshot appends a row to the table above in the same
 commit, so the record of what each tag protects never lives only in a message.
 
+## One active candidate ref and worktree
+
+[`DEC-0044-039`](../dossiers/dec-0044-039-candidate-ref-proliferation-control.md)
+binds each assignment or backlog item to one active candidate
+ref and one associated candidate worktree. Initial branch/worktree provisioning
+creates that surface once. Startup, dispatch, and resumed work fail closed if a
+second active candidate, sibling correction branch or worktree, or duplicate
+claim would occupy the same slot.
+
+Corrections, validation repairs, review responses, and same-slot rework are new
+commits appended linearly to the active ref. They keep the assignment history
+and reserved integration slot; a rejected or stale commit does not justify a
+replacement branch. At interruption, useful recoverable work is committed as
+WIP on the same ref. Disposable uncommitted state is allowed only while its safe
+recovery can be established, and it never creates another candidate surface.
+
+A coordinator may replace the active ref only through an explicit atomic
+same-slot supersession. The atomic same-slot supersession transaction names and
+preserves the displaced ref, retains the assignment history and Integrator
+reservation, and designates
+exactly one replacement as active. This is a lifecycle transition, not
+authority to delete, rename, force-update, prune, integrate, or accept either
+ref. The displaced ref remains subject to the reachability and preservation
+rules in this document.
+
+A separate immutable evidence ref is exceptional. Its necessity must be stated
+by a named decision, review, or incident artifact that cites the exact commit
+and records the retention purpose. Ordinary red cases, failed attempts, and
+review iterations remain addressable by commit ID on the active ref and do not
+receive a ref per attempt.
+
+Review and integration pin one exact candidate commit. The final canonical
+receipt proves that commit is an ancestor of the target. An identical tree,
+replayed patch, reconstructed bytes, claim state, or sibling commit is not
+ancestry proof. These rules add candidate admission discipline without changing
+the no-force/no-delete, preserved-snapshot, unique-content retention,
+independent-review, worktree-isolation, or red-baseline contracts.
+
 ## Claim files and work products travel on the branch
 
 Under this workflow the `TODO-<agent-id>.md` claim file is a tracked artifact on

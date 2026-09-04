@@ -95,6 +95,35 @@ Dispatch is admission-controlled by downstream capacity, not by the number of id
 
 The operative queue, receipt, and delegated escalation ladder are in [`docs/pipeline/integration-flow-control.md`](docs/pipeline/integration-flow-control.md). Actionable findings route to same-slot rework, unresolved technical disagreement first receives the documented trilateral round, and only its remaining non-delegable product, policy, material-architecture, authority, material-risk, external-effect, public-release, or waiver question becomes `[u]` and a durable Management request. A Management fleet freeze overrides autonomous pickup and offer creation until its explicit release.
 
+### One active candidate per assignment or item
+
+Under [`DEC-0044-039`](docs/dossiers/dec-0044-039-candidate-ref-proliferation-control.md),
+an assignment or backlog item has exactly one active
+candidate ref and its associated worktree. Startup and dispatch must reject a
+second active candidate ref, sibling correction branch, correction worktree, or
+duplicate claim for that slot. Review corrections, validation repairs, and
+same-slot rework append commits linearly to the awarded ref and reuse its
+Integrator reservation.
+
+Replacement is permitted only through an explicit atomic same-slot supersession
+that names and preserves the displaced ref, retains assignment history and the
+reservation, and designates exactly one replacement as active. Supersession is
+not deletion, force-update, Acceptance, integration, or cleanup authority.
+
+An immutable evidence ref is exceptional: a named decision, review, or incident
+artifact must cite its exact commit and state the retention purpose. Ordinary
+failed attempts, red fixtures, and review iterations are cited by commit on the
+active ref; they do not each receive a new ref. Useful work present at
+interruption is committed as WIP on that same ref. Safely recoverable disposable
+local state may remain uncommitted, but interruption never justifies a sibling
+candidate.
+
+Reviewers and Integrators pin one exact candidate commit. Tree equality, patch
+replay, reconstructed bytes, claim state, or a newer sibling ref cannot replace
+proof that the reviewed candidate is an ancestor of the canonical target.
+Existing no-force/no-delete, preserved-snapshot, unique-content retention,
+independent-review, worktree-isolation, and red-baseline rules remain unchanged.
+
 A session that spawns another agent is its **dispatcher** and is answerable for
 the briefing being complete. A subagent never inherits the dispatcher's
 capability class, authority, claim, or write scope implicitly.
@@ -265,6 +294,12 @@ Every agent check-in or commit performed on behalf of a user must carry durable 
 Before yielding with claimed work incomplete:
 
 - leave the Task `[p]` unless another state is justified by `TODO.md`;
+- keep using the assignment's sole active candidate ref and worktree; do not
+  mint a sibling correction surface because the turn, tool budget, or runtime
+  was interrupted;
+- commit useful recoverable state as WIP on that active ref before yielding;
+  leave disposable local state uncommitted only when safe recovery is
+  established and recorded;
 - append progress, execution or assigned acceptance-review status/log locations, validation, remaining work, and interruption reason to the applicable Task history and coordination record;
 - retain the claim so ownership remains visible;
 - identify temporary files, pending execution requests or results, uncommitted changes, external state, and recovery steps;

@@ -902,7 +902,9 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
   - **No-checkpoint rationale:** package aggregates non-operative ingress/store candidates; `0046-00` already gates scope and `0046-06` gates integration.
   - **Acceptance criteria:** Both child candidates share the exact schema/baseline and prove bounded, idempotent, append-only ingestion with privacy metadata.
   - **Definition of Done:** aggregation manifest and focused cross-boundary tests are committed; no authoritative profile mutation occurs.
-  - [ ] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+  - [x] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+    Claim: `DONE-data-0046-01.01-1788291575795-ae8796e9.md`; owner_token: `agent:data:0046-01.01:1788291575795-ae8796e9`.
+    Integration review: `DONE-obrien-0046-01.01-integration-20260903.md`; owner_token: `agent:obrien:0046-01.01-integration:1788435625132-d294a044`.
     - **Prerequisites:** `0046-00`.
     - **Test scope:** `unit+integration`; accessibility, target resolution, consent/visibility, bounds, injection-safe rendering and error cases.
     - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high`.
@@ -2493,6 +2495,7 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
   - **Definition of Done:** Hermetic tests create post-activation item, criterion, claim, closure, and provenance changes, then prove emergency freeze fencing, lossless export/restore/replay, collision/conflict blocking, forward repair, regenerated-view consistency, session invalidation, and authorized write re-enable; documentation names data-loss/RTO limitations and the separately authorized process required for any future reverse migration.
   - **Implementation completion (frozen closure delta):** The substantive product `e6a9251b1a6a98c53a8dc22ab2d6fffa288d79aa` and canonical integration receipt `e54ebbb41bab6bc66b8f028735cd446628fd9db7` are ancestors of the assignment-bound base. Transaction `0037-43-44-closure-delta-1788512992649-36e30730` records implementation completion only; no Acceptance or checkpoint crossing is inferred.
 
+- [x] **0037-29** PREREQ: 0037-29:0037-14, 0037-29:0037-15, 0037-29:0037-16, 0037-29:0037-21 Execute repeated non-authoritative shadow migrations from pinned committed legacy sources and resolve every importer/schema finding. **Acceptance: ✓** (2026-09-03)
   - **Acceptance criteria:** Each run uses Git blobs, fresh `_src/output/issue-migration/<run-id>/issues/` and `<run-id>/reports/` roots, and recorded source/candidate/tool/schema/artifact identities; includes every newly committed legacy change; regenerates views/reports; links each mismatch to a bounded issue or signed disposition; and is visibly non-authoritative. Manual shadow edits are discarded, not reconciled.
   - **Definition of Done:** At least two increasing source-watermark runs plus one schema/tool-change rerun converge to zero unexplained loss/duplication and a passing retained report; prior run/report/finding links remain queryable.
 

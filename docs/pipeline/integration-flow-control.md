@@ -23,6 +23,31 @@ Sequencing implementation, unit testing, and integration in prose is insufficien
 5. Rejection, conflict, stale baseline, failed hygiene, missing evidence, or failed ancestry keeps the same slot occupied until repair or explicit cancellation.
 6. A fleet freeze blocks new offers and all source or publication ref movement until the authority that issued it explicitly releases it.
 
+## Candidate identity within the reserved slot
+
+This lifecycle implements
+[`DEC-0044-039`](../dossiers/dec-0044-039-candidate-ref-proliferation-control.md).
+Each assignment or backlog item has one active candidate ref and associated
+worktree in its reserved slot. Dispatch and startup reject a second active ref,
+sibling correction worktree, or duplicate claim for that slot. Actionable
+review findings, validation repairs, conflicts, stale-baseline corrections, and
+same-slot rework append commits linearly to the active ref; the Integrator
+reservation remains attached through re-review.
+
+A replacement exists only after an explicit atomic same-slot supersession names
+and preserves the displaced ref, carries forward assignment history and the
+reservation, and designates exactly one replacement as active. It does not
+authorize deletion or force-update of either ref. A separate evidence ref is
+exceptional and requires a named decision, review, or incident artifact citing
+the exact commit and retention purpose.
+
+Useful work at interruption is committed as WIP on the active ref. Safely
+recoverable disposable local state may remain uncommitted, but neither condition
+permits a sibling candidate. Review-ready state names one exact commit; review,
+hygiene, Acceptance, and the canonical integration receipt remain pinned to it.
+Tree equality, patch replay, reconstructed bytes, claim state, or another ref
+cannot satisfy the exact-candidate ancestry gate.
+
 ## End-to-end accountability
 
 The dispatcher owns flow, not technical approval. Its obligation ends only when the canonical receipt below exists and the chain's active claims are reconciled. The Implementer still owns implementation and correction. The independent Integrator still owns review, hygiene, Acceptance where assigned, and the source integration. These duties may not be collapsed merely to improve throughput.
