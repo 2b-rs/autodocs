@@ -6,6 +6,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import canonical_id as cid  # noqa: E402
 import curation_flags as cf  # noqa: E402
 import curation_item as ci  # noqa: E402
+import feedback_recipe_contract as frc  # noqa: E402
 import review_request_ingest as rri  # noqa: E402
 import review_request_package as rrp  # noqa: E402
 import version_id as vid_util  # noqa: E402
@@ -660,10 +662,49 @@ class ReviewRequestIngestTests(unittest.TestCase):
             "error_details": None,
             "created_at": "2026-09-01T00:00:01Z",
         }
-        report = rri.ingest(handoff, apply=True)
-        self.assertEqual(report["outcome"], rri.IngestOutcome.OK)
-        self.assertFalse(report.get("target_record_mutated", True))
-        self.assertEqual(len(list(cf.list_open_flags())), 1)
+        selector_root = self._root / "selector-root"
+        selector_root.mkdir()
+        selector_file = selector_root / "agent-workflow.json"
+        selector_file.write_text(json.dumps({
+            "authority_epoch": "legacy-writable",
+            "runner_protocol": "runner-request@v1",
+        }), encoding="utf-8")
+
+        with mock.patch.object(frc, "AUTODOCS_ROOT", selector_root):
+            report = rri.ingest(handoff, apply=True)
+            self.assertEqual(report["outcome"], rri.IngestOutcome.OK)
+            self.assertFalse(report.get("target_record_mutated", True))
+            self.assertEqual(len(list(cf.list_open_flags())), 1)
+
+            record_before = self._rec_file.read_bytes()
+            versions_before = sorted(
+                (path.relative_to(self._versions_dir).as_posix(), path.read_bytes())
+                for path in self._versions_dir.rglob("*") if path.is_file()
+            )
+            queue_before = sorted(
+                (path.relative_to(cf.QUEUE).as_posix(), path.read_bytes())
+                for path in cf.QUEUE.rglob("*") if path.is_file()
+            )
+            selector_file.write_text(json.dumps({
+                "authority_epoch": "legacy-frozen",
+                "execution_model": "direct",
+            }), encoding="utf-8")
+
+            frozen = rri.ingest(handoff, apply=True)
+            self.assertEqual(frozen["outcome"], frc.FeedbackConsumerOutcome.REJECTED_SELECTOR_MISMATCH)
+            self.assertEqual(frozen["errors"], [
+                "unsupported runner_protocol in selector: None; expected 'runner-request@v1'",
+            ])
+            self.assertFalse(frozen.get("target_record_mutated", True))
+            self.assertEqual(self._rec_file.read_bytes(), record_before)
+            self.assertEqual(sorted(
+                (path.relative_to(self._versions_dir).as_posix(), path.read_bytes())
+                for path in self._versions_dir.rglob("*") if path.is_file()
+            ), versions_before)
+            self.assertEqual(sorted(
+                (path.relative_to(cf.QUEUE).as_posix(), path.read_bytes())
+                for path in cf.QUEUE.rglob("*") if path.is_file()
+            ), queue_before)
 
 if __name__ == "__main__":
     unittest.main()

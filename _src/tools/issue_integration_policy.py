@@ -33,7 +33,16 @@ POLICY_SCHEMA = "issue-integration-policy@v1"
 SELECTOR_NAME = "agent-workflow.json"
 
 LEGACY_CLAIM_PATTERN = re.compile(r"^TODO-[A-Za-z0-9._-]+\.md$")
+LEGACY_COMPLETION_PATTERN = re.compile(r"^DONE-[A-Za-z0-9._-]+\.md$")
+FROZEN_CUTOVER_TASK_PATTERN = re.compile(r"(?<![0-9])0037-(?:3[0-9]|40)(?![0-9])")
+ASSIGNMENT_ID_PATTERN = re.compile(r"(?<![0-9])[0-9]{13}-[0-9a-f]{8}(?![0-9a-f])")
 PROHIBITED_DIRECT_GENERATED_FILES = frozenset({"TODO.md", "DONE.md"})
+FROZEN_METADATA_PATHS = frozenset({
+    "agent-workflow.json",
+    ".github/workflows/issue-policy.yml",
+    "_src/tools/issue_integration_policy.py",
+    "_src/tests/test_issue_integration_policy.py",
+})
 SEMVER_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 LINK_RE = re.compile(r"\[[^]]*\]\(([^)#?]+)(?:#[^)]*)?\)")
@@ -204,6 +213,95 @@ def _resolve_commit(candidate_root: Path, ref: str, label: str) -> str:
     return res.stdout.strip()
 
 
+def classify_frozen_path(relative: str) -> str:
+    """Classify one changed path under the Architect-approved frozen scope."""
+    norm = relative.replace("\\", "/")
+    name = PurePosixPath(norm).name
+    if norm in PROHIBITED_DIRECT_GENERATED_FILES:
+        return "legacy-backlog"
+    if "/" not in norm and (LEGACY_CLAIM_PATTERN.fullmatch(name) or LEGACY_COMPLETION_PATTERN.fullmatch(name)):
+        return "cutover-record" if FROZEN_CUTOVER_TASK_PATTERN.search(name) else "legacy-claim"
+    if (
+        norm.startswith("docs/dossiers/0037-")
+        or norm.startswith("provenance/migrations/issue-store/0037-")
+    ) and FROZEN_CUTOVER_TASK_PATTERN.search(norm):
+        return "cutover-evidence"
+    if norm in FROZEN_METADATA_PATHS:
+        return "epoch-metadata"
+    if norm.startswith("_src/output/issue-migration/") or norm.startswith("issues/"):
+        return "migration-output"
+    return "unrestricted"
+
+
+def _candidate_blob(candidate_root: Path, candidate: str, relative: str) -> str:
+    result = subprocess.run(
+        ["git", "show", f"{candidate}:{relative}"],
+        cwd=candidate_root,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return ""
+    return result.stdout
+
+
+def frozen_authority_proof(candidate_root: Path, candidate: str, relative: str) -> bool:
+    """Require task and assignment binding in the immutable candidate blob."""
+    task_match = FROZEN_CUTOVER_TASK_PATTERN.search(relative)
+    if task_match is None:
+        return False
+    text = _candidate_blob(candidate_root, candidate, relative)
+    task_id = task_match.group(0)
+    if task_id not in text:
+        return False
+    assignment_ids = set(re.findall(
+        r"(?im)^\s*[-*]?\s*[\"`*]*(?:assignment|assignment_id|authority)[\"`*]*\s*[:=][^\n]*?([0-9]{13}-[0-9a-f]{8})",
+        text,
+    ))
+    try:
+        payload = json.loads(text)
+    except (TypeError, ValueError):
+        payload = None
+    if isinstance(payload, dict):
+        for key in ("assignment", "assignment_id", "authority"):
+            value = payload.get(key)
+            if isinstance(value, str):
+                assignment_ids.update(ASSIGNMENT_ID_PATTERN.findall(value))
+    owner_ids = set(re.findall(
+        rf"agent:[a-z0-9._-]+:{re.escape(task_id)}[^\n`]*?:([0-9]{{13}}-[0-9a-f]{{8}})",
+        text,
+    ))
+    if classify_frozen_path(relative) == "cutover-record":
+        return bool(assignment_ids & owner_ids)
+    if not assignment_ids:
+        if relative.endswith(".md"):
+            companion = relative[:-3] + ".json"
+            if _candidate_blob(candidate_root, candidate, companion):
+                return frozen_authority_proof(candidate_root, candidate, companion)
+        return False
+
+    listing = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", candidate],
+        cwd=candidate_root,
+        capture_output=True,
+        text=True,
+    )
+    if listing.returncode != 0:
+        return False
+    for claim_path in listing.stdout.splitlines():
+        if "/" in claim_path or classify_frozen_path(claim_path) != "cutover-record" or task_id not in claim_path:
+            continue
+        claim_text = _candidate_blob(candidate_root, candidate, claim_path)
+        claim_assignment_ids = set(ASSIGNMENT_ID_PATTERN.findall(claim_text))
+        claim_owner_ids = set(re.findall(
+            rf"agent:[a-z0-9._-]+:{re.escape(task_id)}[^\n`]*?:([0-9]{{13}}-[0-9a-f]{{8}})",
+            claim_text,
+        ))
+        if assignment_ids & claim_assignment_ids & claim_owner_ids:
+            return True
+    return False
+
+
 def derive_changed_files_from_git(candidate_root: Path, base_ref: str, candidate_ref: str) -> tuple[List[str], str, str]:
     """Resolve and validate an explicit immutable ancestor boundary."""
     base = _resolve_commit(candidate_root, base_ref, "BASE")
@@ -249,6 +347,27 @@ def evaluate_integration_policy(
 
     for rel in files_to_check:
         norm = rel.replace("\\", "/")
+
+        if epoch == "legacy-frozen" and phase == "frozen":
+            path_class = classify_frozen_path(norm)
+            if path_class == "legacy-backlog":
+                violations.append({
+                    "code": "POLICY-FROZEN-BACKLOG-EDIT-PROHIBITED",
+                    "message": f"Legacy backlog file '{norm}' is immutable while authority epoch is legacy-frozen.",
+                    "locator": norm,
+                })
+            elif path_class == "legacy-claim":
+                violations.append({
+                    "code": "POLICY-FROZEN-LEGACY-CLAIM-PROHIBITED",
+                    "message": f"Ordinary legacy claim or completion record '{norm}' cannot land while authority epoch is legacy-frozen.",
+                    "locator": norm,
+                })
+            elif path_class in {"cutover-record", "cutover-evidence"} and not frozen_authority_proof(candidate_root, candidate_commit, norm):
+                violations.append({
+                    "code": "POLICY-FROZEN-AUTHORITY-PROOF-REQUIRED",
+                    "message": f"Frozen-window cutover record '{norm}' lacks task- and assignment-bound authority proof.",
+                    "locator": norm,
+                })
 
         # Rule 1: Direct edits to generated backlog views under issue-store
         if profile == "issue-store":
