@@ -902,7 +902,9 @@ The DAG has one start node (`0046-00`) and exactly one terminal integrating node
   - **No-checkpoint rationale:** package aggregates non-operative ingress/store candidates; `0046-00` already gates scope and `0046-06` gates integration.
   - **Acceptance criteria:** Both child candidates share the exact schema/baseline and prove bounded, idempotent, append-only ingestion with privacy metadata.
   - **Definition of Done:** aggregation manifest and focused cross-boundary tests are committed; no authoritative profile mutation occurs.
-  - [ ] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+  - [x] **0046-01.01** Build feedback UX/API validation and target/baseline preview.
+    Claim: `DONE-data-0046-01.01-1788291575795-ae8796e9.md`; owner_token: `agent:data:0046-01.01:1788291575795-ae8796e9`.
+    Integration review: `DONE-obrien-0046-01.01-integration-20260903.md`; owner_token: `agent:obrien:0046-01.01-integration:1788435625132-d294a044`.
     - **Prerequisites:** `0046-00`.
     - **Test scope:** `unit+integration`; accessibility, target resolution, consent/visibility, bounds, injection-safe rendering and error cases.
     - **Capability profile:** `capability_class=unprivileged; execution_needs=direct; cognitive_demand=high`.
