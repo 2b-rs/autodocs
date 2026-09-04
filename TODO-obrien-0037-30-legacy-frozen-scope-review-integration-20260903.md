@@ -7,7 +7,8 @@
 - **Target Baseline:** `main@780b54e4f3be37985d392e7785f69616b1a16842`
 - **Architect Candidate:** `4584f3b27fb5215362807eeebf14ea2147227361`
 - **Governing Decision:** `decision-0037-30-legacy-frozen-write-gate-20260903` (`enforce_scoped_freeze`)
-- **State:** In Progress / Integration Complete
+- **State:** [x] — Integration Complete (landed at 0e7aa8fe37)
+- state: [x]
 
 ---
 

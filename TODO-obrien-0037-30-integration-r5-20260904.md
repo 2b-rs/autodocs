@@ -9,7 +9,8 @@
 - reviewed_aggregate: `3064b7122f61f1621ce7d0c5cd95b4427fd56ff1`
 - integrated_branch: `integrate-0037-30-final-r5-20260904`
 - governance_basis: `decision-0037-30-legacy-frozen-write-gate-20260903`, Architect scope review `4584f3b27f`, governance receipt `0e7aa8fe37690139c2f49a889b03565256b947db`
-- status: `[p]` — integration verification passed; landing to main pending
+- status: `[x]` — integration complete and landed on main at 3e75573016
+- state: [x]
 
 ---
 
