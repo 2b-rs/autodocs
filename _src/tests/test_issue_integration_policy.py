@@ -2,6 +2,7 @@
 """Adversarial tests for the non-bypassable issue integration gate."""
 import importlib.util, json, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("issue_integration_policy", ROOT / "_src/tools/issue_integration_policy.py")
@@ -102,6 +103,19 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
                 self.git("reset","--hard",self.base); (self.root/path).write_text("mutation\n"); candidate=self.commit(path)
                 result=self.evaluate(candidate=candidate,enforce=False)
                 self.assertEqual(code,result["violations"][0]["code"])
+
+    def test_frozen_exact_closure_proof_is_the_only_backlog_exception(self):
+        self.write_frozen(); self.base=self.commit("frozen")
+        paths = POL.runner_transaction.FROZEN_CLOSURE_MUTATION_PATHS
+        for path in paths:
+            target = self.root/path; target.parent.mkdir(parents=True,exist_ok=True); target.write_text("exact closure\n")
+        manifest = self.root/POL.FROZEN_CLOSURE_MANIFEST; manifest.parent.mkdir(parents=True,exist_ok=True); manifest.write_text("{}\n")
+        candidate=self.commit("closure")
+        with mock.patch.object(POL.runner_transaction,"verify_frozen_closure_delta",return_value={"status":"passed"}):
+            self.assertEqual("passed",self.evaluate(candidate=candidate)["status"])
+        with mock.patch.object(POL.runner_transaction,"verify_frozen_closure_delta",side_effect=POL.runner_transaction.FrozenClosureViolation("FCD-BINDING","stale","manifest")):
+            result=self.evaluate(candidate=candidate,enforce=False)
+            self.assertEqual("POLICY-FROZEN-CLOSURE-FCD-BINDING",result["violations"][0]["code"])
 
     def test_frozen_cutover_claim_requires_machine_verifiable_authority_binding(self):
         self.write_frozen(); self.base=self.commit("frozen")

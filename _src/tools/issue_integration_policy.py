@@ -24,10 +24,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Mapping, Optional, Set
 
 try:
-    from _src.tools import agent_bootstrap
+    from _src.tools import agent_bootstrap, runner_transaction
 except ModuleNotFoundError:  # Direct script execution outside an installed package.
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from _src.tools import agent_bootstrap
+    from _src.tools import agent_bootstrap, runner_transaction
 
 POLICY_SCHEMA = "issue-integration-policy@v1"
 SELECTOR_NAME = "agent-workflow.json"
@@ -43,6 +43,7 @@ FROZEN_METADATA_PATHS = frozenset({
     "_src/tools/issue_integration_policy.py",
     "_src/tests/test_issue_integration_policy.py",
 })
+FROZEN_CLOSURE_MANIFEST = runner_transaction.FROZEN_CLOSURE_MANIFEST_PATH
 SEMVER_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 LINK_RE = re.compile(r"\[[^]]*\]\(([^)#?]+)(?:#[^)]*)?\)")
@@ -345,12 +346,30 @@ def evaluate_integration_policy(
 
     violations: List[Dict[str, str]] = []
 
+    closure_paths: Set[str] = set()
+    if epoch == "legacy-frozen" and phase == "frozen" and FROZEN_CLOSURE_MANIFEST in files_to_check:
+        try:
+            runner_transaction.verify_frozen_closure_delta(candidate_root, base_commit, candidate_commit)
+        except runner_transaction.FrozenClosureViolation as error:
+            code = getattr(error, "code", "FCD-UNAVAILABLE")
+            message = getattr(error, "message", str(error))
+            locator = getattr(error, "locator", FROZEN_CLOSURE_MANIFEST)
+            violations.append({
+                "code": f"POLICY-FROZEN-CLOSURE-{code}",
+                "message": f"Scoped frozen closure proof rejected: {message}",
+                "locator": locator,
+            })
+        else:
+            closure_paths = set(runner_transaction.FROZEN_CLOSURE_MUTATION_PATHS)
+
     for rel in files_to_check:
         norm = rel.replace("\\", "/")
 
         if epoch == "legacy-frozen" and phase == "frozen":
             path_class = classify_frozen_path(norm)
-            if path_class == "legacy-backlog":
+            if norm in closure_paths:
+                pass
+            elif path_class == "legacy-backlog":
                 violations.append({
                     "code": "POLICY-FROZEN-BACKLOG-EDIT-PROHIBITED",
                     "message": f"Legacy backlog file '{norm}' is immutable while authority epoch is legacy-frozen.",

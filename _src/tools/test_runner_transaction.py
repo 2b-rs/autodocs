@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -993,6 +994,205 @@ class RunnerTransactionTests(unittest.TestCase):
             runner.load_manifest(path)
         self.assertEqual(cm.exception.rule, "RTX-SCHEMA-TYPE")
         self.assertIn("commit must be an object", cm.exception.message)
+
+
+class FrozenClosureDeltaTests(unittest.TestCase):
+    """Adversarial coverage for the one DEC-0037-031 transaction."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(prefix="frozen-closure-delta-")
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.git("init", "-q")
+        self.git("config", "user.name", "Frozen Closure Test")
+        self.git("config", "user.email", "frozen-closure@example.invalid")
+        for relative in (
+            "_src/tools", "_src/tests", "docs/pipeline/agent-instructions/current",
+            "provenance/migrations/issue-store",
+        ):
+            (self.root / relative).mkdir(parents=True, exist_ok=True)
+        (self.root / "TODO.md").write_text(
+            "## Feature: 0037 — Fixture\n\n"
+            "- [ ] **0037-43** PREREQ: 0037-43:0037-42 Gate.\n"
+            "  - **Definition of Done:** Gate proof.\n\n"
+            "- [ ] **0037-44** PREREQ: 0037-44:0037-42 Recovery.\n"
+            "  - **Definition of Done:** Recovery proof.\n",
+            encoding="utf-8",
+        )
+        for path, text in (
+            (runner.FROZEN_CLOSURE_MUTATION_PATHS[1], "task: 0037-43\n- status: review\n"),
+            (runner.FROZEN_CLOSURE_MUTATION_PATHS[2], "task: 0037-44\nstatus: review\n"),
+            ("_src/tools/issue_integration_policy.py", "baseline policy\n"),
+            ("_src/tests/test_issue_integration_policy.py", "baseline policy tests\n"),
+            ("_src/tools/runner_transaction.py", "baseline transaction\n"),
+            ("_src/tools/test_runner_transaction.py", "baseline transaction tests\n"),
+        ):
+            (self.root / path).write_text(text, encoding="utf-8")
+        shutil.copy2(ROOT / "_src/tools/agent_bootstrap.py", self.root / "_src/tools/agent_bootstrap.py")
+        self.selector_digest = "sha256:" + "1" * 64
+        self.watermark = "2" * 40
+        (self.root / "agent-workflow.json").write_text(
+            json.dumps({"authority_epoch": "legacy-frozen", "selector_digest": self.selector_digest}) + "\n",
+            encoding="utf-8",
+        )
+        (self.root / "provenance/migrations/issue-store/0037-30-quiescence-report.json").write_text(
+            json.dumps({"source_watermark": {"commit": self.watermark}}) + "\n",
+            encoding="utf-8",
+        )
+        self.base = self.commit("base")
+        self.products = {
+            task: {"product": self.base, "receipt": self.base}
+            for task in ("0037-43", "0037-44")
+        }
+
+    def git(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(["git", *args], cwd=self.root, check=True, text=True, capture_output=True)
+
+    def commit(self, message: str) -> str:
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", message, "--allow-empty")
+        return self.git("rev-parse", "HEAD").stdout.strip()
+
+    @staticmethod
+    def sha(data: bytes) -> str:
+        return hashlib.sha256(data).hexdigest()
+
+    def read_at(self, ref: str, path: str) -> bytes:
+        return subprocess.run(
+            ["git", "show", f"{ref}:{path}"], cwd=self.root, check=True, capture_output=True
+        ).stdout
+
+    def completion(self, task: str) -> str:
+        refs = self.products[task]
+        return (
+            f"  - **Implementation completion (frozen closure delta):** The substantive product `{refs['product']}` "
+            f"and canonical integration receipt `{refs['receipt']}` are ancestors of the assignment-bound base. "
+            f"Transaction `{runner.FROZEN_CLOSURE_TRANSACTION_ID}` records implementation completion only; "
+            "no Acceptance or checkpoint crossing is inferred.\n"
+        )
+
+    def write_candidate(self, mutation=None, extra_path: Optional[str] = None) -> str:
+        todo = (self.root / "TODO.md").read_text(encoding="utf-8")
+        for task, label, dod in (
+            ("0037-43", "Gate.", "Gate proof."),
+            ("0037-44", "Recovery.", "Recovery proof."),
+        ):
+            todo = todo.replace(
+                f"- [ ] **{task}** PREREQ: {task}:0037-42 {label}",
+                f"- [x] **{task}** PREREQ: {task}:0037-42 {label} **REF:** `{self.products[task]['product']}`.",
+            ).replace(
+                f"  - **Definition of Done:** {dod}\n",
+                f"  - **Definition of Done:** {dod}\n" + self.completion(task),
+            )
+        (self.root / "TODO.md").write_text(todo, encoding="utf-8")
+        for path, task in zip(runner.FROZEN_CLOSURE_MUTATION_PATHS[1:], ("0037-43", "0037-44")):
+            refs = self.products[task]
+            with (self.root / path).open("a", encoding="utf-8") as handle:
+                handle.write(
+                    f"\n## Frozen closure delta\n\nTransaction `{runner.FROZEN_CLOSURE_TRANSACTION_ID}` records "
+                    f"implementation completion for product `{refs['product']}` and receipt `{refs['receipt']}`; "
+                    "no Acceptance.\n"
+                )
+        for path in (
+            "_src/tools/issue_integration_policy.py",
+            "_src/tests/test_issue_integration_policy.py",
+            "_src/tools/runner_transaction.py",
+            "_src/tools/test_runner_transaction.py",
+        ):
+            shutil.copy2(ROOT / path, self.root / path)
+        evidence = (
+            "# Frozen closure delta evidence\n\n"
+            f"Transaction: `{runner.FROZEN_CLOSURE_TRANSACTION_ID}`\n\n"
+            "This fixture records implementation completion only; no Acceptance.\n"
+        )
+        (self.root / runner.FROZEN_CLOSURE_EVIDENCE_PATH).write_text(evidence, encoding="utf-8")
+        if mutation:
+            mutation(self.root)
+        if extra_path:
+            (self.root / extra_path).write_text("extra\n", encoding="utf-8")
+        before_map: Dict[str, str] = {}
+        after_map: Dict[str, str] = {}
+        entries = []
+        for path in runner.FROZEN_CLOSURE_MUTATION_PATHS:
+            before = self.read_at(self.base, path)
+            after = (self.root / path).read_bytes()
+            before_map[path] = self.sha(before)
+            after_map[path] = self.sha(after)
+            entries.append({"path": path, "before_sha256": before_map[path], "after_sha256": after_map[path]})
+        manifest = {
+            "schema": runner.FROZEN_CLOSURE_SCHEMA,
+            "transaction_id": runner.FROZEN_CLOSURE_TRANSACTION_ID,
+            "idempotence_key": runner.FROZEN_CLOSURE_TRANSACTION_ID,
+            "assignment_id": runner.FROZEN_CLOSURE_ASSIGNMENT_ID,
+            "decision": runner.FROZEN_CLOSURE_DECISION,
+            "authority_epoch": "legacy-frozen",
+            "selector_digest": self.selector_digest,
+            "base_commit": self.base,
+            "source_watermark": self.watermark,
+            "mutations": entries,
+            "products": self.products,
+            "tool_digests": {
+                path: self.sha((self.root / path).read_bytes())
+                for path in runner.FROZEN_CLOSURE_TOOL_PATHS
+            },
+            "evidence_sha256": self.sha((self.root / runner.FROZEN_CLOSURE_EVIDENCE_PATH).read_bytes()),
+            "aggregate_before_sha256": self.sha(runner._frozen_closure_canonical(before_map)),
+            "aggregate_after_sha256": self.sha(runner._frozen_closure_canonical(after_map)),
+        }
+        (self.root / runner.FROZEN_CLOSURE_MANIFEST_PATH).write_text(
+            json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        return self.commit("candidate")
+
+    def verify(self, candidate: str) -> Dict[str, Any]:
+        with mock.patch.object(runner, "FROZEN_CLOSURE_BASE_COMMIT", self.base), \
+             mock.patch.object(runner, "FROZEN_CLOSURE_SOURCE_WATERMARK", self.watermark), \
+             mock.patch.object(runner, "FROZEN_CLOSURE_SELECTOR_DIGEST", self.selector_digest), \
+             mock.patch.object(runner, "FROZEN_CLOSURE_PRODUCTS", self.products):
+            return runner.verify_frozen_closure_delta(self.root, self.base, candidate)
+
+    def test_exact_pair_and_exact_replay_pass(self) -> None:
+        candidate = self.write_candidate()
+        first = self.verify(candidate)
+        second = self.verify(candidate)
+        self.assertEqual("passed", first["status"])
+        self.assertEqual(first, second)
+
+    def test_extra_path_and_missing_claim_fail_atomically(self) -> None:
+        candidate = self.write_candidate(extra_path="TODO-third.md")
+        with self.assertRaises(runner.FrozenClosureViolation) as raised:
+            self.verify(candidate)
+        self.assertEqual("FCD-PATH-SET", raised.exception.code)
+
+    def test_acceptance_and_task_prose_drift_reject(self) -> None:
+        def drift(root: Path) -> None:
+            path = root / runner.FROZEN_CLOSURE_MUTATION_PATHS[1]
+            path.write_text(path.read_text(encoding="utf-8") + "Acceptance: ✓\n", encoding="utf-8")
+
+        candidate = self.write_candidate(mutation=drift)
+        with self.assertRaises(runner.FrozenClosureViolation) as raised:
+            self.verify(candidate)
+        self.assertEqual("FCD-ACCEPTANCE", raised.exception.code)
+
+    def test_stale_bindings_and_changed_replay_reject(self) -> None:
+        candidate = self.write_candidate()
+        manifest_path = self.root / runner.FROZEN_CLOSURE_MANIFEST_PATH
+        for field, value in (
+            ("assignment_id", "1788512992649-deadbeef"),
+            ("authority_epoch", "legacy-restored"),
+            ("selector_digest", "sha256:" + "0" * 64),
+            ("source_watermark", "0" * 40),
+            ("aggregate_after_sha256", "0" * 64),
+            ("idempotence_key", runner.FROZEN_CLOSURE_TRANSACTION_ID + "-changed"),
+        ):
+            with self.subTest(field=field):
+                self.git("reset", "--hard", candidate)
+                data = json.loads(manifest_path.read_text(encoding="utf-8"))
+                data[field] = value
+                manifest_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+                changed = self.commit(field)
+                with self.assertRaises(runner.FrozenClosureViolation):
+                    self.verify(changed)
 
 
 if __name__ == "__main__":

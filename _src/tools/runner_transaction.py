@@ -73,6 +73,49 @@ EXIT_COMMIT = 60
 EXIT_BOOKKEEPING = 70
 EXIT_INTERNAL = 90
 
+# DEC-0037-031 permits exactly one frozen-state closure transaction.  These
+# bindings intentionally live in the existing transaction coordinator rather
+# than creating a second transaction surface.
+FROZEN_CLOSURE_SCHEMA = "frozen-closure-delta@v1"
+FROZEN_CLOSURE_RESULT_SCHEMA = "frozen-closure-delta-result@v1"
+FROZEN_CLOSURE_TRANSACTION_ID = "0037-43-44-closure-delta-1788512992649-36e30730"
+FROZEN_CLOSURE_ASSIGNMENT_ID = "1788512992649-36e30730"
+FROZEN_CLOSURE_DECISION = "DEC-0037-031"
+FROZEN_CLOSURE_BASE_COMMIT = "e6db416ef8c41770cd09cba3dfef5ceb389a0e60"
+FROZEN_CLOSURE_SOURCE_WATERMARK = "c170c8f34831f3a28b6d4dab67c02c61e3dad53e"
+FROZEN_CLOSURE_SELECTOR_DIGEST = "sha256:49c844c34df6609f4bdec4b618bb5461db4e3848ef7336ca1e7f4a843c122188"
+FROZEN_CLOSURE_MANIFEST_PATH = "provenance/migrations/issue-store/0037-43-44-closure-delta.json"
+FROZEN_CLOSURE_EVIDENCE_PATH = "provenance/migrations/issue-store/0037-43-44-closure-delta.md"
+FROZEN_CLOSURE_MUTATION_PATHS = (
+    "TODO.md",
+    "TODO-wesley-0037-43-i43-block-004-20260903.md",
+    "TODO-wesley-0037-44-repair-1788460354541.md",
+)
+FROZEN_CLOSURE_IMPLEMENTATION_PATHS = frozenset({
+    *FROZEN_CLOSURE_MUTATION_PATHS,
+    FROZEN_CLOSURE_MANIFEST_PATH,
+    FROZEN_CLOSURE_EVIDENCE_PATH,
+    "_src/tools/issue_integration_policy.py",
+    "_src/tests/test_issue_integration_policy.py",
+    "_src/tools/runner_transaction.py",
+    "_src/tools/test_runner_transaction.py",
+})
+FROZEN_CLOSURE_PRODUCTS = {
+    "0037-43": {
+        "product": "0ca70a810b6fc7977bad7b2c5bc0a7f4cbcc697d",
+        "receipt": "867d12f6ac95301a6fa1aaf53649f778feb7c353",
+    },
+    "0037-44": {
+        "product": "e6a9251b1a6a98c53a8dc22ab2d6fffa288d79aa",
+        "receipt": "e54ebbb41bab6bc66b8f028735cd446628fd9db7",
+    },
+}
+FROZEN_CLOSURE_TOOL_PATHS = (
+    "_src/tools/agent_bootstrap.py",
+    "_src/tools/issue_integration_policy.py",
+    "_src/tools/runner_transaction.py",
+)
+
 
 class TransactionError(RuntimeError):
     """Expected fail-closed transaction rejection with a stable rule ID."""
@@ -83,6 +126,239 @@ class TransactionError(RuntimeError):
         self.message = message
         self.phase = phase
         self.exit_code = exit_code
+
+
+class FrozenClosureViolation(RuntimeError):
+    """Stable fail-closed rejection for the single DEC-0037-031 delta."""
+
+    def __init__(self, code: str, message: str, locator: str = "") -> None:
+        super().__init__(message)
+        self.code = code
+        self.message = message
+        self.locator = locator
+
+
+def _frozen_closure_git(repo: Path, *argv: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(argv, cwd=repo, text=True, capture_output=True)
+
+
+def _frozen_closure_resolve(repo: Path, ref: str) -> str:
+    result = _frozen_closure_git(repo, "git", "rev-parse", "--verify", f"{ref}^{{commit}}")
+    if result.returncode:
+        raise FrozenClosureViolation("FCD-REF", "commit reference does not resolve", ref)
+    return result.stdout.strip()
+
+
+def _frozen_closure_blob(repo: Path, commit: str, path: str) -> bytes:
+    result = subprocess.run(["git", "show", f"{commit}:{path}"], cwd=repo, capture_output=True)
+    if result.returncode:
+        raise FrozenClosureViolation("FCD-BLOB", "required blob is absent", path)
+    return result.stdout
+
+
+def _frozen_closure_sha(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def _frozen_closure_canonical(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+
+def _load_frozen_closure_manifest(raw: bytes) -> Dict[str, Any]:
+    try:
+        value = json.loads(raw)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FrozenClosureViolation(
+            "FCD-MANIFEST", "manifest is not valid UTF-8 JSON", FROZEN_CLOSURE_MANIFEST_PATH
+        ) from exc
+    expected = {
+        "schema", "transaction_id", "idempotence_key", "assignment_id",
+        "decision", "authority_epoch", "selector_digest", "base_commit",
+        "source_watermark", "mutations", "products", "tool_digests",
+        "evidence_sha256", "aggregate_before_sha256", "aggregate_after_sha256",
+    }
+    if not isinstance(value, dict) or set(value) != expected:
+        raise FrozenClosureViolation(
+            "FCD-MANIFEST", "manifest fields are not the closed v1 set", FROZEN_CLOSURE_MANIFEST_PATH
+        )
+    return value
+
+
+def _frozen_closure_task_block(text: str, task: str) -> str:
+    match = re.search(
+        rf"(?ms)^- \[[ x]\] \*\*{re.escape(task)}\*\*.*?(?=^- \[[ up?wx]\] \*\*[0-9]{{4}}-[0-9]{{2}}|^### |\Z)",
+        text,
+    )
+    if not match:
+        raise FrozenClosureViolation("FCD-TASK", "unique Task block is missing", task)
+    return match.group(0)
+
+
+def _verify_frozen_closure_semantics(
+    before: Mapping[str, bytes], after: Mapping[str, bytes]
+) -> None:
+    todo_before = before["TODO.md"].decode("utf-8")
+    todo_after = after["TODO.md"].decode("utf-8")
+    for task, refs in FROZEN_CLOSURE_PRODUCTS.items():
+        old = _frozen_closure_task_block(todo_before, task)
+        new = _frozen_closure_task_block(todo_after, task)
+        old_header = old.splitlines()[0]
+        new_header = new.splitlines()[0]
+        if not old_header.startswith(f"- [ ] **{task}**") or not new_header.startswith(f"- [x] **{task}**"):
+            raise FrozenClosureViolation(
+                "FCD-MARKER", "Task must change exactly from open to implementation-complete", task
+            )
+        expected_ref = f" **REF:** `{refs['product']}`."
+        if new_header != old_header.replace("- [ ]", "- [x]", 1) + expected_ref:
+            raise FrozenClosureViolation(
+                "FCD-TASK-DRIFT", "Task header changed beyond marker and exact product REF", task
+            )
+        completion = (
+            f"  - **Implementation completion (frozen closure delta):** The substantive product `{refs['product']}` "
+            f"and canonical integration receipt `{refs['receipt']}` are ancestors of the assignment-bound base. "
+            f"Transaction `{FROZEN_CLOSURE_TRANSACTION_ID}` records implementation completion only; "
+            "no Acceptance or checkpoint crossing is inferred.\n"
+        )
+        if new.count(completion) != 1 or new.replace(completion, "", 1) != old.replace(old_header, new_header, 1):
+            raise FrozenClosureViolation(
+                "FCD-TASK-DRIFT", "Task body changed beyond the exact completion record", task
+            )
+
+    for path, task in zip(FROZEN_CLOSURE_MUTATION_PATHS[1:], ("0037-43", "0037-44")):
+        old = before[path].decode("utf-8")
+        new = after[path].decode("utf-8")
+        if "Acceptance: ✓" in new and "Acceptance: ✓" not in old:
+            raise FrozenClosureViolation("FCD-ACCEPTANCE", "closure delta cannot create Acceptance", path)
+        refs = FROZEN_CLOSURE_PRODUCTS[task]
+        required = (
+            FROZEN_CLOSURE_TRANSACTION_ID,
+            refs["product"],
+            refs["receipt"],
+            "implementation completion",
+        )
+        if not all(token in new for token in required) or new == old:
+            raise FrozenClosureViolation(
+                "FCD-CLAIM", "claim lacks the exact terminal product/receipt binding", path
+            )
+
+
+def verify_frozen_closure_delta(
+    repo: Path,
+    base_ref: str,
+    candidate_ref: str,
+    manifest_path: str = FROZEN_CLOSURE_MANIFEST_PATH,
+) -> Dict[str, Any]:
+    """Verify the exact nine-path closure delta; never mutate repository state."""
+    repo = repo.resolve()
+    base = _frozen_closure_resolve(repo, base_ref)
+    candidate = _frozen_closure_resolve(repo, candidate_ref)
+    if base != FROZEN_CLOSURE_BASE_COMMIT:
+        raise FrozenClosureViolation("FCD-STALE-BASE", "base is not the assignment-bound main", base)
+    if _frozen_closure_git(repo, "git", "merge-base", "--is-ancestor", base, candidate).returncode:
+        raise FrozenClosureViolation("FCD-ANCESTRY", "candidate does not descend from base", candidate)
+    changed_result = _frozen_closure_git(repo, "git", "diff", "--name-only", base, candidate)
+    if changed_result.returncode:
+        raise FrozenClosureViolation("FCD-DIFF", "candidate path set cannot be derived", candidate)
+    changed = frozenset(changed_result.stdout.splitlines())
+    if changed != FROZEN_CLOSURE_IMPLEMENTATION_PATHS:
+        raise FrozenClosureViolation(
+            "FCD-PATH-SET", "candidate path set is not the exact reviewed set", ",".join(sorted(changed))
+        )
+
+    manifest = _load_frozen_closure_manifest(_frozen_closure_blob(repo, candidate, manifest_path))
+    scalars = {
+        "schema": FROZEN_CLOSURE_SCHEMA,
+        "transaction_id": FROZEN_CLOSURE_TRANSACTION_ID,
+        "idempotence_key": FROZEN_CLOSURE_TRANSACTION_ID,
+        "assignment_id": FROZEN_CLOSURE_ASSIGNMENT_ID,
+        "decision": FROZEN_CLOSURE_DECISION,
+        "authority_epoch": "legacy-frozen",
+        "selector_digest": FROZEN_CLOSURE_SELECTOR_DIGEST,
+        "base_commit": FROZEN_CLOSURE_BASE_COMMIT,
+        "source_watermark": FROZEN_CLOSURE_SOURCE_WATERMARK,
+    }
+    for key, expected in scalars.items():
+        if manifest.get(key) != expected:
+            raise FrozenClosureViolation("FCD-BINDING", f"manifest {key} is stale or mismatched", key)
+
+    selector = json.loads(_frozen_closure_blob(repo, candidate, "agent-workflow.json"))
+    if (
+        selector.get("authority_epoch") != "legacy-frozen"
+        or selector.get("selector_digest") != FROZEN_CLOSURE_SELECTOR_DIGEST
+    ):
+        raise FrozenClosureViolation(
+            "FCD-SELECTOR", "candidate selector is not the frozen bound selector", "agent-workflow.json"
+        )
+    quiescence = json.loads(
+        _frozen_closure_blob(repo, candidate, "provenance/migrations/issue-store/0037-30-quiescence-report.json")
+    )
+    if quiescence.get("source_watermark", {}).get("commit") != FROZEN_CLOSURE_SOURCE_WATERMARK:
+        raise FrozenClosureViolation(
+            "FCD-WATERMARK", "original quiescence watermark differs", FROZEN_CLOSURE_SOURCE_WATERMARK
+        )
+
+    mutations = manifest.get("mutations")
+    if not isinstance(mutations, list) or [
+        item.get("path") for item in mutations if isinstance(item, dict)
+    ] != list(FROZEN_CLOSURE_MUTATION_PATHS):
+        raise FrozenClosureViolation(
+            "FCD-MUTATIONS", "mutation manifest is not the ordered exact path set", manifest_path
+        )
+    before: Dict[str, bytes] = {}
+    after: Dict[str, bytes] = {}
+    for item in mutations:
+        if not isinstance(item, dict) or set(item) != {"path", "before_sha256", "after_sha256"}:
+            raise FrozenClosureViolation("FCD-MUTATIONS", "mutation entry fields are not closed", manifest_path)
+        path = item["path"]
+        before[path] = _frozen_closure_blob(repo, base, path)
+        after[path] = _frozen_closure_blob(repo, candidate, path)
+        if (
+            item["before_sha256"] != _frozen_closure_sha(before[path])
+            or item["after_sha256"] != _frozen_closure_sha(after[path])
+        ):
+            raise FrozenClosureViolation("FCD-BLOB-DIGEST", "before/after blob digest mismatch", path)
+
+    if manifest.get("products") != FROZEN_CLOSURE_PRODUCTS:
+        raise FrozenClosureViolation(
+            "FCD-PRODUCTS", "product/receipt pairs differ from reviewed evidence", manifest_path
+        )
+    for task, refs in FROZEN_CLOSURE_PRODUCTS.items():
+        for kind, commit in refs.items():
+            if _frozen_closure_git(repo, "git", "merge-base", "--is-ancestor", commit, base).returncode:
+                raise FrozenClosureViolation(
+                    "FCD-EVIDENCE-ANCESTRY", f"{task} {kind} is not base-ancestral", commit
+                )
+
+    expected_tools = {
+        path: _frozen_closure_sha(_frozen_closure_blob(repo, candidate, path))
+        for path in FROZEN_CLOSURE_TOOL_PATHS
+    }
+    if manifest.get("tool_digests") != expected_tools:
+        raise FrozenClosureViolation(
+            "FCD-TOOL-DIGEST", "policy/transaction/bootstrap digest mismatch", manifest_path
+        )
+    evidence_digest = _frozen_closure_sha(
+        _frozen_closure_blob(repo, candidate, FROZEN_CLOSURE_EVIDENCE_PATH)
+    )
+    if manifest.get("evidence_sha256") != evidence_digest:
+        raise FrozenClosureViolation("FCD-EVIDENCE-DIGEST", "evidence digest mismatch", manifest_path)
+    before_map = {path: _frozen_closure_sha(before[path]) for path in FROZEN_CLOSURE_MUTATION_PATHS}
+    after_map = {path: _frozen_closure_sha(after[path]) for path in FROZEN_CLOSURE_MUTATION_PATHS}
+    if manifest.get("aggregate_before_sha256") != _frozen_closure_sha(_frozen_closure_canonical(before_map)):
+        raise FrozenClosureViolation("FCD-AGGREGATE", "pre-delta aggregate digest mismatch", "aggregate_before_sha256")
+    if manifest.get("aggregate_after_sha256") != _frozen_closure_sha(_frozen_closure_canonical(after_map)):
+        raise FrozenClosureViolation("FCD-AGGREGATE", "post-delta aggregate digest mismatch", "aggregate_after_sha256")
+    _verify_frozen_closure_semantics(before, after)
+    return {
+        "schema": FROZEN_CLOSURE_RESULT_SCHEMA,
+        "status": "passed",
+        "transaction_id": FROZEN_CLOSURE_TRANSACTION_ID,
+        "base_commit": base,
+        "candidate_commit": candidate,
+        "changed_paths": sorted(changed),
+        "aggregate_before_sha256": manifest["aggregate_before_sha256"],
+        "aggregate_after_sha256": manifest["aggregate_after_sha256"],
+    }
 
 
 @dataclass(frozen=True)
