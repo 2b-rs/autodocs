@@ -6,7 +6,8 @@
 - **Claim Reconciliation Award:** Priority offer `1788475475759-0276f652`
 - **Workspace:** `/private/tmp/integrate-0037-44-cutover-20260903`
 - **Target Baseline:** `main@dcda143c8a3c0fc44cf0c0df5fe17f9bcebb6cb4`
-- **State:** In Progress
+- **State:** [x] — Integration Complete
+- state: [x]
 
 ---
 
