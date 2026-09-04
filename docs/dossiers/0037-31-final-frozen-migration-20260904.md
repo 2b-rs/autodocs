@@ -50,3 +50,14 @@ python3 -m pytest -q _src/tests/test_issue_import_legacy.py _src/tests/test_issu
 
 This same-slot correction adds no sibling ref, worktree, claim, Acceptance,
 integration, publication, or authority beyond the resolved scope overlay.
+
+The subsequent stale-baseline rework linearly merged current `main` commit
+`80159001a195747a03ffbee9cd1b5d0234d0a939` into the same candidate history.
+That commit is now an ancestor of the candidate, whose diff against it remains
+exactly the same 980 authorized files with no scope escape. The required focused
+suite was rerun after this merge and passed again:
+
+```text
+python3 -m pytest -q _src/tests/test_issue_import_legacy.py _src/tests/test_issue_integration_policy.py
+56 passed in 247.91s (0:04:07)
+```
