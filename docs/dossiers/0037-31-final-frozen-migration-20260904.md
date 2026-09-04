@@ -31,3 +31,22 @@ allowed paths, run identity, candidate identity, report digests, and these two
 companion blobs. Frozen-policy validation of that complete proof is evidence
 only; it grants no claim, Task marker, Acceptance, integration, cutover, or
 Feature closure.
+
+## Same-slot rework validation
+
+Management decision `decision-1788538399088-6195c7c7` authorized the actual
+eight-entry candidate scope as an additive control-plane overlay for assignment
+`1788525001126-a203ba2c`. The preserved candidate
+`bbfadfaee65b443ab98cdeb6f1c4e0b71b2b2544` was merged linearly with pinned
+`main` commit `f4efd55476f33ea024c54df21a34d6e380c976ef`; the resulting candidate
+diff remains exactly 980 files within that authorized scope.
+
+Post-merge focused validation passed:
+
+```text
+python3 -m pytest -q _src/tests/test_issue_import_legacy.py _src/tests/test_issue_integration_policy.py
+56 passed in 557.59s (0:09:17)
+```
+
+This same-slot correction adds no sibling ref, worktree, claim, Acceptance,
+integration, publication, or authority beyond the resolved scope overlay.
