@@ -4,7 +4,7 @@
 - assignment: `1788480090547-5b9ed1ab`
 - capability_class: `privileged`
 - process: Aggregation, Independent Review and Integration
-- status: `[p]` — independent review passed; guarded root integration pending
+- status: `[p]` — independent review passed; root integration blocked by foreign root-worktree divergence
 - baseline: `main@0e7aa8fe37690139c2f49a889b03565256b947db`
 - scoped-freeze evidence tip: `f99a42c34bc9f1f9237e26dc68a900dd24d3de2c` (ancestor `5220d9fdb`)
 - Data compatibility tip: `9dccd87fe0028a0b9a63a3e1b6b67f7631f30aed`; only its `5220d9fdb..9dccd87fe0` two-path delta is carried
@@ -24,3 +24,4 @@ From exact current main, carry exact `f99a42c34b`, then only the two-path compat
 - 2026-09-04: Atomic R4 award accepted; R3 cancelled and preserved before substantive review; isolated branch created at exact current baseline. Aggregation pending.
 - 2026-09-04: Supervisor restart recovery: original disposable R4 worktree was unavailable while its branch and signed aggregate remained reachable. Created the recovery worktree directly at that immutable aggregate; no root content changed. Read integration digest `1788482051700-ad49d619` through the permitted mailbox projection; it does not alter this exact awarded scope. Native inbox/ack MCP endpoint is unavailable after runtime restart, so acknowledgement cannot be recorded from this session.
 - 2026-09-04: Exact recovered aggregate was committed as signed `b68bd665dcb00dc499ac15b09b033c432246c589`. Independent checks pass: both source signatures, aggregate signature, byte-only ten-path delta, `git diff --check`, live frozen gate (human and JSON, zero violations), 12 focused policy tests, 31 review-ingestion tests, and `python3 test.py` (100 tests, OK). Review dossier and the exact hygiene/root sequence remain pending.
+- 2026-09-04: Signed review candidate `3064b7122f61f1621ce7d0c5cd95b4427fd56ff1` again passed the exact live gate (11 paths, zero violations). Mandatory exact-candidate hygiene then failed: `MAIN_WORKTREE_DIRTY` in root `/Users/tobias.anton/devel/autodocs` on foreign non-Memory tracked files `TODO-jadzia-0037-43-temporary-local-gate-scope-review-20260903.md` and `TODO-jadzia-0046-policy-rederivation.md`. The 59 missing disposable worktrees were advisory. Per the hygiene contract, no root preflight or merge was attempted. Required follow-up: the root-worktree owner/Project Lead must resolve or separately authorize recovery of the foreign divergence, then retrigger an exact-hygiene pass for this unchanged candidate.

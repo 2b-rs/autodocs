@@ -29,3 +29,13 @@
 ## Verdict: PASS
 
 The exact signed aggregate satisfies the Architect-approved scoped legacy-frozen gate and preserves the historical red controls. This PASS authorizes only the assigned guarded hygiene and local fast-forward sequence. It is not Task Acceptance, external publication, push, selector activation beyond the candidate, Feature closure, or permission to delete/rewrite any ref.
+
+## Integration hold
+
+The mandatory exact-candidate hygiene check returned nonzero before root preflight:
+`MAIN_WORKTREE_DIRTY` reports foreign non-Memory tracked divergence in the root
+worktree on `TODO-jadzia-0037-43-temporary-local-gate-scope-review-20260903.md`
+and `TODO-jadzia-0046-policy-rederivation.md`. Missing disposable `/tmp`
+worktrees were advisory only. Therefore no root merge, push, publication, or
+other root mutation was attempted. The signed candidate remains retained for a
+fresh exact-hygiene review after the root owner resolves that separate state.
