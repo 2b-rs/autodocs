@@ -202,3 +202,8 @@ NOTES: Dispatched integration of 0033-07.01 rework.
 - note: paul started IN_PROGRESS on 0033-07.01-integration.
 
 - note: Terminal state / handover verified post supervisor restart.
+
+## 0033-07.01-integration (Retry 2)
+OFFERED: priority 1: obrien
+STATUS: OPEN
+NOTES: Re-dispatched because paul (Discovery) was killed/held.
