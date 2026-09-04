@@ -21,9 +21,30 @@ from frontier_query import (
     parse_todo_items,
     query_frontier,
 )
+from legacy_task_doctor import parse_noncanonical_claim_lifecycle
 
 
 class TestFrontierQuery(unittest.TestCase):
+    def test_noncanonical_terminal_tuple_is_inactive(self):
+        text = "item_id: chain-alpha\nclaim_kind: noncanonical-coordination\nclaim_state: terminal\nlease_active: false\n"
+        self.assertFalse(parse_noncanonical_claim_lifecycle(text)["active"])
+
+    def test_state_terminal_does_not_release(self):
+        self.assertTrue(parse_noncanonical_claim_lifecycle("item_id: chain-alpha\nstate: terminal\n")["active"])
+
+    def test_noncanonical_lifecycle_exhaustive_invariant(self):
+        cases = 0
+        for identity in ("item_id: chain-alpha", "task_id: 0037-51"):
+            for state in ("active", "terminal", "unknown"):
+                for lease in ("true", "false", "maybe"):
+                    for task_state in ("[ ]", "[p]", "[x]", "[w]"):
+                        cases += 1
+                        with self.subTest(identity=identity, state=state, lease=lease, task_state=task_state):
+                            text = f"{identity}\nclaim_kind: noncanonical-coordination\nclaim_state: {state}\nlease_active: {lease}\nstate: {task_state}\n"
+                            result = parse_noncanonical_claim_lifecycle(text)
+                            expected = identity.startswith("item_id") and state == "terminal" and lease == "false"
+                            self.assertEqual(result["active"] is False, expected)
+        self.assertEqual(cases, 72)
     def setUp(self):
         self.tmp_dir = tempfile.mkdtemp()
         self.repo_dir = Path(self.tmp_dir) / "repo"

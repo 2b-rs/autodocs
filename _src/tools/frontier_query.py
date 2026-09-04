@@ -32,6 +32,8 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from legacy_task_doctor import parse_noncanonical_claim_lifecycle
+
 BLIND_SPOTS = [
     "Work in a worktree that was never committed. An agent editing uncommitted files leaves no branch evidence. Partially mitigated by E4 dirty-state inspection; not eliminated.",
     "Work under an award with no branch and no claim yet. Mitigated by E5, and only while the offer record is retained.",
@@ -200,8 +202,8 @@ def discover_branch_claims(repo: Path) -> Tuple[Dict[str, List[Dict[str, str]]],
                                 target_item = fn_m.group(1)
 
                         if target_item:
-                            is_terminal = 'state: accepted' in blob_content or 'status: accepted' in blob_content or 'state: terminal' in blob_content
-                            if not is_terminal:
+                            lifecycle = parse_noncanonical_claim_lifecycle(blob_content)
+                            if lifecycle["active"]:
                                 item_claims.setdefault(target_item, []).append({
                                     'branch': branch,
                                     'claim_file': path,
