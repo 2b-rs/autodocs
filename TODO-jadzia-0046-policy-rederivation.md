@@ -6,3 +6,4 @@ STATUS: OPEN
 NOTES: Dispatched architecture rederivation for 0046 policy supersession based on Management resolution Option A for decision-1788390190360-3c7e959d.
 
 - note: Terminal state / handover verified post supervisor restart.
+- state: [x]
