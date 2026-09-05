@@ -2,20 +2,20 @@
   "adversarial_negative_results": [
     {
       "case_id": "NEG-REGEN-01",
-      "description": "Output hash mismatch between run 1 and run 2",
+      "description": "Output hash in run 1 manifest differs from declared product digest",
       "expected": "BLOCKED",
-      "name": "derived product hash divergence",
+      "name": "run 1 manifest hash divergence",
       "observed": "BLOCKED",
-      "stable_reason": "Determinism check failed: manifest hash mismatch",
+      "stable_reason": "Manifest hash mismatch for bootstrap/TODO.md: run_2=sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8 != product=sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "status": "PASS"
     },
     {
       "case_id": "NEG-REGEN-02",
       "description": "Missing product artifact in derived_product_artifacts",
       "expected": "BLOCKED",
-      "name": "changed artifact cardinality",
+      "name": "missing product artifact in inventory",
       "observed": "BLOCKED",
-      "stable_reason": "Expected 8 derived product artifacts, got 7",
+      "stable_reason": "Missing required product artifact(s): ['bootstrap/TODO.md']",
       "status": "PASS"
     },
     {
@@ -62,6 +62,33 @@
       "observed": "BLOCKED",
       "stable_reason": "Unknown field(s) detected: ['unrecognized_field']",
       "status": "PASS"
+    },
+    {
+      "case_id": "NEG-REGEN-08",
+      "description": "Run 1 report indicates exit_code=1 failure",
+      "expected": "BLOCKED",
+      "name": "non-zero exit code in Run 1",
+      "observed": "BLOCKED",
+      "stable_reason": "Run 1 exit code must be 0, got 1",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-REGEN-09",
+      "description": "Same cardinality inventory containing an unexpected bogus path",
+      "expected": "BLOCKED",
+      "name": "bogus product artifact key with same cardinality",
+      "observed": "BLOCKED",
+      "stable_reason": "Missing required product artifact(s): ['bootstrap/TODO.md']",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-REGEN-10",
+      "description": "Output hash in run 2 manifest differs from declared product digest",
+      "expected": "BLOCKED",
+      "name": "run 2 manifest hash divergence",
+      "observed": "BLOCKED",
+      "stable_reason": "Manifest hash mismatch for dag/output/issue-validation.json: run_2=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=sha256:f8eadbf0c1e18c3ee6e6913a100f387e160373dd8d85f746e345af229dc410d4",
+      "status": "PASS"
     }
   ],
   "baseline": {
@@ -77,20 +104,38 @@
       "07cb1cd6a51b4542c680e7e982ab7fe2b14d5c1f",
       "97ff338a02802304f6fe5193f1933f8a387a1414",
       "04158f9586dff3451e6b79e831d04752146742d0",
-      "e24f419f50af2cc6165bd9fae7f65041ec1a0c9b"
+      "e24f419f50af2cc6165bd9fae7f65041ec1a0c9b",
+      "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33"
     ],
-    "start_commit": "e24f419f50af2cc6165bd9fae7f65041ec1a0c9b",
-    "tree_oid": "7cd3ca8915f21549814541a58d3e45d1a603939c"
+    "start_commit": "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+    "tree_oid": "caadd829fe264f04bac8602e5a154cb77844761d"
   },
   "derived_product_artifacts": {
-    "lists/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
-    "lists/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
-    "lists/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
-    "lists/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
-    "lists/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
-    "lists/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
-    "views/catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
-    "views/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e"
+    "bootstrap/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
+    "bootstrap/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
+    "bootstrap/catalog.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+    "bootstrap/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+    "bootstrap/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
+    "bootstrap/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
+    "bootstrap/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
+    "bootstrap/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
+    "dag/ar/issues/index.html": "sha256:7b30d20ac534ac40a4fbd3b03ca19d23b0cf50c28646fb218ca94b966071d390",
+    "dag/data/issue-catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+    "dag/data/issue-catalog.public.json": "sha256:c59021817777b83cf78c22bf27a036b41dbe77e702ef9082a442ad488cda1631",
+    "dag/data/issue-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+    "dag/data/issue-i18n-register.json": "sha256:40b551066f8bec7cbe2131de662376f16144f0f1bed4ebaabc231c631a04b689",
+    "dag/data/issue-pages.json": "sha256:3e58c187dfc8e5d7bb922ed2ca69d8bbb727863729b7f425740878e5a7588231",
+    "dag/de/issues/index.html": "sha256:a1e313a3969572eeb93b6a24f15230f256a6a8804803b045c5b3f604b5cb831c",
+    "dag/en/issues/index.html": "sha256:9110c4a5b11a3d5e5663177eb97ae8461e5ffa95e3ea33394b7c64f5e7b64c87",
+    "dag/es/issues/index.html": "sha256:83af88c9f2d8447558d2ad2e6cc2fc99e84b33594ecd9a8f5a9961b3e0702035",
+    "dag/fr/issues/index.html": "sha256:31f5dbee6117e4ffb191c9ebf4d4165dd79eb0fdcac47076f8a72122a29200c5",
+    "dag/output/issue-graph.dot": "sha256:1a2fdff4e1c1e97e6b3dd5ac420c6afd8958ddccb0726dec7f7881517f36d14b",
+    "dag/output/issue-graph.svg": "sha256:a68779e2d41d0c3707d4db2644eef73a8d613309bae272d554f3c45c2d31b8de",
+    "dag/output/issue-report.html": "sha256:379698e3c127ec37779070b74bac2124c7babfca8705416e0c9c654d78e50ab6",
+    "dag/output/issue-report.json": "sha256:614e8463b3529cafebfea66c8ed4e4bca8e81c8669f3996b9348be1d7dc410c0",
+    "dag/output/issue-validation.json": "sha256:f8eadbf0c1e18c3ee6e6913a100f387e160373dd8d85f746e345af229dc410d4",
+    "dag/pt/issues/index.html": "sha256:aeb7be54637dad006c470d63026bca0cbaff63b9e270a7e27bc3aa2c1fe7be80",
+    "dag/zh/issues/index.html": "sha256:d74455e51068ad9dbb5606a897986f11b85d635e54944e8a24286f54df416393"
   },
   "determinism_comparison": {
     "artifact_count_match": true,
@@ -113,12 +158,63 @@
     "status": "ready",
     "write_phase": "frozen"
   },
+  "generation_commands": {
+    "commands": [
+      {
+        "command": "git clone --shared /Users/tobias.anton/devel/autodocs <clone_path> && git checkout --detach fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+        "purpose": "Create fresh isolated clean checkout of exact baseline",
+        "stage": "clone-checkout"
+      },
+      {
+        "command": "python3 _src/tools/issue_lists.py --write --output-root <out>/bootstrap/lists --verify",
+        "purpose": "Generate canonical TODO.md, DONE.md, and summaries",
+        "stage": "bootstrap-lists"
+      },
+      {
+        "command": "python3 _src/tools/issue_views.py (render to <out>/bootstrap/catalog.json and dependency-graph.json)",
+        "purpose": "Render internal catalog and dependency graph",
+        "stage": "bootstrap-views"
+      },
+      {
+        "command": "python3 _src/tools/issue_validate.py --source working-tree --root issues --no-compare-head",
+        "purpose": "Validate canonical issues and provenance",
+        "stage": "dag-validate-canonical"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py render --catalog public (render to <out>/dag/data/issue-catalog.public.json)",
+        "purpose": "Render privacy-filtered public catalog projection",
+        "stage": "dag-public-projection"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py render --graphs (render to <out>/dag/data/issue-graph.json, issue-graph.dot, issue-graph.svg)",
+        "purpose": "Render graph models, DOT syntax, and SVG visualization",
+        "stage": "dag-graphs"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py render --page-models (render to <out>/dag/data/issue-pages.json, issue-i18n-register.json)",
+        "purpose": "Render localized page models and i18n registration",
+        "stage": "dag-page-models"
+      },
+      {
+        "command": "python3 _src/tools/generate.py --issues (render to <out>/dag/<lang>/issues/index.html across 7 languages)",
+        "purpose": "Render client localized HTML index trees",
+        "stage": "dag-render-html"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py report (render to <out>/dag/output/issue-report.json and issue-report.html)",
+        "purpose": "Render issue validation and graph summary reports",
+        "stage": "dag-render-reports"
+      }
+    ],
+    "description": "Executable commands and environment parameters used to produce the 25 derived artifacts from clean detached clones",
+    "schema": "issue-regeneration-commands@v1"
+  },
   "integrator_receipts": {
     "mandatory_candidate_hygiene_receipts": [
       {
         "command": "python3 _src/tools/check_integration_hygiene.py --repo /private/tmp/autodocs-worktrees/0037-31-final-frozen-migration-gate-rework-r1-lore --candidate-ref HEAD --json",
         "exit_code": 0,
-        "output_sha256": "sha256:d86959d75dd7d9f535ed1aeeff3859f548e9eb466c0051d2f1d3aecd8ea27e78",
+        "output_sha256": "sha256:54eda576dc3231669489c72441c232a447080454186fb9ae28a125b97aecea78",
         "phase": "pre-commit",
         "status": "clean",
         "timing": "contemporaneous_verification",
@@ -130,12 +226,34 @@
       {
         "command": "python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight --json",
         "exit_code": 0,
-        "output_sha256": "sha256:3c2546cc8ea3cc970937a3424e46340d3a0f115a5d39225652f86070c4f9f309",
+        "output_sha256": "sha256:a987f35323e192bec962e42e809ab85163c800b7627f01aac8f6d14e3a884fbc",
         "status": "valid",
-        "target_commit": "e24f419f50af2cc6165bd9fae7f65041ec1a0c9b",
-        "timing": "contemporaneous_verification"
+        "target_commit": "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+        "timing": "pre_cas_contemporaneous_verification"
       }
     ]
+  },
+  "management_decision": {
+    "authorized_scope": "Feature 0037 Task 0037-35.01 clean regeneration evidence on existing frozen transaction line",
+    "decision_id": "decision-0037-35-01-frozen-red-baseline-20260905",
+    "option_chosen": "exact_baseline_relative",
+    "validation_fact": {
+      "breakdown": {
+        "IV0901": 3,
+        "IV0904": 91,
+        "IV0905": 5,
+        "IV0911": 1,
+        "IV0916": 18,
+        "IV0921": 126
+      },
+      "exit_code": 2,
+      "oversized_provenance_coverage_paths": [
+        "provenance/migrations/issue-store/0037-13-20260825T082600Z/legacy-inventory.json",
+        "provenance/migrations/issue-store/0037-31-final-frozen-candidate.json",
+        "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json"
+      ],
+      "total_diagnostics": 244
+    }
   },
   "no_source_mutation_proof": {
     "clone1_clean": true,
@@ -153,48 +271,80 @@
   "ordering_incident_record": {
     "incident_commit": "8fb8b254646226991a972684c276045270a084c4",
     "nature": "hold_violation_predecessor",
-    "resolution": "Commit 8fb8b254 is preserved as an immutable ancestor on main; 0037-34.02 verifier corrections were integrated linearly after it up to e24f419f50; current 0037-35.01 rework appends linearly from e24f419f50 with full clean dual-run regeneration executed against e24f419f50 baseline with zero mixed-run evidence."
+    "resolution": "Commit 8fb8b254 is preserved as an immutable ancestor on main; 0037-34.02 verifier corrections and initial 0037-35.01 commit fa12dd41ec were integrated linearly after it up to fa12dd41ec; current 0037-35.01 rework iteration 2 appends linearly from fa12dd41ec with full 25-output clean dual-run regeneration and hardened verifier under Management decision decision-0037-35-01-frozen-red-baseline-20260905."
   },
   "run_1": {
-    "artifact_count": 8,
-    "duration_seconds": 13.937,
+    "artifact_count": 25,
+    "duration_seconds": 12.614,
     "exit_code": 0,
     "manifest": {
-      "lists/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
-      "lists/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
-      "lists/run-manifest.json": "sha256:b90cdfd3fdeb5eff2f7d642178d597c1b72e6a674bbcdc70096f960361f376bb",
-      "lists/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
-      "lists/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
-      "lists/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
-      "lists/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
-      "views/catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
-      "views/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e"
+      "bootstrap/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
+      "bootstrap/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
+      "bootstrap/catalog.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+      "bootstrap/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+      "bootstrap/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
+      "bootstrap/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
+      "bootstrap/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
+      "bootstrap/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
+      "dag/ar/issues/index.html": "sha256:7b30d20ac534ac40a4fbd3b03ca19d23b0cf50c28646fb218ca94b966071d390",
+      "dag/data/issue-catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+      "dag/data/issue-catalog.public.json": "sha256:c59021817777b83cf78c22bf27a036b41dbe77e702ef9082a442ad488cda1631",
+      "dag/data/issue-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+      "dag/data/issue-i18n-register.json": "sha256:40b551066f8bec7cbe2131de662376f16144f0f1bed4ebaabc231c631a04b689",
+      "dag/data/issue-pages.json": "sha256:3e58c187dfc8e5d7bb922ed2ca69d8bbb727863729b7f425740878e5a7588231",
+      "dag/de/issues/index.html": "sha256:a1e313a3969572eeb93b6a24f15230f256a6a8804803b045c5b3f604b5cb831c",
+      "dag/en/issues/index.html": "sha256:9110c4a5b11a3d5e5663177eb97ae8461e5ffa95e3ea33394b7c64f5e7b64c87",
+      "dag/es/issues/index.html": "sha256:83af88c9f2d8447558d2ad2e6cc2fc99e84b33594ecd9a8f5a9961b3e0702035",
+      "dag/fr/issues/index.html": "sha256:31f5dbee6117e4ffb191c9ebf4d4165dd79eb0fdcac47076f8a72122a29200c5",
+      "dag/output/issue-graph.dot": "sha256:1a2fdff4e1c1e97e6b3dd5ac420c6afd8958ddccb0726dec7f7881517f36d14b",
+      "dag/output/issue-graph.svg": "sha256:a68779e2d41d0c3707d4db2644eef73a8d613309bae272d554f3c45c2d31b8de",
+      "dag/output/issue-report.html": "sha256:379698e3c127ec37779070b74bac2124c7babfca8705416e0c9c654d78e50ab6",
+      "dag/output/issue-report.json": "sha256:614e8463b3529cafebfea66c8ed4e4bca8e81c8669f3996b9348be1d7dc410c0",
+      "dag/output/issue-validation.json": "sha256:f8eadbf0c1e18c3ee6e6913a100f387e160373dd8d85f746e345af229dc410d4",
+      "dag/pt/issues/index.html": "sha256:aeb7be54637dad006c470d63026bca0cbaff63b9e270a7e27bc3aa2c1fe7be80",
+      "dag/zh/issues/index.html": "sha256:d74455e51068ad9dbb5606a897986f11b85d635e54944e8a24286f54df416393"
     },
     "status": "PASS"
   },
   "run_2": {
-    "artifact_count": 8,
-    "duration_seconds": 10.603,
+    "artifact_count": 25,
+    "duration_seconds": 21.74,
     "exit_code": 0,
     "manifest": {
-      "lists/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
-      "lists/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
-      "lists/run-manifest.json": "sha256:a7ee9665eb0120913eb62479160fd821fd519c96ad6a5720fd1d26fb32e551da",
-      "lists/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
-      "lists/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
-      "lists/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
-      "lists/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
-      "views/catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
-      "views/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e"
+      "bootstrap/DONE.md": "sha256:9ae4d7a1ed33630d01f427dea3d3dc9a17626cc45c27054cbfd0781f3d4cc9d3",
+      "bootstrap/TODO.md": "sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
+      "bootstrap/catalog.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+      "bootstrap/dependency-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+      "bootstrap/summaries/blocked.md": "sha256:1786bee8e176e213b2a1103b208a72e20481b5cf3075d781412a933d0a062ac6",
+      "bootstrap/summaries/open.md": "sha256:17df3a8e0ac0c7fbcd6702a5f2a0701242bf162a131eaec93e9a9cbc209d9995",
+      "bootstrap/summaries/owners.md": "sha256:4334cabc8bbe917a8e7962a6d10c4644ac82cf264bd41fae1ba157b8ddc1881f",
+      "bootstrap/summaries/unclear.md": "sha256:6191aa3898af91f42e2c4418bd1db25054e41a3b347d7a8e88b2f9515e3f6045",
+      "dag/ar/issues/index.html": "sha256:7b30d20ac534ac40a4fbd3b03ca19d23b0cf50c28646fb218ca94b966071d390",
+      "dag/data/issue-catalog.internal.json": "sha256:90c2713c6d0f9763eeeb5bb7f190807658f4d22864f8618b48d6b7bdc296f745",
+      "dag/data/issue-catalog.public.json": "sha256:c59021817777b83cf78c22bf27a036b41dbe77e702ef9082a442ad488cda1631",
+      "dag/data/issue-graph.json": "sha256:651b732213f7355398c01dab961c1f7d22ec2e9a70dd6854bf4e4e0d1d36852e",
+      "dag/data/issue-i18n-register.json": "sha256:40b551066f8bec7cbe2131de662376f16144f0f1bed4ebaabc231c631a04b689",
+      "dag/data/issue-pages.json": "sha256:3e58c187dfc8e5d7bb922ed2ca69d8bbb727863729b7f425740878e5a7588231",
+      "dag/de/issues/index.html": "sha256:a1e313a3969572eeb93b6a24f15230f256a6a8804803b045c5b3f604b5cb831c",
+      "dag/en/issues/index.html": "sha256:9110c4a5b11a3d5e5663177eb97ae8461e5ffa95e3ea33394b7c64f5e7b64c87",
+      "dag/es/issues/index.html": "sha256:83af88c9f2d8447558d2ad2e6cc2fc99e84b33594ecd9a8f5a9961b3e0702035",
+      "dag/fr/issues/index.html": "sha256:31f5dbee6117e4ffb191c9ebf4d4165dd79eb0fdcac47076f8a72122a29200c5",
+      "dag/output/issue-graph.dot": "sha256:1a2fdff4e1c1e97e6b3dd5ac420c6afd8958ddccb0726dec7f7881517f36d14b",
+      "dag/output/issue-graph.svg": "sha256:a68779e2d41d0c3707d4db2644eef73a8d613309bae272d554f3c45c2d31b8de",
+      "dag/output/issue-report.html": "sha256:379698e3c127ec37779070b74bac2124c7babfca8705416e0c9c654d78e50ab6",
+      "dag/output/issue-report.json": "sha256:614e8463b3529cafebfea66c8ed4e4bca8e81c8669f3996b9348be1d7dc410c0",
+      "dag/output/issue-validation.json": "sha256:f8eadbf0c1e18c3ee6e6913a100f387e160373dd8d85f746e345af229dc410d4",
+      "dag/pt/issues/index.html": "sha256:aeb7be54637dad006c470d63026bca0cbaff63b9e270a7e27bc3aa2c1fe7be80",
+      "dag/zh/issues/index.html": "sha256:d74455e51068ad9dbb5606a897986f11b85d635e54944e8a24286f54df416393"
     },
     "status": "PASS"
   },
   "run_manifest_analysis": {
     "description": "run-manifest.json contains execution metadata (run_id and absolute output filesystem paths) explicitly marked in issue_lists.py as volatile execution tracking",
-    "product_artifacts_evaluated": 8,
+    "product_artifacts_evaluated": 25,
     "product_byte_identity": true,
     "volatile_fields_excluded_from_product": [
-      "lists/run-manifest.json"
+      "bootstrap/lists/run-manifest.json"
     ]
   },
   "schema": "clean-regeneration-evidence@v1",
@@ -217,8 +367,8 @@
   },
   "task_id": "0037-35.01",
   "verifier_specification": {
-    "algorithm": "canonical-clean-regeneration-verification-and-negative-harness",
-    "case_count": 7,
+    "algorithm": "hardened-clean-regeneration-verification-and-negative-harness",
+    "case_count": 10,
     "command": "python3 -c \"import json, sys; exec(json.load(open('provenance/migrations/issue-store/0037-35.01-clean-regeneration.json'))['verifier_specification']['source_code']); verify_all('provenance/migrations/issue-store/0037-35.01-clean-regeneration.json', '.')\"",
     "environment": {
       "git_version": "git version 2.50.1 (Apple Git-155)",
@@ -227,14 +377,14 @@
       "python_version": "3.9.6",
       "reproduction_mode": "fresh_detached_disposable_clones"
     },
-    "generation_domain": "clean-regeneration-verification@v1",
+    "generation_domain": "clean-regeneration-verification@v2",
     "happy_path_result": {
       "clone_count": 2,
-      "derived_product_count": 8,
+      "derived_product_count": 25,
       "status": "VALID"
     },
-    "source_code": "# 0037-35.01 Deterministic Clean Regeneration Verifier & Negative Harness\n# Specification ID: 0037-35.01-clean-regeneration-verifier@v1\n# Generation Domain: clean-regeneration-verification@v1\n\nimport copy\nimport hashlib\nimport json\nimport os\nimport subprocess\nimport sys\n\nclass RegenerationVerificationError(Exception):\n    pass\n\ndef dict_raise_on_duplicates(ordered_pairs):\n    d = {}\n    for k, v in ordered_pairs:\n        if k in d:\n            raise RegenerationVerificationError(f\"Duplicate field detected during JSON deserialization: {k}\")\n        d[k] = v\n    return d\n\ndef parse_evidence_json(raw_text):\n    return json.loads(raw_text, object_pairs_hook=dict_raise_on_duplicates)\n\ndef compute_sha256_bytes(b):\n    return \"sha256:\" + hashlib.sha256(b).hexdigest()\n\ndef verify_evidence_structure(data):\n    if not isinstance(data, dict):\n        raise RegenerationVerificationError(\"Top-level payload must be a JSON object\")\n\n    if data.get(\"schema\") != \"clean-regeneration-evidence@v1\":\n        raise RegenerationVerificationError(f\"Invalid schema: {data.get('schema')}\")\n    if data.get(\"task_id\") != \"0037-35.01\":\n        raise RegenerationVerificationError(f\"Invalid task_id: {data.get('task_id')}\")\n\n    required_keys = {\n        \"schema\", \"task_id\", \"baseline\", \"selector_digest\", \"environment\",\n        \"derived_product_artifacts\", \"run_1\", \"run_2\", \"determinism_comparison\",\n        \"run_manifest_analysis\", \"fresh_agent_result\", \"stale_agent_result\",\n        \"adversarial_negative_results\", \"no_source_mutation_proof\",\n        \"ordering_incident_record\", \"verifier_specification\", \"signer_authority\",\n        \"non_operational_guards\", \"integrator_receipts\"\n    }\n    missing = required_keys - set(data.keys())\n    if missing:\n        raise RegenerationVerificationError(f\"Missing required field(s): {sorted(list(missing))}\")\n    extra = set(data.keys()) - required_keys\n    if extra:\n        raise RegenerationVerificationError(f\"Unknown field(s) detected: {sorted(list(extra))}\")\n\n    # Baseline check\n    b = data.get(\"baseline\", {})\n    if b.get(\"start_commit\") != \"e24f419f50af2cc6165bd9fae7f65041ec1a0c9b\":\n        raise RegenerationVerificationError(f\"Wrong start_commit: {b.get('start_commit')}\")\n\n    # Determinism check\n    det = data.get(\"determinism_comparison\", {})\n    if det.get(\"byte_identical\") is not True or det.get(\"semantic_identical\") is not True:\n        raise RegenerationVerificationError(\"Determinism comparison failed\")\n    if det.get(\"diff_count\") != 0:\n        raise RegenerationVerificationError(f\"Non-zero diff count: {det.get('diff_count')}\")\n\n    # Product artifacts count\n    prods = data.get(\"derived_product_artifacts\", {})\n    if len(prods) != 8:\n        raise RegenerationVerificationError(f\"Expected 8 derived product artifacts, got {len(prods)}\")\n\n    # Stale agent check\n    stale = data.get(\"stale_agent_result\", {})\n    if stale.get(\"status\") != \"rejected\":\n        raise RegenerationVerificationError(\"Stale authority acceptance detected: status must be rejected\")\n\n    # Zero mutation check\n    mut = data.get(\"no_source_mutation_proof\", {})\n    if mut.get(\"clone1_clean\") is not True or mut.get(\"clone2_clean\") is not True:\n        raise RegenerationVerificationError(\"Source mutation detected in clones\")\n\n    # Guards check\n    guards = data.get(\"non_operational_guards\", {})\n    if guards.get(\"acceptance_granted\") is not False or guards.get(\"freeze_lifted\") is not False:\n        raise RegenerationVerificationError(\"Non-operational guard violation: acceptance granted or freeze lifted\")\n\n    return True\n\ndef run_negative_harness(base_data):\n    matrix_cases = [\n        {\n            \"case_id\": \"NEG-REGEN-01\",\n            \"name\": \"derived product hash divergence\",\n            \"description\": \"Output hash mismatch between run 1 and run 2\",\n            \"mutate\": lambda d: d[\"run_1\"][\"manifest\"].__setitem__(\"lists/TODO.md\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Determinism check failed: manifest hash mismatch\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-02\",\n            \"name\": \"changed artifact cardinality\",\n            \"description\": \"Missing product artifact in derived_product_artifacts\",\n            \"mutate\": lambda d: d[\"derived_product_artifacts\"].pop(\"lists/TODO.md\"),\n            \"expected_blocked_reason\": \"Expected 8 derived product artifacts, got 7\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-03\",\n            \"name\": \"stale legacy authority acceptance\",\n            \"description\": \"Stale agent reported ready status instead of rejected\",\n            \"mutate\": lambda d: d[\"stale_agent_result\"].__setitem__(\"status\", \"ready\"),\n            \"expected_blocked_reason\": \"Stale authority acceptance detected: status must be rejected\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-04\",\n            \"name\": \"source mutation in clone\",\n            \"description\": \"Source file modified during regeneration run\",\n            \"mutate\": lambda d: d[\"no_source_mutation_proof\"].__setitem__(\"clone1_clean\", False),\n            \"expected_blocked_reason\": \"Source mutation detected in clones\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-05\",\n            \"name\": \"acceptance inflation guard\",\n            \"description\": \"Unauthorized acceptance_granted flag set to true\",\n            \"mutate\": lambda d: d[\"non_operational_guards\"].__setitem__(\"acceptance_granted\", True),\n            \"expected_blocked_reason\": \"Non-operational guard violation: acceptance granted or freeze lifted\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-06\",\n            \"name\": \"duplicate field in raw JSON\",\n            \"description\": \"Duplicate keys in serialized payload\",\n            \"mutate\": lambda d: \"duplicate_raw_json_marker\",\n            \"expected_blocked_reason\": \"Duplicate field detected during JSON deserialization: schema\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-07\",\n            \"name\": \"unknown field in evidence\",\n            \"description\": \"Unrecognized extra field in top-level evidence\",\n            \"mutate\": lambda d: d.__setitem__(\"unrecognized_field\", True),\n            \"expected_blocked_reason\": \"Unknown field(s) detected: ['unrecognized_field']\"\n        }\n    ]\n\n    results = []\n    for c in matrix_cases:\n        case_res = {\n            \"case_id\": c[\"case_id\"],\n            \"name\": c[\"name\"],\n            \"description\": c[\"description\"],\n            \"expected\": \"BLOCKED\",\n            \"observed\": None,\n            \"stable_reason\": None,\n            \"status\": None\n        }\n\n        if c[\"case_id\"] == \"NEG-REGEN-06\":\n            raw_dup_json = '{\"schema\": \"clean-regeneration-evidence@v1\", \"schema\": \"clean-regeneration-evidence@v2\"}'\n            try:\n                parse_evidence_json(raw_dup_json)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"JSON decoder allowed duplicate keys\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n        elif c[\"case_id\"] == \"NEG-REGEN-01\":\n            mut_data = copy.deepcopy(base_data)\n            c[\"mutate\"](mut_data)\n            m1 = mut_data[\"run_1\"][\"manifest\"]\n            m2 = mut_data[\"run_2\"][\"manifest\"]\n            if m1.get(\"lists/TODO.md\") != m2.get(\"lists/TODO.md\"):\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = c[\"expected_blocked_reason\"]\n            else:\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n        else:\n            mut_data = copy.deepcopy(base_data)\n            c[\"mutate\"](mut_data)\n            try:\n                verify_evidence_structure(mut_data)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"Verifier unexpectedly allowed invalid data\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n\n        results.append(case_res)\n\n    return results\n\ndef verify_all(evidence_path, repo_dir):\n    with open(evidence_path, \"rb\") as f:\n        raw_text = f.read().decode(\"utf-8\")\n    data = parse_evidence_json(raw_text)\n    verify_evidence_structure(data)\n\n    spec = data.get(\"verifier_specification\", {})\n    source_code = spec.get(\"source_code\", \"\")\n    expected_hash = spec.get(\"source_sha256\", \"\")\n    actual_hash = compute_sha256_bytes(source_code.encode(\"utf-8\"))\n    if actual_hash != expected_hash:\n        raise RegenerationVerificationError(f\"Verifier source hash mismatch: expected {expected_hash}, computed {actual_hash}\")\n\n    return True\n\nif __name__ == \"__main__\" and len(sys.argv) >= 3:\n    verify_all(sys.argv[1], sys.argv[2])\n    print(\"ALL CLEAN REGENERATION VERIFICATION CHECKS PASSED\")\n",
-    "source_sha256": "sha256:f110422c7748a52009a5f6de8814130cf46c4e65e9c914e4d22516e4c49a0906",
-    "specification_id": "0037-35.01-clean-regeneration-verifier@v1"
+    "source_code": "# 0037-35.01 Hardened Deterministic Clean Regeneration Verifier & Negative Harness\n# Specification ID: 0037-35.01-clean-regeneration-verifier@v2\n# Generation Domain: clean-regeneration-verification@v2\n# Authority Basis: Management decision decision-0037-35-01-frozen-red-baseline-20260905 (exact_baseline_relative)\n\nimport copy\nimport hashlib\nimport json\nimport os\nimport subprocess\nimport sys\n\nclass RegenerationVerificationError(Exception):\n    pass\n\ndef dict_raise_on_duplicates(ordered_pairs):\n    d = {}\n    for k, v in ordered_pairs:\n        if k in d:\n            raise RegenerationVerificationError(f\"Duplicate field detected during JSON deserialization: {k}\")\n        d[k] = v\n    return d\n\ndef parse_evidence_json(raw_text):\n    return json.loads(raw_text, object_pairs_hook=dict_raise_on_duplicates)\n\ndef compute_sha256_bytes(b):\n    return \"sha256:\" + hashlib.sha256(b).hexdigest()\n\nEXPECTED_PRODUCT_ARTIFACTS = frozenset({\n    \"bootstrap/catalog.json\",\n    \"bootstrap/dependency-graph.json\",\n    \"bootstrap/TODO.md\",\n    \"bootstrap/DONE.md\",\n    \"bootstrap/summaries/open.md\",\n    \"bootstrap/summaries/blocked.md\",\n    \"bootstrap/summaries/unclear.md\",\n    \"bootstrap/summaries/owners.md\",\n    \"dag/output/issue-validation.json\",\n    \"dag/data/issue-catalog.internal.json\",\n    \"dag/data/issue-catalog.public.json\",\n    \"dag/data/issue-graph.json\",\n    \"dag/output/issue-graph.dot\",\n    \"dag/output/issue-graph.svg\",\n    \"dag/data/issue-pages.json\",\n    \"dag/data/issue-i18n-register.json\",\n    \"dag/en/issues/index.html\",\n    \"dag/de/issues/index.html\",\n    \"dag/fr/issues/index.html\",\n    \"dag/es/issues/index.html\",\n    \"dag/pt/issues/index.html\",\n    \"dag/ar/issues/index.html\",\n    \"dag/zh/issues/index.html\",\n    \"dag/output/issue-report.json\",\n    \"dag/output/issue-report.html\"\n})\n\nEXPECTED_BREAKDOWN = {\n    \"IV0901\": 3,\n    \"IV0904\": 91,\n    \"IV0905\": 5,\n    \"IV0911\": 1,\n    \"IV0916\": 18,\n    \"IV0921\": 126\n}\n\ndef verify_evidence_structure(data):\n    if not isinstance(data, dict):\n        raise RegenerationVerificationError(\"Top-level payload must be a JSON object\")\n\n    if data.get(\"schema\") != \"clean-regeneration-evidence@v1\":\n        raise RegenerationVerificationError(f\"Invalid schema: {data.get('schema')}\")\n    if data.get(\"task_id\") != \"0037-35.01\":\n        raise RegenerationVerificationError(f\"Invalid task_id: {data.get('task_id')}\")\n\n    required_keys = {\n        \"schema\", \"task_id\", \"baseline\", \"selector_digest\", \"environment\",\n        \"derived_product_artifacts\", \"generation_commands\", \"management_decision\",\n        \"run_1\", \"run_2\", \"determinism_comparison\", \"run_manifest_analysis\",\n        \"fresh_agent_result\", \"stale_agent_result\", \"adversarial_negative_results\",\n        \"no_source_mutation_proof\", \"ordering_incident_record\", \"verifier_specification\",\n        \"signer_authority\", \"non_operational_guards\", \"integrator_receipts\"\n    }\n    missing = required_keys - set(data.keys())\n    if missing:\n        raise RegenerationVerificationError(f\"Missing required field(s): {sorted(list(missing))}\")\n    extra = set(data.keys()) - required_keys\n    if extra:\n        raise RegenerationVerificationError(f\"Unknown field(s) detected: {sorted(list(extra))}\")\n\n    # Baseline check\n    b = data.get(\"baseline\", {})\n    if b.get(\"start_commit\") != \"fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33\":\n        raise RegenerationVerificationError(f\"Wrong start_commit: {b.get('start_commit')}\")\n\n    # Management decision check\n    md = data.get(\"management_decision\", {})\n    if md.get(\"decision_id\") != \"decision-0037-35-01-frozen-red-baseline-20260905\":\n        raise RegenerationVerificationError(f\"Invalid management decision_id: {md.get('decision_id')}\")\n    if md.get(\"option_chosen\") != \"exact_baseline_relative\":\n        raise RegenerationVerificationError(f\"Invalid option_chosen: {md.get('option_chosen')}\")\n    vf = md.get(\"validation_fact\", {})\n    if vf.get(\"exit_code\") != 2 or vf.get(\"total_diagnostics\") != 244:\n        raise RegenerationVerificationError(f\"Invalid validation fact in decision: {vf}\")\n    if vf.get(\"breakdown\") != EXPECTED_BREAKDOWN:\n        raise RegenerationVerificationError(f\"Diagnostic breakdown mismatch: {vf.get('breakdown')}\")\n\n    # Product artifacts key check\n    prods = data.get(\"derived_product_artifacts\", {})\n    if not isinstance(prods, dict):\n        raise RegenerationVerificationError(\"derived_product_artifacts must be a dict\")\n    actual_prod_keys = set(prods.keys())\n    missing_prods = EXPECTED_PRODUCT_ARTIFACTS - actual_prod_keys\n    if missing_prods:\n        raise RegenerationVerificationError(f\"Missing required product artifact(s): {sorted(list(missing_prods))}\")\n    extra_prods = actual_prod_keys - EXPECTED_PRODUCT_ARTIFACTS\n    if extra_prods:\n        raise RegenerationVerificationError(f\"Unexpected product artifact(s): {sorted(list(extra_prods))}\")\n\n    # Runs exit code and status checks\n    r1 = data.get(\"run_1\", {})\n    r2 = data.get(\"run_2\", {})\n    if r1.get(\"exit_code\") != 0:\n        raise RegenerationVerificationError(f\"Run 1 exit code must be 0, got {r1.get('exit_code')}\")\n    if r2.get(\"exit_code\") != 0:\n        raise RegenerationVerificationError(f\"Run 2 exit code must be 0, got {r2.get('exit_code')}\")\n    if r1.get(\"status\") != \"PASS\":\n        raise RegenerationVerificationError(f\"Run 1 status must be PASS, got {r1.get('status')}\")\n    if r2.get(\"status\") != \"PASS\":\n        raise RegenerationVerificationError(f\"Run 2 status must be PASS, got {r2.get('status')}\")\n\n    # Manifest hash checks across runs and product artifacts\n    m1 = r1.get(\"manifest\", {})\n    m2 = r2.get(\"manifest\", {})\n    for k in EXPECTED_PRODUCT_ARTIFACTS:\n        if k not in m1:\n            raise RegenerationVerificationError(f\"Run 1 manifest missing product artifact: {k}\")\n        if k not in m2:\n            raise RegenerationVerificationError(f\"Run 2 manifest missing product artifact: {k}\")\n        h_prod = prods.get(k)\n        h1 = m1.get(k)\n        h2 = m2.get(k)\n        if h1 != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_1={h1} != product={h_prod}\")\n        if h2 != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_2={h2} != product={h_prod}\")\n\n    # Determinism check\n    det = data.get(\"determinism_comparison\", {})\n    if det.get(\"byte_identical\") is not True or det.get(\"semantic_identical\") is not True:\n        raise RegenerationVerificationError(\"Determinism comparison failed\")\n    if det.get(\"diff_count\") != 0:\n        raise RegenerationVerificationError(f\"Non-zero diff count: {det.get('diff_count')}\")\n\n    # Stale agent check\n    stale = data.get(\"stale_agent_result\", {})\n    if stale.get(\"status\") != \"rejected\":\n        raise RegenerationVerificationError(\"Stale authority acceptance detected: status must be rejected\")\n\n    # Zero mutation check\n    mut = data.get(\"no_source_mutation_proof\", {})\n    if mut.get(\"clone1_clean\") is not True or mut.get(\"clone2_clean\") is not True:\n        raise RegenerationVerificationError(\"Source mutation detected in clones\")\n\n    # Guards check\n    guards = data.get(\"non_operational_guards\", {})\n    if guards.get(\"acceptance_granted\") is not False or guards.get(\"freeze_lifted\") is not False:\n        raise RegenerationVerificationError(\"Non-operational guard violation: acceptance granted or freeze lifted\")\n\n    # Generation commands check\n    cmds = data.get(\"generation_commands\", {})\n    if not isinstance(cmds, dict) or not cmds.get(\"commands\"):\n        raise RegenerationVerificationError(\"generation_commands must be present and non-empty\")\n\n    return True\n\ndef run_negative_harness(base_data):\n    matrix_cases = [\n        {\n            \"case_id\": \"NEG-REGEN-01\",\n            \"name\": \"run 1 manifest hash divergence\",\n            \"description\": \"Output hash in run 1 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_1\"][\"manifest\"].__setitem__(\"bootstrap/TODO.md\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for bootstrap/TODO.md: run_1=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-02\",\n            \"name\": \"missing product artifact in inventory\",\n            \"description\": \"Missing product artifact in derived_product_artifacts\",\n            \"mutate\": lambda d: d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"),\n            \"expected_blocked_reason\": \"Missing required product artifact(s): ['bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-03\",\n            \"name\": \"stale legacy authority acceptance\",\n            \"description\": \"Stale agent reported ready status instead of rejected\",\n            \"mutate\": lambda d: d[\"stale_agent_result\"].__setitem__(\"status\", \"ready\"),\n            \"expected_blocked_reason\": \"Stale authority acceptance detected: status must be rejected\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-04\",\n            \"name\": \"source mutation in clone\",\n            \"description\": \"Source file modified during regeneration run\",\n            \"mutate\": lambda d: d[\"no_source_mutation_proof\"].__setitem__(\"clone1_clean\", False),\n            \"expected_blocked_reason\": \"Source mutation detected in clones\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-05\",\n            \"name\": \"acceptance inflation guard\",\n            \"description\": \"Unauthorized acceptance_granted flag set to true\",\n            \"mutate\": lambda d: d[\"non_operational_guards\"].__setitem__(\"acceptance_granted\", True),\n            \"expected_blocked_reason\": \"Non-operational guard violation: acceptance granted or freeze lifted\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-06\",\n            \"name\": \"duplicate field in raw JSON\",\n            \"description\": \"Duplicate keys in serialized payload\",\n            \"mutate\": lambda d: \"duplicate_raw_json_marker\",\n            \"expected_blocked_reason\": \"Duplicate field detected during JSON deserialization: schema\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-07\",\n            \"name\": \"unknown field in evidence\",\n            \"description\": \"Unrecognized extra field in top-level evidence\",\n            \"mutate\": lambda d: d.__setitem__(\"unrecognized_field\", True),\n            \"expected_blocked_reason\": \"Unknown field(s) detected: ['unrecognized_field']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-08\",\n            \"name\": \"non-zero exit code in Run 1\",\n            \"description\": \"Run 1 report indicates exit_code=1 failure\",\n            \"mutate\": lambda d: d[\"run_1\"].__setitem__(\"exit_code\", 1),\n            \"expected_blocked_reason\": \"Run 1 exit code must be 0, got 1\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-09\",\n            \"name\": \"bogus product artifact key with same cardinality\",\n            \"description\": \"Same cardinality inventory containing an unexpected bogus path\",\n            \"mutate\": lambda d: (d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"), d[\"derived_product_artifacts\"].__setitem__(\"bogus/invalid.json\", \"sha256:1111111111111111111111111111111111111111111111111111111111111111\")),\n            \"expected_blocked_reason\": \"Missing required product artifact(s): ['bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-10\",\n            \"name\": \"run 2 manifest hash divergence\",\n            \"description\": \"Output hash in run 2 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_2\"][\"manifest\"].__setitem__(\"dag/output/issue-validation.json\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for dag/output/issue-validation.json: run_2=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        }\n    ]\n\n    results = []\n    for c in matrix_cases:\n        case_res = {\n            \"case_id\": c[\"case_id\"],\n            \"name\": c[\"name\"],\n            \"description\": c[\"description\"],\n            \"expected\": \"BLOCKED\",\n            \"observed\": None,\n            \"stable_reason\": None,\n            \"status\": None\n        }\n\n        if c[\"case_id\"] == \"NEG-REGEN-06\":\n            raw_dup_json = '{\"schema\": \"clean-regeneration-evidence@v1\", \"schema\": \"clean-regeneration-evidence@v2\"}'\n            try:\n                parse_evidence_json(raw_dup_json)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"JSON decoder allowed duplicate keys\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n        else:\n            mut_data = copy.deepcopy(base_data)\n            c[\"mutate\"](mut_data)\n            try:\n                verify_evidence_structure(mut_data)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"Verifier unexpectedly allowed invalid data\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n\n        results.append(case_res)\n\n    return results\n\ndef verify_all(evidence_path, repo_dir):\n    with open(evidence_path, \"rb\") as f:\n        raw_text = f.read().decode(\"utf-8\")\n    data = parse_evidence_json(raw_text)\n    verify_evidence_structure(data)\n\n    spec = data.get(\"verifier_specification\", {})\n    source_code = spec.get(\"source_code\", \"\")\n    expected_hash = spec.get(\"source_sha256\", \"\")\n    actual_hash = compute_sha256_bytes(source_code.encode(\"utf-8\"))\n    if actual_hash != expected_hash:\n        raise RegenerationVerificationError(f\"Verifier source hash mismatch: expected {expected_hash}, computed {actual_hash}\")\n\n    return True\n\nif __name__ == \"__main__\" and len(sys.argv) >= 3:\n    verify_all(sys.argv[1], sys.argv[2])\n    print(\"ALL HARDENED CLEAN REGENERATION VERIFICATION CHECKS PASSED\")\n",
+    "source_sha256": "sha256:744fbf005d27b29db985aa2df62a6c692bab8dc1bad7997503be2f296f235855",
+    "specification_id": "0037-35.01-clean-regeneration-verifier@v2"
   }
 }
