@@ -254,3 +254,123 @@ transaction CAS, independent integration, and a still-closed `0037-34.01`
 start gate. Any need to weaken a mapping, authorize a signer not already
 registered, edit legacy source, broaden paths, waive blockers, or proceed with
 nonzero blockers returns to Management before mutation.
+
+## Additive distinct scope review — exact interrupted-r1 evidence retention (2026-09-05)
+
+### Identity, authority, and separation
+
+- **Reviewer:** `data`
+- **Role:** Management-instantiated privileged Architect, independent of Implementer `miles2-0037-programmer-20260904` and Integrator `Geordi`
+- **Assignment:** `1788581652660-b2c6bd14`
+- **Starting ref:** signed `7e78a076737193811b8ab84e02e09000b69c9135` on retained branch `0037-31-promotion-policy-architect-review-20260904`
+- **Management authority:** durable `decision-1788580603368-b52b66df`, resolved `2026-09-05T04:12:46Z`, option `exact_evidence_retention`; operative notice `1788581566919-22af5e6c`
+- **Verdict:** **SUPPORTS ONLY THE EXACT EVIDENCE-RETENTION EXCEPTION BELOW, WITH BINDING FAIL-CLOSED CONDITIONS**
+
+This is the distinct pre-mutation Architect scope review required by the cross-item gate-scope rule. It is additive to the earlier review and decides only the reach of the selected evidence-retention disposition. It supplies no implementation, integration, hygiene, Acceptance, promotion, transaction, publication, Task-closure, Feature-closure, push, or `main`-mutation authority.
+
+### Independently derived closed allow-set
+
+The only authorized interrupted-r1 content is the complete recursive Git tree rooted at:
+
+`_src/output/issue-migration/0037-31-promoted-dispositions-20260904-r1/`
+
+The authoritative source is predecessor commit `6923deec89fc15575fb23047d8236a89b3fd286e`. Its exact subtree object is `93e1703e2103fd304ec2f22fa4f6f2b83008179a`. Independent `git ls-tree -r` measurement produced exactly **975** entries, all and only mode `100644`, type `blob`; the SHA-256 of the complete canonical `git ls-tree -r` serialization, which binds every repository-relative path, mode, type, and blob OID in order, is `0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620`. Candidate `28bd8f3186f4637cdd051eb70bb76a57ef0829f8` resolves the same root to the same tree object and has an empty path-limited diff against `6923deec89fc15575fb23047d8236a89b3fd286e`.
+
+The allow-set is therefore the exact 975-entry manifest encoded by tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a` at `6923deec89fc15575fb23047d8236a89b3fd286e`, including each exact path, `100644` mode, and blob OID. The directory prefix is descriptive only and is never an authorization rule. Equality to any unpinned predecessor, matching bytes under a different path, a reconstructed tree, tree-size equality, count equality, report equality, or generic prefix membership cannot substitute for this exact manifest and exact root tree.
+
+### Binding rejection predicates
+
+The retention exception must reject before promotion or canonical write if any of the following is observed:
+
+1. any one of the 975 authorized paths is absent;
+2. any additional path appears below or is mapped into the r1 prefix;
+3. any authorized path, mode, type, or blob OID differs from the pinned manifest;
+4. the resolved root tree differs from `93e1703e2103fd304ec2f22fa4f6f2b83008179a`;
+5. an entry is non-regular, executable, a symlink, submodule, alias, redirected path, case-folded substitute, or otherwise not the exact `100644 blob` entry;
+6. validation falls back to prefix, count, byte-equality, report identity, or an unpinned ancestor instead of checking the complete exact manifest and root tree; or
+7. the policy cannot bind its result to the exact current report/candidate identities and fail closed on drift.
+
+No accepted match grants promotion, closure, Acceptance, evidence-gate, or transaction credit to r1. It establishes only that the immutable interrupted-run evidence may remain present without being treated as a new canonical promotion output.
+
+### Mandatory implementation and test boundary remains open
+
+Management selected retention, not a waiver. Geordi's report-binding finding `I31-POL-002` (`1788580420588-7d4c6f1a`) and test-evidence finding `I31-POL-003` (`1788580420670-756930fa`) remain mandatory same-slot repairs. The implementation must bind the policy result to the exact report and candidate evidence rather than accepting an internally valid but unrelated tree. It must include deterministic negative coverage for every absent, extra, changed-path, changed-mode, changed-type, changed-blob, wrong-tree, alias/symlink, and generic-prefix-fallback case. Because the contract asserts exact membership and multiplicity over a set, it also requires exhaustive or generative property evidence over the 975-entry allow-set and adjacent one-mutation cases, with the invariant/oracle, finite domain or generation domain, seed/replay input where applicable, and actual executed case count recorded. Existing tests that only demonstrate the happy-path equality are insufficient.
+
+The original rejected run, all historical proof/evidence, the exact valid r2 proof, candidate `28bd8f3186f4637cdd051eb70bb76a57ef0829f8`, predecessor `6923deec89fc15575fb23047d8236a89b3fd286e`, their lineage and review history, and Geordi's existing reservation must remain preserved. No ref deletion, force-update, sibling correction candidate, replacement worktree, extra run, output rewrite, or reservation expansion follows from this review.
+
+### Cross-item reach and authorized sequencing
+
+The affected shared gate is the `0037-31` frozen canonical promotion policy whose result controls canonical integration and the downstream start of `0037-34.01` and later cutover work. The smallest authorized correction is therefore:
+
+1. land this exact Architect review and the already durable Management resolution into canonical governance before any qualifying policy mutation;
+2. issue an explicit same-slot rework contract against the sole active Miles2 candidate lineage, limited to the exact policy/report-binding/test repair paths authorized by the coordinator;
+3. append corrections linearly, preserve r1/r2/rejected evidence unchanged, and validate the complete closed allow-set plus all mandatory negatives/property cases;
+4. obtain a separate independent review of the exact repaired candidate; and
+5. let the reserved Integrator perform the ordinary pinned-candidate hygiene and integration process without expanding the reservation.
+
+Until all of those conditions are satisfied, `0037-31` canonical promotion and the `0037-34.01` start gate remain blocked. This review does not alter any Task marker, prerequisite, Acceptance record, transaction state, selector/profile/epoch, source or output bytes, candidate ref, reservation, or canonical branch.
+
+### Scope conclusion
+
+The selected disposition is architecturally bounded and supported only as exact evidence retention: precisely the 975 paths, their exact `100644` modes and blob OIDs, canonical manifest digest `0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620`, and root tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a` from `6923deec89fc15575fb23047d8236a89b3fd286e`. Any absent, extra, changed, aliased, non-regular, unbound, or prefix-fallback case is outside authority and must stop. Report binding and adversarial test proof remain separate mandatory work; no promotion or closure credit is conferred.
+
+### `DEC-0037-036` — Retain only the exact interrupted-r1 evidence tree
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-05T04:12:46Z`
+- **Deciding identity:** `authority:management:decision-1788580603368-b52b66df`
+- **Role:** `Management`
+- **Authority reference:** `decision-1788580603368-b52b66df`
+- **Subject:** Evidence-only disposition of the interrupted-r1 tree at the `0037-31` canonical integration gate and its effect on the `0037-34.01` start gate
+- **Decision:** Select `exact_evidence_retention`: retain only the exact 975-entry interrupted-r1 manifest from predecessor `6923deec89fc15575fb23047d8236a89b3fd286e`, with every exact repository-relative path, mode, type, and blob OID and root tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a`; reject every absent, extra, changed, aliased, non-regular, unbound, or generic-prefix-fallback case. This retention is evidence-only and grants no promotion, closure, Acceptance, validation-gate, or transaction credit. The original rejected run, exact valid r2 proof, candidate lineage, review history, refs, and Geordi reservation remain preserved. Policy/report-binding and adversarial test findings remain mandatory same-slot implementation repairs before integration.
+- **Technical justification:** The `0037-31` candidate `28bd8f3186f4637cdd051eb70bb76a57ef0829f8` contains an interrupted-r1 subtree outside the previously reviewed promotion scope, while immutable interrupted-run evidence must not be silently deleted. Independent measurement binds the complete canonical `git ls-tree -r` serialization to SHA-256 `0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620`, exactly 975 `100644 blob` entries, and tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a` at both `6923deec89fc15575fb23047d8236a89b3fd286e` and `28bd8f3186f4637cdd051eb70bb76a57ef0829f8`. Exact tree-and-manifest binding is the smallest closed proof that preserves evidence without turning a directory prefix, count, reconstructed bytes, or unpinned predecessor equality into shared promotion authority. Data's distinct pre-mutation review at assignment `1788581652660-b2c6bd14` confirms that boundary; Geordi findings `I31-POL-002` and `I31-POL-003` show why current report binding and tests cannot be waived.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Retain the exact interrupted-r1 evidence tree under a closed path/mode/type/blob manifest and exact root-tree binding
+    - **Disposition:** `selected`
+    - **Reason:** This preserves immutable rejected/interrupted evidence while limiting shared promotion-policy reach to one independently measured set and withholding all promotion and closure credit.
+  - **ALT-02:** Exclude the interrupted-r1 tree from the candidate
+    - **Disposition:** `rejected`
+    - **Reason:** Exclusion would require a separate exact retention, recovery, and authorized tree-removal disposition; without it, removal risks losing required interrupted-run evidence and does not cure the independent report-binding or test defects.
+- **Consequences:**
+  - **CON-01:** The authorized allow-set is exactly the 975-entry manifest encoded by tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a` at `6923deec89fc15575fb23047d8236a89b3fd286e`, including every exact path, `100644` mode, `blob` type, and blob OID; the prefix alone authorizes nothing.
+  - **CON-02:** Missing, extra, changed-path, changed-mode, changed-type, changed-blob, wrong-tree, symlink, alias, path-redirection, case-folding, reconstructed-tree, count-only, or generic-prefix-fallback inputs must fail closed before promotion or canonical write.
+  - **CON-03:** Implementation may begin only after this record and Data's distinct scope review are canonical governance, through an explicit same-slot rework award on the sole active Miles2 candidate lineage; corrections append linearly and may touch only the coordinator-enumerated policy, report-binding, and test paths.
+  - **CON-04:** Validation must bind the exact current report, candidate, source/run identities, zero-blocker state, exact coverage pairs, complete 975-entry manifest, and exact root tree, and must include deterministic adjacent negatives plus exhaustive or generative set-property evidence with oracle, domain, replay input where applicable, and executed case count.
+  - **CON-05:** `I31-POL-002` (`1788580420588-7d4c6f1a`) and `I31-POL-003` (`1788580420670-756930fa`) remain blocking same-slot repair findings; a green happy path, matching tree, or this decision record does not satisfy them.
+  - **CON-06:** Recovery preserves the original rejected run, interrupted-r1 tree, valid r2 proof, candidate and predecessor refs, lineage, review and assignment history, and Geordi reservation. A failed repair stops without deleting, rewriting, force-updating, reconstructing, or pruning those records; retry remains linear on the same active candidate unless an explicit atomic same-slot supersession preserves the displaced ref and reservation.
+  - **CON-07:** The authority expires for any proposed bytes when the exact 975-entry manifest, modes/types/blob OIDs, root tree, cited decision resolution, candidate lineage, report bindings, or canonical governance ancestry no longer match. Expiry is a fail-closed loss of authorization, not permission to substitute a newer tree or prefix rule.
+  - **CON-08:** Revocation or expansion requires a later explicit, durable Management decision and a distinct pre-mutation Architect scope review before any affected gate is crossed; branch movement, new output, test success, mail, implementation convenience, or inferred intent cannot revoke or widen this record.
+  - **CON-09:** The deliberate cost is exhaustive manifest and adversarial validation plus an additional governance-before-implementation sequence. The remaining risk is limited to implementation or verifier error, which stays blocked behind exact same-slot repair, separate independent review, pinned-candidate hygiene, and the reserved Integrator's verdict.
+  - **CON-10:** No promotion, closure, Acceptance, evidence-gate, transaction, publication, release, or downstream-start credit follows from retaining r1. `0037-31` integration and `0037-34.01` start remain blocked until the repaired candidate independently proves every binding condition and is canonically integrated.
+- **Affected work units:**
+  - `task:0037-31`
+  - `task:0037-34.01`
+  - `path:_src/output/issue-migration/0037-31-promoted-dispositions-20260904-r1/`
+  - `path:_src/tools/issue_integration_policy.py`
+  - `path:_src/tests/test_issue_integration_policy.py`
+  - `path:provenance/migrations/issue-store/0037-31-final-frozen-candidate.json`
+  - `path:provenance/migrations/issue-store/0037-31-final-frozen-candidate.md`
+  - `path:docs/dossiers/0037-31-final-frozen-migration-20260904.md`
+- **Affected gates:**
+  - `integration:0037-31`
+  - `task-start:0037-34.01`
+  - `validation:_src/tools/issue_integration_policy.py`
+  - `validation:_src/tests/test_issue_integration_policy.py`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:architect:0037-31:1788581652660-b2c6bd14`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Distinct pre-mutation scope review independently derived the exact 975-entry path/mode/type/blob manifest and root tree, rejected prefix fallback and all set mutations, preserved evidence and lineage, and withheld promotion and closure credit.
+  - **PART-02:**
+    - **Identity:** `agent:geordi:integrator:0037-31:1788582224009-8374ead9`
+    - **Role:** `Integrator`
+    - **Participation:** `reviewed`
+    - **Position:** `no-position`
+    - **Note:** Independent integration review identified the missing complete decision record as `I31-GOV-001` and retained separate blocking report-binding and test findings; this participation records the review evidence and does not convert it into decision authority.
+- **Waiver:** `none`
