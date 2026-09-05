@@ -357,7 +357,12 @@ class HermeticRelatedSuiteTests(unittest.TestCase):
 
 class BootstrapRefreshTests(RegenerationFixture):
     def test_refresh_checks_all_three_shared_projections_without_persistent_write(self):
+        # DEC-0037-037: the lists-side catalog item is REQUIRED to carry a
+        # "labels" field (views omits it by design); self.repo/"issues" is
+        # empty here so the independently-derived canonical labels default
+        # to [] for every id, matching this fixture's [] below.
         catalog = {"items": [{"id": "0037", "state": "open"}], "generation_id": "sha256:x"}
+        list_catalog = {"items": [{"id": "0037", "state": "open", "labels": []}], "generation_id": "sha256:x"}
         graph = {"nodes": [{"id": "0037"}], "edges": [], "generation_id": "sha256:y"}
         groups = {"open": [catalog["items"][0]], "blocked": []}
         documents = {
@@ -366,7 +371,7 @@ class BootstrapRefreshTests(RegenerationFixture):
         }
         validation = {"exit_code": 0, "item_count": 1, "diagnostics": []}
         with mock.patch.object(regen.views, "render", return_value=(catalog, graph)), \
-             mock.patch.object(regen.lists, "render_lists", return_value=(catalog, groups, documents)), \
+             mock.patch.object(regen.lists, "render_lists", return_value=(list_catalog, groups, documents)), \
              mock.patch.object(regen, "_validate_payload", return_value=validation):
             result = regen.bootstrap_refresh(repo=self.repo, output_root=None, write=False)
         self.assertEqual(result["status"], "PASS")
@@ -395,6 +400,277 @@ class BootstrapRefreshTests(RegenerationFixture):
         self.assertFalse(second["changed"])
         self.assertTrue((self.target / "lists/TODO.md").is_file())
         self.assertFalse((self.repo / "TODO.md").exists())
+
+
+class BootstrapCatalogAgreementTests(RegenerationFixture):
+    """DEC-0037-037: representation-correct IR1030 comparison.
+
+    AE binding:
+    - baseline: eeb4dafc8f12c80e2d656f058e00ae2ace8bca0f (naive `!=` compare
+      on full item dicts; raises IR1030 on any labels-only difference)
+    - candidate: the carrying commit containing this test (exact ordered
+      identity/membership/multiplicity check, non-label field equality, and
+      independently-derived canonical-label equality for both sides)
+    - falsification: ``test_labels_only_difference_red_on_baseline_green_on_candidate``
+      loads the real baseline source via `git show` and proves it raises
+      IR1030 on a fixture whose only difference is a "labels" key, while the
+      candidate does not.
+    - adjacent cases: wrong label content, missing/extra/duplicate/reordered
+      identity, non-label field disagreement, a list item missing the
+      required labels field, a view item whose own (defensively present)
+      labels disagree with canonical, canonical-absence treated as [], and
+      input immutability -- eight distinct neighboring dimensions.
+    """
+
+    def _basic_catalogs(self, view_extra=None, list_extra=None, canonical_by_id=None):
+        view_item = {"id": "X", "state": "open", "title": "T"}
+        if view_extra:
+            view_item.update(view_extra)
+        list_item = {"id": "X", "state": "open", "title": "T", "labels": []}
+        if list_extra:
+            list_item.update(list_extra)
+        catalog = {"items": [view_item]}
+        rendered_catalog = {"items": [list_item]}
+        return catalog, rendered_catalog
+
+    def _load_store_returning(self, canonical_by_id):
+        parsed = [{"item": {"id": item_id, "labels": labels}} for item_id, labels in canonical_by_id.items()]
+        return mock.patch.object(regen.views, "load_store", return_value=(parsed, [], []))
+
+    def test_labels_only_difference_red_on_baseline_green_on_candidate(self):
+        # Extract the whole _src/tools/ tree as it existed at the pre-repair
+        # baseline commit (not just the single file) so the baseline
+        # module's own internal _load("issue_validate", ...) sibling
+        # lookups resolve against real, contemporaneous sibling sources
+        # rather than a bare, dependency-less copy.
+        with tempfile.TemporaryDirectory(dir="/private/tmp") as temp:
+            temp_path = Path(temp)
+            archive = subprocess.run(
+                ["git", "archive", "eeb4dafc8f12c80e2d656f058e00ae2ace8bca0f", "_src/tools"],
+                cwd=ROOT, capture_output=True, check=True,
+            ).stdout
+            extract = subprocess.run(
+                ["tar", "-x", "-C", str(temp_path)], input=archive, capture_output=True, check=True,
+            )
+            self.assertEqual(extract.returncode, 0)
+            baseline_path = temp_path / "_src/tools/issue_regenerate.py"
+            self.assertTrue(baseline_path.is_file())
+            spec = importlib.util.spec_from_file_location("issue_regenerate_baseline", baseline_path)
+            old_regen = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(old_regen)
+
+        view_catalog = {"items": [{"id": "X", "state": "open"}]}
+        list_catalog = {"items": [{"id": "X", "state": "open", "labels": []}]}
+        validation = {"exit_code": 0, "item_count": 1, "diagnostics": []}
+        documents = {key: "" for key in ("todo", "done", "open", "blocked", "unclear", "owners")}
+        groups = {"open": [], "blocked": []}
+
+        with mock.patch.object(old_regen.views, "render", return_value=(view_catalog, {})), \
+             mock.patch.object(old_regen.lists, "render_lists", return_value=(list_catalog, groups, documents)), \
+             mock.patch.object(old_regen, "_validate_payload", return_value=validation):
+            with self.assertRaises(old_regen.RegenerateError) as raised:
+                old_regen.bootstrap_refresh(repo=self.repo, output_root=None, write=False)
+            self.assertEqual(raised.exception.code, "IR1030")
+
+        with mock.patch.object(regen.views, "render", return_value=(view_catalog, {})), \
+             mock.patch.object(regen.lists, "render_lists", return_value=(list_catalog, groups, documents)), \
+             mock.patch.object(regen, "_validate_payload", return_value=validation):
+            result = regen.bootstrap_refresh(repo=self.repo, output_root=None, write=False)
+        self.assertEqual(result["status"], "PASS")
+
+    def test_wrong_label_content_on_list_side_blocks(self):
+        catalog, rendered_catalog = self._basic_catalogs(list_extra={"labels": ["wrong"]})
+        with self._load_store_returning({"X": []}):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+            self.assertEqual(raised.exception.code, "IR1030")
+
+    def test_missing_extra_duplicate_reordered_identity_blocks(self):
+        base_view = {"items": [{"id": "A", "state": "open"}, {"id": "B", "state": "open"}]}
+        base_list = {"items": [
+            {"id": "A", "state": "open", "labels": []},
+            {"id": "B", "state": "open", "labels": []},
+        ]}
+        cases = {
+            "missing": {"items": base_list["items"][:1]},
+            "extra": {"items": base_list["items"] + [{"id": "C", "state": "open", "labels": []}]},
+            "duplicate": {"items": [base_list["items"][0], base_list["items"][0]]},
+            "reordered": {"items": list(reversed(base_list["items"]))},
+        }
+        with self._load_store_returning({"A": [], "B": [], "C": []}):
+            for name, rendered_catalog in cases.items():
+                with self.subTest(case=name):
+                    with self.assertRaises(regen.RegenerateError) as raised:
+                        regen._verify_bootstrap_catalog_agreement(base_view, rendered_catalog, self.repo / "issues", self.repo)
+                    self.assertEqual(raised.exception.code, "IR1030")
+
+    def test_non_label_field_disagreement_blocks(self):
+        catalog, rendered_catalog = self._basic_catalogs(list_extra={"state": "closed"})
+        with self._load_store_returning({"X": []}):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+            self.assertEqual(raised.exception.code, "IR1030")
+
+    def test_list_item_missing_required_labels_field_blocks(self):
+        catalog = {"items": [{"id": "X", "state": "open"}]}
+        rendered_catalog = {"items": [{"id": "X", "state": "open"}]}  # no "labels" key at all
+        with self._load_store_returning({"X": []}):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+            self.assertEqual(raised.exception.code, "IR1030")
+
+    def test_view_side_labels_when_present_must_also_match_canonical(self):
+        catalog, rendered_catalog = self._basic_catalogs(view_extra={"labels": ["wrong"]})
+        with self._load_store_returning({"X": []}):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+            self.assertEqual(raised.exception.code, "IR1030")
+        # A view that correctly carries the SAME labels as canonical must not block.
+        catalog2, rendered_catalog2 = self._basic_catalogs(view_extra={"labels": ["a"]}, list_extra={"labels": ["a"]})
+        with self._load_store_returning({"X": ["a"]}):
+            regen._verify_bootstrap_catalog_agreement(catalog2, rendered_catalog2, self.repo / "issues", self.repo)
+
+    def test_canonical_absence_is_treated_as_empty_list(self):
+        catalog, rendered_catalog = self._basic_catalogs()
+        with mock.patch.object(regen.views, "load_store", return_value=([{"item": {"id": "X"}}], [], [])):
+            regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+
+    def test_comparison_does_not_mutate_inputs(self):
+        catalog, rendered_catalog = self._basic_catalogs()
+        import copy
+        before_catalog = copy.deepcopy(catalog)
+        before_rendered = copy.deepcopy(rendered_catalog)
+        with self._load_store_returning({"X": []}):
+            regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
+        self.assertEqual(catalog, before_catalog)
+        self.assertEqual(rendered_catalog, before_rendered)
+
+
+class BootstrapCatalogLabelOracleHelpers:
+    """Independent oracle for DEC-0037-037, derived from the decision text
+    (not from `_verify_bootstrap_catalog_agreement`'s own code path)."""
+
+    @staticmethod
+    def expected_outcome(canonical, observed_list_labels, view_has_labels, shared_state):
+        if shared_state != "same":
+            return "IR1030"
+        if list(observed_list_labels) != list(canonical):
+            return "IR1030"
+        # view_has_labels is deliberately constructed to always mirror
+        # canonical exactly (see the test's construction of view_item
+        # below); its role in this oracle is only to prove presence of a
+        # *correct* view-side labels array never blocks, independent of the
+        # observed-vs-canonical mismatch already covered by the dimension
+        # above. It never contributes an IR1030 outcome by itself.
+        return "PASS"
+
+
+class BootstrapCatalogLabelOracleTests(unittest.TestCase):
+    def test_exhaustive_392_case_label_and_shared_field_oracle(self):
+        """AE-5: 7 canonical-label arrays x 7 observed-label variants x 2
+        view-label-presence states x 4 shared-field states = 392 real,
+        independently-oracled, executed cases."""
+        canonicals = [
+            [], ["a"], ["a", "b"], ["b", "a"], ["a", "a"], ["a", "b", "c"], ["owner-tom"],
+        ]
+
+        def observed_variants(canonical):
+            same = list(canonical)
+            empty = []
+            reordered = list(reversed(canonical)) if len(canonical) > 1 else list(canonical)
+            missing_one = canonical[:-1] if canonical else []
+            extra_one = canonical + ["extra"]
+            duplicated = canonical + canonical[:1] if canonical else ["dup"]
+            disjoint = ["zzz_different"]
+            return [same, empty, reordered, missing_one, extra_one, duplicated, disjoint]
+
+        view_states = (False, True)
+        shared_states = ("same", "value_diff", "missing_key", "extra_key")
+
+        case_count = 0
+        for canonical in canonicals:
+            with mock.patch.object(regen.views, "load_store", return_value=([{"item": {"id": "X", "labels": canonical}}], [], [])):
+                for observed in observed_variants(canonical):
+                    for view_has_labels in view_states:
+                        for shared_state in shared_states:
+                            case_count += 1
+                            base_view = {"id": "X", "state": "open", "title": "T"}
+                            base_list = dict(base_view)
+                            if shared_state == "value_diff":
+                                base_list["state"] = "closed"
+                            elif shared_state == "missing_key":
+                                del base_list["title"]
+                            elif shared_state == "extra_key":
+                                base_list["extra_field"] = "surprise"
+                            view_item = dict(base_view)
+                            if view_has_labels:
+                                view_item["labels"] = list(canonical)
+                            list_item = dict(base_list)
+                            list_item["labels"] = list(observed)
+                            catalog = {"items": [view_item]}
+                            rendered_catalog = {"items": [list_item]}
+
+                            expected = BootstrapCatalogLabelOracleHelpers.expected_outcome(
+                                canonical, observed, view_has_labels, shared_state,
+                            )
+                            with self.subTest(canonical=canonical, observed=observed,
+                                               view_has_labels=view_has_labels, shared_state=shared_state):
+                                if expected == "IR1030":
+                                    with self.assertRaises(regen.RegenerateError) as raised:
+                                        regen._verify_bootstrap_catalog_agreement(
+                                            catalog, rendered_catalog, Path("/nonexistent-unused"), Path("/nonexistent-unused"),
+                                        )
+                                    self.assertEqual(raised.exception.code, "IR1030")
+                                else:
+                                    regen._verify_bootstrap_catalog_agreement(
+                                        catalog, rendered_catalog, Path("/nonexistent-unused"), Path("/nonexistent-unused"),
+                                    )
+        self.assertEqual(case_count, 392)
+
+
+class RealFrozenBaselineBootstrapTests(unittest.TestCase):
+    def test_frozen_real_551_item_baseline_labels_only_difference_progresses_to_real_ir1031(self):
+        """Real (unmocked) views.render/lists.render_lists/_validate_payload
+        against this worktree's actual frozen issues/ tree: the genuine,
+        real, labels-only IR1030 difference no longer blocks, and execution
+        correctly reaches the real (still-red) IR1031 canonical validation."""
+        with self.assertRaises(regen.RegenerateError) as raised:
+            regen.bootstrap_refresh(repo=ROOT, output_root=None, write=False)
+        self.assertEqual(raised.exception.code, "IR1031")
+
+    def test_frozen_real_241_multiset_equals_244_multiset_minus_exactly_three_iv0901(self):
+        """Independently reproduces the DEC-0037-037 technical justification
+        by content (multiset equality with multiplicity), not by trusting an
+        externally-recorded, undocumented-serialization digest literal."""
+        from dataclasses import asdict
+        from collections import Counter
+
+        diag_244, _ = regen.iv.validate(
+            repo=ROOT, source="working-tree", root=ROOT / "issues",
+            compare_head=False, provenance_root=ROOT / "provenance",
+        )
+        diag_241, _ = regen.iv.validate(
+            repo=ROOT, source="working-tree", root=ROOT / "issues",
+            compare_head=False, provenance_root=None,
+        )
+        self.assertEqual(len(diag_244), 244)
+        self.assertEqual(len(diag_241), 241)
+
+        def key(d):
+            return json.dumps(asdict(d), sort_keys=True)
+
+        d244 = [asdict(d) for d in diag_244]
+        iv0901 = [d for d in d244 if d["rule"] == "IV0901"]
+        self.assertEqual(len(iv0901), 3)
+
+        c244 = Counter(json.dumps(d, sort_keys=True) for d in d244)
+        c_iv0901 = Counter(json.dumps(d, sort_keys=True) for d in iv0901)
+        c241 = Counter(key(d) for d in diag_241)
+
+        expected_241 = c244.copy()
+        expected_241.subtract(c_iv0901)
+        expected_241 = +expected_241  # drop zero/negative counts
+        self.assertEqual(expected_241, c241)
 
 
 class AuthorityMatrixTests(RegenerationFixture):

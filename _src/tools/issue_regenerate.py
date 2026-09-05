@@ -685,6 +685,96 @@ def execute(
         )
 
 
+def _first_diff_index(left: List[Any], right: List[Any]) -> Optional[int]:
+    for index, (l_value, r_value) in enumerate(zip(left, right)):
+        if l_value != r_value:
+            return index
+    if len(left) != len(right):
+        return min(len(left), len(right))
+    return None
+
+
+def _canonical_labels_by_id(issues_root: Path, repository_root: Path) -> Dict[str, List[str]]:
+    """Independently derive each item's canonical labels straight from the
+    parsed issue store (views.load_store), never from the views or lists
+    rendering paths -- so the comparison below cannot circularly trust
+    either side it is checking. Absence of a labels field on the parsed
+    record is treated as an empty list (DEC-0037-037: "absence=>[]")."""
+    parsed, _malformed, _sources = views.load_store(issues_root, repository_root)
+    canonical: Dict[str, List[str]] = {}
+    for value in parsed:
+        canonical[value["item"]["id"]] = list(value["item"].get("labels") or [])
+    return canonical
+
+
+def _verify_bootstrap_catalog_agreement(
+    catalog: Mapping[str, Any],
+    rendered_catalog: Mapping[str, Any],
+    issues_root: Path,
+    repository_root: Path,
+) -> None:
+    """Representation-correct IR1030 comparison (DEC-0037-037 / ALT-01,
+    Architect scope 1788622388397-a0f0f9a3). Real difference classes are
+    still fail-closed: wrong labels, any non-label difference, missing or
+    extra items, identity mismatch, reordering, and duplication all raise
+    IR1030. Only a *labels-only* difference between the views and lists
+    representations -- each independently correct against canonical issue
+    labels -- is not an error, because that is the two renderers' genuine,
+    intended division of responsibility (views omits labels; lists carries
+    them), not a defect.
+
+    Never uses set()/sorted()/dedup on the id sequence (would hide
+    reordering, duplication, or multiplicity changes) and never zips before
+    proving equal length/order (would silently truncate on a real
+    cardinality mismatch instead of raising)."""
+    view_items = catalog.get("items") or []
+    list_items = rendered_catalog.get("items") or []
+
+    view_ids = [item.get("id") for item in view_items]
+    list_ids = [item.get("id") for item in list_items]
+    if view_ids != list_ids:
+        raise RegenerateError(
+            "IR1030",
+            "view/list catalog identity, order, or multiplicity mismatch: "
+            f"views has {len(view_ids)} item id(s), lists has {len(list_ids)} item id(s); "
+            f"first divergence at index {_first_diff_index(view_ids, list_ids)}",
+        )
+
+    canonical = _canonical_labels_by_id(issues_root, repository_root)
+
+    # Lengths and order already proven equal above; zip here cannot hide a
+    # real cardinality mismatch.
+    for index, (view_item, list_item) in enumerate(zip(view_items, list_items)):
+        item_id = view_item.get("id")
+        view_rest = {key: value for key, value in view_item.items() if key != "labels"}
+        list_rest = {key: value for key, value in list_item.items() if key != "labels"}
+        if view_rest != list_rest:
+            raise RegenerateError(
+                "IR1030",
+                f"view/list catalog non-label field disagreement for item {item_id!r} at index {index}",
+            )
+        canonical_labels = canonical.get(item_id, [])
+        if "labels" not in list_item:
+            raise RegenerateError(
+                "IR1030", f"lists catalog item {item_id!r} at index {index} is missing the required labels field"
+            )
+        observed_list_labels = list(list_item["labels"])
+        if observed_list_labels != canonical_labels:
+            raise RegenerateError(
+                "IR1030",
+                f"lists catalog labels for item {item_id!r} do not exactly equal canonical labels "
+                f"(order/multiplicity-sensitive): observed {observed_list_labels!r}, canonical {canonical_labels!r}",
+            )
+        if "labels" in view_item:
+            observed_view_labels = list(view_item["labels"])
+            if observed_view_labels != canonical_labels:
+                raise RegenerateError(
+                    "IR1030",
+                    f"views catalog labels for item {item_id!r} do not exactly equal canonical labels: "
+                    f"observed {observed_view_labels!r}, canonical {canonical_labels!r}",
+                )
+
+
 def bootstrap_refresh(
     *, repo: Path, output_root: Optional[Path], write: bool
 ) -> Dict[str, Any]:
@@ -692,8 +782,7 @@ def bootstrap_refresh(
     selector = load_selector(repo)
     catalog, graph = views.render(repo / "issues", repo)
     rendered_catalog, groups, documents = lists.render_lists(repo / "issues", repo)
-    if rendered_catalog.get("items") != catalog.get("items"):
-        raise RegenerateError("IR1030", "view/list catalog disagreement")
+    _verify_bootstrap_catalog_agreement(catalog, rendered_catalog, repo / "issues", repo)
     validation = _validate_payload(repo, include_provenance=False)
     if validation.get("exit_code") != 0:
         raise RegenerateError("IR1031", "bootstrap refresh canonical validation failed")
