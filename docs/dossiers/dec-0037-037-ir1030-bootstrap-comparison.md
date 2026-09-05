@@ -2,7 +2,7 @@
 
 - **Record format:** `decision-record@v1`
 - **Recorded at:** `2026-09-05T17:41:21+02:00`
-- **Deciding identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Deciding identity:** `agent:supervisor:0037-35.01:20260905T154121Z`
 - **Role:** `Management`
 - **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
 - **Subject:** Representation-correct repair of the cross-item `IR1030` bootstrap catalog/list comparison and bounded treatment of the associated `IR1031` no-provenance validation control for Task `0037-35.01`.
@@ -47,5 +47,43 @@
     - **Role:** `Architekt`
     - **Participation:** `reviewed`
     - **Position:** `supports`
-    - **Note:** Accepted scope review `1788622388397-a0f0f9a3`, results `1788622540833-9e46d191`, `1788622571215-9c8a9d3e`, `1788622571247-6d06d1de`, and `1788622540894-4389869a`, bounds callers to `bootstrap_refresh` and inherited `issuectl.cmd_bootstrap`; compares exact ordered identities, lengths, non-label key sets and recursive values; derives every list/view label array from canonical issue labels; retains `IR1030` for every other mismatch; and requires baseline-red/candidate-green real fixtures plus 392 exhaustive cases from seven canonical-label arrays by seven observed arrays by two view-label-presence states by four shared-field states, with adjacent absent/empty, forged/reordered, missing/extra/duplicate identity, malformed source, nested-change, immutability, real eight-output write/check/no-op, and exact 241-as-244-minus-three `IV0901` evidence. No fourth source file, bypass, threshold change, or waiver is supported.
+    - **Note:** The accepted read-only scope review bounded the repair to three paths, specified exact ordered comparison and canonical-label semantics, defined the exhaustive 392-case oracle, and retained the full `IR1031` red control and downstream thresholds.
 - **Waiver:** `none`
+
+#### `DEC-0037-037-C001`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0037-037`
+- **Recorded at:** `2026-09-05T17:51:00+02:00`
+- **Correcting identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Role:** `Management`
+- **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Correction reason:** The base record attributed the decision to the coordinating supervisor instead of the durable Management resolver recorded by the decision archive.
+- **Target field:** `Deciding identity`
+- **Previous effective block SHA-256:** `7ecb66076b328f47035c73e524a7f2090afa72fb2c68583163620ab192ee4bf5`
+- **Replacement block:**
+  ```markdown
+  - **Deciding identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+  ```
+
+#### `DEC-0037-037-C002`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0037-037`
+- **Recorded at:** `2026-09-05T17:51:01+02:00`
+- **Correcting identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Role:** `Management`
+- **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Correction reason:** The base participation note summarized the accepted Architect review but did not bind its exact result records, callers, comparison contract, exhaustive domain, adjacent cases, and validation boundaries.
+- **Target field:** `Review participation`
+- **Previous effective block SHA-256:** `927f9f9c3451880c80935abf78bf7ddda7dfecf9d92b0d6c5f8b6ddbe826f057`
+- **Replacement block:**
+  ```markdown
+  - **Review participation:**
+    - **PART-01:**
+      - **Identity:** `agent:data:0037-35.01:1788622388397-a0f0f9a3`
+      - **Role:** `Architekt`
+      - **Participation:** `reviewed`
+      - **Position:** `supports`
+      - **Note:** Accepted scope review `1788622388397-a0f0f9a3`, results `1788622540833-9e46d191`, `1788622571215-9c8a9d3e`, `1788622571247-6d06d1de`, and `1788622540894-4389869a`, bounds callers to `bootstrap_refresh` and inherited `issuectl.cmd_bootstrap`; compares exact ordered identities, lengths, non-label key sets and recursive values; derives every list/view label array from canonical issue labels; retains `IR1030` for every other mismatch; and requires baseline-red/candidate-green real fixtures plus 392 exhaustive cases from seven canonical-label arrays by seven observed arrays by two view-label-presence states by four shared-field states, with adjacent absent/empty, forged/reordered, missing/extra/duplicate identity, malformed source, nested-change, immutability, real eight-output write/check/no-op, and exact 241-as-244-minus-three `IV0901` evidence. No fourth source file, bypass, threshold change, or waiver is supported.
+  ```
