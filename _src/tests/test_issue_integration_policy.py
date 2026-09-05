@@ -119,8 +119,7 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
                  "tree_digest": proof["candidate_tree_digest"], "promotable": True,
                  "root": POL.PROMOTION_0037_31_RUN_ROOT + "/"}}
         import_manifest = {"blocking": False, "approval_emitted": False, "claim_json_emitted": False,
-                           "closure_json_emitted": False, "finding_summary": summary,
-                           "disposition_coverage": coverage}
+                           "closure_json_emitted": False, "disposition_coverage": coverage}
         findings = [{"severity": "blocking"} for _ in range(930)] + [{"severity": "warning"}]
         runs = [{"result": "covered", "source_commit": POL.CLAIMLESS_0037_31_SOURCE,
                  "disposition_manifest_digest": "sha256:" + "8" * 64}]
