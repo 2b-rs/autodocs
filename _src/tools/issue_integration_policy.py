@@ -79,6 +79,10 @@ PROMOTION_0037_31_EVIDENCE = frozenset({
     PROMOTION_0037_31_AUTHORITY,
     PROMOTION_0037_31_DISPOSITIONS,
 })
+PROMOTION_0037_31_GOVERNANCE = frozenset({
+    "docs/dossiers/0037-31-promotion-policy-scope-review-20260904.md",
+    "docs/dossiers/dec-0037-035-promotion-policy-proof-extension.md",
+})
 PROMOTION_0037_31_FILES = frozenset({
     "_src/tools/issue_import_legacy.py", "_src/tests/test_issue_import_legacy.py",
     "_src/tools/issue_integration_policy.py", "_src/tests/test_issue_integration_policy.py",
@@ -416,7 +420,7 @@ def _promotion_authority_valid(candidate_root: Path, candidate: str, disposition
     return len(set(expected_canonical)) == 930 and sorted(canonical) == sorted(expected_canonical)
 
 
-def _promotion_0037_31_proof(
+def _promotion_0037_31_proof_uncached(
     candidate_root: Path, candidate: str, relative: str, changed_files: Set[str]
 ) -> Optional[bool]:
     """Validate DEC-0037-035's separate, exact, closed promotion proof.
@@ -430,7 +434,7 @@ def _promotion_0037_31_proof(
     promotion = manifest.get("promotion")
     if not isinstance(promotion, dict) or "policy_proof" not in promotion:
         return None
-    if relative not in PROMOTION_0037_31_EVIDENCE:
+    if relative not in PROMOTION_0037_31_EVIDENCE | PROMOTION_0037_31_GOVERNANCE:
         return False
     proof = promotion.get("policy_proof")
     expected_keys = {
@@ -463,10 +467,21 @@ def _promotion_0037_31_proof(
     }
     if any(proof.get(key) != value for key, value in expected.items()):
         return False
-    normalized = [_canonical_promotion_path(path) for path in changed_files]
+    canonical_delta = subprocess.run(
+        ["git", "diff", "--name-only", PROMOTION_0037_31_CANONICAL_BASE, candidate],
+        cwd=candidate_root, capture_output=True, text=True,
+    )
+    if canonical_delta.returncode != 0:
+        return False
+    canonical_files = {line for line in canonical_delta.stdout.splitlines() if line}
+    normalized = [_canonical_promotion_path(path) for path in canonical_files]
     if any(path is None for path in normalized) or len(normalized) != len(set(normalized)):
         return False
     changed = set(normalized)
+    if relative in PROMOTION_0037_31_GOVERNANCE:
+        if (_candidate_blob_sha256(candidate_root, candidate, relative) !=
+                _candidate_blob_sha256(candidate_root, PROMOTION_0037_31_CANONICAL_BASE, relative)):
+            return False
     if proof.get("changed_paths") != sorted(changed):
         return False
     if proof.get("evidence_paths") != sorted(PROMOTION_0037_31_EVIDENCE):
@@ -552,6 +567,21 @@ def _promotion_0037_31_proof(
     if import_manifest.get("blocking") is not False or any(import_manifest.get(key) is not False for key in ("approval_emitted", "claim_json_emitted", "closure_json_emitted")):
         return False
     return _promotion_authority_valid(candidate_root, candidate, disposition)
+
+_PROMOTION_PROOF_CACHE: Dict[tuple[str, str, tuple[str, ...]], Optional[bool]] = {}
+
+def _promotion_0037_31_proof(
+    candidate_root: Path, candidate: str, relative: str, changed_files: Set[str]
+) -> Optional[bool]:
+    key = (str(candidate_root.resolve()), candidate, tuple(sorted(changed_files)))
+    if key not in _PROMOTION_PROOF_CACHE:
+        _PROMOTION_PROOF_CACHE[key] = _promotion_0037_31_proof_uncached(
+            candidate_root, candidate, relative, changed_files
+        )
+    result = _PROMOTION_PROOF_CACHE[key]
+    if result is True and relative not in PROMOTION_0037_31_EVIDENCE | PROMOTION_0037_31_GOVERNANCE:
+        return False
+    return result
 
 def frozen_authority_proof(
     candidate_root: Path, candidate: str, relative: str,

@@ -175,8 +175,11 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
             if path.startswith(POL.PROMOTION_0037_31_RETAINED_RUN_ROOT + "/"):
                 return "f" * 64
             return digests.get(path)
+        POL._PROMOTION_PROOF_CACHE.clear()
+        canonical = mock.Mock(returncode=0, stdout="\n".join(sorted(changed)) + "\n")
         with mock.patch.object(POL, "_candidate_json", side_effect=candidate_json), \
              mock.patch.object(POL, "_candidate_blob", side_effect=candidate_blob), \
+             mock.patch.object(POL.subprocess, "run", return_value=canonical), \
              mock.patch.object(POL, "_candidate_blob_sha256", side_effect=candidate_digest), \
              mock.patch.object(POL, "_regular_candidate_blob", return_value=True), \
              mock.patch.object(POL, "_promotion_authority_valid", return_value=True):
@@ -214,6 +217,7 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
 
     def test_recognized_invalid_promotion_never_falls_back_to_historical_proof(self):
         manifest = {"promotion": {"policy_proof": {}}}
+        POL._PROMOTION_PROOF_CACHE.clear()
         with mock.patch.object(POL, "_candidate_json", return_value=manifest), \
              mock.patch.object(POL, "_claimless_0037_31_proof", return_value=True):
             self.assertIs(False, POL.frozen_authority_proof(
