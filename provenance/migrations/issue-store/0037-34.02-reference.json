@@ -57,6 +57,68 @@
     "decision-0037-34-02-frozen-reference-semantics-20260905",
     "decision-0037-34-02-reference-resolution-correction-20260905"
   ],
+  "integrator_receipts": {
+    "mandatory_candidate_hygiene_receipts": [
+      {
+        "git_status": "clean",
+        "phase": "pre-commit",
+        "unstaged_changes_count": 0,
+        "untracked_files_count": 0,
+        "verification": "pass",
+        "worktree_path": "/private/tmp/autodocs-worktrees/0037-31-final-frozen-migration-gate-rework-r1-lore"
+      }
+    ],
+    "root_ff_only_ancestry_receipts": [
+      {
+        "ancestry_verified": true,
+        "commit_oid": "b9149771c01e21acd893783e25026d9947b9e985",
+        "merge_base": "36b349fb86c9aa5579f46d89bea73096af35ad11",
+        "merge_strategy": "ff-only",
+        "parent_oid": "36b349fb86c9aa5579f46d89bea73096af35ad11"
+      },
+      {
+        "ancestry_verified": true,
+        "commit_oid": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+        "merge_base": "b9149771c01e21acd893783e25026d9947b9e985",
+        "merge_strategy": "ff-only",
+        "parent_oid": "b9149771c01e21acd893783e25026d9947b9e985"
+      }
+    ],
+    "root_preflight_receipts": [
+      {
+        "notes": "Post-hoc verification confirming signature, clean tree cff4f993, and frozen selector digest",
+        "status": "valid",
+        "target_commit": "b9149771c01e21acd893783e25026d9947b9e985",
+        "timing": "post_hoc_verification"
+      },
+      {
+        "notes": "Post-hoc verification confirming single-file delta (0037-34.02-reference.json), signature, and transaction ref alignment",
+        "status": "valid",
+        "target_commit": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+        "timing": "post_hoc_verification"
+      }
+    ],
+    "transaction_cas_receipts": [
+      {
+        "action": "git update-ref refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95 b9149771 36b349fb",
+        "nature": "atomic_cas",
+        "new_oid": "b9149771c01e21acd893783e25026d9947b9e985",
+        "old_oid": "36b349fb86c9aa5579f46d89bea73096af35ad11",
+        "result": "success",
+        "sequence": 1,
+        "target_ref": "refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95"
+      },
+      {
+        "action": "git update-ref refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95 22de9468 b9149771",
+        "nature": "atomic_cas",
+        "new_oid": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+        "old_oid": "b9149771c01e21acd893783e25026d9947b9e985",
+        "result": "success",
+        "sequence": 2,
+        "target_ref": "refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95"
+      }
+    ]
+  },
   "logical_dispositions": {
     "0037-32": {
       "acceptance_granted": false,
@@ -87,6 +149,143 @@
       "start_gate_satisfied": true
     }
   },
+  "negative_matrix": [
+    {
+      "case_id": "NEG-01",
+      "description": "Commit signed by invalid/untrusted key or signature verification error",
+      "expected": "BLOCKED",
+      "name": "invalid signature",
+      "observed": "BLOCKED",
+      "stable_reason": "Signature verification failed: untrusted signer or signature corrupted",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-02",
+      "description": "Approval marked with validity revoked/stale",
+      "expected": "BLOCKED",
+      "name": "stale/revoked approval condition",
+      "observed": "BLOCKED",
+      "stable_reason": "Stale/revoked approval condition for process: validity=revoked",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-03",
+      "description": "Approval keys replaced with wrong purpose names",
+      "expected": "BLOCKED",
+      "name": "wrong-purpose approval",
+      "observed": "BLOCKED",
+      "stable_reason": "Wrong approval purposes: expected ['process', 'release', 'security-privacy'], got ['finance', 'release', 'security-privacy']",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-04",
+      "description": "Approval commit OID modified to unapproved commit",
+      "expected": "BLOCKED",
+      "name": "wrong approval ref/OID",
+      "observed": "BLOCKED",
+      "stable_reason": "Wrong approval commit_oid for release: expected 88e3cdd8e7a32fe2233fb9d27f07e24b4d03954c, got 1111111111111111111111111111111111111111",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-05",
+      "description": "Control commit set to unauthorized base commit",
+      "expected": "BLOCKED",
+      "name": "wrong base/lineage",
+      "observed": "BLOCKED",
+      "stable_reason": "Wrong control_commit: 0000000000000000000000000000000000000000",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-06",
+      "description": "Cutover tree OID does not match atomic authority switch tree",
+      "expected": "BLOCKED",
+      "name": "wrong cutover tree",
+      "observed": "BLOCKED",
+      "stable_reason": "Wrong cutover tree_oid: badtree000000000000000000000000000000000",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-07",
+      "description": "Frozen selector digest does not match exact frozen workflow digest",
+      "expected": "BLOCKED",
+      "name": "selector digest drift",
+      "observed": "BLOCKED",
+      "stable_reason": "Selector digest drift: expected sha256:13b516474ee10827f8d1364c7c43f74ef80adfbf7b1e92f072dea8531f2b7ee0, got sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-08",
+      "description": "Predecessor sequence number drifted from 1",
+      "expected": "BLOCKED",
+      "name": "predecessor sequence drift",
+      "observed": "BLOCKED",
+      "stable_reason": "Predecessor sequence drift: expected 1, got 2",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-09",
+      "description": "Unrecognized top-level field added to reference schema",
+      "expected": "BLOCKED",
+      "name": "unknown field",
+      "observed": "BLOCKED",
+      "stable_reason": "Unknown field detected in schema: unrecognized_experimental_field",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-10",
+      "description": "Duplicate keys in serialized JSON payload",
+      "expected": "BLOCKED",
+      "name": "duplicate field",
+      "observed": "BLOCKED",
+      "stable_reason": "Duplicate field detected during JSON deserialization: schema",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-11",
+      "description": "Required field bound_package omitted",
+      "expected": "BLOCKED",
+      "name": "missing evidence/field/item",
+      "observed": "BLOCKED",
+      "stable_reason": "Missing required field(s): ['bound_package']",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-12",
+      "description": "Unauthorized item added to logical_dispositions",
+      "expected": "BLOCKED",
+      "name": "extra item",
+      "observed": "BLOCKED",
+      "stable_reason": "Extra item(s) in logical dispositions: ['0037-99']",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-13",
+      "description": "Premature acceptance_granted=True or issue_state=closed in logical_dispositions",
+      "expected": "BLOCKED",
+      "name": "Acceptance inflation",
+      "observed": "BLOCKED",
+      "stable_reason": "Acceptance inflation detected for 0037-34.02: acceptance_granted=True",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-14",
+      "description": "Required deferred closure item removed from obligations list",
+      "expected": "BLOCKED",
+      "name": "missing deferred obligation",
+      "observed": "BLOCKED",
+      "stable_reason": "Missing deferred obligation(s): ['0037-34.02']",
+      "status": "PASS"
+    },
+    {
+      "case_id": "NEG-15",
+      "description": "Mutation of canonical issues/ or TODO.md outside reference JSON",
+      "expected": "BLOCKED",
+      "name": "forbidden tree delta",
+      "observed": "BLOCKED",
+      "stable_reason": "Forbidden tree delta detected: issues/0037/0037-34.02.md was modified outside allowed scope provenance/migrations/issue-store/0037-34.02-reference.json",
+      "status": "PASS"
+    }
+  ],
   "predecessor": {
     "commit_oid": "b9149771c01e21acd893783e25026d9947b9e985",
     "sequence": 1,
@@ -101,11 +300,61 @@
     "0037-34"
   ],
   "schema": "issue-cutover-reference@v1",
+  "signature_verification_results": {
+    "cutover_commit": {
+      "commit_oid": "b9149771c01e21acd893783e25026d9947b9e985",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    },
+    "process_approval": {
+      "commit_oid": "5955b2e5c32b3698df661384d0a3567db8e93f28",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    },
+    "reference_commit_22de": {
+      "commit_oid": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    },
+    "release_approval": {
+      "commit_oid": "88e3cdd8e7a32fe2233fb9d27f07e24b4d03954c",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    },
+    "security_privacy_approval": {
+      "commit_oid": "00f972ccf45cc760e2857268b95926534490ebfe",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    }
+  },
   "signer_authority": {
     "fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
     "policy_path": "issues/_policy/allowed_signers",
     "principal": "tobias.anton@accenture.com"
   },
   "task_id": "0037-34.02",
-  "transaction_id": "0037-34.01-authority-switch-20260905"
+  "transaction_id": "0037-34.01-authority-switch-20260905",
+  "verifier_specification": {
+    "algorithm": "canonical-digest-bound-reference-verification",
+    "command": "python3 scratch/execute_reference_correction.py",
+    "environment": {
+      "allowed_signers_policy": "issues/_policy/allowed_signers",
+      "allowed_signers_sha256": "sha256:7e194c8ff111d85b37d7ec9f49ea59e37e5316a69de0714e4ad5095fb951d82c",
+      "git_version": "git version 2.50.1 (Apple Git-155)",
+      "os": "macOS-26.5.1-arm64-arm-64bit",
+      "python_version": "3.9.6"
+    },
+    "happy_path_result": {
+      "assertions_evaluated": 34,
+      "disposition_count": 4,
+      "retained_obligations_count": 6,
+      "status": "VALID"
+    },
+    "specification_id": "0037-34.02-reference-verifier@v1"
+  }
 }
