@@ -4,13 +4,15 @@ You are an AGENT. This file defines the current collaboration and Task-bookkeepi
 
 ## Current authority
 
-Until Feature `0037` completes its authorized cutover, `TODO.md` and `DONE.md` are the authoritative backlog and `TODO-<agent-id>.md` files are active coordination claims. Marker, prerequisite, Task-acceptance, and Feature-closure semantics are defined by the header of `TODO.md` and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md); do not invent alternative meanings.
+During the `issue-store-write-frozen` authority epoch, `issues/` is the authoritative backlog; `TODO.md` and `DONE.md` are generated read-only projections and `TODO-<agent-id>.md` files are retained legacy provenance, while all ordinary item, claim, marker, closure, Acceptance, and Feature-closure writes stay frozen until the signed `0037-40` activation/reference sequence. Marker, prerequisite, Task-acceptance, and Feature-closure semantics are defined by the header of `TODO.md` and [`docs/pipeline/task-acceptance.md`](docs/pipeline/task-acceptance.md); do not invent alternative meanings.
 
-Feature `0037` implementation must be executable by sandboxed/grunt agents. Privileged-agent availability must never be an unstated prerequisite.
+Feature `0037` uses direct execution for all operational agents. Direct execution grants no Acceptance, checkpoint-integration, architecture, specialist, release, or Feature-closure authority.
 
 Capability classes and all sandbox-specific execution mechanics—including discovery, runner requests, network execution, and the queue dispatch lifecycle—are defined by `SANDBOX.md`. This file defines the collaboration and bookkeeping requirements shared across capability classes.
 
-### Queue-based dispatch (`runner-queue@v1`)
+### Historical queue-based dispatch (`runner-queue@v1`; non-operative under the v2 direct selector)
+
+> Retained for pre-cutover evidence only. No future agent submits runner requests or derives current execution authority from this section.
 
 Sandboxed agents reach the runner through the versioned queue, using non-execution file operations only:
 

@@ -10,7 +10,7 @@ It does not grant privilege. If privilege is absent or ambiguous, follow the san
 2. `SANDBOX.md` defines capability classes, authority discovery, and the runner protocol.
 3. `AGENTS.md` defines claims, coordination, bookkeeping, commits, interruptions, and handoffs.
 4. This file defines additional conduct for explicitly privileged agents.
-5. Until Feature `0037` completes its authorized cutover, `TODO.md`, `DONE.md`, and active `TODO-<agent-id>.md` claims remain authoritative.
+5. During `issue-store-write-frozen`, `issues/` is authoritative while `TODO.md`/`DONE.md` are generated projections and legacy claim files are provenance-only; privilege does not lift the frozen item/claim/closure gates before signed `0037-40`.
 
 If these instructions conflict and precedence does not resolve the conflict safely, stop the conflicting mutation and identify the exact conflict.
 

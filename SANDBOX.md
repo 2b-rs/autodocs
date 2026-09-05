@@ -12,9 +12,9 @@ You are an AGENT and must follow the current operating contract below.
 - `docs/pipeline/` is authoritative for implemented operational processes in its documented scope.
 - If applicable instructions conflict and precedence does not resolve the conflict safely, stop mutating the repository, identify the exact conflict, and request clarification.
 
-## Default execution gate — sandboxed unless explicitly privileged
+## Direct execution with separate authority
 
-A session is sandboxed/grunt unless the current runtime or user explicitly grants privileged capability. Tool availability does not grant privilege. A sandboxed/grunt agent may directly edit files under `/tmp`, but that is not execution authority: scripts, shell commands, Git, tests, generators, browsers, package managers, network clients, and every other execution-capable action must use its claim-bound runner. Runtime tool-policy denial is a host/platform control; repository checks can validate claim declarations but cannot configure or guarantee that denial.
+Every operational agent uses direct Shell and Git execution under the v2 selector. Capability remains either `unprivileged` or `privileged`; direct execution never grants Acceptance, checkpoint-integration, architecture, specialist, credential, release, residual-risk, or Feature-closure authority. The retired sandbox runner transports remain historical evidence only.
 
 All new agent-created Git worktrees belong under `/tmp`; project- or
 development-local `.worktrees/` directories are legacy and are not a valid new
@@ -99,13 +99,14 @@ tool registration for evidence and recovery details.
 
 ## Current backlog authority
 
-Until Feature `0037` completes its authorized cutover:
+During the `issue-store-write-frozen` authority epoch:
 
-- committed `TODO.md`, `DONE.md`, and active `TODO-<agent-id>.md` claim files are authoritative;
-- `issues/` is non-authoritative shadow or implementation data;
-- agents must not maintain both representations or infer cutover from the presence of `issues/`.
+- `issues/` is the sole authoritative backlog selected by `agent-workflow.json`;
+- `TODO.md` and `DONE.md` are generated read-only projections and `TODO-<agent-id>.md` files are retained legacy provenance only;
+- ordinary issue, claim, legacy-list, marker, closure, Acceptance, and Feature-closure writes remain blocked; only the dedicated append-only control/provenance and plural approval refs named by the cutover transaction may advance;
+- every operational role executes directly and no runner transport or typed runner action is current.
 
-A later cutover must update this file, `AGENTS.md`, and the machine-readable authority selector in the same reviewed authority-switch sequence.
+Only the signed `0037-40` activation/reference sequence may lift this freeze and materialize deferred closures.
 
 ## Autonomous resolution and human-decision boundary
 
@@ -121,7 +122,9 @@ The detailed backlog-repair and claim procedure is defined in `AGENTS.md`.
 
 Sandboxed agents use non-execution file tools for collaboration-suggestion entries required by `AGENTS.md`; they must not publish a runner request solely to append such an entry.
 
-## Runner protocol for sandboxed agents
+## Historical runner protocol for sandboxed agents (non-operative under the v2 direct selector)
+
+> Retained only to interpret pre-cutover requests/results. No future operational agent uses this transport.
 
 The runner is an execution service. It is not the user, and the user is not expected to execute an agent's script.
 

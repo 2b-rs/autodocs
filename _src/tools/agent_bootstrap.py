@@ -36,7 +36,7 @@ PHASES = {
     "legacy-frozen": ("legacy-lists", "frozen"),
     "legacy-restored": ("legacy-lists", "legacy-restored"),
     "issue-store-writable": ("issue-store", "issue-store-writable"),
-    "issue-store-write-frozen": ("issue-store", "write-frozen"),
+    "issue-store-write-frozen": ("issue-store", "frozen"),
 }
 DIAGNOSTIC_ORDER = {
     name: index for index, name in enumerate((

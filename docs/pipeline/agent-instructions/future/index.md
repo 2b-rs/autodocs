@@ -1,3 +1,3 @@
 # future authority instruction bundle
 
-Read root `agent-workflow.json`, validate its digest and schema, enforce its selected authority epoch, and use only declared runner actions. On any mismatch: stop mutation and run `issuectl bootstrap --refresh`.
+Read root `agent-workflow.json`, validate its digest and schema, and enforce `authority_epoch=issue-store-write-frozen`, `authority_profile=issue-store`, and `write_phase=frozen`. All operational roles execute directly; no runner transport or typed runner action is current. Ordinary issue, claim, legacy-list, marker, closure, Acceptance, and Feature-closure writes remain blocked until the signed 0037-40 activation/reference sequence. On mismatch, stop mutation and run `python3 _src/tools/agent_bootstrap.py doctor --repo . --expected-epoch issue-store-write-frozen --expected-profile issue-store --expected-workflow-version 2.1.0 --json`.
