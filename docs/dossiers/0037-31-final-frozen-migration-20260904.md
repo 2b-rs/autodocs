@@ -92,3 +92,20 @@ Focused policy command before final candidate validation:
 python3 -m pytest -q _src/tests/test_issue_integration_policy.py
 20 passed in 54.88s
 ```
+
+## DEC-0037-036 exact interrupted-r1 retention
+
+Management decision `decision-1788580603368-b52b66df` selected `exact_evidence_retention`; the distinct Architect review and `DEC-0037-036` are canonical at `d40d104519625fe019e0fccf04b9b32c49ac4562`. The retained r1 evidence is bound exclusively by predecessor `6923deec89fc15575fb23047d8236a89b3fd286e`, root tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a`, exactly 975 `100644 blob` entries, and SHA-256 `0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620` of the complete canonical `git ls-tree -r` serialization. Prefix membership, byte comparison, count equality, an unpinned ancestor, reconstructed content, or matching reports cannot authorize retention. Any absent, extra, changed-path, changed-mode/type/blob, alias, symlink, non-regular entry, wrong tree, or wrong manifest fails closed. Retention grants no promotion, closure, Acceptance, evidence, validation-gate, or transaction credit.
+
+### DEC-0037-036 real adversarial rework evidence
+
+The production verifier reads the complete candidate `git ls-tree -r` serialization, verifies its SHA-256, exact root tree, count, every canonical path, `100644` mode, `blob` type, and blob OID, and passes the resulting exact set to the canonical-delta envelope. No r1 prefix predicate exists in the authorization path. The real test matrix executes five mutated Git candidates (absent, extra, changed blob, executable mode, symlink), wrong-tree and wrong-manifest cases, and 978 set neighbors: each of the 975 exact entries absent, plus extra-under-prefix, prefix-confusable sibling, and foreign path.
+
+Authority tests invoke the production allowed-signers-backed verifier on the real authority commit, then reject wrong principal, commit, blob digest, and path. The record oracle rejects missing, duplicate, and payload-drift signed records. Report tests independently exercise 929 and 931 coverage pairs; zero/two warnings; blocking and credit drift; wrong source tree, run identity, disposition digest, candidate identity, and run source. Empty, null, and incomplete recognized promotion proofs are exercised through the real frozen policy and cannot fall back to historical proof. A 12-case proof-kind × canonical/implementation-boundary × matching/mismatching cross-product demonstrates that canonical-only foreign paths cannot be masked by an otherwise valid implementation delta.
+
+Executed focused suite before candidate check-in:
+
+```text
+python3 -m pytest -q _src/tests/test_issue_integration_policy.py
+22 passed in 61.67s
+```

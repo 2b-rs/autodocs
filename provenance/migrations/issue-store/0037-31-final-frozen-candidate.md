@@ -22,7 +22,11 @@ This is implementation evidence only. It creates no Acceptance, integration verd
 
 - Policy-extension award: `1788578218939-4aee4c00`
 - Governing decision: `DEC-0037-035`
-- Canonical validation baseline: `7e78a076737193811b8ab84e02e09000b69c9135`
+- Canonical validation baseline: `d40d104519625fe019e0fccf04b9b32c49ac4562`
 - Pre-extension candidate: `6923deec89fc15575fb23047d8236a89b3fd286e`
 
 The separate `0037-31-promotion-policy-proof@v1` object binds the parent assignment, delegation, exact extension award, frozen source/tree, signed disposition authority and manifest, all six immutable r2 reports, promoted identity/tree, complete normalized canonical delta, and synchronized companions. The historical `claimless-frozen-assignment-proof@v1` remains unchanged. A recognized invalid promotion proof fails closed and cannot fall back to the historical proof, a generic claim, or Markdown recursion. The retained r1 output is admissible only when every candidate blob remains byte-identical to the pinned pre-extension candidate; it grants no new authority.
+
+## DEC-0037-036 exact interrupted-r1 retention
+
+Management decision `decision-1788580603368-b52b66df` selected `exact_evidence_retention`; the distinct Architect review and `DEC-0037-036` are canonical at `d40d104519625fe019e0fccf04b9b32c49ac4562`. The retained r1 evidence is bound exclusively by predecessor `6923deec89fc15575fb23047d8236a89b3fd286e`, root tree `93e1703e2103fd304ec2f22fa4f6f2b83008179a`, exactly 975 `100644 blob` entries, and SHA-256 `0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620` of the complete canonical `git ls-tree -r` serialization. Prefix membership, byte comparison, count equality, an unpinned ancestor, reconstructed content, or matching reports cannot authorize retention. Any absent, extra, changed-path, changed-mode/type/blob, alias, symlink, non-regular entry, wrong tree, or wrong manifest fails closed. Retention grants no promotion, closure, Acceptance, evidence, validation-gate, or transaction credit.

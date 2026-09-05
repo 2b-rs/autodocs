@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess
@@ -24,10 +25,18 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Mapping, Optional, Set
 
 try:
-    from _src.tools import agent_bootstrap, issue_import_legacy, runner_transaction
+    from _src.tools import agent_bootstrap, runner_transaction
 except ModuleNotFoundError:  # Direct script execution outside an installed package.
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from _src.tools import agent_bootstrap, issue_import_legacy, runner_transaction
+    from _src.tools import agent_bootstrap, runner_transaction
+
+_IMPORTER_SPEC = importlib.util.spec_from_file_location(
+    "issue_import_legacy_candidate", Path(__file__).with_name("issue_import_legacy.py")
+)
+if _IMPORTER_SPEC is None or _IMPORTER_SPEC.loader is None:
+    raise RuntimeError("candidate issue importer module is unavailable")
+issue_import_legacy = importlib.util.module_from_spec(_IMPORTER_SPEC)
+_IMPORTER_SPEC.loader.exec_module(issue_import_legacy)
 
 POLICY_SCHEMA = "issue-integration-policy@v1"
 SELECTOR_NAME = "agent-workflow.json"
@@ -66,10 +75,13 @@ PROMOTION_0037_31_ASSIGNMENT = "1788546750193-fb7f5f95"
 PROMOTION_0037_31_DELEGATION = "1788547915174-4a5b7bc0"
 PROMOTION_0037_31_EXTENSION_AWARD = "1788578218939-4aee4c00"
 PROMOTION_0037_31_BASE_CANDIDATE = "6923deec89fc15575fb23047d8236a89b3fd286e"
-PROMOTION_0037_31_CANONICAL_BASE = "7e78a076737193811b8ab84e02e09000b69c9135"
+PROMOTION_0037_31_CANONICAL_BASE = "d40d104519625fe019e0fccf04b9b32c49ac4562"
 PROMOTION_0037_31_RUN_ID = "0037-31-promoted-dispositions-20260904-r2"
 PROMOTION_0037_31_RUN_ROOT = f"_src/output/issue-migration/{PROMOTION_0037_31_RUN_ID}"
 PROMOTION_0037_31_RETAINED_RUN_ROOT = "_src/output/issue-migration/0037-31-promoted-dispositions-20260904-r1"
+PROMOTION_0037_31_RETAINED_TREE = "93e1703e2103fd304ec2f22fa4f6f2b83008179a"
+PROMOTION_0037_31_RETAINED_MANIFEST_SHA256 = "0bb49bee19793152d0b87f677a5793f642057e3db9ab6722194810d3ac217620"
+PROMOTION_0037_31_RETAINED_COUNT = 975
 PROMOTION_0037_31_AUTHORITY = "provenance/migrations/issue-store/0037-31-promotion/migration-disposition-authority.json"
 PROMOTION_0037_31_DISPOSITIONS = "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json"
 PROMOTION_0037_31_EVIDENCE = frozenset({
@@ -82,6 +94,7 @@ PROMOTION_0037_31_EVIDENCE = frozenset({
 PROMOTION_0037_31_GOVERNANCE = frozenset({
     "docs/dossiers/0037-31-promotion-policy-scope-review-20260904.md",
     "docs/dossiers/dec-0037-035-promotion-policy-proof-extension.md",
+    "docs/dossiers/0037-31-promotion-rework-scope-review-20260904.md",
 })
 PROMOTION_0037_31_FILES = frozenset({
     "_src/tools/issue_import_legacy.py", "_src/tests/test_issue_import_legacy.py",
@@ -402,6 +415,109 @@ def _regular_candidate_blob(candidate_root: Path, candidate: str, relative: str)
     return result.returncode == 0 and len(fields) == 4 and fields[0] == "100644" and fields[1] == "blob"
 
 
+def _exact_tree_manifest(
+    candidate_root: Path, candidate: str, root: str, expected_tree: str,
+    expected_digest: str, expected_count: int,
+) -> Optional[Set[str]]:
+    tree = subprocess.run(
+        ["git", "rev-parse", "--verify", f"{candidate}:{root}"],
+        cwd=candidate_root, capture_output=True, text=True,
+    )
+    listing = subprocess.run(
+        ["git", "ls-tree", "-r", candidate, "--", root],
+        cwd=candidate_root, capture_output=True,
+    )
+    if tree.returncode or tree.stdout.strip() != expected_tree or listing.returncode:
+        return None
+    if hashlib.sha256(listing.stdout).hexdigest() != expected_digest:
+        return None
+    try:
+        lines = listing.stdout.decode("utf-8").splitlines()
+    except UnicodeDecodeError:
+        return None
+    paths: Set[str] = set()
+    for line in lines:
+        try:
+            metadata, relative = line.split("\t", 1)
+            mode, kind, oid = metadata.split(" ")
+        except ValueError:
+            return None
+        canonical = _canonical_promotion_path(relative)
+        if mode != "100644" or kind != "blob" or not re.fullmatch(r"[0-9a-f]{40,64}", oid) or canonical is None:
+            return None
+        if canonical in paths:
+            return None
+        paths.add(canonical)
+    return paths if len(paths) == expected_count else None
+
+
+def _promotion_path_envelope_valid(changed: Set[str], declared: object, retained: Set[str]) -> bool:
+    if declared != sorted(changed) or not PROMOTION_0037_31_EVIDENCE.issubset(changed):
+        return False
+    for path in changed:
+        if path in PROMOTION_0037_31_FILES or path.startswith(PROMOTION_0037_31_RUN_ROOT + "/"):
+            continue
+        if path not in retained:
+            return False
+    return retained.issubset(changed)
+
+
+def _authority_records_valid(entries: object, records: object) -> bool:
+    if not isinstance(entries, list) or len(entries) != 930 or not isinstance(records, list):
+        return False
+    try:
+        expected = [issue_import_legacy.generate_authority_record(entry) for entry in entries]
+        canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in records]
+        expected_canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in expected]
+    except (KeyError, TypeError):
+        return False
+    return len(set(expected_canonical)) == 930 and sorted(canonical) == sorted(expected_canonical)
+
+
+def _promotion_reports_valid(
+    proof: Mapping[str, Any], report: object, state: object, coverage: object,
+    import_manifest: object, findings: object, run_records: object,
+) -> bool:
+    if not all(isinstance(value, dict) for value in (report, state, coverage, import_manifest)):
+        return False
+    if report.get("run_id") != PROMOTION_0037_31_RUN_ID or state.get("run_id") != PROMOTION_0037_31_RUN_ID:
+        return False
+    if report.get("status") != "promoted" or state.get("status") != "promoted" or state.get("phase") != "promoted":
+        return False
+    source = state.get("source")
+    if not isinstance(source, dict) or source.get("commit") != CLAIMLESS_0037_31_SOURCE or source.get("tree") != CLAIMLESS_0037_31_SOURCE_TREE or source.get("tree_digest") != proof.get("legacy_tree_digest") or source.get("working_tree_clean") is not True:
+        return False
+    candidate_info, state_candidate = report.get("candidate"), state.get("candidate")
+    if not isinstance(candidate_info, dict) or not isinstance(state_candidate, dict):
+        return False
+    if candidate_info.get("identity") != proof.get("candidate_identity") or candidate_info.get("observed_tree_digest") != proof.get("candidate_tree_digest") or candidate_info.get("logical_root") != PROMOTION_0037_31_RUN_ROOT + "/":
+        return False
+    if state_candidate.get("identity") != proof.get("candidate_identity") or state_candidate.get("tree_digest") != proof.get("candidate_tree_digest") or state_candidate.get("promotable") is not True or state_candidate.get("root") != PROMOTION_0037_31_RUN_ROOT + "/":
+        return False
+    expected_summary = {"blocking": 0, "error": 0, "info": 1, "total": 2, "warning": 1}
+    if report.get("finding_summary") != expected_summary or state.get("finding_summary") != expected_summary:
+        return False
+    disposition_input = report.get("disposition_input")
+    if not isinstance(disposition_input, dict) or disposition_input.get("path") != PROMOTION_0037_31_DISPOSITIONS or disposition_input.get("digest") != "sha256:" + proof.get("disposition_manifest_sha256", ""):
+        return False
+    pairs = coverage.get("pairs")
+    if not isinstance(pairs, list) or len(pairs) != 930:
+        return False
+    identities = {(pair.get("finding_id"), pair.get("rule")) for pair in pairs if isinstance(pair, dict)}
+    if len(identities) != 930 or coverage.get("blocking_after_coverage") is not False or coverage.get("closure_json_synthesized") is not False or coverage.get("credit_granted") is not False or coverage.get("disposition_manifest_digest") != "sha256:" + proof.get("disposition_manifest_sha256", ""):
+        return False
+    if import_manifest.get("disposition_coverage") != coverage or import_manifest.get("finding_summary") != expected_summary:
+        return False
+    if not isinstance(findings, list) or len(findings) != 931:
+        return False
+    severities = [entry.get("severity") for entry in findings if isinstance(entry, dict)]
+    if severities.count("blocking") != 930 or severities.count("warning") != 1:
+        return False
+    if not isinstance(run_records, list) or len(run_records) != 1 or run_records[0].get("result") != "covered" or run_records[0].get("source_commit") != CLAIMLESS_0037_31_SOURCE or run_records[0].get("disposition_manifest_digest") != "sha256:" + proof.get("disposition_manifest_sha256", ""):
+        return False
+    return import_manifest.get("blocking") is False and all(import_manifest.get(key) is False for key in ("approval_emitted", "claim_json_emitted", "closure_json_emitted"))
+
+
 def _promotion_authority_valid(candidate_root: Path, candidate: str, disposition: dict) -> bool:
     entries = disposition.get("entries")
     if not isinstance(entries, list) or len(entries) != 930:
@@ -414,10 +530,7 @@ def _promotion_authority_valid(candidate_root: Path, candidate: str, disposition
         return False
     if any(entry.get("signature_material") != material for entry in entries):
         return False
-    expected = [issue_import_legacy.generate_authority_record(entry) for entry in entries]
-    canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in records]
-    expected_canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in expected]
-    return len(set(expected_canonical)) == 930 and sorted(canonical) == sorted(expected_canonical)
+    return _authority_records_valid(entries, records)
 
 
 def _promotion_0037_31_proof_uncached(
@@ -431,9 +544,11 @@ def _promotion_0037_31_proof_uncached(
     manifest = _candidate_json(candidate_root, candidate, CLAIMLESS_0037_31_MANIFEST)
     if manifest is None:
         return None
+    if "promotion" not in manifest:
+        return None
     promotion = manifest.get("promotion")
     if not isinstance(promotion, dict) or "policy_proof" not in promotion:
-        return None
+        return False
     if relative not in PROMOTION_0037_31_EVIDENCE | PROMOTION_0037_31_GOVERNANCE:
         return False
     proof = promotion.get("policy_proof")
@@ -443,7 +558,7 @@ def _promotion_0037_31_proof_uncached(
         "source_commit", "source_tree", "legacy_tree_digest", "run_id", "run_root",
         "authority_sha256", "disposition_manifest_sha256", "candidate_identity",
         "candidate_tree_digest", "reports", "evidence_paths", "changed_paths",
-        "companion_sha256", "historical_proof",
+        "companion_sha256", "historical_proof", "retained_r1_evidence",
     }
     if not isinstance(proof, dict) or set(proof) != expected_keys:
         return False
@@ -452,7 +567,7 @@ def _promotion_0037_31_proof_uncached(
         "assignment_id": PROMOTION_0037_31_ASSIGNMENT,
         "delegation_offer": PROMOTION_0037_31_DELEGATION,
         "extension_award": PROMOTION_0037_31_EXTENSION_AWARD,
-        "authority_decisions": ["DEC-0037-034", "DEC-0037-035"],
+        "authority_decisions": ["DEC-0037-034", "DEC-0037-035", "DEC-0037-036"],
         "canonical_base": PROMOTION_0037_31_CANONICAL_BASE,
         "overlay_base_candidate": PROMOTION_0037_31_BASE_CANDIDATE,
         "source_commit": CLAIMLESS_0037_31_SOURCE,
@@ -482,21 +597,24 @@ def _promotion_0037_31_proof_uncached(
         if (_candidate_blob_sha256(candidate_root, candidate, relative) !=
                 _candidate_blob_sha256(candidate_root, PROMOTION_0037_31_CANONICAL_BASE, relative)):
             return False
-    if proof.get("changed_paths") != sorted(changed):
+    retained = _exact_tree_manifest(
+        candidate_root, candidate, PROMOTION_0037_31_RETAINED_RUN_ROOT,
+        PROMOTION_0037_31_RETAINED_TREE, PROMOTION_0037_31_RETAINED_MANIFEST_SHA256,
+        PROMOTION_0037_31_RETAINED_COUNT,
+    )
+    if retained is None or not _promotion_path_envelope_valid(changed, proof.get("changed_paths"), retained):
         return False
     if proof.get("evidence_paths") != sorted(PROMOTION_0037_31_EVIDENCE):
         return False
-    if not PROMOTION_0037_31_EVIDENCE.issubset(changed):
+    if proof.get("retained_r1_evidence") != {
+        "source_candidate": PROMOTION_0037_31_BASE_CANDIDATE,
+        "root": PROMOTION_0037_31_RETAINED_RUN_ROOT + "/",
+        "root_tree": PROMOTION_0037_31_RETAINED_TREE,
+        "manifest_sha256": PROMOTION_0037_31_RETAINED_MANIFEST_SHA256,
+        "entries": PROMOTION_0037_31_RETAINED_COUNT,
+        "credit_granted": False,
+    }:
         return False
-    for path in changed:
-        if path in PROMOTION_0037_31_FILES or path.startswith(PROMOTION_0037_31_RUN_ROOT + "/"):
-            continue
-        if not path.startswith(PROMOTION_0037_31_RETAINED_RUN_ROOT + "/"):
-            return False
-        if _candidate_blob_sha256(candidate_root, candidate, path) != _candidate_blob_sha256(
-            candidate_root, PROMOTION_0037_31_BASE_CANDIDATE, path
-        ):
-            return False
     if not all(_regular_candidate_blob(candidate_root, candidate, path) for path in PROMOTION_0037_31_EVIDENCE):
         return False
     if proof.get("authority_sha256") != _candidate_blob_sha256(candidate_root, candidate, PROMOTION_0037_31_AUTHORITY):
@@ -543,32 +661,9 @@ def _promotion_0037_31_proof_uncached(
             run_records = [json.loads(line) for line in run_text.splitlines() if line.strip()]
         except (TypeError, ValueError):
             return False
-    if not all(isinstance(value, dict) for value in (report, state, coverage, import_manifest, disposition)):
+    if not isinstance(disposition, dict):
         return False
-    if report.get("status") != "promoted" or state.get("status") != "promoted" or state.get("phase") != "promoted":
-        return False
-    candidate_info = report.get("candidate")
-    state_candidate = state.get("candidate")
-    if not isinstance(candidate_info, dict) or not isinstance(state_candidate, dict):
-        return False
-    if candidate_info.get("identity") != proof["candidate_identity"] or candidate_info.get("observed_tree_digest") != proof["candidate_tree_digest"]:
-        return False
-    if state_candidate.get("identity") != proof["candidate_identity"] or state_candidate.get("tree_digest") != proof["candidate_tree_digest"] or state_candidate.get("promotable") is not True:
-        return False
-    pairs = coverage.get("pairs")
-    if not isinstance(pairs, list) or len(pairs) != 930:
-        return False
-    identities = {(pair.get("finding_id"), pair.get("rule")) for pair in pairs if isinstance(pair, dict)}
-    if len(identities) != 930 or coverage.get("blocking_after_coverage") is not False or coverage.get("closure_json_synthesized") is not False or coverage.get("credit_granted") is not False:
-        return False
-    if not isinstance(findings, list) or len(findings) != 931:
-        return False
-    severities = [entry.get("severity") for entry in findings if isinstance(entry, dict)]
-    if severities.count("blocking") != 930 or severities.count("warning") != 1:
-        return False
-    if len(run_records) != 1 or run_records[0].get("result") != "covered":
-        return False
-    if import_manifest.get("blocking") is not False or any(import_manifest.get(key) is not False for key in ("approval_emitted", "claim_json_emitted", "closure_json_emitted")):
+    if not _promotion_reports_valid(proof, report, state, coverage, import_manifest, findings, run_records):
         return False
     return _promotion_authority_valid(candidate_root, candidate, disposition)
 
