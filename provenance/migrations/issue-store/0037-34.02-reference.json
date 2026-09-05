@@ -82,6 +82,13 @@
         "merge_base": "b9149771c01e21acd893783e25026d9947b9e985",
         "merge_strategy": "ff-only",
         "parent_oid": "b9149771c01e21acd893783e25026d9947b9e985"
+      },
+      {
+        "ancestry_verified": true,
+        "commit_oid": "e186757e5417fbd7b4d89f2cf9ca6a7567642eeb",
+        "merge_base": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+        "merge_strategy": "ff-only",
+        "parent_oid": "22de9468f8b15750f18c7eac1d47e0fca220eac9"
       }
     ],
     "root_preflight_receipts": [
@@ -96,6 +103,12 @@
         "status": "valid",
         "target_commit": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
         "timing": "post_hoc_verification"
+      },
+      {
+        "notes": "Contemporaneous verification confirming signed evidence retention, negative matrix, and transaction ref CAS",
+        "status": "valid",
+        "target_commit": "e186757e5417fbd7b4d89f2cf9ca6a7567642eeb",
+        "timing": "contemporaneous_verification"
       }
     ],
     "transaction_cas_receipts": [
@@ -115,6 +128,15 @@
         "old_oid": "b9149771c01e21acd893783e25026d9947b9e985",
         "result": "success",
         "sequence": 2,
+        "target_ref": "refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95"
+      },
+      {
+        "action": "git update-ref refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95 e186757e 22de9468",
+        "nature": "atomic_cas",
+        "new_oid": "e186757e5417fbd7b4d89f2cf9ca6a7567642eeb",
+        "old_oid": "22de9468f8b15750f18c7eac1d47e0fca220eac9",
+        "result": "success",
+        "sequence": 3,
         "target_ref": "refs/autodocs/cutover/0037/0037-31-promotion-1788546750193-fb7f5f95"
       }
     ]
@@ -319,6 +341,12 @@
       "signer": "tobias.anton@accenture.com",
       "verification_status": "VALID"
     },
+    "reference_evidence_commit_e186": {
+      "commit_oid": "e186757e5417fbd7b4d89f2cf9ca6a7567642eeb",
+      "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
+      "signer": "tobias.anton@accenture.com",
+      "verification_status": "VALID"
+    },
     "release_approval": {
       "commit_oid": "88e3cdd8e7a32fe2233fb9d27f07e24b4d03954c",
       "key_fingerprint": "SHA256:YWg/nPlBol+BkcbC/S0yIDBaw7xpKmfSjreQM8rgDjU",
@@ -341,7 +369,8 @@
   "transaction_id": "0037-34.01-authority-switch-20260905",
   "verifier_specification": {
     "algorithm": "canonical-digest-bound-reference-verification",
-    "command": "python3 scratch/execute_reference_correction.py",
+    "case_count": 15,
+    "command": "python3 -c \"import json, os, sys; exec(json.load(open('provenance/migrations/issue-store/0037-34.02-reference.json'))['verifier_specification']['source_code']); verify_all('provenance/migrations/issue-store/0037-34.02-reference.json', '.')\"",
     "environment": {
       "allowed_signers_policy": "issues/_policy/allowed_signers",
       "allowed_signers_sha256": "sha256:7e194c8ff111d85b37d7ec9f49ea59e37e5316a69de0714e4ad5095fb951d82c",
@@ -349,12 +378,16 @@
       "os": "macOS-26.5.1-arm64-arm-64bit",
       "python_version": "3.9.6"
     },
+    "generation_domain": "issue-cutover-reference-verification@v1",
     "happy_path_result": {
-      "assertions_evaluated": 34,
+      "assertions_evaluated": 35,
       "disposition_count": 4,
       "retained_obligations_count": 6,
       "status": "VALID"
     },
+    "negative_matrix_case_count": 15,
+    "source_code": "# 0037-34.02 Deterministic Reference Verifier\n# Specification ID: 0037-34.02-reference-verifier@v1\n# Generation Domain: issue-cutover-reference-verification@v1\n\nimport copy\nimport hashlib\nimport json\nimport os\nimport platform\nimport subprocess\nimport sys\n\nclass ReferenceVerificationError(Exception):\n    pass\n\ndef compute_sha256_file(path):\n    h = hashlib.sha256()\n    with open(path, \"rb\") as f:\n        while chunk := f.read(65536):\n            h.update(chunk)\n    return \"sha256:\" + h.hexdigest()\n\ndef run_git(args, cwd):\n    res = subprocess.run([\"git\"] + args, cwd=cwd, capture_output=True, text=True)\n    return res.returncode, res.stdout.strip(), res.stderr.strip()\n\ndef verify_reference_structure(data):\n    if data.get(\"schema\") != \"issue-cutover-reference@v1\":\n        raise ReferenceVerificationError(f\"Invalid schema: {data.get('schema')}\")\n    if data.get(\"transaction_id\") != \"0037-34.01-authority-switch-20260905\":\n        raise ReferenceVerificationError(f\"Invalid transaction_id: {data.get('transaction_id')}\")\n    if data.get(\"task_id\") != \"0037-34.02\":\n        raise ReferenceVerificationError(f\"Invalid task_id: {data.get('task_id')}\")\n\n    required_keys = {\n        \"schema\", \"transaction_id\", \"task_id\", \"signer_authority\", \"cutover_execution\",\n        \"predecessor\", \"governing_decisions\", \"architect_scope_reviews\", \"bound_package\",\n        \"approvals\", \"frozen_selector\", \"logical_dispositions\", \"retained_deferred_closure_obligations\",\n        \"verifier_specification\", \"negative_matrix\", \"signature_verification_results\", \"integrator_receipts\"\n    }\n    missing = required_keys - set(data.keys())\n    if missing:\n        raise ReferenceVerificationError(f\"Missing required field(s): {sorted(list(missing))}\")\n\n    extra_k = set(data.keys()) - required_keys\n    if extra_k:\n        raise ReferenceVerificationError(f\"Unknown field detected in schema: {sorted(list(extra_k))[0]}\")\n\n    cut = data.get(\"cutover_execution\", {})\n    if cut.get(\"commit_oid\") != \"b9149771c01e21acd893783e25026d9947b9e985\":\n        raise ReferenceVerificationError(f\"Wrong cutover commit_oid: {cut.get('commit_oid')}\")\n    if cut.get(\"control_commit\") != \"36b349fb86c9aa5579f46d89bea73096af35ad11\":\n        raise ReferenceVerificationError(f\"Wrong control_commit: {cut.get('control_commit')}\")\n    if cut.get(\"control_tree\") != \"8d3cb2789fe4e4635fe31985c7df35c2cb93c537\":\n        raise ReferenceVerificationError(f\"Wrong control_tree: {cut.get('control_tree')}\")\n    if cut.get(\"tree_oid\") != \"cff4f993bb43fda5e23aa1d29ca34c67e4959b39\":\n        raise ReferenceVerificationError(f\"Wrong cutover tree_oid: {cut.get('tree_oid')}\")\n    if cut.get(\"tree_sha256\") != \"sha256:1afa28699324f6a492ecac472d447c122932fb9b872ed38afbd83535af1cecba\":\n        raise ReferenceVerificationError(f\"Wrong cutover tree_sha256: {cut.get('tree_sha256')}\")\n\n    apps = data.get(\"approvals\", {})\n    expected_purposes = {\"process\", \"security-privacy\", \"release\"}\n    if set(apps.keys()) != expected_purposes:\n        raise ReferenceVerificationError(f\"Wrong approval purposes: expected {sorted(list(expected_purposes))}, got {sorted(list(apps.keys()))}\")\n    \n    expected_app_data = {\n        \"process\": {\n            \"commit_oid\": \"5955b2e5c32b3698df661384d0a3567db8e93f28\",\n            \"ref\": \"refs/autodocs/approvals/0037/0037-34.01-authority-switch-20260905/process\",\n            \"signing_occasion\": \"0037-33-process-20260905T094410Z\",\n            \"validity\": \"valid\"\n        },\n        \"security-privacy\": {\n            \"commit_oid\": \"00f972ccf45cc760e2857268b95926534490ebfe\",\n            \"ref\": \"refs/autodocs/approvals/0037/0037-34.01-authority-switch-20260905/security-privacy\",\n            \"signing_occasion\": \"0037-33-security-privacy-20260905T094420Z\",\n            \"validity\": \"valid\"\n        },\n        \"release\": {\n            \"commit_oid\": \"88e3cdd8e7a32fe2233fb9d27f07e24b4d03954c\",\n            \"ref\": \"refs/autodocs/approvals/0037/0037-34.01-authority-switch-20260905/release\",\n            \"signing_occasion\": \"0037-33-release-20260905T094430Z\",\n            \"validity\": \"valid\"\n        }\n    }\n    for purp, exp in expected_app_data.items():\n        act = apps.get(purp, {})\n        if act.get(\"validity\") != \"valid\":\n            raise ReferenceVerificationError(f\"Stale/revoked approval condition for {purp}: validity={act.get('validity')}\")\n        if act.get(\"commit_oid\") != exp[\"commit_oid\"]:\n            raise ReferenceVerificationError(f\"Wrong approval commit_oid for {purp}: expected {exp['commit_oid']}, got {act.get('commit_oid')}\")\n        if act.get(\"ref\") != exp[\"ref\"]:\n            raise ReferenceVerificationError(f\"Wrong approval ref for {purp}: expected {exp['ref']}, got {act.get('ref')}\")\n\n    sel = data.get(\"frozen_selector\", {})\n    if sel.get(\"authority_profile\") != \"issue-store\" or sel.get(\"authority_epoch\") != \"issue-store-write-frozen\" or sel.get(\"write_phase\") != \"frozen\":\n        raise ReferenceVerificationError(f\"Frozen selector state mismatch: {sel}\")\n    if sel.get(\"digest\") != \"sha256:13b516474ee10827f8d1364c7c43f74ef80adfbf7b1e92f072dea8531f2b7ee0\":\n        raise ReferenceVerificationError(f\"Selector digest drift: expected sha256:13b516474ee10827f8d1364c7c43f74ef80adfbf7b1e92f072dea8531f2b7ee0, got {sel.get('digest')}\")\n\n    pred = data.get(\"predecessor\", {})\n    if pred.get(\"commit_oid\") != \"b9149771c01e21acd893783e25026d9947b9e985\":\n        raise ReferenceVerificationError(f\"Predecessor commit drift: expected b9149771c01e21acd893783e25026d9947b9e985, got {pred.get('commit_oid')}\")\n    if pred.get(\"sequence\") != 1:\n        raise ReferenceVerificationError(f\"Predecessor sequence drift: expected 1, got {pred.get('sequence')}\")\n    if pred.get(\"tree_oid\") != \"cff4f993bb43fda5e23aa1d29ca34c67e4959b39\":\n        raise ReferenceVerificationError(f\"Predecessor tree drift: expected cff4f993bb43fda5e23aa1d29ca34c67e4959b39, got {pred.get('tree_oid')}\")\n\n    disps = data.get(\"logical_dispositions\", {})\n    expected_items = {\"0037-32\", \"0037-33\", \"0037-34\", \"0037-34.02\"}\n    if set(disps.keys()) != expected_items:\n        extra = set(disps.keys()) - expected_items\n        missing_items = expected_items - set(disps.keys())\n        if extra:\n            raise ReferenceVerificationError(f\"Extra item(s) in logical dispositions: {sorted(list(extra))}\")\n        if missing_items:\n            raise ReferenceVerificationError(f\"Missing item(s) in logical dispositions: {sorted(list(missing_items))}\")\n\n    for item_id, item_disp in disps.items():\n        if item_disp.get(\"acceptance_granted\") is not False:\n            raise ReferenceVerificationError(f\"Acceptance inflation detected for {item_id}: acceptance_granted={item_disp.get('acceptance_granted')}\")\n        if item_disp.get(\"issue_state\") != \"open\":\n            raise ReferenceVerificationError(f\"Acceptance inflation / state mutation detected for {item_id}: issue_state={item_disp.get('issue_state')}\")\n        if item_disp.get(\"disposition\") != \"completed\":\n            raise ReferenceVerificationError(f\"Invalid disposition for {item_id}: {item_disp.get('disposition')}\")\n        if item_disp.get(\"start_gate_satisfied\") is not True:\n            raise ReferenceVerificationError(f\"Start gate not satisfied for {item_id}\")\n        if item_disp.get(\"materialization_task\") != \"0037-40\":\n            raise ReferenceVerificationError(f\"Wrong materialization task for {item_id}: {item_disp.get('materialization_task')}\")\n\n    retained = data.get(\"retained_deferred_closure_obligations\", [])\n    expected_retained = [\"0037-31\", \"0037-34.01\", \"0037-32\", \"0037-33\", \"0037-34.02\", \"0037-34\"]\n    if sorted(retained) != sorted(expected_retained):\n        missing_retained = set(expected_retained) - set(retained)\n        if missing_retained:\n            raise ReferenceVerificationError(f\"Missing deferred obligation(s): {sorted(list(missing_retained))}\")\n        raise ReferenceVerificationError(f\"Retained deferred obligations mismatch: expected {expected_retained}, got {retained}\")\n\n    return True\n\ndef verify_all(reference_json_path, repo_dir):\n    with open(reference_json_path, \"r\", encoding=\"utf-8\") as f:\n        data = json.load(f)\n\n    # 1. Structure check\n    verify_reference_structure(data)\n\n    # 2. Signature verification\n    allowed_signers = os.path.join(repo_dir, \"issues/_policy/allowed_signers\")\n    commits = [\n        (\"process_approval\", \"5955b2e5c32b3698df661384d0a3567db8e93f28\"),\n        (\"security_privacy_approval\", \"00f972ccf45cc760e2857268b95926534490ebfe\"),\n        (\"release_approval\", \"88e3cdd8e7a32fe2233fb9d27f07e24b4d03954c\"),\n        (\"cutover_commit\", \"b9149771c01e21acd893783e25026d9947b9e985\"),\n        (\"reference_commit_22de\", \"22de9468f8b15750f18c7eac1d47e0fca220eac9\"),\n        (\"reference_evidence_commit_e186\", \"e186757e5417fbd7b4d89f2cf9ca6a7567642eeb\")\n    ]\n    for label, oid in commits:\n        code, out, err = run_git([\"-c\", f\"gpg.ssh.allowedSignersFile={allowed_signers}\", \"verify-commit\", \"--raw\", oid], repo_dir)\n        if code != 0:\n            raise ReferenceVerificationError(f\"Signature verification failed for {label} ({oid}): {err}\")\n\n    # 3. Source hash self-check\n    spec = data.get(\"verifier_specification\", {})\n    source_code = spec.get(\"source_code\", \"\")\n    expected_hash = spec.get(\"source_sha256\", \"\")\n    actual_hash = \"sha256:\" + hashlib.sha256(source_code.encode(\"utf-8\")).hexdigest()\n    if actual_hash != expected_hash:\n        raise ReferenceVerificationError(f\"Verifier source hash mismatch: expected {expected_hash}, computed {actual_hash}\")\n\n    return True\n\nif __name__ == \"__main__\" and len(sys.argv) >= 3:\n    verify_all(sys.argv[1], sys.argv[2])\n    print(\"ALL REFERENCE VERIFICATION CHECKS PASSED\")\n",
+    "source_sha256": "sha256:05829611bca11bbb96749795d3a35a24ab8c540edfecbdbc7509257398496f7d",
     "specification_id": "0037-34.02-reference-verifier@v1"
   }
 }
