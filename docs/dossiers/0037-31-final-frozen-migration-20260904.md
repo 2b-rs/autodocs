@@ -70,3 +70,25 @@ The exact generated evidence check independently measured 930 manifest entries, 
 ## Boundaries
 
 This candidate is ready only for independent review. It grants no Acceptance or integration credit and does not update the cutover transaction ref. Geordi alone retains authority for exact-candidate transaction-ref CAS, independent policy review, integration hygiene, source integration, and reachability receipt. `0037-34.01` remains stopped until those downstream gates complete.
+
+## DEC-0037-035 promotion-policy extension
+
+The exact same-slot extension award is `1788578218939-4aee4c00`, held by `miles2-0037-programmer-20260904`. Governance ancestry was refreshed on the existing candidate branch by signed merge commit `5fe43cccdbd38a42767bb25506765f20f2234574`, whose parents are the pre-extension candidate `6923deec89fc15575fb23047d8236a89b3fd286e` and canonical `main@7e78a076737193811b8ab84e02e09000b69c9135`. No sibling candidate, worktree, claim, transaction ref, selector, or main ref was created or moved.
+
+`_src/tools/issue_integration_policy.py` now recognizes a separate exact-key `0037-31-promotion-policy-proof@v1` object. It validates the complete normalized canonical delta, all five evidence files, both exact implementation/test pairs, the exact r2 subtree, and the already-retained r1 subtree. The r1 subtree is not newly authorized: every r1 blob must equal the pinned pre-extension candidate. Absolute, traversal, dot-segment, backslash, empty, duplicate, prefix-confusable, foreign, missing, non-regular, symlink, and altered retained paths fail closed. A recognized invalid promotion proof never falls through to the historical verifier or generic authority lookup.
+
+The verifier binds the exact authority and disposition digests, verifies the allowed-signers-backed authority commit and principal through the production importer verifier, requires 930 unique signed canonical authority records, and recomputes all six r2 report hashes from candidate blobs. Report semantics require promoted status, the exact candidate identity/tree, 930 unique covered pairs, zero post-coverage blockers, exactly one warning alongside the retained 930-source-finding population, no closure/claim/approval emission, no evidence credit, and a single covered run record. The historical assignment, rejected run, report hash, and closure transaction remain conjunctively pinned and unchanged.
+
+### Adversarial completion evidence
+
+- **AE-2 baselines:** pre-change candidate `6923deec89fc15575fb23047d8236a89b3fd286e`; canonical baseline `7e78a076737193811b8ab84e02e09000b69c9135`; implementation candidate is the signed commit reported with Assignment `1788578218939-4aee4c00`.
+- **AE-3 falsification:** the independently retained baseline invocations in the integrated Architect review are red: implementation base evaluates 980 paths with three `POLICY-FROZEN-AUTHORITY-PROOF-REQUIRED` findings; canonical main evaluates 1,957 paths with five such findings. The repaired candidate must make both exact boundaries green without changing the old proof.
+- **AE-4 adjacent cases:** (1) a complete promotion proof with exact bindings is accepted, while any one missing static binding is rejected; neighboring dimension is field presence/exact identity. (2) canonical relative paths are accepted, while traversal, dot segments, backslashes, absolute paths, a prefix-confusable r20 subtree, a missing authority file, or an altered retained r1 blob is rejected; neighboring dimension is normalized path membership and retained identity. Additional adjacent cases cover invalid promotion plus valid historical proof (rejected), wrong authority/report digest, wrong pair/warning/blocker/credit semantics, and non-regular evidence.
+- **AE-5 property evidence:** deterministic finite domains enumerate all 22 required proof fields as independently absent, eight canonical/alias path forms, evidence omission and prefix collision, and recognized-promotion fallback behavior. The existing importer suite additionally retains its 64 membership, 24 set/sequence, 1,821 finding-identity, seed `37029` ordering/missing-field, and four deciding-role property domains.
+
+Focused policy command before final candidate validation:
+
+```text
+python3 -m pytest -q _src/tests/test_issue_integration_policy.py
+20 passed in 54.88s
+```

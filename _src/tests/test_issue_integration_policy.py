@@ -94,6 +94,132 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
 
+    def promotion_fixture(self):
+        report_digests = {key: hashlib.sha256(path.encode()).hexdigest()
+                          for key, path in POL.PROMOTION_0037_31_REPORTS.items()}
+        companion_paths = POL.PROMOTION_0037_31_EVIDENCE - {POL.CLAIMLESS_0037_31_MANIFEST}
+        companion_digests = {path: hashlib.sha256(("companion:" + path).encode()).hexdigest()
+                             for path in companion_paths}
+        companion_digests[POL.PROMOTION_0037_31_AUTHORITY] = "512ae4acec856e74625ea6c6dd3ad5fafd03b901fe29e51af84fc9548001fe55"
+        companion_digests[POL.PROMOTION_0037_31_DISPOSITIONS] = "82275efcd478fe3518b33ca9f61876077ae8c3e8594f0c6ba6064d6567b079b9"
+        changed = set(POL.PROMOTION_0037_31_FILES) | set(POL.PROMOTION_0037_31_REPORTS.values()) | {
+            POL.PROMOTION_0037_31_RETAINED_RUN_ROOT + "/retained.txt",
+        }
+        proof = {
+            "schema": "0037-31-promotion-policy-proof@v1", "task_id": "0037-31",
+            "assignment_id": POL.PROMOTION_0037_31_ASSIGNMENT,
+            "delegation_offer": POL.PROMOTION_0037_31_DELEGATION,
+            "extension_award": POL.PROMOTION_0037_31_EXTENSION_AWARD,
+            "authority_decisions": ["DEC-0037-034", "DEC-0037-035"],
+            "canonical_base": POL.PROMOTION_0037_31_CANONICAL_BASE,
+            "overlay_base_candidate": POL.PROMOTION_0037_31_BASE_CANDIDATE,
+            "source_commit": POL.CLAIMLESS_0037_31_SOURCE,
+            "source_tree": POL.CLAIMLESS_0037_31_SOURCE_TREE,
+            "legacy_tree_digest": "95084ca98c1d84bca6215da5d8763084ebc0f2a90c5a4e9d33a3a38aa96423d8",
+            "run_id": POL.PROMOTION_0037_31_RUN_ID,
+            "run_root": POL.PROMOTION_0037_31_RUN_ROOT + "/",
+            "authority_sha256": companion_digests[POL.PROMOTION_0037_31_AUTHORITY],
+            "disposition_manifest_sha256": companion_digests[POL.PROMOTION_0037_31_DISPOSITIONS],
+            "candidate_identity": "f23a0cb083515f964e624658ba2cd89252e9cc16708a1d41e85f8a276a1beb10",
+            "candidate_tree_digest": "61bc158665cf84e8c8ba4b394ea15724525d97d97a58dafa4ef61cffd4def3d9",
+            "reports": report_digests, "evidence_paths": sorted(POL.PROMOTION_0037_31_EVIDENCE),
+            "changed_paths": sorted(changed), "companion_sha256": companion_digests,
+            "historical_proof": {
+                "assignment_id": POL.CLAIMLESS_0037_31_ASSIGNMENT,
+                "closure_transaction": POL.CLAIMLESS_0037_31_TRANSACTION,
+                "run_id": POL.CLAIMLESS_0037_31_RUN_ID,
+                "report_sha256": "9b5660a92d50757dd20f950286c8a24b62978c2dd0ed3250177ba62343d2ea7e",
+            },
+        }
+        manifest = {"promotion": {"policy_proof": proof}}
+        pairs = [{"finding_id": f"IMP-{n:016x}", "rule": "IMP-CLAIM-OPAQUE"} for n in range(930)]
+        objects = {
+            POL.CLAIMLESS_0037_31_MANIFEST: manifest,
+            POL.PROMOTION_0037_31_REPORTS["migration_report_sha256"]: {
+                "status": "promoted", "candidate": {"identity": proof["candidate_identity"],
+                "observed_tree_digest": proof["candidate_tree_digest"]}},
+            POL.PROMOTION_0037_31_REPORTS["migration_state_sha256"]: {
+                "status": "promoted", "phase": "promoted", "candidate": {"identity": proof["candidate_identity"],
+                "tree_digest": proof["candidate_tree_digest"], "promotable": True}},
+            POL.PROMOTION_0037_31_REPORTS["disposition_coverage_sha256"]: {
+                "pairs": pairs, "blocking_after_coverage": False,
+                "closure_json_synthesized": False, "credit_granted": False},
+            POL.PROMOTION_0037_31_REPORTS["import_manifest_sha256"]: {
+                "blocking": False, "approval_emitted": False, "claim_json_emitted": False,
+                "closure_json_emitted": False},
+            POL.PROMOTION_0037_31_DISPOSITIONS: {"entries": []},
+        }
+        findings = [{"severity": "blocking"} for _ in range(930)] + [{"severity": "warning"}]
+        blobs = {
+            POL.PROMOTION_0037_31_REPORTS["findings_sha256"]: json.dumps(findings),
+            POL.PROMOTION_0037_31_REPORTS["disposition_runs_sha256"]: json.dumps({"result": "covered"}) + "\n",
+            "provenance/migrations/issue-store/0037-31-final-frozen-candidate.md":
+                POL.PROMOTION_0037_31_ASSIGNMENT + " " + POL.PROMOTION_0037_31_RUN_ID,
+            "docs/dossiers/0037-31-final-frozen-migration-20260904.md":
+                POL.PROMOTION_0037_31_ASSIGNMENT + " " + POL.PROMOTION_0037_31_RUN_ID,
+        }
+        digests = {**report_digests, **companion_digests}
+        digest_by_path = {path: report_digests[key] for key, path in POL.PROMOTION_0037_31_REPORTS.items()}
+        digest_by_path.update(companion_digests)
+        return changed, proof, objects, blobs, digest_by_path
+
+    def evaluate_promotion_fixture(self, mutate=None, changed_mutation=None):
+        changed, proof, objects, blobs, digests = self.promotion_fixture()
+        if mutate:
+            mutate(proof)
+        if changed_mutation:
+            changed_mutation(changed)
+        def candidate_json(_root, _candidate, path): return objects.get(path)
+        def candidate_blob(_root, _candidate, path): return blobs.get(path, "")
+        def candidate_digest(_root, candidate, path):
+            if path.startswith(POL.PROMOTION_0037_31_RETAINED_RUN_ROOT + "/"):
+                return "f" * 64
+            return digests.get(path)
+        with mock.patch.object(POL, "_candidate_json", side_effect=candidate_json), \
+             mock.patch.object(POL, "_candidate_blob", side_effect=candidate_blob), \
+             mock.patch.object(POL, "_candidate_blob_sha256", side_effect=candidate_digest), \
+             mock.patch.object(POL, "_regular_candidate_blob", return_value=True), \
+             mock.patch.object(POL, "_promotion_authority_valid", return_value=True):
+            return POL._promotion_0037_31_proof(self.root, "c" * 40,
+                POL.CLAIMLESS_0037_31_MANIFEST, changed)
+
+    def test_promotion_closed_proof_accepts_only_complete_exact_fixture(self):
+        self.assertIs(True, self.evaluate_promotion_fixture())
+
+    def test_promotion_each_static_binding_wrong_or_missing_fails_closed(self):
+        fields = (
+            "schema", "task_id", "assignment_id", "delegation_offer", "extension_award",
+            "authority_decisions", "canonical_base", "overlay_base_candidate", "source_commit",
+            "source_tree", "legacy_tree_digest", "run_id", "run_root", "authority_sha256",
+            "disposition_manifest_sha256", "candidate_identity", "candidate_tree_digest",
+            "reports", "evidence_paths", "changed_paths", "companion_sha256", "historical_proof",
+        )
+        for field in fields:
+            with self.subTest(field=field):
+                self.assertIs(False, self.evaluate_promotion_fixture(lambda proof, f=field: proof.pop(f)))
+
+    def test_promotion_changed_path_property_domain(self):
+        adjacent = {
+            "relative/file": True, "/absolute": False, "../traversal": False,
+            "a/../alias": False, "a/./dot": False, "a\\backslash": False,
+            "": False, "prefix/../collision": False,
+        }
+        for path, expected in adjacent.items():
+            with self.subTest(path=path):
+                self.assertEqual(expected, POL._canonical_promotion_path(path) is not None)
+        foreign = lambda changed: changed.add("_src/output/issue-migration/0037-31-promoted-dispositions-20260904-r20/alias")
+        self.assertIs(False, self.evaluate_promotion_fixture(changed_mutation=foreign))
+        omitted = lambda changed: changed.remove(POL.PROMOTION_0037_31_AUTHORITY)
+        self.assertIs(False, self.evaluate_promotion_fixture(changed_mutation=omitted))
+
+    def test_recognized_invalid_promotion_never_falls_back_to_historical_proof(self):
+        manifest = {"promotion": {"policy_proof": {}}}
+        with mock.patch.object(POL, "_candidate_json", return_value=manifest), \
+             mock.patch.object(POL, "_claimless_0037_31_proof", return_value=True):
+            self.assertIs(False, POL.frozen_authority_proof(
+                self.root, "c" * 40, POL.CLAIMLESS_0037_31_MANIFEST,
+                {POL.CLAIMLESS_0037_31_MANIFEST}))
+
     def test_live_legacy_placeholder_candidate_passes_only_exact_contract(self):
         (self.root/"TODO.md").write_text("# conforming\n"); candidate=self.commit("legacy")
         result=self.evaluate(candidate=candidate); self.assertEqual("passed",result["status"])

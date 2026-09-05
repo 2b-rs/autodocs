@@ -17,3 +17,12 @@ Under `DEC-0037-034`, the fresh production run applies a signed, source-bound `m
 The promoted candidate identity is `f23a0cb083515f964e624658ba2cd89252e9cc16708a1d41e85f8a276a1beb10`; its observed tree digest is `61bc158665cf84e8c8ba4b394ea15724525d97d97a58dafa4ef61cffd4def3d9`. The migration report and state digests are `c3aeb3a1f8e23f331d226d3fc87df009fe603cfbe6cac1ae406ad584fa52bb2b` and `414e63cda4b276d8d536d76feffa4dd852c6f5f69a4732431d934a42f663c9b0` respectively.
 
 This is implementation evidence only. It creates no Acceptance, integration verdict, transaction-ref update, publication, cutover, or permission to start `0037-34.01`. Geordi retains the reserved independent CAS/review/integration slot.
+
+## Closed promotion-policy proof extension
+
+- Policy-extension award: `1788578218939-4aee4c00`
+- Governing decision: `DEC-0037-035`
+- Canonical validation baseline: `7e78a076737193811b8ab84e02e09000b69c9135`
+- Pre-extension candidate: `6923deec89fc15575fb23047d8236a89b3fd286e`
+
+The separate `0037-31-promotion-policy-proof@v1` object binds the parent assignment, delegation, exact extension award, frozen source/tree, signed disposition authority and manifest, all six immutable r2 reports, promoted identity/tree, complete normalized canonical delta, and synchronized companions. The historical `claimless-frozen-assignment-proof@v1` remains unchanged. A recognized invalid promotion proof fails closed and cannot fall back to the historical proof, a generic claim, or Markdown recursion. The retained r1 output is admissible only when every candidate blob remains byte-identical to the pinned pre-extension candidate; it grants no new authority.

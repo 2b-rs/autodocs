@@ -24,10 +24,10 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Mapping, Optional, Set
 
 try:
-    from _src.tools import agent_bootstrap, runner_transaction
+    from _src.tools import agent_bootstrap, issue_import_legacy, runner_transaction
 except ModuleNotFoundError:  # Direct script execution outside an installed package.
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-    from _src.tools import agent_bootstrap, runner_transaction
+    from _src.tools import agent_bootstrap, issue_import_legacy, runner_transaction
 
 POLICY_SCHEMA = "issue-integration-policy@v1"
 SELECTOR_NAME = "agent-workflow.json"
@@ -62,6 +62,36 @@ CLAIMLESS_0037_31_SCOPE = frozenset({
     "_src/tests/test_issue_import_legacy.py", "_src/tests/test_issue_integration_policy.py",
     CLAIMLESS_0037_31_RUN_ROOT, *CLAIMLESS_0037_31_EVIDENCE,
 })
+PROMOTION_0037_31_ASSIGNMENT = "1788546750193-fb7f5f95"
+PROMOTION_0037_31_DELEGATION = "1788547915174-4a5b7bc0"
+PROMOTION_0037_31_EXTENSION_AWARD = "1788578218939-4aee4c00"
+PROMOTION_0037_31_BASE_CANDIDATE = "6923deec89fc15575fb23047d8236a89b3fd286e"
+PROMOTION_0037_31_CANONICAL_BASE = "7e78a076737193811b8ab84e02e09000b69c9135"
+PROMOTION_0037_31_RUN_ID = "0037-31-promoted-dispositions-20260904-r2"
+PROMOTION_0037_31_RUN_ROOT = f"_src/output/issue-migration/{PROMOTION_0037_31_RUN_ID}"
+PROMOTION_0037_31_RETAINED_RUN_ROOT = "_src/output/issue-migration/0037-31-promoted-dispositions-20260904-r1"
+PROMOTION_0037_31_AUTHORITY = "provenance/migrations/issue-store/0037-31-promotion/migration-disposition-authority.json"
+PROMOTION_0037_31_DISPOSITIONS = "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json"
+PROMOTION_0037_31_EVIDENCE = frozenset({
+    CLAIMLESS_0037_31_MANIFEST,
+    "provenance/migrations/issue-store/0037-31-final-frozen-candidate.md",
+    "docs/dossiers/0037-31-final-frozen-migration-20260904.md",
+    PROMOTION_0037_31_AUTHORITY,
+    PROMOTION_0037_31_DISPOSITIONS,
+})
+PROMOTION_0037_31_FILES = frozenset({
+    "_src/tools/issue_import_legacy.py", "_src/tests/test_issue_import_legacy.py",
+    "_src/tools/issue_integration_policy.py", "_src/tests/test_issue_integration_policy.py",
+    *PROMOTION_0037_31_EVIDENCE,
+})
+PROMOTION_0037_31_REPORTS = {
+    "migration_report_sha256": PROMOTION_0037_31_RUN_ROOT + "/reports/migration-report.json",
+    "migration_state_sha256": PROMOTION_0037_31_RUN_ROOT + "/reports/migration-state.json",
+    "disposition_coverage_sha256": PROMOTION_0037_31_RUN_ROOT + "/issues/import-disposition-coverage.json",
+    "disposition_runs_sha256": PROMOTION_0037_31_RUN_ROOT + "/issues/import-disposition-runs.jsonl",
+    "findings_sha256": PROMOTION_0037_31_RUN_ROOT + "/issues/import-findings.json",
+    "import_manifest_sha256": PROMOTION_0037_31_RUN_ROOT + "/issues/import-manifest.json",
+}
 SEMVER_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
 DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 LINK_RE = re.compile(r"\[[^]]*\]\(([^)#?]+)(?:#[^)]*)?\)")
@@ -341,6 +371,188 @@ def _claimless_0037_31_proof(
                for key, path in report_paths.items())
 
 
+
+def _canonical_promotion_path(relative: object) -> Optional[str]:
+    if not isinstance(relative, str) or not relative or "\\" in relative:
+        return None
+    posix = PurePosixPath(relative)
+    if posix.is_absolute() or any(part in {"", ".", ".."} for part in posix.parts):
+        return None
+    return posix.as_posix() if posix.as_posix() == relative else None
+
+
+def _candidate_json(candidate_root: Path, candidate: str, relative: str) -> Optional[dict]:
+    try:
+        value = json.loads(_candidate_blob(candidate_root, candidate, relative))
+    except (TypeError, ValueError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _regular_candidate_blob(candidate_root: Path, candidate: str, relative: str) -> bool:
+    result = subprocess.run(
+        ["git", "ls-tree", candidate, "--", relative], cwd=candidate_root,
+        capture_output=True, text=True,
+    )
+    fields = result.stdout.strip().split(None, 3)
+    return result.returncode == 0 and len(fields) == 4 and fields[0] == "100644" and fields[1] == "blob"
+
+
+def _promotion_authority_valid(candidate_root: Path, candidate: str, disposition: dict) -> bool:
+    entries = disposition.get("entries")
+    if not isinstance(entries, list) or len(entries) != 930:
+        return False
+    try:
+        issue_import_legacy.validate_disposition_document(disposition)
+        material = entries[0]["signature_material"]
+        records = issue_import_legacy._load_authority_records(material, candidate_root)
+    except (KeyError, TypeError, issue_import_legacy.ImportErrorClosed):
+        return False
+    if any(entry.get("signature_material") != material for entry in entries):
+        return False
+    expected = [issue_import_legacy.generate_authority_record(entry) for entry in entries]
+    canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in records]
+    expected_canonical = [json.dumps(record, sort_keys=True, separators=(",", ":")) for record in expected]
+    return len(set(expected_canonical)) == 930 and sorted(canonical) == sorted(expected_canonical)
+
+
+def _promotion_0037_31_proof(
+    candidate_root: Path, candidate: str, relative: str, changed_files: Set[str]
+) -> Optional[bool]:
+    """Validate DEC-0037-035's separate, exact, closed promotion proof.
+
+    None means no recognized promotion proof. False means a recognized promotion proof
+    is invalid and must not fall back to the historical claimless verifier.
+    """
+    manifest = _candidate_json(candidate_root, candidate, CLAIMLESS_0037_31_MANIFEST)
+    if manifest is None:
+        return None
+    promotion = manifest.get("promotion")
+    if not isinstance(promotion, dict) or "policy_proof" not in promotion:
+        return None
+    if relative not in PROMOTION_0037_31_EVIDENCE:
+        return False
+    proof = promotion.get("policy_proof")
+    expected_keys = {
+        "schema", "task_id", "assignment_id", "delegation_offer", "extension_award",
+        "authority_decisions", "canonical_base", "overlay_base_candidate",
+        "source_commit", "source_tree", "legacy_tree_digest", "run_id", "run_root",
+        "authority_sha256", "disposition_manifest_sha256", "candidate_identity",
+        "candidate_tree_digest", "reports", "evidence_paths", "changed_paths",
+        "companion_sha256", "historical_proof",
+    }
+    if not isinstance(proof, dict) or set(proof) != expected_keys:
+        return False
+    expected = {
+        "schema": "0037-31-promotion-policy-proof@v1", "task_id": "0037-31",
+        "assignment_id": PROMOTION_0037_31_ASSIGNMENT,
+        "delegation_offer": PROMOTION_0037_31_DELEGATION,
+        "extension_award": PROMOTION_0037_31_EXTENSION_AWARD,
+        "authority_decisions": ["DEC-0037-034", "DEC-0037-035"],
+        "canonical_base": PROMOTION_0037_31_CANONICAL_BASE,
+        "overlay_base_candidate": PROMOTION_0037_31_BASE_CANDIDATE,
+        "source_commit": CLAIMLESS_0037_31_SOURCE,
+        "source_tree": CLAIMLESS_0037_31_SOURCE_TREE,
+        "legacy_tree_digest": "95084ca98c1d84bca6215da5d8763084ebc0f2a90c5a4e9d33a3a38aa96423d8",
+        "run_id": PROMOTION_0037_31_RUN_ID,
+        "run_root": PROMOTION_0037_31_RUN_ROOT + "/",
+        "authority_sha256": "512ae4acec856e74625ea6c6dd3ad5fafd03b901fe29e51af84fc9548001fe55",
+        "disposition_manifest_sha256": "82275efcd478fe3518b33ca9f61876077ae8c3e8594f0c6ba6064d6567b079b9",
+        "candidate_identity": "f23a0cb083515f964e624658ba2cd89252e9cc16708a1d41e85f8a276a1beb10",
+        "candidate_tree_digest": "61bc158665cf84e8c8ba4b394ea15724525d97d97a58dafa4ef61cffd4def3d9",
+    }
+    if any(proof.get(key) != value for key, value in expected.items()):
+        return False
+    normalized = [_canonical_promotion_path(path) for path in changed_files]
+    if any(path is None for path in normalized) or len(normalized) != len(set(normalized)):
+        return False
+    changed = set(normalized)
+    if proof.get("changed_paths") != sorted(changed):
+        return False
+    if proof.get("evidence_paths") != sorted(PROMOTION_0037_31_EVIDENCE):
+        return False
+    if not PROMOTION_0037_31_EVIDENCE.issubset(changed):
+        return False
+    for path in changed:
+        if path in PROMOTION_0037_31_FILES or path.startswith(PROMOTION_0037_31_RUN_ROOT + "/"):
+            continue
+        if not path.startswith(PROMOTION_0037_31_RETAINED_RUN_ROOT + "/"):
+            return False
+        if _candidate_blob_sha256(candidate_root, candidate, path) != _candidate_blob_sha256(
+            candidate_root, PROMOTION_0037_31_BASE_CANDIDATE, path
+        ):
+            return False
+    if not all(_regular_candidate_blob(candidate_root, candidate, path) for path in PROMOTION_0037_31_EVIDENCE):
+        return False
+    if proof.get("authority_sha256") != _candidate_blob_sha256(candidate_root, candidate, PROMOTION_0037_31_AUTHORITY):
+        return False
+    if proof.get("disposition_manifest_sha256") != _candidate_blob_sha256(candidate_root, candidate, PROMOTION_0037_31_DISPOSITIONS):
+        return False
+    reports = proof.get("reports")
+    if not isinstance(reports, dict) or set(reports) != set(PROMOTION_0037_31_REPORTS):
+        return False
+    if any(reports[key] != _candidate_blob_sha256(candidate_root, candidate, path)
+           for key, path in PROMOTION_0037_31_REPORTS.items()):
+        return False
+    companions = proof.get("companion_sha256")
+    companion_paths = PROMOTION_0037_31_EVIDENCE - {CLAIMLESS_0037_31_MANIFEST}
+    if not isinstance(companions, dict) or set(companions) != companion_paths:
+        return False
+    if any(companions[path] != _candidate_blob_sha256(candidate_root, candidate, path) for path in companion_paths):
+        return False
+    for path in companion_paths & {"provenance/migrations/issue-store/0037-31-final-frozen-candidate.md", "docs/dossiers/0037-31-final-frozen-migration-20260904.md"}:
+        text = _candidate_blob(candidate_root, candidate, path)
+        if PROMOTION_0037_31_ASSIGNMENT not in text or PROMOTION_0037_31_RUN_ID not in text:
+            return False
+    historical = proof.get("historical_proof")
+    if historical != {
+        "assignment_id": CLAIMLESS_0037_31_ASSIGNMENT,
+        "closure_transaction": CLAIMLESS_0037_31_TRANSACTION,
+        "run_id": CLAIMLESS_0037_31_RUN_ID,
+        "report_sha256": "9b5660a92d50757dd20f950286c8a24b62978c2dd0ed3250177ba62343d2ea7e",
+    }:
+        return False
+    report = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_REPORTS["migration_report_sha256"])
+    state = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_REPORTS["migration_state_sha256"])
+    coverage = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_REPORTS["disposition_coverage_sha256"])
+    import_manifest = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_REPORTS["import_manifest_sha256"])
+    findings_text = _candidate_blob(candidate_root, candidate, PROMOTION_0037_31_REPORTS["findings_sha256"])
+    run_text = _candidate_blob(candidate_root, candidate, PROMOTION_0037_31_REPORTS["disposition_runs_sha256"])
+    disposition = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_DISPOSITIONS)
+    try:
+        findings = json.loads(findings_text)
+        run_records = [json.loads(line) for line in run_text.splitlines() if line.strip()]
+    except (TypeError, ValueError):
+        return False
+    if not all(isinstance(value, dict) for value in (report, state, coverage, import_manifest, disposition)):
+        return False
+    if report.get("status") != "promoted" or state.get("status") != "promoted" or state.get("phase") != "promoted":
+        return False
+    candidate_info = report.get("candidate")
+    state_candidate = state.get("candidate")
+    if not isinstance(candidate_info, dict) or not isinstance(state_candidate, dict):
+        return False
+    if candidate_info.get("identity") != proof["candidate_identity"] or candidate_info.get("observed_tree_digest") != proof["candidate_tree_digest"]:
+        return False
+    if state_candidate.get("identity") != proof["candidate_identity"] or state_candidate.get("tree_digest") != proof["candidate_tree_digest"] or state_candidate.get("promotable") is not True:
+        return False
+    pairs = coverage.get("pairs")
+    if not isinstance(pairs, list) or len(pairs) != 930:
+        return False
+    identities = {(pair.get("finding_id"), pair.get("rule")) for pair in pairs if isinstance(pair, dict)}
+    if len(identities) != 930 or coverage.get("blocking_after_coverage") is not False or coverage.get("closure_json_synthesized") is not False or coverage.get("credit_granted") is not False:
+        return False
+    if not isinstance(findings, list) or len(findings) != 931:
+        return False
+    severities = [entry.get("severity") for entry in findings if isinstance(entry, dict)]
+    if severities.count("blocking") != 930 or severities.count("warning") != 1:
+        return False
+    if len(run_records) != 1 or run_records[0].get("result") != "covered":
+        return False
+    if import_manifest.get("blocking") is not False or any(import_manifest.get(key) is not False for key in ("approval_emitted", "claim_json_emitted", "closure_json_emitted")):
+        return False
+    return _promotion_authority_valid(candidate_root, candidate, disposition)
+
 def frozen_authority_proof(
     candidate_root: Path, candidate: str, relative: str,
     changed_files: Optional[Set[str]] = None,
@@ -351,10 +563,12 @@ def frozen_authority_proof(
         return False
     text = _candidate_blob(candidate_root, candidate, relative)
     task_id = task_match.group(0)
-    if task_id == "0037-31" and changed_files is not None and _claimless_0037_31_proof(
-        candidate_root, candidate, relative, changed_files
-    ):
-        return True
+    if task_id == "0037-31" and changed_files is not None:
+        promotion = _promotion_0037_31_proof(candidate_root, candidate, relative, changed_files)
+        if promotion is not None:
+            return promotion
+        if _claimless_0037_31_proof(candidate_root, candidate, relative, changed_files):
+            return True
     if task_id not in text:
         return False
     assignment_ids = set(re.findall(
