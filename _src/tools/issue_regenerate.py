@@ -694,6 +694,29 @@ def _first_diff_index(left: List[Any], right: List[Any]) -> Optional[int]:
     return None
 
 
+def _strict_json_equal(left: Any, right: Any) -> bool:
+    """Compare JSON values without Python's bool-is-an-int coercion."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(
+            _strict_json_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            _strict_json_equal(l_value, r_value)
+            for l_value, r_value in zip(left, right)
+        )
+    return left == right
+
+
+def _strict_labels(value: Any) -> Optional[List[str]]:
+    """Return labels only for an actual JSON array of strings."""
+    if type(value) is not list or any(type(label) is not str for label in value):
+        return None
+    return list(value)
+
+
 def _canonical_labels_by_id(issues_root: Path, repository_root: Path) -> Dict[str, List[str]]:
     """Independently derive each item's canonical labels straight from the
     parsed issue store (views.load_store), never from the views or lists
@@ -703,7 +726,12 @@ def _canonical_labels_by_id(issues_root: Path, repository_root: Path) -> Dict[st
     parsed, _malformed, _sources = views.load_store(issues_root, repository_root)
     canonical: Dict[str, List[str]] = {}
     for value in parsed:
-        canonical[value["item"]["id"]] = list(value["item"].get("labels") or [])
+        labels = _strict_labels(value["item"].get("labels", []))
+        if labels is None:
+            raise RegenerateError(
+                "IR1030", f"canonical labels for item {value['item']['id']!r} are not an array of strings"
+            )
+        canonical[value["item"]["id"]] = labels
     return canonical
 
 
@@ -748,7 +776,7 @@ def _verify_bootstrap_catalog_agreement(
         item_id = view_item.get("id")
         view_rest = {key: value for key, value in view_item.items() if key != "labels"}
         list_rest = {key: value for key, value in list_item.items() if key != "labels"}
-        if view_rest != list_rest:
+        if not _strict_json_equal(view_rest, list_rest):
             raise RegenerateError(
                 "IR1030",
                 f"view/list catalog non-label field disagreement for item {item_id!r} at index {index}",
@@ -758,16 +786,16 @@ def _verify_bootstrap_catalog_agreement(
             raise RegenerateError(
                 "IR1030", f"lists catalog item {item_id!r} at index {index} is missing the required labels field"
             )
-        observed_list_labels = list(list_item["labels"])
-        if observed_list_labels != canonical_labels:
+        observed_list_labels = _strict_labels(list_item["labels"])
+        if observed_list_labels is None or not _strict_json_equal(observed_list_labels, canonical_labels):
             raise RegenerateError(
                 "IR1030",
                 f"lists catalog labels for item {item_id!r} do not exactly equal canonical labels "
                 f"(order/multiplicity-sensitive): observed {observed_list_labels!r}, canonical {canonical_labels!r}",
             )
         if "labels" in view_item:
-            observed_view_labels = list(view_item["labels"])
-            if observed_view_labels != canonical_labels:
+            observed_view_labels = _strict_labels(view_item["labels"])
+            if observed_view_labels is None or not _strict_json_equal(observed_view_labels, canonical_labels):
                 raise RegenerateError(
                     "IR1030",
                     f"views catalog labels for item {item_id!r} do not exactly equal canonical labels: "

@@ -485,6 +485,29 @@ class BootstrapCatalogAgreementTests(RegenerationFixture):
                 regen._verify_bootstrap_catalog_agreement(catalog, rendered_catalog, self.repo / "issues", self.repo)
             self.assertEqual(raised.exception.code, "IR1030")
 
+    def test_non_array_or_non_string_labels_are_not_coerced(self):
+        for bad_labels in ("a", True, 1, {"label": "a"}, ["a", 1]):
+            with self.subTest(bad_labels=bad_labels):
+                catalog, rendered_catalog = self._basic_catalogs(list_extra={"labels": bad_labels})
+                with self._load_store_returning({"X": []}):
+                    with self.assertRaises(regen.RegenerateError) as raised:
+                        regen._verify_bootstrap_catalog_agreement(
+                            catalog, rendered_catalog, self.repo / "issues", self.repo
+                        )
+                    self.assertEqual(raised.exception.code, "IR1030")
+
+    def test_recursive_json_comparison_distinguishes_boolean_from_number(self):
+        catalog, rendered_catalog = self._basic_catalogs(
+            view_extra={"nested": {"enabled": True}},
+            list_extra={"nested": {"enabled": 1}},
+        )
+        with self._load_store_returning({"X": []}):
+            with self.assertRaises(regen.RegenerateError) as raised:
+                regen._verify_bootstrap_catalog_agreement(
+                    catalog, rendered_catalog, self.repo / "issues", self.repo
+                )
+            self.assertEqual(raised.exception.code, "IR1030")
+
     def test_missing_extra_duplicate_reordered_identity_blocks(self):
         base_view = {"items": [{"id": "A", "state": "open"}, {"id": "B", "state": "open"}]}
         base_list = {"items": [
