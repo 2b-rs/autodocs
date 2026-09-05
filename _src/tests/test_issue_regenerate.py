@@ -569,6 +569,158 @@ class BootstrapCatalogAgreementTests(RegenerationFixture):
         self.assertEqual(rendered_catalog, before_rendered)
 
 
+class BootstrapCatalogTypeRegressionTests(RegenerationFixture):
+    """R037-01/R037-02 execution against real dfd955160d source and candidate.
+
+    Only canonical loading is stubbed; the comparison itself runs unchanged.
+    Baseline source is compiled in memory with its actual sibling path. No
+    source file, worktree, ref, or evidence JSON is replaced or created by
+    these two tests.
+    Run: python3 -m unittest _src.tests.test_issue_regenerate.BootstrapCatalogTypeRegressionTests
+
+    Validation receipt, 2026-09-05, assignment 1788636877547-a78fdb24:
+    Production baseline: dfd955160d2b8001f93a9cdcf85d12a928c810d1.
+    Production candidate: 89680be5f64e37e0d5bd494a021fef91d00309aa.
+    This carrying commit changes tests only; production bytes remain 89680be5f.
+
+    Exact broad command (default macOS TMPDIR, Python 3.9):
+      python3 -m unittest _src.tests.test_issue_regenerate _src.tests.test_issue_views _src.tests.test_issue_lists _src.tests.test_issuectl _src.tests.test_agent_bootstrap
+    Identical 101-test comparison: candidate test bytes from 89680be5f were
+    used on BOTH production versions (dfd itself predates the two regression
+    tests). Candidate: exit 1, 101 tests, 11 failures/11 errors, 59.443s.
+    Baseline: exit 1, 101 tests, 12 failures/13 errors, 46.777s.
+    The native baseline run used an apply-patch reversal of the source change
+    in this same worktree, including subprocess-visible source. Git diff
+    verified all files except the candidate tests equal dfd955160d, and test
+    bytes equal 89680be5f, before the command. Afterwards source was restored
+    by apply-patch and git diff verified equality to 89680be5f. No ref moved.
+    This also corroborated an earlier in-memory baseline run (101 tests,
+    12 failures/13 errors, 131.270s); that preliminary overlay alone did not
+    establish subprocess behavior and is not the native baseline evidence.
+
+    Baseline-only findings in the identical 101-test suite:
+    - test_non_array_or_non_string_labels_are_not_coerced: raw TypeError
+      for bad_labels=True and bad_labels=1 (two errors), candidate IR1030.
+    - test_recursive_json_comparison_distinguishes_boolean_from_number:
+      expected RegenerateError not raised (one failure), candidate IR1030.
+    Candidate-only findings: none in this comparison. Shared findings remain
+    red and are not waived: 10 IR1005 unsafe-/var-symlink errors (three
+    AuthorityMatrix targets, one BootstrapRefresh, six RegenerationExecution),
+    nine RealManifestContract assertion failures reporting that IR1005,
+    one output-root-lock entered.wait failure, one AuthorityMatrix IR1002
+    unsupported 'issue-store-frozen', and one AgentBootstrap valid/issue-store
+    fixture yielding 'stale-or-invalid' instead of 'ready'. These 22 findings
+    were observed on both versions; this is evidence, not presumed inheritance.
+
+    Focused command: python3 -m unittest followed by these module/class names:
+      _src.tests.test_issue_regenerate.BootstrapCatalogAgreementTests
+      _src.tests.test_issue_regenerate.BootstrapCatalogLabelOracleTests
+      _src.tests.test_issue_regenerate.RealFrozenBaselineBootstrapTests
+      _src.tests.test_issue_regenerate.BootstrapCatalogTypeRegressionTests
+    Observed: exit 0, 15 tests, 17.531s (original focused 13 plus these two).
+    Includes 392 oracle cases, real frozen IR1031, and exact diagnostic multiset
+    equality 244 minus three IV0901 equals 241. The tests below execute 36
+    label cases (27 old coercion/TypeError regressions and nine adjacent
+    already-rejected non-string arrays), plus 32 bool/number cases and their
+    32 equal-type positive controls; both versions' inputs remain unchanged.
+    Additional command: TMPDIR=/private/tmp python3 -m unittest
+      _src.tests.test_issue_regenerate.BootstrapRefreshTests
+    Observed: exit 0, two tests, 0.290s. These use mocked render/validation
+    fixtures for eight-output count and write/idempotence, not a waiver of
+    real frozen IR1031. The broad comparison above retained default TMPDIR.
+    Direct load_store count: 551 parsed items, zero malformed records, exit 0.
+    Final broad rerun with these two added tests: same command, exit 1,
+    103 tests in 48.484s, the same 11 failures/11 errors; no new findings.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        source = subprocess.run(
+            ["git", "show", "dfd955160d2b8001f93a9cdcf85d12a928c810d1:_src/tools/issue_regenerate.py"],
+            cwd=ROOT, capture_output=True, check=True, timeout=30,
+        ).stdout
+        spec = importlib.util.spec_from_file_location("r037_baseline", PATH)
+        cls.baseline = importlib.util.module_from_spec(spec)
+        exec(compile(source, str(PATH), "exec"), cls.baseline.__dict__)
+
+    def _comparison_outcome(self, module, canonical, view_item, list_item):
+        import copy
+        inputs = (canonical, view_item, list_item)
+        before = copy.deepcopy(inputs)
+        parsed = [{"item": {"id": "X", "labels": canonical}}]
+        with mock.patch.object(module.views, "load_store", return_value=(parsed, [], [])):
+            try:
+                module._verify_bootstrap_catalog_agreement(
+                    {"items": [view_item]}, {"items": [list_item]}, self.repo / "issues", self.repo,
+                )
+                result = "PASS"
+            except module.RegenerateError as error:
+                result = error.code
+            except TypeError:
+                result = "TypeError"
+        self.assertEqual(inputs, before)
+        return result
+
+    def test_r037_01_real_baseline_coercion_and_type_errors_candidate_ir1030(self):
+        # bad labels, matching canonical array, old canonical-side outcome,
+        # old view/list-side outcome. Fixed observations, not an implementation oracle.
+        cases = (
+            ("", [], "PASS", "PASS"),
+            ("a", ["a"], "PASS", "PASS"),
+            ({}, [], "PASS", "PASS"),
+            ({"a": 7}, ["a"], "PASS", "PASS"),
+            (None, [], "PASS", "TypeError"),
+            (False, [], "PASS", "TypeError"),
+            (0, [], "PASS", "TypeError"),
+            (True, [], "TypeError", "TypeError"),
+            (7, [], "TypeError", "TypeError"),
+            ([1], [], "IR1030", "IR1030"),
+            ([True], [], "IR1030", "IR1030"),
+            (["a", 0], [], "IR1030", "IR1030"),
+        )
+        count = 0
+        for bad, canonical, old_canonical, old_rendered in cases:
+            for side in ("canonical", "view", "list"):
+                with self.subTest(labels=bad, side=side):
+                    view_item = {"id": "X"}
+                    list_item = {"id": "X", "labels": canonical}
+                    source_labels = canonical
+                    if side == "canonical":
+                        source_labels = bad
+                    elif side == "view":
+                        view_item["labels"] = bad
+                    else:
+                        list_item["labels"] = bad
+                    old = old_canonical if side == "canonical" else old_rendered
+                    self.assertEqual(self._comparison_outcome(self.baseline, source_labels, view_item, list_item), old)
+                    self.assertEqual(self._comparison_outcome(regen, source_labels, view_item, list_item), "IR1030")
+                    count += 1
+        self.assertEqual(count, 36)
+
+    def test_r037_02_real_baseline_bool_number_aliases_candidate_ir1030(self):
+        shapes = (
+            lambda value: value,
+            lambda value: {"enabled": value},
+            lambda value: [value],
+            lambda value: {"entries": [{"enabled": [value]}]},
+        )
+        count = 0
+        for boolean, number in ((True, 1), (False, 0), (True, 1.0), (False, 0.0)):
+            for left, right in ((boolean, number), (number, boolean)):
+                for depth, shape in enumerate(shapes):
+                    with self.subTest(left=left, right=right, depth=depth):
+                        view_item = {"id": "X", "payload": shape(left)}
+                        list_item = {"id": "X", "payload": shape(right), "labels": []}
+                        self.assertEqual(self._comparison_outcome(self.baseline, [], view_item, list_item), "PASS")
+                        self.assertEqual(self._comparison_outcome(regen, [], view_item, list_item), "IR1030")
+                        # Adjacent control: the same typed value must still pass.
+                        list_item["payload"] = shape(left)
+                        self.assertEqual(self._comparison_outcome(regen, [], view_item, list_item), "PASS")
+                        count += 1
+        self.assertEqual(count, 32)
+
+
 class BootstrapCatalogLabelOracleHelpers:
     """Independent oracle for DEC-0037-037, derived from the decision text
     (not from `_verify_bootstrap_catalog_agreement`'s own code path)."""
