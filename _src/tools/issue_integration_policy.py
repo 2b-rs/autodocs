@@ -536,9 +536,13 @@ def _promotion_0037_31_proof_uncached(
     disposition = _candidate_json(candidate_root, candidate, PROMOTION_0037_31_DISPOSITIONS)
     try:
         findings = json.loads(findings_text)
-        run_records = [json.loads(line) for line in run_text.splitlines() if line.strip()]
+        run_document = json.loads(run_text)
+        run_records = [run_document] if isinstance(run_document, dict) else run_document
     except (TypeError, ValueError):
-        return False
+        try:
+            run_records = [json.loads(line) for line in run_text.splitlines() if line.strip()]
+        except (TypeError, ValueError):
+            return False
     if not all(isinstance(value, dict) for value in (report, state, coverage, import_manifest, disposition)):
         return False
     if report.get("status") != "promoted" or state.get("status") != "promoted" or state.get("phase") != "promoted":
