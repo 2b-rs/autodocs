@@ -6,7 +6,7 @@
       "expected": "BLOCKED",
       "name": "run 1 manifest hash divergence",
       "observed": "BLOCKED",
-      "stable_reason": "Manifest hash mismatch for bootstrap/TODO.md: run_2=sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8 != product=sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "stable_reason": "Manifest hash mismatch for bootstrap/TODO.md: run_1=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=sha256:26b0f270e83d92b0b99ace64550355497d12d3c20179def0b25b93f88ee126a8",
       "status": "PASS"
     },
     {
@@ -15,7 +15,7 @@
       "expected": "BLOCKED",
       "name": "missing product artifact in inventory",
       "observed": "BLOCKED",
-      "stable_reason": "Missing required product artifact(s): ['bootstrap/TODO.md']",
+      "stable_reason": "Product artifacts set mismatch: ['bootstrap/TODO.md']",
       "status": "PASS"
     },
     {
@@ -69,7 +69,7 @@
       "expected": "BLOCKED",
       "name": "non-zero exit code in Run 1",
       "observed": "BLOCKED",
-      "stable_reason": "Run 1 exit code must be 0, got 1",
+      "stable_reason": "Run exit codes must be 0",
       "status": "PASS"
     },
     {
@@ -78,7 +78,7 @@
       "expected": "BLOCKED",
       "name": "bogus product artifact key with same cardinality",
       "observed": "BLOCKED",
-      "stable_reason": "Missing required product artifact(s): ['bootstrap/TODO.md']",
+      "stable_reason": "Product artifacts set mismatch: ['bogus/invalid.json', 'bootstrap/TODO.md']",
       "status": "PASS"
     },
     {
@@ -92,6 +92,8 @@
     }
   ],
   "baseline": {
+    "baseline_rework_commit": "3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c",
+    "baseline_rework_tree_oid": "dc5edf78041558324753f0db4c859774a8c105b2",
     "control_commit": "36b349fb86c9aa5579f46d89bea73096af35ad11",
     "cutover_commit": "b9149771c01e21acd893783e25026d9947b9e985",
     "lineage": [
@@ -105,7 +107,11 @@
       "97ff338a02802304f6fe5193f1933f8a387a1414",
       "04158f9586dff3451e6b79e831d04752146742d0",
       "e24f419f50af2cc6165bd9fae7f65041ec1a0c9b",
-      "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33"
+      "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+      "aedf32e758431aff52e5fff8d2f735f6c8218185",
+      "e7bb2ac63fc8a2e1d75c907106fe936a7a5c5dc0",
+      "359baacdc05634563dae2f753239a04a5ee75253",
+      "3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c"
     ],
     "start_commit": "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
     "tree_oid": "caadd829fe264f04bac8602e5a154cb77844761d"
@@ -161,9 +167,24 @@
   "generation_commands": {
     "commands": [
       {
-        "command": "git clone --shared /Users/tobias.anton/devel/autodocs <clone_path> && git checkout --detach fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+        "command": "git clone --shared /Users/tobias.anton/devel/autodocs <clone_path> && git -C <clone_path> checkout --detach 3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c",
         "purpose": "Create fresh isolated clean checkout of exact baseline",
         "stage": "clone-checkout"
+      },
+      {
+        "command": "python3 _src/tools/agent_bootstrap.py doctor --repo /Users/tobias.anton/devel/autodocs --expected-epoch issue-store-write-frozen --expected-profile issue-store --expected-workflow-version 2.1.0 --json",
+        "purpose": "Verify fresh agent bootstrap doctor succeeds with status ready",
+        "stage": "fresh-agent-doctor"
+      },
+      {
+        "command": "python3 _src/tools/agent_bootstrap.py doctor --repo /Users/tobias.anton/devel/autodocs --expected-epoch legacy-writable --expected-profile legacy-lists --expected-workflow-version 1.0.0 --json",
+        "purpose": "Verify stale legacy agent bootstrap doctor rejects with error codes AB017, AB018, AB019",
+        "stage": "stale-agent-doctor"
+      },
+      {
+        "command": "python3 _src/tools/check_integration_hygiene.py --repo /Users/tobias.anton/devel/autodocs --root-preflight --json",
+        "purpose": "Verify repository and locked toolchain hygiene preflight",
+        "stage": "locked-toolchain-hygiene"
       },
       {
         "command": "python3 _src/tools/issue_lists.py --write --output-root <out>/bootstrap/lists --verify",
@@ -171,43 +192,97 @@
         "stage": "bootstrap-lists"
       },
       {
-        "command": "python3 _src/tools/issue_views.py (render to <out>/bootstrap/catalog.json and dependency-graph.json)",
-        "purpose": "Render internal catalog and dependency graph",
-        "stage": "bootstrap-views"
+        "command": "python3 _src/tools/issuectl.py render --catalog internal --output-root <out>/bootstrap --write",
+        "purpose": "Render internal catalog view to bootstrap/catalog.json",
+        "stage": "bootstrap-views-catalog"
       },
       {
-        "command": "python3 _src/tools/issue_validate.py --source working-tree --root issues --no-compare-head",
-        "purpose": "Validate canonical issues and provenance",
+        "command": "python3 _src/tools/issuectl.py render --graphs --output-root <out>/bootstrap --write",
+        "purpose": "Render dependency graph view to bootstrap/dependency-graph.json",
+        "stage": "bootstrap-views-graph"
+      },
+      {
+        "command": "python3 _src/tools/issue_validate.py --source working-tree --root issues --provenance-root provenance --no-compare-head --json",
+        "purpose": "Validate canonical issues and provenance tree under baseline fact",
         "stage": "dag-validate-canonical"
       },
       {
-        "command": "python3 _src/tools/issuectl.py render --catalog public (render to <out>/dag/data/issue-catalog.public.json)",
+        "command": "python3 _src/tools/issuectl.py render --catalog internal --output-root <out>/dag --write",
+        "purpose": "Render internal issue catalog projection",
+        "stage": "dag-internal-catalog"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py render --catalog public --output-root <out>/dag --write",
         "purpose": "Render privacy-filtered public catalog projection",
         "stage": "dag-public-projection"
       },
       {
-        "command": "python3 _src/tools/issuectl.py render --graphs (render to <out>/dag/data/issue-graph.json, issue-graph.dot, issue-graph.svg)",
+        "command": "python3 _src/tools/issuectl.py render --graphs --output-root <out>/dag --write",
         "purpose": "Render graph models, DOT syntax, and SVG visualization",
         "stage": "dag-graphs"
       },
       {
-        "command": "python3 _src/tools/issuectl.py render --page-models (render to <out>/dag/data/issue-pages.json, issue-i18n-register.json)",
+        "command": "python3 _src/tools/issuectl.py render --page-models --output-root <out>/dag --write",
         "purpose": "Render localized page models and i18n registration",
         "stage": "dag-page-models"
       },
       {
-        "command": "python3 _src/tools/generate.py --issues (render to <out>/dag/<lang>/issues/index.html across 7 languages)",
-        "purpose": "Render client localized HTML index trees",
+        "command": "python3 _src/tools/issuectl.py render --html --output-root <out>/dag --write",
+        "purpose": "Render client localized HTML index trees across 7 languages",
         "stage": "dag-render-html"
       },
       {
-        "command": "python3 _src/tools/issuectl.py report (render to <out>/dag/output/issue-report.json and issue-report.html)",
+        "command": "python3 _src/tools/issuectl.py report --output-root <out>/dag --write",
         "purpose": "Render issue validation and graph summary reports",
         "stage": "dag-render-reports"
+      },
+      {
+        "command": "python3 _src/tools/issuectl.py render --catalog internal --output-root <out>/dag --check",
+        "purpose": "Verify clean no-op dry-run check invocation against generated output",
+        "stage": "dag-check-dryrun"
       }
     ],
-    "description": "Executable commands and environment parameters used to produce the 25 derived artifacts from clean detached clones",
+    "description": "Executable commands used to execute doctors, verify toolchain, and build 25 derived artifacts from clean detached clones",
     "schema": "issue-regeneration-commands@v1"
+  },
+  "historical_candidate_receipts": {
+    "candidates": [
+      {
+        "commit": "8fb8b254646226991a972684c276045270a084c4",
+        "nature": "hold_violation_predecessor",
+        "note": "Integrated prematurely ahead of 0037-34.02 verifier closure; preserved as immutable ancestor on main",
+        "status": "superseded_ancestor"
+      },
+      {
+        "commit": "fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33",
+        "nature": "initial_0037_35_01_candidate",
+        "note": "Initial clean regeneration evidence recording 8 product artifacts; rejected for missing full DAG surface",
+        "status": "rework_predecessor"
+      },
+      {
+        "commit": "7ed161607d8b8d9eda47fc939b1b2fb6ebd60694",
+        "nature": "displaced_candidate",
+        "note": "Displaced by concurrent branch divergence; preserved via signed tag preserved/0037-35.01-displaced-7ed161607d-20260905 (tag OID 37fb642236df6739486e35bd296146053c8b82ea)",
+        "status": "preserved_tag"
+      },
+      {
+        "commit": "aedf32e758431aff52e5fff8d2f735f6c8218185",
+        "nature": "rework_iteration_1_candidate",
+        "note": "Rejected for incomplete 244-diagnostic multiset, missing pinned digests, pseudo-commands, and verifier negative harness check omission; preserved on branch history",
+        "status": "rejected_ancestor"
+      }
+    ],
+    "reset_incident": {
+      "divergent_commits": [
+        "1e37ec951b",
+        "81ab29e24b"
+      ],
+      "resolution": "Landing 0037-root-freeze-claim-restore-landing-r2 restored clean main at 359baacdc0; merged into incident branch at 3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c",
+      "reverts": [
+        "175e08ac65",
+        "359baacdc05634563dae2f753239a04a5ee75253"
+      ]
+    }
   },
   "integrator_receipts": {
     "mandatory_candidate_hygiene_receipts": [
@@ -236,7 +311,9 @@
   "management_decision": {
     "authorized_scope": "Feature 0037 Task 0037-35.01 clean regeneration evidence on existing frozen transaction line",
     "decision_id": "decision-0037-35-01-frozen-red-baseline-20260905",
+    "disposition": "exact_baseline_relative",
     "option_chosen": "exact_baseline_relative",
+    "resolution": "accepted_frozen_red_baseline_under_DEC-0037-35-01",
     "validation_fact": {
       "breakdown": {
         "IV0901": 3,
@@ -246,13 +323,1992 @@
         "IV0916": 18,
         "IV0921": 126
       },
-      "exit_code": 2,
-      "oversized_provenance_coverage_paths": [
-        "provenance/migrations/issue-store/0037-13-20260825T082600Z/legacy-inventory.json",
-        "provenance/migrations/issue-store/0037-31-final-frozen-candidate.json",
-        "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json"
+      "diagnostics": [
+        {
+          "field": "",
+          "item": "",
+          "line": 0,
+          "message": "sidecar exceeds 262144 bytes",
+          "path": "provenance/migrations/issue-store/0037-13-20260825T082600Z/legacy-inventory.json",
+          "rule": "IV0901"
+        },
+        {
+          "field": "",
+          "item": "",
+          "line": 0,
+          "message": "sidecar exceeds 262144 bytes",
+          "path": "provenance/migrations/issue-store/0037-31-final-frozen-candidate.json",
+          "rule": "IV0901"
+        },
+        {
+          "field": "",
+          "item": "",
+          "line": 0,
+          "message": "sidecar exceeds 262144 bytes",
+          "path": "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json",
+          "rule": "IV0901"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0011-03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0011/0011-03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0012-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0012/0012-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0013-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1787",
+          "path": "issues/0013/0013-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0013-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0013/0013-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0019-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0019/0019-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-06",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-06/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-07",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-07/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-08",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-08/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0020-09",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0020/0020-09/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 0033-03.01",
+          "path": "issues/0033/0033-04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-07.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-07.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-08",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-08/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-09",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-09/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-10",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-10/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-11",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-11/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-12",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-12/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-13",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-13/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-14",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-14/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-15.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-15.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-15",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-15/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-16.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-16.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0033-16",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0033/0033-16/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0034-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0034/0034-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-08",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-08/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-09.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-09.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-09.02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-09.02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-09.03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-09.03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-09.04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-09.04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-10.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-10.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-10.04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-10.04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-11.02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-11.02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-11",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-11/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-13",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-13/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-14",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-14/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-17.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-17.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-17.02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-17.02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-17.03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-17.03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-22",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-22/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-39",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-39/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0037-51",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0037/0037-51/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-16.01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-16.01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-17",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-17/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-19",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-19/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-22",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-22/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-24",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-24/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-25",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-25/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-26",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-26/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-27",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-27/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-28",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-28/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-29",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-29/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-32",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-32/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0038-33",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0038/0038-33/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0039-04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0039/0039-04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0040-03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0040/0040-03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0040-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0040/0040-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0040-08",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0040/0040-08/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0040-09",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0040/0040-09/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0040-10",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0040/0040-10/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0041-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0041/0041-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0041-02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0041/0041-02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0041-03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0041/0041-03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0041-06",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0041/0041-06/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-02",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-02/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-06",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-06/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0043-07",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0043/0043-07/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-03",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-03/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-04",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-04/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-07",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-07/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-12",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-12/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-14",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-14/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-15",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-15/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-16",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0044/0044-16/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0044-20",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0044/0044-20/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0045-01",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0045/0045-01/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0045-05",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0045/0045-05/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0045-06",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0045/0045-06/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0046-00",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0046/0046-00/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0050-00",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0050/0050-00/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0050-07",
+          "line": 0,
+          "message": "missing prerequisite endpoint 2026",
+          "path": "issues/0050/0050-07/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0050-08",
+          "line": 0,
+          "message": "missing prerequisite endpoint 1788",
+          "path": "issues/0050/0050-08/index.md",
+          "rule": "IV0904"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0002-09",
+          "line": 0,
+          "message": "Feature closure cannot be used as a Task/Subtask implementation start gate",
+          "path": "issues/0002/0002-09/index.md",
+          "rule": "IV0905"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0004-01",
+          "line": 0,
+          "message": "Feature closure cannot be used as a Task/Subtask implementation start gate",
+          "path": "issues/0004/0004-01/index.md",
+          "rule": "IV0905"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0005-01",
+          "line": 0,
+          "message": "Feature closure cannot be used as a Task/Subtask implementation start gate",
+          "path": "issues/0005/0005-01/index.md",
+          "rule": "IV0905"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0007-01",
+          "line": 0,
+          "message": "Feature closure cannot be used as a Task/Subtask implementation start gate",
+          "path": "issues/0007/0007-01/index.md",
+          "rule": "IV0905"
+        },
+        {
+          "field": "prerequisites",
+          "item": "0036-02",
+          "line": 0,
+          "message": "Feature closure cannot be used as a Task/Subtask implementation start gate",
+          "path": "issues/0036/0036-02/index.md",
+          "rule": "IV0905"
+        },
+        {
+          "field": "state",
+          "item": "0007-01",
+          "line": 0,
+          "message": "in_progress item has no active claim",
+          "path": "issues/0007/0007-01/index.md",
+          "rule": "IV0911"
+        },
+        {
+          "field": "closure",
+          "item": "0001",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0001/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0002",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0002/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0003",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0003/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0004",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0004/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0005",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0005/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0006",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0006/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0008",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0008/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0009",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0009/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0010",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0010/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0021",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0021/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0033-10",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0033/0033-10/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0033-11",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0033/0033-11/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0033-13",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0033/0033-13/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0033-15.01",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0033/0033-15.01/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0033",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0033/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0036",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0036/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0040",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0040/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "closure",
+          "item": "0043",
+          "line": 0,
+          "message": "closed item is missing terminal closure.json",
+          "path": "issues/0043/index.md",
+          "rule": "IV0916"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-01 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-02 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-03 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-04 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-05 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-06 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-07 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-08 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-09 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-10 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0001",
+          "line": 0,
+          "message": "Feature closed while child 0001-11 is not terminal",
+          "path": "issues/0001/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-01 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-02 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-03 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-04 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-05 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-06 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-07 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-08 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-09 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0002",
+          "line": 0,
+          "message": "Feature closed while child 0002-10 is not terminal",
+          "path": "issues/0002/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-01 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-02 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-03 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-04 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-05 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-06 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-07 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-08 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-09 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-10 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-11 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-12 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-13 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-14 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-15 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-16 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0003",
+          "line": 0,
+          "message": "Feature closed while child 0003-17 is not terminal",
+          "path": "issues/0003/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0004",
+          "line": 0,
+          "message": "Feature closed while child 0004-01 is not terminal",
+          "path": "issues/0004/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0004",
+          "line": 0,
+          "message": "Feature closed while child 0004-02 is not terminal",
+          "path": "issues/0004/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0005",
+          "line": 0,
+          "message": "Feature closed while child 0005-01 is not terminal",
+          "path": "issues/0005/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-01 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-02 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-03 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-04 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-05 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-06 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-07 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-08 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-09 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-10 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-11 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-12 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-13 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-14 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-15 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-16 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-17 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-18 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-19 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-20 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-21 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-22 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-23 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0006",
+          "line": 0,
+          "message": "Feature closed while child 0006-24 is not terminal",
+          "path": "issues/0006/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-01 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-02 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-03 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-04 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-05 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-06 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-07 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-08 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0008",
+          "line": 0,
+          "message": "Feature closed while child 0008-09 is not terminal",
+          "path": "issues/0008/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-01 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-02 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-03 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-04 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-05 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0009",
+          "line": 0,
+          "message": "Feature closed while child 0009-06 is not terminal",
+          "path": "issues/0009/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0010",
+          "line": 0,
+          "message": "Feature closed while child 0010-01 is not terminal",
+          "path": "issues/0010/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-01 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-02 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-03 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-04 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-05 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-06 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-07 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0021",
+          "line": 0,
+          "message": "Feature closed while child 0021-08 is not terminal",
+          "path": "issues/0021/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-01 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-02 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-03 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-04 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-05 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-06 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-07 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-08 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-09 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-12 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-14 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-15 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0033",
+          "line": 0,
+          "message": "Feature closed while child 0033-16 is not terminal",
+          "path": "issues/0033/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-01 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-02 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-03 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-04 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-05 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-06 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0036",
+          "line": 0,
+          "message": "Feature closed while child 0036-07 is not terminal",
+          "path": "issues/0036/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-01 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-02 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-03 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-04 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-05 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-06 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-07 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-08 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-09 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0040",
+          "line": 0,
+          "message": "Feature closed while child 0040-10 is not terminal",
+          "path": "issues/0040/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-01 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-02 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-03 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-04 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-05 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-06 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        },
+        {
+          "field": "state",
+          "item": "0043",
+          "line": 0,
+          "message": "Feature closed while child 0043-07 is not terminal",
+          "path": "issues/0043/index.md",
+          "rule": "IV0921"
+        }
       ],
-      "total_diagnostics": 244
+      "diagnostics_digest": "sha256:90a18a7eb809ac125b91df2b96a31b3d758f6c6943545281469cd9baba5b26ef",
+      "oversized_provenance_coverage": {
+        "provenance/migrations/issue-store/0037-13-20260825T082600Z/legacy-inventory.json": {
+          "byte_size": 649237,
+          "record_count": 514,
+          "schema": "legacy-inventory@v1",
+          "sha256": "sha256:440fcba1d425f31969dadeaa5a47871e16390c822ff6c5772a0172cee47f0139",
+          "task_id": null,
+          "valid_json": true,
+          "valid_utf8": true
+        },
+        "provenance/migrations/issue-store/0037-31-final-frozen-candidate.json": {
+          "byte_size": 265472,
+          "record_count": 11,
+          "schema": "0037-31-final-frozen-candidate-evidence@v1",
+          "sha256": "sha256:dd9accb5ef70a892615a17708d48f5958688f6ff7cc18196ccabd2e76599213d",
+          "task_id": "0037-31",
+          "valid_json": true,
+          "valid_utf8": true
+        },
+        "provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json": {
+          "byte_size": 1424429,
+          "record_count": 930,
+          "schema": "migration-dispositions@v1",
+          "sha256": "sha256:82275efcd478fe3518b33ca9f61876077ae8c3e8594f0c6ba6064d6567b079b9",
+          "task_id": null,
+          "valid_json": true,
+          "valid_utf8": true
+        }
+      },
+      "total_diagnostics": 244,
+      "visible_validator_exit_code": 2
     }
   },
   "no_source_mutation_proof": {
@@ -271,7 +2327,37 @@
   "ordering_incident_record": {
     "incident_commit": "8fb8b254646226991a972684c276045270a084c4",
     "nature": "hold_violation_predecessor",
-    "resolution": "Commit 8fb8b254 is preserved as an immutable ancestor on main; 0037-34.02 verifier corrections and initial 0037-35.01 commit fa12dd41ec were integrated linearly after it up to fa12dd41ec; current 0037-35.01 rework iteration 2 appends linearly from fa12dd41ec with full 25-output clean dual-run regeneration and hardened verifier under Management decision decision-0037-35-01-frozen-red-baseline-20260905."
+    "resolution": "Commit 8fb8b254 is preserved as an immutable ancestor on main; 0037-34.02 verifier corrections and initial 0037-35.01 commit fa12dd41ec were integrated linearly after it up to fa12dd41ec; subsequent rework iteration 1 (aedf32e758) and tag preservation (e7bb2ac63f) were reconciled with repaired main at 3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c. Current rework iteration 2 builds linearly from 3030e2a4d3 with full 244-diagnostic multiset, pinned digests, and hardened verifier under DEC-0037-35-01."
+  },
+  "pinned_digests": {
+    "audit_profiles": {
+      "docs/pipeline/agent-profile-feedback-approved-baseline.json": "sha256:be6961581600599c9b8a061dd70e322dd8bf4dbb418127a1476afb00414d019f",
+      "docs/pipeline/agent-profile-feedback-loop.md": "sha256:79c1ffed521fff577b8c1f2c06a705052803d3ad0a297e2456bf21e6914efd10",
+      "docs/pipeline/issue-yaml-profile.md": "sha256:00bc9301c98e39d4358239d2b7fdbf7050fdda3c097d295a8e61d3dd0ca8058f",
+      "docs/pipeline/review-request-baseline-audit.md": "sha256:2c04badff714fc9058b7b0eb350eeace19d04fd46c27138c1bdd69b3161632ef"
+    },
+    "configurations": {
+      "AGENTS.md": "sha256:884a99fdbbdf34e334920bae704e803f42c4c0f4a628afdfab95cc031fabab33",
+      "PRIVILEGED.md": "sha256:cf8f76cbfd9a55025357016203085674bf0bdf211bcc35d3847dd5fc1b40218b",
+      "SANDBOX.md": "sha256:66759944d50f79279b80d90882f41d1ff07ad66ebdbe7d6adb85d58b0eae9b0d",
+      "agent-workflow.json": "sha256:13b516474ee10827f8d1364c7c43f74ef80adfbf7b1e92f072dea8531f2b7ee0",
+      "docs/pipeline/issue-derived-artifacts-v1.json": "sha256:d9ddcbadfe67d6d5e9a0d0803c58f26af55cc336b41b90ecfbb07ba3cabd5427",
+      "issues/_policy/allowed_signers": "sha256:7e194c8ff111d85b37d7ec9f49ea59e37e5316a69de0714e4ad5095fb951d82c"
+    },
+    "dependencies": {
+      "git_version": "git version 2.50.1 (Apple Git-155)",
+      "python_version": "3.9.6"
+    },
+    "tools": {
+      "_src/tools/agent_bootstrap.py": "sha256:8b66f9a08c3b7b65bceab4be98b26be9f3dcc1fa4371b82fbcaf6be943a65665",
+      "_src/tools/check_integration_hygiene.py": "sha256:dd9067672453d837ca94a1d291580c35a94c32d6002ea670ff337cc6a5fca25b",
+      "_src/tools/issue_lists.py": "sha256:67b282ad61d0d499eba12e1d3a22a6ccbd53ddc84d507e98743d0b15f9b2d881",
+      "_src/tools/issue_regenerate.py": "sha256:784c803c25e03b4e1f0cedc897dede3ff85abc81748508291b3cf5f2cfc9c22a",
+      "_src/tools/issue_store.py": "sha256:3daf477a1dfb5c9ca7f0bb08f3aef3dc56e16d5e9b10e96a9526999e51e08d43",
+      "_src/tools/issue_validate.py": "sha256:23a7ae05d476cb1e7caeef2e1e61047b02120c8e3461ffb4a2f1ecee0e427fe0",
+      "_src/tools/issue_views.py": "sha256:9cb10f9918027e7645dad68bdb8118f604c3223d2b9333ac94995e70c95ce3b8",
+      "_src/tools/issuectl.py": "sha256:397998ec807c475a29f077d8edb2b3988780f634121633e952137dc1a99f7f43"
+    }
   },
   "run_1": {
     "artifact_count": 25,
@@ -377,14 +2463,14 @@
       "python_version": "3.9.6",
       "reproduction_mode": "fresh_detached_disposable_clones"
     },
-    "generation_domain": "clean-regeneration-verification@v2",
+    "generation_domain": "clean-regeneration-verification@v3",
     "happy_path_result": {
       "clone_count": 2,
       "derived_product_count": 25,
       "status": "VALID"
     },
-    "source_code": "# 0037-35.01 Hardened Deterministic Clean Regeneration Verifier & Negative Harness\n# Specification ID: 0037-35.01-clean-regeneration-verifier@v2\n# Generation Domain: clean-regeneration-verification@v2\n# Authority Basis: Management decision decision-0037-35-01-frozen-red-baseline-20260905 (exact_baseline_relative)\n\nimport copy\nimport hashlib\nimport json\nimport os\nimport subprocess\nimport sys\n\nclass RegenerationVerificationError(Exception):\n    pass\n\ndef dict_raise_on_duplicates(ordered_pairs):\n    d = {}\n    for k, v in ordered_pairs:\n        if k in d:\n            raise RegenerationVerificationError(f\"Duplicate field detected during JSON deserialization: {k}\")\n        d[k] = v\n    return d\n\ndef parse_evidence_json(raw_text):\n    return json.loads(raw_text, object_pairs_hook=dict_raise_on_duplicates)\n\ndef compute_sha256_bytes(b):\n    return \"sha256:\" + hashlib.sha256(b).hexdigest()\n\nEXPECTED_PRODUCT_ARTIFACTS = frozenset({\n    \"bootstrap/catalog.json\",\n    \"bootstrap/dependency-graph.json\",\n    \"bootstrap/TODO.md\",\n    \"bootstrap/DONE.md\",\n    \"bootstrap/summaries/open.md\",\n    \"bootstrap/summaries/blocked.md\",\n    \"bootstrap/summaries/unclear.md\",\n    \"bootstrap/summaries/owners.md\",\n    \"dag/output/issue-validation.json\",\n    \"dag/data/issue-catalog.internal.json\",\n    \"dag/data/issue-catalog.public.json\",\n    \"dag/data/issue-graph.json\",\n    \"dag/output/issue-graph.dot\",\n    \"dag/output/issue-graph.svg\",\n    \"dag/data/issue-pages.json\",\n    \"dag/data/issue-i18n-register.json\",\n    \"dag/en/issues/index.html\",\n    \"dag/de/issues/index.html\",\n    \"dag/fr/issues/index.html\",\n    \"dag/es/issues/index.html\",\n    \"dag/pt/issues/index.html\",\n    \"dag/ar/issues/index.html\",\n    \"dag/zh/issues/index.html\",\n    \"dag/output/issue-report.json\",\n    \"dag/output/issue-report.html\"\n})\n\nEXPECTED_BREAKDOWN = {\n    \"IV0901\": 3,\n    \"IV0904\": 91,\n    \"IV0905\": 5,\n    \"IV0911\": 1,\n    \"IV0916\": 18,\n    \"IV0921\": 126\n}\n\ndef verify_evidence_structure(data):\n    if not isinstance(data, dict):\n        raise RegenerationVerificationError(\"Top-level payload must be a JSON object\")\n\n    if data.get(\"schema\") != \"clean-regeneration-evidence@v1\":\n        raise RegenerationVerificationError(f\"Invalid schema: {data.get('schema')}\")\n    if data.get(\"task_id\") != \"0037-35.01\":\n        raise RegenerationVerificationError(f\"Invalid task_id: {data.get('task_id')}\")\n\n    required_keys = {\n        \"schema\", \"task_id\", \"baseline\", \"selector_digest\", \"environment\",\n        \"derived_product_artifacts\", \"generation_commands\", \"management_decision\",\n        \"run_1\", \"run_2\", \"determinism_comparison\", \"run_manifest_analysis\",\n        \"fresh_agent_result\", \"stale_agent_result\", \"adversarial_negative_results\",\n        \"no_source_mutation_proof\", \"ordering_incident_record\", \"verifier_specification\",\n        \"signer_authority\", \"non_operational_guards\", \"integrator_receipts\"\n    }\n    missing = required_keys - set(data.keys())\n    if missing:\n        raise RegenerationVerificationError(f\"Missing required field(s): {sorted(list(missing))}\")\n    extra = set(data.keys()) - required_keys\n    if extra:\n        raise RegenerationVerificationError(f\"Unknown field(s) detected: {sorted(list(extra))}\")\n\n    # Baseline check\n    b = data.get(\"baseline\", {})\n    if b.get(\"start_commit\") != \"fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33\":\n        raise RegenerationVerificationError(f\"Wrong start_commit: {b.get('start_commit')}\")\n\n    # Management decision check\n    md = data.get(\"management_decision\", {})\n    if md.get(\"decision_id\") != \"decision-0037-35-01-frozen-red-baseline-20260905\":\n        raise RegenerationVerificationError(f\"Invalid management decision_id: {md.get('decision_id')}\")\n    if md.get(\"option_chosen\") != \"exact_baseline_relative\":\n        raise RegenerationVerificationError(f\"Invalid option_chosen: {md.get('option_chosen')}\")\n    vf = md.get(\"validation_fact\", {})\n    if vf.get(\"exit_code\") != 2 or vf.get(\"total_diagnostics\") != 244:\n        raise RegenerationVerificationError(f\"Invalid validation fact in decision: {vf}\")\n    if vf.get(\"breakdown\") != EXPECTED_BREAKDOWN:\n        raise RegenerationVerificationError(f\"Diagnostic breakdown mismatch: {vf.get('breakdown')}\")\n\n    # Product artifacts key check\n    prods = data.get(\"derived_product_artifacts\", {})\n    if not isinstance(prods, dict):\n        raise RegenerationVerificationError(\"derived_product_artifacts must be a dict\")\n    actual_prod_keys = set(prods.keys())\n    missing_prods = EXPECTED_PRODUCT_ARTIFACTS - actual_prod_keys\n    if missing_prods:\n        raise RegenerationVerificationError(f\"Missing required product artifact(s): {sorted(list(missing_prods))}\")\n    extra_prods = actual_prod_keys - EXPECTED_PRODUCT_ARTIFACTS\n    if extra_prods:\n        raise RegenerationVerificationError(f\"Unexpected product artifact(s): {sorted(list(extra_prods))}\")\n\n    # Runs exit code and status checks\n    r1 = data.get(\"run_1\", {})\n    r2 = data.get(\"run_2\", {})\n    if r1.get(\"exit_code\") != 0:\n        raise RegenerationVerificationError(f\"Run 1 exit code must be 0, got {r1.get('exit_code')}\")\n    if r2.get(\"exit_code\") != 0:\n        raise RegenerationVerificationError(f\"Run 2 exit code must be 0, got {r2.get('exit_code')}\")\n    if r1.get(\"status\") != \"PASS\":\n        raise RegenerationVerificationError(f\"Run 1 status must be PASS, got {r1.get('status')}\")\n    if r2.get(\"status\") != \"PASS\":\n        raise RegenerationVerificationError(f\"Run 2 status must be PASS, got {r2.get('status')}\")\n\n    # Manifest hash checks across runs and product artifacts\n    m1 = r1.get(\"manifest\", {})\n    m2 = r2.get(\"manifest\", {})\n    for k in EXPECTED_PRODUCT_ARTIFACTS:\n        if k not in m1:\n            raise RegenerationVerificationError(f\"Run 1 manifest missing product artifact: {k}\")\n        if k not in m2:\n            raise RegenerationVerificationError(f\"Run 2 manifest missing product artifact: {k}\")\n        h_prod = prods.get(k)\n        h1 = m1.get(k)\n        h2 = m2.get(k)\n        if h1 != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_1={h1} != product={h_prod}\")\n        if h2 != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_2={h2} != product={h_prod}\")\n\n    # Determinism check\n    det = data.get(\"determinism_comparison\", {})\n    if det.get(\"byte_identical\") is not True or det.get(\"semantic_identical\") is not True:\n        raise RegenerationVerificationError(\"Determinism comparison failed\")\n    if det.get(\"diff_count\") != 0:\n        raise RegenerationVerificationError(f\"Non-zero diff count: {det.get('diff_count')}\")\n\n    # Stale agent check\n    stale = data.get(\"stale_agent_result\", {})\n    if stale.get(\"status\") != \"rejected\":\n        raise RegenerationVerificationError(\"Stale authority acceptance detected: status must be rejected\")\n\n    # Zero mutation check\n    mut = data.get(\"no_source_mutation_proof\", {})\n    if mut.get(\"clone1_clean\") is not True or mut.get(\"clone2_clean\") is not True:\n        raise RegenerationVerificationError(\"Source mutation detected in clones\")\n\n    # Guards check\n    guards = data.get(\"non_operational_guards\", {})\n    if guards.get(\"acceptance_granted\") is not False or guards.get(\"freeze_lifted\") is not False:\n        raise RegenerationVerificationError(\"Non-operational guard violation: acceptance granted or freeze lifted\")\n\n    # Generation commands check\n    cmds = data.get(\"generation_commands\", {})\n    if not isinstance(cmds, dict) or not cmds.get(\"commands\"):\n        raise RegenerationVerificationError(\"generation_commands must be present and non-empty\")\n\n    return True\n\ndef run_negative_harness(base_data):\n    matrix_cases = [\n        {\n            \"case_id\": \"NEG-REGEN-01\",\n            \"name\": \"run 1 manifest hash divergence\",\n            \"description\": \"Output hash in run 1 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_1\"][\"manifest\"].__setitem__(\"bootstrap/TODO.md\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for bootstrap/TODO.md: run_1=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-02\",\n            \"name\": \"missing product artifact in inventory\",\n            \"description\": \"Missing product artifact in derived_product_artifacts\",\n            \"mutate\": lambda d: d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"),\n            \"expected_blocked_reason\": \"Missing required product artifact(s): ['bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-03\",\n            \"name\": \"stale legacy authority acceptance\",\n            \"description\": \"Stale agent reported ready status instead of rejected\",\n            \"mutate\": lambda d: d[\"stale_agent_result\"].__setitem__(\"status\", \"ready\"),\n            \"expected_blocked_reason\": \"Stale authority acceptance detected: status must be rejected\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-04\",\n            \"name\": \"source mutation in clone\",\n            \"description\": \"Source file modified during regeneration run\",\n            \"mutate\": lambda d: d[\"no_source_mutation_proof\"].__setitem__(\"clone1_clean\", False),\n            \"expected_blocked_reason\": \"Source mutation detected in clones\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-05\",\n            \"name\": \"acceptance inflation guard\",\n            \"description\": \"Unauthorized acceptance_granted flag set to true\",\n            \"mutate\": lambda d: d[\"non_operational_guards\"].__setitem__(\"acceptance_granted\", True),\n            \"expected_blocked_reason\": \"Non-operational guard violation: acceptance granted or freeze lifted\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-06\",\n            \"name\": \"duplicate field in raw JSON\",\n            \"description\": \"Duplicate keys in serialized payload\",\n            \"mutate\": lambda d: \"duplicate_raw_json_marker\",\n            \"expected_blocked_reason\": \"Duplicate field detected during JSON deserialization: schema\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-07\",\n            \"name\": \"unknown field in evidence\",\n            \"description\": \"Unrecognized extra field in top-level evidence\",\n            \"mutate\": lambda d: d.__setitem__(\"unrecognized_field\", True),\n            \"expected_blocked_reason\": \"Unknown field(s) detected: ['unrecognized_field']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-08\",\n            \"name\": \"non-zero exit code in Run 1\",\n            \"description\": \"Run 1 report indicates exit_code=1 failure\",\n            \"mutate\": lambda d: d[\"run_1\"].__setitem__(\"exit_code\", 1),\n            \"expected_blocked_reason\": \"Run 1 exit code must be 0, got 1\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-09\",\n            \"name\": \"bogus product artifact key with same cardinality\",\n            \"description\": \"Same cardinality inventory containing an unexpected bogus path\",\n            \"mutate\": lambda d: (d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"), d[\"derived_product_artifacts\"].__setitem__(\"bogus/invalid.json\", \"sha256:1111111111111111111111111111111111111111111111111111111111111111\")),\n            \"expected_blocked_reason\": \"Missing required product artifact(s): ['bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-10\",\n            \"name\": \"run 2 manifest hash divergence\",\n            \"description\": \"Output hash in run 2 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_2\"][\"manifest\"].__setitem__(\"dag/output/issue-validation.json\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for dag/output/issue-validation.json: run_2=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        }\n    ]\n\n    results = []\n    for c in matrix_cases:\n        case_res = {\n            \"case_id\": c[\"case_id\"],\n            \"name\": c[\"name\"],\n            \"description\": c[\"description\"],\n            \"expected\": \"BLOCKED\",\n            \"observed\": None,\n            \"stable_reason\": None,\n            \"status\": None\n        }\n\n        if c[\"case_id\"] == \"NEG-REGEN-06\":\n            raw_dup_json = '{\"schema\": \"clean-regeneration-evidence@v1\", \"schema\": \"clean-regeneration-evidence@v2\"}'\n            try:\n                parse_evidence_json(raw_dup_json)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"JSON decoder allowed duplicate keys\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n        else:\n            mut_data = copy.deepcopy(base_data)\n            c[\"mutate\"](mut_data)\n            try:\n                verify_evidence_structure(mut_data)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"Verifier unexpectedly allowed invalid data\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n\n        results.append(case_res)\n\n    return results\n\ndef verify_all(evidence_path, repo_dir):\n    with open(evidence_path, \"rb\") as f:\n        raw_text = f.read().decode(\"utf-8\")\n    data = parse_evidence_json(raw_text)\n    verify_evidence_structure(data)\n\n    spec = data.get(\"verifier_specification\", {})\n    source_code = spec.get(\"source_code\", \"\")\n    expected_hash = spec.get(\"source_sha256\", \"\")\n    actual_hash = compute_sha256_bytes(source_code.encode(\"utf-8\"))\n    if actual_hash != expected_hash:\n        raise RegenerationVerificationError(f\"Verifier source hash mismatch: expected {expected_hash}, computed {actual_hash}\")\n\n    return True\n\nif __name__ == \"__main__\" and len(sys.argv) >= 3:\n    verify_all(sys.argv[1], sys.argv[2])\n    print(\"ALL HARDENED CLEAN REGENERATION VERIFICATION CHECKS PASSED\")\n",
-    "source_sha256": "sha256:744fbf005d27b29db985aa2df62a6c692bab8dc1bad7997503be2f296f235855",
-    "specification_id": "0037-35.01-clean-regeneration-verifier@v2"
+    "source_code": "# 0037-35.01 Hardened Deterministic Clean Regeneration Verifier & Negative Harness\n# Specification ID: 0037-35.01-clean-regeneration-verifier@v3\n# Generation Domain: clean-regeneration-verification@v3\n# Authority Basis: Management decision decision-0037-35-01-frozen-red-baseline-20260905 (exact_baseline_relative)\n\nimport copy\nimport hashlib\nimport json\nimport os\nimport subprocess\nimport sys\n\nclass RegenerationVerificationError(Exception):\n    pass\n\ndef dict_raise_on_duplicates(ordered_pairs):\n    d = {}\n    for k, v in ordered_pairs:\n        if k in d:\n            raise RegenerationVerificationError(f\"Duplicate field detected during JSON deserialization: {k}\")\n        d[k] = v\n    return d\n\ndef parse_evidence_json(raw_text):\n    return json.loads(raw_text, object_pairs_hook=dict_raise_on_duplicates)\n\ndef compute_sha256_bytes(b):\n    return \"sha256:\" + hashlib.sha256(b).hexdigest()\n\nEXPECTED_PRODUCT_ARTIFACTS = frozenset({\n    \"bootstrap/catalog.json\",\n    \"bootstrap/dependency-graph.json\",\n    \"bootstrap/TODO.md\",\n    \"bootstrap/DONE.md\",\n    \"bootstrap/summaries/open.md\",\n    \"bootstrap/summaries/blocked.md\",\n    \"bootstrap/summaries/unclear.md\",\n    \"bootstrap/summaries/owners.md\",\n    \"dag/output/issue-validation.json\",\n    \"dag/data/issue-catalog.internal.json\",\n    \"dag/data/issue-catalog.public.json\",\n    \"dag/data/issue-graph.json\",\n    \"dag/output/issue-graph.dot\",\n    \"dag/output/issue-graph.svg\",\n    \"dag/data/issue-pages.json\",\n    \"dag/data/issue-i18n-register.json\",\n    \"dag/en/issues/index.html\",\n    \"dag/de/issues/index.html\",\n    \"dag/fr/issues/index.html\",\n    \"dag/es/issues/index.html\",\n    \"dag/pt/issues/index.html\",\n    \"dag/ar/issues/index.html\",\n    \"dag/zh/issues/index.html\",\n    \"dag/output/issue-report.json\",\n    \"dag/output/issue-report.html\"\n})\n\nEXPECTED_OVERSIZED_PATHS = frozenset({\n    \"provenance/migrations/issue-store/0037-13-20260825T082600Z/legacy-inventory.json\",\n    \"provenance/migrations/issue-store/0037-31-final-frozen-candidate.json\",\n    \"provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json\"\n})\n\ndef verify_evidence_structure(data):\n    if not isinstance(data, dict):\n        raise RegenerationVerificationError(\"Top-level payload must be a JSON object\")\n\n    if data.get(\"schema\") != \"clean-regeneration-evidence@v1\":\n        raise RegenerationVerificationError(f\"Invalid schema: {data.get('schema')}\")\n    if data.get(\"task_id\") != \"0037-35.01\":\n        raise RegenerationVerificationError(f\"Invalid task_id: {data.get('task_id')}\")\n\n    required_keys = {\n        \"schema\", \"task_id\", \"baseline\", \"selector_digest\", \"environment\",\n        \"derived_product_artifacts\", \"generation_commands\", \"management_decision\",\n        \"pinned_digests\", \"run_1\", \"run_2\", \"determinism_comparison\",\n        \"run_manifest_analysis\", \"fresh_agent_result\", \"stale_agent_result\",\n        \"adversarial_negative_results\", \"no_source_mutation_proof\",\n        \"ordering_incident_record\", \"historical_candidate_receipts\",\n        \"verifier_specification\", \"signer_authority\", \"non_operational_guards\",\n        \"integrator_receipts\"\n    }\n    missing = required_keys - set(data.keys())\n    if missing:\n        raise RegenerationVerificationError(f\"Missing required field(s): {sorted(list(missing))}\")\n    extra = set(data.keys()) - required_keys\n    if extra:\n        raise RegenerationVerificationError(f\"Unknown field(s) detected: {sorted(list(extra))}\")\n\n    # Baseline check\n    b = data.get(\"baseline\", {})\n    if b.get(\"start_commit\") != \"fa12dd41ec9f0778e3b9fd8a3d06a8bbf5865f33\":\n        raise RegenerationVerificationError(f\"Wrong start_commit: {b.get('start_commit')}\")\n    if b.get(\"baseline_rework_commit\") != \"3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c\":\n        raise RegenerationVerificationError(f\"Wrong baseline_rework_commit: {b.get('baseline_rework_commit')}\")\n    if b.get(\"baseline_rework_tree_oid\") != \"dc5edf78041558324753f0db4c859774a8c105b2\":\n        raise RegenerationVerificationError(f\"Wrong baseline_rework_tree_oid: {b.get('baseline_rework_tree_oid')}\")\n\n    # Management decision check\n    md = data.get(\"management_decision\", {})\n    if md.get(\"decision_id\") != \"decision-0037-35-01-frozen-red-baseline-20260905\":\n        raise RegenerationVerificationError(f\"Invalid management decision_id: {md.get('decision_id')}\")\n    if md.get(\"option_chosen\") != \"exact_baseline_relative\":\n        raise RegenerationVerificationError(f\"Invalid option_chosen: {md.get('option_chosen')}\")\n    if md.get(\"disposition\") != \"exact_baseline_relative\":\n        raise RegenerationVerificationError(f\"Invalid disposition: {md.get('disposition')}\")\n\n    vf = md.get(\"validation_fact\", {})\n    if vf.get(\"visible_validator_exit_code\") != 2 or vf.get(\"total_diagnostics\") != 244:\n        raise RegenerationVerificationError(f\"Invalid validation fact in decision: {vf}\")\n\n    # Verify full 244 sorted diagnostics multiset\n    diags = vf.get(\"diagnostics\")\n    if not isinstance(diags, list) or len(diags) != 244:\n        raise RegenerationVerificationError(f\"Validation diagnostics must be a list of 244 entries, got {len(diags) if isinstance(diags, list) else type(diags)}\")\n    sorted_diags = sorted(diags, key=lambda d: (d.get(\"rule\", \"\"), d.get(\"path\", \"\"), d.get(\"item\", \"\"), d.get(\"line\", 0), d.get(\"field\", \"\"), d.get(\"message\", \"\")))\n    if diags != sorted_diags:\n        raise RegenerationVerificationError(\"Diagnostics multiset must be in canonical sorted order\")\n\n    canonical_diags_json = json.dumps(sorted_diags, sort_keys=True, separators=(\",\", \":\"))\n    computed_diags_digest = \"sha256:\" + hashlib.sha256(canonical_diags_json.encode(\"utf-8\")).hexdigest()\n    expected_diags_digest = vf.get(\"diagnostics_digest\")\n    if computed_diags_digest != expected_diags_digest:\n        raise RegenerationVerificationError(f\"Diagnostics digest mismatch: computed {computed_diags_digest} != declared {expected_diags_digest}\")\n\n    # Check oversized provenance coverage\n    oversized = vf.get(\"oversized_provenance_coverage\", {})\n    if not isinstance(oversized, dict) or set(oversized.keys()) != EXPECTED_OVERSIZED_PATHS:\n        raise RegenerationVerificationError(f\"Oversized provenance coverage mismatch: {set(oversized.keys())} != {EXPECTED_OVERSIZED_PATHS}\")\n    for op, oinfo in oversized.items():\n        if not oinfo.get(\"valid_json\") or oinfo.get(\"byte_size\", 0) <= 262144:\n            raise RegenerationVerificationError(f\"Oversized coverage invalid for {op}: {oinfo}\")\n\n    # Product artifacts key check\n    prods = data.get(\"derived_product_artifacts\", {})\n    if not isinstance(prods, dict):\n        raise RegenerationVerificationError(\"derived_product_artifacts must be a dict\")\n    actual_prod_keys = set(prods.keys())\n    if actual_prod_keys != EXPECTED_PRODUCT_ARTIFACTS:\n        diff = (EXPECTED_PRODUCT_ARTIFACTS - actual_prod_keys) | (actual_prod_keys - EXPECTED_PRODUCT_ARTIFACTS)\n        raise RegenerationVerificationError(f\"Product artifacts set mismatch: {sorted(list(diff))}\")\n\n    # Runs exit code and status checks\n    r1 = data.get(\"run_1\", {})\n    r2 = data.get(\"run_2\", {})\n    if r1.get(\"exit_code\") != 0 or r2.get(\"exit_code\") != 0:\n        raise RegenerationVerificationError(\"Run exit codes must be 0\")\n    if r1.get(\"status\") != \"PASS\" or r2.get(\"status\") != \"PASS\":\n        raise RegenerationVerificationError(\"Run status must be PASS\")\n\n    # Manifest hash checks across runs and product artifacts\n    m1 = r1.get(\"manifest\", {})\n    m2 = r2.get(\"manifest\", {})\n    for k in EXPECTED_PRODUCT_ARTIFACTS:\n        if k not in m1 or k not in m2:\n            raise RegenerationVerificationError(f\"Run manifest missing product artifact: {k}\")\n        h_prod = prods.get(k)\n        if m1.get(k) != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_1={m1.get(k)} != product={h_prod}\")\n        if m2.get(k) != h_prod:\n            raise RegenerationVerificationError(f\"Manifest hash mismatch for {k}: run_2={m2.get(k)} != product={h_prod}\")\n\n    # Determinism check\n    det = data.get(\"determinism_comparison\", {})\n    if det.get(\"byte_identical\") is not True or det.get(\"semantic_identical\") is not True:\n        raise RegenerationVerificationError(\"Determinism comparison failed\")\n    if det.get(\"diff_count\") != 0:\n        raise RegenerationVerificationError(f\"Non-zero diff count: {det.get('diff_count')}\")\n\n    # Stale agent check\n    stale = data.get(\"stale_agent_result\", {})\n    if stale.get(\"status\") != \"rejected\":\n        raise RegenerationVerificationError(\"Stale authority acceptance detected: status must be rejected\")\n\n    # Zero mutation check\n    mut = data.get(\"no_source_mutation_proof\", {})\n    if mut.get(\"clone1_clean\") is not True or mut.get(\"clone2_clean\") is not True:\n        raise RegenerationVerificationError(\"Source mutation detected in clones\")\n\n    # Guards check\n    guards = data.get(\"non_operational_guards\", {})\n    if guards.get(\"acceptance_granted\") is not False or guards.get(\"freeze_lifted\") is not False:\n        raise RegenerationVerificationError(\"Non-operational guard violation: acceptance granted or freeze lifted\")\n\n    # Generation commands check\n    cmds = data.get(\"generation_commands\", {})\n    if not isinstance(cmds, dict) or not cmds.get(\"commands\"):\n        raise RegenerationVerificationError(\"generation_commands must be present and non-empty\")\n\n    return True\n\ndef run_negative_harness(base_data):\n    matrix_cases = [\n        {\n            \"case_id\": \"NEG-REGEN-01\",\n            \"name\": \"run 1 manifest hash divergence\",\n            \"description\": \"Output hash in run 1 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_1\"][\"manifest\"].__setitem__(\"bootstrap/TODO.md\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for bootstrap/TODO.md: run_1=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-02\",\n            \"name\": \"missing product artifact in inventory\",\n            \"description\": \"Missing product artifact in derived_product_artifacts\",\n            \"mutate\": lambda d: d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"),\n            \"expected_blocked_reason\": \"Product artifacts set mismatch: ['bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-03\",\n            \"name\": \"stale legacy authority acceptance\",\n            \"description\": \"Stale agent reported ready status instead of rejected\",\n            \"mutate\": lambda d: d[\"stale_agent_result\"].__setitem__(\"status\", \"ready\"),\n            \"expected_blocked_reason\": \"Stale authority acceptance detected: status must be rejected\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-04\",\n            \"name\": \"source mutation in clone\",\n            \"description\": \"Source file modified during regeneration run\",\n            \"mutate\": lambda d: d[\"no_source_mutation_proof\"].__setitem__(\"clone1_clean\", False),\n            \"expected_blocked_reason\": \"Source mutation detected in clones\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-05\",\n            \"name\": \"acceptance inflation guard\",\n            \"description\": \"Unauthorized acceptance_granted flag set to true\",\n            \"mutate\": lambda d: d[\"non_operational_guards\"].__setitem__(\"acceptance_granted\", True),\n            \"expected_blocked_reason\": \"Non-operational guard violation: acceptance granted or freeze lifted\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-06\",\n            \"name\": \"duplicate field in raw JSON\",\n            \"description\": \"Duplicate keys in serialized payload\",\n            \"mutate\": lambda d: \"duplicate_raw_json_marker\",\n            \"expected_blocked_reason\": \"Duplicate field detected during JSON deserialization: schema\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-07\",\n            \"name\": \"unknown field in evidence\",\n            \"description\": \"Unrecognized extra field in top-level evidence\",\n            \"mutate\": lambda d: d.__setitem__(\"unrecognized_field\", True),\n            \"expected_blocked_reason\": \"Unknown field(s) detected: ['unrecognized_field']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-08\",\n            \"name\": \"non-zero exit code in Run 1\",\n            \"description\": \"Run 1 report indicates exit_code=1 failure\",\n            \"mutate\": lambda d: d[\"run_1\"].__setitem__(\"exit_code\", 1),\n            \"expected_blocked_reason\": \"Run exit codes must be 0\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-09\",\n            \"name\": \"bogus product artifact key with same cardinality\",\n            \"description\": \"Same cardinality inventory containing an unexpected bogus path\",\n            \"mutate\": lambda d: (d[\"derived_product_artifacts\"].pop(\"bootstrap/TODO.md\"), d[\"derived_product_artifacts\"].__setitem__(\"bogus/invalid.json\", \"sha256:1111111111111111111111111111111111111111111111111111111111111111\")),\n            \"expected_blocked_reason\": \"Product artifacts set mismatch: ['bogus/invalid.json', 'bootstrap/TODO.md']\"\n        },\n        {\n            \"case_id\": \"NEG-REGEN-10\",\n            \"name\": \"run 2 manifest hash divergence\",\n            \"description\": \"Output hash in run 2 manifest differs from declared product digest\",\n            \"mutate\": lambda d: d[\"run_2\"][\"manifest\"].__setitem__(\"dag/output/issue-validation.json\", \"sha256:0000000000000000000000000000000000000000000000000000000000000000\"),\n            \"expected_blocked_reason\": \"Manifest hash mismatch for dag/output/issue-validation.json: run_2=sha256:0000000000000000000000000000000000000000000000000000000000000000 != product=\"\n        }\n    ]\n\n    results = []\n    for c in matrix_cases:\n        case_res = {\n            \"case_id\": c[\"case_id\"],\n            \"name\": c[\"name\"],\n            \"description\": c[\"description\"],\n            \"expected\": \"BLOCKED\",\n            \"observed\": None,\n            \"stable_reason\": None,\n            \"status\": None\n        }\n\n        if c[\"case_id\"] == \"NEG-REGEN-06\":\n            raw_dup_json = '{\"schema\": \"clean-regeneration-evidence@v1\", \"schema\": \"clean-regeneration-evidence@v2\"}'\n            try:\n                parse_evidence_json(raw_dup_json)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"JSON decoder allowed duplicate keys\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n        else:\n            mut_data = copy.deepcopy(base_data)\n            c[\"mutate\"](mut_data)\n            try:\n                verify_evidence_structure(mut_data)\n                case_res[\"observed\"] = \"ALLOWED\"\n                case_res[\"status\"] = \"FAIL\"\n                case_res[\"stable_reason\"] = \"Verifier unexpectedly allowed invalid data\"\n            except RegenerationVerificationError as e:\n                case_res[\"observed\"] = \"BLOCKED\"\n                case_res[\"status\"] = \"PASS\"\n                case_res[\"stable_reason\"] = str(e)\n\n        results.append(case_res)\n\n    return results\n\ndef verify_all(evidence_path, repo_dir):\n    with open(evidence_path, \"rb\") as f:\n        raw_text = f.read().decode(\"utf-8\")\n    data = parse_evidence_json(raw_text)\n    verify_evidence_structure(data)\n\n    spec = data.get(\"verifier_specification\", {})\n    source_code = spec.get(\"source_code\", \"\")\n    expected_hash = spec.get(\"source_sha256\", \"\")\n    actual_hash = compute_sha256_bytes(source_code.encode(\"utf-8\"))\n    if actual_hash != expected_hash:\n        raise RegenerationVerificationError(f\"Verifier source hash mismatch: expected {expected_hash}, computed {actual_hash}\")\n\n    harness_results = run_negative_harness(data)\n    stored_results = data.get(\"adversarial_negative_results\", [])\n    if len(harness_results) != len(stored_results):\n        raise RegenerationVerificationError(f\"Negative results count mismatch: executed {len(harness_results)} != stored {len(stored_results)}\")\n\n    for h_res, s_res in zip(harness_results, stored_results):\n        if h_res[\"case_id\"] != s_res.get(\"case_id\"):\n            raise RegenerationVerificationError(f\"Case ID sequence mismatch: {h_res['case_id']} != {s_res.get('case_id')}\")\n        if h_res[\"status\"] != \"PASS\" or s_res.get(\"status\") != \"PASS\":\n            raise RegenerationVerificationError(f\"Case {h_res['case_id']} failed status check: harness={h_res['status']}, stored={s_res.get('status')}\")\n        if h_res[\"observed\"] != \"BLOCKED\" or s_res.get(\"observed\") != \"BLOCKED\":\n            raise RegenerationVerificationError(f\"Case {h_res['case_id']} not observed BLOCKED: harness={h_res['observed']}, stored={s_res.get('observed')}\")\n        if h_res[\"stable_reason\"] != s_res.get(\"stable_reason\"):\n            raise RegenerationVerificationError(f\"Case {h_res['case_id']} stable reason mismatch: harness={h_res['stable_reason']} != stored={s_res.get('stable_reason')}\")\n\n    return True\n\nif __name__ == \"__main__\" and len(sys.argv) >= 3:\n    verify_all(sys.argv[1], sys.argv[2])\n    print(\"ALL HARDENED CLEAN REGENERATION VERIFICATION CHECKS PASSED\")\n",
+    "source_sha256": "sha256:d611e2a7a835c1bfb0f46876c43bed2ec0115b8a8061c1625624ee481149cb2e",
+    "specification_id": "0037-35.01-clean-regeneration-verifier@v3"
   }
 }
