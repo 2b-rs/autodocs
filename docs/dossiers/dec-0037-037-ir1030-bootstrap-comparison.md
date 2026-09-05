@@ -2,7 +2,7 @@
 
 - **Record format:** `decision-record@v1`
 - **Recorded at:** `2026-09-05T17:41:21+02:00`
-- **Deciding identity:** `agent:supervisor:0037-35.01:20260905T154121Z`
+- **Deciding identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
 - **Role:** `Management`
 - **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
 - **Subject:** Representation-correct repair of the cross-item `IR1030` bootstrap catalog/list comparison and bounded treatment of the associated `IR1031` no-provenance validation control for Task `0037-35.01`.
@@ -47,5 +47,5 @@
     - **Role:** `Architekt`
     - **Participation:** `reviewed`
     - **Position:** `supports`
-    - **Note:** The accepted read-only scope review bounded the repair to three paths, specified exact ordered comparison and canonical-label semantics, defined the exhaustive 392-case oracle, and retained the full `IR1031` red control and downstream thresholds.
+    - **Note:** Accepted scope review `1788622388397-a0f0f9a3`, results `1788622540833-9e46d191`, `1788622571215-9c8a9d3e`, `1788622571247-6d06d1de`, and `1788622540894-4389869a`, bounds callers to `bootstrap_refresh` and inherited `issuectl.cmd_bootstrap`; compares exact ordered identities, lengths, non-label key sets and recursive values; derives every list/view label array from canonical issue labels; retains `IR1030` for every other mismatch; and requires baseline-red/candidate-green real fixtures plus 392 exhaustive cases from seven canonical-label arrays by seven observed arrays by two view-label-presence states by four shared-field states, with adjacent absent/empty, forged/reordered, missing/extra/duplicate identity, malformed source, nested-change, immutability, real eight-output write/check/no-op, and exact 241-as-244-minus-three `IV0901` evidence. No fourth source file, bypass, threshold change, or waiver is supported.
 - **Waiver:** `none`
