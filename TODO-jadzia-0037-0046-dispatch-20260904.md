@@ -39,25 +39,3 @@ NOTES: Re-dispatched implementation of 0046-04 via offer 1788528155940-2a343cc7.
 OFFERED: priority 1: benjamin, priority 2: worf
 STATUS: OPEN
 NOTES: Re-dispatched implementation of 0046-05 via offer 1788528162192-4d925162.
-
-## 0046-04 (Re-offer 2)
-OFFERED: priority 1: benjamin, worf
-STATUS: OPEN
-NOTES: Re-dispatched implementation of 0046-04 via offer 1788608817627-4181b90a.
-
-## 0046-05 (Re-offer 2)
-OFFERED: priority 1: worf, benjamin
-STATUS: OPEN
-NOTES: Cancelled previous offer (overdue/idle) and re-dispatched implementation of 0046-05 via offer 1788608822321-7468a5d2.
-- note: 1788608817627-4181b90a (0046-04) awarded to worf.
-- note: 1788608822321-7468a5d2 (0046-05) awarded to worf.
-
-## 0046-02
-OFFERED: priority 1: benjamin, worf
-STATUS: OPEN
-NOTES: Dispatched implementation of 0046-02 via offer 1788608999142-9c759a99.
-
-## 0046-03
-OFFERED: priority 1: worf, benjamin
-STATUS: OPEN
-NOTES: Dispatched implementation of 0046-03 via offer 1788609003010-195620df.
