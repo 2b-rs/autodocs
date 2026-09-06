@@ -5,8 +5,7 @@ level: "task"
 parent: "0037"
 state: "open"
 visibility: "internal"
-prerequisites:
-  - "0037-36"
+prerequisites: []
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"
@@ -19,7 +18,7 @@ criteria:
 
 ## Goal
 
-PREREQ: 0037-40:0037-36 Apply the signed post-cutover closure/activation delta and lift the write freeze.
+PREREQ: none (DEC-0037-038 bounded one-sequence waiver) Apply the signed post-cutover closure/activation delta and lift the write freeze.
 
 ## Scope
 
