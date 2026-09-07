@@ -120,6 +120,51 @@ class IssueListsTest(unittest.TestCase):
             self.assertEqual(LISTS.main(argv), 0)
             self.assertEqual((out / "TODO.md").read_text(encoding="utf-8"), first)
 
+    def test_ae8_block_extracted_from_agents_md_matches_todo_only(self):
+        # DEC-0038-004 AE-8 / 0038-35 freeze-violation correction: AGENTS.md is
+        # the single source for the adversarial-completion-evidence block;
+        # `_header()` must extract and reproduce it in the "todo" projection
+        # only. Pre-change baseline (main@4f420824368c190813effc6e8d39e3652ab015ec,
+        # the exact commit this correction branched from) had no such
+        # extraction at all: `documents["todo"]` never contained either marker
+        # (red). This assertion is green only on the candidate.
+        agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        begin, end = LISTS.ADVERSARIAL_EVIDENCE_BEGIN, LISTS.ADVERSARIAL_EVIDENCE_END
+        start, stop = agents_text.find(begin), agents_text.find(end)
+        self.assertNotEqual(start, -1, "AGENTS.md must carry the AE-8 markers for this test to be meaningful")
+        expected_block = agents_text[start + len(begin):stop].strip("\n")
+        self.assertIn(begin, self.documents["todo"])
+        self.assertIn(end, self.documents["todo"])
+        todo_start = self.documents["todo"].find(begin)
+        todo_stop = self.documents["todo"].find(end)
+        observed_block = self.documents["todo"][todo_start + len(begin):todo_stop].strip("\n")
+        self.assertEqual(observed_block, expected_block)
+        # Adjacent case: every other generated kind must NOT carry the block —
+        # only "todo" is named by AE-8's own text ("the TODO.md header contract").
+        for kind in ("done", "open", "blocked", "unclear", "owners"):
+            self.assertNotIn(begin, self.documents[kind])
+            self.assertNotIn(end, self.documents[kind])
+
+    def test_ae8_missing_markers_in_agents_md_is_a_hard_error(self):
+        # Adjacent case to the above: a malformed/markerless source must fail
+        # closed, not silently generate a "todo" projection that omits AE-8 by
+        # accident (AE-8 forbids a partial projection; a swallowed extraction
+        # error would produce exactly that).
+        with tempfile.TemporaryDirectory() as temp:
+            fake_repo = Path(temp)
+            (fake_repo / "AGENTS.md").write_text("no markers here\n", encoding="utf-8")
+            with self.assertRaises(LISTS.IssueListsError) as ctx:
+                LISTS._extract_adversarial_evidence(fake_repo)
+            self.assertIn("AE-8", str(ctx.exception))
+
+    def test_ae8_extraction_is_deterministic_and_digested(self):
+        block = LISTS._extract_adversarial_evidence(ROOT)
+        self.assertEqual(block, LISTS._extract_adversarial_evidence(ROOT))
+        self.assertEqual(
+            self.catalog["digests"]["agents_md_ae8_sha256"],
+            LISTS._digest_bytes(block),
+        )
+
 
 def _line_for(item_id):
     catalog, groups, documents = LISTS.render_lists(ISSUES, ROOT)

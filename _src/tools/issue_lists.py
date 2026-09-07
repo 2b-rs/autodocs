@@ -38,6 +38,15 @@ CONFIG = {
     "lists_schema": "issue-lists@v1",
     "warning": "GENERATED-VIEW: not authoritative. Do not hand-edit. Live TODO.md/DONE.md remain authority until cutover.",
 }
+AGENTS_MD_PATH = Path("AGENTS.md")
+ADVERSARIAL_EVIDENCE_BEGIN = "<!-- BEGIN adversarial-completion-evidence@v1 -->"
+ADVERSARIAL_EVIDENCE_END = "<!-- END adversarial-completion-evidence@v1 -->"
+#: `DEC-0038-004` AE-8 requires this block to appear with identical meaning in
+#: both the `TODO.md` header contract and the completion section of
+#: `AGENTS.md`. `AGENTS.md` is the single source; extraction here is what lets
+#: `TODO.md` carry it as a generated, reproducible projection instead of a
+#: second hand-maintained copy (`docs/campaign-evidence/0038-35/`).
+ADVERSARIAL_EVIDENCE_KINDS = frozenset({"todo"})
 MARKER = {
     "open": "[ ]",
     "in_progress": "[p]",
@@ -112,7 +121,29 @@ def _item_line(item):
     )
 
 
-def _header(kind, catalog):
+def _extract_adversarial_evidence(repository_root):
+    """Extract the AE-8 block from `AGENTS.md`, verbatim, as the single source.
+
+    Raises `IssueListsError` when the markers are missing or malformed, rather
+    than silently omitting the block: an unreadable source is not grounds to
+    generate a `TODO.md` that fails AE-8 by omission when AGENTS.md carries the
+    block but the projection cannot be reproduced from it.
+    """
+    path = Path(repository_root) / AGENTS_MD_PATH
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise IssueListsError(f"cannot read {path} for AE-8 extraction: {exc}") from exc
+    start = text.find(ADVERSARIAL_EVIDENCE_BEGIN)
+    stop = text.find(ADVERSARIAL_EVIDENCE_END)
+    if start == -1 or stop == -1 or stop < start:
+        raise IssueListsError(
+            f"AE-8 violation: adversarial-completion-evidence@v1 markers missing or malformed in {path}"
+        )
+    return text[start + len(ADVERSARIAL_EVIDENCE_BEGIN):stop].strip("\n")
+
+
+def _header(kind, catalog, evidence_block=None):
     digests = catalog["digests"]
     lines = [
         f"<!-- {CONFIG['warning']} -->",
@@ -123,6 +154,15 @@ def _header(kind, catalog):
         f"<!-- tool_sha256: {digests['tool_sha256']} -->",
         f"<!-- config_sha256: {digests['config_sha256']} -->",
         "<!-- volatile execution run is recorded only in run-manifest.json -->",
+    ]
+    if evidence_block is not None:
+        lines += [
+            "",
+            ADVERSARIAL_EVIDENCE_BEGIN,
+            evidence_block,
+            ADVERSARIAL_EVIDENCE_END,
+        ]
+    lines += [
         "",
         f"# Generated {kind}",
         "",
@@ -200,11 +240,14 @@ def render_lists(issues_root, repository_root):
     catalog["digests"]["config_sha256"] = config_digest
     catalog["generation_id"] = _generation_id(
         source_digests, schema_digest, tool_digest, config_digest)
+    evidence_block = _extract_adversarial_evidence(repository_root)
+    catalog["digests"]["agents_md_ae8_sha256"] = _digest_bytes(evidence_block)
     groups = classify(catalog)
     documents = {}
     for kind in ("todo", "done", "open", "blocked", "unclear"):
         body = "\n".join(_item_line(item) for item in groups[kind])
-        documents[kind] = _header(kind, catalog) + (body + "\n" if body else "(none)\n")
+        header_evidence = evidence_block if kind in ADVERSARIAL_EVIDENCE_KINDS else None
+        documents[kind] = _header(kind, catalog, header_evidence) + (body + "\n" if body else "(none)\n")
     owner_lines = []
     for owner in sorted(groups["owners"]):
         ids = ",".join(sorted(groups["owners"][owner]))
