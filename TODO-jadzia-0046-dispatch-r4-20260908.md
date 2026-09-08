@@ -39,3 +39,8 @@ NOTES: Dispatched integration of 0046-05 to obrien via offer 1788871328926-8ae74
 AWARDED: obrien
 STATUS: ACCEPTED
 NOTES: obrien accepted offer 1788871328926-8ae74d98.
+
+## 0046-05-integration
+AWARDED: obrien
+STATUS: IN_PROGRESS
+NOTES: obrien started execution.
