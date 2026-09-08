@@ -24,8 +24,3 @@ NOTES: benjamin accepted offer 1788860626994-f28760ef.
 AWARDED: benjamin
 STATUS: IN_PROGRESS
 NOTES: benjamin started execution.
-
-## 0046-05 (Acceptance)
-AWARDED: benjamin
-STATUS: ACCEPTED
-NOTES: 0046-05 Acceptance recorded. Evidence verified.
