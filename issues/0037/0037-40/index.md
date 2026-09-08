@@ -5,8 +5,7 @@ level: "task"
 parent: "0037"
 state: "open"
 visibility: "internal"
-prerequisites:
-  - "0037-36"
+prerequisites: []
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"
@@ -19,7 +18,7 @@ criteria:
 
 ## Goal
 
-PREREQ: 0037-40:0037-36 Apply the signed post-cutover closure/activation delta and lift the write freeze.
+PREREQ: none (DEC-0037-038 bounded one-sequence waiver) Apply the signed post-cutover closure/activation delta and lift the write freeze.
 
 ## Scope
 
@@ -28,8 +27,8 @@ PREREQ: 0037-40:0037-36 Apply the signed post-cutover closure/activation delta a
 
 ## Acceptance criteria
 
-- **AC-001** Verify the append-only transaction-ref head by compare-and-swap, exact cutover/reference/clean-run/rollback/audit artifact digests, independent quality signature/role, and unchanged frozen issue tree. The activation commit materializes closures for `0037-35.01`, `0037-35.02`, `0037-35`, and `0037-36` and regenerates all derived views. A required follow-up reference commit records the activation hash, closes `0037-40` and Feature `0037`, regenerates `TODO.md`/`DONE.md`/catalog/graph outputs, verifies one authority, a newly incremented `issue-store-writable` instruction epoch/capability set, successful fresh-agent doctor, rejected legacy commands and all pre-activation epochs, and zero unexplained diff, and only then lifts the issue/claim write freeze. The signed authorization explicitly accepts that this is the routine legacy-rollback point of no return and names `0037-44` as the post-activation recovery path. Any mismatch leaves the freeze active and triggers frozen-window rollback/remediation
+- **AC-001** For the one sequence authorized by `DEC-0037-038`, bind the activation manifest to the exact base/tree, expected append-only transaction head, authored/generated delta, and Management authority using the configured Git SSH commit signature verified against `issues/_policy/allowed_signers`. Increment the workflow version and bind the `issue-store-writable` epoch, matching write phase, instruction-member hash, and selector digest. Verify exactly one readable issue-store authority, real deterministic regeneration with a second no-op, successful fresh-agent doctor, stale/legacy expectation rejection, and legacy-write rejection with unchanged bytes. Generate only real mapped outputs. `0037-35.01`, `0037-35.02`, `0037-35`, and `0037-36` are not prerequisites for this sequence: retain their findings and outstanding, unpassed/unaccepted assurance without materializing their closures. A separate signed reference commit binds the actual activation OID and results; ordinary writers remain quiescent until both commits are independently reviewed and integrated and the minimum controls pass. The assigned Integrator performs transaction compare-and-swap and integration verification. Neither this sequence nor the waiver grants Task Acceptance or closes Feature `0037`. Preserve all refs, commits, evidence, and new data; use additive correction/re-freeze and the `0037-44` recovery path. The waiver expires on completion, abandonment, or earlier explicit revocation of this sequence; later retries or materially changed candidates require fresh authority.
 
 ## Definition of Done
 
-Both activation and follow-up commits match the signed delta, pass the full issue/regeneration validator from clean checkouts, move the Feature to generated `DONE.md` with real refs, and record the exact transaction-ref terminal object; no ordinary issue mutation occurs before the freeze is lifted.
+Both activation and follow-up commits match the authorized delta and record the minimum-control results and exact transaction-ref terminal object. Ordinary issue/claim writes remain quiescent until integration of both commits and successful minimum controls. Remaining regeneration, rollback, package, and audit assurance is recorded as subsequent work after writing is enabled, retaining every red finding. Feature `0037` remains open; full assurance and separate Acceptance/Feature closure are not claimed through `DEC-0037-038`.
