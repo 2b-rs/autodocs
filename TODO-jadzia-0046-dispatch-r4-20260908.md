@@ -29,3 +29,8 @@ NOTES: benjamin started execution.
 STATUS: REVERTED
 NOTES: Acceptance edd695e87 reverted (commit 3e9857132). PL role carries no Acceptance authority; TODO.md is generated; Acceptance writes stay frozen pending signed 0037-40 sequence. Will re-route through proper privileged review once freeze lifts.
 - note: Terminal state / handover verified post supervisor restart.
+
+## 0046-05-integration
+OFFERED: priority 1: obrien
+STATUS: OPEN
+NOTES: Dispatched integration of 0046-05 to obrien via offer 1788871328926-8ae74d98.
