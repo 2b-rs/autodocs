@@ -19,3 +19,8 @@ NOTES: worf accepted offer 1788860626807-ee037976.
 AWARDED: benjamin
 STATUS: ACCEPTED
 NOTES: benjamin accepted offer 1788860626994-f28760ef.
+
+## 0046-05
+AWARDED: benjamin
+STATUS: IN_PROGRESS
+NOTES: benjamin started execution.
