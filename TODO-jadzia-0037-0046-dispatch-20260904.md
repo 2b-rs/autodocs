@@ -39,3 +39,8 @@ NOTES: Re-dispatched implementation of 0046-04 via offer 1788528155940-2a343cc7.
 OFFERED: priority 1: benjamin, priority 2: worf
 STATUS: OPEN
 NOTES: Re-dispatched implementation of 0046-05 via offer 1788528162192-4d925162.
+
+- note: Offer 1788528150035-ec90276d cancelled (already completed).
+- note: Offer 1788528155940-2a343cc7 cancelled (Worf failed to commit due to incident hold).
+- note: Offer 1788528162192-4d925162 cancelled (overdue).
+- state: [x]
