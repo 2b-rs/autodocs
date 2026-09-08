@@ -243,8 +243,8 @@ def load_and_validate_selector(candidate_root: Path, selector_path: Optional[Pat
         expected_phase = V2_PHASES.get(str(epoch))
         if expected_phase is None or (profile, phase) != expected_phase[:2]:
             raise IntegrationPolicyViolation("PROFILE-PHASE-CONTRADICTION", "v2 authority epoch/profile/phase is unsupported", str(wf_file))
-        if ver != "2.0.0" or data.get("execution_model") != "direct" or data.get("required_capability") not in {"unprivileged", "privileged"}:
-            raise IntegrationPolicyViolation("UNSUPPORTED-V2-CONTRACT", "v2 requires version 2.0.0, direct execution, and an unprivileged/privileged capability", str(wf_file))
+        if ver not in {"2.0.0", "2.1.0", "2.2.0", "2.3.0"} or data.get("execution_model") != "direct" or data.get("required_capability") not in {"unprivileged", "privileged"}:
+            raise IntegrationPolicyViolation("UNSUPPORTED-V2-CONTRACT", "v2 requires supported version (2.0.0-2.3.0), direct execution, and an unprivileged/privileged capability", str(wf_file))
         bundle_value = data.get("instruction_bundle")
         if not isinstance(bundle_value, dict) or set(bundle_value) != {"path", "members"}:
             raise IntegrationPolicyViolation("INVALID-BUNDLE-DECLARATION", "v2 instruction_bundle must contain exactly path and members", str(wf_file))
