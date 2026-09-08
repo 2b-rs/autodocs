@@ -11,11 +11,11 @@ This terminal integrating task integrates the reviewed `agent-inbox` lifecycle a
 | Field | Value |
 |---|---|
 | **Integrator** | `obrien` (Miles O'Brien, Integrator for Team DeepSpace9) |
-| **Authority** | Atomic AWARD on offer `1788297753802-f3b2ad09` (coordinator `jadzia`) |
+| **Authority** | Atomic AWARD on offer `1788866082151-f4da0610` (coordinator `jadzia`) |
 | **Process** | Terminal Integration (SWE.5 / SUP.8) |
 | **Candidate Repository** | `agent-inbox` (`/Users/tobias.anton/devel/agent-inbox`) |
-| **Candidate Head** | `ed79db3aa6be25f85959ddca0bb442a4bb314c75` |
-| **Autodocs Evidence Head** | `0f10393c6b` |
+| **Candidate Head** | `8dec795a21f6fe38506dcf04e2ac318cfc615889` |
+| **Autodocs Evidence Head** | `24efe9c520` |
 
 ---
 
@@ -32,7 +32,7 @@ Every candidate task under Feature 0050 has been independently implemented, revi
 | `0050-04` | `agent-inbox` | `8ef6f0a66f68f8fb54cca89abff57a835b328fee` | Supervisor drain & deadline escalation reconciliation |
 | `0050-05` | `agent-inbox` | `0fe7b5e25ca92b1a80a3e8d712a822352d4a7b48` | GUI drain visibility & canonical pause/resume controls |
 | `0050-06` | `agent-inbox` | `91f59a6fcde91685347cf24e3b35e1632f5721b1` | Emergency blackout, preservation, zero proof & rollback |
-| `0050-07` | `autodocs` | `403c761f2c` | Independent QA matrix verification (identified Q-01..Q-03) |
+| `0050-07` | `autodocs` | `24efe9c520` | Independent QA matrix verification (verified-complete across all 7 dimensions) |
 | `0050-09` (Arch) | `autodocs` | `4778393ae9` | Management DEC-1788296208431-408cb2cb opt1 scope adjustment |
 | `0050-09` (Impl) | `agent-inbox` | `ed79db3aa6be25f85959ddca0bb442a4bb314c75` | QA coverage closure for Q-01, Q-02, Q-03 |
 
