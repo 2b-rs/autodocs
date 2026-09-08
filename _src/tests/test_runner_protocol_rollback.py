@@ -1,98 +1,26 @@
-#!/usr/bin/env python3
-import json
-import shutil
-import tempfile
-import unittest
+import json, shutil, tempfile, unittest
 from pathlib import Path
-
-from _src.tools.runner_protocol_rollback import (
-    EXCLUSIVE_MUTATION,
-    FAILURE_STORES,
-    HEALTH_AFTER_SWITCH,
-    INJECTED_EPOCH,
-    INJECTED_PROTOCOL,
-    POST_SWITCH_VERIFICATION,
-    PRIOR_EPOCH,
-    SELECTOR_NAME,
-    SERVICE_NAME,
-    SINGLETON_PROTOCOL,
-    capture,
-    inject_failed_activation,
-    prove,
-    sha256_bytes,
-)
-
-SELECTOR = {
-    "schema": "agent-workflow-bootstrap@v1",
-    "workflow_version": "1.0.0",
-    "authority_epoch": PRIOR_EPOCH,
-    "authority_profile": "legacy-lists",
-    "write_phase": PRIOR_EPOCH,
-    "required_capability": "sandboxed-grunt",
-    "runner_protocol": SINGLETON_PROTOCOL,
-    "selector_digest": "sha256:" + ("a" * 64),
-    "instruction_bundle": "docs/pipeline/agent-instructions/legacy/index.md",
-}
-SERVICE = {
-    "schema": "runner-service@v1",
-    "run_slot": "run.sh",
-    "rollback_path": "git checkout HEAD -- runner-host/run-loop.sh",
-}
-
-
-class ProtocolRollbackTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.tmp = Path(tempfile.mkdtemp(prefix="rollback-proof-"))
-        self.addCleanup(shutil.rmtree, self.tmp, True)
-        git = self.tmp / ".git"
-        git.mkdir()
-        (git / "HEAD").write_text("ref: refs/heads/0037-46.02\n", encoding="utf-8")
-        (self.tmp / SELECTOR_NAME).write_text(json.dumps(SELECTOR) + "\n", encoding="utf-8")
-        service = self.tmp / SERVICE_NAME
-        service.parent.mkdir(parents=True)
-        service.write_text(json.dumps(SERVICE) + "\n", encoding="utf-8")
-
-    def test_injection_changes_protocol_and_epoch(self) -> None:
-        fields = inject_failed_activation(self.tmp)
-        self.assertEqual(fields["runner_protocol"], INJECTED_PROTOCOL)
-        self.assertEqual(fields["authority_epoch"], INJECTED_EPOCH)
-
-    def test_prove_restores_bytes_and_fields(self) -> None:
-        before = (self.tmp / SELECTOR_NAME).read_bytes()
-        service_before = (self.tmp / SERVICE_NAME).read_bytes()
-        result = prove(self.tmp)
-        self.assertTrue(result["ok"], result)
-        self.assertEqual(result["injected"]["runner_protocol"], INJECTED_PROTOCOL)
-        self.assertEqual(result["injected"]["authority_epoch"], INJECTED_EPOCH)
-        self.assertEqual(result["after"]["fields"]["runner_protocol"], SINGLETON_PROTOCOL)
-        self.assertEqual(result["after"]["fields"]["authority_epoch"], PRIOR_EPOCH)
-        after = (self.tmp / SELECTOR_NAME).read_bytes()
-        self.assertEqual(after, before)
-        self.assertEqual(sha256_bytes(after), sha256_bytes(before))
-        self.assertEqual((self.tmp / SERVICE_NAME).read_bytes(), service_before)
-
-    def test_all_named_failure_stores_prove_and_restore_bytes(self) -> None:
-        self.assertEqual(
-            FAILURE_STORES,
-            (HEALTH_AFTER_SWITCH, POST_SWITCH_VERIFICATION, EXCLUSIVE_MUTATION),
-        )
-        for store in FAILURE_STORES:
-            with self.subTest(store=store):
-                before = capture(self.tmp)
-                result = prove(self.tmp, store)
-                after = capture(self.tmp)
-                self.assertTrue(result["ok"], result)
-                self.assertEqual(result["failure_store"], store)
-                self.assertEqual(before["selector"]["digest"], after["selector"]["digest"])
-                self.assertEqual(before["service"]["digest"], after["service"]["digest"])
-                self.assertEqual(before["fields"], after["fields"])
-
-    def test_invalid_failure_store_is_rejected_without_mutation(self) -> None:
-        before = (self.tmp / SELECTOR_NAME).read_bytes()
-        with self.assertRaises(ValueError):
-            inject_failed_activation(self.tmp, "not-a-gate")
-        self.assertEqual((self.tmp / SELECTOR_NAME).read_bytes(), before)
-
-
-if __name__ == "__main__":
-    unittest.main()
+from _src.tools.runner_protocol_rollback import FAILURES, EVENTS, MARKER, BLOCKED, execute, load_bundle, sha256_bytes
+ROOT=Path(__file__).resolve().parents[2]
+class RollbackTests(unittest.TestCase):
+ def setUp(self):
+  self.tmp=Path(tempfile.mkdtemp());self.addCleanup(shutil.rmtree,self.tmp,True)
+  p=self.tmp/"issues/_policy";p.mkdir(parents=True);shutil.copy(ROOT/"issues/_policy/runner-protocol-rollback-v1.json",p)
+  (self.tmp/"agent-workflow.json").write_text("bad\n");(p/"runner-service.json").write_text("bad\n")
+ def test_bundle_is_corrected_lineage_and_digest_bound(self):
+  targets=load_bundle(self.tmp);self.assertEqual({t["path"] for t in targets},{"agent-workflow.json","issues/_policy/runner-service.json"})
+  self.assertTrue(all(sha256_bytes(t["payload"])==t["sha256"] for t in targets))
+ def test_service_is_restored_before_selector_and_events_verified(self):
+  r=execute(self.tmp);self.assertTrue(r["ok"]);self.assertEqual(json.loads((self.tmp/MARKER).read_text())["status"],"restored")
+  self.assertEqual([json.loads(x)["event"] for x in (self.tmp/EVENTS).read_text().splitlines()],["rollback-started","rollback-restored"])
+  self.assertEqual(json.loads((self.tmp/"agent-workflow.json").read_text())["runner_protocol"],"runner-request@v1")
+ def test_every_failure_is_durably_blocked(self):
+  for failure in FAILURES:
+   with self.subTest(failure=failure):
+    r=execute(self.tmp,timeout=0,fail_at=failure);self.assertFalse(r["ok"]);self.assertTrue((self.tmp/BLOCKED).exists())
+ def test_active_claim_drain_timeout_blocks(self):
+  claims=self.tmp/".runner/claims";claims.mkdir(parents=True);(claims/"a.lease.json").write_text("{}")
+  self.assertFalse(execute(self.tmp,timeout=0)["ok"]);self.assertEqual(json.loads((self.tmp/BLOCKED).read_text())["reason"],"failure")
+ def test_existing_lock_is_exclusive(self):
+  (self.tmp/".runner/rollback-v1.lock").mkdir(parents=True);self.assertEqual(execute(self.tmp)["reason"],"lock")
+if __name__=="__main__":unittest.main()
