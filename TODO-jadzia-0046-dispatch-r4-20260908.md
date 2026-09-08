@@ -34,3 +34,8 @@ NOTES: Acceptance edd695e87 reverted (commit 3e9857132). PL role carries no Acce
 OFFERED: priority 1: obrien
 STATUS: OPEN
 NOTES: Dispatched integration of 0046-05 to obrien via offer 1788871328926-8ae74d98.
+
+## 0046-05-integration
+AWARDED: obrien
+STATUS: ACCEPTED
+NOTES: obrien accepted offer 1788871328926-8ae74d98.
