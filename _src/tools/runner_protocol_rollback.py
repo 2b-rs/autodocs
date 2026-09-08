@@ -34,8 +34,9 @@ def execute(repo:Path,*,timeout:float=30,fail_at:str|None=None)->dict[str,Any]:
   atomic_write(repo/MARKER,(json.dumps(m,sort_keys=True)+"\n").encode());_event(repo,{"event":"rollback-started"},fail_at)
   if fail_at=="digest":raise ValueError("injected digest failure")
   targets=load_bundle(repo);deadline=time.monotonic()+timeout
+  if fail_at=="timeout":raise TimeoutError("injected timeout failure")
   while list((repo/".runner/claims").glob("*.lease.json")):
-   if fail_at=="timeout" or time.monotonic()>=deadline:raise TimeoutError("active-claim drain timed out")
+   if time.monotonic()>=deadline:raise TimeoutError("active-claim drain timed out")
    time.sleep(.01)
   for t in sorted(targets,key=lambda x:0 if x["path"].endswith("runner-service.json") else 1):
    if fail_at=="write":raise OSError("injected write failure")
