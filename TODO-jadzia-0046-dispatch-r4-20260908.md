@@ -24,3 +24,7 @@ NOTES: benjamin accepted offer 1788860626994-f28760ef.
 AWARDED: benjamin
 STATUS: IN_PROGRESS
 NOTES: benjamin started execution.
+
+## 0046-05 (Invalidation)
+STATUS: REVERTED
+NOTES: Acceptance edd695e87 reverted (commit 3e9857132). PL role carries no Acceptance authority; TODO.md is generated; Acceptance writes stay frozen pending signed 0037-40 sequence. Will re-route through proper privileged review once freeze lifts.
