@@ -1,0 +1,30 @@
+# Claim: 0037-30 final scoped-freeze R4 aggregation, review and integration
+
+- owner_token: `agent:geordi:0037-30-integration-r4:1788480090547-5b9ed1ab`
+- assignment: `1788480090547-5b9ed1ab`
+- capability_class: `privileged`
+- process: Aggregation, Independent Review and Integration
+- status: `[p]` — independent review artifacts preserved; reservation released after restarted assignment registry could not prove the award
+- baseline: `main@0e7aa8fe37690139c2f49a889b03565256b947db`
+- scoped-freeze evidence tip: `f99a42c34bc9f1f9237e26dc68a900dd24d3de2c` (ancestor `5220d9fdb`)
+- Data compatibility tip: `9dccd87fe0028a0b9a63a3e1b6b67f7631f30aed`; only its `5220d9fdb..9dccd87fe0` two-path delta is carried
+- prior signed rejections: `532e475a5404a6db34e03ea25c341c6316e7976e`, `ce31c50f14cce6bf643a2bfbbbfa600c98fb2312`
+- decision / Architect / governance receipt: `decision-0037-30-legacy-frozen-write-gate-20260903` / `4584f3b27f` / `0e7aa8fe37690139c2f49a889b03565256b947db`
+- branch/worktree: recovery branch `integrate-0037-30-final-r4-recovery-20260904` at `/tmp/integrate-0037-30-final-r4-recovery-20260904`, recreated from immutable signed aggregate `882d4c3acadd928dbe696be6dd776b278a62a43f` after supervisor restart removed the disposable original worktree
+- allowed write scope: the eleven exact paths in offer `1788480090547-5b9ed1ab`
+- activation bound: only `legacy-frozen`; never `issue-store-writable`
+- prohibited: issue import, `TODO.md`, `DONE.md`, push/publication/remote configuration, ref deletion/force/reset/prune, Feature closure
+
+## Review contract
+
+From exact current main, carry exact `f99a42c34b`, then only the two-path compatibility delta `5220d9fdb..9dccd87fe0`, preserving both latest claims and recording aggregate identity before review. Independently verify current bundle, single frozen legacy authority, human/JSON denial for ordinary legacy backlog/claims, machine-authorized 0037 cutover/recovery allowlisting, stale-client rejection, signed reports/watermark/refs, hermetic feedback behavior, historical red controls, adjacent allow/deny cases, property count, focused suites, live gate and full repository suite. Any finding produces a signed rejection and leaves root untouched. PASS alone permits signed R4 review/receipt and guarded exact-hygiene/root-preflight/ff-only/postflight integration.
+
+## Progress
+
+- 2026-09-04: Atomic R4 award accepted; R3 cancelled and preserved before substantive review; isolated branch created at exact current baseline. Aggregation pending.
+- 2026-09-04: Supervisor restart recovery: original disposable R4 worktree was unavailable while its branch and signed aggregate remained reachable. Created the recovery worktree directly at that immutable aggregate; no root content changed. Read integration digest `1788482051700-ad49d619` through the permitted mailbox projection; it does not alter this exact awarded scope. Native inbox/ack MCP endpoint is unavailable after runtime restart, so acknowledgement cannot be recorded from this session.
+- 2026-09-04: Exact recovered aggregate was committed as signed `b68bd665dcb00dc499ac15b09b033c432246c589`. Independent checks pass: both source signatures, aggregate signature, byte-only ten-path delta, `git diff --check`, live frozen gate (human and JSON, zero violations), 12 focused policy tests, 31 review-ingestion tests, and `python3 test.py` (100 tests, OK). Review dossier and the exact hygiene/root sequence remain pending.
+- 2026-09-04: Signed review candidate `3064b7122f61f1621ce7d0c5cd95b4427fd56ff1` again passed the exact live gate (11 paths, zero violations). Mandatory exact-candidate hygiene then failed: `MAIN_WORKTREE_DIRTY` in root `/Users/tobias.anton/devel/autodocs` on foreign non-Memory tracked files `TODO-jadzia-0037-43-temporary-local-gate-scope-review-20260903.md` and `TODO-jadzia-0046-policy-rederivation.md`. The 59 missing disposable worktrees were advisory. Per the hygiene contract, no root preflight or merge was attempted. Required follow-up: the root-worktree owner/Project Lead must resolve or separately authorize recovery of the foreign divergence, then retrigger an exact-hygiene pass for this unchanged candidate.
+- 2026-09-04: Mailbox projection messages `1788482266938-eb58eba4` and `1788482691603-b2299d99` advertise Jean-Luc claim-closure candidate `c8110766a0d48ed4f551d1f0e3687cb24bcd8572` and Beverly claim-closure candidate `2bf54d423b91b1588826c5e12c86604e20868f37`. They are coordination notices, not awards; both explicitly report the same foreign Jadzia root divergence. No reservation, review, or integration was started while this exact R4 assignment remains active. Route them through a normal independent Integrator offer only after root hygiene is fit.
+- 2026-09-04: Mailbox projection message `1788483409797-b365be7d` reports the root divergence self-cleared and root preflight passed, but `main` advanced to `8522149878f6af56175da98657fa35b3ea602af5`. The R4 award and completed review are pinned to `0e7aa8fe37690139c2f49a889b03565256b947db`; therefore the reviewed candidate is stale for the required `--ff-only` landing. No rebase, merge, new review, or root mutation was attempted from this coordination notice. Required follow-up: coordinator/Project Lead must issue a refreshed exact scope-and-baseline assignment for a new aggregate descendant of current `main`.
+- 2026-09-04: Restart reconciliation for message `1788484012772-1b834a44`: retained recovery branch/worktree and this signed claim were verified at `b53520f3ca5a6318dccf067ee890b9f4bc751c11`, but authoritative `offer_status(agent=geordi, offer_id=1788480090547-5b9ed1ab)` returned `unknown priority offer`. A live award therefore cannot be proven from the restarted registry. The Enterprise reservation is released; no further review/integration is authorized until a fresh exact scope-and-current-baseline offer is atomically awarded. All R4 work remains preserved on this branch.

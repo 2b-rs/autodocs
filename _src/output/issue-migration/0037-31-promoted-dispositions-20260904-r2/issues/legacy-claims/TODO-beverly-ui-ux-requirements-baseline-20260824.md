@@ -1,0 +1,29 @@
+# UI/UX requirements baseline claim
+
+- **Item:** `ui-ux-requirements-baseline-20260824` (directly assigned preparation; no backlog marker claimed)
+- **Owner token:** `agent:beverly:ui-ux-requirements-baseline-20260824:20260824T075154Z`
+- **Role:** Requirements Engineer, Team Enterprise
+- **Capability class:** `unprivileged`
+- **Execution authority:** direct local Shell/Git in the isolated worktree; no acceptance, checkpoint, integration, release, Management, or architecture authority
+- **Authority/provenance:** direct Project Lead assignment from Jean-Luc, mailbox `1787557914002-310712dc`, implementing the current-user UI/UX request quoted verbatim in `docs/design/ui-ux-requirements-baseline.md`
+- **Branch:** `ui-ux-requirements-baseline-20260824`
+- **Worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/ui-ux-requirements-baseline-20260824`
+- **Base:** `ui-ux-design-dossier-20260824@1d749458859726323d5c2fb9bae32766a0da9b12`
+- **Status:** `[x]`
+- **Startup review:** user-directed follow-on to a completed dossier; no `TODO.md` mutation or Feature/Task/DEC allocation. The work stabilizes needs and traceability without selecting or activating architecture.
+- **Write scope:** this claim; `docs/design/ui-ux-requirements-baseline.md`; RQ bindings only in `docs/design/ui-ux-quality-trace-matrix.md` and `docs/design/ui-ux-implementation-roadmap.md`
+- **Read scope:** dossier and its design, route, view, critique, quality, and roadmap inputs; repository evidence as needed
+- **External resources:** none
+- **Assumptions:** `RQ-UIUX-*` are preparation identifiers, not allocated backlog or governance IDs; `F-A..F-O` and `F-E0` remain proposed Features; `D-01..D-06` are open-decision handles, not `DEC-*` allocations
+- **Exclusions:** architecture redesign, production code, governance, root/main/TODO/DONE mutation, Feature/Task/DEC allocation, acceptance, integration, checkpoint crossing, publication
+- **Validation intent:** unique/contiguous RQ IDs; all 119 inventory views accounted for; every RQ maps to source, decision status, view/route family, proposed Feature, quality gate/test/evidence; reverse Q/Feature bindings; local links and diff hygiene
+- **Safety hold:** do not use `memory_append` until workspace routing is fixed; any durable follow-up remains in this claim.
+- **Recovery:** discard only this isolated branch/worktree; no production or governance state is changed.
+- **Implementation REF:** `a2c47d306a6261862db44c97b24463d955be3889`
+- **Delivered:** 32 atomic `RQ-UIUX-*` requirements; exact current-user provenance; goal/constraint/quality/open-decision classification; six genuine open product choices; requirement-to-decision/view-route/proposed-Feature/Q-test-evidence trace; reverse bindings for Q-01..Q-24 and F-A..F-O/F-E0.
+- **Validation:** PASS — 32 unique contiguous RQ rows; every RQ appears in both reverse binding artifacts; 24 exact Q binding rows; 16 exact proposed-Feature binding rows; inventory and route matrix each contain 119 unique IDs with exact set equality; `git diff --check` clean; only declared paths changed.
+- **Handoff:** Project Lead routes D-01..D-06 to authorized decision-making and allocates future Feature/Task/DEC IDs. This claim grants none of those authorities.
+- **Correction F-UIUX-RQ-001 (2026-08-24):** Project Lead independently found that the reported diff-clean result did not reproduce: `git diff --check 1d749458859726323d5c2fb9bae32766a0da9b12..88d0df2cd8f89495daa657af538752bcb225b0b8` exited 2 for trailing spaces at requirements-baseline lines 3–4. The prior statement resulted from checking only the unstaged delta and is superseded, not erased. Removed only those spaces; requirement substance is unchanged. Final pinned-range and coverage results are recorded by the corrective commit.
+- **Correction REF and retest:** `376bc83703d1445874544d35b5a395eba51a8601`; exact `git diff --check 1d749458859726323d5c2fb9bae32766a0da9b12..376bc83703d1445874544d35b5a395eba51a8601` PASS (exit 0). Coverage retest PASS: inventory/matrix `119/119` unique with exact set equality; 32 contiguous RQs each represented in both reverse maps; 24 Q bindings; 16 proposed-Feature bindings. Only the claim and requirements-baseline paths changed in the correction.
+- **Independent review finding F-UIUX-RQ-REVIEW-001:** Troy's review evidence `85a4b0fc2eaab1384de083d35927d43242cd4075` against `5109048a1a8bc00d1b1f4e1d5af9bbd7045274ac` correctly found that the decision inventory omitted the dossier's explicit Visibility choice and substituted the distinct feedback-identity choice. Added unresolved `D-06` without deciding it; bound it to RQ-UIUX-021 and preserved the existing F-D/F-H and Q-05/Q-08/Q-19 traces. Fresh independent review is required.
+- **Independent review R2:** `review-ready` against corrected candidate `ae11b1f8beacaaf4a84998ed6f99b2d5cf3533fd`; F-UIUX-RQ-REVIEW-001 closed. Append-only review branch `review-ui-ux-requirements-baseline-20260824@9896d9d2073c91a9345b7c1f03cce3ffa817cb01`. Reviewer independently recomputed D-01..D-06, 32-RQ reverse-map equality, 119/119 view-route set equality, and exact base-to-candidate diff hygiene. `review-ready` is evidence only, not Acceptance, allocation, implementation authority, checkpoint, or integration.

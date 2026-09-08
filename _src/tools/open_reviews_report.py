@@ -24,6 +24,7 @@ CPU-Last, daher direkt ueber MCP ausfuehrbar (AGENTS.md).
 """
 import csv
 import html
+from report_page_header import report_page_header
 import json
 import os
 import sys
@@ -182,6 +183,7 @@ def build_page(items):
         "footer": "extracted",
         "main_lead": "",
         "main": [
+            {"t": "html", "html": report_page_header(generator="_src/tools/open_reviews_report.py", data_source="_src/spec/records/ und _src/data/records.csv", purpose="Zeigt jedes Requirement mit offenem Review-Bedarf; Quelle, Grund und Verlinkung helfen bei der Priorisierung.") , "tail": "\n"},
             {"t": "html", "html": "<h1>Offene Reviews — Gesamtuebersicht</h1>", "tail": "\n"},
             {"t": "html", "html": style + intro, "tail": "\n"},
             {"t": "html", "html": table, "tail": "\n"},

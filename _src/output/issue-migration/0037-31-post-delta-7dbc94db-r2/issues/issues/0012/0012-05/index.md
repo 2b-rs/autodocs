@@ -1,0 +1,35 @@
+---
+schema_version: "1.0"
+id: "0012-05"
+level: "task"
+parent: "0012"
+state: "closed"
+visibility: "internal"
+prerequisites:
+  - "0011-04"
+  - "0012-02"
+work_type: "migration"
+origin:
+  kind: "migrated-from-legacy-todo"
+  source: "legacy:TODO.md:2854"
+authority: "shadow"
+criteria:
+  - id: "AC-001"
+    status: "active"
+---
+
+## Goal
+
+PREREQ: 0012-05:0011-04, 0012-05:0012-02 Define and operate an interface/communication matrix covering internal/external parties, responsibilities, commitments, channels, cadence, response/escalation expectations, and required communication records.
+
+## Scope
+
+Imported legacy text retained under source locators.
+
+## Acceptance criteria
+
+- **AC-001** Preserve imported acceptance text from the legacy source.
+
+## Definition of Done
+
+Imported item is represented under the disposable candidate root.

@@ -1,0 +1,52 @@
+# Claim: jadzia-distribution-20260903
+
+- item: jadzia-distribution-20260903
+- capability_class: privileged
+- assigned_by: jadzia
+- state: [p]
+- note: Re-evaluated durable open claims 0033, 0037, 0039, 0045, 0046, 0050.
+- note: 0039 and 0045 were previously marked terminal. 
+- note: 0037-29 offered and awarded to benjamin (offer 1788432126699-ffbcbaea).
+- note: 0033-07.01-integration offered and awarded to obrien (offer 1788432127707-3f41ed18).
+- note: 0046-01.01 offered and awarded to quark (offer 1788432128323-bcfd688a).
+- note: 0050-01 offered to benjamin and worf (offer 1788432128105-27518f58), waiting for reply.
+- note: 0033-07.01-integration accepted. Feature 0033 terminal cutover complete.
+- note: DEC-0044-038-integration offered to obrien (offer 1788433737757-5c932465).
+- note: DEC-0044-038-integration accepted. Architecture record on main.
+- note: Cancelled previous offers for 0037-29, 0046-01.01, 0050-01 due to supervisor restart crashing workers.
+- note: Re-offered 0037-29 (offer 1788435564954-c1296510).
+- note: Re-offered 0046-01.01 (offer 1788435564989-f6677070).
+- note: Re-offered 0050-01 (offer 1788435565017-704bb274).
+- note: 0046-01.01 implementation review ready. Offered integration to obrien (offer 1788435625132-d294a044).
+- note: 0046-01.01-integration accepted. 
+- note: Offered 0046-01.02 to quark, worf, benjamin (offer 1788435942889-6510a736).
+- note: 0046-01.02 implementation review ready. Offered integration to obrien (offer 1788436008372-550fcc17).
+- note: 0046-01.02-integration accepted.
+- note: Offered 0046-01 parent package to obrien (offer 1788436122760-6ba2a2f9).
+- note: 0046-01 parent package accepted.
+- note: Offered 0046-02 to quark, worf, benjamin (offer 1788436320866-73f5b00a).
+- note: HARD HOLD mandate (1788436590594-f26d3190). Paused 0050-01 and 0046-02. Only 0037-29 remains active.
+- note: Worf dropped 0037-29 during restart. Re-offered 0037-29 (offer 1788436803594-b7777d5e).
+- note: 0037-29 implementation review ready. Offered integration to obrien as 0037-cutover (offer 1788436916615-5b271faa).
+- note: O'Brien dropped 0037-cutover during restart. Re-offered 0037-cutover (offer 1788437251698-ced6805f).
+- note: O'Brien dropped 0037-cutover during another restart. Re-offered 0037-cutover (offer 1788437678714-ce3b921e).
+- note: 0037-cutover (0037-29 integration) accepted. Worf's 0037-29 accepted.
+- note: Offered 0037-30 reconciliation (as 0037-cutover) to worf, benjamin (offer 1788437940615-b6740524) after restart drop.
+- note: Benjamin dropped 0037-30 reconciliation during restart. Re-offered (offer 1788438580509-f4132bb3).
+- note: Benjamin dropped 0037-30 reconciliation during another restart. Re-offered (offer 1788439238170-aeb123b4).
+- note: Benjamin dropped 0037-30 reconciliation during yet another restart. Re-offered (offer 1788439906202-72b45f11).
+- note: Benjamin dropped 0037-30 reconciliation during 4th restart. Re-offered (offer 1788440193198-114cacb0).
+- note: Benjamin dropped 0037-30 reconciliation during 5th restart. Re-offered (offer 1788440467310-f2ef9fe2).
+- note: Benjamin dropped 0037-30 reconciliation during 6th restart. However, 0037-30 is BLOCKED by incomplete 0037-29. Cancelled 0037-30. Re-offering 0037-29 (as 0037-cutover) to implement DEC-0037-008 disposition policy.
+- note: Data's duplicate award is blocked by startup scope issues. Re-offered 0037-29 implementation to Benjamin/Worf (offer 1788441433880-6dee3e48) to retain a valid active owner and unblock the cutover.
+- note: Cancelled 0037-29 implementation (Benjamin) after restart drop. Implementation MUST wait until Geordi integrates the DEC-0037-008 architecture policy onto main. DeepSpace9 stands down on 0037-29 implementation until canonical receipt.
+- note: DEC-0037-008 architecture integrated on main by Geordi. Resuming 0037-29 implementation. Re-offered 0037-29 (as 0037-cutover) to Benjamin/Worf with amended open scope.
+- note: Integration of DEC-0037-008 by Geordi (commit 7c9e228c4c) was discovered to be invalid (failed hygiene exit 2, missing claim file). Cancelled Benjamin's 0037-29 implementation offer (1788441737676-7f78c694). DeepSpace9 again stands down on 0037-29 implementation until Enterprise reconciles the main branch conflict.
+- note: Management resolved incident via forward qualification (decision-1788441923781-ff7846f7). Supervisor awarded the integration recovery to O'Brien (offer 1788442040784-2c0677c7) because Geordi caused the incident. O'Brien is executing independent qualification. Revived O'Brien after restart.
+- note: O'Brien successfully integrated DEC-0037-008 forward qualification to main (commit 9221504dc4). Re-offered 0037-29 implementation to Benjamin (offer 1788442678114-31202743) using an exact bounded claim scope to prevent previous startup blocks. Directed Data to terminal-cancel the duplicate assignment.
+- note: Revived Benjamin for 0037-29 implementation following latest server restart. Existing bounded offer remains operative.
+- note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
+- note: Revived Benjamin again after 13:51Z server restart. Existing bounded offer (1788442678114-31202743) remains operative.
+- note: Discovered Benjamin suffered a fatal network crash and exited. Cancelled stalled offer 1788442678114-31202743. Re-offered 0037-29 to Benjamin via offer 1788444136281-3a8871fd to re-establish state.
+- note: Discovered Benjamin suffered a second fatal network crash. Cancelled stalled offer 1788444136281-3a8871fd. Re-offered 0037-29 to Benjamin/Worf via offer 1788444691529-9600182d.
+- note: Transferred the unique 0037-29 bounded assignment (1788444691529-9600182d) to the supervisor per instruction.

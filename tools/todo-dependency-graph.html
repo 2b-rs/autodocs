@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>TODO.md Dependency Graph (maintainer tool, not published)</title>
+<title>Issue dependency graph (maintainer tool, not published)</title>
 <meta name="robots" content="noindex, nofollow">
 <style>
   :root { color-scheme: light; }
@@ -24,35 +24,34 @@
 </head>
 <body>
 
-<h1>TODO.md Dependency Graph</h1>
+<h1>Issue dependency graph</h1>
 <div class="warn">
-  Maintainer-only tool. Not linked from the published site, not covered by
-  <code>generate.py</code>/<code>validate.py</code>. Auto-loads <code>../TODO.md</code>
-  on page load and renders live via a vendored local Graphviz-WASM bundle
-  (<code>tools/vendor/hpcc-js-wasm-graphviz.umd.js</code>). Requires the page to be
-  served over <code>http(s)://</code> (e.g. <code>python3 -m http.server</code> in the
-  repo root) — <code>fetch()</code> cannot read sibling files across the <code>file://</code>
-  origin boundary.
+  Maintainer-only tool. Loads validated
+  <code>issues/_views/dependency-graph.json</code> (never TODO.md / DONE.md / YAML).
+  Malformed or stale catalogs fail visibly. Serve over
+  <code>http(s)://</code> so <code>fetch()</code> can read the sibling catalog.
 </div>
 
 <div class="toolbar">
-  <label><input type="checkbox" id="chk-include-done"> include finished tasks/features</label>
+  <label><input type="checkbox" id="chk-include-done" checked> include closed items</label>
+  <label><input type="checkbox" id="chk-include-w" checked> include withdrawn [w]</label>
   <button id="btn-rerender" disabled>Re-render</button>
 </div>
 
 <div id="status">Loading…</div>
 
 <div id="legend">
-  <span><i style="background:black"></i>same-feature / explicit</span>
-  <span><i style="background:#1f4e79"></i>cross-feature / explicit</span>
-  <span><i style="background:crimson"></i>cross-feature / implicit</span>
-  <span><i style="background:gray;border-top:2px dashed gray;height:0"></i>cross-feature / soft</span>
-  <span><i style="background:#d9d9d9"></i>outgoing from done task</span>
-  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open [ ]</span>
-  <span><i style="width:10px;height:10px;background:#fff3b0"></i>partial [p]</span>
-  <span><i style="width:10px;height:10px;background:#ffb3b3"></i>unclear [u]</span>
-  <span><i style="width:10px;height:10px;background:#d9d9d9"></i>unknown [?]</span>
-  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">done [x]</span></span>
+  <span><i style="background:black"></i>same-feature / start-gate</span>
+  <span><i style="background:#1f4e79"></i>cross-feature / start-gate</span>
+  <span><i style="background:crimson"></i>feature-closure</span>
+  <span><i style="background:#6a1b9a;border-top:2px dashed #6a1b9a;height:0"></i>relation</span>
+  <span><i style="background:#d9d9d9"></i>outgoing from closed</span>
+  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open</span>
+  <span><i style="width:10px;height:10px;background:#fff3b0"></i>in_progress</span>
+  <span><i style="width:10px;height:10px;background:#ffb3b3"></i>blocked</span>
+  <span><i style="width:10px;height:10px;background:#e8d5ff"></i>withdrawn [w]</span>
+  <span><i style="width:10px;height:10px;background:#d9d9d9"></i>missing/malformed</span>
+  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">closed</span></span>
 </div>
 
 <div id="graph-container"><p style="color:#8a90a0">Graph will render here.</p></div>
@@ -64,6 +63,7 @@ const statusEl = document.getElementById('status');
 const graphEl = document.getElementById('graph-container');
 const btnRerender = document.getElementById('btn-rerender');
 const chkIncludeDone = document.getElementById('chk-include-done');
+const chkIncludeW = document.getElementById('chk-include-w');
 const core = window.TodoGraphCore;
 
 let lastText = null;
@@ -79,7 +79,7 @@ async function ensureGraphviz() {
   setStatus('Loading local Graphviz-WASM bundle…');
   const hpcc = globalThis['@hpcc-js/wasm/graphviz'];
   if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
-    throw new Error('Local Graphviz-WASM bundle not found. Run ./run.sh once to download tools/vendor/hpcc-js-wasm-graphviz.umd.js.');
+    throw new Error('Local Graphviz-WASM bundle not found.');
   }
   graphviz = await hpcc.Graphviz.load();
   return graphviz;
@@ -89,42 +89,33 @@ async function renderFromText(text) {
   lastText = text;
   btnRerender.disabled = false;
   try {
-    if (!core) throw new Error('todo-graph-core.js failed to load.');
-    const featuresAll = core.parseTodo(text);
-    if (featuresAll.length === 0) {
-      setStatus("ERROR: no '## Feature: XXXX — ...' headings found in the loaded file.", true);
-      return;
+    if (!core || typeof core.loadGraph !== 'function') {
+      throw new Error('todo-graph-core.js failed to load (no loadGraph).');
     }
-    const totalTasks = featuresAll.reduce((sum, f) => sum + f.tasks.length, 0);
-    if (totalTasks === 0) {
-      setStatus("ERROR: features found, but no '- [ ] **XXXX-YY** ...' tasks parsed.", true);
-      return;
+    if (typeof core.parseTodo === 'function') {
+      throw new Error('duplicate semantic classifier parseTodo must not remain in browser core');
     }
-
-    const includeDone = chkIncludeDone.checked;
-    const features = includeDone
-      ? featuresAll
-      : featuresAll
-          .map((f) => ({
-            id: f.id,
-            name: f.name,
-            tasks: f.tasks.filter((t) => t.mark !== 'x'),
-          }))
-          .filter((f) => f.tasks.length > 0);
-
-    const { dot, nodeCount, edgeCount, liveFeatureCount } = core.buildDot(features);
+    const graph = core.loadGraph(text);
+    const tallies = core.counts(graph);
+    const { dot, nodeCount, edgeCount, liveFeatureCount, unresolvedEdgeCount } = core.buildDot(graph, {
+      includeClosed: chkIncludeDone.checked,
+      includeWithdrawn: chkIncludeW.checked,
+      includeUnresolved: true,
+    });
 
     const gv = await ensureGraphviz();
     setStatus('Rendering…');
     const svg = gv.layout(dot, 'svg', 'dot');
     graphEl.innerHTML = svg;
 
-    const nFeaturesTotal = featuresAll.length;
-    const nFeaturesDone = featuresAll.filter((f) => core.featureDone(f)).length;
     setStatus(
-      `Parsed ${nFeaturesTotal} feature(s) (${nFeaturesDone} fully done), ${totalTasks} task(s) total.\n` +
-      `Rendered ${nodeCount} task node(s), ${liveFeatureCount} feature cluster(s), ${edgeCount} dependency edge(s).` +
-      (includeDone ? ' (including finished items)' : '')
+      `Catalog nodes=${tallies.nodes} (features=${tallies.features} tasks=${tallies.tasks} ` +
+      `subtasks=${tallies.subtasks} withdrawn=${tallies.withdrawn} missing=${tallies.missing_nodes} ` +
+      `malformed=${tallies.malformed_nodes})\n` +
+      `edges=${tallies.edges} start-gate=${tallies.start_gate_edges} ` +
+      `feature-closure=${tallies.feature_closure_edges} unresolved=${tallies.unresolved_edges}\n` +
+      `Rendered ${nodeCount} node(s), ${liveFeatureCount} cluster(s), ${edgeCount} edge(s)` +
+      ` (unresolved edges kept: ${unresolvedEdgeCount}).`
     );
   } catch (err) {
     setStatus('ERROR: ' + err.message, true);
@@ -133,20 +124,17 @@ async function renderFromText(text) {
 }
 
 async function loadAndRender() {
-  setStatus('Fetching ../TODO.md…');
+  setStatus('Fetching ../issues/_views/dependency-graph.json…');
   try {
-    const res = await fetch('../TODO.md', { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status} fetching ../TODO.md`);
+    const res = await fetch('../issues/_views/dependency-graph.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching dependency-graph.json`);
     const text = await res.text();
     await renderFromText(text);
   } catch (err) {
     setStatus(
       'ERROR: ' + err.message +
-      '\nThis page must be served over http(s):// to auto-load TODO.md ' +
-      '(e.g. run `python3 -m http.server 8000` in the repo root, then open ' +
-      'http://localhost:8000/tools/todo-dependency-graph.html). Opening this file ' +
-      'directly via file:// will not work since fetch() cannot read sibling files ' +
-      'across the file:// origin boundary.',
+      '\nServe over http(s):// and keep issues/_views/dependency-graph.json available. ' +
+      'Markdown TODO.md input is refused.',
       true
     );
   }
@@ -154,6 +142,9 @@ async function loadAndRender() {
 
 btnRerender.addEventListener('click', () => loadAndRender());
 chkIncludeDone.addEventListener('change', () => {
+  if (lastText != null) renderFromText(lastText);
+});
+chkIncludeW.addEventListener('change', () => {
   if (lastText != null) renderFromText(lastText);
 });
 

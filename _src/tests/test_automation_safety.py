@@ -8,6 +8,7 @@ import sys
 import tempfile
 import types
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 
@@ -39,12 +40,64 @@ finally:
 
 
 class AutomationSafetyFixtureTests(unittest.TestCase):
+    # DEC-0038-002 and the independent 0038-33 Architect scope review permit
+    # only these five existing AUTO010 identities.  Equality is deliberate:
+    # any sixth, moved, renamed, or byte-changed finding requires re-review.
+    RUNNER_TRANSACTION_ALLOWED_AUTO010 = frozenset(
+        {
+            (
+                277,
+                "_atomic_create",
+                "a9585e4f1caf3113aa8a1da53260983471d1e10d5339b4a553f0fcce7a047ea2",
+            ),
+            (
+                1735,
+                "Transaction.acquire_lock",
+                "bbeb1bc976b167dc0d4939d3788858124cb8cfecdc064b4c6bac40cc1f290fd8",
+            ),
+            (
+                1876,
+                "Transaction.materialize_editor_candidate",
+                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+            ),
+            (
+                3332,
+                "BranchMergeTransaction._synchronize_worktree",
+                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+            ),
+            (
+                3959,
+                "_recovery_lease",
+                "d9bae0d944b115d54df1aa8eb1b10f982d72c3427965fb54b216068970284802",
+            ),
+        }
+    )
+
     def scan(self, name, language):
         path = FIXTURES / name
         return safety.scan_text(name, path.read_text(encoding="utf-8"), language)
 
     def rules(self, name, language):
         return {finding.rule for finding in self.scan(name, language)}
+
+    def runner_transaction_findings(self):
+        relative = "_src/tools/runner_transaction.py"
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        return safety.scan_text(relative, text, "python")
+
+    def assert_runner_transaction_control(self, findings):
+        unconditionally_forbidden = {"AUTO001", "AUTO002", "AUTO009"}
+        observed_rules = {finding.rule for finding in findings}
+        self.assertTrue(
+            unconditionally_forbidden.isdisjoint(observed_rules),
+            sorted(observed_rules & unconditionally_forbidden),
+        )
+        observed_auto010 = {
+            (finding.line, finding.symbol, finding.evidence_sha256)
+            for finding in findings
+            if finding.rule == "AUTO010"
+        }
+        self.assertEqual(self.RUNNER_TRANSACTION_ALLOWED_AUTO010, observed_auto010)
 
     def test_link_verification_fixture_freezes_false_green_and_wildcard_commit(self):
         rules = self.rules("link_verification_evidence.py.fixture", "python")
@@ -1181,7 +1234,6 @@ def validate():
     def test_current_safe_aggregate_controls_do_not_regress(self):
         controls = {
             "_src/tools/review_request_baseline_audit.py": {"AUTO001", "AUTO002"},
-            "_src/tools/runner_transaction.py": {"AUTO001", "AUTO002", "AUTO009", "AUTO010"},
             "_src/tools/review_ingest.py": {"AUTO002"},
             "_src/tools/curation_ingest.py": {"AUTO002"},
             "_src/validate.py": {"AUTO007"},
@@ -1190,6 +1242,62 @@ def validate():
             text = (ROOT / relative).read_text(encoding="utf-8")
             rules = {finding.rule for finding in safety.scan_text(relative, text, "python")}
             self.assertTrue(forbidden.isdisjoint(rules), f"{relative}: {sorted(rules & forbidden)}")
+        self.assert_runner_transaction_control(self.runner_transaction_findings())
+
+    def test_runner_transaction_control_rejects_a_sixth_auto010(self):
+        findings = self.runner_transaction_findings()
+        sixth = replace(
+            next(finding for finding in findings if finding.rule == "AUTO010"),
+            line=9999,
+            symbol="FutureTransaction.unreviewed_operation",
+            evidence="unreviewed destructive operation",
+            evidence_sha256=safety.hashlib.sha256(
+                b"unreviewed destructive operation"
+            ).hexdigest(),
+        )
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control([*findings, sixth])
+
+    def test_runner_transaction_control_rejects_a_moved_auto010(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 277)
+        changed = [
+            replace(finding, line=finding.line + 1) if finding is target else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
+
+    def test_runner_transaction_control_rejects_a_renamed_auto010(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 1735)
+        changed = [
+            replace(finding, symbol="Transaction.renamed_lock")
+            if finding is target
+            else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
+
+    def test_runner_transaction_control_rejects_changed_evidence_bytes(self):
+        findings = self.runner_transaction_findings()
+        target = next(finding for finding in findings if finding.line == 1876)
+        changed_evidence = target.evidence + "\n# byte drift"
+        changed = [
+            replace(
+                finding,
+                evidence=changed_evidence,
+                evidence_sha256=safety.hashlib.sha256(
+                    changed_evidence.encode("utf-8")
+                ).hexdigest(),
+            )
+            if finding is target
+            else finding
+            for finding in findings
+        ]
+        with self.assertRaises(AssertionError):
+            self.assert_runner_transaction_control(changed)
 
     def test_findings_have_exact_stable_source_identity(self):
         finding = self.scan("shell_exec.py.fixture", "python")[0]
@@ -1298,6 +1406,214 @@ class AutomationSafetyPolicyTests(unittest.TestCase):
         report = self.scan()
         self.assertEqual(report["verdict"], "FAIL")
         self.assertTrue(any("without glob" in error["message"] for error in report["policy_errors"]))
+
+
+@unittest.skipUnless(shutil.which("git"), "git is required for owner_ref reachability checks")
+class AutomationSafetyProvenClosedTests(unittest.TestCase):
+    """DEC-0038-007: the `proven-closed` disposition kind.
+
+    AE-2 baselines for this claim-bound change (AE-1 applies: it alters
+    blocking/gate classification): pre-change baseline is any commit before
+    this Task's own substantive commit on branch
+    `automation-safety-proven-closed-impl-belanna-20260827T2251Z`; candidate
+    is that commit. `test_falsification_terminal_owner_task_now_passes_only_with_proof`
+    is the AE-3 red-on-baseline/green-on-candidate case: on the pre-change
+    checker the identical policy entry (terminal `owner_task`, no proof
+    anchor) fails exactly as `AutomationSafetyPolicyTests
+    .test_terminal_owner_task_expires_disposition` already proves; on the
+    candidate it fails without `kind: proven-closed` + proof anchoring and
+    passes with them, for the same terminal task state.
+    """
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        (self.root / "TODO.md").write_text(
+            "- [x] **0038-14** Deferred mutator classification.\n",
+            encoding="utf-8",
+        )
+        (self.root / "DONE.md").write_text("# Done\n", encoding="utf-8")
+        self.script = self.root / "danger.py"
+        self.script.write_text(
+            "import subprocess\nsubprocess.run(['git', 'commit', '-m', 'unsafe'])\n",
+            encoding="utf-8",
+        )
+        initial = safety.scan_explicit_paths(self.root, ["danger.py"], language="python")
+        self.critical = [item for item in initial["findings"] if item["severity"] == "critical"]
+        self.assertTrue(self.critical)
+        self.policy_path = self.root / "policy.json"
+
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(["git", "add", "-A"], cwd=self.root, check=True)
+        commit = subprocess.run(
+            ["git", "-c", "user.email=test@example.com", "-c", "user.name=Test",
+             "commit", "-q", "-m", "proof commit"],
+            cwd=self.root, check=True,
+        )
+        self.assertEqual(commit.returncode, 0)
+        rev = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=self.root,
+            stdout=subprocess.PIPE, check=True,
+        )
+        self.proof_commit = rev.stdout.decode("utf-8").strip()
+        self.assertRegex(self.proof_commit, r"^[0-9a-f]{40}$")
+
+    def tearDown(self):
+        self.temp.cleanup()
+
+    def write_policy(self, findings, **overrides):
+        entries = []
+        for finding in findings:
+            entry = {
+                "path": finding["path"],
+                "rule": finding["rule"],
+                "line": finding["line"],
+                "symbol": finding["symbol"],
+                "evidence_sha256": finding["evidence_sha256"],
+                "kind": "proven-closed",
+                "rationale": "The dedicated lifecycle Task owns this exact legacy risk.",
+                "owner_task": "0038-14",
+                "expected_safe_invariant": "No affected source line changes before the owner Task replaces it.",
+                "owner_ref": self.proof_commit,
+                "proof_summary": "Fault-injection-proven safe: test_danger_script_is_inert asserts no real git mutation occurs; see proof commit diff.",
+            }
+            entry.update(overrides)
+            entries.append(entry)
+        self.policy_path.write_text(
+            json.dumps({"schema_version": 1, "dispositions": entries}),
+            encoding="utf-8",
+        )
+
+    def scan(self):
+        return safety.scan_explicit_paths(
+            self.root,
+            ["danger.py"],
+            language="python",
+            policy_path=self.policy_path,
+            today=datetime.date(2026, 8, 27),
+        )
+
+    def test_falsification_terminal_owner_task_now_passes_only_with_proof(self):
+        # Red on baseline (proven by AutomationSafetyPolicyTests
+        # .test_terminal_owner_task_expires_disposition: identical terminal
+        # owner_task state, kind blocking-task, fails). Green on candidate:
+        # same terminal owner_task, kind proven-closed with real proof anchor.
+        self.write_policy(self.critical)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
+        self.assertEqual(report["counts"]["unresolved_critical"], 0)
+        self.assertEqual(report["counts"]["disposed_critical"], len(self.critical))
+        self.assertFalse(any("terminal" in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_missing_owner_ref_rejected(self):
+        self.write_policy(self.critical, owner_ref=None)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("owner_ref must be a full 40-character lowercase commit SHA"
+                             in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_malformed_owner_ref_rejected(self):
+        self.write_policy(self.critical, owner_ref="not-a-sha")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("owner_ref must be a full 40-character lowercase commit SHA"
+                             in error["message"] for error in report["policy_errors"]))
+
+    def test_adjacent_unreachable_owner_ref_rejected(self):
+        # Well-formed 40-hex SHA, but no such object exists in this repo --
+        # the mechanical reachability check (not just format) must reject it.
+        self.write_policy(self.critical, owner_ref="a" * 40)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("is not a reachable commit" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_short_proof_summary_rejected(self):
+        self.write_policy(self.critical, proof_summary="too short")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("proof_summary must be a substantive" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_missing_proof_summary_rejected(self):
+        self.write_policy(self.critical, proof_summary=None)
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("proof_summary must be a substantive" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_non_proven_closed_kind_rejects_owner_ref_field(self):
+        # owner_ref/proof_summary must not silently ride along on the other
+        # two kinds -- would be a confusing, effectively-inert field.
+        self.write_policy(
+            self.critical,
+            kind="blocking-task",
+            expires_after_task="0038-14",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any("only permitted for kind proven-closed" in error["message"]
+                             for error in report["policy_errors"]))
+
+    def test_adjacent_expires_after_task_not_required_for_proven_closed(self):
+        # CON-01/CON-02: proven-closed's expiry model is reachability +
+        # digest match, not a live/terminal Task -- no expires_after_task or
+        # expires_on field should be required at all.
+        self.write_policy(self.critical)
+        report = self.scan()
+        self.assertNotIn("expires_after_task and/or expires_on is required",
+                          [error["message"] for error in report["policy_errors"]])
+
+    def test_adjacent_terminal_expires_after_task_not_rejected_for_proven_closed(self):
+        # CON-02 explicitly waives BOTH owner_task and expires_after_task
+        # terminal checks for proven-closed, not just owner_task.
+        self.write_policy(self.critical, expires_after_task="0038-14")
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
+        self.assertFalse(any("terminal" in error["message"] for error in report["policy_errors"]))
+
+    def test_policy_stale_still_triggers_for_proven_closed_on_digest_mismatch(self):
+        # CON-03: "Unmatched digests must still correctly trigger
+        # POLICY_STALE." This is the check that must never be weakened --
+        # the whole point of anchoring to evidence_sha256 is that a later
+        # source edit re-opens the finding regardless of disposition kind.
+        self.write_policy(self.critical)
+        self.script.write_text(
+            "import subprocess\nsubprocess.run(['git', 'commit', '-m', 'changed'])\n",
+            encoding="utf-8",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(any(error["code"] == "POLICY_STALE" for error in report["policy_errors"]))
+        self.assertGreater(report["counts"]["unresolved_critical"], 0)
+
+    def test_reachability_cache_is_memoized_across_entries(self):
+        # Two proven-closed entries citing the same owner_ref should only
+        # need the commit to exist once; exercised indirectly by pointing
+        # two distinct findings at the same proof commit and confirming both
+        # pass (would also work unmemoized, but this is the shape DEC-0038-007's
+        # 33-entry migration relies on for reasonable runtime).
+        entries = []
+        for finding in self.critical:
+            entries.append({
+                "path": finding["path"],
+                "rule": finding["rule"],
+                "line": finding["line"],
+                "symbol": finding["symbol"],
+                "evidence_sha256": finding["evidence_sha256"],
+                "kind": "proven-closed",
+                "rationale": "The dedicated lifecycle Task owns this exact legacy risk.",
+                "owner_task": "0038-14",
+                "expected_safe_invariant": "No affected source line changes before the owner Task replaces it.",
+                "owner_ref": self.proof_commit,
+                "proof_summary": "Fault-injection-proven safe, duplicated to exercise the reachability cache path.",
+            })
+        self.policy_path.write_text(
+            json.dumps({"schema_version": 1, "dispositions": entries}),
+            encoding="utf-8",
+        )
+        report = self.scan()
+        self.assertEqual(report["verdict"], "PASS")
 
 
 @unittest.skipUnless(shutil.which("git"), "git is required for tracked discovery")

@@ -1,0 +1,65 @@
+### `DEC-0028-001` — Conditional SYS.1 activation, work graph, and consumer handoff
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-29T22:50:09Z`
+- **Deciding identity:** `agent:data:0028-feature-breakdown:1788043592587-75bc2401`
+- **Role:** `Architekt`
+- **Authority reference:** Management option A in `decision-1788029989734-71b1345c`; atomic award `1788043592587-75bc2401`
+- **Subject:** Fail-closed activation and bounded decomposition of conditional Feature `0028`, including the exact SYS.1 output interface used by `0029-01`
+- **Decision:** Keep `SYS.1` external and `out of scope/not rated` until an append-only Management disposition changes the selected-profile and `0022-01` interface row with named performer, agreement/acceptance authorities, exact process/product/baseline identity, and owned outcome boundary. Decompose Feature `0028` into `0028-01` activation/input authority, `0028-02` stakeholder/source register, `0028-03` elicitation and conflict analysis, `0028-04` agreed controlled stakeholder-requirements baseline and conditional consumer handoff, and exactly one terminal integrating Task `0028-05`. `0028-01`, `0028-04`, and `0028-05` carry mandatory integration reviews. `0028-02` and `0028-03` do not. `0029-01` conditionally consumes `0028-04`/`0028-05` output only when SYS.1 is internally or shared-performed; its external path remains available through the existing accepted external/shared baseline interface, so no unconditional `0029-01:0028-*` start edge is added. No architecture document, scenario, fixture, or repository validation proves SYS.1 process performance.
+- **Technical justification:** The current selected profile and responsibility matrix exclude internal SYS.1, while the broad original `0028-01` combined authority activation, source control, stakeholder analysis, elicitation, conflict resolution, agreement, baselining, change control, and downstream handoff. Splitting those ownership and verification surfaces prevents an internally authored source list from being mistaken for stakeholder agreement, preserves the conditional consumer path, and gives the Feature an independent terminal review floor. The activation and output-interface checkpoints protect cross-unit authority and consumer reach; the two middle evidence-production Tasks are reversible, have no external effect, and are composition-reviewed downstream.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `authority-tailoring-or-waiver`
+- **Considered alternatives:**
+  - **ALT-01:** Five-stage fail-closed graph with conditional `0029-01` handoff and three risk-based checkpoints
+    - **Disposition:** `selected`
+    - **Reason:** Separates authority, evidence production, agreement, and integration without widening the external consumer path.
+  - **ALT-02:** Retain the single broad `0028-01`
+    - **Disposition:** `rejected`
+    - **Reason:** It is not bounded, assigns multiple independent authorities implicitly, and has no terminal Feature integration floor.
+  - **ALT-03:** Activate SYS.1 from repository evidence or the existing stakeholder-baseline candidate
+    - **Disposition:** `rejected`
+    - **Reason:** Current records are candidate/unapproved or external-interface evidence and cannot establish complete-system responsibility or stakeholder agreement.
+  - **ALT-04:** Add `0028-05` as an unconditional start prerequisite of `0029-01`
+    - **Disposition:** `rejected`
+    - **Reason:** It would block the valid external/shared SYS.2 input path and convert conditional use semantics into a broad start gate.
+  - **ALT-05:** Treat architecture products, controlled scenarios, or green validators as SYS.1 execution evidence
+    - **Disposition:** `rejected`
+    - **Reason:** Mechanism evidence cannot prove performance of the ECU process.
+- **Consequences:**
+  - **CON-01:** Operative order is `0028-01` → `0028-02` → `0028-03` → `0028-04` → `0028-05`; every edge is a hard producer/consumer start gate.
+  - **CON-02:** `0028-01` cannot pass with `SYS.1` still `out of scope/not rated`, an unnamed performer/authority, an unapproved input baseline, or an undefined assessed-unit boundary. Missing authority remains a blocker, not an agent-fillable value.
+  - **CON-03:** `0028-04` is the versioned `SYS1-stakeholder-baseline-interface@v1`: exact product/project/process-instance/baseline/revision/variant identity; atomic requirement IDs; controlled sources; rationale, priority, status, acceptance criteria, validation method; stakeholder agreement/authority; intended-use/environment coverage; conflict dispositions; bidirectional source and downstream trace; change/impact/risk history; communication and open findings.
+  - **CON-04:** `0029-01` selects one input path at use time. Internal/shared SYS.1 requires current accepted `0028-04` output carried through `0028-05`; external SYS.1 requires the existing named external/shared origin, acceptance, configuration, status, assumptions, and feedback interface. Neither path grants SYS.1 credit to the other.
+  - **CON-05:** Activation is prospective only after this decision, scope review, and backlog candidate reach `main`; no earlier source, baseline, Task, Feature, or evidence is grandfathered or retroactively certified.
+  - **CON-06:** Before activation, recovery is to withhold the candidate. After activation, stop new use, retain prior baselines, record additive invalidation/supersession and impact, reopen affected work, notify named consumers, restore the last accepted interface, and reverify before reuse.
+  - **CON-07:** A later order deviation is recorded under Gate A2 only when it can block/change another work unit. A selected-profile, responsibility, performer, authority, or consumer-path change requires additive impact analysis and renewed TK-2 review before gate mutation.
+- **Affected work units:**
+  - `feature:0028`
+  - `task:0028-01`
+  - `task:0028-02`
+  - `task:0028-03`
+  - `task:0028-04`
+  - `task:0028-05`
+  - `task:0029-01`
+  - `task:0022-01`
+  - `task:0020-09`
+  - `task:0027-01`
+- **Affected gates:**
+  - `task-start:0028-01`
+  - `integration:0028-01`
+  - `integration:0028-04`
+  - `integration:0028-05`
+  - `feature-closure:0028`
+  - `validation:0029-01-SYS1-input-selection`
+  - `validation:0025-02-selected-profile-readiness`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0028-feature-breakdown:1788043592587-75bc2401`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports with binding conditions`
+    - **Note:** Separate artifact `docs/dossiers/0028-feature-breakdown-scope-review.md`; Data is distinct from every future Implementer and Integrator. This is not Acceptance or an integration review.
+- **Waiver:** `none`

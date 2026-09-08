@@ -26,6 +26,11 @@ REPORT_SCHEMA = "legacy-task-doctor-report@v1"
 VALID_MARKERS = {" ", "u", "p", "?", "w", "x", "d"}
 TERMINAL_MARKERS = {"w", "x"}
 TASK_ID_RE = re.compile(r"^[0-9]{4}-[0-9]{2}(?:\.[0-9]{2})?$")
+NONCANONICAL_KIND = "noncanonical-coordination"
+LIFECYCLE_FIELD_RE = re.compile(
+    r"^\s*(?:[-*]\s*)?(?:\*\*(?P<bold>claim_kind|claim_state|lease_active|task_id|item_id|state)(?::\*\*|\*\*:)|`(?P<code>claim_kind|claim_state|lease_active|task_id|item_id|state)`\s*:|(?P<plain>claim_kind|claim_state|lease_active|task_id|item_id|state)\s*:)\s*`?(?P<value>[^`\n]+?)`?\s*$",
+    re.IGNORECASE,
+)
 FEATURE_ID_RE = re.compile(r"^[0-9]{4}$")
 FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHORT_COMMIT_RE = re.compile(r"^[0-9a-f]{7,39}$")
@@ -125,6 +130,7 @@ RULE_SEVERITY = {
     "LTD-CLAIM-STATE-DIVERGED": "error",
     "LTD-CLAIM-TASK-MISSING": "error",
     "LTD-CLAIM-TERMINAL-RETAINED": "error",
+    "LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE": "error",
     "LTD-CLAIM-IDENTITY-MISMATCH": "error",
     "LTD-CLAIM-BASE-ABBREVIATED": "warning",
     "LTD-CLAIM-BASE-INVALID": "error",
@@ -320,6 +326,38 @@ class FieldOccurrence:
     canonical: bool
 
 
+def parse_noncanonical_claim_lifecycle(text: str) -> Dict[str, object]:
+    """Normalize DEC-0037-032 fields; every invalid tuple stays active."""
+    values: Dict[str, List[str]] = {}
+    for line in text.splitlines():
+        match = LIFECYCLE_FIELD_RE.match(line)
+        if match:
+            key = match.group("bold") or match.group("code") or match.group("plain")
+            values.setdefault(key.lower(), []).append(match.group("value").strip())
+    if not any(key in values for key in ("claim_kind", "claim_state", "lease_active")):
+        return {"classification": "legacy", "valid": True, "active": True, "errors": []}
+    errors: List[str] = []
+    for key in ("claim_kind", "claim_state", "lease_active"):
+        count = len(values.get(key, []))
+        if count != 1:
+            errors.append(f"{key}-{'missing' if count == 0 else 'duplicate'}")
+    kind = values.get("claim_kind", [None])[0]
+    claim_state = values.get("claim_state", [None])[0]
+    lease_raw = values.get("lease_active", [None])[0]
+    if kind is not None and kind != NONCANONICAL_KIND: errors.append("claim_kind-unknown")
+    if claim_state is not None and claim_state not in {"active", "terminal"}: errors.append("claim_state-unknown")
+    if lease_raw is not None and lease_raw not in {"true", "false"}: errors.append("lease_active-malformed")
+    identities = values.get("task_id", []) + values.get("item_id", [])
+    if len(identities) != 1: errors.append("identity-ambiguous")
+    elif TASK_ID_RE.fullmatch(identities[0]): errors.append("exact-task-cannot-be-noncanonical")
+    lease = {"true": True, "false": False}.get(lease_raw)
+    if claim_state == "active" and lease is not True: errors.append("active-requires-lease")
+    if claim_state == "terminal" and lease is not False: errors.append("terminal-requires-release")
+    if any(value == "terminal" for value in values.get("state", [])): errors.append("task-state-terminal-invalid")
+    valid = not errors
+    return {"classification": NONCANONICAL_KIND if kind == NONCANONICAL_KIND else "invalid", "claim_state": claim_state, "lease_active": lease, "valid": valid, "active": not (valid and claim_state == "terminal" and lease is False), "errors": sorted(set(errors))}
+
+
 @dataclass(frozen=True)
 class ClaimRecord:
     path: str
@@ -483,7 +521,7 @@ def _claim_names(root: Path) -> List[str]:
         names = [
             entry.name
             for entry in os.scandir(root)
-            if entry.name.startswith("TODO-") and entry.name.endswith(".md")
+            if entry.name.startswith(("TODO-", "DONE-")) and entry.name.endswith(".md")
         ]
     except OSError as exc:
         raise DoctorInputError(
@@ -548,9 +586,9 @@ def _verify_inputs(root: Path, blobs: Mapping[str, InputBlob], claim_names: Sequ
     changed: List[str] = []
     try:
         if _claim_names(root) != list(claim_names):
-            changed.append("TODO-*.md")
+            changed.append("TODO-/DONE-*.md")
     except DoctorInputError:
-        changed.append("TODO-*.md")
+        changed.append("TODO-/DONE-*.md")
     for relative, before in sorted(blobs.items()):
         try:
             after = _read_blob(root, relative)
@@ -1153,7 +1191,7 @@ def _ref_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], reac
 
 def _task_claim_pointer(blob: InputBlob, task: TaskRecord) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     block = "\n".join(blob.lines[task.line - 1:task.end_line])
-    path_match = re.search(r"via\s+`(?P<path>TODO-[^`]+\.md)`", block)
+    path_match = re.search(r"via\s+`(?P<path>(?:TODO|DONE)-[^`]+\.md)`", block)
     token_match = re.search(r"owner_token:\s*(?P<value>agent:[A-Za-z0-9:._-]+)", block)
     base_match = re.search(r"(?:base|base_commit)\s+`?(?P<value>[0-9a-f]{7,40}|pending-discovery)`?", block)
     return (
@@ -1176,6 +1214,11 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
         grouped: Dict[str, List[FieldOccurrence]] = {}
         for item in items:
             grouped.setdefault(item.key, []).append(item)
+        lifecycle = parse_noncanonical_claim_lifecycle(blobs[claim.path].text)
+        if not lifecycle["valid"]:
+            findings.append(_make_finding("LTD-CLAIM-LIFECYCLE-INVALID", "claim", claim.path, 1, claim.task_id or claim.path, "invalid noncanonical lifecycle: " + ", ".join(lifecycle["errors"]), blobs))
+        elif lifecycle["classification"] == NONCANONICAL_KIND:
+            continue
         required = {"request_id", "owner_token", "base_commit", "capability_class", "state"}
         if claim.state == "p":
             required.update({"execution_authority", "startup_review"})
@@ -1204,8 +1247,9 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
                 mismatches.append("owner_token Task differs from task_id")
             if claim.request_id and owner_match.group("claim") != claim.request_id:
                 mismatches.append("request_id differs from immutable owner-token claim ID")
+            expected_prefix = "DONE" if claim.path.startswith("DONE-") else "TODO"
             expected_filename = (
-                f"TODO-{owner_match.group('agent')}-"
+                f"{expected_prefix}-{owner_match.group('agent')}-"
                 f"{owner_match.group('task')}-"
                 f"{owner_match.group('claim')}.md"
             )
@@ -1310,11 +1354,12 @@ def _claim_findings(parsed: ParsedRepository, blobs: Mapping[str, InputBlob], oc
 
         if claim.task_id and claim.task_id in tasks_by_id:
             task = sorted(tasks_by_id[claim.task_id], key=lambda value: (value.path, value.line))[0]
+            accepted = _task_has_acceptance_mark(blobs[task.path], task)
+            if not accepted and claim.path.startswith("DONE-"):
+                findings.append(_make_finding("LTD-CLAIM-DONE-WITHOUT-ACCEPTANCE", "claim", claim.path, 1, claim.task_id, "DONE-* claim requires a current Acceptance: ✓ on the authoritative Task", blobs, related_paths=(task.path,)))
             if claim.state is not None and claim.state != task.marker:
                 line = claim.field_lines.get("state", (1,))[0]
                 findings.append(_make_finding("LTD-CLAIM-STATE-DIVERGED", "claim", claim.path, line, claim.task_id, f"claim state [{claim.state}] disagrees with authoritative Task state [{task.marker}]", blobs, related_paths=(task.path,)))
-            if task.marker in TERMINAL_MARKERS:
-                findings.append(_make_finding("LTD-CLAIM-TERMINAL-RETAINED", "claim", claim.path, 1, claim.task_id, f"claim file remains after authoritative Task reached [{task.marker}]", blobs, related_paths=(task.path,)))
 
     for task_id, task_records in sorted(tasks_by_id.items()):
         task = sorted(task_records, key=lambda value: (value.path, value.line))[0]

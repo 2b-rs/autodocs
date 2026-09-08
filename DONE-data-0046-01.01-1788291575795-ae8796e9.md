@@ -1,0 +1,139 @@
+# Implementation claim — `0046-01.01` feedback UX/API
+
+- **owner_token:** `agent:data:0046-01.01:1788291575795-ae8796e9`
+- **request_id:** `1788291575795-ae8796e9`
+- **assignment/award:** `agent-inbox:1788291607270-deb257f8`
+- **assignment_state:** `in_progress`
+- **decision_request:** `decision-1788388089596-28a364de`
+- **process:** Implementation
+- **status:** `[x]` — candidate implemented, tested, policy unblocked via Decision 1788390190360-3c7e959d Option A, and verified passing 24 tests
+- **capability_class:** `privileged`
+- **execution_authority:** direct local execution in the assigned item worktree; no Acceptance, checkpoint, integration, release, external-effect, `DONE.md`, or `main` authority
+- **branch:** `0046-01.01`
+- **worktree:** `/Users/tobias.anton/devel/autodocs/.worktrees/0046-01.01`
+- **base_commit:** `3ddc29eef522cf373bd401705eba0b3b957e02a5`
+- **declared_parent:** `0046-01-current-20260903-data-1788291575795`
+- **rederived_from:** `f5142ab033947bf16601ed9063f48aa96a8ff0e5`
+- **prerequisite:** accepted `0046-00@a47ae11b5d3f61ae305790a84b884691758be3f6`
+- **write_scope:** `_src/templates/agent_feedback.html`, `_src/static/agent-feedback.js`, `_src/tools/agent_feedback_form.py`, `_src/tests/test_agent_feedback_form.py`, and this claim
+- **external_resources:** none
+
+## Startup finding and stop condition
+
+The assigned branch/worktree already existed at `f5142ab033947bf16601ed9063f48aa96a8ff0e5`
+with four untracked product files and no matching Data claim. The accepted
+prerequisite `0046-00` is an ancestor of this branch. However, the required
+parent ref `0046-01@6f5ba155337e19b40eabf714758ddab83147c305`
+belongs to an older, different Feature-`0046` definition (WTP/IP operation),
+owned by terminal Beverly claim
+`TODO-beverly-0046-01-20260824T190100Z-7c91e4b2.md`. It is neither an ancestor
+of this child nor of current `main@a0623411bfb3590ae4a3d8d08177064554651401`,
+and accepted `0046-00` is not its ancestor. Both the parent/child and
+parent/current-main merge bases are the old
+`2dae2a088d54b950908edcbc31c5f4402a078750` baseline. The symmetric difference
+between that parent and current `main` spans 5,664 files, 318,959 insertions,
+and 6,269 deletions.
+
+Merging the named parent would import a stale, unrelated Feature tree;
+rewriting or force-moving it would appropriate Beverly's retained ref. Creating
+a differently named parent or changing the awarded branch contract requires a
+fresh exact branch/recovery assignment. Under the binding branch-start and
+foreign-ref preservation rules, no product edit, test execution, staging, or
+completion bookkeeping may proceed until the parent collision is resolved.
+
+## Preserved pre-claim product state
+
+The four pre-existing untracked files are retained byte-for-byte and were only
+read for inventory; none was staged, executed, or edited:
+
+- `_src/static/agent-feedback.js` — SHA-256 `c82e4e90f909d0d76d651fbe80d5327eb901531e90e38a260989e5ea76322749`
+- `_src/templates/agent_feedback.html` — SHA-256 `d5eae7256cfd1ebef7065ac87cc210fd7086b72dd6bb97c700d4beba45863ba3`
+- `_src/tools/agent_feedback_form.py` — SHA-256 `6fce69a827ebc7f8eb7bc9091ff9714e76e5e185c5813f8a295439638c210b40`
+- `_src/tests/test_agent_feedback_form.py` — SHA-256 `af58921e79b802c9fa261908e8d56a685e1eb5e906c4600d0c6e1d7a8bac7c6e`
+
+Read-only inspection also exposed an apparent malformed quote in the Python
+agent-name regular expression. This is not yet a validated finding because
+startup gates prohibit running or correcting the candidate before the branch
+collision is resolved.
+
+## Recovery and next action
+
+Preserve `0046-01`, `0046-01.01`, this worktree, and all four untracked files.
+The coordinator must issue an exact recovery contract that names a non-colliding
+current Feature-`0046` parent ref/branch and states how the existing child branch
+is to consume it without deleting or rewriting the historical `0046-01` ref.
+After that authority exists, verify the new parent contains accepted `0046-00`,
+merge/rederive as authorized, recheck the four file digests, then validate and
+correct the product within the original exhaustive scope.
+
+## Exhausted-preparation update
+
+Repeated mailbox and ref checks through 2026-09-03 found no recovery-parent
+assignment and no topology change: `main`, `0046-01`, and `0046-00` remain at
+the exact objects recorded above, and `0046-01` remains outside this child's
+ancestry. All safe bounded preparation is complete. Because choosing or
+authorizing a replacement parent/ref contract would expand this assignment and
+could alter another work unit's branch contract, the claim is now `[u]` under
+the repository's authority-decision boundary. This is not a technical-failure
+classification and grants no permission to mutate the four product files.
+
+## Durable authority request
+
+Decision request `decision-1788388089596-28a364de` now holds assignment
+`1788291575795-ae8796e9`. It asks Management to choose the exact non-colliding
+parent/ref and child-consumption contract. The recommended option creates a
+collision-resistant current-baseline parent, preserves historical `0046-01`
+unchanged, and authorizes an explicit rederivation only after its lineage is
+verified. Until resolution, the assignment is `on_hold`, this claim remains
+`[u]`, and the four untracked product files remain preservation-only state.
+
+## Management resolution and lineage recovery
+
+Management resolved `decision-1788388089596-28a364de` with Option A at
+`2026-09-02T22:59:31Z`. The assignment resumed `in_progress`. At the
+pre-mutation checkpoint, current `main` was
+`3ddc29eef522cf373bd401705eba0b3b957e02a5`; it contains the accepted
+`0046-00` baseline. The collision-resistant parent branch
+`0046-01-current-20260903-data-1788291575795` was created at that exact
+commit, and the three claim/hold commits were rederived onto it. The resulting
+child tip was `acbddc8f431a736a1378a40755ae90aba107d22f` before this claim update.
+
+Post-rederivation ancestry passed, the historical
+`0046-01@6f5ba155337e19b40eabf714758ddab83147c305` ref remained unchanged, and
+all four preserved product SHA-256 digests still matched the values above.
+Resolved Feature-level decision `decision-1788255482182-030d2c67` Option
+`opt-2` separately confirms the operative mutation gate is open; it does not
+expand this assignment's exhaustive paths or grant Acceptance, integration,
+publication, or external-effect authority. Product validation and bounded
+correction may now proceed.
+
+## Conflicting-decision preservation hold
+
+At 2026-09-02T23:04:29Z, before staging or the planned completion commit,
+coordination message agent-inbox:1788390269672-7761e511 reported that the
+Feature-level mutation gate was re-blocked by pending Management decision
+decision-1788390190360-3c7e959d because prior options opt-1 and opt-2
+conflict. Durable decision_status confirms that request is pending. No
+further product mutation, completion bookkeeping, review transition, or
+integration may occur until Management resolves it.
+
+Before that re-block arrived, work had proceeded under resolved decisions
+decision-1788388089596-28a364de Option A and
+decision-1788255482182-030d2c67 Option opt-2. The recovered candidate
+corrected the embedded NUL byte, malformed Python expressions, server/client
+apostrophe escaping parity, and JSON CLI option precedence; it added CLI
+regressions. Validation completed before the new hold:
+
+- Python compilation on source and tests: PASS.
+- Focused unittest suite: PASS, 24 tests.
+- JavaScript syntax check: PASS.
+- Anonymous JSON CLI preview and JSON parse: PASS.
+- Git whitespace validation: PASS.
+
+Preservation digests at the stop point are
+agent-feedback.js=c82e4e90f909d0d76d651fbe80d5327eb901531e90e38a260989e5ea76322749,
+agent_feedback.html=d5eae7256cfd1ebef7065ac87cc210fd7086b72dd6bb97c700d4beba45863ba3,
+agent_feedback_form.py=a0ceed3385772148772a95c08137451b7df49ed4c8212ed8d1f861a9d8911f43,
+and
+test_agent_feedback_form.py=778e69c4f201f6c95726ba9b522c158f607e917c25be8c3674a1d27a4442c5e3.
+The next action is Management resolution only.

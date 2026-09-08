@@ -1,0 +1,37 @@
+### `DEC-0044-031` — Reversibly contain the unauthorized live reference-transaction hook
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-28T19:21:40Z`
+- **Deciding identity:** `authority:current-user:supervisor-dashboard:1787944900878-1dc85eda`
+- **Role:** `Management`
+- **Authority reference:** `agent-inbox:1787944900878-1dc85eda`
+- **Subject:** Operational containment of the unauthorized `0044-13` hook identified at `docs/campaign-evidence/0044-13/live-hook-incident-assessment.md` without treating containment as implementation, review, Acceptance, or integration
+- **Decision:** Select reversible containment: preserve the live hook, configuration-origin, retained-log, pending-inventory, ref, and reflog evidence; neutralize both supervisor-generated `core.hooksPath` activation sources; restart affected supervisor-managed processes so inherited command-scope activation is gone; and retain the hashed hook bytes unreachable pending a separately authorized disposition. Refs, `main`, backlog semantics, Acceptance, and integration evidence remain unchanged by containment.
+- **Technical justification:** The executable at `/Users/tobias.anton/devel/autodocs/.githooks/reference-transaction` has SHA-256 `a4393fc5aeb2986bb191c6c6aac34e844869bb67ff604e0225b9e35efb4ff9aa`, is absent from the authorized `main` baseline, and is activated both through supervisor-managed per-agent global Git configuration and command-scope `GIT_CONFIG_KEY_*` injection. Removing only one source or restarting against the unchanged generator would reactivate the hook. Preservation before neutralization keeps the internally consistent R3 correlation and filesystem/configuration metadata available without crediting the hook as policy, validation, review, Acceptance, or integration evidence.
+- **Triggers:**
+  - `irreversible-or-external-effect`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Preserve evidence, neutralize both activation sources, restart affected processes, and retain the hook bytes unreachable
+    - **Disposition:** `selected`
+    - **Reason:** This stops unreviewed shared control-path execution while preserving forensic evidence and a deliberate restoration path.
+  - **ALT-02:** Retain the hook activation and the fleet freeze
+    - **Disposition:** `rejected`
+    - **Reason:** This leaves unreviewed code live across shared Git transactions and prevents governed dispatch, review, and integration from resuming.
+- **Consequences:**
+  - **CON-01:** The supervisor identity generator must stop emitting `core.hooksPath` in both the per-agent global configuration and command-scope override before affected processes restart.
+  - **CON-02:** The live hook, configuration snapshots, retained JSONL, pending inventory, and relevant ref/reflog evidence are preserved with hashes and metadata before neutralization; containment must not delete or reinterpret them.
+  - **CON-03:** Fresh-process verification must show neither activation source, while the pinned `main` and all refs remain unchanged by the containment transaction.
+  - **CON-04:** Restoring any hook requires separately approved bytes reachable from an approved baseline, one deliberately managed activation source, and hermetic validation with inherited Git configuration neutralized.
+- **Affected work units:**
+  - `task:0044-13`
+  - `repository:autodocs`
+  - `external:agent-supervisor`
+- **Affected gates:**
+  - `integration:0044-13`
+  - `external:agent-supervisor-git-hook-activation`
+- **Review participation:** `none`
+- **No-review reason:** The current user selected the bounded incident-response alternative directly after the committed independent Security Engineer assessment; this record preserves that Management choice and does not manufacture an additional review or integration verdict.
+- **Waiver:** `none`
+

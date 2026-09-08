@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://internal/issues/_schema/issue-catalog-v1.schema.json",
+  "title": "issue-catalog@v1",
+  "description": "Generated internal catalog. Never parser input. No browser-only fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "authority", "items", "digests", "generation_id"],
+  "properties": {
+    "schema": {"const": "issue-catalog@v1"},
+    "authority": {"const": "generated-view"},
+    "generation_id": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}},
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_sha256", "tool_sha256", "config_sha256", "source_sha256"],
+      "properties": {
+        "schema_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "tool_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "config_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "source_sha256": {"type": "array", "items": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}},
+        "item_schema_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "store_tool_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "level", "state", "lifecycle_status", "url", "source", "prerequisites", "criteria"],
+      "properties": {
+        "id": {"type": "string"},
+        "level": {"type": ["string", "null"], "enum": ["feature", "task", "subtask", null]},
+        "parent": {"type": ["string", "null"]},
+        "state": {"type": ["string", "null"]},
+        "lifecycle_status": {"type": "string"},
+        "archive_status": {"type": ["string", "null"]},
+        "visibility": {"type": ["string", "null"]},
+        "url": {"type": ["string", "null"]},
+        "title": {"type": "string"},
+        "title_source_hash": {"type": ["string", "null"]},
+        "prerequisites": {"type": "array", "items": {"type": "string"}},
+        "relations": {"type": "array"},
+        "criteria": {"type": "array"},
+        "source": {"type": "object"},
+        "normalized_sha256": {"type": ["string", "null"]},
+        "endpoint_status": {"type": "string", "enum": ["present", "malformed", "missing"]},
+        "parse_error": {"type": "string"}
+      }
+    }
+  }
+}

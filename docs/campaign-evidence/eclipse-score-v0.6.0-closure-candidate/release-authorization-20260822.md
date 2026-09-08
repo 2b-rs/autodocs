@@ -353,3 +353,89 @@ in zusätzlichem Code.
 Zu melden und in die `0019-10`-Buchhaltung einzutragen: Ziel-URL, Commit im
 Deploy-Repository, Digest des tatsächlich veröffentlichten Teilbaums, Zeitpunkt,
 sowie die Autoritätsreferenzen `DEC-0019-001`, `d394f39f8` und dieser Nachtrag.
+
+---
+
+## Nachtrag 2026-08-27 — korrigierter Baum auf `main` integriert; KEINE neue Veröffentlichungsfreigabe
+
+**Art:** append-only Ergänzung. Alles oben bleibt unverändert stehen und gültig
+für den **damals** freigegebenen, byteidentischen Baum mit Digest
+`7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283`. Dieser
+Nachtrag ändert daran nichts und ersetzt nichts.
+
+### Was geschehen ist
+
+Task `0019-13` (Nachfolgearbeit, in „Bekannte, bewusst nicht behobene Mängel"
+oben bereits angekündigt) hat beide dort genannten toten relativen Links
+behoben:
+- alle Record-Seiten: `../../../../review_request.js` → `../review_request.js`
+  (jetzt auflösend)
+- `participate.html`: `../../../curation-report.html` → gleiches Verzeichnis
+  `process.html` (keine Verzeichnis-Flucht mehr)
+
+Implementiert von `Tom-Torres`/`Tom-Riker` (Branch
+`0019-13-followup-tom-torres-20260827`, Fix-Commit `ca4edf93e4`), verifiziert
+unabhängig von `belanna` (privilegierte Integratorin, Team Voyager) unter
+Kathryns EXECUTE-Auftrag (agent-inbox `1787864656282-01164384`, Thread
+`0019-13-digest-repin`, Management-Autorisierung `1787864562364-74b94bbf` = A).
+
+**Umfang, nach zwei Korrekturrunden mit Kathryn festgelegt** (agent-inbox
+`1787866943779-98cd7c05` Entscheidung (b), `1787867538934-aba630d5` eigene
+Korrektur, `1787867570625-272c703a` Bestätigung): schmaler, pfadbegrenzter
+Commit — `eclipse-score-v0.6.0-curation-review/` (2.247 Dateien, der
+veröffentlichte Export), `_src/tools`-Korrektur (34 Dateien, Generatoren
+`prepare_score_curation_export.py`/`score_curation_views.py` und zugehörige
+Tests/Fixtures) **und** `docs/campaign-evidence/eclipse-score-v0.6.0-curation-review/`
+(2.257 Dateien — die Quellinhalts-Baum, aus dem der Generator liest; ohne sie
+ist der Fix nicht reproduzierbar, durch tatsächlich fehlschlagende
+Regressionstests belegt, nicht nur durch Inspektion). **Ausdrücklich
+ausgeschlossen:** `docs/pipeline/` (72 Dateien) und ein `DEC`-förmiger Dossier
+(1 Datei) als Governance-Artefakte, sowie 8 themenfremde
+`docs/campaign-evidence/`-Dateien (Abschluss-Kandidat-Manifeste,
+Provenienzkorrekturen) — der übrige, nicht integrierte Feature-`0019`-Rückstand
+(~81 Dateien dieser Art plus separate `TODO-worf-*`/`TODO-tasha-*`-Ansprüche)
+bleibt außen vor.
+
+### Neuer Digest des korrigierten Baums
+
+- **Tree-SHA256:** `432b5634bdf6fd2f7fe9d7f07dc24203ac78451c678283dcfc897137a90f877d`
+- Umfang: 2.250 Dateien im veröffentlichten Export (2.239 Kandidaten-Seiten +
+  `records/index.html` + `style.css`/`process.html`/`review_request.js` als
+  neue Wurzeldateien; `assets/view.css` entfernt, siehe unten)
+- Verfahren: identisch zum oben dokumentierten Rezept, unabhängig dreifach
+  bestätigt — Ausgabe von `prepare_score_curation_export.py` selbst, Angabe im
+  Implementer-Claim, und eigene Neuberechnung aus den Rohdateien durch
+  `belanna` — alle drei stimmen exakt überein.
+- `assets/view.css` → `style.css` (Wurzelverzeichnis-Umzug, byteidentischer
+  Inhalt, von `test_score_curation_views.py` erzwungen).
+
+### Was dieser Nachtrag ausdrücklich NICHT ist
+
+- **Keine neue enge Ausschlussprüfung.** Die 2026-08-22-Prüfung (QA-Manager
+  `Kathryn-Harry-20260822T113000Z`) lief gegen den **alten** Baum. Der neue
+  Baum wurde **nicht** erneut auf Fremdinhalt/Zugangsdaten/Claim-Dateien
+  geprüft — nur inhaltlich auf den Link-Fix (Regressionssuite 12/12,
+  unabhängig nachgefahren) und bytegenau auf den Digest.
+- **Keine neue Veröffentlichungsfreigabe.** Der oben unter „Freigabe
+  2026-08-22 — enger Weg autorisiert" beschriebene, an-den-alten-Digest
+  gebundene autorisierte Ablauf (`publish_approved_subtree.py --apply
+  --expected-tree-digest 7c514686...`) bleibt an genau diesem alten Digest
+  gebunden und wird durch diesen Nachtrag **nicht** auf den neuen Digest
+  übertragen. Die öffentliche Site
+  (<https://2b-rs.github.io/autodocs/eclipse-score-v0.6.0-curation-review/>)
+  bleibt unverändert auf dem alten, freigegebenen Baum.
+- **Kein Push, kein Deployment, keine Netzwerkoperation.** Diese Integration
+  betrifft ausschließlich `main` in diesem Repository.
+- Ob und wie der korrigierte Baum künftig veröffentlicht wird — erneute enge
+  Ausschlussprüfung plus eigene Management-Freigabe für den neuen Digest, oder
+  ein anderer Weg — ist eine eigenständige, hier nicht getroffene Entscheidung.
+
+### Herkunft
+
+Merge-Base mit `main`: `0523b9eaf` (identisch mit der ursprünglichen
+`main`-Publikation). Schmaler Integrationscommit auf Branch
+`0019-13-followup-narrow-belanna-20260827T2154Z`, gebaut auf `main`
+`7f728768fc6602b6f4fafd65ff6cfbf86c729cc3` (nach der `0037-08`-Landung).
+Evidenz unter
+`docs/campaign-evidence/0019-13-followup-digest-repin-belanna-20260827T211005Z/verification.md`
+(Branch `review-0019-13-followup-belanna-20260827T211005Z`).

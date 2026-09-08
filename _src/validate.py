@@ -13,8 +13,14 @@ Prüft:
   5. Sprachbäume (en es pt fr ru ar hi ko zh): byte-genau reproduzierbar,
      gleicher Seitenbestand wie Deutsch, korrekte lang-/dir-Attribute,
      keine Maskierungs-Platzhalter (⟦…⟧) im Output, Flaggen vorhanden
+  6. Aktualität des veröffentlichten Build-Reports (0043-04): das Seitenmodell
+     `_src/sources/pages/build-reports.json` ist über sein
+     `publication_provenance`-Objekt an genau einen schemakonformen Eintrag des
+     getrackten Ledgers `docs/evidence/build-ledger.jsonl` gebunden, und eine
+     vollständige lokale Publikationskohorte hat einen Ledger-Eintrag
 Exit-Code 0 = alles in Ordnung.
 """
+import argparse
 import glob
 import json
 import multiprocessing
@@ -593,7 +599,324 @@ def check_record_status():
             record_finding("missing-record-status", "error", f"Record ohne 'status': {rid}", ref=rid)
 
 
+BUILD_REPORT_PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
+BUILD_REPORTS_DIR = os.path.join(ROOT, "output", "build-reports")
+
+
+def _import_build_tools():
+    tools_dir = os.path.join(SRC, "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import build_ledger
+    import build_report
+    return build_report, build_ledger
+
+
+def _eligible_publication_cohorts(build_report):
+    """Group local raw subreports into publication-candidate cohorts (0043-04).
+
+    A cohort is a publication candidate only when it is *complete*: all four
+    required stages present, every subreport schema-valid, sharing one non-empty
+    ``run_archive_ref``. Identity-less reports and reports of an expressly
+    diagnostic ``--no-ledger`` run are excluded, and an incomplete (in-flight)
+    cohort is never a candidate — that is the false-positive guard that keeps a
+    build in progress, including this validator's own subreport, from producing
+    a staleness finding.
+
+    Returns a list of ``(finished_at, run_archive_ref)`` sorted oldest first.
+    """
+    diagnostic_refs = set()
+    by_ref = {}
+    if not os.path.isdir(BUILD_REPORTS_DIR):
+        return []
+    for path in sorted(glob.glob(os.path.join(BUILD_REPORTS_DIR, "*.json"))):
+        try:
+            with open(path, encoding="utf-8") as fp:
+                data = json.load(fp)
+            if not isinstance(data, dict):
+                continue
+        except (OSError, UnicodeError, ValueError):
+            # Unreadable raw evidence is reported by `combine`, not here: it is
+            # not one of this check's two firing conditions.
+            continue
+        ref = data.get("run_archive_ref")
+        if not isinstance(ref, str) or not ref.strip():
+            continue
+        if os.path.basename(path).startswith("combined-"):
+            if data.get("diagnostic_no_ledger") is True:
+                diagnostic_refs.add(ref)
+            continue
+        if build_report._validate_subreport(data, ref):
+            continue
+        by_ref.setdefault(ref, {})[data["report_kind"]] = data
+
+    cohorts = []
+    for ref, stages in by_ref.items():
+        if ref in diagnostic_refs:
+            continue
+        if any(stage not in stages for stage in build_report.REQUIRED_STAGES):
+            continue
+        cohorts.append((max(s["finished_at"] for s in stages.values()), ref))
+    return sorted(cohorts)
+
+
+def check_report_freshness():
+    """Report staleness of the published build report (0043-04, DEC-0043-003).
+
+    Two firing conditions, and no others:
+
+      (a) the tracked page model's publication provenance is missing, malformed,
+          or does not match the newest schema-valid entry of the tracked ledger
+          `docs/evidence/build-ledger.jsonl`;
+      (b) a complete, non-diagnostic publication cohort exists locally with no
+          matching tracked ledger entry.
+
+    The check is read-only: it never combines, publishes, appends to the ledger,
+    or repairs the page. It is decidable from tracked state alone — a clean
+    checkout with an empty `output/` and a page model matching the newest ledger
+    entry passes, and the absence of git-ignored raw reports is never itself a
+    finding.
+    """
+    checks_performed.append("check_report_freshness")
+    try:
+        build_report, build_ledger = _import_build_tools()
+    except Exception as exc:
+        record_finding(
+            "report-freshness-error", "error",
+            f"Report-Freshness-Pruefung konnte nicht laufen: {exc}",
+        )
+        return
+
+    page_rel = os.path.relpath(BUILD_REPORT_PAGE_MODEL, ROOT)
+    try:
+        with open(BUILD_REPORT_PAGE_MODEL, encoding="utf-8") as fp:
+            page_data = json.load(fp)
+        if not isinstance(page_data, dict):
+            raise ValueError("top-level JSON value must be an object")
+    except (OSError, UnicodeError, ValueError) as exc:
+        record_finding(
+            "stale-build-report", "error",
+            f"Seitenmodell des Build-Reports ist nicht lesbar: {page_rel}: {exc}",
+            ref=page_rel,
+        )
+        return
+
+    # --- Ledger: malformed tracked history is itself an error finding. -------
+    entries, ledger_findings = build_ledger.read_entries()
+    for finding in ledger_findings:
+        record_finding(
+            finding.get("category", "malformed-build-ledger"),
+            finding.get("severity", "error"),
+            finding.get("message", ""),
+            ref=finding.get("ref"),
+        )
+    newest = entries[-1] if entries else None
+
+    # --- (a) page binding vs newest valid ledger entry -----------------------
+    prov = page_data.get(build_report.PROVENANCE_KEY)
+    if not isinstance(prov, dict):
+        record_finding(
+            "stale-build-report", "error",
+            "Seitenmodell des Build-Reports traegt keine Publikations-Provenienz "
+            f"('{build_report.PROVENANCE_KEY}'); die veroeffentlichte Seite ist an keinen "
+            "Ledger-Eintrag gebunden und ihre Aktualitaet daher nicht pruefbar. "
+            "Erzeugen mit: python3 _src/tools/build_report.py publish  (oder provenance).",
+            ref=page_rel,
+        )
+        return
+    if prov.get("schema_version") != build_report.PROVENANCE_SCHEMA_VERSION:
+        record_finding(
+            "stale-build-report", "error",
+            f"Publikations-Provenienz hat unbekannte schema_version "
+            f"{prov.get('schema_version')!r} (erwartet {build_report.PROVENANCE_SCHEMA_VERSION!r}).",
+            ref=page_rel,
+        )
+        return
+
+    binding = prov.get("ledger_entry")
+    if newest is None:
+        if binding is not None:
+            record_finding(
+                "stale-build-report", "error",
+                "Publikations-Provenienz nennt einen Ledger-Eintrag, das getrackte Ledger "
+                "enthaelt aber keinen schemakonformen Eintrag.",
+                ref=page_rel,
+            )
+    elif not isinstance(binding, dict):
+        record_finding(
+            "stale-build-report", "error",
+            "Publikations-Provenienz enthaelt keinen Ledger-Eintrag, obwohl das getrackte "
+            f"Ledger {len(entries)} schemakonforme Eintraege hat (juengster: "
+            f"{newest.get('recorded_at')}).",
+            ref=page_rel,
+        )
+    else:
+        mismatched = [
+            field for field in ("recorded_at", "run_archive_ref", "combined_report_digest")
+            if binding.get(field) != newest.get(field)
+        ]
+        if mismatched:
+            record_finding(
+                "stale-build-report", "error",
+                "Veroeffentlichter Build-Report ist veraltet oder falsch gebunden: "
+                f"Seitenmodell nennt {{recorded_at={binding.get('recorded_at')!r}, "
+                f"run_archive_ref={binding.get('run_archive_ref')!r}}}, juengster "
+                f"Ledger-Eintrag ist {{recorded_at={newest.get('recorded_at')!r}, "
+                f"run_archive_ref={newest.get('run_archive_ref')!r}}} "
+                f"(abweichend: {', '.join(mismatched)}). "
+                "Neu erzeugen mit: python3 _src/tools/build_report.py publish.",
+                ref=page_rel,
+            )
+        elif binding.get("run_archive_ref") is None and not binding.get("backfilled"):
+            # A live publication must name its cohort; a null ref is honest only
+            # for the historic backfilled entry it exactly mirrors.
+            record_finding(
+                "stale-build-report", "error",
+                "Publikations-Provenienz bindet an einen Eintrag ohne run_archive_ref, "
+                "der nicht als 'backfilled' markiert ist; ein Live-Lauf muss seine "
+                "Kohorte benennen.",
+                ref=page_rel,
+            )
+        rendered = prov.get("rendered_run_archive_ref")
+        if rendered is not None and rendered != binding.get("run_archive_ref"):
+            record_finding(
+                "stale-build-report", "error",
+                f"Seitenkoerper wurde aus Kohorte {rendered!r} gerendert, die Provenienz "
+                f"bindet aber an {binding.get('run_archive_ref')!r}.",
+                ref=page_rel,
+            )
+
+    # --- (b) complete local cohort without a tracked ledger entry ------------
+    cohorts = _eligible_publication_cohorts(build_report)
+    if not cohorts:
+        # No raw reports (clean checkout) or only incomplete/diagnostic ones.
+        return
+    _, newest_ref = cohorts[-1]
+    if not any(entry.get("run_archive_ref") == newest_ref for entry in entries):
+        record_finding(
+            "unrecorded-publication-run", "error",
+            f"Vollstaendige Publikationskohorte {newest_ref!r} hat keinen Eintrag im "
+            "getrackten Build-Ledger docs/evidence/build-ledger.jsonl. Ein Lauf ohne "
+            "Ledger-Eintrag ist kein gruener Lauf (DEC-0043-001/DEC-0043-003).",
+            ref=newest_ref,
+        )
+
+
+ISSUE_VALIDATE_ARGS = None
+
+
+def parse_validate_cli(argv):
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--issue-source",
+        choices=("working-tree", "staged-index", "candidate", "off"),
+        default="working-tree",
+    )
+    parser.add_argument("--issue-root")
+    parser.add_argument("--issue-dag")
+    parser.add_argument("--issue-generated-root")
+    parser.add_argument("--issue-authoritative-root")
+    known, rest = parser.parse_known_args(argv)
+    return known, rest
+
+
+def check_issue_store(options=None):
+    checks_performed.append("check_issue_store")
+    options = options if options is not None else ISSUE_VALIDATE_ARGS
+    if options is None or getattr(options, "issue_source", "working-tree") == "off":
+        return
+    tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    import issue_validate as issue_validate_mod
+    source = options.issue_source
+    root = options.issue_root
+    if source == "candidate":
+        if not root:
+            record_finding(
+                "issue-validate-config",
+                "error",
+                "candidate issue mode requires --issue-root",
+            )
+            return
+        validate_source = "working-tree"
+    else:
+        validate_source = source
+    dag_path = options.issue_dag or os.path.join(ROOT, "docs/pipeline/issue-derived-artifacts-v1.json")
+    generated_root = options.issue_generated_root
+    issue_root = root
+    if validate_source == "working-tree" and issue_root is None:
+        issue_root = os.path.join(ROOT, "issues")
+        if not os.path.isdir(issue_root):
+            issue_root = None
+    try:
+        diagnostics, _parsed = issue_validate_mod.validate(
+            repo=ROOT,
+            source=validate_source,
+            root=issue_root if validate_source != "staged-index" else None,
+            authoritative_root=options.issue_authoritative_root,
+            compare_head=False,
+            dag_path=dag_path if os.path.exists(dag_path) else None,
+            generated_root=generated_root,
+        )
+    except issue_validate_mod.ConfigurationError as exc:
+        record_finding("issue-validate-config", "error", str(exc))
+        return
+    for diagnostic in diagnostics:
+        record_finding(
+            "issue-validate",
+            "error",
+            "%s %s:%s item=%s field=%s: %s" % (
+                diagnostic.rule,
+                diagnostic.path,
+                diagnostic.line,
+                diagnostic.item,
+                diagnostic.field,
+                diagnostic.message,
+            ),
+            ref=diagnostic.path or diagnostic.rule,
+        )
+
+
+
 def check_automation_safety():
+    """Runs automation_safety.scan_repository() over every tracked *.py/*.sh
+    source (see automation_safety.tracked_automation_paths).
+
+    Runtime budget (measured, validate-py-nontermination-20260827):
+    a full cProfile run against this repository's 116 real tracked automation
+    paths, on the investigating host, took 384.26s wall-clock end to end —
+    NOT the ~95s naive extrapolation (116 files * ~0.82s/file from a 20-file
+    sample) that motivated this investigation. The dominant cost (~330s
+    cumulative, ~250s self time, 19.5M calls) is
+    automation_safety._shell_structural_text, reached via
+    _shell_symbol -> scan_shell -> scan_text, concentrated in only 11 shell
+    scripts (not spread evenly across all 116 files) — i.e. a handful of
+    shell scripts drive nearly the entire runtime. This is inside scan_text's
+    shell-scanning path, which this investigation is explicitly not
+    authorized to change (cross-item gate-scope boundary: scan_text affects
+    what the automation-safety gate detects). Recorded as a finding for a
+    separate, future, gate-scope-reviewed task — not fixed here.
+
+    Reproduce with:
+        python3 -c "
+        import cProfile, pstats, sys, time, io
+        sys.path.insert(0, '_src/tools')
+        import automation_safety
+        from pathlib import Path
+        pr = cProfile.Profile(); t0 = time.time(); pr.enable()
+        automation_safety.scan_repository(Path('.'),
+            policy_path=Path('_src/tools/automation_safety_policy.json'))
+        pr.disable(); print('TOTAL_TIME', time.time() - t0)
+        pstats.Stats(pr).sort_stats('cumulative').print_stats(25)
+        "
+    (run from the repository root; ~6-7 minutes on comparable hardware)
+
+    A bounded caller (e.g. an integration checkpoint) should budget at least
+    ~10 minutes for this single check alone, or rely on validate.py's
+    run_checks() progress output (see main()) to distinguish "slow but
+    progressing" from "stuck" instead of a tight timeout.
+    """
     checks_performed.append("check_automation_safety")
     tools_dir = os.path.join(SRC, "tools")
     if tools_dir not in sys.path:
@@ -635,19 +958,66 @@ def check_automation_safety():
         )
 
 
-def main():
+# Ordered list of (name, callable) pairs run by main(). Kept as an explicit,
+# introspectable sequence (rather than 12 bare calls) so progress reporting and
+# tests can iterate it without re-deriving check order from source text.
+CHECKS = [
+    ("check_automation_safety", check_automation_safety),
+    ("check_issue_store", check_issue_store),
+    ("check_build", check_build),
+    ("check_links", check_links),
+    ("check_langs", check_langs),
+    ("check_requirement_review_schema", check_requirement_review_schema),
+    ("check_namespaces", check_namespaces),
+    ("check_home_links", check_home_links),
+    ("check_no_hardcoded_german", check_no_hardcoded_german),
+    ("check_client_rendered_german", check_client_rendered_german),
+    ("check_record_status", check_record_status),
+    ("check_workflow_lifecycle", check_workflow_lifecycle),
+    ("check_report_freshness", check_report_freshness),
+]
+
+
+def run_checks(checks, out=None, clock=time.time):
+    """Run an ordered (name, callable) sequence, emitting one deterministic
+    progress line before and after each check: "n/total start <name>" and
+    "n/total done <name> <elapsed>s". Returns a list of
+    (name, elapsed_seconds) tuples in run order.
+
+    Exists so a caller with a bounded timeout (e.g. an integration checkpoint)
+    can distinguish "slow but progressing" from "stuck" — see
+    _src/validate.py's non-termination investigation
+    (validate-py-nontermination-20260827): validate.py previously produced no
+    output at all until every check had finished, which was indistinguishable
+    from a hang to a bounded caller even though the run was merely slow.
+
+    `out` defaults to sys.stdout at call time (not at import time) so tests
+    can pass an io.StringIO() or a list-collecting callable without needing to
+    patch sys.stdout.
+    """
+    if out is None:
+        out = sys.stdout
+    total = len(checks)
+    timings = []
+    for index, (name, fn) in enumerate(checks, start=1):
+        print("[validate] %d/%d start %s" % (index, total, name), file=out, flush=True)
+        started = clock()
+        fn()
+        elapsed = clock() - started
+        timings.append((name, elapsed))
+        print("[validate] %d/%d done  %s (%.2fs)" % (index, total, name, elapsed),
+              file=out, flush=True)
+    return timings
+
+
+def main(argv=None):
+    global ISSUE_VALIDATE_ARGS
+    argv = sys.argv[1:] if argv is None else argv
+    ISSUE_VALIDATE_ARGS, rest = parse_validate_cli(argv)
+    if rest:
+        sys.argv = [sys.argv[0], *rest]
     _t0 = time.time()
-    check_automation_safety()
-    check_build()
-    check_links()
-    check_langs()
-    check_requirement_review_schema()
-    check_namespaces()
-    check_home_links()
-    check_no_hardcoded_german()
-    check_client_rendered_german()
-    check_record_status()
-    check_workflow_lifecycle()
+    run_checks(CHECKS)
 
     finished_at = time.time()
     _exit_code = 1 if problems else 0

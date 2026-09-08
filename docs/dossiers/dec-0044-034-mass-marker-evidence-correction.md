@@ -1,0 +1,304 @@
+# `DEC-0044-034` — Correct unsupported misc-chain completion projections
+
+This pre-mutation record governs one bounded backlog-integrity correction. It
+does not change a marker, supply missing completion evidence, grant Acceptance,
+authorize a checkpoint or external effect, re-plan work, integrate a branch, or
+advance `main`.
+
+### `DEC-0044-034` — Reopen the exact 54 unsupported misc-chain Tasks atomically
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-30T08:55:11Z`
+- **Deciding identity:** `agent:data:DEC-0044-034-mass-marker-governance-preparation-20260830:1788079870082-7f388409`
+- **Role:** `Architekt`
+- **Authority reference:** agent-inbox AWARD `1788079870082-7f388409`; Project Lead cross-item confirmation `1788079082806-e52e14be`; inventory parent AWARD `1788078667558-99919afc`; distinct Architect scope-review AWARD `1788078984596-2daa44e0`; `docs/pipeline/decision-record.md`; `docs/campaign-evidence/mass-marker-evidence-gap-20260830/architect-scope-review-data.md@68e9e71fa`
+- **Subject:** Exact correction scope, activation boundary, compare-and-swap preconditions, downstream gate effects, verification, recovery, and drift handling for the 54 `TODO.md` completion markers introduced by misc-chain incident commits 12 through 23 and unsupported by task-bound product, validation, authority, independence, or Acceptance evidence.
+- **Decision:** A later, separately authorized Implementer MUST change exactly the 54 named Task markers from `[x]` to `[ ]` in one atomic current-`main` transaction, preserving every Task byte except the marker characters, all prerequisites, checkpoint attributes, claims, summaries, incident commits, and review history. Activation is prohibited until this record and the distinct Architect review `68e9e71fa` are reachable from current `main` and the Project Lead has issued a re-plan for the corrected chains. The mutation is a compare-and-swap: immediately before editing, the Implementer MUST bind the current `TODO.md` digest and verify that it equals `73d1d64d18b2b4ed237751f36dff9e0695cd94b67e7d4d4f80e046b124acf9bd`, all 54 expected old markers remain `[x]`, the complete Task text, prerequisite graph, checkpoint attributes, Acceptance state, and affected gate contracts are unchanged from this decision baseline, and no superseding decision exists. Any mismatch aborts the transaction and requires renewed impact analysis and, when the cross-item reach changes, a new or append-only superseding decision and distinct Architect scope review. The correction re-closes all named successor, validation, future prerequisite-closed Acceptance, integration, publication, release, external-effect, and Feature-closure gates; it does not claim that underlying code is absent. Successors resume only through fresh or properly resumed claims after their prerequisites independently regain truthful completion evidence. Verification MUST prove an exact 54-pair marker-only `TODO.md` diff, zero other Task or governance changes, 94 preserved internal prerequisite edges, 50 closed successor Task-start gates, the two preserved direct Feature edges, all named checkpoint and closure effects, clean diff structure, and current canonical repository-doctor results. If the correction transaction itself is later proven wrong, recovery is a separately authorized append-only restoration bound to exact task evidence and then-current graph state; history is never rewritten and unsupported markers are never restored merely to recover scheduling.
+- **Technical justification:** The 12 incident commits `161ae0b7d42a`, `cf61ea33c23f`, `df0b9981a911`, `71d47c4abcfe`, `0524aa42d9ee`, `1ae357aa0813`, `cd7da8fdae06`, `15aad8b2d1cf`, `ce6f03bf3ecc`, `ba6a16f6f556`, `7e7b3f8233a2`, and `bb25c5d06aa7` changed only 54 marker pairs in `TODO.md`; their companion material supplies claims or prose summaries rather than criterion-bound product/test revisions, retained validation, approvals, signatures, or independent authority evidence. The verified inventory at `9875ede2c6ae9bbdfbde8422b05809b747948646` and distinct review `68e9e71fa` find zero complete retention cases, 94 internal prerequisite edges, 50 successor Task gates, direct edges `0025-10 -> feature:0018` and `0023-10 -> feature:0026`, and mandatory checkpoints `0037-34.02` and `0037-40`. Correcting a subset would leave at least one unsupported completion projection able to open downstream work; adding any other marker or changing contracts would exceed the evidence. The `0023-09` side-branch product `d2e9bbd26f168c9cb34c75b7ca6b480bc78c8572` and content review `b0b0b9dac606c0881172f1876dc462fdcc0d7e6f` are not reachable from the reviewed lineage, and final verdict `000baeba43028af729a7bdf934f6e62fcf794205` is blocked and grants neither approval nor Acceptance, so it is not a retention exception. Exact CAS and drift re-analysis prevent this incident decision from overriding later legitimate evidence or contract changes.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `public-release`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Reopen exactly all 54 unsupported Task markers as one compare-and-swap unit after the decision, distinct scope review, and Project Lead re-plan are reachable.
+    - **Disposition:** `selected`
+    - **Reason:** It is the smallest scope that removes every known unsupported completion projection while preserving contracts, evidence history, and a coherent prerequisite graph.
+  - **ALT-02:** Retain all 54 markers and allow downstream work to proceed.
+    - **Disposition:** `rejected`
+    - **Reason:** No marker has the complete reachable task-bound evidence and authority package its unchanged criterion requires; retention would continue to bypass validation, Acceptance, release, and closure gates.
+  - **ALT-03:** Reopen only markers without any pre-existing implementation fragments and retain the rest.
+    - **Disposition:** `rejected`
+    - **Reason:** A code fragment, prose summary, or blocked side-branch review is not a complete terminal Task disposition; partial correction would leave unsupported states and a split graph baseline.
+  - **ALT-04:** Rewrite or delete incident commits, claims, summaries, or Task contracts.
+    - **Disposition:** `rejected`
+    - **Reason:** History and provenance are evidence of the incident; changing them would exceed the correction and obscure rather than repair the authoritative projection.
+- **Consequences:**
+  - **CON-01:** The exact 54 Tasks become honestly open again; `[ ]` means completion is not established on the authoritative lineage, not that every underlying capability is absent.
+  - **CON-02:** Ninety-four internal prerequisite edges continue unchanged while 50 successor Task-start gates and two direct Feature dependencies fail closed until ordinary completion evidence is restored.
+  - **CON-03:** Future prerequisite-closed Acceptance batches, checkpoints `0037-34.02` and `0037-40`, affected release/publication/external-effect actions, and nine Feature closures cannot consume the unsupported markers.
+  - **CON-04:** The Project Lead must re-plan the corrected chains before successor dispatch; each resumed item needs a real claim, committed work products, criterion-appropriate validation, real REF, and every required approval or independent review.
+  - **CON-05:** The transaction has an exact activation checksum and compare-and-swap contract. Any drift in marker, Task, prerequisite, checkpoint, Acceptance, decision, or affected-gate state stops application and triggers renewed impact analysis.
+  - **CON-06:** Verification costs include an exact 54-marker-only diff audit, graph recount, checkpoint/closure assertions, canonical document checks, and recorded validator provenance; a repository-wide test count alone is insufficient.
+  - **CON-07:** Recovery preserves append-only history. A proven erroneous correction may be restored only by separate authority and exact current evidence; no reset, history rewrite, or scheduling-driven restoration is permitted.
+  - **CON-08:** Permanent HERKUNFT remains bound to parent AWARD `1788078667558-99919afc`, inventory evidence tip `9875ede2c6ae9bbdfbde8422b05809b747948646`, Project Lead projections `1788078876588-b955a927` and `1788079082806-e52e14be`, scope-review AWARD `1788078984596-2daa44e0`, review REF `68e9e71fa`, evidence-carriage source `17732d971`, and this decision AWARD `1788079870082-7f388409`.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `path:TODO.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260830/marker-inventory-and-correction-plan.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260830/architect-scope-review-data.md`
+  - `feature:0015`
+  - `feature:0018`
+  - `feature:0023`
+  - `feature:0024`
+  - `feature:0025`
+  - `feature:0026`
+  - `feature:0033`
+  - `feature:0035`
+  - `feature:0037`
+  - `task:0037-31`
+  - `task:0033-07.01`
+  - `task:0033-07.02`
+  - `task:0023-09`
+  - `task:0035-01`
+  - `task:0035-02`
+  - `task:0035-03`
+  - `task:0033-07.04`
+  - `task:0033-08`
+  - `task:0033-09`
+  - `task:0033-10`
+  - `task:0033-11`
+  - `task:0033-12`
+  - `task:0033-13`
+  - `task:0037-34.01`
+  - `task:0023-10`
+  - `task:0037-32`
+  - `task:0024-01`
+  - `task:0024-02`
+  - `task:0037-33`
+  - `task:0025-02`
+  - `task:0025-03`
+  - `task:0025-04`
+  - `task:0037-34.02`
+  - `task:0037-34`
+  - `task:0033-07.03`
+  - `task:0033-14`
+  - `task:0033-15.01`
+  - `task:0033-15`
+  - `task:0033-16`
+  - `task:0025-05`
+  - `task:0025-06`
+  - `task:0025-07`
+  - `task:0025-08`
+  - `task:0025-09`
+  - `task:0025-10`
+  - `task:0018-01`
+  - `task:0018-02`
+  - `task:0018-03`
+  - `task:0037-35.01`
+  - `task:0037-35.02`
+  - `task:0037-35`
+  - `task:0037-36`
+  - `task:0037-40`
+  - `task:0015-10`
+  - `task:0018-04`
+  - `task:0018-05`
+  - `task:0018-06`
+  - `task:0018-07`
+  - `task:0018-08`
+  - `task:0018-09`
+  - `task:0018-10`
+  - `task:0033-15.02`
+  - `task:0033-16.01`
+- **Affected gates:**
+  - `task-start:0015-10`
+  - `task-start:0018-01`
+  - `task-start:0018-02`
+  - `task-start:0018-03`
+  - `task-start:0018-04`
+  - `task-start:0018-05`
+  - `task-start:0018-06`
+  - `task-start:0018-07`
+  - `task-start:0018-08`
+  - `task-start:0018-09`
+  - `task-start:0018-10`
+  - `task-start:0023-10`
+  - `task-start:0024-01`
+  - `task-start:0024-02`
+  - `task-start:0025-02`
+  - `task-start:0025-03`
+  - `task-start:0025-04`
+  - `task-start:0025-05`
+  - `task-start:0025-06`
+  - `task-start:0025-07`
+  - `task-start:0025-08`
+  - `task-start:0025-09`
+  - `task-start:0025-10`
+  - `task-start:0033-07.03`
+  - `task-start:0033-07.04`
+  - `task-start:0033-08`
+  - `task-start:0033-09`
+  - `task-start:0033-10`
+  - `task-start:0033-11`
+  - `task-start:0033-12`
+  - `task-start:0033-13`
+  - `task-start:0033-14`
+  - `task-start:0033-15`
+  - `task-start:0033-15.01`
+  - `task-start:0033-15.02`
+  - `task-start:0033-16`
+  - `task-start:0033-16.01`
+  - `task-start:0035-01`
+  - `task-start:0035-02`
+  - `task-start:0035-03`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `task-start:0037-34`
+  - `task-start:0037-34.01`
+  - `task-start:0037-34.02`
+  - `task-start:0037-35`
+  - `task-start:0037-35.01`
+  - `task-start:0037-35.02`
+  - `task-start:0037-36`
+  - `task-start:0037-40`
+  - `validation:task-completion-evidence-54-marker-population`
+  - `validation:prerequisite-closed-task-acceptance`
+  - `validation:0033-08-real-store-security-side-effect-regression`
+  - `validation:0025-02-selected-profile-readiness`
+  - `validation:0037-31-frozen-migration-candidate`
+  - `validation:0037-35.01-clean-post-cutover-rebuild`
+  - `validation:0037-35.02-isolated-rollback-rehearsal`
+  - `validation:0025-03-frozen-ecu-evidence-index`
+  - `validation:0025-04-ecu-assessment-evidence`
+  - `validation:0018-04-frozen-ecu-evidence-index`
+  - `validation:0018-05-internal-r1-assessment`
+  - `integration:0037-34.02`
+  - `integration:0037-40`
+  - `release:0024-02-release-delivery-receipt`
+  - `release:0025-09-assessment-publication`
+  - `release:0025-10-level1-cl2-handoff`
+  - `release:0018-09-result-publication`
+  - `release:0018-10-cl2-claim`
+  - `release:0033-15.02-website-release-decision`
+  - `external:0033-16.01-post-decision-audit-closure`
+  - `external:0037-34.02-authority-cutover`
+  - `external:0037-40-closure-activation-write-freeze-lift`
+  - `feature-closure:0015`
+  - `feature-closure:0018`
+  - `feature-closure:0023`
+  - `feature-closure:0024`
+  - `feature-closure:0025`
+  - `feature-closure:0026`
+  - `feature-closure:0033`
+  - `feature-closure:0035`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:mass-marker-evidence-reconciliation-architect-review-data-20260830:1788078984596-2daa44e0`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** The distinct pre-mutation scope review at `68e9e71fa` supports the exact 54-marker atomic compare-and-swap unit, finds no retention exception, enumerates the downstream gates, and requires this decision plus Project Lead re-plan before mutation; it is not Acceptance, integration, or release authority.
+- **Waiver:** `none`
+
+## Append-only Management disposition — independent Feature 0037 marker recovery
+
+### `DEC-0044-035` — Authorize an exact 13-marker Feature 0037 recovery transaction
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-01T21:57:45Z`
+- **Deciding identity:** `authority:repository-owner:autodocs`
+- **Role:** `Management`
+- **Authority reference:** Current repository-owner authorization quoted verbatim in this record; Supervisor assignment `0037-cutover-governance-rebind-20260901`; Data acts only as the privileged Governance Decision Recorder and Implementer, not as deciding Management, Architect reviewer, Integrator, acceptance reviewer, or cutover signer.
+- **Subject:** Management disposition for one independently reviewed, exact-current-baseline recovery transaction that may later reopen exactly 13 unsupported Feature `0037` completion projections while preserving the original `DEC-0044-034` record and all non-target history and state.
+- **Decision:** Management authorizes one independent exact-13 transaction, bound to `refs/heads/main` object `374926174a09af1d0d3d33255a8b08993ff71dfc` and full `TODO.md` SHA-256 `eea63e0ec7e2ca78d90a5ea1e9d477f805da5c5d186acfb97d0aa35fa5f73a42`, that may change only the header markers of `0037-29`, `0037-30`, `0037-31`, `0037-32`, `0037-33`, `0037-34`, `0037-34.01`, `0037-34.02`, `0037-35`, `0037-35.01`, `0037-35.02`, `0037-36`, and `0037-40` atomically from exact `[x]` to exact `[ ]`. `0037-29` and `0037-30` were not members of the original 54-marker population governed by `DEC-0044-034`; the other 11 targets are the Feature `0037` members of that original population relevant to this recovery. This decision expressly supersedes the original `DEC-0044-034` exact-54/no-partial atomicity rule only to the minimum extent necessary to authorize this separate exact-13 transaction. Every other marker from the original population is outside this transaction, is neither changed nor newly credited by it, and has no truth, retention, reopening, repair, or later-disposition decision made here. The transaction is marker-only compare-and-swap: immediately before any write, the operator must prove the exact base object, full-file digest, exact inventory, exact complete target blocks, expected old markers, absence of current target Acceptance, unchanged selector/item/catalog/ref premises, and required decision/review ancestry; any mismatch is a no-write stop. It preserves accepted foundational Feature `0037` work and every byte of Task text, prerequisites, checkpoint attributes and verdicts, Acceptance history, incident summaries, claims, authority selectors/configuration, issue artifacts, integration state, Feature closure state, and unrelated markers. This governance package itself changes no marker, selector, authority, issue item, Acceptance, checkpoint verdict, integration state, write freeze, cutover ref, or Feature closure. Required ancestry is genuine rather than textual: the eventual marker candidate must descend from this Management disposition, the independent Guinan scope-review lineage at `24262277f03f8d36333902fed4b6b25042028402`, a later supporting exact-candidate review requested by the Supervisor, and the exact current-main baseline; only the separately assigned Integrator may cross the applicable checkpoint or advance `main`.
+- **Technical justification:** Guinan's independent Architect review supports the exact 13-marker scope but finds stale candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` non-integration-ready: its digest no longer matched `main`, its free-form addendum incorrectly described all 13 as members of the original population, and it did not resolve the original exact-54/no-partial rule. Current-baseline recomputation at `374926174a09af1d0d3d33255a8b08993ff71dfc` finds all 13 exact complete Task blocks present with `[x]`, no current `Acceptance: ✓` in any target block, selector `agent-workflow-bootstrap@v1` / `legacy-lists` / `legacy-writable` / `legacy-writable` / `runner-request@v1`, zero tracked canonical numeric issue files, zero catalog items, and zero refs below `refs/autodocs/cutover/0037/`. The repository-owner authorization is: “Dann nimm es jetzt in Betrieb. Eine gute Gelegenheit, die fälschlicherweise nicht ge[x]ten Tasks loszuwerden. Du kriegst von mir dafür alle nötigen Management-Freigaben. Steuere alles ein über Assignments, die du als supervisor verschickst. Keine neuen TODO-Tasks erstellen während des übergangs, sonst bremsen wir uns nur wieder selber aus.” Exact marker-only reopening removes unsupported scheduling projections without deleting implementation fragments or asserting that underlying capabilities are absent. A full-file and block-level CAS, no-partial-write rule, genuine review ancestry, and separate integration authority prevent the recovery from overriding concurrent legitimate evidence or silently crossing cutover gates.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `authority-tailoring-or-waiver`
+  - `material-architecture-or-repository-behavior`
+  - `irreversible-or-external-effect`
+  - `public-release`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Authorize one newly bound exact-13 marker-only transaction with explicit disposition of `0037-29` and `0037-30`, narrowly superseding only the original atomicity conflict.
+    - **Disposition:** `selected`
+    - **Reason:** This is the smallest scope supported by the independent Architect review that truthfully covers the complete Feature `0037` production-cutover evidence gap and preserves all non-target state.
+  - **ALT-02:** Integrate stale preparation candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` unchanged.
+    - **Disposition:** `rejected`
+    - **Reason:** Its full-file digest is stale, it misstates original-population membership, and it leaves the exact-54/no-partial conflict unresolved; Guinan expressly found it non-integration-ready.
+  - **ALT-03:** Apply the original exact-54 transaction before or together with Feature `0037` recovery.
+    - **Disposition:** `rejected`
+    - **Reason:** The other original markers are outside the authorized transition scope, and their current truth or repair disposition has not been decided by this Management action.
+  - **ALT-04:** Reopen fewer than 13 targets, widen beyond the 13, or alter Task contracts, Acceptance, selectors, issue artifacts, or integration state in the same transaction.
+    - **Disposition:** `rejected`
+    - **Reason:** A smaller set leaves a reviewed unsupported cutover projection; a larger or mixed-behavior change exceeds the reviewed blast radius and defeats marker-only CAS isolation.
+- **Consequences:**
+  - **CON-01:** A later authorized operator may prepare exactly 13 `[x]` to `[ ]` header-marker replacements; `[ ]` means terminal completion is not established on the authoritative lineage and does not erase or deny underlying work.
+  - **CON-02:** Task-start, validation, prerequisite-closed Acceptance, mandatory integration, authority-switch, write-freeze-lift, and Feature-closure gates that consume the 13 projections fail closed until truthful completion evidence is restored through their unchanged contracts.
+  - **CON-03:** The other original `DEC-0044-034` markers remain untouched and receive no new completion, retention, reopening, or remediation credit from this decision.
+  - **CON-04:** Any drift in `main`, `TODO.md`, a complete target block, marker, Acceptance, prerequisite, checkpoint, selector, issue/catalog/ref state, governance, or required ancestry aborts before write and requires a newly pinned package plus renewed review wherever exact evidence or reach changed.
+  - **CON-05:** A failed CAS, interrupted preparation, or unintegrated partial candidate is never completed by hand or compensated with extra markers; the integration target remains unchanged, evidence is retained, and retry starts from a fresh current-main binding.
+  - **CON-06:** If an integrated correction is later proven wrong, restoration requires separate append-only Management authority bound to exact then-current task evidence and graph state; no reset, history rewrite, or scheduling-only restoration of `[x]` is permitted.
+  - **CON-07:** The present package is governance preparation only. It grants no Acceptance, Architect exact-candidate verdict, integration approval, cutover signature, publication, authority switch, external mutation, or Feature closure.
+  - **CON-08:** The Supervisor must obtain the promised follow-up independent exact-candidate review, then separately dispatch the reserved Integrator persona `Picard`; Data must not self-review, self-accept, integrate, advance `main`, push, publish, or sign a cutover ref.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `path:TODO.md`
+  - `path:docs/dossiers/dec-0044-034-mass-marker-evidence-correction.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260901/current-baseline-0037-marker-plan.md`
+  - `path:docs/campaign-evidence/mass-marker-evidence-gap-20260901/architect-scope-review.md`
+  - `feature:0037`
+  - `task:0037-29`
+  - `task:0037-30`
+  - `task:0037-31`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `task:0037-34`
+  - `subtask:0037-34.01`
+  - `subtask:0037-34.02`
+  - `task:0037-35`
+  - `subtask:0037-35.01`
+  - `subtask:0037-35.02`
+  - `task:0037-36`
+  - `task:0037-40`
+- **Affected gates:**
+  - `task-start:0037-30`
+  - `task-start:0037-31`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `task-start:0037-34`
+  - `task-start:0037-34.01`
+  - `task-start:0037-34.02`
+  - `task-start:0037-35`
+  - `task-start:0037-35.01`
+  - `task-start:0037-35.02`
+  - `task-start:0037-36`
+  - `task-start:0037-40`
+  - `validation:0037-shadow-migration`
+  - `validation:0037-quiescence-freeze`
+  - `validation:0037-frozen-candidate`
+  - `validation:0037-pre-cutover-audit`
+  - `validation:0037-cutover-decision`
+  - `validation:0037-authority-tree-and-rollback-package`
+  - `validation:0037-authority-switch`
+  - `validation:0037-clean-regeneration`
+  - `validation:0037-rollback-event-replay`
+  - `validation:0037-post-cutover-audit`
+  - `validation:0037-final-activation-reference`
+  - `validation:0037-prerequisite-closed-acceptance`
+  - `integration:0037-34.02`
+  - `integration:0037-40`
+  - `external:0037-authority-switch`
+  - `external:0037-issue-claim-write-freeze`
+  - `external:0037-write-freeze-lift`
+  - `external:0037-source-authority`
+  - `release:0037-cutover-activation`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:guinan:0037-cutover-governance-review-20260901:24262277f03f8d36333902fed4b6b25042028402`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Guinan supports the exact 13-marker scope only, finds stale candidate `0d87882bd5a2df9c3b9a9eeec515fdfd09c77450` non-integration-ready, and requires fresh current-main binding plus an authorized append-only decision that includes `0037-29` and `0037-30` and resolves the original exact-54/no-partial conflict. This participation is not Acceptance, integration review, cutover approval, signature, or Feature closure.
+- **Waiver:** `none`

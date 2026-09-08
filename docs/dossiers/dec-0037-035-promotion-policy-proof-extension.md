@@ -1,0 +1,60 @@
+### `DEC-0037-035` — Separate closed proof for final-migration promotion
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-04T19:27:59Z`
+- **Deciding identity:** `authority:supervisor:management`
+- **Role:** `Management`
+- **Authority reference:** Resolved Management decision `decision-1788549180711-76247bba`, option `authorize_bounded_review`, resolved at `2026-09-04T19:13:46Z`; recording and independent scope review assignment `1788549291503-3e8815ee`. This record does not itself award implementation or integration.
+- **Subject:** Bounded extension of the frozen integration proof for the fresh Task `0037-31` promotion selected by `DEC-0037-034`, preserving the closed historical proof under `DEC-0037-033`.
+- **Decision:** Select ALT-01. After this record and its supporting review are integrated on canonical main, an explicit same-slot scope award may add only `_src/tools/issue_integration_policy.py` and `_src/tests/test_issue_integration_policy.py` to the existing promotion implementation scope, with synchronized existing candidate companions. Add a separate exact promotion proof, not a widened historical proof or generic claimless exception. The complete canonical main-to-candidate delta must satisfy the closed path and immutable evidence bindings in the supporting review. Preserve the active implementation ref, assignment history, and Geordi reservation; keep `0037-34.01` stopped pending its existing independent integration and transaction gates.
+- **Technical justification:** Independent read-only reproduction against candidate `6923deec89fc15575fb23047d8236a89b3fd286e` yields three `POLICY-FROZEN-AUTHORITY-PROOF-REQUIRED` findings over 980 paths from implementation base `558326103d6f2f22d90faef2452395b73ef03133`, but five over 1957 paths from canonical main `2e753cdecf8b59c6283ce4482fe048b78ea9405e`. The latter also rejects the disposition authority and manifest. `_claimless_0037_31_proof()` pins the old assignment, rejected run, and closed scope; the fresh promotion cannot conform merely by updating companion hashes. `DEC-0037-034` expressly required scope return before policy mutation. A separate conjunctive proof addresses this observed mismatch without transferring historical authority to new runs or unrelated files.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Add one separately bound promotion proof after independent pre-mutation review
+    - **Disposition:** `selected`
+    - **Reason:** Preserves the old closed proof, exact source and assignment boundaries, and full-delta validation while enabling the already selected fresh-run design.
+  - **ALT-02:** Retain the hold pending a different authority design
+    - **Disposition:** `rejected`
+    - **Reason:** Management selected the bounded review route; the independently reproduced mismatch has a narrow repair that needs no general authority redesign.
+  - **ALT-03:** Broaden the old run prefix, bypass the five findings, or validate only the implementation delta
+    - **Disposition:** `rejected`
+    - **Reason:** These approaches either admit unrelated frozen writes or omit the two authority-bearing artifacts visible only in the canonical delta.
+- **Consequences:**
+  - **CON-01:** Historical assignment `1788519031177-793919ee`, source `7dbc94db262979b41bc225d6571d610123a47814`, tree `6a6c40de53f15245a084bbdc68b526f07ab5b534`, closure transaction `f5a806c52a63e00edac5c0aa8bb0793227ae3af1`, and rejected run `0037-31-post-delta-7dbc94db-r2` retain their existing meaning and validation behavior. They cannot authorize the new promotion by fallback.
+  - **CON-02:** The new proof independently binds promotion assignment `1788546750193-fb7f5f95`, recorded delegation `1788547915174-4a5b7bc0`, exact later same-slot extension authority, frozen source/tree, exact promoted run, signed authority commit/path/blob/principal, disposition manifest digest, all report digests, candidate identity/tree, normalized changed paths, and synchronized companion digests. Strings and self-reported booleans are not authority verification.
+  - **CON-03:** The reviewed run is `0037-31-promoted-dispositions-20260904-r2`. Its authority and manifest paths are exactly `provenance/migrations/issue-store/0037-31-promotion/migration-disposition-authority.json` and `provenance/migrations/issue-store/0037-31-promotion/migration-dispositions.json`. Neither their parent directory nor arbitrary future run IDs become generally writable.
+  - **CON-04:** Every canonical changed path is evaluated, including additions, deletions, modes, and rename endpoints. Missing, extra, malformed, aliased, out-of-scope, or unverifiable evidence rejects the promotion branch of the proof. Generic claim/Markdown fallback must not rescue an invalid recognized promotion proof.
+  - **CON-05:** Green evidence must include the entire current main-to-candidate delta and preservation of old valid and invalid cases. Required negative and finite-property cases are listed in the supporting review; green implementation-base tests alone are insufficient.
+  - **CON-06:** Source, authority, manifest, selector, assignment, candidate, path-set, or main drift requires fresh binding and revalidation before a gate is crossed. Immutable run output is never rewritten to repair a proof. A new production run requires its own fresh ID under the existing bounded process, not automatic acceptance by this proof.
+  - **CON-07:** Before integration retain the candidate and evidence refs if work stops. After integration and before cutover, a separately authorized coordinated revert removes the new proof and promotion use together while preserving old proof behavior and all historical evidence; the promotion becomes blocked again. No deletion, force-update, or pruning is authorized.
+  - **CON-08:** Only the two dossier files are writable under the current Architect award. Governance integration precedes implementation mutation; implementation review, transaction CAS, hygiene, source integration, Acceptance, authority cutover, publication, and Feature closure remain separately authorized gates.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0037`
+  - `task:0037-31`
+  - `subtask:0037-34.01`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `subtask:0037-34.02`
+  - `path:_src/tools/issue_integration_policy.py`
+  - `path:_src/tests/test_issue_integration_policy.py`
+- **Affected gates:**
+  - `validation:0037-31-frozen-promotion-proof`
+  - `integration:0037-31`
+  - `task-start:0037-34.01`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `integration:0037-34.02`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:architect:0037-31:01a06c35-4fd7-74c2-81dc-97cf6cfb8f1f`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Independent pre-mutation review in `docs/dossiers/0037-31-promotion-policy-scope-review-20260904.md` supports only the stated closed bindings and exclusions; this is not implementation Acceptance or an integration verdict.
+- **Waiver:** `none`

@@ -85,12 +85,42 @@ claims.
 |---|---|---|---|---|
 | **Architect** | Break a Feature into work that implementers can execute with minimal additional reasoning; define criteria and integration nodes | Feature breakdown, criteria, Definition of Done, prerequisite graph, checkpoint rationale and no-checkpoint rationale | Work partition, order, criteria, checkpoint placement before current Acceptance of the affected node | A scope decision reaching beyond the Feature without a TK-2 record; silent checkpoint change after current Acceptance; acceptance of its own breakdown |
 | **Implementer** | Produce and validate the work product | Deliverable, tests, validation evidence, claim, `REF` | Technical implementation in the declared write scope; backlog repair under existing rules | Acceptance of its own work (TK-1); write-scope expansion; a blocking gate without a TK-2 record |
-| **Integrator** | Merge work across **integration checkpoints** and review it there | Boundary merge, review findings, `Acceptance: ✓` or `[u]` integration verdict, claim reconciliation | Whether a reviewed checkpoint passes | Resolve its own `[u]` verdict; skip a checkpoint |
+| **Dispatcher** | Admit work only against reserved downstream capacity and keep the chain moving through canonical integration | Capacity reservation, complete briefing, handoffs, repair routing, canonical integration receipt | Which eligible chain to offer within the WIP limit | Declare flow complete at implementation or review handoff; create work without an Integrator reservation; overfill the review queue |
+| **Integrator** | Pull reserved work across **integration checkpoints**, review it there, and execute repository hygiene for assigned `main` integrations | Capacity reservation, boundary merge, hygiene verdict, review findings, Acceptance or non-passing integration verdict, claim reconciliation, canonical integration receipt | Whether a reviewed checkpoint passes, local technical questions inside the accepted contract, and whether the exact assigned merge satisfies the machine hygiene and ancestry gates | Change product scope; waive a gate; resolve a non-delegable `[u]` question; skip a checkpoint; delegate the hygiene verdict to Project Lead; accept more than one active reserved chain |
 
-Only a merge that crosses an integration checkpoint is Integrator work.
-Checkpoint-free merges, typically Subtask→Task, are implementer work and may be
-performed by a sandboxed-grunt agent through the runner. The acceptance reviewer
-in [`task-acceptance.md`](task-acceptance.md) is the Integrator role.
+Checkpoint-free item-branch merges, typically Subtask→Task, are implementer
+work and may be performed by a sandboxed-grunt agent through the runner. The
+Feature→`main` boundary is always expressly assigned privileged Integrator work:
+that Integrator owns the machine hygiene run, verdict, root merge, and immediate
+post-merge verification even when no intermediate checkpoint is crossed. The
+acceptance reviewer in [`task-acceptance.md`](task-acceptance.md) is also the
+Integrator role.
+
+### 3.1.1 Candidate-lifecycle duties
+
+- **Dispatcher:** offers one active candidate ref/worktree for the assignment
+  and rejects a sibling correction surface. It routes review findings back to
+  that ref in the same reserved slot. Only an explicit atomic same-slot
+  supersession may designate one replacement while preserving the displaced
+  ref, assignment history, and reservation.
+- **Implementer/contractor:** appends corrections, validation repairs, and
+  same-slot rework linearly to the awarded ref. On interruption it commits
+  useful state as WIP there; safely recoverable disposable local state does not
+  justify a new branch, worktree, or claim.
+- **Reviewer:** pins the exact candidate commit and returns actionable findings
+  to the same ref. It may cite red or intermediate commits without creating
+  evidence refs. A separate evidence ref is valid only when a named decision,
+  review, or incident artifact cites its exact commit and retention purpose.
+- **Integrator:** retains the reservation through correction and re-review,
+  verifies the exact reviewed candidate's ancestry to the canonical target, and
+  rejects tree equality, patch replay, reconstructed bytes, or a sibling commit
+  as substitutes.
+
+These duties implement
+[`DEC-0044-039`](../dossiers/dec-0044-039-candidate-ref-proliferation-control.md)
+and grant no ref deletion, force update, Acceptance, integration, publication,
+Task-state, or Feature-closure authority. Existing preservation, independence,
+hygiene, and worktree boundaries continue to govern.
 
 ### 3.2 Two functions
 
@@ -120,6 +150,7 @@ authority, **never an agent role**.
 |---|---|---|
 | Architect | `sandboxed-grunt` | — |
 | Implementer | `sandboxed-grunt`; `unprivileged` where the Task's execution scope requires direct execution | The class follows the Task's need, not the session's preference |
+| Dispatcher | `unprivileged` | Dispatch grants no Acceptance or integration authority; it carries end-to-end flow accountability |
 | Integrator | **`privileged`** | Neither `sandboxed-grunt` nor `unprivileged` may be Integrator; both lack authority, not capability |
 | Requirements Engineer | `sandboxed-grunt` | — |
 | QA Manager | `sandboxed-grunt` is sufficient | More rights do **not** increase independence. `unprivileged` is permitted when direct verification runs are required |
@@ -168,6 +199,15 @@ and irreversible, external, security, credential, release, and material-risk
 decisions. Acceptance records and integration verdicts remain specialized
 formats; a TK-2 decision on which either depends receives a separate `DEC-…`
 record.
+
+The presence of a TK-2 or other `decision-record@v1` trigger determines that a
+durable record is required; it does not automatically select Management as the
+deciding role. Technical dissent follows the delegated escalation ladder in
+[`integration-flow-control.md`](integration-flow-control.md): same-slot rework,
+then a documented trilateral round among producer, reviewer, and Coordinator or
+Architect. That round may interpret the existing contract and select bounded
+correction inside existing authority, but cannot change product scope or waive
+independence, hygiene, Acceptance, security, release, or specialist gates.
 
 For pre-mutation review of gate scopes, apply only the canonical
 [`cross-item-blast-radius`](decision-record.md#2-when-a-record-is-mandatory)
@@ -276,6 +316,10 @@ typical failure, and a repository example.
   removal, or movement first requires separately authorized append-only
   invalidation or reopening. Applicable TK-2 and independent gate-scope review
   requirements remain in force.
+- **Breakdown instruction:** Apply the normative
+  [`feature-breakdown.md`](feature-breakdown.md) record for the source of each
+  architecture decision, prerequisite/order and test derivation, capability
+  profile, branch instruction, and A1/A2 evidence.
 - **Prohibitions:** Gate decisions without TK-2; accept its own breakdown;
   imply completeness where a gap exists.
 - **Typical failure:** Check duplicates against the wrong neighboring Feature.
@@ -291,7 +335,8 @@ typical failure, and a repository example.
   current state at the edit location → validation path.
 - **Result:** Deliverable, tests, validation evidence, `REF`, and current claim.
 - **Prohibitions:** Accept own work; silently widen write scope; claim validation
-  that did not run; install a blocking gate without a record.
+  that did not run; install a blocking gate without a record; create a sibling
+  correction candidate instead of continuing linearly on the awarded ref.
 - **Typical failure:** Treat green output as proof of correct scope. `0038-03`
   was green at closure — 99 files and zero open findings — while already carrying
   the defect.
@@ -303,10 +348,12 @@ typical failure, and a repository example.
   the checkpoint.
 - **Reading order:** Checkpoint marking → transitive prerequisites → work
   products and findings → independent validation → authority boundaries.
-- **Result:** Boundary merge, review findings, `Acceptance: ✓` or `[u]` verdict,
-  and reconciled claims.
+- **Result:** Boundary merge, machine hygiene and immediate post-merge verdict,
+  review findings, `Acceptance: ✓` or `[u]` verdict, and reconciled claims.
 - **Prohibitions:** Resolve own `[u]` verdict; skip a checkpoint; repair findings
-  rather than issue a verdict; accept when TK-1 applies without a waiver.
+  rather than issue a verdict; accept when TK-1 applies without a waiver;
+  substitute byte-equivalent reconstruction for ancestry of the exact reviewed
+  candidate.
 - **Typical failure:** Wave work through because progress is blocked. `[u]`
   exists for exactly that situation.
 - **Good question:** “Would I accept this if someone else had produced it?”
