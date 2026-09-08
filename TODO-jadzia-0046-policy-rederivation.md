@@ -7,3 +7,4 @@ NOTES: Dispatched architecture rederivation for 0046 policy supersession based o
 
 - note: Terminal state / handover verified post supervisor restart.
 - state: [x]
+- note: Terminal state / handover verified post supervisor restart.

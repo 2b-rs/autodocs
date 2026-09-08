@@ -27,3 +27,4 @@ STATUS: OPEN
 NOTES: Dispatched 0050-03 (draining, checkpoint, evidence-bound decisions).
 - note: 0050-01-integration ACCEPTED. Review record: DONE-obrien-0050-01-integration-20260901.md.
 - state: [x]
+- note: Terminal state / handover verified post supervisor restart.
