@@ -1,7 +1,7 @@
 ### `DEC-0037-039` — Reconcile v2 workflow version increment with integration gate enforcement
 
 - **Record format:** `decision-record@v1`
-- **Recorded at:** `2026-09-08T15:42:00+02:00`
+- **Recorded at:** `2026-09-08T17:42:00+02:00`
 - **Deciding identity:** `authority:mancons:decision-1788863428529-3f63ce54`
 - **Role:** `Management`
 - **Authority reference:** `decision-1788863428529-3f63ce54`
@@ -38,12 +38,12 @@
   - `validation:_src/tools/issue_integration_policy.py`
   - `validation:UNSUPPORTED-V2-CONTRACT`
   - `integration:0037-40`
-  - `doctor:agent_bootstrap`
+  - `validation:_src/tools/agent_bootstrap.py`
 - **Review participation:**
   - **PART-01:**
-    - **Identity:** `agent:seven:0037-40:1788881863364-f2c60e45`
+    - **Identity:** `agent:seven:0037-40-v2-3-0-candidate-architect-scope-review:1788881977462-85bce4c3`
     - **Role:** `Architekt`
     - **Participation:** `reviewed`
-    - **Position:** `supports-with-conditions`
-    - **Note:** Required formal decision-record@v1 in docs/dossiers, narrowing allowlist to {2.0.0, 2.3.0}, and AE-3/AE-4 adversarial evidence.
+    - **Position:** `supports`
+    - **Note:** Formally reviewed on commit d087f04ac (review 27a4d0161 / c4b8608af). Scope approved with B1/B2/B3 and fixture discharged; required record text corrections C1/C2 applied.
 - **Waiver:** `none`
