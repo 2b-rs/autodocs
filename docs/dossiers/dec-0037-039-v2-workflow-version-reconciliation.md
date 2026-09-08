@@ -1,0 +1,49 @@
+### `DEC-0037-039` — Reconcile v2 workflow version increment with integration gate enforcement
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-08T15:42:00+02:00`
+- **Deciding identity:** `authority:mancons:decision-1788863428529-3f63ce54`
+- **Role:** `Management`
+- **Authority reference:** `decision-1788863428529-3f63ce54`
+- **Subject:** Reconciliation of v2 workflow version increment (`2.3.0`) with integration gate version enforcement in `issue_integration_policy.py`.
+- **Decision:** Execute Option A of `decision-1788863428529-3f63ce54`. Increment `workflow_version` to `2.3.0` per Task `0037-40` AC-001 requirements from the 2.1.0 pre-activation baseline, and update the hosted integration gate in `_src/tools/issue_integration_policy.py:246` to strictly accept supported v2 versions `{"2.0.0", "2.3.0"}`.
+- **Technical justification:** Task `0037-40` AC-001 literally requires incrementing the workflow version above the pre-activation 2.1.0 baseline. The prior candidate set `workflow_version` to `2.0.0` to satisfy a hardcoded equality check in `issue_integration_policy.py`, violating AC-001. Option A resolves this contradiction by incrementing `workflow_version` to `2.3.0` and updating the gate to permit both initial legacy `2.0.0` and current active `2.3.0` v2 selectors. Unvalidatable intermediate or forward versions (`2.1.0`, `2.2.0`, `2.4.0`) remain strictly rejected as `UNSUPPORTED-V2-CONTRACT`.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Increment `workflow_version` to `2.3.0` and widen `issue_integration_policy.py:246` to allow `{"2.0.0", "2.3.0"}` with AE-3 and AE-4 test evidence.
+    - **Disposition:** `selected`
+    - **Reason:** Literally satisfies AC-001 and permanently resolves the tooling contradiction without admitting untracked versions.
+  - **ALT-02:** Keep `workflow_version` at `2.0.0` and reinterpret AC-001 increment wording.
+    - **Disposition:** `rejected`
+    - **Reason:** Violates plain wording of acceptance criteria and sets poor precedent for requirement compliance.
+  - **ALT-03:** Revert activation to pre-activation frozen state.
+    - **Disposition:** `rejected`
+    - **Reason:** Re-freezes fleet-wide development and incurs high cost of delay without technical necessity.
+- **Consequences:**
+  - **CON-01:** Modifies `_src/tools/issue_integration_policy.py` to allow exactly `{"2.0.0", "2.3.0"}`.
+  - **CON-02:** Updates `agent-workflow.json` with `workflow_version: "2.3.0"`, `docs/pipeline/agent-instructions/future/index.md` with `--expected-workflow-version 2.3.0`, and fixture `issues/_schema/fixtures/agent-workflow-bootstrap-v2/valid/issue-store.json`.
+  - **CON-03:** Adds AE-3 positive regression and AE-4 adjacent negative cases in `_src/tests/test_issue_integration_policy.py`.
+  - **CON-04:** No unassigned gate mutation, no direct TODO.md edits, and no premature Feature 0037 closure.
+- **Affected work units:**
+  - `task:0037-40`
+  - `path:_src/tools/issue_integration_policy.py`
+  - `path:_src/tests/test_issue_integration_policy.py`
+  - `path:agent-workflow.json`
+  - `path:docs/pipeline/agent-instructions/future/index.md`
+  - `path:issues/_schema/fixtures/agent-workflow-bootstrap-v2/valid/issue-store.json`
+- **Affected gates:**
+  - `validation:_src/tools/issue_integration_policy.py`
+  - `validation:UNSUPPORTED-V2-CONTRACT`
+  - `integration:0037-40`
+  - `doctor:agent_bootstrap`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:seven:0037-40:1788881863364-f2c60e45`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports-with-conditions`
+    - **Note:** Required formal decision-record@v1 in docs/dossiers, narrowing allowlist to {2.0.0, 2.3.0}, and AE-3/AE-4 adversarial evidence.
+- **Waiver:** `none`

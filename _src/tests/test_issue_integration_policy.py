@@ -406,4 +406,42 @@ class IssueIntegrationPolicyTests(unittest.TestCase):
                            "--candidate-ref",candidate,"--json"],capture_output=True,text=True)
         self.assertEqual(0,ok.returncode,ok.stderr)
 
+
+    def test_ae3_v2_workflow_version_2_3_0_accepted(self):
+        """AE-3: workflow_version 2.3.0 with direct execution passes v2 integration policy."""
+        self.write_v2(workflow_version="2.3.0")
+        candidate = self.commit("v2-2.3.0-activation")
+        report = self.evaluate(candidate=candidate)
+        self.assertEqual("passed", report.get("status"))
+
+    def test_ae4_v2_workflow_versions_unsupported_rejected(self):
+        """AE-4: adjacent versions and non-direct capability combinations are rejected with UNSUPPORTED-V2-CONTRACT."""
+        # Version 2.4.0 (future unvalidated)
+        self.write_v2(workflow_version="2.4.0")
+        cand_240 = self.commit("v2-2.4.0")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
+            self.evaluate(candidate=cand_240)
+        self.assertEqual("UNSUPPORTED-V2-CONTRACT", ctx.exception.code)
+
+        # Version 2.1.0 (unvalidatable intermediate)
+        self.write_v2(workflow_version="2.1.0")
+        cand_210 = self.commit("v2-2.1.0")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
+            self.evaluate(candidate=cand_210)
+        self.assertEqual("UNSUPPORTED-V2-CONTRACT", ctx.exception.code)
+
+        # Version 2.2.0 (unvalidatable intermediate)
+        self.write_v2(workflow_version="2.2.0")
+        cand_220 = self.commit("v2-2.2.0")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
+            self.evaluate(candidate=cand_220)
+        self.assertEqual("UNSUPPORTED-V2-CONTRACT", ctx.exception.code)
+
+        # Version 2.3.0 with non-direct execution_model
+        self.write_v2(workflow_version="2.3.0", execution_model="runner")
+        cand_runner = self.commit("v2-2.3.0-runner")
+        with self.assertRaises(POL.IntegrationPolicyViolation) as ctx:
+            self.evaluate(candidate=cand_runner)
+        self.assertEqual("UNSUPPORTED-V2-CONTRACT", ctx.exception.code)
+
 if __name__=="__main__": unittest.main()
