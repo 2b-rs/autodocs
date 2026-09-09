@@ -45,3 +45,5 @@ NOTES: Re-dispatched implementation of 0046-05 via offer 1788528162192-4d925162.
 - note: Offer 1788528162192-4d925162 cancelled (overdue).
 - state: [x]
 - note: Terminal state / handover verified post supervisor restart.
+handover_to: leahcim
+handover_at: 2026-09-09T08:53:42Z

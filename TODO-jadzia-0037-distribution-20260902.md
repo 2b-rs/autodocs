@@ -21,3 +21,5 @@ NOTES: Re-dispatched shadow migrations via offer 1788420050946-98d33df3.
 - note: Worf accepted re-offer 1788420443941-64a35f2a and started IN_PROGRESS for 0037-29.
 - state: [x]
 - note: Terminal state / handover verified post supervisor restart.
+handover_to: leahcim
+handover_at: 2026-09-09T08:53:42Z
