@@ -95,3 +95,24 @@ SYS, VAL, HWE, ACQ.4, MLE, SUP.11, PIM.3, REU.2, CS/FS: not included (`0020-04`/
 ## 7. Exclusions
 
 Capability ratings; `Acceptance: ✓`; `0020-09` register implementation; `0025` freeze; `main`; Feature `0033`; overwriting prior tokens.
+
+---
+
+## 8. Capability Level 2 (PA 2.1 / PA 2.2) Extensions
+
+As required by `0011-05`, the single ECU catalogue is extended to support Managed Process Performance (PA 2.1 and PA 2.2). No separate CL2 catalogue shall be created.
+
+### 8.1 PA 2.1 Performance Management Criteria
+- **Responsibilities & Owners**: Every instantiated process MUST have a named Process Owner and assigned Performers (as defined in `docs/pipeline/aspice-cl2-roles.md`).
+- **Resource & Repository Planning**: The repository (`autodocs` Git) and required toolchain MUST be formally assigned and authorized for the process instances.
+- **Process Evidence**: Retained attribute evidence MUST include the project plan (MAN.3) demonstrating how the process instance was planned, monitored, and adjusted.
+
+### 8.2 PA 2.2 Work Product Management Criteria
+- **Quality & Control Criteria**: Every work product MUST have defined quality criteria (e.g., schema validation, static analysis, unit test coverage minimums).
+- **Review/Approval Rules**: 
+  - Every work product MUST undergo independent review against its quality criteria.
+  - Approval MUST follow the TK-1 rule (Approver != Producer).
+- **Retained Attribute Evidence**: 
+  - Traceable review logs/findings.
+  - Explicit approval records (e.g., integration verdicts, `Acceptance: ✓` records).
+  - Version-controlled baseline identity (`ecu-execution` origin) including revision, validity, retention, and confidentiality metadata.
