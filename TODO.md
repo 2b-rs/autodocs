@@ -69,7 +69,7 @@
 - [ ] **0006-04** (task, open) PREREQ: 0006-04:0006-03 — extend the record schema to carry stable provenance for curator-visible changes across all modules, not just pilot records criteria=AC-001:active
 - [ ] **0006-05** (task, open) PREREQ: 0006-05:0006-03 — add first-class support for AI-proposed NEW elements in the DB and queue model criteria=AC-001:active
 - [ ] **0006-06** (task, open) PREREQ: 0006-06:0006-03 — converge browser review, queue review, AI proposals, and curator decisions into one end-to-end state machine criteria=AC-001:active
-- [ ] **0006-07** (task, open) design a feedback loop from curator decision back into extraction/scrape/database logic criteria=AC-001:active
+- [ ] **0006-07** (task, in_progress, @kira) design a feedback loop from curator decision back into extraction/scrape/database logic criteria=AC-001:active
 - [ ] **0006-08** (task, open) resurrect and implement campaign manifests as the versioning backbone for curation work criteria=AC-001:active
 - [ ] **0006-09** (task, open) PREREQ: 0006-09:0006-03, 0006-09:0001-08 — build a static HTML "curation report" that renders all open and recent curation items from the queue(s) -- DONE 2026-08-14: `_src/tools/curation_report.py` normalizes all items from `curation-queue` and `review-queue` into `curation-item@v1` and generates `curation-report.html`. criteria=AC-001:active
 - [ ] **0006-10** (task, open) PREREQ: 0006-10:0006-09 — design the future dynamic JS/API view around the same schema, not a second ad-hoc model -- DONE 2026-08-14: `_src/tools/curation_report.py` exports the canonical dataset to `_src/data/curation-items.json` (`curation-items-export@v1`) matching the exact schema for future client-side and API filtering. criteria=AC-001:active
