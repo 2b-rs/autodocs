@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "typed-claim@v1",
+  "title": "Typed Claim",
+  "description": "Synthesized knowledge unit containing fact type, evidence references, and confidence (Feature 0006-21).",
+  "type": "object",
+  "required": [
+    "schema",
+    "claim_id",
+    "parent_artifact_id",
+    "claim_type",
+    "content",
+    "evidence_refs",
+    "dependency_refs",
+    "current_confidence",
+    "confidence_history",
+    "invalidation",
+    "dismissed_from_future_synthesis",
+    "supersedes_claim_ids",
+    "superseded_by_claim_ids",
+    "created",
+    "updated"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "typed-claim@v1"
+    },
+    "claim_id": {
+      "type": "string"
+    },
+    "parent_artifact_id": {
+      "type": "string"
+    },
+    "claim_type": {
+      "type": "string",
+      "enum": ["hard_fact", "curated_fact", "user_comment", "ai_inferred"]
+    },
+    "content": {
+      "type": "string",
+      "description": "Human-readable claim text."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Direct evidence/version/curation ids the claim cites."
+    },
+    "dependency_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Broader graph dependencies used during synthesis."
+    },
+    "current_confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "confidence_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["score", "cause", "computed_at"],
+        "properties": {
+          "score": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "cause": { "type": "string" },
+          "inputs": {},
+          "computed_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "invalidation": {
+      "type": "object",
+      "required": ["invalidated"],
+      "properties": {
+        "invalidated": { "type": "boolean" },
+        "reason": { "type": ["string", "null"] },
+        "invalidated_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "dismissed_from_future_synthesis": {
+      "type": "boolean",
+      "description": "True if curator chose not to propagate this claim."
+    },
+    "supersedes_claim_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "superseded_by_claim_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
