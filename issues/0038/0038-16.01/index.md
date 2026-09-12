@@ -16,7 +16,6 @@ prerequisites:
   - "0038-20"
   - "0038-21"
   - "0038-23"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

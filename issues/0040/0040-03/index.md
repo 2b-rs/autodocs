@@ -8,7 +8,6 @@ visibility: "internal"
 prerequisites:
   - "0040-01"
   - "0040-10"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

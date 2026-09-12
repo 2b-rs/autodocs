@@ -9,7 +9,6 @@ prerequisites:
   - "0033-03"
   - "0033-07"
   - "0033-07.02"
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

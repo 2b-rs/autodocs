@@ -11,7 +11,6 @@ prerequisites:
   - "0033-10"
   - "0033-11"
   - "0033-12"
-  - "1788"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

@@ -8,7 +8,6 @@ visibility: "internal"
 prerequisites:
   - "0033-15.02"
   - "0033-16"
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

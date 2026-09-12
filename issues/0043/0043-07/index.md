@@ -12,7 +12,6 @@ prerequisites:
   - "0043-04"
   - "0043-05"
   - "0043-06"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

@@ -9,7 +9,6 @@ prerequisites:
   - "0037-02"
   - "0037-07"
   - "0037-39"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

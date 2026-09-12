@@ -11,7 +11,6 @@ prerequisites:
   - "0033-06"
   - "0033-10"
   - "0033-11"
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

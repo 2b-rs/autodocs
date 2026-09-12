@@ -10,7 +10,6 @@ prerequisites:
   - "0038-02"
   - "0041-02"
   - "0041-03"
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

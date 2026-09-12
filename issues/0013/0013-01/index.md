@@ -7,8 +7,6 @@ state: "open"
 visibility: "internal"
 prerequisites:
   - "0011-01"
-  - "1787"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

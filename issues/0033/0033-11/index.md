@@ -13,7 +13,6 @@ prerequisites:
   - "0033-07.01"
   - "0033-07.02"
   - "0033-10"
-  - "1788"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

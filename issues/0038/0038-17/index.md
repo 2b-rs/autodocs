@@ -6,7 +6,6 @@ parent: "0038"
 state: "open"
 visibility: "internal"
 prerequisites:
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

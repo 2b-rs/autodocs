@@ -13,7 +13,6 @@ prerequisites:
   - "0033-07.04"
   - "0033-08"
   - "0033-13"
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

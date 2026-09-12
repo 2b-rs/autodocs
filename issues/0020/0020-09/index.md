@@ -9,7 +9,6 @@ prerequisites:
   - "0020-05"
   - "0020-06"
   - "0020-08"
-  - "2026"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"

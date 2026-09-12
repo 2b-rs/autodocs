@@ -6,7 +6,6 @@ parent: "0050"
 state: "open"
 visibility: "internal"
 prerequisites:
-  - "1788"
 labels:
   - "legacy-terminal-unverified"
 work_type: "migration"
