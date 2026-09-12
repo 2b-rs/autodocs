@@ -1,213 +1,205 @@
-# 0033-03 — review-request-package@v2 / envelope reconciliation (Class R candidate)
+# 0033-03 — Review-request package/envelope v2 reconciliation
 
-**Class:** R (reconstructed proposal). Not operative. Not `docs/pipeline/`
-content. May only become Class O through `0033-04.01` approval.
+**Status:** Review-ready contract package; implementation result for Task
+`0033-03`, not process/privacy/UX approval, runtime validation, trusted ingress,
+queue migration, release authorization or Task Acceptance.
 
-**Status:** review-ready, unapproved, awaiting `0033-04.01`.
+**Candidate base after prerequisite merge:**
+`53a5c68d9c28c7177080f49056fc52d8be27d564`
 
-**Task:** `0033-03`. **Chain:** `chain-0033-chakotay`.
+**Process input:** `0033-02` substantive REF
+`ac4b2579a52f4e6acc94873de6964e0aab059663`.
 
-**Base pin:** `main@3736170586e85047ab68691f0596689610688d9c`.
+**Claim:** `TODO-zed-0033-03-20260819T065436Z-d9be66d964ba.md`.
 
-**Process input:** `0033-02` Class R candidate,
-`docs/dossiers/0033-02-process-reconciliation.md`, REF `99fdc4a2b`, this branch.
+## 1. Selected contract design
 
-**Baseline findings addressed:** `RRB-SCHEMA-001`, `RRB-IDENT-001`,
-`RRB-TRUST-001` (interface impact), `RRB-PRIV-001`.
+The historical mixed `review-request-package@v1` model is replaced for future
+use by four distinct identities and three contract families:
 
-**Informed by (Class E, cited only, never merged):** historical substantive
-commit `7c21351cfa` (`docs/pipeline/review-request-package-schema.md` and
-`docs/pipeline/review-request-package-v2.schema.json` at that ref). This
-document and its accompanying fixtures under
-`_src/tests/fixtures/review_request_v2/` are a fresh reconstruction: field
-names and identity concepts are informed by the historical defect analysis
-(random `request_id` called deterministic, three incompatible duplicate
-rules, null-version staleness gap), but the schema below, its exact vectors,
-and the contract tests are authored fresh against the current baseline.
-
----
-
-## 1. Selected identity and contract design
-
-Four distinct identities replace the historical single mixed `request_id`:
-
-| Identity | Purpose | Explicit non-purpose |
+| Identity/contract | Purpose | Explicit non-purpose |
 |---|---|---|
-| `event_id` (RFC 9562 UUIDv7) | One immutable, time-ordered package version | Not a concern key, not delivery/Issue/envelope identity |
-| `concern_key` (SHA-256 over canonical target/category/rationale projection) | Deduplicates same-concern submissions | Not NLP similarity; excludes actor, transport, evidence, timestamps |
-| `package_sha256` (SHA-256 over canonical package bytes) | Detects tamper/collision on retry | Never itself stored inside the package it hashes |
-| envelope/Issue/delivery IDs | Separate transport attempts | Never overwrite `event_id`/`concern_key` history |
+| UUIDv7 `event_id` | One immutable intentional package version | Not concern, delivery, Issue, envelope or queue identity |
+| `concern_key` | SHA-256 over exact target/category/rationale projection | Not NLP equivalence and excludes actor/transport/evidence |
+| `package_sha256` | SHA-256 over exact canonical package bytes | Not recursively stored in package |
+| Envelope/Issue/delivery/queue IDs | Separate transport/persistence attempts | Never overwrite event/concern history |
+| `review-request-package@v2` | Closed credential-blind client claims | No transport/trust/receipt/server/route/writer/decision fields |
+| `review-request-envelope@v1` | Approved adapter-produced GitHub evidence | JSON shape or `verified` flag cannot establish trust |
+| `review-request-local-envelope@v1` | Exact self-declared local import | Never authenticated; later GitHub evidence is additive |
 
-Three contract families:
+Formal Draft 2020-12 schema:
+`docs/pipeline/review-request-package-v2.schema.json`.
 
-1. **`review-request-package@v2`** — the closed, credential-blind client
-   claim. Candidate formal schema:
-   `_src/tests/fixtures/review_request_v2/review-request-package-v2.schema.candidate.json`
-   (Class R; landing an approved version to `docs/pipeline/` is
-   `0033-04.01`'s exclusive act, per architect scope review §2/§6).
-2. **`review-request-envelope@v1`** — the trusted adapter-produced GitHub
-   evidence wrapper. Presence of this envelope, not a client-supplied
-   `verified` field, is what establishes trust.
-3. **`review-request-local-envelope@v1`** — self-declared local/no-JS import.
-   Never authenticated; later GitHub evidence is additive, never assumed.
+Normative candidate prose:
+`docs/pipeline/review-request-package-schema.md`.
 
-## 2. Canonicalization profile and pinned vectors
+## 2. Historical finding disposition
 
-Profile `autodocs-canonical-json-nfc-lf@v1`: UTF-8, no BOM, reject duplicate
-keys, NFC-normalized strings, closed declared field set (no
-`additionalProperties`), no floating-point numbers, object keys sorted
-lexicographically by UTF-8 byte value, compact separators (`,`/`:`, no
-whitespace), array order preserved as authored, exactly one trailing LF.
-Parse → recanonicalize must be byte-identical.
+| Finding | V1 defect | Candidate correction | Implementation owner |
+|---|---|---|---|
+| `RRB-SCHEMA-001` | Open/coercive fields/types; client trust/server fields accepted | Closed object branches, formal schema, recursive reserved-field and semantic-security contract, field-addressed negatives | `0033-05`, `0033-08` |
+| `RRB-IDENT-001` | Random event called deterministic; no vectors; confirmation/retry drift and contradictory duplicate keys | Real RFC 9562 UUIDv7 vector, immutable edit/retry rule, separate exact concern/package/attempt identities, canonical bytes/digests | `0033-05`, `0033-07`, `0033-10`, `0033-11` |
+| `RRB-TRUST-001` | Client transport/bare actor stood in for trusted GitHub evidence | Credential-blind package and separate API/webhook/combined/local envelope families; no profiles enabled before approval | `0033-06`, `0033-08` |
+| `RRB-PRIV-001` | Trust/actor retention conflated and contradicted done queue | Field classification references approved `PROC-*` choices; credentials forbidden; source-preserving migration/quarantine | `0033-07.02`, `0033-07.03` |
 
-Pinned vectors, computed and verified executable
-(`_src/tests/test_review_request_package_v2_contract.py::TestCanonicalVectors`):
+This Task closes the design gap only. Runtime findings remain open until their
+named implementation/assurance Tasks pass.
 
-| Vector | Canonical byte length | Digest |
-|---|---:|---|
-| `valid-package-v2-01` (full package) | 254 | `sha256:533a20625205590aedd935f46b9af42be4f6fb6d124aa1e0c1a24479a85d7683` |
-| `concern-key-preimage-01` (target/category/rationale only) | 150 | `sha256:fe305d2299e75649199c024d37803ae793825947d7131910130e132891787230` |
-| RFC 9562 Appendix A vector | — | `017f22e2-79b0-7cc3-98c4-dc0c0c07398f`, version 7, RFC variant |
+## 3. Exact canonical profile and vectors
 
-The concern-key preimage vector deliberately omits `event_id` and every
-trust/actor/evidence field, closing `RRB-IDENT-001`'s "canonical
-serialization disconnected from identity/deduplication" gap by construction:
-the same concern always hashes to the same `concern_key` regardless of which
-transport attempt or retry produced it.
+Profile `autodocs-canonical-json-nfc-lf@v1` requires UTF-8/no BOM,
+duplicate-key rejection, NFC input, closed declared types, no floats,
+lexicographically sorted ASCII keys, compact separators, preserved array order
+and exactly one LF. Parse/recanonicalize is byte-identical.
 
-## 3. Duplicate, replay, and concurrency policy
+Pinned RFC 9562 Appendix A vector:
 
-One policy, not three, covers every case named in `0033-03`'s acceptance
-criteria (proven exhaustively over the finite nonterminal/terminal state
-partition, see §5 below and the executable tests):
+- UUID: `017f22e2-79b0-7cc3-98c4-dc0c0c07398f`
+- Unix milliseconds: `1645557742000`
+- UTC: `2022-02-22T19:22:22.000Z`
+- version `7`, RFC variant.
 
-- **same `event_id` + identical canonical `package_sha256`** = exact retry,
-  idempotent — return the prior result, never re-process;
-- **same `event_id` + different `package_sha256`** = collision or tampering,
-  refused, logged to the restricted abuse channel (`0033-02` §5);
-- **different `event_id`, same `concern_key`, both nonterminal** = the later
-  one is `superseded` and linked to the earlier active request;
-- **different `event_id`, same `concern_key`, earlier is terminal** = the
-  later one proceeds independently — a terminal decision never blocks a fresh
-  submission for the same concern, because circumstances may have changed;
-- **exact webhook redelivery** (same delivery ID and raw-body digest) = no-op,
-  return prior result;
-- **distinct transport attempts for the same event** (retry via a different
-  channel) = linked to the same `event_id`, never treated as a new concern.
+Tracked package vectors:
 
-Active-uniqueness therefore holds the invariant: **at most one nonterminal
-request per `concern_key` at any time.** This is verified as a set/enumeration
-property, not just asserted in prose — see §5.
+| Fixture | Event | Canonical bytes | Package SHA-256 |
+|---|---|---:|---|
+| `valid-github.json` | RFC Appendix A vector | 923 | `sha256:d96aa35239f18edfa7f03f79bde648979b451336dac820c2d97b33b8f38e60ab` |
+| `valid-json-export.json` | `01a018cc-e3e0-7123-8000-0000075bcd15` | 847 | `sha256:e4ce6a5823941c4bd24407de89a273180c5a124e6747b24d2e3eee145558a0f1` |
+| `valid-nojs-normalized.json` | `01a018cd-41a0-7234-8000-00003ade68b1` | 855 | `sha256:e89fe419817c3690614e030692b84330cf84883be998716ee2a0a9abf6646d64` |
 
-## 4. Target freshness (staleness) rule
+`canonical-vectors.json` tracks exact package, concern-preimage and envelope
+strings, byte sizes and digests. Reviewers never reconstruct them from this
+table.
 
-`target_version_id` is bound to `target_canonical_id` **and** a content hash.
-Authoritative current-version lookup at decision time determines staleness;
-age is never used as a staleness signal (closing `RRB-IDENT-001`'s
-"null-version records could never become hard-stale" defect). For versioned
-targets, a mismatch between the request's bound version hash and the current
-authoritative version is hard-stale. For unversioned/legacy targets (no
-version dimension exists), staleness is determined by full-content-hash
-comparison only, never by elapsed time.
+## 4. Target freshness and duplicate contract
 
-## 5. Set/invariant evidence (AE-5)
+Versioned target acceptance requires canonical prefix, version-ID hash8, full
+SHA-256, authoritative version-store entry, current latest version, eligible
+status and authoritative source URL to agree at lookup and under the atomic
+queue reservation. Any mismatch is hard stale/ineligible; a version/full-hash
+invariant breach is quarantined. Approved unversioned legacy relies on full
+SHA-256 only; age is never freshness evidence.
 
-- **Invariant:** across all nonterminal (`open`, `claimed`) requests sharing a
-  `concern_key`, at most one is active; any additional nonterminal request for
-  the same concern is `superseded`.
-- **Enumeration boundary:** the finite state set from the `0033-02` process
-  candidate §4.1 (`open`, `claimed`, `applied`, `rejected`, `refused`,
-  `quarantined`, `stale`, `superseded`), partitioned exhaustively and
-  disjointly into nonterminal vs. terminal.
-- **Executed evidence:** `_src/tests/test_review_request_package_v2_contract.py`
-  class `TestDuplicateAndSetInvariant`, 4 tests, exercising: exhaustive/disjoint
-  state partition; two nonterminal same-concern requests collapsing to one
-  active; two different-concern requests both remaining active; a terminal
-  same-concern request not blocking a new active one. Actual executed case
-  count: 4 tests / 4 assertions on the invariant, run in this environment
-  (`python3 -m pytest _src/tests/test_review_request_package_v2_contract.py -q`
-  → 13 passed).
+One policy covers:
 
-## 6. Trust profiles represented but disabled
+- same event/package/stable trust = exact retry;
+- same event/different package = collision/tampering;
+- separate delivery/Issue/envelope attempts linked to unchanged package;
+- exact webhook replay only when delivery and raw-body digest both match;
+- all nonterminal states included in active-concern uniqueness;
+- terminal exact redelivery returns prior result;
+- new terminal successor event follows approved recurrence;
+- concurrent event/concern reservation plus target compare-and-set creates at
+  most one item.
 
-The candidate schema can represent four trust profiles
-(`github-api-refetch-v1`, `github-webhook-sha256-v1`,
-`github-webhook-sha256+api-refetch-v1`, `local-import-v1`), but the fixture
-manifest declares `"approval_state":"candidate-not-approved"` and
-`"enabled_github_profiles":[]`. Representing a profile in the schema is not
-activating it — `0033-04.01` selects exact enabled profiles, allowlists, and
-actor-mismatch policy. No package or envelope fixture contains a PAT, header,
-signature, secret, or session identifier (enforced by the forbidden-field
-check in every contract test).
+## 5. Trust profiles represented but disabled
 
-## 7. Compatibility and migration
+The closed schema can represent:
 
-Five distinct dispositions, each with a named fixture case
-(`_src/tests/fixtures/review_request_v2/compatibility-cases.json`,
-`TestCompatibilityCases`):
+1. `github-api-refetch-v1`;
+2. `github-webhook-sha256-v1`;
+3. `github-webhook-sha256+api-refetch-v1` (logical AND);
+4. `local-import-v1` (always self-declared, never trusted).
 
-1. resolvable historical `v1` export → migrate to `v2`, minting a fresh
-   `event_id`, preserving the `v1` payload as source-preserving evidence;
-2. `v1` export whose target no longer resolves → quarantine with an
-   actionable rejection, never silently dropped;
-3. already-persisted malformed legacy queue item → quarantine with an
-   actionable rejection;
-4. a future, unrecognized package `kind` → reject as unsupported version;
-5. exact same-`event_id` retry → idempotent, return the prior result (§3).
+Fixture manifest intentionally records:
 
-## 8. Falsification and adjacent-case evidence (AE-3/AE-4)
+```json
+"approval_state":"candidate-not-approved",
+"enabled_github_profiles":[]
+```
 
-This is net-new candidate design work with no prior operative behavior to
-regress against — there is no pre-change baseline for a contract that has
-never been operative (§0 note in the test module). AE-3's red/green-on-two-
-baselines form therefore does not apply in its literal sense; what is
-provided instead is the falsification set the candidate itself must reject,
-exercised as executable evidence:
+`0033-04.01` selects exact enabled profiles, allowlists, actor-mismatch policy,
+retention revision and no-JS normalization. Schema support is not activation.
+PAT/header/signature/secret/session/network identifiers are absent from every
+package/envelope fixture.
 
-- `TestInvalidCasesRejected` — 5 distinct adjacent invalid cases (additional
-  field, server-owned field, malformed UUID, missing required target,
-  forbidden credential field), each asserted to violate for its stated
-  reason. All 5 pass (i.e., are correctly rejected) against the candidate
-  validator.
-- `TestValidFixturesConform` — the 3 valid fixtures (GitHub-trusted,
-  JSON-export, no-JS/local) each conform with zero violations, confirming the
-  validator does not over-reject legitimate shapes.
+## 6. Compatibility and migration
 
-## 9. Requirement-to-artifact matrix
+Five explicit compatibility cases cover:
 
-| `0033-03` acceptance criterion (from `TODO.md`) | Evidence |
+- resolvable v1 GitHub source requiring authoritative target plus new migration
+  event;
+- null-version v1 awaiting `PROC-0033-02-03` or rejection;
+- malformed v1 actionable rejection;
+- v1 client trust/session fields restricted quarantine;
+- persisted request-shaped decision/terminal ambiguity quarantine.
+
+No v1 object validates directly as v2. Migration preserves source bytes/digest,
+removes untrusted transport/authentication claims, derives full target identity
+only from authoritative stores, and never fabricates curator decision, apply,
+publication or trusted actor. Structural queue migration remains `0033-07`;
+privacy/disposal remains `0033-07.02`.
+
+## 7. Requirement-to-evidence matrix
+
+| `0033-03` requirement | Artifact/evidence |
 |---|---|
-| RFC 9562 UUIDv7 event/request ID + deterministic concern key from canonical bytes | §1, §2 |
-| edits mint new event; retry reuses same event ID; canonical byte/digest vectors | §2 |
-| one duplicate policy across retry/collision/linked-attempt/replay/active-state cases | §3, §5 |
-| `target_version_id` bound to `target_canonical_id` + content hash; hash-only staleness for unversioned; no age-based claims | §4 |
-| separate client package vs. trusted GitHub/local envelope, including JSON-export/later-transfer | §1, §6 |
-| supported GitHub trust profiles, `0033-04.01` selects | §6 |
-| allowed fields, sensitive/server-owned fields, timestamps, semver, URL rules, retention/redaction | schema `properties`/`not` block in the candidate schema; retention deferred to `0033-02` §6 |
-| version negotiation, migration/quarantine/rejection for legacy exports and malformed persisted items | §7 |
+| Proper UUIDv7 event ID separate from concern identity | Schema definitions; prose sections 2–3; RFC vector/test |
+| Intentional edit vs exact retry | Prose section 3.1; canonical vectors; same-concern test |
+| Canonical byte/digest vectors | `canonical-vectors.json`; canonical fixture test |
+| Unified duplicate/replay/concurrency policy | Prose section 4; invalid matrix; dossier section 4 |
+| Canonical/version/hash and unversioned staleness | Schema target oneOf; prose section 2.2; target negative cases |
+| Client claim separated from trusted transport | Separate package/envelope/local-envelope defs and positives; reserved-field negatives |
+| Webhook/API/both profile support with no caller verification | Schema envelope profile; prose section 5; empty enabled-profile manifest |
+| Closed fields/types/lengths/counts/semver/timestamps | Draft 2020-12 schema; closure/semantic tests |
+| URL, Unicode, control/injection and sensitive-field handling | Prose section 7; 28 negative cases; recursive scan test |
+| Version negotiation/migration/quarantine | Prose section 8; five compatibility cases |
+| Retention/redaction remains approval-bound | Prose section 9; `PROC-*` mapping; manifest candidate state |
+| GitHub/JSON/no-JS examples | Three canonical positive envelopes |
+| Requirement-to-test matrix | This table plus section 8 below |
 
-## 10. Scope statement
+## 8. Validation matrix
 
-This Task's entire Class R deliverable is this dossier plus
-`_src/tests/fixtures/review_request_v2/**` and
-`_src/tests/test_review_request_package_v2_contract.py`. No `docs/pipeline/**`
-path is touched; landing an approved schema there is `0033-04.01`'s and a
-later Task's act.
+New contract test `_src/tests/test_review_request_package_v2_contract.py`
+performs 11 deterministic tests:
 
-## 11. Validation performed
+1. all seven fixture JSON files are duplicate-free canonical UTF-8 with one LF
+   (the NFD negative value is retained as negative data without pretending it
+   is a valid package);
+2. Draft 2020-12 identity and closed object definitions;
+3. three positive envelope/package semantic checks;
+4. RFC UUIDv7 time/version/variant vector;
+5. exact concern/package/envelope bytes, sizes and SHA-256;
+6. all 28 negative cases reach their intended rule;
+7. no package claims transport/authority;
+8. concern identity excludes actor/evidence/event/time/source while package
+   identity changes;
+9. five compatibility cases and source reachability;
+10. manifest counts/candidate/disabled profile truthfulness;
+11. historical v1 artifacts remain separate and available.
 
-- `python3 -m pytest _src/tests/test_review_request_package_v2_contract.py -q`
-  → **13 passed**, this environment, this commit.
-- Manual cross-check: every `0033-03` acceptance-criterion clause in current
-  `TODO.md` (line 1733–1737) maps to a section above (§9 matrix).
-- `git diff --name-only main...chain-0033-chakotay` (checked after this
-  commit): no path under `docs/pipeline/**` or any governance file.
-- Not run: `_src/validate.py` (no generated-tree source changed by this Task).
+Focused regression must also run historical v1 package and baseline-audit tests,
+proving additive design work did not rewrite historical evidence.
 
-## 12. Provenance
+## 9. Review findings and open decisions
 
-Requested by dispatch briefing (Dispatcher `chakotay`, atomic AWARD
-`1787970210735-b3950909`, thread `0033-chain`), executed under claim
-`TODO-Chakotay-Paris-0033-chain-20260830T113000Z.md`,
-owner_token `agent:chakotay-paris:0033-chain:20260830T113000Z`. Authored
-2026-08-30 against `main@3736170586e85047ab68691f0596689610688d9c`.
+Independent read-only design reviews agreed on the package/envelope separation,
+full SHA, UUIDv7 parsing, stable identities, hard-stale behavior, closed fields,
+no caller trust, source-preserving compatibility and disabled profile gate.
+Their main design alternatives were resolved as follows:
+
+- concern key includes target identity, category and exact rationale but excludes
+  evidence, actor, event/time and transport so supplementary evidence remains
+  the same active concern;
+- package limit is 32 KiB (not 16 KiB) to align the Task/architecture count-size
+  boundary while rationale remains 4000 and evidence count 3;
+- safe text allows inert HTML-/Markdown-like content subject to control/NFC/
+  size rules and contextual encoding; semantic moderation quarantines malicious
+  meaning rather than trusting a blacklist;
+- GitHub machine package uses exact base64url bytes, not raw Markdown fences;
+- full SHA is authoritative; historical hash8 remains only a cross-check inside
+  existing version IDs.
+
+Still unapproved: profile activation, legacy classes, self-declared/anonymous
+intake, exact recurrence/duplicate choice, URL host/fetch policy, actor mismatch,
+projections/results, clocks/controllers, abuse quotas/moderator role, Browser
+Store/PAT mechanism and residual risks. These remain in the same
+`PROC-0033-02-*` review suite.
+
+## 10. Scope boundary
+
+No historical v1 validator/fixture was changed. No production validator,
+ingestion adapter, queue writer, browser script, store, record, report, GitHub
+Issue, credential, approval or external state is modified by this contract
+Task. Runtime implementation begins only after `0033-04.01` approval and under
+its separately claimed Tasks.
