@@ -200,7 +200,7 @@
 - [ ] **0019** (feature, open) Eclipse S-Core Database Import criteria=AC-001:active
 - [x] **0019-01** (task, open) Establish the v0.6.0 source bill of materials and release-pinning policy. REF: `111a5b90527cb6cb5f2b5bdcf8fad3a0237c41dd`. Claim: `TODO-terra-1-0019-01-20260819T130000Z-b19c61d4.md`; owner_token: `agent:terra-1:0019-01:20260819T130000Z-b19c61d4`. criteria=AC-001:active,AC-002:active,AC-003:active **Acceptance: ✓** (2026-09-12, Project Lead jadzia, Integration by obrien).
 - [ ] **0019-02** (task, open) PREREQ: 0019-02:0019-01 Create an immutable local source snapshot and evidence inventory for the v0.6.0 BOM. criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active
-- [ ] **0019-03** (task, open) PREREQ: 0019-03:0019-01 Define and test the S-Core import profile: source selectors, supported artifact classes, field mapping, status defaults, and explicit non-goals. criteria=AC-001:active,AC-002:active,AC-003:active
+- [ ] **0019-03** (task, in_progress, @kira) PREREQ: 0019-03:0019-01 Define and test the S-Core import profile: source selectors, supported artifact classes, field mapping, status defaults, and explicit non-goals. criteria=AC-001:active,AC-002:active,AC-003:active
 - [ ] **0019-04** (task, open) PREREQ: 0019-04:0019-02, 0019-04:0019-03 Implement the v0.6.0 manifest-driven S-Core extraction adapter. criteria=AC-001:active,AC-002:active,AC-003:active
 - [ ] **0019-05** (task, open) PREREQ: 0019-05:0019-04 Normalize raw S-Core extraction output into canonical versioned records. criteria=AC-001:active,AC-002:active
 - [ ] **0019-06** (task, open) PREREQ: 0019-06:0019-05 Implement S-Core-specific validation and campaign evidence reporting. criteria=AC-001:active,AC-002:active
