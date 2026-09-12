@@ -17,7 +17,7 @@ and `DEC-CAP-001` for the capability-class model.
   requirement extraction.
 - This must not be confused with the ASPICE assessment of an **ECU product** in
   Features `0011`–`0032`. References here are **process support, not assessed
-  capability**.
+  capability**. For formal ASPICE CL2 managed process roles (e.g., Process Owner, Release Authority, Assessor), see [`aspice-cl2-roles.md`](aspice-cl2-roles.md).
 
 **Derivation:**
 [`../dossiers/re-intake-evidence-traceability-and-roles.md`](../dossiers/re-intake-evidence-traceability-and-roles.md)
