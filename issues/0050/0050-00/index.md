@@ -3,7 +3,7 @@ schema_version: "1.0"
 id: "0050-00"
 level: "task"
 parent: "0050"
-state: "open"
+state: "closed"
 visibility: "internal"
 prerequisites:
   - "2026"
