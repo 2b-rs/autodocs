@@ -1,135 +1,186 @@
-# Record-Page "Flag for Review" UX Contract (0021-04)
+# Website Review-Request UX Contract — v2 candidate (`0033-04`)
 
-Status: drafted for **0021-04**. PREREQ: 0021-01 (process/roles), 0021-02
-(package schema). Normative for `0021-05` (browser implementation) and
-`0021-06` (history/report rendering).
+**Status:** Review-ready UX candidate, **not approved**, not a browser/store/
+transport implementation, and not authority to submit, ingest, queue, decide,
+apply, publish, or modify a record. It is effective only if the combined suite
+is approved by `0033-04.01`.
 
-## Scope and non-goal
+**Depends on:** the process candidate in [website-review-flag.md](website-review-flag.md),
+the package contract in [review-request-package-schema.md](review-request-package-schema.md),
+and the shared browser contract in [review-browser-transport-v2.md](review-browser-transport-v2.md).
+Those contracts control semantics; this document controls user-visible behavior.
 
-This is the **interaction contract**, not the implementation. It defines
-what must be true of the UI; `0021-05` decides markup/CSS/JS structure to
-satisfy it. Nothing here authorizes any script to write to a record
-(0021-01 non-bypass rule 1).
+## 1. Scope, invariants, and ownership
 
-## Action placement
+The UX creates only a credential-blind `review-request-package@v2` client claim
+and may stage, export, or transfer its exact bytes. It never creates a queue
+item, verified identity, transport receipt, server time, authoritative status,
+or a factual record change. A request is not a curator decision.
 
-| Record status | Placement | Label |
+`0033-10.01` owns the concrete shared IndexedDB collection/migration/drawer;
+`0033-10`/`.02` own browser adapters; `0033-11.01` owns transport; `0033-05.01`
+owns trusted ingress/receipts; `0033-06` owns live target/trust validation. This
+contract does not authorize any of them.
+
+## 2. Where the action appears
+
+| Context | Required presentation | Result |
 |---|---|---|
-| `valid/*` (any curated variant) | Secondary action, below the primary content, near existing provenance/history links — never adjacent to the record's main value display, to avoid implying the value itself is in question. | "Flag for review" |
-| `invalid/*` (`to-be-confirmed`, `hypothesized`, `obsolete`) | Same placement, but label changes to reflect the record is already under active curation. | "Add supporting evidence" (routes through the same schema/ingestion path; `category` defaults are adjusted, not the transport). |
-| Records with an already-**open** review-request (per `0021-06` history surfacing) | Action is replaced by a disabled/informational state linking to the existing open request — never a second active button, since duplicate detection would reject it anyway (0021-02 Duplicate rule) and a hard rejection after a full submission flow is a worse experience than preventing it. |
+| One published, eligible `valid/*` record with complete immutable metadata and no known active duplicate | Secondary control below record content and beside provenance/history, labelled **Request review** | Opens the draft dialog. |
+| `valid/curator-decided` | Same placement and label; read-only status disclosure says “Curator-decided” | Does not imply the value is wrong or reopen it. |
+| Known active same-concern request | Replace the control with a privacy-safe informational link/status | No second draft is opened. |
+| Missing/inconsistent metadata, excluded `invalid/*`, draft, unpublished, multi-record, index, report, diagram, search, download or process page | No request action; an eligible canonical-record link may be offered where applicable | No package is constructed; implementation reports the inventory finding. |
+| Authenticated internal curation/report context | Separate, clearly internal entry point; it must name its different authority and must not masquerade as public intake | Any behavior requires its own approved contract. |
 
-## Form fields (maps 1:1 onto `review-request-package@v1`, `review-request-package-schema.md`)
+The implementation never exposes an action for historical `invalid/*` pages just
+because the legacy draft did. The target context is captured only from the
+rendered eligible record; users cannot type or replace it.
 
-| Field | UI requirement |
+## 3. Draft form and immutable disclosure
+
+The dialog begins with an `aria-describedby` target summary containing title,
+canonical ID, displayed status, version ID, content SHA-256, and stable source
+URL. These are read-only claims bound into the package and revalidated later;
+the display is not proof of current freshness.
+
+| UI input | Package field | Rule |
+|---|---|---|
+| Category | `category` | Required single select over the five v2 values; no silent default. |
+| Why should this be reviewed? | `rationale` | Required; validate the v2 3–4000 character, NFC/control-character limits before confirmation. |
+| Supporting link | one `evidence_refs` entry with derived `kind=url` | Clearly optional; HTTPS, public-safe URL validation only. No fetch occurs. |
+| Additional context | one `evidence_refs` entry with derived `kind=note` | Clearly optional; plain text only. The user never selects internal kinds. |
+| Identity choice | `actor_claim` | Explicit `anonymous` or `self-declared` (with display name); no GitHub-authenticated client value exists. |
+
+At most the v2 evidence limit is exposed. Citation support, if approved later,
+uses a distinct labelled control and derives `kind=citation`; it is not inferred
+from arbitrary free text. Field errors are stable, local, and do not echo unsafe
+values.
+
+Before the first input and immediately before confirmation, show: “This submits
+a request for review. It does not change this record, its status, or its source.”
+The public-GitHub path additionally warns that Issue bodies/comments/attachments
+may be public and difficult to delete, that secrets/restricted personal data must
+not be entered, and that GitHub identity is transport evidence only after trusted
+adapter verification. A signed-in browser state is not a client claim and does
+not change export eligibility.
+
+## 4. One byte-bound confirmation and transport choices
+
+Confirmation renders the exact canonical package bytes (or deterministic
+field-for-field representation plus displayed SHA-256 and copy/download action)
+that export, direct transfer, retry, and later ingress bind. Confirmation is
+blocked on local validation failure; it has **Edit**, **Cancel**, **Export JSON**,
+and only an approved configured transfer action. There is one package builder for
+direct and collected paths. Rebuilding, transport-specific field insertion, or
+silent identity upgrade is forbidden.
+
+| Choice/outcome | Truthful copy and boundary |
 |---|---|
-| `category` | Required. Single-select, all 5 enum values shown, no default pre-selected (forces a deliberate choice). |
-| `rationale` | Required. Multi-line text, non-empty enforced client-side before submit is enabled; minimum is "non-whitespace," no arbitrary length floor is imposed on the requester. |
-| `evidence_refs` | Optional. Repeatable rows of (kind, value, note); a "Add another reference" control; zero rows is valid. |
-| `target_canonical_id`, `target_version_id`, `target_content_hash`, `target_status_snapshot`, `source_url` | **Never user-entered.** Bound automatically from the rendered page's own data at open-dialog time (0021-05 concern), but the UX contract requires all five to be **visibly disclosed** to the requester before submit — e.g. "You are flagging: *TSync User Guide*, version R25-11, currently Curator-decided" — so a requester never submits blind against a record they didn't intend. |
-| `actor_claim` | Two paths, see Consent/trust disclosure below. |
+| Local draft | `local-only`: retained only in the local draft store; no transfer occurred. |
+| JSON export | `exported`: “Downloaded — not submitted or queued.” The download is the exact confirmed bytes and remains self-declared/anonymous. |
+| Configured GitHub transfer succeeds | `submitted-with-receipt`: show receipt URL/number and exact package digest; say “submitted, awaiting intake”, never “queued”. |
+| Transfer outcome is ambiguous/fails | `unknown` or `transport-failure`: preserve exact draft; offer retry of the same bytes; do not claim delivery. |
+| Ingress later validates/queues | `ingested/queued`: only an authenticated receipt/status lookup can show this state. |
+| Intake refuses/quarantines | Show safe code and channel where a receipt/status lookup supplies it; distinguish invalid, stale, duplicate, rate-limited and governed outcomes. Do not expose unsafe raw diagnostics. |
+| Curator outcome | Show accepted/rejected/closed only from an authorised projection. Rejected is retained closure and never means the target changed. |
 
-## Current record/version/status disclosure
+Server-owned envelope fields (verified actor, Issue/repository/delivery identity,
+received time, receipt, route, queue ID and lifecycle result) do not exist in the
+form or confirmed package. Display them only after a trusted adapter/status
+projection supplies them. A browser cannot infer ingestion from a GitHub page.
 
-The dialog must show, read-only, before any input field: the record's
-title/canonical id, current status badge (using the same status vocabulary
-as the public page, not raw `status.state` enum strings), and version/release
-id if one exists. This satisfies the acceptance criterion literally and
-doubles as the visible anchor a screen-reader user can associate with the
-form region (`aria-describedby`).
+## 5. Identity, edit, retry, duplicate, and stale rules
 
-## Consent and trust disclosure
+A retry of an ambiguous or failed transfer reuses the exact event ID, package
+bytes, digest and concern key. An intentional edit returns to the form and mints
+a new event ID/created time/package digest under the v2 contract; evidence-only
+edits retain the concern key, while target/category/rationale changes recompute
+it. Local copy removal never rewrites an exported/received immutable package.
 
-Reuses `review.js`'s existing two-path identity pattern verbatim rather than
-inventing a new one:
+A pre-open duplicate result prevents opening another draft. A race after
+confirmation is resolved only by authoritative ingest: it returns the
+privacy-safe leading reference or duplicate result with no new queue item. Page
+age, build time and UUID time are not stale detection. The UX may say that a
+submission will be rechecked; only live lookup and the queue reservation can
+return `stale`/`ineligible`.
 
-- **GitHub-authenticated path**: "Signed in as %s via GitHub" — matches
-  `idAuthNote` in `review.js`. Selecting this path is what allows
-  `trust.identity_kind = "github_authenticated"` once ingested
-  (`review-request-package-schema.md`, Two distinct identities).
-- **Self-declared path**: name/handle entry plus the existing warning text
-  pattern (`review.js`'s `warn` string, adapted): "This request will be
-  recorded as self-declared and carries lower trust; the Kurator may weigh
-  it accordingly." Shown **before** submit, not after, so it is informed
-  consent rather than a post-hoc disclaimer.
-- Neither path is hidden behind a default; the requester must pick one
-  explicitly, mirroring `review.js`'s existing identity-gate pattern.
+## 6. Shared IndexedDB migration and local-data controls
 
-## Confirmation behavior
+The target design is one physical database `ara-review-browser`, version `2`,
+object store `collection`, using `browser-review-store-record@v2`. Feedback
+records use exactly `entry_type=feedback` with
+`payload_schema=review-request-package@v2`; review/curation/governance records
+remain distinct typed pairs. The implementation must not treat a review decision
+as a feedback request or keep two writable authorities.
 
-Submit is a two-step interaction: (1) a review screen restating record
-identity + category + rationale + evidence + chosen identity path, with an
-explicit secondary "Edit" action, then (2) the actual submit. This mirrors
-`review.js`'s package-drawer pattern (collect, then submit as a distinct
-step) and gives the no-JavaScript fallback a natural two-page-load
-equivalent (see below).
+Migration input is allowlisted: the historical `ara-review-package-v1` source
+may contain Review/Curation entries, while a declared feedback-draft source is
+separately named and mapped only if it yields valid v2 feedback. PAT, token and
+identity convenience keys are excluded. Valid sources map deterministically to
+entry ID, payload digest, revision and timestamps. Source is preserved until an
+explicit verified migration disposition; corrupt, sensitive, oversized, unknown,
+conflicting or stale source remains preserved with bounded diagnostics and no
+entry write.
 
-## Success / error / stale states
+Migration is idempotent and transaction-safe: same deterministic ID/digest is a
+retry; same ID/different digest aborts; tombstones prevent resurrection. Multi-tab
+updates use the monotonic revision/transaction conflict rule rather than last
+writer wins. Quota, unavailable storage, interrupted migration and clear-local-
+data are visible recoverable states. Clear-local-data first shows affected draft
+counts/types, preserves tombstones/required migration evidence per approved
+retention policy, and cannot delete server/Issue/queue data. Delayed submission
+always uses the exact preserved bytes and still undergoes authoritative stale
+validation. Concrete transactions and retention periods remain approval choices
+for `0033-04.01` and implementation work for `0033-10.01`.
 
-| State | UI requirement |
-|---|---|
-| `exported` (JSON download offered) | Labeled explicitly as "Downloaded — not yet submitted." Never uses success styling; this is a hand-off, not a completion (0021-05 acceptance criterion: exported must never look submitted/queued). |
-| `submitted` (GitHub issue created) | "Submitted as GitHub issue #%n — awaiting review." Shows only the transport receipt (issue link); explicitly does **not** claim queued/ingested state, since ingestion is a separate, later, trusted step (0021-01 lifecycle). |
-| `stale` (page's local record state no longer matches what the user is about to submit against — detectable client-side only via a soft page-age check, hard staleness is server-side per `review-request-package-schema.md`) | Non-blocking warning banner in the dialog: "This page may be out of date. Reload before submitting to avoid a rejected request." Does not block submit — hard staleness is authoritatively decided at ingestion, per the Staleness rule; the client can only warn, never authoritatively reject. |
-| `duplicate` (surfaced pre-submit per Action placement, or post-submit if a race occurred) | "A review request for this record is already open." Links to the existing request's public reference if available (0021-06 concern); never presented as an error the user caused. |
-| submission failure (network/transport error) | Inline, non-dismissive-by-timeout error adjacent to the submit control; preserves all entered field values (no data loss on retry). |
+## 7. Accessibility, responsive behavior, and cancellation
 
-Terminology rule (acceptance criterion, verbatim requirement): every one of
-the above states' copy must avoid words like "changed"/"updated"/"corrected"
-for the record itself — only the *request* is created/submitted/queued, the
-*record* is untouched until a Kurator decision, per `0021-01`'s `valid/*`
-re-review rule.
+The trigger is a semantic `<button>` with a unique accessible name. Each dialog
+has a unique `aria-labelledby` and target summary association; opening places
+focus at the dialog heading/first invalid input, traps focus while modal, and
+returns focus to its originating trigger on Cancel, Escape, completion, or close.
+Visible focus is never removed. Inline errors are associated with fields; a
+polite live region announces draft/confirmation state and success, while an
+assertive bounded region announces blocking failures without moving focus away
+from correction. Cancel confirms discard only if the local draft changed and
+never claims remote cancellation.
 
-## Keyboard operation and focus management
+Desktop is the normal modal at **768 px and above**. At **below 768 px**, use a
+full-viewport sheet with a persistent target summary, single-column controls,
+44 CSS-pixel minimum targets, no hover-only operation, and no hidden horizontal
+confirmation content. Keyboard, touch, zoom, reduced-motion, and screen-reader
+flows reach every action without drag, timing, or colour-only cues.
 
-- The trigger control is a real `<button>` (or `<a>` with `role="button"`
-  plus keydown handling), reachable via Tab in normal document order.
-- Opening the dialog moves focus to the dialog's first focusable element
-  (the category select) and traps focus within the dialog (Escape closes
-  and returns focus to the trigger) — standard modal dialog pattern,
-  consistent with `review.js`'s existing panel/drawer components.
-- The two-step confirmation screen (see Confirmation behavior) moves focus
-  to its own heading on transition, so screen-reader users get an
-  announced state change rather than a silent DOM swap.
-- All error states (see Success/error/stale) move focus to the first
-  invalid field or the error banner, not left at the submit button.
+## 8. No-JavaScript GitHub Issue intake
 
-## Mobile layout
+No-JavaScript pages must not use a static URL that pretends to mint package
+metadata. The eligible record page offers an Issue-form route carrying only
+escaped, prefilling untrusted target context and clear public-data disclosure.
+GitHub provides the submission confirmation/Issue receipt; it does not prove
+queueing. The trusted ingress adapter refetches the Issue, validates form/body
+and repository binding, derives all server-owned request/envelope metadata,
+normalizes an allowed package, and performs the same live lookup/duplicate/stale
+checks as JavaScript-originated intake.
 
-Dialog becomes a full-viewport sheet below a defined breakpoint (matching
-existing responsive breakpoints used by `review.js`'s drawer, not a new
-breakpoint); the two-step confirmation screen and the record
-identity/status disclosure block remain visible without requiring a
-separate scroll-and-recall step — i.e. the record identity banner persists
-(sticky or repeated) rather than scrolling out of view before submit.
+Signed-out users may use the public route subject to GitHub sign-in and the
+approved policy. If GitHub blocks submission, form configuration is unavailable,
+or ingress cannot verify/normalize the Issue, show the safe failure/next-contact
+path and create no client/server queue claim. No-JS input cannot supply verified
+identity, receipt, authority, route or writer fields.
 
-## No-JavaScript fallback
+## 9. Open decisions for `0033-04.01`
 
-Mirrors `review.js`'s existing fallback split (`ghSkip`: "export without a
-token"): with JavaScript disabled, the record page instead links directly
-to a pre-filled GitHub "New Issue" URL (query-string template, same
-approach GitHub issue templates use) containing the identity-disclosed
-fields the user can still fill in manually in GitHub's own UI; there is no
-client-side schema validation in this path, so the ingestion boundary's
-server-side validation (`0021-03`) is the only enforcement point.
-Fallback confirmation is GitHub's own "Issue submitted" page — explicitly
-not re-implemented, since duplicating it would risk making an
-unauthoritative page claim ingestion state.
+Approval must select transport profiles and public receipt/status lookup policy;
+identity/mismatch handling; exact citation control; eligible internal/report
+contexts; migration source key and retention/clear-data/tombstone behavior;
+quota limits; moderation wording; no-JS Issue-form repository/template; and
+privacy-safe duplicate/curator projection. Until then, controls requiring those
+choices remain disabled or unavailable rather than guessed.
 
-## Testable acceptance scenarios (Definition of Done)
+## 10. Executable scenario mapping
 
-1. **Standard**: `valid/*` record, no open request — action visible, full flow to `submitted`.
-2. **Valid-curated**: `valid/curator-decided` record — same flow; disclosure banner correctly shows "Curator-decided" status.
-3. **Stale**: page loaded, record changes server-side before submit — client shows non-blocking stale warning; ingestion (0021-03) authoritatively rejects if hard-stale.
-4. **Duplicate**: record already has an open request — action replaced by informational link state; no dialog opens.
-5. **Submission-failure**: transport/network failure on submit — inline error shown, fields preserved, retry succeeds without re-entry.
-
-## Traceability
-
-Satisfies 0021-04's acceptance criteria and Definition of Done by defining
-action placement (valid/non-valid), required fields, disclosure, consent,
-confirmation, all named states, keyboard/focus, mobile, and no-JS fallback
-in one authoritative document, plus the five required testable scenarios
-above. Consistent with `review.js`'s existing identity/consent UI and with
-`review-request-package-schema.md` (0021-02) and `website-review-flag.md`
-(0021-01).
+The complete scenario and later-test mapping is
+[`../dossiers/0033-04-ux-scenarios.md`](../dossiers/0033-04-ux-scenarios.md).
+`_src/tests/test_review_request_ux_contract.py` verifies this candidate remains
+complete, unapproved, type-safe, byte-bound, migration-safe, and traceable; it
+does not test a production browser or transport.
