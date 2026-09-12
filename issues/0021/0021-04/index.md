@@ -3,13 +3,12 @@ schema_version: "1.0"
 id: "0021-04"
 level: "task"
 parent: "0021"
-state: "open"
+state: "closed"
 visibility: "internal"
 prerequisites:
   - "0021-01"
   - "0021-02"
 labels:
-  - "legacy-terminal-unverified"
   - "archived-not-accepted"
 work_type: "migration"
 origin:

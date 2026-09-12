@@ -3,14 +3,12 @@ schema_version: "1.0"
 id: "0033-04.01"
 level: "subtask"
 parent: "0033-04"
-state: "open"
+state: "closed"
 visibility: "internal"
 prerequisites:
   - "0033-02"
   - "0033-03"
   - "0033-04"
-labels:
-  - "legacy-terminal-unverified"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

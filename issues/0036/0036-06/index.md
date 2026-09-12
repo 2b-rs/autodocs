@@ -3,15 +3,13 @@ schema_version: "1.0"
 id: "0036-06"
 level: "task"
 parent: "0036"
-state: "open"
+state: "closed"
 visibility: "internal"
 prerequisites:
   - "0036-01"
   - "0036-02"
   - "0036-03"
   - "0036-04"
-labels:
-  - "legacy-terminal-unverified"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

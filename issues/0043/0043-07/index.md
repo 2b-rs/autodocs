@@ -3,7 +3,7 @@ schema_version: "1.0"
 id: "0043-07"
 level: "task"
 parent: "0043"
-state: "open"
+state: "closed"
 visibility: "internal"
 prerequisites:
   - "0043-01"
@@ -12,8 +12,6 @@ prerequisites:
   - "0043-04"
   - "0043-05"
   - "0043-06"
-labels:
-  - "legacy-terminal-unverified"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

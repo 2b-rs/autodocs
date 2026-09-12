@@ -3,10 +3,8 @@ schema_version: "1.0"
 id: "0006-01"
 level: "task"
 parent: "0006"
-state: "open"
+state: "closed"
 visibility: "internal"
-labels:
-  - "legacy-terminal-unverified"
 work_type: "migration"
 origin:
   kind: "migrated-from-legacy-todo"

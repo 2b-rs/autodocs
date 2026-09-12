@@ -3,10 +3,9 @@ schema_version: "1.0"
 id: "0021-01"
 level: "task"
 parent: "0021"
-state: "open"
+state: "closed"
 visibility: "internal"
 labels:
-  - "legacy-terminal-unverified"
   - "archived-not-accepted"
 work_type: "migration"
 origin:
