@@ -45,3 +45,69 @@ The pipeline adopts an iterative, gated V-Model architecture:
 - **Resource Allocation**: No agent may be assigned more than one concurrent active task execution without explicit deputy delegation.
 - **Schedule Synchronization**: When an assignee's `until` timestamp expires, Dispatcher must review progress, re-announce `until`, or initiate reassignment.
 - **Commitment Integrity**: Work commitments are sealed upon atomic priority offer `ACCEPT` (AWARD) and can only be renegotiated through formal rework/hold transitions.
+
+## 7. Integrated Project Schedule & Milestones
+The project is divided into iterative campaigns (increments), each with predefined schedules and deliverables.
+
+### 7.1 Campaign A: Foundation & Process Baseline
+- **Milestone A.1 (M1)**: Core Process Definition.
+  - *Schedule*: Weeks 1-2.
+  - *Deliverables*: Approved ASPICE CL2 process strategies, process-roles, evidence catalogues.
+  - *Entry Criteria*: Project initiation approved.
+  - *Exit Criteria*: Independent QA review passed for process assets.
+- **Milestone A.2 (M2)**: Toolchain & CI Automation.
+  - *Schedule*: Weeks 3-4.
+  - *Deliverables*: Agent mailbox, worktree isolation scripts, validation schemas.
+  - *Entry Criteria*: M1 completed.
+  - *Exit Criteria*: 100% automated schema validation passing on core docs.
+
+### 7.2 Campaign B: Requirements & Architecture
+- **Milestone B.1 (M3)**: Software Requirements Baseline.
+  - *Schedule*: Weeks 5-6.
+  - *Deliverables*: Versioned `req-*.md` documents, stakeholder traces.
+  - *Entry Criteria*: Process baseline (Campaign A) operative.
+  - *Exit Criteria*: Requirements Engineer and Stakeholders sign off.
+- **Milestone B.2 (M4)**: Architectural Design Baseline.
+  - *Schedule*: Weeks 7-8.
+  - *Deliverables*: `feature-breakdown.md`, component interfaces.
+  - *Entry Criteria*: M3 completed.
+  - *Exit Criteria*: Architecture approved by Architect role.
+
+### 7.3 Campaign C: Execution & Verification
+- **Milestone C.1 (M5)**: Unit Construction & Verification.
+  - *Schedule*: Weeks 9-14.
+  - *Deliverables*: Source code (`_src`), unit tests, code-review logs.
+  - *Entry Criteria*: M4 completed.
+  - *Exit Criteria*: Zero lint errors, 100% unit tests passing.
+- **Milestone C.2 (M6)**: Integration & Qualification.
+  - *Schedule*: Weeks 15-18.
+  - *Deliverables*: Integration test results, qualification test reports.
+  - *Entry Criteria*: M5 completed.
+  - *Exit Criteria*: 100% traceability from requirements to passing qualification tests.
+
+### 7.4 Campaign D: Release & Assessment
+- **Milestone D.1 (M7)**: Release Candidate.
+  - *Schedule*: Weeks 19-20.
+  - *Deliverables*: Release package, known issues list, SPL.2 manifest.
+  - *Entry Criteria*: M6 completed.
+  - *Exit Criteria*: Release Authority approval (`Acceptance: ✓`).
+
+## 8. Work Packages & Dependencies
+Work packages are managed as granular atomic tasks in `TODO.md` linked via strict `PREREQ` chains.
+- **WP Type: Requirements Engineering (SWE.1)**. 
+  - *Dependencies*: Precedes SWE.2; relies on Stakeholder inputs.
+  - *Estimates*: 1-2 hours per `00XX-XX` feature task.
+- **WP Type: Architecture & Design (SWE.2, SWE.3)**.
+  - *Dependencies*: Follows SWE.1, precedes Implementation.
+  - *Estimates*: 2-4 hours per component task.
+- **WP Type: Implementation & Unit Testing (SWE.3, SWE.4)**.
+  - *Dependencies*: Follows SWE.2/SWE.3 design.
+  - *Estimates*: 4-8 hours per code module task.
+- **WP Type: Verification & QA (SWE.5, SWE.6, SUP.1)**.
+  - *Dependencies*: Follows Implementation.
+  - *Estimates*: 1-3 hours per test suite/audit task.
+
+## 9. Infrastructure & Resource Commitments
+- **Infrastructure**: `autodocs` GitHub repository, GitHub Actions (CI/CD pipeline), isolated agent execution environments.
+- **Skills/Competencies**: Agent roster defined by capability classes (`sandboxed-grunt`, `unprivileged`, `privileged`), matched to tasks via the Coordinator's evaluation of the required engineering roles (e.g., Architect, Requirements Engineer).
+- **Commitments**: The Project Lead commits to the schedule and resource provisioning. The internal execution team commits to the granular `planned_minutes` during task acceptance.
