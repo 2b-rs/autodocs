@@ -26,6 +26,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(1, str(Path(__file__).resolve().parent / "tools"))
 import lib_svgdiag as D
 import seqgen
 from lxml import html as LH
@@ -119,6 +120,13 @@ def main():
                     svg = render_seq_svg(neu)
                 ziel.parent.mkdir(parents=True, exist_ok=True)
                 ziel.write_text(svg + '\n', encoding='utf-8')
+                from diagram_provenance import maybe_record_from_env, assert_svg_without_provenance
+                assert_svg_without_provenance(svg)
+                lab_path = Path(I18N) / lang / 'labels.json'
+                maybe_record_from_env(
+                    src, svg, language=lang, repository_root=D.ROOT,
+                    svg_path=ziel, labels_path=lab_path if lab_path.exists() else None,
+                )
                 ok += 1
                 _totals["translated_written"] += 1
             except Exception as ex:
