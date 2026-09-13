@@ -332,7 +332,10 @@ receive a ref per attempt.
 Review and integration pin one exact candidate commit. The final canonical
 receipt proves that commit is an ancestor of the target. An identical tree,
 replayed patch, reconstructed bytes, claim state, or sibling commit is not
-ancestry proof. These rules add candidate admission discipline without changing
+ancestry proof. A mailbox Integration assignment may request signoff only after
+that ancestry holds for the source checkout HEAD, and the coordinator who signs
+off must reap that source worktree before the assignment can close. These rules
+add candidate admission discipline without changing
 the no-force/no-delete, preserved-snapshot, unique-content retention,
 independent-review, worktree-isolation, or red-baseline contracts.
 

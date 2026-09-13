@@ -114,7 +114,9 @@ Integrator role.
 - **Integrator:** retains the reservation through correction and re-review,
   verifies the exact reviewed candidate's ancestry to the canonical target, and
   rejects tree equality, patch replay, reconstructed bytes, or a sibling commit
-  as substitutes.
+  as substitutes. After that merge it requests mailbox signoff; it does not close
+  the assignment. The coordinator who signs off reaps the source worktree
+  before the assignment can close.
 
 These duties implement
 [`DEC-0044-039`](../dossiers/dec-0044-039-candidate-ref-proliferation-control.md)
