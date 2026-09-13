@@ -177,6 +177,22 @@ def main():
             _lang_page_counts[lang] = _n_lang
             _fallback_by_lang[lang] = _missing
     _exit_code = 1 if bad else 0
+    if not check and (
+        "--provenance" in args or os.environ.get("HTML_TREE_PROVENANCE") == "1"
+    ):
+        tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+        if tools_dir not in sys.path:
+            sys.path.insert(0, tools_dir)
+        import html_tree_provenance as _htp
+        _htp.record_after_generate(
+            repo_root=ROOT,
+            languages=["de"] + list(langs),
+            issue=os.environ.get("HTML_TREE_PROVENANCE_ISSUE", "0037-27.05"),
+            criterion=os.environ.get("HTML_TREE_PROVENANCE_CRITERION", "AC-html-tree-provenance"),
+            source_commit=os.environ.get("HTML_TREE_PROVENANCE_COMMIT", "0" * 40),
+            tool_commit=os.environ.get("HTML_TREE_PROVENANCE_TOOL_COMMIT", "1" * 40),
+            config_commit=os.environ.get("HTML_TREE_PROVENANCE_CONFIG_COMMIT", "2" * 40),
+        )
     if not check:
         reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
         os.makedirs(reports_dir, exist_ok=True)
