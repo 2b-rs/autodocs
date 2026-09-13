@@ -33,7 +33,7 @@ BOOTSTRAP_SCHEMA = "issue-bootstrap-refresh-result@v1"
 MAX_FINDINGS = 20
 LEGACY_PROFILES = frozenset({"legacy-lists"})
 LEGACY_PHASES = frozenset({"legacy-writable"})
-FROZEN_PHASES = frozenset({"frozen"})
+FROZEN_PHASES = frozenset({"frozen", "issue-store-frozen"})
 WRITABLE_PHASES = frozenset({"issue-store-writable"})
 SAFE_ROOT_TOKENS = frozenset({"shadow", "check", "generated", "regenerated"})
 SAFE_ROOT_RE = re.compile(r"^(?:shadow|check|generated|regenerated)(?:[-_.][a-z0-9]+)*$")
@@ -109,9 +109,20 @@ def _inside(path: Path, parent: Path) -> bool:
 
 
 def _path_has_symlink(path: Path) -> bool:
+    if path.is_symlink():
+        return True
     absolute = path.absolute()
-    current = Path(absolute.anchor)
-    for part in absolute.parts[1:]:
+    parts = list(absolute.parts)
+    if len(parts) >= 2 and parts[0] == "/" and parts[1] in ("var", "tmp", "etc"):
+        current = Path("/private") / parts[1]
+        remaining = parts[2:]
+    elif len(parts) >= 3 and parts[0] == "/" and parts[1] == "private" and parts[2] in ("var", "tmp", "etc"):
+        current = Path("/private") / parts[2]
+        remaining = parts[3:]
+    else:
+        current = Path(absolute.anchor)
+        remaining = parts[1:]
+    for part in remaining:
         current = current / part
         if current.is_symlink():
             return True

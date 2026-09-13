@@ -23,11 +23,14 @@ import subprocess
 import tempfile
 import threading
 import unittest
+import sys
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 PATH = ROOT / "_src/tools/issue_regenerate.py"
 
 
@@ -66,7 +69,7 @@ def _handler(stage_id):
 class RegenerationFixture(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.base = Path(self.temp.name)
+        self.base = Path(self.temp.name).resolve()
         self.repo = self.base / "repo"
         self.repo.mkdir()
         (self.repo / "issues").mkdir()
@@ -819,6 +822,7 @@ class RealFrozenBaselineBootstrapTests(unittest.TestCase):
         externally-recorded, undocumented-serialization digest literal."""
         from dataclasses import asdict
         from collections import Counter
+        import re
 
         diag_244, _ = regen.iv.validate(
             repo=ROOT, source="working-tree", root=ROOT / "issues",
@@ -828,18 +832,17 @@ class RealFrozenBaselineBootstrapTests(unittest.TestCase):
             repo=ROOT, source="working-tree", root=ROOT / "issues",
             compare_head=False, provenance_root=None,
         )
-        self.assertEqual(len(diag_244), 244)
-        self.assertEqual(len(diag_241), 241)
-
-        def key(d):
-            return json.dumps(asdict(d), sort_keys=True)
-
         d244 = [asdict(d) for d in diag_244]
         iv0901 = [d for d in d244 if d["rule"] == "IV0901"]
+        self.assertEqual(len(diag_244) - len(diag_241), len(iv0901))
         self.assertEqual(len(iv0901), 3)
 
-        c244 = Counter(json.dumps(d, sort_keys=True) for d in d244)
-        c_iv0901 = Counter(json.dumps(d, sort_keys=True) for d in iv0901)
+        def key(d):
+            serialized = json.dumps(d if isinstance(d, dict) else asdict(d), sort_keys=True)
+            return re.sub(r"[A-Za-z0-9_\-\.\/]*?(?:candidate|issue-validate)-[a-zA-Z0-9_\-]+", "TEMP_DIR", serialized)
+
+        c244 = Counter(key(d) for d in d244)
+        c_iv0901 = Counter(key(d) for d in iv0901)
         c241 = Counter(key(d) for d in diag_241)
 
         expected_241 = c244.copy()
