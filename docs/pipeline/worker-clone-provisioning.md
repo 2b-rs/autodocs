@@ -39,9 +39,9 @@ runner tooling (`runner-host/perplexity-cpu-loop.js`, `runner-host/run-loop.sh`)
 branch/clone/merge/push functionality, so there is no other legal place for
 branch and clone creation to happen (finding I).
 
-Re-running the script against an already-provisioned item is safe and
-expected — e.g. after a nightly `/tmp` reap, or simply to confirm the clone
-is still healthy before handing off a resumed claim.
+Re-running the script is safe for an existing healthy clone on the assigned
+item branch, or after a complete `/tmp` reap that leaves no target directory.
+A partial reap with surviving bytes is refused for manual recovery.
 
 ## Inputs
 
@@ -56,49 +56,55 @@ any Git command runs.
 
 ## What it does
 
-1. Derives the branch name (the bare item ID) and the parent branch per
-   `branch-workflow.md`: Subtask → its Task branch, Task → its Feature
-   branch, Feature → `main`. If the derived parent branch does not exist yet
-   in the canonical repo, it falls back to `main` and prints an explicit
-   notice — it never guesses further up the chain.
-2. Creates the item's branch in the canonical repo from the parent branch if
-   it does not already exist; reuses it unchanged otherwise.
-3. Clones the canonical repo (`git clone --no-hardlinks --branch <item>`)
-   into the target path, giving the worker checkout its own object store,
-   refs, `HEAD`, and index.
-4. Prints one final line: target path, branch, and `HEAD` short SHA.
+1. Derives the bare item branch and its **exact** parent from
+   `branch-workflow.md`: Subtask → Task branch, Task → Feature branch, Feature
+   → `main`. The derived parent must already exist. A missing parent is a
+   non-zero refusal; the provisioner never falls back to another branch.
+2. Checks the requested target before creating an item branch. It rejects every
+   unsafe existing target without changing canonical refs, `HEAD`, index, or
+   working-tree status.
+3. Creates the item branch from that exact parent only when the branch is
+   absent. This changes one canonical ref but leaves the checked-out canonical
+   branch, index, and porcelain status unchanged.
+4. Creates a self-contained checkout with
+   `git clone --no-hardlinks --branch <item>` when the target is absent.
+5. Reuses an already healthy clone on the requested item branch without any
+   checkout, reset, clean, restore, or other worker-file mutation.
 
 ## What it refuses, and why
 
-The script fails closed — non-zero exit, and a message naming exactly what
-was found — when the target path already exists as one of:
+The script fails closed with a non-zero exit and a message identifying the
+observed condition when the target is:
 
-- **A `.git` symlink.** This is the exact construction that caused the
-  original incident; the script names the symlink target and refuses rather
-  than silently continuing on a shared object store.
-- **A registered `git worktree` of the canonical repository.** Checked
-  against `git -C <canonical-repo> worktree list`; the script names the
-  canonical repo path and tells the operator how to remove the worktree
-  registration if that is really intended.
-- **A directory holding local commits, or uncommitted changes, not yet
-  present in the canonical repo's object store** — i.e. work that has not
-  been pushed. The script never rebuilds a checkout out from under
-  unpublished work; it stops and asks for the work to be pushed or manually
-  resolved first.
+- **A target-path symlink or a `.git` symlink.** Either can redirect the
+  provisioner to another checkout and defeat independent worker metadata.
+- **A registered `git worktree` of the canonical repository.** The target is
+  compared to `git -C <canonical> worktree list` after physical-path
+  normalization.
+- **Anything other than a healthy self-contained clone.** This includes a
+  partial reap that removed `.git` while files survived, a worktree metadata
+  file, a clone with Git object alternates or any linked Git metadata, an
+  unrelated origin, an unexpected directory, or a file. The script preserves
+  every byte for manual recovery instead of recursively
+  deleting or rebuilding it.
+- **A healthy clone on another branch, or one whose item branch is absent from
+  the canonical repository.** It preserves the existing worker state and
+  requires an explicit operator decision rather than changing branch state.
+
+A missing exact parent is rejected before target or canonical-branch mutation.
+An invalid target is rejected before canonical item-branch creation.
 
 ## Idempotence and reap recovery
 
-If the target is already a healthy clone on the correct branch, the script
-does not rebuild it. It only restores tracked files that a `/tmp` reap
-deleted (`git ls-files -d` → `git checkout --`), and never touches
-uncommitted or untracked edits — the same non-destructive reap-recovery
-behavior the superseded worktree-based script had, reimplemented on top of
-an isolated clone instead of a shared one.
+An already healthy clone on the requested branch is a strict no-op with respect
+to its index, tracked files, untracked files, staged changes, modifications, and
+intentional deletions. The provisioner does not try to infer whether a missing
+tracked file was removed by a reap or by its worker.
 
-If the target exists but is not a healthy, self-contained clone (e.g. a
-partially reaped `.git`, or checked out on an unexpected branch) **and**
-carries no unpushed local work, the script removes and re-clones it. If it
-does carry unpushed local work, that falls under the refusal above instead.
+A complete reap leaves no target directory, so a later invocation safely creates
+a fresh clone. A partial reap that leaves any target content is intentionally not
+self-healed: the remaining bytes can include uncommitted worker work, and the
+only safe automatic behavior is an explicit refusal with recovery instructions.
 
 ## Publication
 
