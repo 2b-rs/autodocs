@@ -226,6 +226,32 @@ class IssueViewsTest(unittest.TestCase):
         self.assertIsNone(VIEWS._archive_status("closed", {"malformed": True}))
         self.assertIsNone(VIEWS._archive_status("closed", None))
 
+    def test_lifecycle_infers_acceptance_and_legacy_terminal(self):
+        """AE-4: Goal Acceptance vs unverified label vs stored open state.
+
+        Neighboring dimension: which evidence is present on an open YAML item.
+        Expected: Acceptance -> closed:completed; unverified label alone stays
+        open (YAML was left open on purpose). Neither -> open. Acceptance wins
+        over the unverified label; a closure sidecar still wins over Goal text.
+        """
+        self.assertEqual(
+            VIEWS._lifecycle_status("open", None, title="work **Acceptance: ✓**"),
+            "closed:completed")
+        self.assertEqual(
+            VIEWS._lifecycle_status("open", None, labels=["legacy-terminal-unverified"]),
+            "open")
+        self.assertEqual(VIEWS._lifecycle_status("open", None, title="still open"), "open")
+        self.assertEqual(
+            VIEWS._lifecycle_status(
+                "open", None, title="**Acceptance: ✓**",
+                labels=["legacy-terminal-unverified"]),
+            "closed:completed")
+        self.assertEqual(
+            VIEWS._lifecycle_status(
+                "closed", {"disposition": "archived-not-accepted"},
+                title="**Acceptance: ✓**"),
+            "closed:archived-not-accepted")
+
     def test_reject_browser_keys_positive_raise_all_members(self):
         """AE-4 adjacent: every real BROWSER_KEYS member raises at top level.
 

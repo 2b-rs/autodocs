@@ -6,6 +6,7 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -170,6 +171,64 @@ class BacklogEvolutionTest(unittest.TestCase):
         self.assertEqual(js["fids"], ["0001", "0037"])
         self.assertEqual(js["marks"]["0037-12"], "x")
         self.assertEqual(js["marks"]["0001-01"], "a")
+
+    def test_open_checkbox_with_acceptance_is_accepted(self):
+        text = (
+            "## Feature: 0001 — Alpha\n"
+            "- [ ] **0001-01** First task **Acceptance: ✓** (Integrator)\n"
+            "- [ ] **0001-02** still open\n"
+        )
+        parsed = EVO.parse_todo_markdown(text)
+        self.assertEqual(parsed["marks"]["0001-01"], "a")
+        self.assertEqual(parsed["marks"]["0001-02"], " ")
+        js = _js_load_text(text)
+        self.assertTrue(js["ok"], js)
+        self.assertEqual(js["marks"]["0001-01"], "a")
+
+    def test_generated_open_checkbox_keeps_done_and_accepted(self):
+        prior = {"0001-01": "a", "0001-02": "x", "0001-03": "w", "0001-04": " "}
+        generated = {"0001-01": " ", "0001-02": " ", "0001-03": " ", "0001-04": " "}
+        out = EVO.overlay_keep_completed(generated, prior)
+        self.assertEqual(out["0001-01"], "a")
+        self.assertEqual(out["0001-02"], "x")
+        self.assertEqual(out["0001-03"], "w")
+        self.assertEqual(out["0001-04"], " ")
+        self.assertTrue(EVO.is_generated_todo_text("- [ ] **0001-01** (task, open) x\n"))
+        self.assertFalse(EVO.is_generated_todo_text("## Feature: 0001 — Alpha\n- [ ] **0001-01** x\n"))
+
+    def test_generated_todo_history_does_not_reopen_completed(self):
+        tmp = Path(tempfile.mkdtemp())
+        subprocess.run(["git", "init"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=tmp, check=True)
+        subprocess.run(["git", "config", "user.name", "t"], cwd=tmp, check=True)
+        (tmp / "TODO.md").write_text(
+            "## Feature: 0001 — Alpha\n"
+            "- [x] **0001-01** accepted **Acceptance: ✓** (Integrator)\n"
+            "- [x] **0001-02** done without acceptance\n"
+            "- [w] **0001-03** withdrawn\n"
+            "- [ ] **0001-04** still open\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "add", "TODO.md"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "legacy"], cwd=tmp, check=True, capture_output=True)
+        (tmp / "TODO.md").write_text(
+            "<!-- GENERATED-VIEW -->\n"
+            "- [ ] **0001-01** (task, open) accepted **Acceptance: ✓** (Integrator)\n"
+            "- [ ] **0001-02** (task, open) done without acceptance\n"
+            "- [ ] **0001-03** (task, open) withdrawn\n"
+            "- [ ] **0001-04** (task, open) still open\n"
+            "- [ ] **0001-05** (task, open) newly added after cutover\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "add", "TODO.md"], cwd=tmp, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "generated wipe"], cwd=tmp, check=True, capture_output=True)
+        payload = EVO.build_from_repo(tmp)
+        wipe = [s for s in payload["timeline"] if s["msg"] == "generated wipe"][0]
+        self.assertEqual(wipe["marks"]["0001-01"], "a")
+        self.assertEqual(wipe["marks"]["0001-02"], "x")
+        self.assertEqual(wipe["marks"]["0001-03"], "w")
+        self.assertEqual(wipe["marks"]["0001-04"], " ")
+        self.assertEqual(wipe["marks"]["0001-05"], " ")
 
 
 if __name__ == "__main__":

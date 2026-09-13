@@ -103,9 +103,21 @@ def _owner_label(item):
     return "unassigned"
 
 
+def _marker_for(item):
+    lifecycle = item.get("lifecycle_status") or item.get("state") or ""
+    if lifecycle in ("closed", "closed:completed") or str(lifecycle).startswith("closed:"):
+        return "[x]"
+    if lifecycle == "withdrawn":
+        return "[w]"
+    title = item.get("title") or ""
+    if "Acceptance: ✓" in title or "Acceptance: ✔" in title:
+        return "[x]"
+    return MARKER.get(item.get("state") or "malformed", "[?]")
+
+
 def _item_line(item):
     state = item.get("state") or "malformed"
-    marker = MARKER.get(state, "[?]")
+    marker = _marker_for(item)
     title = item.get("title") or "(untitled)"
     level = item.get("level") or "item"
     archive = item.get("archive_status")

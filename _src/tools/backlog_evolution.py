@@ -49,9 +49,25 @@ def has_acceptance(text):
 
 def promote_accepted_mark(mark, text=""):
     mark = (mark or " ").lower()
-    if mark == "x" and has_acceptance(text):
+    if has_acceptance(text):
         return "a"
     return mark
+
+
+def overlay_keep_completed(marks, prior_marks):
+    """Keep non-open marks through generated TODO.md projections that list everything open."""
+    out = dict(marks or {})
+    for nid, prev in (prior_marks or {}).items():
+        if prev not in (" ", "", None) and out.get(nid, " ") == " ":
+            out[nid] = prev
+    return out
+
+
+def is_generated_todo_text(text):
+    for raw in str(text).splitlines():
+        if FEATURE_RE.match(raw.strip()):
+            return False
+    return True
 
 
 def lifecycle_to_mark(lifecycle_status, endpoint_status=None, title=None, prior_mark=None):
@@ -65,6 +81,8 @@ def lifecycle_to_mark(lifecycle_status, endpoint_status=None, title=None, prior_
     if status == "blocked":
         return "u"
     if status == "withdrawn":
+        return "w"
+    if prior_mark == "w" and status in ("open", "closed:archived-not-accepted"):
         return "w"
     if status == "closed" or status.startswith("closed:"):
         return "x"
@@ -562,35 +580,42 @@ def build_from_repo(repo):
         if not text:
             continue
         parsed = parse_todo_markdown(text)
+        marks = parsed["marks"]
+        if is_generated_todo_text(text):
+            marks = overlay_keep_completed(marks, last_legacy_marks)
+            parsed = dict(parsed)
+            parsed["marks"] = marks
         feature_groups.append(parsed["features"])
         for feat in parsed["features"]:
             features_by_id[feat["id"]] = feat
-        sig = (tuple(parsed["fids"]), tuple(sorted(parsed["marks"].items())))
+        sig = (tuple(parsed["fids"]), tuple(sorted(marks.items())))
         if sig == last_sig:
             continue
         last_sig = sig
         texts = _task_text_map(parsed["features"])
         changes = _diff_snapshots(
             prev_fids, prev_marks, prev_text,
-            parsed["fids"], parsed["marks"], texts, features_by_id,
+            parsed["fids"], marks, texts, features_by_id,
         )
         timeline.append({
             "hash": sha[:8],
             "date": date,
             "msg": msg,
             "fids": parsed["fids"],
-            "marks": parsed["marks"],
+            "marks": marks,
             "changes": changes,
         })
         prev_fids = parsed["fids"]
-        prev_marks = parsed["marks"]
+        prev_marks = marks
         prev_text = texts
-        last_legacy_marks.update(parsed["marks"])
+        last_legacy_marks.update(marks)
 
+    live_now = {}
     live_todo = repo / "TODO.md"
     if live_todo.is_file():
+        live_now = parse_todo_markdown(live_todo.read_text(encoding="utf-8"))["marks"]
         last_legacy_marks.update(
-            parse_todo_markdown(live_todo.read_text(encoding="utf-8"))["marks"])
+            {nid: mark for nid, mark in live_now.items() if mark not in (" ", "")})
 
     catalog_path = repo / "issues/_views/catalog.json"
     graph_path = repo / "issues/_views/dependency-graph.json"
@@ -604,15 +629,25 @@ def build_from_repo(repo):
         store_fids = packed["snapshot"]["fids"]
         items = list(catalog.get("items") or [])
         by_id = {item.get("id"): item for item in items if item.get("id")}
+        live_open = {
+            nid for nid, mark in live_now.items()
+            if mark in (" ", "") and not has_acceptance(
+                (by_id.get(nid) or {}).get("title") or "")
+        }
         overlaid = {}
         for nid, mark in store_marks.items():
             item = by_id.get(nid) or {}
-            overlaid[nid] = lifecycle_to_mark(
+            title = item.get("title") or item.get("name")
+            inferred = lifecycle_to_mark(
                 item.get("lifecycle_status"),
                 item.get("endpoint_status"),
-                title=item.get("title") or item.get("name"),
+                title=title,
                 prior_mark=last_legacy_marks.get(nid) or prev_marks.get(nid),
             )
+            if nid in live_open and not has_acceptance(title):
+                overlaid[nid] = " "
+            else:
+                overlaid[nid] = inferred
         store_marks = overlaid
         packed["snapshot"]["marks"] = store_marks
         texts = _task_text_map(packed["features"])

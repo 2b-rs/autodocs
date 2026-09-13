@@ -42,6 +42,7 @@ CONFIG = {
 }
 ID_TOKEN = re.compile(r"^[0-9]{4}(?:-[0-9]{2}(?:\.[0-9]{2})?)?$")
 PREREQ_LINE = re.compile(r'^\s*-\s*"([^"]+)"\s*$|^\s*-\s*(\S+)\s*$')
+ACCEPTANCE_RE = re.compile(r"Acceptance:\s*[✓✔]")
 BROWSER_KEYS = frozenset({
     "color", "fill", "fontcolor", "stroke", "dot", "svg", "style",
     "shape", "penwidth", "html_label", "cluster_color",
@@ -123,10 +124,21 @@ def _archive_status(state, closure):
     return None
 
 
-def _lifecycle_status(state, closure):
+def _has_acceptance(text):
+    return bool(ACCEPTANCE_RE.search(text or ""))
+
+
+def _lifecycle_status(state, closure, title="", labels=None):
+    """Derived view of true completion. YAML ``state`` stays the stored field.
+
+    Goal ``Acceptance: ✓`` is a projection of already-accepted work that cutover
+    left as ``open``.
+    """
     archive = _archive_status(state, closure)
     if archive:
         return f"closed:{archive}"
+    if _has_acceptance(title):
+        return "closed:completed"
     return state
 
 
@@ -213,12 +225,14 @@ def _catalog_item(value, repository_root):
     archive = _archive_status(item["state"], closure)
     goal = value["sections"].get("Goal", {})
     goal_text = goal.get("text", "")
+    labels = list(item.get("labels") or [])
     return {
         "id": item["id"],
         "level": item["level"],
         "parent": item.get("parent"),
         "state": item["state"],
-        "lifecycle_status": _lifecycle_status(item["state"], closure),
+        "lifecycle_status": _lifecycle_status(
+            item["state"], closure, title=goal_text, labels=labels),
         "archive_status": archive,
         "visibility": item.get("visibility", "internal"),
         "url": item_url(item["id"], item["level"]),

@@ -846,7 +846,10 @@ def render_item(repo: Path, item_id: str, catalog: Mapping[str, Any],
         entry.setdefault("title", goal.splitlines()[0] if goal else item_id)
         if not entry.get("lifecycle_status"):
             entry["lifecycle_status"] = views._lifecycle_status(
-                parsed_item.get("state"), loaded.get("closure"))
+                parsed_item.get("state"), loaded.get("closure"),
+                title=entry.get("title") or "",
+                labels=parsed_item.get("labels") or [],
+            )
     entry.setdefault("id", item_id)
     title = short_title(entry.get("title") or item_id) or item_id
     kids = descendants(by_id, item_id)

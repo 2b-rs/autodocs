@@ -41,8 +41,18 @@
 
   function promoteAcceptedMark(mark, text) {
     mark = String(mark || ' ').toLowerCase();
-    if (mark === 'x' && hasAcceptance(text)) return 'a';
+    if (hasAcceptance(text)) return 'a';
     return mark;
+  }
+
+  function overlayKeepCompleted(marks, priorMarks) {
+    var out = {};
+    Object.keys(marks || {}).forEach(function (nid) { out[nid] = marks[nid]; });
+    Object.keys(priorMarks || {}).forEach(function (nid) {
+      var prev = priorMarks[nid];
+      if (prev && prev !== ' ' && (out[nid] == null || out[nid] === ' ')) out[nid] = prev;
+    });
+    return out;
   }
 
   function lifecycleToMark(lifecycleStatus, endpointStatus, title, priorMark) {
@@ -52,6 +62,7 @@
     if (status === 'in_progress') return 'p';
     if (status === 'blocked') return 'u';
     if (status === 'withdrawn') return 'w';
+    if (priorMark === 'w' && (status === 'open' || status === 'closed:archived-not-accepted')) return 'w';
     if (status === 'closed' || status.indexOf('closed:') === 0) return 'x';
     if (status === 'open' && (priorMark === 'x' || priorMark === 'a')) return priorMark;
     if (status === 'open') return ' ';
