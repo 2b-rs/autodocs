@@ -539,13 +539,10 @@ function initVisualizer() {
   const FEAT_KEYS = FEATURES.map(f => f.id);
   const numFeatures = FEATURES.length;
   const nOrbits = Math.max(1, Math.floor(Math.sqrt(numFeatures)));
-  
-  const minOrbitDist = 130;
-  const maxOrbitDist = 380;
-  const orbitDistStep = nOrbits > 1 ? (maxOrbitDist - minOrbitDist) / (nOrbits - 1) : 0;
+  const orbitDistStep = nOrbits > 1 ? (MAX_ORBIT_DIST - MIN_ORBIT_DIST) / (nOrbits - 1) : 0;
   const orbitRadii = [];
   for (let o = 0; o < nOrbits; o++) {
-    orbitRadii.push(nOrbits === 1 ? (minOrbitDist + maxOrbitDist) / 2 : minOrbitDist + o * orbitDistStep);
+    orbitRadii.push(nOrbits === 1 ? (MIN_ORBIT_DIST + MAX_ORBIT_DIST) / 2 : MIN_ORBIT_DIST + o * orbitDistStep);
   }
 
   const taskToFeat = new Map();
@@ -630,6 +627,9 @@ let camZoom = 1.0;
 let targetZoom = 1.0;
 const MIN_ZOOM = 0.3;
 const MAX_ZOOM = 4.0;
+const MIN_ORBIT_DIST = 260;
+const MAX_ORBIT_DIST = 760;
+const MIN_FEAT_DIST = 148;
 let ringAngle = 0;
 
 let camLookX = 0, camLookY = 0;
@@ -712,7 +712,7 @@ function computeFocusLayout(fid) {
     });
   });
 
-  worldPos.set('F' + fid, { x: 0, y: 70, z: 0 });
+  worldPos.set('F' + fid, { x: 0, y: H * 0.10, z: 0 });
 
   const extPrereqs = [];
   tasks.forEach(t => {
@@ -912,9 +912,10 @@ function rebuildVis() {
       computeFocusLayout(fid);
     }
 
+    const featurePlanetY = H * 0.10;
     const fn = getOrMake('F' + fid, () => ({
       id:'F'+fid, type:'feature', fid,
-      x: W/2, y: 70, tx: W/2, ty: 70,
+      x: W/2, y: featurePlanetY, tx: W/2, ty: featurePlanetY,
       r:1, tr:22, alpha:0, talpha:1,
       boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
       color: f.color, progress:0, label:fid, sublabel:''
@@ -923,6 +924,16 @@ function rebuildVis() {
     fn.talpha = inspectedTaskId ? 0.35 : 1.0;
     fn.tboxW = 0; fn.tboxH = 0;
     fn.sublabel = (f.name || '').slice(0, 36);
+    if (!inspectedTaskId) {
+      fn.tx = W / 2;
+      fn.ty = featurePlanetY;
+      fn.x = W / 2;
+      fn.y = featurePlanetY;
+      camLookX = W / 2;
+      camLookY = H / 2;
+      targetLookX = W / 2;
+      targetLookY = H / 2;
+    }
     visNodes.push(fn);
 
     tasks.forEach(t => {
@@ -1155,7 +1166,7 @@ function frame(time) {
       activeFeatNodes.push({ fid, cfg, fn });
     });
 
-    const minFeatDist = 74;
+    const minFeatDist = MIN_FEAT_DIST;
     for (let pass = 0; pass < 4; pass++) {
       for (let i = 0; i < activeFeatNodes.length; i++) {
         const a = activeFeatNodes[i];
@@ -1216,11 +1227,6 @@ function frame(time) {
     let focusTarget = null;
     if (inspectedTaskId) {
       focusTarget = nodePool.get(inspectedTaskId);
-    } else if (focusedNodeId) {
-      focusTarget = nodePool.get(focusedNodeId);
-    }
-    if (!focusTarget) {
-      focusTarget = nodePool.get('F' + focusFid);
     }
 
     nodePool.forEach(n => {
@@ -1243,10 +1249,15 @@ function frame(time) {
       }
     });
 
-    if (focusTarget) {
+    if (inspectedTaskId && focusTarget) {
       targetLookX = focusTarget.tx;
       targetLookY = focusTarget.ty;
     } else {
+      const fn = nodePool.get('F' + focusFid);
+      if (fn) {
+        fn.tx = W / 2;
+        fn.ty = H * 0.10;
+      }
       targetLookX = W / 2;
       targetLookY = H / 2;
     }
@@ -1349,16 +1360,14 @@ function draw(time) {
   if (!focusFid) {
     const numFeatures = FEATURES.length;
     const nOrbits = Math.max(1, Math.floor(Math.sqrt(numFeatures)));
-    const minOrbitDist = 130;
-    const maxOrbitDist = 380;
-    const orbitDistStep = nOrbits > 1 ? (maxOrbitDist - minOrbitDist) / (nOrbits - 1) : 0;
+    const orbitDistStep = nOrbits > 1 ? (MAX_ORBIT_DIST - MIN_ORBIT_DIST) / (nOrbits - 1) : 0;
     
     ctx.save();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 6]);
     for (let o = 0; o < nOrbits; o++) {
-      const r = nOrbits === 1 ? (minOrbitDist + maxOrbitDist) / 2 : minOrbitDist + o * orbitDistStep;
+      const r = nOrbits === 1 ? (MIN_ORBIT_DIST + MAX_ORBIT_DIST) / 2 : MIN_ORBIT_DIST + o * orbitDistStep;
       ctx.beginPath();
       ctx.ellipse(W / 2, H / 2, r, r * 0.65, 0, 0, Math.PI * 2);
       ctx.stroke();

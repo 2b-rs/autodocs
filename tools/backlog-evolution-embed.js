@@ -31,9 +31,9 @@
     wrap.innerHTML =
       '<summary><h2 class="sect" style="display:inline">Feature completion over time (internal)</h2></summary>' +
       '<p class="dim" style="margin:.4rem 0 .8rem">Scrub git history of the legacy TODO.md backlog and the current issue-store catalog. Open the standalone viewer for a larger canvas.</p>' +
-      '<iframe src="tools/backlog-evolution-visualizer.html" title="Feature completion over time" ' +
+      '<iframe src="tools/backlog-evolution-visualizer.html?v=feature-top2" title="Feature completion over time" ' +
       'style="width:100%;height:540px;border:1px solid #d9dce3;border-radius:10px;background:#080c14;display:block;"></iframe>' +
-      '<p class="dim" style="margin:.5rem 0 0"><a href="tools/backlog-evolution-visualizer.html">Open full visualizer</a></p>';
+      '<p class="dim" style="margin:.5rem 0 0"><a href="tools/backlog-evolution-visualizer.html?v=feature-top2">Open full visualizer</a></p>';
     wrap.addEventListener('toggle', function () {
       setPersistedOpen(wrap.open);
     });
