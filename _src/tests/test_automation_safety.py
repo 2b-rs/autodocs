@@ -46,29 +46,29 @@ class AutomationSafetyFixtureTests(unittest.TestCase):
     RUNNER_TRANSACTION_ALLOWED_AUTO010 = frozenset(
         {
             (
-                277,
-                "_atomic_create",
-                "a9585e4f1caf3113aa8a1da53260983471d1e10d5339b4a553f0fcce7a047ea2",
-            ),
-            (
-                1735,
+                1601,
                 "Transaction.acquire_lock",
                 "bbeb1bc976b167dc0d4939d3788858124cb8cfecdc064b4c6bac40cc1f290fd8",
             ),
             (
-                1876,
-                "Transaction.materialize_editor_candidate",
-                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+                1974,
+                "Transaction.prepare_atomic_checkin",
+                "4133794f254dea5c821b1f645e948c28df23a73d75c2a9d0d425c0d93341b478",
             ),
             (
-                3332,
-                "BranchMergeTransaction._synchronize_worktree",
-                "2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c",
+                1975,
+                "Transaction.prepare_atomic_checkin",
+                "5c8fc9a1b5dc7758f1e59f1c4f840d5272c5ef95c6ce0e9f16a3392c4890e17f",
             ),
             (
-                3959,
-                "_recovery_lease",
-                "d9bae0d944b115d54df1aa8eb1b10f982d72c3427965fb54b216068970284802",
+                1976,
+                "Transaction.prepare_atomic_checkin",
+                "dc2e66d6d439f072f56eac5ef1451f83ea1ebf4586c1cc1bda4ca12278a7d23b",
+            ),
+            (
+                1977,
+                "Transaction.prepare_atomic_checkin",
+                "2402f926f11b7a6d46e4ced3d8503abf65a2ecfdaa9b7b8615866c59465a511a",
             ),
         }
     )
@@ -1260,7 +1260,11 @@ def validate():
 
     def test_runner_transaction_control_rejects_a_moved_auto010(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 277)
+        target = next(
+            finding
+            for finding in findings
+            if finding.line == 1601 and finding.rule == "AUTO010"
+        )
         changed = [
             replace(finding, line=finding.line + 1) if finding is target else finding
             for finding in findings
@@ -1270,7 +1274,11 @@ def validate():
 
     def test_runner_transaction_control_rejects_a_renamed_auto010(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 1735)
+        target = next(
+            finding
+            for finding in findings
+            if finding.line == 1974 and finding.rule == "AUTO010"
+        )
         changed = [
             replace(finding, symbol="Transaction.renamed_lock")
             if finding is target
@@ -1282,7 +1290,11 @@ def validate():
 
     def test_runner_transaction_control_rejects_changed_evidence_bytes(self):
         findings = self.runner_transaction_findings()
-        target = next(finding for finding in findings if finding.line == 1876)
+        target = next(
+            finding
+            for finding in findings
+            if finding.line == 1975 and finding.rule == "AUTO010"
+        )
         changed_evidence = target.evidence + "\n# byte drift"
         changed = [
             replace(
