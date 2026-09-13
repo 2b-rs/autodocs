@@ -34,6 +34,7 @@ Zweck und typischem Aufruf. Quelle: jeweiliger Modul-Docstring.
 | `summarize_trace_check.py` | Fasst `trace-check`-Ergebnisse zusammen, liest von stdin | `python3 _src/tools/summarize_trace_check.py < input.json` |
 | `review_ingest.py` | Review-Pakete aus dem HTML-Workflow (`review.js`) in Records schreiben; einziger schreibender Weg für Requirement-Text-Reviews | `--check`/`--apply paket.json`, `-g <issue-nr>...`, `--repo <org>/<repo>`, `--require-authenticated` |
 | `review_flags.py` | Flag-Dateien für KI-Review-Jobs, kollisionsfrei via `os.rename` (atomar) | Bibliothek: `write_review_flag`, `complete_flag`, `build_instruction` |
+| `task_acceptance_policy.py` | Machine-enforced batch expansion and graph-closure validation for privileged Task Acceptance and Feature Closure | Bibliothek: `expand_batch(tasks, assigned, accepted)`, `validate_feature_acceptance(feature_tasks, terminal_task)` |
 | `curation_ingest.py` | Kurationsentscheidungen aus dem Extraktionsbericht übernehmen | `--check`/`--apply paket.json`, `--issue-body issue-42.md` |
 | `curation_flags.py` | Warteschlange für KI-gestützte Kurations-Anfragen, kollisionsfrei | Bibliothek: `write_curation_flag`, `complete_flag` |
 | `review_request_ingest.py` | Nimmt website-initiierte Re-Review-Anfragen (`review-request-package@v1`) entgegen, prüft Schema/Version/Hash/Duplikate und schreibt bei Erfolg ein `open`-Curation-Queue-Item vom `item_kind: "review-request"` (0021-03) | Bibliothek: `ingest(pkg, apply=..., current_content_hash=..., current_version_id=..., authoritative_actor=...)` |
