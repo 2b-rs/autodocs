@@ -71,7 +71,14 @@ def hypothesis_id() -> str:
     return f"hypothesis:{uuid7()}"
 
 
-_PREFIXED_RE = re.compile(r"^(?P<prefix>curation|evidence|artifact|hypothesis):(?P<uuid>[0-9a-f-]{36})$")
+def claim_id() -> str:
+    """0037-27.01: typed-claim identity family, distinct from hypothesis:."""
+    return f"claim:{uuid7()}"
+
+
+_PREFIXED_RE = re.compile(
+    r"^(?P<prefix>curation|evidence|artifact|hypothesis|claim):(?P<uuid>[0-9a-f-]{36})$"
+)
 
 
 def parse_prefixed_id(value: str) -> dict | None:

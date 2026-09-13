@@ -8,7 +8,7 @@ inspect claims consistently.
 Schema: typed-claim@v1
 Required top-level fields:
 - schema: always "typed-claim@v1"
-- claim_id: stable claim id (hypothesis_id() from 0006-15)
+- claim_id: stable claim id (claim:<uuid7> from 0037-27.01; not hypothesis:)
 - parent_artifact_id: the synthesis/artifact this claim belongs to
 - claim_type: one of hard_fact / curated_fact / user_comment / ai_inferred
 - content: textual claim content
@@ -23,8 +23,8 @@ Required top-level fields:
 - created: ISO 8601 timestamp
 - updated: ISO 8601 timestamp
 
-This is an in-memory / JSON-serializable schema helper only. It does not
-create persistence stores or wire itself into a renderer yet.
+In-memory schema helper. One-file persistence and AI-run provenance live in
+`ai_workflow_persist.py` (Task `0037-27.01`).
 """
 from __future__ import annotations
 from datetime import datetime, timezone
@@ -62,7 +62,7 @@ def new_claim(parent_artifact_id: str, claim_type: str, content: str,
     now = _now()
     return {
         "schema": "typed-claim@v1",
-        "claim_id": vid.hypothesis_id(),
+        "claim_id": vid.claim_id(),
         "parent_artifact_id": parent_artifact_id,
         "claim_type": claim_type,
         "content": content,
