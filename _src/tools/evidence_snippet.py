@@ -44,7 +44,8 @@ def _now():
 
 
 def record_evidence_snippet(source_version: str, text: str, reason: str,
-                            meta: dict | None = None) -> dict:
+                            meta: dict | None = None,
+                            provenance: dict | None = None) -> dict:
     """Create and append one evidence snippet, pinned to source_version
     (a requirement-version id, e.g. from version_store.latest_version()).
 
@@ -53,6 +54,10 @@ def record_evidence_snippet(source_version: str, text: str, reason: str,
     (0006-17's whole point), never optional/nullable like
     curation_item.decided_on_version (which may legitimately be unknown
     for pre-existing decisions).
+
+    Duplicate (source_version, text, reason) is a no-op: the existing
+    JSONL line is returned unchanged. Legacy lines without an envelope
+    are never backfilled.
     """
     if not source_version:
         raise ValueError("source_version is required for every evidence snippet (0006-17)")
@@ -61,8 +66,44 @@ def record_evidence_snippet(source_version: str, text: str, reason: str,
         raise ValueError(f"source_version is not a well-formed requirement-version id: {source_version!r}")
     canonical_id = parsed["canonical_id"]
 
+    path = _store_path(canonical_id)
+    if path.exists():
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                existing = json.loads(line)
+                if (
+                    existing.get("source_version") == source_version
+                    and existing.get("text") == text
+                    and existing.get("reason") == reason
+                ):
+                    env = existing.get("provenance")
+                    if provenance and env:
+                        from evidence_version_provenance import attach_evidence_provenance
+                        attach_evidence_provenance(
+                            snippet_id=existing["id"],
+                            source_version=source_version,
+                            text=text,
+                            request=provenance,
+                            existing_envelope=env,
+                        )
+                    return existing
+
+    snippet_uuid = evidence_id()
+    envelope = None
+    if provenance is not None:
+        from evidence_version_provenance import attach_evidence_provenance
+        envelope = attach_evidence_provenance(
+            snippet_id=snippet_uuid,
+            source_version=source_version,
+            text=text,
+            request=provenance,
+        )
+
     entry = {
-        "id": evidence_id(),
+        "id": snippet_uuid,
         "canonical_id": canonical_id,
         "source_version": source_version,
         "text": text,
@@ -70,7 +111,8 @@ def record_evidence_snippet(source_version: str, text: str, reason: str,
         "meta": meta or {},
         "created": _now(),
     }
-    path = _store_path(canonical_id)
+    if envelope is not None:
+        entry["provenance"] = envelope
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp-%s" % _uuid.uuid4().hex[:8])
     if path.exists():
