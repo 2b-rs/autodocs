@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en" style="height:100%">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Backlog 3D Evolution & Dependency Visualizer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #080c14;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden;
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+  #header {
+    height: 44px;
+    background: rgba(15, 23, 42, 0.90);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 100;
+  }
+  #header h1 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #header .badge {
+    background: #3b82f6;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  #header .nav-hint {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  #back-btn {
+    display: none;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid #3b82f6;
+    color: #93c5fd;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-left: 10px;
+    transition: all 0.15s ease;
+  }
+  #back-btn:hover {
+    background: #3b82f6;
+    color: #fff;
+  }
+  #workspace {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+  }
+  #canvas-wrap {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    cursor: grab;
+  }
+  #canvas-wrap:active {
+    cursor: grabbing;
+  }
+  canvas#viz {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #side-panel {
+    width: 360px;
+    background: rgba(15, 23, 42, 0.94);
+    backdrop-filter: blur(16px);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+  }
+  #side-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  #side-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  #side-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  #focus-card {
+    padding: 12px 16px;
+    background: rgba(59, 130, 246, 0.08);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    font-size: 11px;
+    line-height: 1.45;
+    max-height: 48%;
+    overflow-y: auto;
+    display: none;
+  }
+  #focus-card b {
+    color: #60a5fa;
+  }
+  #clog {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ce {
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .ctag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-right: 6px;
+  }
+  .ce-fa .ctag { background: #0284c7; color: #fff; }
+  .ce-fr .ctag { background: #64748b; color: #fff; }
+  .ce-ta .ctag { background: #8b5cf6; color: #fff; }
+  .ce-td .ctag { background: #16a34a; color: #fff; }
+  .ce-tm .ctag { background: #d97706; color: #fff; }
+
+  #ctrl {
+    height: 72px;
+    background: rgba(15, 23, 42, 0.95);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    z-index: 100;
+  }
+  #scrub-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #scrub-chart-wrap {
+    position: relative;
+    height: 34px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  #scrub-chart-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  #scrub {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+    z-index: 10;
+  }
+  #scrub::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 34px;
+    background: rgba(59, 130, 246, 0.85);
+    border: 1.5px solid #ffffff;
+    border-radius: 3px;
+    cursor: ew-resize;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+  }
+  #scrub::-moz-range-thumb {
+    width: 14px;
+    height: 34px;
+    background: rgba(59, 130, 246, 0.85);
+    border: 1.5px solid #ffffff;
+    border-radius: 3px;
+    cursor: ew-resize;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.8);
+  }
+  #scrub-lbl {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .chart-leg {
+    display: flex;
+    gap: 12px;
+  }
+  .chart-leg-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .spds {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 2px;
+    gap: 2px;
+  }
+  .spd {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .spd.on {
+    background: #3b82f6;
+    color: #fff;
+  }
+  #legend {
+    display: flex;
+    gap: 10px;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .leg-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>Backlog 3D Evolution <span class="badge">LIVE</span> <button id="back-btn">← Back</button></h1>
+  <div class="nav-hint" id="header-hint">Scroll V: Zoom · Scroll H: Scrub · Click / ↑ / ↓: Focus · Enter / Esc: Navigate</div>
+</div>
+<div id="workspace">
+  <div id="canvas-wrap">
+    <canvas id="viz"></canvas>
+  </div>
+  <div id="side-panel">
+    <div id="side-header">
+      <div id="side-title">Snapshot Changelog</div>
+      <div id="side-sub">Select or scrub timeline</div>
+    </div>
+    <div id="focus-card"></div>
+    <div id="clog"></div>
+  </div>
+</div>
+<div id="ctrl">
+  <div id="scrub-col">
+    <div id="scrub-chart-wrap">
+      <canvas id="scrub-chart-canvas"></canvas>
+      <input type="range" id="scrub" min="0" step="1" value="0">
+    </div>
+    <div id="scrub-lbl">
+      <span id="scrub-info">—</span>
+      <div class="chart-leg">
+        <span class="chart-leg-item"><span style="display:inline-block;width:10px;height:6px;background:rgba(255,255,255,0.30);border-radius:1px"></span> Live Area</span>
+        <span class="chart-leg-item"><span style="display:inline-block;width:8px;height:2px;background:#ef4444"></span> Created (red)</span>
+        <span class="chart-leg-item"><span style="display:inline-block;width:8px;height:2px;background:#22c55e"></span> Done (green)</span>
+      </div>
+    </div>
+  </div>
+  <div class="spds">
+    <button class="spd" data-spd="0">0&#215;</button>
+    <button class="spd" data-spd="2">0.5&#215;</button>
+    <button class="spd on" data-spd="1">1&#215;</button>
+    <button class="spd" data-spd="0.5">2&#215;</button>
+    <button class="spd" data-spd="0.25">4&#215;</button>
+  </div>
+  <div id="legend">
+    <div class="leg-item"><span class="leg-dot" style="background:#22c55e"></span> Done [x]</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#38bdf8"></span> In Progress [p]</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#f59e0b"></span> Review [u]</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#64748b"></span> Open [ ]</div>
+  </div>
+</div>
+
+<script src="backlog-evolution-core.js"></script>
+<script>
+let FEATURES = [];
+let TIMELINE = [];
+let TASK_HISTORY = {};
+
+const MARK_COLOR = {
+  'x': '#22c55e',
+  'p': '#38bdf8',
+  'u': '#f59e0b',
+  ' ': '#64748b',
+  'w': '#94a3b8',
+  'd': '#ef4444',
+  '?': '#a855f7'
+};
+
+const MARK_LABEL = {
+  'x': 'Done',
+  'p': 'In Progress',
+  'u': 'Needs Clarification',
+  ' ': 'Open',
+  'w': 'Withdrawn',
+  'd': 'Deferred',
+  '?': 'Investigating'
+};
+
+const PALETTE = [
+  '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185',
+  '#34d399', '#2dd4bf', '#a78bfa', '#fb923c', '#facc15',
+  '#4ade80', '#60a5fa', '#e879f9', '#22d3ee', '#f87171'
+];
+
+const canvas = document.getElementById('viz');
+const ctx    = canvas.getContext('2d');
+const scrubChart = document.getElementById('scrub-chart-canvas');
+const scrubCtx   = scrubChart.getContext('2d');
+const scrubInfo  = document.getElementById('scrub-info');
+const clog       = document.getElementById('clog');
+const sideTitle  = document.getElementById('side-title');
+const sideSub    = document.getElementById('side-sub');
+const focusCard  = document.getElementById('focus-card');
+const backBtn    = document.getElementById('back-btn');
+const scrubEl    = document.getElementById('scrub');
+const headerHint = document.getElementById('header-hint');
+
+let W = 0, H = 0;
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = canvas.width  = rect.width;
+  H = canvas.height = rect.height;
+  scrubChart.width  = scrubChart.parentElement.clientWidth;
+  scrubChart.height = scrubChart.parentElement.clientHeight;
+  drawScrubChart();
+}
+window.addEventListener('resize', resize);
+
+const featureMap = new Map();
+const taskMap    = new Map();
+const subtaskParent = new Map();
+const featSolarConfig = new Map();
+
+// ── Vanishing & Dissolve Animation System ──────────────────────────────────
+const vanishingEffects = [];
+
+function spawnVanishingEffect(x, y, r, color, label) {
+  const particles = [];
+  const pCount = Math.min(36, Math.max(16, Math.floor(r * 1.5)));
+  for (let i = 0; i < pCount; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const speed = 0.6 + Math.random() * 2.8;
+    const pSize = 1.5 + Math.random() * 2.5;
+    particles.push({
+      x: x + Math.cos(ang) * (r * 0.5),
+      y: y + Math.sin(ang) * (r * 0.5),
+      vx: Math.cos(ang) * speed,
+      vy: Math.sin(ang) * speed,
+      size: pSize,
+      color: color,
+      life: 1.0,
+      decay: 0.015 + Math.random() * 0.02
+    });
+  }
+  vanishingEffects.push({
+    x, y,
+    r: Math.max(12, r),
+    ringR: r * 0.8,
+    color,
+    label,
+    alpha: 1.0,
+    particles
+  });
+}
+
+function updateAndDrawVanishingEffects() {
+  for (let i = vanishingEffects.length - 1; i >= 0; i--) {
+    const fx = vanishingEffects[i];
+    fx.alpha -= 0.022;
+    fx.ringR += 1.8;
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, fx.alpha * 0.8);
+    ctx.strokeStyle = fx.color;
+    ctx.lineWidth = 2.0 * fx.alpha;
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, fx.ringR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(fx.x, fx.y, fx.ringR * 0.6, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.0 * fx.alpha;
+    ctx.stroke();
+    ctx.restore();
+
+    let activeParticles = 0;
+    fx.particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.96;
+      p.vy *= 0.96;
+      p.life -= p.decay;
+      if (p.life > 0) {
+        activeParticles++;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, p.life * fx.alpha);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+
+    if (fx.alpha <= 0 && activeParticles === 0) {
+      vanishingEffects.splice(i, 1);
+    }
+  }
+}
+
+function initVisualizer() {
+  featureMap.clear();
+  taskMap.clear();
+  subtaskParent.clear();
+  featSolarConfig.clear();
+
+  FEATURES.forEach(f => {
+    featureMap.set(f.id, f);
+    (f.tasks || []).forEach(t => {
+      taskMap.set(t.id, t);
+      if (t.id.includes('.')) {
+        subtaskParent.set(t.id, t.id.split('.')[0]);
+      }
+    });
+  });
+
+  const FEAT_KEYS = FEATURES.map(f => f.id);
+  const numFeatures = FEATURES.length;
+  const nOrbits = Math.max(1, Math.floor(Math.sqrt(numFeatures)));
+  
+  const minOrbitDist = 130;
+  const maxOrbitDist = 380;
+  const orbitDistStep = nOrbits > 1 ? (maxOrbitDist - minOrbitDist) / (nOrbits - 1) : 0;
+  const orbitRadii = [];
+  for (let o = 0; o < nOrbits; o++) {
+    orbitRadii.push(nOrbits === 1 ? (minOrbitDist + maxOrbitDist) / 2 : minOrbitDist + o * orbitDistStep);
+  }
+
+  const taskToFeat = new Map();
+  FEATURES.forEach(f => {
+    (f.tasks || []).forEach(t => {
+      taskToFeat.set(t.id, f.id);
+    });
+  });
+
+  const featDegree = new Map();
+  const featWeights = new Map();
+  FEAT_KEYS.forEach(fid => {
+    featWeights.set(fid, new Map());
+    featDegree.set(fid, 0);
+  });
+
+  FEATURES.forEach(f => {
+    const fid1 = f.id;
+    (f.tasks || []).forEach(t => {
+      (t.prereqs || []).forEach(pr => {
+        const pTo = pr.to || pr;
+        let fid2 = taskToFeat.get(pTo);
+        if (!fid2 && pTo.includes('-')) fid2 = pTo.split('-')[0];
+        if (fid2 && fid2 !== fid1 && featureMap.has(fid2)) {
+          const m1 = featWeights.get(fid1);
+          m1.set(fid2, (m1.get(fid2) || 0) + 1);
+          const m2 = featWeights.get(fid2);
+          m2.set(fid1, (m2.get(fid1) || 0) + 1);
+          featDegree.set(fid1, featDegree.get(fid1) + 1);
+          featDegree.set(fid2, featDegree.get(fid2) + 1);
+        }
+      });
+    });
+  });
+
+  const sortedByDegree = [...FEAT_KEYS].sort((a, b) => featDegree.get(b) - featDegree.get(a));
+  const placement = new Map();
+  const orbitBuckets = Array.from({ length: nOrbits }, () => []);
+
+  sortedByDegree.forEach((fid, idx) => {
+    const orbitIdx = idx % nOrbits;
+    orbitBuckets[orbitIdx].push(fid);
+  });
+
+  for (let o = 0; o < nOrbits; o++) {
+    const bucket = orbitBuckets[o];
+    const k = bucket.length;
+    bucket.forEach((fid, idx) => {
+      placement.set(fid, {
+        orbitIdx: o,
+        angle: (idx / Math.max(1, k)) * Math.PI * 2 + (o * 0.45)
+      });
+    });
+  }
+
+  FEAT_KEYS.forEach(fid => {
+    const f = featureMap.get(fid);
+    const taskCount = (f.tasks || []).length || 1;
+    const radius = Math.min(26, Math.max(13, 11 + Math.sqrt(taskCount) * 2.6));
+    const opt = placement.get(fid) || { orbitIdx: 0, angle: 0 };
+    const dist = orbitRadii[opt.orbitIdx];
+    const speed = 0.00035 * (opt.orbitIdx % 2 === 0 ? 1 : -0.85) / Math.sqrt(opt.orbitIdx + 1);
+    const tilt = 0.65;
+    featSolarConfig.set(fid, { radius, dist, speed, angle: opt.angle, tilt, mass: taskCount * 2, orbitIdx: opt.orbitIdx });
+  });
+
+  scrubEl.max = Math.max(0, TIMELINE.length - 1);
+  resize();
+  applySnapshot(TIMELINE.length - 1);
+  scrubEl.value = TIMELINE.length - 1;
+  scrubFloat = TIMELINE.length - 1;
+}
+
+let curIdx = 0;
+let focusFid = null;
+let focusedNodeId = null;
+let inspectedTaskId = null;
+let currentMarks = {};
+let currentFids  = new Set();
+
+let camZoom = 1.0;
+let targetZoom = 1.0;
+const MIN_ZOOM = 0.3;
+const MAX_ZOOM = 4.0;
+let ringAngle = 0;
+
+let camLookX = 0, camLookY = 0;
+let targetLookX = 0, targetLookY = 0;
+
+const nodePool = new Map();
+const edgePool = new Map();
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function getOrMake(id, factory) {
+  if (!nodePool.has(id)) nodePool.set(id, factory());
+  return nodePool.get(id);
+}
+
+function getOrMakeEdgeByKey(key, factory) {
+  if (!edgePool.has(key)) edgePool.set(key, factory());
+  return edgePool.get(key);
+}
+
+const worldPos = new Map();
+let detailRotY = 0;
+let targetDetailRotY = 0;
+
+function computeFocusLayout(fid) {
+  const f = featureMap.get(fid); if (!f) return;
+  const tasks = (f.tasks || []);
+  const ids   = tasks.map(t => t.id);
+  const idSet = new Set(ids);
+
+  const deps = new Map();
+  ids.forEach(id => deps.set(id, new Set()));
+  tasks.forEach(t => {
+    (t.prereqs || []).forEach(pr => {
+      const pTo = pr.to || pr;
+      if (idSet.has(pTo)) deps.get(t.id).add(pTo);
+    });
+  });
+
+  const level = new Map();
+  function getRank(tid, visited = new Set()) {
+    if (level.has(tid)) return level.get(tid);
+    if (visited.has(tid)) return 0;
+    visited.add(tid);
+    const prereqList = Array.from(deps.get(tid) || []);
+    if (!prereqList.length) {
+      level.set(tid, 0);
+      return 0;
+    }
+    let maxR = 0;
+    prereqList.forEach(p => {
+      maxR = Math.max(maxR, getRank(p, new Set(visited)) + 1);
+    });
+    level.set(tid, maxR);
+    return maxR;
+  }
+  ids.forEach(id => getRank(id));
+
+  let maxRank = 0;
+  ids.forEach(id => { maxRank = Math.max(maxRank, level.get(id) || 0); });
+
+  const byRank = new Map();
+  for (let r = 0; r <= maxRank; r++) byRank.set(r, []);
+  ids.forEach(id => { byRank.get(level.get(id) || 0).push(id); });
+
+  const topY = 160;
+  const botY = Math.max(topY + 160, H - 110);
+  const rankStepY = maxRank > 0 ? (botY - topY) / maxRank : 0;
+
+  byRank.forEach((rowIds, r) => {
+    const y = maxRank > 0 ? botY - r * rankStepY : (topY + botY) / 2;
+    const count = rowIds.length;
+    const radSpread = Math.min(340, 70 + count * 44);
+
+    rowIds.forEach((id, j) => {
+      const angle = count === 1 ? 0 : (-Math.PI * 0.70 + (j / (count - 1)) * Math.PI * 1.40);
+      const x = Math.sin(angle) * radSpread;
+      const z = Math.cos(angle) * (radSpread * 0.75);
+      worldPos.set(id, { x, y, z });
+    });
+  });
+
+  worldPos.set('F' + fid, { x: 0, y: 70, z: 0 });
+
+  const extPrereqs = [];
+  tasks.forEach(t => {
+    (t.prereqs || []).forEach(pr => {
+      const pTo = pr.to || pr;
+      if (!idSet.has(pTo)) {
+        extPrereqs.push({ from: t.id, to: pTo, soft: pr.soft || false });
+      }
+    });
+  });
+
+  const extGroup = new Map();
+  extPrereqs.forEach(ep => {
+    if (!extGroup.has(ep.to)) extGroup.set(ep.to, []);
+    extGroup.get(ep.to).push(ep);
+  });
+
+  const extIds = Array.from(extGroup.keys());
+  const extCount = extIds.length;
+  extIds.forEach((extId, k) => {
+    const extAngle = extCount === 1 ? 0 : (-Math.PI * 0.80 + (k / Math.max(1, extCount - 1)) * Math.PI * 1.60);
+    const extX = Math.sin(extAngle) * 390;
+    const extY = botY + 45 + (k % 2) * 25;
+    const extZ = -340 - Math.cos(extAngle) * 90;
+    worldPos.set('EXT:' + extId, { x: extX, y: extY, z: extZ, targetId: extId });
+  });
+}
+
+// ── Layout for Focused Task Inspector Mode ─────────────────────────────────
+function computeTaskInspectorLayout(tid) {
+  const f = featureMap.get(focusFid); if (!f) return;
+  const currentTask = taskMap.get(tid); if (!currentTask) return;
+
+  // Center the inspected task
+  worldPos.set(tid, { x: 0, y: H / 2, z: 0 });
+
+  // 1. Direct predecessors (prerequisites that this task depends on)
+  const directPreds = (currentTask.prereqs || []).map(p => p.to || p);
+  const predCount = directPreds.length;
+  directPreds.forEach((pid, i) => {
+    const x = predCount === 1 ? 0 : (-Math.PI * 0.35 + (i / Math.max(1, predCount - 1)) * Math.PI * 0.7) * 320;
+    const y = (H / 2) - 195;
+    const z = 30 + Math.abs(x) * 0.15;
+    worldPos.set(pid, { x, y, z });
+  });
+
+  // 2. Direct successors (tasks that depend on this task)
+  const directSuccs = [];
+  (f.tasks || []).forEach(other => {
+    if (other.id !== tid) {
+      const dependsOnCur = (other.prereqs || []).some(pr => (pr.to || pr) === tid);
+      if (dependsOnCur) directSuccs.push(other.id);
+    }
+  });
+  const succCount = directSuccs.length;
+  directSuccs.forEach((sid, i) => {
+    const x = succCount === 1 ? 0 : (-Math.PI * 0.35 + (i / Math.max(1, succCount - 1)) * Math.PI * 0.7) * 320;
+    const y = (H / 2) + 195;
+    const z = 30 + Math.abs(x) * 0.15;
+    worldPos.set(sid, { x, y, z });
+  });
+
+  // 3. Unrelated tasks dimmed into the 3D background
+  (f.tasks || []).forEach(other => {
+    if (other.id !== tid && !directPreds.includes(other.id) && !directSuccs.includes(other.id)) {
+      const oldWp = worldPos.get(other.id) || { x: 0, y: H / 2, z: 0 };
+      worldPos.set(other.id, { x: oldWp.x * 1.5, y: oldWp.y, z: -400 });
+    }
+  });
+}
+
+let visNodes = [];
+let visEdges = [];
+
+function rebuildVis() {
+  visNodes = [];
+  visEdges = [];
+  const edgeKeySeen = new Set();
+  const FEAT_KEYS = FEATURES.map(f => f.id);
+
+  if (!focusFid) {
+    backBtn.style.display = 'none';
+    focusCard.style.display = 'none';
+    headerHint.textContent = 'Scroll V: Zoom · Scroll H: Scrub · Click Feature to open DAG · Drag to rotate';
+
+    const starRadius = 24;
+    const starNode = getOrMake('STAR', () => ({
+      id: 'STAR', type: 'star',
+      x: W/2, y: H/2, tx: W/2, ty: H/2,
+      r: starRadius, tr: starRadius, alpha: 1, talpha: 1,
+      boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
+      color: '#fbbf24', label: 'BACKLOG', sublabel: 'Core'
+    }));
+    starNode.tx = W/2; starNode.ty = H/2;
+    starNode.tr = starRadius;
+    starNode.talpha = 1;
+    starNode.tboxW = 0; starNode.tboxH = 0;
+    visNodes.push(starNode);
+
+    const fids = FEAT_KEYS.filter(fid => currentFids.has(fid));
+    fids.forEach(fid => {
+      const f = featureMap.get(fid);
+      const cfg = featSolarConfig.get(fid);
+      if (!cfg) return;
+
+      const allTasks = f.tasks || [];
+      const activeTasks = allTasks.filter(t => t.id in currentMarks);
+      const total = activeTasks.length || 1;
+      const done  = activeTasks.filter(t => currentMarks[t.id] === 'x').length;
+
+      const fn = getOrMake('F' + fid, () => ({
+        id: 'F'+fid, type:'feature', fid,
+        x: W/2, y: H/2, tx: W/2, ty: H/2,
+        r: 1, tr: cfg.radius || 18, alpha: 0, talpha: 1,
+        boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
+        color: f.color, progress: 0, label: fid, sublabel: ''
+      }));
+
+      fn.tr = cfg.radius || 18;
+      fn.talpha = 1;
+      fn.tboxW = 0; fn.tboxH = 0;
+      fn.progress = done / total;
+      fn.sublabel = (f.name || '').slice(0, 22);
+      fn.totalTasks = total; fn.doneTasks = done;
+      visNodes.push(fn);
+
+      activeTasks.forEach((t, i) => {
+        const mark = currentMarks[t.id] || ' ';
+        const isSub = subtaskParent.has(t.id);
+        const satR = isSub ? 3.5 : 5.5;
+
+        const tn = getOrMake(t.id, () => ({
+          id: t.id, type: 'task', fid,
+          x: W/2, y: H/2, tx: W/2, ty: H/2,
+          r: 1, tr: satR, alpha: 0, talpha: 0.9,
+          boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
+          color: MARK_COLOR[mark] || '#888', mark,
+          label: t.id, text: t.text
+        }));
+        tn.tr = satR;
+        tn.mark = mark;
+        tn.tboxW = 0; tn.tboxH = 0;
+        tn.color = MARK_COLOR[mark] || '#888';
+        tn.talpha = mark === 'x' ? 0.35 : 0.95;
+        visNodes.push(tn);
+
+        const featEdgeKey = 'F' + fid + '>' + t.id;
+        if (!edgeKeySeen.has(featEdgeKey)) {
+          edgeKeySeen.add(featEdgeKey);
+          const en = getOrMakeEdgeByKey(featEdgeKey, () => ({
+            key: featEdgeKey, fnid: 'F' + fid, tnid: t.id,
+            ax: W/2, ay: H/2, bx: W/2, by: H/2,
+            alpha: 0, talpha: 0.25, soft: true, color: f.color
+          }));
+          en.talpha = 0.25;
+          en.color = f.color;
+          en.soft = true;
+          visEdges.push(en);
+        }
+      });
+
+      activeTasks.forEach(t => {
+        (t.prereqs || []).forEach(pr => {
+          const pTo = pr.to || pr;
+          if (pTo in currentMarks) {
+            const prereqKey = t.id + '>' + pTo;
+            if (!edgeKeySeen.has(prereqKey)) {
+              edgeKeySeen.add(prereqKey);
+              const en = getOrMakeEdgeByKey(prereqKey, () => ({
+                key: prereqKey, fnid: t.id, tnid: pTo,
+                ax: W/2, ay: H/2, bx: W/2, by: H/2,
+                alpha: 0, talpha: 0.45, soft: false, color: 'rgba(185,200,255,0.45)'
+              }));
+              en.talpha = 0.45;
+              en.color = 'rgba(185,200,255,0.45)';
+              en.soft = false;
+              visEdges.push(en);
+            }
+          }
+        });
+      });
+    });
+
+  } else {
+    // ── 3D DETAIL / INSPECTOR VIEW ──────────────────────────────────────────────
+    backBtn.style.display = 'inline-block';
+    const fid = focusFid;
+    const f   = featureMap.get(fid); if (!f) return;
+    const tasks = (f.tasks || []);
+    const idSet = new Set(tasks.map(t => t.id));
+
+    if (inspectedTaskId) {
+      headerHint.textContent = '←/→: Siblings · ↑/↓: Switch Immediately (Pred/Succ) · Enter: Refocus · Esc: Back';
+      computeTaskInspectorLayout(inspectedTaskId);
+    } else {
+      headerHint.textContent = 'Click task: Open Digest Box · ↑/↓/Space: Navigate · Drag/Arrows: Rotate · Esc: Overview';
+      computeFocusLayout(fid);
+    }
+
+    const fn = getOrMake('F' + fid, () => ({
+      id:'F'+fid, type:'feature', fid,
+      x: W/2, y: 70, tx: W/2, ty: 70,
+      r:1, tr:22, alpha:0, talpha:1,
+      boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
+      color: f.color, progress:0, label:fid, sublabel:''
+    }));
+    fn.tr = inspectedTaskId ? 14 : 22;
+    fn.talpha = inspectedTaskId ? 0.35 : 1.0;
+    fn.tboxW = 0; fn.tboxH = 0;
+    fn.sublabel = (f.name || '').slice(0, 36);
+    visNodes.push(fn);
+
+    tasks.forEach(t => {
+      const mark = currentMarks[t.id] || ' ';
+      const exists = t.id in currentMarks;
+      const isSub = subtaskParent.has(t.id);
+      const isInspected = (inspectedTaskId === t.id);
+
+      const focusR = isSub ? 8.5 : 14;
+
+      const tn = getOrMake(t.id, () => ({
+        id: t.id, type:'task', fid,
+        x: W/2, y: H/2, tx: W/2, ty: H/2,
+        r:1, tr:focusR, alpha:0, talpha:0,
+        boxW: 0, tboxW: 0, boxH: 0, tboxH: 0,
+        color: MARK_COLOR[mark] || '#888', mark,
+        label: t.id, text: t.text, description: t.description || '', isSubtask: isSub
+      }));
+
+      tn.mark = mark;
+      tn.color = MARK_COLOR[mark] || '#888';
+      tn.text = t.text;
+      tn.description = t.description || '';
+
+      if (inspectedTaskId) {
+        if (isInspected) {
+          // Deform circle into comprehensive Digest Box
+          tn.tr = 12;
+          tn.tboxW = 430;
+          tn.tboxH = 240;
+          tn.talpha = 1.0;
+        } else {
+          const curT = taskMap.get(inspectedTaskId);
+          const isPred = (curT?.prereqs || []).some(p => (p.to || p) === t.id);
+          const isSucc = (t.prereqs || []).some(p => (p.to || p) === inspectedTaskId);
+          
+          if (isPred || isSucc) {
+            tn.tr = isSub ? 10 : 16;
+            tn.tboxW = 240;
+            tn.tboxH = 50;
+            tn.talpha = 0.95;
+          } else {
+            tn.tr = focusR;
+            tn.tboxW = 0;
+            tn.tboxH = 0;
+            tn.talpha = 0.12;
+          }
+        }
+      } else {
+        tn.tr = focusR;
+        tn.tboxW = 0;
+        tn.tboxH = 0;
+        tn.talpha = exists ? (mark === 'x' ? 0.35 : 1.0) : 0.15;
+      }
+      visNodes.push(tn);
+    });
+
+    tasks.forEach(t => {
+      (t.prereqs || []).forEach(pr => {
+        const pTo = pr.to || pr;
+        if (!idSet.has(pTo)) return;
+        const ekey = t.id + '>' + pTo;
+        if (edgeKeySeen.has(ekey)) return; edgeKeySeen.add(ekey);
+        const en = getOrMakeEdgeByKey(ekey, () => ({
+          key: ekey, fnid: t.id, tnid: pTo,
+          ax: W/2, ay: H/2, bx: W/2, by: H/2,
+          alpha:0, talpha:0, soft: pr.soft || false, color:'rgba(185,200,255,.85)'
+        }));
+        if (inspectedTaskId) {
+          const isRelevant = (t.id === inspectedTaskId || pTo === inspectedTaskId);
+          en.talpha = isRelevant ? 0.95 : 0.08;
+          en.color  = isRelevant ? '#60a5fa' : 'rgba(185,200,255,.2)';
+        } else {
+          en.talpha = pr.soft ? 0.35 : 0.85;
+          en.color  = pr.soft ? 'rgba(130,145,230,.6)' : 'rgba(185,200,255,.85)';
+        }
+        visEdges.push(en);
+      });
+    });
+
+    // Update Focused Node Card in sidebar
+    const activeDisplayId = inspectedTaskId || focusedNodeId;
+    if (activeDisplayId) {
+      const fnNode = nodePool.get(activeDisplayId);
+      const th = TASK_HISTORY[activeDisplayId] || {};
+      if (fnNode) {
+        focusCard.style.display = 'block';
+        const curM = currentMarks[activeDisplayId] || fnNode.mark || ' ';
+        
+        let gitChangesHtml = '';
+        if (th.changes && th.changes.length) {
+          gitChangesHtml = `
+            <div style="margin-top:8px;font-weight:600;color:#93c5fd">Git State Change History:</div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+              ${th.changes.map(ch => `
+                <div style="background:rgba(255,255,255,0.04);padding:4px 6px;border-radius:4px;border-left:2px solid ${MARK_COLOR[ch.mark]||'#64748b'}">
+                  <div style="color:#f8fafc;font-weight:600;display:flex;justify-content:space-between">
+                    <span>[${ch.mark}] ${ch.hash}</span> <span style="color:#94a3b8;font-size:9px">${ch.date}</span>
+                  </div>
+                  <div style="color:#cbd5e1;font-size:9.5px;margin-top:2px">${ch.msg}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        focusCard.innerHTML = `
+          <b>${fnNode.label}</b> &nbsp;<span style="color:${MARK_COLOR[curM]||'#fff'}">(${MARK_LABEL[curM]||curM})</span><br>
+          <div style="margin-top:4px;font-weight:600;color:#f8fafc">${fnNode.text || ''}</div>
+          ${fnNode.description ? `<div style="margin-top:6px;color:#94a3b8;font-size:10px;white-space:pre-wrap;line-height:1.35;max-height:110px;overflow-y:auto;background:rgba(0,0,0,0.25);padding:6px;border-radius:4px">${fnNode.description}</div>` : ''}
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:10px">
+            <div>Created: <span style="color:#f8fafc">${th.created || 'Initial'}</span> · Done: <span style="color:${th.done ? '#4ade80' : '#94a3b8'}">${th.done || '—'}</span></div>
+          </div>
+          ${gitChangesHtml}
+        `;
+      } else {
+        focusCard.style.display = 'none';
+      }
+    } else {
+      focusCard.style.display = 'none';
+    }
+  }
+
+  const activeIds = new Set(visNodes.map(n => n.id));
+  nodePool.forEach(n => {
+    if (!activeIds.has(n.id)) {
+      if (n.alpha > 0.2 && n.talpha > 0 && (n.type === 'feature' || n.type === 'task')) {
+        spawnVanishingEffect(n.x, n.y, n.r || 16, n.color || '#3b82f6', n.label);
+      }
+      n.talpha = 0;
+    }
+  });
+  const activeEdges = new Set(visEdges.map(e => e.key));
+  edgePool.forEach(e => { if (!activeEdges.has(e.key)) e.talpha = 0; });
+}
+
+function applySnapshot(idx) {
+  curIdx = idx;
+  const snap = TIMELINE[idx];
+  if (!snap) return;
+
+  currentFids  = new Set(snap.fids);
+  currentMarks = snap.marks || {};
+
+  scrubInfo.textContent = `${snap.date} · ${snap.hash} · ${snap.msg}`;
+
+  if (focusFid) {
+    sideTitle.textContent = inspectedTaskId ? `Task ${inspectedTaskId} Digest` : `Feature ${focusFid} Details`;
+    sideSub.textContent = featureMap.get(focusFid)?.name || '';
+  } else {
+    sideTitle.textContent = `Snapshot #${idx + 1} (${snap.date})`;
+    sideSub.textContent = snap.msg;
+  }
+
+  const allChanges = snap.changes || [];
+  let visibleChanges = allChanges;
+  if (focusFid) {
+    const fObj = featureMap.get(focusFid);
+    const scopeTaskIds = new Set((fObj?.tasks || []).map(t => t.id));
+    const extKeys = Array.from(worldPos.keys()).filter(k => k.startsWith('EXT:')).map(k => worldPos.get(k).targetId);
+    const extSet = new Set(extKeys);
+
+    visibleChanges = allChanges.filter(c => {
+      if (c.fid && (c.fid === focusFid || extSet.has(c.fid))) return true;
+      if (c.tid && (scopeTaskIds.has(c.tid) || extSet.has(c.tid))) return true;
+      return false;
+    });
+  }
+
+  clog.innerHTML = visibleChanges.length ? visibleChanges.map(c => {
+    if (c.type==='feat_add')  return `<div class="ce ce-fa"><span class="ctag">+feat</span>${c.fid} — ${c.name}</div>`;
+    if (c.type==='feat_rem')  return `<div class="ce ce-fr"><span class="ctag">-feat</span>${c.fid}</div>`;
+    if (c.type==='task_add')  return `<div class="ce ce-ta"><span class="ctag">+task</span><b>${c.tid}</b> ${c.text||''}</div>`;
+    if (c.type==='task_mark' && c.to==='x') return `<div class="ce ce-td"><span class="ctag">done</span><b>${c.tid}</b> ${c.text||''}</div>`;
+    if (c.type==='task_mark') return `<div class="ce ce-tm"><span class="ctag">${c.from}→${c.to}</span><b>${c.tid}</b> ${c.text||''}</div>`;
+    return '';
+  }).join('') : '<div style="color:#64748b;padding:10px 8px;font-size:.75rem">' + (focusFid ? 'No changes in this feature' : 'No changes recorded') + '</div>';
+
+  rebuildVis();
+}
+
+let idleClock = 0;
+
+function frame(time) {
+  requestAnimationFrame(frame);
+  idleClock += 0.016;
+
+  camZoom = lerp(camZoom, targetZoom, 0.14);
+  const K = 0.14;
+  const FEAT_KEYS = FEATURES.map(f => f.id);
+
+  if (!focusFid) {
+    targetLookX = W / 2;
+    targetLookY = H / 2;
+
+    const cx = W / 2, cy = H / 2;
+    FEAT_KEYS.forEach(fid => {
+      const cfg = featSolarConfig.get(fid);
+      if (cfg) cfg.angle += cfg.speed;
+    });
+
+    const activeFeatNodes = [];
+    FEAT_KEYS.forEach(fid => {
+      if (!currentFids.has(fid)) return;
+      const cfg = featSolarConfig.get(fid);
+      const fn  = nodePool.get('F' + fid);
+      if (!cfg || !fn) return;
+      
+      const curA = cfg.angle + ringAngle;
+      const floatX = Math.cos(idleClock * 0.8 + cfg.orbitIdx) * 3.5;
+      const floatY = Math.sin(idleClock * 0.6 + cfg.orbitIdx) * 3.0;
+
+      const px = cx + Math.cos(curA) * cfg.dist + floatX;
+      const py = cy + Math.sin(curA) * (cfg.dist * (cfg.tilt || 0.65)) + floatY;
+      fn.tx = px;
+      fn.ty = py;
+      fn.envR = (cfg.radius || 18) + 24;
+      activeFeatNodes.push({ fid, cfg, fn });
+    });
+
+    const minFeatDist = 74;
+    for (let pass = 0; pass < 4; pass++) {
+      for (let i = 0; i < activeFeatNodes.length; i++) {
+        const a = activeFeatNodes[i];
+        for (let j = i + 1; j < activeFeatNodes.length; j++) {
+          const b = activeFeatNodes[j];
+          const dx = b.fn.tx - a.fn.tx;
+          const dy = b.fn.ty - a.fn.ty;
+          const dist = Math.hypot(dx, dy) || 0.001;
+          const requiredDist = Math.max(minFeatDist, a.fn.envR + b.fn.envR);
+          if (dist < requiredDist) {
+            const overlap = requiredDist - dist;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            a.fn.tx -= nx * overlap * 0.5;
+            a.fn.ty -= ny * overlap * 0.5;
+            b.fn.tx += nx * overlap * 0.5;
+            b.fn.ty += ny * overlap * 0.5;
+
+            if (a.cfg.orbitIdx === b.cfg.orbitIdx) {
+              const angDiff = b.cfg.angle - a.cfg.angle;
+              const pushAng = 0.015;
+              if (angDiff >= 0) {
+                b.cfg.angle += pushAng;
+                a.cfg.angle -= pushAng;
+              } else {
+                b.cfg.angle -= pushAng;
+                a.cfg.angle += pushAng;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    activeFeatNodes.forEach(({ fid, cfg, fn }) => {
+      const f = featureMap.get(fid);
+      const curA = cfg.angle + ringAngle;
+      const activeTasks = (f?.tasks || []).filter(t => t.id in currentMarks);
+      const nTasks = activeTasks.length;
+      activeTasks.forEach((t, i) => {
+        const tn = nodePool.get(t.id);
+        if (!tn) return;
+        const satAng = curA * 2.2 + (i / Math.max(1, nTasks)) * Math.PI * 2;
+        const satDist = (cfg.radius || 18) + 12 + (i % 3) * 6;
+        tn.tx = fn.tx + Math.cos(satAng) * satDist;
+        tn.ty = fn.ty + Math.sin(satAng) * (satDist * 0.65);
+      });
+    });
+
+  } else {
+    // 3D Detail & Inspector Projection
+    detailRotY = lerp(detailRotY, targetDetailRotY, 0.14);
+    const cosR = Math.cos(detailRotY);
+    const sinR = Math.sin(detailRotY);
+    const FOCAL = 680;
+    const cx = W / 2;
+
+    let focusTarget = null;
+    if (inspectedTaskId) {
+      focusTarget = nodePool.get(inspectedTaskId);
+    } else if (focusedNodeId) {
+      focusTarget = nodePool.get(focusedNodeId);
+    }
+    if (!focusTarget) {
+      focusTarget = nodePool.get('F' + focusFid);
+    }
+
+    nodePool.forEach(n => {
+      const wp = worldPos.get(n.id);
+      if (wp) {
+        const floatZ = Math.sin(idleClock * 1.2 + (wp.y * 0.01)) * 6.0;
+        const floatY = Math.cos(idleClock * 0.9 + (wp.x * 0.01)) * 3.0;
+
+        const rx = wp.x * cosR + ((wp.z || 0) + floatZ) * sinR;
+        const rz = -wp.x * sinR + ((wp.z || 0) + floatZ) * cosR;
+        const ry = wp.y + floatY;
+
+        const depth = FOCAL + rz;
+        const scale = Math.max(0.35, Math.min(2.2, FOCAL / Math.max(80, depth)));
+
+        n.tx = cx + rx * scale;
+        n.ty = ry;
+        n.z = rz;
+        n.scale3d = scale;
+      }
+    });
+
+    if (focusTarget) {
+      targetLookX = focusTarget.tx;
+      targetLookY = focusTarget.ty;
+    } else {
+      targetLookX = W / 2;
+      targetLookY = H / 2;
+    }
+
+    if (!inspectedTaskId) {
+      const collisionNodes = visNodes.filter(n =>
+        (n.type === 'task' || n.type === 'external') && n.talpha > 0.08
+      );
+      const minGap = 8;
+      for (let pass = 0; pass < 3; pass++) {
+        for (let i = 0; i < collisionNodes.length; i++) {
+          const a = collisionNodes[i];
+          for (let j = i + 1; j < collisionNodes.length; j++) {
+            const b = collisionNodes[j];
+            const dx = b.tx - a.tx;
+            const dy = b.ty - a.ty;
+            const distance = Math.hypot(dx, dy) || 0.001;
+            const required = (a.tr || a.r || 8) + (b.tr || b.r || 8) + minGap;
+            if (distance >= required) continue;
+
+            const overlap = required - distance;
+            const angle = distance > 0.01 ? Math.atan2(dy, dx) : (i * 2.39996 + j * 0.61803);
+            const pushX = Math.cos(angle) * overlap * 0.5;
+            const pushY = Math.sin(angle) * overlap * 0.5;
+
+            a.tx -= pushX;
+            b.tx += pushX;
+            a.ty -= pushY * 0.28;
+            b.ty += pushY * 0.28;
+
+            a.z = (a.z || 0) - overlap * 0.35;
+            b.z = (b.z || 0) + overlap * 0.35;
+          }
+        }
+      }
+    }
+  }
+
+  camLookX = lerp(camLookX, targetLookX, K);
+  camLookY = lerp(camLookY, targetLookY, K);
+
+  nodePool.forEach(n => {
+    n.x = lerp(n.x, n.tx, K);
+    n.y = lerp(n.y, n.ty, K);
+    n.r = lerp(n.r, n.tr, K);
+    n.boxW = lerp(n.boxW || 0, n.tboxW || 0, K);
+    n.boxH = lerp(n.boxH || 0, n.tboxH || 0, K);
+    n.alpha = lerp(n.alpha, n.talpha, K);
+  });
+
+  draw(time);
+  if (playing) tickPlayback();
+}
+
+function drawDeformedBox(ctx, x, y, bw, bh, r, progress) {
+  const halfW = lerp(r, bw / 2, progress);
+  const halfH = lerp(r, bh / 2, progress);
+  const cornerR = lerp(r, 8, progress);
+
+  ctx.beginPath();
+  ctx.moveTo(x - halfW + cornerR, y - halfH);
+  ctx.lineTo(x + halfW - cornerR, y - halfH);
+  ctx.quadraticCurveTo(x + halfW, y - halfH, x + halfW, y - halfH + cornerR);
+  ctx.lineTo(x + halfW, y + halfH - cornerR);
+  ctx.quadraticCurveTo(x + halfW, y + halfH, x + halfW - cornerR, y + halfH);
+  ctx.lineTo(x - halfW + cornerR, y + halfH);
+  ctx.quadraticCurveTo(x - halfW, y + halfH, x - halfW, y + halfH - cornerR);
+  ctx.lineTo(x - halfW, y - halfH + cornerR);
+  ctx.quadraticCurveTo(x - halfW, y - halfH, x - halfW + cornerR, y - halfH);
+  ctx.closePath();
+}
+
+function draw(time) {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(camZoom, camZoom);
+  ctx.translate(-camLookX, -camLookY);
+
+  // Draw Edges
+  visEdges.forEach(e => {
+    const fn = nodePool.get(e.fnid);
+    const tn = nodePool.get(e.tnid);
+    if (!fn || !tn || (fn.alpha < 0.05 && tn.alpha < 0.05)) return;
+
+    ctx.save();
+    ctx.globalAlpha = Math.min(fn.alpha, tn.alpha) * (e.alpha || 0.6);
+    ctx.strokeStyle = e.color || 'rgba(185, 200, 255, 0.7)';
+    ctx.lineWidth = e.soft ? 1.0 : 1.8;
+    if (e.soft) ctx.setLineDash([4, 4]);
+
+    ctx.beginPath();
+    ctx.moveTo(fn.x, fn.y);
+    ctx.lineTo(tn.x, tn.y);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  if (!focusFid) {
+    const numFeatures = FEATURES.length;
+    const nOrbits = Math.max(1, Math.floor(Math.sqrt(numFeatures)));
+    const minOrbitDist = 130;
+    const maxOrbitDist = 380;
+    const orbitDistStep = nOrbits > 1 ? (maxOrbitDist - minOrbitDist) / (nOrbits - 1) : 0;
+    
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 6]);
+    for (let o = 0; o < nOrbits; o++) {
+      const r = nOrbits === 1 ? (minOrbitDist + maxOrbitDist) / 2 : minOrbitDist + o * orbitDistStep;
+      ctx.beginPath();
+      ctx.ellipse(W / 2, H / 2, r, r * 0.65, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  const sortedNodes = [...visNodes].sort((a, b) => (a.z || 0) - (b.z || 0));
+
+  sortedNodes.forEach(n => {
+    if (n.alpha < 0.02) return;
+    const isInspectedCenter = (inspectedTaskId === n.id);
+
+    if (n.type === 'star') {
+      ctx.save();
+      ctx.globalAlpha = n.alpha;
+      const grad = ctx.createRadialGradient(n.x, n.y, 2, n.x, n.y, n.r * 2.2);
+      grad.addColorStop(0, '#fef08a');
+      grad.addColorStop(0.4, '#eab308');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = '#fef08a';
+      ctx.fill();
+      ctx.restore();
+
+    } else if (n.type === 'feature') {
+      ctx.save();
+      ctx.globalAlpha = n.alpha;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = n.color;
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(n.label, n.x, n.y);
+
+      if (n.sublabel && !inspectedTaskId) {
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '9px Inter, sans-serif';
+        ctx.fillText(n.sublabel, n.x, n.y + n.r + 12);
+      }
+      ctx.restore();
+
+    } else {
+      const isDeforming = (n.boxW > 1);
+      const deformProgress = Math.min(1.0, Math.max(0, n.boxW / (n.tboxW || 430)));
+      const drawR = focusFid ? n.r * (n.scale3d || 1.0) : n.r;
+
+      ctx.save();
+      ctx.globalAlpha = n.alpha;
+
+      if (isDeforming) {
+        const curM = currentMarks[n.id] || n.mark || ' ';
+        const th = TASK_HISTORY[n.id] || {};
+
+        ctx.shadowColor = isInspectedCenter ? 'rgba(56, 189, 248, 0.45)' : 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = isInspectedCenter ? 24 : 12;
+
+        drawDeformedBox(ctx, n.x, n.y, n.boxW, n.boxH, drawR, deformProgress);
+        ctx.fillStyle = isInspectedCenter ? 'rgba(15, 23, 42, 0.95)' : 'rgba(30, 41, 59, 0.92)';
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = isInspectedCenter ? '#38bdf8' : 'rgba(255,255,255,0.20)';
+        ctx.lineWidth = isInspectedCenter ? 2.2 : 1.4;
+        ctx.stroke();
+
+        if (deformProgress > 0.45) {
+          ctx.save();
+          const pad = 14;
+          const leftX = n.x - n.boxW / 2 + pad;
+          const topY = n.y - n.boxH / 2 + pad;
+          const rightX = n.x + n.boxW / 2 - pad;
+
+          if (isInspectedCenter && n.boxH > 140) {
+            // ── Comprehensive Task Digest Layout ─────────────────────────────
+            // 1. Header: Task ID & Status Badge
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12.5px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(n.label, leftX, topY);
+
+            const statusLabel = MARK_LABEL[curM] || curM;
+            const statusBg = MARK_COLOR[curM] || '#64748b';
+            ctx.font = 'bold 9.5px Inter, sans-serif';
+            const sWidth = ctx.measureText(statusLabel).width + 12;
+            const badgeX = rightX - sWidth;
+            
+            ctx.fillStyle = statusBg;
+            ctx.beginPath();
+            ctx.roundRect(badgeX, topY - 2, sWidth, 18, 4);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.fillText(statusLabel, badgeX + sWidth / 2, topY + 2);
+
+            // 2. Full Task Title (multi-line wrapped)
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            const maxTextW = n.boxW - pad * 2;
+            const fullTitle = n.text || '';
+            const words = fullTitle.split(' ');
+            let line = '';
+            let lineY = topY + 22;
+            let lineCount = 0;
+
+            for (let w = 0; w < words.length; w++) {
+              const testLine = line + words[w] + ' ';
+              if (ctx.measureText(testLine).width > maxTextW && w > 0) {
+                ctx.fillText(line, leftX, lineY);
+                line = words[w] + ' ';
+                lineY += 14;
+                lineCount++;
+                if (lineCount >= 2) {
+                  line += '...';
+                  break;
+                }
+              } else {
+                line = testLine;
+              }
+            }
+            ctx.fillText(line, leftX, lineY);
+            lineY += 18;
+
+            // 3. Task Description Summary
+            if (n.description && n.boxH > 180) {
+              ctx.font = '9.5px Inter, sans-serif';
+              ctx.fillStyle = '#94a3b8';
+              const cleanDesc = n.description.replace(/^-\s*/, '').replace(/\n/g, ' ');
+              const descWords = cleanDesc.split(' ');
+              let dLine = '';
+              let dCount = 0;
+              for (let dw = 0; dw < descWords.length; dw++) {
+                const testD = dLine + descWords[dw] + ' ';
+                if (ctx.measureText(testD).width > maxTextW && dw > 0) {
+                  ctx.fillText(dLine, leftX, lineY);
+                  dLine = descWords[dw] + ' ';
+                  lineY += 13;
+                  dCount++;
+                  if (dCount >= 2) {
+                    dLine += '...';
+                    break;
+                  }
+                } else {
+                  dLine = testD;
+                }
+              }
+              ctx.fillText(dLine, leftX, lineY);
+              lineY += 16;
+            }
+
+            // 4. Change History (1st line of git log for state changes)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.10)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(leftX, lineY);
+            ctx.lineTo(rightX, lineY);
+            ctx.stroke();
+            lineY += 6;
+
+            ctx.font = 'bold 9px Inter, sans-serif';
+            ctx.fillStyle = '#60a5fa';
+            ctx.fillText('STATE CHANGE GIT HISTORY:', leftX, lineY);
+            lineY += 13;
+
+            const changeEntries = (th.changes && th.changes.length) ? th.changes : [
+              { date: th.created || 'Init', hash: '—', mark: curM, msg: 'Initial declaration' }
+            ];
+
+            const recentChanges = changeEntries.slice(-2);
+            recentChanges.forEach(ch => {
+              ctx.fillStyle = MARK_COLOR[ch.mark] || '#64748b';
+              ctx.beginPath();
+              ctx.arc(leftX + 4, lineY + 5, 3.5, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = '#f1f5f9';
+              ctx.font = '9px Inter, monospace';
+              const headTag = `[${ch.mark}] ${ch.hash}`;
+              ctx.fillText(headTag, leftX + 13, lineY);
+
+              ctx.font = '9px Inter, sans-serif';
+              ctx.fillStyle = '#94a3b8';
+              const maxMsgW = maxTextW - 85;
+              let gitMsg = ch.msg || '';
+              if (ctx.measureText(gitMsg).width > maxMsgW) {
+                while (gitMsg.length > 5 && ctx.measureText(gitMsg + '...').width > maxMsgW) {
+                  gitMsg = gitMsg.slice(0, -1);
+                }
+                gitMsg += '...';
+              }
+              ctx.fillText(gitMsg, leftX + 78, lineY);
+              lineY += 13;
+            });
+
+          } else {
+            // Compact relative card (Predecessor / Successor)
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 10px Inter, sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText(n.label, leftX, topY);
+
+            ctx.fillStyle = MARK_COLOR[curM] || '#64748b';
+            ctx.beginPath();
+            ctx.arc(rightX - 4, topY + 6, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.font = '9.5px Inter, sans-serif';
+            const shortText = (n.text || '').slice(0, 36) + ((n.text || '').length > 36 ? '...' : '');
+            ctx.fillText(shortText, leftX, topY + 16);
+          }
+
+          ctx.restore();
+        }
+
+      } else {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, drawR, 0, Math.PI * 2);
+        ctx.fillStyle = n.color;
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.0;
+        ctx.stroke();
+
+        if (focusFid) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.label, n.x, n.y);
+
+          if (n.text && !inspectedTaskId) {
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '8px Inter, sans-serif';
+            ctx.fillText(n.text.slice(0, 24), n.x, n.y + drawR + 9);
+          }
+        }
+      }
+      ctx.restore();
+    }
+  });
+
+  updateAndDrawVanishingEffects();
+  ctx.restore();
+}
+
+function drawScrubChart() {
+  const W_chart = scrubChart.width;
+  const H_chart = scrubChart.height;
+  if (!W_chart || !H_chart) return;
+  scrubCtx.clearRect(0, 0, W_chart, H_chart);
+
+  const nPoints = TIMELINE.length;
+  if (nPoints < 2) return;
+
+  const metrics = TIMELINE.map(s => {
+    const marks = s.marks || {};
+    let done = 0, created = Object.keys(marks).length;
+    Object.values(marks).forEach(m => { if (m === 'x') done++; });
+    return { created, done, live: created - done };
+  });
+
+  let maxVal = 1;
+  metrics.forEach(m => { maxVal = Math.max(maxVal, m.created); });
+
+  const getX = i => (i / (nPoints - 1)) * (W_chart - 16) + 8;
+  const getY = v => H_chart - 4 - (v / maxVal) * (H_chart - 8);
+
+  // Live area
+  scrubCtx.fillStyle = 'rgba(255, 255, 255, 0.30)';
+  scrubCtx.beginPath();
+  for (let i = 0; i < nPoints; i++) {
+    const x = getX(i);
+    const yCreated = getY(metrics[i].created);
+    if (i === 0) scrubCtx.moveTo(x, yCreated);
+    else scrubCtx.lineTo(x, yCreated);
+  }
+  for (let i = nPoints - 1; i >= 0; i--) {
+    const x = getX(i);
+    const yDone = getY(metrics[i].done);
+    scrubCtx.lineTo(x, yDone);
+  }
+  scrubCtx.closePath();
+  scrubCtx.fill();
+
+  // Created (red)
+  scrubCtx.strokeStyle = '#ef4444';
+  scrubCtx.lineWidth = 1.8;
+  scrubCtx.beginPath();
+  for (let i = 0; i < nPoints; i++) {
+    const x = getX(i), y = getY(metrics[i].created);
+    if (i === 0) scrubCtx.moveTo(x, y);
+    else scrubCtx.lineTo(x, y);
+  }
+  scrubCtx.stroke();
+
+  // Done (green)
+  scrubCtx.strokeStyle = '#22c55e';
+  scrubCtx.lineWidth = 1.8;
+  scrubCtx.beginPath();
+  for (let i = 0; i < nPoints; i++) {
+    const x = getX(i), y = getY(metrics[i].done);
+    if (i === 0) scrubCtx.moveTo(x, y);
+    else scrubCtx.lineTo(x, y);
+  }
+  scrubCtx.stroke();
+}
+
+// ── Immediate Navigation & Keyboard Engine ────────────────────────────────
+function handleInspectorKeyboardNav(key) {
+  const f = featureMap.get(focusFid); if (!f) return;
+  const curTask = taskMap.get(inspectedTaskId); if (!curTask) return;
+
+  const preds = (curTask.prereqs || []).map(p => p.to || p).filter(id => taskMap.has(id));
+  const succs = (f.tasks || []).filter(t => (t.prereqs || []).some(pr => (pr.to || pr) === inspectedTaskId)).map(t => t.id);
+  const siblings = (f.tasks || []).map(t => t.id);
+
+  if (key === 'ArrowUp') {
+    if (preds.length > 0) {
+      inspectedTaskId = preds[0];
+      rebuildVis();
+    }
+  } else if (key === 'ArrowDown') {
+    if (succs.length > 0) {
+      inspectedTaskId = succs[0];
+      rebuildVis();
+    }
+  } else if (key === 'ArrowLeft' || key === 'ArrowRight') {
+    const dir = (key === 'ArrowRight') ? 1 : -1;
+    const curPos = siblings.indexOf(inspectedTaskId);
+    if (curPos !== -1) {
+      const nextPos = (curPos + dir + siblings.length) % siblings.length;
+      inspectedTaskId = siblings[nextPos];
+      rebuildVis();
+    }
+  } else if (key === 'Escape') {
+    inspectedTaskId = null;
+    targetZoom = 1.0;
+    rebuildVis();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (inspectedTaskId) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(e.key)) {
+      handleInspectorKeyboardNav(e.key);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  if (e.key === 'ArrowUp') {
+    if (!focusFid) targetZoom = Math.min(MAX_ZOOM, targetZoom * 1.18);
+    e.preventDefault();
+  } else if (e.key === 'ArrowDown') {
+    if (!focusFid) targetZoom = Math.max(MIN_ZOOM, targetZoom / 1.18);
+    e.preventDefault();
+  } else if (e.key === 'ArrowLeft') {
+    if (focusFid) targetDetailRotY -= Math.PI / 16;
+    else { ringAngle -= Math.PI / 16; }
+    e.preventDefault();
+  } else if (e.key === 'ArrowRight') {
+    if (focusFid) targetDetailRotY += Math.PI / 16;
+    else { ringAngle += Math.PI / 16; }
+    e.preventDefault();
+  } else if (e.key === 'Enter') {
+    if (focusFid && focusedNodeId && focusedNodeId.startsWith('00')) {
+      inspectedTaskId = focusedNodeId;
+      targetZoom = 1.25;
+      rebuildVis();
+      e.preventDefault();
+    }
+  } else if (e.key === 'Escape') {
+    if (inspectedTaskId) {
+      inspectedTaskId = null;
+      targetZoom = 1.0;
+      rebuildVis();
+    } else if (focusFid) {
+      focusFid = null;
+      focusedNodeId = null;
+      targetZoom = 1.0;
+      applySnapshot(curIdx);
+    }
+    e.preventDefault();
+  }
+});
+
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let didDrag = false;
+
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0) {
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    didDrag = false;
+  }
+});
+
+window.addEventListener('mouseup', () => { isDragging = false; });
+
+canvas.addEventListener('mousemove', e => {
+  if (isDragging) {
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    if (Math.hypot(dx, dy) > 4) didDrag = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+
+    if (focusFid) {
+      targetDetailRotY += dx * 0.008;
+    } else {
+      ringAngle += dx * 0.005;
+    }
+  }
+});
+
+canvas.addEventListener('click', e => {
+  if (didDrag) return;
+  const rect = canvas.getBoundingClientRect();
+  const rawX = e.clientX - rect.left;
+  const rawY = e.clientY - rect.top;
+
+  const worldX = (rawX - W/2) / camZoom + camLookX;
+  const worldY = (rawY - H/2) / camZoom + camLookY;
+
+  let clickedNode = null;
+  let bestDist = Infinity;
+  visNodes.forEach(n => {
+    let hitR = Math.max(n.r + 14, 22);
+    if (n.boxW > 1) {
+      const dx = Math.abs(n.x - worldX);
+      const dy = Math.abs(n.y - worldY);
+      if (dx <= n.boxW / 2 + 10 && dy <= n.boxH / 2 + 10) {
+        const d = Math.hypot(dx, dy);
+        if (d < bestDist) {
+          bestDist = d;
+          clickedNode = n;
+        }
+      }
+      return;
+    }
+
+    const dist = Math.hypot(n.x - worldX, n.y - worldY);
+    if (dist <= hitR && dist < bestDist) {
+      bestDist = dist;
+      clickedNode = n;
+    }
+  });
+
+  if (clickedNode) {
+    if (!focusFid) {
+      if (clickedNode.type === 'feature' || clickedNode.fid) {
+        focusFid = clickedNode.fid || (clickedNode.id.startsWith('F') ? clickedNode.id.slice(1) : clickedNode.id);
+        focusedNodeId = 'F' + focusFid;
+        inspectedTaskId = null;
+        targetZoom = 1.0;
+        applySnapshot(curIdx);
+      }
+    } else {
+      if (clickedNode.type === 'task') {
+        inspectedTaskId = clickedNode.id;
+        targetZoom = 1.25;
+        rebuildVis();
+      } else {
+        focusedNodeId = clickedNode.id;
+        rebuildVis();
+      }
+    }
+  }
+});
+
+backBtn.addEventListener('click', () => {
+  if (inspectedTaskId) {
+    inspectedTaskId = null;
+    targetZoom = 1.0;
+    rebuildVis();
+  } else {
+    focusFid = null;
+    focusedNodeId = null;
+    targetZoom = 1.0;
+    applySnapshot(curIdx);
+  }
+});
+
+let scrubFloat = 0;
+document.addEventListener('wheel', e => {
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && !e.shiftKey) {
+    e.preventDefault();
+    const sens = focusFid ? 0.0012 : 0.0005;
+    const clampedDelta = Math.max(-80, Math.min(80, e.deltaY));
+    const zoomFactor = Math.exp(-clampedDelta * sens);
+    targetZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, targetZoom * zoomFactor));
+    return;
+  }
+
+  e.preventDefault();
+  const rawH = e.shiftKey ? e.deltaY : e.deltaX;
+  const maxIdx = Math.max(0, TIMELINE.length - 1);
+  if (maxIdx === 0) return;
+
+  scrubFloat += (-rawH * 0.018);
+  scrubFloat = Math.max(0, Math.min(maxIdx, scrubFloat));
+  const nextIdx = Math.round(scrubFloat);
+
+  if (nextIdx !== curIdx) {
+    applySnapshot(nextIdx);
+    scrubEl.value = nextIdx;
+  }
+}, { passive: false });
+
+let playing    = true;
+let speedMs    = 1000;
+let lastPlayTs = 0;
+
+function tickPlayback() {
+  if (!playing || speedMs <= 0) return;
+  const now = performance.now();
+  if (now - lastPlayTs < speedMs) return;
+  lastPlayTs = now;
+  if (curIdx < TIMELINE.length - 1) {
+    applySnapshot(curIdx + 1);
+    scrubEl.value = curIdx;
+    scrubFloat = curIdx;
+  } else {
+    playing = false;
+  }
+}
+
+scrubEl.addEventListener('input', () => {
+  const val = +scrubEl.value;
+  scrubFloat = val;
+  applySnapshot(val);
+});
+
+document.querySelectorAll('.spd').forEach(b => {
+  b.addEventListener('click', () => {
+    const val = +b.dataset.spd;
+    if (val === 0) {
+      playing = false;
+      speedMs = 0;
+    } else {
+      playing = true;
+      speedMs = val * 1000;
+      lastPlayTs = performance.now();
+    }
+    document.querySelectorAll('.spd').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  });
+});
+
+async function boot() {
+  const status = document.getElementById('header-hint');
+  try {
+    if (!window.BacklogEvolutionCore || typeof BacklogEvolutionCore.loadFromUrls !== 'function') {
+      throw new Error('backlog-evolution-core.js failed to load');
+    }
+    if (status) status.textContent = 'Loading snapshots…';
+    const payload = await BacklogEvolutionCore.loadFromUrls();
+    FEATURES = payload.features || [];
+    TIMELINE = payload.timeline || [];
+    TASK_HISTORY = payload.task_history || {};
+    if (!FEATURES.length || !TIMELINE.length) {
+      throw new Error('evolution payload is empty');
+    }
+    initVisualizer();
+    requestAnimationFrame(frame);
+    if (status) status.textContent = 'Scroll V: Zoom · Scroll H: Scrub · Click / ↑ / ↓: Focus · Enter / Esc: Navigate';
+  } catch (err) {
+    console.error(err);
+    if (status) status.textContent = 'ERROR: ' + (err && err.message ? err.message : err);
+  }
+}
+boot();
+</script>
+</body>
+</html>
