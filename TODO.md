@@ -528,8 +528,8 @@
 - [ ] **0044-19** (task, open) Implement the branch-aware frontier query according to `docs/pipeline/frontier-query-spec.md`. **REF:** `1cd82b57f9b99c4b7583a4db1036809f1308cecb`. Claim: `TODO-benjamin-0044-19-20260829.md`. criteria=AC-001:active
 - [ ] **0044-20** (task, open) PREREQ: 0044-20:0044-17 Implement `DEC-0044-033` terminal-claim lifecycle, exact-set finalization, and target-policy validation compatibility. criteria=AC-001:active,AC-002:active
 - [ ] **0045** (feature, open) S-Core/AUTOSAR Feedback Loop criteria=AC-001:active
-- [ ] **0045-00** (task, open) (P0; single start) Prepare the Management gate decision, criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active
-- [ ] **0045-01** (task, open) (A/P0; fan-out A) Implement the navigable multilingual criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active
+- [x] **0045-00** (task, open) (P0; single start) Prepare the Management gate decision, criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia).
+- [x] **0045-01** (task, open) (A/P0; fan-out A) Implement the navigable multilingual criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia, Integration by obrien).
 - [ ] **0045-02** (task, open) (B/P0; fan-out B) Implement the typed GitHub event, criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active,AC-006:active,AC-007:active
 - [ ] **0045-03** (task, open) (C/P0 parent package) Verify and aggregate the criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active
 - [ ] **0045-04** (task, open) (D/P1) Implement the awarded AI proposal recipe, causal live criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active
