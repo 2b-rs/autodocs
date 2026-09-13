@@ -123,7 +123,7 @@ def parse_todo_markdown(text):
             if rest.startswith(":"):
                 rest = rest[1:].strip()
             prefix = tid.split("-", 1)[0]
-            feature = by_id.get(prefix) or current
+            feature = by_id.get(prefix)
             if feature is None:
                 feat = {
                     "id": prefix,

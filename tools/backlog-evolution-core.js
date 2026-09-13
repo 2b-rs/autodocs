@@ -90,7 +90,7 @@
         var rest = (mTask[3] || '').trim();
         if (rest.charAt(0) === ':') rest = rest.slice(1).trim();
         var prefix = tid.split('-')[0];
-        var feature = byId[prefix] || current;
+        var feature = byId[prefix];
         if (!feature) {
           feature = { id: prefix, name: prefix, color: PALETTE[order.length % PALETTE.length], tasks: [] };
           byId[prefix] = feature;

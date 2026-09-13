@@ -151,18 +151,25 @@ class BacklogEvolutionTest(unittest.TestCase):
 
     def test_generated_todo_without_feature_headers(self):
         text = (
+            "- [x] **0001-01** (task, open) first **Acceptance: ✓** (Integrator)\n"
+            "- [ ] **0001-02** (task, open) still open on 0001\n"
             "- [x] **0037-12** (task, open) freeze Feature 0037\n"
             "- [ ] **0037-10** (task, open) still open\n"
-            "- [x] **0037-01** (task, open) first **Acceptance: ✓** (Integrator)\n"
         )
         parsed = EVO.parse_todo_markdown(text)
+        self.assertEqual(parsed["fids"], ["0001", "0037"])
+        self.assertEqual(parsed["marks"]["0001-01"], "a")
         self.assertEqual(parsed["marks"]["0037-12"], "x")
         self.assertEqual(parsed["marks"]["0037-10"], " ")
-        self.assertEqual(parsed["marks"]["0037-01"], "a")
+        tasks_0001 = {t["id"] for f in parsed["features"] if f["id"] == "0001" for t in f["tasks"]}
+        tasks_0037 = {t["id"] for f in parsed["features"] if f["id"] == "0037" for t in f["tasks"]}
+        self.assertEqual(tasks_0001, {"0001-01", "0001-02"})
+        self.assertEqual(tasks_0037, {"0037-12", "0037-10"})
         js = _js_load_text(text)
         self.assertTrue(js["ok"], js)
+        self.assertEqual(js["fids"], ["0001", "0037"])
         self.assertEqual(js["marks"]["0037-12"], "x")
-        self.assertEqual(js["marks"]["0037-01"], "a")
+        self.assertEqual(js["marks"]["0001-01"], "a")
 
 
 if __name__ == "__main__":
