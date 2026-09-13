@@ -1080,7 +1080,7 @@ def _parse_workflow(blob: InputBlob, blobs: Mapping[str, InputBlob]) -> Tuple[Di
         findings.append(
             _make_finding("LTD-BOOT-UNKNOWN-FIELD", "bootstrap", blob.path, 1, "agent-workflow", f"unknown fields: {', '.join(unknown)}", blobs)
         )
-    exact = {"schema": "agent-workflow-bootstrap@v1", "runner_protocol": "runner-request@v1"}
+    exact = {"schema": "agent-workflow-bootstrap@v1", "runner_protocol": "runner-queue@v1"}
     for key, expected in exact.items():
         if value.get(key) != expected:
             findings.append(

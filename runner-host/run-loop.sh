@@ -21,6 +21,9 @@ NOTIFIER_OPTION=""
 SIGNAL_PID=""
 SENTINEL_TEXT="He's dead, Jim!"
 UI_OWNER_TOKEN=""
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/retirement_guard.sh
+source "$SCRIPT_DIR/lib/retirement_guard.sh"
 
 usage() {
   printf 'Usage: %s [OPTIONS] [FILE]\n\n' "$(basename "$0")"
@@ -1381,6 +1384,28 @@ while true; do
     sleep "$SLEEP_SECONDS"
     continue
   fi
+
+  # --- 0037-46.02 retirement guard: singleton admission -------------------
+  # Once the live bootstrap selector (agent-workflow.json) declares a
+  # runner_protocol other than runner-request@v1, the queue is the sole
+  # mutation authority and this singleton slot accepts no new work. The
+  # sentinel is exempt so the stop semantics keep working. The request is
+  # moved to the archive with a rejected- prefix (never executed, never
+  # silently deleted) so the submitting agent can see what happened.
+  if retirement_guard_admit "$ROOT_DIR" "$RUN_SCRIPT_PATH" "$ARCHIVE_DIR" "$SENTINEL_TEXT"; then
+    :
+  else
+    guard_status=$?
+    printf '[%s] singleton admission result=%s archive=%s\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S %Z')" "$guard_status" "${RETIREMENT_GUARD_ARCHIVE_PATH:-<none>}" >&2
+    if (( guard_status == RETIREMENT_GUARD_RETIRED || guard_status == RETIREMENT_GUARD_FAILOVER_REQUIRED )); then
+      sleep "$SLEEP_SECONDS"
+      continue
+    fi
+    printf 'error: retirement guard could not park request: %s\n' "$RUN_SCRIPT_PATH" >&2
+    exit "$guard_status"
+  fi
+  # -------------------------------------------------------------------------
 
   if ! chmod u+x "$RUN_SCRIPT_PATH"; then
     printf 'error: failed to make watched script executable: %s\n' "$RUN_SCRIPT_PATH" >&2

@@ -221,6 +221,44 @@ python3 -m unittest _src.tests.test_legacy_handoff_manifest
 Adding a legacy mechanism to `tools.md` without adding a primitive here fails rule `LHM074`;
 two primitives claiming one capability fail `LHM048`/`LHM061`.
 
+## Activation record — `0037-46.02` (2026-08-23, append-only)
+
+The epoch bump and the retirement of new singleton submissions have been
+**executed**. This section records the durable facts; the pre-activation text
+above is retained unchanged as the hand-over contract it was.
+
+- **Epoch bump:** `agent-workflow.json` declares `runner-queue@v1` since commit
+  `10712ee8d` (branch `0037-46.02-bump-kathryn`, based on `67edb1bc0`).
+- **Queue success, live (not fixture):** round-trip
+  `req-0037-46.02-live-1` (`runner.discovery@v1`, succeeded, result digest
+  `sha256:7ae9ad90bcc4…`) and a real mutation `req-0037-46.02-live-2`
+  (`git.base-branch@v1`, succeeded, created `refs/heads/0037-46.02-queue-proof`
+  at exactly the expected tip, result digest `sha256:98a069e32349…`). A
+  mis-declared envelope (`read_only_discovery` with a write scope) was rejected
+  at publish time by the draft schema — the guard chain works in live operation.
+- **Queue success, fixture:** concurrency with a synchronized-start barrier and
+  fully overlapping execution windows, crash-lease reclaim, governance-scope and
+  scope-collision rejection — evidence with SHA-256 sums under
+  `docs/campaign-evidence/0037-46.02-20260823/` (commit `67edb1bc0`).
+- **Last accepted singleton request:** `req-0037-46.02-commit-evidence-1`,
+  archived as `output/run-archive/run-2026-08-23_10-27-22-n0013.*` (PASS,
+  exit 0). Every later slot content was a stop sentinel, never an accepted
+  request.
+- **New singleton submissions are rejected:** `runner-host/run-loop.sh` now
+  reads the live selector before accepting work; any `runner_protocol` other
+  than `runner-request@v1` moves the submission unexecuted to
+  `output/run-archive/rejected-<stamp>-run.sh` with a written rejection notice
+  pointing at the `.runner/` queue. The stop sentinel stays exempt, and a
+  missing selector deliberately falls back to the old behaviour so the tested
+  rollback path (below) can never be locked out by a corrupted selector.
+- **Rollback retained, not retired:** `_src/tools/runner_protocol_rollback.py`
+  (three failure stores, byte-identical restore proofs) stays executable for
+  the whole activation window. If it restores `runner-request@v1`, the
+  singleton accepts work again — verified against the new guard. No
+  `retirement-trigger` artifact has been *removed*: every `removal_condition`
+  above (notably `0038-16.02`'s proof and `0037-46.02` terminality) is still
+  open, and `evidence.run-archive` is never removed.
+
 ## Related
 
 - [`runner-transaction.md`](runner-transaction.md) — the legacy transaction bridge itself
