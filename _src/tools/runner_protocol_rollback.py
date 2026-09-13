@@ -1,179 +1,57 @@
 #!/usr/bin/env python3
-"""Automatic singleton+epoch rollback for 0037-46.02 (pre-switch proof).
-
-The helper snapshots the legacy selector/service pair, injects a controlled
-post-switch failure, and restores the exact prior bytes.  The three named
-failure stores model the distinct points at which activation must fail closed:
-health after switching, post-switch verification, and exclusive-mutation
-validation.
-"""
-
+"""Dormant digest-bound rollback executor; it has no admission/deployment call site."""
 from __future__ import annotations
-
-import argparse
-import hashlib
-import json
-import os
+import argparse,base64,hashlib,json,os,time
 from pathlib import Path
 from typing import Any
-
-SINGLETON_PROTOCOL = "runner-request@v1"
-PRIOR_EPOCH = "legacy-writable"
-SELECTOR_NAME = "agent-workflow.json"
-SERVICE_NAME = "issues/_policy/runner-service.json"
-INJECTED_PROTOCOL = "runner-queue@v1"
-INJECTED_EPOCH = "issue-store-writable"
-
-HEALTH_AFTER_SWITCH = "health_after_switch"
-POST_SWITCH_VERIFICATION = "post_switch_verification"
-EXCLUSIVE_MUTATION = "exclusive_mutation"
-FAILURE_STORES = (
-    HEALTH_AFTER_SWITCH,
-    POST_SWITCH_VERIFICATION,
-    EXCLUSIVE_MUTATION,
-)
-
-
-def sha256_bytes(data: bytes) -> str:
-    return "sha256:" + hashlib.sha256(data).hexdigest()
-
-
-def read_bytes(path: Path) -> bytes:
-    return path.read_bytes()
-
-
-def atomic_write(path: Path, data: bytes) -> None:
-    tmp = path.with_name(path.name + ".rollback-tmp")
-    tmp.write_bytes(data)
-    os.replace(tmp, path)
-
-
-def git_rev_parse(repo: Path) -> str:
-    head = repo / ".git"
-    if head.is_file():
-        text = head.read_text(encoding="utf-8").strip()
-        gitdir = Path(text.split(":", 1)[1].strip()) if text.startswith("gitdir:") else head
-    else:
-        gitdir = head
-    return (gitdir / "HEAD").read_text(encoding="utf-8").strip()
-
-
-def snapshot_file(repo: Path, rel: str) -> dict[str, Any]:
-    path = repo / rel
-    data = read_bytes(path)
-    return {"path": rel, "digest": sha256_bytes(data), "bytes": len(data), "payload": data}
-
-
-def selector_fields(data: bytes) -> dict[str, str]:
-    obj = json.loads(data.decode("utf-8"))
-    return {
-        "runner_protocol": str(obj.get("runner_protocol", "")),
-        "authority_epoch": str(obj.get("authority_epoch", "")),
-        "write_phase": str(obj.get("write_phase", "")),
-    }
-
-
-def capture(repo: Path) -> dict[str, Any]:
-    selector = snapshot_file(repo, SELECTOR_NAME)
-    service = snapshot_file(repo, SERVICE_NAME)
-    return {
-        "head_ref": git_rev_parse(repo),
-        "selector": {key: selector[key] for key in ("path", "digest", "bytes")},
-        "service": {key: service[key] for key in ("path", "digest", "bytes")},
-        "fields": selector_fields(selector["payload"]),
-        "_selector_payload": selector["payload"],
-        "_service_payload": service["payload"],
-    }
-
-
-def restore(repo: Path, snap: dict[str, Any]) -> None:
-    """Restore both protected files exactly, atomically per file."""
-    atomic_write(repo / SELECTOR_NAME, snap["_selector_payload"])
-    atomic_write(repo / SERVICE_NAME, snap["_service_payload"])
-
-
-def inject_failed_activation(repo: Path, failure_store: str | None = None) -> dict[str, str]:
-    """Inject a queue selector state representing a controlled failed switch.
-
-    ``failure_store`` selects a required fail-closed gate.  The selector carries
-    the store only while injected; ``restore`` returns it byte-for-byte to its
-    legacy singleton state.
-    """
-    if failure_store is not None and failure_store not in FAILURE_STORES:
-        raise ValueError(f"unknown failure store: {failure_store}")
-    path = repo / SELECTOR_NAME
-    obj = json.loads(path.read_text(encoding="utf-8"))
-    obj["runner_protocol"] = INJECTED_PROTOCOL
-    obj["authority_epoch"] = INJECTED_EPOCH
-    obj["write_phase"] = INJECTED_EPOCH
-    if failure_store is not None:
-        obj["activation_failure_store"] = failure_store
-    atomic_write(path, (json.dumps(obj, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8"))
-    return selector_fields(path.read_bytes())
-
-
-def verify_restored(before: dict[str, Any], after: dict[str, Any]) -> list[str]:
-    errors: list[str] = []
-    if after["fields"]["runner_protocol"] != SINGLETON_PROTOCOL:
-        errors.append("protocol-not-singleton")
-    if after["fields"]["authority_epoch"] != PRIOR_EPOCH:
-        errors.append("epoch-not-prior")
-    if after["selector"]["digest"] != before["selector"]["digest"]:
-        errors.append("selector-digest-mismatch")
-    if after["service"]["digest"] != before["service"]["digest"]:
-        errors.append("service-digest-mismatch")
-    if after["head_ref"] != before["head_ref"]:
-        errors.append("head-ref-changed")
-    return errors
-
-
-def prove(repo: Path, failure_store: str | None = None) -> dict[str, Any]:
-    """Prove one named failure store rolls back selector and service bytes."""
-    before = capture(repo)
-    injected: dict[str, str] | None = None
-    after: dict[str, Any] | None = None
-    errors: list[str] = []
-    try:
-        if before["fields"]["runner_protocol"] != SINGLETON_PROTOCOL:
-            raise RuntimeError("precondition: singleton protocol not active")
-        if before["fields"]["authority_epoch"] != PRIOR_EPOCH:
-            raise RuntimeError("precondition: prior epoch not active")
-        injected = inject_failed_activation(repo, failure_store)
-        mid = capture(repo)
-        if mid["fields"]["runner_protocol"] == SINGLETON_PROTOCOL:
-            raise RuntimeError("injection did not change protocol")
-        if mid["fields"]["authority_epoch"] == PRIOR_EPOCH:
-            raise RuntimeError("injection did not change epoch")
-        restore(repo, before)
-        after = capture(repo)
-        errors = verify_restored(before, after)
-    except Exception:
-        restore(repo, before)
-        raise
-    public_before = {key: before[key] for key in ("head_ref", "selector", "service", "fields")}
-    public_after = {key: after[key] for key in ("head_ref", "selector", "service", "fields")}
-    return {
-        "ok": not errors,
-        "failure_store": failure_store,
-        "errors": errors,
-        "before": public_before,
-        "injected": injected,
-        "after": public_after,
-    }
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--prove", action="store_true")
-    parser.add_argument("--repo", default=".")
-    parser.add_argument("--failure-store", choices=FAILURE_STORES)
-    args = parser.parse_args()
-    if not args.prove:
-        parser.error("only --prove is supported")
-    result = prove(Path(args.repo).resolve(), args.failure_store)
-    print(json.dumps(result, indent=2, sort_keys=True))
-    return 0 if result["ok"] else 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
+POLICY="issues/_policy/runner-protocol-rollback-v1.json"; MARKER=".runner/rollback-v1.json"; LOCK=".runner/rollback-v1.lock"; BLOCKED=".runner/rollback-blocked.json"; EVENTS=".runner/rollback-events.jsonl"
+FAILURES=("digest","write","verify","lock","timeout","event")
+def sha256_bytes(data:bytes)->str:return "sha256:"+hashlib.sha256(data).hexdigest()
+def atomic_write(p:Path,data:bytes)->None:
+ p.parent.mkdir(parents=True,exist_ok=True); q=p.with_name(p.name+".rollback-tmp");q.write_bytes(data);os.replace(q,p)
+def load_bundle(repo:Path)->list[dict[str,Any]]:
+ o=json.loads((repo/POLICY).read_text()); assert o.get("schema")=="runner-protocol-rollback@v1" and o.get("lineage_commit")=="46fdd63983"
+ out=[]; seen=set()
+ for t in o.get("targets",[]):
+  d=base64.b64decode(t["base64"],validate=True)
+  if t.get("path") not in {"agent-workflow.json","issues/_policy/runner-service.json"} or t["path"] in seen or sha256_bytes(d)!=t.get("sha256"):raise ValueError("bundle digest mismatch")
+  seen.add(t["path"]);out.append({**t,"payload":d})
+ if len(out)!=2:raise ValueError("invalid targets")
+ return out
+def _event(repo:Path,event:dict[str,Any],fail:str|None=None)->None:
+ if fail=="event":raise RuntimeError("injected event failure")
+ p=repo/EVENTS;p.parent.mkdir(parents=True,exist_ok=True)
+ with p.open("a") as f:f.write(json.dumps(event,sort_keys=True)+"\n");f.flush();os.fsync(f.fileno())
+def _block(repo:Path,reason:str,marker:dict[str,Any])->dict[str,Any]:
+ s={"schema":"runner-protocol-rollback-blocked@v1","status":"blocked","reason":reason,"marker":marker};atomic_write(repo/BLOCKED,(json.dumps(s,sort_keys=True)+"\n").encode());return s
+def execute(repo:Path,*,timeout:float=30,fail_at:str|None=None)->dict[str,Any]:
+ if fail_at not in (*FAILURES,None):raise ValueError("unknown failure injection")
+ m={"schema":"runner-protocol-rollback-marker@v1","status":"running","lineage_commit":"46fdd63983"};lock=repo/LOCK
+ try:lock.parent.mkdir(parents=True,exist_ok=True);os.mkdir(lock)
+ except FileExistsError:return _block(repo,"lock",m)
+ try:
+  if fail_at=="lock":raise RuntimeError("injected lock failure")
+  atomic_write(repo/MARKER,(json.dumps(m,sort_keys=True)+"\n").encode());_event(repo,{"event":"rollback-started"},fail_at)
+  if fail_at=="digest":raise ValueError("injected digest failure")
+  targets=load_bundle(repo);deadline=time.monotonic()+timeout
+  if fail_at=="timeout":raise TimeoutError("injected timeout failure")
+  while list((repo/".runner/claims").glob("*.lease.json")):
+   if time.monotonic()>=deadline:raise TimeoutError("active-claim drain timed out")
+   time.sleep(.01)
+  for t in sorted(targets,key=lambda x:0 if x["path"].endswith("runner-service.json") else 1):
+   if fail_at=="write":raise OSError("injected write failure")
+   atomic_write(repo/t["path"],t["payload"])
+   if fail_at=="verify" or sha256_bytes((repo/t["path"]).read_bytes())!=t["sha256"]:raise RuntimeError("restore verification failed")
+  m["status"]="restored";atomic_write(repo/MARKER,(json.dumps(m,sort_keys=True)+"\n").encode());_event(repo,{"event":"rollback-restored"},fail_at);return {"ok":True,"status":"restored","marker":m}
+ except Exception as e:
+  m.update(status="blocked",error=str(e));_block(repo,fail_at or "failure",m)
+  try:_event(repo,{"event":"rollback-blocked","reason":fail_at or "failure"})
+  except Exception:pass
+  return {"ok":False,"status":"blocked","reason":fail_at or "failure"}
+ finally:
+  try:os.rmdir(lock)
+  except OSError:pass
+def prove(repo:Path,failure_store:str|None=None)->dict[str,Any]:return execute(repo,fail_at=failure_store)
+def main()->int:
+ p=argparse.ArgumentParser();p.add_argument("--repo",default=".");p.add_argument("--prove",action="store_true");p.add_argument("--failure-store",choices=FAILURES);a=p.parse_args();r=prove(Path(a.repo).resolve(),a.failure_store) if a.prove else execute(Path(a.repo).resolve());print(json.dumps(r,sort_keys=True));return 0 if r["ok"] else 1
+if __name__=="__main__":raise SystemExit(main())
