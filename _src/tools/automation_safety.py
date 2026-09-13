@@ -147,11 +147,97 @@ def _python_finding(
 
 
 def _dedupe(findings: Iterable[Finding]) -> List[Finding]:
+    """Collapse identical findings *within one source variant*.
+
+    The line number stays part of the key here on purpose: inside a single
+    version of a file, two occurrences on two different lines are two genuine
+    findings, even when their evidence text is byte-identical.  Deduplication
+    *across* the index and worktree variants of the same file is a different
+    problem with a different key -- see :func:`_merge_source_variants`.
+    """
     unique = {}
     for finding in findings:
         key = (finding.path, finding.line, finding.rule, finding.symbol, finding.evidence_sha256)
         unique[key] = finding
     return sorted(unique.values(), key=lambda item: (item.path, item.line, item.rule))
+
+
+def _code_site_key(finding: Finding) -> Tuple[str, str, str, str]:
+    """Identify a physical code site independently of its line number.
+
+    ``evidence_sha256`` is the SHA-256 of the exact evidence text -- the source
+    line for shell rules, the full AST node source span for Python rules.  It is
+    therefore invariant under a pure line move and changes as soon as the code
+    itself changes, which makes it the anchor for recognizing the same site in
+    two versions of one file.  ``path`` and ``rule`` scope it; ``symbol`` keeps
+    byte-identical statements in two different functions apart.
+
+    What it deliberately does *not* do is tell two byte-identical statements in
+    the *same* symbol apart.  That is why :func:`_merge_source_variants` unions
+    on multiplicity rather than collapsing every group to one finding.
+    """
+    return (finding.path, finding.rule, finding.symbol, finding.evidence_sha256)
+
+
+def _merge_source_variants(variants: Sequence[Sequence[Finding]]) -> List[Finding]:
+    """Union the findings of several source variants of one file.
+
+    ``_read_tracked_sources`` yields the Git *index* version of a file and, when
+    the working tree differs from it, the *worktree* version as well.  Scanning
+    both is deliberate: an uncommitted edit must not be able to hide a finding
+    that is committed, and a file that is clean in the index must not hide a
+    finding freshly introduced on disk.  Concatenating the two scans, however,
+    reported a finding that had merely *moved lines* twice, because the
+    within-variant key includes the line number (Task ``0038-31``).
+
+    The union is therefore taken per code site (see :func:`_code_site_key`) and
+    keeps, for each site, the largest number of occurrences observed in any
+    single variant::
+
+        moved finding            index 1 / worktree 1  -> 1
+        genuinely repeated code  index 2 / worktree 2  -> 2
+        introduced, uncommitted  index 0 / worktree 1  -> 1
+        removed in worktree only index 1 / worktree 0  -> 1
+
+    The representative kept for a site is the one from the earliest variant it
+    occurs in -- the index -- so an unchanged code site reports the same line
+    number whether or not the working tree happens to be dirty.  That stability
+    is what lets the counts serve as evidence; it also keeps disposition
+    matching (which is keyed on the line) identical on clean and dirty trees.
+    Extra occurrences beyond the index's count are topped up from the later
+    variant.
+
+    The top-up must never reuse a line already kept for the site: the merged
+    list still passes through the line-keyed :func:`_dedupe`, so a topped-up
+    occurrence carrying the same line as the kept representative would silently
+    collapse with it and *lose* a real finding (review round 1, finding F1:
+    index 1 / worktree 2 with the new uncommitted copy placed before the
+    original).  Choosing collision-free occurrences is always possible: within
+    one variant the occurrences of a site have pairwise distinct lines (the
+    within-variant :func:`_dedupe` guarantees it), so with ``k`` lines kept and
+    ``m > k`` occurrences in the variant, at most ``k`` of them can collide and
+    at least ``m - k`` -- exactly the number needed -- do not.
+    """
+    merged: Dict[Tuple[str, str, str, str], List[Finding]] = {}
+    order: List[Tuple[str, str, str, str]] = []
+    for variant in variants:
+        grouped: Dict[Tuple[str, str, str, str], List[Finding]] = {}
+        for finding in _dedupe(variant):
+            grouped.setdefault(_code_site_key(finding), []).append(finding)
+        for key, occurrences in grouped.items():
+            if key not in merged:
+                merged[key] = []
+                order.append(key)
+            kept = merged[key]
+            needed = len(occurrences) - len(kept)
+            if needed > 0:
+                kept_lines = {finding.line for finding in kept}
+                fresh = [f for f in occurrences if f.line not in kept_lines]
+                kept.extend(fresh[:needed])
+    result: List[Finding] = []
+    for key in order:
+        result.extend(merged[key])
+    return result
 
 
 def _call_name(node: ast.AST) -> str:
@@ -2649,6 +2735,10 @@ def _read_index_source(
 
 
 def _read_tracked_sources(root: Path, path: str) -> Tuple[List[str], Optional[Dict[str, object]]]:
+    # Ordering contract: the index version is always first. _merge_source_variants
+    # keeps the representative from the earliest variant a code site occurs in,
+    # which is what makes the index the authoritative locator in the report
+    # (see docs/pipeline/automation-safety.md, "What the gate scans").
     index_text, index_error = _read_index_source(root, path)
     if index_error or index_text is None:
         return [], index_error
@@ -2901,6 +2991,7 @@ def _assemble_report(
     policy: Optional[Dict[str, object]],
     errors: Sequence[Dict[str, object]],
     today: Optional[_datetime.date] = None,
+    sources: Optional[Dict[str, object]] = None,
 ) -> Dict[str, object]:
     policy_errors = list(errors)
     matches = {}
@@ -2943,6 +3034,11 @@ def _assemble_report(
         "root": ".",
         "scanned_files": len(scanned_paths),
         "scanned_paths": list(scanned_paths),
+        "sources": dict(sources) if sources is not None else {
+            "authoritative": "worktree",
+            "also_scanned": [],
+            "divergent_paths": [],
+        },
         "counts": {
             "findings": len(rendered),
             "unresolved_critical": unresolved_critical,
@@ -2964,18 +3060,27 @@ def scan_repository(
     paths, errors = tracked_automation_paths(root)
     findings = []
     scanned = []
+    divergent = []
     for path in paths:
         texts, read_error = _read_tracked_sources(root, path)
         if read_error:
             errors.append(read_error)
             continue
         scanned.append(path)
-        for text in texts:
-            findings.extend(scan_text(path, text))
+        if len(texts) > 1:
+            divergent.append(path)
+        findings.extend(_merge_source_variants([scan_text(path, text) for text in texts]))
     selected_policy = policy_path or (root / DEFAULT_POLICY)
     policy, load_errors = _load_repository_policy(root, selected_policy)
     errors.extend(load_errors)
-    return _assemble_report(root, _dedupe(findings), scanned, policy, errors, today=today)
+    sources = {
+        "authoritative": "index",
+        "also_scanned": ["worktree"],
+        "divergent_paths": divergent,
+    }
+    return _assemble_report(
+        root, _dedupe(findings), scanned, policy, errors, today=today, sources=sources
+    )
 
 
 def scan_explicit_paths(
@@ -3015,7 +3120,14 @@ def scan_explicit_paths(
     if policy_path is not None:
         policy, load_errors = load_policy(policy_path)
         errors.extend(load_errors)
-    return _assemble_report(root, _dedupe(findings), scanned, policy, errors, today=today)
+    sources = {
+        "authoritative": "worktree",
+        "also_scanned": [],
+        "divergent_paths": [],
+    }
+    return _assemble_report(
+        root, _dedupe(findings), scanned, policy, errors, today=today, sources=sources
+    )
 
 
 def _print_human(report: Dict[str, Any]) -> None:
@@ -3037,6 +3149,19 @@ def _print_human(report: Dict[str, Any]) -> None:
             counts["policy_errors"],
         )
     )
+    sources = report.get("sources")
+    if isinstance(sources, dict):
+        also = sources.get("also_scanned") or []
+        divergent = sources.get("divergent_paths") or []
+        print(
+            "sources: authoritative=%s also-scanned=%s divergent-paths=%d%s"
+            % (
+                sources.get("authoritative", "worktree"),
+                ",".join(str(item) for item in also) if also else "none",
+                len(divergent),
+                (" (" + ", ".join(str(item) for item in divergent) + ")") if divergent else "",
+            )
+        )
     for error in policy_errors:
         if not isinstance(error, dict):
             continue

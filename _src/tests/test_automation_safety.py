@@ -1707,6 +1707,233 @@ class AutomationSafetyDiscoveryTests(unittest.TestCase):
             self.assertTrue(any(e["code"] == "POLICY_DIVERGENCE" for e in report["policy_errors"]))
 
 
+@unittest.skipUnless(shutil.which("git"), "git is required for tracked discovery")
+class IndexWorktreeVariantMergeTests(unittest.TestCase):
+    """Task 0038-31: a finding that merely moved lines must be reported once.
+
+    ``_read_tracked_sources`` deliberately scans the Git index version *and* the
+    worktree version of a file so an uncommitted edit cannot hide a committed
+    finding.  Before this fix the two scans were concatenated and deduplicated
+    with a key that included the line number, so a finding that had only shifted
+    lines was counted twice -- inflating exactly the numbers agents copy into
+    completion evidence.
+    """
+
+    DANGER = "    subprocess.run(cmd, shell=True)\n"
+
+    @contextlib.contextmanager
+    def repository(self, committed_body):
+        """A hermetic Git repository -- never the live repository."""
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            tools = root / "_src" / "tools"
+            tools.mkdir(parents=True)
+            script = tools / "sample.py"
+            script.write_text(committed_body, encoding="utf-8")
+            (tools / "automation_safety_policy.json").write_text(
+                json.dumps({"schema_version": 1, "dispositions": []}),
+                encoding="utf-8",
+            )
+            (root / "TODO.md").write_text("# TODO\n", encoding="utf-8")
+            (root / "DONE.md").write_text("# DONE\n", encoding="utf-8")
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "Automation Test"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "automation@example.invalid"], cwd=root, check=True
+            )
+            subprocess.run(["git", "add", "_src", "TODO.md", "DONE.md"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-q", "-m", "fixture"], cwd=root, check=True)
+            yield root, script
+
+    @staticmethod
+    def body(*, leading_blank_lines=0, danger_lines=1):
+        return (
+            "import subprocess\n"
+            + "\n" * leading_blank_lines
+            + "\n\ndef danger(cmd):\n"
+            + IndexWorktreeVariantMergeTests.DANGER * danger_lines
+        )
+
+    @staticmethod
+    def sites(report, rule="AUTO001"):
+        return [
+            (finding["line"], finding["evidence_sha256"])
+            for finding in report["findings"]
+            if finding["rule"] == rule
+        ]
+
+    def test_clean_tree_reports_the_finding_once(self):
+        with self.repository(self.body()) as (root, _script):
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 1, sites)
+
+    def test_moved_finding_on_a_dirty_tree_is_reported_once(self):
+        """The reported regression: same code site, different line numbers."""
+        with self.repository(self.body()) as (root, script):
+            clean = self.sites(safety.scan_repository(root))
+            # Shift the code site down without changing it.
+            script.write_text(self.body(leading_blank_lines=3), encoding="utf-8")
+            dirty = self.sites(safety.scan_repository(root))
+
+        self.assertEqual(len(clean), 1, clean)
+        self.assertEqual(len(dirty), 1, dirty)
+        # Same physical code site: the evidence digest is identical, which is
+        # precisely why it is the cross-variant deduplication anchor.
+        self.assertEqual(clean[0][1], dirty[0][1])
+        # The index is the authoritative locator, so the line does not move
+        # merely because the working tree is dirty.
+        self.assertEqual(clean[0][0], dirty[0][0])
+
+    def test_counts_do_not_change_merely_because_the_tree_is_dirty(self):
+        with self.repository(self.body()) as (root, script):
+            clean = safety.scan_repository(root)["counts"]
+            script.write_text(self.body(leading_blank_lines=3), encoding="utf-8")
+            dirty = safety.scan_repository(root)["counts"]
+        self.assertEqual(clean, dirty)
+
+    def test_genuinely_repeated_identical_code_survives_a_line_shift(self):
+        """Multiplicity is preserved -- the dangerous direction is losing a finding."""
+        with self.repository(self.body(danger_lines=2)) as (root, script):
+            clean = self.sites(safety.scan_repository(root))
+            script.write_text(self.body(leading_blank_lines=2, danger_lines=2), encoding="utf-8")
+            dirty = self.sites(safety.scan_repository(root))
+
+        # Two byte-identical statements in one symbol: the evidence digests are
+        # equal, so a key of (path, rule, symbol, digest) alone would collapse
+        # them. Both must survive, on a clean and on a dirty tree alike.
+        self.assertEqual(len(clean), 2, clean)
+        self.assertEqual(len(dirty), 2, dirty)
+        self.assertEqual(clean[0][1], clean[1][1])
+
+    def test_worktree_only_finding_is_not_hidden_by_a_clean_index(self):
+        with self.repository(self.body()) as (root, script):
+            script.write_text(self.body(danger_lines=2), encoding="utf-8")
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_finding_removed_in_the_worktree_only_is_still_reported(self):
+        with self.repository(self.body()) as (root, script):
+            script.write_text(
+                "import subprocess\n\n\ndef danger(cmd):\n    pass\n", encoding="utf-8"
+            )
+            sites = self.sites(safety.scan_repository(root))
+        # An uncommitted edit must never be able to hide a committed finding.
+        self.assertEqual(len(sites), 1, sites)
+
+    def test_report_states_which_source_versions_were_scanned(self):
+        with self.repository(self.body()) as (root, script):
+            clean = safety.scan_repository(root)
+            script.write_text(self.body(leading_blank_lines=3), encoding="utf-8")
+            dirty = safety.scan_repository(root)
+
+        for report in (clean, dirty):
+            self.assertEqual(report["sources"]["authoritative"], "index")
+            self.assertEqual(report["sources"]["also_scanned"], ["worktree"])
+        self.assertEqual(clean["sources"]["divergent_paths"], [])
+        self.assertEqual(dirty["sources"]["divergent_paths"], ["_src/tools/sample.py"])
+
+    def test_human_output_names_the_scanned_source_versions(self):
+        with self.repository(self.body()) as (root, script):
+            script.write_text(self.body(leading_blank_lines=3), encoding="utf-8")
+            report = safety.scan_repository(root)
+        stream = io.StringIO()
+        with contextlib.redirect_stdout(stream):
+            safety._print_human(report)
+        line = next(
+            item for item in stream.getvalue().splitlines() if item.startswith("sources:")
+        )
+        self.assertIn("authoritative=index", line)
+        self.assertIn("also-scanned=worktree", line)
+        self.assertIn("_src/tools/sample.py", line)
+
+    def test_explicit_path_scan_reports_the_worktree_as_authoritative(self):
+        with self.repository(self.body()) as (root, _script):
+            report = safety.scan_explicit_paths(root, ["_src/tools/sample.py"])
+        self.assertEqual(report["sources"]["authoritative"], "worktree")
+        self.assertEqual(report["sources"]["divergent_paths"], [])
+
+    def test_new_uncommitted_copy_colliding_with_the_index_line_keeps_both(self):
+        """Review round 1, F1 (Kathryn-Kolos, 0db2a4fd9): Index 1 / Worktree 2
+        with the new copy placed so an occurrence collides with the index
+        representative's line must report 2, never 1."""
+        committed = (
+            "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER
+        )  # danger at line 6
+        with self.repository(committed) as (root, script):
+            # One blank line removed, danger doubled: worktree lines 5 AND 6 --
+            # the second worktree occurrence collides with index line 6.
+            script.write_text(
+                "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER * 2,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_new_uncommitted_copy_colliding_after_the_index_line_keeps_both(self):
+        """Neighbour of F1: copy added *after* the original while a shift makes
+        the first worktree occurrence collide with the index line."""
+        committed = (
+            "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER
+        )  # danger at line 5
+        with self.repository(committed) as (root, script):
+            # One blank line added, danger doubled: worktree lines 6 and 7 --
+            # no collision on the first, but the index representative is line 5
+            # and the top-up must still add exactly one more.
+            script.write_text(
+                "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER * 2,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_copy_removed_in_the_worktree_keeps_the_committed_pair(self):
+        """Neighbour of F1, mirrored: Index 2 / Worktree 1 must report 2."""
+        committed = "import subprocess\n\n\ndef danger(cmd):\n" + self.DANGER * 2
+        with self.repository(committed) as (root, script):
+            script.write_text(
+                "import subprocess\n\n\n\ndef danger(cmd):\n" + self.DANGER,
+                encoding="utf-8",
+            )
+            sites = self.sites(safety.scan_repository(root))
+        self.assertEqual(len(sites), 2, sites)
+
+    def test_two_code_sites_with_line_collisions_in_one_file(self):
+        """Neighbour of F1: two distinct code sites whose occurrences swap
+        lines between index and worktree must each survive once."""
+        committed = (
+            "import os\nimport subprocess\n\n\ndef danger(cmd):\n"
+            "    subprocess.run(cmd, shell=True)\n    os.system(cmd)\n"
+        )
+        with self.repository(committed) as (root, script):
+            script.write_text(
+                "import os\nimport subprocess\n\n\ndef danger(cmd):\n"
+                "    os.system(cmd)\n    subprocess.run(cmd, shell=True)\n",
+                encoding="utf-8",
+            )
+            report = safety.scan_repository(root)
+            sites = self.sites(report)
+        # Both sites survive; each is reported once, at its index line.
+        self.assertEqual(len(sites), 2, sites)
+        self.assertEqual(sorted(line for line, _digest in sites), [6, 7])
+
+    def test_code_site_key_ignores_the_line_but_not_the_code(self):
+        moved = safety.scan_text("a.py", self.body())
+        shifted = safety.scan_text("a.py", self.body(leading_blank_lines=3))
+        changed = safety.scan_text(
+            "a.py", "import subprocess\n\n\ndef danger(cmd):\n    subprocess.run(cmd, shell=1)\n"
+        )
+        keys = lambda findings, rule: {  # noqa: E731
+            safety._code_site_key(f) for f in findings if f.rule == rule
+        }
+        # A pure line move keeps the key; changing the code does not.
+        self.assertEqual(keys(moved, "AUTO001"), keys(shifted, "AUTO001"))
+        self.assertNotEqual(keys(moved, "AUTO001"), keys(changed, "AUTO001"))
+        self.assertNotEqual(
+            [f.line for f in moved if f.rule == "AUTO001"],
+            [f.line for f in shifted if f.rule == "AUTO001"],
+        )
+
+
 class RemediationBehaviorTests(unittest.TestCase):
     @staticmethod
     def write_required_build_reports(directory, validate_exit=0):

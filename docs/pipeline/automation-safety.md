@@ -11,7 +11,51 @@ python3 _src/tools/automation_safety.py
 python3 _src/tools/automation_safety.py --json
 ```
 
-A live scan discovers scripts through `git ls-files`. It inspects both index and worktree bytes whenever they differ, and falls back to the index when an unrelated worktree deletion makes a path unavailable. A staged risk therefore cannot be hidden behind safe unstaged bytes. Policy index/worktree divergence is itself a blocking error. Live scans exclude `logs/**`, `output/**`, `node_modules/**`, test files, and fixture directories. Archived scripts and fixture text are therefore not accidentally treated as executable current policy.
+A live scan discovers scripts through `git ls-files`. It inspects both index and worktree bytes whenever they differ (see *What the gate scans* below), and falls back to the index when an unrelated worktree deletion makes a path unavailable. A staged risk therefore cannot be hidden behind safe unstaged bytes. Policy index/worktree divergence is itself a blocking error. Live scans exclude `logs/**`, `output/**`, `node_modules/**`, test files, and fixture directories. Archived scripts and fixture text are therefore not accidentally treated as executable current policy.
+
+## What the gate scans
+
+A live scan reads **two versions of every tracked automation file**: the version in the Git index, and — when the working tree differs from it — the version on disk. Both are scanned and their findings are unioned. Neither version can hide a finding present in the other: an uncommitted edit cannot conceal a committed risk, and a clean index cannot conceal a risk freshly written to disk.
+
+**The index is the authoritative locator.** When the same physical code site is found in both versions, the report gives its **index** line number. A code site found *only* in the working tree is reported at its worktree line. Consequently:
+
+- the counts and the reported lines do **not** change merely because the working tree happens to be dirty, so a count can be quoted as evidence and reproduced later from the commit;
+- disposition matching — which is keyed on the exact line — behaves identically on a clean and on a dirty tree, with no change to the disposition mechanism.
+
+Every report states this explicitly in a top-level `sources` block, and the human output repeats it on one line, so a reader can always tell what was actually scanned:
+
+```json
+"sources": {
+  "authoritative": "index",
+  "also_scanned": ["worktree"],
+  "divergent_paths": ["_src/tools/publish_approved_subtree.py"]
+}
+```
+
+```text
+sources: authoritative=index also-scanned=worktree divergent-paths=1 (_src/tools/publish_approved_subtree.py)
+```
+
+`divergent_paths` names exactly the tracked automation files whose working-tree bytes differ from the index — the files for which two versions were scanned. An explicit `--path`/`--fixture` scan reads only the bytes on disk and reports `"authoritative": "worktree"` with no `also_scanned`.
+
+### Why a moved finding is counted once
+
+Findings are deduplicated at two different scopes, with two different keys.
+
+*Within* one version of a file the key is `(path, line, rule, symbol, evidence_sha256)`. The line number belongs in this key: inside a single version, two occurrences on two different lines are two genuine findings even when their evidence text is byte-identical.
+
+*Across* the index and worktree versions of one file the key is `(path, rule, symbol, evidence_sha256)` — the line number is deliberately excluded. `evidence_sha256` is the SHA-256 of the exact evidence text (the source line for shell rules, the full AST node source span for Python rules), so it is invariant under a pure line move and changes the instant the code itself changes. `path` and `rule` scope it; `symbol` keeps byte-identical statements in two different functions apart.
+
+That key cannot, by construction, tell two byte-identical statements in the *same* symbol apart. The union therefore does not collapse a group to a single finding: it keeps, for each code site, the **largest number of occurrences observed in any single version**.
+
+| case | index | worktree | reported |
+|---|---|---|---|
+| finding merely moved lines | 1 | 1 | 1 |
+| genuinely repeated identical code | 2 | 2 | 2 |
+| finding newly introduced, uncommitted | 0 | 1 | 1 |
+| finding removed in the working tree only | 1 | 0 | 1 |
+
+Before Task `0038-31` the two scans were concatenated and deduplicated with the line-bearing key alone, so a finding that had merely shifted lines was reported twice — inflating precisely the numbers agents quote in completion evidence. The regression tests for all four rows above are in `_src/tests/test_automation_safety.py::IndexWorktreeVariantMergeTests` and build hermetic Git repositories rather than measuring the live repository.
 
 Extensionless frozen bytes are scanned only when their language is explicit:
 
@@ -75,7 +119,7 @@ Every finding contains:
 - `status`: `unresolved`, `disposed`, or `advisory`;
 - an exact disposition object when status is `disposed`.
 
-JSON output is stable and includes scanned paths, counts, policy errors, and `PASS`/`FAIL`. The process exits nonzero only when at least one critical finding is unresolved or policy evaluation fails. Undispositioned high advisories remain visible for lifecycle classification and do not silently become accepted behavior. An exact policy entry may classify a high finding, but the JSON retains the finding, rationale, owner, expiry, and independently testable invariant.
+JSON output is stable and includes scanned paths, the `sources` block described under *What the gate scans*, counts, policy errors, and `PASS`/`FAIL`. The process exits nonzero only when at least one critical finding is unresolved or policy evaluation fails. Undispositioned high advisories remain visible for lifecycle classification and do not silently become accepted behavior. An exact policy entry may classify a high finding, but the JSON retains the finding, rationale, owner, expiry, and independently testable invariant.
 
 ## Narrow dispositions
 
