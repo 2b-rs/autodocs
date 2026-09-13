@@ -29,8 +29,10 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
 from lib_docmodel import (SRC, ROOT, LANGS, render_page, load_templates,
                           compare_html, iter_pages)
+import build_report_envelope as envelope
 
 WORKERS = min(12, os.cpu_count() or 12)
 
@@ -195,23 +197,20 @@ def main():
         )
     if not check:
         reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
-        os.makedirs(reports_dir, exist_ok=True)
-        finished_at = time.time()
-        report = {
-            "schema_version": "1.0", "report_kind": "html_generate", "tool": "generate.py",
-            "command": "generate.py " + " ".join(args), "inputs": langs or ["de"],
-            "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(_t0)),
-            "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
-            "duration_s": round(finished_at - _t0, 3), "exit_code": _exit_code,
-            "changed_artifacts": _changed_targets,
-            "counts": {"pages_generated_per_lang": {"de": n, **_lang_page_counts},
-                       "fallback_to_german": _fallback_by_lang, "changed_targets": len(_changed_targets)},
-            "findings": [],
-            "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
-        }
-        fn = os.path.join(reports_dir, "html_generate-%d.json" % int(finished_at))
-        with open(fn, "w", encoding="utf-8") as f:
-            json.dump(report, f, ensure_ascii=False, indent=1)
+        envelope.emit_and_write_stage(
+            reports_dir,
+            ROOT,
+            report_kind="html_generate",
+            tool="generate.py",
+            command="generate.py " + " ".join(args),
+            inputs=langs or ["de"],
+            started_at=_t0,
+            exit_code=_exit_code,
+            changed_artifacts=_changed_targets,
+            counts={"pages_generated_per_lang": {"de": n, **_lang_page_counts},
+                    "fallback_to_german": _fallback_by_lang, "changed_targets": len(_changed_targets)},
+            findings=[],
+        )
     sys.exit(_exit_code)
 
 

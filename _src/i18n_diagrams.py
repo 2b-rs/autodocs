@@ -29,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(1, str(Path(__file__).resolve().parent / "tools"))
 import lib_svgdiag as D
 import seqgen
+import build_report_envelope as envelope
 from lxml import html as LH
 from lib_i18n import I18N, LANGS, uebersetze_dot, uebersetze_seq
 
@@ -38,19 +39,19 @@ REPORTS_DIR = D.SRC.parent / "output" / "build-reports"
 
 
 def _write_report(counts, findings, exit_code, started_at, langs):
-    os.makedirs(REPORTS_DIR, exist_ok=True)
-    finished_at = time.time()
-    report = {
-        "schema_version": "1.0", "report_kind": "i18n_diagrams", "tool": "i18n_diagrams.py",
-        "command": "i18n_diagrams.py " + " ".join(langs), "inputs": langs,
-        "started_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(started_at)),
-        "finished_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(finished_at)),
-        "duration_s": round(finished_at - started_at, 3), "exit_code": exit_code,
-        "changed_artifacts": [], "counts": counts, "findings": findings,
-        "run_archive_ref": os.environ.get("RUN_ARCHIVE_REF"),
-    }
-    fn = REPORTS_DIR / ("i18n_diagrams-%d.json" % int(finished_at))
-    fn.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    envelope.emit_and_write_stage(
+        str(REPORTS_DIR),
+        str(D.SRC.parent),
+        report_kind="i18n_diagrams",
+        tool="i18n_diagrams.py",
+        command="i18n_diagrams.py " + " ".join(langs),
+        inputs=list(langs),
+        started_at=started_at,
+        exit_code=exit_code,
+        changed_artifacts=[],
+        counts=counts,
+        findings=findings,
+    )
 
 
 def render_dot_svg(text, inline):
