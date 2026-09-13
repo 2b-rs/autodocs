@@ -534,7 +534,7 @@
 - [x] **0045-03** (task, open) (C/P0 parent package) Verify and aggregate the criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia, Integration by obrien).
 - [x] **0045-04** (task, open) (D/P1) Implement the awarded AI proposal recipe, causal live criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia, Integration by obrien).
 - [x] **0045-05** (task, open) (E/P1) Implement the bounded S-Core Curator-decision UI and criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active,AC-006:active,AC-007:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia).
-- [ ] **0045-06** (task, open) (F/P0; exactly one terminal parent) Integrate the criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active,AC-006:active
+- [x] **0045-06** (task, open) (F/P0; exactly one terminal parent) Integrate the criteria=AC-001:active,AC-002:active,AC-003:active,AC-004:active,AC-005:active,AC-006:active **Acceptance: ✓** (2026-09-13, Project Lead jadzia, Integration by obrien).
 - [ ] **0046** (feature, open) Controlled Agent/Profile Feedback Lifecycle criteria=AC-001:active
 - [ ] **0046-00** (task, open) (P0; single start; Integration review: mandatory) Bind the material architecture, cross-item decision record, exact source/publication baselines, and distinct Architect scope review before operative mutation. criteria=AC-001:active
 - [ ] **0046-01** (task, open) (P0 parent package) Deliver the bounded submission and append-only feedback-record boundary. criteria=AC-001:active,AC-002:active,AC-003:active
