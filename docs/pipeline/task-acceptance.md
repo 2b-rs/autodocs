@@ -59,7 +59,9 @@ The minimum legacy rendering is:
     - **Review REF:** `<full reachable 40-hex commit of the Acceptance bookkeeping record, or the review-decision commit when bookkeeping has not yet been created>`
 ```
 
-A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process.
+A `Review REF` is mandatory exactly when an `Acceptance: ✓` record is created at an architect-declared integration checkpoint; unflagged `[x]`/`[w]` work has no acceptance record and needs no `REF`. The field binds the structured decision to the reachable review evidence commit; this checkpoint-only rule is the ordinary optional case for all other terminal work. A management override that authorizes closure without a required review is retained as its own authority record and does not fabricate `Acceptance: ✓` or a Review REF.
+
+A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process. Existing implementation/disposition REF fields remain historical evidence but are no longer prerequisites for `[x]`/`[w]`.
 
 ## Authority and separation of duties
 
