@@ -315,6 +315,7 @@
   </div>
   <div id="legend">
     <div class="leg-item"><span class="leg-dot" style="background:#22c55e"></span> Done [x]</div>
+    <div class="leg-item"><span class="leg-dot" style="background:#e2e8f0;box-shadow:0 0 6px rgba(248,250,252,0.55)"></span> Accepted ✓</div>
     <div class="leg-item"><span class="leg-dot" style="background:#38bdf8"></span> In Progress [p]</div>
     <div class="leg-item"><span class="leg-dot" style="background:#f59e0b"></span> Review [u]</div>
     <div class="leg-item"><span class="leg-dot" style="background:#64748b"></span> Open [ ]</div>
@@ -329,6 +330,7 @@ let TASK_HISTORY = {};
 
 const MARK_COLOR = {
   'x': '#22c55e',
+  'a': '#e2e8f0',
   'p': '#38bdf8',
   'u': '#f59e0b',
   ' ': '#64748b',
@@ -339,6 +341,7 @@ const MARK_COLOR = {
 
 const MARK_LABEL = {
   'x': 'Done',
+  'a': 'Accepted',
   'p': 'In Progress',
   'u': 'Needs Clarification',
   ' ': 'Open',
@@ -346,6 +349,63 @@ const MARK_LABEL = {
   'd': 'Deferred',
   '?': 'Investigating'
 };
+
+function isAccepted(mark) {
+  return mark === 'a';
+}
+
+function isComplete(mark) {
+  return mark === 'x' || mark === 'a';
+}
+
+function taskAlphaForMark(mark, dimDone, otherwise) {
+  if (isAccepted(mark)) return 1.0;
+  if (mark === 'x') return dimDone;
+  return otherwise;
+}
+
+function ensureStardust(n) {
+  if (n._stardust && n._stardust.length) return n._stardust;
+  const particles = [];
+  const count = 16;
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      ang: (i / count) * Math.PI * 2 + Math.random() * 0.35,
+      dist: 0.28 + Math.random() * 0.95,
+      speed: 0.00016 + Math.random() * 0.00032,
+      size: 0.6 + Math.random() * 1.5,
+      phase: Math.random() * Math.PI * 2,
+      blink: 0.55 + Math.random() * 1.1
+    });
+  }
+  n._stardust = particles;
+  return particles;
+}
+
+function drawAcceptedStardust(n, time, drawR) {
+  const particles = ensureStardust(n);
+  const r = Math.max(6, drawR || n.r || 8);
+  ctx.save();
+  particles.forEach(p => {
+    const ang = p.ang + time * p.speed;
+    const px = n.x + Math.cos(ang) * r * p.dist;
+    const py = n.y + Math.sin(ang) * r * p.dist * 0.72;
+    const pulse = 0.14 + 0.38 * (0.5 + 0.5 * Math.sin(time * 0.0021 * p.blink + p.phase));
+    ctx.globalAlpha = n.alpha * pulse;
+    ctx.fillStyle = 'rgba(248,250,252,0.92)';
+    ctx.beginPath();
+    ctx.arc(px, py, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = n.alpha * (0.18 + 0.12 * (0.5 + 0.5 * Math.sin(time * 0.0017)));
+  ctx.strokeStyle = 'rgba(226,232,240,0.55)';
+  ctx.lineWidth = 0.85;
+  ctx.font = 'bold 9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeText(n.label, n.x, n.y);
+  ctx.restore();
+}
 
 const PALETTE = [
   '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185',
@@ -761,7 +821,7 @@ function rebuildVis() {
       const allTasks = f.tasks || [];
       const activeTasks = allTasks.filter(t => t.id in currentMarks);
       const total = activeTasks.length || 1;
-      const done  = activeTasks.filter(t => currentMarks[t.id] === 'x').length;
+      const done  = activeTasks.filter(t => isComplete(currentMarks[t.id])).length;
 
       const fn = getOrMake('F' + fid, () => ({
         id: 'F'+fid, type:'feature', fid,
@@ -796,7 +856,7 @@ function rebuildVis() {
         tn.mark = mark;
         tn.tboxW = 0; tn.tboxH = 0;
         tn.color = MARK_COLOR[mark] || '#888';
-        tn.talpha = mark === 'x' ? 0.35 : 0.95;
+        tn.talpha = taskAlphaForMark(mark, 0.35, 0.95);
         visNodes.push(tn);
 
         const featEdgeKey = 'F' + fid + '>' + t.id;
@@ -915,7 +975,7 @@ function rebuildVis() {
         tn.tr = focusR;
         tn.tboxW = 0;
         tn.tboxH = 0;
-        tn.talpha = exists ? (mark === 'x' ? 0.35 : 1.0) : 0.15;
+        tn.talpha = exists ? taskAlphaForMark(mark, 0.35, 1.0) : 0.15;
       }
       visNodes.push(tn);
     });
@@ -999,6 +1059,8 @@ function rebuildVis() {
   edgePool.forEach(e => { if (!activeEdges.has(e.key)) e.talpha = 0; });
 }
 
+let lastAppliedMarks = {};
+
 function applySnapshot(idx) {
   curIdx = idx;
   const snap = TIMELINE[idx];
@@ -1006,6 +1068,15 @@ function applySnapshot(idx) {
 
   currentFids  = new Set(snap.fids);
   currentMarks = snap.marks || {};
+  Object.keys(currentMarks).forEach(tid => {
+    if (lastAppliedMarks[tid] === 'x' && currentMarks[tid] === 'a') {
+      const n = nodePool.get(tid);
+      if (n && n.alpha > 0.05) {
+        spawnVanishingEffect(n.x, n.y, n.r || 8, n.color || MARK_COLOR.x, n.label);
+      }
+    }
+  });
+  lastAppliedMarks = Object.assign({}, currentMarks);
 
   scrubInfo.textContent = `${snap.date} · ${snap.hash} · ${snap.msg}`;
 
@@ -1036,6 +1107,7 @@ function applySnapshot(idx) {
     if (c.type==='feat_add')  return `<div class="ce ce-fa"><span class="ctag">+feat</span>${c.fid} — ${c.name}</div>`;
     if (c.type==='feat_rem')  return `<div class="ce ce-fr"><span class="ctag">-feat</span>${c.fid}</div>`;
     if (c.type==='task_add')  return `<div class="ce ce-ta"><span class="ctag">+task</span><b>${c.tid}</b> ${c.text||''}</div>`;
+    if (c.type==='task_mark' && c.to==='a') return `<div class="ce ce-td"><span class="ctag">accepted</span><b>${c.tid}</b> ${c.text||''}</div>`;
     if (c.type==='task_mark' && c.to==='x') return `<div class="ce ce-td"><span class="ctag">done</span><b>${c.tid}</b> ${c.text||''}</div>`;
     if (c.type==='task_mark') return `<div class="ce ce-tm"><span class="ctag">${c.from}→${c.to}</span><b>${c.tid}</b> ${c.text||''}</div>`;
     return '';
@@ -1520,25 +1592,30 @@ function draw(time) {
         }
 
       } else {
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, drawR, 0, Math.PI * 2);
-        ctx.fillStyle = n.color;
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.0;
-        ctx.stroke();
+        const curM = currentMarks[n.id] || n.mark || ' ';
+        if (isAccepted(curM)) {
+          drawAcceptedStardust(n, time, drawR);
+        } else {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, drawR, 0, Math.PI * 2);
+          ctx.fillStyle = n.color;
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
 
-        if (focusFid) {
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 9px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(n.label, n.x, n.y);
+          if (focusFid) {
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 9px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(n.label, n.x, n.y);
 
-          if (n.text && !inspectedTaskId) {
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '8px Inter, sans-serif';
-            ctx.fillText(n.text.slice(0, 24), n.x, n.y + drawR + 9);
+            if (n.text && !inspectedTaskId) {
+              ctx.fillStyle = '#94a3b8';
+              ctx.font = '8px Inter, sans-serif';
+              ctx.fillText(n.text.slice(0, 24), n.x, n.y + drawR + 9);
+            }
           }
         }
       }
@@ -1562,7 +1639,7 @@ function drawScrubChart() {
   const metrics = TIMELINE.map(s => {
     const marks = s.marks || {};
     let done = 0, created = Object.keys(marks).length;
-    Object.values(marks).forEach(m => { if (m === 'x') done++; });
+    Object.values(marks).forEach(m => { if (isComplete(m)) done++; });
     return { created, done, live: created - done };
   });
 

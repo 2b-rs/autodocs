@@ -19,10 +19,14 @@ GOLDEN_GRAPH = ROOT / "_src/tests/fixtures/0037-12/golden-graph.json"
 
 
 def _js_load(path):
+    return _js_load_text(Path(path).read_text(encoding="utf-8"))
+
+
+def _js_load_text(text):
     script = r"""
 const fs = require('fs');
 const core = require(process.argv[1]);
-const text = fs.readFileSync(process.argv[2], 'utf8');
+const text = fs.readFileSync(0, 'utf8');
 try {
   const payload = core.load(text);
   process.stdout.write(JSON.stringify({
@@ -40,7 +44,8 @@ try {
 }
 """
     result = subprocess.run(
-        ["node", "-e", script, str(CORE_JS), str(path)],
+        ["node", "-e", script, str(CORE_JS)],
+        input=text,
         capture_output=True, text=True, check=False)
     if result.returncode != 0:
         raise AssertionError(result.stderr or result.stdout)
@@ -108,6 +113,30 @@ class BacklogEvolutionTest(unittest.TestCase):
         self.assertIn(("task_mark", "0001-01"), kinds)
         self.assertIn(("task_add", "0002-02"), kinds)
 
+    def test_acceptance_promotes_checkbox_to_accepted_mark(self):
+        text = (
+            "## Feature: 0001 — Alpha\n"
+            "- [x] **0001-01** First task **Acceptance: ✓** (2026-08-25, Integrator `belanna`)\n"
+            "- [x] **0001-02** Done without acceptance\n"
+        )
+        parsed = EVO.parse_todo_markdown(text)
+        self.assertEqual(parsed["marks"]["0001-01"], "a")
+        self.assertEqual(parsed["marks"]["0001-02"], "x")
+        js = _js_load_text(text)
+        self.assertTrue(js["ok"], js)
+        self.assertEqual(js["marks"]["0001-01"], "a")
+        self.assertEqual(js["marks"]["0001-02"], "x")
+
+    def test_issue_store_keeps_done_and_promotes_accepted(self):
+        self.assertEqual(EVO.lifecycle_to_mark("open", title="still in progress"), " ")
+        self.assertEqual(EVO.lifecycle_to_mark("open", prior_mark="x"), "x")
+        self.assertEqual(
+            EVO.lifecycle_to_mark("open", title="work **Acceptance: ✓** (Integrator)"),
+            "a",
+        )
+        self.assertEqual(EVO.lifecycle_to_mark("closed:completed"), "a")
+        self.assertEqual(EVO.lifecycle_to_mark("closed:archived-not-accepted"), "x")
+
     def test_visualizer_has_no_baked_timeline(self):
         html = (ROOT / "tools/backlog-evolution-visualizer.html").read_text(encoding="utf-8")
         embed = (ROOT / "tools/backlog-evolution-embed.js").read_text(encoding="utf-8")
@@ -117,6 +146,23 @@ class BacklogEvolutionTest(unittest.TestCase):
         self.assertIn("tr-backlog-evolution", embed)
         index_json = (ROOT / "_src/sources/pages/index.json").read_text(encoding="utf-8")
         self.assertIn("tr-backlog-evolution", index_json)
+        self.assertIn("drawAcceptedStardust", html)
+        self.assertIn("function isAccepted", html)
+
+    def test_generated_todo_without_feature_headers(self):
+        text = (
+            "- [x] **0037-12** (task, open) freeze Feature 0037\n"
+            "- [ ] **0037-10** (task, open) still open\n"
+            "- [x] **0037-01** (task, open) first **Acceptance: ✓** (Integrator)\n"
+        )
+        parsed = EVO.parse_todo_markdown(text)
+        self.assertEqual(parsed["marks"]["0037-12"], "x")
+        self.assertEqual(parsed["marks"]["0037-10"], " ")
+        self.assertEqual(parsed["marks"]["0037-01"], "a")
+        js = _js_load_text(text)
+        self.assertTrue(js["ok"], js)
+        self.assertEqual(js["marks"]["0037-12"], "x")
+        self.assertEqual(js["marks"]["0037-01"], "a")
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@
   var PREREQ_BLOCK_RE = /PREREQ:\s*(.+?)(?:\s*(?:\u2014|--)\s|\s*$)/;
   var PREREQ_ITEM_RE = /(\d{4}(?:-\d{2}(?:\.\d{2})?)?)\s*:\s*(\d{4}(?:-\d{2}(?:\.\d{2})?)?)/g;
   var SOFT_RE = /\(soft\b/i;
+  var ACCEPTANCE_RE = /Acceptance:\s*[✓✔]/;
   var PALETTE = [
     '#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#fb7185',
     '#34d399', '#2dd4bf', '#a78bfa', '#fb923c', '#facc15',
@@ -30,17 +31,30 @@
     if (head.indexOf('---') === 0) return true;
     if (head.indexOf('## Feature:') !== -1 || head.indexOf('# ') === 0) return true;
     if (head.indexOf('PREREQ:') !== -1 && head.indexOf('- [') !== -1) return true;
+    if (TASK_RE.test(head) || /^-\s*\[[ xup?wd]\]/im.test(head)) return true;
     return false;
   }
 
-  function lifecycleToMark(lifecycleStatus, endpointStatus) {
+  function hasAcceptance(text) {
+    return ACCEPTANCE_RE.test(String(text || ''));
+  }
+
+  function promoteAcceptedMark(mark, text) {
+    mark = String(mark || ' ').toLowerCase();
+    if (mark === 'x' && hasAcceptance(text)) return 'a';
+    return mark;
+  }
+
+  function lifecycleToMark(lifecycleStatus, endpointStatus, title, priorMark) {
     if (endpointStatus === 'missing' || endpointStatus === 'malformed') return '?';
     var status = lifecycleStatus || '';
-    if (status === 'open') return ' ';
+    if (hasAcceptance(title) || status === 'closed' || status === 'closed:completed') return 'a';
     if (status === 'in_progress') return 'p';
     if (status === 'blocked') return 'u';
     if (status === 'withdrawn') return 'w';
     if (status === 'closed' || status.indexOf('closed:') === 0) return 'x';
+    if (status === 'open' && (priorMark === 'x' || priorMark === 'a')) return priorMark;
+    if (status === 'open') return ' ';
     return '?';
   }
 
@@ -70,13 +84,19 @@
       }
       var mTask = TASK_RE.exec(line);
       TASK_RE.lastIndex = 0;
-      if (mTask && current) {
+      if (mTask) {
         var mark = String(mTask[1] || ' ').toLowerCase();
         var tid = mTask[2];
         var rest = (mTask[3] || '').trim();
         if (rest.charAt(0) === ':') rest = rest.slice(1).trim();
         var prefix = tid.split('-')[0];
         var feature = byId[prefix] || current;
+        if (!feature) {
+          feature = { id: prefix, name: prefix, color: PALETTE[order.length % PALETTE.length], tasks: [] };
+          byId[prefix] = feature;
+          order.push(prefix);
+          features.push(feature);
+        }
         var prereqs = [];
         var block = PREREQ_BLOCK_RE.exec(rest);
         PREREQ_BLOCK_RE.lastIndex = 0;
@@ -92,7 +112,7 @@
         var existing = feature.tasks.filter(function (t) { return t.id === tid; })[0];
         if (!existing) feature.tasks.push(task);
         else { existing.text = rest; existing.prereqs = prereqs; }
-        marks[tid] = mark;
+        marks[tid] = promoteAcceptedMark(mark, rest);
         current = feature;
       }
     });
@@ -113,7 +133,7 @@
       features.push(feat);
     });
     items.forEach(function (item) {
-      var mark = lifecycleToMark(item.lifecycle_status, item.endpoint_status);
+      var mark = lifecycleToMark(item.lifecycle_status, item.endpoint_status, item.title || item.name);
       if (item.level === 'feature') {
         if (item.id) marks[item.id] = mark;
         return;
@@ -149,7 +169,7 @@
     var marks = {};
     nodes.forEach(function (node) {
       if (!node.id) return;
-      marks[node.id] = lifecycleToMark(node.lifecycle_status, node.endpoint_status);
+      marks[node.id] = lifecycleToMark(node.lifecycle_status, node.endpoint_status, node.title || node.name);
       if (node.level === 'feature' || (node.level == null && String(node.id).indexOf('-') === -1)) {
         var feat = { id: node.id, name: node.id, color: PALETTE[order.length % PALETTE.length], tasks: [] };
         byId[node.id] = feat;

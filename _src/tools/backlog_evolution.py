@@ -30,6 +30,7 @@ TASK_RE = re.compile(
 PREREQ_BLOCK_RE = re.compile(r"PREREQ:\s*(.+?)(?:\s*(?:\u2014|--)\s|\s*$)")
 PREREQ_ITEM_RE = re.compile(r"(\d{4}(?:-\d{2}(?:\.\d{2})?)?)\s*:\s*(\d{4}(?:-\d{2}(?:\.\d{2})?)?)")
 SOFT_RE = re.compile(r"\(soft\b", re.I)
+ACCEPTANCE_RE = re.compile(r"Acceptance:\s*[✓✔]")
 
 PALETTE = [
     "#38bdf8", "#818cf8", "#c084fc", "#f472b6", "#fb7185",
@@ -42,12 +43,23 @@ class EvolutionError(ValueError):
     pass
 
 
-def lifecycle_to_mark(lifecycle_status, endpoint_status=None):
+def has_acceptance(text):
+    return bool(ACCEPTANCE_RE.search(text or ""))
+
+
+def promote_accepted_mark(mark, text=""):
+    mark = (mark or " ").lower()
+    if mark == "x" and has_acceptance(text):
+        return "a"
+    return mark
+
+
+def lifecycle_to_mark(lifecycle_status, endpoint_status=None, title=None, prior_mark=None):
     if endpoint_status in ("missing", "malformed"):
         return "?"
     status = lifecycle_status or ""
-    if status == "open":
-        return " "
+    if has_acceptance(title) or status in ("closed", "closed:completed"):
+        return "a"
     if status == "in_progress":
         return "p"
     if status == "blocked":
@@ -56,6 +68,10 @@ def lifecycle_to_mark(lifecycle_status, endpoint_status=None):
         return "w"
     if status == "closed" or status.startswith("closed:"):
         return "x"
+    if status == "open" and prior_mark in ("x", "a"):
+        return prior_mark
+    if status == "open":
+        return " "
     return "?"
 
 
@@ -66,6 +82,8 @@ def _looks_like_markdown(text):
     if "## Feature:" in head or head.startswith("# "):
         return True
     if "PREREQ:" in head and "- [" in head:
+        return True
+    if TASK_RE.search(head) or re.search(r"^-\s*\[[ xup\?wd]\]", head, re.I | re.M):
         return True
     return False
 
@@ -98,7 +116,7 @@ def parse_todo_markdown(text):
             current = by_id[fid]
             continue
         m_task = TASK_RE.match(line)
-        if m_task and current is not None:
+        if m_task:
             mark = m_task.group(1).lower()
             tid = m_task.group(2)
             rest = (m_task.group(3) or "").strip()
@@ -106,6 +124,17 @@ def parse_todo_markdown(text):
                 rest = rest[1:].strip()
             prefix = tid.split("-", 1)[0]
             feature = by_id.get(prefix) or current
+            if feature is None:
+                feat = {
+                    "id": prefix,
+                    "name": prefix,
+                    "color": PALETTE[len(order) % len(PALETTE)],
+                    "tasks": [],
+                }
+                by_id[prefix] = feat
+                order.append(prefix)
+                features.append(feat)
+                feature = feat
             prereqs = []
             block = PREREQ_BLOCK_RE.search(rest)
             if block:
@@ -118,7 +147,7 @@ def parse_todo_markdown(text):
                 feature["tasks"].append(task)
             else:
                 existing.update(task)
-            marks[tid] = mark
+            marks[tid] = promote_accepted_mark(mark, rest)
             current = feature
     return {"features": features, "marks": marks, "fids": [f["id"] for f in features]}
 
@@ -145,7 +174,11 @@ def _features_from_catalog(catalog):
     for item in items:
         level = item.get("level")
         nid = item.get("id")
-        mark = lifecycle_to_mark(item.get("lifecycle_status"), item.get("endpoint_status"))
+        mark = lifecycle_to_mark(
+            item.get("lifecycle_status"),
+            item.get("endpoint_status"),
+            title=item.get("title") or item.get("name"),
+        )
         if level == "feature":
             if nid:
                 marks[nid] = mark
@@ -189,7 +222,11 @@ def _features_from_graph(graph):
         nid = node.get("id")
         if not nid:
             continue
-        marks[nid] = lifecycle_to_mark(node.get("lifecycle_status"), node.get("endpoint_status"))
+        marks[nid] = lifecycle_to_mark(
+            node.get("lifecycle_status"),
+            node.get("endpoint_status"),
+            title=node.get("title") or node.get("name"),
+        )
         if node.get("level") == "feature" or (
                 node.get("level") is None and "-" not in str(nid)):
             feat = {
@@ -517,6 +554,7 @@ def build_from_repo(repo):
     prev_fids = []
     prev_marks = {}
     prev_text = {}
+    last_legacy_marks = {}
     features_by_id = {}
     last_sig = None
     for sha, date, msg in commits:
@@ -547,6 +585,12 @@ def build_from_repo(repo):
         prev_fids = parsed["fids"]
         prev_marks = parsed["marks"]
         prev_text = texts
+        last_legacy_marks.update(parsed["marks"])
+
+    live_todo = repo / "TODO.md"
+    if live_todo.is_file():
+        last_legacy_marks.update(
+            parse_todo_markdown(live_todo.read_text(encoding="utf-8"))["marks"])
 
     catalog_path = repo / "issues/_views/catalog.json"
     graph_path = repo / "issues/_views/dependency-graph.json"
@@ -558,6 +602,19 @@ def build_from_repo(repo):
         feature_groups.append(packed["features"])
         store_marks = packed["snapshot"]["marks"]
         store_fids = packed["snapshot"]["fids"]
+        items = list(catalog.get("items") or [])
+        by_id = {item.get("id"): item for item in items if item.get("id")}
+        overlaid = {}
+        for nid, mark in store_marks.items():
+            item = by_id.get(nid) or {}
+            overlaid[nid] = lifecycle_to_mark(
+                item.get("lifecycle_status"),
+                item.get("endpoint_status"),
+                title=item.get("title") or item.get("name"),
+                prior_mark=last_legacy_marks.get(nid) or prev_marks.get(nid),
+            )
+        store_marks = overlaid
+        packed["snapshot"]["marks"] = store_marks
         texts = _task_text_map(packed["features"])
         for feat in packed["features"]:
             features_by_id[feat["id"]] = feat
