@@ -210,7 +210,8 @@ class ProvisionOneTests(unittest.TestCase):
             },
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        target = Path(result.stdout.removeprefix("OK: ").split(" on ", 1)[0]).resolve()
+        ok_line = next(line for line in result.stdout.splitlines() if line.startswith("OK: "))
+        target = Path(ok_line.removeprefix("OK: ").split(" on ", 1)[0]).resolve()
         self.addCleanup(
             lambda: subprocess.run(
                 ["git", "-C", str(self.repo.root), "worktree", "remove", "--force", str(target)],
