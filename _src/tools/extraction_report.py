@@ -896,7 +896,9 @@ def cmd_render_shots(inputs):
     print("screenshots: %d" % len(ordered))
 
 
-def cmd_assemble(input_dir):
+def cmd_assemble(input_dir, *, record_provenance=False, provenance_root=None,
+                 provenance_issue="0037-26.01", provenance_criterion="AC-extraction-envelope",
+                 provenance_campaign="scrape-extraction"):
     import datetime
     raw = load_raw_records(input_dir)
     datum = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -907,6 +909,26 @@ def cmd_assemble(input_dir):
     _atomic_write_json(PAGE, seite)
     ensure_version_pages()
     verlinke_startseite(datum)
+    if record_provenance:
+        import scrape_extraction_provenance as sep
+        files = {}
+        for path in sorted(glob.glob(os.path.join(input_dir, "*.json"))):
+            rel = os.path.relpath(path, ROOT).replace("\\", "/")
+            files[rel] = Path(path).read_bytes()
+        root = Path(provenance_root) if provenance_root else Path(ROOT)
+        commit = sep.git_head_commit(Path(ROOT))
+        seite = sep.record_extraction_assemble(
+            seite,
+            input_files=files,
+            store_root=root,
+            source_commit=commit,
+            tool_commit=commit,
+            config_commit=commit,
+            issue=provenance_issue,
+            criterion=provenance_criterion,
+            campaign=provenance_campaign,
+        )
+        _atomic_write_json(PAGE, seite)
     total = sum(len(v) for v in raw.values())
     print("Extraktions-Bericht: Stand %s, %d Abweichungen ueber %d Fehlerklassen" % (datum, total, len(CATEGORIES)))
 
@@ -944,6 +966,11 @@ def main(argv=None):
 
     p = sub.add_parser("assemble")
     p.add_argument("input_dir")
+    p.add_argument("--record-provenance", action="store_true")
+    p.add_argument("--provenance-root", default=None)
+    p.add_argument("--provenance-issue", default="0037-26.01")
+    p.add_argument("--provenance-criterion", default="AC-extraction-envelope")
+    p.add_argument("--provenance-campaign", default="scrape-extraction")
 
     sub.add_parser("build")
     ns = ap.parse_args(argv)
@@ -957,7 +984,14 @@ def main(argv=None):
     elif ns.cmd == "render-shots":
         cmd_render_shots(ns.inputs)
     elif ns.cmd == "assemble":
-        cmd_assemble(ns.input_dir)
+        cmd_assemble(
+            ns.input_dir,
+            record_provenance=ns.record_provenance,
+            provenance_root=ns.provenance_root,
+            provenance_issue=ns.provenance_issue,
+            provenance_criterion=ns.provenance_criterion,
+            provenance_campaign=ns.provenance_campaign,
+        )
     return 0
 
 

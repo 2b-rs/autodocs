@@ -1,0 +1,254 @@
+{
+  "$id": "https://internal/provenance/_schema/issue-migration-report-v1.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "definitions": {
+    "artifactIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": { "$ref": "#/definitions/digest" },
+        "kind": { "enum": ["source", "candidate"] },
+        "member_count": { "minimum": 0, "type": "integer" },
+        "members_digest": { "$ref": "#/definitions/digest" },
+        "path": { "type": ["string", "null"] }
+      },
+      "required": ["kind", "path", "digest", "members_digest", "member_count"],
+      "type": "object"
+    },
+    "commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "comparison": {
+      "additionalProperties": false,
+      "properties": {
+        "checked": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "expected_digest": { "$ref": "#/definitions/digest" },
+              "match": { "type": "boolean" },
+              "observed_digest": {
+                "anyOf": [
+                  { "$ref": "#/definitions/digest" },
+                  { "type": "null" }
+                ]
+              },
+              "path": { "minLength": 1, "type": "string" }
+            },
+            "required": ["path", "expected_digest", "observed_digest", "match"],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "disposition": { "type": ["string", "null"] },
+        "mismatch_count": { "minimum": 0, "type": "integer" },
+        "status": { "enum": ["match", "mismatch", "not-supplied"] }
+      },
+      "required": ["status", "mismatch_count"],
+      "type": "object"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "disposition": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": { "minLength": 1, "type": "string" },
+        "evidence_credit": { "type": ["boolean", "null"] },
+        "source": { "pattern": "^inventory:dispositions\\[[0-9]+\\]$", "type": "string" },
+        "value": { "minLength": 1, "type": "string" }
+      },
+      "required": ["value", "authority", "evidence_credit", "source"],
+      "type": "object"
+    },
+    "finding": {
+      "additionalProperties": false,
+      "properties": {
+        "disposition": {
+          "anyOf": [
+            { "$ref": "#/definitions/disposition" },
+            { "type": "null" }
+          ]
+        },
+        "field": { "minLength": 1, "type": "string" },
+        "id": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" },
+        "item": { "minLength": 1, "type": "string" },
+        "message": { "minLength": 1, "type": "string" },
+        "rule": { "pattern": "^MIG-[A-Z0-9-]+$", "type": "string" },
+        "severity": { "enum": ["error", "warning", "info"] },
+        "source_locator": { "minLength": 1, "type": "string" }
+      },
+      "required": ["id", "rule", "severity", "item", "field", "source_locator", "message", "disposition"],
+      "type": "object"
+    },
+    "summary": {
+      "additionalProperties": false,
+      "properties": {
+        "counts_by_state": {
+          "additionalProperties": { "minimum": 0, "type": "integer" },
+          "type": "object"
+        },
+        "counts_by_type": {
+          "additionalProperties": { "minimum": 0, "type": "integer" },
+          "type": "object"
+        },
+        "hashes_by_item": {
+          "additionalProperties": { "$ref": "#/definitions/digest" },
+          "type": "object"
+        },
+        "hashes_by_state": {
+          "additionalProperties": { "$ref": "#/definitions/digest" },
+          "type": "object"
+        },
+        "hashes_by_type": {
+          "additionalProperties": { "$ref": "#/definitions/digest" },
+          "type": "object"
+        },
+        "total_items": { "minimum": 0, "type": "integer" }
+      },
+      "required": ["total_items", "counts_by_type", "counts_by_state", "hashes_by_item", "hashes_by_type", "hashes_by_state"],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "comparisons": {
+      "additionalProperties": false,
+      "properties": {
+        "archives": { "$ref": "#/definitions/comparison" },
+        "claims": { "$ref": "#/definitions/comparison" },
+        "criteria": { "$ref": "#/definitions/comparison" },
+        "definition_of_done": { "$ref": "#/definitions/comparison" },
+        "edges": { "$ref": "#/definitions/comparison" },
+        "generated_views": { "$ref": "#/definitions/comparison" },
+        "ids": { "$ref": "#/definitions/comparison" },
+        "preserved_text": { "$ref": "#/definitions/comparison" },
+        "provenance": { "$ref": "#/definitions/comparison" },
+        "refs": { "$ref": "#/definitions/comparison" },
+        "states": { "$ref": "#/definitions/comparison" }
+      },
+      "required": ["ids", "states", "edges", "criteria", "definition_of_done", "refs", "claims", "archives", "preserved_text", "provenance", "generated_views"],
+      "type": "object"
+    },
+    "decision": {
+      "additionalProperties": false,
+      "properties": {
+        "cutover_blocked": { "type": "boolean" },
+        "pass": { "type": "boolean" },
+        "unresolved_error_ids": {
+          "items": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "unresolved_warning_ids": {
+          "items": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": ["pass", "unresolved_error_ids", "unresolved_warning_ids", "cutover_blocked"],
+      "type": "object"
+    },
+    "findings": {
+      "items": { "$ref": "#/definitions/finding" },
+      "type": "array"
+    },
+    "identity": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_artifact_set": { "$ref": "#/definitions/artifactIdentity" },
+        "candidate_commit": { "$ref": "#/definitions/commit" },
+        "producing_issue": { "const": "0037-16" },
+        "report_json": {
+          "additionalProperties": false,
+          "properties": { "path": { "pattern": "^provenance/migrations/issue-store/[^/]+/report\\.json$", "type": "string" } },
+          "required": ["path"],
+          "type": "object"
+        },
+        "report_markdown": {
+          "additionalProperties": false,
+          "properties": {
+            "digest": { "$ref": "#/definitions/digest" },
+            "path": { "pattern": "^provenance/migrations/issue-store/[^/]+/report\\.md$", "type": "string" }
+          },
+          "required": ["path", "digest"],
+          "type": "object"
+        },
+        "report_schema": {
+          "additionalProperties": false,
+          "properties": {
+            "digest": { "$ref": "#/definitions/digest" },
+            "path": { "const": "provenance/_schema/issue-migration-report-v1.schema.json" },
+            "version": { "const": "1.0" }
+          },
+          "required": ["path", "version", "digest"],
+          "type": "object"
+        },
+        "source_artifact_set": { "$ref": "#/definitions/artifactIdentity" },
+        "source_commit": { "$ref": "#/definitions/commit" },
+        "tool": {
+          "additionalProperties": false,
+          "properties": {
+            "digest": { "$ref": "#/definitions/digest" },
+            "path": { "const": "_src/tools/issue_migration_report.py" },
+            "version": { "const": "1.0" }
+          },
+          "required": ["path", "version", "digest"],
+          "type": "object"
+        }
+      },
+      "required": ["producing_issue", "source_commit", "candidate_commit", "source_artifact_set", "candidate_artifact_set", "tool", "report_schema", "report_json", "report_markdown"],
+      "type": "object"
+    },
+    "integrity": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "payload_digest": { "$ref": "#/definitions/digest" }
+      },
+      "required": ["algorithm", "payload_digest"],
+      "type": "object"
+    },
+    "previous_run": {
+      "additionalProperties": false,
+      "properties": {
+        "added_finding_ids": { "items": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" }, "type": "array", "uniqueItems": true },
+        "report_digest": { "anyOf": [{ "$ref": "#/definitions/digest" }, { "type": "null" }] },
+        "resolved_finding_ids": { "items": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" }, "type": "array", "uniqueItems": true },
+        "retained_finding_ids": { "items": { "pattern": "^MIG-[0-9a-f]{16}$", "type": "string" }, "type": "array", "uniqueItems": true },
+        "run_id": { "type": ["string", "null"] }
+      },
+      "required": ["run_id", "report_digest", "added_finding_ids", "retained_finding_ids", "resolved_finding_ids"],
+      "type": "object"
+    },
+    "produced_at": { "format": "date-time", "type": "string" },
+    "run_id": { "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", "type": "string" },
+    "schema": { "const": "issue-migration-report@v1" },
+    "schema_version": { "const": "1.0" },
+    "summaries": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate": { "$ref": "#/definitions/summary" },
+        "source": { "$ref": "#/definitions/summary" }
+      },
+      "required": ["source", "candidate"],
+      "type": "object"
+    },
+    "watermarks": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_commit": { "$ref": "#/definitions/commit" },
+        "candidate_source_commit": { "$ref": "#/definitions/commit" },
+        "latest_source_commit": { "$ref": "#/definitions/commit" },
+        "self_baselined": { "type": "boolean" },
+        "stale": { "type": "boolean" }
+      },
+      "required": ["baseline_commit", "latest_source_commit", "candidate_source_commit", "stale", "self_baselined"],
+      "type": "object"
+    }
+  },
+  "required": ["schema", "schema_version", "run_id", "produced_at", "identity", "watermarks", "summaries", "comparisons", "findings", "previous_run", "decision", "integrity"],
+  "title": "issue-migration-report@v1",
+  "type": "object"
+}

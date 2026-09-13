@@ -102,11 +102,13 @@ class RunChecksProgressTests(unittest.TestCase):
         # No done line for "boom" (it raised) and no start line for "never".
         self.assertEqual(len(lines), 3)
 
-    def test_checks_constant_matches_the_12_functions_main_used_to_call_directly(self):
+    def test_checks_constant_matches_the_14_functions_main_used_to_call_directly(self):
         # Locks in check identity and order so a future edit to CHECKS is a
         # visible, intentional change rather than a silent drop/reorder.
         expected_order = [
             "check_automation_safety",
+            "check_issue_store",
+            "check_public_issue_graph",
             "check_build",
             "check_links",
             "check_langs",
