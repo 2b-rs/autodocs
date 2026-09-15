@@ -1,0 +1,15 @@
+# Claim: chain-0019-2 (Eclipse S-Core Database Import: 0019-09 -> 0019-10)
+- **offer_id**: `1789463559572-d04ba021`
+- **assignee**: `benjamin`
+- **process**: `Implementation`
+- **scope**: `0019-09 and 0019-10`
+- **branch**: `feat/chain-0019-2`
+- **worktree**: `/Users/tobias.anton/devel/autodocs/.worktrees/chain-0019-2`
+- **state**: `review`
+- **chain**: `0019-09` -> `0019-10`
+- **prerequisites**: `0019-08` (DONE / Accepted)
+- **deliverables**:
+  - `0019-09`: Generated and validated curator-authorized S-Core v0.6.0 curation/review views (REF `e56336fbec0eed3860851a85e38615b1370b7113`)
+  - `0019-10`: Published authorized views and closed v0.6.0 import campaign evidence under `docs/pipeline/aspice-level1-score-import.md` (REF `8e03946eb4f56f28ea303704fdb1656b6959503f`)
+- **tests**: 46 passed across focused S-Core suite
+- **review_ready**: true
