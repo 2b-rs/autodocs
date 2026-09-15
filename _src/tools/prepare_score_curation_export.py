@@ -28,10 +28,7 @@ REVIEW_CLIENT_SHA256 = "bd6e23ae7454e7dee4daba98a104fa76db0ef9cdf54713ef35569a6c
 STYLESHEET_SHA256 = "7fa99621f52bac786f6793024eda694f0d54454cd8715bc346292c6c5d0d133c"
 PREVIOUS_APPROVED_TREE_SHA256 = "7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283"
 PUBLIC_ROOT_FILES = frozenset({"index.html", "participate.html", "process.html", "review_request.js", "style.css", "evidence.json", "validation.json"})
-SITE = json.loads((ROOT / "_src" / "site.json").read_text(encoding="utf-8"))
-CANONICAL_LANGUAGE = SITE["sprachen"]["kanonisch"]
-PUBLIC_LANGUAGES = tuple(dict.fromkeys((CANONICAL_LANGUAGE, *SITE["sprachen"]["ziele"])))
-PUBLIC_DIRECTORIES = ("assets", "records", *PUBLIC_LANGUAGES)
+PUBLIC_DIRECTORIES = ("assets", "en", "records")
 
 
 class Links(HTMLParser):
@@ -99,13 +96,12 @@ def export_content(name: str, path: Path) -> bytes:
     data = path.read_bytes()
     if not name.endswith(".html"):
         return data
-    language_prefix = next((language for language in PUBLIC_LANGUAGES if name.startswith(language + "/")), None)
-    if language_prefix:
+    if name.startswith("en/"):
         old, new = 'href="../unresolved.html"', 'href="unresolved.html"'
     elif name.startswith("records/"):
-        old, new = 'href="../unresolved.html"', f'href="../{CANONICAL_LANGUAGE}/unresolved.html"'
+        old, new = 'href="../unresolved.html"', 'href="../en/unresolved.html"'
     else:
-        old, new = 'href="unresolved.html"', f'href="{CANONICAL_LANGUAGE}/unresolved.html"'
+        old, new = 'href="unresolved.html"', 'href="en/unresolved.html"'
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
