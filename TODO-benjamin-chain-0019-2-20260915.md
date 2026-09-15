@@ -5,7 +5,7 @@
 - **scope**: `0019-09 and 0019-10`
 - **branch**: `feat/chain-0019-2`
 - **worktree**: `/Users/tobias.anton/devel/autodocs/.worktrees/chain-0019-2`
-- **state**: `review`
+- **state**: `[x]`
 - **chain**: `0019-09` -> `0019-10`
 - **prerequisites**: `0019-08` (DONE / Accepted)
 - **deliverables**:
