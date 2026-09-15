@@ -1,0 +1,16 @@
+# Claim: chain-0019 (Eclipse S-Core Database Import: 0019-06 -> 0019-07 -> 0019-08)
+- **offer_id**: `1789462326790-08ce60f2`
+- **assignee**: `benjamin`
+- **process**: `Implementation`
+- **scope**: `0019 chain`
+- **branch**: `feat/0019-chain`
+- **worktree**: `/Users/tobias.anton/devel/autodocs/.worktrees/0019-chain`
+- **state**: `review`
+- **chain**: `0019-06` -> `0019-07` -> `0019-08`
+- **prerequisites**: `0019-05` (DONE)
+- **checkpoints**:
+  - `0019-06`: S-Core validation & campaign evidence reporting logic verified (REF `43968b25fb23bb26e236bd3f420fce0cc1eef9af`)
+  - `0019-07`: Exception candidate curation lifecycle integrated (REF `71fa107fa1786a0ee7b0538fc952684fb6b1d44c`)
+  - `0019-08`: Phase-6 validation & digest-bound curator readiness decision package committed (`docs/pipeline/eclipse-score-v0.6.0-phase6-curator-package.md`, REF `f36581f643445d74df6ab032a8217574ad5900ee`)
+- **tests**: 46 passed across focused S-Core suite (`test_score_campaign_manifest.py`, `test_score_curation_views.py`, `test_score_curator_decision.py`, `test_score_extraction_adapter.py`, `test_score_import_profile.py`, `test_score_normalization.py`, `test_score_source_snapshot.py`)
+- **review_ready**: true
