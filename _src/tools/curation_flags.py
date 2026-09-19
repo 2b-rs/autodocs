@@ -40,6 +40,7 @@ QUEUE = Path(__file__).resolve().parents[1] / "spec" / "curation-queue"
 OPEN_DIR = QUEUE / "open"
 CLAIMED_DIR = QUEUE / "claimed"
 DONE_DIR = QUEUE / "done"
+QUARANTINE_DIR = QUEUE / "quarantine"
 
 SCHEMA = "curation-flag@v1"
 
@@ -52,7 +53,7 @@ def _now():
 
 
 def _ensure_dirs():
-    for d in (OPEN_DIR, CLAIMED_DIR, DONE_DIR):
+    for d in (OPEN_DIR, CLAIMED_DIR, DONE_DIR, QUARANTINE_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
 

@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 
-ROLES = {"requester", "ai_agent", "curator", "operator", "service"}
+ROLES = {"requester", "ai_agent", "curator", "operator", "service", "moderator"}
 
 # Permitted transitions per role: role -> {action: (allowed_from_states, to_state)}
 ROLE_PERMISSIONS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
@@ -48,6 +48,16 @@ ROLE_PERMISSIONS: dict[str, dict[str, tuple[tuple[str, ...], str]]] = {
         "reject": (("proposed", "claimed", "queued"), "rejected"),
         "apply": (("accepted",), "applied"),
         "close": (("applied", "rejected"), "closed"),
+        "quarantine": (("discovered", "queued"), "quarantined"),
+        "release_quarantine": (("quarantined",), "queued"),
+        "refuse": (("quarantined", "queued"), "refused"),
+        "escalate": (("quarantined", "queued"), "escalated"),
+    },
+    "moderator": {
+        "quarantine": (("discovered", "queued"), "quarantined"),
+        "release_quarantine": (("quarantined",), "queued"),
+        "refuse": (("quarantined", "queued"), "refused"),
+        "escalate": (("quarantined", "queued"), "escalated"),
     },
     "service": {
         "submit": (("discovered",), "queued"),
