@@ -3,7 +3,7 @@ schema_version: "1.0"
 id: "0013-02"
 level: "task"
 parent: "0013"
-state: "open"
+state: "accepted"
 visibility: "internal"
 prerequisites:
   - "0013-01"
@@ -35,3 +35,6 @@ PREREQ: 0013-02:0013-01 Create and approve a versioned stakeholder-requirements 
 ## Definition of Done
 
 Imported item is represented under the disposable candidate root.
+
+## Management Decision
+Decision `decision-1789246527834-1f27fd4f` (msg `1789814945765-2c2bce2d`) approved the baseline. The `[u]` boundary is resolved.
