@@ -10,9 +10,9 @@
 | Project | `autodocs-ecu-software` |
 | Increment | `software-without-kernel` |
 | Source snapshot | exact prerequisite branch tip `0013-01@ec4d20cd1875a1b6bcdfd32f6738da0c12c8b072` |
-| Baseline status | `candidate-unapproved` |
-| Operative / agreed | `no` |
-| Approval authority | `not-assigned`; open decision `PD-0013-01-04` |
+| Baseline status | `approved` |
+| Operative / agreed | `yes` |
+| Approval authority | management (`decision-1789246527834-1f27fd4f` / msg `1789814945765-2c2bce2d`) |
 | Customer / intended-use authority | `not-assigned`; open decisions `PD-0013-01-01`, `02` |
 | Classification | `internal` |
 | Change record | `CHG-0013-02-001` |
