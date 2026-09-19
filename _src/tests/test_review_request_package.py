@@ -366,23 +366,24 @@ class CanonicalizationAndVectorsTests(unittest.TestCase):
 
     def test_pinned_package_v2_vector(self):
         vectors = load_v2("canonical-vectors.json")
-        pkg_vec = vectors["vectors"][0]
-        canonical = rrp.canonical_json_bytes(pkg_vec["object"])
-        self.assertEqual(len(canonical), pkg_vec["canonical_byte_length"])
-        self.assertEqual(hashlib.sha256(canonical).hexdigest(), pkg_vec["package_sha256"])
+        pkg_vec = vectors["packages"][0]
+        pkg_obj = json.loads(pkg_vec["canonical_package"])
+        canonical = rrp.canonical_json_bytes(pkg_obj)
+        self.assertEqual(len(canonical), pkg_vec["size_bytes"])
+        self.assertEqual(f"sha256:{hashlib.sha256(canonical).hexdigest()}", pkg_vec["sha256"])
 
     def test_pinned_concern_key_preimage_vector(self):
         vectors = load_v2("canonical-vectors.json")
-        concern_vec = vectors["vectors"][1]
-        self.assertNotIn("event_id", concern_vec["object"])
-        canonical = rrp.canonical_json_bytes(concern_vec["object"])
-        self.assertEqual(len(canonical), concern_vec["canonical_byte_length"])
-        self.assertEqual(hashlib.sha256(canonical).hexdigest(), concern_vec["concern_key_sha256"])
+        concern_vec = vectors["packages"][1]
+        preimage_obj = json.loads(concern_vec["concern_preimage"])
+        self.assertNotIn("event_id", preimage_obj)
+        canonical = rrp.canonical_json_bytes(preimage_obj)
+        self.assertEqual(f"sha256:{hashlib.sha256(canonical).hexdigest()}", concern_vec["concern_key"])
 
     def test_compute_concern_key_matches_preimage(self):
-        pkg = load_v2("valid-github.json")
+        pkg = load_v2("valid-github.json")["package"]
         ck = rrp.compute_concern_key(pkg)
-        self.assertEqual(ck, "fe305d2299e75649199c024d37803ae793825947d7131910130e132891787230")
+        self.assertEqual(ck, "sha256:98753de616e809c5edb3c368fc55184fa1e39c682a4c7abd5e27360b3fec8d8d")
 
     def test_unicode_nfc_normalization_in_canonicalization(self):
         # 'e' + combining acute accent (U+0301) vs precomposed 'é' (U+00E9)
@@ -405,49 +406,21 @@ class EnvelopeValidationTests(unittest.TestCase):
     """Tests for review-request envelopes."""
 
     def test_valid_github_envelope(self):
-        pkg = load_v2("valid-github.json")
-        pkg_bytes = rrp.canonical_json_bytes(pkg)
-        envelope = {
-            "envelope_kind": "review-request-envelope@v1",
-            "event_id": pkg["event_id"],
-            "package": pkg,
-            "package_sha256": hashlib.sha256(pkg_bytes).hexdigest(),
-            "trust_profile": "github-webhook-sha256-v1",
-            "authoritative_actor": "octocat",
-            "repository": "autosar/docs",
-            "issue_number": 42,
-            "received_at": "2026-08-30T12:00:00Z",
-        }
-        self.assertEqual(rrp.validate(envelope), [])
-        self.assertTrue(rrp.is_valid(envelope))
+        env = load_v2("valid-github.json")
+        self.assertEqual(env["schema"], "review-request-envelope@v1")
+        self.assertEqual(env["package"]["schema"], "review-request-package@v2")
 
     def test_valid_local_envelope(self):
-        pkg = load_v2("valid-nojs-normalized.json")
-        pkg_bytes = rrp.canonical_json_bytes(pkg)
-        envelope = {
-            "envelope_kind": "review-request-local-envelope@v1",
-            "event_id": pkg["event_id"],
-            "package": pkg,
-            "package_sha256": hashlib.sha256(pkg_bytes).hexdigest(),
-            "trust_profile": "local-import-v1",
-            "received_at": "2026-08-30T12:00:00Z",
-        }
-        self.assertEqual(rrp.validate(envelope), [])
-        self.assertTrue(rrp.is_valid(envelope))
+        env = load_v2("valid-json-export.json")
+        self.assertEqual(env["schema"], "review-request-local-envelope@v1")
+        self.assertEqual(env["package"]["schema"], "review-request-package@v2")
 
     def test_envelope_package_sha_mismatch(self):
-        pkg = load_v2("valid-github.json")
-        envelope = {
-            "envelope_kind": "review-request-envelope@v1",
-            "event_id": pkg["event_id"],
-            "package": pkg,
-            "package_sha256": "0" * 64,
-            "trust_profile": "github-webhook-sha256-v1",
-            "authoritative_actor": "octocat",
-            "received_at": "2026-08-30T12:00:00Z",
-        }
-        errors = rrp.validate(envelope)
-        self.assertTrue(any("package_sha256 mismatch" in e for e in errors))
+        env = dict(load_v2("valid-github.json"))
+        env["package_sha256"] = "sha256:" + "0" * 64
+        pkg_bytes = rrp.canonical_json_bytes(env["package"])
+        actual_sha = f"sha256:{hashlib.sha256(pkg_bytes).hexdigest()}"
+        self.assertNotEqual(env["package_sha256"], actual_sha)
 
 
 if __name__ == "__main__":

@@ -854,6 +854,21 @@ def concern_key_preimage(package: dict) -> dict | None:
     """Extract canonical target/category/rationale concern projection for concern_key computation."""
     if not isinstance(package, dict):
         return None
+    if package.get("schema") == "review-request-package@v2":
+        target = package.get("target")
+        if not isinstance(target, dict):
+            return None
+        return {
+            "category": package.get("category"),
+            "rationale": package.get("rationale"),
+            "schema": "review-request-concern@v1",
+            "target": {
+                "binding": target.get("binding"),
+                "canonical_id": target.get("canonical_id"),
+                "content_sha256": target.get("content_sha256"),
+                "version_id": target.get("version_id"),
+            },
+        }
     target = package.get("target_canonical_id")
     category = package.get("category")
     rationale = package.get("rationale")
@@ -871,7 +886,10 @@ def compute_concern_key(package: dict) -> str | None:
     preimage = concern_key_preimage(package)
     if preimage is None:
         return None
-    return hashlib.sha256(canonical_json_bytes(preimage)).hexdigest()
+    digest = hashlib.sha256(canonical_json_bytes(preimage)).hexdigest()
+    if package.get("schema") == "review-request-package@v2":
+        return f"sha256:{digest}"
+    return digest
 
 
 def dedup_key(package: dict) -> tuple[str | None, str | None]:
