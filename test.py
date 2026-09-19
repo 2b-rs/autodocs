@@ -49,13 +49,15 @@ def get_test_modules(layer: str = "all") -> list[str]:
     
     if layer in ("all", "review-request"):
         modules.extend([
-            "_src/tests/test_review_request_browser.py",
-            "_src/tests/test_review_request_rendering.py",
-            "_src/tests/test_review_request_ingest.py",
             "_src/tests/test_review_request_package.py",
-            "_src/tests/test_review_request_baseline_audit.py",
-            "_src/tests/test_review_request_retention.py",
             "_src/tests/test_review_request_package_v2_contract.py",
+            "_src/tests/test_review_request_ingest.py",
+            "_src/tests/test_review_request_retention.py",
+            "_src/tests/test_review_request_abuse_control.py",
+            "_src/tests/test_review_request_browser.py",
+            "_src/tests/test_review_request_browser_builder.py",
+            "_src/tests/test_review_request_rendering.py",
+            "_src/tests/test_review_request_ux_contract.py",
         ])
         
     if layer in ("all", "tools"):
