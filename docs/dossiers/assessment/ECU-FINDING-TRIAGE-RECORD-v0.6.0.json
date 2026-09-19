@@ -1,0 +1,189 @@
+{
+  "schema": "ecu-finding-triage-record@v1",
+  "triage_record_id": "ECU-TRIAGE-virtualized-automotive-ecu@software-without-kernel:v0.6.0",
+  "title": "Automotive ECU Assessment Finding Triage & Remediation Governance Record",
+  "governance": {
+    "product_id": "virtualized-automotive-ecu",
+    "project_id": "autodocs-ecu-software",
+    "baseline_id": "virtualized-automotive-ecu@software-without-kernel:v0.6.0",
+    "baseline_commit": "60d9a85",
+    "assessment_report_reference": "ECU-L1-REPORT-virtualized-automotive-ecu@software-without-kernel:v0.6.0",
+    "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+    "qa_manager": "jake (QA-Manager, Team DeepSpace9)",
+    "project_lead": "jadzia (Project Lead, Team DeepSpace9)",
+    "triage_date": "2026-09-19",
+    "issued_at": "2026-09-19T12:00:17+00:00",
+    "governance_status": "FORMALLY_TRIAGED_AND_APPROVED"
+  },
+  "triage_summary": {
+    "total_findings_triaged": 5,
+    "approved_corrections_count": 3,
+    "accepted_residuals_count": 2,
+    "blocking_nonconformances_count": 0,
+    "target_remediation_completion_date": "2026-11-15",
+    "overall_remediation_risk": "LOW_MANAGED"
+  },
+  "triaged_findings": [
+    {
+      "finding_id": "FIND-0025-01",
+      "process_id": "SWE.1",
+      "process_name": "Software Requirements Analysis",
+      "category": "OBSERVATION",
+      "title": "Automated Trace Validator Memory Footprint on Large Doxygen XML Trees",
+      "description": "During full corpus trace validation, memory usage peaked when indexing deeply nested Doxygen XML trees.",
+      "root_cause": "In-memory DOM parsing (xml.etree.ElementTree) loads entire document trees simultaneously during batch trace extraction, leading to transient memory spikes when parsing heavily annotated Doxygen XML AST exports.",
+      "impact_analysis": "Low severity. Trace extraction and verification correctness are 100% preserved. However, local CI test runs on memory-constrained development containers (<2GB RAM) experience elevated swap overhead.",
+      "owner": "julian (Requirements Engineer, Team DeepSpace9)",
+      "due_date": "2026-10-15",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "governance_decision_ref": "DEC-0025-TRIAGE-01",
+      "problem_report_links": [
+        "PR-SWE1-202610-001"
+      ],
+      "change_request_links": [
+        "CR-SWE1-202610-001"
+      ],
+      "affected_lifecycle_evidence": [
+        "EVID-SWE1-SRS-001",
+        "docs/pipeline/ecu-traceability-matrix.md",
+        "_src/tools/ecu_trace_validator.py"
+      ],
+      "required_reverification_plan": "Refactor trace extraction parser to stream XML elements via iterparse/iterfind; execute full corpus trace validation and verify identical requirement-to-code trace output while profiling peak memory consumption under 50 MB.",
+      "reverification_criteria": [
+        "Deterministic bidirectional trace equivalence between DOM and streaming parser outputs.",
+        "Peak process heap memory <= 50 MB during full corpus XML indexing.",
+        "100% pass on requirements-to-architecture and requirements-to-test trace matrix verification."
+      ],
+      "triage_status": "TRIAGED_OPEN"
+    },
+    {
+      "finding_id": "FIND-0025-02",
+      "process_id": "SWE.4",
+      "process_name": "Software Unit Verification",
+      "category": "OFI",
+      "title": "Parallelization of MC-DC Coverage Matrix Analysis in Hermetic Harness",
+      "description": "Unit verification execution runs sequentially across all 4 SWCs; parallel test runner execution could reduce execution time.",
+      "root_cause": "Unit verification harness runner (_src/tests/harness/) invokes test binaries in sequential sub-processes without leveraging multi-core executor concurrency pools.",
+      "impact_analysis": "Low severity. Verification thoroughness and coverage measurements are 100% complete. Execution turnaround time is 90s, which could be reduced to ~30s with concurrent runner scheduling.",
+      "owner": "nog (Tester, Team DeepSpace9)",
+      "due_date": "2026-10-30",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "governance_decision_ref": "DEC-0025-TRIAGE-02",
+      "problem_report_links": [
+        "PR-SWE4-202610-001"
+      ],
+      "change_request_links": [
+        "CR-SWE4-202610-001"
+      ],
+      "affected_lifecycle_evidence": [
+        "EVID-SWE4-EXEC-001",
+        "_src/tests/test_ecu_unit_verification.py"
+      ],
+      "required_reverification_plan": "Implement multiprocessing test runner pool across SWC-DIAG, SWC-TELEM, SWC-SAFETY, and SWC-CRYPTO test suites; validate bit-identical coverage logs and confirm execution elapsed time is reduced by at least 50%.",
+      "reverification_criteria": [
+        "Identical 100% Statement, 100% Branch, and 100% MC-DC coverage reports across all 4 SWCs.",
+        "Zero race conditions or mock register collision under concurrent execution.",
+        "Harness execution time <= 45 seconds on standard CI runner."
+      ],
+      "triage_status": "TRIAGED_OPEN"
+    },
+    {
+      "finding_id": "FIND-0025-03",
+      "process_id": "SUP.8",
+      "process_name": "Configuration Management",
+      "category": "OBSERVATION",
+      "title": "Automated Worktree Pruning Interval Documentation in Developer Onboarding",
+      "description": "Worktree lifecycle is strictly enforced by tools, but developer onboarding guide should explicitly document the 7-day stale branch reap rule.",
+      "root_cause": "Automated worktree cleanup tooling was introduced in CI infrastructure, but corresponding user-facing operational guidelines in docs/pipeline/ were not synchronized.",
+      "impact_analysis": "Low severity. No repository corruption or unmanaged branches observed. Developer onboarding clarity will be enhanced.",
+      "owner": "obrien (Integrator, Team DeepSpace9)",
+      "due_date": "2026-10-15",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "governance_decision_ref": "DEC-0025-TRIAGE-03",
+      "problem_report_links": [
+        "PR-SUP8-202610-001"
+      ],
+      "change_request_links": [
+        "CR-SUP8-202610-001"
+      ],
+      "affected_lifecycle_evidence": [
+        "EVID-SUP8-CM-001",
+        "docs/pipeline/developer-onboarding.md"
+      ],
+      "required_reverification_plan": "Update developer onboarding guide and repository CM rules to document worktree retention, pruning criteria, and branch naming conventions; submit for QA review.",
+      "reverification_criteria": [
+        "Documentation review by QA Authority (jake) confirming explicit 7-day stale worktree policy.",
+        "Cross-link verification between CM manual and automated cleanup script."
+      ],
+      "triage_status": "TRIAGED_OPEN"
+    },
+    {
+      "finding_id": "FIND-0025-04",
+      "process_id": "MAN.6",
+      "process_name": "Measurement",
+      "category": "OFI",
+      "title": "Real-Time Web Dashboard for Measurement Metric Trends",
+      "description": "Measurement metrics are currently generated as JSON reports; an interactive dashboard view would increase visibility.",
+      "root_cause": "Metric reporting was designed to produce machine-readable JSON artifacts for automated pipeline gating rather than browser-based interactive visualization.",
+      "impact_analysis": "Low severity. Quantitative metrics are fully captured and accurate. Interactive UI is a non-blocking enhancement.",
+      "owner": "jake (QA-Manager, Team DeepSpace9)",
+      "due_date": "2026-11-01",
+      "triage_disposition": "ACCEPTED_RESIDUAL",
+      "governance_decision_ref": "DEC-0025-TRIAGE-04",
+      "problem_report_links": [],
+      "change_request_links": [
+        "CR-MAN6-202611-001"
+      ],
+      "affected_lifecycle_evidence": [
+        "EVID-MAN6-MEAS-001"
+      ],
+      "required_reverification_plan": "Formalize accepted residual risk for baseline v0.6.0; schedule dashboard web frontend module in v0.7.0 milestone backlog.",
+      "reverification_criteria": [
+        "Documented residual risk acceptance signed off by QA Authority and Project Sponsor.",
+        "Feature backlog item created for v0.7.0 measurement dashboard."
+      ],
+      "triage_status": "TRIAGED_ACCEPTED_RESIDUAL"
+    },
+    {
+      "finding_id": "FIND-0025-05",
+      "process_id": "VAL.1",
+      "process_name": "System & ECU Operational Validation",
+      "category": "OBSERVATION",
+      "title": "HIL Simulated Network Noise Injection Profiles Expansion",
+      "description": "HIL operational validation tested CAN bus-off and under-voltage; additional transient burst noise patterns should be added for future ASIL D releases.",
+      "root_cause": "Current testbed simulated failure modes focused on ASIL B operational validation requirements (bus-off recovery, under-voltage reset); advanced capacitive coupling burst noise was marked for future major revision.",
+      "impact_analysis": "Low severity. Baseline v0.6.0 fulfills all required ASIL B operational validation criteria. Extended profiles are valuable for subsequent high-integrity ASIL D platforms.",
+      "owner": "jake (Validation Lead, Team DeepSpace9)",
+      "due_date": "2026-11-15",
+      "triage_disposition": "ACCEPTED_RESIDUAL",
+      "governance_decision_ref": "DEC-0025-TRIAGE-05",
+      "problem_report_links": [
+        "PR-VAL1-202611-001"
+      ],
+      "change_request_links": [
+        "CR-VAL1-202611-001"
+      ],
+      "affected_lifecycle_evidence": [
+        "EVID-VAL1-EXEC-001"
+      ],
+      "required_reverification_plan": "Document accepted residual risk for baseline v0.6.0; define extended burst noise testbed injection specification in v0.7.0 HIL validation plan.",
+      "reverification_criteria": [
+        "Safety Officer (odo) and Lead Assessor sign-off on residual risk acceptance.",
+        "Engineering specification approved for next-cycle HIL noise injection harness."
+      ],
+      "triage_status": "TRIAGED_ACCEPTED_RESIDUAL"
+    }
+  ],
+  "remediation_tracking_and_governance": {
+    "tracking_mechanism": "Controlled Git PR/CR Lifecycle & Problem Resolution Database (SUP.9 / SUP.10)",
+    "periodic_review_cadence": "Bi-weekly Quality & Safety Assurance Review",
+    "reverification_protocol": "Each approved correction must execute its defined re-verification criteria, produce clean automated test/evidence logs, and receive formal 4-eyes sign-off from QA-Manager before closing.",
+    "governance_signoffs": {
+      "lead_assessor_approval": "odo (Lead Assessor / Security & Safety Officer)",
+      "qa_manager_approval": "jake (QA-Manager)",
+      "project_lead_approval": "jadzia (Project Lead)",
+      "approval_date": "2026-09-19"
+    }
+  },
+  "triage_record_sha256": "03b79f2de85920da41ca32588be8aa06fcff06c6892cc3cdae9aedc75934b138"
+}
