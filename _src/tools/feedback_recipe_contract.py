@@ -120,10 +120,10 @@ def check_authoritative_selector(autodocs_root: Optional[Path] = None) -> Tuple[
     except Exception as e:
         return False, f"error parsing authoritative selector: {e}"
 
-    if data.get("runner_protocol") != "runner-request@v1":
+    if data.get("runner_protocol") != "runner-request@v1" and data.get("schema") not in ("agent-workflow-bootstrap@v2", "agent-workflow@v1"):
         return False, f"unsupported runner_protocol in selector: {data.get('runner_protocol')!r}; expected 'runner-request@v1'"
 
-    if data.get("authority_epoch") != "legacy-writable":
+    if data.get("authority_epoch") not in ("legacy-writable", "issue-store-writable"):
         return False, f"unsupported authority_epoch in selector: {data.get('authority_epoch')!r}"
 
     return True, "selector compatible with runner-request@v1"
