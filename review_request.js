@@ -3,7 +3,7 @@
 
   var TOKEN = "ara-review-github-token-v1";
   var IDENT = "ara-review-identity";
-  var REPO = document.querySelector('meta[name="review-github-repo"]')?.getAttribute('content') || '2b-rs/autodocs';
+  var REPO = (typeof document !== "undefined" && document.querySelector('meta[name="review-github-repo"]')?.getAttribute('content')) || '2b-rs/autodocs';
   var CATEGORIES = [
     ["", "Choose category"],
     ["factual-accuracy", "Factual accuracy"],
@@ -14,12 +14,14 @@
   ];
 
   function processDocHref(anchor) {
+    if (typeof document === "undefined") return "process.html#" + anchor;
     var sheet = document.querySelector('link[rel="stylesheet"]');
     var href = sheet && sheet.getAttribute("href");
     var marker = "style.css";
     var index = href ? href.lastIndexOf(marker) : -1;
     return (index >= 0 ? href.slice(0, index) : "") + "process.html#" + anchor;
   }
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;")
@@ -27,40 +29,82 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+
   function cleanName(v) { return String(v == null ? "" : v).replace(/\s+/g, " ").trim().slice(0, 80); }
   function validName(v) { return cleanName(v).length >= 2; }
-  function selfName() { try { return cleanName(localStorage.getItem(IDENT) || ""); } catch (_) { return ""; } }
-  function setSelfName(v) { try { localStorage.setItem(IDENT, cleanName(v)); } catch (_) {} }
-  function activeToken() { try { return String(localStorage.getItem(TOKEN) || "").trim(); } catch (_) { return ""; } }
+  function selfName() {
+    try {
+      if (typeof localStorage !== "undefined") return cleanName(localStorage.getItem(IDENT) || "");
+    } catch (_) {}
+    return "";
+  }
+  function setSelfName(v) {
+    try {
+      if (typeof localStorage !== "undefined") localStorage.setItem(IDENT, cleanName(v));
+    } catch (_) {}
+  }
+  function activeToken() {
+    try {
+      if (typeof localStorage !== "undefined") return String(localStorage.getItem(TOKEN) || "").trim();
+    } catch (_) {}
+    return "";
+  }
+
   async function verify(token) {
     var r = await fetch("https://api.github.com/user", { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "X-GitHub-Api-Version": "2022-11-28" } });
     if (!r.ok) throw new Error("GitHub: " + r.status);
     return await r.json();
   }
-  function uuid7Like() {
-    var a = new Uint8Array(16);
-    (self.crypto || window.crypto).getRandomValues(a);
-    a[6] = (a[6] & 0x0f) | 0x70;
-    a[8] = (a[8] & 0x3f) | 0x80;
-    var hex = Array.from(a, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-    return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
+
+  function generateUUIDv7() {
+    var now = Date.now();
+    var bytes = new Uint8Array(16);
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      crypto.getRandomValues(bytes);
+    } else {
+      try {
+        var nodeCrypto = require("crypto");
+        var buf = nodeCrypto.randomBytes(16);
+        for (var i = 0; i < 16; i++) bytes[i] = buf[i];
+      } catch (_) {
+        for (var j = 0; j < 16; j++) bytes[j] = Math.floor(Math.random() * 256);
+      }
+    }
+    bytes[0] = Math.floor(now / 0x10000000000) & 0xff;
+    bytes[1] = Math.floor(now / 0x100000000) & 0xff;
+    bytes[2] = Math.floor(now / 0x1000000) & 0xff;
+    bytes[3] = Math.floor(now / 0x10000) & 0xff;
+    bytes[4] = Math.floor(now / 0x100) & 0xff;
+    bytes[5] = now & 0xff;
+    bytes[6] = (bytes[6] & 0x0f) | 0x70;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    var hex = [];
+    for (var k = 0; k < 16; k++) hex.push(bytes[k].toString(16).padStart(2, "0"));
+    var h = hex.join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
   }
-  function requestId() { return "review-request:" + uuid7Like(); }
+
+  function requestId() { return "review-request:" + generateUUIDv7(); }
+
   function knownIdentity() {
     var s = selfName();
     if (activeToken()) return { name: null, mode: "github_authenticated" };
     if (validName(s)) return { name: s, mode: "self_declared" };
     return null;
   }
+
   function setState(root, message, kind) {
+    if (!root) return;
     var el = root.querySelector("[data-review-request-state]");
     if (!el) return;
     el.hidden = !message;
     el.className = "review-request-state" + (kind ? " is-" + kind : "");
     el.textContent = message || "";
   }
+
   function openIdentityModal() {
     return new Promise(function (resolve, reject) {
+      if (typeof document === "undefined") return reject(new Error("DOM not available"));
       var modal = document.createElement("div");
       modal.className = "rv-modal is-open";
       modal.innerHTML = '<div class="rv-modal-scrim"></div><div class="rv-modal-card" role="dialog" aria-modal="true" aria-labelledby="rr-id-title"><header class="rv-modal-head"><h2 id="rr-id-title">Who is requesting review?</h2><button type="button" class="rv-icon-btn" data-cancel aria-label="Cancel">×</button></header><div class="rv-modal-body"><p class="rv-modal-lead">Your identity is attached to the request. Self-declared requests may carry lower trust than GitHub-authenticated requests.</p><label class="rv-field"><span>Name or handle</span><input type="text" data-input maxlength="80" required></label><p class="rv-modal-note">At least 2 characters. Stored locally in this browser only.</p></div><footer class="rv-modal-foot"><span class="rv-spacer"></span><button type="button" class="rv-btn rv-btn-quiet" data-cancel>Cancel</button><button type="button" class="rv-btn rv-btn-primary" data-ok disabled>Use this name</button></footer></div>';
@@ -80,6 +124,7 @@
       input.focus(); input.select();
     });
   }
+
   async function resolveIdentity() {
     var known = knownIdentity();
     if (known && known.mode === 'self_declared') return known;
@@ -91,6 +136,7 @@
     }
     return await openIdentityModal();
   }
+
   function buildEvidenceRows() {
     return '<div class="review-request-evidence-row">' +
       '<label class="review-request-field"><span>Kind</span><input type="text" data-evidence-kind placeholder="quote|url|note"></label>' +
@@ -99,6 +145,7 @@
       '<button type="button" class="review-request-remove" data-evidence-remove aria-label="Remove evidence reference">×</button>' +
       '</div>';
   }
+
   function buildDialog(root, data) {
     var dlg = document.createElement('div');
     dlg.className = 'rv-modal';
@@ -107,17 +154,20 @@
     document.body.appendChild(dlg);
     return dlg;
   }
+
   function serializeEvidence(dialog) {
+    if (!dialog) return [];
     return Array.from(dialog.querySelectorAll('.review-request-evidence-row')).map(function (row) {
-      var kind = row.querySelector('[data-evidence-kind]').value.trim();
-      var value = row.querySelector('[data-evidence-value]').value.trim();
-      var note = row.querySelector('[data-evidence-note]').value.trim();
+      var kind = row.querySelector('[data-evidence-kind]')?.value?.trim() || "";
+      var value = row.querySelector('[data-evidence-value]')?.value?.trim() || "";
+      var note = row.querySelector('[data-evidence-note]')?.value?.trim() || "";
       if (!kind || !value) return null;
       var out = { kind: kind, value: value };
       if (note) out.note = note;
       return out;
     }).filter(Boolean);
   }
+
   function validate(dialog) {
     var errors = [];
     if (!dialog.querySelector('[data-category]').value) errors.push('Category is required.');
@@ -131,25 +181,46 @@
     }
     return true;
   }
-  async function buildPackage(root, data, transport) {
-    var who = await resolveIdentity();
+
+  function buildConfirmedPackage(root, data, who, transport) {
+    var mode = who && who.mode === "github_authenticated" ? "github_authenticated" : "self_declared";
+    var tr = transport || (mode === "github_authenticated" ? "github_issue" : "json_export");
+    var evidence = [];
+    if (data && Array.isArray(data.evidence_refs)) {
+      evidence = data.evidence_refs;
+    } else if (root && root._rrDialog) {
+      evidence = serializeEvidence(root._rrDialog);
+    }
+    var cat = (data && data.category) || (root && root._rrDialog && root._rrDialog.querySelector('[data-category]')?.value) || "factual-accuracy";
+    var rat = (data && data.rationale) || (root && root._rrDialog && root._rrDialog.querySelector('[data-rationale]')?.value?.trim()) || "";
+    var name = (who && who.name) || "Anonymous";
+
     return {
-      schema: 'review-request-package@v1',
-      client_schema_version: 1,
+      schema: "review-request-package@v1",
+      client_schema_version: "1.0.0",
       request_id: requestId(),
-      target_canonical_id: data.canonical_id,
-      target_version_id: data.version_id,
-      target_content_hash: data.content_hash,
-      target_status_snapshot: data.status,
-      source_url: data.source_url || window.location.href,
-      category: root._rrDialog.querySelector('[data-category]').value,
-      rationale: root._rrDialog.querySelector('[data-rationale]').value.trim(),
-      actor_claim: { display_name: who.name, identity_kind: who.mode },
-      evidence_refs: serializeEvidence(root._rrDialog),
-      created_at: new Date().toISOString(),
-      transport: transport
+      target_canonical_id: (data && (data.canonical_id || data.target_canonical_id)) || "",
+      target_version_id: (data && (data.version_id || data.target_version_id)) || "",
+      target_content_hash: (data && (data.content_hash || data.target_content_hash)) || "",
+      target_status_snapshot: (data && (data.status || data.target_status || data.target_status_snapshot)) || "valid/published",
+      source_url: (data && (data.source_url || data.target_source_url)) || (typeof window !== "undefined" ? window.location.href : ""),
+      category: cat,
+      rationale: rat,
+      evidence_refs: evidence,
+      actor_claim: {
+        display_name: name,
+        identity_kind: mode
+      },
+      transport: tr,
+      created_at: new Date().toISOString()
     };
   }
+
+  async function buildPackage(root, data, transport) {
+    var who = await resolveIdentity();
+    return buildConfirmedPackage(root, data, who, transport);
+  }
+
   async function exportJson(root, data) {
     var pkg = await buildPackage(root, data, 'json_export');
     var blob = new Blob([JSON.stringify(pkg, null, 2) + '\n'], { type: 'application/json' });
@@ -161,6 +232,7 @@
     setState(root, 'Downloaded — not yet submitted.', 'exported');
     closeDialog(root);
   }
+
   async function submitGithub(root, data) {
     if (!activeToken()) throw new Error('GitHub connection required for direct submission.');
     var pkg = await buildPackage(root, data, 'github_issue');
@@ -174,13 +246,15 @@
     setState(root, 'Submitted as GitHub issue #' + issue.number + ' — awaiting review.', 'submitted');
     closeDialog(root);
   }
+
   function closeDialog(root) {
-    if (!root._rrDialog) return;
+    if (!root || !root._rrDialog) return;
     var btn = root.querySelector('[data-review-request-open]');
     root._rrDialog.classList.remove('is-open');
     root._rrDialog.hidden = true;
     if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
   }
+
   function openDialog(root, data) {
     if (!root._rrDialog) root._rrDialog = buildDialog(root, data);
     var dlg = root._rrDialog;
@@ -230,6 +304,7 @@
       });
     };
   }
+
   function init(root) {
     var dataEl = root.querySelector('.review-request-data');
     if (!dataEl) return;
@@ -237,7 +312,22 @@
     var btn = root.querySelector('[data-review-request-open]');
     if (btn) btn.addEventListener('click', function () { openDialog(root, data); });
   }
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('[data-review-request-root]').forEach(init);
-  });
+
+  if (typeof document !== "undefined") {
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-review-request-root]').forEach(init);
+    });
+  }
+
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+      generateUUIDv7: generateUUIDv7,
+      uuid7Like: generateUUIDv7,
+      requestId: requestId,
+      buildConfirmedPackage: buildConfirmedPackage,
+      buildPackage: buildPackage,
+      cleanName: cleanName,
+      validName: validName
+    };
+  }
 })();
