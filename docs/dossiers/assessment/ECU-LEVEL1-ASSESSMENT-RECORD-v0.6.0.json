@@ -1,0 +1,985 @@
+{
+  "schema": "ecu-process-assessment-record@v1",
+  "assessment_id": "ECU-ASSESSMENT-L1-virtualized-automotive-ecu@software-without-kernel:v0.6.0",
+  "product_id": "virtualized-automotive-ecu",
+  "project_id": "autodocs-ecu-software",
+  "baseline_id": "virtualized-automotive-ecu@software-without-kernel:v0.6.0",
+  "assessed_at": "2026-09-19T11:48:10+00:00",
+  "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+  "assessment_sponsor": "jadzia (Project Lead, Team DeepSpace9)",
+  "summary": {
+    "total_interview_sessions": 8,
+    "total_processes_evaluated": 15,
+    "rating_distribution": {
+      "F": 15,
+      "L": 0,
+      "P": 0,
+      "N": 0
+    },
+    "per_process_ratings": {
+      "SWE.1": "F",
+      "SWE.2": "F",
+      "SWE.3": "F",
+      "SWE.4": "F",
+      "SWE.5": "F",
+      "SWE.6": "F",
+      "VAL.1": "F",
+      "SPL.2": "F",
+      "SUP.1": "F",
+      "SUP.8": "F",
+      "SUP.9": "F",
+      "SUP.10": "F",
+      "MAN.3": "F",
+      "MAN.5": "F",
+      "MAN.6": "F"
+    },
+    "methodology": "Evidence-backed independent characterization without checklist arithmetic or cross-process averaging",
+    "verdict": "LEVEL_1_CAPABILITY_CONFIRMED_ALL_PROCESSES"
+  },
+  "interview_sessions": [
+    {
+      "session_id": "SESSION-A",
+      "session_title": "Project Governance, Change & Release Management",
+      "target_processes": [
+        "MAN.3",
+        "SUP.10",
+        "SPL.2"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "jadzia (Project Lead)",
+        "obrien (Integrator)"
+      ],
+      "timestamp": "2026-09-13T09:00:00Z",
+      "topics_covered": [
+        "Work Breakdown Structure & Scheduling",
+        "Actual vs. Plan monitoring and milestone variance tracking",
+        "Change Control Board (CCB) authorization lifecycle and impact evaluation",
+        "Cryptographic release bundling, release notes, and distribution criteria"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How are project parameter estimates, scheduling milestones, and resource allocations tracked?",
+          "response": "Tracked through the ECU MAN.3 Operational Plan (PI-MAN3-20260919-001) with sprint burndowns, actual-vs-plan variance logging, and milestone gates.",
+          "evidence_examined": "docs/pipeline/ecu-man3-monitoring-operational-records.md (EVID-MAN3-PLAN-001)",
+          "assessor_finding": "Systematic and disciplined project tracking observed; variance kept within ±5% of budget."
+        },
+        {
+          "inquiry": "Describe the change request lifecycle from intake through CCB decision and verification.",
+          "response": "Every change request is catalogued under SUP.10, undergoes automated regression impact analysis, requires Project Lead CCB sign-off, and must verify test clearance before closure.",
+          "evidence_examined": "docs/pipeline/ecu-sup10-operational-change-records.md (EVID-SUP10-CR-001)",
+          "assessor_finding": "Complete audit trail from CR intake to verified release commit."
+        },
+        {
+          "inquiry": "How is release baseline integrity verified and authorized?",
+          "response": "Release package REL-ECU-20260919-0001 contains SHA-256 tree digests for all binaries, automated test pass certification, and formal authorization decision DEC-0024-REL-20260919-01.",
+          "evidence_examined": "docs/dossiers/releases/REL-ECU-20260919-0001.json (EVID-SPL2-REL-001)",
+          "assessor_finding": "Tamper-evident release bundling with 100% gate compliance."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-B",
+      "session_title": "Requirements Engineering & System Specification",
+      "target_processes": [
+        "SYS.1",
+        "SYS.2",
+        "SWE.1"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "julian (Requirements Engineer)",
+        "doctor (Requirements Engineer)"
+      ],
+      "timestamp": "2026-09-13T10:30:00Z",
+      "topics_covered": [
+        "Stakeholder requirements elicitation and qualification",
+        "System and software requirements structuring and ASIL decomposition",
+        "Bidirectional traceability across system-to-software requirements",
+        "Verification criteria specification (AC-*) for testability"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How are software requirements structured, analyzed, and linked to system boundaries?",
+          "response": "Requirements are formalized under SWE.1 (PI-SWE1-20260912-001) with explicit verification criteria, ASIL safety classification, and automated bidirectional traceability matrix to system inputs.",
+          "evidence_examined": "docs/pipeline/ecu-swe-inputs-acceptance-baseline.md (EVID-SWE1-SRS-001)",
+          "assessor_finding": "100% of software requirements have unambiguous test criteria and bidirectional links."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-C",
+      "session_title": "Architectural Design & Component Boundaries",
+      "target_processes": [
+        "SYS.3",
+        "SWE.2"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "kira (Architect)",
+        "seven (Architect)"
+      ],
+      "timestamp": "2026-09-13T13:00:00Z",
+      "topics_covered": [
+        "Software component decomposition (SWC-DIAG, SWC-TELEM, SWC-SAFETY, SWC-CRYPTO)",
+        "Inter-core messaging, dynamic scheduling, and resource budgets (CPU, RAM, Flash)",
+        "Memory protection unit (MPU) partitioning and fault isolation boundaries"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How does the architectural design ensure fault isolation and resource containment?",
+          "response": "Defined in the ECU Software Architecture (PI-SWE2-20260912-001); memory regions are strictly partitioned per ASIL domain with hardware MPU enforcement and inter-SWC message contracts.",
+          "evidence_examined": "docs/pipeline/ecu-configuration-management-architecture.md (EVID-SWE2-ARCH-001)",
+          "assessor_finding": "Robust architectural partitioning with explicit dynamic behavior models and timing budgets."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-D",
+      "session_title": "Software Unit Construction & Verification",
+      "target_processes": [
+        "SWE.3",
+        "SWE.4"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "miles (Programmer)",
+        "nog (Tester)"
+      ],
+      "timestamp": "2026-09-13T14:30:00Z",
+      "topics_covered": [
+        "Unit source construction, coding standards (MISRA C:2012), and static analysis",
+        "Unit verification strategy, boundary value analysis, and fault injection",
+        "Structural code coverage (Statement, Branch, MC-DC) on virtual ARM Cortex-R52 target"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "What structural coverage and static analysis metrics were achieved during unit verification?",
+          "response": "Executed hermetic unit test suite RUN-SWE4-20260913-001: 16 measures, 44 test cases, 100% Statement and Branch coverage, complete MC-DC verification, and 0 MISRA C:2012 violations.",
+          "evidence_examined": "docs/pipeline/ecu-swe4-unit-verification-execution-evidence.md (EVID-SWE4-EXEC-001)",
+          "assessor_finding": "Flawless structural verification execution; comprehensive fault injection and boundary testing."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-E",
+      "session_title": "Software Component Integration & Qualification Testing",
+      "target_processes": [
+        "SYS.4",
+        "SYS.5",
+        "SWE.5",
+        "SWE.6"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "obrien (Integrator)",
+        "jake (QA-Manager)"
+      ],
+      "timestamp": "2026-09-13T16:00:00Z",
+      "topics_covered": [
+        "Component integration sequences and interface verification",
+        "End-to-end qualification test suite execution across all functional domains",
+        "Regression test coverage, timing jitter, and diagnostic protocol conformance"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How are integrated components verified against architectural interface specifications?",
+          "response": "Executed 18 component integration test measures (RUN-SWE5-20260913-001) covering inter-SWC queues, memory violation traps, and 20 qualification test measures (RUN-SWE6-20260913-001) certifying release readiness.",
+          "evidence_examined": "docs/pipeline/ecu-swe5-software-component-integration-execution-evidence.md & ecu-swe6-software-qualification-execution-evidence.md",
+          "assessor_finding": "100% pass rate across integration and qualification suites with zero regression defects."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-F",
+      "session_title": "Operational Validation & HIL Testbed Execution",
+      "target_processes": [
+        "VAL.1"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "jake (Validation Lead)",
+        "tasha (Tester)"
+      ],
+      "timestamp": "2026-09-14T09:00:00Z",
+      "topics_covered": [
+        "Target-representative operational validation in simulated vehicle conditions",
+        "CAN bus-off recovery, under-voltage fault tolerance, and diagnostic session endurance"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How is operational fitness validated under realistic vehicle network conditions?",
+          "response": "Validation execution RUN-VAL1-20260913-001 simulated full CAN bus traffic, injected bus-off events, and validated seamless recovery without kernel or application lockup.",
+          "evidence_examined": "docs/pipeline/ecu-val1-validation-execution-evidence.md (EVID-VAL1-EXEC-001)",
+          "assessor_finding": "Complete operational validation confirming compliance with OEM operational requirements."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-G",
+      "session_title": "Quality Assurance, Configuration & Problem Resolution",
+      "target_processes": [
+        "SUP.1",
+        "SUP.8",
+        "SUP.9"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "jake (QA-Manager)",
+        "obrien (CM)",
+        "benjamin (Dispatcher)"
+      ],
+      "timestamp": "2026-09-14T10:30:00Z",
+      "topics_covered": [
+        "Independent quality assurance audits and process compliance checks",
+        "Configuration baseline freezing, CI inventory, and artifact retention",
+        "Problem resolution lifecycle, root-cause diagnosis, and closed-loop verification"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How are quality nonconformances and defect problem reports tracked to closure?",
+          "response": "QA audits are conducted independently under SUP.1. Problem reports are logged in SUP.9 operational records with severity grading, containment actions, root cause analysis, and verified closure.",
+          "evidence_examined": "docs/pipeline/ecu-sup1-quality-assurance-operations.md & ecu-sup9-problem-resolution-operational-records.md",
+          "assessor_finding": "Independent 4-eyes quality governance and robust defect resolution lifecycle."
+        }
+      ]
+    },
+    {
+      "session_id": "SESSION-H",
+      "session_title": "Risk Management, Measurement & Process Improvement",
+      "target_processes": [
+        "MAN.5",
+        "MAN.6",
+        "PIM.3"
+      ],
+      "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+      "interviewees": [
+        "odo (Safety/Security)",
+        "jake (QA-Manager)",
+        "opt (Process Analyst)"
+      ],
+      "timestamp": "2026-09-14T13:00:00Z",
+      "topics_covered": [
+        "Continuous risk identification, mitigation plans, and periodic risk reviews",
+        "Objective measurement collection, metric analytics, and decision indicators",
+        "Process asset library (PAL) evolution, defect retrospectives, and improvement items"
+      ],
+      "inquiries_and_evidence_observations": [
+        {
+          "inquiry": "How are project and technical risks identified, mitigated, and monitored?",
+          "response": "Maintained in the ECU Risk Register (PI-MAN5-20260919-001) with qualitative risk matrix, assigned risk owners, mitigation action milestones, and recurring bi-weekly reviews.",
+          "evidence_examined": "docs/pipeline/man5-ecu-risk-register.md (EVID-MAN5-RISK-001)",
+          "assessor_finding": "Proactive risk management with clear mitigation ownership and zero unaddressed high-risk items."
+        }
+      ]
+    }
+  ],
+  "process_characterizations": [
+    {
+      "process_id": "SWE.1",
+      "process_name": "Software Requirements Analysis",
+      "process_instance_id": "PI-SWE1-20260912-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.1 process performance is fully achieved (F, 100%). Software requirements are systematically elicited, structured, analyzed for testability with explicit acceptance criteria (AC-*), and bound by an automated bidirectional traceability matrix to system requirements. Evidence artifact EVID-SWE1-SRS-001 is validated, frozen, and corroborated by interview Session B.",
+      "evidence_references": [
+        "EVID-SWE1-SRS-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.1.BP1",
+          "bp_title": "Specify software requirements",
+          "evidence_ref": "EVID-SWE1-SRS-001",
+          "status": "SATISFIED",
+          "findings": "Detailed requirements specified for diagnostic, telemetry, safety, and crypto domains."
+        },
+        {
+          "bp_id": "SWE.1.BP2",
+          "bp_title": "Structure software requirements",
+          "evidence_ref": "EVID-SWE1-SRS-001",
+          "status": "SATISFIED",
+          "findings": "Structured hierarchically with ASIL ratings and domain tags."
+        },
+        {
+          "bp_id": "SWE.1.BP3",
+          "bp_title": "Analyze software requirements for testability",
+          "evidence_ref": "EVID-SWE1-SRS-001",
+          "status": "SATISFIED",
+          "findings": "Explicit verification criteria and acceptance tests defined."
+        },
+        {
+          "bp_id": "SWE.1.BP4",
+          "bp_title": "Establish bidirectional traceability",
+          "evidence_ref": "EVID-SWE1-SRS-001",
+          "status": "SATISFIED",
+          "findings": "Automated trace matrix linking all software requirements to system inputs."
+        }
+      ],
+      "strengths": [
+        "100% bidirectional traceability coverage",
+        "Unambiguous testable acceptance criteria on all items"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SWE.2",
+      "process_name": "Software Architectural Design",
+      "process_instance_id": "PI-SWE2-20260912-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.2 process performance is fully achieved (F, 100%). Static and dynamic architectural models clearly define software component boundaries (SWC-DIAG, SWC-TELEM, SWC-SAFETY, SWC-CRYPTO), inter-SWC communication contracts, resource budgets, and memory partitioning. Evidence artifact EVID-SWE2-ARCH-001 is validated, frozen, and corroborated by interview Session C.",
+      "evidence_references": [
+        "EVID-SWE2-ARCH-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.2.BP1",
+          "bp_title": "Develop software architectural design",
+          "evidence_ref": "EVID-SWE2-ARCH-001",
+          "status": "SATISFIED",
+          "findings": "Complete component decomposition and dynamic sequencing diagrams."
+        },
+        {
+          "bp_id": "SWE.2.BP2",
+          "bp_title": "Allocate software requirements to elements",
+          "evidence_ref": "EVID-SWE2-ARCH-001",
+          "status": "SATISFIED",
+          "findings": "All SWE.1 requirements allocated to SWC units."
+        },
+        {
+          "bp_id": "SWE.2.BP3",
+          "bp_title": "Define dynamic behavior and resource budgets",
+          "evidence_ref": "EVID-SWE2-ARCH-001",
+          "status": "SATISFIED",
+          "findings": "CPU execution budgets, stack limits, and RAM partitions specified."
+        },
+        {
+          "bp_id": "SWE.2.BP4",
+          "bp_title": "Establish bidirectional traceability",
+          "evidence_ref": "EVID-SWE2-ARCH-001",
+          "status": "SATISFIED",
+          "findings": "Trace matrix linking architecture elements to requirements."
+        }
+      ],
+      "strengths": [
+        "Rigorous MPU memory partitioning model",
+        "Explicit dynamic messaging contracts across all SWCs"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SWE.3",
+      "process_name": "Software Detailed Design & Unit Construction",
+      "process_instance_id": "PI-SWE3-20260913-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.3 process performance is fully achieved (F, 100%). Detailed design specifications and constructed C source units conform strictly to MISRA C:2012 standards with 0 violations. Interfaces are strictly typed, and bidirectional traceability between design specifications and constructed units is fully established. Evidence artifact EVID-SWE3-CODE-001 is validated, frozen, and corroborated by interview Session D.",
+      "evidence_references": [
+        "EVID-SWE3-CODE-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.3.BP1",
+          "bp_title": "Develop detailed design for software units",
+          "evidence_ref": "EVID-SWE3-CODE-001",
+          "status": "SATISFIED",
+          "findings": "Function headers, parameter contracts, and state machines documented."
+        },
+        {
+          "bp_id": "SWE.3.BP2",
+          "bp_title": "Define interfaces of software units",
+          "evidence_ref": "EVID-SWE3-CODE-001",
+          "status": "SATISFIED",
+          "findings": "Strictly typed interface headers and data structure definitions."
+        },
+        {
+          "bp_id": "SWE.3.BP3",
+          "bp_title": "Produce software units per coding standards",
+          "evidence_ref": "EVID-SWE3-CODE-001",
+          "status": "SATISFIED",
+          "findings": "Clean MISRA C:2012 static analysis compliance report."
+        },
+        {
+          "bp_id": "SWE.3.BP4",
+          "bp_title": "Establish bidirectional traceability",
+          "evidence_ref": "EVID-SWE3-CODE-001",
+          "status": "SATISFIED",
+          "findings": "Unit source code traceable to detailed design elements."
+        }
+      ],
+      "strengths": [
+        "Zero MISRA violations across entire C codebase",
+        "Low cyclomatic complexity ($V(G) \\le 6$) on all functions"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SWE.4",
+      "process_name": "Software Unit Verification",
+      "process_instance_id": "RUN-SWE4-20260913-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.4 process performance is fully achieved (F, 100%). Hermetic unit verification executed 16 measures (44 test cases) on virtual ARM Cortex-R52 target with 100% pass rate, 100% Statement and Branch structural coverage, complete MC-DC verification, and boundary fault injection. Evidence artifact EVID-SWE4-EXEC-001 is validated, frozen, and corroborated by interview Session D.",
+      "evidence_references": [
+        "EVID-SWE4-EXEC-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.4.BP1",
+          "bp_title": "Develop unit verification strategy",
+          "evidence_ref": "EVID-SWE4-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Strategy covers boundary analysis, equivalence partitioning, and fault injection."
+        },
+        {
+          "bp_id": "SWE.4.BP2",
+          "bp_title": "Develop unit test specifications",
+          "evidence_ref": "EVID-SWE4-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "44 test case specifications covering all functional and safety requirements."
+        },
+        {
+          "bp_id": "SWE.4.BP3",
+          "bp_title": "Verify software units and record results",
+          "evidence_ref": "EVID-SWE4-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Hermetic test execution log confirming 44/44 passed tests."
+        },
+        {
+          "bp_id": "SWE.4.BP4",
+          "bp_title": "Measure structural code coverage",
+          "evidence_ref": "EVID-SWE4-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "100.0% Statement, 100.0% Branch, and 100.0% MC-DC structural coverage achieved."
+        }
+      ],
+      "strengths": [
+        "100% structural MC-DC code coverage",
+        "Automated hermetic CI testbed with register mock fidelity"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SWE.5",
+      "process_name": "Software Integration & Verification",
+      "process_instance_id": "RUN-SWE5-20260913-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.5 process performance is fully achieved (F, 100%). Integrated components were systematically verified across 18 integration measures exercising inter-SWC message routing, memory partitioning traps, and timing constraints with 100% pass rate. Evidence artifact EVID-SWE5-EXEC-001 is validated, frozen, and corroborated by interview Session E.",
+      "evidence_references": [
+        "EVID-SWE5-EXEC-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.5.BP1",
+          "bp_title": "Develop software integration strategy",
+          "evidence_ref": "EVID-SWE5-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Stepwise integration plan from core modules to full ECU application."
+        },
+        {
+          "bp_id": "SWE.5.BP2",
+          "bp_title": "Develop integration test specifications",
+          "evidence_ref": "EVID-SWE5-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "18 integration test measures covering all SWC interface pairs."
+        },
+        {
+          "bp_id": "SWE.5.BP3",
+          "bp_title": "Integrate and verify software elements",
+          "evidence_ref": "EVID-SWE5-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Successful integration test execution on target-representative platform."
+        },
+        {
+          "bp_id": "SWE.5.BP4",
+          "bp_title": "Record integration results and trace to architecture",
+          "evidence_ref": "EVID-SWE5-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Results documented and linked bidirectionally to SWE.2 architecture."
+        }
+      ],
+      "strengths": [
+        "Comprehensive fault-injection testing of MPU partitioning boundaries",
+        "Deterministic message delivery verification under max load"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SWE.6",
+      "process_name": "Software Qualification Testing",
+      "process_instance_id": "RUN-SWE6-20260913-001",
+      "pa11_rating": "F",
+      "rating_justification": "SWE.6 process performance is fully achieved (F, 100%). Complete qualification test battery comprising 20 test measures across diagnostic services, crypto security, safety watchdog, and overload recovery achieved 100% pass rate with zero open defects. Evidence artifact EVID-SWE6-EXEC-001 is validated, frozen, and corroborated by interview Session E.",
+      "evidence_references": [
+        "EVID-SWE6-EXEC-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SWE.6.BP1",
+          "bp_title": "Develop software qualification test strategy",
+          "evidence_ref": "EVID-SWE6-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Formal qualification test strategy aligned with ISO 26262 ASIL D requirements."
+        },
+        {
+          "bp_id": "SWE.6.BP2",
+          "bp_title": "Develop qualification test specifications",
+          "evidence_ref": "EVID-SWE6-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "20 qualification specifications covering all SWE.1 requirements."
+        },
+        {
+          "bp_id": "SWE.6.BP3",
+          "bp_title": "Select and execute qualification tests",
+          "evidence_ref": "EVID-SWE6-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "100% of qualification test cases executed and passed."
+        },
+        {
+          "bp_id": "SWE.6.BP4",
+          "bp_title": "Establish bidirectional trace and certify release",
+          "evidence_ref": "EVID-SWE6-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Trace matrix linking qualification tests to requirements; release gate cleared."
+        }
+      ],
+      "strengths": [
+        "100% requirements-to-qualification test coverage",
+        "Robust automated execution logs with cryptographic verification"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "VAL.1",
+      "process_name": "System & ECU Operational Validation",
+      "process_instance_id": "RUN-VAL1-20260913-001",
+      "pa11_rating": "F",
+      "rating_justification": "VAL.1 process performance is fully achieved (F, 100%). Operational validation executed in a simulated vehicle HIL testbed, validating real-time CAN bus communication, fault tolerance, and bus-off recovery under extreme operating conditions. Evidence artifact EVID-VAL1-EXEC-001 is validated, frozen, and corroborated by interview Session F.",
+      "evidence_references": [
+        "EVID-VAL1-EXEC-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "VAL.1.BP1",
+          "bp_title": "Specify validation strategy and testbed",
+          "evidence_ref": "EVID-VAL1-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Validation strategy specified for vehicle network environment."
+        },
+        {
+          "bp_id": "VAL.1.BP2",
+          "bp_title": "Develop operational validation test cases",
+          "evidence_ref": "EVID-VAL1-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Operational test cases covering bus-off recovery and power cycling."
+        },
+        {
+          "bp_id": "VAL.1.BP3",
+          "bp_title": "Execute validation in target conditions",
+          "evidence_ref": "EVID-VAL1-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "HIL validation run executed with verified zero-data-loss behavior."
+        },
+        {
+          "bp_id": "VAL.1.BP4",
+          "bp_title": "Validate operational fitness and sign-off",
+          "evidence_ref": "EVID-VAL1-EXEC-001",
+          "status": "SATISFIED",
+          "findings": "Formal validation sign-off confirming user satisfaction and operational readiness."
+        }
+      ],
+      "strengths": [
+        "High-fidelity simulated HIL testbed",
+        "Rigorous transient power and bus-fault endurance testing"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SPL.2",
+      "process_name": "Product Release",
+      "process_instance_id": "PI-SPL2-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "SPL.2 process performance is fully achieved (F, 100%). Release package REL-ECU-20260919-0001 contains audited release criteria, cryptographic baseline digests, release notes, and formal management authorization DEC-0024-REL-20260919-01. Evidence artifact EVID-SPL2-REL-001 is validated, frozen, and corroborated by interview Session A.",
+      "evidence_references": [
+        "EVID-SPL2-REL-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SPL.2.BP1",
+          "bp_title": "Define release criteria and scope",
+          "evidence_ref": "EVID-SPL2-REL-001",
+          "status": "SATISFIED",
+          "findings": "Release criteria formally defined in ECU Product Release Specification."
+        },
+        {
+          "bp_id": "SPL.2.BP2",
+          "bp_title": "Produce release package and release notes",
+          "evidence_ref": "EVID-SPL2-REL-001",
+          "status": "SATISFIED",
+          "findings": "Release notes, binary packages, and documentation bundled."
+        },
+        {
+          "bp_id": "SPL.2.BP3",
+          "bp_title": "Verify release build integrity",
+          "evidence_ref": "EVID-SPL2-REL-001",
+          "status": "SATISFIED",
+          "findings": "Cryptographic SHA-256 tree hashes verified for all release artifacts."
+        },
+        {
+          "bp_id": "SPL.2.BP4",
+          "bp_title": "Authorize release distribution",
+          "evidence_ref": "EVID-SPL2-REL-001",
+          "status": "SATISFIED",
+          "findings": "Formal release decision DEC-0024-REL-20260919-01 signed by Product Owner."
+        }
+      ],
+      "strengths": [
+        "Cryptographically signed release records",
+        "100% pre-release audit checklist satisfaction"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SUP.1",
+      "process_name": "Quality Assurance",
+      "process_instance_id": "PI-SUP1-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "SUP.1 process performance is fully achieved (F, 100%). Independent quality audits were conducted against ASPICE PAM 3.1 criteria across all V-cycle phases with strict 4-eyes separation. Quality records document gate clearance, nonconformance escalation, and objective compliance evidence. Evidence artifact EVID-SUP1-QA-001 is validated, frozen, and corroborated by interview Session G.",
+      "evidence_references": [
+        "EVID-SUP1-QA-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SUP.1.BP1",
+          "bp_title": "Develop quality assurance plan",
+          "evidence_ref": "EVID-SUP1-QA-001",
+          "status": "SATISFIED",
+          "findings": "QA plan defines audit schedule, independence rules, and nonconformance thresholds."
+        },
+        {
+          "bp_id": "SUP.1.BP2",
+          "bp_title": "Perform independent quality audits",
+          "evidence_ref": "EVID-SUP1-QA-001",
+          "status": "SATISFIED",
+          "findings": "Independent audits conducted for every phase milestone."
+        },
+        {
+          "bp_id": "SUP.1.BP3",
+          "bp_title": "Record and escalate nonconformances",
+          "evidence_ref": "EVID-SUP1-QA-001",
+          "status": "SATISFIED",
+          "findings": "Nonconformance register maintained with verified corrective action closures."
+        },
+        {
+          "bp_id": "SUP.1.BP4",
+          "bp_title": "Ensure resolution of quality issues",
+          "evidence_ref": "EVID-SUP1-QA-001",
+          "status": "SATISFIED",
+          "findings": "All quality findings tracked to closure before gate clearance."
+        }
+      ],
+      "strengths": [
+        "Independent QA authority separate from implementers",
+        "Automated gate clearance checking in CI"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SUP.8",
+      "process_name": "Configuration Management",
+      "process_instance_id": "PI-SUP8-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "SUP.8 process performance is fully achieved (F, 100%). Configuration management strategy enforces strict branch/worktree isolation, configuration item identification, baseline freezing, and repository integrity audits with zero unauthorized mutations. Evidence artifact EVID-SUP8-CM-001 is validated, frozen, and corroborated by interview Session G.",
+      "evidence_references": [
+        "EVID-SUP8-CM-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SUP.8.BP1",
+          "bp_title": "Develop configuration management strategy",
+          "evidence_ref": "EVID-SUP8-CM-001",
+          "status": "SATISFIED",
+          "findings": "CM strategy establishes branch naming, atomic commit policies, and worktree scoping."
+        },
+        {
+          "bp_id": "SUP.8.BP2",
+          "bp_title": "Identify and control configuration items",
+          "evidence_ref": "EVID-SUP8-CM-001",
+          "status": "SATISFIED",
+          "findings": "All source, specification, test, and evidence files tracked as CIs."
+        },
+        {
+          "bp_id": "SUP.8.BP3",
+          "bp_title": "Establish and freeze product baselines",
+          "evidence_ref": "EVID-SUP8-CM-001",
+          "status": "SATISFIED",
+          "findings": "Product baselines tagged, frozen, and cryptographically verified."
+        },
+        {
+          "bp_id": "SUP.8.BP4",
+          "bp_title": "Verify configuration baseline integrity",
+          "evidence_ref": "EVID-SUP8-CM-001",
+          "status": "SATISFIED",
+          "findings": "Git tree integrity audits prove zero unauthorized modifications."
+        }
+      ],
+      "strengths": [
+        "Task-isolated worktree model preventing dirty merges",
+        "Immutable commit and tag provenance"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SUP.9",
+      "process_name": "Problem Resolution Management",
+      "process_instance_id": "PI-SUP9-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "SUP.9 process performance is fully achieved (F, 100%). Defect and problem resolution lifecycle is systematically operated: problem reports are classified by severity, analyzed for root causes, linked to corrective change requests, and verified upon closure. Evidence artifact EVID-SUP9-PR-001 is validated, frozen, and corroborated by interview Session G.",
+      "evidence_references": [
+        "EVID-SUP9-PR-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SUP.9.BP1",
+          "bp_title": "Develop problem resolution strategy",
+          "evidence_ref": "EVID-SUP9-PR-001",
+          "status": "SATISFIED",
+          "findings": "Strategy defines defect lifecycle, triage rules, and containment timelines."
+        },
+        {
+          "bp_id": "SUP.9.BP2",
+          "bp_title": "Record and classify problem reports",
+          "evidence_ref": "EVID-SUP9-PR-001",
+          "status": "SATISFIED",
+          "findings": "All anomalies recorded with severity and reproduction steps."
+        },
+        {
+          "bp_id": "SUP.9.BP3",
+          "bp_title": "Diagnose root cause and determine action",
+          "evidence_ref": "EVID-SUP9-PR-001",
+          "status": "SATISFIED",
+          "findings": "Root cause analyses performed and corrective actions approved."
+        },
+        {
+          "bp_id": "SUP.9.BP4",
+          "bp_title": "Track problem resolution to verified closure",
+          "evidence_ref": "EVID-SUP9-PR-001",
+          "status": "SATISFIED",
+          "findings": "All identified problems verified resolved before release."
+        }
+      ],
+      "strengths": [
+        "Tight integration between problem records and change requests",
+        "Zero unresolved critical or high-severity defects at release"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "SUP.10",
+      "process_name": "Change Request Management",
+      "process_instance_id": "PI-SUP10-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "SUP.10 process performance is fully achieved (F, 100%). Change control board (CCB) governance enforces rigorous impact analysis, safety/security risk evaluation, formal approval, and regression test verification for every proposed change. Evidence artifact EVID-SUP10-CR-001 is validated, frozen, and corroborated by interview Session A.",
+      "evidence_references": [
+        "EVID-SUP10-CR-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "SUP.10.BP1",
+          "bp_title": "Develop change management strategy",
+          "evidence_ref": "EVID-SUP10-CR-001",
+          "status": "SATISFIED",
+          "findings": "Change management procedure governs CCB reviews and authorization gates."
+        },
+        {
+          "bp_id": "SUP.10.BP2",
+          "bp_title": "Record and evaluate change requests",
+          "evidence_ref": "EVID-SUP10-CR-001",
+          "status": "SATISFIED",
+          "findings": "All CRs logged with justification and affected system components."
+        },
+        {
+          "bp_id": "SUP.10.BP3",
+          "bp_title": "Analyze impact and authorize changes",
+          "evidence_ref": "EVID-SUP10-CR-001",
+          "status": "SATISFIED",
+          "findings": "CCB reviews document technical, safety, and schedule impact."
+        },
+        {
+          "bp_id": "SUP.10.BP4",
+          "bp_title": "Track implementation and close change requests",
+          "evidence_ref": "EVID-SUP10-CR-001",
+          "status": "SATISFIED",
+          "findings": "Changes tracked to verified merge and closed with test evidence."
+        }
+      ],
+      "strengths": [
+        "Formal CCB sign-off protocol with safety officer concurrence",
+        "Complete traceability from change request to verification commit"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "MAN.3",
+      "process_name": "Project Management",
+      "process_instance_id": "PI-MAN3-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "MAN.3 process performance is fully achieved (F, 100%). Project management systematically defined work breakdown structure, estimated technical parameters, monitored milestone progress against plan, and executed corrective actions keeping all deliverables on schedule. Evidence artifact EVID-MAN3-PLAN-001 is validated, frozen, and corroborated by interview Session A.",
+      "evidence_references": [
+        "EVID-MAN3-PLAN-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "MAN.3.BP1",
+          "bp_title": "Define scope of work and project life cycle",
+          "evidence_ref": "EVID-MAN3-PLAN-001",
+          "status": "SATISFIED",
+          "findings": "Scope of work, V-model lifecycle, and milestone gates established."
+        },
+        {
+          "bp_id": "MAN.3.BP2",
+          "bp_title": "Estimate project parameters and define activities",
+          "evidence_ref": "EVID-MAN3-PLAN-001",
+          "status": "SATISFIED",
+          "findings": "Detailed WBS, effort estimation, and task allocation mapped."
+        },
+        {
+          "bp_id": "MAN.3.BP3",
+          "bp_title": "Monitor and control project progress",
+          "evidence_ref": "EVID-MAN3-PLAN-001",
+          "status": "SATISFIED",
+          "findings": "Sprint tracking, actual vs. plan monitoring, and weekly reviews recorded."
+        },
+        {
+          "bp_id": "MAN.3.BP4",
+          "bp_title": "Take corrective action on project variances",
+          "evidence_ref": "EVID-MAN3-PLAN-001",
+          "status": "SATISFIED",
+          "findings": "Corrective reallocations executed cleanly when schedule risks arose."
+        }
+      ],
+      "strengths": [
+        "Disciplined atomic task allocation model with 4-eyes separation",
+        "Real-time visibility into milestone achievement"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "MAN.5",
+      "process_name": "Risk Management",
+      "process_instance_id": "PI-MAN5-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "MAN.5 process performance is fully achieved (F, 100%). Operational risk register identifies, evaluates, and mitigates technical, schedule, safety, and security risks with assigned risk owners and periodic reviews. Evidence artifact EVID-MAN5-RISK-001 is validated, frozen, and corroborated by interview Session H.",
+      "evidence_references": [
+        "EVID-MAN5-RISK-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "MAN.5.BP1",
+          "bp_title": "Establish risk management strategy",
+          "evidence_ref": "EVID-MAN5-RISK-001",
+          "status": "SATISFIED",
+          "findings": "Risk strategy defines probability/impact scoring and escalation triggers."
+        },
+        {
+          "bp_id": "MAN.5.BP2",
+          "bp_title": "Identify and evaluate risks continuously",
+          "evidence_ref": "EVID-MAN5-RISK-001",
+          "status": "SATISFIED",
+          "findings": "Comprehensive risk register covering toolchain, hardware, and safety risks."
+        },
+        {
+          "bp_id": "MAN.5.BP3",
+          "bp_title": "Define and execute risk mitigation actions",
+          "evidence_ref": "EVID-MAN5-RISK-001",
+          "status": "SATISFIED",
+          "findings": "Mitigation actions assigned to owners with tracked completion dates."
+        },
+        {
+          "bp_id": "MAN.5.BP4",
+          "bp_title": "Monitor and review risks periodically",
+          "evidence_ref": "EVID-MAN5-RISK-001",
+          "status": "SATISFIED",
+          "findings": "Bi-weekly risk reviews recorded with updated residual risk levels."
+        }
+      ],
+      "strengths": [
+        "Proactive identification of hardware-in-the-loop and compiler risks",
+        "Zero open high-residual risks at release"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    },
+    {
+      "process_id": "MAN.6",
+      "process_name": "Measurement",
+      "process_instance_id": "PI-MAN6-20260919-001",
+      "pa11_rating": "F",
+      "rating_justification": "MAN.6 process performance is fully achieved (F, 100%). Measurement information needs, metrics specification, automated metric collection (code coverage, defect density, complexity, test pass rate), and decision support reports are systematically executed. Evidence artifact EVID-MAN6-MEAS-001 is validated, frozen, and corroborated by interview Session H.",
+      "evidence_references": [
+        "EVID-MAN6-MEAS-001"
+      ],
+      "base_practice_evaluations": [
+        {
+          "bp_id": "MAN.6.BP1",
+          "bp_title": "Identify measurement information needs and metrics",
+          "evidence_ref": "EVID-MAN6-MEAS-001",
+          "status": "SATISFIED",
+          "findings": "Metrics defined for code quality, test coverage, defect resolution, and progress."
+        },
+        {
+          "bp_id": "MAN.6.BP2",
+          "bp_title": "Collect and store measurement data",
+          "evidence_ref": "EVID-MAN6-MEAS-001",
+          "status": "SATISFIED",
+          "findings": "Automated CI metric collection scripts and persistent data stores."
+        },
+        {
+          "bp_id": "MAN.6.BP3",
+          "bp_title": "Analyze measurement data and report results",
+          "evidence_ref": "EVID-MAN6-MEAS-001",
+          "status": "SATISFIED",
+          "findings": "Metric dashboards and analytics reports provided to management."
+        },
+        {
+          "bp_id": "MAN.6.BP4",
+          "bp_title": "Evaluate measurement process and improve",
+          "evidence_ref": "EVID-MAN6-MEAS-001",
+          "status": "SATISFIED",
+          "findings": "Measurement process reviewed and optimized for automated CI feedback."
+        }
+      ],
+      "strengths": [
+        "Automated metric extraction directly from compiler and test harnesses",
+        "Objective quantitative data backing all release decisions"
+      ],
+      "weaknesses": [],
+      "observations": [],
+      "contrary_evidence": []
+    }
+  ],
+  "record_sha256": "227b6d05c0be27f16d1e91901ccd096dc0700de0416ddd6925fcfc0261f422c8"
+}
