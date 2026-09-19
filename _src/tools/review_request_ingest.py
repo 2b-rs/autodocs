@@ -30,6 +30,7 @@ from typing import Any, Callable
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import canonical_id as cid_util  # noqa: E402
 import curation_flags as cf  # noqa: E402
+import review_request_abuse_control as rrac  # noqa: E402
 import review_request_package as rrp  # noqa: E402
 import version_id as vid_util  # noqa: E402
 import version_store as vstore  # noqa: E402
@@ -118,6 +119,7 @@ def get_global_replay_tracker() -> ReplayTracker:
 
 def reset_replay_tracker() -> None:
     _GLOBAL_REPLAY_TRACKER.reset()
+    rrac.reset_abuse_controller()
 
 
 # ============================================================================
@@ -583,12 +585,14 @@ def ingest(
     campaign: str = "website-review-request",
     records_root: Path | None = None,
     versions_root: Path | None = None,
+    queue_root: Path | None = None,
     raw_body: bytes | None = None,
     signature_header: str | None = None,
     webhook_secret: str | None = None,
     allowed_repositories: tuple[str, ...] | list[str] | None = None,
     refetch_fn: Callable[[str, int], dict | None] | None = None,
     replay_tracker: ReplayTracker | None = None,
+    abuse_controller: rrac.AbuseController | None = None,
 ) -> dict:
     """Validate, authoritatively resolve live target, verify transport trust,
     check staleness & duplicates, and (if apply=True) enqueue as curation-queue item.
@@ -651,6 +655,79 @@ def ingest(
         report["outcome"] = IngestOutcome.REJECTED_INVALID
         report["errors"] = schema_errors
         return report
+
+    # Step 2b: Automated URL Security, Content Moderation & Abuse Checks (0033-07.04)
+    # 1. URL Security Check (PROC-0033-02-10)
+    url_errors = rrac.validate_all_evidence_urls(package)
+    if url_errors:
+        report["outcome"] = IngestOutcome.QUARANTINED
+        report["errors"] = url_errors
+        if apply:
+            q_path = rrac.write_quarantine_item(
+                package_or_payload=package,
+                reason="; ".join(url_errors),
+                category="prohibited_url_security",
+                origin_id=trust.get("authoritative_actor") or (package.get("actor_claim") or {}).get("claimed_actor"),
+                queue_root=queue_root,
+            )
+            report["path"] = str(q_path)
+        return report
+
+    # 2. Content Moderation & Credential Leaks (PROC-0033-02-09, PROC-0033-02-11)
+    is_abuse, abuse_cat, abuse_reason = rrac.check_package_content_moderation(package)
+    if is_abuse and abuse_reason:
+        report["outcome"] = IngestOutcome.QUARANTINED
+        report["errors"] = [f"Content moderation trigger ({abuse_cat}): {abuse_reason}"]
+        if apply:
+            q_path = rrac.write_quarantine_item(
+                package_or_payload=package,
+                reason=abuse_reason,
+                category=abuse_cat or "sensitive_content",
+                origin_id=trust.get("authoritative_actor") or (package.get("actor_claim") or {}).get("claimed_actor"),
+                queue_root=queue_root,
+            )
+            report["path"] = str(q_path)
+        return report
+
+    # 3. Rate Limiting, Burst Quotas & Flooding (PROC-0033-02-11)
+    abuse_ctrl = abuse_controller if abuse_controller is not None else rrac.get_global_abuse_controller()
+    origin_ident = trust.get("authoritative_actor") or (package.get("actor_claim") or {}).get("claimed_actor") or "anonymous_origin"
+    target_cid_pre = package.get("target_canonical_id")
+    allowed, abuse_code, abuse_msg = abuse_ctrl.check_and_record_request(
+        origin_id=origin_ident,
+        target_canonical_id=target_cid_pre,
+    )
+    if not allowed and abuse_msg:
+        report["outcome"] = IngestOutcome.QUARANTINED
+        report["errors"] = [f"Abuse control trigger ({abuse_code}): {abuse_msg}"]
+        if apply:
+            q_path = rrac.write_quarantine_item(
+                package_or_payload=package,
+                reason=abuse_msg,
+                category=abuse_code or "rate_limit_or_flood",
+                origin_id=origin_ident,
+                queue_root=queue_root,
+            )
+            report["path"] = str(q_path)
+        return report
+
+    # 4. Queue Capacity Hysteresis Check (PROC-0033-02-11)
+    cap_ok, cap_code, cap_count = abuse_ctrl.check_queue_capacity(queue_root=queue_root)
+    if not cap_ok:
+        report["outcome"] = IngestOutcome.QUARANTINED
+        report["errors"] = [f"Queue capacity ceiling exceeded ({cap_count}/500 active items); intake quarantined"]
+        if apply:
+            q_path = rrac.write_quarantine_item(
+                package_or_payload=package,
+                reason=f"Queue capacity ceiling exceeded ({cap_count}/500 items)",
+                category="queue_capacity_overflow",
+                origin_id=origin_ident,
+                queue_root=queue_root,
+            )
+            report["path"] = str(q_path)
+        return report
+    elif cap_code == "capacity_warning":
+        report["warnings"].append(f"Queue capacity warning: {cap_count}/500 items in active queue.")
 
     # Step 3: Authoritative Live-Target Resolution
     target_canonical_id = package.get("target_canonical_id")
