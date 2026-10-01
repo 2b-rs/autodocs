@@ -1,0 +1,881 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+build_report.py — Orchestrates and publishes traceable publication build reports.
+
+Tasks:
+  - 0001-07: Combines merge, diagram, generate, and validate subreports into a
+    single combined publication report (output/build-reports/combined-<timestamp>.json)
+    conforming to docs/pipeline/build-report-schema.md.
+  - 0001-08 / 0001-09: Generates the canonical browsable HTML report page model
+    (_src/sources/pages/build-reports.json) with links to archived logs,
+    referenced artifacts, and per-stage counters.
+
+CLI:
+    python3 _src/tools/build_report.py combine [--run-archive-ref=<ref>]
+    python3 _src/tools/build_report.py publish [--run-archive-ref=<ref>]
+    python3 _src/tools/build_report.py combine --no-ledger
+    python3 _src/tools/build_report.py mint-ref
+        Mints and prints a distinguishably marked fallback RUN_ARCHIVE_REF
+        (see mint_manual_run_archive_ref) for a manual/out-of-runner build
+        (0043-01), so `combine` can still correlate its cohort. Export it
+        before invoking the producers, e.g.:
+            export RUN_ARCHIVE_REF="$(python3 _src/tools/build_report.py mint-ref)"
+
+  - 0043-02: `combine` and `publish` append exactly one entry per publication
+    run to the tracked append-only build ledger `docs/evidence/build-ledger.jsonl`
+    (see build_ledger.py and docs/pipeline/build-ledger.md). `--no-ledger`
+    suppresses the append for a diagnostic re-run that must not enter the
+    permanent build history. Such a diagnostic combined report is machine-marked
+    with `"diagnostic_no_ledger": true` so `validate.py`'s freshness check can
+    tell an expressly diagnostic cohort from a publication cohort whose ledger
+    append simply failed (0043-04 / DEC-0043-003).
+  - 0043-04: `publish` (and the `provenance` command) write the structured
+    `publication_provenance` object into the page model, binding the published
+    page to exactly one schema-valid ledger entry. `validate.py` compares that
+    binding against the ledger and the local cohorts and reports staleness as
+    an error finding.
+
+CLI (0043-04):
+    python3 _src/tools/build_report.py provenance
+        Recompute only the `publication_provenance` object of the existing page
+        model from the tracked ledger, leaving the rendered body untouched. This
+        is the supported way to refresh the binding when the raw combined report
+        of the recorded run is no longer present (it lives under git-ignored
+        `output/` per DEC-0043-001), and it is idempotent.
+"""
+import datetime
+import glob
+import html
+from report_page_header import report_page_header, tokenize_report_markup
+import json
+import math
+import os
+import secrets
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import build_ledger  # noqa: E402  (same-directory sibling module)
+import build_report_envelope as envelope  # noqa: E402
+
+SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(SRC)
+REPORTS_DIR = os.path.join(ROOT, "output", "build-reports")
+PAGE_MODEL = os.path.join(SRC, "sources", "pages", "build-reports.json")
+REQUIRED_STAGES = envelope.REQUIRED_STAGES
+ALLOWED_FINDING_SEVERITIES = envelope.ALLOWED_FINDING_SEVERITIES
+SCHEMA_VERSION = envelope.SCHEMA_VERSION
+LEGACY_SCHEMA_VERSION = envelope.LEGACY_SCHEMA_VERSION
+
+# 0043-04: schema version of the `publication_provenance` object written into
+# the page model. Bump only on a breaking change; validate.py refuses an
+# unknown version rather than guessing its meaning.
+PROVENANCE_SCHEMA_VERSION = "1.0"
+PROVENANCE_KEY = "publication_provenance"
+
+# Runner-issued refs name a real output/run-archive/run-<timestamp>-n<seq>
+# pair (see runner-host/run-loop.sh). A build run outside the runner (the
+# manual WARTUNG.md path) has no such pair to name, but `combine` still
+# requires a non-empty run_archive_ref shared by every subreport in the
+# cohort (0043-01: "combine cannot starve on missing cohorts"). This prefix
+# marks a minted fallback so it can never be mistaken for, or collide with, a
+# real runner-issued ref.
+MANUAL_REF_PREFIX = "manual-"
+
+# A ledger entry's combined_report_ref names output/build-reports/combined-*.json,
+# which DEC-0043-001 keeps permanently git-ignored — it never reaches the published
+# site. Rendering it as a link therefore produces a dead link on every history row
+# (0043-03, finding F-BELANNA-0043-03-01). Following the same idea as
+# MANUAL_REF_PREFIX above — mark what cannot resolve instead of pretending it does —
+# such a ref is rendered as plain text that still shows its value. Only a ref naming
+# a *tracked* (published) path is rendered as a link; the local, git-ignored
+# output/ tree is deliberately not consulted, since a check that passes only because
+# this machine happens to hold an artifact is exactly the defect being fixed.
+_TRACKED_PATHS_CACHE = {}
+
+
+def _tracked_paths(root=None):
+    """Set of repository-relative paths tracked by Git, cached per root.
+
+    Fails closed: if Git cannot be consulted, the set is empty and nothing is
+    rendered as a link.
+    """
+    key = os.path.abspath(root or ROOT)
+    if key not in _TRACKED_PATHS_CACHE:
+        try:
+            completed = subprocess.run(
+                ["git", "-C", key, "ls-files", "-z"],
+                capture_output=True, text=True, timeout=60, check=True,
+            )
+            paths = frozenset(p for p in completed.stdout.split("\0") if p)
+        except (OSError, subprocess.SubprocessError):
+            paths = frozenset()
+        _TRACKED_PATHS_CACHE[key] = paths
+    return _TRACKED_PATHS_CACHE[key]
+
+
+def _ref_is_published(ref, root=None):
+    """True only when `ref` names a tracked file, i.e. one that exists on the
+    published site and can therefore be linked without producing a dead link."""
+    if not isinstance(ref, str) or not ref.strip():
+        return False
+    candidate = ref.strip()
+    if os.path.isabs(candidate):
+        return False
+    candidate = os.path.normpath(candidate)
+    if candidate.startswith(".."):
+        return False
+    return candidate in _tracked_paths(root)
+
+
+def _esc(s):
+    return html.escape(str(s if s is not None else ""), quote=True)
+
+
+def mint_manual_run_archive_ref():
+    """Mint a fallback RUN_ARCHIVE_REF for a publication run executed outside
+    the runner lifecycle (runner-host/run-loop.sh).
+
+    The result is distinguishably marked with MANUAL_REF_PREFIX so it is never
+    indistinguishable from a real runner-issued ref, which always names an
+    actual output/run-archive/run-<timestamp>-n<seq> pair. Uniqueness across
+    concurrent/successive manual runs comes from a UTC timestamp plus 4 bytes
+    (8 hex chars) of CSPRNG entropy from `secrets`.
+    """
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return f"{MANUAL_REF_PREFIX}{stamp}-{secrets.token_hex(4)}"
+
+
+def _has_run_archive_ref(value):
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _parse_utc_timestamp(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return None
+    if parsed.strftime("%Y-%m-%dT%H:%M:%SZ") != value:
+        return None
+    return parsed.replace(tzinfo=datetime.timezone.utc)
+
+
+def _is_string_list(value):
+    return isinstance(value, list) and all(isinstance(item, str) for item in value)
+
+
+def _validate_subreport(data, selected_run_id):
+    return envelope.validate_v2_subreport(data, selected_run_id)
+
+
+def load_latest_subreports(since_ts=None, run_archive_ref=None, run_id=None):
+    """Load schema-valid producer reports from one exact run_id cohort.
+
+    Directory listing is path-sorted. Cohort identity is never the newest mtime.
+    """
+    os.makedirs(REPORTS_DIR, exist_ok=True)
+    paths = []
+    payloads = []
+    findings = []
+    pattern = os.path.join(REPORTS_DIR, "*.json")
+    for f in sorted(glob.glob(pattern)):
+        if os.path.basename(f).startswith("combined-"):
+            continue
+        try:
+            with open(f, encoding="utf-8") as fp:
+                data = json.load(fp)
+            if not isinstance(data, dict):
+                raise ValueError("top-level JSON value must be an object")
+        except (OSError, UnicodeError, ValueError) as exc:
+            findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"{os.path.basename(f)} is not a readable report: {exc}",
+                "ref": os.path.relpath(f, ROOT),
+            })
+            continue
+        paths.append(f)
+        payloads.append(data)
+
+    requested_run_id = run_id or envelope.run_id_from_env()
+    selected, by_kind, select_findings = envelope.select_cohort_files(
+        paths,
+        payloads,
+        requested_run_id=requested_run_id,
+        requested_archive_ref=run_archive_ref,
+    )
+    findings.extend(select_findings)
+    if since_ts is not None:
+        by_kind = {
+            kind: data
+            for kind, data in by_kind.items()
+            if data.get("started_at", "") >= since_ts
+        }
+    return by_kind, findings, selected
+
+
+def combine_reports(run_archive_ref=None, diagnostic_no_ledger=False, run_id=None):
+    """Combine one correlated producer-report cohort into a canonical v2 report."""
+    requested_ref = run_archive_ref if run_archive_ref is not None else os.environ.get("RUN_ARCHIVE_REF")
+    subreports, load_findings, selected_run_id = load_latest_subreports(
+        run_archive_ref=requested_ref if _has_run_archive_ref(requested_ref) else None,
+        run_id=run_id,
+    )
+    now = time.time()
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
+    valid_started_at = []
+    for report in subreports.values():
+        value = report.get("started_at")
+        try:
+            time.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        except (TypeError, ValueError):
+            continue
+        valid_started_at.append(value)
+    started_at = min(valid_started_at, default=now_iso)
+    finished_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now))
+
+    all_inputs = []
+    all_changed = []
+    all_findings = list(load_findings)
+    by_stage = {}
+    overall_exit_code = 1 if load_findings else 0
+    lineage_err = envelope.lineage_matches(subreports)
+    if lineage_err:
+        all_findings.append({
+            "category": "mixed-run-cohort",
+            "severity": "error",
+            "message": lineage_err,
+            "ref": selected_run_id or "lineage",
+        })
+        overall_exit_code = max(overall_exit_code, 1)
+
+    trigger = None
+    source_commit = tool_commit = config_commit = None
+    input_members = []
+    output_members = []
+
+    for kind in REQUIRED_STAGES:
+        sub = subreports.get(kind)
+        if sub is None:
+            by_stage[kind] = {}
+            cohort = f" for run_id {selected_run_id!r}" if selected_run_id else " in a correlated run cohort"
+            all_findings.append({
+                "category": "missing-build-stage",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has no report{cohort}.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+            continue
+
+        trigger = sub.get("trigger")
+        source_commit = sub.get("source_commit")
+        tool_commit = sub.get("tool_commit")
+        config_commit = sub.get("config_commit")
+        for member in (sub.get("input_artifact_set") or {}).get("members") or []:
+            if member not in input_members:
+                input_members.append(member)
+        for member in (sub.get("output_artifact_set") or {}).get("members") or []:
+            if member not in output_members:
+                output_members.append(member)
+
+        counts = sub.get("counts")
+        if not isinstance(counts, dict):
+            counts = {}
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has missing or invalid counts.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+        by_stage[kind] = counts
+
+        for inp in sub.get("inputs", []) if isinstance(sub.get("inputs", []), list) else []:
+            if inp not in all_inputs:
+                all_inputs.append(inp)
+        for art in sub.get("changed_artifacts", []) if isinstance(sub.get("changed_artifacts", []), list) else []:
+            if art not in all_changed:
+                all_changed.append(art)
+
+        stage_findings = sub.get("findings", [])
+        if not isinstance(stage_findings, list):
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has invalid findings.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+        else:
+            all_findings.extend(stage_findings)
+
+        exit_code = sub.get("exit_code")
+        if isinstance(exit_code, bool) or not isinstance(exit_code, int) or not 0 <= exit_code <= 255:
+            all_findings.append({
+                "category": "malformed-build-report",
+                "severity": "error",
+                "message": f"Required build stage {kind!r} has missing or invalid exit_code.",
+                "ref": kind,
+            })
+            overall_exit_code = max(overall_exit_code, 1)
+        elif exit_code != 0:
+            overall_exit_code = max(overall_exit_code, exit_code)
+
+    if not input_members or not output_members:
+        all_findings.append({
+            "category": "incomplete-artifact-set",
+            "severity": "error",
+            "message": "combined report requires complete input and output artifact-set members from the stage lineage",
+            "ref": selected_run_id or "artifact-set",
+        })
+        overall_exit_code = max(overall_exit_code, 1)
+
+    archive_ref = None
+    for sub in subreports.values():
+        if _has_run_archive_ref(sub.get("run_archive_ref")):
+            archive_ref = sub.get("run_archive_ref")
+            break
+    if _has_run_archive_ref(requested_ref):
+        archive_ref = requested_ref
+
+    combined = {
+        "schema_version": SCHEMA_VERSION,
+        "schema": envelope.SCHEMA_NAME,
+        "report_kind": "combined",
+        "tool": "build_report.py",
+        "command": "build_report.py combine",
+        "inputs": all_inputs,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "duration_s": round(now - time.mktime(time.strptime(started_at, "%Y-%m-%dT%H:%M:%SZ")) if "T" in started_at else 0.0, 3),
+        "exit_code": overall_exit_code,
+        "changed_artifacts": all_changed,
+        "counts": {
+            "by_stage": by_stage,
+            "overall_success": overall_exit_code == 0,
+        },
+        "findings": all_findings,
+        "run_archive_ref": archive_ref,
+        "run_id": selected_run_id,
+        "source_commit": source_commit,
+        "tool_commit": tool_commit,
+        "config_commit": config_commit,
+        "trigger": trigger,
+        "success": overall_exit_code == 0,
+    }
+    if input_members:
+        combined["input_artifact_set"] = envelope.artifact_set_from_members(input_members)
+    if output_members:
+        combined["output_artifact_set"] = envelope.artifact_set_from_members(output_members)
+    if diagnostic_no_ledger:
+        combined["diagnostic_no_ledger"] = True
+
+    out_file = os.path.join(REPORTS_DIR, f"combined-{selected_run_id or int(now)}.json")
+    with open(out_file, "w", encoding="utf-8") as f:
+        json.dump(combined, f, ensure_ascii=False, indent=1)
+
+    return combined, out_file
+
+def publication_provenance(ledger_path=None, rendered_run_archive_ref=None, previous=None):
+    """Build the structured publication-provenance object for the page model (0043-04).
+
+    The binding is derived from the tracked ledger alone: the newest
+    schema-valid entry is *the* published run, because the ledger is the only
+    configuration-managed publication evidence (`DEC-0043-001`). The raw
+    combined report it pins lives under git-ignored `output/` and may be absent
+    in any clean checkout, so it is never required to compute this object.
+
+    `rendered_run_archive_ref` records which cohort the page's latest-run detail
+    section was rendered from, so a page whose body and whose binding disagree
+    is detectable. It is `None` when the rendered run carries no cohort identity
+    (the historic backfilled run does not).
+    """
+    entries, findings = build_ledger.read_entries(ledger_path)
+    newest = entries[-1] if entries else None
+    binding = None
+    if newest is not None:
+        binding = {
+            "recorded_at": newest.get("recorded_at"),
+            "run_archive_ref": newest.get("run_archive_ref"),
+            "combined_report_digest": newest.get("combined_report_digest"),
+            "backfilled": bool(newest.get("backfilled")),
+        }
+    provenance = {
+        "schema_version": PROVENANCE_SCHEMA_VERSION,
+        "bound_at": _utc_now_iso(),
+        "ledger_ref": os.path.relpath(ledger_path or build_ledger.LEDGER_PATH, ROOT),
+        "ledger_entry_count": len(entries),
+        "ledger_findings_count": len(findings),
+        "ledger_entry": binding,
+        "rendered_run_archive_ref": rendered_run_archive_ref,
+    }
+    # `bound_at` is when *this* binding was established, not when the generator
+    # last ran: an unchanged binding keeps its original timestamp so a repeated
+    # publication of the same run produces a byte-identical tracked page model.
+    if isinstance(previous, dict):
+        unchanged = all(
+            previous.get(field) == provenance[field]
+            for field in provenance if field != "bound_at"
+        )
+        if unchanged and isinstance(previous.get("bound_at"), str):
+            provenance["bound_at"] = previous["bound_at"]
+    return provenance
+
+
+def _utc_now_iso():
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+
+
+def write_page_provenance(ledger_path=None, page_model=None):
+    """Refresh only `publication_provenance` in an existing page model.
+
+    Used when the page body is current but the binding must be recomputed from
+    the tracked ledger — e.g. after a backfill, or in a checkout where the raw
+    combined report of the recorded run is not present. Idempotent.
+    """
+    target = page_model or PAGE_MODEL
+    with open(target, encoding="utf-8") as f:
+        page_data = json.load(f)
+    previous = page_data.get(PROVENANCE_KEY)
+    rendered = previous.get("rendered_run_archive_ref") if isinstance(previous, dict) else None
+    page_data[PROVENANCE_KEY] = publication_provenance(ledger_path, rendered, previous)
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(page_data, f, ensure_ascii=False, indent=1)
+    return target
+
+
+def get_extraction_status_summary():
+    """Scan version store and return extraction metrics."""
+    root = os.path.join(SRC, "spec", "versions")
+    ap_dir = os.path.join(root, "AUTOSAR", "AP", "record")
+    cp_dir = os.path.join(root, "AUTOSAR", "CP", "record")
+
+    ap_files = len(glob.glob(os.path.join(ap_dir, "*.jsonl"))) if os.path.isdir(ap_dir) else 0
+    cp_files = len(glob.glob(os.path.join(cp_dir, "*.jsonl"))) if os.path.isdir(cp_dir) else 0
+    total_specs = ap_files + cp_files
+
+    ap_versions = 0
+    cp_versions = 0
+    releases = set()
+
+    if os.path.isdir(ap_dir):
+        for p in glob.glob(os.path.join(ap_dir, "*.jsonl")):
+            try:
+                with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if not line.strip():
+                            continue
+                        ap_versions += 1
+                        if '"release":' in line:
+                            rel = line.split('"release": "')[1].split('"')[0]
+                            releases.add(rel)
+            except OSError:
+                pass
+
+    if os.path.isdir(cp_dir):
+        for p in glob.glob(os.path.join(cp_dir, "*.jsonl")):
+            try:
+                with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if not line.strip():
+                            continue
+                        cp_versions += 1
+                        if '"release":' in line:
+                            rel = line.split('"release": "')[1].split('"')[0]
+                            releases.add(rel)
+            except OSError:
+                pass
+
+    total_versions = ap_versions + cp_versions
+    sorted_releases = sorted(releases)
+    return {
+        "ap_files": ap_files,
+        "cp_files": cp_files,
+        "total_specs": total_specs,
+        "ap_versions": ap_versions,
+        "cp_versions": cp_versions,
+        "total_versions": total_versions,
+        "releases": sorted_releases,
+    }
+
+
+def _extraction_status_html():
+    """Render the HTML section for specification extraction and multi-release ingestion."""
+    stats = get_extraction_status_summary()
+    total_specs = stats["total_specs"]
+    ap_files = stats["ap_files"]
+    cp_files = stats["cp_files"]
+    total_versions = stats["total_versions"]
+    ap_versions = stats["ap_versions"]
+    cp_versions = stats["cp_versions"]
+    releases = stats["releases"]
+    rel_str = ", ".join(releases) if releases else "R17-03 bis R25-11"
+
+    return f"""<h2 class="sect" id="extraction-status">Spezifikations- &amp; Extraktions-Status (Multi-Release Ingestion)</h2>
+<section class="br-head">
+<p>Übersicht der automatisierten Extraktions- und Ingestionsläufe der Spezifikations-Datenbank. Am <strong>2026-09-30</strong> wurde die vollständige Multi-Release-Ingestion für alle Requirements der AUTOSAR Classic und Adaptive Platform durchgeführt.</p>
+<p class="br-meta">
+<span>Status: <strong><span class="br-badge-ok">ERFOLG</span></strong></span>
+<span>Letzter Extraktionslauf: <strong>2026-09-30</strong></span>
+<span>Plattformen: <strong>AUTOSAR AP &amp; CP</strong></span>
+<span>Releases: <strong>{len(releases)} Versionen</strong></span>
+<span>Parallelisierung: <strong>bis zu 10 CPU-Workers</strong></span>
+<span>Pipeline: <code>sync_baseline_versions.py</code> · <code>multi_release_ingest.py</code> · <code>multi_release_report.py</code></span>
+</p>
+</section>
+
+<div class="br-grid">
+<article><span>Requirements (Gesamt)</span><strong>{total_specs:,}</strong><small>{ap_files:,} Adaptive / {cp_files:,} Classic</small></article>
+<article><span>Gespeicherte Versionen</span><strong>{total_versions:,}</strong><small>mit SHA-256 Inhalts-Hashes</small></article>
+<article><span>Abgedeckte Releases</span><strong>{len(releases)}</strong><small>{_esc(rel_str[:40])}...</small></article>
+<article><span>Multi-CPU-Pipeline</span><strong>10 Workers</strong><small>parallele Ingestion &amp; Delta-Analyse</small></article>
+</div>
+
+<details class="br-section" open>
+<summary><strong>Extraktions-Details &amp; Plattform-Aufschlüsselung (Lauf 2026-09-30)</strong></summary>
+<div class="br-table-wrap">
+<table class="br-table">
+<thead><tr><th>Plattform</th><th>Requirements</th><th>Versionseinträge</th><th>Releases &amp; Umfang</th><th>Dokumente / Module</th></tr></thead>
+<tbody>
+<tr>
+<td><strong>AUTOSAR Adaptive Platform (AP)</strong></td>
+<td>{ap_files:,}</td>
+<td>{ap_versions:,}</td>
+<td>R25-11 Baseline + Multi-Release-Abgleich mit R20-11</td>
+<td><code>SWS_AIDSM</code>, <code>SWS_CORE</code>, <code>SWS_DM</code>, <code>SWS_EM</code>, <code>SWS_LOG</code>, <code>SWS_PER</code>, <code>SWS_PHM</code>, <code>SWS_SM</code>, <code>SWS_TS</code>, <code>SWS_UCM</code>, etc.</td>
+</tr>
+<tr>
+<td><strong>AUTOSAR Classic Platform (CP)</strong></td>
+<td>{cp_files:,}</td>
+<td>{cp_versions:,}</td>
+<td>{len(releases)} Releases ({_esc(rel_str)})</td>
+<td><code>SWS_Com</code>, <code>SWS_LDCOM</code>, <code>SWS_Dlt</code>, <code>RS_MCR</code>, <code>SWS_CAN</code>, etc.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</details>
+
+<details class="br-section" open>
+<summary><strong>Verwandte Berichte &amp; Revisions-Werkzeuge</strong></summary>
+<div class="br-table-wrap" style="padding:1rem;">
+<ul style="margin:0;padding-left:1.2rem;line-height:1.8;">
+<li><a href="versions.html"><strong>Versions- &amp; Provenienz-Explorer (versions.html)</strong></a> — Interaktives Frontend mit Revisions-Timeline, Change-Epoch-Gruppierung, chronologischem 2-Klick-Vergleich, wortgenauem Side-by-Side-Diff und Lifecycle-Kennzeichnung entfallener Requirements.</li>
+<li><a href="extraction-reports.html"><strong>Extraktions-Berichte (extraction-reports.html)</strong></a> — Vollständige Historie aller Extraktions-Berichtsversionen mit Dokumenten- und Fehlerscans.</li>
+<li><a href="curation-report.html"><strong>Kurations-Bericht (curation-report.html)</strong></a> — Übersicht über ungeklärte oder redaktionell bearbeitete Anforderungen und Review-Workflows.</li>
+</ul>
+</div>
+</details>"""
+
+
+def _format_run_ref_html(ref, root=None):
+    if not isinstance(ref, str) or not ref.strip():
+        return "<code>historisch nachgetragen</code>"
+    ref_clean = ref.strip()
+    if ref_clean.startswith("http://") or ref_clean.startswith("https://"):
+        return f'<code><a href="{_esc(ref_clean)}" target="_blank" rel="noopener">{_esc(ref_clean)}</a></code>'
+    if ref_clean.startswith("gh-actions-"):
+        parts = ref_clean.split("-")
+        if len(parts) >= 3 and parts[2].isdigit():
+            run_id = parts[2]
+            url = f"https://github.com/2b-rs/autodocs/actions/runs/{run_id}"
+            return f'<code><a href="{url}" target="_blank" rel="noopener">{_esc(ref_clean)}</a></code>'
+    r = root or ROOT
+    if ref_clean != "N/A" and os.path.exists(os.path.join(r, ref_clean)):
+        return f'<code><a href="{_esc(ref_clean)}">{_esc(ref_clean)}</a></code>'
+    return f'<code>{_esc(ref_clean)}</code>'
+
+
+def generate_report_page(combined_report=None, run_archive_ref=None, ledger_path=None):
+    """Generate the static page model for build-reports.html."""
+    entries, ledger_findings = build_ledger.read_entries(ledger_path)
+    newest_entry = entries[-1] if entries else None
+
+    if combined_report is None:
+        requested_run = envelope.run_id_from_env()
+        combined_files = sorted(glob.glob(os.path.join(REPORTS_DIR, "combined-*.json")))
+        chosen = None
+        if requested_run:
+            for path in combined_files:
+                try:
+                    with open(path, encoding="utf-8") as f:
+                        candidate = json.load(f)
+                except (OSError, UnicodeError, ValueError):
+                    continue
+                if isinstance(candidate, dict) and candidate.get("run_id") == requested_run:
+                    chosen = candidate
+                    break
+        elif len(combined_files) == 1:
+            with open(combined_files[0], encoding="utf-8") as f:
+                chosen = json.load(f)
+
+        # Fallback to newest ledger entry if chosen is missing or belongs to an older cohort
+        if chosen is not None and newest_entry is not None:
+            if chosen.get("run_archive_ref") != newest_entry.get("run_archive_ref"):
+                chosen = None
+
+        if chosen is None and newest_entry is not None:
+            combined_report = {
+                "report_kind": "combined",
+                "started_at": newest_entry.get("run_started_at", ""),
+                "finished_at": newest_entry.get("run_finished_at", ""),
+                "run_archive_ref": newest_entry.get("run_archive_ref"),
+                "exit_code": newest_entry.get("exit_code", 0),
+                "counts": {
+                    "by_stage": newest_entry.get("counts_by_stage", {}),
+                    "overall_success": newest_entry.get("overall_success", False),
+                },
+                "findings": [],
+            }
+        elif chosen is None:
+            combined_report, _ = combine_reports(run_archive_ref, run_id=requested_run)
+        else:
+            combined_report = chosen
+
+    stage_counts = (combined_report.get("counts") or {}).get("by_stage", {})
+    overall_success = (combined_report.get("counts") or {}).get("overall_success", False)
+    if not isinstance(overall_success, bool):
+        overall_success = False
+    ref = combined_report.get("run_archive_ref") or "N/A"
+    started = combined_report.get("started_at", "")
+    finished = combined_report.get("finished_at", "")
+    findings = combined_report.get("findings", [])
+
+    # Format runner archive link / info
+    archive_html = _format_run_ref_html(ref)
+
+    html_parts = []
+    html_parts.append(tokenize_report_markup("""<style>
+.br-head{padding:1.15rem 1.35rem;border:1px solid #d9dce3;border-radius:14px;background:linear-gradient(135deg,#f7f8ff,#eef5ff);margin:1rem 0 1.4rem}
+.br-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin:.6rem 0 0}
+.br-meta span{background:#fff;border:1px solid #d7dcea;border-radius:999px;padding:.28rem .66rem;font-size:.88rem}
+.br-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;margin:1rem 0 1.5rem}
+.br-grid article{border:1px solid #d9dce3;border-radius:12px;padding:.95rem;background:#fff;box-shadow:0 3px 14px rgba(20,40,80,.06)}
+.br-grid span,.br-grid small{display:block;color:#596274}
+.br-grid strong{display:block;font-size:1.7rem;margin:.18rem 0;font-variant-numeric:tabular-nums}
+.br-section{border:1px solid #d9dce3;border-radius:10px;margin:.8rem 0;background:#fff;overflow:hidden}
+.br-section summary{display:flex;justify-content:space-between;gap:1rem;padding:.8rem 1rem;cursor:pointer;background:#f7f8fa}
+.br-table-wrap{overflow:auto;max-height:42rem}
+.br-table{border-collapse:collapse;width:100%;font-size:.9rem}
+.br-table th{position:sticky;top:0;background:#eef1f6;text-align:left;z-index:1}
+.br-table th,.br-table td{padding:.5rem .7rem;border-bottom:1px solid #e4e7ec;vertical-align:top}
+.br-badge-ok{color:#166534;background:#dcfce7;border-radius:999px;padding:.15rem .6rem;font-weight:bold}
+.br-badge-err{color:#991b1b;background:#fee2e2;border-radius:999px;padding:.15rem .6rem;font-weight:bold}
+</style>"""))
+
+    status_badge = '<span class="br-badge-ok">ERFOLG</span>' if overall_success else '<span class="br-badge-err">FEHLER</span>'
+    html_parts.append(report_page_header(generator="_src/tools/build_report.py", data_source="docs/evidence/build-ledger.jsonl und output/build-reports/combined-*.json", purpose="Zeigt die vollständige Bauhistorie aus dem Build-Ledger sowie Details des jüngsten Laufs; die Liste ist neueste zuerst zu lesen."))
+
+    # Spezifikations- & Extraktions-Status prominent einbinden
+    html_parts.append(_extraction_status_html())
+
+    ledger_entries, ledger_findings = build_ledger.read_entries(ledger_path)
+    html_parts.append('<h2 class="sect">Build-Historie</h2>')
+    html_parts.append('<p>Quelle der Historie: <code>docs/evidence/build-ledger.jsonl</code>. Die Seite wurde beim aktuellen Publikationslauf erzeugt.</p>')
+    if ledger_findings:
+        html_parts.append('<div class="br-section"><strong>Build-Ledger-Befunde</strong><ul>')
+        for finding in ledger_findings:
+            html_parts.append(f'<li><code>{_esc(finding.get("category", "-"))}</code>: {_esc(finding.get("message", "-"))}</li>')
+        html_parts.append('</ul></div>')
+    html_parts.append('<div class="br-table-wrap"><table class="br-table"><thead><tr><th>Zeit</th><th>Ergebnis</th><th>Ref</th><th>Kennzahlen</th><th>Details</th></tr></thead><tbody>')
+    for entry in reversed(ledger_entries):
+        badge = '<span class="br-badge-ok">ERFOLG</span>' if entry.get("overall_success") else '<span class="br-badge-err">FEHLER</span>'
+        counts = entry.get("counts_by_stage") or {}
+        pages = ((counts.get("html_generate") or {}).get("pages_generated_per_lang") or {}).get("de", 0)
+        checks = (counts.get("validate") or {}).get("checks_performed", 0)
+        diagrams = (counts.get("i18n_diagrams") or {}).get("sources_considered", 0)
+        detail_ref = entry.get("combined_report_ref") or ""
+        if not detail_ref:
+            detail = "–"
+        elif _ref_is_published(detail_ref):
+            detail = f'<a href="{_esc(detail_ref)}">JSON-Details</a>'
+        else:
+            # Not published (typically the git-ignored output/build-reports/ tree):
+            # show the ref value as plain text instead of a dead link.
+            detail = f'<code>{_esc(detail_ref)}</code>'
+        ref_cell = _format_run_ref_html(entry.get("run_archive_ref"))
+        html_parts.append(f'<tr><td>{_esc(entry.get("run_finished_at", ""))}</td><td>{badge}</td><td>{ref_cell}</td><td>Seiten: {pages}; Prüfungen: {checks}; Diagramme: {diagrams}; Befunde: {entry.get("findings_count", 0)}</td><td>{detail}</td></tr>')
+    if not ledger_entries:
+        html_parts.append('<tr><td colspan="5">Keine schemakonformen Ledger-Einträge vorhanden.</td></tr>')
+    html_parts.append('</tbody></table></div>')
+    html_parts.append(f"""<h1 id="latest-run">Traceable Build- & Publikations-Report</h1>
+<section class="br-head">
+<p>Zusammenfassender Veröffentlichungs- und Validierungsbericht der Dokumentations-Pipeline. Jeder Lauf aggregiert die Befunde aus Übersetzung, Diagrammerzeugung, HTML-Generierung und Konsistenzprüfung.</p>
+<p class="br-meta">
+<span>Status: <strong>{status_badge}</strong></span>
+<span>Start: <strong>{_esc(started)}</strong></span>
+<span>Ende: <strong>{_esc(finished)}</strong></span>
+<span>Runner-Referenz: {archive_html}</span>
+</p>
+</section>""")
+
+    # Grid metrics
+    gen_counts = stage_counts.get("html_generate", {})
+    val_counts = stage_counts.get("validate", {})
+    diag_counts = stage_counts.get("i18n_diagrams", {})
+    merge_counts = stage_counts.get("i18n_merge", {})
+
+    de_pages = (gen_counts.get("pages_generated_per_lang") or {}).get("de", 0)
+    checks_n = val_counts.get("checks_performed", 0)
+    findings_n = len(findings)
+
+    html_parts.append(f"""<h2 class="sect">Pipeline-Kennzahlen</h2>
+<div class="br-grid">
+<article><span>Generierte Seiten</span><strong>{de_pages}</strong><small>im kanonischen Hauptbaum (de)</small></article>
+<article><span>Qualitätsprüfungen</span><strong>{checks_n}</strong><small>automatisierte Prüfschritte</small></article>
+<article><span>Befunde & Warnungen</span><strong>{findings_n}</strong><small>in der aktuellen Validierung</small></article>
+<article><span>Diagramm-Quellen</span><strong>{diag_counts.get('sources_considered', 0)}</strong><small>bearbeitet / synchronisiert</small></article>
+</div>""")
+
+    # Stage details
+    html_parts.append("""<h2 class="sect">Stufen-Details & Sub-Reports</h2>""")
+
+    # Validation findings table
+    html_parts.append(f"""<details class="br-section" open>
+<summary><strong>Validierungs-Befunde ({len(findings)})</strong></summary>
+<div class="br-table-wrap">
+<table class="br-table">
+<thead><tr><th>Kategorie</th><th>Schweregrad</th><th>Nachricht</th><th>Referenz</th></tr></thead>
+<tbody>""")
+    if findings:
+        for f in findings:
+            cat = _esc(f.get("category", "-"))
+            sev = _esc(f.get("severity", "-"))
+            msg = _esc(f.get("message", "-"))
+            ref_val = _esc(f.get("ref", "-"))
+            html_parts.append(f"<tr><td><code>{cat}</code></td><td>{sev}</td><td>{msg}</td><td>{ref_val}</td></tr>")
+    else:
+        html_parts.append("<tr><td colspan=\"4\">Keine offenen Befunde. Alle Validierungsprüfungen erfolgreich.</td></tr>")
+    html_parts.append("</tbody></table></div></details>")
+
+    # Stage breakdown
+    html_parts.append("""<details class="br-section">
+<summary><strong>Aggregierte Zähler je Pipeline-Stufe</strong></summary>
+<div class="br-table-wrap">
+<table class="br-table">
+<thead><tr><th>Pipeline-Stufe</th><th>Zähler & Kennzahlen</th></tr></thead>
+<tbody>""")
+    for stage_name, c in stage_counts.items():
+        html_parts.append(f"<tr><td><strong>{_esc(stage_name)}</strong></td><td><code>{_esc(json.dumps(c, ensure_ascii=False))}</code></td></tr>")
+    html_parts.append("</tbody></table></div></details>")
+
+    rendered_ref = combined_report.get("run_archive_ref")
+    if not _has_run_archive_ref(rendered_ref):
+        rendered_ref = None
+    try:
+        with open(PAGE_MODEL, encoding="utf-8") as f:
+            previous_provenance = json.load(f).get(PROVENANCE_KEY)
+    except (OSError, UnicodeError, ValueError):
+        previous_provenance = None
+
+    page_data = {
+        "file": "build-reports.html",
+        "title": "Build- & Publikations-Bericht",
+        "body_class": None,
+        "nolang": True,
+        "nav_html": "<a href=\"index.html\">Start</a> / <a href=\"process.html\">Prozess</a> / Build-Bericht",
+        "footer": "extracted",
+        "main_lead": "",
+        "main": [
+            {
+                "t": "html",
+                "html": "".join(html_parts)
+            }
+        ],
+        # 0043-04 / DEC-0043-003: binds this published page to exactly one
+        # schema-valid tracked ledger entry; validate.py checks the binding.
+        PROVENANCE_KEY: publication_provenance(ledger_path, rendered_ref, previous_provenance),
+    }
+
+    os.makedirs(os.path.dirname(PAGE_MODEL), exist_ok=True)
+    with open(PAGE_MODEL, "w", encoding="utf-8") as f:
+        json.dump(page_data, f, ensure_ascii=False, indent=1)
+
+    return PAGE_MODEL
+
+
+def record_in_ledger(combined, combined_path, ledger_path=None):
+    """Append this run to the tracked build ledger (0043-02).
+
+    Returns ``(ok, message)``. A failure is never swallowed: the ledger is the
+    configuration-managed build evidence required by `DEC-0043-001`, and
+    `0043-04` will treat a run without a ledger entry as a finding, so a failed
+    append must be visible in the exit code of the run that caused it.
+    """
+    try:
+        status, entry = build_ledger.record_run(combined, combined_path, path=ledger_path)
+    except (build_ledger.LedgerError, OSError, ValueError) as exc:
+        return False, f"Build-Ledger NICHT aktualisiert: {exc}"
+    target = ledger_path or build_ledger.LEDGER_PATH
+    rel = os.path.relpath(target, ROOT)
+    if rel.startswith(os.pardir):  # a ledger outside the repository (tests, diagnostics)
+        rel = target
+    if status == "duplicate":
+        return True, (
+            f"Build-Ledger unveraendert: Lauf {entry['run_archive_ref']!r} ist in {rel} "
+            "bereits verzeichnet (ein Eintrag je Lauf)."
+        )
+    return True, f"Build-Ledger ergaenzt: {rel} (+1 Eintrag, Lauf {entry['run_archive_ref']!r})"
+
+
+def main(argv=None):
+    args = list(sys.argv[1:] if argv is None else argv)
+    cmd = args[0] if args else "combine"
+    ref = None
+    run_id = None
+    use_ledger = "--no-ledger" not in args
+    for a in args:
+        if a.startswith("--run-archive-ref="):
+            ref = a.split("=", 1)[1]
+        if a.startswith("--run-id="):
+            run_id = a.split("=", 1)[1]
+
+    if cmd == "combine":
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger, run_id=run_id)
+        print(f"Aggregierter Build-Report geschrieben: {out} (Exit-Code {combined['exit_code']})")
+        exit_code = combined["exit_code"]
+        if use_ledger:
+            ok, message = record_in_ledger(combined, out)
+            print(message, file=sys.stdout if ok else sys.stderr)
+            if not ok:
+                exit_code = max(exit_code, 1)
+        return exit_code
+    if cmd == "provenance":
+        target = write_page_provenance()
+        print(f"Publikations-Provenienz im Seitenmodell aktualisiert: {target}")
+        return 0
+    if cmd == "page":
+        page_path = generate_report_page(run_archive_ref=ref)
+        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path}")
+        return 0
+    if cmd == "publish":
+        combined, out = combine_reports(ref, diagnostic_no_ledger=not use_ledger, run_id=run_id)
+        exit_code = combined["exit_code"]
+        if use_ledger:
+            ok, message = record_in_ledger(combined, out)
+            print(message, file=sys.stdout if ok else sys.stderr)
+            if not ok:
+                exit_code = max(exit_code, 1)
+        page_path = generate_report_page(combined, ref)
+        print(f"Seitenmodell fuer Build-Report erzeugt: {page_path} (Exit-Code {combined['exit_code']})")
+        return exit_code
+    if cmd == "mint-ref":
+        print(mint_manual_run_archive_ref())
+        return 0
+    if cmd == "mint-run-id":
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from version_id import uuid7
+        print(uuid7())
+        return 0
+    print(f"Unbekannter Befehl: {cmd}. Erlaubt: combine, publish, provenance, mint-ref")
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

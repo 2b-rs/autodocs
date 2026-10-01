@@ -1,0 +1,59 @@
+{
+ "schema": "curation-flag@v1",
+ "id": "SWS_UCM_00352",
+ "created": "2026-08-12T12:44:36+00:00",
+ "campaign": "2026-08-service-method-namespace-deviation-review",
+ "outcome": "proposed_change",
+ "decided_by": "ai-agent",
+ "identity": null,
+ "decided_at": "2026-08-12T12:44:36+00:00",
+ "rationale": "Diese Records tragen bereits eine fruehere, explizite Entscheidung (namespace_meta.deviation = 'dienstschnittstelle-ohne-namensraum', source='dienst'), die besagt, dass service-interface-gebundene Methoden keinen Namensraum tragen sollen. Vertiefte Recherche in der AUTOSAR-Norm widerspricht dieser fruehen Entscheidung:\n- AUTOSAR_SWS_CommunicationManagement.pdf, [SWS_CM_01005]: 'the C++ namespace of the Service header file shall be: namespace <ServiceInterface.namespace[0].symbol> { ... }' -- Service-Interfaces haben einen PFLICHT-Namensraum im Metamodell, und generierter Code (inkl. Methoden) liegt darin.\n- AUTOSAR_AP_EXP_ARAComAPI.pdf: Proxy-/Skeleton-Artefakte liegen zusaetzlich in einem aus der Service-Definition abgeleiteten proxy/skeleton-Unternamensraum.\n- Empirisch bestaetigt in diesem Repo: die verlinkte Service-Interface-Seite trägt selbst bereits einen Namensraum (siehe decision_basis.resolved_namespace) -- nur die Methoden-Records haben ihn nicht geerbt.\nMeine Einschaetzung: die fruehere 'ohne-namensraum'-Markierung war ein Fehler, keine gueltige Ausnahme wie z.B. PRS_E2E (das echte, protokoll-only Requirements ohne C++-Bezug sind). Empfehlung: namespace_meta durch den unten vorgeschlagenen, aus der Service-Interface-Seite abgeleiteten Wert ersetzen. Ich wende dies NICHT selbst an -- das ist eine inhaltliche Norm-Interpretationsfrage, die laut curation_flags.py-Prozess der Betreiberin/dem Betreiber zur Freigabe vorliegen muss.",
+ "decision_basis": {
+  "record_title": "service method Activate",
+  "record_path": "_src/spec/records/SWS_UCM/SWS_UCM_00352.json",
+  "current_namespace_meta": {
+   "module": "ucm",
+   "source": "dienst",
+   "generated": false,
+   "deviation": "dienstschnittstelle-ohne-namensraum"
+  },
+  "conflicting_prior_deviation": "dienstschnittstelle-ohne-namensraum",
+  "service_interface_name": "PackageManagement",
+  "service_interface_page": "sv_ucm_PackageManagement_3e8fec.html",
+  "resolved_namespace": "ara::ucm",
+  "proposed_namespace_meta": {
+   "namespace": "ara::ucm",
+   "enclosing": "ara::ucm::PackageManagement",
+   "module": "ucm",
+   "source": "ai-derived-from-service-interface",
+   "generated": false,
+   "review_status": "pending"
+  },
+  "spec_evidence": [
+   {
+    "source": "AUTOSAR_SWS_CommunicationManagement.pdf",
+    "requirement": "SWS_CM_01005",
+    "quote": "the C++ namespace of the Service header file shall be: namespace <ServiceInterface.namespace[0].symbol> { ... }"
+   },
+   {
+    "source": "AUTOSAR_AP_EXP_ARAComAPI.pdf",
+    "quote": "ara::com expects proxy related artifacts inside a namespace proxy. This namespace is typically included in a namespace hierarchy deduced from the service definition and its context."
+   }
+  ],
+  "conversation_context": "Raised and investigated across run.sh #264-268 in the current agent session: schema-mismatch fix in validate.py surfaced these as the last 34 genuine namespace findings; deep research into ara::com/SOME-IP/metamodel docs found the applicable spec rule; inspecting the actual record JSON then revealed a pre-existing, conflicting deviation marker instead of a plain gap."
+ },
+ "instruction": {
+  "goal": "Kurationsentscheidung fuer SWS_UCM_00352 in eine konkrete Aenderung uebersetzen.",
+  "forbidden": [
+   "Die Aenderung direkt committen oder mergen",
+   "Den Normtext ohne Beleg aendern",
+   "complete_flag() aufrufen (das macht nur die Betreiberin/der Betreiber)"
+  ],
+  "steps": [
+   "Lies rationale und decision_basis; sie enthalten den Kurations-Wunsch im Klartext.",
+   "Schlage eine minimale, belegte Aenderung vor (Code-Diff in spec_scrape.py oder neuer RESIDUAL-Eintrag in extraction_report.py) und lege sie als Patch- oder PR-Entwurf ab.",
+   "Verweise im Vorschlag auf diese Flag-Datei und auf den Screenshot-Pfad aus decision_basis.",
+   "Uebergib den Vorschlag zur Pruefung; wende ihn nicht selbst an."
+  ]
+ }
+}

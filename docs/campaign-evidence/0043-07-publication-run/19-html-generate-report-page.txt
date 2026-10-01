@@ -1,0 +1,86 @@
+# fresh run, stage 19: generate.py -- regenerate HTML so the new run appears in the history list
+command: python3 _src/generate.py
+RUN_ARCHIVE_REF=manual-20260824T072259Z-d6eece5d
+agent: Tom-Adeyemi-20260824T133000Z
+cwd: /Users/tobias.anton/devel/autodocs/.worktrees/0043-07
+HEAD: 0475da7bf35456091143ecaad62533a241dc216c
+started: 2026-08-24T16:22:22Z
+----------------------------------------------------------------
+generiert: 428 Seiten
+----------------------------------------------------------------
+shell exit_code: 0
+finished: 2026-08-24T16:23:11Z
+STAGE-COMPLETE
+
+## Note on the exit-status capture (F-TOM-ADEYEMI-002, second instance)
+
+The first capture of this stage used `${PIPESTATUS[0]}`, which is bash syntax;
+this shell is zsh (the equivalent is `${pipestatus[1]}`), so the field came out
+EMPTY rather than wrong. The value above is a clean re-measurement:
+
+    $ RUN_ARCHIVE_REF=manual-20260824T072259Z-d6eece5d python3 _src/generate.py
+    generiert: 428 Seiten
+    real generate.py exit: 0
+
+This artifact was not yet committed when the defect was noticed, so it is
+corrected in place rather than by a separate correction file -- unlike
+`16-combine.txt`, which was already committed and is therefore left unedited
+with its correction in `16a-combine-exit-correction.txt`. An empty field is also
+the benign failure mode: it cannot be mistaken for a passing 0.
+
+Generation is idempotent: the re-measurement produced the same 428 pages and
+left the ledger byte-identical (2 lines,
+sha256 254862eee8af423835154607533af18e21c0e5d8a98efb47322fb6a930d8625e).
+
+## Run visible in the history list -- CONFIRMED
+
+`build-reports.html` contains `manual-20260824T072259Z-d6eece5d` (3 occurrences).
+
+Page model `_src/sources/pages/build-reports.json` binds exactly the newest
+ledger entry -- all three binding fields agree, none inherited from the old
+2026-08-21 state that stage 17 caught:
+
+    newest ledger entry   recorded_at             2026-08-24T11:29:43Z
+    page model            recorded_at             2026-08-24T11:29:43Z
+    newest ledger entry   run_archive_ref         manual-20260824T072259Z-d6eece5d
+    page model            run_archive_ref         manual-20260824T072259Z-d6eece5d
+    newest ledger entry   combined_report_digest  sha256:7add61d98f88a5d8e00ea4e...
+    page model            combined_report_digest  sha256:7add61d98f88a5d8e00ea4e...
+
+## No report page is older than the run that built it -- CONFIRMED
+
+    run_finished_at                        2026-08-24T11:29:43Z
+    build-reports.html               mtime 2026-08-24T16:23:11Z   newer  OK
+    _src/sources/pages/build-reports.json  2026-08-24T16:21:17Z   newer  OK
+
+### A false positive this session produced and is reporting rather than burying
+
+An initial version of this check walked the whole tree and compared the mtime of
+**all 4499 HTML pages** against `run_finished_at`. It reported 4072 pages as
+"older than the run". **That result is wrong, and the check was wrong, not the
+tree.**
+
+Two reasons, both confirmed against the ledger entry:
+
+1. Generation is deliberately incremental. The run reports
+   `changed_targets: 0` and `unchanged_skipped: 305`: a page whose rendered
+   content did not change is intentionally not rewritten, so its mtime stays
+   old. Filesystem mtime is therefore not a validity signal for an unchanged
+   page -- treating it as one would mark every idempotent build stale.
+2. The check compared pages the cohort never claimed to build. This run's
+   `html_generate` stage covers `de` and `en`; the flagged files were
+   overwhelmingly `ru/`, `es/`, `fr/` and similar, produced by earlier runs and
+   outside this cohort entirely.
+
+The invariant that actually matters -- and the one the acceptance criterion
+names -- is about the **published report page** being no older than the run it
+reports, which is what the table above measures, and which `_src/validate.py`
+enforces mechanically as firing condition (a) `stale-build-report`. That
+authoritative check, not this ad hoc mtime walk, is the binding one: it compares
+the page model's binding fields against the newest ledger entry rather than
+guessing from timestamps. It fired correctly in stage 17 and is re-run in
+stage 20.
+
+Recorded because a discarded measurement that looked alarming is exactly the
+kind of thing a reviewer should be told about by the author rather than
+rediscover.

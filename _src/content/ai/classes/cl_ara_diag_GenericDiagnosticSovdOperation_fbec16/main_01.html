@@ -1,0 +1,74 @@
+<div class="ai"><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><h4>Verwendungszweck</h4><p><code>GenericDiagnosticSovdOperation</code> ist die Anwendungs-Schnittstelle für eine generische SOVD-Diagnoseoperation. Der Diagnostic Manager (DM) ruft <code>StartExecution</code> auf, wenn eine SOVD-Anforderung zum Starten der angegebenen Operation eingeht; bei Bedarf muss zuvor die Proximity-Challenge-Validierung erfolgreich sein. <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02203" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Diagnostics.pdf)">[SWS_DM_02203]</a> <a class="swsref" href="#SWS_DM_02210">[SWS_DM_02210]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02174">[SWS_DM_02174]</a> Die Implementierung liefert asynchron entweder eine synchrone oder eine asynchrone Startantwort. Bei einer synchronen Antwort leitet der DM die Parameter der positiven SOVD-Antwort aus dem zurückgegebenen <code>DiagnosticSovdContentData</code> ab. <a class="swsref" href="#SWS_DM_02210">[SWS_DM_02210]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Diagnostics.pdf#nameddest=SWS_DM_02176">[SWS_DM_02176]</a></p><h4>Erzeugung &amp; Zerstörung</h4><p>Die Instanz wird mit einem <code>InstanceSpecifier</code> für einen PortPrototype der <code>DiagnosticDataIdentifierGenericInterface</code> und einem <code>ConcurrencyType</code> erzeugt. <code>Offer()</code> aktiviert die Weiterleitung von Anfragen durch den DM, <code>StopOffer()</code> deaktiviert sie wieder. <a class="swsref" href="#SWS_DM_02204">[SWS_DM_02204]</a> <a class="swsref" href="#SWS_DM_02211">[SWS_DM_02211]</a> <a class="swsref" href="#SWS_DM_02212">[SWS_DM_02212]</a> Ein erneutes Anbieten wird mit <code>DiagOfferErrc::kAlreadyOffered</code> abgewiesen. <a class="swsref" href="#SWS_DM_02211">[SWS_DM_02211]</a></p><h4>Lebenszyklus &amp; Ownership</h4><p>Die Schnittstelle ist beweglich: Move-Konstruktion und Move-Zuweisung sind vorgesehen. <a class="swsref" href="#SWS_DM_02206">[SWS_DM_02206]</a> <a class="swsref" href="#SWS_DM_02207">[SWS_DM_02207]</a> Der Destruktor ist <code>noexcept</code>, ausnahmesicher und thread-safe. <a class="swsref" href="#SWS_DM_02205">[SWS_DM_02205]</a></p><h4>Einschränkungen &amp; Fehlerbehandlung</h4><p>Die Daten des Parameters <code>sovd_content_data</code> bleiben nur bis zur Erfüllung des Promise beziehungsweise bis zur Verarbeitung einer Abbruchmeldung gültig. Der <code>CancellationHandler</code> darf nicht über die Lebensdauer dieser Operation hinaus gespeichert oder verwendet werden. Fehler der Ausführung sind als anwendbarer SOVD-Fehlercode zu liefern. <a class="swsref" href="#SWS_DM_02210">[SWS_DM_02210]</a> <code>Offer()</code> und <code>StopOffer()</code> sind nicht thread-safe; <code>StartExecution</code> ist thread-safe. <a class="swsref" href="#SWS_DM_02211">[SWS_DM_02211]</a> <a class="swsref" href="#SWS_DM_02212">[SWS_DM_02212]</a> <a class="swsref" href="#SWS_DM_02210">[SWS_DM_02210]</a></p><p><code>StartExecution</code> kann eine synchrone oder asynchrone Startantwort als Variante zurückgeben und ist eine reine virtuelle Funktion, die daher von der Anwendung implementiert werden muss. <a class="swsref" href="#SWS_DM_02210">[SWS_DM_02210]</a> Der Konstruktor selbst ist ausnahmesicher und thread-safe. <a class="swsref" href="#SWS_DM_02204">[SWS_DM_02204]</a></p><h4>SOVD-Kontext</h4><p>Für SOVD-Use-Cases, die UDS entsprechen, ist die Wiederverwendung derselben Portinstanz wie für den korrespondierenden UDS-Dienst ein Leitprinzip; dafür gelten dieselben Regeln zu Reentranz und paralleler Ausführung. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf#nameddest=section.3.1">EXP SOVD §3.1 „Common use cases in SOVD and UDS"</a> SOVD-Operationen werden im DEXT aus <code>DiagnosticRoutine</code> abgeleitet. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf#nameddest=section.3.1">EXP SOVD §3.1 „Common use cases in SOVD and UDS"</a></p><h4>Rolle im Schnittstellenmodell</h4><p>Die Architektur führt <code>GenericDiagnosticSovdOperation</code> mit <code>Offer</code>, <code>StartExecution</code> und <code>StopOffer</code>; <code>StartExecution</code> ist für „Start execution of an operation“ der angegebenen SOVD-Operation bestimmt. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.8.1.1.10">EXP SWArchitecture §9.8.1.1.10</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 774.00 66.00" style="max-width:1032px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 61.5)">
+<title>G</title>
+<text xml:space="preserve" text-anchor="middle" x="382.94" y="-41.15" font-family="Helvetica,sans-Serif" font-size="13.00" fill="#28251d">SOVD-Operation: Schnittstellenrolle</text>
+<!-- start -->
+<g id="node1" class="node">
+<title>start</title>
+<ellipse fill="#28251d" stroke="#28251d" stroke-width="1.2" cx="5.76" cy="-18" rx="5.76" ry="5.76"></ellipse>
+</g>
+<!-- req -->
+<g id="node2" class="node vis-app">
+<title>req</title>
+<g id="a_node2"><a xlink:href="../namespaces/ns_diag_ara_diag_fbd60d.html" xlink:title="SOVD-Anforderung beim Diagnostic Manager" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M174.77,-36C174.77,-36 60.52,-36 60.52,-36 54.52,-36 48.52,-30 48.52,-24 48.52,-24 48.52,-12 48.52,-12 48.52,-6 54.52,0 60.52,0 60.52,0 174.77,0 174.77,0 180.77,0 186.77,-6 186.77,-12 186.77,-12 186.77,-24 186.77,-24 186.77,-30 180.77,-36 174.77,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="117.64" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SOVD-Anforderung</text>
+<text xml:space="preserve" text-anchor="middle" x="117.64" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">beim Diagnostic Manager</text>
+</a>
+</g>
+</g>
+<!-- start&#45;&gt;req -->
+<g id="edge1" class="edge">
+<title>start-&gt;req</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M12.06,-18C17.32,-18 26.06,-18 36.31,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="36.27,-21.5 46.27,-18 36.27,-14.5 36.27,-21.5"></polygon>
+</g>
+<!-- op -->
+<g id="node3" class="node vis-app">
+<title>op</title>
+<g id="a_node3"><a xlink:href="cl_ara_diag_GenericDiagnosticSovdOperation_fbec16.html" xlink:title="GenericDiagnosticSovdOperation StartExecution" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M442.77,-36C442.77,-36 291.02,-36 291.02,-36 285.02,-36 279.02,-30 279.02,-24 279.02,-24 279.02,-12 279.02,-12 279.02,-6 285.02,0 291.02,0 291.02,0 442.77,0 442.77,0 448.77,0 454.77,-6 454.77,-12 454.77,-12 454.77,-24 454.77,-24 454.77,-30 448.77,-36 442.77,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="366.89" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">GenericDiagnosticSovdOperation</text>
+<text xml:space="preserve" text-anchor="middle" x="366.89" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">StartExecution</text>
+</a>
+</g>
+</g>
+<!-- req&#45;&gt;op -->
+<g id="edge2" class="edge">
+<title>req-&gt;op</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M187.19,-18C211.95,-18 240.41,-18 267.24,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="266.96,-21.5 276.96,-18 266.96,-14.5 266.96,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="232.89" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">Weiterleitung</text>
+</g>
+<!-- execution -->
+<g id="node4" class="node vis-app">
+<title>execution</title>
+<g id="a_node4"><a xlink:href="cl_ara_diag_SovdOperationExecution_beb569.html" xlink:title="SovdOperationExecution GetStatus / Terminate" target="_top" class="vis-app">
+<path fill="#ffffff" stroke="#01696f" stroke-width="1.2" d="M699.52,-36C699.52,-36 588.27,-36 588.27,-36 582.27,-36 576.27,-30 576.27,-24 576.27,-24 576.27,-12 576.27,-12 576.27,-6 582.27,0 588.27,0 588.27,0 699.52,0 699.52,0 705.52,0 711.52,-6 711.52,-12 711.52,-12 711.52,-24 711.52,-24 711.52,-30 705.52,-36 699.52,-36"></path>
+<text xml:space="preserve" text-anchor="middle" x="643.89" y="-19.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">SovdOperationExecution</text>
+<text xml:space="preserve" text-anchor="middle" x="643.89" y="-7.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">GetStatus / Terminate</text>
+</a>
+</g>
+</g>
+<!-- op&#45;&gt;execution -->
+<g id="edge3" class="edge">
+<title>op-&gt;execution</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M455.28,-18C490.33,-18 530.4,-18 564.49,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="564.14,-21.5 574.14,-18 564.14,-14.5 564.14,-21.5"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="515.52" y="-19.75" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">aktuelle Ausführung</text>
+</g>
+<!-- end -->
+<g id="node5" class="node">
+<title>end</title>
+<ellipse fill="#28251d" stroke="#28251d" cx="757.2" cy="-18" rx="4.68" ry="4.68"></ellipse>
+<ellipse fill="none" stroke="#28251d" cx="757.2" cy="-18" rx="8.68" ry="8.68"></ellipse>
+</g>
+<!-- execution&#45;&gt;end -->
+<g id="edge4" class="edge">
+<title>execution-&gt;end</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M711.89,-18C720.87,-18 729.44,-18 736.6,-18"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="736.42,-21.5 746.42,-18 736.42,-14.5 736.42,-21.5"></polygon>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Aktivitätsdiagramm: Rolle der dokumentierten SOVD-Schnittstellen. Quellen: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SWArchitecture.pdf#nameddest=paragraph.9.8.1.1.10">EXP SWArchitecture §9.8.1.1.10</a>; <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_SOVD.pdf#nameddest=section.3.1">EXP SOVD §3.1 „Common use cases in SOVD and UDS"</a>. <em>Interpretation: Die Darstellung ordnet die dokumentierten Operationen zu einer minimalen Ablaufansicht; sie legt keine nicht dokumentierten Antwortformate fest.</em></p></div>

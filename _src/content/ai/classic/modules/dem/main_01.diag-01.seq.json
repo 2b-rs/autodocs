@@ -1,0 +1,97 @@
+{
+ "titel": "DTC-Reporting und Freeze-Frame-Speicherung im DEM",
+ "teilnehmer": [
+  {
+   "name": "SW-C / Monitor",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "Diagnostic Event Manager",
+   "href": "dem.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "NVRAM Manager (NvM)",
+   "href": "../memory.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "DCM",
+   "href": "dcm.html",
+   "klasse": "vis-app"
+  }
+ ],
+ "schritte": [
+  {
+   "art": "nachricht",
+   "von": 0,
+   "nach": 1,
+   "text": [
+    "Dem_SetEventStatus(EventId, FAILED)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Entprellzähler auswerten (Debounce)"
+   ]
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "DTC-Statusbyte setzen (TestFailed, Confirmed)"
+   ]
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Freeze-Frame erfassen (Snapshot Data)"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 2,
+   "text": [
+    "NvM_WriteBlock(BlockId, NvMDataPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 1,
+   "text": [
+    "JobResult = NVM_REQ_OK"
+   ],
+   "pfeil": "offen",
+   "gestrichelt": true
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 1,
+   "text": [
+    "Dem_GetStatusOfDTC(DTC, &Status)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 3,
+   "text": [
+    "DTCStatusByte zurückgeben"
+   ],
+   "pfeil": "offen",
+   "gestrichelt": true
+  }
+ ]
+}

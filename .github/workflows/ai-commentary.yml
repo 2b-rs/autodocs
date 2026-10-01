@@ -1,0 +1,73 @@
+name: "Generate AI Commentary (Nexos.ai)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Ziel für die KI-Generierung (z. B. 'classic/modules/linif.html', 'SWS_LinIf_00201' oder '--veraltet')"
+        required: true
+        default: "classic/modules/linif.html"
+      model:
+        description: "KI-Modell über Nexos.ai"
+        required: true
+        default: "gpt-4o"
+        type: choice
+        options:
+          - "gpt-4o"
+          - "claude-3-5-sonnet"
+          - "gemini-1.5-pro"
+      commit:
+        description: "Ergebnisse direkt in den Branch 'main' committen und pushen?"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  generate-ai:
+    name: "Generate AI Commentary"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install lxml ruamel.yaml
+
+      - name: Execute Nexos AI Commentary Generation
+        env:
+          NEXOS_API_KEY: ${{ secrets.NEXOS_API_KEY }}
+        run: |
+          python3 _src/tools/ai_nexos_runner.py \
+            --target "${{ inputs.target }}" \
+            --model "${{ inputs.model }}"
+
+      - name: Render Diagrams & Regenerate Pages
+        run: |
+          python3 _src/render_diagrams.py
+          python3 _src/generate.py --lang=alle
+          python3 _src/validate.py
+
+      - name: Commit & Push Changes
+        if: ${{ inputs.commit }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add _src/content/ai/ _src/ai/traces/ _src/diagrams/ _src/sources/pages/ *.html */*.html
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen zum Committen vorhanden."
+          else
+            git commit -m "feat(ai): update AI commentary for ${{ inputs.target }} [skip ci]"
+            git push origin main
+          fi

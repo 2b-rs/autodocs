@@ -1,0 +1,42 @@
+# Decision record for Task 0038-33
+
+### `DEC-0038-002` — Preserve the AUTO010 aggregate control with five exact reviewed exceptions
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T20:42:22+02:00`
+- **Deciding identity:** `agent:harry-seven-20260822t153500z:architect:0038-33:scope-review`
+- **Role:** `Architekt`
+- **Authority reference:** `TODO-Harry-Seven-0038-33-scope-20260822T153500Z.md#verbatim-briefing`
+- **Subject:** Scope of the shared AUTO010 aggregate regression control for the five existing findings in `_src/tools/runner_transaction.py` under Task `0038-33`.
+- **Decision:** The aggregate control keeps `AUTO010` forbidden for `_src/tools/runner_transaction.py` except for one closed allow-set containing exactly the five reviewed tuples of line, symbol, and full evidence SHA-256 listed below. The implementation must assert equality with this set, so any additional finding or any change to line, symbol, or evidence bytes fails the control. `AUTO001`, `AUTO002`, and `AUTO009` remain unconditionally forbidden for the file. The five permitted tuples are: `(240, _atomic_create, a9585e4f1caf3113aa8a1da53260983471d1e10d5339b4a553f0fcce7a047ea2)`, `(1698, Transaction.acquire_lock, bbeb1bc976b167dc0d4939d3788858124cb8cfecdc064b4c6bac40cc1f290fd8)`, `(1839, Transaction.materialize_editor_candidate, 2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c)`, `(3295, BranchMergeTransaction._synchronize_worktree, 2027934680f43f964b21625c17ce86672422e5584efeaa904d49a4d17baa8d3c)`, and `(3922, _recovery_lease, d9bae0d944b115d54df1aa8eb1b10f982d72c3427965fb54b216068970284802)`. This decision authorizes no policy, scanner, runtime, severity, live-gate, or disposition change.
+- **Technical justification:** The aggregate control was introduced by `ec251f2a69b18e9d90f3cac53bedfa7fa248e338` at 2026-08-17T06:12:46+02:00, when the current scanner finds zero `AUTO010` in the target file. Independent historical rescans show that every reviewed finding arrived later through `2e688ab6c056b1e990f0c433e606601cace8966c`, `4231f93b24cbd9aa056305ffa5a147ac316c783c`, `2d510d08ed0cc86964cec4a9be99fe719edffadf`, and `b70238ad0ea186fcf4c28579515b4ec695f048f1`. Code, documentation, and focused transaction tests show bounded temporary-file, verified-dead-lock, detached-candidate, published-commit-materialization, and exact-owner recovery-lease operations backed by their target artifact, commit, candidate, rollback, or recovery journal. This supports a stale path-wide assertion rather than regression of these five operations. Exact tuple equality preserves the original fail-closed purpose; symbol is essential because two distinct operations share the same evidence hash. The independent review, complete dispatch briefing, received context, and context not received are recorded in `docs/dossiers/0038-33-automation-safety-auto010-scope-review.md` and `TODO-Harry-Seven-0038-33-scope-20260822T153500Z.md` on the same branch. A green test alone is not authority evidence.
+- **Triggers:**
+  - `cross-item-blast-radius`
+- **Considered alternatives:**
+  - **ALT-01:** Keep the general prohibition and permit only the exact five reviewed line/symbol/full-hash tuples with equality asserted.
+    - **Disposition:** `selected`
+    - **Reason:** It resolves the stale control while ensuring a sixth, moved, renamed, or byte-changed finding fails and requires new review.
+  - **ALT-02:** Remove `AUTO010` from the file's forbidden rule set.
+    - **Disposition:** `rejected`
+    - **Reason:** A blanket file/rule exemption would silently admit future unreviewed destructive operations and defeat the aggregate control.
+  - **ALT-03:** Add narrow policy dispositions for the five findings.
+    - **Disposition:** `rejected`
+    - **Reason:** The policy mechanism does not repair a stale unit-test assertion and Task `0038-33` forbids using dispositions to paper over a genuine regression question.
+  - **ALT-04:** Change the scanner or the five runtime operations to make the current assertion green.
+    - **Disposition:** `rejected`
+    - **Reason:** Scanner semantics and runtime guarantees are outside the bounded defect; changing them would widen scope and could create new safety behavior without evidence that either is defective.
+- **Consequences:**
+  - **CON-01:** The full automation-safety suite can become green without suppressing or reclassifying the five machine-visible high advisory findings in the live report.
+  - **CON-02:** Any new `AUTO010`, or movement/change of an allowed finding's line, symbol, or evidence bytes, fails the aggregate control and requires explicit re-evaluation.
+  - **CON-03:** `AUTO001`, `AUTO002`, and `AUTO009` remain forbidden exactly as before; controls for other paths and rules are unchanged.
+  - **CON-04:** The exact line binding intentionally creates maintenance friction for unrelated line movement; this is the cost of proving that permission did not silently expand beyond the five examined findings.
+  - **CON-05:** The decision becomes available to the Implementer only after this governance record is integrated on `main`; the Architect branch and review do not themselves authorize gate mutation.
+- **Affected work units:**
+  - `task:0038-33`
+  - `feature:0038`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `validation:_src/tests/test_automation_safety.py`
+- **Review participation:** `none`
+- **No-review reason:** The deciding Architect is the management-instantiated independent pre-mutation scope reviewer, distinct from Implementer `Harry-Bashir-20260822T152700Z`; no additional participant was assigned for this scope decision, and the complete briefing/context boundary is retained in the linked review evidence.
+- **Waiver:** `none`

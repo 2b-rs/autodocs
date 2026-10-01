@@ -1,0 +1,65 @@
+# Feature 0037 Wave-B governance normalization
+
+### `DEC-0037-006` — Normalize the frozen issue-store epoch, approval refs, and source-integration boundary
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-03T00:04:12+02:00`
+- **Deciding identity:** `agent:data:0037-cutover-governance-normalization:1788382508075-dcd89d43`
+- **Role:** `Architekt`
+- **Authority reference:** Architecture award `agent-inbox:1788383431170-a516ad6c`, prepared through priority offer `1788382508075-dcd89d43`
+- **Subject:** Canonical authority, freeze, selector vocabulary, approval-ref namespace, native multi-ref compare-and-swap, and source-integration semantics for Feature `0037` effectful Wave B from the `0037-34.02` cutover through the `0037-40` activation boundary
+- **Decision:** At the `0037-34.02` authority switch, the Git-native issue store becomes the sole authoritative backlog even though ordinary issue-item and claim writes remain disabled until `0037-40`. During that interval the sole writable authority domain is the dedicated append-only control/provenance ref set; both legacy backlog writes and issue-item/claim writes are forbidden. The selector identifies this interval with canonical capability vocabulary `issue-store-write-frozen` and exact `write_phase: frozen`; `issue-store-frozen` is only a legacy input spelling that the prepared migration must map to the canonical value and retire, and no post-switch writer or validator may emit or accept it as current state. All new Feature `0037` approval records use the plural namespace `refs/autodocs/approvals/...`; pre-existing singular `refs/autodocs/approval/...` objects remain immutable historical evidence but grant no Wave-B approval credit unless the prepared transaction explicitly binds and validates a plural-namespace successor or an append-only migration mapping authorized for that exact approval. The native multi-ref compare-and-swap from `DEC-0037-005` targets only dedicated authority, item/resource, transaction-manifest, control/provenance, and approval refs declared by the transaction; it MUST NOT verify, update, create, delete, or otherwise move `refs/heads/main`. Reviewed source-history integration remains a separate operation performed by the expressly assigned privileged Integrator from the root checkout with `git merge --ff-only <candidate>` after the candidate-specific hygiene check and immediate pre/post root preflights. The exactly-one-writable-authority invariant is therefore: one authoritative backlog is selected in every epoch, and exactly one declared authority domain can accept the epoch's permitted writes—legacy items before cutover, control/provenance refs during the frozen issue-store interval, and issue-store items only after signed `0037-40` activation; no transition permits two writable domains or treats source-history `main` as an Authority-Ref-CAS resource.
+- **Technical justification:** Current `main` at `a0623411bfb3590ae4a3d8d08177064554651401` already separates the `0037-34.02` authority switch from the `0037-40` write activation in `TODO.md` and `docs/pipeline/issue-cutover-rollback.md`, while `docs/pipeline/agent-workflow.md` uses the canonical `issue-store-write-frozen` concept. Other current Feature `0037` material still contains the shorter `issue-store-frozen` spelling and singular approval refs, so leaving either as an accepted current form would make selector interpretation and approval discovery dependent on which document or client is read. `DEC-0037-005` correctly places authoritative mutations in one native atomic ref transaction, but without an explicit ref-class exclusion it can be misread as permission to include `refs/heads/main`, contradicting the root-checkout fast-forward and hygiene contract in `AGENTS.md` and `docs/pipeline/branch-workflow.md`. Assigning the frozen interval to one control/provenance write domain preserves audit and recovery evidence without reopening either backlog, and separating dedicated-ref CAS from reviewed source integration prevents an authority transaction from bypassing the index/worktree synchronization and independent integration gates required for `main`.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `security-or-credential-boundary`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Adopt one canonical frozen-epoch value and plural approval namespace, keep only control/provenance refs writable between `0037-34.02` and `0037-40`, and strictly separate dedicated-ref CAS from root source integration
+    - **Disposition:** `selected`
+    - **Reason:** It gives every client one state interpretation, one approval discovery rule, one write domain per epoch, and preserves the existing independent hygiene-gated integration boundary for `main`.
+  - **ALT-02:** Accept `issue-store-frozen` and `issue-store-write-frozen` indefinitely as equivalent current selector values and search both singular and plural approval namespaces
+    - **Disposition:** `rejected`
+    - **Reason:** Permanent aliases create two emitted contracts, make stale-client behavior ambiguous, and allow the same approval purpose to be discovered under competing namespaces.
+  - **ALT-03:** Make the issue store authoritative and immediately writable at `0037-34.02`
+    - **Disposition:** `rejected`
+    - **Reason:** It removes the signed post-cutover audit and rollback window that `0037-35`, `0037-36`, and `0037-40` require before ordinary issue and claim mutation.
+  - **ALT-04:** Include `refs/heads/main` in the native multi-ref authority transaction so cutover authority and source integration move together
+    - **Disposition:** `rejected`
+    - **Reason:** Moving a checked-out `main` ref outside the root merge bypasses index/worktree synchronization, candidate hygiene, root preflight, and the distinct Integrator act, recreating the stale-root failure prohibited by repository governance.
+- **Consequences:**
+  - **CON-01:** `0037-34.01` must prepare a selector and instruction bundle that emit `issue-store-write-frozen` with exact `write_phase: frozen`; migration may recognize `issue-store-frozen` only to translate it and must prove that no active post-switch output retains the legacy spelling.
+  - **CON-02:** `0037-34.02` selects the issue store as authority but enables no ordinary issue-item or claim writer. Only declared append-only control/provenance operations may succeed until the signed `0037-40` transition.
+  - **CON-03:** New approval producers, validators, policies, credentials, and transaction manifests use `refs/autodocs/approvals/...`. Historical singular refs are not deleted or rewritten; their Wave-B use requires an exact authorized migration binding rather than implicit grandfathering.
+  - **CON-04:** The Authority-Ref-CAS manifest must enumerate dedicated non-source refs and reject `refs/heads/main` as a target before transaction preparation. A transaction containing `main` is invalid even if every expected object ID matches.
+  - **CON-05:** The Integrator advances source-history `main` only through the governed root-checkout merge. A successful dedicated-ref CAS is evidence for its own authority transaction, not source integration, Task Acceptance, or permission to bypass hygiene.
+  - **CON-06:** Rollback before `0037-34.02` abandons the prepared candidate without changing live authority. Rollback after `0037-34.02` but before `0037-40` uses an authorized control/provenance transaction to restore the exact coherent legacy selector, bundle, and authority watermark while keeping all cutover, issue-store, approval, and audit objects append-only; it never makes legacy and issue items writable together.
+  - **CON-07:** After signed `0037-40` activation, routine rollback to legacy authority remains prohibited; emergency handling first re-enters the canonical issue-store write-frozen phase and follows `0037-44` forward repair/export/restore. Reverse migration requires a new separately authorized decision.
+  - **CON-08:** No existing selector string, singular approval ref, or mixed-ref transaction is grandfathered as conforming merely because it predates this record. Each effectful Wave-B consumer must be regenerated, migrated, or rejected under its existing implementation, validation, audit, and integration gates.
+  - **CON-09:** The normalization adds bounded implementation work to the already planned preparation and validation population: assumed low single-digit file families and existing fixtures, with no new external service. The material residual risk is stale-client or historical-approval misclassification; fail-closed alias retirement, exact ref inventories, and negative fixtures are required controls.
+- **Affected work units:**
+  - `feature:0037`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `subtask:0037-34.01`
+  - `subtask:0037-34.02`
+  - `subtask:0037-35.01`
+  - `subtask:0037-35.02`
+  - `task:0037-36`
+  - `task:0037-40`
+  - `subtask:0037-42.02`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `task-start:0037-34.02`
+  - `validation:agent-workflow-selector`
+  - `validation:issue-policy`
+  - `integration:0037-34.02`
+  - `task-start:0037-35.01`
+  - `task-start:0037-35.02`
+  - `task-start:0037-36`
+  - `integration:0037-40`
+  - `feature-closure:0037`
+- **Review participation:** `none`
+- **No-review reason:** The exact Architecture award supplies the resolved four-part decision input and authorizes this bounded recording act; no distinct reviewer participated in authoring this record. The existing independent audit, approval, integration, and Acceptance gates remain mandatory and this author performs none of them here.
+- **Waiver:** `none`

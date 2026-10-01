@@ -1,0 +1,29 @@
+{
+  "titel": "Conversation: Fehlerbehandlung und Session-Abbruch",
+  "teilnehmer": [
+    {"name": "Diagnoseanwendung"},
+    {"name": "Conversation", "href": "../classes/cl_ara_diag_Conversation_8b92b3.html", "klasse": "vis-app"},
+    {"name": "Diagnostic Manager"},
+    {"name": "Diagnoseclient"}
+  ],
+  "schritte": [
+    {"art": "nachricht", "von": 0, "nach": 1, "text": ["SetActivityNotifier(notifier)"]},
+    {"art": "nachricht", "von": 1, "nach": 2, "text": ["Notifier registrieren", "(ersetzt vorherigen Notifier)"]},
+    {"art": "nachricht", "von": 0, "nach": 1, "text": ["GetActivityStatus() oder", "GetDiagnosticSession()"]},
+    {"art": "nachricht", "von": 1, "nach": 2, "text": ["aktuellen Conversation-Zustand abfragen"]},
+    {"art": "rahmen", "typ": "alt", "guard": "[DM-Service verfügbar]"},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["Result: ActivityStatus /", "DiagnosticSession"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "nachricht", "von": 1, "nach": 0, "text": ["Result erfolgreich zurückgeben"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "trenner", "guard": "[essentielle DM-Funktionalität nicht verfügbar]"},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["Result: DiagErrc::", "kServiceNotAvailable"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "nachricht", "von": 1, "nach": 0, "text": ["Fehler result zurückgeben;", "Operation mit Rollback behandeln"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "rahmen-ende"},
+    {"art": "rahmen", "typ": "alt", "guard": "[Session endet durch Abbruch oder Timeout]"},
+    {"art": "nachricht", "von": 3, "nach": 2, "text": ["Conversation beenden"]},
+    {"art": "selbst", "teilnehmer": 2, "text": ["ActivityStatus auf kInactive setzen"]},
+    {"art": "nachricht", "von": 2, "nach": 1, "text": ["ActivityStatusTypeNotifier(kInactive)"]},
+    {"art": "nachricht", "von": 1, "nach": 0, "text": ["Notifier: Conversation inaktiv;", "keine Folgeanfragen ableiten"], "pfeil": "offen", "gestrichelt": true},
+    {"art": "rahmen-ende"},
+    {"art": "notiz", "ueber": [0, 2], "text": ["Fehlerpfade: SWS_DM_00692, SWS_DM_00694, SWS_DM_00696, SWS_DM_00698, SWS_DM_00700", "Notifier und Conversation-Ende: SWS_DM_00695, SWS_DM_00843, SWS_DM_01355"]}
+  ]
+}

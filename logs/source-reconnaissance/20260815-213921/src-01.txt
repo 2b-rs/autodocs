@@ -1,0 +1,2838 @@
++ run.sh:131: echo '##### FILE: ./_src/tools/spec_scrape.py'
+##### FILE: ./_src/tools/spec_scrape.py
+++ run.sh:132: shasum ./_src/tools/spec_scrape.py
+++ run.sh:132: awk '{print $1}'
++ run.sh:132: echo '##### SHA1: 1811933ff65516aa95f04929503c068ef7b67e96'
+##### SHA1: 1811933ff65516aa95f04929503c068ef7b67e96
+++ run.sh:133: wc -l
+++ run.sh:133: tr -d ' '
++ run.sh:133: echo '##### LINES: 2825'
+##### LINES: 2825
++ run.sh:134: echo
+
++ run.sh:135: nl -ba ./_src/tools/spec_scrape.py
+     1	#!/usr/bin/env python3
+     2	# -*- coding: utf-8 -*-
+     3	"""spec_scrape.py — Spezifikations-Records aus AUTOSAR-Standard-PDFs gewinnen.
+     4	
+     5	Zweck
+     6	-----
+     7	Die Spezifikations-DB unter ``_src/spec/records/`` wurde urspruenglich aus den
+     8	fertigen Seitenmodellen migriert (siehe ``migriere_spec_db.py``). Damit ist die
+     9	DB von der Darstellung abgeleitet, nicht von der Quelle. Dieses Werkzeug dreht
+    10	die Richtung um: es liest die normativen AUTOSAR-PDFs und vergleicht sie mit der
+    11	DB — oder baut sie neu auf.
+    12	
+    13	Drei Phasen (einzeln oder verkettet aufrufbar):
+    14	
+    15	  1. ``ids``      IDs (SWS_/RS_/PRS_/TPS_-Nummern) aus den PDFs einsammeln,
+    16	                  optional gefiltert nach Muster, Dokument oder Modul.
+    17	  2. ``props``    zu den IDs aus Phase 1 die Eigenschaften extrahieren
+    18	                  (Kind, Header, Scope, Symbol, Syntax, Beschreibung, ...).
+    19	  3. ``compare``  gegen die interne Spec-DB abgleichen. Standard ist ein reiner
+    20	                  Integritaetsbericht (``--check``); ``--rebuild`` schreibt.
+    21	
+    22	  ``all``         Phase 1 + 2 + 3 in einem Lauf.
+    23	  ``crosscheck``  extrahiert denselben Cache getrennt mit pypdf und dem
+    24	                  eingebauten Backend, meldet jede Abweichung und prueft beide
+    25	                  Ergebnisse unabhaengig gegen die interne Spec-DB.
+    26	  ``urls``        druckt die Download-Zeilen fuer die run.sh (die MCP-Sandbox
+    27	                  hat keinen Netzzugriff, siehe README-Arbeitspraeferenz).
+    28	
+    29	PDF-Cache und Workflow
+    30	----------------------
+    31	Die unveraenderten Quelldokumente liegen release-spezifisch unter
+    32	``_src/spec/pdf-cache/R25-11/`` mit der Hierarchie ``AUTOSAR/``,
+    33	``AUTOSAR/AP/``, ``AUTOSAR/CLASSIC/``, ``AUTOSAR/FOUNDATION/`` und
+    34	``ECLIPSE/``. ``manifest.sha256`` dokumentiert ihren
+    35	Inhalt. Eine run.sh laedt nur fehlende/ungueltige PDFs ueber eine temporaere
+    36	Datei und ersetzt niemals einen gueltigen Cache-Eintrag. Der Cache ist damit
+    37	zwischen Prueflaeufen wiederverwendbar; ein Release-Wechsel bekommt ein eigenes
+    38	Unterverzeichnis.
+    39	
+    40	Extraktionsablauf: Cache aufbauen -> ``crosscheck`` ausfuehren -> zuerst
+    41	Backend-Abweichungen klaeren -> erst danach die je Backend gemeldeten
+    42	DB-Abweichungen bewerten. ``--rebuild`` ist absichtlich kein Bestandteil des
+    43	Quervergleichs; Schreiben erfolgt erst nach manueller Freigabe.
+    44	
+    45	Abhaengigkeiten
+    46	---------------
+    47	Keine. Ist ``pypdf`` oder ``PyMuPDF`` installiert, wird es benutzt; sonst greift
+    48	ein eingebauter, minimaler PDF-Textextraktor (FlateDecode + Tj/TJ-Operatoren).
+    49	Der eingebaute Extraktor sortiert Seiten nach Objektnummer statt ueber den
+    50	Seitenbaum — fuer die zeilenweise Auswertung der Spec-Tabellen ausreichend.
+    51	
+    52	Aufrufbeispiele (immer vom Repo-Wurzelverzeichnis)
+    53	--------------------------------------------------
+    54	    python3 _src/tools/spec_scrape.py urls --module log
+    55	    CACHE=_src/spec/pdf-cache/R25-11
+    56	    python3 _src/tools/spec_scrape.py ids       --pdf-dir "$CACHE" --module log
+    57	    python3 _src/tools/spec_scrape.py props     --pdf-dir "$CACHE" --id SWS_LOG_00261 --backend pypdf
+    58	    python3 _src/tools/spec_scrape.py crosscheck --pdf-dir "$CACHE" --json
+    59	    python3 _src/tools/spec_scrape.py all       --pdf-dir "$CACHE" --check
+    60	    python3 _src/tools/spec_scrape.py all       --pdf-dir "$CACHE" --rebuild
+    61	
+    62	Exit-Code 1, wenn im Check-Modus Abweichungen gefunden wurden.
+    63	"""
+    64	from __future__ import annotations
+    65	
+    66	import argparse
+    67	import importlib.util
+    68	import json
+    69	import logging
+    70	import os
+    71	import re
+    72	import sys
+    73	import time
+    74	import zlib
+    75	from collections import OrderedDict, defaultdict
+    76	from concurrent.futures import ProcessPoolExecutor
+    77	from pathlib import Path
+    78	
+    79	LOG = logging.getLogger("spec_scrape")
+    80	if not LOG.handlers:
+    81	    _handler = logging.StreamHandler()
+    82	    _handler.setFormatter(logging.Formatter("%(asctime)s [%(name)s] %(message)s"))
+    83	    LOG.addHandler(_handler)
+    84	LOG.setLevel(logging.INFO)
+    85	
+    86	SRC = Path(__file__).resolve().parent.parent
+    87	ROOT = SRC.parent
+    88	RECORDS = SRC / "spec" / "records"
+    89	TRACE_RECORDS = SRC / "spec" / "traceability"
+    90	
+    91	from spec_upstream import UpstreamIndex, rebuild_record_files
+    92	RELEASE = "R25-11"
+    93	# PDF-Cache: die normativen Standard-PDFs liegen versionsweise unter _src.
+    94	PDF_CACHE = SRC / "spec" / "pdf-cache" / RELEASE
+    95	BASE_URL = "https://www.autosar.org/fileadmin/standards/" + RELEASE
+    96	
+    97	# ---------------------------------------------------------------------------
+    98	# Dokumentregister: Modul -> (Plattformzweig, PDF-Basisname, Record-Praefix)
+    99	# ---------------------------------------------------------------------------
+   100	DOCS = OrderedDict([
+   101	    ("core",   ("AP", "AUTOSAR_AP_SWS_Core",                        "SWS_CORE")),
+   102	    ("log",    ("AP", "AUTOSAR_AP_SWS_LogAndTrace",                 "SWS_LOG")),
+   103	    ("com",    ("AP", "AUTOSAR_AP_SWS_CommunicationManagement",     "SWS_CM")),
+   104	    ("exec",   ("AP", "AUTOSAR_AP_SWS_ExecutionManagement",         "SWS_EM")),
+   105	    ("diag",   ("AP", "AUTOSAR_AP_SWS_Diagnostics",                 "SWS_DM")),
+   106	    ("per",    ("AP", "AUTOSAR_AP_SWS_Persistency",                 "SWS_PER")),
+   107	    ("phm",    ("AP", "AUTOSAR_AP_SWS_PlatformHealthManagement",    "SWS_PHM")),
+   108	    ("sm",     ("AP", "AUTOSAR_AP_SWS_StateManagement",             "SWS_SM")),
+   109	    ("nm",     ("AP", "AUTOSAR_AP_SWS_NetworkManagement",           "SWS_ANM")),
+   110	    ("tsync",  ("AP", "AUTOSAR_AP_SWS_TimeSynchronization",         "SWS_TS")),
+   111	    ("crypto", ("AP", "AUTOSAR_AP_SWS_Cryptography",               "SWS_CRYPT")),
+   112	    ("idsm",   ("AP", "AUTOSAR_AP_SWS_IntrusionDetectionSystemManager", "SWS_AIDSM")),
+   113	    ("rds",    ("AP", "AUTOSAR_AP_SWS_RawDataStream",               "SWS_RDS")),
+   114	    ("ucm",    ("AP", "AUTOSAR_AP_SWS_UpdateAndConfigurationManagement", "SWS_UCM")),
+   115	    ("shwa",   ("AP", "AUTOSAR_AP_SWS_SafeHardwareAcceleration",    "AP_SWS")),
+   116	    ("osi",    ("AP", "AUTOSAR_AP_SWS_OperatingSystemInterface",    "SWS_OSI")),
+   117	])
+   118	
+   119	# Canonical upstream-requirement sources. Kept separate so existing SWS
+   120	# registry entries and module selection semantics remain unchanged.
+   121	RS_DOCS = OrderedDict([
+   122	    ("rs-general", ("AP", "AUTOSAR_AP_RS_General", "RS_AP")),
+   123	    ("rs-cm", ("AP", "AUTOSAR_AP_RS_CommunicationManagement", "RS_CM")),
+   124	    ("rs-crypto", ("AP", "AUTOSAR_AP_RS_Cryptography", "RS_CRYPTO")),
+   125	    ("rs-em", ("AP", "AUTOSAR_AP_RS_ExecutionManagement", "RS_EM")),
+   126	    ("rs-osi", ("AP", "AUTOSAR_AP_RS_OperatingSystemInterface", "RS_OSI")),
+   127	    ("rs-per", ("AP", "AUTOSAR_AP_RS_Persistency", "RS_PER")),
+   128	    ("rs-phm", ("AP", "AUTOSAR_AP_RS_PlatformHealthManagement", "RS_PHM")),
+   129	    ("rs-shwa", ("AP", "AUTOSAR_AP_RS_SafeHardwareAcceleration", "RS_SHWA")),
+   130	    ("rs-sm", ("AP", "AUTOSAR_AP_RS_StateManagement", "RS_SM")),
+   131	    ("rs-ucm", ("AP", "AUTOSAR_AP_RS_UpdateAndConfigurationManagement", "RS_UCM")),
+   132	    ("rs-vucm", ("AP", "AUTOSAR_AP_RS_VehicleUpdateAndConfigurationManagement", "RS_VUCM")),
+   133	    ("rs-diag", ("FO", "AUTOSAR_FO_RS_Diagnostics", "RS_DIAG")),
+   134	    ("rs-e2e", ("FO", "AUTOSAR_FO_RS_E2E", "RS_E2E")),
+   135	    ("rs-hm", ("FO", "AUTOSAR_FO_RS_HealthMonitoring", "RS_HM")),
+   136	    ("rs-ids", ("FO", "AUTOSAR_FO_RS_IntrusionDetectionSystem", "RS_IDS")),
+   137	    ("rs-lt", ("FO", "AUTOSAR_FO_RS_LogAndTrace", "RS_LT")),
+   138	    ("rs-nm", ("FO", "AUTOSAR_FO_RS_NetworkManagement", "RS_NM")),
+   139	    ("rs-ts", ("FO", "AUTOSAR_FO_RS_TimeSync", "RS_TS")),
+   140	    ("prs-e2e", ("FO", "AUTOSAR_FO_PRS_E2EProtocol", "PRS_E2E")),
+   141	    ("prs-ids", ("FO", "AUTOSAR_FO_PRS_IntrusionDetectionSystem", "PRS_IDS")),
+   142	    ("prs-ts", ("FO", "AUTOSAR_FO_PRS_TimeSyncOverEthernetProtocol", "PRS_TS")),
+   143	    ("rs-someip", ("FO", "AUTOSAR_FO_RS_SOMEIPProtocol", "RS_SOMEIP")),
+   144	    ("rs-saf", ("FO", "AUTOSAR_FO_RS_Safety", "RS_SAF")),
+   145	    ("rs-htm", ("AP", "AUTOSAR_AP_RS_HWTestManager", "AP_RS_HTM")),
+   146	    ("exp-saf-overview", ("FO", "AUTOSAR_FO_EXP_SafetyOverview", "RS_SAF")),
+   147	])
+   148	
+   149	ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b", re.IGNORECASE)
+   150	
+   151	# Beschriftungen der Eigenschaftstabellen in den SWS-Dokumenten.
+   152	LABELS = [
+   153	    "Kind", "Header file", "Forwarding header file", "Scope", "Symbol",
+   154	    "Underlying type", "Syntax", "Values", "Parameters (in)",
+   155	    "Parameters (inout)", "Parameters (out)", "Return value",
+   156	    "Exception Safety", "Thread Safety", "Description", "Rationale",
+   157	    "Dependencies", "Use Case", "AppliesTo", "Supporting Material", "Notes",
+   158	    "Type", "Default value", "Errors",
+   159	]
+   160	LABEL_RE = re.compile(r"^(%s)\s*:?\s*(.*)$" % "|".join(re.escape(x) for x in LABELS))
+   161	HEADING_LABEL_RE = re.compile(r"^(?:%s)\s*:\s*.*$|^(?:%s)$" %
+   162	                              tuple(["|".join(re.escape(x) for x in LABELS)] * 2))
+   163	UPSTREAM_RE = re.compile(r"Upstream requirements?:\s*(.+)")
+   164	
+   165	# Some documents (e.g. AUTOSAR_FO_RS_LogAndTrace) carry the actual heading not
+   166	# inside the record itself but in the numbered subsection line immediately
+   167	# before it -- the [ID] marker there is followed directly by the opening
+   168	# bracket with no title text of its own, e.g.:
+   169	#   4.2.1.1.8 The LT shall transmit log and trace messages ...
+   170	#   [RS_LT_00001] <opening bracket>
+   171	# Fallback used only when the normal heading detection yields nothing.
+   172	SUBSECTION_HEADING_RE = re.compile(r"^\d+(?:\.\d+)+\s+(.*\S)$")
+   173	
+   174	# Deutsche th-Beschriftungen der DB -> kanonische PDF-Beschriftung.
+   175	DB_LABEL_MAP = {
+   176	    "header-datei": "Header file",
+   177	    "header file": "Header file",
+   178	    "weiterleitungs-header": "Forwarding header file",
+   179	    "forwarding header file": "Forwarding header file",
+   180	    "scope": "Scope",
+   181	    "geltungsbereich": "Scope",
+   182	    "symbol": "Symbol",
+   183	    "basistyp": "Underlying type",
+   184	    "underlying type": "Underlying type",
+   185	    "rückgabewert": "Return value",
+   186	    "return value": "Return value",
+   187	    "ausnahmesicherheit": "Exception Safety",
+   188	    "exception safety": "Exception Safety",
+   189	    "thread-sicherheit": "Thread Safety",
+   190	    "thread safety": "Thread Safety",
+   191	    "syntax": "Syntax",
+   192	}
+   193	# Diese Felder werden verglichen (Rest ist nur informativ).
+   194	COMPARED = ["Kind", "Header file", "Scope", "Symbol", "Underlying type"]
+   195	
+   196	# Bekannte Namespace-Praefixe aus der Spec-DB. Der laengste passende Praefix
+   197	# gewinnt; alles dahinter ist umschliessender Typ, nicht Namespace. So werden
+   198	# auch kleingeschriebene Typnamen wie std::hash, value_compare, reference oder
+   199	# in_place_t korrekt behandelt.
+   200	KNOWN_NAMESPACE_PREFIXES = [
+   201	    "apext::com::secoc",
+   202	    "apext::diag::uds_transport",
+   203	    "apext::log",
+   204	    "apext::phm",
+   205	    "apext::sm",
+   206	    "apext::tsync",
+   207	    "apext",
+   208	    "ara::com::e2e",
+   209	    "ara::com::runtime",
+   210	    "ara::com",
+   211	    "ara::core::literals::string_view_literals",
+   212	    "ara::core",
+   213	    "ara::crypto::cryp",
+   214	    "ara::crypto::x509",
+   215	    "ara::crypto",
+   216	    "ara::diag",
+   217	    "ara::exec",
+   218	    "ara::fw::states",
+   219	    "ara::fw",
+   220	    "ara::log",
+   221	    "ara::per",
+   222	    "ara::phm::supervised_entities",
+   223	    "ara::phm",
+   224	    "ara::rds",
+   225	    "ara::shwa",
+   226	    "ara::sm::s2r",
+   227	    "ara::sm",
+   228	    "ara::tsync",
+   229	    "ara",
+   230	    "std",
+   231	]
+   232	KNOWN_NAMESPACE_PREFIXES.sort(key=len, reverse=True)
+   233	
+   234	
+   235	# ===========================================================================
+   236	# PDF-Textextraktion
+   237	# ===========================================================================
+   238	def _pdf_string_bytes(raw: bytes) -> bytes:
+   239	    """Decode PDF literal/hex string syntax while preserving character codes."""
+   240	    if raw.startswith(b"<"):
+   241	        digits = re.sub(rb"[^0-9A-Fa-f]", b"", raw[1:-1])
+   242	        if len(digits) % 2:
+   243	            digits += b"0"
+   244	        return bytes.fromhex(digits.decode("ascii"))
+   245	    body, out, i = raw[1:-1], bytearray(), 0
+   246	    simple = {ord("n"): 10, ord("r"): 13, ord("t"): 9, ord("b"): 8,
+   247	              ord("f"): 12, ord("("): 40, ord(")"): 41, ord("\\"): 92}
+   248	    while i < len(body):
+   249	        if body[i] != 92:
+   250	            out.append(body[i]); i += 1; continue
+   251	        i += 1
+   252	        if i >= len(body):
+   253	            break
+   254	        ch = body[i]
+   255	        if ch in simple:
+   256	            out.append(simple[ch]); i += 1
+   257	        elif ch in (10, 13):
+   258	            i += 1
+   259	            if ch == 13 and i < len(body) and body[i] == 10:
+   260	                i += 1
+   261	        elif 48 <= ch <= 55:
+   262	            j = i
+   263	            while j < len(body) and j < i + 3 and 48 <= body[j] <= 55:
+   264	                j += 1
+   265	            out.append(int(body[i:j], 8) & 255); i = j
+   266	        else:
+   267	            out.append(ch); i += 1
+   268	    return bytes(out)
+   269	
+   270	
+   271	def _unicode_value(raw: bytes) -> str:
+   272	    try:
+   273	        return raw.decode("utf-16-be")
+   274	    except UnicodeDecodeError:
+   275	        return raw.decode("latin-1", "replace")
+   276	
+   277	
+   278	def _parse_tounicode(data: bytes) -> dict:
+   279	    """Parse bfchar and bfrange entries from a PDF ToUnicode CMap."""
+   280	    result = {}
+   281	    for block in re.findall(rb"beginbfchar(.*?)endbfchar", data, re.S):
+   282	        for src, dst in re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>", block):
+   283	            result[bytes.fromhex(src.decode())] = _unicode_value(bytes.fromhex(dst.decode()))
+   284	    for block in re.findall(rb"beginbfrange(.*?)endbfrange", data, re.S):
+   285	        entries = re.findall(rb"<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<([0-9A-Fa-f]+)>|\[(.*?)\])", block, re.S)
+   286	        for lo, hi, target, sequential, array in entries:
+   287	            lo_b, hi_b = bytes.fromhex(lo.decode()), bytes.fromhex(hi.decode())
+   288	            width = len(lo_b); first, last = int.from_bytes(lo_b, "big"), int.from_bytes(hi_b, "big")
+   289	            if sequential:
+   290	                dst = bytes.fromhex(sequential.decode()); base = int.from_bytes(dst, "big"); dwidth = len(dst)
+   291	                values = [(base + offset).to_bytes(dwidth, "big") for offset in range(last-first+1)]
+   292	            else:
+   293	                values = [bytes.fromhex(x.decode()) for x in re.findall(rb"<([0-9A-Fa-f]+)>", array)]
+   294	            for offset, value in enumerate(values[:last-first+1]):
+   295	                result[(first + offset).to_bytes(width, "big")] = _unicode_value(value)
+   296	    return result
+   297	
+   298	
+   299	def _decode_pdf_string(raw: bytes, cmap=None) -> str:
+   300	    data = _pdf_string_bytes(raw)
+   301	    if not cmap:
+   302	        if data[:2] in (b"\xfe\xff", b"\xff\xfe"):
+   303	            return data.decode("utf-16", "replace")
+   304	        return data.decode("latin-1", "replace")
+   305	    lengths = sorted({len(key) for key in cmap}, reverse=True)
+   306	    out, pos = [], 0
+   307	    while pos < len(data):
+   308	        for width in lengths:
+   309	            token = data[pos:pos + width]
+   310	            if len(token) == width and token in cmap:
+   311	                out.append(cmap[token]); pos += width; break
+   312	        else:
+   313	            out.append(bytes([data[pos]]).decode("latin-1", "replace")); pos += 1
+   314	    return "".join(out)
+   315	
+   316	
+   317	_OPS = re.compile(rb"""
+   318	    (?P<font>/[A-Za-z0-9_.+-]+)\s+-?\d+(?:\.\d+)?\s+Tf
+   319	  | (?P<lit>\((?:\\.|[^\\()])*\))\s*(?:Tj|')
+   320	  | (?P<hex><[0-9A-Fa-f\s]*>)\s*Tj
+   321	  | (?P<arr>\[(?:\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>|[^\]()])*\])\s*TJ
+   322	  | (?P<brk>T\*|TD|Td|ET|BT)
+   323	""", re.S | re.X)
+   324	_ARR_ITEM = re.compile(rb"\((?:\\.|[^\\()])*\)|<[0-9A-Fa-f\s]*>|-?\d+(?:\.\d+)?")
+   325	
+   326	
+   327	def _content_to_text(content: bytes, fonts=None) -> str:
+   328	    """Content stream to text, applying the active font's ToUnicode CMap."""
+   329	    parts, active = [], None
+   330	    fonts = fonts or {}
+   331	    for m in _OPS.finditer(content):
+   332	        if m.group("font"):
+   333	            active = m.group("font")[1:].decode("ascii", "replace")
+   334	        elif m.group("brk"):
+   335	            parts.append("\n")
+   336	        elif m.group("lit") or m.group("hex"):
+   337	            parts.append(_decode_pdf_string(m.group("lit") or m.group("hex"), fonts.get(active)))
+   338	        else:
+   339	            for item in _ARR_ITEM.finditer(m.group("arr")):
+   340	                tok = item.group(0)
+   341	                if tok[:1] in (b"(", b"<"):
+   342	                    parts.append(_decode_pdf_string(tok, fonts.get(active)))
+   343	                else:
+   344	                    try:
+   345	                        if float(tok) <= -100:
+   346	                            parts.append(" ")
+   347	                    except ValueError:
+   348	                        pass
+   349	    return "".join(parts)
+   350	
+   351	
+   352	def _inflate(raw: bytes, body: bytes) -> bytes:
+   353	    """FlateDecode inkl. PNG-Predictor (/Predictor >= 10), sonst Rohdaten."""
+   354	    if b"/FlateDecode" not in body:
+   355	        return raw
+   356	    try:
+   357	        data = zlib.decompress(raw)
+   358	    except zlib.error:
+   359	        try:
+   360	            data = zlib.decompressobj().decompress(raw)
+   361	        except zlib.error:
+   362	            return b""
+   363	    m = re.search(rb"/Predictor\s+(\d+)", body)
+   364	    if not m or int(m.group(1)) < 10:
+   365	        return data
+   366	    cols = int((re.search(rb"/Columns\s+(\d+)", body) or [b"", b"1"])[1])
+   367	    colors = int((re.search(rb"/Colors\s+(\d+)", body) or [b"", b"1"])[1])
+   368	    bpc = int((re.search(rb"/BitsPerComponent\s+(\d+)", body) or [b"", b"8"])[1])
+   369	    bpp = max(1, colors * bpc // 8)
+   370	    rowlen = cols * colors * bpc // 8
+   371	    out, prev = bytearray(), bytearray(rowlen)
+   372	    pos = 0
+   373	    while pos + 1 + rowlen <= len(data):
+   374	        ft = data[pos]
+   375	        row = bytearray(data[pos + 1 : pos + 1 + rowlen])
+   376	        pos += 1 + rowlen
+   377	        for i in range(rowlen):
+   378	            a = row[i - bpp] if i >= bpp else 0
+   379	            b = prev[i]
+   380	            c = prev[i - bpp] if i >= bpp else 0
+   381	            if ft == 1:
+   382	                row[i] = (row[i] + a) & 0xFF
+   383	            elif ft == 2:
+   384	                row[i] = (row[i] + b) & 0xFF
+   385	            elif ft == 3:
+   386	                row[i] = (row[i] + (a + b) // 2) & 0xFF
+   387	            elif ft == 4:
+   388	                pp = a + b - c
+   389	                pa, pb, pc = abs(pp - a), abs(pp - b), abs(pp - c)
+   390	                pr = a if (pa <= pb and pa <= pc) else (b if pb <= pc else c)
+   391	                row[i] = (row[i] + pr) & 0xFF
+   392	        out += row
+   393	        prev = row
+   394	    return bytes(out)
+   395	
+   396	
+   397	def _collect_objects(data: bytes) -> dict:
+   398	    """Alle Objekte einsammeln — klassisch und aus Objektstroemen (/ObjStm).
+   399	
+   400	    Moderne PDFs (auch die AUTOSAR-Dokumente) legen die meisten Objekte in
+   401	    komprimierten Objektstroemen ab; ohne deren Aufloesung findet man keine
+   402	    einzige Seite.
+   403	    """
+   404	    bodies, streams = {}, {}
+   405	    for m in re.finditer(rb"(\d+)\s+\d+\s+obj(.*?)endobj", data, re.S):
+   406	        num, body = int(m.group(1)), m.group(2)
+   407	        bodies[num] = body
+   408	        sm = re.search(rb"stream\r?\n(.*?)\r?\n?endstream", body, re.S)
+   409	        if sm:
+   410	            streams[num] = _inflate(sm.group(1), body)
+   411	    for num, body in list(bodies.items()):
+   412	        if not re.search(rb"/Type\s*/ObjStm", body) or num not in streams:
+   413	            continue
+   414	        payload = streams[num]
+   415	        n = int((re.search(rb"/N\s+(\d+)", body) or [b"", b"0"])[1])
+   416	        first = int((re.search(rb"/First\s+(\d+)", body) or [b"", b"0"])[1])
+   417	        header = payload[:first].split()
+   418	        for i in range(min(n, len(header) // 2)):
+   419	            onum, off = int(header[2 * i]), int(header[2 * i + 1])
+   420	            ende = (int(header[2 * i + 3]) + first) if 2 * i + 3 < len(header) else len(payload)
+   421	            bodies.setdefault(onum, payload[first + off : ende])
+   422	    return bodies, streams
+   423	
+   424	
+   425	def _builtin_pdf_pages(path: Path) -> list:
+   426	    """Minimalparser ohne Fremdbibliothek.
+   427	
+   428	    Seiten werden ueber den Seitenbaum (/Type /Pages -> /Kids) geordnet, damit
+   429	    die Reihenfolge der Dokumentreihenfolge entspricht; nur falls kein Baum
+   430	    auffindbar ist, greift die Objektnummern-Reihenfolge.
+   431	    """
+   432	    data = path.read_bytes()
+   433	    bodies, streams = _collect_objects(data)
+   434	    seiten = [n for n, b in bodies.items() if re.search(rb"/Type\s*/Page[^s]", b + b" ")]
+   435	
+   436	    reihenfolge, gesehen = [], set()
+   437	
+   438	    def kids_of(num, tiefe=0):
+   439	        if tiefe > 64 or num in gesehen:
+   440	            return
+   441	        gesehen.add(num)
+   442	        body = bodies.get(num, b"")
+   443	        if re.search(rb"/Type\s*/Page[^s]", body + b" "):
+   444	            reihenfolge.append(num)
+   445	            return
+   446	        km = re.search(rb"/Kids\s*\[(.*?)\]", body, re.S)
+   447	        if km:
+   448	            for kid in re.findall(rb"(\d+)\s+\d+\s+R", km.group(1)):
+   449	                kids_of(int(kid), tiefe + 1)
+   450	
+   451	    wurzeln = [n for n, b in bodies.items()
+   452	               if re.search(rb"/Type\s*/Pages", b) and b"/Parent" not in b]
+   453	    for w in wurzeln:
+   454	        kids_of(w)
+   455	    if not reihenfolge:
+   456	        reihenfolge = sorted(seiten)
+   457	
+   458	    ergebnis = []
+   459	    for num in reihenfolge:
+   460	        body = bodies.get(num, b"")
+   461	        refs = [int(r) for r in re.findall(rb"/Contents\s+(\d+)\s+\d+\s+R", body)]
+   462	        arr = re.search(rb"/Contents\s*\[(.*?)\]", body, re.S)
+   463	        if arr:
+   464	            refs += [int(r) for r in re.findall(rb"(\d+)\s+\d+\s+R", arr.group(1))]
+   465	        resource = body
+   466	        rm = re.search(rb"/Resources\s+(\d+)\s+\d+\s+R", body)
+   467	        if rm:
+   468	            resource = bodies.get(int(rm.group(1)), b"")
+   469	        fonts = {}
+   470	        fm = re.search(rb"/Font\s*<<(.*?)>>", resource, re.S)
+   471	        if fm:
+   472	            for alias, font_ref in re.findall(rb"/([A-Za-z0-9_.+-]+)\s+(\d+)\s+\d+\s+R", fm.group(1)):
+   473	                font_body = bodies.get(int(font_ref), b"")
+   474	                tm = re.search(rb"/ToUnicode\s+(\d+)\s+\d+\s+R", font_body)
+   475	                if tm and int(tm.group(1)) in streams:
+   476	                    fonts[alias.decode("ascii", "replace")] = _parse_tounicode(streams[int(tm.group(1))])
+   477	        ergebnis.append("".join(_content_to_text(streams[r], fonts) for r in refs if r in streams))
+   478	    return ergebnis
+   479	
+   480	
+   481	BACKENDS = ("pypdf", "mupdf", "builtin")
+   482	
+   483	
+   484	def _matrix_values(value) -> list[float] | None:
+   485	    """Return a stable six-value PDF matrix without retaining backend objects."""
+   486	    if not value or len(value) < 6:
+   487	        return None
+   488	    return [round(float(item), 6) for item in value[:6]]
+   489	
+   490	
+   491	def _effective_text_position(current_matrix, text_matrix) -> tuple[float, float] | None:
+   492	    """Transform a text-matrix origin into page coordinates."""
+   493	    cm = _matrix_values(current_matrix)
+   494	    tm = _matrix_values(text_matrix)
+   495	    if cm is None or tm is None:
+   496	        return None
+   497	    x = tm[4] * cm[0] + tm[5] * cm[2] + cm[4]
+   498	    y = tm[4] * cm[1] + tm[5] * cm[3] + cm[5]
+   499	    return round(x, 6), round(y, 6)
+   500	
+   501	
+   502	def _classify_line_layout(line: dict, spans_by_id: dict[str, dict]) -> dict:
+   503	    """Describe aligned horizontal cells without changing reading order."""
+   504	    groups = []
+   505	    for span_id in line["ordered_span_ids"]:
+   506	        span = spans_by_id[span_id]
+   507	        x = float(span["position"][0])
+   508	        if not groups or abs(x - groups[-1]["x"]) > 1.0:
+   509	            groups.append({"x": round(x, 6), "span_ids": [span_id]})
+   510	        else:
+   511	            groups[-1]["span_ids"].append(span_id)
+   512	    gaps = [round(right["x"] - left["x"], 6) for left, right in zip(groups, groups[1:])]
+   513	    font_size = max((float(spans_by_id[s].get("font_size") or 0) for s in line["span_ids"]), default=1.0)
+   514	    threshold = max(36.0, font_size * 3.0)
+   515	    boundaries = [index + 1 for index, gap in enumerate(gaps) if gap >= threshold]
+   516	    cells = []
+   517	    start = 0
+   518	    for end in [*boundaries, len(groups)]:
+   519	        ids = [sid for group in groups[start:end] for sid in group["span_ids"]]
+   520	        if ids:
+   521	            cells.append({"id": f"{line['id']}-c{len(cells) + 1}", "span_ids": ids,
+   522	                          "x_range": [groups[start]["x"], groups[end - 1]["x"]]})
+   523	        start = end
+   524	    return {
+   525	        "kind": "cell-candidate" if len(cells) > 1 else "single-flow",
+   526	        "cells": cells,
+   527	        "gaps": gaps,
+   528	        "cell_gap_threshold": round(threshold, 6),
+   529	    }
+   530	
+   531	
+   532	def _promote_repeated_cell_patterns(lines: list[dict]) -> None:
+   533	    """Promote nearby repeated alignments into explicit, stable table regions."""
+   534	    candidates = []
+   535	    for line_index, line in enumerate(lines):
+   536	        layout = line["layout"]
+   537	        layout["table_region_id"] = None
+   538	        if layout["kind"] != "cell-candidate":
+   539	            layout["alignment_support"] = 0
+   540	            continue
+   541	        pattern = tuple(round(cell["x_range"][0], 1) for cell in layout["cells"])
+   542	        layout["alignment_pattern"] = list(pattern)
+   543	        candidates.append((line_index, line, pattern))
+   544	    for line_index, line, pattern in candidates:
+   545	        supporting = []
+   546	        for other_line_index, other, other_pattern in candidates:
+   547	            if len(other_pattern) != len(pattern):
+   548	                continue
+   549	            if max(abs(a - b) for a, b in zip(pattern, other_pattern)) > 1.0:
+   550	                continue
+   551	            if abs(line_index - other_line_index) > 8:
+   552	                continue
+   553	            supporting.append(other["id"])
+   554	        layout = line["layout"]
+   555	        layout["alignment_support"] = len(supporting)
+   556	        layout["supporting_line_ids"] = supporting
+   557	        layout["kind"] = (
+   558	            "table-row-candidate" if len(supporting) >= 2
+   559	            else "isolated-gap-candidate"
+   560	        )
+   561	
+   562	    regions = []
+   563	    for line_index, line, pattern in candidates:
+   564	        if line["layout"]["kind"] != "table-row-candidate":
+   565	            continue
+   566	        matching = None
+   567	        for region in reversed(regions):
+   568	            same_shape = len(region["pattern"]) == len(pattern)
+   569	            aligned = same_shape and max(abs(a - b) for a, b in zip(region["pattern"], pattern)) <= 1.0
+   570	            if aligned and line_index - region["last_line_index"] <= 8:
+   571	                matching = region
+   572	                break
+   573	        if matching is None:
+   574	            matching = {"id": f"table-r{len(regions) + 1}", "pattern": pattern,
+   575	                        "last_line_index": line_index, "lines": []}
+   576	            regions.append(matching)
+   577	        matching["last_line_index"] = line_index
+   578	        matching["lines"].append(line)
+   579	    for region in regions:
+   580	        if len(region["lines"]) < 2:
+   581	            continue
+   582	        for line in region["lines"]:
+   583	            layout = line["layout"]
+   584	            layout["kind"] = "table-row"
+   585	            layout["table_region_id"] = region["id"]
+   586	            for cell_index, cell in enumerate(layout["cells"], 1):
+   587	                cell["column_index"] = cell_index - 1
+   588	                cell["region_cell_id"] = f"{region['id']}-c{cell_index}"
+   589	
+   590	
+   591	def _classify_repeated_margin_bands(pages: list[dict]) -> None:
+   592	    """Mark coordinate-stable margin lines while preserving their evidence."""
+   593	    if not pages:
+   594	        return
+   595	    page_count = len(pages)
+   596	    minimum_support = max(2, int(page_count * 0.8 + 0.999999))
+   597	    bands = {}
+   598	    for page in pages:
+   599	        seen = set()
+   600	        for line in page["lines"]:
+   601	            y = round(float(line["baseline_y"]), 0)
+   602	            if y <= 0:
+   603	                continue
+   604	            seen.add(y)
+   605	        for y in seen:
+   606	            bands[y] = bands.get(y, 0) + 1
+   607	    repeated = {y: support for y, support in bands.items() if support >= minimum_support}
+   608	    for page in pages:
+   609	        baselines = [float(line["baseline_y"]) for line in page["lines"] if line["baseline_y"] > 0]
+   610	        top = max(baselines, default=0.0)
+   611	        for line in page["lines"]:
+   612	            y = round(float(line["baseline_y"]), 0)
+   613	            support = repeated.get(y, 0)
+   614	            line["margin_band"] = None
+   615	            line["margin_band_support"] = support
+   616	            if not support:
+   617	                continue
+   618	            if line["baseline_y"] <= 72:
+   619	                line["margin_band"] = "footer"
+   620	            elif top and line["baseline_y"] >= top - 36:
+   621	                line["margin_band"] = "header"
+   622	    _mark_varying_margin_spans(pages)
+   623	
+   624	
+   625	def _mark_varying_margin_spans(pages: list[dict]) -> None:
+   626	    """Separate page-varying margin text (page numbers) from boilerplate."""
+   627	    observed = {}
+   628	    for page in pages:
+   629	        spans = {span["id"]: span for span in page.get("spans", [])}
+   630	        for line in page["lines"]:
+   631	            if not line["margin_band"]:
+   632	                continue
+   633	            for index, span_id in enumerate(line.get("ordered_span_ids", [])):
+   634	                key = (line["margin_band"], round(float(line["baseline_y"]), 0), index)
+   635	                text = spans.get(span_id, {}).get("text", "").strip()
+   636	                observed.setdefault(key, set()).add(text)
+   637	    for page in pages:
+   638	        spans = {span["id"]: span for span in page.get("spans", [])}
+   639	        for line in page["lines"]:
+   640	            roles = {}
+   641	            if line["margin_band"]:
+   642	                for index, span_id in enumerate(line.get("ordered_span_ids", [])):
+   643	                    key = (line["margin_band"], round(float(line["baseline_y"]), 0), index)
+   644	                    variants = len(observed.get(key, ()))
+   645	                    if not spans.get(span_id, {}).get("text", "").strip():
+   646	                        continue
+   647	                    roles[span_id] = "page-varying" if variants > 1 else "boilerplate"
+   648	            line["margin_span_roles"] = roles
+   649	
+   650	
+   651	BULLET_GLYPHS = "•–—-*◦‣·"
+   652	
+   653	
+   654	def _classify_list_structure(pages: list[dict]) -> None:
+   655	    """Record bullet markers and indentation levels from geometry evidence."""
+   656	    for page in pages:
+   657	        spans = {span["id"]: span for span in page.get("spans", [])}
+   658	        indents = sorted({
+   659	            round(float(line["x_range"][0]), 1)
+   660	            for line in page["lines"]
+   661	            if not line.get("margin_band") and line.get("x_range")
+   662	            and float(line["baseline_y"]) > 0
+   663	            and line.get("layout", {}).get("kind") == "single-flow"
+   664	        })
+   665	        levels = []
+   666	        for indent in indents:
+   667	            if not levels or indent - levels[-1] > 6.0:
+   668	                levels.append(indent)
+   669	        for line in page["lines"]:
+   670	            line["bullet"] = None
+   671	            line["indent_level"] = None
+   672	            if line.get("margin_band") or float(line["baseline_y"]) <= 0:
+   673	                continue
+   674	            ordered = line.get("ordered_span_ids", [])
+   675	            if not ordered:
+   676	                continue
+   677	            if line.get("layout", {}).get("kind") != "single-flow":
+   678	                line["indent_level"] = None
+   679	            else:
+   680	                left = round(float(line["x_range"][0]), 1)
+   681	                level = 0
+   682	                for index, candidate in enumerate(levels):
+   683	                    if left >= candidate - 0.05:
+   684	                        level = index
+   685	                line["indent_level"] = level
+   686	            first_id = ordered[0]
+   687	            text = spans.get(first_id, {}).get("text", "").strip()
+   688	            if text and text[0] in BULLET_GLYPHS and (len(text) == 1 or text[1:2] == " "):
+   689	                line["bullet"] = {"span_id": first_id, "marker": text[0]}
+   690	
+   691	
+   692	def _classify_paragraph_flow(pages: list[dict]) -> None:
+   693	    """Mark whether each body line continues the previous line or starts a block."""
+   694	    for page in pages:
+   695	        body = [
+   696	            line for line in page["lines"]
+   697	            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+   698	            and line.get("ordered_span_ids")
+   699	        ]
+   700	        body.sort(key=lambda line: -float(line["baseline_y"]))
+   701	        gaps = [
+   702	            round(float(a["baseline_y"]) - float(b["baseline_y"]), 1)
+   703	            for a, b in zip(body, body[1:])
+   704	        ]
+   705	        positive = sorted(gap for gap in gaps if gap > 0)
+   706	        leading = positive[len(positive) // 2] if positive else 0.0
+   707	        for line in page["lines"]:
+   708	            line["flow"] = None
+   709	            line["flow_gap"] = None
+   710	        previous = None
+   711	        for line in body:
+   712	            if previous is None:
+   713	                line["flow"] = "block-start"
+   714	                previous = line
+   715	                continue
+   716	            gap = round(float(previous["baseline_y"]) - float(line["baseline_y"]), 1)
+   717	            line["flow_gap"] = gap
+   718	            same_block = (
+   719	                leading > 0
+   720	                and gap <= leading * 1.35
+   721	                and line.get("bullet") is None
+   722	                and line.get("indent_level") is not None
+   723	                and line.get("indent_level") == previous.get("indent_level")
+   724	                and previous["layout"]["kind"] == "single-flow"
+   725	                and line["layout"]["kind"] == "single-flow"
+   726	            )
+   727	            line["flow"] = "wrap" if same_block else "block-start"
+   728	            previous = line
+   729	
+   730	
+   731	def _classify_page_columns(pages: list[dict]) -> None:
+   732	    """Detect genuine side-by-side columns from disjoint horizontal extents."""
+   733	    for page in pages:
+   734	        body = [
+   735	            line for line in page["lines"]
+   736	            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+   737	            and line.get("ordered_span_ids")
+   738	        ]
+   739	        page["columns"] = []
+   740	        for line in page["lines"]:
+   741	            line["column_index"] = None
+   742	        if len(body) < 6:
+   743	            continue
+   744	        extents = sorted(
+   745	            ((float(line["x_range"][0]), float(line["x_range"][1]), index)
+   746	             for index, line in enumerate(body)),
+   747	        )
+   748	        clusters = []
+   749	        for left, right, index in extents:
+   750	            line = body[index]
+   751	            if clusters and left <= clusters[-1]["right"] + 36.0:
+   752	                clusters[-1]["right"] = max(clusters[-1]["right"], right)
+   753	                clusters[-1]["lines"].append(line)
+   754	            else:
+   755	                clusters.append({"left": left, "right": right, "lines": [line]})
+   756	        if len(clusters) < 2:
+   757	            continue
+   758	        minimum_lines = max(5, int(len(body) * 0.25))
+   759	        if any(len(cluster["lines"]) < minimum_lines for cluster in clusters):
+   760	            continue
+   761	        baselines = [
+   762	            {round(float(line["baseline_y"]), 0) for line in cluster["lines"]}
+   763	            for cluster in clusters
+   764	        ]
+   765	        shared = min(
+   766	            len(left & right) / max(1, min(len(left), len(right)))
+   767	            for left, right in zip(baselines, baselines[1:])
+   768	        )
+   769	        if shared < 0.5:
+   770	            continue
+   771	        for index, cluster in enumerate(clusters):
+   772	            for line in cluster["lines"]:
+   773	                line["column_index"] = index
+   774	            page["columns"].append({
+   775	                "index": index,
+   776	                "x_range": [round(cluster["left"], 3), round(cluster["right"], 3)],
+   777	                "line_count": len(cluster["lines"]),
+   778	            })
+   779	
+   780	
+   781	def _finalize_line_order(pages: list[dict]) -> None:
+   782	    """Record column-aware reading order for the lines of each page."""
+   783	    for page in pages:
+   784	        body = [
+   785	            line for line in page["lines"]
+   786	            if not line.get("margin_band") and float(line["baseline_y"]) > 0
+   787	            and line.get("ordered_span_ids")
+   788	        ]
+   789	        ordered = sorted(
+   790	            body,
+   791	            key=lambda line: (
+   792	                line.get("column_index") if line.get("column_index") is not None else 0,
+   793	                -float(line["baseline_y"]),
+   794	                float(line["x_range"][0]),
+   795	            ),
+   796	        )
+   797	        page["reading_order"] = [line["id"] for line in ordered]
+   798	        for position, line in enumerate(ordered):
+   799	            line["reading_position"] = position
+   800	        for line in page["lines"]:
+   801	            line.setdefault("reading_position", None)
+   802	
+   803	
+   804	def _horizontal_span_order(line: dict, spans_by_id: dict[str, dict]) -> tuple[list[str], list[str]]:
+   805	    """Return deterministic left-to-right evidence order for one baseline line."""
+   806	    warnings = []
+   807	    positioned = []
+   808	    for span_id in line["span_ids"]:
+   809	        span = spans_by_id[span_id]
+   810	        position = span.get("position")
+   811	        if position is None:
+   812	            warnings.append(f"{line['id']}: {span_id}: missing-horizontal-position")
+   813	            continue
+   814	        positioned.append((float(position[0]), int(span.get("operation_index", 0)), span_id))
+   815	    positioned.sort(key=lambda item: (item[0], item[1], item[2]))
+   816	    for left, right in zip(positioned, positioned[1:]):
+   817	        left_span = spans_by_id[left[2]]
+   818	        right_span = spans_by_id[right[2]]
+   819	        delta = abs(left[0] - right[0])
+   820	        if (
+   821	            0 < delta <= 0.25
+   822	            and left_span.get("text", "").strip()
+   823	            and right_span.get("text", "").strip()
+   824	        ):
+   825	            warnings.append(
+   826	                f"{line['id']}: ambiguous-horizontal-order: {left[2]}, {right[2]}"
+   827	            )
+   828	    return [item[2] for item in positioned], warnings
+   829	
+   830	
+   831	def _infer_span_separators(line: dict, spans_by_id: dict[str, dict]) -> None:
+   832	    """Mark adjacent spans that need a separator in reconstructed text."""
+   833	    ids = line.get("ordered_span_ids", [])
+   834	    for span in (spans_by_id[span_id] for span_id in ids):
+   835	        span["inferred_spacing"] = False
+   836	    for left_id, right_id in zip(ids, ids[1:]):
+   837	        left = spans_by_id[left_id]
+   838	        right = spans_by_id[right_id]
+   839	        left_text = left.get("text", "")
+   840	        right_text = right.get("text", "")
+   841	        if not left_text or not right_text:
+   842	            continue
+   843	        if left_text[-1].isspace() or right_text[0].isspace():
+   844	            continue
+   845	        if (left_text[-1].isalnum() or left_text[-1] in ":;,.]") and (
+   846	            right_text[0].isalnum() or right_text[0] in "\"'([{•–—"
+   847	        ):
+   848	            right["inferred_spacing"] = True
+   849	
+   850	
+   851	def _reconstructed_line_text(line: dict, spans_by_id: dict[str, dict]) -> str:
+   852	    """Join ordered spans using recorded geometric separator evidence."""
+   853	    parts = []
+   854	    for span_id in line.get("ordered_span_ids", []):
+   855	        span = spans_by_id[span_id]
+   856	        if parts and span.get("inferred_spacing"):
+   857	            parts.append(" ")
+   858	        parts.append(span.get("text", ""))
+   859	    return "".join(parts)
+   860	
+   861	
+   862	def _cluster_spans_into_lines(spans: list[dict]) -> tuple[list[dict], list[str]]:
+   863	    """Group positioned spans by baseline without imposing horizontal order."""
+   864	    lines = []
+   865	    warnings = []
+   866	    for span in spans:
+   867	        position = span.get("position")
+   868	        if position is None:
+   869	            warnings.append(f"{span['id']}: missing-position")
+   870	            continue
+   871	        x, y = position
+   872	        font_size = max(float(span.get("font_size") or 0), 1.0)
+   873	        tolerance = max(0.75, font_size * 0.25)
+   874	        candidates = [line for line in lines if abs(line["baseline_y"] - y) <= max(line["tolerance"], tolerance)]
+   875	        if candidates:
+   876	            line = min(candidates, key=lambda item: (abs(item["baseline_y"] - y), item["operation_index"]))
+   877	            count = len(line["span_ids"])
+   878	            line["baseline_y"] = round((line["baseline_y"] * count + y) / (count + 1), 6)
+   879	            line["tolerance"] = round(max(line["tolerance"], tolerance), 6)
+   880	            line["span_ids"].append(span["id"] )
+   881	            line["x_range"][0] = min(line["x_range"][0], x)
+   882	            line["x_range"][1] = max(line["x_range"][1], x)
+   883	        else:
+   884	            lines.append({
+   885	                "id": "",
+   886	                "span_ids": [span["id"]],
+   887	                "baseline_y": y,
+   888	                "x_range": [x, x],
+   889	                "tolerance": round(tolerance, 6),
+   890	                "operation_index": int(span.get("operation_index", 0)),
+   891	            })
+   892	    lines.sort(key=lambda item: item["operation_index"])
+   893	    for number, line in enumerate(lines, 1):
+   894	        page = line["span_ids"][0].split("-s", 1)[0]
+   895	        line["id"] = f"{page}-l{number}"
+   896	        line["x_range"] = [round(value, 6) for value in line["x_range"]]
+   897	    return lines, warnings
+   898	
+   899	
+   900	def _span_orientation(text_matrix: list[float]) -> str:
+   901	    """Classify span orientation from its text matrix."""
+   902	    a, b, c, d = (float(value) for value in text_matrix[:4])
+   903	    if abs(b) < 1e-6 and abs(c) < 1e-6:
+   904	        if a > 0 and d > 0:
+   905	            return "upright"
+   906	        return "flipped"
+   907	    if abs(a) < 1e-6 and abs(d) < 1e-6:
+   908	        return "vertical"
+   909	    return "skewed"
+   910	
+   911	
+   912	def _unmapped_glyph_count(text: str) -> int:
+   913	    """Count characters that indicate a missing /ToUnicode mapping."""
+   914	    return sum(
+   915	        1 for character in text
+   916	        if (ord(character) < 32 and character not in "\t\n\r")
+   917	        or character == "\ufffd"
+   918	    )
+   919	
+   920	
+   921	def _pypdf_page_observations(path: Path) -> list[dict]:
+   922	    """Capture raw pypdf text and geometry without changing text reconstruction.
+   923	
+   924	    This is deliberately an evidence-only first step: ``raw_text`` remains the
+   925	    normal pypdf extraction result, while visitor fragments retain coordinates
+   926	    for later, independently benchmarked line reconstruction.
+   927	    """
+   928	    from pypdf import PdfReader  # type: ignore
+   929	
+   930	    observations = []
+   931	    for page_number, page in enumerate(PdfReader(str(path)).pages, 1):
+   932	        spans = []
+   933	
+   934	        def visitor(text, current_matrix, text_matrix, font, font_size):
+   935	            if not text:
+   936	                return
+   937	            spans.append({
+   938	                "id": f"p{page_number}-s{len(spans) + 1}",
+   939	                "text": text,
+   940	                "current_matrix": _matrix_values(current_matrix),
+   941	                "text_matrix": _matrix_values(text_matrix),
+   942	                "position": _effective_text_position(current_matrix, text_matrix),
+   943	                "orientation": _span_orientation(_matrix_values(text_matrix)),
+   944	                "unmapped_glyphs": _unmapped_glyph_count(text),
+   945	                "font": str((font or {}).get("/BaseFont", "")),
+   946	                "font_size": round(float(font_size or 0), 6),
+   947	                "operation_index": len(spans),
+   948	                "inferred_spacing": False,
+   949	                "inferred_line_break": False,
+   950	            })
+   951	
+   952	        raw_text = page.extract_text(visitor_text=visitor) or ""
+   953	        horizontal = [
+   954	            span for span in spans
+   955	            if span["orientation"] in ("upright", "flipped")
+   956	            and not span["unmapped_glyphs"]
+   957	        ]
+   958	        lines, warnings = _cluster_spans_into_lines(horizontal)
+   959	        for span in spans:
+   960	            if span["orientation"] != "upright":
+   961	                warnings.append({
+   962	                    "kind": "non-upright-span",
+   963	                    "span_id": span["id"],
+   964	                    "orientation": span["orientation"],
+   965	                })
+   966	            if span["unmapped_glyphs"]:
+   967	                warnings.append({
+   968	                    "kind": "unmapped-glyphs",
+   969	                    "span_id": span["id"],
+   970	                    "count": span["unmapped_glyphs"],
+   971	                    "font": span["font"],
+   972	                })
+   973	        spans_by_id = {span["id"]: span for span in spans}
+   974	        for line in lines:
+   975	            line["ordered_span_ids"], order_warnings = _horizontal_span_order(line, spans_by_id)
+   976	            _infer_span_separators(line, spans_by_id)
+   977	            same_origin_groups = []
+   978	            current_group = []
+   979	            current_x = None
+   980	            for span_id in line["ordered_span_ids"]:
+   981	                x = spans_by_id[span_id]["position"][0]
+   982	                if current_x is not None and x != current_x:
+   983	                    if len(current_group) > 1:
+   984	                        same_origin_groups.append(current_group)
+   985	                    current_group = []
+   986	                current_group.append(span_id)
+   987	                current_x = x
+   988	            if len(current_group) > 1:
+   989	                same_origin_groups.append(current_group)
+   990	            line["same_origin_groups"] = same_origin_groups
+   991	            line["layout"] = _classify_line_layout(line, spans_by_id)
+   992	            warnings.extend(order_warnings)
+   993	        _promote_repeated_cell_patterns(lines)
+   994	        observations.append({
+   995	            "page_number": page_number,
+   996	            "raw_text": raw_text,
+   997	            "spans": spans,
+   998	            "lines": lines,
+   999	            "warnings": warnings,
+  1000	            "backend": "pypdf",
+  1001	        })
+  1002	    _classify_repeated_margin_bands(observations)
+  1003	    _classify_list_structure(observations)
+  1004	    _classify_paragraph_flow(observations)
+  1005	    _classify_page_columns(observations)
+  1006	    _finalize_line_order(observations)
+  1007	    return observations
+  1008	
+  1009	
+  1010	def _pypdf_pages(path: Path) -> list:
+  1011	    return [item["raw_text"] for item in _pypdf_page_observations(path)]
+  1012	
+  1013	
+  1014	def _mupdf_pages(path: Path) -> list:
+  1015	    import fitz  # type: ignore
+  1016	    with fitz.open(str(path)) as doc:
+  1017	        return [page.get_text() for page in doc]
+  1018	
+  1019	
+  1020	_BACKEND_FN = {"pypdf": _pypdf_pages, "mupdf": _mupdf_pages,
+  1021	               "builtin": _builtin_pdf_pages}
+  1022	_BACKEND_MODUL = {"pypdf": "pypdf", "mupdf": "fitz"}
+  1023	
+  1024	
+  1025	def available_backends() -> list:
+  1026	    """Backends, die auf diesem Rechner benutzbar sind (builtin immer)."""
+  1027	    ok = []
+  1028	    for name in BACKENDS:
+  1029	        if name == "builtin" or importlib.util.find_spec(_BACKEND_MODUL[name]):
+  1030	            ok.append(name)
+  1031	    return ok
+  1032	
+  1033	
+  1034	def pdf_pages(path: Path, backend: str = "auto") -> list:
+  1035	    """Seitentexte eines PDFs.
+  1036	
+  1037	    ``auto`` nimmt den erstbesten verfuegbaren Backend. Ein ausdruecklich
+  1038	    genannter Backend wird **nicht** stillschweigend durch einen anderen
+  1039	    ersetzt — sonst waere der Quervergleich wertlos.
+  1040	
+  1041	    Die Backends liefern unterschiedlich strukturierten Text (pypdf haengt
+  1042	    Tabellenzellen ohne Trenner aneinander, der eingebaute Extraktor setzt
+  1043	    Umbrueche an den Positionierungsoperatoren). Das gleicht
+  1044	    ``normalize_layout`` aus; deshalb duerfen die Ergebnisse verglichen werden.
+  1045	    """
+  1046	    if backend != "auto":
+  1047	        if backend not in _BACKEND_FN:
+  1048	            raise SystemExit("unbekannter Backend: %s" % backend)
+  1049	        return _BACKEND_FN[backend](path)
+  1050	    for name in available_backends():
+  1051	        try:
+  1052	            return _BACKEND_FN[name](path)
+  1053	        except Exception:
+  1054	            continue
+  1055	    return _builtin_pdf_pages(path)
+  1056	
+  1057	
+  1058	# ===========================================================================
+  1059	# Phase 1 — IDs einsammeln
+  1060	# ===========================================================================
+  1061	def discover_pdfs(pdf_dir: Path, modules=None, docs=None) -> list:
+  1062	    wanted_names = None
+  1063	    if modules or docs:
+  1064	        wanted_names = set()
+  1065	        for mod in modules or ():
+  1066	            if mod not in DOCS:
+  1067	                raise SystemExit("unbekanntes Modul: %s (bekannt: %s)"
+  1068	                                 % (mod, ", ".join(DOCS)))
+  1069	            wanted_names.add(DOCS[mod][1])
+  1070	        for doc in docs or ():
+  1071	            wanted_names.add(Path(doc).stem)
+  1072	    found = []
+  1073	    for path in sorted(pdf_dir.rglob("*.pdf")):
+  1074	        if wanted_names is None or path.stem in wanted_names:
+  1075	            found.append(path)
+  1076	    return found
+  1077	
+  1078	
+  1079	HISTORY_PAGE_RE = re.compile(
+  1080	    r"(?:Added|Changed|Deleted|Removed)\s+(?:Requirements?|Constraints?)"
+  1081	    r"|Traceable item history"
+  1082	    r"|Document Change History"
+  1083	    r"|Change History", re.IGNORECASE)
+  1084	
+  1085	HISTORY_HEADING_RE = re.compile(
+  1086	    r"(?:[A-Z]?\.?\d+(?:\.\d+)*\s+)?(?:Added|Changed|Deleted|Removed)\s+"
+  1087	    r"(?:Requirements?|Constraints?)\b"
+  1088	    r"|Traceable item history"
+  1089	    r"|Document Change History"
+  1090	    r"|Change History", re.IGNORECASE)
+  1091	
+  1092	HISTORY_TABLE_CAPTION_RE = re.compile(
+  1093	    r"Table\s+[A-Za-z0-9.]+\s*:\s*(?:Added|Changed|Deleted|Removed)\s+"
+  1094	    r"(?:Requirements?|Constraints?)[^\n]*", re.IGNORECASE)
+  1095	
+  1096	HISTORY_CONTINUATION_RE = re.compile(
+  1097	    r"\A(?:.{0,120}\n){0,6}?△?\s*\n?\s*\d{4}-\d{2}-\d{2}\s+[A-Za-z0-9.\-]+\s*\n"
+  1098	    r"\s*AUTOSAR\s*\n\s*Release\s*\n\s*Management",
+  1099	    re.IGNORECASE,
+  1100	)
+  1101	
+  1102	HISTORY_NUMBER_HEADING_CONTINUATION_RE = re.compile(
+  1103	    r"\A(?:\s*\n){0,4}(?:.{0,80}\n){0,3}?\s*Number\s+Heading\s*\n",
+  1104	    re.IGNORECASE,
+  1105	)
+  1106	
+  1107	TRACEABILITY_HEADING_RE = re.compile(
+  1108	    r"\A(?:\s*\n){0,4}(?:.{0,120}\n){0,3}?\s*\d+(?:\.\d+)*\s+Requirements\s+Tracing\b",
+  1109	    re.IGNORECASE,
+  1110	)
+  1111	TRACEABILITY_CONTINUATION_RE = re.compile(
+  1112	    r"\A\s*(?:△\s*)?\n?\s*Requirement\s+Description\s+Satisfied\s+by\b",
+  1113	    re.IGNORECASE,
+  1114	)
+  1115	TRACEABILITY_HEADER_RE = re.compile(r"Requirement\s+Description\s+Satisfied\s+by", re.IGNORECASE)
+  1116	TRACEABILITY_ROW_ID_RE = re.compile(r"\bRS_[A-Z0-9]+(?:_[A-Z0-9]+)+\b", re.IGNORECASE)
+  1117	TRACEABILITY_CLEAN_RE = re.compile(r"\s+")
+  1118	
+  1119	
+  1120	TOC_LINE_RE = re.compile(r"^.*\.{4,}\s*\d+\s*$", re.MULTILINE)
+  1121	BIBLIO_HEADING_RE = re.compile(r"^\s*(?:Bibliography|References)\s*$", re.MULTILINE | re.IGNORECASE)
+  1122	
+  1123	
+  1124	def classify_page_structure(text: str) -> dict:
+  1125	    """Label the non-body regions of a page once, for reuse across phases.
+  1126	
+  1127	    Extraction, segmentation and the benchmark all need to know which parts of
+  1128	    a page are appendix history, table of contents or bibliography.  Detecting
+  1129	    that separately in each phase invites drift, so the labels are produced
+  1130	    here and consumed everywhere else.
+  1131	    """
+  1132	    regions = [{"kind": "history", "start": start, "stop": stop}
+  1133	               for start, stop in _history_regions(text)]
+  1134	    regions.extend({"kind": "traceability", "start": start, "stop": stop}
+  1135	                   for start, stop in _traceability_regions(text))
+  1136	    for match in TOC_LINE_RE.finditer(text):
+  1137	        regions.append({"kind": "toc", "start": match.start(), "stop": match.end()})
+  1138	    for match in BIBLIO_HEADING_RE.finditer(text):
+  1139	        regions.append({"kind": "bibliography", "start": match.start(),
+  1140	                        "stop": min(len(text), match.end() + 4000)})
+  1141	    regions.sort(key=lambda item: (item["kind"], item["start"], item["stop"]))
+  1142	    merged = []
+  1143	    for item in regions:
+  1144	        if merged and merged[-1]["kind"] == item["kind"] and item["start"] <= merged[-1]["stop"]:
+  1145	            merged[-1]["stop"] = max(merged[-1]["stop"], item["stop"])
+  1146	            continue
+  1147	        merged.append(dict(item))
+  1148	    regions = sorted(merged, key=lambda item: (item["start"], item["stop"]))
+  1149	    return {"regions": regions,
+  1150	            "kinds": sorted({item["kind"] for item in regions})}
+  1151	
+  1152	
+  1153	def non_body_spans(text: str, kinds=None) -> list:
+  1154	    """Character ranges to exclude from definition detection."""
+  1155	    wanted = set(kinds or ("history", "traceability", "toc", "bibliography"))
+  1156	    return [(item["start"], item["stop"])
+  1157	            for item in classify_page_structure(text)["regions"]
+  1158	            if item["kind"] in wanted]
+  1159	
+  1160	
+  1161	def _history_regions(text: str) -> list:
+  1162	    """Character ranges of appendix history tables and change-log blocks.
+  1163	
+  1164	    A page may hold both a history table and ordinary body text, so rejection
+  1165	    has to work per occurrence.  A region starts at a history heading and ends
+  1166	    at the caption of the table it introduces, or at the next history heading,
+  1167	    or after a bounded window when neither is present.
+  1168	    """
+  1169	    regions = []
+  1170	    for match in HISTORY_HEADING_RE.finditer(text):
+  1171	        caption = HISTORY_TABLE_CAPTION_RE.search(text, match.end())
+  1172	        nxt = HISTORY_HEADING_RE.search(text, match.end())
+  1173	        stop = min([x for x in (caption.end() if caption else None,
+  1174	                                nxt.start() if nxt else None,
+  1175	                                match.end() + 4000) if x is not None])
+  1176	        regions.append((match.start(), stop))
+  1177	    return regions
+  1178	
+  1179	
+  1180	def _traceability_regions(text: str) -> list:
+  1181	    """Character ranges of top-of-page Requirements Tracing tables.
+  1182	
+  1183	    These pages enumerate upstream requirements or trace groups, not local
+  1184	    requirement definitions, so bracketed IDs inside them must not become
+  1185	    definition candidates for this document.
+  1186	    """
+  1187	    match = TRACEABILITY_HEADING_RE.search(text)
+  1188	    if not match:
+  1189	        return []
+  1190	    return [(match.start(), len(text))]
+  1191	
+  1192	
+  1193	def _history_continuation_page(text: str) -> bool:
+  1194	    """Whether a page is a continuation of a multi-page history table/block."""
+  1195	    if HISTORY_CONTINUATION_RE.search(text):
+  1196	        return True
+  1197	    return bool(HISTORY_NUMBER_HEADING_CONTINUATION_RE.search(text)
+  1198	                and HISTORY_TABLE_CAPTION_RE.search(text))
+  1199	
+  1200	
+  1201	def _definition_ids(text: str) -> set:
+  1202	    """Bracketed IDs that are definition candidates on this page.
+  1203	
+  1204	    Occurrences inside a history or traceability region are ignored; an ID that
+  1205	    also appears outside such a region on the same page stays a candidate.
+  1206	    """
+  1207	    regions = non_body_spans(text, kinds=("history", "traceability"))
+  1208	    result = set()
+  1209	    for match in DEF_RE.finditer(text):
+  1210	        if any(start <= match.start() < stop for start, stop in regions):
+  1211	            continue
+  1212	        result.add(match.group(1).upper())
+  1213	    return result
+  1214	
+  1215	
+  1216	def _history_occurrences(text: str) -> list:
+  1217	    """Bracketed ID occurrences suppressed because they sit in a history region."""
+  1218	    regions = _history_regions(text)
+  1219	    found = []
+  1220	    for match in DEF_RE.finditer(text):
+  1221	        for start, stop in regions:
+  1222	            if start <= match.start() < stop:
+  1223	                found.append((match.group(1).upper(),
+  1224	                              text[start:min(stop, start + 90)].strip()))
+  1225	                break
+  1226	    return found
+  1227	
+  1228	
+  1229	def _history_only_evidence(text_by_page: list) -> dict:
+  1230	    """IDs seen only inside history regions, with page and reason per occurrence."""
+  1231	    outside, suppressed = set(), {}
+  1232	    in_history_continuation = False
+  1233	    for pageno, text in enumerate(text_by_page, 1):
+  1234	        continuation = in_history_continuation and _history_continuation_page(text)
+  1235	        if continuation:
+  1236	            definiert = set()
+  1237	        else:
+  1238	            definiert = _definition_ids(text)
+  1239	        outside |= definiert
+  1240	        if continuation:
+  1241	            for raw_rid in ID_RE.findall(text):
+  1242	                rid = raw_rid.upper()
+  1243	                suppressed.setdefault(rid, []).append({
+  1244	                    "page": pageno,
+  1245	                    "region": "Document Change History continuation",
+  1246	                })
+  1247	        else:
+  1248	            for rid, reason in _history_occurrences(text):
+  1249	                suppressed.setdefault(rid, []).append({"page": pageno, "region": reason})
+  1250	        regions = _history_regions(text)
+  1251	        starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
+  1252	        in_history_continuation = continuation or starts_new_run
+  1253	    return {rid: places for rid, places in sorted(suppressed.items())
+  1254	            if rid not in outside}
+  1255	
+  1256	
+  1257	def _ids_for_document(task: tuple[str, str, str | None, frozenset, bool]) -> tuple[str, dict]:
+  1258	    """Per-document worker for phase_ids.
+  1259	
+  1260	    Each source PDF is independent, so ID discovery is naturally parallel at the
+  1261	    document level. The old implementation scanned every PDF sequentially,
+  1262	    calling ``pdf_pages`` and then running all regex/history heuristics in a
+  1263	    single process; that kept one core saturated and blocked later parallelized
+  1264	    phases from ever starting.
+  1265	    """
+  1266	    path_str, backend, pattern, keep, include_refs = task
+  1267	    path = Path(path_str)
+  1268	    started = time.perf_counter()
+  1269	    rx = re.compile(pattern, re.IGNORECASE) if pattern else None
+  1270	    pages = [strip_noise(x) for x in pdf_pages(path, backend)]
+  1271	    hits = defaultdict(list)
+  1272	    spellings = defaultdict(list)
+  1273	    in_history_continuation = False
+  1274	    for pageno, text in enumerate(pages, 1):
+  1275	        continuation = in_history_continuation and _history_continuation_page(text)
+  1276	        definiert = set() if continuation else _definition_ids(text)
+  1277	        for raw_rid in ID_RE.findall(text):
+  1278	            rid = raw_rid.upper()
+  1279	            if rx and not rx.search(rid):
+  1280	                continue
+  1281	            if keep and rid not in keep:
+  1282	                continue
+  1283	            if not include_refs and rid not in definiert:
+  1284	                continue
+  1285	            if pageno not in hits[rid]:
+  1286	                hits[rid].append(pageno)
+  1287	            if raw_rid not in spellings[rid]:
+  1288	                spellings[rid].append(raw_rid)
+  1289	        regions = _history_regions(text)
+  1290	        starts_new_run = bool(regions and any(stop >= len(text) - 5 for _, stop in regions))
+  1291	        in_history_continuation = continuation or starts_new_run
+  1292	    evidence = _history_only_evidence(pages) if not include_refs else {}
+  1293	    rejected = sorted(rid for rid in evidence if not rx or rx.search(rid))
+  1294	    for rid in rejected:
+  1295	        hits.pop(rid, None)
+  1296	        spellings.pop(rid, None)
+  1297	    doc_result = {"path": str(path), "pages": len(pages),
+  1298	                  "ids": {k: v for k, v in sorted(hits.items())},
+  1299	                  "spellings": {k: v for k, v in sorted(spellings.items())},
+  1300	                  "history_only_ids": list(rejected),
+  1301	                  "history_only_evidence": {rid: evidence[rid] for rid in rejected}}
+  1302	    elapsed = time.perf_counter() - started
+  1303	    LOG.info("phase_ids document done name=%s ids=%d elapsed=%.3fs", path.name, len(doc_result["ids"]), elapsed)
+  1304	    return path.name, doc_result
+  1305	
+  1306	
+  1307	def phase_ids(pdfs, pattern=None, only_ids=None, include_refs=False,
+  1308	              backend="auto", jobs: int | None = None) -> dict:
+  1309	    """-> {pdf-name: {id: [seitenzahlen]}}"""
+  1310	    keep = frozenset(rid.upper() for rid in (only_ids or ()))
+  1311	    paths = [str(path) for path in pdfs]
+  1312	    result = OrderedDict()
+  1313	    if not paths:
+  1314	        return result
+  1315	    worker_count = max(1, min(len(paths), jobs or (os.cpu_count() or 1)))
+  1316	    started = time.perf_counter()
+  1317	    LOG.info("phase_ids start documents=%d workers=%d", len(paths), worker_count)
+  1318	    tasks = [(path_str, backend, pattern, keep, include_refs) for path_str in paths]
+  1319	    if worker_count == 1:
+  1320	        results = [_ids_for_document(task) for task in tasks]
+  1321	    else:
+  1322	        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+  1323	            results = list(executor.map(_ids_for_document, tasks, chunksize=1))
+  1324	    by_name = dict(results)
+  1325	    for path_str in paths:
+  1326	        path = Path(path_str)
+  1327	        result[path.name] = by_name[path.name]
+  1328	    elapsed = time.perf_counter() - started
+  1329	    total_ids = sum(len(info.get("ids", {})) for info in result.values())
+  1330	    LOG.info("phase_ids done documents=%d ids=%d elapsed=%.3fs rate=%.1f docs/s", len(paths), total_ids, elapsed, len(paths) / max(elapsed, 1e-9))
+  1331	    return result
+  1332	
+  1333	
+  1334	# ===========================================================================
+  1335	# Phase 2 — Eigenschaften je ID
+  1336	# ===========================================================================
+  1337	DEF_RE = re.compile(r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})\]", re.IGNORECASE)
+  1338	
+  1339	
+  1340	def _record_slice(text: str, rid: str) -> str:
+  1341	    """Textausschnitt ab der ID-Definition bis zum Beginn des naechsten Records.
+  1342	
+  1343	    Bevorzugt einen *echten* Definitionsanker ``[ID] ... ⌈`` und nicht bloss
+  1344	    eine Inline-Zitierung derselben ID (z. B. in ``Dependencies``). Sonst kann
+  1345	    der Slice mitten im Vorgänger-Record starten und dessen Resttext der
+  1346	    gesuchten ID zuordnen.
+  1347	
+  1348	    Grenze ist entweder das Spec-Item-Ende (⌋) oder die naechste in eckigen
+  1349	    Klammern stehende ID — sonst laufen die Eigenschaften des Folgerecords in
+  1350	    den aktuellen hinein.
+  1351	    """
+  1352	    pattern = re.compile(r"\[%s\]" % re.escape(rid), re.IGNORECASE)
+  1353	    matches = list(pattern.finditer(text))
+  1354	    m = None
+  1355	    for cand in matches:
+  1356	        lookahead = text[cand.end():cand.end() + 240]
+  1357	        if "⌈" in lookahead:
+  1358	            pos = lookahead.find("⌈")
+  1359	            nxt = DEF_RE.search(lookahead)
+  1360	            if nxt is None or nxt.start() > pos:
+  1361	                m = cand
+  1362	                break
+  1363	    if m is None and matches:
+  1364	        m = matches[0]
+  1365	    if not m:
+  1366	        m = re.search(re.escape(rid), text, re.IGNORECASE)
+  1367	        if not m:
+  1368	            return ""
+  1369	    rest = text[m.end():]
+  1370	    grenzen = []
+  1371	    ende = rest.find("⌋")
+  1372	    if ende >= 0:
+  1373	        grenzen.append(ende)
+  1374	    nxt = DEF_RE.search(rest)
+  1375	    if nxt:
+  1376	        grenzen.append(nxt.start())
+  1377	    return rest[:min(grenzen)] if grenzen else rest[:6000]
+  1378	
+  1379	
+  1380	# Umbruch vor jeder Beschriftung — bewusst OHNE \b, weil pypdf die Zellen ohne
+  1381	# Trenner aneinanderhaengt ("ara::logSymbol: LogLevel"); dort steht zwischen
+  1382	# Wortende und Beschriftung keine Wortgrenze.
+  1383	NORMATIVE_LABELS = ["Description", "Rationale", "Dependencies", "Use Case",
+  1384	                     "AppliesTo", "Supporting Material"]
+  1385	API_LABELS = [label for label in LABELS if label not in NORMATIVE_LABELS]
+  1386	# Normative RS tables frequently omit the colon after their field labels.  API
+  1387	# property labels remain colon-gated to avoid splitting prose on common words.
+  1388	NORM_RE = re.compile(
+  1389	    r"(?<!^)(?=(?:(?:%s)\s*:|(?:%s)(?:\s*:|(?=\s|[–—-]))|"
+  1390	    r"Upstream requirements?\s*:))" % (
+  1391	        "|".join(re.escape(x) for x in API_LABELS),
+  1392	        "|".join(re.escape(x) for x in NORMATIVE_LABELS),
+  1393	    )
+  1394	)
+  1395	
+  1396	
+  1397	# pypdf trennt Ligaturen ("T race"), der eingebaute Extraktor nicht — deshalb
+  1398	# tolerieren die Muster eingestreute Leerzeichen.
+  1399	def _lose(wort: str) -> str:
+  1400	    return r"\s*".join(re.escape(c) for c in wort)
+  1401	
+  1402	
+  1403	NOISE_RES = [
+  1404	    # Vollstaendige Fusszeile: Titel (ggf. mit Ligaturrest) + Release + Seite.
+  1405	    re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}?"
+  1406	               r"\s*AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
+  1407	    re.compile(r"AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
+  1408	    re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}", re.I),
+  1409	    re.compile(r"Document\s*ID\s*\d+\s*:\s*\S+", re.I),
+  1410	    re.compile(r"\d+\s+of\s+\d+"),
+  1411	    re.compile(_lose("AUTOSARCONFIDENTIAL"), re.I),
+  1412	    re.compile(r"[\u25b3\u25bd\u25b2\u25bc]"),
+  1413	]
+  1414	
+  1415	# Reste am Ende eines Zellwerts: Seitenzahl, Dokumentnummer, Trennzeichen.
+  1416	# Eine Seitenzahl darf nur als eigenstaendiges Token entfernt werden. Die alte
+  1417	# Variante entfernte beliebige Endziffern und kuerzte dadurch gueltige Namen wie
+  1418	# ``namespace ara::crypto::x509`` zu ``namespace ara::crypto::x``.
+  1419	TAIL_RE = re.compile(
+  1420	    r"(?:\s|\u2014|\u2013|(?<![A-Za-z0-9_])\d{1,4}|of|"
+  1421	    r"Document\s*ID\s*\d*:?|[.,;:])+$"
+  1422	)
+  1423	
+  1424	
+  1425	LIGATUR_RE = re.compile(r"\b((?:AP_)?(?:SWS|RS|PRS|TPS))_([A-Z][A-Z0-9]*(?:\s[A-Z0-9]+)*)_(\d{4,5})\b")
+  1426	
+  1427	
+  1428	def fix_ligatures(text: str) -> str:
+  1429	    """Von pypdf zerrissene Bezeichner wieder zusammenfuegen.
+  1430	
+  1431	    pypdf trennt Ligaturen ("RS_L T_00003", "Log and T race"). Innerhalb von
+  1432	    Spec-IDs ist ein Leerzeichen nie gueltig, daher kann es dort gefahrlos
+  1433	    entfernt werden.
+  1434	    """
+  1435	    text = LIGATUR_RE.sub(lambda m: "%s_%s_%s" % (m.group(1),
+  1436	                                                  m.group(2).replace(" ", ""),
+  1437	                                                  m.group(3)), text or "")
+  1438	    # "T race" -> "Trace", "T emplate" -> "Template": Grossbuchstabe, Leerzeichen,
+  1439	    # Kleinbuchstabenrest. Nur bei bekannten Woertern, um echte Wortgrenzen
+  1440	    # nicht zu zerstoeren.
+  1441	    return re.sub(r"\b([A-Z]) (race|emplate|ype|ime|hread|able)\b",
+  1442	                  lambda m: m.group(1) + m.group(2), text)
+  1443	
+  1444	
+  1445	def strip_noise(text: str) -> str:
+  1446	    """Seitenkopf und -fuss entfernen.
+  1447	
+  1448	    Die Eigenschaftstabellen laufen ueber Seitengrenzen; ohne diese Bereinigung
+  1449	    landet die Fusszeile mitten im Zellwert ("std::uint8_t ▽ 52 of 122 Document
+  1450	    ID 853: ...").
+  1451	    """
+  1452	    text = fix_ligatures(text)
+  1453	    for _ in range(2):            # Titel kann durch Umbruch zweigeteilt sein
+  1454	        for rx in NOISE_RES:
+  1455	            text = rx.sub(" ", text)
+  1456	        text = fix_ligatures(text)
+  1457	    # Alleinstehende Ligaturreste einer bereits entfernten Fusszeile.
+  1458	    text = re.sub(r"(?m)^[ \t]*(race|emplate|ime|hread|able|ype)[ \t]*$", " ", text)
+  1459	    return text
+  1460	
+  1461	
+  1462	def _clean_value(value: str) -> str:
+  1463	    """Zellwert von Seitenzahl-/Fusszeilenresten befreien."""
+  1464	    value = strip_noise(value).strip()
+  1465	    value = re.sub(r"\s{2,}", " ", value)
+  1466	    value = re.sub(r"\s+(race|emplate|ime|hread|able|ype)\s*$", "", value)
+  1467	    return TAIL_RE.sub("", value).strip()
+  1468	
+  1469	
+  1470	def normalize_layout(text: str) -> str:
+  1471	    """Zeilenstruktur erzwingen.
+  1472	
+  1473	    Je nach Backend (pypdf, PyMuPDF, eingebauter Extraktor) kommen die
+  1474	    Tabellenzellen mit, ohne oder mit falsch gesetzten Zeilenumbruechen an.
+  1475	    Deshalb wird vor jeder bekannten Beschriftung und vor jeder in eckigen
+  1476	    Klammern stehenden ID hart umbrochen — danach ist die Auswertung
+  1477	    backend-unabhaengig.
+  1478	    """
+  1479	    text = re.sub(r"[ \t]+", " ", strip_noise(text))
+  1480	    text = DEF_RE.sub(lambda m: "\n[%s]\n" % m.group(1), text)
+  1481	    return NORM_RE.sub("\n", text)
+  1482	
+  1483	
+  1484	def _requirement_text(chunk: str) -> str | None:
+  1485	    """Normativen Freitext eines Spec-Items zwischen ⌈ und ⌋ extrahieren.
+  1486	
+  1487	    API-Records enthalten in diesem Bereich Eigenschaftstabellen; für sie wird
+  1488	    kein ``requirement_text`` zurückgegeben. Prosa-Anforderungen haben dagegen
+  1489	    genau hier ihren kanonischen SHALL/SHOULD/MAY-Text. Die Unterscheidung über
+  1490	    eine bekannte Tabellenbeschriftung hält beide Record-Arten sauber getrennt.
+  1491	    """
+  1492	    if "⌈" not in chunk:
+  1493	        return None
+  1494	    text = chunk.split("⌈", 1)[1]
+  1495	    if "⌋" in text:
+  1496	        text = text.split("⌋", 1)[0]
+  1497	    lines = [line.strip() for line in text.split("\n") if line.strip()]
+  1498	    if any(LABEL_RE.match(line) for line in lines):
+  1499	        return None
+  1500	    value = _clean_value(" ".join(lines))
+  1501	    return value or None
+  1502	
+  1503	
+  1504	def _subsection_heading_before(text: str, rid: str) -> str | None:
+  1505	    """Fallback-Ueberschrift aus der nummerierten Zeile vor ``[rid]``.
+  1506	
+  1507	    Manche Dokumente (z. B. AUTOSAR_FO_RS_LogAndTrace) setzen den Titeltext
+  1508	    nicht in den Record selbst, sondern in die nummerierte Unterabschnitts-
+  1509	    Zeile direkt davor; der [ID]-Marker folgt dort unmittelbar von der
+  1510	    oeffnenden Klammer ohne eigenen Titeltext. ``text`` ist bereits durch
+  1511	    ``normalize_layout`` auf harte Zeilenumbrueche vor jeder [ID] normiert.
+  1512	    Der Unterabschnittstitel kann ueber mehrere physische Zeilen umbrechen, die
+  1513	    erste Zeile traegt aber stets das Nummernpraefix ``4.2.1...``.
+  1514	    """
+  1515	    pattern = re.compile(r"\[%s\]" % re.escape(rid), re.IGNORECASE)
+  1516	    m = pattern.search(text)
+  1517	    if not m:
+  1518	        return None
+  1519	    lines = text[:m.start()].split("\n")
+  1520	    tail = []
+  1521	    seen_text = False
+  1522	    for line in reversed(lines):
+  1523	        line = line.strip()
+  1524	        if not line:
+  1525	            if seen_text:
+  1526	                break
+  1527	            continue
+  1528	        seen_text = True
+  1529	        tail.append(line)
+  1530	        sub = SUBSECTION_HEADING_RE.match(line)
+  1531	        if sub:
+  1532	            prefix = sub.group(1)
+  1533	            rest = " ".join(reversed(tail[:-1]))
+  1534	            return _clean_value((prefix + " " + rest).strip())[:120] or None
+  1535	    return None
+  1536	
+  1537	
+  1538	def parse_record(text: str, rid: str) -> dict:
+  1539	    """Eigenschaften eines Spec-Records aus dem PDF-Text."""
+  1540	    chunk = _record_slice(normalize_layout(text), rid)
+  1541	    rec = {"id": rid, "props": OrderedDict(), "upstream": [], "heading": None,
+  1542	           "requirement_text": None}
+  1543	    if not chunk:
+  1544	        return rec
+  1545	    rec["requirement_text"] = _requirement_text(chunk)
+  1546	    for ups in UPSTREAM_RE.finditer(chunk):
+  1547	        for uid in ID_RE.findall(ups.group(1).split("\n")[0]):
+  1548	            uid = uid.upper()
+  1549	            if uid not in rec["upstream"]:
+  1550	                rec["upstream"].append(uid)
+  1551	    # A heading spans everything between the ID and the Status/table marker.
+  1552	    # builtin deliberately emits more positioning newlines than pypdf, so using
+  1553	    # only the first physical line truncates headings such as UCM to one word.
+  1554	    head_part = re.split(r"(?:⌈|(?:^|\n)\s*(?:Status|Upstream requirements?|Kind)\s*:?)",
+  1555	                         chunk.lstrip("\n"), maxsplit=1)[0]
+  1556	    head = _clean_value(" ".join(line.strip() for line in head_part.split("\n")
+  1557	                                  if line.strip()))
+  1558	    if head and not HEADING_LABEL_RE.match(head):
+  1559	        rec["heading"] = head[:120]
+  1560	    if rec["heading"] is None:
+  1561	        rec["heading"] = _subsection_heading_before(normalize_layout(text), rid)
+  1562	    current, buf = None, []
+  1563	    for line in chunk.split("\n"):
+  1564	        line = line.strip()
+  1565	        if not line:
+  1566	            continue
+  1567	        m = LABEL_RE.match(line)
+  1568	        if m:
+  1569	            if current:
+  1570	                rec["props"][current] = _clean_value(" ".join(buf))
+  1571	            current, buf = m.group(1), ([m.group(2).strip()] if m.group(2).strip() else [])
+  1572	        elif current:
+  1573	            buf.append(line)
+  1574	    if current:
+  1575	        rec["props"][current] = _clean_value(" ".join(buf))
+  1576	    ns, enclosing = namespace_from_scope(rec["props"].get("Scope", ""))
+  1577	    rec["namespace"], rec["enclosing"] = ns, enclosing
+  1578	    return rec
+  1579	
+  1580	
+  1581	def namespace_from_scope(scope: str):
+  1582	    """'namespace ara::log' -> ('ara::log', None);
+  1583	    'class ara::log::LogStream' -> ('ara::log', 'ara::log::LogStream').
+  1584	
+  1585	    Die Ableitung beruht auf einem Whitelist-Match ueber bekannte
+  1586	    Namespace-Praefixe. Gross-/Kleinschreibung ist dafuer ungeeignet, weil es
+  1587	    kleingeschriebene Typen gibt (z. B. std::hash, value_compare, reference,
+  1588	    in_place_t), die keine Namespaces sind.
+  1589	    """
+  1590	    original = (scope or "").strip()
+  1591	    s = re.sub(r"^(namespace|class|struct|enum(?:\s+class)?|union)\s+", "", original).strip()
+  1592	    while re.search(r"<[^<>]*>", s):
+  1593	        s = re.sub(r"<[^<>]*>", "", s)
+  1594	    s = re.sub(r"\s+", " ", s).strip()
+  1595	    if not s:
+  1596	        return None, None
+  1597	    if original.startswith("namespace"):
+  1598	        return s, None
+  1599	    for prefix in KNOWN_NAMESPACE_PREFIXES:
+  1600	        if s == prefix:
+  1601	            return prefix, None
+  1602	        if s.startswith(prefix + "::"):
+  1603	            return prefix, s
+  1604	    parts = [p for p in (seg.strip() for seg in s.split("::")) if p]
+  1605	    if not parts or parts[0] not in ("ara", "apext", "std"):
+  1606	        return None, None
+  1607	    if len(parts) == 1:
+  1608	        return parts[0], None
+  1609	    return parts[0], s
+  1610	
+  1611	
+  1612	MAX_RECORD_PAGES = 6
+  1613	
+  1614	
+  1615	def _record_page_span(pages: list, start_page: int, rid: str) -> tuple[list[int], bool]:
+  1616	    """Inclusive page numbers a record occupies, plus whether its end was seen.
+  1617	
+  1618	    The window grows until ``_record_slice`` observes a terminator (spec-item
+  1619	    end or the next bracketed definition).  Without a terminator the record is
+  1620	    reported as unterminated instead of silently claiming a single page.
+  1621	    """
+  1622	    last = len(pages)
+  1623	    for width in range(1, MAX_RECORD_PAGES + 1):
+  1624	        stop = min(start_page - 1 + width, last)
+  1625	        joined = "\n".join(pages[start_page - 1:stop])
+  1626	        m = re.search(re.escape(rid), joined, re.IGNORECASE)
+  1627	        if not m:
+  1628	            continue
+  1629	        rest = joined[m.end():]
+  1630	        if "\u230b" in rest or DEF_RE.search(rest):
+  1631	            consumed = rest.split("\u230b")[0]
+  1632	            nxt = DEF_RE.search(rest)
+  1633	            if nxt:
+  1634	                consumed = min(consumed, rest[:nxt.start()], key=len)
+  1635	            # Count how many of the joined pages the consumed slice reaches into.
+  1636	            offset = m.end() + len(consumed)
+  1637	            used, cursor = start_page, 0
+  1638	            for idx in range(start_page - 1, stop):
+  1639	                cursor += len(pages[idx]) + 1
+  1640	                used = idx + 1
+  1641	                if cursor >= offset:
+  1642	                    break
+  1643	            return list(range(start_page, used + 1)), True
+  1644	        if stop >= last:
+  1645	            break
+  1646	    return list(range(start_page, min(start_page, len(pages)) + 1)), False
+  1647	
+  1648	
+  1649	def _props_for_document(task: tuple[str, dict, frozenset, str]) -> tuple[str, dict]:
+  1650	    """Per-document worker: extract+parse one PDF's records. Independent of
+  1651	    every other document, so this is the natural unit of parallelism --
+  1652	    ``phase_props`` previously ran this loop body sequentially for every
+  1653	    document, which meant only one core was ever busy on PDF extraction and
+  1654	    regex-heavy parsing across ~7500+ IDs.
+  1655	    """
+  1656	    name, info, keep, backend = task
+  1657	    started = time.perf_counter()
+  1658	    pages = [strip_noise(x) for x in pdf_pages(Path(info["path"]), backend)]
+  1659	    doc_out: dict = {}
+  1660	    for rid, pagenos in info["ids"].items():
+  1661	        if keep and rid not in keep:
+  1662	            continue
+  1663	        best = None
+  1664	        for pageno in pagenos:
+  1665	            joined = "\n".join(pages[pageno - 1 : pageno + 1])  # Seitenumbruch mitnehmen
+  1666	            rec = parse_record(joined, rid)
+  1667	            if rec["props"] or rec["upstream"]:
+  1668	                best = rec
+  1669	                break
+  1670	        rec = best or {"id": rid, "props": {}, "upstream": [], "heading": None,
+  1671	                      "requirement_text": None, "namespace": None, "enclosing": None}
+  1672	        rec["document"] = name
+  1673	        rec["page"] = pagenos[0] if pagenos else None
+  1674	        if pagenos:
+  1675	            span, terminated = _record_page_span(pages, pagenos[0], rid)
+  1676	        else:
+  1677	            span, terminated = [], False
+  1678	        rec["pages"] = span
+  1679	        rec["pages_all_definitions"] = list(pagenos)
+  1680	        rec["complete_end"] = terminated
+  1681	        rec["id_observed"] = (info.get("spellings", {}).get(rid) or [rid])[0]
+  1682	        doc_out[rid] = rec
+  1683	    elapsed = time.perf_counter() - started
+  1684	    LOG.info(
+  1685	        "phase_props document done name=%s ids=%d elapsed=%.3fs",
+  1686	        name, len(doc_out), elapsed,
+  1687	    )
+  1688	    return name, doc_out
+  1689	
+  1690	
+  1691	def phase_props(index: dict, only_ids=None, backend="auto", jobs: int | None = None) -> dict:
+  1692	    keep = frozenset(only_ids or ())
+  1693	    out = OrderedDict()
+  1694	    documents = list(index.items())
+  1695	    if not documents:
+  1696	        return out
+  1697	    worker_count = max(1, min(len(documents), jobs or (os.cpu_count() or 1)))
+  1698	    started = time.perf_counter()
+  1699	    LOG.info("phase_props start documents=%d workers=%d", len(documents), worker_count)
+  1700	    tasks = [(name, info, keep, backend) for name, info in documents]
+  1701	    if worker_count == 1:
+  1702	        results = [_props_for_document(task) for task in tasks]
+  1703	    else:
+  1704	        with ProcessPoolExecutor(max_workers=worker_count) as executor:
+  1705	            results = list(executor.map(_props_for_document, tasks, chunksize=1))
+  1706	    # Preserve original document-then-id insertion order regardless of the
+  1707	    # (nondeterministic) completion order of parallel workers.
+  1708	    by_name = dict(results)
+  1709	    for name, _info in documents:
+  1710	        out.update(by_name.get(name, {}))
+  1711	    elapsed = time.perf_counter() - started
+  1712	    LOG.info(
+  1713	        "phase_props done documents=%d ids=%d elapsed=%.3fs rate=%.1f docs/s",
+  1714	        len(documents), len(out), elapsed, len(documents) / max(elapsed, 1e-9),
+  1715	    )
+  1716	    return out
+  1717	
+  1718	def _repair_requirements(requirements: dict, pages_by_doc: dict,
+  1719	                         agreement: dict | None = None) -> None:
+  1720	    """Normtext reparieren, Rohtext erhalten, Evidenzlage bewerten.
+  1721	
+  1722	    Der Lexikon-Guard stammt aus dem jeweiligen PDF selbst; damit ist jede
+  1723	    Reparatur durch das Quelldokument belegt und nicht durch externes Wissen.
+  1724	    """
+  1725	    import text_repair
+  1726	    identifiers = _known_identifiers()
+  1727	    lexicons = {doc: text_repair.build_lexicon(pages)
+  1728	                for doc, pages in pages_by_doc.items()}
+  1729	    for rid, rec in requirements.items():
+  1730	        lex = lexicons.get(rec.get("document")) or {}
+  1731	        entry = text_repair.repair_text(rec.get("requirement_text") or "",
+  1732	                                        lex, identifiers)
+  1733	        agree = (agreement or {}).get(rid)
+  1734	        conf, review, reason = text_repair.assess(entry, agree)
+  1735	        rec["requirement_text"] = entry["text_en"]
+  1736	        rec["requirement_text_raw"] = entry["text_raw"]
+  1737	        rec["repairs"] = entry["repairs"]
+  1738	        rec["suspects"] = entry["suspects"]
+  1739	        rec["confidence"] = conf
+  1740	        rec["review_status"] = review
+  1741	        rec["review_reason"] = reason
+  1742	
+  1743	
+  1744	def _known_identifiers() -> set:
+  1745	    """Bekannte C++-Bezeichner aus der Spec-DB als CamelCase-Whitelist."""
+  1746	    names = set()
+  1747	    if not RECORDS.exists():
+  1748	        return names
+  1749	    ident = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+  1750	    for path in RECORDS.glob("*/*.json"):
+  1751	        try:
+  1752	            raw = path.read_text(encoding="utf-8")
+  1753	        except OSError:
+  1754	            continue
+  1755	        for tok in ident.findall(raw):
+  1756	            if re.search(r"[a-z][A-Z]", tok):
+  1757	                names.add(tok.lower())
+  1758	    return names
+  1759	
+  1760	
+  1761	def phase_requirements(index: dict, only_ids=None, backend="auto") -> dict:
+  1762	    """Prosa-Anforderungen mit normativem Text aus den PDFs extrahieren.
+  1763	
+  1764	    Berücksichtigt nur Records mit ``requirement_text`` und ohne API-Property-
+  1765	    Tabelle. Das Ergebnis ist ein Import-Preview für künftige Requirement-
+  1766	    Records, nicht selbst die schreibende DB-Migration.
+  1767	    """
+  1768	    all_records = phase_props(index, only_ids, backend)
+  1769	    return OrderedDict((rid, rec) for rid, rec in all_records.items()
+  1770	                       if rec.get("requirement_text") and not rec.get("props"))
+  1771	
+  1772	def _requirement_prefix(rid: str) -> str:
+  1773	    """Den Spec-DB-Ordnernamen aus einer Requirement-ID ableiten."""
+  1774	    return "_".join(rid.split("_")[:-1])
+  1775	
+  1776	
+  1777	def _requirement_pdf_url(document: str, rid: str) -> str:
+  1778	    """Reproduzierbaren Deep-Link zum normativen PDF-Abschnitt erzeugen."""
+  1779	    branch = next((branch for branch, stem, _ in DOCS.values() if stem == document), "AP")
+  1780	    return "%s/%s/%s.pdf#nameddest=%s" % (BASE_URL, branch, document, rid)
+  1781	
+  1782	
+  1783	def write_requirement_records(requirements: dict, campaign: str,
+  1784	                              actor: str = "tool") -> list:
+  1785	    """Neue explizite Prosa-Requirements additiv in die Spec-DB schreiben.
+  1786	
+  1787	    Bestehende Records bleiben unberuehrt. Damit ist ein versehentliches
+  1788	    Ueberschreiben bereits vorhandener API- oder manuell gepflegter Records
+  1789	    ausgeschlossen; Konflikte werden als Rueckgabewerte gemeldet.
+  1790	    """
+  1791	    written, existing = [], []
+  1792	    date = __import__("datetime").date.today().isoformat()
+  1793	    for rid, rec in requirements.items():
+  1794	        prefix = _requirement_prefix(rid)
+  1795	        path = RECORDS / prefix / (rid + ".json")
+  1796	        if path.exists():
+  1797	            existing.append(rid)
+  1798	            continue
+  1799	        module = next((name for name, (_, stem, rec_prefix) in DOCS.items()
+  1800	                       if stem == rec["document"] and rec_prefix == prefix), None)
+  1801	        title = rec.get("heading") or rid
+  1802	        upstream = rec.get("upstream") or []
+  1803	        upstream_html = ""
+  1804	        if upstream:
+  1805	            links = []
+  1806	            for up in upstream:
+  1807	                up_url = "%s/FO/AUTOSAR_FO_RS_LogAndTrace.pdf#nameddest=%s" % (BASE_URL, up)
+  1808	                links.append('<a class="swsref" href="%s" title="Spezifikations-PDF">%s</a>'
+  1809	                             % (up_url, up))
+  1810	            upstream_html = ' <span class="ups">Upstream: %s</span>' % ", ".join(links)
+  1811	        record = {
+  1812	            "id": rid,
+  1813	            "attrs": [["class", "rec req"], ["id", rid]],
+  1814	            "lead": "\n",
+  1815	            "blocks": [
+  1816	                {"t": "html",
+  1817	                 "html": '<h3 class="recname"><span class="kind">requirement</span> %s <span class="sws"><a href="%s" title="Spezifikations-PDF (%s.pdf)">[%s]</a></span>%s</h3>'
+  1818	                         % (title, _requirement_pdf_url(rec["document"], rid), rec["document"], rid, upstream_html),
+  1819	                 "tail": "\n"},
+  1820	                {"t": "requirement_text", "text_en": rec["requirement_text"],
+  1821	                 "text_raw": rec.get("requirement_text_raw"),
+  1822	                 "repairs": rec.get("repairs") or [],
+  1823	                 "suspects": rec.get("suspects") or [],
+  1824	                 "status_flag": rec.get("status_flag"), "tail": "\n"},
+  1825	            ],
+  1826	            "requirement_meta": {
+  1827	                "confidence": rec.get("confidence", "medium"),
+  1828	                "review_status": rec.get("review_status", "pending"),
+  1829	                "review_reason": rec.get("review_reason", "single_backend"),
+  1830	                "heading": title,
+  1831	                "upstream": upstream,
+  1832	                "status_flag": rec.get("status_flag"),
+  1833	                "covers": [],
+  1834	                "covered_by": [],
+  1835	                "origin": "explicit",
+  1836	                "module": module,
+  1837	                "document": rec["document"],
+  1838	                "page": rec["page"],
+  1839	                "trace": [{
+  1840	                    "mode": "pdf_deep_link",
+  1841	                    "sources": [{
+  1842	                        "kind": "pdf_deep_link",
+  1843	                        "document": rec["document"],
+  1844	                        "url": _requirement_pdf_url(rec["document"], rid),
+  1845	                        "locator": "named destination %s; page %s" % (rid, rec["page"]),
+  1846	                    }],
+  1847	                    "extracts": [rec["requirement_text"]],
+  1848	                    "reasoning": "Direkt aus dem normativen, mit der ID gekennzeichneten PDF-Abschnitt extrahiert.",
+  1849	                    "rule": "pdf_requirement_text_between_delimiters@v1",
+  1850	                    "confidence": "high",
+  1851	                    "evidence_strength": "strong",
+  1852	                    "review": {"status": "accepted"},
+  1853	                    "created_by": "spec_scrape.py",
+  1854	                    "timestamp": date,
+  1855	                }],
+  1856	            },
+  1857	            "status": {"state": "valid/imported", "reason": "scrape", "campaign": campaign},
+  1858	            "history": [{
+  1859	                "campaign": campaign, "date": date, "from": None,
+  1860	                "to": "valid/imported",
+  1861	                "reason": "Scraping von %s" % rec["document"], "actor": actor,
+  1862	            }],
+  1863	        }
+  1864	        path.parent.mkdir(parents=True, exist_ok=True)
+  1865	        path.write_text(json.dumps(record, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+  1866	        if rec.get("review_status", "pending") != "accepted":
+  1867	            import review_flags
+  1868	            review_flags.write_review_flag(
+  1869	                rid, rec.get("review_reason", "single_backend"),
+  1870	                {"suspects": rec.get("suspects") or [],
+  1871	                 "repairs": rec.get("repairs") or []},
+  1872	                str(path), campaign, rec.get("confidence", "medium"))
+  1873	        written.append(rid)
+  1874	    return {"written": written, "existing": existing}
+  1875	
+  1876	
+  1877	# ===========================================================================
+  1878	# Phase 3 — Abgleich mit der internen Spec-DB
+  1879	# ===========================================================================
+  1880	def _strip_html(value: str) -> str:
+  1881	    import html as _html
+  1882	    return re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", "", value or ""))).strip()
+  1883	
+  1884	
+  1885	def load_db(prefixes=None) -> dict:
+  1886	    """Spec-DB einlesen -> {id: {'path','kind','props','ns'}}."""
+  1887	    db = {}
+  1888	    if not RECORDS.is_dir():
+  1889	        return db
+  1890	    for path in sorted(RECORDS.rglob("*.json")):
+  1891	        if prefixes and not any(path.parent.name == p for p in prefixes):
+  1892	            continue
+  1893	        rec = json.loads(path.read_text(encoding="utf-8"))
+  1894	        props, kind = OrderedDict(), None
+  1895	        for block in rec.get("blocks", []):
+  1896	            if block.get("t") == "props":
+  1897	                for row in block.get("rows", []):
+  1898	                    label = DB_LABEL_MAP.get(_strip_html(row.get("th", "")).lower().rstrip(":"))
+  1899	                    if label:
+  1900	                        props.setdefault(label, _strip_html(row.get("td", "")))
+  1901	            if block.get("t") == "html" and "recname" in (block.get("html") or ""):
+  1902	                m = re.search(r'<span class="kind">(.*?)</span>', block["html"], re.S)
+  1903	                if m:
+  1904	                    kind = _strip_html(m.group(1))
+  1905	        db[rec.get("id") or path.stem] = {
+  1906	            "path": path, "kind": kind, "props": props,
+  1907	            "namespace_meta": rec.get("namespace_meta") or rec.get("ns") or {},
+  1908	        }
+  1909	    return db
+  1910	
+  1911	
+  1912	def _norm(value: str) -> str:
+  1913	    v = re.sub(r"\s+", " ", (value or "")).strip().rstrip(".").lower()
+  1914	    return re.sub(r'^#include\s*["<]|[">]$', "", v).strip()
+  1915	
+  1916	
+  1917	def phase_compare(scraped: dict, prefixes=None, rebuild=False, vollstaendig=True) -> dict:
+  1918	    db = load_db(prefixes)
+  1919	    report = {"checked": 0, "only_in_pdf": [], "only_in_db": [], "diffs": [],
+  1920	              "namespace_diffs": [], "enclosing_diffs": [],
+  1921	              "namespace_legacy_schema": [], "empty_extraction": [], "written": []}
+  1922	    for rid, rec in scraped.items():
+  1923	        if not rec["props"]:
+  1924	            report["empty_extraction"].append(rid)
+  1925	        if rid not in db:
+  1926	            report["only_in_pdf"].append(rid)
+  1927	            continue
+  1928	        report["checked"] += 1
+  1929	        entry = db[rid]
+  1930	        for label in COMPARED:
+  1931	            pdf_val = rec["props"].get(label)
+  1932	            db_val = entry["kind"] if label == "Kind" else entry["props"].get(label)
+  1933	            if pdf_val and db_val and _norm(pdf_val) != _norm(db_val):
+  1934	                report["diffs"].append({"id": rid, "field": label,
+  1935	                                        "pdf": pdf_val[:120], "db": db_val[:120]})
+  1936	            elif pdf_val and not db_val:
+  1937	                report["diffs"].append({"id": rid, "field": label,
+  1938	                                        "pdf": pdf_val[:120], "db": None})
+  1939	        # Namespace und umschliessender Typ sind zwei verschiedene Fakten und
+  1940	        # werden getrennt verglichen. Wo die DB noch dem Altschema folgt und
+  1941	        # den umschliessenden Typ im Feld ``namespace`` fuehrt, ist das kein
+  1942	        # Datenfehler des Inhalts, sondern ein Schemarest: eigener Topf,
+  1943	        # damit nichts still verschwindet (siehe SPEC_BUILD_PROCESS.md).
+  1944	        pdf_ns, pdf_enc = rec.get("namespace"), rec.get("enclosing")
+  1945	        meta = entry.get("namespace_meta") or {}
+  1946	        db_ns, db_enc = meta.get("namespace"), meta.get("enclosing")
+  1947	        if pdf_ns and db_ns and _norm(pdf_ns) != _norm(db_ns):
+  1948	            if db_enc is None and pdf_enc and _norm(db_ns) == _norm(pdf_enc):
+  1949	                report["namespace_legacy_schema"].append(
+  1950	                    {"id": rid, "namespace": pdf_ns, "enclosing": pdf_enc,
+  1951	                     "db": db_ns, "rule": "enclosing-in-namespace"})
+  1952	            elif db_enc is None and pdf_enc and _norm(pdf_enc).startswith(_norm(db_ns) + "::"):
+  1953	                report["namespace_legacy_schema"].append(
+  1954	                    {"id": rid, "namespace": pdf_ns, "enclosing": pdf_enc,
+  1955	                     "db": db_ns, "rule": "enclosing-prefix-in-namespace"})
+  1956	            else:
+  1957	                report["namespace_diffs"].append({"id": rid, "pdf": pdf_ns, "db": db_ns})
+  1958	        if pdf_enc and db_enc and _norm(pdf_enc) != _norm(db_enc):
+  1959	            report["enclosing_diffs"].append({"id": rid, "pdf": pdf_enc, "db": db_enc})
+  1960	    # "nur in der DB" ist ausschliesslich bei einem vollstaendigen Dokumentlauf
+  1961	    # eine echte Aussage — bei --id/--limit/--pattern waere die Liste blosses
+  1962	    # Rauschen (alles, was der Teillauf nicht angefasst hat).
+  1963	    if vollstaendig and scraped:
+  1964	        report["only_in_db"] = sorted(set(db) - set(scraped))
+  1965	    else:
+  1966	        report["only_in_db_unterdrueckt"] = True
+  1967	    if rebuild:
+  1968	        report["written"] = _rebuild(scraped, db)
+  1969	    return report
+  1970	
+  1971	
+  1972	def _rebuild(scraped: dict, db: dict) -> list:
+  1973	    """Autoritative PDF-Felder in die DB zurueckschreiben.
+  1974	
+  1975	    Konservativ: nur der ``ns``-Block und ein ``quelle``-Vermerk werden
+  1976	    aktualisiert bzw. ergaenzt. Darstellungsbloecke (HTML, KI-Fragmente,
+  1977	    Property-Zeilen) bleiben unberuehrt — sie werden vom Generator gebraucht.
+  1978	    """
+  1979	    written = []
+  1980	    for rid, rec in scraped.items():
+  1981	        entry = db.get(rid)
+  1982	        if not entry or not rec.get("namespace"):
+  1983	            continue
+  1984	        data = json.loads(entry["path"].read_text(encoding="utf-8"))
+  1985	        ns = dict(data.get("namespace_meta") or data.get("ns") or {})
+  1986	        before = dict(ns)
+  1987	        ns["namespace"] = rec["namespace"]
+  1988	        if rec.get("enclosing"):
+  1989	            ns["enclosing"] = rec["enclosing"]
+  1990	        ns.setdefault("module", (entry.get("namespace_meta") or {}).get("module") or (entry.get("namespace_meta") or {}).get("modul"))
+  1991	        ns["source"] = "pdf"
+  1992	        if rec.get("enclosing"):
+  1993	            ns["umschliessend"] = rec["enclosing"]
+  1994	        if ns == before:
+  1995	            continue
+  1996	        data["ns"] = ns
+  1997	        entry["path"].write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n",
+  1998	                                 encoding="utf-8")
+  1999	        written.append(rid)
+  2000	    return written
+  2001	
+  2002	
+  2003	# ===========================================================================
+  2004	# Quervergleich der Extraktions-Backends
+  2005	# ===========================================================================
+  2006	def compare_backend_results(results: dict) -> list:
+  2007	    """Feldgenauer Vergleich: IDs, Metadaten, Upstream und alle PDF-Properties."""
+  2008	    names = list(results)
+  2009	    if len(names) < 2:
+  2010	        return []
+  2011	    left, right = names[0], names[1]
+  2012	    a, b = results[left], results[right]
+  2013	    deviations = []
+  2014	    for rid in sorted(set(a) | set(b)):
+  2015	        if rid not in a or rid not in b:
+  2016	            deviations.append({"id": rid, "field": "record",
+  2017	                               left: "present" if rid in a else "missing",
+  2018	                               right: "present" if rid in b else "missing"})
+  2019	            continue
+  2020	        fields = {"heading", "namespace", "enclosing", "document", "page"}
+  2021	        for field in sorted(fields):
+  2022	            av, bv = a[rid].get(field), b[rid].get(field)
+  2023	            if _norm(str(av or "")) != _norm(str(bv or "")):
+  2024	                deviations.append({"id": rid, "field": field, left: av, right: bv})
+  2025	        au, bu = sorted(a[rid].get("upstream") or []), sorted(b[rid].get("upstream") or [])
+  2026	        if au != bu:
+  2027	            deviations.append({"id": rid, "field": "upstream", left: au, right: bu})
+  2028	        for field in sorted(set(a[rid].get("props", {})) | set(b[rid].get("props", {}))):
+  2029	            av = a[rid].get("props", {}).get(field)
+  2030	            bv = b[rid].get("props", {}).get(field)
+  2031	            if _norm(str(av or "")) != _norm(str(bv or "")):
+  2032	                deviations.append({"id": rid, "field": "props." + field,
+  2033	                                   left: av, right: bv})
+  2034	    return deviations
+  2035	
+  2036	
+  2037	def phase_crosscheck(pdfs, pattern=None, only_ids=None, include_refs=False,
+  2038	                     backends=("pypdf", "builtin"), prefixes=None,
+  2039	                     limit=None) -> dict:
+  2040	    missing = [x for x in backends if x not in available_backends()]
+  2041	    if missing:
+  2042	        raise SystemExit("Backend nicht verfuegbar: %s" % ", ".join(missing))
+  2043	    results, indexes = OrderedDict(), OrderedDict()
+  2044	    for backend in backends:
+  2045	        idx = phase_ids(pdfs, pattern, only_ids, include_refs, backend)
+  2046	        if limit:
+  2047	            for info in idx.values():
+  2048	                info["ids"] = dict(list(info["ids"].items())[:limit])
+  2049	        indexes[backend] = idx
+  2050	        results[backend] = phase_props(idx, only_ids, backend)
+  2051	    complete = not (only_ids or limit or pattern)
+  2052	    db_reports = {name: phase_compare(records, prefixes, rebuild=False,
+  2053	                                      vollstaendig=complete)
+  2054	                  for name, records in results.items()}
+  2055	    return {"release": RELEASE, "backends": list(backends),
+  2056	            "documents": [p.name for p in pdfs],
+  2057	            "record_counts": {k: len(v) for k, v in results.items()},
+  2058	            "backend_deviations": compare_backend_results(results),
+  2059	            "database": db_reports}
+  2060	
+  2061	
+  2062	def _traceability_prefix(rid: str) -> str:
+  2063	    return "_".join(str(rid).upper().split("_")[:-1])
+  2064	
+  2065	
+  2066	def _traceability_pdf_url(document: str, rid: str) -> str:
+  2067	    branch = next((branch for branch, stem, _ in DOCS.values() if stem == document), "AP")
+  2068	    return "%s/%s/%s.pdf#nameddest=%s" % (BASE_URL, branch, document, rid)
+  2069	
+  2070	
+  2071	def _traceability_section_pages(pages: list[str]) -> tuple[int | None, list[tuple[int, str]]]:
+  2072	    start = next((i for i, raw in enumerate(pages) if TRACEABILITY_HEADING_RE.search(strip_noise(raw))), None)
+  2073	    if start is None:
+  2074	        return None, []
+  2075	    cleaned = [(start + 1, strip_noise(pages[start]))]
+  2076	    i = start + 1
+  2077	    while i < len(pages):
+  2078	        page = strip_noise(pages[i])
+  2079	        if not TRACEABILITY_CONTINUATION_RE.search(page):
+  2080	            break
+  2081	        cleaned.append((i + 1, page))
+  2082	        i += 1
+  2083	    return start + 1, cleaned
+  2084	
+  2085	
+  2086	def _clean_traceability_text(value: str) -> str:
+  2087	    value = strip_noise(value).replace("△", " ").strip()
+  2088	    value = TRACEABILITY_CLEAN_RE.sub(" ", value)
+  2089	    return value.strip()
+  2090	
+  2091	
+  2092	def _traceability_rows_for_pdf(path: Path, backend: str = "auto") -> list[dict]:
+  2093	    pages = pdf_pages(path, backend)
+  2094	    start_page, section_pages = _traceability_section_pages(pages)
+  2095	    if not section_pages:
+  2096	        return []
+  2097	    rows = []
+  2098	    current = None
+  2099	    for page_no, raw in section_pages:
+  2100	        text = strip_noise(raw)
+  2101	        text = TRACEABILITY_HEADING_RE.sub(" ", text, count=1)
+  2102	        text = TRACEABILITY_HEADER_RE.sub(" ", text)
+  2103	        text = text.replace("△", " ")
+  2104	        matches = list(DEF_RE.finditer(text))
+  2105	        for idx, match in enumerate(matches):
+  2106	            rid = match.group(1).upper()
+  2107	            next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+  2108	            between = text[match.end():next_start]
+  2109	            if TRACEABILITY_ROW_ID_RE.fullmatch(rid):
+  2110	                current = {
+  2111	                    "id": rid,
+  2112	                    "document": path.stem + ".pdf",
+  2113	                    "source_document": path.stem,
+  2114	                    "page": page_no,
+  2115	                    "section_start_page": start_page,
+  2116	                    "description": _clean_traceability_text(between),
+  2117	                    "satisfied_by": [],
+  2118	                }
+  2119	                rows.append(current)
+  2120	            elif current is not None:
+  2121	                if rid not in current["satisfied_by"]:
+  2122	                    current["satisfied_by"].append(rid)
+  2123	    return rows
+  2124	
+  2125	
+  2126	def phase_traceability(pdfs, pattern=None, only_ids=None, backend="auto", progress=False) -> dict:
+  2127	    rx = re.compile(pattern, re.IGNORECASE) if pattern else None
+  2128	    keep = {rid.upper() for rid in (only_ids or ())}
+  2129	    result = OrderedDict()
+  2130	    total = len(pdfs)
+  2131	    for i, path in enumerate(pdfs, 1):
+  2132	        if progress:
+  2133	            print("[trace %d/%d] %s ..." % (i, total, path.name), file=sys.stderr, flush=True)
+  2134	        rows = []
+  2135	        for row in _traceability_rows_for_pdf(path, backend):
+  2136	            rid = row["id"].upper()
+  2137	            if rx and not rx.search(rid):
+  2138	                continue
+  2139	            if keep and rid not in keep:
+  2140	                continue
+  2141	            rows.append(row)
+  2142	        if progress:
+  2143	            print("[trace %d/%d] %s -> %d rows" % (i, total, path.name, len(rows)), file=sys.stderr, flush=True)
+  2144	        if rows:
+  2145	            result[path.name] = rows
+  2146	    return result
+  2147	
+  2148	
+  2149	def write_traceability_records(traceability: dict, campaign: str, actor: str = "tool") -> dict:
+  2150	    grouped = OrderedDict()
+  2151	    for rows in traceability.values():
+  2152	        for row in rows:
+  2153	            rid = row["id"].upper()
+  2154	            bucket = grouped.setdefault(rid, {
+  2155	                "id": rid,
+  2156	                "description": row.get("description") or rid,
+  2157	                "rows": [],
+  2158	                "satisfied_by": [],
+  2159	            })
+  2160	            bucket["rows"].append(dict(row))
+  2161	            for sid in row.get("satisfied_by") or []:
+  2162	                sid = str(sid).upper()
+  2163	                if sid not in bucket["satisfied_by"]:
+  2164	                    bucket["satisfied_by"].append(sid)
+  2165	            if not bucket["description"] or bucket["description"] == rid:
+  2166	                bucket["description"] = row.get("description") or bucket["description"]
+  2167	
+  2168	    written, updated = [], []
+  2169	    date = __import__("datetime").date.today().isoformat()
+  2170	    for rid, bucket in grouped.items():
+  2171	        prefix = _traceability_prefix(rid)
+  2172	        path = TRACE_RECORDS / prefix / (rid + '.json')
+  2173	        path.parent.mkdir(parents=True, exist_ok=True)
+  2174	
+  2175	        downstream = list(bucket["satisfied_by"])
+  2176	        links = [f'<code>{sid}</code>' for sid in downstream]
+  2177	        downstream_html = ', '.join(links) if links else '<span class="dim">(leer)</span>'
+  2178	        title = bucket.get("description") or rid
+  2179	        # Deterministic ordering: sort rows by source document name (then page)
+  2180	        # so which document ends up "first" for the summary document/page
+  2181	        # fields never depends on filesystem/glob iteration order across
+  2182	        # rebuild runs. Without this, re-running --rebuild with the exact
+  2183	        # same PDF set could still change traceability_meta.document/.page
+  2184	        # for records with rows from >1 document, producing diff noise that
+  2185	        # looks like a content change but isn't.
+  2186	        bucket["rows"].sort(key=lambda row: (
+  2187	            row.get("source_document") or Path(row["document"]).stem,
+  2188	            row.get("page") if row.get("page") is not None else -1,
+  2189	        ))
+  2190	        first_row = bucket["rows"][0]
+  2191	        first_doc = first_row.get("source_document") or Path(first_row["document"]).stem
+  2192	        first_url = _traceability_pdf_url(first_doc, rid)
+  2193	        trace_entries = []
+  2194	        sources = []
+  2195	        source_docs = []
+  2196	        source_pages = []
+  2197	        for row in bucket["rows"]:
+  2198	            src_doc = row.get("source_document") or Path(row["document"]).stem
+  2199	            src_url = _traceability_pdf_url(src_doc, rid)
+  2200	            source_docs.append(src_doc)
+  2201	            source_pages.append(row.get("page"))
+  2202	            sources.append({
+  2203	                "kind": "pdf_deep_link",
+  2204	                "document": src_doc,
+  2205	                "url": src_url,
+  2206	                "locator": "named destination %s; page %s" % (rid, row["page"]),
+  2207	            })
+  2208	            trace_entries.append({
+  2209	                "mode": "pdf_deep_link",
+  2210	                "sources": [{
+  2211	                    "kind": "pdf_deep_link",
+  2212	                    "document": src_doc,
+  2213	                    "url": src_url,
+  2214	                    "locator": "named destination %s; page %s" % (rid, row["page"]),
+  2215	                }],
+  2216	                "extracts": [row.get("description") or "", ", ".join(row.get("satisfied_by") or [])],
+  2217	                "reasoning": "Aus Kapitel 6 Requirements Tracing als Traceability-Zeile extrahiert.",
+  2218	                "rule": "pdf_traceability_table@v1",
+  2219	                "confidence": "medium",
+  2220	                "evidence_strength": "medium",
+  2221	                "review": {"status": "pending"},
+  2222	                "created_by": "spec_scrape.py",
+  2223	                "timestamp": date,
+  2224	            })
+  2225	        record = {
+  2226	            "id": rid,
+  2227	            "attrs": [["class", "rec traceability"], ["id", rid]],
+  2228	            "lead": "\n",
+  2229	            "blocks": [
+  2230	                {"t": "html",
+  2231	                 "html": '<h3 class="recname"><span class="kind">traceability</span> %s <span class="sws"><a href="%s" title="Spezifikations-PDF (%s)">[%s]</a></span></h3>'
+  2232	                         % (title, first_url, first_row["document"], rid),
+  2233	                 "tail": "\n"},
+  2234	                {"t": "html",
+  2235	                 "html": '<p class="desc">Kapitel 6 „Requirements Tracing“: <code>%s</code> wird dokumentuebergreifend durch %s erfuellt.</p>'
+  2236	                         % (rid, downstream_html),
+  2237	                 "tail": "\n"},
+  2238	            ],
+  2239	            "traceability_meta": {
+  2240	                "origin": "chapter6_requirements_tracing",
+  2241	                "document": first_row["document"],
+  2242	                "page": min(p for p in source_pages if p is not None) if any(p is not None for p in source_pages) else None,
+  2243	                "description": title,
+  2244	                "satisfied_by": downstream,
+  2245	                "source_documents": list(dict.fromkeys(source_docs)),
+  2246	                "source_rows": [{
+  2247	                    "document": row["document"],
+  2248	                    "source_document": row.get("source_document") or Path(row["document"]).stem,
+  2249	                    "page": row.get("page"),
+  2250	                    "section_start_page": row.get("section_start_page"),
+  2251	                    "description": row.get("description") or "",
+  2252	                    "satisfied_by": list(row.get("satisfied_by") or []),
+  2253	                } for row in bucket["rows"]],
+  2254	                "confidence": "medium",
+  2255	                "review_status": "pending",
+  2256	                "review_reason": "traceability_table_import",
+  2257	                "trace": trace_entries,
+  2258	            },
+  2259	            "status": {"state": "valid/imported", "reason": "traceability", "campaign": campaign},
+  2260	            "history": [{
+  2261	                "campaign": campaign, "date": date, "from": None,
+  2262	                "to": "valid/imported", "by": actor,
+  2263	                "reason": "Merged import from chapter 6 traceability tables",
+  2264	            }],
+  2265	        }
+  2266	        before = None
+  2267	        if path.exists():
+  2268	            try:
+  2269	                before = json.loads(path.read_text(encoding='utf-8'))
+  2270	            except (json.JSONDecodeError, OSError):
+  2271	                before = None
+  2272	        tmp = path.with_suffix(path.suffix + '.tmp')
+  2273	        tmp.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding='utf-8')
+  2274	        tmp.replace(path)
+  2275	        if before is None:
+  2276	            written.append(rid)
+  2277	        elif before != record:
+  2278	            updated.append(rid)
+  2279	    return {"written": written, "updated": updated, "total": len(grouped)}
+  2280	
+  2281	
+  2282	def load_traceability_index() -> dict:
+  2283	    """RS-ID -> {satisfied_by, document, page, description} aus den bereits
+  2284	    geschriebenen Traceability-Records unter ``_src/spec/traceability/``.
+  2285	
+  2286	    Getrennt von ``phase_traceability`` gehalten, weil der Konsistenzcheck
+  2287	    gegen den geschriebenen Stand prüfen soll, nicht gegen einen frischen
+  2288	    PDF-Lauf — das macht Abweichungen zwischen den beiden Phasen selbst
+  2289	    sichtbar, statt sie zu verschleiern.
+  2290	    """
+  2291	    index = {}
+  2292	    if not TRACE_RECORDS.is_dir():
+  2293	        return index
+  2294	    for path in sorted(TRACE_RECORDS.rglob("*.json")):
+  2295	        try:
+  2296	            rec = json.loads(path.read_text(encoding="utf-8"))
+  2297	        except (json.JSONDecodeError, OSError):
+  2298	            continue
+  2299	        meta = rec.get("traceability_meta") or {}
+  2300	        rid = str(rec.get("id", "")).upper()
+  2301	        if not rid:
+  2302	            continue
+  2303	        source_rows = []
+  2304	        for row in (meta.get("source_rows") or []):
+  2305	            if not isinstance(row, dict):
+  2306	                continue
+  2307	            source_rows.append({
+  2308	                "document": row.get("document"),
+  2309	                "source_document": row.get("source_document"),
+  2310	                "page": row.get("page"),
+  2311	                "section_start_page": row.get("section_start_page"),
+  2312	                "description": row.get("description") or "",
+  2313	                "satisfied_by": [str(s).upper() for s in (row.get("satisfied_by") or []) if s],
+  2314	            })
+  2315	        index[rid] = {
+  2316	            "satisfied_by": [s.upper() for s in (meta.get("satisfied_by") or [])],
+  2317	            "document": meta.get("document"),
+  2318	            "page": meta.get("page"),
+  2319	            "description": meta.get("description") or "",
+  2320	            "path": str(path),
+  2321	            "provenance": {
+  2322	                "origin": meta.get("origin") or "chapter6_requirements_tracing",
+  2323	                "record_path": str(path),
+  2324	                "source_documents": list(meta.get("source_documents") or []),
+  2325	                "source_rows": source_rows,
+  2326	            },
+  2327	        }
+  2328	    return index
+  2329	
+  2330	
+  2331	def siblings_for_upstream(record_id: str, trace_index: dict | None = None) -> dict:
+  2332	    """Return the RS upstream(s) for one DB record and all sibling satisfiers.
+  2333	
+  2334	    This is the two-hop navigation needed for reviewer workflows:
+  2335	    record -> upstream RS -> every other record that satisfies the same RS,
+  2336	    with source-document provenance from the canonical traceability record.
+  2337	    """
+  2338	    target = str(record_id or "").upper()
+  2339	    if not target:
+  2340	        return {"record": target, "found": False, "error": "missing_record_id", "upstreams": []}
+  2341	
+  2342	    trace_index = trace_index if trace_index is not None else load_traceability_index()
+  2343	
+  2344	    rec = None
+  2345	    rec_path = None
+  2346	    by_upstream = {}
+  2347	    for path in sorted(RECORDS.rglob("*.json")):
+  2348	        try:
+  2349	            cur = json.loads(path.read_text(encoding="utf-8"))
+  2350	        except (json.JSONDecodeError, OSError):
+  2351	            continue
+  2352	        rid = str(cur.get("id", "")).upper()
+  2353	        if not rid:
+  2354	            continue
+  2355	        if rid == target:
+  2356	            rec = cur
+  2357	            rec_path = str(path)
+  2358	        for item in (cur.get("upstream") or []):
+  2359	            if not isinstance(item, dict) or not item.get("id"):
+  2360	                continue
+  2361	            rs_id = str(item.get("id", "")).upper()
+  2362	            by_upstream.setdefault(rs_id, []).append({
+  2363	                "record": rid,
+  2364	                "path": str(path),
+  2365	                **({"document": item.get("document")} if item.get("document") else {}),
+  2366	                **({"page": item.get("page")} if item.get("page") is not None else {}),
+  2367	                **({"source": item.get("source")} if item.get("source") else {}),
+  2368	            })
+  2369	
+  2370	    if rec is None:
+  2371	        return {"record": target, "found": False, "error": "record_not_found", "upstreams": []}
+  2372	
+  2373	    upstream_entries = []
+  2374	    for item in (rec.get("upstream") or []):
+  2375	        if not isinstance(item, dict) or not item.get("id"):
+  2376	            continue
+  2377	        upstream_entries.append({
+  2378	            "id": str(item.get("id", "")).upper(),
+  2379	            **({"document": item.get("document")} if item.get("document") else {}),
+  2380	            **({"page": item.get("page")} if item.get("page") is not None else {}),
+  2381	            **({"url": item.get("url")} if item.get("url") else {}),
+  2382	            **({"source": item.get("source")} if item.get("source") else {}),
+  2383	        })
+  2384	
+  2385	    results = []
+  2386	    for upstream in upstream_entries:
+  2387	        rs_id = upstream["id"]
+  2388	        trace_row = trace_index.get(rs_id) or {}
+  2389	        siblings = sorted(by_upstream.get(rs_id, []), key=lambda item: item["record"])
+  2390	        results.append({
+  2391	            "rs_id": rs_id,
+  2392	            "record_has_upstream": True,
+  2393	            "upstream": upstream,
+  2394	            "sibling_records": siblings,
+  2395	            "traceability": {
+  2396	                "record_path": trace_row.get("path"),
+  2397	                "document": trace_row.get("document"),
+  2398	                "page": trace_row.get("page"),
+  2399	                "description": trace_row.get("description") or "",
+  2400	                "satisfied_by": list(trace_row.get("satisfied_by") or []),
+  2401	                "source_documents": list(((trace_row.get("provenance") or {}).get("source_documents") or [])),
+  2402	                "source_rows": list(((trace_row.get("provenance") or {}).get("source_rows") or [])),
+  2403	            },
+  2404	        })
+  2405	
+  2406	    return {
+  2407	        "record": target,
+  2408	        "found": True,
+  2409	        "path": rec_path,
+  2410	        "upstreams": results,
+  2411	    }
+  2412	
+  2413	
+  2414	def check_traceability_consistency(trace_index: dict | None = None) -> dict:
+  2415	    """Bestehende Spec-Records gegen Kapitel-6-Traceability-Records abgleichen.
+  2416	
+  2417	    Zwei Widerspruchsarten werden erkannt:
+  2418	
+  2419	    - ``upstream_not_traced``: ein Record nennt ein RS als Upstream, aber die
+  2420	      Traceability-Tabelle dieses RS listet den Record nicht unter
+  2421	      "Satisfied by" (oder das RS taucht in der Traceability-DB gar nicht auf).
+  2422	    - ``traced_not_upstream``: die Traceability-Tabelle nennt einen Record als
+  2423	      Erfüller eines RS, der Record selbst weist dieses RS aber nicht (oder
+  2424	      ein anderes) als Upstream aus.
+  2425	
+  2426	    Beide Fälle werden als Review-Kandidaten zurückgegeben, nicht automatisch
+  2427	    verändert — die Kuratierung bleibt bewusst ein manueller Schritt.
+  2428	    """
+  2429	    def upstream_provenance(rec: dict, path: Path, rs_id: str) -> dict:
+  2430	        upstream = []
+  2431	        for item in (rec.get("upstream") or []):
+  2432	            if not isinstance(item, dict):
+  2433	                continue
+  2434	            current_id = str(item.get("id", "")).upper()
+  2435	            entry = {k: item[k] for k in ("id", "document", "page", "url") if item.get(k) is not None}
+  2436	            entry["id"] = current_id
+  2437	            upstream.append(entry)
+  2438	        matched = [u for u in upstream if u.get("id") == rs_id]
+  2439	        return {
+  2440	            "origin": "record_upstream_field",
+  2441	            "record_path": str(path),
+  2442	            "record_id": str(rec.get("id", "")).upper(),
+  2443	            "matched_upstream": matched,
+  2444	            "all_upstream": upstream,
+  2445	        }
+  2446	
+  2447	    def trace_side_provenance(trace_row: dict, rs_id: str, satisfier: str | None = None) -> dict:
+  2448	        source_rows = []
+  2449	        for row in ((trace_row.get("provenance") or {}).get("source_rows") or []):
+  2450	            if satisfier is None or satisfier in set(row.get("satisfied_by") or []):
+  2451	                source_rows.append(row)
+  2452	        return {
+  2453	            "origin": (trace_row.get("provenance") or {}).get("origin") or "chapter6_requirements_tracing",
+  2454	            "record_path": trace_row.get("path"),
+  2455	            "record_id": rs_id,
+  2456	            "document": trace_row.get("document"),
+  2457	            "page": trace_row.get("page"),
+  2458	            "description": trace_row.get("description") or "",
+  2459	            "source_documents": list(((trace_row.get("provenance") or {}).get("source_documents") or [])),
+  2460	            "matched_source_rows": source_rows,
+  2461	        }
+  2462	
+  2463	    trace_index = trace_index if trace_index is not None else load_traceability_index()
+  2464	    flagged = []
+  2465	    checked = 0
+  2466	    for path in sorted(RECORDS.rglob("*.json")):
+  2467	        try:
+  2468	            rec = json.loads(path.read_text(encoding="utf-8"))
+  2469	        except (json.JSONDecodeError, OSError):
+  2470	            continue
+  2471	        rid = str(rec.get("id", "")).upper()
+  2472	        if not rid:
+  2473	            continue
+  2474	        upstream_ids = [str(u.get("id", "")).upper() for u in (rec.get("upstream") or [])
+  2475	                        if isinstance(u, dict) and u.get("id")]
+  2476	        if not upstream_ids:
+  2477	            continue
+  2478	        checked += 1
+  2479	        for rs_id in upstream_ids:
+  2480	            trace_row = trace_index.get(rs_id)
+  2481	            if trace_row is None:
+  2482	                flagged.append({
+  2483	                    "record": rid, "path": str(path), "rs_id": rs_id,
+  2484	                    "issue": "upstream_not_traced",
+  2485	                    "detail": "RS %s hat keinen Traceability-Record." % rs_id,
+  2486	                    "provenance": {
+  2487	                        "db_upstream": upstream_provenance(rec, path, rs_id),
+  2488	                        "traceability": {
+  2489	                            "origin": "chapter6_requirements_tracing",
+  2490	                            "record_path": None,
+  2491	                            "record_id": rs_id,
+  2492	                            "matched": False,
+  2493	                            "reason": "missing_traceability_record",
+  2494	                            "matched_source_rows": [],
+  2495	                            "source_documents": [],
+  2496	                        },
+  2497	                    },
+  2498	                })
+  2499	            elif rid not in trace_row["satisfied_by"]:
+  2500	                satisfied_by = trace_row["satisfied_by"]
+  2501	                if not satisfied_by:
+  2502	                    reason = "traceability_row_has_empty_satisfied_by"
+  2503	                    detail = "RS %s hat einen Traceability-Record, dessen 'Satisfied by'-Liste leer ist." % rs_id
+  2504	                else:
+  2505	                    reason = "record_not_listed_under_satisfied_by"
+  2506	                    detail = "RS %s listet %s nicht unter 'Satisfied by'." % (rs_id, rid)
+  2507	                flagged.append({
+  2508	                    "record": rid, "path": str(path), "rs_id": rs_id,
+  2509	                    "issue": "upstream_not_traced",
+  2510	                    "detail": detail,
+  2511	                    "traced_satisfied_by": satisfied_by,
+  2512	                    "provenance": {
+  2513	                        "db_upstream": upstream_provenance(rec, path, rs_id),
+  2514	                        "traceability": {
+  2515	                            **trace_side_provenance(trace_row, rs_id, rid),
+  2516	                            "matched": False,
+  2517	                            "reason": reason,
+  2518	                        },
+  2519	                    },
+  2520	                })
+  2521	    for rs_id, trace_row in trace_index.items():
+  2522	        for satisfier in trace_row["satisfied_by"]:
+  2523	            prefix = _requirement_prefix(satisfier) if satisfier.startswith("SWS_") or "_" in satisfier else None
+  2524	            candidate = None
+  2525	            if prefix:
+  2526	                candidate_path = RECORDS / prefix / (satisfier + ".json")
+  2527	                if candidate_path.exists():
+  2528	                    candidate = candidate_path
+  2529	            if candidate is None:
+  2530	                continue
+  2531	            try:
+  2532	                rec = json.loads(candidate.read_text(encoding="utf-8"))
+  2533	            except (json.JSONDecodeError, OSError):
+  2534	                continue
+  2535	            upstream_ids = {str(u.get("id", "")).upper() for u in (rec.get("upstream") or [])
+  2536	                           if isinstance(u, dict) and u.get("id")}
+  2537	            if rs_id not in upstream_ids:
+  2538	                flagged.append({
+  2539	                    "record": satisfier, "path": str(candidate), "rs_id": rs_id,
+  2540	                    "issue": "traced_not_upstream",
+  2541	                    "detail": "Traceability-Tabelle nennt %s als Erfueller von %s, "
+  2542	                              "Record weist dieses RS nicht als Upstream aus (hat: %s)."
+  2543	                              % (satisfier, rs_id, sorted(upstream_ids) or "keins"),
+  2544	                    "provenance": {
+  2545	                        "traceability": {
+  2546	                            **trace_side_provenance(trace_row, rs_id, satisfier),
+  2547	                            "matched": True,
+  2548	                            "reason": "record_listed_under_satisfied_by",
+  2549	                        },
+  2550	                        "db_upstream": upstream_provenance(rec, candidate, rs_id),
+  2551	                    },
+  2552	                })
+  2553	    return {
+  2554	        "checked_records": checked,
+  2555	        "traceability_rs_count": len(trace_index),
+  2556	        "flagged": flagged,
+  2557	        "flagged_count": len(flagged),
+  2558	    }
+  2559	
+  2560	
+  2561	# ===========================================================================
+  2562	# urls — Downloadzeilen fuer die run.sh
+  2563	# ===========================================================================
+  2564	def phase_urls(modules=None, out_dir="output/pdf") -> str:
+  2565	    mods = list(modules) if modules else list(DOCS)
+  2566	    lines = ["#!/bin/zsh", "set -euo pipefail", 'cd "${0:A:h}"',
+  2567	             "mkdir -p %s" % out_dir, ""]
+  2568	    for mod in mods:
+  2569	        branch, stem, _ = DOCS[mod]
+  2570	        lines.append('curl -fL --retry 3 -o "%s/%s.pdf" \\\n  "%s/%s/%s.pdf"'
+  2571	                     % (out_dir, stem, BASE_URL, branch, stem))
+  2572	    lines += ["", "python3 _src/tools/spec_scrape.py all --pdf-dir %s --check" % out_dir, ""]
+  2573	    return "\n".join(lines)
+  2574	
+  2575	
+  2576	
+  2577	def phase_upstream(scraped: dict, *, rebuild: bool = False) -> dict:
+  2578	    """Compare or explicitly rebuild canonical RS metadata in existing records."""
+  2579	    sources = [rec for rec in scraped.values() if str(rec.get("id", "")).upper().startswith("RS_")]
+  2580	    index = UpstreamIndex(sources)
+  2581	    paths = sorted(RECORDS.rglob("*.json"))
+  2582	    report = rebuild_record_files(paths, index, write=rebuild)
+  2583	    report["source_records"] = len(sources)
+  2584	    report["mode"] = "rebuild" if rebuild else "compare"
+  2585	    return report
+  2586	
+  2587	# ===========================================================================
+  2588	# CLI
+  2589	# ===========================================================================
+  2590	def main(argv=None) -> int:
+  2591	    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+  2592	    ap.add_argument("phase", choices=["ids", "props", "reqs", "trace", "trace-check", "siblings", "compare", "all", "crosscheck", "urls", "upstream", "observations"])
+  2593	    ap.add_argument("--pdf-dir", type=Path, default=PDF_CACHE)
+  2594	    ap.add_argument("--module", action="append", help="Modulkuerzel, z. B. log (mehrfach)")
+  2595	    ap.add_argument("--doc", action="append", help="PDF-Basisname (mehrfach)")
+  2596	    ap.add_argument("--rs-docs", action="store_true", help="alle kanonischen RS-Dokumente aus RS_DOCS")
+  2597	    ap.add_argument("--id", action="append", help="nur diese ID(s)")
+  2598	    ap.add_argument("--pattern", help="Regex-Filter fuer IDs, z. B. '^SWS_LOG_'")
+  2599	    ap.add_argument("--include-refs", action="store_true",
+  2600	                    help="auch blosse ID-Referenzen aufnehmen, nicht nur Definitionen")
+  2601	    ap.add_argument("--check", action="store_true", help="nur pruefen (Standard)")
+  2602	    ap.add_argument("--rebuild", action="store_true", help="DB explizit schreiben; upstream vergleicht sonst nur")
+  2603	    ap.add_argument("--write-reqs", action="store_true",
+  2604	                    help="explizite Prosa-Requirements additiv in die DB schreiben (nur Phase reqs)")
+  2605	    ap.add_argument("--campaign", default="requirement-import",
+  2606	                    help="Kampagnen-ID fuer --write-reqs (Standard: requirement-import)")
+  2607	    ap.add_argument("--json", action="store_true", help="Rohdaten als JSON ausgeben")
+  2608	    ap.add_argument("--progress", action="store_true",
+  2609	                    help="Fortschritt pro Dokument auf stderr ausgeben (Phase trace)")
+  2610	    ap.add_argument("--limit", type=int, help="nur die ersten N IDs (Phase 2/3)")
+  2611	    ap.add_argument("--backend", choices=["auto", "pypdf", "mupdf", "builtin"],
+  2612	                    default="auto", help="Extraktions-Backend (Standard: auto)")
+  2613	    ap.add_argument("--cross-backend", action="append",
+  2614	                    choices=["pypdf", "mupdf", "builtin"],
+  2615	                    help="Backends fuer crosscheck (Standard: pypdf + builtin)")
+  2616	    args = ap.parse_args(argv)
+  2617	
+  2618	    if args.phase == "urls":
+  2619	        print(phase_urls(args.module))
+  2620	        return 0
+  2621	
+  2622	    if args.phase == "trace-check":
+  2623	        report = check_traceability_consistency()
+  2624	        if args.json:
+  2625	            print(json.dumps(report, ensure_ascii=False, indent=1))
+  2626	        else:
+  2627	            print("geprueft: %d Records mit Upstream; %d Traceability-RS bekannt"
+  2628	                  % (report["checked_records"], report["traceability_rs_count"]))
+  2629	            print("markiert: %d" % report["flagged_count"])
+  2630	            for item in report["flagged"][: args.limit or 20]:
+  2631	                print("   [%s] %s (%s): %s" % (item["issue"], item["record"], item["rs_id"], item["detail"]))
+  2632	        return 1 if report["flagged_count"] else 0
+  2633	
+  2634	    if args.phase == "siblings":
+  2635	        ids = [str(x).upper() for x in (args.id or []) if str(x).strip()]
+  2636	        if len(ids) != 1:
+  2637	            print("siblings erwartet genau ein --id RECORD_ID", file=sys.stderr)
+  2638	            return 2
+  2639	        payload = siblings_for_upstream(ids[0])
+  2640	        if args.json:
+  2641	            print(json.dumps(payload, ensure_ascii=False, indent=1))
+  2642	        else:
+  2643	            if not payload.get("found"):
+  2644	                print("Record nicht gefunden: %s" % ids[0], file=sys.stderr)
+  2645	                return 2
+  2646	            print("record: %s" % payload["record"])
+  2647	            print("path: %s" % payload.get("path"))
+  2648	            print("upstreams: %d" % len(payload.get("upstreams") or []))
+  2649	            for item in payload.get("upstreams") or []:
+  2650	                trace = item.get("traceability") or {}
+  2651	                print(" - %s" % item["rs_id"])
+  2652	                print("   siblings: %d" % len(item.get("sibling_records") or []))
+  2653	                print("   traceability: %s p.%s" % (trace.get("document"), trace.get("page")))
+  2654	                if trace.get("source_documents"):
+  2655	                    print("   source_documents: %s" % ', '.join(trace.get("source_documents") or []))
+  2656	        return 0
+  2657	
+  2658	    if not args.pdf_dir.is_dir():
+  2659	        print("PDF-Verzeichnis fehlt: %s" % args.pdf_dir, file=sys.stderr)
+  2660	        print("Tipp: 'urls'-Phase erzeugt die Download-Zeilen fuer die run.sh "
+  2661	              "(die Sandbox hat keinen Netzzugriff).", file=sys.stderr)
+  2662	        return 2
+  2663	    selected_docs = args.doc
+  2664	    if args.rs_docs:
+  2665	        selected_docs = list(dict.fromkeys([*(selected_docs or []), *(x[1] for x in RS_DOCS.values())]))
+  2666	    pdfs = discover_pdfs(args.pdf_dir, args.module, selected_docs)
+  2667	    if not pdfs:
+  2668	        print("keine passenden PDFs in %s" % args.pdf_dir, file=sys.stderr)
+  2669	        return 2
+  2670	
+  2671	    prefixes = {DOCS[m][2] for m in (args.module or [])} or None
+  2672	    if args.phase == "observations":
+  2673	        if args.backend != "pypdf":
+  2674	            print("observations unterstuetzt derzeit nur --backend pypdf", file=sys.stderr)
+  2675	            return 2
+  2676	        payload = {
+  2677	            "schema": 1,
+  2678	            "backend": "pypdf",
+  2679	            "documents": [
+  2680	                {
+  2681	                    "document": path.stem,
+  2682	                    "path": str(path),
+  2683	                    "pages": _pypdf_page_observations(path),
+  2684	                }
+  2685	                for path in pdfs
+  2686	            ],
+  2687	        }
+  2688	        print(json.dumps(payload, ensure_ascii=False, indent=1, sort_keys=True))
+  2689	        return 0
+  2690	
+  2691	    if args.phase == "crosscheck":
+  2692	        report = phase_crosscheck(pdfs, args.pattern, args.id, args.include_refs,
+  2693	                                  tuple(args.cross_backend or ("pypdf", "builtin")),
+  2694	                                  prefixes, args.limit)
+  2695	        print(json.dumps(report, ensure_ascii=False, indent=1))
+  2696	        db_bad = any(r["diffs"] or r["namespace_diffs"] or r["only_in_pdf"]
+  2697	                     for r in report["database"].values())
+  2698	        return 1 if report["backend_deviations"] or db_bad else 0
+  2699	
+  2700	    index = phase_ids(pdfs, args.pattern, args.id, args.include_refs, args.backend)
+  2701	    if args.phase == "ids":
+  2702	        if args.json:
+  2703	            print(json.dumps(index, ensure_ascii=False, indent=1))
+  2704	        else:
+  2705	            for name, info in index.items():
+  2706	                print("%s — %d Seiten, %d IDs" % (name, info["pages"], len(info["ids"])))
+  2707	                for rid, pages in list(info["ids"].items())[: args.limit or 20]:
+  2708	                    print("   %-18s Seite %s" % (rid, ", ".join(map(str, pages[:4]))))
+  2709	        return 0
+  2710	
+  2711	    if args.phase == "trace":
+  2712	        rows = phase_traceability(pdfs, args.pattern, args.id, args.backend, progress=args.progress)
+  2713	        write_report = None
+  2714	        if args.rebuild:
+  2715	            if args.progress:
+  2716	                print("[trace] writing records ...", file=sys.stderr, flush=True)
+  2717	            write_report = write_traceability_records(rows, args.campaign)
+  2718	            if args.progress:
+  2719	                print("[trace] write done", file=sys.stderr, flush=True)
+  2720	        if args.json:
+  2721	            payload = {"traceability": rows}
+  2722	            if write_report is not None:
+  2723	                payload["write"] = write_report
+  2724	            print(json.dumps(payload, ensure_ascii=False, indent=1))
+  2725	        else:
+  2726	            total = sum(len(v) for v in rows.values())
+  2727	            print("traceability rows: %d" % total)
+  2728	            for name, entries in rows.items():
+  2729	                print("%s — %d Zeilen" % (name, len(entries)))
+  2730	                for row in entries[: args.limit or 5]:
+  2731	                    print("   %-14s -> %d satisfied-by" % (row["id"], len(row.get("satisfied_by") or [])))
+  2732	            if write_report is not None:
+  2733	                print("\ngeschrieben: %d; aktualisiert: %d" %
+  2734	                      (len(write_report["written"]), len(write_report["updated"])))
+  2735	        return 0
+  2736	
+  2737	    if args.limit:
+  2738	        for info in index.values():
+  2739	            info["ids"] = dict(list(info["ids"].items())[: args.limit])
+  2740	    if args.phase == "reqs":
+  2741	        requirements = phase_requirements(index, args.id, args.backend)
+  2742	        pages_by_doc = {name: pdf_pages(Path(info["path"]), args.backend)
+  2743	                        for name, info in index.items()}
+  2744	        _repair_requirements(requirements, pages_by_doc)
+  2745	        write_report = None
+  2746	        if args.write_reqs:
+  2747	            write_report = write_requirement_records(requirements, args.campaign)
+  2748	        if args.json:
+  2749	            payload = {"requirements": requirements}
+  2750	            if write_report is not None:
+  2751	                payload["write"] = write_report
+  2752	            print(json.dumps(payload, ensure_ascii=False, indent=1))
+  2753	        else:
+  2754	            for rid, rec in requirements.items():
+  2755	                print("\n%s  (%s, Seite %s)" % (rid, rec["document"], rec["page"]))
+  2756	                if rec.get("heading"):
+  2757	                    print("   Titel      : %s" % rec["heading"])
+  2758	                if rec.get("upstream"):
+  2759	                    print("   Upstream   : %s" % ", ".join(rec["upstream"]))
+  2760	                print("   Anforderung: %s" % rec["requirement_text"])
+  2761	            if write_report is not None:
+  2762	                print("\ngeschrieben: %d; bereits vorhanden: %d" %
+  2763	                      (len(write_report["written"]), len(write_report["existing"])))
+  2764	        return 0
+  2765	
+  2766	    scraped = phase_props(index, args.id, args.backend)
+  2767	    if args.phase == "upstream":
+  2768	        report = phase_upstream(scraped, rebuild=args.rebuild)
+  2769	        print(json.dumps(report, ensure_ascii=False, indent=1))
+  2770	        return 1 if report.get("missing") or report.get("ambiguous") else 0
+  2771	    if args.phase == "props":
+  2772	        if args.json:
+  2773	            print(json.dumps(scraped, ensure_ascii=False, indent=1))
+  2774	        else:
+  2775	            for rid, rec in scraped.items():
+  2776	                print("\n%s  (%s, Seite %s)" % (rid, rec["document"], rec["page"]))
+  2777	                if rec.get("heading"):
+  2778	                    print("   Titel      : %s" % rec["heading"])
+  2779	                if rec.get("upstream"):
+  2780	                    print("   Upstream   : %s" % ", ".join(rec["upstream"]))
+  2781	                if rec.get("namespace"):
+  2782	                    print("   Namensraum : %s%s" % (rec["namespace"],
+  2783	                          "  (in %s)" % rec["enclosing"] if rec.get("enclosing") else ""))
+  2784	                for label, value in rec["props"].items():
+  2785	                    print("   %-11s: %s" % (label, value[:100]))
+  2786	        return 0
+  2787	
+  2788	    vollstaendig = not (args.id or args.limit or args.pattern)
+  2789	    report = phase_compare(scraped, prefixes,
+  2790	                           rebuild=args.rebuild and not args.check,
+  2791	                           vollstaendig=vollstaendig)
+  2792	    if args.json:
+  2793	        print(json.dumps(report, ensure_ascii=False, indent=1))
+  2794	        problems = bool(report["diffs"] or report["namespace_diffs"] or report["only_in_pdf"])
+  2795	        if problems:
+  2796	            print("[spec_scrape] --check/all completed successfully: returning exit code 1 because differences were found (not a crash). diffs=%d namespace_diffs=%d only_in_pdf=%d only_in_db=%d empty_extraction=%d" %
+  2797	                  (len(report["diffs"]), len(report["namespace_diffs"]), len(report["only_in_pdf"]),
+  2798	                   len(report["only_in_db"]), len(report["empty_extraction"])),
+  2799	                  file=sys.stderr, flush=True)
+  2800	        else:
+  2801	            print("[spec_scrape] --check/all completed successfully: no differences found, returning exit code 0.",
+  2802	                  file=sys.stderr, flush=True)
+  2803	        return 1 if problems else 0
+  2804	    print("verglichen: %d Records" % report["checked"])
+  2805	    for key, title in (("only_in_pdf", "nur im PDF (fehlen in der DB)"),
+  2806	                       ("only_in_db", "nur in der DB (im PDF nicht gefunden)"),
+  2807	                       ("empty_extraction", "ohne extrahierbare Eigenschaften")):
+  2808	        items = report[key]
+  2809	        if items:
+  2810	            print("%s (%d): %s%s" % (title, len(items), ", ".join(items[:8]),
+  2811	                                     " …" if len(items) > 8 else ""))
+  2812	    for diff in report["diffs"][:20]:
+  2813	        print("  ABWEICHUNG %s %s: PDF=%r DB=%r"
+  2814	              % (diff["id"], diff["field"], diff["pdf"], diff["db"]))
+  2815	    for diff in report["namespace_diffs"][:20]:
+  2816	        print("  NAMENSRAUM %s: PDF=%s DB=%s" % (diff["id"], diff["pdf"], diff["db"]))
+  2817	    if report["written"]:
+  2818	        print("geschrieben: %d Records" % len(report["written"]))
+  2819	    problems = report["diffs"] or report["namespace_diffs"] or report["only_in_pdf"]
+  2820	    print("OK — DB deckt sich mit den PDFs." if not problems else "PROBLEME gefunden.")
+  2821	    return 1 if problems else 0
+  2822	
+  2823	
+  2824	if __name__ == "__main__":
+  2825	    sys.exit(main())

@@ -1,0 +1,188 @@
+{
+  "accepted_residuals_count": 2,
+  "approved_corrections_count": 3,
+  "assessment_report_id": "ECU-PILOT-LEVEL2-REPORT-virtualized-automotive-ecu@software-without-kernel:v0.7.0-pilot1",
+  "baseline_id": "virtualized-automotive-ecu@software-without-kernel:v0.7.0-pilot1",
+  "commit_sha": "8b2c49f",
+  "findings": [
+    {
+      "affected_lifecycle_evidence": [
+        "ART-SWE1-REQ-01",
+        "docs/pipeline/swe1-software-requirements.json",
+        ".git/hooks/pre-commit"
+      ],
+      "category": "OBSERVATION",
+      "change_request_links": [
+        "CR-SWE1-202611-001"
+      ],
+      "child_remediation_task_id": "TASK-REM-0018-01",
+      "description": "Requirements schema validation is currently enforced via pytest in CI; adding local pre-commit hook validation provides immediate developer feedback.",
+      "due_date": "2026-11-15",
+      "finding_id": "FIND-0018-01",
+      "governance_decision_ref": "DEC-0018-TRIAGE-01",
+      "impact_analysis": "Low severity. Schema correctness is 100% enforced in CI, but developer ergonomic feedback latency is elevated when malformed JSON is committed locally before pushing.",
+      "owner": "julian (Requirements Engineer, Team DeepSpace9)",
+      "problem_report_links": [
+        "PR-SWE1-202611-001"
+      ],
+      "process_id": "SWE.1",
+      "process_name": "Software Requirements Analysis",
+      "remediation_scope": "Configure pre-commit hook binding for fast-path JSON schema validation across docs/pipeline/ and docs/dossiers/.",
+      "reverification_criteria": [
+        "Local pre-commit hook automatically rejects invalid JSON payloads with descriptive line/column errors.",
+        "Hook execution completed in <= 150ms on standard developer workstation.",
+        "Zero regressions on existing CI validation pipeline."
+      ],
+      "root_cause": "Schema linting was integrated into repository-level pytest test suites, but developer git hook configurations did not bind automated JSON schema validation to the local pre-commit hook stage.",
+      "title": "Automated JSON Schema Linting in Pre-Commit Hooks",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "triage_status": "TRIAGED_AND_BOUNDED"
+    },
+    {
+      "affected_lifecycle_evidence": [
+        "ART-SWE3-CODE-01",
+        "ART-SWE3-MISRA-01",
+        "_src/target/c_units/"
+      ],
+      "category": "OFI",
+      "change_request_links": [
+        "CR-SWE3-202611-001"
+      ],
+      "child_remediation_task_id": "TASK-REM-0018-02",
+      "description": "MISRA deviation permits are tracked in central JSON files; an automated tool scraping inline PRQA/Cppcheck comments into the dossier would streamline audits.",
+      "due_date": "2026-11-30",
+      "finding_id": "FIND-0018-02",
+      "governance_decision_ref": "DEC-0018-TRIAGE-02",
+      "impact_analysis": "Low severity. 100% MISRA mandatory rule compliance is verified; automated scraping streamlines assessor walkthroughs.",
+      "owner": "miles (Software Developer, Team DeepSpace9)",
+      "problem_report_links": [
+        "PR-SWE3-202611-001"
+      ],
+      "process_id": "SWE.3",
+      "process_name": "Software Detailed Design & Unit Construction",
+      "remediation_scope": "Implement automated parser in static analysis toolchain to extract inline suppressions and format audit appendix.",
+      "reverification_criteria": [
+        "100% match between inline C comment suppressions and generated MISRA audit appendix.",
+        "Zero unmatched or unreferenced inline suppression tags.",
+        "Automated test coverage in test_ecu_misra_sync.py."
+      ],
+      "root_cause": "MISRA compliance tracking relies on central reporting (_src/tools/misra_checker.py), but inline compiler suppression comments in C source units require manual cross-referencing during formal auditor interviews.",
+      "title": "Automated MISRA Inline Suppression Documentation Scraper",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "triage_status": "TRIAGED_AND_BOUNDED"
+    },
+    {
+      "affected_lifecycle_evidence": [
+        "ART-SWE5-REPORT-01",
+        "docs/pipeline/swe5-integration-report.json",
+        "man5-risk-register.json"
+      ],
+      "category": "OFI",
+      "change_request_links": [
+        "CR-SWE5-202612-001"
+      ],
+      "child_remediation_task_id": "TASK-REM-0018-03",
+      "description": "QEMU virtual ECU platform currently models CAN controller and timer peripherals; adding SPI flash and crypto co-processor emulators will expand integration coverage.",
+      "due_date": "2026-12-01",
+      "finding_id": "FIND-0018-03",
+      "governance_decision_ref": "DEC-0018-TRIAGE-03",
+      "impact_analysis": "Low severity. Current baseline functional requirements are fully verified; hardware register emulation is beneficial for next-generation silicon platform.",
+      "owner": "obrien (Integrator, Team DeepSpace9)",
+      "problem_report_links": [
+        "PR-SWE5-202612-001"
+      ],
+      "process_id": "SWE.5",
+      "process_name": "Software Integration & Verification",
+      "remediation_scope": "Accepted residual risk for Release v0.7.0; scheduled for implementation in Next Major Baseline v0.8.0.",
+      "reverification_criteria": [
+        "Risk logged in Risk Register (RISK-0018-03) with residual severity LOW.",
+        "Reviewed and accepted by Project Lead and Lead Assessor.",
+        "Formal tracking in project roadmap for v0.8.0 development cycle."
+      ],
+      "root_cause": "Virtual ECU integration environment targets ARM Cortex-M7 with standard peripherals; dedicated cryptographic hardware accelerators (HSM) are emulated in software stubs rather than full hardware register emulation.",
+      "title": "Virtual QEMU Peripheral Hardware Emulation Model Expansion",
+      "triage_disposition": "ACCEPTED_RESIDUAL",
+      "triage_status": "TRIAGED_AND_BOUNDED"
+    },
+    {
+      "affected_lifecycle_evidence": [
+        "ART-MAN3-SIGNOFF-01",
+        "_src/tools/ecu_pilot_execution.py"
+      ],
+      "category": "OBSERVATION",
+      "change_request_links": [
+        "CR-MAN3-202611-001"
+      ],
+      "child_remediation_task_id": "TASK-REM-0018-04",
+      "description": "Earned Value metrics are tracked in JSON reports; printing an ASCII EV trend curve in CLI output improves visibility during daily standups.",
+      "due_date": "2026-11-15",
+      "finding_id": "FIND-0018-04",
+      "governance_decision_ref": "DEC-0018-TRIAGE-04",
+      "impact_analysis": "Low severity. Management control and monitoring are 100% compliant; visualization improves team sync efficiency.",
+      "owner": "jadzia (Project Lead, Team DeepSpace9)",
+      "problem_report_links": [
+        "PR-MAN3-202611-001"
+      ],
+      "process_id": "MAN.3",
+      "process_name": "Project Management",
+      "remediation_scope": "Add terminal ASCII trend sparkline rendering to project management CLI reports.",
+      "reverification_criteria": [
+        "Deterministic sparkline rendering across Linux/macOS terminals without third-party graphics dependencies.",
+        "Verified by unit test in test_ecu_pilot_execution.py."
+      ],
+      "root_cause": "Management tracking engine (ecu_pilot_execution.py) calculates EV metrics deterministically, but output format was restricted to raw numbers and JSON logs without terminal sparkline visualization.",
+      "title": "Automated Sprint Earned Value Visualization in CLI Summary",
+      "triage_disposition": "APPROVED_CORRECTION",
+      "triage_status": "TRIAGED_AND_BOUNDED"
+    },
+    {
+      "affected_lifecycle_evidence": [
+        "ART-MAN6-REPORT-01",
+        "ART-MAN6-DASHBOARD-01",
+        "man5-risk-register.json"
+      ],
+      "category": "OFI",
+      "change_request_links": [
+        "CR-MAN6-202612-001"
+      ],
+      "child_remediation_task_id": "TASK-REM-0018-05",
+      "description": "Measurement process tracks historical defect density; incorporating ARIMA predictive modeling will improve pre-release risk forecasting.",
+      "due_date": "2026-12-15",
+      "finding_id": "FIND-0018-05",
+      "governance_decision_ref": "DEC-0018-TRIAGE-05",
+      "impact_analysis": "Low severity. Current statistical control charts fully satisfy ASPICE Level 2 measurement requirements.",
+      "owner": "jake (QA-Manager, Team DeepSpace9)",
+      "problem_report_links": [
+        "PR-MAN6-202612-001"
+      ],
+      "process_id": "MAN.6",
+      "process_name": "Measurement",
+      "remediation_scope": "Accepted residual observation for pilot baseline; scheduled for Level 3 multi-project organizational rollout.",
+      "reverification_criteria": [
+        "Documented in measurement plan as Level 3 process maturity roadmap item.",
+        "Reviewed and signed off by QA Manager and Lead Assessor."
+      ],
+      "root_cause": "Process measurement uses standard statistical process control (+-3 sigma); advanced predictive time-series models were scoped for enterprise multi-ECU deployment rather than single pilot ECU.",
+      "title": "Automated Defect Density Forecasting using ARIMA Models",
+      "triage_disposition": "ACCEPTED_RESIDUAL",
+      "triage_status": "TRIAGED_AND_BOUNDED"
+    }
+  ],
+  "governance_safeguards": [
+    "100% of assessment findings triaged with root causes, impact analyses, owners, and due dates.",
+    "Zero unmitigated blocking non-conformances (all 5 items classified as Observations / OFIs).",
+    "Bounded child remediation tasks created for all 3 approved corrections (TASK-REM-0018-01, 02, 04).",
+    "Formal governance decisions recorded for all 2 accepted residual items (TASK-REM-0018-03, 05).",
+    "Strict cross-campaign isolation maintained: zero Feature 0019/documentation execution evidence imported."
+  ],
+  "lead_assessor": "odo (Lead Assessor, Team DeepSpace9)",
+  "problem_dispatcher": "benjamin (Dispatcher, Team DeepSpace9)",
+  "product_id": "virtualized-automotive-ecu",
+  "project_id": "autodocs-ecu-software",
+  "record_sha256": "6e50926d23c84f9f1d66169f3c3c47fe29c82b60a217645536b3ec693b239fad",
+  "schema": "ecu-pilot-finding-triage-record@v1",
+  "standard_reference": "Automotive SPICE PAM 3.1 / PAM 4.0 (SUP.9 / SUP.10 Remediation Governance)",
+  "total_findings": 5,
+  "triage_chair": "jadzia (Project Lead, Team DeepSpace9)",
+  "triaged_at": "2026-09-19T13:50:22.982630+00:00"
+}

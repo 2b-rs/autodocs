@@ -1,0 +1,464 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://autodocs.local/schemas/integration-plan.schema.json",
+  "title": "Integration Plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "canonicalization_version", "digest_algorithm",
+    "content_digest", "plan_id", "revision", "feature_id", "baseline_ref",
+    "integrator_identity", "authority_ref", "created_at", "status",
+    "supersedes", "requirements", "wtp_binding", "topology_snapshot",
+    "acceptance_closures", "reconciliation_alternatives", "steps", "events",
+    "revision_policy", "open_decisions", "recovery", "evidence_manifest",
+    "execution_prohibition"
+  ],
+  "properties": {
+    "schema_version": { "const": "integration-plan@v1" },
+    "canonicalization_version": { "const": "json-sort-utf8-no-floats@v1" },
+    "digest_algorithm": { "const": "sha256" },
+    "content_digest": { "$ref": "#/$defs/digest" },
+    "plan_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+    "revision": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+    "feature_id": { "type": "string", "pattern": "^[0-9]{4}$" },
+    "baseline_ref": { "$ref": "#/$defs/gitRef" },
+    "integrator_identity": { "$ref": "#/$defs/identity" },
+    "authority_ref": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": {
+      "enum": ["dormant", "ready", "executing", "completed", "blocked", "superseded", "withdrawn"]
+    },
+    "supersedes": {
+      "oneOf": [
+        { "const": "none" },
+        { "$ref": "#/$defs/planIdentity" }
+      ]
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 10,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^RQ-(?:IP|OPS)-[0-9]{3}$" }
+    },
+    "wtp_binding": { "$ref": "#/$defs/wtpBinding" },
+    "topology_snapshot": { "$ref": "#/$defs/topologySnapshot" },
+    "acceptance_closures": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/acceptanceClosure" }
+    },
+    "reconciliation_alternatives": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/reconciliationAlternative" }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/refreshEvent" }
+    },
+    "revision_policy": { "$ref": "#/$defs/revisionPolicy" },
+    "open_decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/openDecision" }
+    },
+    "recovery": { "$ref": "#/$defs/recovery" },
+    "evidence_manifest": { "$ref": "#/$defs/evidenceManifest" },
+    "execution_prohibition": { "const": "plan-is-evidence-not-authority" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "dormant" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "steps": {
+            "items": {
+              "properties": {
+                "state": { "enum": ["planned", "blocked", "completed-evidence-only"] },
+                "consequential": { "const": false }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "gitRef": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "identity": {
+      "type": "string",
+      "pattern": "^(agent|authority):[A-Za-z0-9][A-Za-z0-9._-]*(?::[A-Za-z0-9][A-Za-z0-9._-]*){1,}$"
+    },
+    "workUnit": {
+      "type": "string",
+      "pattern": "^(feature|task|subtask):[0-9]{4}(?:-[0-9]{2}(?:\\.[0-9]{2})?)?$"
+    },
+    "planIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "digest", "compatibility"],
+      "properties": {
+        "ref": { "$ref": "#/$defs/gitRef" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "compatibility": { "enum": ["compatible", "incompatible"] }
+      }
+    },
+    "artifactDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "digest"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "consumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "disposition", "reason", "evidence_ref"],
+      "properties": {
+        "input": { "type": "string", "minLength": 1 },
+        "disposition": { "enum": ["consumed", "rejected-blocking"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "evidence_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "wtpBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref", "content_digest", "digest_scope", "schema_version",
+        "canonicalization_version", "digest_algorithm", "feature_id",
+        "baseline_ref", "topology_revision", "architect_identity",
+        "authority_ref", "status", "supersession_compatibility", "validation_profile",
+        "contract_artifacts", "consumption", "revalidate_before_steps"
+      ],
+      "properties": {
+        "ref": { "$ref": "#/$defs/gitRef" },
+        "content_digest": { "$ref": "#/$defs/digest" },
+        "digest_scope": { "enum": ["canonical-wtp-instance", "candidate-contract-artifact"] },
+        "schema_version": { "const": "worktree-topology-plan@v1" },
+        "canonicalization_version": { "const": "json-sort-utf8-no-floats@v1" },
+        "digest_algorithm": { "const": "sha256" },
+        "feature_id": { "type": "string", "pattern": "^[0-9]{4}$" },
+        "baseline_ref": { "$ref": "#/$defs/gitRef" },
+        "topology_revision": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "architect_identity": { "$ref": "#/$defs/identity" },
+        "authority_ref": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["candidate", "trial", "active", "superseded", "withdrawn"] },
+        "supersession_compatibility": { "enum": ["current", "compatible", "incompatible", "withdrawn"] },
+        "validation_profile": { "$ref": "#/$defs/validationProfile" },
+        "contract_artifacts": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/artifactDigest" }
+        },
+        "consumption": {
+          "type": "array",
+          "minItems": 8,
+          "items": { "$ref": "#/$defs/consumption" }
+        },
+        "revalidate_before_steps": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "topologySnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "node_ids", "edge_ids", "overlap_rule_ids", "checkpoint_work_units", "set_equality_evidence"],
+      "properties": {
+        "state": { "enum": ["complete", "unavailable-blocking", "invalid"] },
+        "node_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "edge_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "overlap_rule_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "checkpoint_work_units": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/workUnit" } },
+        "set_equality_evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "validationProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "profile_version", "required_stages", "failure_policy"],
+      "properties": {
+        "profile_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "profile_version": { "type": "string", "pattern": "^[1-9][0-9]*$" },
+        "required_stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" }
+        },
+        "failure_policy": { "const": "fail-closed" }
+      }
+    },
+    "pin": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "ref"],
+          "properties": {
+            "state": { "const": "exact" },
+            "ref": { "$ref": "#/$defs/gitRef" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "decision_id"],
+          "properties": {
+            "state": { "const": "unavailable-blocking" },
+            "decision_id": { "type": "string", "minLength": 1 }
+          }
+        }
+      ]
+    },
+    "commandEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "baseline", "environment", "expected_exit", "evidence_ref"],
+      "properties": {
+        "command": { "type": "string", "minLength": 1 },
+        "baseline": { "type": "string", "minLength": 1 },
+        "environment": { "type": "string", "minLength": 1 },
+        "expected_exit": { "type": "integer" },
+        "evidence_ref": { "type": "string", "minLength": 1 }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence", "step_id", "operation", "state", "consequential",
+        "source_branch", "target_branch", "source_pin", "target_pin_before",
+        "target_tree_before", "wtp_nodes", "wtp_edges", "overlap_rule",
+        "prerequisite_order", "merge_mode", "reconciliation_alternative",
+        "checkpoint_work_unit", "acceptance_closure_id", "validation",
+        "hygiene", "authority", "evidence_outputs", "recovery"
+      ],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "step_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "operation": { "enum": ["verify", "absorb-prerequisite", "merge-to-parent", "checkpoint-review", "integration-test", "reconcile", "final-main"] },
+        "state": { "enum": ["planned", "ready", "blocked", "completed-evidence-only"] },
+        "consequential": { "type": "boolean" },
+        "source_branch": { "type": "string", "minLength": 1 },
+        "target_branch": { "type": "string", "minLength": 1 },
+        "source_pin": { "$ref": "#/$defs/pin" },
+        "target_pin_before": { "$ref": "#/$defs/pin" },
+        "target_tree_before": { "$ref": "#/$defs/pin" },
+        "wtp_nodes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "wtp_edges": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "overlap_rule": { "type": "string", "minLength": 1 },
+        "prerequisite_order": { "type": "array", "items": { "$ref": "#/$defs/workUnit" } },
+        "merge_mode": { "enum": ["none", "ff-only", "no-ff", "revert", "authorized-reset"] },
+        "reconciliation_alternative": { "type": "string", "minLength": 1 },
+        "checkpoint_work_unit": { "oneOf": [{ "const": "none" }, { "$ref": "#/$defs/workUnit" }] },
+        "acceptance_closure_id": { "type": "string", "minLength": 1 },
+        "validation": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/commandEvidence" } },
+        "hygiene": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/commandEvidence" } },
+        "authority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required_role", "authority_ref", "current_check"],
+          "properties": {
+            "required_role": { "type": "string", "minLength": 1 },
+            "authority_ref": { "type": "string", "minLength": 1 },
+            "current_check": { "type": "string", "minLength": 1 }
+          }
+        },
+        "evidence_outputs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "recovery": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "consequential": { "const": true } }, "required": ["consequential"] },
+          "then": {
+            "properties": {
+              "state": { "const": "ready" },
+              "source_pin": { "properties": { "state": { "const": "exact" } }, "required": ["state"] },
+              "target_pin_before": { "properties": { "state": { "const": "exact" } }, "required": ["state"] },
+              "target_tree_before": { "properties": { "state": { "const": "exact" } }, "required": ["state"] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "operation": { "const": "final-main" } }, "required": ["operation"] },
+          "then": {
+            "properties": {
+              "checkpoint_work_unit": { "$ref": "#/$defs/workUnit" },
+              "merge_mode": { "enum": ["ff-only", "no-ff"] }
+            }
+          }
+        }
+      ]
+    },
+    "closureMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work_unit", "candidate_ref", "candidate_tree_digest", "contract_ref",
+        "contract_digest", "disposition", "bookkeeping_ref", "claim_ref",
+        "acceptance_ref", "acceptance_record_digest", "accepted_candidate_ref",
+        "reviewer_identity", "authority_ref", "invalidation_state",
+        "evidence_manifest_ref", "evidence_manifest_digest"
+      ],
+      "properties": {
+        "work_unit": { "$ref": "#/$defs/workUnit" },
+        "candidate_ref": { "$ref": "#/$defs/gitRef" },
+        "candidate_tree_digest": { "$ref": "#/$defs/digest" },
+        "contract_ref": { "$ref": "#/$defs/gitRef" },
+        "contract_digest": { "$ref": "#/$defs/digest" },
+        "disposition": { "enum": ["completed", "closed-without-implementation"] },
+        "bookkeeping_ref": { "$ref": "#/$defs/gitRef" },
+        "claim_ref": { "$ref": "#/$defs/gitRef" },
+        "acceptance_ref": { "$ref": "#/$defs/gitRef" },
+        "acceptance_record_digest": { "$ref": "#/$defs/digest" },
+        "accepted_candidate_ref": { "$ref": "#/$defs/gitRef" },
+        "reviewer_identity": { "$ref": "#/$defs/identity" },
+        "authority_ref": { "type": "string", "minLength": 1 },
+        "invalidation_state": { "enum": ["current", "invalidated", "superseded-compatible", "superseded-incompatible"] },
+        "evidence_manifest_ref": { "$ref": "#/$defs/gitRef" },
+        "evidence_manifest_digest": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "acceptanceClosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "closure_id", "state", "wtp_ref", "wtp_digest", "checkpoint_work_unit",
+        "integration_target_pin", "algorithm", "normalized_edges",
+        "accepted_boundary_stops", "members", "decision_refs", "waiver_refs",
+        "member_manifest_digest", "closure_digest", "audit_timestamp"
+      ],
+      "properties": {
+        "closure_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "state": { "enum": ["current", "blocking-stale", "unavailable-blocking"] },
+        "wtp_ref": { "$ref": "#/$defs/gitRef" },
+        "wtp_digest": { "$ref": "#/$defs/digest" },
+        "checkpoint_work_unit": { "$ref": "#/$defs/workUnit" },
+        "integration_target_pin": { "$ref": "#/$defs/pin" },
+        "algorithm": { "const": "task-acceptance-prerequisite-closure@v1" },
+        "normalized_edges": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "accepted_boundary_stops": { "type": "array", "items": { "$ref": "#/$defs/workUnit" } },
+        "members": { "type": "array", "items": { "$ref": "#/$defs/closureMember" } },
+        "decision_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "waiver_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "member_manifest_digest": { "$ref": "#/$defs/digest" },
+        "closure_digest": { "$ref": "#/$defs/digest" },
+        "audit_timestamp": { "type": "string", "format": "date-time" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "unavailable-blocking" } }, "required": ["state"] },
+          "then": {
+            "properties": {
+              "members": { "maxItems": 0 },
+              "integration_target_pin": { "properties": { "state": { "const": "unavailable-blocking" } }, "required": ["state"] }
+            }
+          }
+        }
+      ]
+    },
+    "reconciliationAlternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alternative_id", "strategy", "declared_paths", "authority_boundary", "required_evidence", "novel_drift_behavior"],
+      "properties": {
+        "alternative_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "strategy": { "enum": ["abort-on-conflict", "linewise-union", "regenerate-declared-output", "no-reconciliation"] },
+        "declared_paths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "authority_boundary": { "type": "string", "minLength": 1 },
+        "required_evidence": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "novel_drift_behavior": { "const": "block-and-revise" }
+      }
+    },
+    "refreshEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id", "sequence", "event_type", "stale_class", "old_pin",
+        "new_pin", "reason", "ancestry_result", "overlap_result",
+        "closure_result", "hygiene_result", "actor_identity", "evidence_ref",
+        "evidence_digest", "event_digest", "created_at"
+      ],
+      "properties": {
+        "event_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+        "sequence": { "type": "integer", "minimum": 1 },
+        "event_type": { "const": "refresh" },
+        "stale_class": { "enum": ["source-tip", "target-tip", "observed-ancestry", "evidence-timestamp", "hygiene-snapshot", "closure-snapshot"] },
+        "old_pin": { "$ref": "#/$defs/gitRef" },
+        "new_pin": { "$ref": "#/$defs/gitRef" },
+        "reason": { "type": "string", "minLength": 1 },
+        "ancestry_result": { "type": "string", "minLength": 1 },
+        "overlap_result": { "type": "string", "minLength": 1 },
+        "closure_result": { "type": "string", "minLength": 1 },
+        "hygiene_result": { "type": "string", "minLength": 1 },
+        "actor_identity": { "$ref": "#/$defs/identity" },
+        "evidence_ref": { "type": "string", "minLength": 1 },
+        "evidence_digest": { "$ref": "#/$defs/digest" },
+        "event_digest": { "$ref": "#/$defs/digest" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "revisionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["refreshable", "new_revision_required", "history_policy"],
+      "properties": {
+        "refreshable": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "new_revision_required": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "history_policy": { "const": "append-only-supersede-or-withdraw" }
+      }
+    },
+    "openDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision_id", "owner", "safe_default", "trigger", "deadline_or_event", "affected_requirements", "affected_steps", "unresolved_behavior"],
+      "properties": {
+        "decision_id": { "type": "string", "pattern": "^[A-Z0-9][A-Z0-9._-]*$" },
+        "owner": { "type": "string", "minLength": 1 },
+        "safe_default": { "type": "string", "minLength": 1 },
+        "trigger": { "type": "string", "minLength": 1 },
+        "deadline_or_event": { "type": "string", "minLength": 1 },
+        "affected_requirements": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "affected_steps": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "unresolved_behavior": { "const": "block-affected-steps-retain-last-valid-plan" }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["last_valid_pin", "stop_conditions", "preserve", "forbidden", "restore_authority", "verification"],
+      "properties": {
+        "last_valid_pin": { "$ref": "#/$defs/pin" },
+        "stop_conditions": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "preserve": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "forbidden": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "restore_authority": { "type": "string", "minLength": 1 },
+        "verification": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "evidenceManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "ref", "digest", "commands_retained", "privacy_boundary"],
+      "properties": {
+        "state": { "enum": ["planned", "current", "blocking-missing"] },
+        "ref": { "type": "string", "minLength": 1 },
+        "digest": { "$ref": "#/$defs/digest" },
+        "commands_retained": { "type": "boolean" },
+        "privacy_boundary": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

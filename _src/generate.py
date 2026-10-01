@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+generate.py — Erzeugt den kompletten HTML-Tree aus den Quellen unter _src/.
+
+    python3 _src/generate.py            # schreibt alle deutschen Seiten nach ../
+    python3 _src/generate.py --check    # schreibt nichts, vergleicht nur (DOM)
+    python3 _src/generate.py classes/cl_ara_core_Future_420ba8.html   # einzelne Seite(n)
+    python3 _src/generate.py --lang=en  # zusätzlich Sprachbaum ../en/ erzeugen
+    python3 _src/generate.py --lang=alle   # alle Sprachbäume (en es pt fr ru ar hi ko zh nl)
+
+Sprachbäume (Details in lib_i18n.py): Deutsch ist kanonisch; Übersetzungen
+kommen aus _src/i18n/. Segmente ohne Übersetzung bleiben deutsch (Fallback,
+wird gezählt und gemeldet).
+
+Quellen: _src/sources/pages/**.json  (Seitenmodelle / Komposition)
+         _src/spec/records/**.json   (Spezifikations-DB, via rec-ref referenziert)
+         _src/content/ai/**          (KI-Fragmente, referenziert aus den Modellen)
+         _src/diagrams/**            (SVG-Diagramme, referenziert aus den Modellen)
+         _src/templates/             (Seiten-Chrome, Footer-Varianten)
+         _src/site.json              (Projektmanifest: Bereiche, Sprachen)
+Danach:  python3 _src/validate.py    (Prüfungen, siehe WARTUNG.md)
+"""
+import json
+import multiprocessing
+import os
+import re
+import sys
+import time
+from concurrent.futures import ProcessPoolExecutor
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lib_docmodel import (SRC, ROOT, LANGS, render_page, load_templates,
+                          compare_html, iter_pages)
+import build_report_envelope as envelope
+
+WORKERS = min(12, os.cpu_count() or 12)
+
+
+def publication_links(html_text, lang=None, page_file=None):
+    """Resolve root chooser links for the canonical or translated tree."""
+    with open(os.path.join(SRC, "site.json"), encoding="utf-8") as f:
+        config = json.load(f)
+    publication = config["publikation"]
+    canonical = config["sprachen"]["kanonisch"]
+    language = lang or canonical
+    depth = (page_file or "").count("/")
+    lang_prefix = "../" * depth
+    root_prefix = "../" * (depth + (0 if (lang is None or lang == canonical) else 1))
+    replacements = {
+        "@@AUTOSAR_TREE_HREF@@": "%sadaptive/index.html" % lang_prefix,
+        "@@SCORE_TREE_HREF@@": "%s%s/%s/index.html" % (
+            root_prefix, publication["score_tree"], language
+        ),
+        "@@ROOT_PREFIX@@": root_prefix,
+        "@@LANG_PREFIX@@": lang_prefix,
+    }
+    for token, target in replacements.items():
+        html_text = html_text.replace(token, target)
+
+    if lang is not None and lang != canonical:
+        # Resolve links to nolang root-only reports
+        nolang_pattern = re.compile(
+            r'href="(?:\.\./)*(curation-report|build-reports|open-reviews|extraction-reports|traceability|e2e-requirements)\.html([^"]*)"'
+        )
+        html_text = nolang_pattern.sub(rf'href="{root_prefix}\1.html\2"', html_text)
+
+        # Resolve links to S-Core curation review portal
+        score_tree_escaped = re.escape(publication["score_tree"])
+        score_review_de = re.compile(rf'href="(?:\.\./)*{score_tree_escaped}/de/index\.html"')
+        score_review_any = re.compile(rf'href="(?:\.\./)*{score_tree_escaped}/([^"]*)"')
+        html_text = score_review_de.sub(
+            f'href="{root_prefix}{publication["score_tree"]}/{language}/index.html"',
+            html_text,
+        )
+        html_text = score_review_any.sub(
+            rf'href="{root_prefix}{publication["score_tree"]}/\1"',
+            html_text,
+        )
+
+    return html_text
+
+
+def _missing_count(stat):
+    return len(stat.fehlend) + len(getattr(stat, "fehlende_labels", {}))
+
+
+# 'fork' avoids re-importing lxml/lib_docmodel per worker (macOS defaults to
+# 'spawn', which pays that import cost on every one of the 12 workers and
+# dominates wall-clock time for a fast, many-small-tasks workload like this).
+_MP_CTX = multiprocessing.get_context("fork")
+
+
+def _render_one(args):
+    page, footers, page_tmpl, check = args
+    html_text = publication_links(render_page(page, footers, page_tmpl), page_file=page["file"])
+    target = os.path.join(ROOT, page["file"])
+    if check:
+        errs = compare_html(target, html_text) if os.path.exists(target) else ["Datei fehlt"]
+        return page["file"], None, errs
+    return page["file"], html_text, None
+
+
+def generate_lang(lang, only=None, check=False, announce=True):
+    """Einen Sprachbaum ../<lang>/ erzeugen (oder mit check=True nur byte-genau
+    vergleichen). Liefert (Seitenzahl, Statistik, Liste abweichender Dateien)."""
+    from lib_i18n import (Statistik, globale_ersetzungen, lade_register,
+                          lade_soll, lade_soll_labels, uebersetze_seite)
+    seg, lab, ui = lade_register(lang)
+    page_tmpl, footers = load_templates()
+    footers = dict(footers, **ui.get("footers", {}))
+    stat = Statistik(soll=lade_soll(), soll_labels=lade_soll_labels())
+    n, stale = 0, []
+    for page in iter_pages(only):
+        if page.get("nolang"):
+            continue          # nur-deutsche Seite (z. B. Traceability-Bericht)
+        uebers = uebersetze_seite(page, lang, seg, ui, stat, lab=lab)
+        html_text = render_page(uebers, footers, page_tmpl, lang=lang, notice_ui=ui.get("review_notice"))
+        html_text = publication_links(globale_ersetzungen(html_text, ui), lang, page_file=page["file"])
+        target = os.path.join(ROOT, lang, page["file"])
+        if check:
+            cur = open(target, encoding="utf-8").read() if os.path.exists(target) else None
+            if cur != html_text:
+                stale.append("%s/%s" % (lang, page["file"]))
+        else:
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(html_text)
+        n += 1
+    if not check and announce:
+        print("generiert [%s]: %d Seiten, Treffer %d, fehlende Übersetzungen (Fallback deutsch): %d eindeutige Segmente"
+              % (lang, n, stat.treffer, _missing_count(stat)))
+    return n, stat, stale
+
+
+def _generate_lang_one(args):
+    lang, only, check = args
+    n, stat, stale = generate_lang(lang, only, check, announce=False)
+    return lang, n, stat.treffer, _missing_count(stat), stale
+
+
+def generate_languages(langs, only=None, check=False):
+    """Generate independent language trees concurrently and return results in
+    input order. Duplicate languages are collapsed to prevent concurrent writes
+    to the same output tree."""
+    ordered_langs = list(dict.fromkeys(langs))
+    unsupported = [lang for lang in ordered_langs if lang not in LANGS]
+    if unsupported:
+        raise ValueError("unsupported language(s): %s" % ", ".join(unsupported))
+    tasks = [(lang, only, check) for lang in ordered_langs]
+    if len(tasks) < 2 or WORKERS < 2:
+        results = [_generate_lang_one(task) for task in tasks]
+    else:
+        with ProcessPoolExecutor(
+            max_workers=min(WORKERS, len(tasks)), mp_context=_MP_CTX
+        ) as ex:
+            results = list(ex.map(_generate_lang_one, tasks, chunksize=1))
+    if not check:
+        for lang, n, hits, missing, _stale in results:
+            print("generiert [%s]: %d Seiten, Treffer %d, fehlende Übersetzungen (Fallback deutsch): %d eindeutige Segmente"
+                  % (lang, n, hits, missing))
+    return results
+
+
+def main():
+    _t0 = time.time()
+    args = [a for a in sys.argv[1:]]
+    check = "--check" in args
+    langs = []
+    for a in args:
+        if a.startswith("--lang="):
+            w = a.split("=", 1)[1]
+            langs = list(LANGS) if w in ("alle", "all") else w.split(",")
+    only = set(a for a in args if not a.startswith("--")) or None
+
+    page_tmpl, footers = load_templates()
+    pages = list(iter_pages(only))
+    n, bad = 0, 0
+    tasks = [(page, footers, page_tmpl, check) for page in pages]
+    chunksize = max(1, len(tasks) // (WORKERS * 4)) if tasks else 1
+    if len(tasks) < WORKERS * 2:
+        rendered = [_render_one(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=WORKERS, mp_context=_MP_CTX) as ex:
+            rendered = list(ex.map(_render_one, tasks, chunksize=chunksize))
+    results = {file: (html_text, errs) for file, html_text, errs in rendered}
+    for page in pages:
+        html_text, errs = results[page["file"]]
+        if check:
+            if errs:
+                bad += 1
+                print("ABWEICHUNG %s" % page["file"])
+                for e in errs[:5]:
+                    print("   ", e)
+        else:
+            target = os.path.join(ROOT, page["file"])
+            os.makedirs(os.path.dirname(target), exist_ok=True)
+            with open(target, "w", encoding="utf-8") as f:
+                f.write(html_text)
+        n += 1
+    print(("geprüft" if check else "generiert") + ": %d Seiten" % n + (", Abweichungen: %d" % bad if check else ""))
+    _fallback_by_lang, _lang_page_counts, _changed_targets = {}, {}, []
+    if not check:
+        for lang, _n_lang, _hits, _missing, _stale in generate_languages(langs, only):
+            _lang_page_counts[lang] = _n_lang
+            _fallback_by_lang[lang] = _missing
+    _exit_code = 1 if bad else 0
+    if not check and (
+        "--provenance" in args or os.environ.get("HTML_TREE_PROVENANCE") == "1"
+    ):
+        tools_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tools")
+        if tools_dir not in sys.path:
+            sys.path.insert(0, tools_dir)
+        import html_tree_provenance as _htp
+        _htp.record_after_generate(
+            repo_root=ROOT,
+            languages=["de"] + list(langs),
+            issue=os.environ.get("HTML_TREE_PROVENANCE_ISSUE", "0037-27.05"),
+            criterion=os.environ.get("HTML_TREE_PROVENANCE_CRITERION", "AC-html-tree-provenance"),
+            source_commit=os.environ.get("HTML_TREE_PROVENANCE_COMMIT", "0" * 40),
+            tool_commit=os.environ.get("HTML_TREE_PROVENANCE_TOOL_COMMIT", "1" * 40),
+            config_commit=os.environ.get("HTML_TREE_PROVENANCE_CONFIG_COMMIT", "2" * 40),
+        )
+    if not check:
+        reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "output", "build-reports")
+        envelope.emit_and_write_stage(
+            reports_dir,
+            ROOT,
+            report_kind="html_generate",
+            tool="generate.py",
+            command="generate.py " + " ".join(args),
+            inputs=langs or ["de"],
+            started_at=_t0,
+            exit_code=_exit_code,
+            changed_artifacts=_changed_targets,
+            counts={"pages_generated_per_lang": {"de": n, **_lang_page_counts},
+                    "fallback_to_german": _fallback_by_lang, "changed_targets": len(_changed_targets)},
+            findings=[],
+        )
+    sys.exit(_exit_code)
+
+
+if __name__ == "__main__":
+    main()

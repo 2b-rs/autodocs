@@ -1,0 +1,48 @@
+{
+  "schema": "completion-evidence@v1",
+  "item": "0037-27.02",
+  "change_kinds": [
+    "identity-matching",
+    "serialization-shape",
+    "gate-classification",
+    "set-sequence-invariant"
+  ],
+  "baselines": {
+    "pre_change": "2064704457f98c66fb6f77ad3c263415864fe2ff",
+    "candidate": "9c4b59780da477aa714b4cbcf168e4df48843d64"
+  },
+  "falsification_cases": [
+    {
+      "name": "source-digest-change-marks-exact-svg-stale",
+      "derived_from_claim": "Source/label/theme changes mark exact SVGs stale via content identity, not path or mtime.",
+      "command": "git show 2064704457f98c66fb6f77ad3c263415864fe2ff:_src/tools/diagram_provenance.py; python3 _src/tests/test_diagram_provenance.py DiagramProvenanceTests.test_source_change_marks_exact_svg_stale",
+      "output": "fatal: path '_src/tools/diagram_provenance.py' exists on disk, but not in '2064704457f98c66fb6f77ad3c263415864fe2ff'\n... test_source_change_marks_exact_svg_stale ... ok",
+      "result_pre_change": "red",
+      "result_candidate": "green",
+      "mocked_changed_path": false
+    }
+  ],
+  "adjacent_cases": [
+    {
+      "name": "mtime-only-same-bytes",
+      "dimension": "mtime vs content identity",
+      "expected": "identical source bytes do not mark the recorded SVG stale",
+      "observed": "test_mtime_only_does_not_mark_stale PASS",
+      "why_adjacent": "Neighbor of the falsifying content-digest gate: same path, unchanged bytes."
+    },
+    {
+      "name": "labels-language-isolation",
+      "dimension": "labels vs language membership",
+      "expected": "label digest change stales the translated SVG only, not the canonical de render without labels",
+      "observed": "test_labels_change_marks_translated_not_unrelated_language PASS",
+      "why_adjacent": "Neighbor of source-identity: labels are an optional identity member bound to language."
+    }
+  ],
+  "property_evidence": {
+    "invariant": "Each recorded artifact-set has unique roles, always includes source-model, theme, and rendered-svg; labels present iff supplied; input_identity equals the stored identity.",
+    "domain": "24 generated (source, optional labels) pairs",
+    "generative": true,
+    "seed": "2702",
+    "executed_cases": 24
+  }
+}

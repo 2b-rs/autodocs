@@ -1,0 +1,270 @@
+# Privileged Task Acceptance and Feature Closure
+
+**Status:** Normative legacy-authority process introduced by reserved Task `0039-04`. Until Feature `0037` completes its authorized cutover, `TODO.md`, `DONE.md`, and active coordination records remain authoritative. The future issue-store contracts must implement equivalent semantics before approval and cutover.
+
+## Purpose and boundary
+
+Implementation completion and independent acceptance are different decisions. A Task may have a committed deliverable, successful validation, and a carrying commit with `Task-ID`/`Base-Ref` trailers while still resting on incomplete evidence, unrealistic tests, an unreviewed prerequisite, a hidden authority assumption, or a result that does not satisfy the intended outcome. This process introduces a separate Task-acceptance state, rendered as `✓`, and an independent Feature aggregate-acceptance gate.
+
+Task acceptance means that the exact reviewed work-product baseline satisfies the Task contract under the recorded review scope. It does **not** grant or imply product approval, architecture approval, release authorization, safety acceptance, cybersecurity/privacy residual-risk acceptance, external-service authorization, process-baseline approval, or an Automotive SPICE capability rating. The reviewer verifies that any separately required decision exists and is correctly bound; the reviewer does not manufacture that authority.
+
+The word `accepted` in this document is namespaced to **Task/Feature work-product acceptance**. It is distinct from curation-item decisions, review-request acceptance, publication, or external approval processes elsewhere in `docs/pipeline/`.
+
+Case-A4 risk integrations use the separate bounded record and fail-closed state
+machine in [`risk-integration.md`](risk-integration.md). That record is evidence
+for an integration decision, never an `Acceptance: ✓` record or a substitute for
+the independent acceptance procedure here.
+
+## Integration checkpoints and the architect
+
+Privileged **integration review is not independently triggered uniformly**. It is triggered exactly at the nodes an **architect** marks as integration checkpoints. The checkpoint identifies the initiating review node; it does not exempt unmarked required predecessors from the prerequisite-closed Task-Acceptance batch described in section 2. This keeps independently initiated review proportional to declared risk instead of implied by hierarchy. Checkpoints are selected at decomposition or later under the timing rule below, not frozen at decomposition.
+
+- **Architect.** An authority **instantiated by management** whose job is to subdivide a Feature into bounded, context-rich work packages so implementers need minimal reasoning, and to review the resulting tasks and flag the most critical ones `Integration review: mandatory`. Checkpoint placement is exclusively Architect authority. The Architect may add the attribute, with recorded rationale, at any time before the affected node has current Acceptance, including while it is `[x]`/`[w]`. Current Acceptance closes that ordinary designation window for the accepted baseline. A later addition, removal, or movement requires separately authorized append-only invalidation or reopening first; history is never rewritten. Applicable decision-record and distinct Architect gate-scope review requirements remain binding. The architect is a recorded designation distinct from both the implementer and the integrator who performs the review — a separation of *who scopes*, *who builds*, and *who reviews*.
+- **The attribute.** A node (Task, Subtask, or Feature) carries `**Integration review:** mandatory` when it is an integration checkpoint. The attribute requires a privileged integration review before the node's work is integrated across its boundary. Current `Acceptance: ✓` for the checkpoint requires both a passing review of that initiating node and current individual Acceptance for every member of its induced prerequisite-closed batch. The attribute is orthogonal to the checkbox marker and set only by the architect, with recorded rationale.
+- **Opt-in, both directions audited.** A node without the attribute does not independently trigger integration review and may cross a checkpoint-free boundary through an ordinary grunt-eligible merge. It is not exempt from Task Acceptance when it is an unaccepted required predecessor of a target now being accepted. An omission is never silent: a node that touches an irreversible migration, external effect, credential/security boundary, or public release and is left unflagged must record an explicit **no-checkpoint justification** by the architect.
+- **Gate scope.** A checkpoint gates *upward integration*, not implementation start: dependents may build on its `[x]`/`[w]` and merge it, but crossing its boundary and treating it as integrated waits for a passing review. An architect may additionally impose the stricter *acceptance-before-start* edge gate for a high-risk predecessor.
+- **Mandatory integrating task (the floor).** The feature-breakdown process requires the architect to create exactly one integration task per Feature that integrates the whole Feature's work, flagged `Integration review: mandatory`. It is the Feature's terminal checkpoint and effective review floor; further intermediate checkpoints are added at the architect's discretion. Absent an override, no Feature closes without this review.
+- **Management override.** Management — the current user or a registered authority above the process — may waive the mandatory integrating task, override an integrator's `[u]` verdict, or authorize closure without a required review. An override is valid only as an explicit, recorded authorization naming authority, scope, reason, and compensating controls; it is append-only, deletes no history, and is never performed autonomously by an architect, integrator, implementer, or grunt. It is the sanctioned path for the surprises real work produces — distinct from an agent silently skipping a gate, which remains prohibited.
+
+The independence, competence, procedure, invalidation, and recording rules in the rest of this document apply to every review a checkpoint requires. Sandboxed/grunt agents never set, clear, or move the `Integration review` attribute; that is architect authority.
+
+For this timing rule, **current Acceptance** means a reachable, non-invalidated record bound to the exact Task contract, work-product baseline, prerequisite-Acceptance set, authority epoch, and review evidence. Historical, stale, superseded, rejected, inconclusive, or invalidated records neither supply Acceptance credit nor close the Architect's designation window.
+
+## State and rendering model
+
+Acceptance is orthogonal to the legacy checkbox marker so that the executed disposition remains visible and current parsers are not silently broken.
+
+| Representation | Meaning | Ordinary implementation start gate | Feature closure |
+|---|---|---|---|
+| `[ ]`, `[?]`, `[p]`, `[u]` | Existing open, investigatory, active, or genuinely human-blocked state | Unsatisfied | Unsatisfied |
+| `[x]` | Implementation complete, committed, implementer validation complete, awaiting acceptance | Satisfied unless the consumer explicitly requires prior acceptance | Unsatisfied |
+| `[w]` | Non-implementation disposition complete, reason/evidence committed, awaiting acceptance | Satisfied unless the consumer explicitly requires prior acceptance | Unsatisfied |
+| `**Acceptance:** ✓` | The exact `[x]`/`[w]` baseline has a current accepted disposition | Satisfied | Required, but not sufficient by itself |
+
+An accepted Task retains `[x]` or `[w]` on its header and adds a structured acceptance record. This preserves the distinction between a delivered result and a correctly accepted `wontfix`, `superseded`, `duplicate`, or `cancelled` disposition. `[✓]` is not introduced as a Markdown checkbox because it is not a standard checkbox token and would erase the underlying disposition.
+
+The minimum legacy rendering is:
+
+```markdown
+  - **Acceptance:** ✓
+    - **Disposition:** `completed|wontfix|superseded|duplicate|cancelled`
+    - **Accepted by:** `<authorized-reviewer-identity>`
+    - **Authority reference:** `<immutable assignment/authority reference>`
+    - **Accepted at:** `<ISO-8601 timestamp with timezone>`
+    - **Contract SHA-256:** `<64 lowercase hexadecimal>`
+    - **Work-product manifest SHA-256:** `<64 lowercase hexadecimal>`
+    - **Prerequisite-acceptance SHA-256:** `<64 lowercase hexadecimal>`
+    - **Carrying commit:** `<full reachable 40-hex carrying commit>`
+    - **Review-decision commit:** `<full reachable 40-hex review evidence commit>`
+    - **Review REF:** `<full reachable 40-hex commit of the Acceptance bookkeeping record, or the review-decision commit when bookkeeping has not yet been created>`
+```
+
+A `Review REF` is mandatory exactly when an `Acceptance: ✓` record is created at an architect-declared integration checkpoint; unflagged `[x]`/`[w]` work has no acceptance record and needs no `REF`. The field binds the structured decision to the reachable review evidence commit; this checkpoint-only rule is the ordinary optional case for all other terminal work. A management override that authorizes closure without a required review is retained as its own authority record and does not fabricate `Acceptance: ✓` or a Review REF.
+
+A historical `ARCHIVED — NOT ACCEPTED` record never receives acceptance credit. Existing Features already in `DONE.md` retain the semantics and evidence status recorded when they were moved; they are not retroactively relabeled or represented as accepted under this process. Existing implementation/disposition REF fields remain historical evidence but are no longer prerequisites for `[x]`/`[w]`.
+
+## Authority and separation of duties
+
+Sandboxed/grunt agents may implement, investigate, validate, commit, prepare acceptance packages, and move their own claimed Tasks to `[x]` or `[w]`. They are prohibited from:
+
+- creating, modifying, invalidating, or removing a current `Acceptance: ✓` record;
+- representing themselves as the acceptance reviewer;
+- asking a generic runner action to perform acceptance promotion;
+- moving a Feature to `DONE.md`;
+- setting, clearing, or moving the `Integration review: mandatory` attribute (architect authority);
+- treating privilege, a green command, or an implementation carrying-commit identity as acceptance.
+
+Only a session that is both currently privileged **and explicitly assigned by the current user or registered acceptance authority to the exact review scope** may decide Task or Feature acceptance. Privilege alone is not acceptance authority. A model name, Git author, claim filename, terminal access, or role self-assertion is not proof.
+
+The reviewer is independent by default: the reviewer must not be the Task claim owner, principal implementer, author of the decisive technical disposition, or sole producer of the validation evidence. Prior consultation does not automatically destroy independence, but material design authorship, implementation, or self-generated approval evidence must be disclosed and normally disqualifies the reviewer. A self-acceptance exception requires an explicit current-user or registered-authority waiver naming scope, reason, duration, conflict, and compensating controls. Urgency or reviewer scarcity is not a waiver.
+
+Specialist competence is part of assignment. One reviewer need not possess every specialist authority, but the review plan must identify required architecture, security, privacy, safety, release, legal, operational, or domain decisions and verify their authentic records.
+
+## Implementation completion and review handoff
+
+The implementation owner completes the existing claim at `[x]` or `[w]`, commits the carrying result (trailers `Task-ID` and `Base-Ref`), finalizes the implementation claim in that same tree, and returns to ordinary queue work. Waiting for acceptance must not hold the implementation write scope or become `[u]`.
+
+The acceptance package must identify:
+
+1. Task and Feature identity, exact normative Task text, acceptance criteria, Definition of Done, and contract digest;
+2. exact carrying commit, candidate tree, expected parent/`Base-Ref`, and authority epoch; Acceptance later pins the independent review-decision commit and the Acceptance bookkeeping commit;
+3. a complete authoritative work-product manifest with paths, roles, source/generated classification, media types, and digests;
+4. declared and observed direct, derived, external, and evidence scopes, including proof that unrelated work was excluded;
+5. a criterion matrix mapping every normative condition to implementation, validation, evidence, findings, and disposition;
+6. the direct and transitive prerequisite graph plus existing acceptance records and invalidation state;
+7. validation profiles, commands or typed actions, environment/input/output identities, coverage, canaries, negative cases, durations, resource bounds, and immutable results;
+8. material findings, severity, affected criterion/artifact, owner, corrective action or authorized disposition, and verification status;
+9. security, privacy, safety, external-effect, migration, compatibility, recovery, rollback, and residual-risk interfaces;
+10. user-prompt/process provenance and immutable evidence references without secrets or restricted personal data;
+11. prior rejected, inconclusive, superseded, or invalidated review attempts.
+
+Missing, stale, mixed, inaccessible, malformed, or internally inconsistent package information yields `inconclusive`, never an assumed pass.
+
+## Privileged review procedure
+
+### 1. Assignment and preflight
+
+The reviewer verifies current privilege, exact user/authority assignment, independence, competence, review scope, policy/authority epoch, and absence of a competing review assignment. The reviewer pins the exact Task contract and candidate baseline before substantive inspection. Any drift requires a new review baseline.
+
+### 2. Expand the prerequisite closure
+
+The reviewer parses the exact prerequisite graph, rejects missing endpoints, self-edges, duplicate/reversed edges, cycles, ambiguous alternatives, and required prose-only dependencies, then computes the transitive prerequisite closure. A valid, reachable, non-invalidated acceptance record forms a review boundary. Every prerequisite without such a boundary enters the same review batch.
+
+The batch is topologically ordered from leaves to the target. Acceptance is prerequisite-closed: a Task cannot be accepted while a required predecessor remains unaccepted, rejected, inconclusive, stale, or invalidated. Several items may be reviewed in one batch, but each receives its own decision and is promoted bottom-up.
+
+This is a two-gate rule. `[x]`/`[w]` ordinarily satisfies an implementation-start prerequisite without Acceptance. When Task Acceptance is assigned for a target, every required transitive `[x]`/`[w]` predecessor without current valid Acceptance enters the same bottom-up batch and receives an individual decision before the target can receive current `Acceptance: ✓`. Only a marked checkpoint independently triggers integration review; unmarked predecessors included by closure do not thereby become checkpoints.
+
+Ordinary implementation may consume `[x]`/`[w]` to avoid serializing all work behind privileged reviews. A Task with an irreversible migration, canonical interface/schema, credential/security boundary, public release, architecture selection, or comparable high-risk dependency may state a stricter acceptance-before-start gate; until machine-enforced profile edges exist, this gate must be explicit in the Task contract and checked manually.
+
+### 3. Inspect contract, work products, and scope
+
+The reviewer reads the actual changed source, configuration, policy, process, test, and generated-output contracts—not only summaries or logs. Every criterion, changed authoritative path, authority-sensitive path, manifest/digest, structured finding, negative test requirement, and recovery/rollback boundary receives complete inspection.
+
+For a large homogeneous generated population, deterministic whole-population checks remain preferred. Sampling is permitted only when the population is enumerated and digest-bound, a complete validator is infeasible or complementary inspection is useful, and the method records strata, seed, size, exclusions, boundary/high-risk selections, and rationale. Authority boundaries are never sampled. A material sample defect, population heterogeneity, missing canary, or unexplained mismatch expands the sample or triggers complete inspection.
+
+The reviewer confirms that declared scope agrees with observed changes; no ambient staged, unstaged, untracked, generated, or external effect was silently included or omitted. Generated artifacts must map to their canonical producer and source manifest.
+
+### 4. Evaluate and rerun validation
+
+Existing immutable runs support review but do not replace independent freshness checks. Against an isolated exact candidate where feasible, the reviewer reruns:
+
+- package/schema/digest/reachability and prerequisite checks;
+- focused tests for changed behavior;
+- required security/privacy/authority policy checks;
+- representative negative, canary, failure, cancellation, retry, and recovery cases;
+- broader regression, generation, or end-to-end validation required by the Task risk and contract.
+
+A full expensive rerun may be omitted only when the validation profile permits reuse, all inputs/environment/tool versions and immutable results match exactly, canaries prove coverage, and the reviewer records why reproduction adds no material assurance. Child exit zero, output existence, timestamps, synthetic-only data, or a baseline-only run are not sufficient by themselves.
+
+At an **integration checkpoint**, the execution content of this step is defined by [`integration-test-obligation.md`](./integration-test-obligation.md) (decided by `DEC-0044-019`, staged activation): the integrator derives a checkpoint-specific test set from the integrated items' architecture and interface contracts, executes it against the exact integrated candidate, and retains the reproducible evidence minimum stated there. That obligation produces evidence for this review; it grants no acceptance by itself.
+
+### 5. Review findings and authority boundaries
+
+Findings use stable identities and at least critical, major, minor, and observation/improvement classes. Critical and major findings block acceptance. A minor finding may remain only when it does not contradict a criterion, the Task contract permits deferral, and it has an owner, due condition, traceable downstream item, and any required authority disposition.
+
+The reviewer verifies required architecture, security, privacy, safety, release, external mutation, signing, or residual-risk decisions, but does not make them without the corresponding registered authority. An absent required decision blocks or makes the review inconclusive according to the evidence.
+
+### 6. Decide and record
+
+The review has exactly one outcome for the reviewed baseline:
+
+- `accepted`: all criteria and prerequisite acceptance gates are satisfied; material findings are closed or validly dispositioned;
+- `rejected`: evidence demonstrates a material nonconformity;
+- `inconclusive`: identity, evidence, environment, scope, or authority is insufficient to determine conformity.
+
+Rejected and inconclusive attempts remain append-only evidence. Rejection normally returns the Task to `[p]` when corrective implementation work is actionable. Inconclusive normally leaves `[x]`/`[w]` awaiting corrected review evidence; it becomes `[p]` only when substantive rework is required. Correction and re-review remain in the same reserved slot. Persistent technical disagreement follows the documented trilateral round in [`integration-flow-control.md`](integration-flow-control.md). `[u]` is used only when that round leaves an exact non-delegable product, policy, material-architecture, authority, material-risk, external-effect, public-release, or waiver decision as the sole next action.
+
+The review evidence is committed first. A separate path-isolated bookkeeping commit adds `Acceptance: ✓` and references the real review commit. Immediately before bookkeeping, the reviewer must compare-and-swap the expected Task block, checkpoint attribute, contract digest, prerequisite graph, prerequisite-Acceptance set, and Acceptance state. If an Architect added or changed a checkpoint, or any other bound input drifted after the review baseline was pinned, the review is stale and must not be promoted; the changed scope is reviewed first. The acceptance commit must preserve unrelated work and use expected-base protection. The reviewer never fabricates a self-referential hash.
+
+## Invalidation and reacceptance
+
+Acceptance binds the Task-contract digest, substantive commit/tree, work-product manifest, validation profile/results, prerequisite acceptance set, authority epoch, accepted disposition, reviewer identity/assignment, and review timestamp. It is invalidated—not deleted—when relevant content or authority changes, including:
+
+- normative Task, criterion, or Definition-of-Done change;
+- accepted work-product bytes or semantic interface change;
+- prerequisite acceptance invalidation or incompatible prerequisite change;
+- changed required validation profile, environment, source input, or generated-output contract;
+- a newly discovered material finding;
+- relevant policy/authority epoch, supersession, rollback, or migration change.
+
+An unrelated repository `HEAD` advance does not invalidate acceptance. Impact is determined from bound scopes, manifests, and semantics. Invalidation is append-only, names the triggering evidence, removes current acceptance credit, and propagates to affected dependent Tasks and Feature aggregate acceptance. Historical acceptance remains visible but is not current.
+
+## Feature aggregate acceptance and `DONE.md`
+
+A Feature moves to `DONE.md` only when its work is terminal (`[x]`/`[w]`), **every integration checkpoint within it has a current passing integration review**, and every required transitive `[x]`/`[w]` predecessor induced into those Task-Acceptance batches has its own current accepted disposition. If the architect marked the Feature node itself `Integration review: mandatory`, a separately assigned independent privileged reviewer performs the Feature aggregate review below before closure; an unflagged Feature whose internal checkpoints and induced Acceptance batches all pass is closed by the privileged closure authority without an additional Feature-node review. The `DONE.md` move is always a privileged act, never a grunt or checkbox-counter action. When a Feature aggregate review is required, the reviewer verifies:
+
+1. complete, acyclic, current Task/Subtask and Feature-prerequisite closure;
+2. satisfaction of the Feature goal and Feature Definition of Done;
+3. consistency and integration of Task outputs and accepted baselines;
+4. Feature-level end-to-end, negative, recovery, migration, and operational checks;
+5. cross-Task findings, residual risks, exclusions, cancellations, and successors;
+6. current required product/specialist approvals from their proper authorities;
+7. one digest-bound aggregate manifest of Task acceptance records and work products;
+8. one immutable Feature-acceptance review record.
+
+Only after every required integration checkpoint has passed — and the Feature aggregate review too, when the Feature node is flagged — may a privileged agent authorize the path-isolated move to `DONE.md`. A grunt, checkbox counter, parent aggregation tool, or old closure-eligibility advisory cannot perform or imply this move.
+
+Feature aggregate review is performed as the branch **integration** step defined in [`branch-workflow.md`](branch-workflow.md): the privileged integrator merges the required Task branch(es) into the Feature branch, reviews marked checkpoints, expands their Acceptance assignments through every required transitive predecessor until current valid Acceptance boundaries, adds an individual decision and record for every accepted batch member, reconciles and removes the carried predecessor claim files, and — on approval — integrates the Feature into `main` alongside the path-isolated `DONE.md` move. If the integrator cannot approve a row of Tasks, it does not force closure: it records a Feature-level `rejected` or `inconclusive` integration verdict beneath the Feature heading (verdict author, authority reference, ISO-8601 timestamp, affected tasks, reason, integration-branch tip) and follows the delegated escalation ladder in [`integration-flow-control.md`](integration-flow-control.md). Actionable findings return to same-slot `[p]` rework; unresolved technical disagreement receives the documented trilateral round. Only its exact remaining non-delegable question is recorded as `[u]` and submitted through the durable Management-request workflow. A non-passing verdict blocks Feature closure without rewriting the true Task-level markers or existing acceptance records.
+
+## Interim legacy enforcement and required migration
+
+The human/agent authority rules in this document apply immediately. Existing legacy tools still encode `[x]`/`[w]` as terminal and therefore cannot be trusted to decide Feature closure or acceptance eligibility. Until machine enforcement is implemented:
+
+- no automated or grunt-authored path may add, alter, invalidate, or remove acceptance records;
+- no tool output stating that a Feature is closure-eligible is sufficient;
+- privileged acceptance uses an exact reviewed candidate, separate evidence and bookkeeping commits, and manual verification of the rules above;
+- any tool that cannot preserve acceptance records must fail closed rather than rewrite the Task block;
+- future Feature `0037` approval/cutover must reconcile this process into lifecycle, schema, migration, queue, authority, and validation contracts.
+
+Reserved follow-up Task `0039-05` owns the coordinated machine-enforcement and migration plan. It must extend the existing legacy editor/transaction semantics rather than create a competing writer, and must not appropriate active Tasks `0038-02` or `0038-05`.
+
+## Measures and improvement
+
+Track acceptance queue age, implementation-to-acceptance lead time, first-review acceptance rate, rejection/inconclusive causes, package-completeness defects, findings by severity/category, validation-rerun mismatches, escaped findings, invalidations, prerequisite-closure size, sampling escalation, independence waivers, Feature aggregate rejections/reopens, and reviewer load. Measures require definitions, denominators, population boundaries, data-quality checks, privacy controls, and decision use. Acceptance volume or a high pass rate is not an assurance objective.
+
+## Automotive SPICE relationship boundary
+
+This process can contribute evidence to quality assurance, verification, configuration management, problem/change management, project/risk/measurement management, work-product management, and process improvement. It is not an assessment and establishes no process capability level. A privileged agent is not automatically an organizationally independent QA function or competent assessor. Capability claims require the selected Automotive SPICE model/edition, named process and organizational scope, representative process instances, competent assessment, and evidence that practices are deployed and effective—not merely documented in this repository.
+
+---
+
+## Klarstellung 2026-08-22/23 — Integrationscheckpoint-Review und transitive Acceptance-Closure
+
+**Anlass:** Bei Task `0038-33` stellte der unabhängige Reviewer
+`Data-Geordi-20260822T203512Z` fest, dass die direkte Vorleistung `0038-14`
+kein aktuelles `Acceptance: ✓` trägt, und leitete daraus über §2 eine
+nicht-akzeptierte transitive Closure von **30 Vorgängen** über die Features
+`0038` und `0037` ab. Der Reviewer hat daraufhin korrekt `inconclusive`
+aufgezeichnet, statt außerhalb seines Auftrags zu akzeptieren, und die
+Klärung angefordert. Diese Zurückhaltung war richtig.
+
+**Verbindliche Präzisierung:** Die Abgrenzung des technischen Checkpoint-Reviews
+vom Implementierungsstart bleibt bestehen. Die Folgerung, nicht akzeptierte
+Vorfahren erst bei der Feature-Schließung zu behandeln, ist durch die
+Managemententscheidung `DEC-0044-020` präzisiert: Ein technischer Vorreview darf
+früher stattfinden, aber aktuelle Task-Acceptance bleibt ausnahmslos
+prerequisite-closed.
+
+Die transitive Closure aus §2 gehört zur **Task-Acceptance**. Sie ist **kein**
+Eintrittsgatter für den technischen Vorreview eines Checkpoints, wohl aber für
+dessen aktuelle `Acceptance: ✓`. `AGENTS.md` und der `TODO.md`-Header bestimmen
+beide Seiten ausdrücklich:
+
+- Header Zeile 24: *„A Task/Subtask prerequisite is ordinarily an
+  **implementation start gate**: `[x]`/`[w]` satisfies it so work can continue
+  without serial privileged review."* Eine ausdrückliche Ausnahme („requires a
+  predecessor's current acceptance before start") muss am Vorgang **benannt**
+  sein; `0038-33` nennt keine.
+- Der Headerabschnitt *Integration checkpoints and the architect* legt fest:
+  Nur ein markierter Knoten löst selbständig Integrationsreview aus; unmarkierte
+  Vorgänger sind dadurch nicht von der induzierten Task-Acceptance ausgenommen.
+
+**Daraus folgt:**
+
+1. Ein markierter Checkpoint löst den Integrationsreview seines Knotens aus.
+   Dessen technische Prüfung darf beginnen, sobald die erforderlichen
+   Vorleistungen `[x]`/`[w]` sind; fehlende Acceptance blockiert weder diesen
+   Vorreview noch gewöhnliche Nachfolgeimplementierung.
+2. Der Review darf dem Checkpoint jedoch erst dann aktuelle
+   `Acceptance: ✓` geben, wenn jeder erforderliche transitive `[x]`/`[w]`-
+   Vorgänger ohne aktuelle gültige Acceptance in denselben Batch aufgenommen,
+   einzeln entschieden und bottom-up akzeptiert wurde. Ein unmarkierter
+   Vorgänger löst keinen eigenen Integrationsreview aus, ist aber von dieser
+   Task-Acceptance nicht ausgenommen.
+3. Ein technisches `accepted`-Ergebnis ohne abgeschlossene
+   Voraussetzungskette ist nur Review-Evidenz, keine aktuelle Task-Acceptance
+   und darf nicht als `Acceptance: ✓` gebucht werden.
+4. Eine Prosa-Formulierung wie *„no `Acceptance: ✓` record is required"* ist
+   weder ein strukturierter Acceptance-Datensatz noch eine Ausnahme von der
+   prerequisite-closed Closure.
+
+**Konkret für `0038-33`:** Der technische Folgereview darf seine eigenen
+Befunde abschließen. Seine Acceptance-Buchung wartet jedoch auf die dokumentierte
+Closure von 30 Vorgängen über `0038` und `0037`; jeder noch nicht aktuell
+akzeptierte Vorgang erhält eine eigene bottom-up Entscheidung. Der historische
+`inconclusive`-Datensatz bleibt append-only erhalten.
+
+Diese Klarstellung akzeptiert keinen Vorgang, hebt keine Checkpoint-Pflicht auf
+und blockiert keinen gewöhnlichen Implementierungsstart. Sie legt eindeutig
+fest, dass die transitive Closure bei **jeder Task-Acceptance** gilt und deshalb
+spätestens vor Feature-Schließung vollständig gebucht sein muss.

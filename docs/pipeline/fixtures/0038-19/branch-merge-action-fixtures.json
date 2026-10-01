@@ -1,0 +1,497 @@
+{
+  "schema": "0038-19-branch-merge-action-fixtures@v1",
+  "generated_for_task": "0038-19",
+  "purpose": "Positive/negative examples for docs/pipeline/branch-merge-actions.md, validated structurally against the frozen 0037-45 runner-request@v1/runner-result@v1 schemas and, for the business-rule layer this document defines on top of that closed envelope, against the four required negative categories: authority violation, undeclared merge source, stale base/tip, and claim-union conflict.",
+  "note_on_context_field": "The 'context' object on each case is fixture-only harness data (simulated repository ground truth, resolved capability class, and simulated claim-file union state). It is never part of a real runner-request@v1/runner-result@v1 instance; only 'request' and 'result' are validated against the frozen JSON Schema files.",
+  "cases": [
+    {
+      "id": "base-branch-pos-01",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "base-branch",
+        "capability_class": "unprivileged",
+        "actual_tips": { "0042": "79fce2bb14c014fdde4336e61e5129074eaf3541" },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-base-branch-pos-01",
+        "claim_owner_token": "agent:example:0042-05:20260820-0001",
+        "action": "generation",
+        "expected_base": "79fce2bb14c014fdde4336e61e5129074eaf3541",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0042@79fce2bb14c014fdde4336e61e5129074eaf3541"],
+        "write_scopes": ["ref:refs/heads/0042-05"],
+        "preflight": [
+          "target-branch:refs/heads/0042-05",
+          "parent-branch-exists:0042",
+          "expected-parent-tip:refs/heads/0042@79fce2bb14c014fdde4336e61e5129074eaf3541",
+          "item-branch-absent-or-fast-forwardable:refs/heads/0042-05",
+          "owner-token-matches-claim:agent:example:0042-05:20260820-0001"
+        ],
+        "dependencies": [],
+        "limits": { "timeout_seconds": 60, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "base-branch:0042-05:79fce2bb14c014fdde4336e61e5129074eaf3541"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-base-branch-pos-01",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:00:00Z",
+        "finished_at": "2026-08-20T01:00:01Z",
+        "base_observed": "79fce2bb14c014fdde4336e61e5129074eaf3541",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": ["ref:refs/heads/0042-05@79fce2bb14c014fdde4336e61e5129074eaf3541"],
+        "findings": [],
+        "result_digest": "sha256:6f88ea5eef5e053e9b2eb05457802ccf07406d514ec9b61f69d7ce58e600e3fb"
+      }
+    },
+    {
+      "id": "merge-prereqs-pos-01-linear",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0040": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+          "0040-02": "e100a3f69a8e8542b22da375634105d110069a5c"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-pos-01",
+        "claim_owner_token": "agent:example:0040-03:20260820-0002",
+        "action": "path_limited_commit",
+        "expected_base": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c"],
+        "write_scopes": ["TODO-example-0040-02-20260819-abcd.md", "docs/example/0040-02-deliverable.md"],
+        "preflight": [
+          "target-branch:refs/heads/0040-03",
+          "expected-source-tip:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c",
+          "owner-token-matches-claim:agent:example:0040-03:20260820-0002",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0040-02"],
+        "limits": { "timeout_seconds": 120, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0040-03:e100a3f69a8e8542b22da375634105d110069a5c"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-pos-01",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:01:00Z",
+        "finished_at": "2026-08-20T01:01:02Z",
+        "base_observed": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [
+          "merged-branch-tip:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c",
+          "merge-commit:427ab441ce61e1694f1db88a8b82915dc178686f"
+        ],
+        "findings": [],
+        "result_digest": "sha256:16b5041deb3f0be440cecbf0f2e52c6f8c53e6232e933fae557af38f8ad5c48f"
+      }
+    },
+    {
+      "id": "merge-prereqs-pos-02-multi",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0042": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+          "0042-03": "4cd334b67892ff2ed9af18dbb8cb23e673f7566d",
+          "0042-04": "2744bbfacee4622c006e85f73ffdf0ea3232c0e4"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-pos-02",
+        "claim_owner_token": "agent:example:0042-05:20260820-0003",
+        "action": "path_limited_commit",
+        "expected_base": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": [
+          "ref:refs/heads/0042-03@4cd334b67892ff2ed9af18dbb8cb23e673f7566d",
+          "ref:refs/heads/0042-04@2744bbfacee4622c006e85f73ffdf0ea3232c0e4"
+        ],
+        "write_scopes": [
+          "TODO-example-0042-03-20260819-a1a1.md",
+          "TODO-example-0042-04-20260819-b2b2.md",
+          "docs/example/0042-03-deliverable.md",
+          "docs/example/0042-04-deliverable.md"
+        ],
+        "preflight": [
+          "target-branch:refs/heads/0042-05",
+          "expected-source-tip:refs/heads/0042-03@4cd334b67892ff2ed9af18dbb8cb23e673f7566d",
+          "expected-source-tip:refs/heads/0042-04@2744bbfacee4622c006e85f73ffdf0ea3232c0e4",
+          "owner-token-matches-claim:agent:example:0042-05:20260820-0003",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0042-03", "0042-04"],
+        "limits": { "timeout_seconds": 180, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0042-05:2de51eb7972348eb2bda396a6b62acac5bf5497d"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-pos-02",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:02:00Z",
+        "finished_at": "2026-08-20T01:02:03Z",
+        "base_observed": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [
+          "merged-branch-tip:refs/heads/0042-03@4cd334b67892ff2ed9af18dbb8cb23e673f7566d",
+          "merge-commit:5275eb2c21835b74124e46107d825a23e89a67b5",
+          "merged-branch-tip:refs/heads/0042-04@2744bbfacee4622c006e85f73ffdf0ea3232c0e4",
+          "merge-commit:2de51eb7972348eb2bda396a6b62acac5bf5497d"
+        ],
+        "findings": [],
+        "result_digest": "sha256:309887c728dd8d2b76de9d035ea033148a88f827ba9b14547e7dead64164d7f7"
+      }
+    },
+    {
+      "id": "merge-prereqs-claim-union-pos-01",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0040": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+          "0040-02": "e100a3f69a8e8542b22da375634105d110069a5c"
+        },
+        "claim_conflicts": [
+          {
+            "path": "TODO-example-0040-02-20260819-abcd.md",
+            "destination_owner_token": "agent:example:0040-02:20260819-abcd",
+            "source_owner_token": "agent:example:0040-02:20260819-abcd",
+            "resolution": "auto-union"
+          }
+        ]
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-claim-union-pos-01",
+        "claim_owner_token": "agent:example:0040-03:20260820-0004",
+        "action": "path_limited_commit",
+        "expected_base": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c"],
+        "write_scopes": ["TODO-example-0040-02-20260819-abcd.md", "docs/example/0040-02-deliverable.md"],
+        "preflight": [
+          "target-branch:refs/heads/0040-03",
+          "expected-source-tip:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c",
+          "owner-token-matches-claim:agent:example:0040-03:20260820-0004",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0040-02"],
+        "limits": { "timeout_seconds": 120, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0040-03:claim-union-e100a3f69a8e8542b22da375634105d110069a5c"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-merge-prereqs-claim-union-pos-01",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:03:00Z",
+        "finished_at": "2026-08-20T01:03:02Z",
+        "base_observed": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": ["merge-commit:427ab441ce61e1694f1db88a8b82915dc178686f"],
+        "findings": ["claim-union:TODO-example-0040-02-20260819-abcd.md"],
+        "result_digest": "sha256:110b508a3065b985a982c6d0fa97340db092957c07222dc38fbaa2da960f1d2f"
+      }
+    },
+    {
+      "id": "integrate-checkpoint-task-to-feature-pos-01",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "integrate-checkpoint",
+        "capability_class": "privileged",
+        "actual_tips": {
+          "0038": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+          "0038-19": "41788c76c4db2886c3ce8ce8035be2799dda838e"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-integrate-task-to-feature-pos-01",
+        "claim_owner_token": "agent:example-integrator:0038:20260820-0005",
+        "action": "path_limited_commit",
+        "expected_base": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0038-19@41788c76c4db2886c3ce8ce8035be2799dda838e"],
+        "write_scopes": ["docs/pipeline/branch-merge-actions.md", "TODO-example-0038-19-20260819-cccc.md"],
+        "preflight": [
+          "target-branch:refs/heads/0038",
+          "expected-source-tip:refs/heads/0038-19@41788c76c4db2886c3ce8ce8035be2799dda838e",
+          "capability-class-privileged",
+          "owner-token-matches-claim:agent:example-integrator:0038:20260820-0005"
+        ],
+        "dependencies": ["0038-19"],
+        "limits": { "timeout_seconds": 300, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "integrate-checkpoint:0038:41788c76c4db2886c3ce8ce8035be2799dda838e"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-integrate-task-to-feature-pos-01",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:04:00Z",
+        "finished_at": "2026-08-20T01:04:05Z",
+        "base_observed": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": ["merge-commit:a74885af39ec84dc7182a0589a1d1d68e7b93da5"],
+        "findings": [],
+        "result_digest": "sha256:5d383beac9ef783be7c2214ed3839f6c084dcb2ee2437408b6df642e4fa49cf2"
+      }
+    },
+    {
+      "id": "integrate-checkpoint-feature-to-main-pos-01",
+      "category": "positive",
+      "expected": "valid",
+      "context": {
+        "action_kind": "integrate-checkpoint",
+        "capability_class": "privileged",
+        "actual_tips": {
+          "main": "87211774899dc23fcc32cbfa81ae9400d196aecd",
+          "0038": "7903888e06cf83cb27a9546b857b56c313b405e0"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-integrate-feature-to-main-pos-01",
+        "claim_owner_token": "agent:example-integrator:0038:20260820-0006",
+        "action": "path_limited_commit",
+        "expected_base": "87211774899dc23fcc32cbfa81ae9400d196aecd",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0038@7903888e06cf83cb27a9546b857b56c313b405e0"],
+        "write_scopes": ["DONE.md", "TODO.md"],
+        "preflight": [
+          "target-branch:refs/heads/main",
+          "expected-source-tip:refs/heads/0038@7903888e06cf83cb27a9546b857b56c313b405e0",
+          "capability-class-privileged",
+          "all-checkpoints-passed",
+          "owner-token-matches-claim:agent:example-integrator:0038:20260820-0006"
+        ],
+        "dependencies": ["0038"],
+        "limits": { "timeout_seconds": 300, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "integrate-checkpoint:main:7903888e06cf83cb27a9546b857b56c313b405e0"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-integrate-feature-to-main-pos-01",
+        "status": "succeeded",
+        "started_at": "2026-08-20T01:05:00Z",
+        "finished_at": "2026-08-20T01:05:05Z",
+        "base_observed": "87211774899dc23fcc32cbfa81ae9400d196aecd",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": ["merge-commit:0caee48f72b71b9beaee2185847a06fba773d6c1"],
+        "findings": [],
+        "result_digest": "sha256:223e5193ad368e85ee3202956ebf2062fcd906640a5d1554d76f57d67d256aff"
+      }
+    },
+    {
+      "id": "authority-violation-neg-01",
+      "category": "negative",
+      "expected": "BMA-AUTHORITY-VIOLATION",
+      "context": {
+        "action_kind": "integrate-checkpoint",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0038": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+          "0038-19": "41788c76c4db2886c3ce8ce8035be2799dda838e"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-authority-violation-neg-01",
+        "claim_owner_token": "agent:example-grunt:0038:20260820-0007",
+        "action": "path_limited_commit",
+        "expected_base": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0038-19@41788c76c4db2886c3ce8ce8035be2799dda838e"],
+        "write_scopes": ["docs/pipeline/branch-merge-actions.md", "TODO-example-0038-19-20260819-cccc.md"],
+        "preflight": [
+          "target-branch:refs/heads/0038",
+          "expected-source-tip:refs/heads/0038-19@41788c76c4db2886c3ce8ce8035be2799dda838e",
+          "owner-token-matches-claim:agent:example-grunt:0038:20260820-0007"
+        ],
+        "dependencies": ["0038-19"],
+        "limits": { "timeout_seconds": 300, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "integrate-checkpoint:0038:41788c76c4db2886c3ce8ce8035be2799dda838e-unprivileged-attempt"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-authority-violation-neg-01",
+        "status": "rejected",
+        "started_at": "2026-08-20T01:06:00Z",
+        "finished_at": "2026-08-20T01:06:00Z",
+        "base_observed": "18ae10f393ec24c01fcff44f2ae44964856056f8",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [],
+        "findings": [
+          "BMA-AUTHORITY-VIOLATION: claim_owner_token agent:example-grunt:0038:20260820-0007 resolves to capability class 'unprivileged'; integrate-checkpoint targeting refs/heads/0038 requires 'privileged'"
+        ],
+        "result_digest": "sha256:811a9d4036e3bf5260c43691c3efd13cc58a811838b37fa467c165aa925bab56"
+      }
+    },
+    {
+      "id": "undeclared-source-neg-01",
+      "category": "negative",
+      "expected": "BMA-UNDECLARED-SOURCE",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0042": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+          "0042-07": "76a9c1c3fdcc1a15500dd3ec0e9abb61b4c7d2e2",
+          "0042-08": "39dcb0a726fe36c3036cfdd747280dc62e579fc7"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-undeclared-source-neg-01",
+        "claim_owner_token": "agent:example:0042-09:20260820-0008",
+        "action": "path_limited_commit",
+        "expected_base": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0042-07@76a9c1c3fdcc1a15500dd3ec0e9abb61b4c7d2e2"],
+        "write_scopes": ["TODO-example-0042-07-20260819-dddd.md", "docs/example/0042-07-deliverable.md"],
+        "preflight": [
+          "target-branch:refs/heads/0042-09",
+          "expected-source-tip:refs/heads/0042-07@76a9c1c3fdcc1a15500dd3ec0e9abb61b4c7d2e2",
+          "owner-token-matches-claim:agent:example:0042-09:20260820-0008",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0042-07", "0042-08"],
+        "limits": { "timeout_seconds": 180, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0042-09:missing-0042-08-pin"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-undeclared-source-neg-01",
+        "status": "rejected",
+        "started_at": "2026-08-20T01:07:00Z",
+        "finished_at": "2026-08-20T01:07:00Z",
+        "base_observed": "16d2c7100a936731d00eed14ff9cdc2cc5cd353f",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [],
+        "findings": [
+          "BMA-UNDECLARED-SOURCE: dependency '0042-08' has no matching 'ref:refs/heads/0042-08@...' entry in read_scopes"
+        ],
+        "result_digest": "sha256:e03fe3eb76ab1803a137d9692f251c19a5126e6adc3c6f6acdb651eff5e83abe"
+      }
+    },
+    {
+      "id": "stale-tip-neg-01",
+      "category": "negative",
+      "expected": "BMA-STALE-SOURCE-TIP",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0040": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+          "0040-02": "c7e602e3520ea09fabcabaf86a5c5500133e1613"
+        },
+        "claim_conflicts": []
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-stale-tip-neg-01",
+        "claim_owner_token": "agent:example:0040-03:20260820-0009",
+        "action": "path_limited_commit",
+        "expected_base": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0040-02@41e5a76d918d645bb80b5c6e68ed62d0b9f18c21"],
+        "write_scopes": ["TODO-example-0040-02-20260819-abcd.md", "docs/example/0040-02-deliverable.md"],
+        "preflight": [
+          "target-branch:refs/heads/0040-03",
+          "expected-source-tip:refs/heads/0040-02@41e5a76d918d645bb80b5c6e68ed62d0b9f18c21",
+          "owner-token-matches-claim:agent:example:0040-03:20260820-0009",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0040-02"],
+        "limits": { "timeout_seconds": 120, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0040-03:41e5a76d918d645bb80b5c6e68ed62d0b9f18c21-stale"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-stale-tip-neg-01",
+        "status": "rejected",
+        "started_at": "2026-08-20T01:08:00Z",
+        "finished_at": "2026-08-20T01:08:00Z",
+        "base_observed": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [],
+        "findings": [
+          "BMA-STALE-SOURCE-TIP: declared tip 41e5a76d918d645bb80b5c6e68ed62d0b9f18c21 for refs/heads/0040-02 does not match observed tip c7e602e3520ea09fabcabaf86a5c5500133e1613"
+        ],
+        "result_digest": "sha256:f1814ae204b3ace90b7f64a9dead3ba8aaa76024b3d5eb6354459eaac96e8b0f"
+      }
+    },
+    {
+      "id": "claim-union-conflict-neg-01",
+      "category": "negative",
+      "expected": "BMA-CLAIM-FOREIGN-TOKEN",
+      "context": {
+        "action_kind": "merge-prereqs",
+        "capability_class": "unprivileged",
+        "actual_tips": {
+          "0040": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+          "0040-02": "e100a3f69a8e8542b22da375634105d110069a5c"
+        },
+        "claim_conflicts": [
+          {
+            "path": "TODO-example-0040-02-20260819-abcd.md",
+            "destination_owner_token": "agent:example:0040-02:20260819-abcd",
+            "source_owner_token": "agent:someone-else:0040-02:20260819-zzzz",
+            "resolution": "foreign-token"
+          }
+        ]
+      },
+      "request": {
+        "schema": "runner-request@v1",
+        "request_id": "0038-19-fixture-claim-union-conflict-neg-01",
+        "claim_owner_token": "agent:example:0040-03:20260820-0010",
+        "action": "path_limited_commit",
+        "expected_base": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch": "legacy-writable",
+        "read_scopes": ["ref:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c"],
+        "write_scopes": ["TODO-example-0040-02-20260819-abcd.md", "docs/example/0040-02-deliverable.md"],
+        "preflight": [
+          "target-branch:refs/heads/0040-03",
+          "expected-source-tip:refs/heads/0040-02@e100a3f69a8e8542b22da375634105d110069a5c",
+          "owner-token-matches-claim:agent:example:0040-03:20260820-0010",
+          "claim-union-no-foreign-rewrite"
+        ],
+        "dependencies": ["0040-02"],
+        "limits": { "timeout_seconds": 120, "cpu": 1, "memory_mib": 256 },
+        "idempotence_key": "merge-prereqs:0040-03:claim-conflict-e100a3f69a8e8542b22da375634105d110069a5c"
+      },
+      "result": {
+        "schema": "runner-result@v1",
+        "request_id": "0038-19-fixture-claim-union-conflict-neg-01",
+        "status": "rejected",
+        "started_at": "2026-08-20T01:09:00Z",
+        "finished_at": "2026-08-20T01:09:00Z",
+        "base_observed": "9a4f70c9d79ac9741edbfeeb93b91ce0bbe2b403",
+        "authority_epoch_observed": "legacy-writable",
+        "outputs": [],
+        "findings": [
+          "BMA-CLAIM-FOREIGN-TOKEN: TODO-example-0040-02-20260819-abcd.md carries owner_token agent:example:0040-02:20260819-abcd on the destination side and agent:someone-else:0040-02:20260819-zzzz on the source side; auto-union is refused"
+        ],
+        "result_digest": "sha256:fb86f7dbad7419fbf1ebca5354fd08fc39df5e6f5bc01b09aef4635ecba54562"
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+name: "Issue Store Integration Policy Gate"
+
+on:
+  push:
+    branches:
+      - main
+      - "0037-*"
+  pull_request:
+    branches:
+      - main
+      - "0037-*"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-integration-policy:
+    name: "Enforce Integration Policy (0037-43)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Integration Policy Gate
+        run: |
+          python3 _src/tools/issue_integration_policy.py \
+            --root . \
+            --base-ref "${{ github.event.pull_request.base.sha || github.event.before }}" \
+            --candidate-ref "${{ github.event.pull_request.head.sha || github.sha }}" \
+            --json

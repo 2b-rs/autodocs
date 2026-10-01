@@ -1,0 +1,26 @@
+{
+  "schema": "legacy-scope-planner-fixtures@v1",
+  "constants": {"git_head":"1111111111111111111111111111111111111111","index_tree":"2222222222222222222222222222222222222222","worktree_digest":"sha256:3333333333333333333333333333333333333333333333333333333333333333","runner_snapshot_id":"runner-snapshot-fixture-001"},
+  "cases": [
+    {"name":"exact-file","participants":[{"id":"a","writes":[["src/a.py","file"]]},{"id":"b","writes":[["src/a.py","file"]]}],"verdict":"BLOCK","classes":["exact-direct"]},
+    {"name":"exact-directory","participants":[{"id":"a","writes":[["docs","directory"]]},{"id":"b","writes":[["docs","directory"]]}],"verdict":"BLOCK","classes":["exact-direct"]},
+    {"name":"ancestor-directory-file","participants":[{"id":"a","writes":[["docs","directory"]]},{"id":"b","writes":[["docs/a.md","file"]]}],"verdict":"BLOCK","classes":["ancestor-directory"]},
+    {"name":"file-ancestor-directory-reversed","participants":[{"id":"a","writes":[["docs/a.md","file"]]},{"id":"b","writes":[["docs","directory"]]}],"verdict":"BLOCK","classes":["ancestor-directory"]},
+    {"name":"write-read","participants":[{"id":"a","writes":[["src/a.py","file"]]},{"id":"b","reads":[["src/a.py","file"]]}],"verdict":"BLOCK","classes":["write-vs-read"]},
+    {"name":"issue-dag-transitive","participants":[{"id":"a","sources":[["issues/a.md","file"]]},{"id":"b","actions":[{"id":"publish","type":"publication","outputs":[["en/issues/index.html","file"]]}]}],"verdict":"BLOCK","classes":["source-vs-derived"],"chain_contains":["issues/a.md","render-html","en/issues/index.html"]},
+    {"name":"write-auto-derived","participants":[{"id":"a","writes":[["issues/a.md","file"]]},{"id":"b","actions":[{"id":"publish-write","type":"publication","outputs":[["en/issues/index.html","file"]]}]}],"verdict":"BLOCK","classes":["source-vs-derived"],"chain_contains":["issues/a.md","render-html","en/issues/index.html"]},
+    {"name":"directory-write-auto-derived","participants":[{"id":"a","writes":[["issues","directory"]]},{"id":"b","actions":[{"id":"publish-directory-write","type":"publication","outputs":[["en/issues/index.html","file"]]}]}],"verdict":"BLOCK","classes":["source-vs-derived"],"chain_contains":["issues","render-html","en/issues/index.html"]},
+    {"name":"source-versus-claimed-derived","participants":[{"id":"a","sources":[["issues/a.md","file"]]},{"id":"b","writes":[["data/issue-pages.json","file"]]}],"verdict":"BLOCK","classes":["source-vs-derived"]},
+    {"name":"derived-output","participants":[{"id":"a","sources":[["issues/a.md","file"]]},{"id":"b","sources":[["issues/b.md","file"]]}],"verdict":"BLOCK","classes":["derived-output"]},
+    {"name":"sole-writer","participants":[{"id":"a","writes":[["data/issue-pages.json","file"]]},{"id":"b","actions":[{"id":"pages","type":"publication","outputs":[["data/issue-pages.json","file"]]}]}],"verdict":"BLOCK","classes":["sole-writer"]},
+    {"name":"dirty-git-read","participants":[{"id":"a","reads":[["src/a.py","file"]]}],"git_dirty":[["src/a.py","file"]],"verdict":"BLOCK","classes":["git-dirty"]},
+    {"name":"dirty-git-write","participants":[{"id":"a","writes":[["src/a.py","file"]]}],"git_dirty":[["src","directory"]],"verdict":"BLOCK","classes":["git-dirty"]},
+    {"name":"runner-read-conflict","participants":[{"id":"a","writes":[["output/a.json","file"]]}],"runner_reads":[["output","directory"]],"verdict":"BLOCK","classes":["runner-snapshot"]},
+    {"name":"runner-write-conflict","participants":[{"id":"a","reads":[["output/a.json","file"]]}],"runner_writes":[["output/a.json","file"]],"verdict":"BLOCK","classes":["runner-snapshot"]},
+    {"name":"promotion-group","participants":[{"id":"a","actions":[{"id":"en","type":"publication","outputs":[["en/a.html","file"]],"promotion_group":"site"}]},{"id":"b","actions":[{"id":"de","type":"publication","outputs":[["de/b.html","file"]],"promotion_group":"site"}]}],"verdict":"BLOCK","classes":["promotion-group"]},
+    {"name":"0036-broad-targeted","participants":[{"id":"0036-05","writes":[["_src/templates/process.html","file"]],"actions":[{"id":"all-locales","type":"generator","outputs":[["process.html","file"]],"prefixes":[["en","directory"],["de","directory"],["fr","directory"]],"promotion_group":"legacy-site"}]},{"id":"0036-06","writes":[["_src/i18n/process.json","file"]],"actions":[{"id":"process-locales","type":"i18n","outputs":[["process.html","file"],["de/process.html","file"],["fr/process.html","file"]],"promotion_group":"legacy-site"}]}],"verdict":"BLOCK","classes":["exact-direct","ancestor-directory","promotion-group"]},
+    {"name":"locale-subset","participants":[{"id":"a","actions":[{"id":"western","type":"i18n","prefixes":[["de","directory"],["fr","directory"]]}]},{"id":"b","actions":[{"id":"subset","type":"i18n","outputs":[["fr/process.html","file"]]}]}],"verdict":"BLOCK","classes":["ancestor-directory"]},
+    {"name":"disjoint-page-locale","participants":[{"id":"a","actions":[{"id":"de-process","type":"i18n","outputs":[["de/process.html","file"]]}]},{"id":"b","actions":[{"id":"fr-review","type":"i18n","outputs":[["fr/review.html","file"]]}]}],"verdict":"PARALLEL","classes":[]},
+    {"name":"explicit-order","participants":[{"id":"a"},{"id":"b","after":["a"]}],"verdict":"SERIALIZE","classes":[]}
+  ]
+}

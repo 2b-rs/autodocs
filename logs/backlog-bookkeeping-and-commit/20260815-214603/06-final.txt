@@ -1,0 +1,104 @@
++ run.sh:104: echo IMPLEMENTATION_REF=d596af8a8efbdb006dc2a3e096d33d80a4d0e7b8
+IMPLEMENTATION_REF=d596af8a8efbdb006dc2a3e096d33d80a4d0e7b8
++ run.sh:105: echo FINAL_HEAD=7b2b572ab18ecab29e7e6fd9704b9b85e7b806ab
+FINAL_HEAD=7b2b572ab18ecab29e7e6fd9704b9b85e7b806ab
++ run.sh:106: git show --stat --oneline --decorate HEAD
+7b2b572a (HEAD -> main) Feature 0034: preserve Persistency additional information
+ TODO-perplexity.md                    | 54 +++++++++++++++++++++++
+ TODO.md                               | 80 ++++++++++++++++++++++++++++++++++-
+ _src/tests/test_spec_scrape_fields.py | 43 +++++++++++++++++++
+ _src/tools/spec_scrape.py             |  1 +
+ 4 files changed, 177 insertions(+), 1 deletion(-)
++ run.sh:107: echo
+
++ run.sh:107: echo '--- task excerpt ---'
+--- task excerpt ---
++ run.sh:107: sed -n 145,158p TODO.md
+- [x] **0034-03** Add `Additional Information` to the recognised field labels in `spec_scrape.py` so Persistency-style requirement blocks do not silently drop their second field. REF: d596af8a8efbdb006dc2a3e096d33d80a4d0e7b8
+  - **Discovery (2026-08-15, found while working 0007-01):** `AUTOSAR_AP_RS_Persistency.pdf` does not use the Description/Rationale/Dependencies/Use Case/Supporting Material schema of the other RS documents. Its formal blocks carry exactly two labels: `Description:` and `Additional Information:`. `Additional Information` is absent from `LABELS` in `spec_scrape.py`, so `NORM_RE` never splits on it and its entire body is silently swallowed into the preceding `Description` value. Verified for `RS_PER_00010` (p.10-11) and `RS_PER_00021` (p.15-16); the draft fixture stores a single `Description` field for both, matching the loss.
+  - **Why it matters:** This is silent data loss rather than a visible mis-split — nothing in the output signals that a field went missing, so it would not be caught by eyeballing extracted records. Any other document-specific labels may be lost the same way.
+  - **Acceptance criteria:** `Additional Information` recognised as a normative label; `parse_record()` on the Persistency document returns both `Description` and `Additional Information` for `RS_PER_00010` and `RS_PER_00021` with the boundary at the label; a regression test covers it; existing scrape tests still pass.
+  - **Suggested follow-up (not required):** Sweep the RS corpus for `^[A-Z][A-Za-z ]{2,30}:` line-initial candidates that are not in `LABELS`, to find further unrecognised labels rather than discovering them one document at a time.
+  - **Resolution (2026-08-15, AGENT PERPLEXITY):** `Additional Information` added to `LABELS` in `_src/tools/spec_scrape.py`. Three regression tests added to `RequirementFieldTests` in `_src/tests/test_spec_scrape_fields.py` (concatenated-cell form, own-line form, and a negative case). Evidence in `logs/validate-db-contents/20260815-214205/`: end-to-end `parse_record()` against the real cached `AUTOSAR_AP_RS_Persistency.pdf` now returns `['Description', 'Additional Information']` for both `RS_PER_00010` (heading "Configurable Layout of Persistent Data") and `RS_PER_00021` (heading "Initialization and Shutdown"), with the boundary at the label and no label leak into `Description`. Scrape selection 65 -> 68 passed / 144 deselected; full suite 212 passed, 0 failed.
+  - **Design decision (deliberate, pinned by test):** The label was added to `LABELS` but NOT to `NORMATIVE_LABELS`. Members of `NORMATIVE_LABELS` split even without a trailing colon; that is safe for rare tokens like `Rationale` but not for the common English phrase `Additional Information`, which would shred prose such as "see the annex for Additional Information about timing". The label is therefore colon-gated via `API_LABELS`. Verified sufficient: the real Persistency tables do emit the colon. `test_additional_information_without_colon_does_not_split_prose` pins this so a later change cannot loosen it silently.
+  - **Observed while validating (new, not in scope of this task):** Both Persistency `Additional Information` values end with the absorbed running header `Requirements on Persistency`. This is the same page-furniture absorption already noted in 0034-01's live-reproduction bullet (page markers and running headers bleeding into field values), now confirmed on a second document and a different label. No new task filed — it belongs to 0034-01's stated scope; flagged here so 0034-01 covers it.
+
+- [ ] **0034-04** Exclude citation-only ID mentions from benchmark record selection in `_src/tools/spec_extraction_benchmark.py`, so an ID that is merely referenced in prose never becomes a benchmark entry.
+  - **Discovery (2026-08-15, found while working 0007-01):** `RS_SAF_21101` was selected as a benchmark record for `AUTOSAR_AP_RS_PlatformHealthManagement`, but that document does not define it. Its sole occurrence (p.9) is an inline citation inside a running sentence: "...as recommended in ISO26262, for instance [RS_SAF_21101][4]." No block-opening marker appears within 120 characters before or 200 characters after the ID, and no formal block exists anywhere in the file.
+  - **Symptom:** the produced entry had `heading: null`, `fields: {}` and `pages: [9, 10]` - it anchored to the citation and then spilled past the page boundary, which additionally gave it a bogus `multi_page` category.
+  - **Distinct from 0034-01/02/03:** those are extractor defects (field splitting, anchor direction, missing label). This one is a record-SELECTION defect in the benchmark builder: the record should never have been created. Note `spec_extraction_benchmark.py` was previously cleared of blame for 0034-01, which remains correct; this is a separate concern in the same file.
+  - **Acceptance criteria:** a candidate ID is promoted to a benchmark record only when a definition block can be anchored to it (marker present in either direction, per the 0034-02 fix); citation-only mentions are skipped and counted in a report so silent loss is impossible; a regression test covers the `RS_SAF_21101` case; upstream-requirement cross-references such as `RS_SAF_10039` cited inside other records are likewise not promoted.
++ run.sh:108: echo
+
++ run.sh:108: echo '--- task-path status ---'
+--- task-path status ---
++ run.sh:108: git status --short -- _src/tools/spec_scrape.py _src/tests/test_spec_scrape_fields.py TODO.md TODO-perplexity.md
++ run.sh:109: echo
+
++ run.sh:109: echo '--- other working tree state preserved ---'
+--- other working tree state preserved ---
++ run.sh:109: git status --short
++ run.sh:109: head -80
+ M AGENTS.md
+ M DONE.md
+ M README.md
+ M _src/data/curation-items.json
+ M _src/lib_docmodel.py
+ M _src/sources/pages/curation-report.json
+ M _src/tests/test_curation_item_lifecycle.py
+ M _src/tests/test_review_request_rendering.py
+ M _src/tools/curation_item.py
+ M _src/tools/curation_report.py
+ M _src/tools/test_curation_report.py
+ M curation-report.html
+ M docs/brainstorming/SPEC_QUALITY_ROADMAP-original.md
+ M docs/pipeline/reports.md
+ M docs/pipeline/tools.md
+ M docs/pipeline/website-review-flag.md
+ M tools/todo-dependency-graph.html
+?? .perplexity-cpu-loop-execution-641e999c-b823-40c1-9266-3b802f6cf7e4.sh
+?? .perplexity-cpu-loop-recovery-14b0d1f8-a9df-4191-a409-c93cc00e547d.sh
+?? PERFORMANCE_LOGGING.md
+?? SANDBOX.md
+?? SCRIPTING.md
+?? _review_request_bisect_tmp/
+?? _review_request_four_url_probe/
+?? _src/logs/
+?? _src/perplexity-cpu-loop.js
+?? _src/runner-states.mmd
+?? _src/spec/versions/
+?? _src/tools/check_client_rendered_german.cjs
+?? _src/tools/orphan-state-diagram/
+?? logs/backlog-bookkeeping-and-commit/20260815-202533/
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/06-staged-diffstat.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/07-git-commit.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/08-log-after.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/09-head-stat.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/10-status-after.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-202959/11-todo-perplexity-head.txt
+?? logs/backlog-bookkeeping-and-commit/20260815-214603/
+?? logs/source-reconnaissance/
+?? logs/spec-truthing-apply/20260815-204055/06-staged-diffstat.txt
+?? logs/spec-truthing-apply/20260815-204055/07-git-commit.txt
+?? logs/spec-truthing-apply/20260815-204055/08-log-after.txt
+?? logs/spec-truthing-apply/20260815-204055/09-head-stat.txt
+?? logs/spec-truthing-evidence/20260815-203254/05-staged-diffstat.txt
+?? logs/spec-truthing-evidence/20260815-203254/06-git-commit.txt
+?? logs/spec-truthing-evidence/20260815-203254/07-log-after.txt
+?? logs/validate-db-contents/
++ run.sh:110: echo
+
++ run.sh:110: echo '--- validation ---'
+--- validation ---
++ run.sh:110: cat /tmp/autodocs/logs/backlog-bookkeeping-and-commit/20260815-214603/01-validation.txt
++ run.sh:50: wd 90 python3 -m pytest -q _src/tests/test_spec_scrape_fields.py -k additional_information
++ run.sh:47: local secs=90
++ run.sh:47: shift
++ run.sh:47: perl -e 'alarm shift; exec @ARGV' 90 python3 -m pytest -q _src/tests/test_spec_scrape_fields.py -k additional_information
+...                                                                      [100%]
+3 passed, 42 deselected in 0.21s
++ run.sh:50: echo TARGETED_EXIT=0
+TARGETED_EXIT=0
++ run.sh:50: python3 -m py_compile _src/tools/spec_scrape.py _src/tests/test_spec_scrape_fields.py
++ run.sh:50: echo COMPILE_EXIT=0
+COMPILE_EXIT=0

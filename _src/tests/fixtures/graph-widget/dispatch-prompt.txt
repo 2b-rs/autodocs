@@ -1,0 +1,70 @@
+# Dispatch-Arbeitsintensität · Version 1
+
+Angefordert: high. Nativer Thinking-Parameter: high. Steuerung: native+briefing.
+
+Bleibe im beauftragten Umfang und beachte die bestehenden Verträge. Für alle Stufen gelten dieselben Wahrheits- und Abnahmestandards: behaupte nur geprüfte Ergebnisse, nenne ausgeführte Prüfungen und verbleibende Lücken. Die Stufe fordert Arbeitsweise, keine garantierte Tokenzahl, Laufzeit oder Zahl künstlicher Prüfungsrunden.
+
+Prüfe Repository und relevante Verträge, reproduziere den Fehler soweit möglich und decke relevante Grenzfälle sowie Datenverlustrisiken ab. Führe passende Tests selbst aus; prüfe UI-Verhalten im echten Browser, sofern verfügbar. Kontrolliere das Ergebnis gegen die Abnahme und berichte Evidenz sowie Restlücken. Erweitere den Scope nicht allein wegen der Effort-Stufe.
+
+---
+
+> **Headless-Einmallauf 20260929-224817-cursor-cursor-2-graph-widget. Vor allem anderen lesen.**
+> Dies ist ein nicht-interaktiver Lauf. Sobald du deinen Zug beendest, ist der Auftrag vorbei, und alles
+> Unfertige ist verloren. Es gibt keine Benachrichtigungen und niemanden, der nachfragt.
+> 1. Führe **jeden** Befehl im **Vordergrund** aus, mit ausdrücklicher Zeitschranke. Starte nichts im Hintergrund
+>    (kein `&`, kein `nohup`) und warte auf nichts. Zerlege lange Testläufe in mehrere Vordergrundaufrufe.
+> 2. Starte **keinen Befehl ein zweites Mal**, weil du sein Ergebnis nicht gesehen hast. Lies die Ausgabe aus der
+>    Datei, in die sie geschrieben wurde. Ein Befehl, der ungewöhnlich lange braucht, ist ein Befund für deinen
+>    Bericht, kein Grund zu warten.
+> 3. Arbeite nur in `/private/tmp/autodocs-worktrees/task-cursor-2-graph-widget`. Fasse keine anderen Arbeitsbäume und nicht den Hauptcheckout an.
+>    Prozessbereinigung nur über nachgewiesene eigene PIDs oder eine ausschließlich eigene Prozessgruppe.
+>    Keine breiten `pkill`-/`killall`-Aufrufe; fremde Server und andere Prüfläufe niemals beenden.
+> 4. Git immer als `git -C /private/tmp/autodocs-worktrees/task-cursor-2-graph-widget …`. Kein `git stash`, kein `git push`, keine Änderung fremder
+>    Historie, keine `Co-Authored-By`- oder `Claude-Session`-Zeilen.
+> 5. **Der Auftrag ist erst mit dem Commit erfüllt.** Committe in kleinen Schritten mit klaren
+>    Nachrichten. Ein Arbeitsbaum voller ungespeicherter Arbeit zählt als nicht geliefert;
+>    `git -C /private/tmp/autodocs-worktrees/task-cursor-2-graph-widget status --porcelain` muss am Ende leer sein.
+> 6. Deine **letzte Nachricht ist der Bericht**: was erledigt ist, was nicht (mit Grund), Commits, die genauen
+>    Testbefehle mit dem Ende ihrer Ausgabe, Abweichungen vom Auftrag. Nenne, was du nicht geschafft hast, so
+>    deutlich wie das Erledigte. Letzte Zeile: `DISPATCH-DONE 20260929-224817-cursor-cursor-2-graph-widget`.
+>
+> Warum das hier steht: im September 2026 arbeiteten drei Läufe zusammen 5,4 Stunden, hinterließen guten Code und
+> keinen einzigen Commit. Sie hatten Tests im Hintergrund gestartet und danach nur noch das Warten beschrieben.
+
+
+---
+
+# Brief: Interactive Traceability & Dependency Graph Widget (Cuttlefish / Cytoscape)
+
+## Objective
+Upgrade `component-graph.js` into an interactive, multi-universe Traceability & Dependency Graph widget featuring Cuttlefish layout physics, stereotype badges, and synchronization with the Component Inspector.
+
+## Context
+The user requested:
+"wie kann man cuttlefish in dem Kontext zum Einsatz bringen? integriere mal die Lösung in den Komponenten-Inspektor. Und haben wir Cuttlefish schon in der Bibliothek? Gibt's dafür überhaupt ein geeignetes Stereotyp?"
+The graph widget must support nodes across all three universes (Adaptive, Classic, S-Core), display stereotypes clearly, allow filtering, and allow selecting a node to open its properties in the Inspector.
+
+## Deliverables
+1. Update `component-graph.js`:
+   - Support nodes across universes:
+     - AUTOSAR Adaptive (cyan/teal border)
+     - AUTOSAR Classic (indigo/blue border)
+     - Eclipse S-Core (emerald/green border)
+   - Render Cuttlefish stereotypes on nodes:
+     - Stereotype chip / badge: `<<Service>>`, `<<ECU Abstraction>>`, `<<Application>>`, `<<Driver>>`, etc.
+   - Interactive Filter Toolbar:
+     - Filter by Universe: All / Adaptive / Classic / S-Core.
+     - Filter by Stereotype.
+     - Filter by Curation status (Reviewed, Draft, Unvalidated).
+   - Selection Synchronization with Inspector:
+     - Clicking any node fires a custom event `component:selected` with node ID, universe, stereotypes, and attributes, which automatically populates and opens the Component Inspector!
+   - Fullscreen Mode & Physics Layout toggle:
+     - Smooth spring-physics (Cuttlefish / Euler / CoSE layout) with pause/freeze option for performance.
+2. Accessible No-JS Fallback (`RQ-UIUX-012`):
+   - When JavaScript is disabled or user switches to "Tabellenansicht", provide an accessible semantic HTML table listing all nodes, relationships, and stereotypes.
+3. Tests:
+   - Create `_src/tests/test_graph_widget.py` testing graph data serialization, stereotype mapping, and fallback table structure.
+
+## Acceptance Oracle
+Run: `python3 -m unittest _src/tests/test_graph_widget.py` -> All tests PASS.
+Commit all changes to your branch with a clear descriptive message.

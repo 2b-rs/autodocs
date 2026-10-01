@@ -1,0 +1,54 @@
+# Decision record for Task 0043-04
+
+### `DEC-0043-003` — Bind report freshness to tracked publication provenance
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-22T23:27:56+02:00`
+- **Deciding identity:** `agent:harry-seven-20260822t153500z:architect:0043-04:scope-review`
+- **Role:** `Architekt`
+- **Authority reference:** `TODO-Harry-Seven-0043-04-scope-20260822T203500Z.md#verbatim-briefing`
+- **Subject:** Minimum scope and semantics of the blocking report-staleness finding added to canonical `_src/validate.py` by Task `0043-04`.
+- **Decision:** Task `0043-04` may add one `severity="error"` freshness check for `build-reports` only. The generated `_src/sources/pages/build-reports.json` must contain structured publication provenance that binds the page model to exactly one schema-valid entry in tracked `docs/evidence/build-ledger.jsonl`, using at least `combined_report_digest`, `recorded_at`, and `run_archive_ref`. A live publication requires a non-empty run ref; a null ref is valid only when it exactly mirrors an entry marked `backfilled: true`. With no ignored raw reports, the page binding must equal the newest valid tracked ledger entry, including the historic backfill. With raw reports, only a complete schema-valid cohort containing `i18n_merge`, `i18n_diagrams`, `html_generate`, and `validate` under one non-empty run ref is eligible; a newer eligible publication cohort must have a matching ledger entry and page binding. Incomplete, identity-less, and explicitly machine-marked diagnostic `--no-ledger` cohorts are not publication candidates. Missing or malformed authoritative provenance, malformed ledger data, an eligible publication cohort without a ledger entry, or a mismatch among the page binding, newest valid ledger entry, and newest eligible cohort is an error finding. The canonical sequence is producer stages including initial validation, `combine`, `publish`, page generation, then final validation; a final validation subreport under the same run ref does not create a newer cohort. `_src/validate.py` remains read-only and reports state without combining, publishing, appending the ledger, or repairing the page. This decision changes no agent-controlling host, Runner, start, health, restart, rollback, or revocation mechanism and authorizes no such change under `DEC-CAP-003`.
+- **Technical justification:** The predicate rests on actual declared behavior: `record_finding(..., severity="error", ...)` appends to `problems`, and `validate.py` exits `1` when `problems` is non-empty. Because `_src/validate.py` is canonical validation, this Task-local finding can block integration and closure of other work units. Tracked ledger identity is stable across clean checkouts, while filesystem times and presentation HTML are not authority-bearing provenance. Requiring complete four-stage cohorts prevents in-progress producer output from becoming a false blocker; a machine-readable diagnostic distinction preserves the documented `--no-ledger` path without treating an ordinary failed ledger append as diagnostic. The exact historic-backfill exception preserves the ledger's truthful pre-`0043-01` record without weakening live-run identity. The independent scope review at `docs/dossiers/0043-04-report-staleness-scope-review.md` pinned candidate `b9bef3f423a05de47f7dbad82324af0ebb4667e9`, Feature `23c4c3705e0055ebce5f4d5ad5de81d2d7bec7b1`, and review baseline `3d8467b097120302d80f5ffccfae06c1e3dd095a`, and found no product implementation in the candidate. Current governance through `main@69326064dac5bb2aab93f61762d8bc6891d570e6` is incorporated. The task-acceptance clarification does not change this scope: this record is neither Task acceptance nor an integration-checkpoint verdict, and non-accepted prerequisite closure remains a Feature-closure concern rather than an entry gate for the node's later checkpoint review.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+- **Considered alternatives:**
+  - **ALT-01:** Bind one blocking `build-reports` freshness check to exact structured page and tracked-ledger provenance, considering only complete publication cohorts and explicitly marked diagnostics.
+    - **Disposition:** `selected`
+    - **Reason:** It detects the motivating frozen page deterministically while retaining a clean-checkout truth source and excluding incomplete or diagnostic work from publication freshness.
+  - **ALT-02:** Infer freshness from filesystem modification times or parse the rendered HTML presentation string.
+    - **Disposition:** `rejected`
+    - **Reason:** Checkout times are unstable and HTML is not a structured provenance contract, so either mechanism can silently misorder runs or create false blockers.
+  - **ALT-03:** Treat every raw, partial, identity-less, or `--no-ledger` cohort as a missing-publication error.
+    - **Disposition:** `rejected`
+    - **Reason:** This would turn in-progress and expressly diagnostic execution into repository-wide validation failures unrelated to a completed publication.
+  - **ALT-04:** Emit only a warning or advisory freshness finding.
+    - **Disposition:** `rejected`
+    - **Reason:** A non-blocking finding would not make report staleness mechanically impossible to miss and would preserve the original silent-failure mode.
+  - **ALT-05:** Let validation repair state by running `combine`, publishing, appending the ledger, or regenerating the page.
+    - **Disposition:** `rejected`
+    - **Reason:** Validation must remain observational; hidden mutation would cross publication and append-only authority boundaries and make failure recovery ambiguous.
+- **Consequences:**
+  - **CON-01:** A frozen, missing, corrupt, or wrongly bound `build-reports` page becomes a canonical validation error and can block `0043-04`, integrating Task `0043-07`, and Feature `0043` closure until corrected.
+  - **CON-02:** Clean checkouts pass without ignored `output/` evidence when the page model matches the newest valid tracked ledger entry; absence of raw reports alone is never stale.
+  - **CON-03:** The page-model producer gains only the minimum structured provenance needed by validation; the ledger schema, append-only history, raw-log boundary from `DEC-0043-001`, unrelated reports, and unrelated validation checks remain unchanged.
+  - **CON-04:** Task `0043-04` must consume the completed `0043-02` ledger contract and extend the completed `0043-03` page model, so its prerequisite reconciliation must name both without rewriting their history.
+  - **CON-05:** Focused hermetic proof must cover frozen and aligned pages, clean checkout, newer complete and incomplete cohorts, missing/malformed ledger and provenance, failed append, explicit diagnostics, same-ref final validation, and no ignored output.
+  - **CON-06:** This record grants no Task acceptance, checkpoint verdict, Feature integration, publication authority, external effect, or service-control authority; `DEC-CAP-003` continues to reserve changes to agent-controlling services to the repository owner.
+  - **CON-07:** Product/gate mutation remains blocked until this governance record is integrated on `main`; the Architect's branch and commit alone do not activate it.
+- **Affected work units:**
+  - `task:0043-04`
+  - `task:0043-02`
+  - `task:0043-03`
+  - `task:0043-07`
+  - `feature:0043`
+  - `repository:autodocs`
+- **Affected gates:**
+  - `validation:_src/validate.py`
+  - `integration:0043-04`
+  - `integration:0043-07`
+  - `feature-closure:0043`
+- **Review participation:** `none`
+- **No-review reason:** The deciding Architect is the management-instantiated independent pre-mutation scope reviewer, distinct from former Implementer `Data-Aria-20260821T093000Z`; no additional participant was assigned for this scope decision, and the complete dispatcher briefing, persona discrepancy, and received/not-received context are retained in `TODO-Harry-Seven-0043-04-scope-20260822T203500Z.md`.
+- **Waiver:** `none`

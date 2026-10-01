@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light" data-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dokumentation erleben — sechs Säulen</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f4f6f7;
+    --paper: #ffffff;
+    --ink: #1c2430;
+    --muted: #5c6775;
+    --line: #d5dbe3;
+    --accent: #01696f;
+    --accent-ink: #ffffff;
+    --warn: #8a4b08;
+    --ok: #0d6b3d;
+    --shadow: 0 1px 2px rgba(28, 36, 48, 0.06);
+    --pad: 1.25rem;
+    --radius: 12px;
+  }
+  html[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #12171c;
+    --paper: #1c242c;
+    --ink: #e7edf2;
+    --muted: #a9b4c0;
+    --line: #31404c;
+    --accent: #3cb8bf;
+    --accent-ink: #082124;
+    --warn: #f0c088;
+    --ok: #8ddeaf;
+    --shadow: none;
+  }
+  html[data-density="compact"] {
+    --pad: 0.7rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 16px/1.5 "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  a { color: var(--accent); }
+  header, main { width: min(1080px, calc(100% - 2rem)); margin: 0 auto; }
+  header { padding: 1.5rem 0 0.5rem; }
+  h1, h2, h3 { font-family: "Avenir Next", "Segoe UI", sans-serif; line-height: 1.2; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .lede { color: var(--muted); max-width: 68ch; }
+  .shell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .shell a, .shell button, button, .pick {
+    font: 14px/1.2 "Avenir Next", "Segoe UI", sans-serif;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0.45rem 0.8rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .shell a[aria-current="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .toggles { margin-left: auto; display: flex; gap: 0.4rem; }
+  section {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: var(--pad);
+    margin: 1rem 0;
+  }
+  .cards, .split { display: grid; gap: 0.8rem; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: var(--pad); }
+  .card h3 { margin: 0 0 0.4rem; }
+  .absent { color: var(--warn); }
+  .badge {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    font: 12px/1.4 "Avenir Next", "Segoe UI", sans-serif;
+  }
+  .badge.unbound { text-decoration: line-through; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 0.4rem 0.3rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  #trace-graph { height: 420px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+  .split { grid-template-columns: 1.2fr 0.8fr; }
+  label { display: block; margin: 0.6rem 0 0.2rem; font-family: "Avenir Next", "Segoe UI", sans-serif; font-size: 0.9rem; }
+  input, select, textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
+  }
+  textarea { min-height: 7rem; }
+  .row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.8rem; }
+  .primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .danger { border-color: var(--warn); color: var(--warn); }
+  #status-line, .note, .result { color: var(--muted); }
+  .result.ok { color: var(--ok); }
+  .result.err { color: var(--warn); }
+  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); max-width: min(520px, 92vw); }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+  #discuss-log { white-space: pre-wrap; }
+  @media (max-width: 800px) {
+    .split { grid-template-columns: 1fr; }
+    .toggles { margin-left: 0; width: 100%; }
+    #trace-graph { height: 300px; }
+    header, main { width: min(1080px, calc(100% - 1rem)); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <p class="lede">Lokale Führung</p>
+  <h1>Sechs Säulen, ein Server</h1>
+  <p class="lede">Diese Seite macht Adaptive, Classic und S-Core, die Arbeitsbereiche, den Trace, die Kuration, das Feedback und die Kommentarschleife im Browser bedienbar. Kanonische Dokumentseiten werden dabei nicht überschrieben.</p>
+  <p id="status-line" class="note" role="status">Status wird geladen …</p>
+</header>
+<nav class="shell" aria-label="Arbeitsbereiche">
+  <a href="#pillar-universe" data-domain="explore">Explore</a>
+  <a href="#pillar-trace" data-domain="trace">Trace</a>
+  <a href="#component-inspector" data-domain="curate">Curate</a>
+  <a href="#pillar-feedback" data-domain="review">Review</a>
+  <a href="#pillar-discuss" data-domain="work">Work</a>
+  <a href="build-reports.html" data-domain="reports">Reports</a>
+  <div class="toggles">
+    <button type="button" id="theme-toggle">Hell/Dunkel</button>
+    <button type="button" id="density-toggle">Dichte</button>
+  </div>
+</nav>
+<main>
+  <section id="pillar-universe">
+    <h2>1. Universum</h2>
+    <p>Adaptive, Classic und S-Core stehen auf derselben Ebene. Der Schalter setzt das aktive Universum; Kataloge und die Adaptive-Referenz bleiben erhalten.</p>
+    <div class="row" id="tour-universe" role="group" aria-label="Universe switching">
+      <button type="button" data-switch-universe="adaptive" aria-pressed="true">Adaptive</button>
+      <button type="button" data-switch-universe="classic" aria-pressed="false">Classic</button>
+      <button type="button" data-switch-universe="score" aria-pressed="false">Eclipse S-Core</button>
+    </div>
+    <p id="universe-active" data-active-universe="adaptive">Aktiv: Adaptive. Universe switching across Adaptive, Classic, and Eclipse S-Core.</p>
+    <div class="cards" id="universe-switcher">
+      <article class="card" data-universe="adaptive" aria-current="true">
+        <h3>AUTOSAR Adaptive</h3>
+        <p>Veröffentlichte <code>ara::*</code>-Referenz.</p>
+        <p><a href="index.html">Startseite</a> · <a href="modules/core.html">ara::core</a></p>
+      </article>
+      <article class="card" data-universe="classic">
+        <h3>AUTOSAR Classic</h3>
+        <p>Layered Architecture, R20-11.</p>
+        <p><a href="classic/index.html">Modulkatalog</a> · <a href="classic/os.html">CP_OS</a></p>
+      </article>
+      <article class="card" data-universe="score">
+        <h3>S-Core</h3>
+        <p>Eclipse S-Core v0.6.0, Kandidatenreview.</p>
+        <p><a href="score/index.html">Component Directory</a> · <a href="eclipse-score-v0.6.0-curation-review/index.html">Review-Überblick</a></p>
+      </article>
+    </div>
+  </section>
+
+  <section id="tour-classic">
+    <h2>Classic Layered Architecture</h2>
+    <p>Katalog der Classic-Schichten. Jede Karte öffnet die veröffentlichte Seite, ohne eine Adaptive-Modulseite zu ersetzen.</p>
+    <div class="cards" id="classic-catalog">
+      <a class="card" href="classic/rte.html"><h3>Application Layer &amp; RTE</h3><p>RTE</p></a>
+      <a class="card" href="classic/os.html"><h3>Services Layer</h3><p>OS, System</p></a>
+      <a class="card" href="classic/com.html"><h3>Services Layer</h3><p>COM, Diagnostics</p></a>
+      <a class="card" href="classic/can.html"><h3>ECU Abstraction</h3><p>CAN</p></a>
+      <a class="card" href="classic/ethernet.html"><h3>ECU Abstraction</h3><p>Ethernet</p></a>
+      <a class="card" href="classic/memory.html"><h3>Memory</h3><p>NVRAM</p></a>
+      <a class="card" href="classic/crypto.html"><h3>Security</h3><p>Crypto</p></a>
+      <a class="card" href="classic/diagnostics.html"><h3>Diagnostics</h3><p>Dem, Dcm</p></a>
+      <a class="card" href="classic/system.html"><h3>System</h3><p>EcuM, BswM</p></a>
+      <a class="card" href="classic/mcal.html"><h3>MCAL &amp; CDD</h3><p>MCAL</p></a>
+    </div>
+  </section>
+
+  <section id="tour-score">
+    <h2>S-Core Component Directory</h2>
+    <p>Eclipse S-Core v0.6.0. Die Einträge führen in den Komponentenbaum unter <code>score/</code>.</p>
+    <ul id="score-directory">
+      <li><a href="score/core.html">Core Execution Environment</a></li>
+      <li><a href="score/communication.html">Communication</a></li>
+      <li><a href="score/diagnostic_adapter.html">Diagnostic Adapter</a></li>
+      <li><a href="score/memory.html">Memory &amp; Persistence</a></li>
+      <li><a href="score/crypto.html">Crypto &amp; Security</a></li>
+      <li><a href="score/process.html">Process Execution</a></li>
+    </ul>
+  </section>
+
+  <section id="pillar-shell">
+    <h2>2. Arbeitsbereiche</h2>
+    <p>Dieselben sechs Bereiche wie in der Produkthülle. Die Schalter ändern nur die Darstellung dieser Führung.</p>
+    <div class="cards">
+      <article class="card"><h3>Explore</h3><p><a href="index.html">API-Referenz</a></p></article>
+      <article class="card"><h3>Trace</h3><p><a href="traceability.html">Traceability</a> und der Graph unten.</p></article>
+      <article class="card"><h3>Curate</h3><p><a href="curation-report.html">Kurationsbericht</a>. Entscheidungen auf dieser Seite sind Envelopes.</p></article>
+      <article class="card"><h3>Review</h3><p><a href="open-reviews.html">Offene Reviews</a></p></article>
+      <article class="card"><h3>Work</h3><p><a href="process.html">Prozess</a> · <a href="issues/">Issue-Store</a></p></article>
+      <article class="card"><h3>Reports</h3><p><a href="build-reports.html">Build-Bericht</a></p></article>
+    </div>
+  </section>
+
+  <section id="pillar-trace">
+    <h2>3. Traceability-Graph</h2>
+    <p>Ausschnitt der echten Modulseiten. Kanten der Art <code>uses</code> sind eine Führung, nicht der vollständige Graph. Die Tabelle bleibt die lesbare Form, wenn die Zeichenfläche fehlt.</p>
+    <div class="row" id="graph-universe-filters" role="group" aria-label="Universe filter">
+      <button type="button" data-graph-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-graph-filter="adaptive" aria-pressed="false">Adaptive</button>
+      <button type="button" data-graph-filter="classic" aria-pressed="false">Classic</button>
+      <button type="button" data-graph-filter="score" aria-pressed="false">Score</button>
+    </div>
+    <div class="split">
+      <div>
+        <div id="trace-graph" role="img" aria-label="Modulgraph mit Stereotypen"></div>
+        <p class="note">Voller Graph: <a href="index.html">Startseite</a>, Abschnitt Komponentengraph.</p>
+      </div>
+      <div>
+        <table id="trace-table">
+          <thead><tr><th>Komponente</th><th>Stereotyp</th><th>Seite</th></tr></thead>
+          <tbody>
+            <tr data-id="core" data-label="ara::core" data-stereotype="foundation" data-url="modules/core.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::core</button></td>
+              <td><span class="badge" data-stereotype-for="core">foundation</span></td>
+              <td><a href="modules/core.html">öffnen</a></td>
+            </tr>
+            <tr data-id="com" data-label="ara::com" data-stereotype="service" data-url="modules/com.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::com</button></td>
+              <td><span class="badge" data-stereotype-for="com">service</span></td>
+              <td><a href="modules/com.html">öffnen</a></td>
+            </tr>
+            <tr data-id="exec" data-label="ara::exec" data-stereotype="platform" data-url="modules/exec.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::exec</button></td>
+              <td><span class="badge" data-stereotype-for="exec">platform</span></td>
+              <td><a href="modules/exec.html">öffnen</a></td>
+            </tr>
+            <tr data-id="per" data-label="ara::per" data-stereotype="service" data-url="modules/per.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::per</button></td>
+              <td><span class="badge" data-stereotype-for="per">service</span></td>
+              <td><a href="modules/per.html">öffnen</a></td>
+            </tr>
+            <tr data-id="log" data-label="ara::log" data-stereotype="service" data-url="modules/log.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::log</button></td>
+              <td><span class="badge" data-stereotype-for="log">service</span></td>
+              <td><a href="modules/log.html">öffnen</a></td>
+            </tr>
+            <tr data-id="crypto" data-label="ara::crypto" data-stereotype="platform" data-url="modules/crypto.html" data-universe="adaptive">
+              <td><button type="button" class="pick">ara::crypto</button></td>
+              <td><span class="badge" data-stereotype-for="crypto">platform</span></td>
+              <td><a href="modules/crypto.html">öffnen</a></td>
+            </tr>
+            <tr data-id="CP_RTE" data-label="RTE" data-stereotype="service" data-url="classic/rte.html" data-universe="classic">
+              <td><button type="button" class="pick">RTE</button></td>
+              <td><span class="badge" data-stereotype-for="CP_RTE">service</span></td>
+              <td><a href="classic/rte.html">öffnen</a></td>
+            </tr>
+            <tr data-id="CP_OS" data-label="CP_OS" data-stereotype="platform" data-url="classic/os.html" data-universe="classic">
+              <td><button type="button" class="pick">CP_OS</button></td>
+              <td><span class="badge" data-stereotype-for="CP_OS">platform</span></td>
+              <td><a href="classic/os.html">öffnen</a></td>
+            </tr>
+            <tr data-id="SCORE_CORE" data-label="SCORE_CORE" data-stereotype="foundation" data-url="score/core.html" data-universe="score">
+              <td><button type="button" class="pick">SCORE_CORE</button></td>
+              <td><span class="badge" data-stereotype-for="SCORE_CORE">foundation</span></td>
+              <td><a href="score/core.html">öffnen</a></td>
+            </tr>
+            <tr data-id="SCORE_COM" data-label="SCORE_COM" data-stereotype="service" data-url="score/communication.html" data-universe="score">
+              <td><button type="button" class="pick">SCORE_COM</button></td>
+              <td><span class="badge" data-stereotype-for="SCORE_COM">service</span></td>
+              <td><a href="score/communication.html">öffnen</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <ul id="trace-edges">
+          <li data-source="core" data-target="com" data-relation="uses">ara::core → ara::com (uses)</li>
+          <li data-source="core" data-target="exec" data-relation="uses">ara::core → ara::exec (uses)</li>
+          <li data-source="core" data-target="per" data-relation="uses">ara::core → ara::per (uses)</li>
+          <li data-source="core" data-target="log" data-relation="uses">ara::core → ara::log (uses)</li>
+          <li data-source="core" data-target="crypto" data-relation="uses">ara::core → ara::crypto (uses)</li>
+          <li data-source="CP_RTE" data-target="CP_OS" data-relation="uses">RTE → CP_OS (uses)</li>
+          <li data-source="SCORE_CORE" data-target="SCORE_COM" data-relation="uses">SCORE_CORE → SCORE_COM (uses)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="component-inspector">
+    <h2>4. Komponenten-Inspektor</h2>
+    <p id="inspector-empty">Wähle eine Komponente im Graphen oder in der Tabelle.</p>
+    <dl id="inspector-fields" hidden>
+      <dt>Id</dt><dd id="inspector-id"></dd>
+      <dt>Name</dt><dd id="inspector-label"></dd>
+      <dt>Universum</dt><dd id="inspector-universe"></dd>
+      <dt>Zuordnung</dt><dd id="inspector-mapping">gebunden</dd>
+      <dt>Seite</dt><dd id="inspector-link"></dd>
+    </dl>
+    <label for="stereotype-select">Stereotyp</label>
+    <select id="stereotype-select">
+      <option>foundation</option>
+      <option>service</option>
+      <option>platform</option>
+      <option>protocol</option>
+      <option>unspecified</option>
+    </select>
+    <div class="row">
+      <button type="button" class="primary" id="save-stereotype">Stereotyp speichern</button>
+      <button type="button" class="danger" id="unbind-component">Zuordnung lösen</button>
+    </div>
+    <p id="inspector-result" class="result" role="status"></p>
+    <p class="note">Component Inspector node unbinding schreibt ein Envelope unter <code>_src/spec/feedback-queue/decisions/</code>. Die Zuordnung wird nur in dieser Führung gelöst. Keine Modulseite und kein Spec-Record wird gelöscht.</p>
+  </section>
+
+  <section id="pillar-feedback">
+    <h2>5. Feedback</h2>
+    <form id="feedback-form" method="post" action="/api/feedback">
+      <label for="feedback-text">Rückmeldung</label>
+      <textarea id="feedback-text" name="feedback_text" required maxlength="4000">Die Beschreibung von ara::core sollte den Stereotyp foundation nennen.</textarea>
+      <details>
+        <summary>Zuordnung und Nachweis</summary>
+        <label for="target-agent">Ziel-Agent</label>
+        <input id="target-agent" name="target_agent" value="curator" required>
+        <label for="baseline">Beobachtete Baseline</label>
+        <input id="baseline" name="observed_baseline" value="workspace" required>
+        <label for="category">Kategorie</label>
+        <select id="category" name="category">
+          <option>general</option>
+          <option>factual_correction</option>
+          <option>persona_preference</option>
+          <option>role_process</option>
+          <option>capability</option>
+          <option>safety</option>
+          <option>abuse_noise</option>
+        </select>
+        <input type="hidden" name="attribution" value="identified">
+        <label for="submitter">Absender</label>
+        <input id="submitter" name="submitter" value="demo-visitor" required>
+        <input type="hidden" name="consent_visibility" value="private">
+        <label for="feedback-page">Seite</label>
+        <input id="feedback-page" name="page" value="modules/core.html">
+        <label for="feedback-universe">Universum</label>
+        <input id="feedback-universe" name="universe" value="adaptive">
+        <label for="feedback-component">Komponente</label>
+        <input id="feedback-component" name="component_id" value="core">
+      </details>
+      <div class="row">
+        <button type="submit" class="primary">Feedback senden</button>
+      </div>
+    </form>
+    <p id="feedback-receipt" class="result" role="status"></p>
+  </section>
+
+  <section id="pillar-discuss">
+    <h2>6. Diskussion und geschlossene Schleife</h2>
+    <p>Der Vorschlag entsteht lokal aus Prompt und Kontext. Die Schleife erzeugt danach Kommentar-Sidecars und kleine HTML-Seiten unter der Feedback-Queue. Die zitierte Dokumentseite bleibt bytegleich.</p>
+    <label for="discuss-prompt">Prompt</label>
+    <textarea id="discuss-prompt">Erläutere ara::core anhand des gewählten Kontexts. Nenne keine neue Anforderung.</textarea>
+    <h3>Kontext</h3>
+    <pre id="discuss-context" class="note">Noch kein Kontext.</pre>
+    <div class="row">
+      <button type="button" class="primary" id="discuss-send">Antwort erzeugen</button>
+      <button type="button" id="run-loop">Kommentare neu erzeugen</button>
+    </div>
+    <h3>Gespräch</h3>
+    <pre id="discuss-log"></pre>
+    <h3>Schleife</h3>
+    <pre id="loop-result" class="note">Noch nicht ausgeführt.</pre>
+  </section>
+
+  <section id="tour-discuss">
+    <h2>AI commentaries and AI Discuss</h2>
+    <p>Die Kommentare stehen neben der Anforderung. Der Sidecar spricht <code>/api/discuss</code> mit der Datensatz-ID an und erfindet keinen PAT.</p>
+    <article class="rec card" id="commentary-CP_OS" data-record-id="CP_OS" data-universe="classic">
+      <h3>CP_OS</h3>
+      <p class="desc">Activate a task. Classic-Anforderung auf <a href="classic/os.html">classic/os.html</a>.</p>
+      <aside class="ai-commentary" data-commentary-for="CP_OS">
+        <h4>KI-Kommentar</h4>
+        <p>Lokaler Kommentar zu CP_OS. Keine neue Spezifikationsaussage.</p>
+      </aside>
+      <button type="button" class="primary" data-open-discuss="CP_OS">AI Discuss für CP_OS öffnen</button>
+    </article>
+    <article class="rec card" id="commentary-SCORE_CORE" data-record-id="SCORE_CORE" data-universe="score">
+      <h3>SCORE_CORE</h3>
+      <p class="desc">S-Core Core Execution Environment auf <a href="score/core.html">score/core.html</a>.</p>
+      <aside class="ai-commentary" data-commentary-for="SCORE_CORE">
+        <h4>KI-Kommentar</h4>
+        <p>Lokaler Kommentar zu SCORE_CORE. Keine neue Spezifikationsaussage.</p>
+      </aside>
+      <button type="button" class="primary" data-open-discuss="SCORE_CORE">AI Discuss für SCORE_CORE öffnen</button>
+    </article>
+    <aside id="ai-discuss-sidecar" hidden>
+      <h3>AI Discuss</h3>
+      <p id="discuss-sidecar-record">Kein Datensatz gewählt.</p>
+      <label for="discuss-sidecar-message">Nachricht</label>
+      <textarea id="discuss-sidecar-message">Erkläre diese Anforderung einfach</textarea>
+      <div class="row">
+        <button type="button" class="primary" id="discuss-sidecar-send">Antwort aus dem Datensatz</button>
+      </div>
+      <pre id="discuss-sidecar-log"></pre>
+    </aside>
+  </section>
+
+  <section id="tour-classic-feedback">
+    <h2>Classic feedback without PAT</h2>
+    <p>Die Rückmeldung zu CP_OS geht an <code>/api/feedback</code>. Es gibt kein Personal-Access-Token-Feld und keinen Authorization-Header.</p>
+    <form id="classic-feedback-form" method="post" action="/api/feedback">
+      <label for="classic-feedback-text">Rückmeldung</label>
+      <textarea id="classic-feedback-text" name="feedback_text" required maxlength="4000">Die Classic-Anforderung CP_OS sollte ActivateTask als Task-Aktivierung beschreiben.</textarea>
+      <input type="hidden" name="target_agent" value="curator">
+      <input type="hidden" name="observed_baseline" value="workspace">
+      <input type="hidden" name="category" value="factual_correction">
+      <input type="hidden" name="attribution" value="identified">
+      <input type="hidden" name="submitter" value="demo-visitor">
+      <input type="hidden" name="consent_visibility" value="private">
+      <input type="hidden" name="page" value="classic/os.html">
+      <input type="hidden" name="universe" value="classic">
+      <input type="hidden" name="component_id" value="CP_OS">
+      <div class="row">
+        <button type="submit" class="primary">Classic-Feedback senden</button>
+        <button type="button" id="classic-run-loop">Feedback-Schleife starten</button>
+      </div>
+    </form>
+    <p id="classic-feedback-receipt" class="result" role="status"></p>
+    <pre id="classic-loop-result" class="note">Noch nicht ausgeführt.</pre>
+  </section>
+
+  <section id="tour-reports">
+    <h2>Report landscape</h2>
+    <p>Die Berichte tragen die Produkthülle. Hell/Dunkel und Dichte auf dieser Führung setzen <code>data-theme</code> und <code>data-density</code> auf light/dark sowie comfortable/compact.</p>
+    <ul id="report-landscape">
+      <li><a href="curation-report.html">curation-report.html</a></li>
+      <li><a href="extraction-reports.html">extraction-reports.html</a></li>
+      <li><a href="mutation-ledger.html">mutation-ledger.html</a></li>
+    </ul>
+  </section>
+</main>
+<dialog id="receipt-dialog">
+  <h3>Feedback aufgenommen</h3>
+  <p id="receipt-body"></p>
+  <form method="dialog"><button type="submit" class="primary">Schließen</button></form>
+</dialog>
+<script src="cytoscape.min.js"></script>
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var selected = null;
+  var mapping = {};
+  var lastFeedbackId = null;
+
+  function readPrefs() {
+    try {
+      var theme = localStorage.getItem("demo-theme");
+      var density = localStorage.getItem("demo-density");
+      if (theme) root.setAttribute("data-theme", theme);
+      else if (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches) root.setAttribute("data-theme", "dark");
+      if (density) root.setAttribute("data-density", density);
+    } catch (err) { /* private mode */ }
+  }
+
+  function postJson(url, payload) {
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify(payload || {})
+    }).then(function (response) {
+      return response.json().then(function (body) {
+        body._status = response.status;
+        return body;
+      });
+    });
+  }
+
+  function rows() {
+    return Array.prototype.slice.call(document.querySelectorAll("#trace-table tbody tr"));
+  }
+
+  function rowById(id) {
+    return document.querySelector('#trace-table tr[data-id="' + id + '"]');
+  }
+
+  function contextObject() {
+    if (!selected) return { universe: "adaptive", page: "index.html" };
+    return {
+      universe: selected.universe,
+      page: selected.url,
+      component_id: selected.id,
+      label: selected.label,
+      stereotype: selected.stereotype,
+      mapping: mapping[selected.id] || "bound",
+      last_feedback_id: lastFeedbackId
+    };
+  }
+
+  function showContext() {
+    document.getElementById("discuss-context").textContent = JSON.stringify(contextObject(), null, 2);
+  }
+
+  function selectRow(row) {
+    selected = {
+      id: row.getAttribute("data-id"),
+      label: row.getAttribute("data-label"),
+      stereotype: row.getAttribute("data-stereotype"),
+      url: row.getAttribute("data-url"),
+      universe: row.getAttribute("data-universe")
+    };
+    document.getElementById("inspector-empty").hidden = true;
+    document.getElementById("inspector-fields").hidden = false;
+    document.getElementById("inspector-id").textContent = selected.id;
+    document.getElementById("inspector-label").textContent = selected.label;
+    document.getElementById("inspector-universe").textContent = selected.universe;
+    document.getElementById("inspector-mapping").textContent = mapping[selected.id] || "bound";
+    var link = document.getElementById("inspector-link");
+    link.innerHTML = "";
+    var anchor = document.createElement("a");
+    anchor.href = selected.url;
+    anchor.textContent = selected.url;
+    link.appendChild(anchor);
+    document.getElementById("stereotype-select").value = selected.stereotype;
+    document.getElementById("feedback-page").value = selected.url;
+    document.getElementById("feedback-universe").value = selected.universe;
+    document.getElementById("feedback-component").value = selected.id;
+    showContext();
+    if (window.demoCy) {
+      window.demoCy.$("node").unselect();
+      window.demoCy.$('node[id="' + selected.id + '"]').select();
+    }
+  }
+
+  function paintBadge(id, stereotype, unbound) {
+    var badge = document.querySelector('[data-stereotype-for="' + id + '"]');
+    if (!badge) return;
+    badge.textContent = unbound ? stereotype + " · gelöst" : stereotype;
+    badge.classList.toggle("unbound", !!unbound);
+  }
+
+  function setResult(id, ok, text) {
+    var node = document.getElementById(id);
+    node.textContent = text;
+    node.classList.toggle("ok", !!ok);
+    node.classList.toggle("err", !ok);
+  }
+
+  function buildGraph() {
+    var host = document.getElementById("trace-graph");
+    if (!window.cytoscape) {
+      host.textContent = "Cytoscape ist nicht geladen. Die Tabelle bleibt die Trace-Ansicht.";
+      return;
+    }
+    var elements = [];
+    rows().forEach(function (row) {
+      elements.push({ data: { id: row.getAttribute("data-id"), label: row.getAttribute("data-label") + "\n" + row.getAttribute("data-stereotype") } });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("#trace-edges li"), function (edge) {
+      elements.push({ data: { id: edge.getAttribute("data-source") + "-" + edge.getAttribute("data-target"), source: edge.getAttribute("data-source"), target: edge.getAttribute("data-target"), label: edge.getAttribute("data-relation") } });
+    });
+    window.demoCy = cytoscape({
+      container: host,
+      elements: elements,
+      layout: { name: "circle", padding: 28 },
+      style: [
+        { selector: "node", style: { label: "data(label)", "text-wrap": "wrap", "text-valign": "center", "text-halign": "center", "background-color": "#01696f", color: "#ffffff", "font-size": "11px", width: 118, height: 48, shape: "round-rectangle" } },
+        { selector: "edge", style: { label: "data(label)", width: 1.4, "line-color": "#5c6775", "target-arrow-color": "#5c6775", "target-arrow-shape": "triangle", "curve-style": "bezier", "font-size": "10px", color: "#5c6775" } },
+        { selector: "node:selected", style: { "background-color": "#8a4b08" } }
+      ]
+    });
+    window.demoCy.on("tap", "node", function (evt) {
+      var row = rowById(evt.target.id());
+      if (row) selectRow(row);
+    });
+  }
+
+  function refreshNode(id) {
+    var row = rowById(id);
+    if (!row || !window.demoCy) return;
+    window.demoCy.$('node[id="' + id + '"]').data("label", row.getAttribute("data-label") + "\n" + row.getAttribute("data-stereotype"));
+  }
+
+  readPrefs();
+  rows().forEach(function (row) {
+    row.querySelector(".pick").addEventListener("click", function () { selectRow(row); });
+  });
+  document.getElementById("theme-toggle").addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("demo-theme", next); } catch (err) {}
+  });
+  document.getElementById("density-toggle").addEventListener("click", function () {
+    var next = root.getAttribute("data-density") === "compact" ? "comfortable" : "compact";
+    root.setAttribute("data-density", next);
+    try { localStorage.setItem("demo-density", next); } catch (err) {}
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".shell a"), function (link) {
+    link.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".shell a"), function (other) {
+        other.removeAttribute("aria-current");
+      });
+      link.setAttribute("aria-current", "true");
+    });
+  });
+
+  document.getElementById("save-stereotype").addEventListener("click", function () {
+    if (!selected) { setResult("inspector-result", false, "Zuerst eine Komponente wählen."); return; }
+    var stereotype = document.getElementById("stereotype-select").value;
+    postJson("/api/curate", { decision: "change_stereotype", target_id: selected.id, stereotype: stereotype, rationale: "Führung auf der Demo-Seite" })
+      .then(function (body) {
+        if (body._status !== 200) { setResult("inspector-result", false, body.error || "Speichern fehlgeschlagen"); return; }
+        selected.stereotype = stereotype;
+        rowById(selected.id).setAttribute("data-stereotype", stereotype);
+        paintBadge(selected.id, stereotype, mapping[selected.id] === "unbound");
+        refreshNode(selected.id);
+        setResult("inspector-result", true, "Envelope " + body.envelope_id + " gespeichert. Kanonische Dateien unverändert.");
+      })
+      .catch(function () { setResult("inspector-result", false, "Der Server ist nicht erreichbar. Seite über python3 _src/serve.py öffnen."); });
+  });
+
+  document.getElementById("unbind-component").addEventListener("click", function () {
+    if (!selected) { setResult("inspector-result", false, "Zuerst eine Komponente wählen."); return; }
+    if (!window.confirm("Zuordnung für " + selected.label + " nur als Envelope lösen? Die Dokumentseite bleibt erhalten.")) return;
+    postJson("/api/curate", { decision: "delete_mapping", target_id: selected.id, rationale: "Zuordnung in der Führung gelöst" })
+      .then(function (body) {
+        if (body._status !== 200) { setResult("inspector-result", false, body.error || "Lösen fehlgeschlagen"); return; }
+        mapping[selected.id] = "unbound";
+        document.getElementById("inspector-mapping").textContent = "unbound";
+        paintBadge(selected.id, selected.stereotype, true);
+        showContext();
+        setResult("inspector-result", true, "Envelope " + body.envelope_id + ". Keine Datei wurde gelöscht.");
+      })
+      .catch(function () { setResult("inspector-result", false, "Der Server ist nicht erreichbar."); });
+  });
+
+  document.getElementById("feedback-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var payload = {
+      target_agent: form.target_agent.value,
+      observed_baseline: form.observed_baseline.value,
+      category: form.category.value,
+      attribution: "identified",
+      submitter: form.submitter.value,
+      consent_visibility: "private",
+      feedback_text: form.feedback_text.value,
+      page: form.page.value,
+      universe: form.universe.value,
+      component_id: form.component_id.value
+    };
+    postJson("/api/feedback", payload).then(function (body) {
+      var receipt = document.getElementById("feedback-receipt");
+      if (body._status !== 201 && body._status !== 200) {
+        setResult("feedback-receipt", false, body.error || "Feedback abgelehnt");
+        return;
+      }
+      lastFeedbackId = body.envelope_id;
+      var text = "Beleg " + body.envelope_id + " · " + body.path + (body.idempotent_replay ? " · bereits vorhanden" : "");
+      setResult("feedback-receipt", true, text);
+      document.getElementById("receipt-body").textContent = text;
+      document.getElementById("receipt-dialog").showModal();
+      showContext();
+    }).catch(function () {
+      setResult("feedback-receipt", false, "Der Server ist nicht erreichbar. Seite über python3 _src/serve.py öffnen.");
+    });
+  });
+
+  document.getElementById("discuss-send").addEventListener("click", function () {
+    var prompt = document.getElementById("discuss-prompt").value;
+    postJson("/api/discuss", { prompt: prompt, context: contextObject() }).then(function (body) {
+      var log = document.getElementById("discuss-log");
+      if (body._status !== 200) {
+        log.textContent += "Fehler: " + (body.error || body._status) + "\n";
+        return;
+      }
+      log.textContent += "Vorschlag " + body.proposal_id + "\n" + body.reply + "\n\n" + body.proposal.text + "\n\n";
+    }).catch(function () {
+      document.getElementById("discuss-log").textContent += "Server nicht erreichbar.\n";
+    });
+  });
+
+  document.getElementById("run-loop").addEventListener("click", function () {
+    postJson("/api/feedback-loop/run", {}).then(function (body) {
+      var node = document.getElementById("loop-result");
+      if (body._status !== 200) {
+        node.textContent = body.error || "Schleife fehlgeschlagen";
+        return;
+      }
+      var summary = body.summary || {};
+      node.textContent = JSON.stringify({
+        comments_written: summary.comments_written,
+        pages_rebuilt: summary.pages_rebuilt,
+        suppressed: summary.suppressed,
+        canonical_mutation: summary.canonical_mutation,
+        errors: summary.errors
+      }, null, 2);
+    }).catch(function () {
+      document.getElementById("loop-result").textContent = "Server nicht erreichbar.";
+    });
+  });
+
+  fetch("/api/status", { headers: { "Accept": "application/json" } }).then(function (response) {
+    return response.json();
+  }).then(function (body) {
+    var universes = (body.universes || []).map(function (row) {
+      return row.label + (row.present ? " bereit" : " ohne Korpus");
+    }).join(" · ");
+    var queue = body.curation_queue || {};
+    document.getElementById("status-line").textContent =
+      universes + " · offenes Feedback " + body.pending_feedback +
+      " · Kurationsqueue " + queue.open + " offen / " + queue.quarantine + " Quarantäne";
+  }).catch(function () {
+    document.getElementById("status-line").textContent = "Status nicht erreichbar. Start: python3 _src/serve.py";
+  });
+
+  function switchUniverse(id) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-switch-universe]"), function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-switch-universe") === id ? "true" : "false");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("#universe-switcher .card"), function (card) {
+      if (card.getAttribute("data-universe") === id) card.setAttribute("aria-current", "true");
+      else card.removeAttribute("aria-current");
+    });
+    var active = document.getElementById("universe-active");
+    active.setAttribute("data-active-universe", id);
+    active.textContent = "Aktiv: " + id + ". Universe switching across Adaptive, Classic, and Eclipse S-Core.";
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-switch-universe]"), function (button) {
+    button.addEventListener("click", function () {
+      switchUniverse(button.getAttribute("data-switch-universe"));
+    });
+  });
+
+  function applyUniverseFilter(which) {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-graph-filter]"), function (button) {
+      button.setAttribute("aria-pressed", button.getAttribute("data-graph-filter") === which ? "true" : "false");
+    });
+    rows().forEach(function (row) {
+      var universe = row.getAttribute("data-universe");
+      row.hidden = which !== "all" && universe !== which;
+    });
+    if (!window.demoCy) return;
+    window.demoCy.nodes().forEach(function (node) {
+      var row = rowById(node.id());
+      node.style("display", row && !row.hidden ? "element" : "none");
+    });
+    window.demoCy.edges().forEach(function (edge) {
+      var visible = edge.source().style("display") !== "none" && edge.target().style("display") !== "none";
+      edge.style("display", visible ? "element" : "none");
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-graph-filter]"), function (button) {
+    button.addEventListener("click", function () {
+      applyUniverseFilter(button.getAttribute("data-graph-filter"));
+    });
+  });
+
+  var sidecarRecord = null;
+  function openDiscuss(recordId) {
+    sidecarRecord = recordId;
+    var panel = document.getElementById("ai-discuss-sidecar");
+    panel.hidden = false;
+    document.getElementById("discuss-sidecar-record").textContent = recordId;
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-open-discuss]"), function (button) {
+    button.addEventListener("click", function () {
+      openDiscuss(button.getAttribute("data-open-discuss"));
+    });
+  });
+  document.getElementById("discuss-sidecar-send").addEventListener("click", function () {
+    if (!sidecarRecord) {
+      document.getElementById("discuss-sidecar-log").textContent = "Zuerst eine Anforderung öffnen.";
+      return;
+    }
+    var message = document.getElementById("discuss-sidecar-message").value;
+    postJson("/api/discuss", { action: "chat", record_id: sidecarRecord, message: message }).then(function (body) {
+      var log = document.getElementById("discuss-sidecar-log");
+      if (!body.ok) {
+        log.textContent = body.error || "Discuss abgelehnt";
+        return;
+      }
+      log.textContent = (body.reply || "") + (body.canonical_mutation ? "\nKanonische Datei verändert." : "\nKanonische Dateien unverändert.");
+    }).catch(function () {
+      document.getElementById("discuss-sidecar-log").textContent = "Server nicht erreichbar.";
+    });
+  });
+
+  document.getElementById("classic-feedback-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var form = event.currentTarget;
+    var payload = {
+      target_agent: form.target_agent.value,
+      observed_baseline: form.observed_baseline.value,
+      category: form.category.value,
+      attribution: "identified",
+      submitter: form.submitter.value,
+      consent_visibility: "private",
+      feedback_text: form.feedback_text.value,
+      page: form.page.value,
+      universe: form.universe.value,
+      component_id: form.component_id.value
+    };
+    postJson("/api/feedback", payload).then(function (body) {
+      if (body._status !== 201 && body._status !== 200) {
+        setResult("classic-feedback-receipt", false, body.error || "Feedback abgelehnt");
+        return;
+      }
+      lastFeedbackId = body.envelope_id;
+      setResult("classic-feedback-receipt", true, "Beleg " + body.envelope_id + " ohne PAT · " + body.path);
+      showContext();
+    }).catch(function () {
+      setResult("classic-feedback-receipt", false, "Der Server ist nicht erreichbar. Seite über python3 _src/serve.py öffnen.");
+    });
+  });
+
+  document.getElementById("classic-run-loop").addEventListener("click", function () {
+    postJson("/api/feedback-loop/run", {}).then(function (body) {
+      var node = document.getElementById("classic-loop-result");
+      if (body._status !== 200) {
+        node.textContent = body.error || "Schleife fehlgeschlagen";
+        return;
+      }
+      var summary = body.summary || {};
+      node.textContent = JSON.stringify({
+        comments_written: summary.comments_written,
+        pages_rebuilt: summary.pages_rebuilt,
+        canonical_mutation: summary.canonical_mutation
+      }, null, 2);
+    }).catch(function () {
+      document.getElementById("classic-loop-result").textContent = "Server nicht erreichbar.";
+    });
+  });
+
+  showContext();
+  buildGraph();
+  applyUniverseFilter("all");
+})();
+</script>
+</body>
+</html>

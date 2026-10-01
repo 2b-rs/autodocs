@@ -1,0 +1,30 @@
+Check-in provenance for Feature 0038 / Task 0038-05.02
+Agent: Seven-Chell (agent:seven-chell:0038-05.02:20260820T190456Z)
+Trigger: interactive user turn (not a script/process trigger)
+Execution date: 2026-08-20T19:04:56Z (approx., session start; commit timestamps are authoritative)
+
+The following is the verbatim user-authored prompt that requested, authorized,
+and specified the scope of this Task's implementation. It is reproduced in
+full, in order, with original line breaks preserved.
+
+=== BEGIN VERBATIM USER PROMPT ===
+You are agent "Seven-Chell" (a Voyager-crew-themed invented name), a fresh session with capability_class = `unprivileged` (NOT sandboxed-grunt: execute Git, tests, and commits directly — never route through the run.sh runner protocol/singleton).
+
+Repo: /Users/tobias.anton/devel/autodocs (ara::* AUTOSAR Adaptive Platform API reference). Read AGENTS.md and SANDBOX.md in full before mutating anything — they define claim/branch/commit procedure and capability-class rules, and OVERRIDE any default behavior.
+
+Your write scope: the git worktree already provisioned at /Users/tobias.anton/devel/autodocs/.worktrees/0038-05.02 (branch `0038-05.02`, based on Feature branch `0038` at its current tip). Work ONLY inside that worktree directory — never touch the root /Users/tobias.anton/devel/autodocs checkout (it has unrelated live uncommitted edits from another session; do not read or write it) and never touch /Users/tobias.anton/devel/autodocs/.worktrees/0038-20 (a sibling subagent is working there concurrently on `_src/tools/runner_transaction.py` for a different Task, 0038-20 — you will ALSO be editing that same file for Task 0038-05.02, so expect a merge conflict later; that is expected and will be resolved by a privileged integrator, not by you. Do not coordinate directly with that sibling.).
+
+Task: `0038-05.02` in TODO.md (search for `**0038-05.02**`): "Integrate all editor candidate promotion into the durable legacy transaction coordinator and retire its separate regex closure renderer." PREREQ: 0038-05.02:0038-05.01 (`[x]`, already merged into branch `0038`), 0038-05.02:0038-02 (`[x]`, already merged into branch `0038`) — both prerequisites are satisfied. Read its full acceptance criteria and Definition of Done from TODO.md in that worktree, and also read the parent Task `0038-05`'s text immediately above it in TODO.md for context (it explains the `.01`/`.02` split rationale), and read `0038-05.01`'s completion note (also above it) describing exactly what was delivered: a pure structural parser/renderer/candidate-diff producer for the legacy backlog/claim editor, in `_src/tools/legacy_task_editor.py` (or wherever `0038-05.01`'s REF `ffaf3934796023872eb4a58134865c3daf6f5079` actually put it — inspect that commit).
+
+Your job: add a fixed typed "editor-candidate" action/contract to `_src/tools/runner_transaction.py` that consumes `0038-05.01`'s candidate/diff/promotion-preflight output and performs the actual multi-file pickup/handoff/finalization promotion using `0038-02`'s journal/lock/signal/resume/rollback recovery guarantees (inspect `0038-02`'s REF `9d8e45bbbeede9a2fd5c6c9471820d76686b743b` and its test file to understand that recovery contract). It must replace `render_task_closure()` (the old regex-based closure renderer, if still present anywhere in this codebase — grep for it) with the `0038-05.01` editor core instead of a second parser. No operation may expose a successful partial claim/TODO state or overwrite a concurrent edit. Follow the exact acceptance criteria and Definition of Done text in TODO.md — that is authoritative over this summary.
+
+Standard procedure: create/update your `TODO-seven-chell-0038-05.02-<timestamp>.md` claim per AGENTS.md (owner_token `agent:seven-chell:0038-05.02:<timestamp>`), mark `0038-05.02` `[p]` in that worktree's TODO.md, implement, write failure-injection tests per the DoD (before/after every candidate, TODO, claim create/archive/delete, journal, result, and CAS boundary), run the full relevant test suite, commit substantive work then a separate bookkeeping commit marking `0038-05.02` `[x]` with the real REF. Use git identity `tobias.anton` (already configured). Do NOT merge this branch anywhere — leave it at rest on `0038-05.02`. Do NOT touch DONE.md, do NOT create `Acceptance: ✓` records, do NOT cross any integration checkpoint. Do NOT attempt Task `0038-05` (the parent) — that is separate follow-up work after this lands.
+
+Be concise in your final report: what you built, test results, final commit hashes, and anything you found notable (e.g. if `render_task_closure()` doesn't actually exist anymore, say so plainly rather than inventing removal work).
+=== END VERBATIM USER PROMPT ===
+
+No further user prompts were received during this Task's implementation; all
+design decisions documented in TODO-seven-chell-0038-05.02-20260820T190456Z.md
+were derived autonomously from this briefing, AGENTS.md/SANDBOX.md, the
+referenced commits, and repository evidence, per AGENTS.md's "Autonomous
+backlog repair" authority.

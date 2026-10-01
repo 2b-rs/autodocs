@@ -1,0 +1,56 @@
+### `DEC-0044-030` — Retain the global three-class runner architecture and bound direct-only restrictions to consumers
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-28T09:23:00Z`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** Current-user/Management selection `agent-inbox:1787901177228-90a8b1db`; operative recording assignment `agent-inbox:1787901222930-181cd035`; Architect decision input `docs/campaign-evidence/0044-07/architect-role-catalog-decision-packet.md@6539c7c0d`
+- **Subject:** Whether the repository-wide execution architecture should replace the existing three capability classes and runner transport with A-prime, retain them with bounded consumer restrictions, or operate both indefinitely
+- **Decision:** Select option B. The global capability-class vocabulary remains `sandboxed-grunt`, `unprivileged`, and `privileged`; the queue-backed runner architecture and its fail-closed sandbox fallback remain available. A consumer that genuinely requires independently established direct execution may reject `sandboxed-grunt` only through a bounded consumer policy whose declared reach, evidence, activation, and recovery satisfy the ordinary decision and cross-item scope-review rules. Capability matching remains evidence of eligibility and grants no assignment, ownership, authority, independence, Acceptance, waiver, checkpoint, integration, release, or scope.
+- **Technical justification:** Option B preserves the existing enforcement and recovery boundary while the repository has only a sparse population of genuine machine-readable capability profiles and descriptors. Global A-prime would remove a selectable class, retire the typed runner path, change ambiguous-capability fallback behavior, invalidate accepted `0044-04`/`0044-05` interfaces, and force active Feature `0037` migration before equivalent safety invariants have been proven elsewhere. A bounded consumer restriction can express a real direct-execution requirement without reinterpreting every role, runtime, historic record, or fallback globally.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Replace the global selectable classes with `unprivileged` and `privileged`, make Runner a normally unprivileged direct process role, and retire the runner service, queue, and typed transport after migration (A-prime).
+    - **Disposition:** `rejected`
+    - **Reason:** Equivalent fail-closed enforcement, accepted-interface migration, descriptor coverage, active-work transition, and recovery have not been proven; global replacement is unnecessary to express bounded direct-only requirements.
+  - **ALT-02:** Retain the global three-class and runner architecture, while permitting an explicitly qualified consumer policy to require direct execution within its recorded scope (B).
+    - **Disposition:** `selected`
+    - **Reason:** This is the current-user/Management selection and has the smallest immediate reach while preserving existing safety and recovery mechanisms.
+  - **ALT-03:** Preserve both the current and A-prime architectures indefinitely as parallel selectable execution models (C).
+    - **Disposition:** `rejected`
+    - **Reason:** Permanent dual semantics would duplicate controls, complicate matching and fallback, and make equivalent assignments behave differently without a bounded transition end state.
+- **Consequences:**
+  - **CON-01:** `sandboxed-grunt`, `unprivileged`, and `privileged` remain the global capability classes. Runner remains a process role and execution mechanism, not a fourth capability class.
+  - **CON-02:** The queue transport, typed runner protocol, lease/idempotence/scope controls, and fail-closed default for a runtime whose class is absent or cannot be established remain unchanged by this record.
+  - **CON-03:** Accepted v1 task profiles, agent descriptors, match results, and matcher semantics from `0044-04`/`0044-05` remain valid and byte-preserved. Missing, ambiguous, stale, or conflicting capability evidence does not become normal eligibility.
+  - **CON-04:** A bounded consumer may require direct execution only when its own contract names the affected work units and gates, the independently required class/route evidence, the failure behavior, activation conditions, verification, and recovery. Cross-item reach requires its own conforming decision and distinct Management-instantiated Architect scope review before mutation.
+  - **CON-05:** Feature `0037` is not globally migrated by this record. Any direct-only consumer rule there must be separately bounded and must not silently remove the sandboxed runner path from unrelated Tasks, roles, or Features.
+  - **CON-06:** Role-catalog, schema, matcher, runner, roster, and backlog implementation remains future work for identities distinct from the decisive `0044-07` Architect. This record neither implements nor activates those changes.
+  - **CON-07:** Activation of this decision is limited to making the decision and supporting scope review reachable from `main`. The selected global state is retention of current behavior; any new consumer restriction activates only through its own integrated and verified implementation package.
+  - **CON-08:** Verification for a future bounded restriction must prove permitted direct descriptors match, sandboxed or ambiguous descriptors reject with stable reasons, capability evidence grants no authority, unrelated consumers retain existing behavior, and rollback restores the previous consumer contract without altering global class or runner semantics.
+  - **CON-09:** Recovery from an erroneous bounded restriction disables or reverts only that consumer policy and restores its prior accepted contract. Recovery must not delete runner infrastructure, rewrite historic evidence, weaken the ambiguous-capability fallback, or alter this append-only decision provenance.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0044`
+  - `task:0044-07`
+  - `task:0044-04`
+  - `task:0044-05`
+  - `task:0044-08`
+  - `feature:0037`
+- **Affected gates:**
+  - `task-start:0044-07`
+  - `validation:capability-matching`
+  - `integration:0044`
+  - `feature-closure:0044`
+  - `validation:direct-execution-only-consumer-policy`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0044-07:20260827T115800Z-e2f77b46`
+    - **Role:** `Architekt`
+    - **Participation:** `consulted`
+    - **Position:** `supports`
+    - **Note:** Prepared the pinned alternatives and blast-radius packet, recommended option B, and recorded the separate supporting scope review; this is not implementation, Acceptance, or integration authority.
+- **Waiver:** `none`

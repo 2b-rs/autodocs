@@ -1,0 +1,353 @@
+{
+  "schema": "action-registry@v1",
+  "registry_version": 1,
+  "purpose": "Permanent typed-action registry for Task 0037-46.01. Every entry is a fixed, reviewed action with a bounded argument schema. There is no generic/shell/free-form action; an unregistered or generic action id is always rejected by _src/tools/runner_dispatch.py before any mutation is attempted.",
+  "source_mapping": "Every id below is drawn verbatim from docs/pipeline/legacy-handoff-manifest-v1.json's typed-action dispositions (Task 0038-16.01) and, for the three branch/merge actions, from docs/pipeline/branch-merge-actions.md (Task 0038-19). This registry does not invent a new action surface; it is the implementation target both documents already named.",
+  "envelope": "Every request carrying one of these actions must be a fully schema-valid issues/_schema/runner-request-v1.schema.json instance. The typed action id is carried as the discriminator prefix of idempotence_key (\"<typed-action-id>:<item-id>:<disambiguator>\") exactly as docs/pipeline/branch-merge-actions.md section 2 already specifies, and echoed in a preflight entry \"typed-action:<id>\" so the dispatcher never has to guess it from free text.",
+  "actions": [
+    {
+      "id": "runner.discovery@v1",
+      "category": "context",
+      "manifest_primitive": "context.backlog-diagnosis",
+      "envelope_action": "read_only_discovery",
+      "description": "Read-only Git/authority/claim/slot discovery (the fixed pending-discovery profile SANDBOX.md already describes).",
+      "args": {"required": [], "optional": ["scan_paths"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "context.build-capsule@v1",
+      "category": "context",
+      "manifest_primitive": "context.resume-capsule",
+      "envelope_action": "read_only_discovery",
+      "description": "Build a bounded resume/context capsule (task text, claim, prerequisite closure) for handoff.",
+      "args": {"required": ["item_id"], "optional": ["max_bytes"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "bookkeeping.plan@v1",
+      "category": "context",
+      "manifest_primitive": "context.bookkeeping-planner",
+      "envelope_action": "read_only_discovery",
+      "description": "Plan the exact bookkeeping edits (marker, REF, closure note) without writing them.",
+      "args": {"required": ["item_id", "target_marker"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "env.bootstrap-instance@v1",
+      "category": "action",
+      "manifest_primitive": "action.bootstrap.instance",
+      "envelope_action": "external_service_configuration",
+      "description": "Bootstrap a fresh runner-capable clone/instance (wraps _src/tools/bootstrap_instance.sh semantics).",
+      "args": {"required": ["target_root"], "optional": ["protocol_epoch"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "env.bootstrap-known-hosts@v1",
+      "category": "action",
+      "manifest_primitive": "action.bootstrap.ssh-known-hosts",
+      "envelope_action": "external_service_configuration",
+      "description": "Verify-before-write SSH known_hosts provisioning (wraps _src/tools/bootstrap_ssh_known_hosts.sh).",
+      "args": {"required": ["host"], "optional": ["fingerprint"]},
+      "authority": {"capability_class": "any", "network": true, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "env.provision-worker-clone@v1",
+      "category": "action",
+      "manifest_primitive": "action.provision.worker-clone",
+      "envelope_action": "external_service_configuration",
+      "description": "Provision an isolated worker clone/worktree (wraps _src/tools/provision_worker_clone.sh).",
+      "args": {"required": ["clone_root", "source_ref"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "publish.public-site@v1",
+      "category": "action",
+      "manifest_primitive": "action.publish.public-site",
+      "envelope_action": "external_service_configuration",
+      "description": "Protected push/publish of the generated site to the public deploy repo (wraps _src/tools/publish_public_site.sh).",
+      "args": {"required": ["source_root", "remote"], "optional": ["dry_run"]},
+      "authority": {"capability_class": "privileged", "network": true, "credentials": true, "mutates": true}
+    },
+    {
+      "id": "git.base-branch@v1",
+      "category": "action",
+      "manifest_primitive": "action.branch-merge.base-branch",
+      "envelope_action": "generation",
+      "description": "Base an item's own branch off its parent branch tip. Never touches tracked content; identical tree to parent. See docs/pipeline/branch-merge-actions.md section 3.",
+      "args": {"required": ["item_id", "parent_branch", "expected_parent_tip"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true, "rollback": "branch is never advanced on any failure; creation is atomic (git branch or nothing)."}
+    },
+    {
+      "id": "git.merge-prereqs@v1",
+      "category": "action",
+      "manifest_primitive": "action.branch-merge.merge-prereqs",
+      "envelope_action": "path_limited_commit",
+      "description": "Sequential 2-parent merges of every declared done prerequisite branch into the item's own not-yet-advanced branch. Never octopus. See docs/pipeline/branch-merge-actions.md section 4.",
+      "args": {"required": ["item_id", "expected_base", "sources"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true, "rollback": "a content conflict on any step aborts that step entirely (git merge --abort equivalent); destination branch/tree unchanged; no partial merge is ever published."}
+    },
+    {
+      "id": "git.integrate-checkpoint@v1",
+      "category": "action",
+      "manifest_primitive": "action.branch-merge.integrate-checkpoint",
+      "envelope_action": "path_limited_commit",
+      "description": "Task->Feature or Feature->main integration merge across a checkpoint. See docs/pipeline/branch-merge-actions.md section 6. Privileged-only unconditionally.",
+      "args": {"required": ["item_id", "target_kind", "expected_base", "source_branch"], "optional": []},
+      "authority": {"capability_class": "privileged", "network": false, "credentials": false, "mutates": true, "rollback": "same fail-closed abort-on-conflict as merge-prereqs; target ref is only ever advanced by a single successful compare-and-swap update-ref."}
+    },
+    {
+      "id": "git.rollback-ref-cleanup@v1",
+      "category": "action",
+      "manifest_primitive": "recovery.rollback-and-ref-cleanup",
+      "envelope_action": "path_limited_commit",
+      "description": "Roll back a failed/abandoned ref advance and remove any temporary refs it created.",
+      "args": {"required": ["ref", "expected_current", "restore_to"], "optional": ["temporary_refs"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "git.worktree-detached@v1",
+      "category": "action",
+      "manifest_primitive": "recovery.rollback-and-ref-cleanup",
+      "envelope_action": "read_only_discovery",
+      "description": "Create/tear down a detached temporary worktree used as an isolated candidate root for a Git action.",
+      "args": {"required": ["source_ref", "worktree_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "git.commit-path-limited@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.close-task-v1",
+      "envelope_action": "path_limited_commit",
+      "description": "Commit an exact declared set of tracked paths through a temporary index (never the ambient index).",
+      "args": {"required": ["write_paths", "commit_message"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "git.commit-verified@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.verify-and-commit-v1",
+      "envelope_action": "signing_verification",
+      "description": "Verify a signature (git verify-commit equivalent) before/after a commit through an approved signing handle.",
+      "args": {"required": ["commit_ish"], "optional": ["expected_signer"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": true, "mutates": false}
+    },
+    {
+      "id": "repo.generate@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.close-task-v1",
+      "envelope_action": "generation",
+      "description": "Run _src/generate.py; may change only declared output paths.",
+      "args": {"required": ["input_paths", "output_paths"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "repo.validate@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.close-task-v1",
+      "envelope_action": "focused_validation",
+      "description": "Run _src/validate.py; must not change source or output files.",
+      "args": {"required": [], "optional": ["scope_paths"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "bookkeeping.two-commit-ref-closure@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.close-task-v1",
+      "envelope_action": "bookkeeping_commit",
+      "description": "Second of two commits: mark TODO.md [x]/[w] with the real substantive commit hash from the first commit as REF. Never amends; never invents the hash.",
+      "args": {"required": ["item_id", "substantive_commit", "marker"], "optional": ["closure_text"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "bookkeeping.promote-editor-candidate@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.legacy-editor-candidate-v1",
+      "envelope_action": "bookkeeping_commit",
+      "description": "Promote a validated legacy_task_editor candidate into TODO.md via per-file atomic replacement.",
+      "args": {"required": ["candidate_path", "todo_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "claim.finalize@v1",
+      "category": "action",
+      "manifest_primitive": "action.runner-transaction.close-task-v1",
+      "envelope_action": "bookkeeping_commit",
+      "description": "Compare-and-swap finalize/retire an owned claim file (git update-ref semantics on the claim's owning branch tip); never overwrites a foreign owner_token.",
+      "args": {"required": ["claim_path", "owner_token", "expected_state"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "approval.check-readiness@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.readiness-manager",
+      "envelope_action": "read_only_discovery",
+      "description": "Run manage_approval_readiness.py --check --json (never mutates a tracked policy file).",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "approval.check-readiness-external@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.external-readiness-blocker",
+      "envelope_action": "read_only_discovery",
+      "description": "Report the external (human-only) readiness blockers manage_approval_readiness.py cannot resolve itself.",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "sign.create@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.authorities-policy",
+      "envelope_action": "signing_verification",
+      "description": "Create a signature through an approved signing credential handle. Never accepts or persists a raw key/secret value.",
+      "args": {"required": ["credential_handle", "payload_digest"], "optional": []},
+      "authority": {"capability_class": "privileged", "network": false, "credentials": true, "mutates": false}
+    },
+    {
+      "id": "approval.ref-create-append-cas@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.authorities-policy",
+      "envelope_action": "bookkeeping_commit",
+      "description": "Create/append an approval or cutover ref (refs/autodocs/approval/..., refs/autodocs/cutover/...) via compare-and-swap; never a force update.",
+      "args": {"required": ["ref", "expected_current", "new_value"], "optional": []},
+      "authority": {"capability_class": "privileged", "network": false, "credentials": true, "mutates": true}
+    },
+    {
+      "id": "sign.verify@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.bootstrap-verifier",
+      "envelope_action": "signing_verification",
+      "description": "Verify a signature (git verify-commit or SSH signature verification) against allowed_signers/authorities.json.",
+      "args": {"required": ["commit_ish_or_payload"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "approval.verify-bootstrap@v1",
+      "category": "approval-readiness",
+      "manifest_primitive": "approval.bootstrap-verifier",
+      "envelope_action": "signing_verification",
+      "description": "Structural validation of an approval-bootstrap record (verify_issue_approval_bootstrap.py semantics) prior to a real git verify-commit.",
+      "args": {"required": ["approval_record_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "evidence.build-pack@v1",
+      "category": "evidence",
+      "manifest_primitive": "evidence.pack-builder",
+      "envelope_action": "generation",
+      "description": "Assemble a bounded evidence pack (validation output excerpts, digests, retained log paths) for a Task/claim.",
+      "args": {"required": ["item_id", "output_path"], "optional": ["max_bytes"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "evidence.verify-pack@v1",
+      "category": "evidence",
+      "manifest_primitive": "evidence.pack-builder",
+      "envelope_action": "focused_validation",
+      "description": "Verify a previously built evidence pack's digests still match the live tree.",
+      "args": {"required": ["pack_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "evidence.request-log-root@v1",
+      "category": "evidence",
+      "manifest_primitive": "evidence.request-log-root",
+      "envelope_action": "read_only_discovery",
+      "description": "Resolve/create the bounded, git-ignored output/logs/<task-or-claim>/<request-id>/ root for a request.",
+      "args": {"required": ["task_or_claim", "request_id"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "recovery.quarantine@v1",
+      "category": "recovery",
+      "manifest_primitive": "recovery.artifact-quarantine-gc",
+      "envelope_action": "bookkeeping_commit",
+      "description": "Quarantine a tampered/invalid result or orphaned draft/claim artifact rather than deleting it.",
+      "args": {"required": ["artifact_path", "reason"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": true}
+    },
+    {
+      "id": "recovery.gc-plan@v1",
+      "category": "recovery",
+      "manifest_primitive": "recovery.artifact-quarantine-gc",
+      "envelope_action": "read_only_discovery",
+      "description": "Plan (never execute unattended) garbage collection of expired/quarantined .runner/ artifacts.",
+      "args": {"required": [], "optional": ["older_than_seconds"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "recovery.journal-replay@v1",
+      "category": "recovery",
+      "manifest_primitive": "recovery.transaction-journal",
+      "envelope_action": "read_only_discovery",
+      "description": "Replay a promotion journal to determine exact recovery state after a crash mid-transaction.",
+      "args": {"required": ["journal_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.automation-safety@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.automation-safety",
+      "envelope_action": "focused_validation",
+      "description": "Run _src/tools/automation_safety.py --json.",
+      "args": {"required": [], "optional": ["path"]},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.chore-inventory@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.chore-tool-inventory",
+      "envelope_action": "focused_validation",
+      "description": "Run _src/tools/chore_tool_inventory.py --check.",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.handoff-manifest@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.handoff-manifest",
+      "envelope_action": "focused_validation",
+      "description": "Run _src/tools/legacy_handoff_manifest.py --check.",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.run-profile@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.task-validation",
+      "envelope_action": "focused_validation",
+      "description": "Run a declared task-validation-profile@v1 fixture/test profile.",
+      "args": {"required": ["profile_path"], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.transaction-fixtures@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.transaction-fixtures",
+      "envelope_action": "focused_validation",
+      "description": "Run docs/pipeline/fixtures/0038-19/validate_branch_merge_action_fixtures.py.",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    },
+    {
+      "id": "validate.workflow-lifecycle@v1",
+      "category": "validation",
+      "manifest_primitive": "validation.workflow-validator",
+      "envelope_action": "focused_validation",
+      "description": "Run the legacy agent-workflow.json lifecycle validator.",
+      "args": {"required": [], "optional": []},
+      "authority": {"capability_class": "any", "network": false, "credentials": false, "mutates": false}
+    }
+  ],
+  "preflight_checks": [
+    {"id": "scope.authority-boundary@v1", "manifest_primitive": "scope.forbidden-branch-writes", "description": "Reject any request whose write_scopes include a governance artifact path or refs/heads/main unless capability_class is privileged and the action is git.integrate-checkpoint@v1 with target_kind main."},
+    {"id": "scope.preflight@v1", "manifest_primitive": "scope.planner.collision-preflight", "description": "Reject a request whose write_scopes intersect any other currently claimed (unresolved) request's write_scopes."},
+    {"id": "scope.policy-provenance@v1", "manifest_primitive": "scope.policy-provenance", "description": "For a governance-artifact write, require first-parent-chain provenance evidence (see check_policy_provenance.py); reject an absorbed fast-forward per DEC-0044-007."},
+    {"id": "scope.isolated-attempt-root@v1", "manifest_primitive": "scope.run-attempt-roots", "description": "Require every mutating action to execute inside a fresh isolated temporary root, never the shared root checkout."},
+    {"id": "scope.claim-declaration@v1", "manifest_primitive": "scope.write-scope-declaration", "description": "Require read_scopes/write_scopes to be a declared, non-empty, non-wildcard, non-directory, non-pathspec-magic exact path list."}
+  ],
+  "forbidden": [
+    {"pattern": "shell.*", "reason": "Generic/arbitrary shell execution is explicitly forbidden by Task 0037-46.01's acceptance criteria."},
+    {"pattern": "exec.*", "reason": "No action may accept a free-form command line, executable path, or argv passthrough."}
+  ]
+}

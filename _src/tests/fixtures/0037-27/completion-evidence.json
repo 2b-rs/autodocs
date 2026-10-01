@@ -1,0 +1,47 @@
+{
+  "schema": "completion-evidence@v1",
+  "item": "0037-27",
+  "change_kinds": [
+    "identity-matching",
+    "gate-classification",
+    "set-sequence-invariant"
+  ],
+  "baselines": {
+    "pre_change": "7076df3b1bb8d97bc7f3534e66cffee86c4a971b",
+    "candidate": "5de4facb214aca460429db3c93d6461af81c725d"
+  },
+  "falsification_cases": [
+    {
+      "name": "html-family-trace-adapter-absent-on-27.05-tip",
+      "derived_from_claim": "Language-specific HTML traces to exact issue, trigger, source versions, and each producer run only when the package orchestrator exists.",
+      "command": "git cat-file -e 7076df3b1bb8d97bc7f3534e66cffee86c4a971b:_src/tools/html_family_trace.py; python3 _src/tests/test_0037_27_package_html_trace.py PackageHtmlFamilyTraceTests.test_traces_html_to_issue_trigger_source_and_producer_run",
+      "output": "fatal: path '_src/tools/html_family_trace.py' exists on disk, but not in '7076df3b1bb8d97bc7f3534e66cffee86c4a971b'\n... test_traces_html_to_issue_trigger_source_and_producer_run ... ok",
+      "result_pre_change": "red",
+      "result_candidate": "green",
+      "mocked_changed_path": false
+    }
+  ],
+  "adjacent_cases": [
+    {
+      "name": "html-svg-without-provenance-injection",
+      "dimension": "manifest vs generated markup",
+      "expected": "assembled HTML contains no provenance markers; metadata stays in provenance envelopes",
+      "observed": "test_traces_html_to_issue_trigger_source_and_producer_run PASS (assert_html_without_provenance)",
+      "why_adjacent": "Neighbor of reverse identity: the same generate path must not leak run_id into HTML."
+    },
+    {
+      "name": "second-live-html-generate-mixed-run",
+      "dimension": "blocking mixed-run gate",
+      "expected": "HTP-MIXED-RUN when a second language-tree generate runs without invalidating the live tree",
+      "observed": "test_second_live_html_generate_is_mixed_run PASS",
+      "why_adjacent": "Neighbor of the package reverse-trace: the 27.05 mixed-run gate still blocks after five-family assembly."
+    }
+  ],
+  "property_evidence": {
+    "invariant": "Each assemble_cross_family report contains exactly the five family keys ai, diagram, guides, i18n, html, each with run_id and issue.",
+    "domain": "3 independent hermetic assemblies",
+    "generative": false,
+    "seed": null,
+    "executed_cases": 3
+  }
+}

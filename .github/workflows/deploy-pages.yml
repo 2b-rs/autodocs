@@ -1,0 +1,92 @@
+name: "Build & Deploy Autodocs Site"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: "Build HTML Documentation Tree"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install lxml ruamel.yaml
+
+      - name: Set up Build Identity
+        run: |
+          RUN_ID=$(python3 _src/tools/build_report.py mint-run-id)
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "BUILD_REPORT_RUN_ID=$RUN_ID" >> $GITHUB_ENV
+          echo "RUN_ARCHIVE_REF=gh-actions-${{ github.run_id }}-${{ github.run_attempt }}" >> $GITHUB_ENV
+
+      - name: Emit Prebuilt Stage Envelopes
+        run: |
+          python3 _src/tools/ci_build_report.py emit-stages
+
+      - name: Generate Multilingual HTML Tree
+        run: |
+          python3 _src/generate.py --lang=alle
+
+      - name: Export Version Records for Explorer
+        run: |
+          python3 _src/tools/export_versions.py
+
+      - name: Validate Tree & Links
+        continue-on-error: true
+        run: |
+          python3 _src/validate.py --issue-source=off
+
+      - name: Log Build Report to Ledger & Render HTML
+        run: |
+          python3 _src/tools/ci_build_report.py finalize
+
+      - name: Commit and Push Build Report to Repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/evidence/build-ledger.jsonl _src/sources/pages/build-reports.json build-reports.html versions/catalog.json .nojekyll
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(report): record build report for run #${{ github.run_id }} [skip ci]"
+            git pull --rebase origin main || true
+            git push origin main
+          fi
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+  deploy:
+    name: "Deploy to GitHub Pages"
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

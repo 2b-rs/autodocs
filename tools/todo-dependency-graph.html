@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Issue dependency graph (maintainer tool, not published)</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root { color-scheme: light; }
+  body { font-family: -apple-system, Helvetica, Arial, sans-serif; margin: 0; padding: 1.2rem 1.5rem; background: #f7f8fa; color: #1d2129; }
+  h1 { font-size: 1.3rem; margin: 0 0 .3rem; }
+  .warn { background: #fff3cd; border: 1px solid #f0c36d; border-radius: 8px; padding: .6rem .9rem; font-size: .9rem; margin-bottom: 1rem; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-bottom: 1rem; }
+  .toolbar label { font-size: .9rem; display: flex; align-items: center; gap: .35rem; }
+  button, input[type=file] { font-size: .9rem; padding: .4rem .7rem; border-radius: 6px; border: 1px solid #c7ccd6; background: #fff; cursor: pointer; }
+  button:hover { background: #eef1f6; }
+  #status { font-size: .85rem; color: #596274; white-space: pre-wrap; margin-bottom: .8rem; }
+  #status.error { color: #b3261e; }
+  #legend { font-size: .8rem; color: #596274; margin-bottom: .8rem; display: flex; flex-wrap: wrap; gap: 0; }
+  #legend span { display: inline-flex; align-items: center; gap: .3rem; margin-right: 1.1rem; }
+  #legend i { display: inline-block; width: 22px; height: 3px; border-radius: 2px; }
+  #graph-container { background: #fff; border: 1px solid #d9dce3; border-radius: 10px; padding: .8rem; overflow: auto; min-height: 200px; }
+  #graph-container svg { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+
+<h1>Issue dependency graph</h1>
+<div class="warn">
+  Maintainer-only tool. Loads validated
+  <code>issues/_views/dependency-graph.json</code> (never TODO.md / DONE.md / YAML).
+  Malformed or stale catalogs fail visibly. Serve over
+  <code>http(s)://</code> so <code>fetch()</code> can read the sibling catalog.
+</div>
+
+<div class="toolbar">
+  <label><input type="checkbox" id="chk-include-done" checked> include closed items</label>
+  <label><input type="checkbox" id="chk-include-w" checked> include withdrawn [w]</label>
+  <button id="btn-rerender" disabled>Re-render</button>
+</div>
+
+<div id="status">Loading…</div>
+
+<div id="legend">
+  <span><i style="background:black"></i>same-feature / start-gate</span>
+  <span><i style="background:#1f4e79"></i>cross-feature / start-gate</span>
+  <span><i style="background:crimson"></i>feature-closure</span>
+  <span><i style="background:#6a1b9a;border-top:2px dashed #6a1b9a;height:0"></i>relation</span>
+  <span><i style="background:#d9d9d9"></i>outgoing from closed</span>
+  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #c7ccd6"></i>open</span>
+  <span><i style="width:10px;height:10px;background:#fff3b0"></i>in_progress</span>
+  <span><i style="width:10px;height:10px;background:#ffb3b3"></i>blocked</span>
+  <span><i style="width:10px;height:10px;background:#e8d5ff"></i>withdrawn [w]</span>
+  <span><i style="width:10px;height:10px;background:#d9d9d9"></i>missing/malformed</span>
+  <span><i style="width:10px;height:10px;background:#ffffff;border:1px solid #808080"></i><span style="color:#808080;">closed</span></span>
+</div>
+
+<div id="graph-container"><p style="color:#8a90a0">Graph will render here.</p></div>
+
+<script src="todo-graph-core.js"></script>
+<script src="vendor/hpcc-js-wasm-graphviz.umd.js"></script>
+<script type="module">
+const statusEl = document.getElementById('status');
+const graphEl = document.getElementById('graph-container');
+const btnRerender = document.getElementById('btn-rerender');
+const chkIncludeDone = document.getElementById('chk-include-done');
+const chkIncludeW = document.getElementById('chk-include-w');
+const core = window.TodoGraphCore;
+
+let lastText = null;
+let graphviz = null;
+
+function setStatus(msg, isError) {
+  statusEl.textContent = msg;
+  statusEl.className = isError ? 'error' : '';
+}
+
+async function ensureGraphviz() {
+  if (graphviz) return graphviz;
+  setStatus('Loading local Graphviz-WASM bundle…');
+  const hpcc = globalThis['@hpcc-js/wasm/graphviz'];
+  if (!hpcc || !hpcc.Graphviz || typeof hpcc.Graphviz.load !== 'function') {
+    throw new Error('Local Graphviz-WASM bundle not found.');
+  }
+  graphviz = await hpcc.Graphviz.load();
+  return graphviz;
+}
+
+async function renderFromText(text) {
+  lastText = text;
+  btnRerender.disabled = false;
+  try {
+    if (!core || typeof core.loadGraph !== 'function') {
+      throw new Error('todo-graph-core.js failed to load (no loadGraph).');
+    }
+    if (typeof core.parseTodo === 'function') {
+      throw new Error('duplicate semantic classifier parseTodo must not remain in browser core');
+    }
+    const graph = core.loadGraph(text);
+    const tallies = core.counts(graph);
+    const { dot, nodeCount, edgeCount, liveFeatureCount, unresolvedEdgeCount } = core.buildDot(graph, {
+      includeClosed: chkIncludeDone.checked,
+      includeWithdrawn: chkIncludeW.checked,
+      includeUnresolved: true,
+    });
+
+    const gv = await ensureGraphviz();
+    setStatus('Rendering…');
+    const svg = gv.layout(dot, 'svg', 'dot');
+    graphEl.innerHTML = svg;
+
+    setStatus(
+      `Catalog nodes=${tallies.nodes} (features=${tallies.features} tasks=${tallies.tasks} ` +
+      `subtasks=${tallies.subtasks} withdrawn=${tallies.withdrawn} missing=${tallies.missing_nodes} ` +
+      `malformed=${tallies.malformed_nodes})\n` +
+      `edges=${tallies.edges} start-gate=${tallies.start_gate_edges} ` +
+      `feature-closure=${tallies.feature_closure_edges} unresolved=${tallies.unresolved_edges}\n` +
+      `Rendered ${nodeCount} node(s), ${liveFeatureCount} cluster(s), ${edgeCount} edge(s)` +
+      ` (unresolved edges kept: ${unresolvedEdgeCount}).`
+    );
+  } catch (err) {
+    setStatus('ERROR: ' + err.message, true);
+    console.error(err);
+  }
+}
+
+async function loadAndRender() {
+  setStatus('Fetching ../issues/_views/dependency-graph.json…');
+  try {
+    const res = await fetch('../issues/_views/dependency-graph.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status} fetching dependency-graph.json`);
+    const text = await res.text();
+    await renderFromText(text);
+  } catch (err) {
+    setStatus(
+      'ERROR: ' + err.message +
+      '\nServe over http(s):// and keep issues/_views/dependency-graph.json available. ' +
+      'Markdown TODO.md input is refused.',
+      true
+    );
+  }
+}
+
+btnRerender.addEventListener('click', () => loadAndRender());
+chkIncludeDone.addEventListener('change', () => {
+  if (lastText != null) renderFromText(lastText);
+});
+chkIncludeW.addEventListener('change', () => {
+  if (lastText != null) renderFromText(lastText);
+});
+
+loadAndRender();
+</script>
+</body>
+</html>

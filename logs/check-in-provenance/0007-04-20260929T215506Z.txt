@@ -1,0 +1,70 @@
+User-authored prompt provenance for Feature 0007 Task 0007-04
+Dispatch run: 20260929-215506-cursor-0007-04
+Recorded-at: 2026-09-29T19:59:00+00:00
+Worktree: /private/tmp/autodocs-worktrees/task-0007-04
+Base-Ref: 3170be4607490cbdac3661a0dbd4eba781489d5c
+
+# Dispatch-Arbeitsintensität · Version 1
+
+Angefordert: high. Nativer Thinking-Parameter: high. Steuerung: native+briefing.
+
+Bleibe im beauftragten Umfang und beachte die bestehenden Verträge. Für alle Stufen gelten dieselben Wahrheits- und Abnahmestandards: behaupte nur geprüfte Ergebnisse, nenne ausgeführte Prüfungen und verbleibende Lücken. Die Stufe fordert Arbeitsweise, keine garantierte Tokenzahl, Laufzeit oder Zahl künstlicher Prüfungsrunden.
+
+Prüfe Repository und relevante Verträge, reproduziere den Fehler soweit möglich und decke relevante Grenzfälle sowie Datenverlustrisiken ab. Führe passende Tests selbst aus; prüfe UI-Verhalten im echten Browser, sofern verfügbar. Kontrolliere das Ergebnis gegen die Abnahme und berichte Evidenz sowie Restlücken. Erweitere den Scope nicht allein wegen der Effort-Stufe.
+
+---
+
+> **Headless-Einmallauf 20260929-215506-cursor-0007-04. Vor allem anderen lesen.**
+> Dies ist ein nicht-interaktiver Lauf. Sobald du deinen Zug beendest, ist der Auftrag vorbei, und alles
+> Unfertige ist verloren. Es gibt keine Benachrichtigungen und niemanden, der nachfragt.
+> 1. Führe **jeden** Befehl im **Vordergrund** aus, mit ausdrücklicher Zeitschranke. Starte nichts im Hintergrund
+>    (kein `&`, kein `nohup`) und warte auf nichts. Zerlege lange Testläufe in mehrere Vordergrundaufrufe.
+> 2. Starte **keinen Befehl ein zweites Mal**, weil du sein Ergebnis nicht gesehen hast. Lies die Ausgabe aus der
+>    Datei, in die sie geschrieben wurde. Ein Befehl, der ungewöhnlich lange braucht, ist ein Befund für deinen
+>    Bericht, kein Grund zu warten.
+> 3. Arbeite nur in `/private/tmp/autodocs-worktrees/task-0007-04`. Fasse keine anderen Arbeitsbäume und nicht den Hauptcheckout an.
+>    Prozessbereinigung nur über nachgewiesene eigene PIDs oder eine ausschließlich eigene Prozessgruppe.
+>    Keine breiten `pkill`-/`killall`-Aufrufe; fremde Server und andere Prüfläufe niemals beenden.
+> 4. Git immer als `git -C /private/tmp/autodocs-worktrees/task-0007-04 …`. Kein `git stash`, kein `git push`, keine Änderung fremder
+>    Historie, keine `Co-Authored-By`- oder `Claude-Session`-Zeilen.
+> 5. **Der Auftrag ist erst mit dem Commit erfüllt.** Committe in kleinen Schritten mit klaren
+>    Nachrichten. Ein Arbeitsbaum voller ungespeicherter Arbeit zählt als nicht geliefert;
+>    `git -C /private/tmp/autodocs-worktrees/task-0007-04 status --porcelain` muss am Ende leer sein.
+> 6. Deine **letzte Nachricht ist der Bericht**: was erledigt ist, was nicht (mit Grund), Commits, die genauen
+>    Testbefehle mit dem Ende ihrer Ausgabe, Abweichungen vom Auftrag. Nenne, was du nicht geschafft hast, so
+>    deutlich wie das Erledigte. Letzte Zeile: `DISPATCH-DONE 20260929-215506-cursor-0007-04`.
+>
+> Warum das hier steht: im September 2026 arbeiteten drei Läufe zusammen 5,4 Stunden, hinterließen guten Code und
+> keinen einzigen Commit. Sie hatten Tests im Hintergrund gestartet und danach nur noch das Warten beschrieben.
+
+
+---
+
+# Auftrag: Task 0007-04 Einfrieren und Durchsetzen des Extraction-Benchmarks als Regressionsorakel
+
+## Ziel
+Das unabhängig geprüfte Benchmark wird als kanonisches, eingefrorenes Regressionsorakel `_src/tests/fixtures/spec_extraction/benchmark.json` verankert und fest in die Testsuite (`test_spec_extraction_benchmark.py` & `spec_extraction_benchmark.py`) eingebunden, sodass Regressionen automatisch abgefangen werden.
+
+## Umfang (alles davon)
+- Erstellung von `_src/tests/fixtures/spec_extraction/benchmark.json` aus dem genehmigten Draft mit Status `frozen` und SHA-256 Manifest der Datensätze.
+- Erweiterung von `_src/tests/test_spec_extraction_benchmark.py` um Tests, die das eingefrorene Benchmark verifizieren:
+  - Vollständigkeit (199 Datensätze, keine fehlenden IDs)
+  - Unveränderlichkeit der Felder und IDs
+  - Automatischer Schutz vor Regressionen
+- Aktualisierung von `spec_extraction_benchmark.py`, sodass standardmäßig das eingefrorene Benchmark referenziert wird.
+- Dokumentation der Benchmark-Verankerung in `_src/tests/fixtures/spec_extraction/README.md`.
+- Commit aller Änderungen auf dem Task-Branch.
+
+## Nicht im Umfang
+- Änderungen an anderen Testsuiten außerhalb von `spec_extraction`.
+
+## Dateien
+- Neu anlegen: `_src/tests/fixtures/spec_extraction/benchmark.json`
+- Ändern erlaubt: `_src/tests/test_spec_extraction_benchmark.py`, `_src/tools/spec_extraction_benchmark.py`, `_src/tests/fixtures/spec_extraction/README.md`, `TODO.md`
+
+## Abnahme (das Orakel, vorher festgelegt)
+- `python3 -m unittest _src/tests/test_spec_extraction_benchmark.py` läuft fehlerfrei durch (exit code 0).
+- `_src/tests/fixtures/spec_extraction/benchmark.json` existiert und validiert als JSON.
+
+## Tests
+- `python3 -m unittest _src/tests/test_spec_extraction_benchmark.py`

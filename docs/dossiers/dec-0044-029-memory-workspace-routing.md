@@ -1,0 +1,62 @@
+### `DEC-0044-029` — Keep memory writes paused until routing fails closed outside the shared root
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-28T06:22:22Z`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** Management decision `agent-inbox:1787898060256-d1495823`; originating decision request `agent-inbox:1787894015952-201f6995`; supporting Tuvok evidence reference `agent-inbox:1787893973173-8df13a51`
+- **Subject:** Whether agent, role, capability-set, and Feature memory writes may resume before their profile and tool defaults make implicit or shared-root workspace routing impossible
+- **Decision:** Select option A. The `memory_append` pause remains in force. Before any memory write may resume, the applicable profile instructions and tool defaults must fail closed so that an omitted, defaulted, unresolved, or shared-root workspace cannot become a write target. This record does not implement or activate that behavior.
+- **Technical justification:** Repeated observed routing incidents show that current defaults can direct a memory append to the shared root checkout even when an item worktree is active. A documentation-only expectation or caller convention cannot safely contain that cross-item effect because memory guidance is consumed by multiple roles and sessions, while root divergence can block unrelated validation and integration. Keeping writes paused and requiring fail-closed routing before resumption preserves existing evidence, prevents additional root mutation, and leaves the implementation architecture to a separately authorized scope review and implementation package.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Keep `memory_append` paused and require profile and tool defaults to fail closed against implicit, default, unresolved, or shared-root routing before writes resume.
+    - **Disposition:** `selected`
+    - **Reason:** This is Management-selected option A and is the only considered alternative that prevents another write while the routing target is ambiguous or unsafe.
+  - **ALT-02:** Resume or permit memory writes before fail-closed profile and tool routing is implemented, integrated, and verified.
+    - **Disposition:** `rejected`
+    - **Reason:** Caller discipline or explicit-workspace convention alone leaves the demonstrated default/root-routing failure mode available across work units.
+- **Consequences:**
+  - **CON-01:** The existing `memory_append` hold remains fully operative in every scope; ordinary profile guidance does not override it.
+  - **CON-02:** Existing divergence under `logs/agent-memory/**` remains preserved: no cleanup, staging, commit, revert, deletion, or new append is authorized by this decision.
+  - **CON-03:** This record alone changes no tool, profile, instruction, gate implementation, worktree, claim, Acceptance, integration state, or authority allocation.
+  - **CON-04:** Any mutation that implements or changes the cross-item routing or gate scope starts only after a distinct Management-instantiated Architect, separate from the Implementer, records the required supporting scope review.
+  - **CON-05:** Activation occurs only after this decision is reachable from `main`, the required Architect scope review exists, the implementation is integrated under its ordinary authority, and positive and negative validation prove that explicit safe-worktree routing succeeds while omitted, default, unresolved, shared-root, and path-escape targets fail before a write.
+  - **CON-06:** The affected interfaces are agent, role, capability-set, and Feature memory workspace selection; the profile instructions that request memory operations; and the `memory_append` tool boundary. Ordinary item scopes and Acceptance, integration, release, waiver, and specialist authorities remain unchanged.
+  - **CON-07:** Until activation, a durable learning needed for active work is recorded only in the active item claim, without calling `memory_append` or mutating memory files.
+  - **CON-08:** Rollback after any later activation disables memory writes and restores the hold before reverting the activating implementation; rollback must not route writes to the shared root or alter preserved divergence. This decision record and its provenance remain append-only.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0044`
+  - `path:logs/agent-memory`
+  - `path:docs/pipeline/core-rules.md`
+  - `path:docs/pipeline/roles/requirements-engineer.md`
+  - `external:agent-inbox-memory-append`
+- **Affected gates:**
+  - `validation:memory-workspace-routing-fail-closed`
+  - `integration:0044`
+  - `feature-closure:0044`
+- **Review participation:** `none`
+- **No-review reason:** Management requires a future, distinct Management-instantiated Architect scope review before any qualifying implementation mutation; no such review is represented as completed by this recording package.
+- **Waiver:** `none`
+
+#### Appointment event — `2026-08-28T07:11:01Z`
+
+- **Record action:** Management appoints `Data` as the bounded independent Architect for the pre-mutation scope review required by `CON-04` and the `cross-item-blast-radius` trigger of this decision.
+- **Authority and provenance:** Management decision `agent-inbox:1787900955164-f5d818a8`; recording AWARD `agent-inbox:1787901061680-280c396b`; originating decision record `docs/dossiers/dec-0044-029-memory-workspace-routing.md@6b35e9af521154ec29962d7698dc72d76598bd23`.
+- **What changes:** Data now holds the narrow Architect authority to review the proposed routing and gate reach before the first qualifying implementation mutation, identify the affected work units and gates, evaluate whether the proposed fail-closed boundary is justified and no broader than necessary, and record a review verdict bound to an exact candidate and baseline.
+- **What remains unchanged:** The `memory_append` and `memory_store.py append` hold remains in force in every scope. This appointment performs no review and authorizes no implementation, activation, Acceptance, integration verdict, checkpoint crossing, Feature closure, `DONE.md` movement, `main` movement, root mutation, memory cleanup, or memory write.
+- **Affected work and interfaces:** The appointment review covers the work units and gates already enumerated by this decision, including agent, role, capability-set, and Feature workspace selection; profile instructions requesting memory operations; the `memory_append` tool boundary; `validation:memory-workspace-routing-fail-closed`; `integration:0044`; and `feature-closure:0044`. It does not widen those scopes.
+- **Activation point:** The appointment becomes an available prerequisite only after this append-only event is reachable from `main`. Main visibility does not activate memory writes or the proposed routing behavior; implementation mutation remains barred until Data's distinct review is recorded and satisfies the existing gate.
+- **Required verification:** Data's review must cite this appointment and its main-visible commit, pin the exact proposed implementation scope and baseline, address every affected work unit, interface, and gate named above, test cross-item reach and authority boundaries, state an explicit supported or unsupported scope verdict, and remain distinct from implementation, Acceptance, and integration review. Later implementation and activation still require the positive and negative fail-closed validation specified by `CON-05`.
+
+#### Architect scope-review event — `2026-08-28T07:45:15Z`
+
+- **Review identity and authority:** Data, Management-instantiated Architect; Management appointment `agent-inbox:1787900955164-f5d818a8`; main-visible appointment `8685b9bfd910c629dec21f95f392cf22d2f23d97`; scope-review AWARD `agent-inbox:1787902704512-2b68a101`.
+- **Pinned proposal boundary:** No separate implementation candidate existed (`agent-inbox:1787903115657-5154b906`). The review binds exact `main@8685b9bfd910c629dec21f95f392cf22d2f23d97` and the current memory store, MCP, profile generator/configuration, tests, generated profiles, and documentation interfaces at external `agent-inbox@1d75e4573cf1f0cd6768b74d96b902593321322c`.
+- **Verdict:** `supports-with-conditions`.
+- **Review work product:** `docs/campaign-evidence/0044-memory-workspace-routing/architect-scope-review-data-20260828.md` on the review branch. It requires explicit active-item-worktree append routing, root/default/unresolved/path-escape rejection before any mutation, whole-profile and tool-epoch verification, separation from signing-key effects, ordered activation, fail-closed rollback, no grandfathering, and re-review for any widened candidate.
+- **Operative effect:** This event records a supporting scope verdict only. It performs no implementation, activation, hold release, Acceptance, integration verdict, checkpoint crossing, Feature closure, `DONE.md` or `main` movement, root cleanup, Memory cleanup, signing-key change, or Memory write. `CON-01` through `CON-08` remain fully operative.

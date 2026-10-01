@@ -1,0 +1,91 @@
+  1330	    total_ids = sum(len(info.get("ids", {})) for info in result.values())
+  1331	    LOG.info("phase_ids done documents=%d ids=%d elapsed=%.3fs rate=%.1f docs/s", len(paths), total_ids, elapsed, len(paths) / max(elapsed, 1e-9))
+  1332	    return result
+  1333	
+  1334	
+  1335	# ===========================================================================
+  1336	# Phase 2 — Eigenschaften je ID
+  1337	# ===========================================================================
+  1338	DEF_RE = re.compile(r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5})\]", re.IGNORECASE)
+  1339	
+  1340	
+  1341	def _record_slice(text: str, rid: str) -> str:
+  1342	    """Textausschnitt ab der ID-Definition bis zum Beginn des naechsten Records.
+  1343	
+  1344	    Bevorzugt einen *echten* Definitionsanker ``[ID] ... ⌈`` und nicht bloss
+  1345	    eine Inline-Zitierung derselben ID (z. B. in ``Dependencies``). Sonst kann
+  1346	    der Slice mitten im Vorgänger-Record starten und dessen Resttext der
+  1347	    gesuchten ID zuordnen.
+  1348	
+  1349	    Grenze ist entweder das Spec-Item-Ende (⌋) oder die naechste in eckigen
+  1350	    Klammern stehende ID — sonst laufen die Eigenschaften des Folgerecords in
+  1351	    den aktuellen hinein.
+  1352	    """
+  1353	    pattern = re.compile(r"\[%s\]" % re.escape(rid), re.IGNORECASE)
+  1354	    matches = list(pattern.finditer(text))
+  1355	    m = None
+  1356	    for cand in matches:
+  1357	        lookahead = text[cand.end():cand.end() + 240]
+  1358	        if "⌈" in lookahead:
+  1359	            pos = lookahead.find("⌈")
+  1360	            nxt = DEF_RE.search(lookahead)
+  1361	            if nxt is None or nxt.start() > pos:
+  1362	                m = cand
+  1363	                break
+  1364	    if m is None and matches:
+  1365	        m = matches[0]
+  1366	    if not m:
+  1367	        m = re.search(re.escape(rid), text, re.IGNORECASE)
+  1368	        if not m:
+  1369	            return ""
+  1370	    rest = text[m.end():]
+  1371	    grenzen = []
+  1372	    ende = rest.find("⌋")
+  1373	    if ende >= 0:
+  1374	        grenzen.append(ende)
+  1375	    nxt = DEF_RE.search(rest)
+  1376	    if nxt:
+  1377	        grenzen.append(nxt.start())
+  1378	    return rest[:min(grenzen)] if grenzen else rest[:6000]
+  1379	
+  1380	
+  1381	# Umbruch vor jeder Beschriftung — bewusst OHNE \b, weil pypdf die Zellen ohne
+  1382	# Trenner aneinanderhaengt ("ara::logSymbol: LogLevel"); dort steht zwischen
+  1383	# Wortende und Beschriftung keine Wortgrenze.
+  1384	NORMATIVE_LABELS = ["Description", "Rationale", "Dependencies", "Use Case",
+  1385	                     "AppliesTo", "Supporting Material"]
+  1386	API_LABELS = [label for label in LABELS if label not in NORMATIVE_LABELS]
+  1387	# Normative RS tables frequently omit the colon after their field labels.  API
+  1388	# property labels remain colon-gated to avoid splitting prose on common words.
+  1389	NORM_RE = re.compile(
+  1390	    r"(?<!^)(?=(?:(?:%s)\s*:|(?:%s)(?:\s*:|(?=\s|[–—-]))|"
+  1391	    r"Upstream requirements?\s*:))" % (
+  1392	        "|".join(re.escape(x) for x in API_LABELS),
+  1393	        "|".join(re.escape(x) for x in NORMATIVE_LABELS),
+  1394	    )
+  1395	)
+  1396	
+  1397	
+  1398	# pypdf trennt Ligaturen ("T race"), der eingebaute Extraktor nicht — deshalb
+  1399	# tolerieren die Muster eingestreute Leerzeichen.
+  1400	def _lose(wort: str) -> str:
+  1401	    return r"\s*".join(re.escape(c) for c in wort)
+  1402	
+  1403	
+  1404	NOISE_RES = [
+  1405	    # Vollstaendige Fusszeile: Titel (ggf. mit Ligaturrest) + Release + Seite.
+  1406	    re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}?"
+  1407	               r"\s*AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
+  1408	    re.compile(r"AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
+  1409	    re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}", re.I),
+  1410	    re.compile(r"Document\s*ID\s*\d+\s*:\s*\S+", re.I),
+  1411	    re.compile(r"\d+\s+of\s+\d+"),
+  1412	    re.compile(_lose("AUTOSARCONFIDENTIAL"), re.I),
+  1413	    re.compile(r"[\u25b3\u25bd\u25b2\u25bc]"),
+  1414	]
+  1415	
+  1416	# Reste am Ende eines Zellwerts: Seitenzahl, Dokumentnummer, Trennzeichen.
+  1417	# Eine Seitenzahl darf nur als eigenstaendiges Token entfernt werden. Die alte
+  1418	# Variante entfernte beliebige Endziffern und kuerzte dadurch gueltige Namen wie
+  1419	# ``namespace ara::crypto::x509`` zu ``namespace ara::crypto::x``.
+  1420	TAIL_RE = re.compile(

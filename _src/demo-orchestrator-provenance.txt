@@ -1,0 +1,73 @@
+# Dispatch-Arbeitsintensität · Version 1
+
+Angefordert: high. Nativer Thinking-Parameter: high. Steuerung: native+briefing.
+
+Bleibe im beauftragten Umfang und beachte die bestehenden Verträge. Für alle Stufen gelten dieselben Wahrheits- und Abnahmestandards: behaupte nur geprüfte Ergebnisse, nenne ausgeführte Prüfungen und verbleibende Lücken. Die Stufe fordert Arbeitsweise, keine garantierte Tokenzahl, Laufzeit oder Zahl künstlicher Prüfungsrunden.
+
+Prüfe Repository und relevante Verträge, reproduziere den Fehler soweit möglich und decke relevante Grenzfälle sowie Datenverlustrisiken ab. Führe passende Tests selbst aus; prüfe UI-Verhalten im echten Browser, sofern verfügbar. Kontrolliere das Ergebnis gegen die Abnahme und berichte Evidenz sowie Restlücken. Erweitere den Scope nicht allein wegen der Effort-Stufe.
+
+---
+
+> **Headless-Einmallauf 20260929-224838-grok-grok-3-demo-orchestrator. Vor allem anderen lesen.**
+> Dies ist ein nicht-interaktiver Lauf. Sobald du deinen Zug beendest, ist der Auftrag vorbei, und alles
+> Unfertige ist verloren. Es gibt keine Benachrichtigungen und niemanden, der nachfragt.
+> 1. Führe **jeden** Befehl im **Vordergrund** aus, mit ausdrücklicher Zeitschranke. Starte nichts im Hintergrund
+>    (kein `&`, kein `nohup`) und warte auf nichts. Zerlege lange Testläufe in mehrere Vordergrundaufrufe.
+> 2. Starte **keinen Befehl ein zweites Mal**, weil du sein Ergebnis nicht gesehen hast. Lies die Ausgabe aus der
+>    Datei, in die sie geschrieben wurde. Ein Befehl, der ungewöhnlich lange braucht, ist ein Befund für deinen
+>    Bericht, kein Grund zu warten.
+> 3. Arbeite nur in `/private/tmp/autodocs-worktrees/task-grok-3-demo-orchestrator`. Fasse keine anderen Arbeitsbäume und nicht den Hauptcheckout an.
+>    Prozessbereinigung nur über nachgewiesene eigene PIDs oder eine ausschließlich eigene Prozessgruppe.
+>    Keine breiten `pkill`-/`killall`-Aufrufe; fremde Server und andere Prüfläufe niemals beenden.
+> 4. Git immer als `git -C /private/tmp/autodocs-worktrees/task-grok-3-demo-orchestrator …`. Kein `git stash`, kein `git push`, keine Änderung fremder
+>    Historie, keine `Co-Authored-By`- oder `Claude-Session`-Zeilen.
+> 5. **Der Auftrag ist erst mit dem Commit erfüllt.** Committe in kleinen Schritten mit klaren
+>    Nachrichten. Ein Arbeitsbaum voller ungespeicherter Arbeit zählt als nicht geliefert;
+>    `git -C /private/tmp/autodocs-worktrees/task-grok-3-demo-orchestrator status --porcelain` muss am Ende leer sein.
+> 6. Deine **letzte Nachricht ist der Bericht**: was erledigt ist, was nicht (mit Grund), Commits, die genauen
+>    Testbefehle mit dem Ende ihrer Ausgabe, Abweichungen vom Auftrag. Nenne, was du nicht geschafft hast, so
+>    deutlich wie das Erledigte. Letzte Zeile: `DISPATCH-DONE 20260929-224838-grok-grok-3-demo-orchestrator`.
+>
+> Warum das hier steht: im September 2026 arbeiteten drei Läufe zusammen 5,4 Stunden, hinterließen guten Code und
+> keinen einzigen Commit. Sie hatten Tests im Hintergrund gestartet und danach nur noch das Warten beschrieben.
+
+
+---
+
+# Brief: End-to-End Orchestrator & Live Demonstration Server
+
+## Objective
+Implement an interactive local demonstration server and integration test suite (`_src/serve.py` + `_src/tests/test_e2e_experience.py` + `demo.html`) that makes all 6 core pillars immediately runnable, experiential, and demonstrable in the browser.
+
+## Context
+The user requested:
+"/goal den geplanten Funktionsumfang (Darstellung von Autosar Classic + S-Core-Doku, ingest von user-feedback, kuratierung und review, UX-Konzept, interaktive Diskussion mit AI-Agenten, automatische Neuerzeugung von AI-kommentaren nach Feedback oder Spec-update) vollständig erlebbar machen."
+The system needs a single executable command (`python3 _src/serve.py`) that boots up a local web server serving the documentation, handling API requests (feedback, curation, discuss), running the feedback loop in the background, and providing an interactive guided walkthrough (`demo.html`).
+
+## Deliverables
+1. Enhance `_src/serve.py`:
+   - Standalone Python HTTP server (using `http.server` / `urllib` / lightweight standard library without external dependencies):
+     - Serves static documentation files from root and subdirectories.
+     - Implements REST API endpoints:
+       - `POST /api/feedback`: Receives user feedback, saves to `_src/spec/feedback-queue/`, returns 201 with receipt.
+       - `POST /api/curate`: Receives curator decision (accept, reject, change stereotype, delete mapping), saves envelope, returns 200.
+       - `POST /api/discuss`: Receives prompt + context, generates contextual AI reply / proposal, returns 200.
+       - `POST /api/feedback-loop/run`: Triggers `feedback_loop.py` to rebuild affected pages and returns execution summary.
+       - `GET /api/status`: Returns system status across the 3 universes, pending feedback items, and curation queue counts.
+2. Live Walkthrough Page `demo.html`:
+   - A dedicated interactive tour page demonstrating all 6 pillars with clickable links and live cards:
+     1. Universe Switcher: Adaptive, Classic, S-Core.
+     2. UX Shell: 6 global domains (*Explore*, *Trace*, *Curate*, *Review*, *Work*, *Reports*), Dark/Light mode, Density toggle.
+     3. Traceability Graph: Interactive Cytoscape / Cuttlefish graph with stereotype badges.
+     4. Component Inspector: Live component inspection, stereotype dropdown, and direct delete/unbind action.
+     5. Feedback Submission: Live modal with receipt dialog.
+     6. Discuss with AI & Closed Feedback Loop: Live chat, context inspector, proposal generation, and triggering of automatic comment regeneration.
+3. End-to-End Test Suite:
+   - Create `_src/tests/test_e2e_experience.py`:
+     - Spawns the server in a test thread.
+     - Executes HTTP requests against `/api/status`, `/api/feedback`, `/api/curate`, `/api/discuss`, and `/api/feedback-loop/run`.
+     - Validates that each endpoint returns status 200 and performs expected file operations.
+
+## Acceptance Oracle
+Run: `python3 -m unittest _src/tests/test_e2e_experience.py` -> All tests PASS.
+Commit all changes to your branch with a clear descriptive message.

@@ -1,0 +1,110 @@
+{
+ "titel": "ECU-State-Machine: Startup bis Run und Shutdown",
+ "teilnehmer": [
+  {
+   "name": "Bootloader / MCU",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "ECU State Manager (EcuM)",
+   "href": "ecum.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "BSW Mode Manager (BswM)",
+   "href": "../system.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "BSW & OS Services",
+   "href": "../os.html",
+   "klasse": "vis-app"
+  }
+ ],
+ "schritte": [
+  {
+   "art": "nachricht",
+   "von": 0,
+   "nach": 1,
+   "text": [
+    "EcuM_Init() (Phase STARTUP I: Pre-OS)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Basistreiber initialisieren (MCU, Port, Gpt)"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 3,
+   "text": [
+    "StartOS(OSDEFAULTAPPMODE)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 1,
+   "text": [
+    "Startup-Hook: EcuM_StartupTwo()"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 2,
+   "text": [
+    "BswM_Init() (Phase STARTUP II: Post-OS)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 2,
+   "text": [
+    "EcuM_RequestRUN(ClientId)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 2,
+   "text": [
+    "Zustand RUN: Kommunikation & RTE starten"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 1,
+   "text": [
+    "EcuM_GoDown() (Shutdown eingeleitet)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 3,
+   "text": [
+    "ShutdownOS()"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  }
+ ]
+}

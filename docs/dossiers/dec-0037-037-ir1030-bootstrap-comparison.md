@@ -1,0 +1,89 @@
+### `DEC-0037-037` — Repair the bootstrap catalog/list comparison without widening the frozen baseline
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-05T17:41:21+02:00`
+- **Deciding identity:** `agent:supervisor:0037-35.01:20260905T154121Z`
+- **Role:** `Management`
+- **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Subject:** Representation-correct repair of the cross-item `IR1030` bootstrap catalog/list comparison and bounded treatment of the associated `IR1031` no-provenance validation control for Task `0037-35.01`.
+- **Decision:** Repair `_src/tools/issue_regenerate.py` so bootstrap comparison checks exact ordered membership and every non-label field while independently deriving and checking each item label list against canonical issue labels. Every wrong label, non-label difference, missing or extra item, identity, order, or multiplicity difference remains blocking as `IR1030`. Do not authorize a general `IR1030` bypass. Within isolated `0037-35.01` evidence only, retain `IR1031` as a red control and accept its full 241-diagnostic multiset only when independently proven byte-for-byte and multiplicity-for-multiplicity equal to the already authorized 244-diagnostic multiset minus exactly the three named `IV0901` oversized-provenance findings.
+- **Technical justification:** At `main@3030e2a4d30832c77cf5a025b07dfa1bc9c28c5c`, all 551 bootstrap item comparisons differ only because `issue_lists.py` emits canonical `labels` arrays while the view representation omits that field. The item-array digests are `851fa22ae642a59780e73fc322e33ecb0a72a372eb98c1576155baac9719794e` for views and `687370a32b471206d414928e06ab20639e359a4dcc8d44404faf717a8ae5ae2e` for lists. Treating this deterministic representation mismatch as a baseline exception would weaken a repository-wide gate and compound the circular trust problem already found in rejected candidates. A narrow comparison repair preserves the intended semantic invariant and permits real eight-output bootstrap execution without hiding genuine differences. The exact `IR1031` 241-multiset digest is `a11ba09ae959cf9d3d1b9f2b1a81bc8e9db6c42b3dd9e46b3b96a84bc7a59fc9`; counts, prefixes, truncation, or any other substitution are insufficient.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Repair the representation comparison and validate canonical labels independently.
+    - **Disposition:** `selected`
+    - **Reason:** Preserves the gate intent, keeps semantic differences fail-closed, and removes the need for an evidence-only bootstrap bypass.
+  - **ALT-02:** Authorize an exact labels-only `IR1030` and 241-diagnostic `IR1031` disposition only inside `0037-35.01`.
+    - **Disposition:** `rejected`
+    - **Reason:** Retains inconsistent representations and expands the embedded evidence harness and its circular trust surface.
+  - **ALT-03:** Leave `IR1030` blocking and stop the cutover.
+    - **Disposition:** `rejected`
+    - **Reason:** Avoids source change but makes the required real eight-output bootstrap proof and therefore Feature `0037` completion unreachable.
+- **Consequences:**
+  - **CON-01:** The implementation is limited to `_src/tools/issue_regenerate.py`, `_src/tests/test_issue_regenerate.py`, and the downstream `0037-35.01` evidence correction on the existing linear candidate ref.
+  - **CON-02:** Tests must include baseline-red/candidate-green execution, absent and empty labels, forged and reordered labels, identity and membership failures, and the Architect-specified exhaustive 392-case oracle.
+  - **CON-03:** Ordinary bootstrap on the frozen real input still advances to genuine red `IR1031`; neither this decision nor a green focused test weakens the `0037-36` or `0037-40` zero-failure thresholds.
+  - **CON-04:** No issue, claim, closure, authority selector, freeze, publication, remote, Acceptance, checkpoint, or Feature-closure effect is authorized.
+- **Affected work units:**
+  - `subtask:0037-35.01`
+  - `subtask:0037-35.02`
+  - `task:0037-35`
+  - `task:0037-36`
+  - `task:0037-40`
+  - `path:_src/tools/issue_regenerate.py`
+  - `path:_src/tests/test_issue_regenerate.py`
+- **Affected gates:**
+  - `validation:_src/tools/issue_regenerate.py`
+  - `validation:IR1030`
+  - `validation:IR1031`
+  - `integration:0037-40`
+  - `feature-closure:0037`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0037-35.01:1788622388397-a0f0f9a3`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** The accepted read-only scope review bounded the repair to three paths, specified exact ordered comparison and canonical-label semantics, defined the exhaustive 392-case oracle, and retained the full `IR1031` red control and downstream thresholds.
+- **Waiver:** `none`
+
+#### `DEC-0037-037-C001`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0037-037`
+- **Recorded at:** `2026-09-05T17:51:00+02:00`
+- **Correcting identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Role:** `Management`
+- **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Correction reason:** The base record attributed the decision to the coordinating supervisor instead of the durable Management resolver recorded by the decision archive.
+- **Target field:** `Deciding identity`
+- **Previous effective block SHA-256:** `7ecb66076b328f47035c73e524a7f2090afa72fb2c68583163620ab192ee4bf5`
+- **Replacement block:**
+  ```markdown
+  - **Deciding identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+  ```
+
+#### `DEC-0037-037-C002`
+
+- **Event format:** `decision-record-correction@v1`
+- **Target record:** `DEC-0037-037`
+- **Recorded at:** `2026-09-05T17:51:01+02:00`
+- **Correcting identity:** `authority:mancons:decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Role:** `Management`
+- **Authority reference:** `decision-0037-35-01-ir1030-bootstrap-guard-20260905`
+- **Correction reason:** The base participation note summarized the accepted Architect review but did not bind its exact result records, callers, comparison contract, exhaustive domain, adjacent cases, and validation boundaries.
+- **Target field:** `Review participation`
+- **Previous effective block SHA-256:** `927f9f9c3451880c80935abf78bf7ddda7dfecf9d92b0d6c5f8b6ddbe826f057`
+- **Replacement block:**
+  ```markdown
+  - **Review participation:**
+    - **PART-01:**
+      - **Identity:** `agent:data:0037-35.01:1788622388397-a0f0f9a3`
+      - **Role:** `Architekt`
+      - **Participation:** `reviewed`
+      - **Position:** `supports`
+      - **Note:** Accepted scope review `1788622388397-a0f0f9a3`, results `1788622540833-9e46d191`, `1788622571215-9c8a9d3e`, `1788622571247-6d06d1de`, and `1788622540894-4389869a`, bounds callers to `bootstrap_refresh` and inherited `issuectl.cmd_bootstrap`; compares exact ordered identities, lengths, non-label key sets and recursive values; derives every list/view label array from canonical issue labels; retains `IR1030` for every other mismatch; and requires baseline-red/candidate-green real fixtures plus 392 exhaustive cases from seven canonical-label arrays by seven observed arrays by two view-label-presence states by four shared-field states, with adjacent absent/empty, forged/reordered, missing/extra/duplicate identity, malformed source, nested-change, immutability, real eight-output write/check/no-op, and exact 241-as-244-minus-three `IV0901` evidence. No fourth source file, bypass, threshold change, or waiver is supported.
+  ```

@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const state=document.getElementById('client-render-state');state.dataset.clientRender='verified';state.textContent='Client rendering verified; unvalidated marker remains visible.';});

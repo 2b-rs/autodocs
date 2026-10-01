@@ -1,0 +1,64 @@
+# Scoped frozen-state completion delta for Tasks 0037-43 and 0037-44
+
+### `DEC-0037-031` — Scoped frozen-state completion delta for Tasks 0037-43 and 0037-44
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-09-04T08:31:21Z`
+- **Deciding identity:** `authority:management:decision-1788485334668-c71f3fc5`
+- **Role:** `Management`
+- **Authority reference:** Durable decision request `decision-1788485334668-c71f3fc5`, resolved as `authorize_scoped_closure_delta` at `2026-09-04T08:31:21Z`.
+- **Subject:** Permit a narrowly reviewed completion transaction for Tasks `0037-43` and `0037-44` while Feature 0037 remains in `legacy-frozen`, without reopening ordinary legacy writes.
+- **Decision:** Select `authorize_scoped_closure_delta`. An additive completion delta may be prepared for the already-integrated Task `0037-43` and `0037-44` work products and receipts. The delta may become operative only after a distinct Management-instantiated Architect has reviewed and supported its exact cross-item gate scope and the decision record and scope review have entered the independently validated reserved integration chain. This record alone changes no gate. The operative candidate must be newly derived from the current authorized baseline and must not reuse rejected candidate `6a140653b8c18b1282d5bf93081020345086ec6b`.
+- **Technical justification:** The Task products and their immutable receipt evidence are already reachable, but the `legacy-frozen` integration policy rejects the legacy backlog and claim bookkeeping needed to close the two Tasks. Technical convergence at `62deb449d0a9c503d1d81f23826502cf19d86752` and independent rejection at `adbe68e6974a2abb7699b72bb9d20ea1a34c49dd` demonstrate both the bounded closure need and why an ordinary write is invalid. A reviewed completion-specific delta resolves that frozen-state lifecycle deadlock while retaining the original freeze against unrelated legacy mutations.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Authorize a scoped frozen-state completion delta for Tasks `0037-43` and `0037-44`.
+    - **Disposition:** `selected`
+    - **Reason:** It permits only the missing closure transaction, subject to an independent Architect scope review and integration validation, while preserving the freeze elsewhere.
+  - **ALT-02:** Restore the pre-freeze state, complete the Tasks, then freeze again.
+    - **Disposition:** `rejected`
+    - **Reason:** It introduces avoidable state transitions and a wider interval in which the legacy store is writable.
+  - **ALT-03:** Apply the rejected legacy-write candidate directly or treat existing receipts as authority to bypass the gate.
+    - **Disposition:** `rejected`
+    - **Reason:** Candidate `6a140653b8c18b1282d5bf93081020345086ec6b` failed the independent policy review, and receipts prove ancestry rather than permission to mutate frozen governance state.
+- **Consequences:**
+  - **CON-01:** Before any operative mutation, the exact delta requires a supporting scope review by a Management-instantiated Architect whose identity is distinct from the Implementer.
+  - **CON-02:** The completion candidate must be independently validated and integrated through its reserved chain; this record grants no Acceptance, integration, `main`, push, publication, or product authority.
+  - **CON-03:** Outside the reviewed `0037-43`/`0037-44` completion transaction, `legacy-frozen`, `POLICY-FROZEN-LEGACY-CLAIM-PROHIBITED`, `POLICY-FROZEN-BACKLOG-EDIT-PROHIBITED`, and the no-shadow-write invariant remain unchanged.
+  - **CON-04:** The operative validation must recheck the affected Feature 0037 sequence, including Tasks `0037-30`, `0037-31`, `0037-34.01`, `0037-32`, `0037-33`, and `0037-40`, and must demonstrate that unrelated legacy writes still fail closed.
+  - **CON-05:** The rejected candidate `6a140653b8c18b1282d5bf93081020345086ec6b` remains evidence only and is not a reusable implementation candidate.
+  - **CON-06:** Any implementation is bound to its exact assignment, permitted paths, before-and-after blob identities, and complete product-and-receipt manifest; it must apply atomically with compare-and-swap and idempotence checks.
+  - **CON-07:** After the delta, downstream aggregate digests must be recomputed and matched to the declared manifest before any affected start, integration, or closure gate advances.
+  - **CON-08:** The delta conveys no Acceptance and permits no legacy write beyond the exact reviewed completion transaction.
+- **Affected work units:**
+  - `repository:autodocs`
+  - `feature:0037`
+  - `task:0037-43`
+  - `task:0037-44`
+  - `task:0037-30`
+  - `task:0037-31`
+  - `subtask:0037-34.01`
+  - `task:0037-32`
+  - `task:0037-33`
+  - `task:0037-40`
+  - `path:TODO.md`
+  - `path:TODO-wesley-0037-43-i43-block-004-20260903.md`
+  - `path:TODO-wesley-0037-44-repair-1788460354541.md`
+- **Affected gates:**
+  - `validation:_src/tools/issue_integration_policy.py`
+  - `validation:_src/tools/agent_bootstrap.py`
+  - `integration:0037-43`
+  - `integration:0037-44`
+  - `task-start:0037-31`
+  - `task-start:0037-32`
+  - `task-start:0037-33`
+  - `task-start:0037-34.01`
+  - `task-start:0037-40`
+  - `integration:0037-34.01`
+  - `feature-closure:0037`
+- **Review participation:** none
+- **No-review reason:** The mandatory distinct Management-instantiated Architect scope review is a separately assigned artifact and was not yet available when this decision record preparation candidate was authored. Prior technical consultations are evidence, not the required formal scope review.
+- **Waiver:** none

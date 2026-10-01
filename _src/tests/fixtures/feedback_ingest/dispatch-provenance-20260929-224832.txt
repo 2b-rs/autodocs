@@ -1,0 +1,80 @@
+Dispatch-ID: 20260929-224832-cursor-cursor-3-feedback-ingest
+Worktree: /private/tmp/autodocs-worktrees/task-cursor-3-feedback-ingest
+Pre-change baseline: 29aeadfbd34c84d7f02951f33b4383217c046330
+
+The following is the verbatim user-authored prompt that requested this check-in.
+
+---
+# Dispatch-Arbeitsintensität · Version 1
+
+Angefordert: high. Nativer Thinking-Parameter: high. Steuerung: native+briefing.
+
+Bleibe im beauftragten Umfang und beachte die bestehenden Verträge. Für alle Stufen gelten dieselben Wahrheits- und Abnahmestandards: behaupte nur geprüfte Ergebnisse, nenne ausgeführte Prüfungen und verbleibende Lücken. Die Stufe fordert Arbeitsweise, keine garantierte Tokenzahl, Laufzeit oder Zahl künstlicher Prüfungsrunden.
+
+Prüfe Repository und relevante Verträge, reproduziere den Fehler soweit möglich und decke relevante Grenzfälle sowie Datenverlustrisiken ab. Führe passende Tests selbst aus; prüfe UI-Verhalten im echten Browser, sofern verfügbar. Kontrolliere das Ergebnis gegen die Abnahme und berichte Evidenz sowie Restlücken. Erweitere den Scope nicht allein wegen der Effort-Stufe.
+
+---
+
+> **Headless-Einmallauf 20260929-224832-cursor-cursor-3-feedback-ingest. Vor allem anderen lesen.**
+> Dies ist ein nicht-interaktiver Lauf. Sobald du deinen Zug beendest, ist der Auftrag vorbei, und alles
+> Unfertige ist verloren. Es gibt keine Benachrichtigungen und niemanden, der nachfragt.
+> 1. Führe **jeden** Befehl im **Vordergrund** aus, mit ausdrücklicher Zeitschranke. Starte nichts im Hintergrund
+>    (kein `&`, kein `nohup`) und warte auf nichts. Zerlege lange Testläufe in mehrere Vordergrundaufrufe.
+> 2. Starte **keinen Befehl ein zweites Mal**, weil du sein Ergebnis nicht gesehen hast. Lies die Ausgabe aus der
+>    Datei, in die sie geschrieben wurde. Ein Befehl, der ungewöhnlich lange braucht, ist ein Befund für deinen
+>    Bericht, kein Grund zu warten.
+> 3. Arbeite nur in `/private/tmp/autodocs-worktrees/task-cursor-3-feedback-ingest`. Fasse keine anderen Arbeitsbäume und nicht den Hauptcheckout an.
+>    Prozessbereinigung nur über nachgewiesene eigene PIDs oder eine ausschließlich eigene Prozessgruppe.
+>    Keine breiten `pkill`-/`killall`-Aufrufe; fremde Server und andere Prüfläufe niemals beenden.
+> 4. Git immer als `git -C /private/tmp/autodocs-worktrees/task-cursor-3-feedback-ingest …`. Kein `git stash`, kein `git push`, keine Änderung fremder
+>    Historie, keine `Co-Authored-By`- oder `Claude-Session`-Zeilen.
+> 5. **Der Auftrag ist erst mit dem Commit erfüllt.** Committe in kleinen Schritten mit klaren
+>    Nachrichten. Ein Arbeitsbaum voller ungespeicherter Arbeit zählt als nicht geliefert;
+>    `git -C /private/tmp/autodocs-worktrees/task-cursor-3-feedback-ingest status --porcelain` muss am Ende leer sein.
+> 6. Deine **letzte Nachricht ist der Bericht**: was erledigt ist, was nicht (mit Grund), Commits, die genauen
+>    Testbefehle mit dem Ende ihrer Ausgabe, Abweichungen vom Auftrag. Nenne, was du nicht geschafft hast, so
+>    deutlich wie das Erledigte. Letzte Zeile: `DISPATCH-DONE 20260929-224832-cursor-cursor-3-feedback-ingest`.
+>
+> Warum das hier steht: im September 2026 arbeiteten drei Läufe zusammen 5,4 Stunden, hinterließen guten Code und
+> keinen einzigen Commit. Sie hatten Tests im Hintergrund gestartet und danach nur noch das Warten beschrieben.
+
+
+---
+
+# Brief: User Feedback Ingest & Review-Request Dialog
+
+## Objective
+Implement an accessible, end-to-end User Feedback and Defect Ingestion workflow (`review_request.js` + queue backend), supporting rich user feedback, client-side validation, envelope creation (`user-feedback-envelope@v1`), and receipt issuance.
+
+## Context
+Feature 0021 and Feature 0035 laid the groundwork. To make feedback submission fully experiential and secure without exposing browser PAT tokens, we need an interactive dialog on every documentation view that validates submissions, packages them into an append-only feedback queue under `_src/spec/feedback-queue/`, and provides a receipt with a tracking hash.
+
+## Deliverables
+1. `review_request.js` / Modal UI:
+   - Floating / Header button "Feedback / Mangel melden" on every documentation view.
+   - Form Fields:
+     - Target Specification / Component ID (pre-populated from current page/section).
+     - Category (Inhaltlich, Fehlende Information, Übersetzungsfehler, Unklarheit, Typo).
+     - Title / Summary.
+     - Detailed Description.
+     - Proposed Change (optional text/markdown diff).
+     - Severity: Blocker, Major, Minor, Editorial.
+     - Submitter Handle / Email (optional or pseudonymous).
+2. Data Envelope & Storage:
+   - Generate schema-compliant `user-feedback-envelope@v1`:
+     - `feedback_id`: UUID or timestamp-hash.
+     - `submitted_at`: ISO timestamp.
+     - `target_id`, `category`, `severity`, `description`, `proposed_change`.
+     - `receipt_hash`: SHA-256 over canonical JSON.
+   - Store in `_src/spec/feedback-queue/<timestamp>-<id>.json`.
+   - Provide fallback local storage queuing if offline or server endpoint unreachable.
+3. Receipt Modal:
+   - On submission, display a receipt dialog showing the `feedback_id`, `receipt_hash`, and status "Eingereicht / In Warteschlange".
+4. Integration into templates:
+   - Connect trigger button in `_src/templates/page.html.tmpl`.
+5. Tests:
+   - Create `_src/tests/test_feedback_ingest.py` validating form validation, envelope formatting, SHA-256 receipt generation, and queue file creation.
+
+## Acceptance Oracle
+Run: `python3 -m unittest _src/tests/test_feedback_ingest.py` -> All tests PASS.
+Commit all changes to your branch with a clear descriptive message.

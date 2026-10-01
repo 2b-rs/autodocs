@@ -1,0 +1,54 @@
+<div class="ai"><p class="ai-note">Automatisch generierte Beschreibung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Dokumenten (SWS-Spezifikation und begleitende Standarddokumente) — kein offizieller AUTOSAR-Text. Als Interpretation gekennzeichnete Aussagen sind Schlussfolgerungen aus den Quellen.</p><h4>Verwendungszweck</h4><p><code>ara::core::ErrorDomain</code> bildet den Kontext für Fehlerbedingungen, kontrolliert die Fehlerwerte von <code>ErrorCode</code> und ordnet ihnen Textdarstellungen zu <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00110" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Core.pdf)">[SWS_CORE_00110]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10303">[SWS_CORE_10303]</a>. Es ist die Basisklasse konkreter Fehlerdomänen und selbst ein Literal Type <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_00110" title="Spezifikations-PDF (AUTOSAR_AP_SWS_Core.pdf)">[SWS_CORE_00110]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10400">[SWS_CORE_10400]</a>.</p><h4>Erzeugung &amp; Zerstörung</h4><p>Die geschützte Erzeugung nimmt eine erwartungsgemäß systemweit eindeutige Domain-ID entgegen <a class="swsref" href="#SWS_CORE_00135">[SWS_CORE_00135]</a>. Der Destruktor ist bewusst nicht virtuell und trivial, da keine polymorphe Zerstörung nötig ist und die Literal-Type-Eigenschaft erhalten bleibt <a class="swsref" href="#SWS_CORE_00136">[SWS_CORE_00136]</a>.</p><h4>Lebenszyklus &amp; Ownership</h4><p>Kopieren und Verschieben einschließlich Zuweisung sind unterbunden <a class="swsref" href="#SWS_CORE_00131">[SWS_CORE_00131]</a> <a class="swsref" href="#SWS_CORE_00132">[SWS_CORE_00132]</a> <a class="swsref" href="#SWS_CORE_00133">[SWS_CORE_00133]</a> <a class="swsref" href="#SWS_CORE_00134">[SWS_CORE_00134]</a>. Die von <code>Name()</code> und <code>Message()</code> gelieferten Zeichenzeiger verbleiben im Besitz der Domäne beziehungsweise ihrer Unterklasse und dürfen von Clients nicht freigegeben werden <a class="swsref" href="#SWS_CORE_00152">[SWS_CORE_00152]</a> <a class="swsref" href="#SWS_CORE_00153">[SWS_CORE_00153]</a>.</p><h4>Zusammenspiel mit anderen Klassen</h4><p><code>Id()</code> liefert die eindeutige ID. Zwei Domains sind genau dann gleich, wenn ihre IDs gleich sind <a class="swsref" href="#SWS_CORE_00151">[SWS_CORE_00151]</a> <a class="swsref" href="#SWS_CORE_00137">[SWS_CORE_00137]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10401">[SWS_CORE_10401]</a>. Abgeleitete Domains implementieren <code>Name()</code>, <code>Message()</code> und <code>ThrowAsException()</code>; sie sollen <code>final</code> sein und Aliase <code>Errc</code> und <code>Exception</code> bereitstellen <a class="swsref" href="#SWS_CORE_00152">[SWS_CORE_00152]</a> <a class="swsref" href="#SWS_CORE_00153">[SWS_CORE_00153]</a> <a class="swsref" href="#SWS_CORE_00154">[SWS_CORE_00154]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10932">[SWS_CORE_10932]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10933">[SWS_CORE_10933]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10934">[SWS_CORE_10934]</a>.</p><h4>Einschränkungen &amp; Fehlerbehandlung</h4><p><code>ThrowAsException()</code> bestimmt einen passenden Exception-Typ, enthält den übergebenen <code>ErrorCode</code> und nimmt bei deaktivierten C++-Exceptions nicht an der Overload-Auflösung teil <a class="swsref" href="#SWS_CORE_00154">[SWS_CORE_00154]</a> <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10304">[SWS_CORE_10304]</a>. Mit Ausnahme dieser Funktion müssen öffentliche Funktionen konkreter Error Domains <code>noexcept</code> sein <a class="swsref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=SWS_CORE_10950">[SWS_CORE_10950]</a>.</p><h4>Abgrenzung von Fehlerdomänen</h4><p>Fehlerdomänen liefern den Kontext, in dem ein Fehlerwert gilt. Für herstellerspezifische Fehler sind eigene Domains vorgesehen, damit ihre Zuordnung eindeutig bleibt; portable Anwendungen berücksichtigen sie als Default-Fall. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=subsection.3.1.5">EXP InterfacesGuidelines §3.1.5 „Standardized vs Vendor-specific ErrorCodes“</a></p><p>Die Rust-Bindung illustriert dieselbe Trennung: Ein Enum implementiert dort das ErrorDomain-Trait und wird zur Erzeugung von <code>ErrorCode</code>-Objekten verwendet. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARARustApplications.pdf#nameddest=section.5.6">EXP ARARustApplications §5.6 „Creating a new ErrorDomain“</a></p><div class="diagram" id="diag-01"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewbox="0.00 0.00 289.00 105.00" style="max-width:385px">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 101)">
+<title>G</title>
+<!-- ec -->
+<g id="node1" class="node vis-app">
+<title>ec</title>
+<g id="a_node1"><a xlink:href="cl_ara_core_ErrorCode_538b08.html" xlink:title="ErrorCode" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="67,-70 0,-70 0,-34 67,-34 67,-70"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="33.5" y="-47.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ErrorCode</text>
+</a>
+</g>
+</g>
+<!-- ed -->
+<g id="node2" class="node vis-app">
+<title>ed</title>
+<g id="a_node2"><a xlink:href="cl_ara_core_ErrorDomain_a538fe.html" xlink:title="ErrorDomain" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="281,-97 202.75,-97 202.75,-61 281,-61 281,-97"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="241.88" y="-74.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">ErrorDomain</text>
+</a>
+</g>
+</g>
+<!-- ec&#45;&gt;ed -->
+<g id="edge1" class="edge">
+<title>ec-&gt;ed</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M67.51,-60.53C73.31,-61.83 79.31,-63.05 85,-64 120.2,-69.85 160.27,-73.64 190.97,-75.95"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="190.36,-79.42 200.59,-76.64 190.87,-72.43 190.36,-79.42"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="134.88" y="-76.94" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">1: Domain()</text>
+</g>
+<!-- ex -->
+<g id="node3" class="node vis-app">
+<title>ex</title>
+<g id="a_node3"><a xlink:href="cl_ara_core_Exception_a2d771.html" xlink:title="Exception" target="_top" class="vis-app">
+<polygon fill="#ffffff" stroke="#01696f" stroke-width="1.2" points="273.5,-36 210.25,-36 210.25,0 273.5,0 273.5,-36"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="241.88" y="-13.55" font-family="Helvetica,sans-Serif" font-size="11.00" fill="#01696f">Exception</text>
+</a>
+</g>
+</g>
+<!-- ec&#45;&gt;ex -->
+<g id="edge2" class="edge">
+<title>ec-&gt;ex</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M67.56,-34.73C73.25,-32.36 79.2,-30.23 85,-28.75 122.52,-19.16 166.67,-16.93 198.38,-16.82"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="198.21,-20.32 208.23,-16.87 198.24,-13.32 198.21,-20.32"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="134.88" y="-30.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">3: ThrowAsException()</text>
+</g>
+<!-- ed&#45;&gt;ec -->
+<g id="edge3" class="edge">
+<title>ed-&gt;ec</title>
+<path fill="none" stroke="#28251d" stroke-width="1.1" d="M210.4,-60.45C202.34,-56.46 193.45,-52.82 184.75,-50.75 149.91,-42.48 109.23,-43.44 78.99,-46.1"></path>
+<polygon fill="#28251d" stroke="#28251d" stroke-width="1.1" points="78.8,-42.61 69.2,-47.08 79.49,-49.57 78.8,-42.61"></polygon>
+<text xml:space="preserve" text-anchor="middle" x="134.88" y="-52.5" font-family="Helvetica,sans-Serif" font-size="10.00" fill="#28251d">2: Message()/Kontext</text>
+</g>
+</g>
+</svg>
+</div><p class="diagram-note">Kollaborationsdiagramm: Die Domain bestimmt den Fehlerkontext und unterstützt die explizite Exception-Umwandlung des <code>ErrorCode</code>. Quellen: <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_InterfacesGuidelines.pdf#nameddest=subsection.3.1.2">EXP InterfacesGuidelines §3.1.2 „Result“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_EXP_ARARustApplications.pdf#nameddest=section.5.6">EXP ARARustApplications §5.6 „Creating a new ErrorDomain“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_RS_General.pdf#nameddest=subsection.4.1.3">RS General §4.1.3 „The use of noexcept“</a>.</p><h4>Identität, Nachricht und Exception-Grenze</h4><p>Eine ErrorDomain definiert die Bedeutung ihrer Fehlerwerte, einschließlich einer stabilen Identität und der Erzeugung der Nachricht. Ihre Rolle ist nicht nur eine Aufzählung: Sie stellt den Kontext bereit, den ein <code>ErrorCode</code> für Vergleich, Textdarstellung und die explizite Exception-Umwandlung benötigt. <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=section.7.2">SWS Core §7.2 „Error handling“</a> <a class="docref" href="https://www.autosar.org/fileadmin/standards/R25-11/AP/AUTOSAR_AP_SWS_Core.pdf#nameddest=subsubsection.7.2.5.2">SWS Core §7.2.5.2 „Error Domain“</a></p></div>

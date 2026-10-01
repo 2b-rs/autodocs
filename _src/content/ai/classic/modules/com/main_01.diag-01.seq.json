@@ -1,0 +1,99 @@
+{
+ "titel": "Signal-Packung, Übertragungsmodi und Filterung in AUTOSAR COM",
+ "teilnehmer": [
+  {
+   "name": "Application (RTE)",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "AUTOSAR COM (Com)",
+   "href": "com.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "PDU Router (PduR)",
+   "href": "pdur.html",
+   "klasse": "vis-app"
+  }
+ ],
+ "schritte": [
+  {
+   "art": "nachricht",
+   "von": 0,
+   "nach": 1,
+   "text": [
+    "Com_SendSignal(SignalId, &SignalData)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Filterbedingung prüfen (z.B. MASKED_NEW_DIFFERS_MASKED_OLD)"
+   ]
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Signal in I-PDU Shadow-Buffer packen"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 2,
+   "text": [
+    "PduR_ComTransmit(PduId, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Deadline-Monitoring Timer starten"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 1,
+   "text": [
+    "PduR_ComTxConfirmation(PduId)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 1,
+   "text": [
+    "PduR_ComRxIndication(PduId, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "selbst",
+   "teilnehmer": 1,
+   "text": [
+    "Signale entpacken & Update-Bits auswerten"
+   ]
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 0,
+   "text": [
+    "Com_ReceiveSignal(SignalId, &Data)"
+   ],
+   "pfeil": "offen",
+   "gestrichelt": true
+  }
+ ]
+}

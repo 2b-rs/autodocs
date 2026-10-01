@@ -1,0 +1,22 @@
+{
+  "schema": "task-acceptance-policy-fixtures@v1",
+  "cases": [
+    {"name":"linear-unflagged-predecessors","tasks":{"A":{"prereq":[],"checkpoint":false},"B":{"prereq":["A"],"checkpoint":false},"C":{"prereq":["B"],"checkpoint":true}},"assigned":["C"],"accepted":[],"expected_batch":["A","B","C"],"expected_error":null},
+    {"name":"accepted-boundary","tasks":{"A":{"prereq":[],"checkpoint":false},"B":{"prereq":["A"],"checkpoint":false},"C":{"prereq":["B"],"checkpoint":true}},"assigned":["C"],"accepted":["A"],"expected_batch":["B","C"],"expected_error":null},
+    {"name":"branching-deterministic","tasks":{"A":{"prereq":[],"checkpoint":false},"B":{"prereq":["A"],"checkpoint":false},"C":{"prereq":["A"],"checkpoint":false},"D":{"prereq":["C","B"],"checkpoint":true}},"assigned":["D"],"accepted":[],"expected_batch":["A","B","C","D"],"expected_error":null},
+    {"name":"unassigned-predecessor-checkpoint","tasks":{"P":{"prereq":[],"checkpoint":true},"C":{"prereq":["P"],"checkpoint":true}},"assigned":["C"],"accepted":[],"expected_batch":null,"expected_error":"unassigned checkpoint P"},
+    {"name":"explicit-predecessor-checkpoint-batch","tasks":{"A":{"prereq":[],"checkpoint":false},"P":{"prereq":["A"],"checkpoint":true},"C":{"prereq":["P"],"checkpoint":true}},"assigned":["P","C"],"accepted":[],"expected_batch":["A","P","C"],"expected_error":null},
+    {"name":"wontfix-predecessor","tasks":{"W":{"prereq":[],"checkpoint":false,"marker":"w"},"C":{"prereq":["W"],"checkpoint":true}},"assigned":["C"],"accepted":[],"expected_batch":["W","C"],"expected_error":null},
+    {"name":"missing-endpoint","tasks":{"C":{"prereq":["MISSING"],"checkpoint":true}},"assigned":["C"],"accepted":[],"expected_batch":null,"expected_error":"missing endpoint MISSING"},
+    {"name":"cycle","tasks":{"A":{"prereq":["B"],"checkpoint":false},"B":{"prereq":["A"],"checkpoint":false},"C":{"prereq":["B"],"checkpoint":true}},"assigned":["C"],"accepted":[],"expected_batch":null,"expected_error":"cycle"}
+  ],
+  "semantic_cases": [
+    {"name":"blocking-finding","expected":"no Task is accepted before a required predecessor with a blocking finding"},
+    {"name":"unauthorized-review","expected":"assignment, privilege, competence, authority and TK-1 are checked separately per included Task"},
+    {"name":"later-defect-successor","expected":"accepted Task is unchanged and a new Task explicitly depends on it"},
+    {"name":"missing-feature-edge","expected":"Feature closure fails when any work item is unreachable from the integrating closure"},
+    {"name":"historical-invalidation","expected":"record remains traceable but cannot alter authentic Acceptance"},
+    {"name":"duplicate-acceptance","expected":"second Acceptance creation is rejected even for identical bytes"},
+    {"name":"feature-closure","expected":"every covered Task has immutable Acceptance and all declared work is covered"}
+  ]
+}

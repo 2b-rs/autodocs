@@ -1,0 +1,59 @@
+{
+  "schema": "feedback-ingress-aggregation@v1",
+  "item": "0046-01",
+  "feature": "0046",
+  "feature_title": "Agent Profile Feedback Loop - Bounded Submission & Append-Only Feedback-Record Boundary",
+  "integrator": "obrien",
+  "recorded_at": "2026-09-03",
+  "child_candidates": {
+    "0046-01.01": {
+      "repository": "autodocs",
+      "commit": "d960f9d69d",
+      "scope": "feedback UX/API validation and target/baseline preview",
+      "artifacts": [
+        "_src/templates/agent_feedback.html",
+        "_src/static/agent-feedback.js",
+        "_src/tools/agent_feedback_form.py",
+        "_src/tests/test_agent_feedback_form.py"
+      ],
+      "tests_passed": 24,
+      "test_command": "python3 -m unittest _src/tests/test_agent_feedback_form.py"
+    },
+    "0046-01.02": {
+      "repository": "agent-inbox",
+      "commit": "485b957561a462500848bee97b2b0be140b7239f",
+      "scope": "append-only feedback journal, identity/anonymous policy, idempotency and retention",
+      "artifacts": [
+        "agent_profile_feedback.py",
+        "test_agent_profile_feedback.py",
+        "agent-profile-feedback-schema.json"
+      ],
+      "tests_passed": 133,
+      "test_command": "pytest test_agent_profile_feedback.py test_agent_inbox.py"
+    }
+  },
+  "schema_version": "agent-profile-feedback-schema@v1",
+  "invariants_verified": {
+    "bounded": "Strict field limits (feedback_text max 4000, agent name max 64, baseline max 128), schema validation, and injection-safe HTML/JSON rendering.",
+    "idempotent": "Digest-based SHA-256 idempotency key generated per payload; duplicate submissions detected and rejected across restarts.",
+    "append_only": "Feedback journal is strictly append-only; updates/redactions are recorded as additive retention events without historical deletion.",
+    "privacy_metadata": "Explicit identified vs anonymous attribution support; visibility consent levels (private/team/public); anonymous submissions enforce no approval authority per DEC-0046-001 Option A.",
+    "zero_authoritative_mutation": "Ingress and journal boundaries do not mutate agent profiles, supervisor configurations, or deployment state."
+  },
+  "suite_verification": {
+    "autodocs_full_suite": {
+      "command": "python3 test.py",
+      "passed": 100,
+      "failures": 0,
+      "status": "PASS"
+    },
+    "agent_inbox_suite": {
+      "command": "pytest test_agent_profile_feedback.py test_agent_inbox.py",
+      "passed": 133,
+      "failures": 0,
+      "status": "PASS"
+    },
+    "hygiene_check": "PASS (100 worktrees clean)"
+  },
+  "verdict": "ACCEPTED"
+}

@@ -1,0 +1,45 @@
+<div class="ai"><p class="ai-note">Automatisch generierte Anleitung, inhaltlich abgeleitet aus den referenzierten AUTOSAR-R25-11-Spezifikationselementen — kein offizieller AUTOSAR-Text. Belege: [SWS_…]-Verweise.</p>
+<h3>1. Modellierung im Manifest</h3>
+<p>Ausgangspunkt ist ein <code>ServiceInterface</code> im ARXML-Manifest (Service-Interface-Description).
+Dort werden die Elemente des Dienstes modelliert: <b>Events</b>, <b>Methods</b> (inkl. Fire&amp;Forget),
+<b>Fields</b> (mit Get/Set/Notifier) sowie die Namespace-Hierarchie des Interfaces.</p>
+<h3>2. Was der Generator erzeugt</h3>
+<p>Aus dem Manifest generiert das Tooling des AP-Stacks C++-Bindings, je Service-Interface
+(<code>&lt;SI&gt;</code>) zwei zentrale Klassen:</p>
+<ul>
+<li>Die <b>Skeleton-Klasse</b> <code>&lt;SI-Namespace&gt;::skeleton::&lt;SI&gt;Skeleton</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html">[SWS_CM_00002]</a>
+im Header <code>&lt;si&gt;_skeleton.h</code> — die serverseitige Basisklasse des Dienstanbieters.</li>
+<li>Die <b>Proxy-Klasse</b> <code>&lt;SI-Namespace&gt;::proxy::&lt;SI&gt;Proxy</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html">[SWS_CM_00004]</a>
+im Header <code>&lt;si&gt;_proxy.h</code> — der clientseitige Stellvertreter.</li>
+</ul>
+<p>Je Event, Field und Method entstehen zusätzlich innere Klassen in den Namespaces
+<code>events</code>, <code>fields</code> und <code>methods</code> (z. B.
+<code>&lt;SI-Namespace&gt;::proxy::events::&lt;Event&gt;</code>). Die Platzhalter-Klassenseiten
+dieses Moduls (Namen mit <code>&lt;…&gt;</code>) dokumentieren genau diese generierten Typen.</p>
+<h3>3. Dienst anbieten (Skeleton-Seite)</h3>
+<ul>
+<li>Eigene Implementierungsklasse von <code>&lt;SI&gt;Skeleton</code> ableiten und die rein virtuellen
+Service-Methoden überschreiben: reguläre Methoden liefern <code>ara::core::Future&lt;…Output&gt;</code>
+<a class="swsref vis-app" href="../classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_00191">[SWS_CM_00191]</a>, Fire&amp;Forget-Methoden <code>void</code> <a class="swsref vis-app" href="../classes/cl_hierarchical_namespace_list_lower_skeleton_skeleton_service_a0d0ef.html#SWS_CM_90434">[SWS_CM_90434]</a>.</li>
+<li>Instanz mit einem <code>ara::core::InstanceSpecifier</code> konstruieren; der Verarbeitungsmodus
+(<code>MethodCallProcessingMode</code>: kEvent, kEventSingleThread, kPoll) steuert die Abarbeitung
+eingehender Aufrufe <a class="swsref vis-app" href="../namespaces/ns_com_ara_com_4a3210.html#SWS_CM_00301">[SWS_CM_00301]</a>.</li>
+<li>Dienst mit <code>OfferService()</code> anbieten <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00101">[SWS_CM_00101]</a> und mit
+<code>StopOfferService()</code> zurücknehmen <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_SI_Skeleton_317026.html#SWS_CM_00111">[SWS_CM_00111]</a>.</li>
+<li>Events über <code>events::&lt;Event&gt;::Send()</code> publizieren <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_events_Event_99cf79.html#SWS_CM_00162">[SWS_CM_00162]</a>, Felder über
+<code>fields::&lt;Field&gt;::Update()</code> aktualisieren <a class="swsref vis-app" href="../classes/cl_SI_Namespace_skeleton_fields_Field_f27d36.html#SWS_CM_00119">[SWS_CM_00119]</a>.</li>
+</ul>
+<h3>4. Dienst nutzen (Proxy-Seite)</h3>
+<ul>
+<li>Verfügbare Instanzen suchen: synchron per <code>&lt;SI&gt;Proxy::FindService()</code>
+<a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00122">[SWS_CM_00122]</a> (mit InstanceSpecifier <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_00622">[SWS_CM_00622]</a>) oder kontinuierlich per
+<code>StartFindService()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11352">[SWS_CM_11352]</a> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_11365">[SWS_CM_11365]</a>.</li>
+<li>Das Ergebnis ist ein <code>&lt;SI&gt;Proxy::HandleType</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_HandleType_73854b.html">[SWS_CM_00312]</a>; daraus wird der Proxy
+über die statische Factory <code>&lt;SI&gt;Proxy::Create()</code> erzeugt <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10438">[SWS_CM_10438]</a>
+(Handle später abrufbar via <code>GetHandle()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_SI_Proxy_059f5c.html#SWS_CM_10383">[SWS_CM_10383]</a>).</li>
+<li>Events: <code>events::&lt;Event&gt;::Subscribe()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_events_Event_ed6992.html#SWS_CM_00141">[SWS_CM_00141]</a>, Empfang über
+<code>GetNewSamples()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_events_Event_ed6992.html#SWS_CM_00701">[SWS_CM_00701]</a>.</li>
+<li>Felder: <code>fields::&lt;Field&gt;::Get()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00112">[SWS_CM_00112]</a> /
+<code>Set()</code> <a class="swsref vis-app" href="../classes/cl_SI_Namespace_proxy_fields_Field_768e1a.html#SWS_CM_00113">[SWS_CM_00113]</a>; Methodenaufrufe laufen asynchron und liefern
+<code>ara::core::Future</code>.</li>
+</ul></div>

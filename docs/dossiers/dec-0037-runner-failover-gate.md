@@ -1,0 +1,53 @@
+# Runner failover gate decisions
+
+### `DEC-0037-001` — Admission-coupled queue failover with drain-before-reopen
+
+- **Record format:** `decision-record@v1`
+- **Recorded at:** `2026-08-23T13:50:19Z`
+- **Deciding identity:** `authority:repository-owner`
+- **Role:** `Management`
+- **Authority reference:** `authority:repository-owner`
+- **Subject:** `0037-46.02` queue/singleton admission, automatic rollback, and fail-closed boundary
+- **Decision:** The corrective implementation of `0037-46.02` uses one admission-coupled failover state machine shared by the queue claim path and the legacy singleton execution path. Every unclaimed request is re-evaluated against the live selector immediately before admission. A failed queue-readiness check blocks new queue claims, establishes one digest-bound rollback coordinator, drains active queue claims, restores and verifies the corrected legacy service configuration first and the legacy selector last, and only then reopens the pending singleton request. A rollback timeout, partial restore, indeterminate selector, or failed verification leaves both paths fail-closed with append-only incident evidence. No request is grandfathered across the selector transition.
+- **Technical justification:** Privileged Integrator Geordi rejected candidate `0d2088a6778820b83329fafe248f21b97d904654` in review evidence `b57fa240859bac7a3ba3362680db1541c88ccb8c` because the rollback helper had no live admission call site and the singleton-retirement behavior lacked retained independently checkable rejection evidence. Management-instantiated Architect Data accepted both findings and, at proposal commit `164890ec3c9ccc670fd502ea8c351269be955683` with final handoff tip `a2e9802026466d220f26af3ec78291e901979010`, found that selector restoration alone is unsafe while queue claims remain active. The selected design preserves the queue architecture while making mutual exclusion, automatic recovery, collision-safe retirement evidence, and rollback failure mechanically observable at both admission boundaries.
+- **Triggers:**
+  - `cross-item-blast-radius`
+  - `material-architecture-or-repository-behavior`
+  - `irreversible-or-external-effect`
+  - `material-risk-decision`
+- **Considered alternatives:**
+  - **ALT-01:** Admission-coupled automatic rollback with active-claim drain before legacy reopen
+    - **Disposition:** `selected`
+    - **Reason:** It closes both reviewed defects without permitting simultaneous mutation protocols or reopening legacy while queue work remains active.
+  - **ALT-02:** Retain the manual rollback helper and rely on an operator to invoke it after a failure
+    - **Disposition:** `rejected`
+    - **Reason:** It repeats Geordi's critical finding and cannot satisfy the unwaived automatic-rollback criterion.
+  - **ALT-03:** Keep queue and singleton available as simultaneous warm standbys
+    - **Disposition:** `rejected`
+    - **Reason:** It violates the one-writer protocol invariant and can admit overlapping repository mutations.
+- **Consequences:**
+  - **CON-01:** No implementation of the qualifying gate scope starts until this record is reachable on `main` and Datas supporting Architect review remains pinned and current.
+  - **CON-02:** Queue health, selector state, rollback markers, and admission are checked at the outer dispatch loop and again immediately before lease creation; the singleton path applies the same state semantics before execution.
+  - **CON-03:** Active queue claims drain before the service-first, selector-last restore; a drain timeout or restore failure blocks both paths and requires Project Lead/operator recovery rather than implicit risk acceptance.
+  - **CON-04:** Corrective work is split into decision, retirement-guard, rollback-executor, admission-coupling, and terminal live-qualification packages. Only the terminal package may deploy to `/tmp/runner-0037-46.02` and only with synthetic non-secret requests.
+  - **CON-05:** Data remains Architect and does not implement or accept the correction; Geordi remains independent Integrator and receives a fresh exact candidate and authority only after immutable evidence exists.
+  - **CON-06:** The earlier narrow deployment-transaction waiver remains unchanged and does not waive automatic rollback, evidence, mutual exclusion, review, or integration requirements.
+- **Affected work units:**
+  - `feature:0037`
+  - `task:0037-46.02`
+  - `task:0037-47`
+  - `repository:autodocs`
+  - `external:runner-host-service`
+- **Affected gates:**
+  - `validation:runner-queue-admission`
+  - `integration:0037-46.02`
+  - `feature-closure:0037`
+  - `external:runner-host-service`
+- **Review participation:**
+  - **PART-01:**
+    - **Identity:** `agent:data:0037-46.02-architecture:20260823T130400Z`
+    - **Role:** `Architekt`
+    - **Participation:** `reviewed`
+    - **Position:** `supports`
+    - **Note:** Datas scope review classified the admission and selector changes as qualifying cross-item gate mutations and supports the selected design only within the package, deployment, rollback, and role-separation bounds recorded here.
+- **Waiver:** `none`

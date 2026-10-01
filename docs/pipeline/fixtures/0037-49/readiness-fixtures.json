@@ -1,0 +1,13 @@
+{
+  "schema": "0037-49-readiness-fixtures@v1",
+  "policy": "deny-on-missing-or-unverifiable-external-prerequisite",
+  "cases": [
+    {"id":"approve-with-complete-independent-evidence","input":{"approval_ref":true,"reviewer_role":"verified","signer_fingerprint":"verified","owner_channel":"verified","credential_handle":"verified","service_controls":"verified","digest":"current"},"expected":"approval-eligible"},
+    {"id":"reject-placeholder-signer","input":{"signer_fingerprint":"placeholder"},"expected":"blocked:signing"},
+    {"id":"reject-wrong-reviewer-role","input":{"reviewer_role":"contributor-not-approver"},"expected":"blocked:reviewer-role"},
+    {"id":"reject-stale-digest","input":{"digest":"stale"},"expected":"blocked:digest"},
+    {"id":"reject-unavailable-credential-handle","input":{"credential_handle":"unavailable"},"expected":"blocked:credential-handle"},
+    {"id":"reject-no-hosting-admin","input":{"owner_channel":"unverified","hosting_admin":"absent"},"expected":"blocked:hosting-administration"},
+    {"id":"no-op-deploy-health-restart-rollback","input":{"service_controls":"absent","operation":"no-op-local-probe"},"expected":"blocked:service-controls;no-external-mutation"}
+  ]
+}

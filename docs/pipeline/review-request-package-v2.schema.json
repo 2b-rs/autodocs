@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://2b-rs.github.io/autodocs/schemas/review-request-package-v2.schema.json",
+  "title": "Review request package v2 contract suite",
+  "$ref": "#/$defs/clientPackage",
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71
+    },
+    "uuidV7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "utcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])-([0-2][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\\.[0-9]{3}Z$",
+      "minLength": 24,
+      "maxLength": 24
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$",
+      "minLength": 5,
+      "maxLength": 64
+    },
+    "safeText": {
+      "type": "string",
+      "pattern": "^[^\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f-\\u009f]*$"
+    },
+    "plainIdentifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "canonicalId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9.-]{0,31}/[A-Z0-9][A-Za-z0-9.-]{0,31}/[a-z][a-z0-9-]{0,31}/[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$",
+      "minLength": 7,
+      "maxLength": 384
+    },
+    "versionId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9.-]{0,31}/[A-Z0-9][A-Za-z0-9.-]{0,31}/[a-z][a-z0-9-]{0,31}/[A-Za-z0-9][A-Za-z0-9._:-]{0,255}@rel:[A-Za-z0-9][A-Za-z0-9._-]{0,63}#[0-9a-f]{8}$",
+      "minLength": 20,
+      "maxLength": 512
+    },
+    "httpsUrl": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://[^\\s\\\\]+$",
+      "minLength": 12,
+      "maxLength": 2048
+    },
+    "eligibleStatus": {
+      "enum": [
+        "valid/auto-approved",
+        "valid/corrected",
+        "valid/ai-decided",
+        "valid/curator-decided"
+      ]
+    },
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "$ref": "#/$defs/plainIdentifier" },
+        "version": { "$ref": "#/$defs/semver" }
+      }
+    },
+    "actorAnonymous": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "const": "anonymous" }
+      }
+    },
+    "actorSelfDeclared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "display_name"],
+      "properties": {
+        "kind": { "const": "self-declared" },
+        "display_name": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 2, "maxLength": 80 }
+          ]
+        }
+      }
+    },
+    "actorClaim": {
+      "oneOf": [
+        { "$ref": "#/$defs/actorAnonymous" },
+        { "$ref": "#/$defs/actorSelfDeclared" }
+      ]
+    },
+    "targetVersioned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding", "canonical_id", "version_id", "content_sha256", "status_snapshot", "source_url"],
+      "properties": {
+        "binding": { "const": "versioned" },
+        "canonical_id": { "$ref": "#/$defs/canonicalId" },
+        "version_id": { "$ref": "#/$defs/versionId" },
+        "content_sha256": { "$ref": "#/$defs/sha256" },
+        "status_snapshot": { "$ref": "#/$defs/eligibleStatus" },
+        "source_url": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "targetLegacyHashOnly": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binding", "canonical_id", "version_id", "content_sha256", "status_snapshot", "source_url"],
+      "properties": {
+        "binding": { "const": "legacy-hash-only" },
+        "canonical_id": { "$ref": "#/$defs/canonicalId" },
+        "version_id": { "type": "null" },
+        "content_sha256": { "$ref": "#/$defs/sha256" },
+        "status_snapshot": { "$ref": "#/$defs/eligibleStatus" },
+        "source_url": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "target": {
+      "oneOf": [
+        { "$ref": "#/$defs/targetVersioned" },
+        { "$ref": "#/$defs/targetLegacyHashOnly" }
+      ]
+    },
+    "evidenceUrl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "url" },
+        "value": { "$ref": "#/$defs/httpsUrl" },
+        "note": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 1, "maxLength": 500 }
+          ]
+        }
+      }
+    },
+    "evidenceCitation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "citation" },
+        "value": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 2, "maxLength": 1000 }
+          ]
+        },
+        "note": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 1, "maxLength": 500 }
+          ]
+        }
+      }
+    },
+    "evidenceNote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "note" },
+        "value": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 2, "maxLength": 1000 }
+          ]
+        }
+      }
+    },
+    "evidenceRef": {
+      "oneOf": [
+        { "$ref": "#/$defs/evidenceUrl" },
+        { "$ref": "#/$defs/evidenceCitation" },
+        { "$ref": "#/$defs/evidenceNote" }
+      ]
+    },
+    "clientPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "client", "event_id", "created_at", "concern_key", "target", "category", "rationale", "evidence_refs", "actor_claim"],
+      "properties": {
+        "schema": { "const": "review-request-package@v2" },
+        "client": { "$ref": "#/$defs/client" },
+        "event_id": { "$ref": "#/$defs/uuidV7" },
+        "created_at": { "$ref": "#/$defs/utcTimestamp" },
+        "concern_key": { "$ref": "#/$defs/sha256" },
+        "target": { "$ref": "#/$defs/target" },
+        "category": {
+          "enum": ["factual-accuracy", "outdated-source", "missing-context", "ai-hallucination-suspected", "other"]
+        },
+        "rationale": {
+          "allOf": [
+            { "$ref": "#/$defs/safeText" },
+            { "minLength": 3, "maxLength": 4000 }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/evidenceRef" },
+          "maxItems": 3
+        },
+        "actor_claim": { "$ref": "#/$defs/actorClaim" }
+      }
+    },
+    "githubId": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,19}$",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "owner_id", "full_name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/githubId" },
+        "owner_id": { "$ref": "#/$defs/githubId" },
+        "full_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+          "minLength": 3,
+          "maxLength": 141
+        }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "number", "author_id", "author_login", "created_at", "updated_at", "api_url", "html_url"],
+      "properties": {
+        "id": { "$ref": "#/$defs/githubId" },
+        "number": { "$ref": "#/$defs/githubId" },
+        "author_id": { "$ref": "#/$defs/githubId" },
+        "author_login": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$",
+          "minLength": 1,
+          "maxLength": 39
+        },
+        "created_at": { "$ref": "#/$defs/utcTimestamp" },
+        "updated_at": { "$ref": "#/$defs/utcTimestamp" },
+        "api_url": { "$ref": "#/$defs/httpsUrl" },
+        "html_url": { "$ref": "#/$defs/httpsUrl" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "policy_id", "checked_at"],
+      "properties": {
+        "method": {
+          "enum": ["github-api-installation-refetch", "github-webhook-hmac-sha256", "github-webhook-hmac-sha256+api-refetch"]
+        },
+        "policy_id": { "$ref": "#/$defs/plainIdentifier" },
+        "key_id": { "$ref": "#/$defs/plainIdentifier" },
+        "checked_at": { "$ref": "#/$defs/utcTimestamp" },
+        "api_version": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "minLength": 10,
+          "maxLength": 10
+        }
+      }
+    },
+    "packageBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "issue_body_sha256"],
+      "properties": {
+        "method": { "enum": ["embedded-base64url-v2", "github-issue-form-v1"] },
+        "issue_body_sha256": { "$ref": "#/$defs/sha256" },
+        "normalization_profile": { "const": "github-issue-form-review-request@v1" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "method": { "const": "github-issue-form-v1" } }, "required": ["method"] },
+          "then": { "required": ["normalization_profile"] },
+          "else": { "not": { "required": ["normalization_profile"] } }
+        }
+      ]
+    },
+    "apiAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fetched_at", "etag"],
+      "properties": {
+        "fetched_at": { "$ref": "#/$defs/utcTimestamp" },
+        "etag": { "type": "string", "minLength": 3, "maxLength": 128 }
+      }
+    },
+    "webhookAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hook_id", "delivery_id", "event", "action", "raw_body_sha256"],
+      "properties": {
+        "hook_id": { "$ref": "#/$defs/githubId" },
+        "delivery_id": { "$ref": "#/$defs/uuid" },
+        "event": { "const": "issues" },
+        "action": { "enum": ["opened", "edited", "reopened"] },
+        "raw_body_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "combinedAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["webhook", "api_refetch"],
+      "properties": {
+        "webhook": { "$ref": "#/$defs/webhookAttempt" },
+        "api_refetch": { "$ref": "#/$defs/apiAttempt" }
+      }
+    },
+    "trustedEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "profile", "envelope_id", "received_at", "package_sha256", "package", "verification", "repository", "installation_id", "issue", "package_binding", "attempt", "stable_binding_sha256", "retention_policy_ref"],
+      "properties": {
+        "schema": { "const": "review-request-envelope@v1" },
+        "profile": { "enum": ["github-api-refetch-v1", "github-webhook-sha256-v1", "github-webhook-sha256+api-refetch-v1"] },
+        "envelope_id": { "$ref": "#/$defs/uuidV7" },
+        "received_at": { "$ref": "#/$defs/utcTimestamp" },
+        "package_sha256": { "$ref": "#/$defs/sha256" },
+        "package": { "$ref": "#/$defs/clientPackage" },
+        "verification": { "$ref": "#/$defs/verification" },
+        "repository": { "$ref": "#/$defs/repository" },
+        "installation_id": { "$ref": "#/$defs/githubId" },
+        "issue": { "$ref": "#/$defs/issue" },
+        "package_binding": { "$ref": "#/$defs/packageBinding" },
+        "attempt": {
+          "oneOf": [
+            { "$ref": "#/$defs/apiAttempt" },
+            { "$ref": "#/$defs/webhookAttempt" },
+            { "$ref": "#/$defs/combinedAttempt" }
+          ]
+        },
+        "stable_binding_sha256": { "$ref": "#/$defs/sha256" },
+        "retention_policy_ref": { "$ref": "#/$defs/plainIdentifier" }
+      }
+    },
+    "localSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "media_type", "source_bytes_sha256", "source_size_bytes"],
+      "properties": {
+        "kind": { "enum": ["browser-export", "json-file", "stdin"] },
+        "media_type": { "const": "application/json" },
+        "source_bytes_sha256": { "$ref": "#/$defs/sha256" },
+        "source_size_bytes": { "type": "integer", "minimum": 1, "maximum": 32768 }
+      }
+    },
+    "localEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "profile", "envelope_id", "received_at", "package_sha256", "package", "assurance", "source", "package_binding", "retention_policy_ref"],
+      "properties": {
+        "schema": { "const": "review-request-local-envelope@v1" },
+        "profile": { "const": "local-import-v1" },
+        "envelope_id": { "$ref": "#/$defs/uuidV7" },
+        "received_at": { "$ref": "#/$defs/utcTimestamp" },
+        "package_sha256": { "$ref": "#/$defs/sha256" },
+        "package": { "$ref": "#/$defs/clientPackage" },
+        "assurance": { "const": "self-declared" },
+        "source": { "$ref": "#/$defs/localSource" },
+        "package_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method"],
+          "properties": {
+            "method": { "const": "exact-canonical-json-v2" }
+          }
+        },
+        "retention_policy_ref": { "$ref": "#/$defs/plainIdentifier" }
+      }
+    }
+  }
+}
