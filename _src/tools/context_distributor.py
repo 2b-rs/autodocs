@@ -49,7 +49,11 @@ LOG.setLevel(logging.INFO)
 
 SNIPPETS_DIR = _SRC_DIR / "spec" / "snippets"
 DOSSIERS_DIR = _SRC_DIR / "ai" / "dossiers"
-PDF_CACHE_R20 = _SRC_DIR / "spec" / "pdf-cache" / "R20-11" / "AUTOSAR" / "CLASSIC"
+PDF_CACHE_ROOT = _SRC_DIR / "spec" / "pdf-cache"
+PDF_CACHE_R20 = PDF_CACHE_ROOT / "R20-11" / "AUTOSAR" / "CLASSIC"
+PDF_CACHE_R25_AP = PDF_CACHE_ROOT / "R25-11" / "AUTOSAR" / "AP"
+PDF_CACHE_R25_FO = PDF_CACHE_ROOT / "R25-11" / "AUTOSAR" / "FOUNDATION"
+PDF_CACHE_R23_FO = PDF_CACHE_ROOT / "R23-11" / "AUTOSAR" / "FOUNDATION"
 QUELLEN_FILE = _SRC_DIR / "ai" / "quellen.json"
 PAGES_DIR = _SRC_DIR / "sources" / "pages"
 
@@ -78,9 +82,35 @@ def lade_policy() -> Dict[str, Any]:
 
 def finde_pdf_fuer_dok(dok_name: str) -> Optional[Path]:
     """Findet die lokale PDF-Datei zu einer Dokument-ID."""
-    kandidat = PDF_CACHE_R20 / f"{dok_name}.pdf"
-    if kandidat.exists():
-        return kandidat
+    clean_name = dok_name[:-4] if dok_name.endswith(".pdf") else dok_name
+    candidates = [
+        PDF_CACHE_R25_AP / f"{clean_name}.pdf",
+        PDF_CACHE_R25_FO / f"{clean_name}.pdf",
+        PDF_CACHE_R23_FO / f"{clean_name}.pdf",
+        PDF_CACHE_R20 / f"{clean_name}.pdf",
+    ]
+    for c in candidates:
+        if c.exists():
+            return c
+    matches = list(PDF_CACHE_ROOT.glob(f"**/{clean_name}.pdf"))
+    if matches:
+        return matches[0]
+    variations = []
+    if "Core" in clean_name:
+        variations.extend(["AUTOSAR_SWS_AdaptivePlatformCore", "AUTOSAR_SWS_AdaptiveCore"])
+    if clean_name.startswith("AUTOSAR_AP_SWS_"):
+        suffix = clean_name[len("AUTOSAR_AP_SWS_"):]
+        variations.extend([
+            f"AUTOSAR_SWS_{suffix}",
+            f"AUTOSAR_SWS_Adaptive{suffix}",
+            f"AUTOSAR_SWS_AdaptivePlatform{suffix}",
+            f"AUTOSAR_AP_RS_{suffix}",
+            f"AUTOSAR_RS_{suffix}",
+        ])
+    for var in variations:
+        var_matches = list(PDF_CACHE_ROOT.glob(f"**/{var}.pdf"))
+        if var_matches:
+            return var_matches[0]
     return None
 
 
@@ -96,6 +126,7 @@ def extrahiere_snippets_fuer_modul(
     modul_name: str,
     suchbegriffe: List[str],
     cluster_dokumente: List[str],
+    plattform: str = "classic",
 ) -> List[Dict[str, Any]]:
     """Durchsucht Cluster-Dokumente nach Suchbegriffen und liefert Snippet-Kandidaten."""
     gefundene_snippets = []
@@ -136,7 +167,7 @@ def extrahiere_snippets_fuer_modul(
                         "source_page": p_idx,
                         "source_element": sws_id,
                         "category": kategorie,
-                        "concept_tags": [modul_name.lower(), "autosar_cp", kategorie],
+                        "concept_tags": [modul_name.lower(), "autosar_ap" if plattform == "adaptive" else "autosar_cp", kategorie],
                         "relevance_score": score,
                         "relevance_rationale": f"Automatisch extrahierter Beleg aus {dok_id} (Seite {p_idx}) mit Treffern für {modul_name}.",
                         "verbatim_text": clean,
@@ -174,12 +205,27 @@ def speichere_snippets(modul_name: str, snippets: List[Dict[str, Any]], plattfor
 def erstelle_agenten_dossier(modul_name: str, plattform: str = "classic") -> Tuple[Path, Dict[str, Any]]:
     """Assembliert das vollständige, reproduzierbare Agenten-Kontext-Dossier."""
     # 1. Lokale Spezifikations-Records laden
-    record_datei = _SRC_DIR / "spec" / "records" / plattform / "modules" / f"{modul_name}.json"
     spec_records = []
-    if record_datei.exists():
-        with open(record_datei, "r", encoding="utf-8") as f:
-            rec_data = json.load(f)
-            spec_records = rec_data.get("blocks", [])
+    if plattform == "adaptive":
+        mod_key = modul_name.lower()
+        adap_info = KNOWN_ADAPTIVE_MODULES.get(mod_key, {})
+        grp = adap_info.get("group", "")
+        if grp:
+            grp_dir = _SRC_DIR / "spec" / "records" / grp
+            if grp_dir.is_dir():
+                # Lade bis zu 30 repräsentative Records der Gruppe
+                for r_path in sorted(grp_dir.glob("*.json"))[:30]:
+                    try:
+                        r_data = json.loads(r_path.read_text(encoding="utf-8"))
+                        spec_records.extend(r_data.get("blocks", []))
+                    except Exception:
+                        pass
+    else:
+        record_datei = _SRC_DIR / "spec" / "records" / plattform / "modules" / f"{modul_name}.json"
+        if record_datei.exists():
+            with open(record_datei, "r", encoding="utf-8") as f:
+                rec_data = json.load(f)
+                spec_records = rec_data.get("blocks", [])
 
     # 2. Pinned Inbound-Snippets laden (mit Dismissal-Status aus dem Dependency Graph)
     snippets_datei = SNIPPETS_DIR / plattform / "modules" / f"{modul_name.lower()}.json"
@@ -209,6 +255,12 @@ def erstelle_agenten_dossier(modul_name: str, plattform: str = "classic") -> Tup
         "reproducible_mode": True,
     }
 
+    if plattform == "adaptive":
+        frag_cand = _SRC_DIR / "content" / "ai" / "modules" / modul_name.lower() / "main_01.html"
+    else:
+        frag_cand = _SRC_DIR / "content" / "ai" / plattform / "modules" / modul_name.lower() / "main_01.html"
+    bisheriges_frag = frag_cand.read_text(encoding="utf-8") if frag_cand.exists() else ""
+
     # 5. Dossier zusammenstellen
     dossier_content: Dict[str, Any] = {
         "dossier_version": "1.1",
@@ -229,7 +281,7 @@ def erstelle_agenten_dossier(modul_name: str, plattform: str = "classic") -> Tup
         "spec_records": spec_records,
         "inbound_snippets": inbound_snippets,
         "quellen_register": quellen_meta,
-        "bisheriges_fragment": (_SRC_DIR / "content" / "ai" / plattform / "modules" / modul_name.lower() / "main_01.html").read_text(encoding="utf-8") if (_SRC_DIR / "content" / "ai" / plattform / "modules" / modul_name.lower() / "main_01.html").exists() else "",
+        "bisheriges_fragment": bisheriges_frag,
     }
 
     # Hash über kanonische Serialisierung bilden
@@ -247,6 +299,177 @@ def erstelle_agenten_dossier(modul_name: str, plattform: str = "classic") -> Tup
 
     LOG.info("Agenten-Dossier geschrieben: %s (SHA: %s)", ziel_datei, dossier_digest[:12])
     return ziel_datei, dossier_content
+
+
+KNOWN_ADAPTIVE_MODULES = {
+    "core": {
+        "title": "ara::core",
+        "name": "Core",
+        "group": "SWS_CORE",
+        "record_prefix": "SWS_CORE_",
+        "pdf": "AUTOSAR_AP_SWS_Core",
+        "search_terms": ["ara::core", "Core", "SWS_CORE"],
+    },
+    "com": {
+        "title": "ara::com",
+        "name": "Communication",
+        "group": "SWS_CM",
+        "record_prefix": "SWS_CM_",
+        "pdf": "AUTOSAR_AP_SWS_CommunicationManagement",
+        "search_terms": ["ara::com", "Communication Management", "SWS_CM"],
+    },
+    "exec": {
+        "title": "ara::exec",
+        "name": "ExecutionManagement",
+        "group": "SWS_EM",
+        "record_prefix": "SWS_EM_",
+        "pdf": "AUTOSAR_AP_SWS_ExecutionManagement",
+        "search_terms": ["ara::exec", "Execution Management", "ExecutionManager", "SWS_EM"],
+    },
+    "diag": {
+        "title": "ara::diag",
+        "name": "Diagnostics",
+        "group": "SWS_DM",
+        "record_prefix": "SWS_DM_",
+        "pdf": "AUTOSAR_AP_SWS_Diagnostics",
+        "search_terms": ["ara::diag", "Diagnostic Management", "SWS_DM"],
+    },
+    "crypto": {
+        "title": "ara::crypto",
+        "name": "Cryptography",
+        "group": "SWS_CRYPT",
+        "record_prefix": "SWS_CRYPT_",
+        "pdf": "AUTOSAR_AP_SWS_Cryptography",
+        "search_terms": ["ara::crypto", "Cryptography", "SWS_CRYPT"],
+    },
+    "log": {
+        "title": "ara::log",
+        "name": "LogAndTrace",
+        "group": "SWS_LOG",
+        "record_prefix": "SWS_LOG_",
+        "pdf": "AUTOSAR_AP_SWS_LogAndTrace",
+        "search_terms": ["ara::log", "Log and Trace", "SWS_LOG"],
+    },
+    "per": {
+        "title": "ara::per",
+        "name": "Persistency",
+        "group": "SWS_PER",
+        "record_prefix": "SWS_PER_",
+        "pdf": "AUTOSAR_AP_SWS_Persistency",
+        "search_terms": ["ara::per", "Persistency", "SWS_PER"],
+    },
+    "phm": {
+        "title": "ara::phm",
+        "name": "PlatformHealthManagement",
+        "group": "SWS_PHM",
+        "record_prefix": "SWS_PHM_",
+        "pdf": "AUTOSAR_AP_SWS_PlatformHealthManagement",
+        "search_terms": ["ara::phm", "Platform Health Management", "SWS_PHM"],
+    },
+    "sm": {
+        "title": "ara::sm",
+        "name": "StateManagement",
+        "group": "SWS_SM",
+        "record_prefix": "SWS_SM_",
+        "pdf": "AUTOSAR_AP_SWS_StateManagement",
+        "search_terms": ["ara::sm", "State Management", "SWS_SM"],
+    },
+    "tsync": {
+        "title": "ara::tsync",
+        "name": "TimeSynchronization",
+        "group": "SWS_TS",
+        "record_prefix": "SWS_TS_",
+        "pdf": "AUTOSAR_AP_SWS_TimeSynchronization",
+        "search_terms": ["ara::tsync", "Time Synchronization", "SWS_TS"],
+    },
+    "ucm": {
+        "title": "ara::ucm",
+        "name": "UpdateAndConfigurationManagement",
+        "group": "SWS_UCM",
+        "record_prefix": "SWS_UCM_",
+        "pdf": "AUTOSAR_AP_SWS_UpdateAndConfigurationManagement",
+        "search_terms": ["ara::ucm", "Update and Configuration Management", "SWS_UCM"],
+    },
+    "idsm": {
+        "title": "ara::idsm",
+        "name": "IntrusionDetectionSystemManager",
+        "group": "SWS_AIDSM",
+        "record_prefix": "SWS_AIDSM_",
+        "pdf": "AUTOSAR_AP_SWS_IntrusionDetectionSystemManager",
+        "search_terms": ["ara::idsm", "Intrusion Detection System", "SWS_AIDSM"],
+    },
+    "nm": {
+        "title": "ara::nm",
+        "name": "NetworkManagement",
+        "group": "SWS_ANM",
+        "record_prefix": "SWS_ANM_",
+        "pdf": "AUTOSAR_AP_SWS_NetworkManagement",
+        "search_terms": ["ara::nm", "Network Management", "SWS_ANM"],
+    },
+    "fw": {
+        "title": "ara::fw",
+        "name": "Firewall",
+        "group": "AP_SWS",
+        "record_prefix": "AP_SWS_Fw_",
+        "pdf": "AUTOSAR_AP_SWS_Firewall",
+        "search_terms": ["ara::fw", "Firewall", "AP_SWS_Fw"],
+    },
+    "rds": {
+        "title": "ara::rds",
+        "name": "RawDataStream",
+        "group": "SWS_RDS",
+        "record_prefix": "SWS_RDS_",
+        "pdf": "AUTOSAR_AP_SWS_RawDataStream",
+        "search_terms": ["ara::rds", "Raw Data Stream", "SWS_RDS"],
+    },
+    "shwa": {
+        "title": "ara::shwa",
+        "name": "SafeHardwareAcceleration",
+        "group": "AP_SWS",
+        "record_prefix": "AP_SWS_SHWA_",
+        "pdf": "AUTOSAR_AP_SWS_SafeHardwareAcceleration",
+        "search_terms": ["ara::shwa", "Safe Hardware Acceleration", "AP_SWS_SHWA"],
+    },
+}
+
+ADAPTIVE_PREFIX_TO_MODULE = {
+    "core": "core",
+    "cm": "com",
+    "crypt": "crypto",
+    "dm": "diag",
+    "em": "exec",
+    "log": "log",
+    "per": "per",
+    "phm": "phm",
+    "sm": "sm",
+    "ts": "tsync",
+    "ucm": "ucm",
+    "aidsm": "idsm",
+    "anm": "nm",
+    "fw": "fw",
+    "rds": "rds",
+    "shwa": "shwa",
+}
+
+ADAPTIVE_DOCUMENTS_TO_SCAN = [
+    "AUTOSAR_AP_RS_General",
+    "AUTOSAR_AP_RS_CommunicationManagement",
+    "AUTOSAR_AP_RS_ExecutionManagement",
+    "AUTOSAR_AP_RS_OperatingSystemInterface",
+    "AUTOSAR_AP_RS_Persistency",
+    "AUTOSAR_AP_RS_Cryptography",
+    "AUTOSAR_AP_RS_PlatformHealthManagement",
+    "AUTOSAR_AP_RS_SafeHardwareAcceleration",
+    "AUTOSAR_AP_RS_StateManagement",
+    "AUTOSAR_AP_EXP_ARAComAPI",
+    "AUTOSAR_AP_SWS_CommunicationManagement",
+    "AUTOSAR_AP_SWS_ExecutionManagement",
+    "AUTOSAR_AP_SWS_LogAndTrace",
+    "AUTOSAR_AP_SWS_Persistency",
+    "AUTOSAR_AP_SWS_Diagnostics",
+    "AUTOSAR_AP_SWS_PlatformHealthManagement",
+    "AUTOSAR_AP_SWS_TimeSynchronization",
+]
 
 
 KNOWN_CLASSIC_MODULES = {
@@ -312,12 +535,21 @@ CLASSIC_CLUSTERS = {
 }
 
 
-def resolve_spec_record_target(rec_id: str, current_module: str = "LinIf", is_cluster: bool = False) -> Optional[Tuple[str, str]]:
-    """Löst einen Spezifikations-Identifier (z.B. SWS_LinSM_00079) in (url, target_type) auf."""
-    m = re.match(r"^(SWS|SRS|TPS)_([A-Za-z0-9]+)_", rec_id)
+def resolve_spec_record_target(rec_id: str, current_module: str = "LinIf", is_cluster: bool = False, plattform: str = "classic") -> Optional[Tuple[str, str]]:
+    """Löst einen Spezifikations-Identifier (z.B. SWS_LinSM_00079 oder SWS_CORE_00733) in (url, target_type) auf."""
+    m = re.match(r"^(SWS|SRS|TPS|AP_SWS)_([A-Za-z0-9]+)_", rec_id)
     if not m:
         return None
     prefix = m.group(2).lower()
+    cur = current_module.lower()
+
+    if plattform == "adaptive" or prefix in ADAPTIVE_PREFIX_TO_MODULE:
+        target_mod = ADAPTIVE_PREFIX_TO_MODULE.get(prefix)
+        if target_mod:
+            if target_mod == cur:
+                return f"#{rec_id}", "local"
+            return f"{target_mod}.html#{rec_id}", "cross_module"
+
     if prefix == "comtype":
         prefix = "comstack"
     if is_cluster:
@@ -349,7 +581,7 @@ def linkify_spec_references(text: str, current_module: str = "LinIf", is_cluster
             title = f"Zu {rec_id} im aktuellen Modul springen"
         else:
             mod_key = url.split('.')[0].replace("modules/", "")
-            mod_title = KNOWN_CLASSIC_MODULES.get(mod_key, mod_key)
+            mod_title = KNOWN_CLASSIC_MODULES.get(mod_key, KNOWN_ADAPTIVE_MODULES.get(mod_key, {}).get("title", mod_key))
             title = f"Zu {rec_id} in {mod_title} springen"
         return f'<a href="{url}" class="rec-jump-link" data-rec-id="{rec_id}" title="{title}">{bracket_pre}<code>{rec_id}</code>{bracket_post}</a>'
     return pattern.sub(repl, text)
@@ -364,15 +596,15 @@ def extrahiere_spec_records(records: List[Dict[str, Any]], module_name: str = "L
             continue
         h = b.get("html", "")
         m = re.search(
-            r'<h3 class=["\']recname["\']\s+id=["\']([^"\']+)["\']><span class=["\']kind["\']>([^<]+)</span>\s*(.+?)\s*<span class=["\']sws["\']>(?:<a[^>]*>)?\[([^\]]+)\]',
+            r'<h3 class=["\']recname["\'](?:\s+id=["\']([^"\']+)["\'])?[^>]*><span class=["\']kind["\']>([^<]+)</span>\s*(.+?)\s*<span class=["\']sws["\']>(?:<a[^>]*>)?\[([^\]]+)\]',
             h,
         )
         if m:
-            rec_id = m.group(1).strip()
+            sws = m.group(4).strip()
+            rec_id = m.group(1).strip() if m.group(1) else sws
             kind = m.group(2).strip()
             name = m.group(3).strip()
-            name = re.sub(r"AUTOSAR_SWS_\w+", "", name).strip()
-            sws = m.group(4).strip()
+            name = re.sub(r"AUTOSAR_(?:AP_)?SWS_\w+", "", name).strip()
             syntax = ""
             desc = ""
             for next_b in records[i + 1 :]:
@@ -428,8 +660,12 @@ def baue_auftrag_entry(
         seite = f"{plattform}/{modul.lower()}.html"
         art = "cluster-guide"
     else:
-        frag = f"content/ai/{plattform}/modules/{modul.lower()}/main_01.html"
-        seite = f"{plattform}/modules/{modul.lower()}.html"
+        if plattform == "adaptive":
+            frag = f"content/ai/modules/{modul.lower()}/main_01.html"
+            seite = f"modules/{modul.lower()}.html"
+        else:
+            frag = f"content/ai/{plattform}/modules/{modul.lower()}/main_01.html"
+            seite = f"{plattform}/modules/{modul.lower()}.html"
         art = "module-guide"
 
     tp = trace_pfad(frag)
@@ -680,11 +916,13 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
     else:
         modul = dossier.get("target_module", "Unbekannt")
         cluster_name = None
-        cluster_modules = []
         modal_id = f"dossier-modal-{modul.lower()}"
         modal_title = f"Agenten-Kontext &amp; Nachweis-Dossier ({modul})"
         section_desc = "Volltext der Kernspezifikation. Auch die Eigenschaft „konstituierend“ kann beanstandet oder im Verbund mit Nachbarschnittstellen diskutiert werden."
-        frag_rel = f"content/ai/{plattform}/modules/{modul.lower()}/main_01.html"
+        if plattform == "adaptive":
+            frag_rel = f"content/ai/modules/{modul.lower()}/main_01.html"
+        else:
+            frag_rel = f"content/ai/{plattform}/modules/{modul.lower()}/main_01.html"
 
     repro = dossier.get("reproducibility", {})
     exec_params = dossier.get("execution_parameters", {})
@@ -813,7 +1051,10 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
             sws_linked = linkify_spec_references(sws, modul, is_cluster=is_cluster)
             desc_linked = linkify_spec_references(desc, modul, is_cluster=is_cluster) if desc else '<p><em>(Keine weitere Spezifikationsbeschreibung vorhanden)</em></p>'
 
-            pdf_url = f"https://www.autosar.org/fileadmin/standards/R20-11/CP/{doc}.pdf"
+            if plattform == "adaptive":
+                pdf_url = f"https://www.autosar.org/fileadmin/standards/R25-11/AP/{doc}.pdf"
+            else:
+                pdf_url = f"https://www.autosar.org/fileadmin/standards/R20-11/CP/{doc}.pdf"
             if "SWS_" in sws:
                 pdf_url += f"#nameddest={sws}"
             pdf_badge = f'<a href="{pdf_url}" target="_blank" rel="noopener noreferrer" class="sws-pdf-link" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="AUTOSAR-Dokument für {doc} öffnen">📄 PDF</a>'
@@ -894,7 +1135,10 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
         text_linked = linkify_spec_references(text, modul, is_cluster=is_cluster)
         rationale_linked = linkify_spec_references(rationale, modul, is_cluster=is_cluster) if rationale else ""
 
-        pdf_url = f"https://www.autosar.org/fileadmin/standards/R20-11/CP/{doc}.pdf"
+        if plattform == "adaptive":
+            pdf_url = f"https://www.autosar.org/fileadmin/standards/R25-11/AP/{doc}.pdf"
+        else:
+            pdf_url = f"https://www.autosar.org/fileadmin/standards/R20-11/CP/{doc}.pdf"
         if "SWS_" in sws:
             pdf_url += f"#nameddest={sws}"
         pdf_badge = f'<a href="{pdf_url}" target="_blank" rel="noopener noreferrer" class="sws-pdf-link" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="AUTOSAR-Dokument für {doc} (S. {page}) öffnen">📄 PDF</a>'
@@ -995,7 +1239,10 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
     if is_cluster:
         frag_file = _SRC_DIR / "content" / "ai" / plattform / "clusters" / cluster_name.lower() / "main_01.html"
     else:
-        frag_file = _SRC_DIR / "content" / "ai" / plattform / "modules" / modul.lower() / "main_01.html"
+        if plattform == "adaptive":
+            frag_file = _SRC_DIR / "content" / "ai" / "modules" / modul.lower() / "main_01.html"
+        else:
+            frag_file = _SRC_DIR / "content" / "ai" / plattform / "modules" / modul.lower() / "main_01.html"
     current_output_text = dossier.get("bisheriges_fragment") or (frag_file.read_text(encoding="utf-8") if frag_file.exists() else "")
 
     modal_html = f'''<dialog id="{modal_id}" class="dossier-modal dossier-workbench" data-dossier-sha="{dossier.get("dossier_sha256", "")}" aria-labelledby="{modal_id}-title">
@@ -1141,7 +1388,10 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
 
 def aktualisiere_seitenmodell_mit_dossier(modul_name: str, dossier_html: str, plattform: str = "classic") -> Path:
     """Fügt das Dossier als dynamisches Modal (außerhalb des Fließtexts) in das Seitenmodell ein."""
-    seiten_datei = PAGES_DIR / plattform / "modules" / f"{modul_name.lower()}.json"
+    if plattform == "adaptive":
+        seiten_datei = PAGES_DIR / "modules" / f"{modul_name.lower()}.json"
+    else:
+        seiten_datei = PAGES_DIR / plattform / "modules" / f"{modul_name.lower()}.json"
     if not seiten_datei.exists():
         raise FileNotFoundError(f"Seitenmodell nicht gefunden: {seiten_datei}")
 
@@ -1177,7 +1427,13 @@ def aktualisiere_seitenmodell_mit_dossier(modul_name: str, dossier_html: str, pl
     for b in bereinigte_bloecke:
         if b.get("t") == "fold":
             attrs = dict(b.get("attrs", []))
-            if attrs.get("id") == guide_fold_id:
+            is_guide = (
+                attrs.get("id") == guide_fold_id
+                or ("User Guide" in b.get("summary", "") and any(fb.get("t") == "ai" for fb in b.get("blocks", [])))
+            )
+            if is_guide:
+                if "id" not in attrs:
+                    b["attrs"].append(["id", guide_fold_id])
                 fold_blocks = [fb for fb in b.get("blocks", []) if "ai-commentary-actions" not in fb.get("html", "")]
                 fold_blocks.append({"t": "html", "html": guide_actions_html, "tail": "\n"})
                 b["blocks"] = fold_blocks
@@ -1514,22 +1770,35 @@ def main():
         print("=== Cluster-Distributionslauf erfolgreich abgeschlossen ===")
         return
 
-    modul = args.module
-    print(f"=== Starte Kontext-Distributionslauf für {modul} ({plattform}) ===")
-
-    if args.action in ("extract", "pin", "all"):
-        if modul.lower() == "linif":
-            snippets = kuratierte_linif_snippets()
+    if args.module.lower() == "all":
+        if plattform == "adaptive":
+            module_liste = list(KNOWN_ADAPTIVE_MODULES.keys())
         else:
-            snippets = extrahiere_snippets_fuer_modul(modul, [f"{modul}_", modul], [])
-        speichere_snippets(modul, snippets, plattform=plattform)
+            module_liste = list(KNOWN_CLASSIC_MODULES.keys())
+    else:
+        module_liste = [m.strip() for m in args.module.split(",") if m.strip()]
 
-    if args.action in ("dossier", "all"):
-        dossier_pfad, dossier = erstelle_agenten_dossier(modul, plattform=plattform)
-        dossier_html = generiere_dossier_html(dossier)
+    for modul in module_liste:
+        print(f"=== Starte Kontext-Distributionslauf für {modul} ({plattform}) ===")
 
-        if args.update_page:
-            aktualisiere_seitenmodell_mit_dossier(modul, dossier_html, plattform=plattform)
+        if args.action in ("extract", "pin", "all"):
+            if plattform == "classic" and modul.lower() == "linif":
+                snippets = kuratierte_linif_snippets()
+            elif plattform == "adaptive":
+                cfg = KNOWN_ADAPTIVE_MODULES.get(modul.lower(), {})
+                search_terms = cfg.get("search_terms", [f"ara::{modul.lower()}", modul])
+                doc_name = cfg.get("pdf", "")
+                snippets = extrahiere_snippets_fuer_modul(modul, search_terms, [doc_name] if doc_name else [], plattform=plattform)
+            else:
+                snippets = extrahiere_snippets_fuer_modul(modul, [f"{modul}_", modul], [], plattform=plattform)
+            speichere_snippets(modul, snippets, plattform=plattform)
+
+        if args.action in ("dossier", "all"):
+            dossier_pfad, dossier = erstelle_agenten_dossier(modul, plattform=plattform)
+            dossier_html = generiere_dossier_html(dossier)
+
+            if args.update_page:
+                aktualisiere_seitenmodell_mit_dossier(modul, dossier_html, plattform=plattform)
 
     print("=== Distributionslauf erfolgreich abgeschlossen ===")
 
