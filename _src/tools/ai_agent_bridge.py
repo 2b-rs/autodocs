@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import queue
 import re
 import shutil
 import subprocess
@@ -51,9 +52,9 @@ def get_agent_config() -> dict:
     primary = model_sec.get("primaer") or {
         "provider": "agy",
         "cli": "agy",
-        "modell": "gemini-3.8-flash-high",
-        "display_name": "Gemini 3.8 Flash (High)",
-        "thinking_effort": "high",
+        "modell": "gemini-3.8-flash-medium",
+        "display_name": "Gemini 3.8 Flash (Medium)",
+        "thinking_effort": "medium",
         "subscription": "gemini",
     }
     fallback = model_sec.get("fallback") or {
@@ -115,9 +116,9 @@ def discover_models(refresh: bool = False) -> Dict[str, Any]:
             "available": subs["gemini"]["available"],
             "cli_path": subs["gemini"]["cli_path"],
             "cli_version": None,
-            "selected_model": "gemini-3.8-flash-high",
-            "display_name": "Gemini 3.8 Flash (High)",
-            "thinking_effort": "high",
+            "selected_model": "gemini-3.8-flash-medium",
+            "display_name": "Gemini 3.8 Flash (Medium)",
+            "thinking_effort": "medium",
             "available_models": [],
         },
         "cursor": {
@@ -210,18 +211,18 @@ def discover_models(refresh: bool = False) -> Dict[str, Any]:
 def ping_agy(
     cli_path: str,
     model: str,
-    effort: str = "high",
+    effort: Optional[str] = None,
     timeout: int = 25,
 ) -> Tuple[bool, int, Optional[str]]:
     """Test availability of agy with mini-prompt. Returns (ok, latency_ms, error)."""
     t0 = time.monotonic()
-    cmd = [
-        cli_path,
-        "--model", model,
-        "--effort", effort,
+    cmd = [cli_path, "--model", model]
+    if effort and not any(model.endswith(f"-{s}") for s in ["low", "medium", "high"]):
+        cmd.extend(["--effort", effort])
+    cmd.extend([
         "--dangerously-skip-permissions",
         "--print=Respond with PONG",
-    ]
+    ])
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         latency_ms = int((time.monotonic() - t0) * 1000)
@@ -265,6 +266,9 @@ def ping_cursor(
     except Exception as exc:
         latency_ms = int((time.monotonic() - t0) * 1000)
         return False, latency_ms, str(exc)
+def agdisp(name: str) -> str:
+    """Helper to clean display names."""
+    return re.sub(r"\s+", " ", name).strip() if name else ""
 
 
 class AIHealthMonitor:
@@ -283,8 +287,8 @@ class AIHealthMonitor:
             "agy": {
                 "name": "Gemini (AGY CLI)",
                 "role": "primary",
-                "model": "gemini-3.8-flash-high",
-                "display_name": "Gemini 3.8 Flash (High)",
+                "model": "gemini-3.8-flash-medium",
+                "display_name": "Gemini 3.8 Flash (Medium)",
                 "cli_version": None,
                 "available": False,
                 "status": "untested",
@@ -336,10 +340,10 @@ class AIHealthMonitor:
             agy_conf = disc.get("agy", {})
             agy_avail = agy_conf.get("available", False)
             agy_cli = agy_conf.get("cli_path")
-            agy_model = agy_conf.get("selected_model", "gemini-3.8-flash-high")
-            agy_disp = agy_conf.get("display_name", "Gemini 3.8 Flash (High)")
+            agy_model = agy_conf.get("selected_model", "gemini-3.8-flash-medium")
+            agy_disp = agy_conf.get("display_name", "Gemini 3.8 Flash (Medium)")
             agy_ver = agy_conf.get("cli_version")
-            agy_effort = agy_conf.get("thinking_effort", "high")
+            agy_effort = agy_conf.get("thinking_effort", "medium")
 
             agy_ok = False
             agy_latency = None
@@ -450,10 +454,6 @@ class AIHealthMonitor:
             self.run_check_cycle()
 
 
-def agdisp(name: str) -> str:
-    """Helper to clean display names."""
-    return re.sub(r"\s+", " ", name).strip()
-
 
 _MONITOR: Optional[AIHealthMonitor] = None
 _MONITOR_LOCK = threading.Lock()
@@ -508,6 +508,279 @@ def _run_cli_prompt(cmd: List[str], prompt: str = "", timeout: int = 60) -> Tupl
         return False, f"CLI execution error: {exc}"
 
 
+def build_stream_cmd(provider: str, cli_path: str, model: str, effort: str = "medium", prompt: str = "") -> List[str]:
+    """Construct command list for streaming JSON output."""
+    if provider == "agy":
+        cmd = [
+            cli_path,
+            "--model", model,
+        ]
+        if effort:
+            cmd.extend(["--effort", effort])
+        cmd.extend([
+            "--dangerously-skip-permissions",
+            "--output-format", "stream-json",
+            "-p", prompt,
+        ])
+        return cmd
+    elif provider == "cursor":
+        return [
+            cli_path,
+            "--print",
+            "--trust",
+            "--mode", "ask",
+            "--model", model,
+            "--output-format", "stream-json",
+            "--stream-partial-output",
+            prompt,
+        ]
+    return [cli_path, prompt]
+
+
+def stream_agent_cli(
+    cmd: List[str],
+    prompt: Optional[str] = None,
+    timeout: int = 180,
+    min_hz: float = 4.0,
+    provider: str = "agy",
+):
+    """Run an AI agent CLI in streaming mode, guaranteeing incremental updates at >= min_hz (default 4.0 Hz).
+
+    Yields dictionary events:
+      - {"event": "start", "provider": provider, "min_hz": min_hz, "elapsed_ms": 0}
+      - {"event": "tick", "phase": phase, "elapsed_ms": elapsed, "hz": current_hz, "tokens": count, "accumulated": text}
+      - {"event": "thinking", "delta": text, "elapsed_ms": elapsed, "hz": current_hz}
+      - {"event": "delta", "delta": text, "accumulated": text, "phase": "generating", "elapsed_ms": elapsed, "hz": current_hz, "tokens": count}
+      - {"event": "complete", "ok": True, "output": text, "duration_ms": elapsed, ...}
+      - {"event": "error", "error": msg, "duration_ms": elapsed}
+    """
+    t0 = time.monotonic()
+    tick_interval = 1.0 / max(min_hz, 1.0)
+    last_yield_time = t0
+    updates_count = 0
+
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            stdin=subprocess.PIPE if prompt else None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
+        if prompt and proc.stdin:
+            try:
+                proc.stdin.write(prompt)
+                proc.stdin.close()
+            except Exception:
+                pass
+    except Exception as exc:
+        yield {"event": "error", "error": f"Failed to start CLI process: {exc}", "duration_ms": 0}
+        return
+
+    q: queue.Queue = queue.Queue()
+
+    def reader(pipe, q_out):
+        try:
+            for line in iter(pipe.readline, ""):
+                q_out.put(("line", line))
+        except Exception as e:
+            q_out.put(("pipe_err", str(e)))
+        finally:
+            q_out.put(("eof", None))
+
+    t_reader = threading.Thread(target=reader, args=(proc.stdout, q), daemon=True)
+    t_reader.start()
+
+    accumulated_text = []
+    current_phase = "thinking"
+    token_est = 0
+    raw_response = None
+    eof_reached = False
+
+    yield {
+        "event": "start",
+        "provider": provider,
+        "min_hz": min_hz,
+        "elapsed_ms": 0,
+        "phase": current_phase,
+    }
+    updates_count += 1
+    last_yield_time = time.monotonic()
+
+    while True:
+        now = time.monotonic()
+        elapsed = now - t0
+        if elapsed > timeout:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+            yield {
+                "event": "error",
+                "error": f"CLI execution timed out after {timeout}s",
+                "duration_ms": int(elapsed * 1000),
+            }
+            return
+
+        time_since_last = now - last_yield_time
+        remaining_timeout = max(0.01, tick_interval - time_since_last)
+
+        item = None
+        try:
+            item = q.get(timeout=remaining_timeout)
+        except queue.Empty:
+            item = None
+
+        now = time.monotonic()
+        elapsed = now - t0
+        current_hz = round(updates_count / max(0.1, elapsed), 1)
+
+        if item is not None:
+            kind, val = item
+            if kind == "eof":
+                eof_reached = True
+            elif kind == "line":
+                line_str = val.strip()
+                if line_str:
+                    try:
+                        parsed = json.loads(line_str)
+                    except Exception:
+                        parsed = None
+
+                    if parsed and isinstance(parsed, dict):
+                        if provider == "agy" or "event" in parsed:
+                            ev = parsed.get("event")
+                            if ev == "step_update":
+                                su = parsed.get("step_update") or {}
+                                delta = su.get("text_delta")
+                                if delta:
+                                    current_phase = "generating"
+                                    accumulated_text.append(delta)
+                                    token_est += max(1, len(delta) // 4)
+                                    updates_count += 1
+                                    last_yield_time = time.monotonic()
+                                    yield {
+                                        "event": "delta",
+                                        "delta": delta,
+                                        "accumulated": "".join(accumulated_text),
+                                        "phase": "generating",
+                                        "elapsed_ms": int((last_yield_time - t0) * 1000),
+                                        "hz": current_hz,
+                                        "tokens": token_est,
+                                    }
+                                else:
+                                    stype = su.get("step_type")
+                                    if stype:
+                                        current_phase = "reasoning" if "think" in stype else "active"
+                            elif ev == "result":
+                                res_obj = parsed.get("result") or {}
+                                raw_response = res_obj.get("response") or "".join(accumulated_text)
+
+                        elif provider == "cursor" or "type" in parsed:
+                            ptype = parsed.get("type")
+                            if ptype == "thinking":
+                                current_phase = "thinking"
+                                txt = parsed.get("text")
+                                if txt:
+                                    updates_count += 1
+                                    last_yield_time = time.monotonic()
+                                    yield {
+                                        "event": "thinking",
+                                        "delta": txt,
+                                        "elapsed_ms": int((last_yield_time - t0) * 1000),
+                                        "hz": current_hz,
+                                    }
+                            elif ptype == "assistant":
+                                current_phase = "generating"
+                                msg = parsed.get("message") or {}
+                                contents = msg.get("content") or []
+                                delta = ""
+                                if isinstance(contents, list):
+                                    for c in contents:
+                                        if isinstance(c, dict) and c.get("type") == "text":
+                                            delta += c.get("text") or ""
+                                elif isinstance(contents, str):
+                                    delta = contents
+                                if delta:
+                                    accumulated_text.append(delta)
+                                    token_est += max(1, len(delta) // 4)
+                                    updates_count += 1
+                                    last_yield_time = time.monotonic()
+                                    yield {
+                                        "event": "delta",
+                                        "delta": delta,
+                                        "accumulated": "".join(accumulated_text),
+                                        "phase": "generating",
+                                        "elapsed_ms": int((last_yield_time - t0) * 1000),
+                                        "hz": current_hz,
+                                        "tokens": token_est,
+                                    }
+                            elif ptype == "result":
+                                raw_response = parsed.get("result") or "".join(accumulated_text)
+
+                    elif not parsed and line_str:
+                        current_phase = "generating"
+                        accumulated_text.append(line_str + "\n")
+                        token_est += max(1, len(line_str) // 4)
+                        updates_count += 1
+                        last_yield_time = time.monotonic()
+                        yield {
+                            "event": "delta",
+                            "delta": line_str + "\n",
+                            "accumulated": "".join(accumulated_text),
+                            "phase": "generating",
+                            "elapsed_ms": int((last_yield_time - t0) * 1000),
+                            "hz": current_hz,
+                            "tokens": token_est,
+                        }
+
+        if eof_reached and q.empty():
+            break
+
+        now = time.monotonic()
+        if (now - last_yield_time) >= tick_interval and not eof_reached:
+            updates_count += 1
+            last_yield_time = now
+            current_hz = round(updates_count / max(0.1, now - t0), 1)
+            yield {
+                "event": "tick",
+                "phase": current_phase,
+                "elapsed_ms": int((now - t0) * 1000),
+                "hz": max(min_hz, current_hz),
+                "tokens": token_est,
+                "accumulated_len": sum(len(x) for x in accumulated_text),
+            }
+
+    proc.wait()
+    now = time.monotonic()
+    dur_ms = int((now - t0) * 1000)
+    final_output = (raw_response or "".join(accumulated_text)).strip()
+    returncode = proc.returncode
+
+    if returncode != 0 and not final_output:
+        stderr_err = ""
+        try:
+            stderr_err = proc.stderr.read().strip()
+        except Exception:
+            pass
+        yield {
+            "event": "error",
+            "error": f"CLI exited with {returncode}: {stderr_err}",
+            "duration_ms": dur_ms,
+        }
+    else:
+        yield {
+            "event": "complete",
+            "ok": True,
+            "output": final_output,
+            "duration_ms": dur_ms,
+            "provider": provider,
+            "total_updates": updates_count,
+            "effective_hz": round(updates_count / max(0.1, now - t0), 1),
+        }
+
+
 def synthesize_commentary(prompt: str, context: Optional[dict] = None) -> Tuple[Optional[str], dict]:
     """Generate commentary using active model from health monitor with automatic fallback.
 
@@ -537,11 +810,12 @@ def synthesize_commentary(prompt: str, context: Optional[dict] = None) -> Tuple[
         if prov == "agy" and subs["gemini"]["available"]:
             meta["primary_attempted"] = True
             cli = subs["gemini"]["cli_path"] or "agy"
-            model = agy_prov.get("model", "gemini-3.8-flash-high")
+            model = agy_prov.get("model", "gemini-3.8-flash-medium")
+            effort = agy_prov.get("thinking_effort", "medium")
             cmd = [
                 cli,
                 "--model", model,
-                "--effort", "high",
+                "--effort", effort,
                 "--dangerously-skip-permissions",
                 f"--print={prompt}",
             ]

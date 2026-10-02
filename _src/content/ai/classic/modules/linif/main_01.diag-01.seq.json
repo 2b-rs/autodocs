@@ -1,8 +1,12 @@
 {
- "titel": "LIN-Schedule-Steuerung und Frame-Übertragung im LinIf",
+ "titel": "LIN-Schedule-Steuerung, Frame-Übertragung und Wakeup-Validierung im LinIf",
  "teilnehmer": [
   {
-   "name": "LinSM / PduR",
+   "name": "LIN State Manager (LinSM)",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "PDU Router (PduR)",
    "href": "pdur.html",
    "klasse": "vis-app"
   },
@@ -26,7 +30,7 @@
   {
    "art": "nachricht",
    "von": 0,
-   "nach": 1,
+   "nach": 2,
    "text": [
     "LinIf_ScheduleRequest(Channel, Schedule)"
    ],
@@ -35,27 +39,17 @@
   },
   {
    "art": "selbst",
-   "teilnehmer": 1,
+   "teilnehmer": 2,
    "text": [
     "Schedule-Tabelle aktivieren und Slot auflösen"
    ]
   },
   {
    "art": "nachricht",
-   "von": 0,
-   "nach": 1,
-   "text": [
-    "LinIf_Transmit(TxPduId, PduInfoPtr)"
-   ],
-   "pfeil": "voll",
-   "gestrichelt": false
-  },
-  {
-   "art": "nachricht",
    "von": 1,
    "nach": 2,
    "text": [
-    "Lin_SendFrame(Channel, PduInfoPtr)"
+    "LinIf_Transmit(TxPduId, PduInfoPtr)"
    ],
    "pfeil": "voll",
    "gestrichelt": false
@@ -65,6 +59,26 @@
    "von": 2,
    "nach": 1,
    "text": [
+    "<User_TriggerTransmit>(TxPduId, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 3,
+   "text": [
+    "Lin_SendFrame(Channel, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 2,
+   "text": [
     "LinIf_TxConfirmation(Channel)"
    ],
    "pfeil": "voll",
@@ -72,8 +86,8 @@
   },
   {
    "art": "nachricht",
-   "von": 1,
-   "nach": 0,
+   "von": 2,
+   "nach": 1,
    "text": [
     "PduR_LinIfTxConfirmation(TxPduId)"
    ],
@@ -82,13 +96,43 @@
   },
   {
    "art": "nachricht",
-   "von": 3,
-   "nach": 1,
+   "von": 0,
+   "nach": 2,
+   "text": [
+    "LinIf_GotoSleep(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 4,
+   "nach": 2,
    "text": [
     "LinIf_CheckWakeup(WakeupSource)"
    ],
    "pfeil": "voll",
    "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 3,
+   "text": [
+    "Lin_CheckWakeup(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 2,
+   "text": [
+    "Validierung des Wakeup-Signals"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": true
   }
  ]
 }

@@ -18,7 +18,7 @@ import graph_widget as gw  # noqa: E402
 
 FIXTURE = SRC / "tests" / "fixtures" / "graph-widget" / "sample-graph.json"
 JS_PATH = ROOT / "component-graph.js"
-INDEX_SOURCE = SRC / "sources" / "pages" / "index.json"
+INDEX_SOURCE = SRC / "sources" / "pages" / "adaptive" / "index.json"
 
 
 PRECHANGE_REF = "29aeadfbd"  # tree before this widget change; AE-2 baseline

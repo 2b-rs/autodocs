@@ -784,7 +784,7 @@ class PublishedTreeTest(unittest.TestCase):
 
     def test_universes_render_shell_chrome_and_active_state(self):
         cases = (
-            ("/index.html", 'class="cur" href="index.html"', ">Adaptive</a>"),
+            ("/adaptive/index.html", 'class="cur" href="../adaptive/index.html"', ">Adaptive</a>"),
             ("/classic/index.html", 'class="cur" href="../classic/index.html"', ">Classic</a>"),
             ("/score/index.html", 'class="cur" href="../score/index.html"', ">S-Core</a>"),
         )
@@ -872,7 +872,7 @@ class PublishedTreeTest(unittest.TestCase):
         self.assertFalse(body["canonical_mutation"])
 
         for record_id, snippet in (
-            ("CP_OS", "Activate a task"),
+            ("CP_OS", "This service determines the OS - Application"),
             ("SCORE_CORE", "S-Core Core Execution Environment"),
         ):
             got, context, _ = self._request("GET", "/api/discuss?record_id=" + record_id)

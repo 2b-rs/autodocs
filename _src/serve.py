@@ -23,17 +23,19 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
 import threading
+import time
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 from urllib.parse import parse_qs, urlparse
 
 HERE = Path(__file__).resolve().parent
-MAX_BODY_BYTES = 65536
+MAX_BODY_BYTES = 1048576
 LOOP_TIMEOUT_SECONDS = 30
 TARGET_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9:_.-]{0,199}")
 UNIVERSE_SPECS: Tuple[Tuple[str, str, str], ...] = (
@@ -72,6 +74,7 @@ ASOF = _load("asof_view_for_serve", HERE / "tools" / "asof_view.py")
 DELTA = _load("delta_view_for_serve", HERE / "tools" / "delta_view.py")
 VS = _load("version_store_for_serve", HERE / "tools" / "version_store.py")
 AI_BRIDGE = _load("ai_agent_bridge_for_serve", HERE / "tools" / "ai_agent_bridge.py")
+DG = _load("dependency_graph_for_serve", HERE / "tools" / "dependency_graph.py")
 
 
 
@@ -331,6 +334,19 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
             path = path.rstrip("/")
         return path or "/"
 
+    def end_headers(self) -> None:
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
+    def do_OPTIONS(self) -> None:
+        self.send_response(204)
+        self.end_headers()
+
     def _json(self, status: int, payload: Mapping[str, Any]) -> None:
         data = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
         self.send_response(status)
@@ -376,6 +392,9 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
         if route == "/api/status":
             self._json(200, status_payload(Path(self.repo)))
             return
+        if route == "/api/curation/votes":
+            self._get_curation_votes()
+            return
         if route == "/api/discuss":
             self._get_discuss()
             return
@@ -408,7 +427,7 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
     def do_HEAD(self) -> None:
         route = self._route()
         if route.startswith("/api/"):
-            if route in ("/api/status", "/api/versions", "/api/asof", "/api/delta", "/api/ai/status", "/api/diff"):
+            if route in ("/api/status", "/api/versions", "/api/asof", "/api/delta", "/api/ai/status", "/api/diff", "/api/curation/votes"):
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Cache-Control", "no-store")
@@ -435,6 +454,9 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
             if route == "/api/curate":
                 self._post_curate()
                 return
+            if route == "/api/curation/vote":
+                self._post_curation_vote()
+                return
             if route == "/api/discuss":
                 self._post_discuss()
                 return
@@ -443,6 +465,9 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
                 return
             if route == "/api/ai/check":
                 self._post_ai_check()
+                return
+            if route == "/api/ai/execute_prompt":
+                self._post_ai_execute_prompt()
                 return
 
         except PayloadError as exc:
@@ -594,6 +619,93 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
             },
         )
 
+    def _get_curation_votes(self) -> None:
+        edges = DG.list_edges()
+        votes: Dict[str, Any] = {}
+        for e in edges:
+            to_id = e.get("to")
+            etype = e.get("edge_type")
+            if etype in ("confirms", "dismisses"):
+                if to_id not in votes:
+                    votes[to_id] = {
+                        "confirms": 0,
+                        "dismisses": 0,
+                        "is_dismissed": DG.is_dismissed(to_id),
+                    }
+                if etype == "confirms":
+                    votes[to_id]["confirms"] += 1
+                elif etype == "dismisses":
+                    votes[to_id]["dismisses"] += 1
+        self._json(200, {"ok": True, "votes": votes})
+
+    def _post_curation_vote(self) -> None:
+        data = self._read_object()
+        snippet_id = str(data.get("snippet_id") or data.get("record_id") or data.get("item_id") or "").strip()
+        vote = str(data.get("vote") or "").strip().lower()
+        rationale = str(data.get("rationale") or "").strip()
+        reviewer = str(data.get("reviewer") or "curator").strip()
+
+        if not snippet_id:
+            raise PayloadError(400, "snippet_id or record_id is required")
+        if vote not in ("confirm", "dismiss", "reset", "unrated"):
+            raise PayloadError(400, "vote must be 'confirm', 'dismiss', or 'reset'")
+
+        if vote in ("reset", "unrated"):
+            if hasattr(DG, "undismiss_node"):
+                DG.undismiss_node(snippet_id)
+            self._record_mutation(
+                "snippet-vote-reset",
+                reviewer,
+                {
+                    "snippet_id": snippet_id,
+                    "vote": "reset",
+                    "canonical_mutation": False,
+                },
+                root=self._repo(),
+            )
+            self._json(200, {
+                "ok": True,
+                "snippet_id": snippet_id,
+                "vote": "reset",
+                "is_dismissed": False,
+            })
+            return
+
+        edge_type = "confirms" if vote == "confirm" else "dismisses"
+        from_id = f"reviewer:{reviewer}"
+        to_id = snippet_id
+
+        edge = DG.add_edge(
+            from_id,
+            to_id,
+            edge_type,
+            meta={"rationale": rationale, "voted_at": FEEDBACK._now_iso_utc()},
+        )
+
+        if vote == "dismiss":
+            DG.dismiss_node(snippet_id, reason=rationale or "User curation vote: dismissed")
+
+        self._record_mutation(
+            f"snippet-vote-{vote}",
+            reviewer,
+            {
+                "snippet_id": snippet_id,
+                "vote": vote,
+                "edge_type": edge_type,
+                "rationale": rationale,
+                "canonical_mutation": False,
+            },
+            root=self._repo(),
+        )
+        self._json(200, {
+            "ok": True,
+            "snippet_id": snippet_id,
+            "vote": vote,
+            "edge_type": edge_type,
+            "is_dismissed": DG.is_dismissed(snippet_id),
+            "edge": edge,
+        })
+
     def _get_discuss(self) -> None:
         query = parse_qs(urlparse(self.path).query)
         try:
@@ -609,7 +721,8 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
         if not record_id:
             # Catalog listing / search mode
             global _CATALOG_CACHE
-            if _CATALOG_CACHE is None:
+            refresh = (query.get("refresh") or query.get("reload") or [""])[0].strip() in ("1", "true")
+            if _CATALOG_CACHE is None or refresh:
                 root = Path(self.repo) / "_src" / "spec" / "versions"
                 items = []
                 if root.exists():
@@ -655,6 +768,14 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
             return
         cid = ASOF._canonicalize(record_id)
         versions = VS.list_versions(cid)
+        if not versions and ASOF.parse_canonical_id(record_id) is None:
+            for alt_proj in ("AUTOSAR/CP", "Eclipse/S-Core"):
+                alt_cid = f"{alt_proj}/record/{record_id}"
+                alt_vers = VS.list_versions(alt_cid)
+                if alt_vers:
+                    cid = alt_cid
+                    versions = alt_vers
+                    break
         lifecycle = VS.get_requirement_lifecycle(cid, versions)
         self._json(200, {
             "ok": True,
@@ -819,8 +940,322 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
         except Exception as exc:
             self._json(500, {"ok": False, "error": str(exc)})
 
+    def _parse_agent_html(self, raw_output: str) -> Tuple[Optional[dict], str]:
+        parsed_json = None
+        generated_html = ""
+        m_fence = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_output, re.DOTALL)
+        if m_fence:
+            try:
+                parsed_json = json.loads(m_fence.group(1).strip())
+            except Exception:
+                pass
+        if not parsed_json:
+            cleaned_out = raw_output.strip()
+            try:
+                start = cleaned_out.find("{")
+                end = cleaned_out.rfind("}")
+                if start != -1 and end != -1 and end > start:
+                    parsed_json = json.loads(cleaned_out[start:end+1])
+            except Exception:
+                pass
+        if isinstance(parsed_json, dict):
+            if "ergebnisse" in parsed_json and len(parsed_json["ergebnisse"]) > 0:
+                generated_html = parsed_json["ergebnisse"][0].get("html", "")
+            elif "html" in parsed_json:
+                generated_html = parsed_json.get("html", "")
+        if not generated_html:
+            m = re.search(r'(<div class=["\']ai\b[^>]*>.*?</div>\s*<p class=["\']ai-note["\']>.*?</p>\s*</div>)', raw_output, re.DOTALL)
+            if m:
+                generated_html = m.group(1).strip()
+            elif "<div class=" in raw_output:
+                m2 = re.search(r'(<div class=["\']ai\b.*)', raw_output, re.DOTALL)
+                if m2:
+                    generated_html = m2.group(1).strip()
+        return parsed_json, generated_html
+
+    def _post_ai_execute_prompt(self) -> None:
+        data = self._read_object()
+        prompt = str(data.get("prompt") or "").strip()
+        modul = str(data.get("module") or "LinIf").strip()
+        fragment_rel = str(data.get("fragment") or f"content/ai/classic/modules/{modul.lower()}/main_01.html").strip()
+
+        if not prompt:
+            raise PayloadError(400, "prompt is required")
+
+        repo = self._repo()
+        frag_file = repo / "_src" / fragment_rel
+        if not frag_file.exists():
+            frag_file = repo / fragment_rel
+        original_html = frag_file.read_text(encoding="utf-8") if frag_file.is_file() else ""
+
+        t0 = time.monotonic()
+        status = AI_BRIDGE.get_health_status()
+        subs = AI_BRIDGE.check_subscriptions()
+
+        active_prov = status.get("active_provider") or "agy"
+        agy_conf = status.get("providers", {}).get("agy", {})
+        cur_conf = status.get("providers", {}).get("cursor", {})
+
+        req_model = str(data.get("model") or "").strip()
+        req_prov = str(data.get("provider") or "").strip()
+
+        if req_prov == "cursor" or req_model == "composer-2.5":
+            providers_to_try = ["cursor"]
+        elif req_prov == "agy" or req_model.startswith("gemini-"):
+            providers_to_try = ["agy"]
+        else:
+            providers_to_try = ["agy", "cursor"] if active_prov == "agy" else ["cursor", "agy"]
+
+        is_stream = bool(data.get("stream")) or ("text/event-stream" in self.headers.get("Accept", ""))
+
+        if is_stream:
+            self.close_connection = True
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
+            self.send_header("X-Accel-Buffering", "no")
+            self.end_headers()
+
+            def sse(ev_obj):
+                try:
+                    payload = f"data: {json.dumps(ev_obj, ensure_ascii=False)}\n\n".encode("utf-8")
+                    self.wfile.write(payload)
+                    self.wfile.flush()
+                except Exception:
+                    pass
+
+            if os.environ.get("AI_MOCK_DIFF") == "1" or data.get("mock"):
+                replacement = "Abstracts LIN hardware and manages schedule tables and frame transmission (mit deterministischer Validierung durch SWS_Lin_00098)."
+                mock_html = original_html.replace("Abstracts LIN hardware and manages schedule tables and frame transmission.", replacement) if original_html else f"<div class=\"ai module-guide\"><p>{replacement}</p><p class=\"ai-note\">KI-Hinweis</p></div>"
+                raw_mock = json.dumps({
+                    "ergebnisse": [{
+                        "fragment": fragment_rel,
+                        "html": mock_html,
+                        "diagramme": {},
+                        "trace": {"modell": "mock-generator-v1"}
+                    }]
+                })
+                sse({"event": "start", "provider": "mock", "model": "mock-generator-v1", "min_hz": 4.0, "elapsed_ms": 0, "phase": "thinking"})
+                time.sleep(0.25)
+                sse({"event": "tick", "phase": "thinking", "elapsed_ms": 250, "hz": 4.0, "tokens": 0})
+                time.sleep(0.25)
+                half = len(raw_mock) // 2
+                sse({"event": "delta", "delta": raw_mock[:half], "accumulated": raw_mock[:half], "phase": "generating", "elapsed_ms": 500, "hz": 4.0, "tokens": 50})
+                time.sleep(0.25)
+                sse({"event": "delta", "delta": raw_mock[half:], "accumulated": raw_mock, "phase": "generating", "elapsed_ms": 750, "hz": 4.0, "tokens": 100})
+                time.sleep(0.25)
+                dur_ms = int((time.monotonic() - t0) * 1000)
+                sse({
+                    "event": "complete",
+                    "ok": True,
+                    "provider": "mock",
+                    "model": "mock-generator-v1",
+                    "original_html": original_html,
+                    "generated_html": mock_html,
+                    "parsed_json": json.loads(raw_mock),
+                    "raw_output": raw_mock,
+                    "duration_ms": dur_ms,
+                    "effective_hz": 4.0,
+                })
+                return
+
+            chosen_prov = None
+            chosen_model = None
+            stream_gen = None
+            for prov in providers_to_try:
+                if prov == "agy" and subs.get("gemini", {}).get("available"):
+                    cli = subs["gemini"]["cli_path"] or "agy"
+                    m = req_model if (req_model and req_model.startswith("gemini-")) else agy_conf.get("model", "gemini-3.8-flash-medium")
+                    cmd = AI_BRIDGE.build_stream_cmd("agy", cli, m, effort="medium", prompt=prompt)
+                    stream_gen = AI_BRIDGE.stream_agent_cli(cmd, provider="agy", min_hz=4.0)
+                    chosen_prov = "agy"
+                    chosen_model = m
+                    break
+                elif prov == "cursor" and subs.get("cursor", {}).get("available"):
+                    cli = subs["cursor"]["cli_path"] or "agent"
+                    m = req_model if (req_model and "composer" in req_model) else cur_conf.get("model", "composer-2.5")
+                    cmd = AI_BRIDGE.build_stream_cmd("cursor", cli, m, prompt=prompt)
+                    stream_gen = AI_BRIDGE.stream_agent_cli(cmd, provider="cursor", min_hz=4.0)
+                    chosen_prov = "cursor"
+                    chosen_model = m
+                    break
+
+            if not stream_gen:
+                sse({
+                    "event": "error",
+                    "error": "Kein KI-Provider (agy / cursor) verfügbar.",
+                    "duration_ms": int((time.monotonic() - t0) * 1000)
+                })
+                return
+
+            raw_accum = ""
+            for ev in stream_gen:
+                ev_name = ev.get("event")
+                if ev_name == "complete":
+                    raw_accum = ev.get("output", "")
+                    dur_ms = ev.get("duration_ms") or int((time.monotonic() - t0) * 1000)
+                    parsed_json, generated_html = self._parse_agent_html(raw_accum)
+                    is_ok = bool(generated_html and generated_html.strip())
+                    err_msg = None if is_ok else "Modell lieferte kein gültiges HTML-Fragment im erwarteten Schema."
+                    self._record_mutation(
+                        "ai-prompt-executed",
+                        "prompt-workbench",
+                        {
+                            "module": modul,
+                            "fragment": fragment_rel,
+                            "provider": chosen_prov,
+                            "model": chosen_model,
+                            "duration_ms": dur_ms,
+                            "canonical_mutation": False,
+                        },
+                        root=repo,
+                    )
+                    sse({
+                        "event": "complete",
+                        "ok": is_ok,
+                        "error": err_msg,
+                        "provider": chosen_prov,
+                        "model": chosen_model,
+                        "original_html": original_html,
+                        "generated_html": generated_html,
+                        "parsed_json": parsed_json,
+                        "raw_output": raw_accum[:3000] if raw_accum else "",
+                        "duration_ms": dur_ms,
+                        "effective_hz": ev.get("effective_hz", 4.0),
+                    })
+                    return
+                elif ev_name == "error":
+                    sse(ev)
+                    return
+                else:
+                    sse(ev)
+            return
+
+        # Synchronous fallback for non-streaming callers
+        raw_output = None
+        used_prov = None
+        used_model = None
+        last_error = None
+
+        if os.environ.get("AI_MOCK_DIFF") == "1" or data.get("mock"):
+            used_prov = "mock"
+            used_model = "mock-generator-v1"
+            replacement = "Abstracts LIN hardware and manages schedule tables and frame transmission (mit deterministischer Validierung durch SWS_Lin_00098)."
+            mock_html = original_html.replace("Abstracts LIN hardware and manages schedule tables and frame transmission.", replacement) if original_html else f"<div class=\"ai module-guide\"><p>{replacement}</p><p class=\"ai-note\">KI-Hinweis</p></div>"
+            raw_output = json.dumps({
+                "ergebnisse": [{
+                    "fragment": fragment_rel,
+                    "html": mock_html,
+                    "diagramme": {},
+                    "trace": {"modell": "mock-generator-v1"}
+                }]
+            })
+        else:
+            for prov in providers_to_try:
+                if prov == "agy" and subs.get("gemini", {}).get("available"):
+                    cli = subs["gemini"]["cli_path"] or "agy"
+                    m = req_model if (req_model and req_model.startswith("gemini-")) else agy_conf.get("model", "gemini-3.8-flash-medium")
+                    cmd = [cli, "--model", m, "--dangerously-skip-permissions", "--print", prompt]
+                    ok, out = AI_BRIDGE._run_cli_prompt(cmd, timeout=180)
+                    if ok and out:
+                        raw_output = out
+                        used_prov = "agy"
+                        used_model = m
+                        break
+                    else:
+                        last_error = out
+                elif prov == "cursor" and subs.get("cursor", {}).get("available"):
+                    cli = subs["cursor"]["cli_path"] or "agent"
+                    m = req_model if (req_model and "composer" in req_model) else cur_conf.get("model", "composer-2.5")
+                    cmd = [
+                        cli,
+                        "--print",
+                        "--trust",
+                        "--mode", "ask",
+                        "--model", m,
+                        prompt,
+                    ]
+                    ok, out = AI_BRIDGE._run_cli_prompt(cmd, timeout=180)
+                    if ok and out:
+                        raw_output = out
+                        used_prov = "cursor"
+                        used_model = m
+                        break
+                    else:
+                        last_error = out
+
+        duration_ms = int((time.monotonic() - t0) * 1000)
+
+        if not raw_output:
+            self._json(502, {
+                "ok": False,
+                "error": last_error or "Keine Antwort vom konfigurierten Modell erhalten. Prüfe CLI-Installation und Authentifizierung ('agy' / 'agent').",
+                "duration_ms": duration_ms
+            })
+            return
+
+        parsed_json, generated_html = self._parse_agent_html(raw_output)
+        is_ok = bool(generated_html and generated_html.strip())
+        err_msg = None if is_ok else "Modell lieferte kein gültiges HTML-Fragment im erwarteten Schema."
+
+        self._record_mutation(
+            "ai-prompt-executed",
+            "prompt-workbench",
+            {
+                "module": modul,
+                "fragment": fragment_rel,
+                "provider": used_prov,
+                "model": used_model,
+                "duration_ms": duration_ms,
+                "canonical_mutation": False,
+            },
+            root=repo,
+        )
+
+        self._json(200, {
+            "ok": is_ok,
+            "error": err_msg,
+            "provider": used_prov,
+            "model": used_model,
+            "original_html": original_html,
+            "generated_html": generated_html,
+            "parsed_json": parsed_json,
+            "raw_output": raw_output[:3000] if raw_output else "",
+            "duration_ms": duration_ms,
+        })
+
     def _post_discuss_sidecar(self, data: Dict[str, Any]) -> None:
         repo = self._repo()
+        action = str(data.get("action") or "chat")
+        is_stream = bool(data.get("stream")) or ("text/event-stream" in self.headers.get("Accept", ""))
+
+        if is_stream and action in ("chat", "stream"):
+            src = DISCUSS.src_dir(repo)
+            rec_id = str(data.get("record_id") or "")
+            try:
+                context = DISCUSS.package_context(src, rec_id)
+            except Exception:
+                context = {"record_id": rec_id, "found": False}
+            msg = str(data.get("message") or "")
+
+            self.close_connection = True
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
+            self.send_header("X-Accel-Buffering", "no")
+            self.end_headers()
+
+            try:
+                for ev in DISCUSS.stream_discuss_reply(msg, context, min_hz=4.0):
+                    chunk = f"data: {json.dumps(ev, ensure_ascii=False)}\n\n".encode("utf-8")
+                    self.wfile.write(chunk)
+                    self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return
+
         raw = json.dumps(data, ensure_ascii=False).encode("utf-8")
         try:
             status, payload = DISCUSS.handle_http("POST", {}, raw, repo)
@@ -828,7 +1263,6 @@ class DemoHandler(PREVIEW.IssuePreviewHandler):
             self._json(500, {"ok": False, "error": "discuss-failed", "canonical_mutation": False})
             return
         payload = _with_canonical_flag(payload)
-        action = str(data.get("action") or "chat")
         if status == 200 and payload.get("ok") and action == "submit":
             written = payload.get("path")
             outputs = []

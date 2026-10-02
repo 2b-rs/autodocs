@@ -37,7 +37,7 @@ def call_nexos_chat_completion(
     model: str = DEFAULT_MODEL,
     api_key: Optional[str] = None,
     base_url: str = DEFAULT_BASE_URL,
-    temperature: float = 0.2,
+    temperature: float = 0.0,
 ) -> str:
     """Sendet einen Chat-Completion-Request an die Nexos.ai API."""
     key = api_key or os.environ.get("NEXOS_API_KEY")

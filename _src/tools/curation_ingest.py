@@ -256,31 +256,97 @@ def _record_curation_ingest(paket_pfad: Path, bericht: dict) -> None:
         return
 
 
+def ingest_queue_snippets(apply: bool = False) -> dict:
+    """Scans spec/curation-queue/open for snippet proposals and processes them into the dependency graph."""
+    import dependency_graph as dg
+
+    open_flags = cf.list_open_flags()
+    results = []
+    for flag_path in open_flags:
+        try:
+            payload = json.loads(flag_path.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        rid = str(payload.get("target_record") or payload.get("id") or "")
+        is_snippet = payload.get("item_kind") == "evidence-snippet" or rid.startswith("SNIP_")
+        if not is_snippet:
+            continue
+
+        outcome = payload.get("outcome")
+        rationale = payload.get("rationale") or "Curation proposal ingested"
+        if not apply:
+            results.append({
+                "id": rid,
+                "path": str(flag_path),
+                "status": "dry_run",
+                "action": "would_dismiss" if outcome in ("proposed_change", "reject") else "would_confirm",
+            })
+        else:
+            if outcome in ("proposed_change", "reject"):
+                dg.dismiss_node(rid, reason=rationale)
+                dg.add_edge("curation_ingest", rid, "dismisses", meta={"proposal_file": flag_path.name, "rationale": rationale})
+                completed = cf.complete_flag(flag_path, note=f"Ingested snippet proposal: {rationale}", outcome_class="no_action")
+                results.append({
+                    "id": rid,
+                    "path": str(completed),
+                    "status": "dismissed",
+                    "action": "dismissed_and_completed",
+                })
+            elif outcome == "accept":
+                dg.add_edge("curation_ingest", rid, "confirms", meta={"proposal_file": flag_path.name, "rationale": rationale})
+                completed = cf.complete_flag(flag_path, note=f"Confirmed snippet: {rationale}", outcome_class="no_action")
+                results.append({
+                    "id": rid,
+                    "path": str(completed),
+                    "status": "confirmed",
+                    "action": "confirmed_and_completed",
+                })
+
+    bericht = {
+        "paket": "spec/curation-queue/open (snippets)",
+        "identity": "curation_ingest--snippets",
+        "angewandt": apply,
+        "status": "ok",
+        "fehler": [],
+        "warnungen": [],
+        "snippets_processed": len(results),
+        "ergebnisse": results,
+    }
+    _record_curation_ingest(Path("spec/curation-queue/open"), bericht)
+    return bericht
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("paket", type=Path, help="Review-Paket (JSON) oder Issue-Body (mit --issue-body)")
-    ap.add_argument("--apply", action="store_true", help="Flags anlegen (Standard: nur pruefen)")
+    ap.add_argument("paket", nargs="?", type=Path, default=None, help="Review-Paket (JSON) oder Issue-Body (mit --issue-body)")
+    ap.add_argument("--snippets", action="store_true", help="Offene Snippet-Kurationsanträge aus spec/curation-queue/open verarbeiten")
+    ap.add_argument("--apply", action="store_true", help="Flags anlegen/übernehmen (Standard: nur pruefen)")
     ap.add_argument("--issue-body", action="store_true",
                     help="Eingabedatei ist ein GitHub-Issue-Body mit ```json ...``` Block")
     ap.add_argument("--json", action="store_true", help="Bericht als JSON")
     args = ap.parse_args(argv)
 
-    bericht = ingest(args.paket, args.apply, args.issue_body)
+    if args.snippets or args.paket is None:
+        if args.paket is None and not args.snippets:
+            ap.error("Entweder ein Paket-Pfad oder --snippets angeben")
+        bericht = ingest_queue_snippets(apply=args.apply)
+    else:
+        bericht = ingest(args.paket, args.apply, args.issue_body)
 
     if args.json:
         print(json.dumps(bericht, ensure_ascii=False, indent=1))
     else:
-        print("Paket:    %s (%s)" % (bericht["paket"], bericht["identity"]))
+        print("Paket:    %s (%s)" % (bericht["paket"], bericht.get("identity")))
         for w in bericht.get("warnungen", []):
             print("WARNUNG:  %s" % w)
         for f in bericht["fehler"]:
             print("FEHLER:   %s" % f)
         for r in bericht["ergebnisse"]:
             print("%-9s %s%s" % (r["status"], r["id"],
-                                  (" -> %s" % r["pfad"]) if r.get("pfad") else ""))
+                                  (" -> %s" % r["path"]) if r.get("path") else ((" -> %s" % r["pfad"]) if r.get("pfad") else "")))
         print("%d Kurationsanfragen, %s"
-              % (len(bericht["ergebnisse"]), "angelegt" if bericht["angewandt"] else "nur geprueft"))
+              % (len(bericht["ergebnisse"]), "angelegt/übernommen" if bericht["angewandt"] else "nur geprueft"))
 
     return 1 if bericht["fehler"] else 0
 

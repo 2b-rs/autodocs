@@ -35,7 +35,7 @@ REPORT_PAGES = (
 )
 
 PRECHANGE_REF = "29aeadfbd34c84d7f02951f33b4383217c046330"
-DOMAINS = ("explore", "trace", "curate", "review", "work", "reports")
+DOMAINS = ("extract", "build", "curate", "review", "trace", "explore", "work")
 REQUIRED_TOKENS = (
     "--bg-canvas",
     "--bg-surface",
@@ -155,9 +155,9 @@ class TestUiShellTokens(unittest.TestCase):
         de_html = dm.render_page(page, footers, page_tmpl, lang="de")
         en_html = dm.render_page(page, footers, page_tmpl, lang="en")
         self.assertIn('data-domain="explore" href="../index.html"', de_html)
-        self.assertIn('data-domain="reports" href="../build-reports.html"', de_html)
+        self.assertIn('data-domain="build" href="../build-reports.html"', de_html)
         self.assertIn('data-domain="explore" href="../index.html"', en_html)
-        self.assertIn('data-domain="reports" href="../../build-reports.html"', en_html)
+        self.assertIn('data-domain="build" href="../../build-reports.html"', en_html)
         self.assertIn('data-domain="curate" href="../../curation-report.html"', en_html)
 
     def test_compact_density_reduces_shell_padding_tokens(self):

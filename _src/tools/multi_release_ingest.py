@@ -35,7 +35,7 @@ _LOGGER = logging.getLogger("autodocs.multi_release_ingest")
 
 # Canonical AUTOSAR requirement ceiling and floor delimiters
 REQ_PATTERN = re.compile(
-    r"\[([A-Za-z0-9_]+)\]([^\n⌈]*\n(?:[^\n⌈]*\n)*?)\s*⌈([^⌋]+)⌋",
+    r"\[((?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Za-z0-9_]+)\]([^\[\]⌈]*?)\s*⌈([^⌋]+)⌋",
     re.DOTALL
 )
 
@@ -82,13 +82,21 @@ def parse_pdf_requirements(pdf_path_str: str, release_tag: str) -> List[Dict[str
     items = []
 
     # Determine platform from path or file name
-    is_classic = "CLASSIC" in str(pdf_path) or "AUTOSAR_CP_" in pdf_path.name or "AUTOSAR_SWS_" in pdf_path.name and "AUTOSAR_AP_" not in pdf_path.name
-    platform_kind = "CP" if is_classic else "AP"
+    parts = set(pdf_path.parts)
+    if "CLASSIC" in parts or "CP" in parts or "AUTOSAR_CP_" in pdf_path.name:
+        platform_kind = "CP"
+    elif "FOUNDATION" in parts or "FO" in parts or "AUTOSAR_FO_" in pdf_path.name:
+        platform_kind = "FOUNDATION"
+    elif "AP" in parts or "AUTOSAR_AP_" in pdf_path.name:
+        platform_kind = "AP"
+    else:
+        is_classic = "AUTOSAR_SWS_" in pdf_path.name and "AUTOSAR_AP_" not in pdf_path.name
+        platform_kind = "CP" if is_classic else "AP"
 
     seen_ids: Set[str] = set()
     for req_id, header, body in matches:
         req_id = req_id.strip()
-        if not (req_id.startswith("SWS_") or req_id.startswith("RS_") or req_id.startswith("PRS_")):
+        if not req_id.startswith(("SWS_", "RS_", "PRS_", "TPS_", "AP_SWS_", "AP_RS_")):
             continue
         if req_id in seen_ids:
             continue
@@ -185,6 +193,7 @@ def find_target_pdfs(
     releases: Optional[List[str]] = None,
     modules: Optional[List[str]] = None,
     docs: Optional[List[str]] = None,
+    platform: Optional[str] = None,
 ) -> List[Tuple[Path, str]]:
     """Discover PDF paths matching releases and filter criteria."""
     targets = []
@@ -200,6 +209,19 @@ def find_target_pdfs(
 
         for pdf_path in rel_dir.glob("**/*.pdf"):
             name = pdf_path.name
+            if platform:
+                p_norm = platform.upper()
+                parts = set(pdf_path.parts)
+                if p_norm in ("CP", "CLASSIC"):
+                    if "CLASSIC" not in parts and "CP" not in parts and "AUTOSAR_CP_" not in name:
+                        continue
+                elif p_norm in ("AP", "ADAPTIVE"):
+                    if "AP" not in parts and "AUTOSAR_AP_" not in name:
+                        continue
+                elif p_norm in ("FO", "FOUNDATION"):
+                    if "FOUNDATION" not in parts and "AUTOSAR_FO_" not in name:
+                        continue
+
             if modules:
                 # Check if matches any requested module
                 matched_mod = False
@@ -226,6 +248,7 @@ def main():
     parser.add_argument("--releases", "-r", help="Comma-separated release tags (e.g. R18-10,R19-11,R20-11,R21-11,R22-11,R25-11)")
     parser.add_argument("--modules", "-m", help="Comma-separated module identifiers (e.g. com,core,log,os)")
     parser.add_argument("--docs", "-d", help="Comma-separated document name substrings (e.g. COM,Core,LogAndTrace)")
+    parser.add_argument("--platform", "-p", help="Filter by platform kind (e.g. CP, CLASSIC, AP, ADAPTIVE, FOUNDATION)")
     parser.add_argument("--workers", "-w", type=int, default=10, help="Max parallel CPU workers (default: 10)")
     parser.add_argument("--dry-run", action="store_true", help="Extract without saving to version store")
     parser.add_argument("--json", action="store_true", help="Output summary in JSON format")
@@ -236,7 +259,7 @@ def main():
     mods = [x.strip() for x in args.modules.split(",")] if args.modules else None
     docs = [x.strip() for x in args.docs.split(",")] if args.docs else None
 
-    pdf_targets = find_target_pdfs(cache_dir, releases=rels, modules=mods, docs=docs)
+    pdf_targets = find_target_pdfs(cache_dir, releases=rels, modules=mods, docs=docs, platform=args.platform)
     print(f"Found {len(pdf_targets)} matching PDFs in cache.")
 
     workers = min(args.workers, os.cpu_count() or 10)

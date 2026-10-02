@@ -232,7 +232,18 @@ def cmd_auftrag(args):
         basis = os.path.join(SRC, frag)[:-len(".html")]
         for q in sorted(glob.glob(basis + ".*.dot") + glob.glob(basis + ".*.seq.json")):
             diag[os.path.relpath(q, SRC)] = open(q, encoding="utf-8").read()
-        auftraege.append({
+        dossier = None
+        parts = frag.split("/")
+        if "modules" in parts:
+            mod_idx = parts.index("modules")
+            if mod_idx + 1 < len(parts):
+                mod_name = parts[mod_idx + 1]
+                plattform = parts[mod_idx - 1] if mod_idx > 0 else "classic"
+                dossier_file = os.path.join(SRC, "ai", "dossiers", plattform, "modules", f"{mod_name}.json")
+                if os.path.exists(dossier_file):
+                    dossier = json.load(open(dossier_file, encoding="utf-8"))
+
+        auftrag_entry = {
             "fragment": frag,
             "seite": t["seite"] if t else None,
             "art": t["art"] if t else None,
@@ -241,7 +252,11 @@ def cmd_auftrag(args):
                                    if os.path.exists(os.path.join(SRC, frag)) else None,
             "bisherige_diagramme": diag,
             "trace": t,
-        })
+        }
+        if dossier:
+            auftrag_entry["dossier_sha256"] = dossier.get("dossier_sha256")
+            auftrag_entry["inbound_snippets"] = dossier.get("inbound_snippets", [])
+        auftraege.append(auftrag_entry)
     quellen = json.load(open(os.path.join(AI, "quellen.json"), encoding="utf-8"))
     os.makedirs(WORK, exist_ok=True)
     vorhanden = glob.glob(os.path.join(WORK, "auftrag_*.json"))
@@ -327,6 +342,8 @@ def cmd_merge():
             t["status"] = "aktuell"
             t.pop("invalidiert", None)
             t["elemente_stand"] = {e: record_hash(e) for e in t.get("elemente", [])}
+            if tinfo.get("dossier_sha256"):
+                t["dossier_sha256"] = tinfo.get("dossier_sha256")
             dump(tp, t)
             eingespielt += 1
         os.rename(outp, outp + ".eingespielt")

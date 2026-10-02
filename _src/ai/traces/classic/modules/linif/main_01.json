@@ -12,43 +12,132 @@
   "SWS_LinIf_00351"
  ],
  "zitate": [
+  "SWS_LinIf_00197",
   "SWS_LinIf_00198",
   "SWS_LinIf_00201",
   "SWS_LinIf_00202",
   "SWS_LinIf_00204",
   "SWS_LinIf_00205",
+  "SWS_LinIf_00351",
+  "SWS_LinIf_00378",
+  "SWS_LinIf_00503",
+  "SWS_LinIf_00528",
+  "SWS_LinIf_00529",
   "SWS_LinIf_00544",
-  "SWS_LinIf_00351"
+  "SWS_LinSM_00036",
+  "SWS_LinSM_00079",
+  "SWS_Lin_00098",
+  "SWS_PduR_00430",
+  "SWS_PduR_00627"
  ],
  "quellen": [
+  "AUTOSAR_EXP_LayeredSoftwareArchitecture",
+  "AUTOSAR_SRS_LIN",
+  "AUTOSAR_SWS_LINDriver",
   "AUTOSAR_SWS_LINInterface",
-  "AUTOSAR_SRS_LIN"
+  "AUTOSAR_SWS_LINStateManager",
+  "AUTOSAR_SWS_PDURouter"
  ],
  "wissen": [
   {
-   "aussage": "Das LIN Interface abstrahiert Hardwaredetails und steuert Master- und Slave-Knoten.",
+   "aussage": "Das LIN Interface (LinIf) abstrahiert Hardwaredetails und bildet das Bindeglied zwischen oberen Kommunikations-/Zustandsmanagement-Modulen und LIN-Treibern sowie Transceivern.",
    "quelle": "AUTOSAR_SWS_LINInterface",
    "fundstelle": "SWS_LinIf_00198"
   },
   {
-   "aussage": "LinIf_ScheduleRequest schaltet zur Laufzeit zwischen verschiedenen Schedule-Tabellen um.",
-   "quelle": "AUTOSAR_SWS_LINInterface",
-   "fundstelle": "SWS_LinIf_00202"
-  },
-  {
-   "aussage": "LinIf_Transmit ordnet gesendete I-PDUs Schedule-Tabellen-Slots zu und leitet an Lin weiter.",
+   "aussage": "Das LinIf gewährleistet die deterministische Steuerung von Master- und Slave-Knoten und ordnet Sende-PDUs den entsprechenden Schedule-Slots zu.",
    "quelle": "AUTOSAR_SWS_LINInterface",
    "fundstelle": "SWS_LinIf_00201"
   },
   {
-   "aussage": "LinIf_GotoSleep versetzt den LIN-Bus in den Schlafmodus und sendet das Go-to-Sleep-Kommando.",
+   "aussage": "Gemäß Schichtenarchitekturkonzept kontrolliert das LIN Interface die Wakeup- und Sleep-Schnittstellen und fordert Sendedaten erst unmittelbar vor dem jeweiligen Sende-Slot (Just-in-Time) vom PDU Router an.",
+   "quelle": "AUTOSAR_EXP_LayeredSoftwareArchitecture",
+   "fundstelle": "Document ID 53, Page 44"
+  },
+  {
+   "aussage": "Bei Aufruf von LinSM_ScheduleRequest leitet der LIN State Manager den Wechsel der Schedule-Tabelle unverzüglich ohne Warten auf die nächste Main-Function über LinIf_ScheduleRequest an das LinIf weiter.",
+   "quelle": "AUTOSAR_SWS_LINStateManager",
+   "fundstelle": "SWS_LinSM_00079"
+  },
+  {
+   "aussage": "LinIf_ScheduleRequest fordert die Ausführung einer spezifischen Schedule-Tabelle auf einem LIN-Master-Kanal an und schaltet zur Laufzeit zwischen Schedule-Tabellen um.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00202"
+  },
+  {
+   "aussage": "Schedule-Tabellen werden über einen kanalweit eindeutigen Index vom Typ LinIf_SchHandleType adressiert und verwaltet.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00197"
+  },
+  {
+   "aussage": "Der PDU Router routet sporadische LIN-Frames über die Ziel-Funktion LinIf_Transmit an das LinIf, welche vor der Ausgabe im Slot via TriggerTransmit bedient werden.",
+   "quelle": "AUTOSAR_SWS_PDURouter",
+   "fundstelle": "Table 11.3.1"
+  },
+  {
+   "aussage": "Über die TriggerTransmit-Schnittstelle (<User_TriggerTransmit>) fordert das LinIf die Nutzdaten der zu sendenden I-PDU unmittelbar vor dem Slot bei der oberen Schicht bzw. dem PDU Router an.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00528"
+  },
+  {
+   "aussage": "Der PDU Router leitet synchrone PduR_<User:Lo>TriggerTransmit-Anforderungen des unteren Interface-Moduls direkt an die obere Schicht (<Up>_TriggerTransmit) weiter.",
+   "quelle": "AUTOSAR_SWS_PDURouter",
+   "fundstelle": "SWS_PduR_00430"
+  },
+  {
+   "aussage": "Nach erfolgreicher Übertragung eines Frames auf dem physikalischen Bus bestätigt das LinIf die Übertragung an den PDU Router über <User_TxConfirmation>.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00529"
+  },
+  {
+   "aussage": "Der PDU Router empfängt PduR_<User:Lo>TxConfirmation vom LinIf und leitet die Sendebestätigung an das übergeordnete Modul weiter.",
+   "quelle": "AUTOSAR_SWS_PDURouter",
+   "fundstelle": "SWS_PduR_00627"
+  },
+  {
+   "aussage": "Der integrierte LIN Transport Layer (LinTp) wickelt segmentierte und diagnosebezogene Nachrichten (z. B. UDS-Diagnose) im LinIf ab.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00351"
+  },
+  {
+   "aussage": "Fordert ComM COMM_NO_COMMUNICATION an, ruft der LinSM unmittelbar synchron LinIf_GotoSleep auf dem angegebenen Netzwerk auf, ohne auf die nächste Main-Function zu warten.",
+   "quelle": "AUTOSAR_SWS_LINStateManager",
+   "fundstelle": "SWS_LinSM_00036"
+  },
+  {
+   "aussage": "LinIf_GotoSleep versetzt den LIN-Bus in den Schlafmodus und veranlasst das Senden des entsprechenden Go-to-Sleep-Kommandos auf dem Bus.",
    "quelle": "AUTOSAR_SWS_LINInterface",
    "fundstelle": "SWS_LinIf_00204"
+  },
+  {
+   "aussage": "Das LinIf initiiert interne Aufweckvorgänge über die API LinIf_Wakeup.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00205"
+  },
+  {
+   "aussage": "Das LinIf verwaltet die Betriebsmodi angeschlossener LIN-Transceiver synchron über den API-Aufruf LinIf_SetTrcvMode.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00544"
+  },
+  {
+   "aussage": "LinIf_CheckWakeup wird aufgerufen, wenn der ECU State Manager (EcuM) über einen Wakeup auf einem spezifischen LIN-Kanal informiert wurde.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00378"
+  },
+  {
+   "aussage": "Nach einem Transceiver-Wakeup ruft das LinIf Lin_CheckWakeup auf, um den zugehörigen LIN-Kanal zu identifizieren.",
+   "quelle": "AUTOSAR_SWS_LINInterface",
+   "fundstelle": "SWS_LinIf_00503"
+  },
+  {
+   "aussage": "Nach einem durch einen LIN-Transceiver ausgelösten Wakeup ruft das LinIf Lin_CheckWakeup auf; der LIN-Treiber übernimmt dabei die Validierung des Wakeup-Signals auf dem Kanal.",
+   "quelle": "AUTOSAR_SWS_LINDriver",
+   "fundstelle": "SWS_Lin_00098"
   }
  ],
  "annahmen": [],
- "prompt": "Erstelle einen vollständigen, belegten User Guide für das AUTOSAR Classic Modul LIN Interface (LinIf) mit Schedule-Management, Frame-Transmission, Energiemanagement und Sequenzdiagramm.",
- "modell": "gpt-4o (via Nexos.ai)",
+ "prompt": "Aktualisiere den User Guide für das AUTOSAR Classic Modul LIN Interface (LinIf) mit Schedule-Management, Frame-Transmission, Energiemanagement und Sequenzdiagramm unter Integration der neuen Inbound-Snippets aus LinSM ([SWS_LinSM_00079], [SWS_LinSM_00036]), PduR (sporadische Frames, TxConfirmation) und Lin Driver ([SWS_Lin_00098]).",
+ "modell": "curation_generator (local agent)",
  "policy_version": 1,
  "laeufe": [
   {
@@ -58,14 +147,32 @@
    "status": "aktiv",
    "policy_version": 1,
    "transkript": "User Guide und Herkunftsakte für Classic-Modul LinIf über Nexos-Gateway erzeugt."
+  },
+  {
+   "datum": "2026-10-01",
+   "modell": "curation_generator (local agent: gemini-3.8-flash)",
+   "policy_version": 1,
+   "transkript": "Kurationslauf zur Regenerierung des Modul-Leitfadens für das LIN Interface (LinIf).\nFolgende Inbound-Snippets und Spezifikationsanforderungen wurden integriert:\n1. LinSM: Sofortige Weiterleitung von LinSM_ScheduleRequest an LinIf_ScheduleRequest ohne Zyklusverzögerung ([SWS_LinSM_00079]) sowie synchrone Auslösung von LinIf_GotoSleep bei Wechsel nach COMM_NO_COMMUNICATION ([SWS_LinSM_00036]).\n2. PduR: Routing sporadischer Frames via LinIf_Transmit (Table 11.3.1), Just-in-Time Bereitstellung via <User_TriggerTransmit> ([SWS_LinIf_00528], [SWS_PduR_00430]) und Bestätigungs-Callback via <User_TxConfirmation> / PduR_LinIfTxConfirmation ([SWS_LinIf_00529], [SWS_PduR_00627]).\n3. LIN Driver: Validierung des Transceiver-Wakeups via Lin_CheckWakeup ([SWS_Lin_00098], [SWS_LinIf_00503]).\n4. Sequenzdiagramm (.seq.json): Aufteilung in separate Lebenslinien (LinSM, PduR, LinIf, Lin, LinTrcv) und exakte Abbildung aller belegten Interaktionsschritte.\n5. Annahmen: Keine zusätzlichen Annahmen erforderlich (annahmen: []), da der gesamte Ablauf durch Spezifikationsstellen und Inbound-Snippets normativ belegt ist.",
+   "thinking_effort": "high",
+   "temperature": 0.0
   }
  ],
  "diagramme": {
   "content/ai/classic/modules/linif/main_01.diag-01.seq.json": {
-   "entscheidung": "UML-Sequenzdiagramm zur Verdeutlichung der Interaktion zwischen LinSM, LinIf, PduR und dem LIN-Treiber.",
+   "entscheidung": "UML-Sequenzdiagramm zur Verdeutlichung der Interaktionen zwischen LinSM, PduR, LinIf, LIN Driver und Transceiver gemäss AUTOSAR SWS und Inbound-Snippets.",
    "annahmen": [],
-   "transkript": "Dargestellt ist die Schedule-Aktivierung, gefolgt von der Frame-Übertragung und Wakeup-Prüfung."
+   "transkript": "UML-Sequenzdiagramm zur exakten Abbildung der Schnittstellenvereinbarungen zwischen LinSM, PduR, LinIf, LIN Driver und LIN Transceiver. Dargestellt werden der sofortige Schedule-Tabellenwechsel ([SWS_LinSM_00079], [SWS_LinIf_00202]), die Frame-Übertragung sporadischer Frames mit Just-in-Time TriggerTransmit ([SWS_LinIf_00528], [SWS_PduR_00430]) und TxConfirmation ([SWS_LinIf_00529], [SWS_PduR_00627]), der unmittelbare GotoSleep-Aufruf ([SWS_LinSM_00036], [SWS_LinIf_00204]) sowie die Transceiver-Wakeup-Erkennung mit Validierung durch den LIN Driver ([SWS_LinIf_00378], [SWS_LinIf_00503], [SWS_Lin_00098])."
   }
  },
- "status": "aktuell"
+ "status": "aktuell",
+ "elemente_stand": {
+  "SWS_LinIf_00198": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00201": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00202": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00204": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00205": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00544": "42ae31a2912aaed6d87237badb90faf30e3536ac",
+  "SWS_LinIf_00351": "42ae31a2912aaed6d87237badb90faf30e3536ac"
+ },
+ "dossier_sha256": "bc4aaa64fb2bb0c41031c26b3be376269b626efb8aa0c3132e01dfb0038bf3e6"
 }

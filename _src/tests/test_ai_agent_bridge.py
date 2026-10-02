@@ -12,8 +12,8 @@ class TestAiAgentBridge(unittest.TestCase):
         self.assertIn("primary", cfg)
         self.assertIn("fallback", cfg)
         self.assertEqual(cfg["primary"]["cli"], "agy")
-        self.assertEqual(cfg["primary"]["modell"], "gemini-3.8-flash-high")
-        self.assertEqual(cfg["primary"]["thinking_effort"], "high")
+        self.assertEqual(cfg["primary"]["modell"], "gemini-3.8-flash-medium")
+        self.assertEqual(cfg["primary"]["thinking_effort"], "medium")
         self.assertEqual(cfg["primary"]["subscription"], "gemini")
 
         self.assertEqual(cfg["fallback"]["cli"], "agent")

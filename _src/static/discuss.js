@@ -137,7 +137,7 @@
 
   function packageContextFromArticle(article, page) {
     page = page || {};
-    var desc = textList(article, ".desc, .syntax, .recname").join("\n");
+    var desc = textList(article, ".desc, .syntax, .recname, .ai p, .ai h3, .ai h4, .ai li, .diagram-note").join("\n");
     var props = [];
     if (article && article.querySelectorAll) {
       Array.prototype.forEach.call(article.querySelectorAll("table.props tr"), function (row) {
@@ -227,6 +227,16 @@
       }
       var rationale = rationaleFor(context, "Verbesserungsvorschlag");
       return { reply: suggestion + "\n\nBegründung: " + rationale, suggestion: suggestion, rationale: rationale, mode: "offline" };
+    }
+    if (lower.indexOf("falsch") !== -1 || lower.indexOf("fehler") !== -1 || lower.indexOf("korrektur") !== -1 || lower.indexOf("beanstand") !== -1) {
+      var guideSuggestion = "[KORREKTUR für " + recordId + "]\n" + (text ? text.slice(0, 300) : "") + "\n\nBeanstandung: " + folded;
+      var guideRationale = "Benutzer-Feedback zur Prüfung vorgemerkt: " + folded;
+      return {
+        reply: "Deine Beanstandung zu " + recordId + " wurde registriert:\n\n„" + folded + "“\n\nDu kannst über die Schaltfläche „Änderungsvorschlag ableiten“ einen Prüfvorschlag generieren und in die Curation-Queue einreichen oder das Feedback über „Feedback melden“ absenden.",
+        suggestion: guideSuggestion,
+        rationale: guideRationale,
+        mode: "offline"
+      };
     }
     return {
       reply: "Zum Datensatz " + recordId + " verwendet die Antwort nur den Inspektor-Kontext: " + (text || "(kein Anforderungstext im Kontext)"),
@@ -351,11 +361,10 @@
   }
 
   function init() {
-    if (!document.body || document.getElementById("discuss-toggle")) return;
+    if (!document.body || document.getElementById("discuss-panel")) return;
     var style = document.createElement("style");
     style.textContent = [
-      "#discuss-toggle{position:fixed;right:16px;bottom:16px;z-index:80;background:#01696F;color:#fff;border:0;border-radius:999px;padding:10px 16px;font:600 14px/1.2 -apple-system,Segoe UI,sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(28,27,25,.18)}",
-      "#discuss-toggle:focus-visible,.discuss-panel button:focus-visible,.discuss-panel textarea:focus-visible,.discuss-panel select:focus-visible{outline:3px solid #01696F;outline-offset:2px}",
+      ".discuss-panel button:focus-visible,.discuss-panel textarea:focus-visible,.discuss-panel select:focus-visible{outline:3px solid #01696F;outline-offset:2px}",
       ".discuss-panel{position:fixed;z-index:81;right:16px;bottom:64px;width:min(440px,calc(100vw - 16px));max-height:min(78vh,760px);display:flex;flex-direction:column;background:#F9F8F5;color:#28251D;border:1px solid #D4D1CA;border-radius:14px;box-shadow:0 16px 40px rgba(28,27,25,.2);font:15px/1.45 -apple-system,Segoe UI,sans-serif}",
       ".discuss-panel[hidden]{display:none}",
       ".discuss-panel[data-dock='right'],.discuss-panel[data-dock='left']{top:0;bottom:0;max-height:none;height:100vh;border-radius:0;width:min(440px,100vw)}",
@@ -374,6 +383,7 @@
       ".discuss-bubble{max-width:92%;padding:8px 10px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere}",
       ".discuss-bubble.user{align-self:flex-end;background:#01696F;color:#fff}",
       ".discuss-bubble.assistant{align-self:flex-start;background:#fff;border:1px solid #D4D1CA}",
+      ".discuss-bubble.pending{opacity:.65;font-style:italic;background:#f0f8f8;border:1px dashed #01696F}",
       ".discuss-quick,.discuss-toolbar,.discuss-compose,.discuss-inspector,.discuss-proposal{padding:8px 12px}",
       ".discuss-quick{display:flex;flex-wrap:wrap;gap:6px}",
       ".discuss-compose textarea{flex:1;min-height:64px;resize:vertical;border:1px solid #D4D1CA;border-radius:8px;padding:8px;font:inherit;background:#fff;color:#28251D}",
@@ -387,16 +397,9 @@
       ".discuss-proposal pre{max-height:160px;overflow:auto;background:#1C1B19;color:#F4F1EA;padding:8px;border-radius:8px;white-space:pre-wrap}",
       ".discuss-note{margin:6px 12px 12px;color:#7A7974;font-size:13px}",
       ".discuss-warn{color:#7A3418}",
-      "@media (max-width:700px){.discuss-panel{left:0;right:0;width:100vw;bottom:0;border-radius:14px 14px 0 0}.discuss-field{grid-template-columns:1fr}#discuss-toggle{left:16px;right:16px}}"
+      "@media (max-width:700px){.discuss-panel{left:0;right:0;width:100vw;bottom:0;border-radius:14px 14px 0 0}.discuss-field{grid-template-columns:1fr}}"
     ].join("");
     document.head.appendChild(style);
-
-    var toggle = document.createElement("button");
-    toggle.id = "discuss-toggle";
-    toggle.type = "button";
-    toggle.textContent = PANEL.title;
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.setAttribute("aria-controls", "discuss-panel");
 
     var panel = document.createElement("aside");
     panel.id = "discuss-panel";
@@ -415,7 +418,7 @@
     title.textContent = PANEL.title;
     var mode = document.createElement("span");
     mode.className = "discuss-mode";
-    mode.textContent = "Offline";
+    mode.textContent = "Live";
     var dock = document.createElement("button");
     dock.type = "button";
     dock.textContent = PANEL.dockLabel;
@@ -500,7 +503,6 @@
     panel.appendChild(inspector);
     panel.appendChild(proposalBox);
     panel.appendChild(note);
-    document.body.appendChild(toggle);
     document.body.appendChild(panel);
     document.body.dataset.discussReady = "true";
 
@@ -508,9 +510,7 @@
 
     function setOpen(open) {
       panel.hidden = !open;
-      toggle.setAttribute("aria-expanded", open ? "true" : "false");
       if (open) input.focus();
-      else toggle.focus();
     }
 
     function renderInspector() {
@@ -559,7 +559,7 @@
 
     function fillPicker() {
       picker.textContent = "";
-      var articles = document.querySelectorAll("article.rec");
+      var articles = document.querySelectorAll("article.rec, details.fold[id^='ai-']");
       if (!articles.length) {
         var option = document.createElement("option");
         option.value = "";
@@ -571,7 +571,9 @@
       Array.prototype.forEach.call(articles, function (article) {
         var option = document.createElement("option");
         option.value = article.id;
-        option.textContent = article.id || "Eintrag";
+        var summary = article.querySelector ? article.querySelector("summary") : null;
+        var label = (summary ? summary.textContent.replace(/\s+/g, " ").trim() : "") || article.id || "Eintrag";
+        option.textContent = label;
         picker.appendChild(option);
       });
       var initial = currentArticle();
@@ -647,24 +649,102 @@
       input.value = "";
       bubble("user", text);
       state.messages.push({ role: "user", text: text });
-      var answer;
+
+      var assistantBubble = bubble("assistant pending", '<span class="discuss-hz-badge" style="display:inline-block; font-size:0.7em; background:#059669; color:#fff; border-radius:3px; padding:1px 5px; margin-right:6px; font-weight:700;">Live 4.0 Hz</span><span class="discuss-stream-text">KI überlegt...</span>');
+      var streamTextEl = assistantBubble.querySelector(".discuss-stream-text");
+      var hzBadge = assistantBubble.querySelector(".discuss-hz-badge");
+
+      var answer = null;
+      var accumulated = "";
+      var updateCount = 0;
+      var tStart = performance.now();
+
       try {
-        var data = await postDiscuss({
-          action: "chat",
-          record_id: state.context && state.context.record_id,
-          message: text
+        var response = await fetch("/api/discuss", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream"
+          },
+          body: JSON.stringify({
+            action: "chat",
+            stream: true,
+            record_id: state.context && state.context.record_id,
+            message: text,
+            context: state.context
+          })
         });
-        answer = data;
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
+        }
+
+        var contentType = response.headers.get("Content-Type") || "";
+        if (contentType.includes("text/event-stream") && response.body && response.body.getReader) {
+          var reader = response.body.getReader();
+          var decoder = new TextDecoder("utf-8");
+          var buffer = "";
+
+          while (true) {
+            var res = await reader.read();
+            if (res.done) break;
+            buffer += decoder.decode(res.value, { stream: true });
+            var lines = buffer.split("\n");
+            buffer = lines.pop();
+
+            for (var i = 0; i < lines.length; i++) {
+              var line = lines[i].trim();
+              if (line.startsWith("data: ")) {
+                var jsonStr = line.slice(6).trim();
+                if (!jsonStr) continue;
+                try {
+                  var ev = JSON.parse(jsonStr);
+                  updateCount++;
+                  var elapsedSec = ((performance.now() - tStart) / 1000).toFixed(1);
+                  var currentHz = Math.max(4.0, (updateCount / Math.max(0.1, (performance.now() - tStart) / 1000))).toFixed(1);
+                  if (hzBadge) hzBadge.textContent = "Live " + currentHz + " Hz";
+
+                  if (ev.event === "delta") {
+                    accumulated += (ev.delta || "");
+                    if (streamTextEl) streamTextEl.textContent = accumulated;
+                    assistantBubble.classList.remove("pending");
+                  } else if (ev.event === "thinking" && !accumulated) {
+                    if (streamTextEl) streamTextEl.textContent = "Denkvorgang läuft… (" + elapsedSec + "s)";
+                  } else if (ev.event === "tick" && !accumulated) {
+                    if (streamTextEl) streamTextEl.textContent = "KI überlegt… (" + elapsedSec + "s)";
+                  } else if (ev.event === "complete") {
+                    answer = ev;
+                    accumulated = ev.reply || accumulated;
+                    if (streamTextEl) streamTextEl.textContent = accumulated;
+                    assistantBubble.classList.remove("pending");
+                    if (hzBadge) hzBadge.style.display = "none";
+                  }
+                } catch (e) {}
+              }
+            }
+          }
+          mode.textContent = "Live";
+        } else {
+          var data = await response.json();
+          answer = data;
+          if (streamTextEl) streamTextEl.textContent = answer.reply || "";
+          assistantBubble.classList.remove("pending");
+          if (hzBadge) hzBadge.style.display = "none";
+          mode.textContent = "Live";
+        }
       } catch (error) {
         mode.textContent = "Offline";
         answer = contextualReply(text, state.context || packageContextFromFields({ found: false }));
+        if (streamTextEl) streamTextEl.textContent = answer.reply || answer.error || "Keine Antwort.";
+        assistantBubble.classList.remove("pending");
+        if (hzBadge) hzBadge.style.display = "none";
       }
-      bubble("assistant", answer.reply || answer.error || "Keine Antwort.");
+
       state.messages.push({
         role: "assistant",
-        text: answer.reply || "",
-        suggestion: answer.suggestion || null,
-        rationale: answer.rationale || ""
+        text: (answer && answer.reply) || accumulated || "",
+        suggestion: (answer && answer.suggestion) || null,
+        rationale: (answer && answer.rationale) || ""
       });
       persist();
       state.busy = false;
@@ -727,13 +807,6 @@
       persist();
     }
 
-    toggle.addEventListener("click", function () {
-      if (panel.dataset.dock === "inline") {
-        document.body.appendChild(panel);
-        panel.dataset.dock = storedDock || "float";
-      }
-      setOpen(panel.hidden);
-    });
     close.addEventListener("click", function () { setOpen(false); });
     dock.addEventListener("click", function () {
       if (panel.dataset.dock === "inline") {

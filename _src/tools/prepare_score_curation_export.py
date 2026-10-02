@@ -24,7 +24,7 @@ EXPECTED = {
     "evidence.json": "df65c6faca93059ff86f92ca5a2dd92ab636503cf6fe01775a857d013ee68cd2",
     "validation.json": "ff88159d2a65930c1b512297898c6a4a5f46e572d01a3da15b0e8c2a69d934cf",
 }
-REVIEW_CLIENT_SHA256 = "baed165884989bc0124af8513ff0b7469876442e3a70d91fc5a6b3c701ff7c84"
+REVIEW_CLIENT_SHA256 = "919bd62cd88b03526e1ee983d7cd3e8c946883666b012a618f75045c8e4f3e79"
 STYLESHEET_SHA256 = "7fa99621f52bac786f6793024eda694f0d54454cd8715bc346292c6c5d0d133c"
 PREVIOUS_APPROVED_TREE_SHA256 = "7c514686ba7241416dbab340b4cad9abe032e2c6150e807b302efac363d08283"
 PUBLIC_ROOT_FILES = frozenset({"index.html", "participate.html", "process.html", "review_request.js", "style.css", "evidence.json", "validation.json"})

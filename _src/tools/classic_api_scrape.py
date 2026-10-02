@@ -1067,9 +1067,25 @@ def clean_syntax(s: str) -> str:
     s = " ".join(cleaned_lines)
     s = re.sub(r"\s+", " ", s).strip()
 
-    # Rejoin underscore splits: e.g. "Std_ Return Type" -> "Std_ReturnType", "Det_ Report Error" -> "Det_ReportError"
-    s = re.sub(r"([A-Za-z0-9]+)_\s+([A-Za-z0-9]+)", r"\1_\2", s)
+    # Rejoin underscore splits: e.g. "Std_ Return Type" -> "Std_ReturnType", "Fr Tp_Init" -> "FrTp_Init"
+    s = re.sub(r"([A-Za-z0-9])\s+_\s*([A-Za-z0-9])", r"\1_\2", s)
+    s = re.sub(r"([A-Za-z0-9])\s+_", r"\1_", s)
+    s = re.sub(r"_\s+([A-Za-z0-9])", r"_\1", s)
     s = re.sub(r"(?<=[A-Za-z0-9_])\s+(Type|Ptr|Info|Mode|Id|StateType)\b", r"\1", s)
+
+    # Rejoin module splits: e.g. Fr Tp -> FrTp, Lin If -> LinIf, Can If -> CanIf, Com M -> ComM
+    for mod_p, mod_r in [
+        (r"\bFr\s+Tp\b", "FrTp"), (r"\bLin\s+If\b", "LinIf"), (r"\bCan\s+If\b", "CanIf"),
+        (r"\bCan\s+Tp\b", "CanTp"), (r"\bCan\s+SM\b", "CanSM"), (r"\bCan\s+S\s+M\b", "CanSM"),
+        (r"\bFr\s+SM\b", "FrSM"), (r"\bLin\s+SM\b", "LinSM"), (r"\bCom\s+M\b", "ComM"),
+        (r"\bBsw\s+M\b", "BswM"), (r"\bWdg\s+M\b", "WdgM"), (r"\bWdg\s+If\b", "WdgIf"),
+        (r"\bCry\s+If\b", "CryIf"), (r"\bMem\s+If\b", "MemIf"), (r"\bEth\s+If\b", "EthIf"),
+        (r"\bEth\s+SM\b", "EthSM"), (r"\bLin\s+Trcv\b", "LinTrcv"), (r"\bCan\s+Trcv\b", "CanTrcv"),
+        (r"\bFr\s+Trcv\b", "FrTrcv"), (r"\bEth\s+Trcv\b", "EthTrcv"), (r"\bFr\s+Ar\s+Tp\b", "FrArTp"),
+        (r"\bCor\s+Tst\b", "CorTst"), (r"\bRam\s+Tst\b", "RamTst"),
+    ]:
+        s = re.sub(mod_p, mod_r, s)
+
     # Rejoin common split fragments in AUTOSAR Classic types and parameters
     for prefix, suffix in [
         ("Return", "Type"), ("Config", "Ptr"), ("Config", "Type"),
@@ -1079,7 +1095,11 @@ def clean_syntax(s: str) -> str:
         ("Wakeup", "Mode"), ("Wakeup", "Source"), ("Report", "Error"),
         ("Report", "Runtime"), ("Runtime", "Error"), ("Report", "Transient"),
         ("Transient", "Fault"), ("User_", "Error"), ("Error_", "Hooks"),
-        ("Get", "Version"), ("Version", "Info"),
+        ("Get", "Version"), ("Version", "Info"), ("Get", "VersionInfo"),
+        ("Rx", "Indication"), ("Tx", "Confirmation"), ("Main", "Function"),
+        ("Cancel", "Transmit"), ("Change", "Parameter"), ("Cancel", "Receive"),
+        ("Trigger", "Transmit"), ("Setup", "ResultBuffer"), ("Setup", "Result Buffer"),
+        ("Rx", "PduId"), ("Tx", "PduId"), ("Data", "Buffer"),
     ]:
         s = re.sub(rf"\b{prefix}\s+{suffix}\b", f"{prefix}{suffix}", s)
 
@@ -1271,13 +1291,18 @@ def extract_functions_from_pdf(pdf_path: Path) -> List[Dict[str, Any]]:
 def format_function_blocks(
     item: Dict[str, Any],
     current_module: str = "",
-    include_params: bool = False
+    include_params: bool = False,
+    pdf_doc: str = "",
+    root_rel: str = "../../"
 ) -> List[Dict[str, Any]]:
     """Format one function or type definition into the JSON block structure required by autodocs."""
     sws_id = item["id"]
     name = item["name"]
     kind = item.get("kind", "function")
     desc = item.get("desc") or (f"Service {name}." if kind != "type" else f"Type {name}.")
+
+    if "AUTOSAR" in name and not name.startswith("AUTOSAR"):
+        name = re.sub(r"AUTOSAR.*$", "", name).strip()
 
     if not current_module:
         current_module = item.get("cluster_module") or item.get("module") or ""
@@ -1286,15 +1311,31 @@ def format_function_blocks(
             if "_" in clean_name:
                 current_module = clean_name.split("_")[0]
 
+    sws_link = f'<a href="{root_rel}versions.html?id={sws_id}" title="Requirement im Versions- &amp; Revisions-Explorer anzeigen">[{sws_id}]</a>'
+    pdf_link = ""
+    if pdf_doc:
+        page = item.get("page")
+        if page:
+            p_title = f"Spezifikations-PDF im Original öffnen: {pdf_doc} (Anker: #{sws_id}, S. {page})"
+        else:
+            p_title = f"Spezifikations-PDF im Original öffnen: {pdf_doc} (Anker: #{sws_id})"
+        pdf_url = f"https://www.autosar.org/fileadmin/standards/R20-11/CP/{pdf_doc}#nameddest={sws_id}"
+        pdf_link = f' <a href="{pdf_url}" target="_blank" rel="noopener noreferrer" class="sws-pdf-link" title="{p_title}">📄 PDF</a>'
+
     blocks = [
         {
             "t": "html",
-            "html": f'<h3 class="recname" id="{sws_id}"><span class="kind">{kind}</span> {name} <span class="sws">[{sws_id}]</span></h3>',
+            "html": f'<h3 class="recname" id="{sws_id}"><span class="kind">{kind}</span> {name} <span class="sws">{sws_link}</span>{pdf_link}</h3>',
             "tail": "\n"
         }
     ]
     if item.get("syntax"):
-        linked_syntax = link_syntax_types(item["syntax"], current_module)
+        syn = item["syntax"]
+        if kind == "function":
+            m_paren = re.search(r"^(.*?\(.*?\))(?:[^;]*;?)?.*$", syn, re.DOTALL)
+            if m_paren:
+                syn = m_paren.group(1).strip() + ";"
+        linked_syntax = link_syntax_types(syn, current_module)
         blocks.append({
             "t": "html",
             "html": f'<pre class="syntax">{linked_syntax}</pre>',
@@ -1412,11 +1453,75 @@ def rebuild_module_record(mod_key: str, cache_dir: Path, dry_run: bool = False) 
     types = [it for it in items if it.get("kind") == "type"]
 
     item_blocks = []
+    overview_blocks = []
     if items:
+        if functions:
+            func_items = []
+            for f in functions:
+                sws_id = f["id"]
+                name = f["name"]
+                if "AUTOSAR" in name and not name.startswith("AUTOSAR"):
+                    name = re.sub(r"AUTOSAR.*$", "", name).strip()
+                syntax = f.get("syntax", "")
+                m_paren = re.search(r"^(.*?\(.*?\))(?:[^;]*;?)?.*$", syntax, re.DOTALL)
+                clean_syn = m_paren.group(1).strip() + ";" if m_paren else (syntax + ";" if not syntax.endswith(";") else syntax)
+                idx_p = clean_syn.find("(")
+                if idx_p != -1:
+                    prefix = clean_syn[:idx_p].strip()
+                    params = clean_syn[idx_p:].strip()
+                    letters = list(re.escape(name))
+                    m_fn = re.search(r"\s*".join(letters), prefix, re.IGNORECASE)
+                    if m_fn:
+                        ret_type = prefix[:m_fn.start()].strip()
+                        fn_part = f'<a class="fn" href="#{sws_id}">{name}</a>'
+                        sig = f"{ret_type} {fn_part} {params}" if ret_type else f"{fn_part} {params}"
+                        sig = " ".join(sig.split())
+                    else:
+                        sig = f'<a class="fn" href="#{sws_id}">{name}</a> {params}'
+                else:
+                    sig = f'<a class="fn" href="#{sws_id}">{name}</a>;'
+                desc = f.get("desc") or f"Service {name}."
+                txt = re.sub(r"<[^>]+>", "", desc).strip()
+                if "." in txt:
+                    txt = txt.split(".")[0].strip() + "."
+                if len(txt) > 130:
+                    txt = txt[:127].rsplit(" ", 1)[0] + "..."
+                func_items.append(f'  <li><code class="sig">{sig}</code> <span class="dim">{txt}</span></li>')
+            overview_blocks.append({
+                "t": "html",
+                "html": "<h3>Funktionen — Übersicht</h3>\n<ul class=\"mlist\">\n" + "\n".join(func_items) + "\n</ul>",
+                "tail": "\n"
+            })
+        if types:
+            type_items = []
+            for t in types:
+                sws_id = t["id"]
+                name = t["name"]
+                sig = f'<a class="fn" href="#{sws_id}">{name}</a>'
+                desc = t.get("desc") or f"Type {name}."
+                txt = re.sub(r"<[^>]+>", "", desc).strip()
+                if "." in txt:
+                    txt = txt.split(".")[0].strip() + "."
+                if len(txt) > 130:
+                    txt = txt[:127].rsplit(" ", 1)[0] + "..."
+                type_items.append(f'  <li><code class="sig">{sig}</code> <span class="dim">{txt}</span></li>')
+            overview_blocks.append({
+                "t": "html",
+                "html": "<h3>Typen — Übersicht</h3>\n<ul class=\"mlist\">\n" + "\n".join(type_items) + "\n</ul>",
+                "tail": "\n"
+            })
+        if functions or types:
+            div_title = "Funktionen &amp; Typen — Detailansicht" if (functions and types) else ("Typen — Detailansicht" if types else "Funktionen — Detailansicht")
+            overview_blocks.append({
+                "t": "html",
+                "html": f'<h2 class="sect">{div_title}</h2>',
+                "tail": "\n"
+            })
+
         for f in functions:
-            item_blocks.extend(format_function_blocks(f, current_module=mod_key))
+            item_blocks.extend(format_function_blocks(f, current_module=mod_key, pdf_doc=target_info["pdf"]))
         for t in types:
-            item_blocks.extend(format_function_blocks(t, current_module=mod_key))
+            item_blocks.extend(format_function_blocks(t, current_module=mod_key, pdf_doc=target_info["pdf"]))
     else:
         # Fallback: extract existing blocks from cluster record CP_<cluster>.json
         cluster_file = RECORDS_DIR / CLUSTER_MAP[target_cluster]["record"]
@@ -1449,7 +1554,7 @@ def rebuild_module_record(mod_key: str, cache_dir: Path, dry_run: bool = False) 
                 "html": f"<h2>{target_info['heading']}</h2><p class=\"lead\">{target_info['lead']}</p>",
                 "tail": "\n"
             }
-        ] + item_blocks
+        ] + overview_blocks + item_blocks
     }
 
     funcs_count = sum(1 for b in item_blocks if "<h3 class=\"recname\"" in b.get("html", "") and '<span class="kind">function</span>' in b.get("html", ""))

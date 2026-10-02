@@ -94,6 +94,20 @@ def is_dismissed(node_id: str) -> bool:
     return any(e["node_id"] == node_id for e in _read_jsonl(DISMISSED_FILE))
 
 
+def undismiss_node(node_id: str) -> bool:
+    """Removes node_id from the dismissed file if present."""
+    if not DISMISSED_FILE.exists():
+        return False
+    orig = _read_jsonl(DISMISSED_FILE)
+    entries = [e for e in orig if e.get("node_id") != node_id]
+    if len(entries) != len(orig):
+        with open(DISMISSED_FILE, "w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        return True
+    return False
+
+
 def can_derive_from(node_id: str) -> bool:
     """False if node_id is dismissed: blocks NEW derived_from/quotes edges
     being added FROM a dismissed node going forward (halt future

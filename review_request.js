@@ -685,7 +685,7 @@
     document.body.appendChild(dlg);
     if (opener) opener.setAttribute("aria-expanded", "true");
     var target = dlg.querySelector("[data-fb-target]");
-    target.value = detectTargetId();
+    target.value = (opener && opener.getAttribute && opener.getAttribute("data-target-id")) || detectTargetId();
     target.focus();
     target.select();
 

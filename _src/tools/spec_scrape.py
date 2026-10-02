@@ -148,7 +148,7 @@ RS_DOCS = OrderedDict([
 
 ID_RE = re.compile(r"\b(?:AP_)?(?:SWS|RS|PRS|TPS)_[A-Z][A-Z0-9]*_\d{4,5}\b", re.IGNORECASE)
 
-# Beschriftungen der Eigenschaftstabellen in den SWS-Dokumenten.
+# Beschriftungen der Eigenschaftstabellen in den SWS-Dokumenten (AP, CP, FO).
 LABELS = [
     "Kind", "Header file", "Forwarding header file", "Scope", "Symbol",
     "Underlying type", "Syntax", "Values", "Parameters (in)",
@@ -157,6 +157,8 @@ LABELS = [
     "Dependencies", "Use Case", "AppliesTo", "Supporting Material", "Notes",
     "Additional Information",
     "Type", "Default value", "Errors",
+    "Service Name", "Service ID [hex]", "Service ID", "Sync/Async", "Reentrancy",
+    "Available via",
 ]
 
 
@@ -445,6 +447,17 @@ def _collect_objects(data: bytes) -> dict:
     return bodies, streams
 
 
+_CMSY_TO_UNICODE = {
+    b"\x63": "\u230b",  # ⌋ right floor
+    b"\x64": "\u2308",  # ⌈ left ceiling
+    b"\x65": "\u2309",  # ⌉ right ceiling
+    b"\x66": "\u230a",  # ⌊ left floor
+    b"\x0f": "\u2022",  # • bullet
+    b"\x21": "\u2192",  # → right arrow
+    b"\x22": "\u2190",  # ← left arrow
+}
+
+
 def _builtin_pdf_pages(path: Path) -> list:
     """Minimalparser ohne Fremdbibliothek.
 
@@ -497,6 +510,8 @@ def _builtin_pdf_pages(path: Path) -> list:
                 tm = re.search(rb"/ToUnicode\s+(\d+)\s+\d+\s+R", font_body)
                 if tm and int(tm.group(1)) in streams:
                     fonts[alias.decode("ascii", "replace")] = _parse_tounicode(streams[int(tm.group(1))])
+                elif b"CMSY" in font_body or b"CMSY" in alias:
+                    fonts[alias.decode("ascii", "replace")] = _CMSY_TO_UNICODE
         ergebnis.append("".join(_content_to_text(streams[r], fonts) for r in refs if r in streams))
     return ergebnis
 
@@ -1430,8 +1445,8 @@ NOISE_RES = [
     re.compile(r"General\s+Requirements\s+specific\s+to\s+Adaptive\s+Platform", re.I),
     # Vollstaendige Fusszeile: Titel (ggf. mit Ligaturrest) + Release + Seite.
     re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}?"
-               r"\s*AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
-    re.compile(r"AUTOSAR\s*AP\s*R\d\d\s*-?\s*\d*", re.I),
+               r"\s*AUTOSAR\s*(?:AP|CP|FO)\s*R\d\d\s*-?\s*\d*", re.I),
+    re.compile(r"AUTOSAR\s*(?:AP|CP|FO)\s*R\d\d\s*-?\s*\d*", re.I),
     re.compile(r"Specification\s+of\s+[A-Za-z]+(?:\s+[A-Za-z]{1,12}){0,6}", re.I),
     re.compile(r"Document\s*ID\s*\d+\s*:\s*\S+", re.I),
     re.compile(r"\d+\s+of\s+\d+"),

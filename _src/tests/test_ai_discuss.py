@@ -85,6 +85,31 @@ class DiscussFixture(unittest.TestCase):
             )
         return self.record_path
 
+    def write_snippet(self):
+        snip_dir = self.src / "spec" / "snippets" / "classic" / "modules"
+        snip_dir.mkdir(parents=True, exist_ok=True)
+        snip_file = snip_dir / "linif.json"
+        data = {
+            "schema_version": "1.0",
+            "target_module": "LinIf",
+            "platform": "classic",
+            "snippets": [{
+                "id": "SNIP_LinIf_LinSM_ScheduleRequest_01",
+                "target_module": "LinIf",
+                "source_document": "AUTOSAR_SWS_LINStateManager",
+                "source_page": 27,
+                "source_element": "SWS_LinSM_00079",
+                "category": "inbound_call",
+                "relevance_score": 0.98,
+                "relevance_rationale": "Verbindliche Festlegung.",
+                "verbatim_text": "[SWS_LinSM_00079] If the function LinSM_ScheduleRequest is called...",
+                "sha256": "01ca0064",
+                "captured_at": "2026-10-01T17:00:00Z"
+            }]
+        }
+        snip_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return snip_file
+
     def digest(self, path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -249,6 +274,90 @@ class ProposalAndQueueTests(DiscussFixture):
         self.assertEqual(path.read_bytes(), stored)
         self.assertEqual(neighbor.read_text(encoding="utf-8"), '{"id":"keep"}\n')
         self.assertEqual(self.digest(self.record_path), before_record)
+
+    def test_snippet_context_and_curation_proposal(self):
+        self.write_snippet()
+        context = ad.package_context(self.src, "SNIP_LinIf_LinSM_ScheduleRequest_01")
+        self.assertTrue(context["found"])
+        self.assertTrue(context.get("is_snippet"))
+        self.assertEqual(context["module"], "LinIf")
+        self.assertIn("SWS_LinSM_00079", context["requirement_text"])
+
+        # Test provenance inquiry
+        prov_reply = ad.contextual_reply("Woher stammt dieses Snippet?", context)
+        self.assertIn("AUTOSAR_SWS_LINStateManager", prov_reply["reply"])
+        self.assertIn("Seite 27", prov_reply["reply"])
+
+        # Test purpose inquiry
+        purp_reply = ad.contextual_reply("Was ist der Zweck oder die Sinnhaftigkeit dieses Snippets?", context)
+        self.assertIn("Verbindliche Festlegung", purp_reply["reply"])
+
+        # Test challenge / objection
+        crit_reply = ad.contextual_reply("Dieses Snippet ist falsch für LinIf und soll ausgeschlossen werden.", context)
+        self.assertIn("Beanstandung", crit_reply["reply"])
+        self.assertIsNotNone(crit_reply["suggestion"])
+        self.assertIn("STATUS: EXCLUDE", crit_reply["suggestion"])
+
+        # Build proposal and write to queue
+        proposal = ad.build_proposal(
+            context,
+            crit_reply["suggestion"],
+            crit_reply["rationale"],
+            "discuss-SNIP_LinIf_LinSM_ScheduleRequest_01-20261001T120000Z-test1234",
+        )
+        self.assertEqual(proposal["status"], "proposed")
+        written = ad.write_proposal(self.src, context, proposal)
+        self.assertTrue(written["created"])
+        queue_file = self.queue / (proposal["proposal_id"] + ".json")
+        self.assertTrue(queue_file.is_file())
+        payload = json.loads(queue_file.read_text(encoding="utf-8"))
+        self.assertEqual(payload["schema"], "curation-flag@v1")
+        self.assertEqual(payload["outcome"], "proposed_change")
+        item = curation_item.from_curation_flag(payload)
+        self.assertTrue(curation_item.is_conformant(item))
+
+    def test_constituting_classic_record_discussion(self):
+        context = ad.package_context(SRC, "SWS_LinIf_00198")
+        self.assertTrue(context["found"])
+        self.assertTrue(context.get("is_constituting"))
+        self.assertEqual(context["module"], "LinIf")
+        self.assertEqual(context.get("record_meta", {}).get("name"), "LinIf_Init")
+
+        # Provenance
+        prov = ad.contextual_reply("Woher stammt dieser Record?", context)
+        self.assertIn("LinIf_Init", prov["reply"])
+        self.assertIn("AUTOSAR_SWS_LinIf", prov["reply"])
+
+        # Challenging constitution
+        crit = ad.contextual_reply("LinIf_Init ist nicht konstituierend für LinIf und soll entfernt werden.", context)
+        self.assertIn("Beanstandung", crit["reply"])
+        self.assertIsNotNone(crit["suggestion"])
+        self.assertIn("NICHT KONSTITUIEREND", crit["suggestion"])
+
+    def test_multi_item_attached_discussion(self):
+        self.write_snippet()
+        # Setup context with attached items: one constituting record + one inbound snippet
+        ctx1 = ad.package_context(SRC, "SWS_LinIf_00198")
+        ctx2 = ad.package_context(self.src, "SNIP_LinIf_LinSM_ScheduleRequest_01")
+        context = dict(ctx1)
+        context["attached_items"] = [ctx1, ctx2]
+
+        # Provenance across multiple items
+        prov = ad.contextual_reply("Woher stammen diese Elemente?", context)
+        self.assertIn("SWS_LinIf_00198", prov["reply"])
+        self.assertIn("SNIP_LinIf_LinSM_ScheduleRequest_01", prov["reply"])
+
+        # Relationship / context inquiry
+        rel = ad.contextual_reply("Welcher Zusammenhang und welche Schnittstellenbeziehung besteht zwischen den Elementen?", context)
+        self.assertIn("Schnittstellenbezug", rel["reply"])
+        self.assertIn("LinIf", rel["reply"])
+
+        # Collective challenge
+        crit = ad.contextual_reply("Beide Elemente sind unpassend und sollen aus dem Kontext revidiert werden.", context)
+        self.assertIsNotNone(crit["suggestion"])
+        self.assertIn("STATUS: EXCLUDE_OR_REVISE", crit["suggestion"])
+        self.assertIn("SWS_LinIf_00198", crit["suggestion"])
+        self.assertIn("SNIP_LinIf_LinSM_ScheduleRequest_01", crit["suggestion"])
 
     def test_existing_queue_file_and_traversal_do_not_lose_data(self):
         self.write_record()
@@ -473,6 +582,8 @@ if (!d.threadResetNeeded("SWS_CM_10048", "SWS_CM_10049")) process.exit(11);
 if (d.threadResetNeeded("SWS_CM_10048", "SWS_CM_10048") || d.threadResetNeeded("", "SWS_CM_10048")) process.exit(12);
 console.log("ok");
 """
+        if shutil.which("node") is None:
+            self.skipTest("node runtime not available")
         completed = subprocess.run(
             ["node", "--check", str(SRC / "static" / "discuss.js")],
             check=False,
@@ -490,6 +601,22 @@ console.log("ok");
         )
         self.assertEqual(completed.returncode, 0, completed.stderr + completed.stdout)
         self.assertIn("ok", completed.stdout)
+
+    def test_stream_discuss_reply_4hz(self):
+        """Verifies that stream_discuss_reply yields incremental events at >= 4Hz."""
+        context = {
+            "record_id": "ai-cluster-guide-lin",
+            "module": "LIN",
+            "universe": "AUTOSAR Classic",
+            "requirement_text": "Sample text for LIN guide",
+            "is_guide": True,
+        }
+        events = list(ad.stream_discuss_reply("Woher stammt das?", context, min_hz=4.0))
+        self.assertGreaterEqual(len(events), 2)
+        complete_ev = next((e for e in events if e.get("event") == "complete"), None)
+        self.assertIsNotNone(complete_ev)
+        self.assertTrue(complete_ev["ok"])
+        self.assertTrue(bool(complete_ev.get("reply")))
 
 
 if __name__ == "__main__":

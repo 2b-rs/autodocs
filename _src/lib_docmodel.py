@@ -96,15 +96,25 @@ def langswitch_html(page_file, lang):
 
 
 
+def page_universe(page_file):
+    """Determine the universe ID for a page file, or None if global/portal."""
+    if not UNIVERSES:
+        return None
+    for uid, u in UNIVERSES.items():
+        prefixes = u.get("prefixes")
+        if prefixes:
+            if any(page_file.startswith(pfx) for pfx in prefixes):
+                return uid
+        elif u.get("prefix") and page_file.startswith(u["prefix"]):
+            return uid
+    return None
+
+
 def universeswitch_html(page_file, lang):
     if not UNIVERSES:
         return ""
     
-    current_universe = "adaptive"
-    for uid, u in UNIVERSES.items():
-        if u["prefix"] and page_file.startswith(u["prefix"]):
-            current_universe = uid
-            break
+    current_universe = page_universe(page_file)
             
     depth = page_file.count("/") + (1 if lang != KANONISCH else 0)
     prefix = "../" * depth
@@ -183,6 +193,37 @@ def attrs_list(el):
 # Spezifikationselemente eine eigenständige, seitenunabhängig adressierbare
 # Plain-Text-Datenbank (Schlüssel: SWS-ID).
 
+_CLASSIC_SWS_MAP = None
+
+
+def _get_classic_sws_map():
+    global _CLASSIC_SWS_MAP
+    if _CLASSIC_SWS_MAP is None:
+        _CLASSIC_SWS_MAP = {}
+        classic_dir = os.path.join(SRC, "spec", "records", "classic")
+        if os.path.isdir(classic_dir):
+            dirs_to_scan = [classic_dir]
+            mod_dir = os.path.join(classic_dir, "modules")
+            if os.path.isdir(mod_dir):
+                dirs_to_scan.append(mod_dir)
+            for d in dirs_to_scan:
+                for cf in sorted(os.listdir(d)):
+                    if not cf.endswith(".json"):
+                        continue
+                    full_p = os.path.join(d, cf)
+                    rel = os.path.relpath(full_p, SRC)
+                    base = os.path.splitext(cf)[0]
+                    _CLASSIC_SWS_MAP[base] = rel
+                    try:
+                        with open(full_p, encoding="utf-8") as f:
+                            text = f.read()
+                        for sid in set(re.findall(r'\[(SWS_[A-Za-z0-9_]+)\]', text)):
+                            _CLASSIC_SWS_MAP[sid] = rel
+                    except Exception:
+                        pass
+    return _CLASSIC_SWS_MAP
+
+
 def record_gruppe(rid):
     teile = rid.split("_")
     return "_".join(teile[:2]) if len(teile) >= 3 else "_SONSTIGE"
@@ -190,7 +231,15 @@ def record_gruppe(rid):
 
 def record_relpath(rid):
     """Ablagepfad eines Records relativ zu _src/."""
-    return "spec/records/%s/%s.json" % (record_gruppe(rid), rid)
+    if rid.startswith("CP_"):
+        return "spec/records/classic/%s.json" % rid
+    standard = "spec/records/%s/%s.json" % (record_gruppe(rid), rid)
+    if os.path.exists(os.path.join(SRC, standard)):
+        return standard
+    cmap = _get_classic_sws_map()
+    if rid in cmap:
+        return cmap[rid]
+    return standard
 
 
 def record_hash(rid):
@@ -1028,13 +1077,15 @@ def page_asset_prefixes(page, lang):
 
 
 def shell_hrefs(page, lang):
-    """Stable 6-domain destinations relative to the rendered page."""
+    """Stable domain destinations relative to the rendered page."""
     root_prefix, lang_prefix = page_asset_prefixes(page, lang)
     return {
-        "explore_href": lang_prefix + "index.html",
-        "trace_href": lang_prefix + "index.html#component-graph-data",
+        "extract_href": root_prefix + "extraction-reports.html",
+        "build_href": root_prefix + "build-reports.html",
         "curate_href": root_prefix + "curation-report.html",
         "review_href": root_prefix + "open-reviews.html",
+        "trace_href": lang_prefix + "adaptive/index.html#component-graph-data",
+        "explore_href": lang_prefix + "index.html",
         "work_href": lang_prefix + "process.html",
         "reports_href": root_prefix + "build-reports.html",
     }
@@ -1045,23 +1096,23 @@ def build_crumbs(nav_html, page_file, lang, home_href, universe_name, universesw
     if not UNIVERSES or not universeswitch:
         return nav_html
 
-    current_universe = "adaptive"
-    for uid, u in UNIVERSES.items():
-        if u["prefix"] and page_file.startswith(u["prefix"]):
-            current_universe = uid
-            break
+    current_universe = page_universe(page_file)
 
     try:
         from lib_i18n import lade_register
         _seg, _lab, ui = lade_register(lang)
         start_label = ui.get("nav_start") or "Start"
+        switch_label = (ui.get("universes") or {}).get("switch_universe") or "Dokumentations-Universum wählen"
     except Exception:
         start_label = "Start"
+        switch_label = "Dokumentations-Universum wählen"
+
+    active_name = universe_name if current_universe else switch_label
 
     u_dropdown = (
         f'<nav class="shell-universe" aria-label="Documentation universe">'
         f'<details class="universe-dropdown">'
-        f'<summary class="rel" aria-haspopup="true">{universe_name} <span class="dropdown-caret" aria-hidden="true">▾</span></summary>'
+        f'<summary class="rel" aria-haspopup="true">{active_name} <span class="dropdown-caret" aria-hidden="true">▾</span></summary>'
         f'{universeswitch}'
         f'</details></nav>'
     )
@@ -1069,8 +1120,13 @@ def build_crumbs(nav_html, page_file, lang, home_href, universe_name, universesw
     home_link = f'<a href="{home_href}">{start_label}</a>'
     prefix_crumb = f'{home_link} › {u_dropdown}'
 
+    if current_universe == "adaptive":
+        pattern = r'(?:<span>|<a\s+href=[\"\'][^\"\']*(?:adaptive/)?index\.html[\"\']>)\s*AUTOSAR Adaptive\s*(?:</span>|</a>)'
+        if re.search(pattern, nav_html):
+            return re.sub(pattern, prefix_crumb, nav_html, count=1)
+
     if current_universe == "classic":
-        pattern = r'(?:<span>|<a\s+href=[\"\'][^\"\']*index\.html[\"\']>)\s*AUTOSAR Classic\s*(?:</span>|</a>)'
+        pattern = r'(?:<a\s+href=[\"\'][^\"\']*index\.html[\"\']>\s*Start\s*</a>\s*›\s*)?(?:<span>|<a\s+href=[\"\'][^\"\']*index\.html[\"\']>)\s*AUTOSAR Classic\s*(?:</span>|</a>)'
         if re.search(pattern, nav_html):
             return re.sub(pattern, prefix_crumb, nav_html, count=1)
         return f'{prefix_crumb} › {nav_html}'
@@ -1110,7 +1166,7 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
     body_cls = ' class="%s"' % esc_attr(page["body_class"]) if page.get("body_class") else ""
     main = render_blocks(page["main"], depth, srcdir)
     main, review_notice = _review_page_enhancements(main, notice_ui)
-    has_review = bool(review_notice)
+    has_review = bool(review_notice) or bool(re.search(r'class="[^"]*(?:curation|dossier-modal|snippet-card)', main))
     if review_notice:
         main = review_notice + main
     graph_marker = "@@COMPONENT_GRAPH_JSON@@"
@@ -1126,15 +1182,11 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
             if _src_dir not in sys.path:
                 sys.path.insert(0, _src_dir)
             from graph_widget import fallback_table_html
-            table_html = fallback_table_html(json.loads(graph_text))
+            table_html = fallback_table_html(json.loads(graph_text), href_prefix=lang_prefix)
             main = main.replace(table_marker, table_html)
 
-    current_universe = "adaptive"
-    if UNIVERSES:
-        for uid, u in UNIVERSES.items():
-            if u["prefix"] and page["file"].startswith(u["prefix"]):
-                current_universe = uid
-                break
+    current_universe = page_universe(page["file"])
+    univ_display_name = UNIVERSES[current_universe]["name"] if current_universe and current_universe in UNIVERSES else (UNIVERSES["adaptive"]["name"] if UNIVERSES else "AUTOSAR Adaptive Platform R25-11")
 
     values = {
         "title": esc(page["title"]),
@@ -1143,7 +1195,7 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
         "langswitch": "" if page.get("nolang") else langswitch_html(page["file"], lang),
         "universeswitch": "" if page.get("nolang") else universeswitch_html(page["file"], lang),
         "project_title": esc(SITE.get("projekt", "ara::* API-Referenz")),
-        "universe_name": esc(UNIVERSES[current_universe]["name"] if UNIVERSES else "AUTOSAR Adaptive Platform R25-11"),
+        "universe_name": esc(univ_display_name),
         "css": prefix + "style.css",
         "js": prefix + "fold.js",
         "review_js": prefix + "review.js",
@@ -1153,11 +1205,12 @@ def render_page(page, footers, page_tmpl, srcdir=SRC, lang=KANONISCH, notice_ui=
         "cytoscape_js": prefix + "cytoscape.min.js",
         "graph_js": prefix + "component-graph.js",
         "component_inspector_js": prefix + "component-inspector.js",
+        "classic_filter_js": prefix + "classic-filter.js",
         "home": lang_prefix + "index.html",
         "body_class": body_cls,
         "nav": build_crumbs(
             page["nav_html"], page["file"], lang, lang_prefix + "index.html",
-            esc(UNIVERSES[current_universe]["name"] if UNIVERSES else "AUTOSAR Adaptive Platform R25-11"),
+            esc(univ_display_name),
             "" if page.get("nolang") else universeswitch_html(page["file"], lang),
         ),
         "main_lead": esc(page.get("main_lead", "")),

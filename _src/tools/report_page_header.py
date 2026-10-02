@@ -97,7 +97,7 @@ _HEX_TO_TOKEN = (
 
 ROOT_UNIVERSES = (
     '<div class="universes">'
-    '<a class="cur" href="index.html" data-universe="autosar-adaptive" title="AUTOSAR Adaptive Platform R25-11">Adaptive</a>'
+    '<a class="cur" href="adaptive/index.html" data-universe="autosar-adaptive" title="AUTOSAR Adaptive Platform R25-11">Adaptive</a>'
     '<a href="classic/index.html" data-universe="classic" title="AUTOSAR Classic Platform R20-11">Classic</a>'
     '<a href="score/index.html" data-universe="eclipse-score" title="Eclipse S-Core v0.6.0">S-Core</a>'
     '<a href="eclipse-score-v0.6.0-curation-review/de/index.html" class="universe-review" title="Eclipse S-Core Curation Review Portal">Review</a>'
@@ -144,17 +144,31 @@ def tokenize_report_markup(text):
     return ensure_report_density_css(rewrite_hex_report_css(text))
 
 
-def active_report_domain(page_file):
-    """Return the 6-domain key that should be current for a report page."""
+def active_report_domain(page_file, html=None):
+    """Return the domain key that should be current for a report page."""
+    if page_file == "extraction-reports.html":
+        if html and 'data-domain="extract"' in html:
+            return "extract"
+        if html and 'data-domain="reports"' in html:
+            return "reports"
+        return "extract"
+    if page_file == "build-reports.html":
+        if html and 'data-domain="build"' in html:
+            return "build"
+        if html and 'data-domain="reports"' in html:
+            return "reports"
+        return "build"
     if page_file == "curation-report.html":
         return "curate"
     if page_file == "open-reviews.html":
         return "review"
-    return "reports"
+    if page_file in ("traceability-report.html", "mutation-ledger.html"):
+        return "trace"
+    return "build" if not html or 'data-domain="build"' in html else "reports"
 
 
 def wrap_legacy_report_shell(html, donor_html, page_file):
-    """Replace pre-shell chrome with the current 6-domain header; keep body data."""
+    """Replace pre-shell chrome with the current domain header; keep body data."""
     if 'class="shell"' in html:
         return mark_report_shell_chrome(html, page_file)
     title_m = re.search(r"<title>(.*?)</title>", html, re.S)
@@ -202,7 +216,7 @@ def mark_report_shell_chrome(html, page_file):
                 '<button type="button" class="shell-toggle" data-theme-toggle',
                 1,
             )
-    domain = active_report_domain(page_file)
+    domain = active_report_domain(page_file, html)
     needle = 'data-domain="%s"' % domain
     if needle in html and 'aria-current="page"' not in html:
         html = html.replace(needle, needle + ' aria-current="page"', 1)

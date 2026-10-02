@@ -1,0 +1,202 @@
+{
+ "titel": "LIN-Cluster: Gesamtarchitektur-Kollaboration zwischen LinSM, LinIf, Lin Driver und Transceiver",
+ "teilnehmer": [
+  {
+   "name": "Communication Manager (ComM)",
+   "href": "modules/comm.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "LIN State Manager (LinSM)",
+   "href": "modules/linsm.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "PDU Router (PduR)",
+   "href": "modules/pdur.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "LIN Interface (LinIf)",
+   "href": "modules/linif.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "LIN Driver (Lin)",
+   "href": "modules/lin.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "LIN Transceiver (LinTrcv)",
+   "href": "modules/lintrcv.html",
+   "klasse": "vis-app"
+  },
+  {
+   "name": "ECU State Manager (EcuM)",
+   "href": "modules/ecum.html",
+   "klasse": "vis-app"
+  }
+ ],
+ "schritte": [
+  {
+   "art": "nachricht",
+   "von": 0,
+   "nach": 1,
+   "text": [
+    "LinSM_RequestComMode(Channel, COMM_FULL_COMMUNICATION)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 3,
+   "text": [
+    "LinIf_ScheduleRequest(Channel, NormalSchedule)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 5,
+   "text": [
+    "LinTrcv_SetOpMode(Channel, LINTRCV_TRCV_MODE_NORMAL)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 2,
+   "nach": 3,
+   "text": [
+    "LinIf_Transmit(TxPduId, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 2,
+   "text": [
+    "<User_TriggerTransmit>(TxPduId, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 4,
+   "text": [
+    "Lin_SendFrame(Channel, PduInfoPtr)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 4,
+   "nach": 3,
+   "text": [
+    "LinIf_TxConfirmation(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 2,
+   "text": [
+    "PduR_LinIfTxConfirmation(TxPduId)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 0,
+   "nach": 1,
+   "text": [
+    "LinSM_RequestComMode(Channel, COMM_NO_COMMUNICATION)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 1,
+   "nach": 3,
+   "text": [
+    "LinIf_GotoSleep(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 4,
+   "text": [
+    "Lin_GoToSleep(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 5,
+   "text": [
+    "LinTrcv_SetOpMode(Channel, LINTRCV_TRCV_MODE_SLEEP)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 5,
+   "nach": 6,
+   "text": [
+    "Bus-Wakeup erkannt (Ext. Interrupt)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": true
+  },
+  {
+   "art": "nachricht",
+   "von": 6,
+   "nach": 3,
+   "text": [
+    "LinIf_CheckWakeup(WakeupSource)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 3,
+   "nach": 4,
+   "text": [
+    "Lin_CheckWakeup(Channel)"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": false
+  },
+  {
+   "art": "nachricht",
+   "von": 4,
+   "nach": 3,
+   "text": [
+    "Wakeup-Signal validiert"
+   ],
+   "pfeil": "voll",
+   "gestrichelt": true
+  }
+ ]
+}

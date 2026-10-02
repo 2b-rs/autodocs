@@ -44,7 +44,7 @@ PROMPT_DEPS = "Gibt es Abhängigkeiten?"
 PROMPT_IMPROVE = "Formuliere einen Verbesserungsvorschlag"
 QUICK_PROMPTS = (PROMPT_EXPLAIN, PROMPT_DEPS, PROMPT_IMPROVE)
 
-_RECORD_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,127}$")
+_RECORD_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9:_.-]{0,199}$")
 _PROPOSAL_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _REQ_ID_RE = re.compile(r"^[A-Z][A-Z0-9_]{1,63}$")
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -95,7 +95,7 @@ def bare_record_id(value: str) -> str:
     parsed = parse_canonical_id(text)
     if parsed:
         text = parsed["id"]
-    if not _RECORD_ID_RE.match(text):
+    if not _RECORD_ID_RE.match(text) or text in {".", ".."} or ".." in text:
         raise DiscussError("invalid-record-id")
     return text
 
@@ -277,6 +277,158 @@ def transmitted_text(context: dict) -> str:
     return "\n".join(parts)
 
 
+def find_snippet(src: Path, snippet_id: str) -> dict | None:
+    bare = bare_record_id(snippet_id)
+    snippets_dir = Path(src) / "spec" / "snippets"
+    if not snippets_dir.is_dir():
+        return None
+    for p in sorted(snippets_dir.rglob("*.json")):
+        if not p.is_file():
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                for snip in data.get("snippets") or []:
+                    if snip.get("id") == bare or snip.get("source_element") == bare:
+                        return snip
+        except Exception:
+            continue
+    return None
+
+
+def find_classic_spec_record(src: Path, record_id: str) -> dict | None:
+    bare = bare_record_id(record_id)
+    modules_dir = Path(src) / "spec" / "records" / "classic" / "modules"
+    if not modules_dir.is_dir():
+        return None
+    for p in sorted(modules_dir.glob("*.json")):
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            mod = data.get("module", p.stem)
+            blocks = data.get("blocks", [])
+            for i, b in enumerate(blocks):
+                h = b.get("html", "")
+                if f'id="{bare}"' in h or f"id='{bare}'" in h:
+                    m = re.search(
+                        r'<h3 class=["\']recname["\'][^>]*><span class=["\']kind["\']>([^<]+)</span>\s*(.+?)\s*<span class=["\']sws["\']>(?:<a[^>]*>)?\[([^\]]+)\]',
+                        h,
+                    )
+                    kind = m.group(1).strip() if m else "api"
+                    name = m.group(2).strip() if m else bare
+                    sws = m.group(3).strip() if m else bare
+                    syntax = ""
+                    desc = ""
+                    for next_b in blocks[i + 1 :]:
+                        nh = next_b.get("html", "")
+                        if 'class="recname"' in nh or "class='recname'" in nh or "<h2" in nh:
+                            break
+                        if 'class="syntax"' in nh or "class='syntax'" in nh:
+                            syntax = re.sub(r"<[^>]+>", "", nh).strip()
+                        elif 'class="desc"' in nh or "class='desc'" in nh:
+                            desc = re.sub(r"<[^>]+>", "", nh).strip()
+                    return {
+                        "id": bare,
+                        "sws": sws,
+                        "kind": kind,
+                        "name": name,
+                        "syntax": syntax,
+                        "desc": desc,
+                        "module": mod,
+                        "document": f"AUTOSAR_SWS_{mod}",
+                    }
+        except Exception:
+            continue
+    return None
+
+
+def find_guide(src: Path, record_id: str) -> dict | None:
+    bare = bare_record_id(record_id)
+    is_cluster = bare.startswith("ai-cluster-guide-")
+    is_module = bare.startswith("ai-guide-")
+    if not (is_cluster or is_module):
+        return None
+
+    root = Path(src)
+    content_dir = root / "content" / "ai"
+    if not content_dir.is_dir() and (root / "_src").is_dir():
+        content_dir = root / "_src" / "content" / "ai"
+    if not content_dir.is_dir():
+        return None
+
+    if is_cluster:
+        key = bare[len("ai-cluster-guide-"):].lower()
+        guide_type = "cluster"
+        html_file = content_dir / "classic" / "clusters" / key / "main_01.html"
+        seq_file = content_dir / "classic" / "clusters" / key / "main_01.diag-01.seq.json"
+        name = f"Cluster Guide ({key.upper()})"
+        mod_label = key.upper()
+    else:
+        key = bare[len("ai-guide-"):].lower()
+        guide_type = "module"
+        html_file = content_dir / "classic" / "modules" / key / "main_01.html"
+        seq_file = content_dir / "classic" / "modules" / key / "main_01.diag-01.seq.json"
+        name = f"User Guide ({key.capitalize()})"
+        mod_label = key.capitalize()
+
+    if not html_file.is_file():
+        return None
+
+    try:
+        raw_html = html_file.read_text(encoding="utf-8")
+    except Exception:
+        return None
+
+    text_clean = re.sub(r"<style[\s\S]*?</style>", "", raw_html)
+    text_clean = re.sub(r"<svg[\s\S]*?</svg>", "", text_clean)
+    text_clean = re.sub(r"<[^>]+>", " ", text_clean)
+    text_clean = " ".join(text_clean.split())
+
+    citations = []
+    sws_matches = re.findall(r"\[(SWS_[A-Za-z0-9_]+)\]", raw_html)
+    for sws in dict.fromkeys(sws_matches):
+        citations.append({
+            "id": sws,
+            "document": f"AUTOSAR-Spezifikation für {mod_label}",
+            "href": f"#{sws}",
+        })
+
+    diagram_text = ""
+    diagram_info = None
+    if seq_file.is_file():
+        try:
+            seq_data = json.loads(seq_file.read_text(encoding="utf-8"))
+            diagram_info = seq_data
+            titel = seq_data.get("titel", "")
+            teilnehmer = [t.get("name", "") for t in seq_data.get("teilnehmer", [])]
+            schritte_desc = []
+            for idx, s in enumerate(seq_data.get("schritte", [])):
+                von = teilnehmer[s.get("von", 0)] if s.get("von", 0) < len(teilnehmer) else "?"
+                nach = teilnehmer[s.get("nach", 0)] if s.get("nach", 0) < len(teilnehmer) else "?"
+                txt = " / ".join(s.get("text", []))
+                schritte_desc.append(f"  {idx+1}. {von} -> {nach}: {txt}")
+            diagram_text = (
+                f"Kollaborations- / Sequenzdiagramm: {titel}\n"
+                f"Teilnehmer: {', '.join(teilnehmer)}\n"
+                f"Ablaufschritte:\n" + "\n".join(schritte_desc)
+            )
+        except Exception:
+            pass
+
+    return {
+        "id": bare,
+        "name": name,
+        "guide_type": guide_type,
+        "module": mod_label,
+        "clean_text": text_clean,
+        "raw_html": raw_html,
+        "citations": citations,
+        "diagram_text": diagram_text,
+        "diagram_info": diagram_info,
+        "html_file": str(html_file),
+        "seq_file": str(seq_file) if seq_file.is_file() else None,
+    }
+
+
 def find_record_path(src: Path, record_id: str) -> Path | None:
     bare = bare_record_id(record_id)
     name = bare + ".json"
@@ -301,7 +453,7 @@ def _inside(path: Path, root: Path) -> bool:
 
 
 def package_context(src: Path, record_id: str, *, max_bytes: int = MAX_RECORD_BYTES) -> dict:
-    """Build the exact context manifest for one specification item.
+    """Build the exact context manifest for one specification item or pinned snippet.
 
     Missing, unreadable, and oversized records contribute no invented text
     and no raw file bytes. Secrets are redacted before the manifest is returned.
@@ -309,6 +461,131 @@ def package_context(src: Path, record_id: str, *, max_bytes: int = MAX_RECORD_BY
     bare = bare_record_id(record_id)
     path = find_record_path(Path(src), bare)
     if path is None:
+        snip = find_snippet(Path(src), bare)
+        if snip:
+            sws = snip.get("source_element") or snip.get("id")
+            doc = snip.get("source_document") or "AUTOSAR Norm"
+            page = snip.get("source_page")
+            category = snip.get("category") or "inbound_call"
+            rationale = snip.get("relevance_rationale") or ""
+            verbatim = snip.get("verbatim_text") or ""
+            modul = snip.get("target_module") or ""
+            sha = snip.get("sha256", "")
+
+            requirement = (
+                f"[{sws}] {verbatim}\n\n"
+                f"Fundstelle: {doc} (Seite {page})\n"
+                f"Kategorie: {category}\n"
+                f"Zweck / Relevanz: {rationale}"
+            )
+            canonical = f"AUTOSAR/CP/record/{sws}" if sws and sws.startswith("SWS_") else f"AUTOSAR/CP/record/{bare}"
+            context = {
+                "record_id": bare,
+                "canonical_id": canonical,
+                "universe": "AUTOSAR Classic Platform",
+                "module": modul,
+                "requirement_text": requirement,
+                "parent_ids": [sws] if sws and sws != bare else [],
+                "cited_references": [{
+                    "id": sws if sws else "",
+                    "document": doc,
+                    "page": page if isinstance(page, int) else None,
+                    "href": "",
+                }],
+                "found": True,
+                "truncated": False,
+                "original_chars": len(requirement),
+                "omitted_reason": "",
+                "redaction_count": 0,
+                "privacy_badge": PRIVACY_BADGE,
+                "diff_basis": "full-record",
+                "is_snippet": True,
+                "snippet_meta": {
+                    "source_document": doc,
+                    "source_page": page,
+                    "source_element": sws,
+                    "category": category,
+                    "relevance_rationale": rationale,
+                    "sha256": sha,
+                    "target_module": modul,
+                },
+            }
+            context["token_count"] = estimate_tokens(transmitted_text(context))
+            return context
+
+        classic_rec = find_classic_spec_record(Path(src), bare)
+        if classic_rec:
+            sws = classic_rec["sws"]
+            doc = classic_rec["document"]
+            kind = classic_rec["kind"]
+            name = classic_rec["name"]
+            modul = classic_rec["module"]
+            syntax = classic_rec["syntax"]
+            desc = classic_rec["desc"]
+            requirement = (
+                f"[{sws}] {name} ({kind})\n\n"
+                f"Spezifikationsdokument: {doc}\n"
+                f"Syntax: {syntax}\n\n"
+                f"Beschreibung: {desc}\n\n"
+                f"Status: Konstituierender Spezifikations-Record für Modul {modul}"
+            )
+            canonical = f"AUTOSAR/CP/record/{sws}" if sws.startswith("SWS_") else f"AUTOSAR/CP/record/{bare}"
+            context = {
+                "record_id": bare,
+                "canonical_id": canonical,
+                "universe": "AUTOSAR Classic Platform",
+                "module": modul,
+                "requirement_text": requirement,
+                "parent_ids": [sws] if sws != bare else [],
+                "cited_references": [{
+                    "id": sws,
+                    "document": doc,
+                    "page": None,
+                    "href": "",
+                }],
+                "found": True,
+                "truncated": False,
+                "original_chars": len(requirement),
+                "omitted_reason": "",
+                "redaction_count": 0,
+                "privacy_badge": PRIVACY_BADGE,
+                "diff_basis": "full-record",
+                "is_snippet": False,
+                "is_constituting": True,
+                "record_meta": classic_rec,
+            }
+            context["token_count"] = estimate_tokens(transmitted_text(context))
+            return context
+
+        guide = find_guide(Path(src), bare)
+        if guide:
+            req_text = guide["clean_text"]
+            if guide.get("diagram_text"):
+                req_text += "\n\n" + guide["diagram_text"]
+            context = {
+                "record_id": bare,
+                "canonical_id": f"AUTOSAR/CP/guide/{bare}",
+                "universe": "AUTOSAR Classic Platform",
+                "module": guide["module"],
+                "requirement_text": req_text,
+                "parent_ids": [],
+                "cited_references": guide["citations"],
+                "found": True,
+                "truncated": False,
+                "original_chars": len(req_text),
+                "omitted_reason": "",
+                "redaction_count": 0,
+                "privacy_badge": PRIVACY_BADGE,
+                "diff_basis": "full-record",
+                "is_snippet": False,
+                "is_constituting": False,
+                "is_guide": True,
+                "guide_meta": guide,
+                "diagram_text": guide.get("diagram_text", ""),
+            }
+            context["token_count"] = estimate_tokens(transmitted_text(context))
+            return context
+
         return _empty_context(bare, found=False, reason="record-not-found")
     try:
         size = path.stat().st_size
@@ -378,6 +655,26 @@ def make_diff(record_id: str, original: str, suggested: str) -> str:
 
 
 def suggestion_for(context: dict) -> str | None:
+    if context.get("is_guide"):
+        meta = context.get("guide_meta") or {}
+        g_name = meta.get("name") or context.get("record_id")
+        return (
+            f"[STATUS: REVIEW_GUIDE / PRÜFUNG]\n"
+            f"Guide: {g_name} ({context.get('record_id')})\n"
+            f"Ziel: {context.get('module')}\n"
+            f"Vorschlag: Abgleich der Modulinteraktionen und Sequenzdiagramm-Schritte mit der AUTOSAR-Spezifikation."
+        )
+    if context.get("is_snippet"):
+        meta = context.get("snippet_meta") or {}
+        sws = meta.get("source_element") or context.get("record_id")
+        modul = context.get("module") or "LinIf"
+        return (
+            f"[STATUS: EXCLUDE / ÜBERPRÜFEN]\n"
+            f"Snippet: {context.get('record_id')}\n"
+            f"Element: {sws}\n"
+            f"Zielmodul: {modul}\n"
+            f"Vorschlag: Im nächsten Curation-Ingest auf Relevanz prüfen und ggf. aus Dossier entfernen."
+        )
     text = str(context.get("requirement_text") or "").strip()
     if not text:
         return None
@@ -389,12 +686,35 @@ def suggestion_for(context: dict) -> str | None:
 
 
 def rationale_for(context: dict, *, source: str) -> str:
+    if context.get("is_guide"):
+        return f"Kurations- und Review-Prüfung für Guide {context.get('record_id')} ({source})."
+    if context.get("is_snippet"):
+        return f"Kurations-Beanstandung für Inbound-Snippet {context.get('record_id')} ({source})."
     basis = "dem gekürzten Kontext" if context.get("truncated") else "dem vollständigen Kontext"
     return (
         f"Abgeleitet aus {basis} von {context.get('record_id') or 'dem Datensatz'} ({source}). "
         "Der bestehende Text bleibt erhalten; ergänzt wird nur ein Prüfungshinweis. "
         "Keine automatische Freigabe."
     )
+
+
+def _is_substantiated_rationale(message: str) -> bool:
+    folded = " ".join(message.strip().split())
+    if len(folded) < 25:
+        return False
+    if len(folded) >= 50:
+        return True
+    lower = folded.lower()
+    indicators = (
+        "weil", "da ", "grund", "begründ", "treiber", "schnittstelle", "schicht",
+        "redundant", "intern", "fehlt", "falsche", "nicht zuständig", "architektur",
+        "abstraktion", "vertrag", "hardware", "mcsl", "pdu", "can", "lin", "fr",
+        "eth", "bsw", "swc", "autosar", "konform", "irrelevant", "spezifikation",
+        "gehört zu", "nicht konstituierend", "kein bezug", "falsch für", "soll ausgeschlossen",
+        "ausschließen", "ausgeschlossen werden", "nicht zutreffend", "unpassend",
+        "revidier", "aus dem kontext", "nicht passend", "widerspr"
+    )
+    return any(k in lower for k in indicators)
 
 
 def contextual_reply(message: str, context: dict) -> dict:
@@ -414,6 +734,256 @@ def contextual_reply(message: str, context: dict) -> dict:
     text = str(context.get("requirement_text") or "").strip()
     folded = message.strip()
     lower = folded.casefold()
+
+    if context.get("is_snippet"):
+        meta = context.get("snippet_meta") or {}
+        sws = meta.get("source_element") or context.get("record_id")
+        doc = meta.get("source_document") or "Spezifikation"
+        page = meta.get("source_page") or "?"
+        cat = meta.get("category") or "inbound_call"
+        modul = context.get("module") or "LinIf"
+        rat = meta.get("relevance_rationale") or ""
+
+        # Provenance / Herkunft
+        if any(w in lower for w in ("woher", "herkunft", "source", "quelle", "ursprung", "fundstelle")):
+            reply = (
+                f"Herkunftsnachweis für {record_id} ({sws}):\n\n"
+                f"• Quelldokument: {doc}\n"
+                f"• Fundstelle: Seite {page} (SWS-Identifier [{sws}])\n"
+                f"• Klassifikation: {cat}\n\n"
+                f"Dieses Snippet wurde während des Kontext-Distributionslaufs extrahiert und gepinnt. "
+                f"Es belegt eine Inbound-Anforderung, die das Nachbardokument {doc} an das Modul {modul} stellt."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        # Purpose / Sinnhaftigkeit
+        if any(w in lower for w in ("sinn", "zweck", "warum", "relevan", "verbindlich", "bedeutung")):
+            reply = (
+                f"Sinnhaftigkeit & Zweck für {modul}:\n\n"
+                f"• Erfassungsbegründung: {rat}\n\n"
+                f"Dieses Snippet stellt den Schnittstellenvertrag sicher: Der KI-Agent soll bei der Generierung "
+                f"des Guides wissen, welche Nachbarmodule Anforderungen an {modul} stellen (z.B. synchrone Aufrufe oder Callbacks), "
+                f"anstatt das Modul isoliert ohne Systemkontext zu betrachten."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        # Challenge / Beanstandung / Ausschluss
+        if any(w in lower for w in ("falsch", "beanstand", "ablehn", "irrelevant", "unpassend", "unzutreffend", "ausschlie", "lösch", "entfern", "widerspr", "nicht anwendbar", "stimmt nicht")):
+            if not _is_substantiated_rationale(folded):
+                reply = (
+                    f"Deine Beanstandung zu Snippet {record_id} ({sws}) wurde registriert.\n\n"
+                    f"Um die Beanstandung fachlich zu prüfen und ein verbindliches Kurationsangebot zu erstellen, "
+                    f"wird eine stichhaltige technische Begründung benötigt (z. B. Angabe von Schichtentrennung, Architekturfehler oder Redundanz).\n\n"
+                    f"Bitte erläutere kurz: Warum genau ist dieses Element für {modul} unzutreffend?"
+                )
+                return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+            reply = (
+                f"Deine Beanstandung zu Snippet {record_id} ({sws}) ist berechtigt:\n\n"
+                f"Argument: „{folded}“\n\n"
+                f"Wenn diese Spezifikation rein intern für {doc} gilt oder für {modul} keinen konstituierenden Schnittstellenvertrag darstellt, "
+                f"ist die Aufnahme in den Agentenkontext irreführend und verfälscht die Kommentargenerierung.\n\n"
+                f"Ich habe einen Curation-Vorschlag formuliert, um dieses Snippet beim nächsten Ingest-Lauf zu prüfen und ggf. auszuschließen. "
+                f"Du kannst das Ergebnis jetzt mit „In Curation-Queue vormerken“ ablegen."
+            )
+            suggestion = (
+                f"[STATUS: EXCLUDE / AUSSCHLIESSEN]\n"
+                f"Snippet-ID: {record_id}\n"
+                f"Referenz: {sws} aus {doc} (Seite {page})\n"
+                f"Zielmodul: {modul}\n"
+                f"Empfohlene Aktion: Aus dem Agenten-Kontext-Dossier ausschließen.\n"
+                f"Begründung: {folded}"
+            )
+            rationale = (
+                f"Im Curation-Dialog beanstandet: {folded}. "
+                f"Fremdreferenz soll im nächsten Curation-Ingest überprüft und aus dem Kontext von {modul} entfernt werden."
+            )
+            return {"reply": reply, "suggestion": suggestion, "rationale": rationale, "mode": "mock"}
+
+    attached_items = context.get("attached_items") or []
+    if attached_items:
+        item_names = []
+        for it in attached_items:
+            nid = it.get("record_id") or it.get("id") or "?"
+            nname = it.get("record_meta", {}).get("name") or it.get("snippet_meta", {}).get("source_element") or nid
+            item_names.append(f"{nid} ({nname})")
+        item_str = ", ".join(item_names)
+        modul = context.get("module") or "LinIf"
+
+        if any(w in lower for w in ("woher", "herkunft", "source", "quelle", "ursprung", "fundstelle")):
+            details = []
+            for it in attached_items:
+                iid = it.get("record_id")
+                if it.get("is_snippet"):
+                    m = it.get("snippet_meta", {})
+                    details.append(f"• {iid} (Inbound): aus {m.get('source_document')}, S. {m.get('source_page')} [{m.get('source_element')}] · Zweck: {m.get('relevance_rationale')}")
+                elif it.get("is_constituting"):
+                    m = it.get("record_meta", {})
+                    details.append(f"• {iid} (Konstituierend): {m.get('name')} ({m.get('kind')}) aus {m.get('document')}")
+                else:
+                    details.append(f"• {iid}: {it.get('module', '')}")
+            reply = (
+                f"Herkunftsnachweis für die {len(attached_items)} ausgewählten Elemente:\n\n"
+                + "\n".join(details)
+                + f"\n\nDiese Elemente bilden zusammen den Spezifikations- und Schnittstellenkontext für {modul}."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        if any(w in lower for w in ("sinn", "zweck", "warum", "relevan", "zusammenhang", "schnittstelle", "bezug", "beziehung")):
+            reply = (
+                f"Schnittstellenbezug & Kontext der {len(attached_items)} Elemente:\n\n"
+                f"Im Modulkontext von {modul} definieren die konstituierenden APIs den verbindlichen Implementierungsvertrag, "
+                f"während die Inbound-Snippets den synchronen oder asynchronen Aufruf durch Nachbarmodule belegen.\n\n"
+                f"Gemeinsame Betrachtung stellt sicher, dass Wechselwirkungen (wie Schedule-Tabellen-Trigger oder Wakeup-Validierung) "
+                f"konsistent im Prompt-Dossier und den Generaten abgebildet werden."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        if any(w in lower for w in ("falsch", "beanstand", "ablehn", "irrelevant", "unpassend", "unzutreffend", "ausschlie", "lösch", "entfern", "nicht konstituierend")):
+            if not _is_substantiated_rationale(folded):
+                reply = (
+                    f"Deine Beanstandung zu den Elementen [{item_str}] wurde registriert.\n\n"
+                    f"Um die Beanstandung fachlich zu prüfen und als „begründet“ zu akzeptieren, "
+                    f"wird eine stichhaltige technische Begründung benötigt (z. B. warum die Zuordnung im Modulkontext von {modul} falsch ist).\n\n"
+                    f"Bitte erläutere kurz: Warum genau ist die Einbindung oder Eigenschaft dieser Elemente falsch?"
+                )
+                return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+            reply = (
+                f"Beanstandung zu den Elementen [{item_str}]:\n\n"
+                f"Argument: „{folded}“\n\n"
+                f"Wenn die Zuordnung, die 'konstituierend'-Eigenschaft oder die Bindung eines dieser Elemente für {modul} unzutreffend ist, "
+                f"sollte die Entkopplung im nächsten Curation-Ingest geprüft und vorgenommen werden.\n\n"
+                f"Ich habe einen Kurationsvorschlag vorbereitet. Du kannst ihn direkt mit „In Curation-Queue vormerken“ absenden."
+            )
+            suggestion = (
+                f"[STATUS: EXCLUDE_OR_REVISE]\n"
+                f"Elemente im Fokus: {item_str}\n"
+                f"Zielmodul: {modul}\n"
+                f"Empfohlene Aktion: Einbindung bzw. 'konstituierend'-Eigenschaft im nächsten Ingest prüfen und korrigieren.\n"
+                f"Begründung: {folded}"
+            )
+            return {
+                "reply": reply,
+                "suggestion": suggestion,
+                "rationale": f"Im Multi-Item-Curation-Dialog beanstandet: {folded}",
+                "mode": "mock",
+            }
+
+    if context.get("is_constituting"):
+        rec_meta = context.get("record_meta") or {}
+        r_name = rec_meta.get("name") or record_id
+        r_kind = rec_meta.get("kind") or "api"
+        r_sws = rec_meta.get("sws") or record_id
+        r_doc = rec_meta.get("document") or "Spezifikation"
+        modul = context.get("module") or "LinIf"
+
+        if any(w in lower for w in ("woher", "herkunft", "source", "quelle", "ursprung", "fundstelle")):
+            reply = (
+                f"Herkunftsnachweis für {record_id} ({r_name}):\n\n"
+                f"• Spezifikationsdokument: {r_doc}\n"
+                f"• SWS-Identifier: [{r_sws}]\n"
+                f"• Element-Typ: {r_kind}\n"
+                f"• Modul: {modul}\n\n"
+                f"Dieser Spec-Record wurde aus der offiziellen AUTOSAR-Classic-Spezifikation für {modul} extrahiert "
+                f"und konstituiert die Schnittstellendefinition des Moduls."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        # Challenge / Beanstandung / Ausschluss der konstituierenden Eigenschaft
+        if any(w in lower for w in ("falsch", "beanstand", "ablehn", "irrelevant", "unpassend", "unzutreffend", "ausschlie", "lösch", "entfern", "nicht konstituierend", "stimmt nicht")):
+            if not _is_substantiated_rationale(folded):
+                reply = (
+                    f"Deine Beanstandung zu `{r_name}` [{r_sws}] wurde erfasst.\n\n"
+                    f"Um die Beanstandung fachlich zu prüfen und ein Kurationsangebot zu erstellen, "
+                    f"wird eine stichhaltige technische Begründung benötigt (z. B. warum dieser Record nicht zum Kernvertrag von {modul} gehört).\n\n"
+                    f"Bitte erläutere kurz: Warum genau ist die Einstufung als konstituierend falsch?"
+                )
+                return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+            reply = (
+                f"Deine Beanstandung zu `{r_name}` [{r_sws}] ist erfasst:\n\n"
+                f"Argument: „{folded}“\n\n"
+                f"Falls `{r_name}` nicht konstituierend für {modul} ist (z.B. optional, plattformspezifisch oder nicht zum Kernvertrag gehörig), "
+                f"sollte dieser Record aus dem konstituierenden Agenten-Dossier ausgeschlossen werden.\n\n"
+                f"Ich habe einen Curation-Vorschlag formuliert, den du in die Curation-Queue vormerken kannst."
+            )
+            suggestion = (
+                f"[STATUS: EXCLUDE_CONSTITUTING / NICHT KONSTITUIEREND]\n"
+                f"Record-ID: {record_id}\n"
+                f"Name: {r_name} ({r_kind})\n"
+                f"Spezifikation: {r_doc} [{r_sws}]\n"
+                f"Zielmodul: {modul}\n"
+                f"Empfohlene Aktion: 'konstituierend'-Eigenschaft für {r_name} aufheben / aus Dossier ausschließen.\n"
+                f"Begründung: {folded}"
+            )
+            return {
+                "reply": reply,
+                "suggestion": suggestion,
+                "rationale": f"Im Curation-Dialog als nicht-konstituierend beanstandet: {folded}",
+                "mode": "mock",
+            }
+
+        # Purpose / Sinnhaftigkeit
+        if any(w in lower for w in ("sinn", "zweck", "warum", "relevan", "konstituierend", "bedeutung")):
+            reply = (
+                f"Konstituierende Eigenschaft von {r_name} [{r_sws}]:\n\n"
+                f"• Typ: {r_kind}\n"
+                f"• Modul-Kontext: {modul}\n\n"
+                f"Als konstituierender Record definiert `{r_name}` einen Kernbestandteil der Modulspezifikation. "
+                f"Der KI-Agent verwendet diesen Record für Funktionsübersichten, Schnittstellenbeschreibungen und Sequenzdiagramme."
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+    if context.get("is_guide"):
+        g_meta = context.get("guide_meta") or {}
+        g_name = g_meta.get("name") or record_id
+        g_mod = context.get("module") or ""
+        diag_txt = context.get("diagram_text") or ""
+
+        if any(w in lower for w in ("diagramm", "ablauf", "schritt", "nachricht", "aufruf", "sequenz")):
+            if diag_txt:
+                reply = (
+                    f"Ablauf- und Kollaborationsübersicht für {g_name}:\n\n"
+                    f"{diag_txt}\n\n"
+                    f"Diese Aufrufe spiegeln die Interaktion zwischen den Modulen wider. "
+                    f"Möchtest du eine bestimmte Nachricht oder Signatur im Diagramm beanstanden?"
+                )
+            else:
+                reply = f"Für {g_name} ist kein Sequenzdiagramm hinterlegt."
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
+        if any(w in lower for w in ("falsch", "fehler", "korrektur", "beanstand", "stimmt nicht", "inkonsistent")):
+            reply = (
+                f"Deine Anmerkung zum {g_name} wurde erfasst:\n\n"
+                f"Hinweis: „{folded}“\n\n"
+                f"Im Guide und Sequenzdiagramm müssen alle Schnittstellenaufrufe exakt den SWS-Spezifikationen entsprechen. "
+                f"Ich habe einen Korrekturvorschlag für das nächste Review-Paket vorbereitet. "
+                f"Du kannst ihn über die Curation-Queue vormerken oder direkt über „Feedback melden“ einreichen."
+            )
+            suggestion = (
+                f"[GUIDE-KORREKTUR für {record_id}]\n"
+                f"Bereich: {g_name} ({g_mod})\n"
+                f"Beanstandung: {folded}\n"
+                f"Aktion: Überprüfung und Angleichung der API-Aufrufe an die AUTOSAR-SWS-Norm."
+            )
+            return {
+                "reply": reply,
+                "suggestion": suggestion,
+                "rationale": f"Benutzer-Feedback im Guide-Diskussionsdialog: {folded}",
+                "mode": "mock",
+            }
+
+        if any(w in lower for w in ("woher", "herkunft", "source", "quelle", "ursprung", "fundstelle")):
+            cites = context.get("cited_references") or []
+            c_lines = [f"• {c.get('id', '')}: {c.get('document', '')}" for c in cites]
+            reply = (
+                f"Quellennachweis für {g_name}:\n\n"
+                f"Der Guide und das Sequenzdiagramm leiten sich aus folgenden Spezifikationen ab:\n"
+                + "\n".join(c_lines if c_lines else ["• Siehe SWS-Spezifikationen des Clusters"])
+            )
+            return {"reply": reply, "suggestion": None, "rationale": "", "mode": "mock"}
+
     if folded == PROMPT_EXPLAIN or "erklär" in lower or "explain" in lower:
         body = text or "(kein Anforderungstext im Kontext)"
         module = context.get("module") or "ohne Modul"
@@ -659,6 +1229,283 @@ def _load_body(body: bytes | None) -> dict:
     return payload
 
 
+def _agent_bridge():
+    if os.environ.get("AI_DISCUSS_OFFLINE") == "1":
+        return None
+    try:
+        import ai_agent_bridge as ab
+        return ab
+    except Exception:
+        try:
+            from tools import ai_agent_bridge as ab
+            return ab
+        except Exception:
+            try:
+                import _src.tools.ai_agent_bridge as ab
+                return ab
+            except Exception:
+                return None
+
+
+def _build_discuss_prompt(message: str, context: dict) -> str:
+    rec_id = context.get("record_id", "")
+    univ = context.get("universe", "AUTOSAR Classic")
+    mod = context.get("module", "")
+    req_text = str(context.get("requirement_text") or "")[:4000]
+    diagram_text = str(context.get("diagram_text") or "")[:2000]
+    cites = ", ".join(str(c.get("id") or c.get("document") or "") for c in (context.get("cited_references") or []))
+
+    prompt_parts = [
+        "Du bist der AUTOSAR-KI-Experte im Dokumentationsportal Autodocs.",
+        "Der Benutzer diskutiert mit dir über folgenden Kontext:",
+        f"- ID / Element: {rec_id}",
+        f"- Universum: {univ}",
+        f"- Modul / Cluster: {mod}",
+        f"- Inhalt / Spezifikation / Guide:\n{req_text}",
+    ]
+    if diagram_text:
+        prompt_parts.append(f"- Sequenzdiagramm-Schritte:\n{diagram_text}")
+    if cites:
+        prompt_parts.append(f"- Referenzen: {cites}")
+
+    prompt_parts.extend([
+        "",
+        f"Benutzer-Nachricht:\n\"{message.strip()}\"",
+        "",
+        "Instruktionen für deine Antwort:",
+        "1. Antworte fachlich fundiert, sachlich, präzise und auf Deutsch.",
+        "2. Beantworte Fragen offen und direkt: Erkläre Zusammenhänge, zeige Abhängigkeiten auf oder erläutere SWS-Anforderungen.",
+        "3. Keine Einengung / kein Tunnelblick auf Fehlersuche: Ein Gespräch kann eine reine Wissensabfrage, Architekturerklärung, Validierung oder ein allgemeiner technischer Diskurs sein.",
+        "4. Eskalation in ein Review-Finding: Falls der Nutzer explizit ein Review-Finding wünscht (z. B. 'Leg das als Finding an', 'Eskalieren', 'Erstelle ein Review-Ticket') ODER wenn sich im Dialog ein tatsächlicher, belegbarer Fehler oder eine Inkonsistenz in der Dokumentation/im Diagramm herausstellt und du eine formale Korrektur für geboten hältst, formuliere am Ende deiner Antwort einen strukturierten Block:",
+        "   [REVIEW-FINDING]",
+        "   Titel: <Kurzer, präziser Titel des Befunds>",
+        "   Schweregrad: <Kritisch | Mittel | Niedrig | Hinweis>",
+        "   Betroffenes Element: <ID / Modul / Diagrammschritt>",
+        "   Befund & Begründung: <Konkrete Abweichung zur SWS-Norm>",
+        "   Empfohlene Korrektur: <Konkreter Änderungsvorschlag>",
+        "   [ENDE-REVIEW-FINDING]",
+        "   Dieser Block wird vom System automatisch erkannt und dem Nutzer als 1-Klick-Aktion 'Als Review-Finding anlegen' angeboten.",
+        "5. Formatiere die Antwort übersichtlich in 2-4 Absätzen oder Aufzählungspunkten.",
+    ])
+    return "\n".join(prompt_parts)
+
+
+def _extract_finding_from_reply(out: str, message: str, rec_id: str) -> tuple[Optional[str], str, Optional[dict]]:
+    """Detect if reply contains a formal [REVIEW-FINDING] or if user requested/discussed a complaint."""
+    finding_dict = None
+    suggestion = None
+    rationale = ""
+    lower_msg = message.lower()
+
+    m_find = re.search(r"\[REVIEW-FINDING\](.*?)\[(?:ENDE-REVIEW-FINDING|/REVIEW-FINDING)\]", out, re.DOTALL | re.IGNORECASE)
+    if m_find:
+        raw_find = m_find.group(1).strip()
+        suggestion = f"[REVIEW-FINDING für {rec_id}]\n" + raw_find
+        rationale = f"Als Review-Finding im KI-Diskurs eskaliert: {message.strip()[:200]}"
+        finding_dict = {
+            "title": f"Review-Finding: {rec_id}",
+            "body": raw_find,
+            "target": rec_id,
+        }
+    elif any(w in lower_msg for w in ("finding", "review-ticket", "ticket", "eskalier", "falsch", "korrektur", "fehler", "mangel", "ändern", "ausschließen", "entfernen", "stimmt nicht")):
+        suggestion = f"[KORREKTUR-VORSCHLAG für {rec_id}]\n" + out.strip()[:600]
+        rationale = f"Im Diskussionsdialog mit KI erörtert: {message.strip()[:200]}"
+        finding_dict = {
+            "title": f"Review-Finding: {rec_id}",
+            "body": suggestion,
+            "target": rec_id,
+        }
+
+    return suggestion, rationale, finding_dict
+
+
+def _live_ai_reply(message: str, context: dict) -> Optional[dict]:
+    ab = _agent_bridge()
+    if not ab:
+        return None
+
+    try:
+        subs = ab.check_subscriptions()
+    except Exception:
+        return None
+
+    has_gemini = subs.get("gemini", {}).get("available")
+    has_cursor = subs.get("cursor", {}).get("available")
+    if not (has_gemini or has_cursor):
+        return None
+
+    status = ab.get_health_status()
+    active_prov = status.get("active_provider") or ("agy" if has_gemini else "cursor")
+    rec_id = context.get("record_id", "")
+    prompt = _build_discuss_prompt(message, context)
+
+    prov_order = ["agy", "cursor"] if active_prov == "agy" else ["cursor", "agy"]
+    for prov in prov_order:
+        if prov == "agy" and has_gemini:
+            cli = subs["gemini"]["cli_path"] or "agy"
+            agy_info = status.get("providers", {}).get("agy", {})
+            model_name = agy_info.get("model") or "gemini-3.8-flash-medium"
+            effort = agy_info.get("thinking_effort") or "medium"
+            cmd = [cli, "--model", model_name, "--effort", effort, "--dangerously-skip-permissions", "-p", prompt]
+            ok, out = ab._run_cli_prompt(cmd, timeout=60)
+            if ok and out and out.strip():
+                suggestion, rationale, finding_dict = _extract_finding_from_reply(out, message, rec_id)
+                return {
+                    "reply": out.strip(),
+                    "suggestion": suggestion,
+                    "rationale": rationale,
+                    "finding": finding_dict,
+                    "provider": "agy",
+                    "model": model_name,
+                    "mode": "live",
+                }
+        elif prov == "cursor" and has_cursor:
+            cli = subs["cursor"]["cli_path"] or "agent"
+            model_name = status.get("providers", {}).get("cursor", {}).get("model") or "composer-2.5"
+            cmd = [cli, "--print", "--trust", "--mode", "ask", "--model", model_name, prompt]
+            ok, out = ab._run_cli_prompt(cmd, timeout=60)
+            if ok and out and out.strip():
+                suggestion, rationale, finding_dict = _extract_finding_from_reply(out, message, rec_id)
+                return {
+                    "reply": out.strip(),
+                    "suggestion": suggestion,
+                    "rationale": rationale,
+                    "finding": finding_dict,
+                    "provider": "cursor",
+                    "model": "composer-2.5",
+                    "mode": "live",
+                }
+
+    return None
+
+
+def stream_discuss_reply(message: str, context: dict, min_hz: float = 4.0):
+    """Generator yielding streaming SSE events at >= min_hz (default 4.0 Hz) for a discuss chat message."""
+    ab = _agent_bridge()
+    rec_id = context.get("record_id", "")
+    prompt = _build_discuss_prompt(message, context)
+
+    if not ab:
+        fallback = contextual_reply(message, context)
+        reply_txt = fallback.get("reply") or ""
+        words = reply_txt.split(" ")
+        chunk_sz = max(1, len(words) // 8)
+        t0 = time.monotonic()
+        for i in range(0, len(words), chunk_sz):
+            yield {
+                "event": "delta",
+                "delta": " ".join(words[i:i+chunk_sz]) + " ",
+                "elapsed_ms": int((time.monotonic() - t0) * 1000),
+                "hz": min_hz,
+            }
+            time.sleep(1.0 / max(min_hz, 1.0))
+        yield {
+            "event": "complete",
+            "ok": True,
+            "reply": reply_txt,
+            "suggestion": fallback.get("suggestion"),
+            "rationale": fallback.get("rationale", ""),
+            "mode": "offline",
+            "total_updates": len(words) // chunk_sz + 1,
+            "effective_hz": min_hz,
+        }
+        return
+
+    try:
+        subs = ab.check_subscriptions()
+    except Exception:
+        subs = {}
+
+    has_gemini = subs.get("gemini", {}).get("available", False)
+    has_cursor = subs.get("cursor", {}).get("available", False)
+
+    if not (has_gemini or has_cursor):
+        fallback = contextual_reply(message, context)
+        reply_txt = fallback.get("reply") or ""
+        words = reply_txt.split(" ")
+        chunk_sz = max(1, len(words) // 8)
+        t0 = time.monotonic()
+        for i in range(0, len(words), chunk_sz):
+            yield {
+                "event": "delta",
+                "delta": " ".join(words[i:i+chunk_sz]) + " ",
+                "elapsed_ms": int((time.monotonic() - t0) * 1000),
+                "hz": min_hz,
+            }
+            time.sleep(1.0 / max(min_hz, 1.0))
+        yield {
+            "event": "complete",
+            "ok": True,
+            "reply": reply_txt,
+            "suggestion": fallback.get("suggestion"),
+            "rationale": fallback.get("rationale", ""),
+            "mode": "offline",
+            "total_updates": len(words) // chunk_sz + 1,
+            "effective_hz": min_hz,
+        }
+        return
+
+    status = ab.get_health_status()
+    active_prov = status.get("active_provider") or ("agy" if has_gemini else "cursor")
+    prov_order = ["agy", "cursor"] if active_prov == "agy" else ["cursor", "agy"]
+
+    for prov in prov_order:
+        if prov == "agy" and has_gemini:
+            cli = subs["gemini"]["cli_path"] or "agy"
+            agy_info = status.get("providers", {}).get("agy", {})
+            model_name = agy_info.get("model") or "gemini-3.8-flash-medium"
+            effort = agy_info.get("thinking_effort") or "medium"
+            cmd = ab.build_stream_cmd("agy", cli, model_name, effort=effort, prompt=prompt)
+            for ev in ab.stream_agent_cli(cmd, provider="agy", min_hz=min_hz):
+                if ev.get("event") == "complete":
+                    out = ev.get("output", "")
+                    suggestion, rationale, finding_dict = _extract_finding_from_reply(out, message, rec_id)
+                    yield {
+                        "event": "complete",
+                        "ok": True,
+                        "reply": out,
+                        "suggestion": suggestion,
+                        "rationale": rationale,
+                        "finding": finding_dict,
+                        "provider": "agy",
+                        "model": model_name,
+                        "mode": "live",
+                        "total_updates": ev.get("total_updates", 0),
+                        "effective_hz": ev.get("effective_hz", min_hz),
+                    }
+                    return
+                else:
+                    yield ev
+            return
+        elif prov == "cursor" and has_cursor:
+            cli = subs["cursor"]["cli_path"] or "agent"
+            model_name = status.get("providers", {}).get("cursor", {}).get("model") or "composer-2.5"
+            cmd = ab.build_stream_cmd("cursor", cli, model_name, prompt=prompt)
+            for ev in ab.stream_agent_cli(cmd, provider="cursor", min_hz=min_hz):
+                if ev.get("event") == "complete":
+                    out = ev.get("output", "")
+                    suggestion, rationale, finding_dict = _extract_finding_from_reply(out, message, rec_id)
+                    yield {
+                        "event": "complete",
+                        "ok": True,
+                        "reply": out,
+                        "suggestion": suggestion,
+                        "rationale": rationale,
+                        "finding": finding_dict,
+                        "provider": "cursor",
+                        "model": model_name,
+                        "mode": "live",
+                        "total_updates": ev.get("total_updates", 0),
+                        "effective_hz": ev.get("effective_hz", min_hz),
+                    }
+                    return
+                else:
+                    yield ev
+            return
+
+    return None
+
+
 def handle_http(method: str, query: dict | None, body: bytes | None, repo: Path) -> tuple[int, dict]:
     """Serve ``/api/discuss``. Client-supplied requirement text is not trusted."""
     src = src_dir(repo)
@@ -672,13 +1519,30 @@ def handle_http(method: str, query: dict | None, body: bytes | None, repo: Path)
         _reject_asserted_acceptance(payload)
         action = str(payload.get("action") or "chat")
         context = package_context(src, _record_id_from(query, payload))
+        attached_ids = payload.get("attached_ids") or payload.get("attached_records") or []
+        if isinstance(attached_ids, list) and attached_ids:
+            attached_items = []
+            for aid in attached_ids:
+                if str(aid).strip():
+                    try:
+                        ctx = package_context(src, str(aid).strip())
+                        if ctx.get("found"):
+                            attached_items.append(ctx)
+                    except Exception:
+                        pass
+            if attached_items:
+                context["attached_items"] = attached_items
         if action == "context":
             return 200, {"ok": True, "mode": "live", "context": context}
         if action == "chat":
             message = payload.get("message")
-            if not isinstance(message, str):
+            if not isinstance(message, str) or not message.strip():
                 raise DiscussError("empty-message")
-            reply = contextual_reply(message, context)
+            reply = None
+            if message.strip() not in QUICK_PROMPTS:
+                reply = _live_ai_reply(message, context)
+            if not reply or not reply.get("reply"):
+                reply = contextual_reply(message, context)
             reply["mode"] = "live"
             return 200, {"ok": True, "mode": "live", "context": context, **reply}
         if action == "propose":

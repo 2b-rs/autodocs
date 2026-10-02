@@ -103,7 +103,11 @@
   }
   function safe(fn, dflt) { try { return fn(); } catch (e) { return dflt; } }
   function load() { return safe(function () { return JSON.parse(localStorage.getItem(STORE) || "[]"); }, []); }
-  function store(v) { safe(function () { localStorage.setItem(STORE, JSON.stringify(v)); }); update(); }
+  function store(v) {
+    safe(function () { localStorage.setItem(STORE, JSON.stringify(v)); });
+    update();
+    try { window.dispatchEvent(new CustomEvent("ara-package-changed")); } catch (e) {}
+  }
   function token() { return safe(function () { return localStorage.getItem(TOKEN) || ""; }, ""); }
   function clearLogin() { ghLogin = ""; renderIdentityHints(); }
   function setToken(v) {
@@ -207,6 +211,20 @@
             '</div>' +
             '<p class="rv-item-why">' + esc(d.rationale) + '</p>' +
             '<p class="rv-item-meta">' + esc((d.actor_claim && d.actor_claim.display_name) || d.decided_by || "local-only") + ' · ' + esc(new Date(d.created_at || d.decided_at || Date.now()).toLocaleString(lang)) + ' (local-only)</p>' +
+          '</li>';
+        }
+        if (d.kind === "curation_request") {
+          var ok = d.outcome === "accept";
+          var clabel = ok ? (lang === "de" ? "Kuration: Freigabe" : "Curation: Approve") : (lang === "de" ? "Kuration: Beanstandung" : "Curation: Reject");
+          return '<li class="rv-item rv-item-curation">' +
+            '<div class="rv-item-head">' +
+              '<span class="rv-chip ' + (ok ? "is-accept" : "is-reject") + '">' +
+                (ok ? ICON.ok : ICON.no) + esc(clabel) + '</span>' +
+              '<a class="rv-item-id" href="#' + esc(d.id) + '" title="' + esc(t.edit) + '">' + esc(d.id) + '</a>' +
+              '<button type="button" class="rv-icon-btn rv-icon-btn-sm" data-remove="' + esc(d.id) + '" aria-label="' + esc(t.remove) + '">' + ICON.x + '</button>' +
+            '</div>' +
+            '<p class="rv-item-why">' + esc(d.rationale) + '</p>' +
+            '<p class="rv-item-meta">' + esc(d.decided_by) + ' · ' + esc(new Date(d.decided_at).toLocaleString(lang)) + '</p>' +
           '</li>';
         }
         var ok = d.outcome === "accept";
@@ -581,7 +599,7 @@
   }
 
   function init() {
-    if (!document.querySelector(".reviewbar")) return;
+    if (!document.querySelector(".reviewbar") && !document.querySelector(".dossier-modal, .snippet-card, [data-review-open]")) return;
     buildDrawer();
     buildGithub();
     document.querySelectorAll(".review-panel").forEach(initPanel);
@@ -598,8 +616,17 @@
       b.addEventListener("click", exportPackage);
     });
     document.querySelectorAll("[data-review-warning]").forEach(function (e) { e.textContent = t.warn; });
+    try { window.addEventListener("ara-package-changed", update); } catch (e) {}
     update();
   }
+
+  window.araReview = {
+    openDrawer: openDrawer,
+    closeDrawer: closeDrawer,
+    exportPackage: exportPackage,
+    submitPackage: submitPackage,
+    update: update
+  };
 
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", init) : init();
 })();

@@ -98,16 +98,16 @@ html[data-theme="dark"] .ve-status-dropped{color:#fca5a5}
 .ve-view-btn.is-active{background:var(--color-teal-600);color:#fff}
 
 /* Side-by-Side Split Diff */
-.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:12px;overflow:hidden;background:var(--bg-canvas)}
-.ve-split-columns{display:grid;grid-template-columns:1fr 70px 1fr;position:relative}
-@media (max-width:850px){.ve-split-columns{grid-template-columns:1fr;gap:1rem}}
-.ve-split-pane{background:var(--bg-canvas);overflow-x:auto}
+.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:12px;overflow-x:auto;overflow-y:auto;max-height:650px;background:var(--bg-canvas);position:relative}
+.ve-split-columns{display:grid;grid-template-columns:1fr 70px 1fr;position:relative;min-width:640px;min-height:100%}
+.ve-split-pane{background:var(--bg-canvas);overflow:visible;display:flex;flex-direction:column}
 .ve-split-left{border-right:1px solid var(--border-subtle)}
 .ve-split-right{border-left:1px solid var(--border-subtle)}
-.ve-split-header{padding:.75rem 1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ve-split-header{padding:.75rem 1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
 .ve-header-left{border-top:3px solid #2563eb}
+.ve-header-gutter{border-top:3px solid var(--color-teal-600);justify-content:center;align-items:center;text-align:center;color:var(--color-ink-muted);font-size:.75rem;letter-spacing:.05em;padding:.75rem .5rem}
 .ve-header-right{border-top:3px solid #16a34a}
-.ve-split-body{padding:1rem;font-family:var(--font-mono);font-size:.88rem;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.ve-split-body{padding:1rem;font-family:var(--font-mono);font-size:.88rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;flex:1}
 
 /* Block & Word-level diff styles */
 .ve-block{margin:.4rem 0;padding:.35rem .6rem;border-radius:6px;border-left:3px solid transparent;transition:all .15s}
@@ -118,6 +118,11 @@ html[data-theme="dark"] .ve-status-dropped{color:#fca5a5}
 .ve-block-replaced.ve-block-right{background:rgba(22,163,74,.07);border-left-color:#16a34a;color:var(--color-ink)}
 .ve-block.is-hovered{box-shadow:0 0 0 2px var(--color-teal-600)}
 
+.ve-block-placeholder-wrap{margin:.4rem 0;padding:.35rem .6rem;border-radius:6px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent}
+.ve-block-placeholder{width:100%;height:4px;border-radius:2px}
+.ve-placeholder-delete{background:rgba(220,38,38,.45)}
+.ve-placeholder-insert{background:rgba(22,163,74,.45)}
+
 .ve-word-deleted, del.ve-word-deleted{background:rgba(220,38,38,.28);color:#991b1b;border-radius:3px;padding:0 3px;text-decoration:line-through;font-weight:600}
 html[data-theme="dark"] .ve-word-deleted, html[data-theme="dark"] del.ve-word-deleted{background:rgba(239,68,68,.38);color:#fca5a5}
 .ve-word-added, ins.ve-word-added{background:rgba(22,163,74,.28);color:#14532d;border-radius:3px;padding:0 3px;font-weight:600;text-decoration:none}
@@ -127,8 +132,8 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
 .ve-tombstone-icon{font-size:2.4rem;margin-bottom:.5rem}
 
 /* SVG Gutter & Connector Ribbons */
-.ve-split-gutter{position:relative;width:70px;background:var(--bg-canvas);align-self:stretch}
-@media (max-width:850px){.ve-split-gutter{display:none}}
+.ve-split-gutter{position:relative;width:70px;background:var(--bg-canvas);align-self:stretch;display:flex;flex-direction:column}
+.ve-gutter-canvas-wrap{position:relative;flex:1;width:70px;min-height:100%}
 .ve-gutter-svg{position:absolute;top:0;left:0;width:70px;height:100%;pointer-events:all;overflow:visible}
 .ve-connector{cursor:pointer;transition:opacity .15s}
 .ve-connector-replace{fill:rgba(217,119,6,.18);stroke:#d97706;stroke-width:1}
@@ -585,8 +590,9 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
   }
 
   function computeWordDiff(textA, textB) {
-    const tokensA = textA.match(/\S+|\n|\s+/g) || [];
-    const tokensB = textB.match(/\S+|\n|\s+/g) || [];
+    const tokenRegex = /[<>\-]|[\w\u00C0-\u024F]+|[^\s\w\u00C0-\u024F<>\-]+|\s+/g;
+    const tokensA = textA.match(tokenRegex) || [];
+    const tokensB = textB.match(tokenRegex) || [];
     const opcodes = getDiffOpcodes(tokensA, tokensB);
 
     let outA = '';
@@ -600,12 +606,12 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         outA += escapeHtml(subA);
         outB += escapeHtml(subB);
       } else if (tag === 'replace') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
+        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : escapeHtml(subA);
+        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : escapeHtml(subB);
       } else if (tag === 'delete') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
+        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : escapeHtml(subA);
       } else if (tag === 'insert') {
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
+        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : escapeHtml(subB);
       }
     }
     return [outA, outB];
@@ -978,7 +984,7 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
           const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
           leftBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
         } else if (tag === 'insert') {
-          leftBlocksHtml += `<div class="ve-block ve-block-placeholder" data-block-id="${b.id}" data-tag="insert" style="height:4px;margin:2px 0;background:rgba(22,163,74,.4);border-radius:2px;"></div>`;
+          leftBlocksHtml += `<div class="ve-block ve-block-placeholder-wrap" data-block-id="${b.id}" data-tag="insert" title="Hier im bisherigen Stand nicht vorhanden"><div class="ve-block-placeholder ve-placeholder-insert"></div></div>`;
         }
 
         if (tag === 'insert') {
@@ -991,7 +997,7 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
           const content = b.right_html || escapeHtml(b.right_lines.join('\n'));
           rightBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
         } else if (tag === 'delete') {
-          rightBlocksHtml += `<div class="ve-block ve-block-placeholder" data-block-id="${b.id}" data-tag="delete" style="height:4px;margin:2px 0;background:rgba(220,38,38,.4);border-radius:2px;"></div>`;
+          rightBlocksHtml += `<div class="ve-block ve-block-placeholder-wrap" data-block-id="${b.id}" data-tag="delete" title="Hier im neuen Stand entfallen"><div class="ve-block-placeholder ve-placeholder-delete"></div></div>`;
         }
       });
     }
@@ -1011,7 +1017,10 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
           </div>
 
           <div class="ve-split-gutter" id="ve-split-gutter">
-            <svg class="ve-gutter-svg" id="ve-gutter-svg" width="70" height="100%"></svg>
+            <div class="ve-split-header ve-header-gutter"><span>Diff</span></div>
+            <div class="ve-gutter-canvas-wrap">
+              <svg class="ve-gutter-svg" id="ve-gutter-svg" width="70" height="100%"></svg>
+            </div>
           </div>
 
           <div class="ve-split-pane ve-split-right">
@@ -1044,10 +1053,49 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
     setTimeout(redrawSvgConnectors, 20);
   }
 
+  function syncBlockHeights() {
+    const wrapper = document.getElementById('ve-split-diff-wrapper');
+    if (!wrapper || !lastDiffData || !lastDiffData.aligned_blocks) return;
+
+    const blocks = lastDiffData.aligned_blocks;
+    blocks.forEach(b => {
+      const leftEl = wrapper.querySelector(`#ve-pane-left [data-block-id="${b.id}"]`);
+      const rightEl = wrapper.querySelector(`#ve-pane-right [data-block-id="${b.id}"]`);
+      if (leftEl) leftEl.style.minHeight = '';
+      if (rightEl) rightEl.style.minHeight = '';
+    });
+
+    blocks.forEach(b => {
+      const leftEl = wrapper.querySelector(`#ve-pane-left [data-block-id="${b.id}"]`);
+      const rightEl = wrapper.querySelector(`#ve-pane-right [data-block-id="${b.id}"]`);
+      if (leftEl && rightEl) {
+        const hLeft = leftEl.offsetHeight;
+        const hRight = rightEl.offsetHeight;
+        const maxH = Math.max(hLeft, hRight);
+        if (maxH > 0) {
+          leftEl.style.minHeight = maxH + 'px';
+          rightEl.style.minHeight = maxH + 'px';
+        }
+      }
+    });
+  }
+
   function redrawSvgConnectors() {
     const wrapper = document.getElementById('ve-split-diff-wrapper');
     const svg = document.getElementById('ve-gutter-svg');
+    const gutter = document.getElementById('ve-split-gutter');
     if (!wrapper || !svg || !lastDiffData || !lastDiffData.aligned_blocks) return;
+
+    syncBlockHeights();
+
+    const canvasWrap = (gutter && gutter.querySelector('.ve-gutter-canvas-wrap')) || gutter;
+    if (canvasWrap) {
+      const gH = canvasWrap.offsetHeight || (gutter ? gutter.offsetHeight : 0);
+      if (gH > 0) {
+        svg.setAttribute('height', gH);
+        svg.style.height = gH + 'px';
+      }
+    }
 
     const svgRect = svg.getBoundingClientRect();
     const W = 70;
@@ -1104,6 +1152,21 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         path.classList.remove('is-hovered');
       });
     });
+
+    if (!wrapper._scrollAttached) {
+      wrapper._scrollAttached = true;
+      wrapper.addEventListener('scroll', () => {
+        redrawSvgConnectors();
+      }, { passive: true });
+    }
+
+    if (window.ResizeObserver && !wrapper._roAttached) {
+      wrapper._roAttached = true;
+      const ro = new ResizeObserver(() => {
+        redrawSvgConnectors();
+      });
+      ro.observe(wrapper);
+    }
   }
 
   function renderUnifiedDiff(data, container) {
