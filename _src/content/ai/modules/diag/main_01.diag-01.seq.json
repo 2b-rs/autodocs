@@ -1,78 +1,100 @@
 {
- "titel": "UDS-Anfrage bis zur anwendungsspezifischen Behandlung",
- "teilnehmer": [
-  {
-   "name": "Diagnose-Client"
-  },
-  {
-   "name": "UDS Transport Handler"
-  },
-  {
-   "name": "Protocol Manager"
-  },
-  {
-   "name": "Diagnostic Server"
-  },
-  {
-   "name": "ara::diag-Anwendung",
-   "href": "../classes/cl_ara_diag_GenericUDSService_733cac.html"
-  }
- ],
- "schritte": [
-  {
-   "art": "nachricht",
-   "von": 0,
-   "nach": 1,
-   "text": [
-    "UDS Request"
-   ]
-  },
-  {
-   "art": "nachricht",
-   "von": 1,
-   "nach": 2,
-   "text": [
-    "IndicateMessage mit",
-    "Zieladresse / Kanal"
-   ]
-  },
-  {
-   "art": "nachricht",
-   "von": 2,
-   "nach": 3,
-   "text": [
-    "physisch: ein Server;",
-    "funktional: passende",
-    "Server"
-   ]
-  },
-  {
-   "art": "nachricht",
-   "von": 3,
-   "nach": 4,
-   "text": [
-    "Service-Callback mit",
-    "MetaInfo"
-   ]
-  },
-  {
-   "art": "nachricht",
-   "von": 4,
-   "nach": 3,
-   "text": [
-    "Future: positive Antwort",
-    "oder NRC"
-   ],
-   "pfeil": "offen",
-   "gestrichelt": true
-  },
-  {
-   "art": "nachricht",
-   "von": 3,
-   "nach": 1,
-   "text": [
-    "Transmit über den zugehörigen Kanal"
-   ]
-  }
- ]
+  "titel": "UDS-Anfrageverarbeitung über DoIP/Transport, Diagnostic Server und ara::diag Service-Handler",
+  "teilnehmer": [
+    {
+      "name": "Diagnose-Tester (Client)",
+      "klasse": "vis-app"
+    },
+    {
+      "name": "Transport Layer (DoIP)",
+      "href": "../modules/diag.html",
+      "klasse": "vis-app"
+    },
+    {
+      "name": "Diagnostic Server (DM)",
+      "href": "../modules/diag.html",
+      "klasse": "vis-app"
+    },
+    {
+      "name": "ara::diag Service (App)",
+      "href": "../classes/cl_ara_diag_GenericUDSService_733cac.html",
+      "klasse": "vis-app"
+    }
+  ],
+  "schritte": [
+    {
+      "art": "nachricht",
+      "von": 0,
+      "nach": 1,
+      "text": [
+        "UDS Request (z. B. RoutineControl)"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": false
+    },
+    {
+      "art": "nachricht",
+      "von": 1,
+      "nach": 2,
+      "text": [
+        "IndicateMessage(Channel, TargetAddr)"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": false
+    },
+    {
+      "art": "selbst",
+      "teilnehmer": 2,
+      "text": [
+        "Sitzungs- & Sicherheitsprüfung"
+      ]
+    },
+    {
+      "art": "nachricht",
+      "von": 2,
+      "nach": 3,
+      "text": [
+        "HandleMessage(sid, reqData, metaInfo)"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": false
+    },
+    {
+      "art": "selbst",
+      "teilnehmer": 3,
+      "text": [
+        "Ausführung Diagnoseroutine"
+      ]
+    },
+    {
+      "art": "nachricht",
+      "von": 3,
+      "nach": 2,
+      "text": [
+        "Future<OperationOutput>"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": true
+    },
+    {
+      "art": "nachricht",
+      "von": 2,
+      "nach": 1,
+      "text": [
+        "Transmit(ResponseData)"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": false
+    },
+    {
+      "art": "nachricht",
+      "von": 1,
+      "nach": 0,
+      "text": [
+        "UDS Positive Response"
+      ],
+      "pfeil": "voll",
+      "gestrichelt": true
+    }
+  ]
 }

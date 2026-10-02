@@ -565,25 +565,11 @@ def resolve_spec_record_target(rec_id: str, current_module: str = "LinIf", is_cl
 
 
 def linkify_spec_references(text: str, current_module: str = "LinIf", is_cluster: bool = False) -> str:
-    """Verwandelt Spezifikations-Referenzen wie [SWS_LinSM_00079] oder SWS_LinIf_00503 in klickbare Links."""
+    """Formatiert Spezifikations-Referenzen wie [SWS_LinSM_00079] oder SWS_LinIf_00503 als Code-Elemente."""
     pattern = re.compile(r"(\[)?\b(SWS_[A-Za-z0-9]+_[0-9A-Za-z]+)\b(\])?")
     def repl(match):
-        has_lb = bool(match.group(1))
         rec_id = match.group(2)
-        has_rb = bool(match.group(3))
-        target_info = resolve_spec_record_target(rec_id, current_module, is_cluster=is_cluster)
-        if not target_info:
-            return match.group(0)
-        url, kind = target_info
-        bracket_pre = "[" if (has_lb or has_rb) else ""
-        bracket_post = "]" if (has_lb or has_rb) else ""
-        if kind == "local":
-            title = f"Zu {rec_id} im aktuellen Modul springen"
-        else:
-            mod_key = url.split('.')[0].replace("modules/", "")
-            mod_title = KNOWN_CLASSIC_MODULES.get(mod_key, KNOWN_ADAPTIVE_MODULES.get(mod_key, {}).get("title", mod_key))
-            title = f"Zu {rec_id} in {mod_title} springen"
-        return f'<a href="{url}" class="rec-jump-link" data-rec-id="{rec_id}" title="{title}">{bracket_pre}<code>{rec_id}</code>{bracket_post}</a>'
+        return f'<code>[{rec_id}]</code>'
     return pattern.sub(repl, text)
 
 
@@ -961,10 +947,11 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
         '      </div>',
     ]
 
-    num_func = len([r for r in extracted_records if r.get("kind") == "function"])
-    num_type = len([r for r in extracted_records if r.get("kind") == "type"])
+    display_extracted_records = [] if plattform == "adaptive" else extracted_records
+    num_func = len([r for r in display_extracted_records if r.get("kind") == "function"])
+    num_type = len([r for r in display_extracted_records if r.get("kind") == "type"])
     num_inbound = len(snippets)
-    total_items = len(extracted_records) + num_inbound
+    total_items = len(display_extracted_records) + num_inbound
 
     # 0. Multiselection Batch Action Bar (erscheint nur, wenn die Auswahl nicht leer ist)
     viewer_body.append('      <div class="dossier-selection-bar" id="dossier-selection-bar" hidden>')
@@ -1024,17 +1011,17 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
     viewer_body.append('      </div>')
 
     # 1. Konstituierende Spezifikations-Records des Moduls im Volltext & Kuratierbar
-    viewer_body.append('      <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">')
-    if is_cluster:
-        viewer_body.append(f'        <h3>📋 Konstituierende Spezifikations-Records des Clusters ({len(extracted_records)} APIs &amp; Typen aus {len(cluster_modules)} Modulen)</h3>')
-    else:
-        viewer_body.append(f'        <h3>📋 Konstituierende Spezifikations-Records des Moduls ({len(extracted_records)} APIs &amp; Typen)</h3>')
-    viewer_body.append(f'        <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">{section_desc}</p>')
-    viewer_body.append('      </div>')
+    if display_extracted_records:
+        viewer_body.append('      <div class="dossier-section-head section-head-constituting" style="margin-top: 18px; margin-bottom: 8px;">')
+        if is_cluster:
+            viewer_body.append(f'        <h3>📋 Konstituierende Spezifikations-Records des Clusters ({len(display_extracted_records)} APIs &amp; Typen aus {len(cluster_modules)} Modulen)</h3>')
+        else:
+            viewer_body.append(f'        <h3>📋 Konstituierende Spezifikations-Records des Moduls ({len(display_extracted_records)} APIs &amp; Typen)</h3>')
+        viewer_body.append(f'        <p class="desc" style="font-size: 0.9em; color: #555; margin: 4px 0 10px;">{section_desc}</p>')
+        viewer_body.append('      </div>')
 
-    if extracted_records:
         viewer_body.append('      <div class="records-container" id="records-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 26px;">')
-        for rec in extracted_records:
+        for rec in display_extracted_records:
             rec_id = rec["id"]
             name = rec["name"]
             kind = rec["kind"]
@@ -1050,6 +1037,21 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
 
             sws_linked = linkify_spec_references(sws, modul, is_cluster=is_cluster)
             desc_linked = linkify_spec_references(desc, modul, is_cluster=is_cluster) if desc else '<p><em>(Keine weitere Spezifikationsbeschreibung vorhanden)</em></p>'
+            if is_cluster:
+                if syntax:
+                    syntax = re.sub(r"href=[\x27\x22](?!modules/|https?://|#)([a-zA-Z0-9_]+)\.html", r'href="modules/\1.html', syntax)
+                desc_linked = re.sub(r"href=[\x27\x22](?!modules/|https?://|#)([a-zA-Z0-9_]+)\.html", r'href="modules/\1.html', desc_linked)
+            elif plattform == "adaptive":
+                if syntax:
+                    syntax = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(cl_[a-zA-Z0-9_]+\.html)', r'href="../classes/\1', syntax)
+                    syntax = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(ns_[a-zA-Z0-9_]+\.html)', r'href="../namespaces/\1', syntax)
+                    syntax = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(tp_[a-zA-Z0-9_]+\.html)', r'href="../types/\1', syntax)
+                    syntax = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(sv_[a-zA-Z0-9_]+\.html)', r'href="../services/\1', syntax)
+                if desc_linked:
+                    desc_linked = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(cl_[a-zA-Z0-9_]+\.html)', r'href="../classes/\1', desc_linked)
+                    desc_linked = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(ns_[a-zA-Z0-9_]+\.html)', r'href="../namespaces/\1', desc_linked)
+                    desc_linked = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(tp_[a-zA-Z0-9_]+\.html)', r'href="../types/\1', desc_linked)
+                    desc_linked = re.sub(r'href=[\x27\x22](?!https?://|#|\.\./)(sv_[a-zA-Z0-9_]+\.html)', r'href="../services/\1', desc_linked)
 
             if plattform == "adaptive":
                 pdf_url = f"https://www.autosar.org/fileadmin/standards/R25-11/AP/{doc}.pdf"
@@ -1060,8 +1062,11 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
             pdf_badge = f'<a href="{pdf_url}" target="_blank" rel="noopener noreferrer" class="sws-pdf-link" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="AUTOSAR-Dokument für {doc} öffnen">📄 PDF</a>'
 
             if is_cluster:
-                jump_badge = f'<a href="modules/{rec_mod.lower()}.html#{rec_id}" class="rec-jump-link record-item-chip" data-rec-id="{rec_id}" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="Zu {name} im Modul {rec_mod} springen">↗ Im Modul {rec_mod}</a>'
+                jump_badge = f'<a href="modules/{rec_mod.lower()}.html" class="rec-jump-link record-item-chip" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="Zu Modul {rec_mod} springen">↗ Im Modul {rec_mod}</a>'
                 mod_chip = f'<span class="chip-module" style="background:#e8f4f8; color:#01696f; font-weight:600; padding:2px 6px; border-radius:3px; font-size:0.78em;">{rec_mod}</span>'
+            elif plattform == "adaptive":
+                jump_badge = ''
+                mod_chip = ''
             else:
                 jump_badge = f'<a href="#{rec_id}" class="rec-jump-link record-item-chip" data-rec-id="{rec_id}" style="font-size: 0.82em; color: #01696f; text-decoration: underline;" title="Zu {name} im Dokument springen">↗ Im Dokument</a>'
                 mod_chip = ''
@@ -1134,6 +1139,10 @@ def generiere_dossier_html(dossier: Dict[str, Any]) -> str:
         sws_linked = linkify_spec_references(sws, modul, is_cluster=is_cluster)
         text_linked = linkify_spec_references(text, modul, is_cluster=is_cluster)
         rationale_linked = linkify_spec_references(rationale, modul, is_cluster=is_cluster) if rationale else ""
+        if is_cluster:
+            text_linked = re.sub(r"href=[\x27\x22](?!modules/|https?://|#)([a-zA-Z0-9_]+)\.html", r'href="modules/\1.html', text_linked)
+            if rationale_linked:
+                rationale_linked = re.sub(r"href=[\x27\x22](?!modules/|https?://|#)([a-zA-Z0-9_]+)\.html", r'href="modules/\1.html', rationale_linked)
 
         if plattform == "adaptive":
             pdf_url = f"https://www.autosar.org/fileadmin/standards/R25-11/AP/{doc}.pdf"
@@ -1799,6 +1808,13 @@ def main():
 
             if args.update_page:
                 aktualisiere_seitenmodell_mit_dossier(modul, dossier_html, plattform=plattform)
+        elif args.action == "render":
+            dossier_pfad = DOSSIERS_DIR / plattform / "modules" / f"{modul.lower()}.json"
+            if dossier_pfad.exists():
+                dossier = json.loads(dossier_pfad.read_text(encoding="utf-8"))
+                dossier_html = generiere_dossier_html(dossier)
+                if args.update_page:
+                    aktualisiere_seitenmodell_mit_dossier(modul, dossier_html, plattform=plattform)
 
     print("=== Distributionslauf erfolgreich abgeschlossen ===")
 

@@ -98,16 +98,18 @@ html[data-theme="dark"] .ve-status-dropped{color:#fca5a5}
 .ve-view-btn.is-active{background:var(--color-teal-600);color:#fff}
 
 /* Side-by-Side Split Diff */
-.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:12px;overflow-x:auto;overflow-y:auto;max-height:650px;background:var(--bg-canvas);position:relative}
-.ve-split-columns{display:grid;grid-template-columns:1fr 70px 1fr;position:relative;min-width:640px;min-height:100%}
-.ve-split-pane{background:var(--bg-canvas);overflow:visible;display:flex;flex-direction:column}
+.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:12px;overflow:hidden;height:600px;max-height:75vh;background:var(--bg-canvas);position:relative;display:flex;flex-direction:column}
+.ve-split-columns{display:grid;grid-template-columns:1fr 70px 1fr;position:relative;min-width:640px;flex:1;min-height:0;overflow:hidden}
+.ve-split-pane{background:var(--bg-canvas);overflow:hidden;display:flex;flex-direction:column;min-height:0;position:relative}
 .ve-split-left{border-right:1px solid var(--border-subtle)}
 .ve-split-right{border-left:1px solid var(--border-subtle)}
-.ve-split-header{padding:.75rem 1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.ve-split-header{padding:.75rem 1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:5}
 .ve-header-left{border-top:3px solid #2563eb}
 .ve-header-gutter{border-top:3px solid var(--color-teal-600);justify-content:center;align-items:center;text-align:center;color:var(--color-ink-muted);font-size:.75rem;letter-spacing:.05em;padding:.75rem .5rem}
 .ve-header-right{border-top:3px solid #16a34a}
-.ve-split-body{padding:1rem;font-family:var(--font-mono);font-size:.88rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;flex:1}
+.ve-split-body{padding:1rem;font-family:var(--font-mono);font-size:.88rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;flex:1;overflow-y:auto;overflow-x:hidden;position:relative;box-sizing:border-box}
+.ve-split-body::-webkit-scrollbar{width:6px}
+.ve-split-body::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:3px}
 
 /* Block & Word-level diff styles */
 .ve-block{margin:.4rem 0;padding:.35rem .6rem;border-radius:6px;border-left:3px solid transparent;transition:all .15s}
@@ -118,8 +120,8 @@ html[data-theme="dark"] .ve-status-dropped{color:#fca5a5}
 .ve-block-replaced.ve-block-right{background:rgba(22,163,74,.07);border-left-color:#16a34a;color:var(--color-ink)}
 .ve-block.is-hovered{box-shadow:0 0 0 2px var(--color-teal-600)}
 
-.ve-block-placeholder-wrap{margin:.4rem 0;padding:.35rem .6rem;border-radius:6px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:transparent}
-.ve-block-placeholder{width:100%;height:4px;border-radius:2px}
+.ve-block.ve-block-anchor{display:block!important;height:0!important;min-height:0!important;max-height:0!important;padding:0!important;margin:0!important;border:none!important;overflow:hidden!important;pointer-events:none!important}
+.ve-block.ve-block-placeholder{height:4px!important;min-height:4px!important;margin:3px 0!important;padding:0!important;border:none!important;border-radius:2px;box-sizing:border-box}
 .ve-placeholder-delete{background:rgba(220,38,38,.45)}
 .ve-placeholder-insert{background:rgba(22,163,74,.45)}
 
@@ -132,8 +134,8 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
 .ve-tombstone-icon{font-size:2.4rem;margin-bottom:.5rem}
 
 /* SVG Gutter & Connector Ribbons */
-.ve-split-gutter{position:relative;width:70px;background:var(--bg-canvas);align-self:stretch;display:flex;flex-direction:column}
-.ve-gutter-canvas-wrap{position:relative;flex:1;width:70px;min-height:100%}
+.ve-split-gutter{position:relative;width:70px;background:var(--bg-canvas);border-left:1px solid var(--border-subtle);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.ve-gutter-canvas-wrap{position:relative;flex:1;width:70px;min-height:0;overflow:hidden}
 .ve-gutter-svg{position:absolute;top:0;left:0;width:70px;height:100%;pointer-events:all;overflow:visible}
 .ve-connector{cursor:pointer;transition:opacity .15s}
 .ve-connector-replace{fill:rgba(217,119,6,.18);stroke:#d97706;stroke-width:1}
@@ -238,7 +240,7 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
 
   function loadCatalog() {
     // 1. Try static catalog (GitHub Pages), fallback to dynamic API (/api/versions)
-    fetch('../versions/catalog.json')
+    fetch('versions/catalog.json')
       .then(res => {
         if (!res.ok) throw new Error('Static catalog not available');
         return res.json();
@@ -328,7 +330,7 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
     const newUrl = window.location.pathname + '?id=' + encodeURIComponent(reqId);
     window.history.replaceState({}, '', newUrl);
 
-    const basePath = '../';
+    const basePath = '';
     const staticUrl = basePath + (item && item.file ? item.file : ('versions/data/' + encodeURIComponent(reqId) + '.json'));
 
     fetch(staticUrl)
@@ -606,12 +608,12 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         outA += escapeHtml(subA);
         outB += escapeHtml(subB);
       } else if (tag === 'replace') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : escapeHtml(subA);
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : escapeHtml(subB);
+        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
+        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
       } else if (tag === 'delete') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : escapeHtml(subA);
+        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
       } else if (tag === 'insert') {
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : escapeHtml(subB);
+        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
       }
     }
     return [outA, outB];
@@ -977,27 +979,18 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         if (tag === 'delete') {
           const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
           leftBlocksHtml += `<div class="ve-block ve-block-deleted" data-block-id="${b.id}" data-tag="delete">${content}</div>`;
+          rightBlocksHtml += `<div class="ve-block ve-block-anchor" data-block-id="${b.id}" data-tag="delete"></div>`;
         } else if (tag === 'replace') {
           const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
           leftBlocksHtml += `<div class="ve-block ve-block-replaced ve-block-left" data-block-id="${b.id}" data-tag="replace">${content}</div>`;
+          rightBlocksHtml += `<div class="ve-block ve-block-replaced ve-block-right" data-block-id="${b.id}" data-tag="replace">${b.right_html || escapeHtml(b.right_lines.join('\n'))}</div>`;
         } else if (tag === 'equal') {
           const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
           leftBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
-        } else if (tag === 'insert') {
-          leftBlocksHtml += `<div class="ve-block ve-block-placeholder-wrap" data-block-id="${b.id}" data-tag="insert" title="Hier im bisherigen Stand nicht vorhanden"><div class="ve-block-placeholder ve-placeholder-insert"></div></div>`;
-        }
-
-        if (tag === 'insert') {
-          const content = b.right_html || escapeHtml(b.right_lines.join('\n'));
-          rightBlocksHtml += `<div class="ve-block ve-block-added" data-block-id="${b.id}" data-tag="insert">${content}</div>`;
-        } else if (tag === 'replace') {
-          const content = b.right_html || escapeHtml(b.right_lines.join('\n'));
-          rightBlocksHtml += `<div class="ve-block ve-block-replaced ve-block-right" data-block-id="${b.id}" data-tag="replace">${content}</div>`;
-        } else if (tag === 'equal') {
-          const content = b.right_html || escapeHtml(b.right_lines.join('\n'));
           rightBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
-        } else if (tag === 'delete') {
-          rightBlocksHtml += `<div class="ve-block ve-block-placeholder-wrap" data-block-id="${b.id}" data-tag="delete" title="Hier im neuen Stand entfallen"><div class="ve-block-placeholder ve-placeholder-delete"></div></div>`;
+        } else if (tag === 'insert') {
+          leftBlocksHtml += `<div class="ve-block ve-block-anchor" data-block-id="${b.id}" data-tag="insert"></div>`;
+          rightBlocksHtml += `<div class="ve-block ve-block-added" data-block-id="${b.id}" data-tag="insert">${b.right_html || escapeHtml(b.right_lines.join('\n'))}</div>`;
         }
       });
     }
@@ -1049,35 +1042,160 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
       });
     });
 
-    // Draw connecting SVG lines
-    setTimeout(redrawSvgConnectors, 20);
+    const wrapper = document.getElementById('ve-split-diff-wrapper');
+    const paneLeft = document.getElementById('ve-pane-left');
+    const paneRight = document.getElementById('ve-pane-right');
+    initPiecewiseSyncScroll(wrapper, paneLeft, paneRight, blocks, redrawSvgConnectors);
   }
 
-  function syncBlockHeights() {
-    const wrapper = document.getElementById('ve-split-diff-wrapper');
-    if (!wrapper || !lastDiffData || !lastDiffData.aligned_blocks) return;
+  function initPiecewiseSyncScroll(wrapper, paneLeft, paneRight, blocks, redrawFn) {
+    if (!wrapper || !paneLeft || !paneRight || !blocks || blocks.length === 0) return;
 
-    const blocks = lastDiffData.aligned_blocks;
-    blocks.forEach(b => {
-      const leftEl = wrapper.querySelector(`#ve-pane-left [data-block-id="${b.id}"]`);
-      const rightEl = wrapper.querySelector(`#ve-pane-right [data-block-id="${b.id}"]`);
-      if (leftEl) leftEl.style.minHeight = '';
-      if (rightEl) rightEl.style.minHeight = '';
-    });
+    let blockLayouts = [];
+    let cumV = [0];
+    let V_total = 0;
+    let globalS = 0;
+    let isProgrammatic = false;
 
-    blocks.forEach(b => {
-      const leftEl = wrapper.querySelector(`#ve-pane-left [data-block-id="${b.id}"]`);
-      const rightEl = wrapper.querySelector(`#ve-pane-right [data-block-id="${b.id}"]`);
-      if (leftEl && rightEl) {
-        const hLeft = leftEl.offsetHeight;
-        const hRight = rightEl.offsetHeight;
-        const maxH = Math.max(hLeft, hRight);
-        if (maxH > 0) {
-          leftEl.style.minHeight = maxH + 'px';
-          rightEl.style.minHeight = maxH + 'px';
+    function measureLayout() {
+      blockLayouts = [];
+      cumV = [0];
+      let runningV = 0;
+
+      for (let i = 0; i < blocks.length; i++) {
+        const b = blocks[i];
+        const elL = paneLeft.querySelector(`[data-block-id="${b.id}"]`);
+        const elR = paneRight.querySelector(`[data-block-id="${b.id}"]`);
+
+        const hL = (elL && b.tag !== 'insert') ? elL.offsetHeight : 0;
+        const topL = elL ? elL.offsetTop : (i > 0 ? blockLayouts[i - 1].botL : 0);
+        const botL = topL + hL;
+
+        const hR = (elR && b.tag !== 'delete') ? elR.offsetHeight : 0;
+        const topR = elR ? elR.offsetTop : (i > 0 ? blockLayouts[i - 1].botR : 0);
+        const botR = topR + hR;
+
+        const hV = Math.max(hL, hR);
+        runningV += hV;
+        cumV.push(runningV);
+
+        blockLayouts.push({
+          id: b.id,
+          tag: b.tag,
+          topL, hL, botL,
+          topR, hR, botR,
+          hV,
+          startV: cumV[i],
+          endV: runningV
+        });
+      }
+
+      V_total = runningV;
+    }
+
+    function getTargetsForS(S) {
+      if (blockLayouts.length === 0) return { targetL: 0, targetR: 0 };
+      if (S <= 0) return { targetL: 0, targetR: 0 };
+
+      let k = 0;
+      while (k < blockLayouts.length - 1 && S >= blockLayouts[k].endV) {
+        k++;
+      }
+
+      const blk = blockLayouts[k];
+      const offset = S - blk.startV;
+      const t = blk.hV > 0 ? Math.min(1, Math.max(0, offset / blk.hV)) : 0;
+
+      const targetL = blk.topL + t * blk.hL;
+      const targetR = blk.topR + t * blk.hR;
+
+      return { targetL, targetR };
+    }
+
+    function getSFromR(scrollTopR) {
+      if (blockLayouts.length === 0) return 0;
+      for (let i = 0; i < blockLayouts.length; i++) {
+        const blk = blockLayouts[i];
+        if (scrollTopR >= blk.topR && (scrollTopR < blk.botR || i === blockLayouts.length - 1)) {
+          const t = blk.hR > 0 ? (scrollTopR - blk.topR) / blk.hR : 0;
+          return blk.startV + t * blk.hV;
         }
       }
-    });
+      return 0;
+    }
+
+    function getSFromL(scrollTopL) {
+      if (blockLayouts.length === 0) return 0;
+      for (let i = 0; i < blockLayouts.length; i++) {
+        const blk = blockLayouts[i];
+        if (scrollTopL >= blk.topL && (scrollTopL < blk.botL || i === blockLayouts.length - 1)) {
+          const t = blk.hL > 0 ? (scrollTopL - blk.topL) / blk.hL : 0;
+          return blk.startV + t * blk.hV;
+        }
+      }
+      return 0;
+    }
+
+    function applyScroll(S) {
+      const maxScrollL = Math.max(0, paneLeft.scrollHeight - paneLeft.clientHeight);
+      const maxScrollR = Math.max(0, paneRight.scrollHeight - paneRight.clientHeight);
+      const viewH = Math.min(paneLeft.clientHeight || 500, paneRight.clientHeight || 500);
+      const maxS = Math.max(0, V_total - viewH);
+
+      globalS = Math.max(0, Math.min(maxS, S));
+      const targets = getTargetsForS(globalS);
+
+      isProgrammatic = true;
+      paneLeft.scrollTop = Math.min(maxScrollL, Math.max(0, targets.targetL));
+      paneRight.scrollTop = Math.min(maxScrollR, Math.max(0, targets.targetR));
+
+      if (redrawFn) redrawFn();
+      requestAnimationFrame(() => { isProgrammatic = false; });
+    }
+
+    wrapper.addEventListener('wheel', (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        applyScroll(globalS + e.deltaY);
+      }
+    }, { passive: false });
+
+    paneLeft.addEventListener('scroll', () => {
+      if (isProgrammatic) return;
+      const S = getSFromL(paneLeft.scrollTop);
+      applyScroll(S);
+    }, { passive: true });
+
+    paneRight.addEventListener('scroll', () => {
+      if (isProgrammatic) return;
+      const S = getSFromR(paneRight.scrollTop);
+      applyScroll(S);
+    }, { passive: true });
+
+    wrapper._syncController = {
+      scrollToBlock: (blockId) => {
+        const idx = blockLayouts.findIndex(b => b.id === blockId);
+        if (idx >= 0) {
+          applyScroll(blockLayouts[idx].startV);
+        }
+      },
+      applyScroll: applyScroll,
+      measure: measureLayout
+    };
+
+    setTimeout(() => {
+      measureLayout();
+      applyScroll(0);
+    }, 20);
+
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => {
+        measureLayout();
+        if (redrawFn) redrawFn();
+      });
+      ro.observe(paneLeft);
+      ro.observe(paneRight);
+    }
   }
 
   function redrawSvgConnectors() {
@@ -1085,8 +1203,6 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
     const svg = document.getElementById('ve-gutter-svg');
     const gutter = document.getElementById('ve-split-gutter');
     if (!wrapper || !svg || !lastDiffData || !lastDiffData.aligned_blocks) return;
-
-    syncBlockHeights();
 
     const canvasWrap = (gutter && gutter.querySelector('.ve-gutter-canvas-wrap')) || gutter;
     if (canvasWrap) {
@@ -1113,9 +1229,9 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
       const rRect = rightEl.getBoundingClientRect();
 
       const y1Top = lRect.top - svgRect.top;
-      const y1Bot = lRect.bottom - svgRect.top;
+      const y1Bot = (b.tag === 'insert') ? y1Top : (lRect.bottom - svgRect.top);
       const y2Top = rRect.top - svgRect.top;
-      const y2Bot = rRect.bottom - svgRect.top;
+      const y2Bot = (b.tag === 'delete') ? y2Top : (rRect.bottom - svgRect.top);
 
       const cp1x = W * 0.45;
       const cp2x = W * 0.55;
@@ -1128,12 +1244,10 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Bot} C ${cp2x} ${y2Bot}, ${cp1x} ${y1Bot}, 0 ${y1Bot} Z`;
       } else if (b.tag === 'delete') {
         cls += 've-connector-delete';
-        const midY2 = (y2Top + y2Bot) / 2;
-        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${midY2}, ${W} ${midY2} L ${W} ${midY2+2} C ${cp2x} ${midY2+2}, ${cp1x} ${y1Bot}, 0 ${y1Bot} Z`;
+        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Top} C ${cp2x} ${y2Top}, ${cp1x} ${y1Bot}, 0 ${y1Bot} Z`;
       } else if (b.tag === 'insert') {
         cls += 've-connector-insert';
-        const midY1 = (y1Top + y1Bot) / 2;
-        d = `M 0 ${midY1} C ${cp1x} ${midY1}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Bot} C ${cp2x} ${y2Bot}, ${cp1x} ${midY1+2}, 0 ${midY1+2} Z`;
+        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Bot} C ${cp2x} ${y2Bot}, ${cp1x} ${y1Top}, 0 ${y1Top} Z`;
       }
 
       pathsHtml += `<path d="${d}" class="${cls}" data-connector-id="${b.id}"><title>${b.tag.toUpperCase()}: ${b.id}</title></path>`;
@@ -1151,22 +1265,12 @@ html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-adde
         wrapper.querySelectorAll(`[data-block-id="${id}"]`).forEach(b => b.classList.remove('is-hovered'));
         path.classList.remove('is-hovered');
       });
-    });
-
-    if (!wrapper._scrollAttached) {
-      wrapper._scrollAttached = true;
-      wrapper.addEventListener('scroll', () => {
-        redrawSvgConnectors();
-      }, { passive: true });
-    }
-
-    if (window.ResizeObserver && !wrapper._roAttached) {
-      wrapper._roAttached = true;
-      const ro = new ResizeObserver(() => {
-        redrawSvgConnectors();
+      path.addEventListener('click', () => {
+        if (wrapper._syncController && typeof wrapper._syncController.scrollToBlock === 'function') {
+          wrapper._syncController.scrollToBlock(id);
+        }
       });
-      ro.observe(wrapper);
-    }
+    });
   }
 
   function renderUnifiedDiff(data, container) {

@@ -101,10 +101,17 @@ def main():
     ok = fail = 0
 
     # 1. Datei-Diagramme
+    import shutil
+    has_dot = shutil.which('dot') is not None
     for src, ziel, art in datei_jobs():
         if not passt(src):
             continue
         try:
+            if art == 'gv' and not has_dot:
+                if ziel.exists():
+                    ok += 1
+                    continue
+                raise RuntimeError("Graphviz 'dot' ist nicht im PATH verfügbar")
             neu = render_datei(src, art, inline=False)
             if pruefe_alt and ziel.exists():
                 alt = ziel.read_text(encoding='utf-8')
