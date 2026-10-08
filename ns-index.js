@@ -1,0 +1,1451 @@
+/* ns-index.js — Verhalten der einheitlichen Namespace-Übersicht (lib_nsindex.py).
+   - Gliederung links mit umschaltbarer Gruppierung (Typ, Themen, Historie).
+   - Klick auf einen Eintrag (Gliederung, Karte, Inspektor) wählt ihn aus: Die
+     Detailansicht zeigt seine kanonische Darstellung (Record bzw. Klassenseite),
+     der Inspektor rechts seine Bezüge. Hover hebt nur in der Karte hervor und
+     verändert die Auswahl nicht.
+   - KI-Symbol vor einem Eintrag: Detailansicht mit aufgeklapptem KI-Kommentar.
+   - Mittlere Folds (User Guide, Themenkarte, Detailansicht) lassen sich per Griff
+     umsortieren; der Inspektor ist in der Breite veränderbar. Beides wird lokal
+     gemerkt.
+   - Release-Kontext (#release=… bzw. ?release=…): entfallene Elemente werden
+     markiert; ohne Elementdaten für das Release erscheint ein Hinweis.
+   Ohne Skript bleibt die Seite als Liste mit Dokumentation vollständig lesbar. */
+(function () {
+  "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var ORDER_KEY = "nsx-fold-order", BY_KEY = "nsx-group-by", W_KEY = "nsx-aside-w", TDOCK_KEY = "nsx-titledock";
+  var ICON_DOCK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7M5 6.5l3 3 3-3M2.5 13h11"/></svg>';
+  var ICON_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+
+  function words(el, a) { return (el && el.getAttribute(a) || "").split(" ").filter(Boolean); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function svgEl(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    return e;
+  }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function save(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* ohne Speicher */ } }
+  function currentRelease() {
+    var h = (location.hash || "").replace(/^#/, "");
+    try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
+    var m = /(?:^|&)release=([^&]*)/.exec(h) || /[?&]release=([^&#]+)/.exec(location.search || "");
+    return m ? String(m[1]).trim() : "";
+  }
+  var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var behavior = reduceMotion ? "auto" : "smooth";
+
+  function init(root) {
+    var rows = {}, chips = {}, oitems = {}, recOwner = {};
+    root.querySelectorAll(".nsx-row").forEach(function (r) {
+      var n = r.getAttribute("data-n");
+      rows[n] = r;
+      words(r, "data-recs").concat(words(r, "data-fns")).forEach(function (id) { recOwner[id] = n; });
+    });
+    root.querySelectorAll(".nsx-chip").forEach(function (c) { chips[c.getAttribute("data-n")] = c; });
+    root.querySelectorAll(".nsx-oi").forEach(function (o) { (oitems[o.getAttribute("data-n")] = oitems[o.getAttribute("data-n")] || []).push(o); });
+    var relnote = root.querySelector(".nsx-relnote");
+    var labels = {};
+    root.querySelectorAll(".nsx-labels [data-l]").forEach(function (s) { labels[s.getAttribute("data-l")] = s.textContent.trim(); });
+
+    function applyRelease() {
+      var rel = currentRelease(), any = false;
+      Object.keys(rows).forEach(function (n) {
+        var r = rows[n], gone = rel && words(r, "data-dropped").indexOf(rel) >= 0;
+        if (rel && (words(r, "data-releases").indexOf(rel) >= 0 || gone)) any = true;
+        [r, chips[n]].concat(oitems[n] || []).forEach(function (el) {
+          if (!el) return;
+          el.classList.toggle("nsx-dropped", !!gone);
+          if (gone) el.setAttribute("title", (labels.dropped || "") + " " + words(r, "data-dropped")[0]);
+          else if (el.getAttribute("title")) el.removeAttribute("title");
+        });
+      });
+      if (relnote) {
+        relnote.hidden = !rel || any;
+        var code = relnote.querySelector(".nsx-relnote-r");
+        if (code) code.textContent = rel;
+      }
+    }
+    window.addEventListener("hashchange", applyRelease);
+    applyRelease();
+    // Dichte „Comfortable“: bisherige flache Seite (Übersichten, Diagramm, Dokumentation);
+    // „Compact“: interaktive Ansicht. Ein Wechsel der Dichte lädt die Seite neu.
+    if (document.documentElement.getAttribute("data-density") !== "compact") {
+      flattenClassIndex(document.querySelector("main") || document.body);
+      return;
+    }
+    if (root.classList.contains("nsx-small")) return;
+
+    root.classList.add("nsx-live");
+    var map = root.querySelector(".nsx-map");
+    var outline = root.querySelector(".nsx-outline");
+    var folds = root.querySelector(".nsx-folds");
+    var detFold = root.querySelector('.nsx-fold[data-fold="detail"]');
+    var detBody = detFold && detFold.querySelector(".nsx-detbody");
+    var detTitle = detFold && detFold.querySelector(".nsx-dettitle");
+    var detLink = detFold && detFold.querySelector(".nsx-canon-link");
+    var aside = root.querySelector(".nsx-aside");
+    var relBox = aside && aside.querySelector(".nsx-rel");
+    var hint = aside && aside.querySelector(".nsx-hint");
+    var ext = {};
+    try { ext = JSON.parse((root.querySelector("script.nsx-ext") || {}).textContent || "{}"); } catch (e) { ext = {}; }
+    // Seitenpfad → Eintrag, damit Verweise aus Klassenseiten und Signaturen auf die Auswahl führen
+    var byPath = {};
+    Object.keys(rows).forEach(function (n) {
+      var h = rows[n].getAttribute("data-href");
+      if (h && h.charAt(0) !== "#") byPath[new URL(h, location.href).pathname] = n;
+    });
+    // Signaturen der Nicht-Member-Funktionen nach Name (für „Kommt vor in“)
+    var fnIndex = {};
+    root.querySelectorAll(".nsx-row .nsx-sig").forEach(function (sg) {
+      var code = sg.querySelector("code"), go = sg.querySelector("a.nsx-go");
+      var m = code && go && /(operator\s*[^\s(]+|[A-Za-z_~][\w:]*)\s*\(/.exec(code.textContent);
+      if (!m) return;
+      var fname = m[1].replace(/\s+/g, "").split("::").pop();
+      (fnIndex[fname] = fnIndex[fname] || []).push({ id: go.getAttribute("href").slice(1), code: code });
+    });
+
+    // ---- Titelleiste des Namespace bleibt oben stehen
+    var title = document.querySelector("main > h1");
+    function pinH() { return title ? title.offsetHeight : 0; }
+    function navTop() { return title ? Math.max(0, title.getBoundingClientRect().bottom) : 0; }
+    if (title) {
+      title.classList.add("nsx-pin");
+      var setTop = function () { document.documentElement.style.setProperty("--nsx-top", pinH() + "px"); };
+      setTop();
+      if (window.ResizeObserver) new ResizeObserver(setTop).observe(title);
+    }
+
+    // ---- Dokumentationsabschnitte: Inhalt erscheint nur noch in der Detailansicht
+    document.querySelectorAll("details.nsx-doc").forEach(function (d) { d.hidden = true; });
+
+    // ---- User Guide des Namespace als erster Fold der Mitte
+    var guideFold = null;
+    for (var p = root.previousElementSibling; p; p = p.previousElementSibling) {
+      if (p.tagName === "DETAILS" && p.classList.contains("fold") && !p.classList.contains("nsx-doc") && p.querySelector(".ai")) {
+        p.classList.add("nsx-fold");
+        p.setAttribute("data-fold", "guide");
+        guideFold = p;
+        var sm = p.querySelector("summary");
+        if (sm && !sm.querySelector(".nsx-grip")) {
+          var gr = document.createElement("span");
+          gr.className = "nsx-grip";
+          gr.setAttribute("role", "button");
+          gr.setAttribute("tabindex", "0");
+          sm.insertBefore(gr, sm.firstChild);
+        }
+        folds.insertBefore(p, folds.firstChild);
+        break;
+      }
+    }
+
+    // ---- Auf- und Zuklappen lässt die Fold-Zeile an ihrer Bildschirmposition
+    folds.addEventListener("click", function (ev) {
+      var sm = ev.target.closest("details.nsx-fold > summary");
+      if (!sm || ev.target.closest(".nsx-grip, a, button") || sm.parentNode.classList.contains("nsx-pop")) return;
+      var d = sm.parentNode, y = sm.getBoundingClientRect().top;
+      d.addEventListener("toggle", function () {
+        var dy = sm.getBoundingClientRect().top - y;
+        if (Math.abs(dy) >= 1) window.scrollBy(0, dy);
+      }, { once: true });
+    });
+
+    // ---- Reihenfolge der Folds
+    function foldList() { return Array.prototype.filter.call(folds.children, function (x) { return x.matches("details[data-fold]"); }); }
+    function applyOrder() {
+      var order = (load(ORDER_KEY) || "").split(",").filter(Boolean);
+      if (!order.length) return;
+      var fl = foldList();
+      fl.slice().sort(function (a, b) {
+        var ia = order.indexOf(a.getAttribute("data-fold")), ib = order.indexOf(b.getAttribute("data-fold"));
+        if (ia < 0) ia = 99 + fl.indexOf(a);
+        if (ib < 0) ib = 99 + fl.indexOf(b);
+        return ia - ib;
+      }).forEach(function (f) { folds.appendChild(f); });
+    }
+    function saveOrder() { save(ORDER_KEY, foldList().map(function (f) { return f.getAttribute("data-fold"); }).join(",")); }
+    applyOrder();
+    var dragging = null;
+    folds.querySelectorAll(".nsx-grip").forEach(function (g) {
+      var gl = (canTitleDock(g.closest("details")) ? labels.gripdock : labels.grip) || "";
+      g.setAttribute("title", gl);
+      g.setAttribute("aria-label", gl);
+      g.addEventListener("click", function (ev) { ev.preventDefault(); ev.stopPropagation(); });
+      g.addEventListener("pointerdown", function () { g.closest("details").draggable = true; });
+      g.addEventListener("keydown", function (ev) {
+        if (ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
+        ev.preventDefault();
+        var f = g.closest("details"), fl = foldList().filter(function (x) { return !x.classList.contains("nsx-tdocked"); }), i = fl.indexOf(f);
+        if (ev.key === "ArrowUp" && i === 0 && canTitleDock(f)) { dockTitle(f); return; }
+        if (ev.key === "ArrowUp" && i > 0) folds.insertBefore(f, fl[i - 1]);
+        else if (ev.key === "ArrowDown" && i < fl.length - 1) folds.insertBefore(fl[i + 1], f);
+        else return;
+        g.focus();
+        saveOrder();
+      });
+    });
+    folds.addEventListener("dragstart", function (ev) {
+      var f = ev.target.closest && ev.target.closest("details[data-fold]");
+      if (!f || !f.draggable) return;
+      dragging = f;
+      f._fromTitle = false;
+      f._dropped = false;
+      f.classList.add("nsx-dragging");
+      if (canTitleDock(f)) title.classList.add("nsx-drop-zone");
+      ev.dataTransfer.effectAllowed = "move";
+      try { ev.dataTransfer.setData("text/plain", f.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
+    });
+    folds.addEventListener("dragover", function (ev) {
+      if (!dragging) return;
+      ev.preventDefault();
+      if (dragging.classList.contains("nsx-tdocked")) {
+        undockTitle(dragging, undefined, true);     // Vorschau; endgültig erst beim Ablegen
+        dragging.classList.add("nsx-dragging");
+      }
+      var t = ev.target.closest && ev.target.closest("details[data-fold]");
+      if (!t || t === dragging || t.parentNode !== folds) return;
+      var r = t.getBoundingClientRect();
+      folds.insertBefore(dragging, ev.clientY < r.top + Math.min(r.height / 2, 60) ? t : t.nextSibling);
+    });
+    folds.addEventListener("drop", function (ev) { if (dragging) { ev.preventDefault(); dragging._dropped = true; } });
+    document.addEventListener("dragend", function () {
+      if (!dragging) return;
+      if (title) title.classList.remove("nsx-drop-zone", "nsx-drop-over");
+      // Aus der Titelleiste gezogen: in der Mitte abgelegt → endgültig gelöst,
+      // sonst (abgebrochen, auf der Leiste losgelassen) bleibt der Reiter angedockt
+      if (dragging._fromTitle) {
+        saveTitleDock();
+        if (dragging._dropped && !dragging.classList.contains("nsx-tdocked")) {
+          var tb = tdock.querySelector('[data-fold="' + dragging.getAttribute("data-fold") + '"]');
+          if (tb) tb.remove();
+          saveTitleDock();
+        } else dockTitle(dragging);
+        dragging._fromTitle = false;
+      }
+      dragging.classList.remove("nsx-dragging");
+      dragging.draggable = false;
+      dragging = null;
+      saveOrder();
+      if (selected) drawArrows(selected);
+    });
+    document.addEventListener("pointerup", function () { foldList().forEach(function (f) { if (f !== dragging) f.draggable = false; }); });
+
+    function isClassRow(r) { return r.getAttribute("data-kind") === "class"; }
+    // Kennzahlen eines KI-Texts: Prüfstatus, Release, Abschnitte, Lesezeit, SWS-Verweise, Diagramme
+    function statsHtml(scope) {
+      var rel = currentRelease(), all = scope.querySelectorAll(".ai-guide-release-variant");
+      var v = Array.prototype.filter.call(all, function (x) { return rel && words(x, "data-applicable-releases").indexOf(rel) >= 0; })[0] || all[0] || scope;
+      var ai = v.matches && v.matches(".ai") ? v : (v.querySelector(".ai") || v);
+      var c = ai.cloneNode(true);
+      c.querySelectorAll(".ai-trace-badge, .ai-note, .ai-commentary-actions, script, style, svg").forEach(function (x) { x.remove(); });
+      var txt = c.textContent, nw = (txt.match(/\S+/g) || []).length;
+      if (/[\u3040-\u9fff\uac00-\ud7af]/.test(txt)) nw = Math.max(nw, txt.replace(/\s/g, "").length / 2.5);
+      var refs = {};
+      ai.querySelectorAll(".spec-record-ref[data-req]").forEach(function (a) { refs[a.getAttribute("data-req")] = 1; });
+      var rev = ai.querySelector(".ai-review-state"), parts = [];
+      if (rev) parts.push('<span class="nsx-st nsx-st-rev nsx-st-' + esc(ai.getAttribute("data-trace-review") || "") + '">' + esc(rev.textContent.trim()) + "</span>");
+      var asof = v.getAttribute && v.getAttribute("data-asof-release");
+      if (asof) parts.push('<span class="nsx-st">' + esc(asof) + "</span>");
+      function st(k, n) { if (n) parts.push('<span class="nsx-st">' + esc(labels[k] || "") + " <b>" + n + "</b></span>"); }
+      st("secs", ai.querySelectorAll("h4").length);
+      if (nw) parts.push('<span class="nsx-st">' + esc(labels.read || "") + " <b>≈" + Math.max(1, Math.round(nw / 200)) + " min</b></span>");
+      st("refs", Object.keys(refs).length);
+      st("diag", ai.querySelectorAll(".diagram").length);
+      return parts.join("");
+    }
+
+    // ---- Kennzahlen des User Guide in seiner Titelzeile
+    function guideStats() {
+      if (!guideFold) return;
+      var sm = guideFold.querySelector("summary"), box = sm.querySelector(".nsx-stats");
+      if (!box) {
+        box = document.createElement("span");
+        box.className = "nsx-stats";
+        sm.insertBefore(box, sm.querySelector(".nsx-hbtn"));
+      }
+      box.innerHTML = statsHtml(guideFold);
+      if (typeof fillTab === "function" && guideFold.classList.contains("nsx-tdocked")) fillTab(guideFold);
+    }
+
+    // ---- Andocken von User Guide und Themenkarte in die Titelleiste
+    // Griff auf die Titelleiste ziehen: Der Fold wird dort zum Reiter, der ihn als
+    // Panel unter der Leiste aufklappt. Reiter zurück in die Mitte ziehen (oder der
+    // Knopf im Panel, Pfeil-ab am Reiter) löst ihn wieder. Tastatur: Pfeil-auf am
+    // Griff des obersten Folds dockt an.
+    var tdock = null, popFold = null;
+    function canTitleDock(f) { return !!(title && f && /^(guide|map|uml)$/.test(f.getAttribute("data-fold") || "")); }
+    function foldLabel(f) {
+      var h = f.querySelector("summary > h2");
+      if (!h) return f.getAttribute("data-fold");
+      var c = h.cloneNode(true);
+      c.querySelectorAll(".ai-badge").forEach(function (x) { x.remove(); });
+      return c.textContent.trim();
+    }
+    if (title) {
+      tdock = document.createElement("span");
+      tdock.className = "nsx-tdock";
+      title.appendChild(tdock);
+    }
+    var isCls = root.classList.contains("nsx-cls");
+    var tdockKey = TDOCK_KEY + (isCls ? "-cls" : "");
+    function saveTitleDock() {
+      var keys = tdock ? Array.prototype.filter.call(tdock.children, function (b) { return !b.hidden; })
+        .map(function (b) { return b.getAttribute("data-fold"); }) : [];
+      save(tdockKey, keys.join(","));          // auch leer speichern: sonst gälte wieder die Vorgabe
+    }
+    // Das Panel hängt bündig unter seinem Reiter; der Reiter ist sein Titel
+    function placePop() {
+      if (!popFold) return;
+      var b = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
+      if (!b) return;
+      var t = b.getBoundingClientRect(), c = folds.getBoundingClientRect();
+      var rtl = getComputedStyle(root).direction === "rtl";
+      var avail = rtl ? t.right - 12 : innerWidth - t.left - 12;
+      var w = Math.max(t.width, Math.min(Math.max(c.width, 480), avail));
+      popFold.style.top = t.bottom - 1 + "px";
+      popFold.style.left = (rtl ? t.right - w : t.left) + "px";
+      popFold.style.width = w + "px";
+      popFold.style.setProperty("--nsx-tabw", t.width + "px");
+    }
+    function setPop(f) {
+      if (popFold && popFold !== f) {
+        popFold.classList.remove("nsx-pop");
+        ["top", "left", "width"].forEach(function (k) { popFold.style[k] = ""; });
+        var ob = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
+        if (ob) ob.setAttribute("aria-expanded", "false");
+      }
+      popFold = f;
+      if (!f) return;
+      f.classList.add("nsx-pop");
+      f.open = true;
+      placePop();
+      var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+      if (b) b.setAttribute("aria-expanded", "true");
+      if (selected) drawArrows(selected);
+    }
+    // Der Reiter zeigt dieselbe Zeile wie der Fold in der Mitte: Griff, Titel samt
+    // Badge und Kennzahlen (ohne Knöpfe)
+    function fillTab(f) {
+      var b = tdock && tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+      if (!b) return;
+      var c = f.querySelector("summary").cloneNode(true);
+      c.querySelectorAll(".nsx-hbtn, .nsx-canon-link").forEach(function (x) { x.remove(); });
+      c.querySelectorAll("[role], [tabindex], [id]").forEach(function (x) { x.removeAttribute("role"); x.removeAttribute("tabindex"); x.removeAttribute("id"); });
+      var g = c.querySelector(".nsx-grip");
+      if (g) { g.removeAttribute("title"); g.removeAttribute("aria-label"); g.setAttribute("aria-hidden", "true"); }
+      var h = c.querySelector("h2");
+      if (h) {
+        var hs = document.createElement("span");
+        hs.className = "nsx-tab-h";
+        hs.innerHTML = h.innerHTML;
+        h.replaceWith(hs);
+      }
+      b.innerHTML = c.innerHTML;
+    }
+    function dockTitle(f) {
+      if (!canTitleDock(f) || f.classList.contains("nsx-tdocked")) return;
+      var key = f.getAttribute("data-fold");
+      var old = tdock.querySelector('[data-fold="' + key + '"]');
+      if (old) {
+        // Reiter aus einer abgebrochenen Ziehvorschau wieder zeigen
+        old.hidden = false;
+        f.classList.add("nsx-tdocked");
+        f.classList.remove("nsx-dragging");
+        updateEmpty();
+        return;
+      }
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "nsx-tab";
+      b.draggable = true;
+      b.setAttribute("data-fold", key);
+      b.setAttribute("aria-expanded", "false");
+      b.title = labels.tundock || "";
+      tdock.appendChild(b);
+      fillTab(f);
+      f.classList.add("nsx-tdocked");
+      saveTitleDock();
+      updateEmpty();
+    }
+    // preview: während des Ziehens nur in der Mitte zeigen; der Reiter bleibt (versteckt)
+    // im DOM, damit dragend an ihm ankommt
+    function undockTitle(f, before, preview) {
+      if (!f || !f.classList.contains("nsx-tdocked")) return;
+      if (popFold === f) setPop(null);
+      f.classList.remove("nsx-tdocked");
+      var b = tdock.querySelector('[data-fold="' + f.getAttribute("data-fold") + '"]');
+      if (b) { if (preview) b.hidden = true; else b.remove(); }
+      if (before !== undefined) folds.insertBefore(f, before);
+      if (preview) { updateEmpty(); return; }
+      saveTitleDock();
+      updateEmpty();
+      saveOrder();
+      if (selected) drawArrows(selected);
+    }
+    // Ist die Mitte leer (alles angedockt, nichts ausgewählt), steht dort der Hinweis
+    var emptyHint = detBody && detBody.querySelector(".nsx-hint");
+    if (emptyHint) folds.setAttribute("data-empty", emptyHint.textContent.trim());
+    function updateEmpty() { folds.classList.toggle("nsx-empty", !foldList().some(function (f) { return !f.hidden && !f.classList.contains("nsx-tdocked"); })); }
+    function foldByKey(k) { return folds.querySelector('details[data-fold="' + k + '"]'); }
+    if (tdock) {
+      tdock.addEventListener("click", function (ev) {
+        var b = ev.target.closest(".nsx-tab");
+        if (!b) return;
+        var f = foldByKey(b.getAttribute("data-fold"));
+        setPop(popFold === f ? null : f);
+      });
+      tdock.addEventListener("keydown", function (ev) {
+        var b = ev.target.closest(".nsx-tab");
+        if (!b) return;
+        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+          ev.preventDefault();
+          var fwd = (ev.key === "ArrowRight") !== (getComputedStyle(root).direction === "rtl");
+          if (fwd && b.nextElementSibling) tdock.insertBefore(b.nextElementSibling, b);
+          else if (!fwd && b.previousElementSibling) tdock.insertBefore(b, b.previousElementSibling);
+          b.focus();
+          saveTitleDock();
+          return;
+        }
+        if (ev.key !== "ArrowDown") return;
+        ev.preventDefault();
+        undockTitle(foldByKey(b.getAttribute("data-fold")), folds.firstChild);
+      });
+      // Reiter zurück in die Mitte ziehen
+      tdock.addEventListener("dragstart", function (ev) {
+        var b = ev.target.closest && ev.target.closest(".nsx-tab");
+        if (!b) return;
+        dragging = foldByKey(b.getAttribute("data-fold"));
+        dragging._fromTitle = true;
+        dragging._dropped = false;
+        setPop(null);
+        ev.dataTransfer.effectAllowed = "move";
+        try { ev.dataTransfer.setData("text/plain", b.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
+      });
+      // Fold auf die Titelleiste ziehen
+      title.addEventListener("dragover", function (ev) {
+        if (!dragging || !canTitleDock(dragging)) return;
+        if (dragging._fromTitle) {
+          // Zurück über der Leiste: Vorschau sofort wieder andocken; über einem anderen
+          // Reiter wird umsortiert
+          ev.preventDefault();
+          if (!dragging.classList.contains("nsx-tdocked")) dockTitle(dragging);
+          var me = tdock.querySelector('[data-fold="' + dragging.getAttribute("data-fold") + '"]');
+          var over = ev.target.closest && ev.target.closest(".nsx-tab");
+          if (me && over && over !== me) {
+            var r = over.getBoundingClientRect(), rtl = getComputedStyle(root).direction === "rtl";
+            var after = rtl ? ev.clientX < r.left + r.width / 2 : ev.clientX > r.left + r.width / 2;
+            tdock.insertBefore(me, after ? over.nextSibling : over);
+          }
+          return;
+        }
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+        title.classList.add("nsx-drop-over");
+      });
+      title.addEventListener("dragleave", function (ev) { if (!title.contains(ev.relatedTarget)) title.classList.remove("nsx-drop-over"); });
+      title.addEventListener("drop", function (ev) {
+        if (dragging && dragging._fromTitle) { ev.preventDefault(); dragging._dropped = false; return; }
+        if (!dragging || !canTitleDock(dragging)) return;
+        ev.preventDefault();
+        dragging._dropped = true;
+        dockTitle(dragging);
+      });
+      document.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && popFold) setPop(null); });
+      document.addEventListener("click", function (ev) {
+        if (popFold && !popFold.contains(ev.target) && !tdock.contains(ev.target)) setPop(null);
+      });
+      window.addEventListener("scroll", placePop, { passive: true });
+      window.addEventListener("resize", placePop);
+    }
+    function addButton(f, cls, html, label) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "nsx-hbtn " + cls;
+      b.innerHTML = html;
+      b.title = label || "";
+      b.setAttribute("aria-label", label || "");
+      f.querySelector("summary").appendChild(b);
+      return b;
+    }
+    foldList().forEach(function (f) { if (canTitleDock(f)) addButton(f, "nsx-backbtn", ICON_DOCK, labels.tundock); });
+    guideStats();
+    window.addEventListener("hashchange", guideStats);
+
+    // ---- Gruppierung der Gliederung
+    function setBy(mode) {
+      var btn = outline.querySelector('.nsx-by button[data-by="' + mode + '"]');
+      if (!btn) return false;
+      outline.querySelectorAll(".nsx-by button").forEach(function (b) { b.setAttribute("aria-pressed", String(b === btn)); });
+      outline.querySelectorAll(".nsx-ol").forEach(function (o) { o.hidden = o.getAttribute("data-by") !== mode; });
+      revealSelected();
+      return true;
+    }
+    setBy(load(BY_KEY) || "");
+
+    // ---- Inspektorbreite
+    var split = aside && aside.querySelector(".nsx-split");
+    function setW(w) {
+      w = Math.round(Math.max(220, Math.min(w, root.clientWidth * 0.55)));
+      root.style.setProperty("--nsx-aside-w", w + "px");
+      split.setAttribute("aria-valuenow", String(w));
+      return w;
+    }
+    if (split) {
+      split.setAttribute("title", labels.split || "");
+      split.setAttribute("aria-label", labels.split || "");
+      split.setAttribute("aria-valuemin", "220");
+      var w0 = parseInt(load(W_KEY), 10);
+      if (w0) setW(w0);
+      var rtl = getComputedStyle(root).direction === "rtl";
+      split.addEventListener("pointerdown", function (ev) {
+        ev.preventDefault();
+        split.setPointerCapture(ev.pointerId);
+        root.classList.add("nsx-resizing");
+        function move(e) {
+          var r = aside.getBoundingClientRect();
+          setW(rtl ? e.clientX - r.left : r.right - e.clientX);
+        }
+        function up() {
+          split.removeEventListener("pointermove", move);
+          split.removeEventListener("pointerup", up);
+          root.classList.remove("nsx-resizing");
+          save(W_KEY, String(aside.getBoundingClientRect().width | 0));
+          if (selected) { drawArrows(selected); showRelations(selected); }
+        }
+        split.addEventListener("pointermove", move);
+        split.addEventListener("pointerup", up);
+      });
+      split.addEventListener("keydown", function (ev) {
+        var d = { ArrowLeft: 24, ArrowRight: -24 }[ev.key];
+        if (!d) return;
+        ev.preventDefault();
+        save(W_KEY, String(setW(aside.getBoundingClientRect().width + (rtl ? -d : d))));
+      });
+      split.addEventListener("dblclick", function () { root.style.removeProperty("--nsx-aside-w"); save(W_KEY, null); });
+    }
+
+    // ---- Pfeile über der Karte
+    var overlay = null;
+    if (map) {
+      overlay = svgEl("svg", { "class": "nsx-arrows", "aria-hidden": "true" });
+      var defs = svgEl("defs");
+      var mk = svgEl("marker", { id: "nsx-ah-" + Math.random().toString(36).slice(2), viewBox: "0 0 8 8", refX: "7", refY: "4", markerWidth: "6", markerHeight: "6", orient: "auto-start-reverse" });
+      mk.appendChild(svgEl("path", { d: "M0,0 L8,4 L0,8 z", "class": "nsx-ah" }));
+      defs.appendChild(mk);
+      overlay.appendChild(defs);
+      overlay._marker = mk.id;
+      map.appendChild(overlay);
+    }
+    function edgePoint(r, toward) {
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dx = toward.x - cx, dy = toward.y - cy;
+      if (!dx && !dy) return { x: cx, y: cy };
+      var s = Math.min((r.width / 2) / Math.abs(dx || 1e-9), (r.height / 2) / Math.abs(dy || 1e-9));
+      return { x: cx + dx * s, y: cy + dy * s };
+    }
+    function clearArrows() { if (overlay) overlay.querySelectorAll("path.nsx-edge").forEach(function (p) { p.remove(); }); }
+    function drawArrows(name) {
+      clearArrows();
+      if (!overlay || !chips[name] || !map.offsetParent) return;
+      var base = map.getBoundingClientRect();
+      overlay.setAttribute("width", map.scrollWidth);
+      overlay.setAttribute("height", map.scrollHeight);
+      function rect(n) {
+        var b = chips[n].getBoundingClientRect();
+        return { left: b.left - base.left, top: b.top - base.top, width: b.width, height: b.height };
+      }
+      var edges = [];
+      words(chips[name], "data-out").forEach(function (t) { if (chips[t]) edges.push([name, t]); });
+      words(chips[name], "data-in").forEach(function (s) { if (chips[s]) edges.push([s, name]); });
+      edges.slice(0, 60).forEach(function (e) {
+        var a = rect(e[0]), b = rect(e[1]);
+        var ac = { x: a.left + a.width / 2, y: a.top + a.height / 2 }, bc = { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+        var p1 = edgePoint(a, bc), p2 = edgePoint(b, ac);
+        var mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        var dx = p2.x - p1.x, dy = p2.y - p1.y, len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var bend = Math.min(28, len / 4);
+        overlay.appendChild(svgEl("path", {
+          "class": "nsx-edge" + (e[0] === name ? " out" : " in"),
+          d: "M" + p1.x.toFixed(1) + "," + p1.y.toFixed(1) + " Q" + (mx - dy / len * bend).toFixed(1) + "," + (my + dx / len * bend).toFixed(1) + " " + p2.x.toFixed(1) + "," + p2.y.toFixed(1),
+          "marker-end": "url(#" + overlay._marker + ")"
+        }));
+      });
+    }
+
+    // ---- Hervorheben in der Karte
+    function highlight(name) {
+      if (!map) return;
+      var rel = words(rows[name], "data-out").concat(words(rows[name], "data-in"));
+      map.classList.add("dim");
+      Object.keys(chips).forEach(function (n) {
+        chips[n].classList.toggle("self", n === name);
+        chips[n].classList.toggle("rel", rel.indexOf(n) >= 0);
+      });
+      drawArrows(name);
+    }
+    function unhighlight() {
+      if (!map) return;
+      map.classList.remove("dim");
+      Object.keys(chips).forEach(function (n) { chips[n].classList.remove("self", "rel"); });
+      clearArrows();
+    }
+    function restore() { if (selected) highlight(selected); else unhighlight(); }
+
+    // ---- Vererbungsdiagramm
+    function bases(n) { return rows[n] ? words(rows[n], "data-base") : []; }
+    // Ebenen mit drei oder mehr Klassen (oder zu breit für die Spalte) werden als
+    // Baum untereinander gezeichnet, sofern die Nachbarebene zur Auswahl hin nur
+    // einen Knoten hat; sonst nebeneinander mit waagrechtem Scrollen.
+    function inheritanceSvg(name, avail) {
+      var up = [], seen = {}, level = bases(name);
+      seen[name] = 1;
+      for (var d = 0; d < 5 && level.length; d++) {
+        level = level.filter(function (x) { return !seen[x]; });
+        level.forEach(function (x) { seen[x] = 1; });
+        if (!level.length) break;
+        up.unshift(level);
+        var next = [];
+        level.forEach(function (x) { bases(x).forEach(function (y) { if (next.indexOf(y) < 0) next.push(y); }); });
+        level = next;
+      }
+      var down = rows[name] ? words(rows[name], "data-derived") : [];
+      if (!up.length && !down.length) return null;
+      var layers = up.concat([[name]]).concat(down.length ? [down] : []);
+      var selfIdx = up.length;
+      var CH = 6.6, H = 20, HG = 8, VG = 26, SG = 6, IND = 18, PAD = 4, pos = {};
+      function bw(n) { return n.length * CH + 12; }
+      function lw(layer) { return layer.reduce(function (s, n) { return s + bw(n); }, 0) + HG * (layer.length - 1); }
+      var stacked = layers.map(function (layer, li) {
+        if (li === selfIdx || layer.length < 2) return false;
+        var anchor = layers[li < selfIdx ? li + 1 : li - 1];
+        return anchor.length === 1 && (layer.length >= 3 || lw(layer) + 2 * PAD > avail);
+      });
+      var anyStack = stacked.some(Boolean);
+      var width = 0;
+      layers.forEach(function (layer, li) {
+        width = Math.max(width, stacked[li] ? IND + Math.max.apply(null, layer.map(bw)) : lw(layer));
+      });
+      width += 2 * PAD;
+      // senkrechte Lage: gestapelte Ebenen über der Auswahl in umgekehrter Folge
+      var y = PAD, tops = [];
+      layers.forEach(function (layer, li) {
+        tops[li] = y;
+        y += (stacked[li] ? layer.length * (H + SG) - SG : H) + VG;
+      });
+      var height = y - VG + PAD;
+      layers.forEach(function (layer, li) {
+        if (stacked[li]) {
+          layer.forEach(function (n, k) { pos[n] = { x: PAD + IND, y: tops[li] + k * (H + SG), w: bw(n) }; });
+        } else {
+          var x = anyStack ? PAD : (width - lw(layer)) / 2;
+          layer.forEach(function (n) { pos[n] = { x: x, y: tops[li], w: bw(n) }; x += bw(n) + HG; });
+        }
+      });
+      var svg = svgEl("svg", { "class": "nsx-inhsvg", width: Math.ceil(width), height: Math.ceil(height), role: "img" });
+      var defs = svgEl("defs");
+      var tri = svgEl("marker", { id: "nsx-tri-" + Math.random().toString(36).slice(2), viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "9", markerHeight: "9", orient: "auto" });
+      tri.appendChild(svgEl("path", { d: "M0,0 L10,5 L0,10 z", "class": "nsx-tri" }));
+      defs.appendChild(tri);
+      svg.appendChild(defs);
+      function path(d, arrow) {
+        var a = { "class": "nsx-inh-edge", d: d };
+        if (arrow) a["marker-end"] = "url(#" + tri.id + ")";
+        svg.appendChild(svgEl("path", a));
+      }
+      var drawn = {};
+      layers.forEach(function (layer, li) {
+        if (!stacked[li]) return;
+        var anchor = layers[li < selfIdx ? li + 1 : li - 1][0], A = pos[anchor];
+        var tx = PAD + IND / 2;
+        if (li > selfIdx) {
+          // Ableitungen: gemeinsamer Stamm mit einem Pfeil zur Basis
+          var last = pos[layer[layer.length - 1]];
+          layer.forEach(function (n) { path("M" + pos[n].x + "," + (pos[n].y + H / 2) + " H" + tx, false); drawn[n + ">" + anchor] = 1; });
+          path("M" + tx + "," + (last.y + H / 2) + " V" + (A.y + H + 1), false);
+          path("M" + tx + "," + (A.y + H + 12) + " V" + (A.y + H), true);
+        } else {
+          // Basisklassen: Stamm vom Kind nach oben, Pfeil an jede Basis
+          var first = pos[layer[0]];
+          path("M" + tx + "," + A.y + " V" + (first.y + H / 2), false);
+          layer.forEach(function (n) { path("M" + tx + "," + (pos[n].y + H / 2) + " H" + pos[n].x, true); drawn[anchor + ">" + n] = 1; });
+        }
+      });
+      function edge(child, parent) {
+        var c = pos[child], p = pos[parent];
+        if (!c || !p || drawn[child + ">" + parent]) return;
+        path("M" + (c.x + c.w / 2) + "," + c.y + " L" + (p.x + p.w / 2) + "," + (p.y + H), true);
+      }
+      Object.keys(pos).forEach(function (n) { bases(n).forEach(function (b) { edge(n, b); }); });
+      down.forEach(function (d) { edge(d, name); });
+      Object.keys(pos).forEach(function (n) {
+        var p = pos[n], g = svgEl("g", { "class": "nsx-inh-node" + (n === name ? " self" : "") + (rows[n] ? "" : " ext") });
+        g.appendChild(svgEl("rect", { x: p.x, y: p.y, width: p.w, height: H, rx: 4 }));
+        var t = svgEl("text", { x: p.x + p.w / 2, y: p.y + 14, "text-anchor": "middle" });
+        t.textContent = n;
+        g.appendChild(t);
+        if (rows[n]) { g.setAttribute("data-jump", n); g.setAttribute("tabindex", "0"); }
+        svg.appendChild(g);
+      });
+      return svg;
+    }
+
+    // ---- Inspektor: allgemeine Angaben, Übersichten und Bezüge des Eintrags
+    // Verweise auf Einträge dieses Namespace wählen aus und heben beim Überfahren
+    // hervor; Klassen anderer Namespaces tragen ihr Paket.
+    function decorate(box) {
+      box.querySelectorAll("a[href]").forEach(function (a) {
+        if (a.hasAttribute("data-jump") || a.hasAttribute("data-n")) return;
+        var href = a.getAttribute("href");
+        if (href.indexOf("#nsx-c-") === 0) return;
+        var u;
+        try { u = new URL(href, location.href); } catch (e) { return; }
+        if (u.pathname === location.pathname && u.hash) {
+          var id = decodeURIComponent(u.hash.slice(1));
+          if (recOwner[id]) { a.setAttribute("href", "#" + id); a.setAttribute("data-n", recOwner[id]); }
+          return;
+        }
+        var n = byPath[u.pathname];
+        if (n) { a.setAttribute("data-jump", n); a.setAttribute("href", "#" + rows[n].id); return; }
+        var m = /\/(cl_[A-Za-z0-9_]+)\.html$/.exec(u.pathname);
+        if (m && ext[m[1]]) { a.classList.add("nsx-ext"); a.title = ext[m[1]]; }
+      });
+    }
+    function fnSig(name, ctx) {
+      var c = fnIndex[name] || [];
+      var re = new RegExp("\\b" + ctx.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b");
+      return c.filter(function (x) { return re.test(x.code.textContent); })[0] || c[0] || null;
+    }
+    function relItems(names, ctx) {
+      return names.map(function (n) {
+        if (rows[n]) return '<li><a href="#' + rows[n].id + '" data-jump="' + esc(n) + '">' + esc(n) + "</a></li>";
+        var f = fnSig(n, ctx);
+        if (f) return '<li class="nsx-ifn"><a class="nsx-fname" href="#' + esc(f.id) + '">' + esc(n) + '</a><code class="nsx-isig">' + f.code.innerHTML + "</code></li>";
+        return "<li>" + esc(n) + "</li>";
+      });
+    }
+    var pageCache = {}, insTimer = 0;
+    // Lange Abschnitte sind einklappbar; der Zustand gilt je Überschrift für die ganze Sitzung
+    var secOpen = {};
+    function section(title, n) {
+      var head = "<h4>" + esc(title || "") + (n ? ' <span class="nsx-cnt">' + n + "</span>" : "") + "</h4>";
+      var sct;
+      if (n > 8) {
+        sct = document.createElement("details");
+        sct.className = "nsx-is";
+        sct.open = secOpen[title] === true;
+        sct.innerHTML = "<summary>" + head + "</summary>";
+        sct.addEventListener("toggle", function () { secOpen[title] = sct.open; });
+      } else {
+        sct = document.createElement("section");
+        sct.className = "nsx-is";
+        sct.innerHTML = head;
+      }
+      relBox.appendChild(sct);
+      return sct;
+    }
+    function renderInspector(name, main) {
+      var r = rows[name], kindEl = r.querySelector(".nsx-nm > .kind"), isClass = r.getAttribute("data-kind") === "class";
+      relBox.setAttribute("data-owner", name);
+      relBox.hidden = false;
+      if (hint) hint.hidden = true;
+      relBox.innerHTML = '<div class="t"><a href="#' + r.id + '" data-jump="' + esc(name) + '">' + esc(name) + '</a></div><div class="k">' + esc(kindEl ? kindEl.textContent : "") + "</div>";
+      var dropped = words(r, "data-dropped");
+      if (dropped.length) relBox.insertAdjacentHTML("beforeend", '<p class="nsx-dropnote">' + esc(labels.dropped || "") + " " + esc(dropped[0]) + "</p>");
+      // Klassenhierarchie zuoberst
+      var svg = isClass && inheritanceSvg(name, relBox.clientWidth || (aside ? aside.clientWidth - 24 : 260));
+      if (svg) {
+        var wrap = document.createElement("div");
+        wrap.className = "nsx-inhwrap";
+        wrap.appendChild(svg);
+        section(labels.inh).appendChild(wrap);
+      }
+      var recs = words(r, "data-recs").map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      // Beschreibung
+      var desc = main ? main.querySelector(":scope > .desc") : (recs[0] && recs[0].querySelector(".desc"));
+      if (!desc) desc = r.querySelector(".nsx-desc");
+      if (desc) {
+        var d = desc.cloneNode(true);
+        d.removeAttribute("id");
+        d.className = "nsx-idesc";
+        relBox.appendChild(d);
+      }
+      // Signatur (Funktionen, Typen, Enumerationen)
+      if (!isClass) {
+        var sigs = recs.map(function (rec) { return rec.querySelector("pre.syntax"); }).filter(Boolean);
+        if (sigs.length) {
+          var ss = section(labels.sig, sigs.length > 1 ? sigs.length : 0);
+          sigs.forEach(function (sg) { var c = sg.cloneNode(true); c.removeAttribute("id"); c.className = "nsx-isig"; ss.appendChild(c); });
+        }
+      }
+      // Allgemeine Angaben
+      var props = main ? main.querySelector(":scope > table.props") : (recs.length === 1 && recs[0].querySelector("table.props"));
+      if (props) { var pc = props.cloneNode(true); pc.className = "nsx-iprops"; section(labels.gen).appendChild(pc); }
+      if (r.getAttribute("data-kind") === "enumeration" && recs.length === 1) {
+        var vals = Array.prototype.map.call(recs[0].querySelectorAll("table.params tr td:first-child"), function (td) { return td.textContent.trim(); })
+          .filter(function (v) { return v && v.indexOf("=") < 0; });
+        if (vals.length) section(labels.vals, vals.length).insertAdjacentHTML("beforeend", '<ul class="nsx-ilist nsx-icols">' + vals.map(function (v) { return "<li><code>" + esc(v) + "</code></li>"; }).join("") + "</ul>");
+      }
+      // Methoden-, Typ- und Enum-Übersichten der Klassenseite
+      if (main) Array.prototype.forEach.call(main.querySelectorAll(":scope > h3"), function (h) {
+        var ul = h.nextElementSibling;
+        if (!ul || !ul.matches("ul.mlist")) return;
+        var c = ul.cloneNode(true);
+        c.className = "nsx-ilist";
+        section(h.textContent.trim(), c.children.length).appendChild(c);
+      });
+      // Nicht-Member-Funktionen der Klasse
+      var own = words(r, "data-fns").length ? r.querySelectorAll(".nsx-sig") : [];
+      if (own.length) {
+        var fl = document.createElement("ul");
+        fl.className = "nsx-ilist";
+        own.forEach(function (sg) {
+          var code = sg.querySelector("code"), go = sg.querySelector("a.nsx-go");
+          var fm = code && /(operator\s*[^\s(]+|[A-Za-z_~][\w:]*)\s*\(/.exec(code.textContent);
+          var fname = fm ? fm[1].replace(/\s+/g, "").split("::").pop() : go && go.textContent;
+          if (code && go) fl.insertAdjacentHTML("beforeend", '<li class="nsx-ifn"><a class="nsx-fname" href="' + esc(go.getAttribute("href")) + '">' + esc(fname) + '</a><code class="nsx-isig">' + code.innerHTML + "</code></li>");
+        });
+        section(labels.fns, own.length).appendChild(fl);
+      }
+      // Bezüge: Verwendet (auch Klassen anderer Pakete), Verwendet von, Kommt vor in
+      var out = relItems(words(r, "data-out"), name), seen = {};
+      words(r, "data-out").forEach(function (n) { seen[n] = 1; });
+      if (main) main.querySelectorAll("a[href]").forEach(function (a) {
+        var m = /\/(cl_[A-Za-z0-9_]+)\.html(?:#|$)/.exec(a.getAttribute("href"));
+        var n = a.textContent.trim();
+        if (!m || !ext[m[1]] || seen[n]) return;
+        seen[n] = 1;
+        out.push('<li><a href="' + esc(a.getAttribute("href").split("#")[0]) + '" class="nsx-ext">' + esc(n) + '</a> <span class="nsx-pkg">' + esc(ext[m[1]]) + "</span></li>");
+      });
+      [["out", out], ["in", relItems(words(r, "data-in"), name)], ["uses", isClass ? [] : relItems(words(r, "data-uses"), name)]].forEach(function (x) {
+        if (x[1].length) section(labels[x[0]], x[1].length).insertAdjacentHTML("beforeend", "<ul>" + x[1].join("") + "</ul>");
+      });
+      if (relBox.children.length <= 2) relBox.insertAdjacentHTML("beforeend", '<p class="nsx-hint">' + esc(labels.none || "") + "</p>");
+      decorate(relBox);
+    }
+    function showRelations(name) {
+      var r = rows[name];
+      if (!r || !relBox) return;
+      var href = r.getAttribute("data-kind") === "class" && r.getAttribute("data-href");
+      renderInspector(name, href && pageCache[href] || null);
+      clearTimeout(insTimer);
+      if (href && !pageCache[href]) {
+        insTimer = setTimeout(function () {
+          classPage(href).then(function (main) {
+            pageCache[href] = main;
+            if (relBox.getAttribute("data-owner") === name && !relBox.hidden) renderInspector(name, main);
+          }, function () { /* Inspektor bleibt bei den Angaben der Übersicht */ });
+        }, name === selected ? 0 : 250);
+      }
+    }
+
+    // ---- Detailansicht: kanonische Darstellung des ausgewählten Elements
+    var moved = [], token = 0, pages = {};
+    function restoreMoved() {
+      moved.forEach(function (m) { m.ph.parentNode.insertBefore(m.el, m.ph); m.ph.parentNode.removeChild(m.ph); });
+      moved = [];
+    }
+    function borrow(id, into) {
+      var el = document.getElementById(id);
+      if (!el || detBody.contains(el)) return null;
+      var ph = document.createComment("nsx");
+      el.parentNode.insertBefore(ph, el);
+      into.appendChild(el);
+      moved.push({ el: el, ph: ph });
+      return el;
+    }
+    // Klassenseiten im neuen Layout (cls-index) erscheinen in der Detailansicht flach,
+    // wie die kanonische Klassenseite ohne Skript: Übersicht je Mitgliedsart,
+    // Klassendiagramm und Dokumentation, ohne Gliederung, Folds und Inspektor.
+    function flattenClassIndex(main) {
+      var sec = main.querySelector("section.nsx");
+      if (!sec) return;
+      var doc = main.ownerDocument, frag = doc.createDocumentFragment();
+      var rowsBy = {};
+      sec.querySelectorAll(".nsx-row").forEach(function (r) { rowsBy[r.getAttribute("data-n")] = r; });
+      var ol = sec.querySelector('.nsx-ol[data-by="kind"]');
+      var title = null, ul = null;
+      if (ol) Array.prototype.forEach.call(ol.children, function (x) {
+        if (x.matches(".nsx-og")) {
+          title = doc.createElement("h3");
+          title.textContent = x.textContent.trim();
+          ul = doc.createElement("ul");
+          ul.className = "mlist";
+          frag.appendChild(title);
+          frag.appendChild(ul);
+        } else if (ul && x.matches("a.nsx-oi")) {
+          var r = rowsBy[x.getAttribute("data-n")];
+          if (!r) return;
+          var d = r.querySelector(".nsx-desc");
+          var sigs = r.getAttribute("data-kind") === "class" ? [] : r.querySelectorAll(".nsx-sig code");
+          var li = doc.createElement("li");
+          if (sigs.length) sigs.forEach(function (c, i) {
+            var code = doc.createElement("code");
+            code.className = "sig";
+            code.innerHTML = c.innerHTML;
+            if (i) li.appendChild(doc.createElement("br"));
+            li.appendChild(code);
+          });
+          else li.innerHTML = '<a href="' + esc(r.getAttribute("data-href") || "") + '"><code>' + esc(r.getAttribute("data-n")) + "</code></a>";
+          if (d) li.insertAdjacentHTML("beforeend", ' <span class="dim">' + d.innerHTML + "</span>");
+          ul.appendChild(li);
+        }
+      });
+      var uml = sec.querySelector('.nsx-fold[data-fold="uml"]');
+      if (uml) {
+        var h = doc.createElement("h2");
+        h.className = "sect";
+        h.textContent = uml.querySelector("summary h2").textContent.trim();
+        frag.appendChild(h);
+        Array.prototype.slice.call(uml.children, 1).forEach(function (c) { frag.appendChild(c); });
+      }
+      sec.parentNode.replaceChild(frag, sec);
+      main.querySelectorAll("details.nsx-doc").forEach(function (dd) {
+        var f2 = doc.createDocumentFragment(), kids = Array.prototype.slice.call(dd.childNodes);
+        kids.forEach(function (k) {
+          if (k.nodeType === 1 && k.tagName === "SUMMARY") Array.prototype.slice.call(k.childNodes).forEach(function (c) { f2.appendChild(c); });
+          else f2.appendChild(k);
+        });
+        dd.parentNode.replaceChild(f2, dd);
+      });
+    }
+    function classPage(href) {
+      if (pages[href]) return pages[href];
+      var url = new URL(href, location.href);
+      var p = (location.protocol === "file:" || !window.fetch ? Promise.reject(new Error("file")) :
+        fetch(url.href).then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })).then(function (t) {
+        var main = new DOMParser().parseFromString(t, "text/html").querySelector("main");
+        if (!main) throw new Error("main");
+        flattenClassIndex(main);
+        main.querySelectorAll("script").forEach(function (s) { s.remove(); });
+        // Kurations-Dialoge behalten ihre IDs: „Kuratieren“ findet sie über data-dossier-target
+        function inDialog(e) { return !!e.closest("dialog.dossier-modal"); }
+        main.querySelectorAll("[id]").forEach(function (e) { if (!inDialog(e)) e.id = "nsx-c-" + e.id; });
+        ["aria-labelledby", "aria-controls", "aria-describedby", "for"].forEach(function (a) {
+          main.querySelectorAll("[" + a + "]").forEach(function (e) {
+            if (inDialog(e)) return;
+            e.setAttribute(a, e.getAttribute(a).split(" ").map(function (x) { return "nsx-c-" + x; }).join(" "));
+          });
+        });
+        main.querySelectorAll("[href]").forEach(function (a) {
+          var v = a.getAttribute("href");
+          if (v.charAt(0) === "#") { if (v.length > 1) a.setAttribute("href", "#nsx-c-" + v.slice(1)); }
+          else a.setAttribute("href", new URL(v, url).href);
+        });
+        main.querySelectorAll("[src]").forEach(function (e) { e.setAttribute("src", new URL(e.getAttribute("src"), url).href); });
+        return main;
+      });
+      pages[href] = p;
+      p.catch(function () { delete pages[href]; });
+      return p;
+    }
+    // ---- Scrollverhalten
+    // Eine Auswahl lässt stehen, was der Leser gerade sieht (der angeklickte Eintrag
+    // bleibt unter der Maus). Gescrollt wird nur, wenn die Detailansicht nicht im
+    // Blick ist, dann in einer Bewegung an den oberen Rand unter der Titelleiste.
+    // Gliederung und Inspektor holen zusätzlich den Anfang der Detailansicht, wenn
+    // ihr Kopf gerade über dem Fenster liegt (der gelesene Inhalt wird ersetzt).
+    var anchorEl = null;
+    function keepAnchor(fn) {
+      var a = anchorEl, y = a && a.isConnected && a.getClientRects().length ? a.getBoundingClientRect().top : null;
+      fn();
+      if (y === null || !a.isConnected || !a.getClientRects().length) return;
+      var d = a.getBoundingClientRect().top - y;
+      if (Math.abs(d) >= 1) window.scrollBy(0, d);
+    }
+    function docked(f) { return !f.hidden && !f.classList.contains("nsx-tdocked"); }
+    function firstVisibleFold() {
+      return foldList().filter(function (f) { return docked(f) && f.getBoundingClientRect().bottom > navTop(); })[0] || null;
+    }
+    function detailVisible() {
+      if (!detFold || detFold.hidden) return false;
+      // sichtbar heißt: ein lesbarer Teil, nicht nur die Kopfzeile am Fensterrand
+      var b = detFold.getBoundingClientRect();
+      var seen = Math.min(b.bottom, innerHeight) - Math.max(b.top, navTop());
+      return seen >= Math.min(200, b.height * 0.5);
+    }
+    function headerAbove() { return detFold.getBoundingClientRect().top < pinH() - 2; }
+    function toDetail() {
+      if (!detFold || detFold.hidden) return;
+      detFold.open = true;
+      if (Math.abs(detFold.getBoundingClientRect().top - pinH()) > 2) detFold.scrollIntoView({ block: "start", behavior: behavior });
+    }
+    function openTo(el) {
+      for (var p = el.parentElement; p && p !== detBody; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;
+      el.scrollIntoView({ block: "start", behavior: behavior });
+    }
+    // Titelzeile der Detailansicht: Art (in API-Farbe), voll qualifizierter Name als Link
+    // auf die kanonische Sicht (Klassen- bzw. Record-Seite), eigene SWS-ID; kein Upstream.
+    function setTitle(name, info) {
+      if (!detTitle) return;
+      var r = rows[name];
+      info = info || {};
+      var k = info.kind || (r.querySelector(".nsx-nm > .kind") || {}).textContent || "";
+      var href = info.href || "";
+      var qn = info.qname || name;
+      detTitle.innerHTML = (k ? '<span class="kind">' + esc(k.trim()) + "</span> " : "")
+        + (href ? '<a class="nsx-detname" href="' + esc(href) + '">' + esc(qn) + "</a>" : '<span class="nsx-detname">' + esc(qn) + "</span>")
+        + (info.sws ? " " + info.sws : "");
+      var vis = chips[name] && /(?:^|\s)(vis-[a-z]+)/.exec(chips[name].className);
+      detFold.setAttribute("data-vis", vis ? vis[1] : "");
+    }
+    function swsHtml(el) {
+      var sw = el && el.querySelector(".sws");
+      if (!sw) return "";
+      var c = sw.cloneNode(true);
+      c.querySelectorAll("[id]").forEach(function (e) { e.removeAttribute("id"); });
+      return '<span class="sws">' + c.innerHTML + "</span>";
+    }
+    function scopeOf(rec) {
+      var out = "";
+      if (rec) rec.querySelectorAll("table.props tr").forEach(function (tr) {
+        var th = tr.querySelector("th"), td = tr.querySelector("td");
+        if (!out && th && td && /^(Scope|Geltungsbereich)$/i.test(th.textContent.trim())) out = td.textContent.trim().replace(/^\S+\s+/, "");
+      });
+      return out;
+    }
+    // Der Name des Elements in seiner eigenen Signatur wird zum Link auf die kanonische Sicht
+    function linkOwnNames(box) {
+      box.querySelectorAll("article.rec").forEach(function (rec) {
+        var pre = rec.querySelector(":scope > pre.syntax"), rn = rec.querySelector(":scope > .recname");
+        var sw = rn && rn.querySelector(".sws a");
+        if (!pre || !sw || pre.querySelector("a.nsx-fnlink")) return;
+        var c = rn.cloneNode(true);
+        c.querySelectorAll(".kind, .sws, .ups").forEach(function (x) { x.remove(); });
+        var nm = c.textContent.trim().split("::").pop();
+        if (!nm) return;
+        var re = new RegExp("(^|[^\\w~])(" + nm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(\\s*\\()");
+        var walker = document.createTreeWalker(pre, NodeFilter.SHOW_TEXT, null);
+        for (var tn = walker.nextNode(); tn; tn = walker.nextNode()) {
+          if (tn.parentNode.closest("a")) continue;
+          var m = re.exec(tn.nodeValue);
+          if (!m) continue;
+          var after = tn.splitText(m.index + m[1].length);
+          after.splitText(m[2].length);
+          var a = document.createElement("a");
+          a.className = "nsx-fnlink";
+          a.href = sw.getAttribute("href");
+          a.textContent = m[2];
+          after.parentNode.replaceChild(a, after);
+          break;
+        }
+      });
+    }
+    function recordTitle(name, rec) {
+      var rn = rec.querySelector(".recname"), kind = rn && rn.querySelector(".kind");
+      var sw = rn && rn.querySelector(".sws a");
+      var sc = scopeOf(rec);
+      return { kind: kind ? kind.textContent : "", qname: sc ? sc + "::" + name : name,
+               href: sw ? sw.getAttribute("href") : "", sws: swsHtml(rn) };
+    }
+
+    // KI-Text des Elements (User Guide der Klasse, KI-Kommentar eines Records): als Reiter
+    // in der Titelzeile der Detailansicht angedockt; klappt bündig darunter auf.
+    var dTab = null, dPanel = null;
+    function dockDetailAi(src, label, statsRoot) {
+      dPanel = document.createElement("div");
+      dPanel.className = "nsx-detpanel";
+      dPanel.hidden = true;
+      if (src.tagName === "DETAILS") {
+        Array.prototype.slice.call(src.children, 1).forEach(function (c) { dPanel.appendChild(c); });
+        src.remove();
+      } else {
+        var ph = document.createComment("nsx");
+        src.parentNode.insertBefore(ph, src);
+        dPanel.appendChild(src);
+        moved.push({ el: src, ph: ph });
+      }
+      detBody.insertBefore(dPanel, detBody.firstChild);
+      dTab = document.createElement("button");
+      dTab.type = "button";
+      dTab.className = "nsx-tab nsx-dtab";
+      dTab.setAttribute("aria-expanded", "false");
+      dTab.innerHTML = '<span class="nsx-tab-h">' + label + '</span><span class="nsx-stats">' + statsHtml(statsRoot || dPanel) + "</span>";
+      detTitle.parentNode.insertBefore(dTab, detTitle.nextSibling);
+    }
+    function clearDetailAi() {
+      if (dTab) dTab.remove();
+      dTab = dPanel = null;
+      detFold.classList.remove("nsx-dp-open");
+    }
+    function setDetailAi(open) {
+      if (!dTab || !dPanel) return;
+      dPanel.hidden = !open;
+      dTab.setAttribute("aria-expanded", String(open));
+      detFold.classList.toggle("nsx-dp-open", open);
+      if (open) {
+        var t = dTab.getBoundingClientRect(), pr = dPanel.getBoundingClientRect();
+        var rtl = getComputedStyle(root).direction === "rtl";
+        dPanel.style.setProperty("--nsx-tabx", (rtl ? pr.right - t.right : t.left - pr.left) + "px");
+        dPanel.style.setProperty("--nsx-tabw", t.width + "px");
+      }
+    }
+    function showCanonical(name, opts) {
+      if (!detBody) return;
+      var r = rows[name], my = ++token;
+      detBody.style.minHeight = detBody.offsetHeight + "px";
+      restoreMoved();
+      clearDetailAi();
+      detBody.innerHTML = "";
+      setTitle(name, isClassRow(r) ? { href: r.getAttribute("data-href") } : null);
+      detFold.hidden = false;
+      updateEmpty();
+      var isClass = isClassRow(r);
+      if (detLink) detLink.hidden = true;
+      detFold.open = true;
+      var wrap = document.createElement("div");
+      wrap.className = "nsx-canon";
+      detBody.appendChild(wrap);
+      function fallback(msg) {
+        var ds = r.querySelector(".nsx-ds");
+        if (ds) wrap.appendChild(ds.cloneNode(true));
+        if (msg) wrap.insertAdjacentHTML("beforeend", '<p class="nsx-hint">' + esc(msg) + "</p>");
+      }
+      function finish() {
+        var fns = words(r, "data-fns");
+        if (fns.length) {
+          var sec = document.createElement("section");
+          sec.className = "nsx-canon-fns";
+          sec.innerHTML = "<h3>" + esc(labels.fns || "") + " <span class=\"nsx-cnt\">" + fns.length + "</span></h3>";
+          fns.forEach(function (id) { borrow(id, sec); });
+          detBody.appendChild(sec);
+        }
+        var head = wrap.querySelector(":scope > h1");
+        var recs = wrap.querySelectorAll(":scope > article.rec");
+        if (head) {
+          var hk = head.querySelector(".kind"), hc = head.cloneNode(true);
+          if (hc.querySelector(".kind")) hc.querySelector(".kind").remove();
+          var meta = head.nextElementSibling;
+          setTitle(name, { kind: hk ? hk.textContent : "", qname: hc.textContent.trim(), href: r.getAttribute("data-href"),
+                           sws: meta && meta.matches("p.meta") ? swsHtml(meta) : "" });
+          var gf = Array.prototype.filter.call(wrap.querySelectorAll(":scope > details.fold"), function (d) { return d.querySelector(".ai"); })[0];
+          if (gf) {
+            var gh = gf.querySelector("summary h2"), lab = gh ? gh.cloneNode(true) : null;
+            if (lab) lab.querySelectorAll("[id]").forEach(function (e) { e.removeAttribute("id"); });
+            dockDetailAi(gf, lab ? lab.innerHTML : esc(labels.ai || ""), null);
+          }
+        } else if (recs.length) {
+          var ti = recordTitle(name, recs[0]);
+          if (recs.length > 1) ti.sws = "";
+          setTitle(name, ti);
+          var usage = wrap.querySelector("article.rec .ai.usage");
+          if (usage && usage.textContent.trim()) dockDetailAi(usage, esc(labels.ai || ""), null);
+        }
+        linkOwnNames(detBody);
+        detBody.style.minHeight = "";
+      }
+      function done() {
+        if (my !== token) return;
+        if (opts.ai && dPanel) { setDetailAi(true); toDetail(); return; }
+        var target = opts.ai ? detBody.querySelector(".ai") : (opts.anchor && document.getElementById(opts.anchor));
+        if (target && detBody.contains(target)) openTo(target);
+        else if (opts.ai || opts.anchor) toDetail();
+      }
+      if (isClass) {
+        wrap.classList.add("nsx-loading");
+        classPage(r.getAttribute("data-href")).then(function (main) {
+          pageCache[r.getAttribute("data-href")] = main;
+          if (my !== token) return;
+          keepAnchor(function () {
+            wrap.classList.remove("nsx-loading");
+            var c = main.cloneNode(true);
+            while (c.firstChild) wrap.appendChild(c.firstChild);
+            finish();
+          });
+          done();
+        }, function () {
+          if (my !== token) return;
+          keepAnchor(function () {
+            wrap.classList.remove("nsx-loading");
+            fallback(labels.fail);
+            finish();
+          });
+          done();
+        });
+      } else {
+        words(r, "data-recs").forEach(function (id) { borrow(id, wrap); });
+        if (!wrap.children.length) fallback("");
+        finish();
+        return { done: done };
+      }
+      return { done: done, pending: true };
+    }
+
+    // ---- Auswahl
+    var selected = null;
+    function revealSelected() {
+      if (!selected || !outline) return;
+      (oitems[selected] || []).forEach(function (o) {
+        if (!o.offsetParent) return;
+        var top = o.offsetTop - outline.offsetTop;
+        if (top < outline.scrollTop || top > outline.scrollTop + outline.clientHeight - 20) outline.scrollTop = top - outline.clientHeight / 3;
+      });
+    }
+    // opts.origin: "map" (Themenkarte), "side" (Gliederung, Inspektor), "nav" (Anker von außen)
+    // opts.from: angeklicktes Element; opts.ai / opts.anchor: Sprungziel in der Detailansicht
+    function select(name, opts) {
+      if (!rows[name]) return;
+      opts = opts || {};
+      if (opts.from && popFold && popFold.contains(opts.from)) setPop(null);   // Auswahl im Panel schließt es
+      var origin = opts.origin || "side", was = detailVisible();
+      var jump = !!(opts.ai || opts.anchor);
+      var go = !jump && (origin === "nav" || !was || (origin !== "map" && headerAbove()));
+      anchorEl = opts.from && folds.contains(opts.from) ? opts.from : firstVisibleFold();
+      if (anchorEl === detFold) anchorEl = null;
+      selected = name;
+      root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
+      (oitems[name] || []).forEach(function (o) { o.classList.add("sel"); o.setAttribute("aria-current", "true"); });
+      if (chips[name]) chips[name].classList.add("pin");
+      revealSelected();
+      highlight(name);
+      showRelations(name);
+      var res;
+      keepAnchor(function () { res = showCanonical(name, opts); });
+      if (go || jump) anchorEl = detFold;
+      if (go) toDetail();
+      if (jump && res && !res.pending) res.done();
+    }
+    function deselect() {
+      if (!detFold || detFold.hidden) return;
+      ++token;
+      function hide() {
+        restoreMoved();
+        detBody.innerHTML = "";
+        detFold.hidden = true;
+        updateEmpty();
+        selected = null;
+        root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
+        unhighlight();
+        if (relBox) { relBox.hidden = true; relBox.removeAttribute("data-owner"); }
+        if (hint) hint.hidden = false;
+      }
+      var fv = firstVisibleFold();
+      if (fv === detFold) {
+        // Was unter der Detailansicht folgt, rückt an ihre Stelle
+        var y = Math.max(detFold.getBoundingClientRect().top, pinH()), fl = foldList().filter(docked), nx = fl[fl.indexOf(detFold) + 1];
+        hide();
+        if (nx) window.scrollBy(0, nx.getBoundingClientRect().top - y);
+      } else {
+        anchorEl = fv;
+        keepAnchor(hide);
+      }
+    }
+
+    // ---- Ereignisse
+    function nameFrom(target) {
+      var el = target.closest && target.closest(".nsx-chip, .nsx-oi");
+      return el ? el.getAttribute("data-n") : null;
+    }
+    var last = null;
+    root.addEventListener("mouseover", function (ev) {
+      var n = nameFrom(ev.target);
+      if (!n || n === last) return;
+      last = n;
+      highlight(n);
+      if (!selected) showRelations(n);
+    });
+    [outline, map].forEach(function (zone) {
+      if (zone) zone.addEventListener("mouseleave", function () { last = null; restore(); });
+    });
+    root.addEventListener("click", function (ev) {
+      var t = ev.target;
+      var ai = t.closest(".nsx-ai");
+      if (ai) { ev.preventDefault(); select(ai.getAttribute("data-ai"), { ai: true }); return; }
+      var dt = t.closest(".nsx-dtab");
+      if (dt) {
+        ev.preventDefault();
+        var willOpen = dt.getAttribute("aria-expanded") !== "true";
+        setDetailAi(willOpen);
+        if (willOpen && headerAbove()) toDetail();
+        return;
+      }
+      var hb = t.closest(".nsx-hbtn");
+      if (hb) {
+        ev.preventDefault();
+        var hf = hb.closest("details");
+        if (hb.classList.contains("nsx-closebtn")) deselect();
+        else if (hb.classList.contains("nsx-backbtn")) undockTitle(hf, folds.firstChild);
+        return;
+      }
+      var by = t.closest(".nsx-by button");
+      if (by) { if (setBy(by.getAttribute("data-by"))) save(BY_KEY, by.getAttribute("data-by")); return; }
+      var a = t.closest("a.nsx-chip, a.nsx-oi, a[data-jump], g[data-jump]");
+      if (a) {
+        var n = a.getAttribute("data-n") || a.getAttribute("data-jump");
+        if (!rows[n]) return;
+        ev.preventDefault();
+        if (n === selected) toDetail();
+        else select(n, { origin: a.classList.contains("nsx-chip") ? "map" : "side", from: a });
+        return;
+      }
+      var link = t.closest("a[href^='#']");
+      if (!link) return;
+      var id = decodeURIComponent(link.getAttribute("href").slice(1));
+      if (id === "class-decl" && title) {
+        // Verweis auf die Klasse selbst: sie steht in der Titelleiste; nicht nach oben springen
+        ev.preventDefault();
+        title.classList.remove("nsx-flash");
+        void title.offsetWidth;
+        title.classList.add("nsx-flash");
+        return;
+      }
+      if (id.indexOf("nsx-c-") === 0) {
+        var local = detBody && detBody.querySelector("#" + CSS.escape(id));
+        var owner = link.closest("[data-owner]");
+        if (local) { ev.preventDefault(); openTo(local); }
+        else if (owner) { ev.preventDefault(); select(owner.getAttribute("data-owner"), { anchor: id }); }
+        return;
+      }
+      if (id.indexOf("nsx-e-") === 0) {
+        var row = document.getElementById(id);
+        if (row && rows[row.getAttribute("data-n")]) { ev.preventDefault(); select(row.getAttribute("data-n"), { from: link }); }
+        return;
+      }
+      if (recOwner[id]) {
+        ev.preventDefault();
+        if (selected === recOwner[id] && detBody.contains(document.getElementById(id))) openTo(document.getElementById(id));
+        else select(recOwner[id], { anchor: id });
+      }
+    });
+    root.addEventListener("keydown", function (ev) {
+      if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches(".nsx-ai, g[data-jump]")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      }
+    });
+    root.querySelectorAll(".nsx-ai").forEach(function (s) { s.setAttribute("title", labels.ai || ""); s.setAttribute("aria-label", labels.ai || ""); });
+    if (map) {
+      var mapFold = map.closest("details");
+      if (mapFold) mapFold.addEventListener("toggle", restore);
+    }
+    // Überfahren im Inspektor hebt den Eintrag in Karte und Gliederung hervor
+    var peeked = null;
+    function peek(n) {
+      if (peeked === n) return;
+      [peeked, n].forEach(function (x, i) {
+        if (!x) return;
+        [chips[x]].concat(oitems[x] || []).forEach(function (el) { if (el) el.classList.toggle("peek", i === 1); });
+      });
+      peeked = n;
+    }
+    if (aside) {
+      aside.addEventListener("mouseover", function (ev) {
+        var e = ev.target.closest && ev.target.closest("[data-jump], a[data-n]");
+        peek(e ? e.getAttribute("data-jump") || e.getAttribute("data-n") : null);
+      });
+      aside.addEventListener("mouseleave", function () { peek(null); });
+    }
+    if (detFold) {
+      addButton(detFold, "nsx-closebtn", ICON_CLOSE, labels.close);
+      detFold.hidden = true;
+    }
+    updateEmpty();
+    // Vorgabe ohne gespeicherte Wahl: User Guide und Karte in der Titelleiste
+    // Klassenseiten: Mitgliederkarte, User Guide, Klassendiagramm
+    var td = load(tdockKey);
+    (td === null ? (isCls ? "map,guide,uml" : "guide,map,uml") : td).split(",").forEach(function (k) { if (k) dockTitle(foldByKey(k)); });
+
+    // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
+    // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und
+    // Bedienelemente zählen nicht als leer.
+    function release() {
+      if (!selected) return;
+      selected = null;
+      root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
+      unhighlight();
+      last = null;
+      if (relBox) { relBox.hidden = true; relBox.removeAttribute("data-owner"); }
+      if (hint) hint.hidden = false;
+    }
+    document.addEventListener("click", function (ev) {
+      var t = ev.target;
+      if (ev.button !== 0 || !t.closest || !root.contains(t) && !(title && title.contains(t))) return;
+      if (t.closest("a, button, summary, input, select, textarea, label, [role=button], [tabindex], [data-jump], .nsx-chip, .nsx-oi, " +
+        ".nsx-detbody, .nsx-rel, details[data-fold=guide] > :not(summary), .nsx-tdock")) return;
+      if (window.getSelection && String(getSelection())) return;
+      release();
+    });
+
+    // ---- Historie: je Eintrag die letzte Änderung bis zum gewählten Release (links) und die
+    // nächste danach (rechts). Klick wählt das Release, Überfahren hebt alle Einträge hervor,
+    // die in diesem Release geändert wurden.
+    var allRels = {};
+    root.querySelectorAll("[data-changes]").forEach(function (el) { words(el, "data-changes").forEach(function (r) { allRels[r] = 1; }); });
+    function relKey(r) {
+      var m = /^R(\d+)-(\d+)/.exec(r || "");
+      return m ? +m[1] * 100 + +m[2] : 0;
+    }
+    function latestRel() { return Object.keys(allRels).sort(function (a, b) { return relKey(a) - relKey(b); }).pop() || ""; }
+    function badge(rel, cls, tip) {
+      return '<span class="nsx-hb ' + cls + '" role="button" tabindex="0" data-rel="' + esc(rel) + '" title="' + esc(tip + " · " + (labels.hsel || "")) + '">' + esc(rel) + "</span>";
+    }
+    function renderHistory() {
+      var cur = currentRelease() || latestRel(), ck = relKey(cur);
+      root.querySelectorAll("a.nsx-oi-h").forEach(function (a) {
+        var ch = words(a, "data-changes").sort(function (x, y) { return relKey(x) - relKey(y); });
+        var prev = ch.filter(function (r) { return relKey(r) <= ck; }).pop();
+        var next = ch.filter(function (r) { return relKey(r) > ck; })[0];
+        a.querySelectorAll(".nsx-hb").forEach(function (x) { x.remove(); });
+        var n = a.querySelector(".nsx-oi-n");
+        if (prev) n.insertAdjacentHTML("beforebegin", badge(prev, "nsx-hb-prev", labels.hprev || ""));
+        if (next) n.insertAdjacentHTML("afterend", badge(next, "nsx-hb-next", labels.hnext || ""));
+      });
+      root.querySelectorAll('.nsx-ol[data-by="since"] .nsx-og').forEach(function (g) {
+        var t = g.textContent.trim();
+        if (relKey(t)) { g.setAttribute("data-rel", t); g.classList.add("nsx-hg"); g.classList.toggle("cur", t === cur); }
+      });
+    }
+    function relHighlight(rel) {
+      root.classList.toggle("nsx-relhl", !!rel);
+      root.querySelectorAll(".relhit").forEach(function (x) { x.classList.remove("relhit"); });
+      if (!rel) return;
+      root.querySelectorAll("a.nsx-oi[data-changes], a.nsx-chip[data-changes]").forEach(function (x) {
+        if (words(x, "data-changes").indexOf(rel) >= 0) x.classList.add("relhit");
+      });
+    }
+    renderHistory();
+    window.addEventListener("hashchange", renderHistory);
+    root.addEventListener("mouseover", function (ev) {
+      var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
+      relHighlight(h ? h.getAttribute("data-rel") : null);
+    });
+    root.addEventListener("click", function (ev) {
+      var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
+      if (!h) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var rel = h.getAttribute("data-rel");
+      location.hash = rel === currentRelease() ? "" : "release=" + rel;
+    }, true);
+    root.addEventListener("keydown", function (ev) {
+      if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches(".nsx-hb")) { ev.preventDefault(); ev.target.click(); }
+    });
+
+    // Sprünge von außerhalb (Record-Anker, Eintragsanker)
+    function fromHash() {
+      var h = (location.hash || "").slice(1);
+      try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
+      h = h.split("&").filter(function (x) { return x.indexOf("release=") !== 0; })[0] || "";
+      if (!h) return;
+      if (h.indexOf("nsx-e-") === 0) {
+        var row = document.getElementById(h);
+        if (row && row.classList.contains("nsx-row")) select(row.getAttribute("data-n"), { origin: "nav" });
+      } else if (recOwner[h]) {
+        select(recOwner[h], { anchor: h });
+      }
+    }
+    window.addEventListener("hashchange", fromHash);
+    fromHash();
+  }
+  function boot() {
+    document.querySelectorAll("section.nsx").forEach(init);
+    if (window.MutationObserver && document.querySelector("section.nsx")) {
+      var dens = document.documentElement.getAttribute("data-density");
+      new MutationObserver(function () {
+        if (document.documentElement.getAttribute("data-density") !== dens) location.reload();
+      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-density"] });
+    }
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();

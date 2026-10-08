@@ -1,0 +1,71 @@
+name: "agy-Rauchtest (Gemini-Abo im Runner)"
+
+# Prüft die hinterlegten agy-Profile auf einem GitHub-Runner und den Profilwechsel bei erschöpftem Kontingent.
+# Gibt nur Status, Profilname, Sperrdauer und Token-Fingerabdrücke aus, nie Token oder Antworttext.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, agy-ci]    # Umgebung agy erlaubt main und agy-ci
+    paths: [".github/workflows/agy-smoke.yml", ".github/actions/setup-agy/**", ".github/scripts/agy_switch.py"]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    environment: agy
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: agy einrichten
+        uses: ./.github/actions/setup-agy
+        with:
+          token_1: ${{ secrets.AGY_OAUTH_TOKEN_1 }}
+          name_1: leo
+          token_2: ${{ secrets.AGY_OAUTH_TOKEN_2 }}
+          name_2: neo
+      - name: Sperrzustand der Profile laden
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+          restore-keys: agy-state-
+      - name: Probeanfrage über den Profilwechsel
+        shell: bash
+        run: |
+          set +e -uo pipefail          # agy-Fehlercodes auswerten statt abbrechen
+          agy --version || true
+          [ -z "${AUTODOCS_AGY_PROFILES:-}" ] && { echo "::error::Keine Tokens in der Umgebung agy hinterlegt"; exit 1; }
+          fp() { python3 -c 'import sys,json,hashlib
+          d=json.load(open(sys.argv[1])); t=d.get("token") or {}
+          h=lambda s: hashlib.sha256((s or "").encode()).hexdigest()[:8]
+          print("refresh", h(t.get("refresh_token")), "ablauf", t.get("expiry","?"))' "$1" 2>/dev/null || echo "nicht lesbar"; }
+          IFS=',' read -ra P <<< "$AUTODOCS_AGY_PROFILES"
+          for home in "${P[@]}"; do echo "$(basename "$home") vorher: $(fp "$home/.gemini/antigravity-cli/antigravity-oauth-token")"; done
+          cd "$RUNNER_TEMP"
+          python3 "$GITHUB_WORKSPACE/.github/scripts/agy_switch.py" --state "$RUNNER_TEMP/agy-state.json" -- \
+            -p "Antworte nur mit: ok" --model gemini-3.8-flash --effort low --output-format json \
+            --dangerously-skip-permissions > out.json 2> switch.log
+          rc=$?
+          grep '^agy-switch:' switch.log
+          python3 -c 'import json; print("Antwortstatus:", json.load(open("out.json")).get("status","?"))' 2>/dev/null || echo "Antwortstatus: keine JSON-Antwort"
+          for home in "${P[@]}"; do echo "$(basename "$home") nachher: $(fp "$home/.gemini/antigravity-cli/antigravity-oauth-token")"; done
+          echo "Sperrzustand: $(cat "$RUNNER_TEMP/agy-state.json" 2>/dev/null)"
+          rm -f out.json switch.log
+          case $rc in
+            0) echo "Ergebnis: Antwort erhalten" ;;
+            75) echo "::warning::Alle Profile im Kontingent erschöpft" ; exit 0 ;;
+            77) echo "::error::Kein Profil angemeldet – Anmeldung nötig" ; exit 1 ;;
+            *) echo "::error::agy-Fehler rc=$rc" ; exit 1 ;;
+          esac
+      - name: Sperrzustand der Profile sichern
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+      - name: agy-Profile entfernen
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP"/agy-profile-* "$HOME/.gemini" || true

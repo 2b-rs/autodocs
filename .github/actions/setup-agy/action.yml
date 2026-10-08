@@ -1,0 +1,66 @@
+name: "agy einrichten (Gemini-Abo des Verwalters)"
+description: >
+  Installiert die Antigravity-CLI (agy) und legt je hinterlegtem Token ein eigenes HOME-Profil
+  unter $RUNNER_TEMP an. Die Tokens kommen aus den Secrets der Umgebung "agy" (nur Branch main),
+  stehen nie im Log und werden mit dem Schritt "agy-Profile entfernen" im aufrufenden Workflow
+  wieder gelöscht. Ergebnis: AUTODOCS_AGY_PROFILES (kommagetrennte HOME-Pfade, leer = kein Profil).
+inputs:
+  token_1:
+    description: "Inhalt von ~/.gemini-<profil>/.gemini/antigravity-cli/antigravity-oauth-token (Profil 1)"
+    required: false
+    default: ""
+  token_2:
+    description: "dasselbe für Profil 2"
+    required: false
+    default: ""
+  name_1:
+    description: "Name von Profil 1 (Verzeichnis agy-profile-<name>, Schlüssel im Sperrzustand)"
+    required: false
+    default: "1"
+  name_2:
+    description: "Name von Profil 2"
+    required: false
+    default: "2"
+outputs:
+  profiles:
+    description: "Anzahl eingerichteter Profile"
+    value: ${{ steps.prof.outputs.count }}
+runs:
+  using: composite
+  steps:
+    - name: agy installieren
+      shell: bash
+      run: |
+        set -euo pipefail
+        if ! command -v agy >/dev/null 2>&1; then
+          curl -fsSL https://antigravity.google/cli/install.sh | bash
+        fi
+        for d in "$HOME/.local/bin" "$HOME/.antigravity/bin" "$HOME/bin"; do
+          [ -x "$d/agy" ] && echo "$d" >> "$GITHUB_PATH"
+        done
+        (command -v agy || ls "$HOME"/.local/bin/agy "$HOME"/.antigravity/bin/agy 2>/dev/null) | head -1
+    - name: Profile anlegen
+      id: prof
+      shell: bash
+      env:
+        T1: ${{ inputs.token_1 }}
+        T2: ${{ inputs.token_2 }}
+        N1: ${{ inputs.name_1 }}
+        N2: ${{ inputs.name_2 }}
+      run: |
+        set -euo pipefail
+        umask 077
+        profiles=""
+        n=0
+        for i in 1 2; do
+          var="T$i"; tok="${!var}"; nv="N$i"; name="${!nv}"
+          [ -z "$tok" ] && continue
+          home="$RUNNER_TEMP/agy-profile-$name"
+          mkdir -p "$home/.gemini/antigravity-cli"
+          printf '%s' "$tok" > "$home/.gemini/antigravity-cli/antigravity-oauth-token"
+          profiles="${profiles:+$profiles,}$home"
+          n=$((n+1))
+        done
+        echo "AUTODOCS_AGY_PROFILES=$profiles" >> "$GITHUB_ENV"
+        echo "count=$n" >> "$GITHUB_OUTPUT"
+        echo "agy-Profile eingerichtet: $n"
