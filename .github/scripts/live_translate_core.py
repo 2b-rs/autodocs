@@ -640,7 +640,7 @@ class Terms:
 
 # Version der Prüfregeln (nicht Teil des Rezept-Hashs: gelockerte Regeln machen angenommene Übersetzungen nicht
 # ungültig). Befunde älterer Prüfregeln schließen ihre Einheit nicht mehr (``decided_keys``).
-CHECKS_VERSION = 2
+CHECKS_VERSION = 3
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
 _INLINE_TEXT = re.compile(r"<(strong|em|b|i)>([^<]+)</\1>")
 _CODE_EL = re.compile(r"<code\b[^>]*>(.*?)</code>", re.S)
@@ -711,6 +711,18 @@ _DE_PAIR = re.compile("„([^„“]*)“")
 
 def strip_markup(text: str) -> str:
     return re.sub(r"\s+", " ", _TAG.sub(" ", PH.sub(" ", text))).strip()
+
+
+_ARTICLE_NEXT = re.compile(r"\s+[a-zäöüß]")
+
+
+def _article_only(term: str, text: str, terms: "Terms") -> bool:
+    """Geschützter Begriff, der zugleich ein deutsches Funktionswort ist („Dem“ / „dem“), und an allen Stellen als
+    Artikel steht (gefolgt von einem kleingeschriebenen Wort: „Dem durch … typisierten Port“): nicht verlangt."""
+    if term.lower() not in GERMAN_WORDS:
+        return False
+    hits = list(terms._regexes()[term].finditer(text))
+    return bool(hits) and all(_ARTICLE_NEXT.match(text, m.end()) for m in hits)
 
 
 def protected_tokens(de: str, vocab: Optional[Set[str]] = None, soft: bool = False) -> List[str]:
@@ -821,9 +833,11 @@ def check_segment(de: str, t: Any, lang: str, terms: Optional[Terms] = None) -> 
     plain_t = _html.unescape(strip_markup(t))
     vocab = terms.vocab if terms else None
     toks = protected_tokens(de, vocab)
-    missing = [tok for tok in toks if not _present(tok, plain_t) and not _present(tok, t)]
+    # Kürzel aus zwei Zeichen (ID, IO, OS …) dürfen übersetzt werden (arabisch „معرّف“, russisch „ОС“): nie verlangt
+    missing = [tok for tok in toks if not (len(tok) == 2 and _ACRONYM.match(tok))
+               and not _present(tok, plain_t) and not _present(tok, t)]
     plain_de = _html.unescape(strip_markup(de))
-    terms_de = terms.protected_in(plain_de) if terms else []
+    terms_de = [x for x in terms.protected_in(plain_de) if not _article_only(x, plain_de, terms)] if terms else []
     missing += [x for x in terms_de if x not in plain_t]
     if missing:
         p.append("protected:" + ",".join(sorted(set(missing))[:5]))
