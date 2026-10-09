@@ -640,7 +640,7 @@ class Terms:
 
 # Version der Prüfregeln (nicht Teil des Rezept-Hashs: gelockerte Regeln machen angenommene Übersetzungen nicht
 # ungültig). Befunde älterer Prüfregeln schließen ihre Einheit nicht mehr (``decided_keys``).
-CHECKS_VERSION = 3
+CHECKS_VERSION = 4
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
 _INLINE_TEXT = re.compile(r"<(strong|em|b|i)>([^<]+)</\1>")
 _CODE_EL = re.compile(r"<code\b[^>]*>(.*?)</code>", re.S)
@@ -713,12 +713,12 @@ def strip_markup(text: str) -> str:
     return re.sub(r"\s+", " ", _TAG.sub(" ", PH.sub(" ", text))).strip()
 
 
-_ARTICLE_NEXT = re.compile(r"\s+[a-zäöüß]")
+_ARTICLE_NEXT = re.compile(r"\s+[⟦A-Za-zÄÖÜäöüß]")
 
 
 def _article_only(term: str, text: str, terms: "Terms") -> bool:
     """Geschützter Begriff, der zugleich ein deutsches Funktionswort ist („Dem“ / „dem“), und an allen Stellen als
-    Artikel steht (gefolgt von einem kleingeschriebenen Wort: „Dem durch … typisierten Port“): nicht verlangt."""
+    Artikel steht (gefolgt von einem Wort oder Platzhalter: „Dem durch … Port“, „Dem Feld ⟦0⟧“): nicht verlangt."""
     if term.lower() not in GERMAN_WORDS:
         return False
     hits = list(terms._regexes()[term].finditer(text))
