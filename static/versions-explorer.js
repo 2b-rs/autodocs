@@ -26,7 +26,7 @@
   "use strict";
 
   var STATUS = [["new", 1], ["changed", 2], ["removed", 4], ["unchanged", 8]];
-  var HAS = ["fig", "snip", "ai"];
+  var HAS = ["fig", "snip", "ai", "cit"];
 
   // URL-Parameter je Bereich: [Zustandsschlüssel, URL-Name, mehrwertig]
   var PARAMS = {
@@ -39,7 +39,8 @@
            ["id", "sid"]]
   };
   var TABS = ["el", "fig", "snip"];
-  var VIEWS = ["ver", "fig", "snip"];
+  var VIEWS = ["ver", "fig", "snip", "cit"];
+  var UNIVERSES = ["CP", "AP", "FO", "other"];
 
   function emptyState() {
     var s = { tab: "el", id: "", view: "ver", from: "", to: "", el: {}, fig: {}, snip: {} };
@@ -103,12 +104,15 @@
     var c = raw.cols;
     var n = c.id.length;
     var nm = raw.names || {};
+    var zeros = function () { var a = new Array(n); for (var z = 0; z < n; z++) a[z] = 0; return a; };
     var idx = {
       n: n, ids: c.id, names: c.name, kind: c.kind, mod: c.mod, cl: c.cl, doc: c.doc, plat: c.plat,
       rel: c.rel, chg: c.chg, first: c.first, last: c.last, st: c.st, nv: c.nv, fig: c.fig, snip: c.snip,
-      ai: c.ai, page: c.page, full: true, stems: { rec: nm.records || {}, item: nm.items || {} },
+      ai: c.ai, page: c.page, cit: c.cit || zeros(), ref: c.ref || zeros(), full: true,
+      stems: { rec: nm.records || {}, item: nm.items || {}, ref: nm.refs || {} },
       dict: { kind: raw.kinds, plat: raw.platforms, doc: raw.docs, mod: raw.modules, cl: raw.clusters,
-              rel: raw.releases },
+              rel: raw.releases, modUni: raw.module_universe || [] },
+      aliases: raw.aliases || {}, lower: null,
       counts: raw.counts || {}, byId: new Map(), hay: new Array(n)
     };
     for (var i = 0; i < n; i++) {
@@ -117,6 +121,24 @@
       idx.hay[i] = (c.id[i] + " " + (c.name[i] || "") + " " + m).toLowerCase();
     }
     return idx;
+  }
+
+  // Zitierte Kennung -> Index des Elements: exakt, über einen Alias (andere Schreibweise)
+  // oder eindeutig ohne Groß-/Kleinschreibung; sonst -1
+  function resolveId(idx, id) {
+    if (!idx) return -1;
+    if (idx.byId.has(id)) return idx.byId.get(id);
+    var a = idx.aliases && idx.aliases[id];
+    if (a && idx.byId.has(a)) return idx.byId.get(a);
+    if (!idx.lower) {
+      idx.lower = new Map();
+      idx.ids.forEach(function (x, k) {
+        var key = x.toLowerCase();
+        idx.lower.set(key, idx.lower.has(key) ? -2 : k);
+      });
+    }
+    var k = idx.lower.get(String(id).toLowerCase());
+    return k >= 0 ? k : -1;
   }
 
   // Rückfall ohne Explorer-Index: versions/catalog.json (Plattform, Releases, Wegfall)
@@ -167,7 +189,7 @@
       { key: "chg", type: "bits", get: function (i) { return idx.chg[i]; }, values: idx.dict.rel,
         bit: function (k) { return 1 << k; } },
       { key: "has", type: "flags", values: HAS, get: function (i) {
-        return (idx.fig[i] > 0 ? 1 : 0) | (idx.snip[i] > 0 ? 2 : 0) | (idx.ai[i] ? 4 : 0);
+        return (idx.fig[i] > 0 ? 1 : 0) | (idx.snip[i] > 0 ? 2 : 0) | (idx.ai[i] ? 4 : 0) | (idx.cit[i] > 0 ? 8 : 0);
       }, bit: function (k) { return 1 << k; } }
     ];
     return g;
@@ -324,7 +346,38 @@
   // Inhaltsvergleich ohne Leerraum und Bindestriche (gleiche Regel wie export_explorer.norm_content):
   // Extraktionsvarianten wie „erro r“ oder „develop- ment“ sind kein Änderungspunkt.
   var NORM_DROP = /[\s\u00ad\u2010\u2011-]+/g;
-  function normContent(text) { return String(text || "").replace(NORM_DROP, ""); }
+  var ENTITY = /&(?:([A-Za-z]+)|#(\d+)|#x([0-9A-Fa-f]+));/g;
+  var NAMED = { lt: "<", gt: ">", amp: "&", quot: '"', apos: "'", nbsp: "\u00a0" };
+  // HTML-Entitäten genau einmal auflösen (Anzeige von Versionstexten, die als HTML-Text erfasst sind)
+  function decodeEntities(text) {
+    return String(text == null ? "" : text).replace(ENTITY, function (m, name, dec, hex) {
+      if (name) return Object.prototype.hasOwnProperty.call(NAMED, name) ? NAMED[name] : m;
+      var code = dec ? parseInt(dec, 10) : parseInt(hex, 16);
+      return code > 0 && code < 0x110000 ? String.fromCodePoint(code) : m;
+    });
+  }
+  function decodeFully(text) {
+    var out = String(text || "");
+    for (var k = 0; k < 3; k++) { var next = decodeEntities(out); if (next === out) break; out = next; }
+    return out;
+  }
+  function normContent(text) { return decodeFully(text).replace(NORM_DROP, ""); }
+
+  // Spezifikationskennungen in Belegtexten (gleiche Regel wie export_explorer.CITE_RE)
+  var CITE_SRC = "((?:AP_|CP_|FO_)?(?:SWS|SRS|RS|PRS|TPS|ECUC)_[A-Za-z][A-Za-z0-9]*(?:_CONSTR)?_\\d{4,5})(?![A-Za-z0-9])";
+  function citedIds(text) {
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + CITE_SRC, "g"), out = [], m;
+    while ((m = re.exec(String(text || "")))) if (out.indexOf(m[2]) < 0) out.push(m[2]);
+    return out;
+  }
+  // Kennungen in bereits maskiertem HTML-Text durch render(id) ersetzen (render liefert HTML oder null)
+  function linkifyIds(escapedHtml, render) {
+    var re = new RegExp("(^|[^A-Za-z0-9_])" + CITE_SRC, "g");
+    return String(escapedHtml).replace(re, function (all, pre, id) {
+      var h = render(id);
+      return h == null ? all : pre + h;
+    });
+  }
 
   function releaseKey(rel) {
     var m = /^R(\d{2})-(\d{2})/.exec(rel || "");
@@ -636,6 +689,8 @@
     markedStem: markedStem, fileStem: fileStem, thumbUrl: thumbUrl, occurrencePdfUrl: occurrencePdfUrl,
     catalogPdfUrl: catalogPdfUrl, textMatcher: textMatcher, normContent: normContent, releaseKey: releaseKey,
     sortVersions: sortVersions, buildTimeline: buildTimeline, versionHash: versionHash,
+    decodeEntities: decodeEntities, decodeFully: decodeFully, citedIds: citedIds, linkifyIds: linkifyIds, resolveId: resolveId,
+    UNIVERSES: UNIVERSES,
     isAbortError: isAbortError, isNetworkError: isNetworkError, loadJson: loadJson, renderMarkdown: renderMarkdown,
     mdInline: mdInline
   };
@@ -740,7 +795,11 @@
         '"><div class="ve-vspace" data-role="space"></div></div></div>' +
         '<section class="ve-viewer" data-role="viewer" tabindex="-1" aria-label="' + esc(t("viewer_" + tab)) + '">' +
         '<div class="ve-viewer-top"><button type="button" class="ve-btn ve-back" data-role="back">' + esc(t("back")) +
-        '</button></div><div class="ve-viewer-body" data-role="vbody"><div class="ve-placeholder">' +
+        '</button></div><div class="ve-mismatch" data-role="mismatch" role="status" hidden><strong>' + esc(t("mismatch")) +
+        "</strong> <span>" + esc(t("mismatch_text")) + '</span><span class="ve-mismatch-acts">' +
+        '<button type="button" class="ve-btn" data-role="mmreset">' + esc(t("reset")) + "</button>" +
+        '<button type="button" class="ve-btn" data-role="mmclose">' + esc(t("close_viewer")) + "</button></span></div>" +
+        '<div class="ve-viewer-body" data-role="vbody"><div class="ve-placeholder">' +
         esc(t("pick_" + tab)) + "</div></div></section>" +
         "</div></section>";
     });
@@ -872,14 +931,16 @@
       if (st & 2) badges += '<span class="ve-mini ve-mini-chg" title="' + esc(t("st_changed")) + '">' + esc(t("st_changed")) + "</span>";
       if (st & 4) badges += '<span class="ve-mini ve-mini-drop" title="' + esc(t("st_removed")) + '">' + esc(t("st_removed")) + "</span>";
       if (st & 1) badges += '<span class="ve-mini ve-mini-new">' + esc(t("st_new")) + "</span>";
+      if (E.ref[i]) badges += '<span class="ve-mini ve-mini-ref" title="' + esc(t("ref_link_title")) + '">' + esc(t("k_cited")) + "</span>";
       var plat = E.dict.plat[E.plat[i]] || "";
       var rels = E.first[i] >= 0 ? E.dict.rel[E.first[i]] + (E.last[i] !== E.first[i] ? "–" + E.dict.rel[E.last[i]] : "") : "";
       var meta = [];
       if (E.full) meta.push(esc(kindLabel(E.dict.kind[E.kind[i]])));
       if (E.names[i]) meta.push('<span class="ve-row-name">' + esc(E.names[i]) + "</span>");
-      meta.push(esc(rels));
+      if (rels) meta.push(esc(rels));
       if (E.fig[i]) meta.push('<span title="' + esc(t("v_fig")) + '">▣ ' + E.fig[i] + "</span>");
       if (E.snip[i]) meta.push('<span title="' + esc(t("v_snip")) + '">❝ ' + E.snip[i] + "</span>");
+      if (E.cit[i]) meta.push('<span title="' + esc(t("has_cit")) + '">⌕ ' + E.cit[i] + "</span>");
       return '<div class="ve-row-top"><span class="ve-row-id">' + esc(E.ids[i]) + '</span><span class="ve-row-badges">' + badges +
         '<span class="ve-mini ve-plat-' + esc(plat) + '">' + esc(plat) + "</span></span></div>" +
         '<div class="ve-row-meta">' + meta.join('<span aria-hidden="true">·</span>') + "</div>";
@@ -920,6 +981,15 @@
       commit(true);
     });
     r.back.addEventListener("click", function () { closeDetail(tab); });
+    r.mmreset.addEventListener("click", function () { r.reset.click(); });
+    r.mmclose.addEventListener("click", function () {
+      if (tab === "el") state.id = ""; else state[tab].id = "";
+      commit(true);
+      setMismatch(tab, false);
+      ui[tab].vlist.openKey = null;
+      ui[tab].vlist.render();
+      syncViewer(tab);
+    });
     r.collapse.addEventListener("click", function () { setCollapsed(tab, !r.panel.classList.contains("catalog-collapsed")); });
     r.fbody.addEventListener("click", function (e) {
       var b = e.target.closest("[data-fkey]");
@@ -952,6 +1022,14 @@
       var key = b.getAttribute("data-chip"), val = b.getAttribute("data-val");
       if (key === "*") {
         r.reset.click();
+        return;
+      }
+      if (key === "q") {
+        state[tab].q = "";
+        r.q.value = "";
+        refresh(tab);
+        commit(true);
+        r.q.focus();
         return;
       }
       toggleValue(tab, key, val);
@@ -1160,19 +1238,17 @@
     var sel = state[tab];
     var res = tab === "el" ? C.filterElements(D, sel) : C.filterItems(D, tab, sel);
     var list = res.matches;
-    // Geöffnetes Element bleibt sichtbar, auch wenn die Filter es ausblenden (targetId)
+    // Die Liste enthält nur Treffer. Passt das geöffnete Element nicht (mehr) zu den Filtern,
+    // bleibt der Viewer offen und sagt das (targetId wird nie als Listenzeile eingeschoben).
     var targetId = selectedKey(tab);
-    var matchesTarget = false;
-    if (targetId && D.byId.has(targetId)) {
-      var ti = D.byId.get(targetId);
-      matchesTarget = list.indexOf(ti) >= 0;
-      if (!matchesTarget) list = [ti].concat(list);
-    }
+    var mismatch = false;
+    if (targetId && D.byId.has(targetId)) mismatch = list.indexOf(D.byId.get(targetId)) < 0;
+    setMismatch(tab, mismatch);
     data.res[tab] = res;
     var openChanged = r.vlist.openKey !== (targetId || null);
     r.vlist.openKey = targetId || null;
     r.vlist.setItems(list, function (i) { return D.ids[i]; });
-    if (targetId && openChanged && r.vlist.active >= 0) r.vlist.ensureVisible(r.vlist.active);
+    if (targetId && openChanged && !mismatch && r.vlist.active >= 0) r.vlist.ensureVisible(r.vlist.active);
     var total = D.n;
     r.count.textContent = t("results", { n: num(res.matches.length), total: num(total) });
     var ac = C.activeCount(state, tab);
@@ -1184,6 +1260,12 @@
     refreshFacets(tab, keepFacetFocus);
     refreshChips(tab);
     if (tab === state.tab) layout();
+  }
+
+  function setMismatch(tab, on) {
+    var r = ui[tab];
+    r.panel.classList.toggle("is-mismatch", on);
+    r.mismatch.hidden = !on;
   }
 
   function chipButton(key, k, label, count, on) {
@@ -1247,15 +1329,46 @@
     return html + "</select></label>";
   }
 
+  // Module nach Universum gruppiert (Classic, Adaptive, Foundation, übergreifend). Ohne Ausklappen:
+  // je Gruppe die häufigsten Module mit Treffern; ausgeklappt oder beim Filtern nach Namen auch
+  // Module ohne Treffer (deaktiviert, Zähler 0), damit sichtbar bleibt, was Suche und Filter ausschließen.
+  var MOD_PER_GROUP = 6;
   function modGroup(tab, values, counts) {
     var r = ui[tab];
     var expanded = r.fbody.classList.contains("show-all-mod");
+    var filt = (r.modFilter || "").toLowerCase();
+    var sel = state[tab].mod || [];
+    var uni = (data.el && data.el.dict.modUni) || [];
+    var showZero = expanded || !!filt;
+    var html = "", hidden = 0, any = false;
+    C.UNIVERSES.forEach(function (u) {
+      var ks = [];
+      values.forEach(function (v, k) {
+        if ((uni[k] || "other") !== u) return;
+        if (filt && String(v).toLowerCase().indexOf(filt) < 0 && sel.indexOf(v) < 0) return;
+        ks.push(k);
+      });
+      if (!ks.length) return;
+      ks.sort(function (x, y) { return (counts[y] || 0) - (counts[x] || 0) || String(values[x]).localeCompare(String(values[y])); });
+      var live = ks.filter(function (k) { return (counts[k] || 0) > 0 || sel.indexOf(values[k]) >= 0; });
+      var list = showZero ? ks : live.slice(0, MOD_PER_GROUP);
+      hidden += ks.length - list.length;
+      var sum = 0;
+      ks.forEach(function (k) { sum += counts[k] || 0; });
+      any = any || list.length > 0;
+      html += '<div class="ve-unigroup"><div class="ve-unihead">' + esc(t("uni_" + u)) + ' <span class="ve-fchip-n">' + num(sum) +
+        "</span></div><div class=\"ve-fvals\">" + list.map(function (k) {
+          return chipButton("mod", values[k], values[k], counts[k] || 0, sel.indexOf(values[k]) >= 0);
+        }).join("") + (!list.length ? '<span class="ve-muted ve-fnone">' + esc(t("mod_none")) + "</span>" : "") + "</div></div>";
+    });
+    if (!filt && (hidden || expanded)) {
+      html += '<button type="button" class="ve-more" data-more="mod">' +
+        esc(expanded ? t("show_less") : t("show_all", { n: num(values.length) })) + "</button>";
+    }
+    if (!any && filt) html += '<p class="ve-muted ve-fnone">' + esc(t("mod_nomatch")) + "</p>";
     var inner = '<input type="search" class="ve-modfilter" data-modfilter="1" placeholder="' + esc(t("mod_ph")) +
       '" aria-label="' + esc(t("mod_ph")) + '" value="' + esc(r.modFilter || "") + '">' +
-      '<div class="ve-fvals-scroll">' + facetChips(tab, "mod", values, counts, {
-        sortByCount: true, hideEmpty: true, limit: expanded || r.modFilter ? 0 : 14, expanded: expanded,
-        filter: r.modFilter, label: function (v) { return v; }
-      }) + "</div>";
+      '<div class="ve-fvals-scroll ve-unigroups">' + html + "</div>";
     return group(t("f_mod"), inner, "ve-fgroup-mod");
   }
 
@@ -1265,7 +1378,8 @@
     var active = document.activeElement;
     var focusSel = keepFocus && active && active.matches && active.matches("input[data-modfilter]");
     var c = res.counts;
-    var html = "";
+    var q = (state[tab].q || "").trim();
+    var html = q ? '<p class="ve-fhint">' + esc(t("counts_hint_q", { q: q })) + "</p>" : "";
     if (tab === "el") {
       if (D.full) {
         html += group(t("f_kind"), facetChips(tab, "kind", D.dict.kind, c.kind, { hideEmpty: true }));
@@ -1274,7 +1388,7 @@
       html += group(t("f_status"), facetChips(tab, "st", D.full ? ["new", "changed", "removed", "unchanged"] : ["removed"],
         D.full ? c.st : { 0: c.st[2] }, {}));
       if (D.full) {
-        html += group(t("f_has"), facetChips(tab, "has", ["fig", "snip", "ai"], c.has));
+        html += group(t("f_has"), facetChips(tab, "has", C.HAS, c.has));
         html += group(t("f_doc"), facetChips(tab, "doc", D.dict.doc, c.doc, { hideEmpty: true }));
         html += modGroup(tab, D.dict.mod, c.mod);
         if (D.dict.cl.length) html += group(t("f_cl"), facetChips(tab, "cl", D.dict.cl, c.cl, { hideEmpty: true }));
@@ -1299,6 +1413,11 @@
 
   function refreshChips(tab) {
     var r = ui[tab], sel = state[tab], html = "";
+    // Der Suchtext ist ein Filter wie die Facetten: als entfernbarer Chip vorn
+    if (sel.q && sel.q.trim()) {
+      html += '<button type="button" class="ve-chip-on ve-chip-q" data-chip="q" data-val="" title="' + esc(t("remove_filter")) +
+        '"><span class="ve-chip-k">' + esc(t("chip_q")) + ":</span> „" + esc(sel.q.trim()) + '“ <span aria-hidden="true">✕</span></button>';
+    }
     C.PARAMS[tab].forEach(function (p) {
       var key = p[0];
       if (key === "q" || key === "id") return;
@@ -1331,6 +1450,7 @@
     } else state[tab].id = id;
     commit(push, { detail: true, fromList: !!(opts && opts.fromList) });
     var r = ui[tab];
+    if (opts && opts.fromList) setMismatch(tab, false);
     r.vlist.openKey = id;
     r.vlist.render();
     syncViewer(tab, true);
@@ -1344,6 +1464,7 @@
     }
     if (tab === "el") state.id = ""; else state[tab].id = "";
     commit(true);
+    setMismatch(tab, false);
     ui[tab].vlist.openKey = null;
     ui[tab].vlist.render();
     syncViewer(tab);
@@ -1402,8 +1523,12 @@
     if (!EL.rec || EL.rec.id !== id) {
       r.vbody.innerHTML = '<div class="ve-placeholder">' + esc(t("loading_detail", { id: id })) + "</div>";
     }
-    var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) :
-      fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
+    var D = data.el, di = D ? D.byId.get(id) : null;
+    var isRef = di != null && D.ref[di] === 1;
+    var p = (EL.rec && EL.rec.id === id) ? Promise.resolve(EL.rec) : isRef
+      // nur zitierte Kennung: kein Versions-Record, Belege aus versions/explorer/refs/
+      ? fetchJson(ROOT + "versions/explorer/refs/" + encodeURIComponent(C.recordFile(id, stems("ref"))), signal)
+      : fetchJson(ROOT + "versions/data/" + encodeURIComponent(C.recordFile(id, stems("rec"))), signal)
         .catch(function (err) {
           // Rückfall auf die lokale API nur, wenn die Datei fehlt – nicht bei Abbruch oder Netzfehler
           if (C.isAbortError(err) || C.isNetworkError(err) || my !== token.el) throw err;
@@ -1416,6 +1541,7 @@
       if (EL.rec !== rec) {
         // Präsenz-Einträge (im PDF vorhanden, Wortlaut nicht erfasst) gehören in die Zeitachse,
         // aber nicht in den Vergleich: rec.versions enthält nur erfassten Wortlaut.
+        if (rec.citation_only && state.view === "ver") state.view = "cit";
         rec.allVersions = C.sortVersions(rec.versions || []);
         rec.versions = rec.allVersions.filter(function (v) { return v.text_captured !== false; });
         EL.rec = rec;
@@ -1464,30 +1590,42 @@
       : '<span class="ve-pill-ok">' + esc(t("pill_active", { rel: lc.last_active_release || latest.release || "" })) + "</span>";
   }
 
+  // Namen mit Spezifikations-Platzhaltern (<fwssi-sn>, {<symbol-fw-state>}, <LPDU_CalloutName>)
+  function nameHtml(name, cls) {
+    if (!name) return "";
+    var ph = /<[^<>]+>/.test(name);
+    return '<span class="' + cls + '">' + esc(name) + "</span>" +
+      (ph ? '<span class="ve-ph" title="' + esc(t("placeholder_hint")) + '">' + esc(t("placeholder")) + "</span>" : "");
+  }
+
   function renderElement() {
     var rec = EL.rec, r = ui.el;
     var el = rec.element || {};
     var ev = rec.evidence || { figures: [], snippets: [] };
-    var versions = rec.versions || [];
-    var isCP = String(rec.canonical_id || "").indexOf("AUTOSAR/CP") >= 0;
-    var D = data.el;
-    var i = D ? D.byId.get(rec.id) : null;
+    var isRef = !!rec.citation_only;
+    var isCP = isRef ? el.platform === "CP" : String(rec.canonical_id || "").indexOf("AUTOSAR/CP") >= 0;
     var meta = [];
     meta.push([t("lbl_plat"), platLabel(isCP ? "CP" : "AP")]);
+    if (el.universe === "FO") meta.push([t("lbl_universe"), t("uni_FO")]);
     if (el.module) meta.push([t("lbl_module"), el.module]);
     if (el.cluster) meta.push([t("lbl_cluster"), el.cluster]);
-    if (el.first) meta.push([t("lbl_releases"), el.first + (el.last && el.last !== el.first ? " – " + el.last : "")]);
-    meta.push([t("lbl_versions"), String(el.distinct || (rec.epochs || []).length)]);
-    if (el.changed && el.changed.length) meta.push([t("lbl_changed_in"), el.changed.join(", ")]);
-    if (el.ai) meta.push([t("lbl_ai"), t("ai_yes")]);
+    if (!isRef) {
+      if (el.first) meta.push([t("lbl_releases"), el.first + (el.last && el.last !== el.first ? " – " + el.last : "")]);
+      meta.push([t("lbl_versions"), String(el.distinct || (rec.epochs || []).length)]);
+      if (el.changed && el.changed.length) meta.push([t("lbl_changed_in"), el.changed.join(", ")]);
+      if (el.ai) meta.push([t("lbl_ai"), t("ai_yes")]);
+    }
     var links = "";
-    if (el.page) links += '<a class="ve-linkbtn ve-linkbtn-primary" href="' + esc(el.page + "#" + rec.id) + '">' + esc(t("open_page")) + "</a>";
-    links += '<a class="ve-linkbtn" href="spec/record.html?id=' + encodeURIComponent(rec.id) + '">' + esc(t("open_record")) + "</a>";
+    if (!isRef) {
+      if (el.page) links += '<a class="ve-linkbtn ve-linkbtn-primary" href="' + esc(el.page + "#" + rec.id) + '">' + esc(t("open_page")) + "</a>";
+      links += '<a class="ve-linkbtn" href="spec/record.html?id=' + encodeURIComponent(rec.id) + '">' + esc(t("open_record")) + "</a>";
+    }
     links += '<button type="button" class="ve-linkbtn" data-act="copy">' + esc(t("copy_link")) + "</button>";
-    if (!el.page) links += '<span class="ve-muted ve-nopage">' + esc(t("no_page")) + "</span>";
-    var nf = ev.figures.length, ns = ev.snippets.length;
+    if (!el.page && !isRef) links += '<span class="ve-muted ve-nopage">' + esc(t("no_page")) + "</span>";
+    var nf = ev.figures.length, ns = ev.snippets.length, nc = ev.cited_total || (ev.cited_in || []).length;
     var view = state.view;
-    var sub = [["ver", t("v_ver"), null], ["fig", t("v_fig"), nf], ["snip", t("v_snip"), ns]];
+    var sub = (isRef ? [] : [["ver", t("v_ver"), null]]).concat([["cit", t("v_cit"), nc], ["fig", t("v_fig"), nf], ["snip", t("v_snip"), ns]]);
+    if (!isRef) sub = [sub[0], sub[2], sub[3], sub[1]];
     var subHtml = '<div class="ve-subtabs" role="tablist" aria-label="' + esc(t("viewer_el")) + '">';
     sub.forEach(function (s) {
       subHtml += '<button type="button" role="tab" class="ve-subtab' + (view === s[0] ? " is-active" : "") + '" data-view="' + s[0] +
@@ -1495,15 +1633,48 @@
         (s[2] != null ? ' <span class="ve-subcount' + (s[2] ? "" : " is-zero") + '">' + num(s[2]) + "</span>" : "") + "</button>";
     });
     subHtml += "</div>";
+    var pill = isRef ? '<span class="ve-pill-ref">' + esc(t("ref_badge")) + "</span>" : statusPill(rec);
     r.vbody.innerHTML =
-      '<div class="ve-vh"><div class="ve-vh-top"><h2 class="ve-vh-id">' + esc(rec.id) + "</h2>" + statusPill(rec) + "</div>" +
-      '<div class="ve-vh-name">' + (el.kind ? '<span class="ve-kind">' + esc(kindLabel(el.kind)) + "</span>" : "") +
-      (el.name ? '<span class="ve-vh-elname">' + esc(el.name) + "</span>" : "") +
-      '<span class="ve-muted ve-cid">' + esc(rec.canonical_id || "") + "</span></div>" +
+      '<div class="ve-vh"><div class="ve-vh-top"><h2 class="ve-vh-id">' + esc(rec.id) + "</h2>" + pill + "</div>" +
+      '<div class="ve-vh-name">' + (el.kind ? '<span class="ve-kind' + (isRef ? " ve-kind-ref" : "") + '">' + esc(kindLabel(el.kind)) + "</span>" : "") +
+      nameHtml(el.name, "ve-vh-elname") +
+      (rec.canonical_id ? '<span class="ve-muted ve-cid">' + esc(rec.canonical_id) + "</span>" : "") + "</div>" +
+      (isRef ? '<p class="ve-refnote">' + esc(t("ref_note")) + "</p>" : "") +
       '<dl class="ve-meta">' + meta.map(function (m) { return "<div><dt>" + esc(m[0]) + "</dt><dd>" + esc(m[1]) + "</dd></div>"; }).join("") + "</dl>" +
       '<div class="ve-links">' + links + "</div></div>" + subHtml +
       '<div class="ve-subpanel" data-role="subpanel"></div>';
     renderSubpanel();
+  }
+
+  // Belege, deren Text die Kennung zitiert, ohne ihr zugeordnet zu sein
+  function citedList(list, total) {
+    if (!list.length) return '<p class="ve-placeholder ve-placeholder-small">' + esc(t("cited_empty")) + "</p>";
+    var html = '<p class="ve-muted ve-evhead">' + esc(t("cited_head", { n: num(total || list.length) })) + '</p><ul class="ve-citedlist">';
+    list.forEach(function (c) {
+      var tab = c.kind === "fig" ? "fig" : "snip";
+      html += '<li><button type="button" class="ve-target" data-goto="' + tab + '" data-id="' + esc(c.id) + '">' +
+        esc(c.t || c.id) + '</button><div class="ve-cardmeta"><span class="ve-mini">' + esc(t(tab === "fig" ? "v_fig" : "v_snip")) +
+        "</span> <code>" + esc(c.id) + "</code>" + (c.doc ? " · " + esc(c.doc) + (c.p ? " · " + esc(t("page_n", { p: c.p })) : "") : "") +
+        "</div></li>";
+    });
+    html += "</ul>";
+    if (total > list.length) html += '<p class="ve-muted">' + esc(t("cited_more", { n: num(total - list.length) })) + "</p>";
+    return html;
+  }
+
+  // Kennungen im (maskierten) Text als Sprung in den Element-Viewer
+  function linkIds(escaped, selfId) {
+    var D = data.el;
+    if (!D) return escaped;
+    return C.linkifyIds(escaped, function (id) {
+      var k = C.resolveId(D, id);
+      if (k < 0) return null;
+      var target = D.ids[k];
+      if (target === selfId) return '<strong class="ve-idself">' + esc(id) + "</strong>";
+      var ref = D.ref[k] === 1;
+      return '<button type="button" class="ve-idlink' + (ref ? " is-ref" : "") + '" data-open-el="' + esc(target) +
+        '" title="' + esc(ref ? t("ref_link_title") : t("cited_link_title")) + (target !== id ? " (" + target + ")" : "") + '">' + esc(id) + "</button>";
+    });
   }
 
   function renderSubpanel() {
@@ -1512,6 +1683,7 @@
     var ev = EL.rec.evidence || { figures: [], snippets: [] };
     if (state.view === "fig") box.innerHTML = evidenceList("fig", ev.figures, EL.figShown);
     else if (state.view === "snip") box.innerHTML = evidenceList("snip", ev.snippets, EL.snipShown);
+    else if (state.view === "cit" || EL.rec.citation_only) box.innerHTML = citedList(ev.cited_in || [], ev.cited_total || 0);
     else {
       box.innerHTML = versionsHtml();
       wireVersions(box);
@@ -1566,6 +1738,7 @@
     if (e.role) bits.push('<span class="ve-role ve-role-' + esc(e.role) + '">' + esc(t("role_" + e.role)) + "</span>");
     if (e.conf != null) bits.push(esc(t("conf", { p: Math.round(e.conf * 100) })));
     if (e.m) bits.push(esc(t("by", { m: e.m })));
+    if (e.via) bits.push(esc(t("via_alias", { id: e.via })));
     return bits.join('<span aria-hidden="true"> · </span>');
   }
 
@@ -1585,12 +1758,12 @@
         esc(t(kind === "fig" ? "in_fig_browser" : "in_snip_browser")) + "</button></div>";
       if (kind === "fig") {
         html += '<article class="ve-figcard">' + thumbHtml(e.sha, e.cap) +
-          '<div class="ve-cardbody"><div class="ve-cardtitle">' + esc(e.cap || e.id) + "</div>" +
+          '<div class="ve-cardbody"><div class="ve-cardtitle">' + linkIds(esc(C.decodeEntities(e.cap || e.id)), EL.rec && EL.rec.id) + "</div>" +
           '<div class="ve-cardmeta"><code>' + esc(e.id) + "</code>" + (e.nser > 1 ? ' · ' + esc(t("series_n", { n: e.nser })) : "") + "</div>" +
           '<div class="ve-cardmeta">' + evidenceMeta(e) + "</div>" +
           (e.why ? '<div class="ve-why"><span>' + esc(t("why")) + ":</span> " + esc(e.why) + "</div>" : "") + linkRow + "</div></article>";
       } else {
-        html += '<article class="ve-snipcard"><blockquote class="ve-excerpt">' + esc(e.x || e.id) + "</blockquote>" +
+        html += '<article class="ve-snipcard"><blockquote class="ve-excerpt">' + linkIds(esc(C.decodeEntities(e.x || e.id)), EL.rec && EL.rec.id) + "</blockquote>" +
           '<div class="ve-cardmeta"><code>' + esc(e.id) + "</code></div>" +
           '<div class="ve-cardmeta">' + evidenceMeta(e) + "</div>" +
           (e.why ? '<div class="ve-why"><span>' + esc(t("why")) + ":</span> " + esc(e.why) + "</div>" : "") + linkRow + "</article>";
@@ -1890,7 +2063,9 @@
     var eligB = versions.filter(function (v) { return C.releaseKey(v.release) <= kB; });
     var vA = dropA ? null : (eligA.length ? eligA[eligA.length - 1] : null);
     var vB = dropB ? null : (eligB.length ? eligB[eligB.length - 1] : null);
-    var linesA = formatReqLines(vA ? vA.content || "" : ""), linesB = formatReqLines(vB ? vB.content || "" : "");
+    // Adaptive-Versionstexte sind als HTML-Text erfasst; ältere Store-Zeilen tragen noch doppelt
+    // maskierte Kopfzeilen (&amp;lt;, Quelle inzwischen korrigiert). Zur Anzeige bis zum Fixpunkt auflösen.
+    var linesA = formatReqLines(vA ? C.decodeFully(vA.content || "") : ""), linesB = formatReqLines(vB ? C.decodeFully(vB.content || "") : "");
     var blocks = [], lines = [], bi = 0;
     if (dropB) {
       linesA.forEach(function (l) {
@@ -2215,7 +2390,7 @@
     var v = d.to && d.to.version, dropped = d.to && d.to.is_dropped;
     container.innerHTML = '<div class="ve-raw"><div class="ve-raw-head">' + esc(t("raw_version")) + " " +
       esc(v ? v.version_id : (dropped ? t("st_removed") + " (" + d.to.release + ")" : t("none"))) + "</div><pre>" +
-      esc(v ? v.content : (dropped ? t("raw_dropped") : t("raw_empty"))) + "</pre></div>";
+      esc(v ? C.decodeFully(v.content) : (dropped ? t("raw_dropped") : t("raw_empty"))) + "</pre></div>";
   }
 
   function updateAuditBox(d) {
@@ -2335,15 +2510,28 @@
       }
     }
     if (info.text) {
-      h += '<section class="ve-sect"><h3>' + esc(t(isFig ? "fig_text_head" : "text_head")) + '</h3><div class="ve-fulltext">' + esc(info.text) + "</div></section>";
+      h += '<section class="ve-sect"><h3>' + esc(t(isFig ? "fig_text_head" : "text_head")) + '</h3><div class="ve-fulltext">' + linkIds(esc(info.text), null) + "</div></section>";
     }
     var targets = info.targets || [];
+    var D = data.el;
+    var targetIds = targets.map(function (tg) { return tg.id; });
+    // Im Text zitierte Kennungen, die nicht schon zugeordnet sind
+    var cited = C.citedIds(C.decodeEntities((info.caption || "") + "\n" + (info.text || ""))).filter(function (id) {
+      return targetIds.indexOf(id) < 0;
+    });
+    if (cited.length) {
+      h += '<section class="ve-sect"><h3>' + esc(t("cited_ids_head", { n: num(cited.length) })) + '</h3><div class="ve-idchips">' +
+        cited.map(function (id) { return linkIds(esc(id), null); }).join(" ") + "</div></section>";
+    }
     h += '<section class="ve-sect"><h3>' + esc(t("targets_head", { n: num(targets.length) })) + '</h3><ul class="ve-targets">';
     targets.forEach(function (tg) {
-      var inCat = data.el && data.el.byId.has(tg.id);
-      var name = inCat ? data.el.names[data.el.byId.get(tg.id)] : "";
-      h += "<li>" + (inCat ? '<button type="button" class="ve-target" data-open-el="' + esc(tg.id) + '" data-el-view="' + (isFig ? "fig" : "snip") +
-        '"><code>' + esc(tg.id) + "</code>" + (name ? " " + esc(name) : "") + "</button>" :
+      var k = C.resolveId(D, tg.id);
+      var target = k >= 0 ? D.ids[k] : null;
+      var name = k >= 0 ? D.names[k] : "";
+      var ref = k >= 0 && D.ref[k] === 1;
+      h += "<li>" + (target ? '<button type="button" class="ve-target" data-open-el="' + esc(target) + '" data-el-view="' + (ref ? "cit" : (isFig ? "fig" : "snip")) +
+        '"><code>' + esc(tg.id) + "</code>" + (name ? " " + esc(name) : "") + (target !== tg.id ? " → <code>" + esc(target) + "</code>" : "") + "</button>" +
+        (ref ? ' <span class="ve-mini ve-mini-ref">' + esc(t("k_cited")) + "</span>" : "") :
         '<code>' + esc(tg.id) + '</code> <span class="ve-muted">' + esc(t("not_in_catalog")) + "</span>") +
         '<div class="ve-cardmeta">' + evidenceMeta({ role: tg.role, conf: tg.conf, m: tg.m, rel: tg.rel }) + "</div>" +
         (tg.why ? '<div class="ve-why"><span>' + esc(t("why")) + ":</span> " + esc(tg.why) + "</div>" : "") + "</li>";

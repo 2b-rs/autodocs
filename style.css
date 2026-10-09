@@ -403,6 +403,14 @@ ul.tree ul li::before {
   fill: var(--bg-surface, #1c2328) !important;
 }
 
+/* Interne Verweise in KI-Diagrammen (_src/lib_diaglinks.py): Beschriftungen, die ein
+   bekanntes Element nennen; Anforderungs-IDs stehen im Tooltip (<title>) und in der
+   Quellenzeile der Bildunterschrift. */
+.diagram svg a.diag-ref { cursor: pointer; fill: var(--primary); text-decoration: underline; }
+.diagram svg a.diag-ref:hover, .diagram svg a.diag-ref:focus-visible {
+  fill: var(--primary-hover); text-decoration-thickness: 2px;
+}
+
 /* --- KI-generierte Abschnitte --- */
 .ai-badge {
   display: inline-block; vertical-align: middle; margin-left: 10px;
@@ -4839,27 +4847,51 @@ details[open] > summary .dropdown-caret {
    (CONCEPT-0045-MULTI-RELEASE-CURATION)
    ========================================================================== */
 
-nav.crumbs .releases .release-group-title,
-.release-dropdown .releases .release-group-title {
-  padding: 6px 12px 2px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-dim, #6b7280);
+/* Release-Dropdown: Läufe nach Spezifikationsinhalt (lib_docmodel.release_menu_html,
+   _src/tools/page_release_equivalence.py). Eine Linie trennt Releases, deren Inhalt sich
+   für die Seite unterscheidet; inhaltsgleiche und nicht erfasste Läufe tragen eine Überschrift. */
+nav.crumbs .release-dropdown .releases,
+.release-dropdown .releases {
+  max-width: calc(100vw - 16px);
+}
+nav.crumbs .releases .release-run,
+.release-dropdown .releases .release-run {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+nav.crumbs .releases > * + .release-run,
+nav.crumbs .releases > .release-run + *,
+.release-dropdown .releases > * + .release-run,
+.release-dropdown .releases > .release-run + * {
   border-top: 1px solid var(--border-default, #e5e7eb);
-  margin-top: 4px;
+  margin-top: 3px;
+  padding-top: 3px;
 }
-nav.crumbs .releases .release-group-title:first-child,
-.release-dropdown .releases .release-group-title:first-child {
-  border-top: none;
-  margin-top: 0;
-  padding-top: 2px;
+nav.crumbs .releases .release-run-title,
+.release-dropdown .releases .release-run-title {
+  padding: 4px 12px 1px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-dim, #6b7280);
 }
-[data-theme="dark"] nav.crumbs .releases .release-group-title,
-[data-theme="dark"] .release-dropdown .releases .release-group-title {
+nav.crumbs .releases .release-run-uncaptured .release-run-title,
+nav.crumbs .releases .release-run-absent .release-run-title,
+.release-dropdown .releases .release-run-uncaptured .release-run-title,
+.release-dropdown .releases .release-run-absent .release-run-title {
+  font-style: italic;
+  font-weight: 500;
+}
+[data-theme="dark"] nav.crumbs .releases > * + .release-run,
+[data-theme="dark"] nav.crumbs .releases > .release-run + *,
+[data-theme="dark"] .release-dropdown .releases > * + .release-run,
+[data-theme="dark"] .release-dropdown .releases > .release-run + * {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+[data-theme="dark"] nav.crumbs .releases .release-run-title,
+[data-theme="dark"] .release-dropdown .releases .release-run-title {
   color: #9ca3af;
-  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .ai-tombstone-box {
@@ -5057,26 +5089,18 @@ nav.crumbs .releases .release-group-title:first-child,
   color: #fff;
 }
 
-/* Release Equivalence Grouping (Movie 2026-10-05 23-51-56) */
+/* Inhaltsgleiche Releases (Lauf „R19-11 – R22-11 · inhaltsgleich“) liegen auf einer
+   gemeinsamen, leicht getönten Fläche. */
 nav.crumbs .releases .release-equiv-group,
 .release-dropdown .releases .release-equiv-group {
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-subtle, rgba(0, 0, 0, 0.03));
-  border: 1px dashed var(--border-default, #cbd5e1);
+  background: rgba(15, 118, 110, 0.06);
+  background: color-mix(in srgb, var(--primary, #0f766e) 6%, transparent);
   border-radius: 6px;
-  margin: 3px 4px;
-  padding: 2px;
+  padding-bottom: 2px;
 }
 [data-theme="dark"] nav.crumbs .releases .release-equiv-group,
 [data-theme="dark"] .release-dropdown .releases .release-equiv-group {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-nav.crumbs .releases .release-equiv-group a,
-.release-dropdown .releases .release-equiv-group a {
-  padding: 4px 8px;
-  border-radius: 4px;
+  background: rgba(94, 234, 212, 0.07);
 }
 
 /* Sub-tab timer: reserve width for 3-digit seconds (measured 38→44px past 100 s) */
@@ -5104,6 +5128,9 @@ main:has(> section.nsx) { max-width: none; }
 .nsx [data-g="4"] { --nsx-gc: var(--nsx-g4); } .nsx [data-g="5"] { --nsx-gc: var(--nsx-g5); }
 .nsx [data-g="6"] { --nsx-gc: var(--nsx-g6); } .nsx [data-g="7"] { --nsx-gc: var(--nsx-g7); }
 .nsx [data-g="8"] { --nsx-gc: var(--nsx-g8); } .nsx [data-g="9"] { --nsx-gc: var(--nsx-g9); }
+.nsx [data-g="10"] { --nsx-gc: var(--nsx-g1); } .nsx [data-g="11"] { --nsx-gc: var(--nsx-g2); }
+.nsx [data-g="12"] { --nsx-gc: var(--nsx-g3); } .nsx [data-g="13"] { --nsx-gc: var(--nsx-g4); }
+.nsx [data-g="14"] { --nsx-gc: var(--nsx-g5); } .nsx [data-g="15"] { --nsx-gc: var(--nsx-g6); }
 .nsx .kind { background: none; color: inherit; padding: 0; margin: 0; border-radius: 0;
   text-transform: none; letter-spacing: 0; font-size: inherit; vertical-align: baseline; }
 .nsx code { font-size: 12.5px; }
@@ -5120,13 +5147,16 @@ a.nsx-oi { display: block; font: 12px var(--font-mono); color: var(--muted); pad
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; padding-inline: 16px 4px; }
 a.nsx-oi:hover, a.nsx-oi.on { color: var(--primary); }
 a.nsx-oi.on { background: var(--surface2); border-radius: 4px; }
-.nsx-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); }
+.nsx-map { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-3); grid-auto-flow: row dense; }
+/* Große Gruppen über die ganze Breite; kleine rücken nebeneinander (Aufnahme 12:40) */
+.nsx-map > .nsx-card.nsx-card-wide { grid-column: 1 / -1; }
 .nsx-card { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px 12px; }
 .nsx-card > .nsx-gt { font-size: 14px; margin: 0 0 8px; padding-inline-end: 28px; cursor: pointer; display: flex; gap: 7px; align-items: center; }
 .nsx-card > .nsx-cnt { position: absolute; top: 11px; inset-inline-end: 12px; color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
 .nsx-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .nsx a.nsx-chip { font: 12px var(--font-mono); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border);
-  background: var(--bg); color: var(--text); text-decoration: none; white-space: nowrap; transition: opacity .12s; }
+  background: var(--bg); color: var(--text); text-decoration: none; transition: opacity .12s;
+  max-width: 100%; overflow-wrap: anywhere; }   /* lange Namen brechen in der Karte um statt sie zu sprengen */
 .nsx a.nsx-chip.vis-app { border-color: var(--vis-app); background: var(--vis-app-bg); color: var(--vis-app); }
 .nsx a.nsx-chip.vis-priv { border-color: var(--vis-priv); background: var(--vis-priv-bg); color: var(--vis-priv); }
 .nsx a.nsx-chip.vis-internal { border-color: var(--vis-internal); background: var(--vis-internal-bg); color: var(--vis-internal); }
@@ -5219,7 +5249,16 @@ a.nsx-go { font-size: 10.5px; color: var(--faint); margin-inline-start: 4px; whi
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5l1.6 4.2 4.4 1.3-4.4 1.3L8 12.5 6.4 8.3 2 7l4.4-1.3z'/%3E%3Cpath d='M13 11l.6 1.5 1.4.5-1.4.5L13 15l-.6-1.5-1.4-.5 1.4-.5z'/%3E%3C/svg%3E") center / 13px 13px no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.5l1.6 4.2 4.4 1.3-4.4 1.3L8 12.5 6.4 8.3 2 7l4.4-1.3z'/%3E%3Cpath d='M13 11l.6 1.5 1.4.5-1.4.5L13 15l-.6-1.5-1.4-.5 1.4-.5z'/%3E%3C/svg%3E") center / 13px 13px no-repeat; }
 @media (forced-colors: active) { .nsx-oi .nsx-ai::before { background: CanvasText; } }
-.nsx-oi .nsx-ai:hover, .nsx-oi .nsx-ai:focus-visible { background: #7A39BB; color: #fff; outline: none; }
+/* Review-Bedarf: Markierung am Gliederungseintrag (wie das Symbol der Hinweisleiste) */
+a.nsx-oi.nsx-oi-rv { padding-inline-end: 20px; }
+.nsx-oi .nsx-rv { position: absolute; inset-inline-end: 3px; top: 2px; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--primary); color: #fff; font: 800 9px/13px var(--font-sans, inherit); text-align: center; }
+.nsx-oi .nsx-rv::before { content: "!"; }
+a.nsx-oi.sel .nsx-rv { background: #fff; color: var(--primary); }
+.page-review-links .nsx-rvshow { border: 1px dashed color-mix(in srgb, var(--primary) 45%, var(--border)); border-radius: 999px;
+  background: none; color: var(--primary); padding: 3px 9px; font: 650 11px/1.4 inherit; cursor: pointer; }
+.page-review-links .nsx-rvshow:hover { border-style: solid; background: color-mix(in srgb, var(--primary) 7%, var(--surface2)); }
+.nsx-oi .nsx-ai:hover, .nsx-oi .nsx-ai:focus-visible, .nsx-oi .nsx-ai[aria-pressed="true"] { background: #7A39BB; color: #fff; outline: none; }
 a.nsx-oi.sel { color: #fff; background: var(--primary); border-radius: 4px; }
 a.nsx-oi.sel .nsx-ai { color: #fff; }
 .nsx a.nsx-chip.pin { outline: 2px solid var(--primary); outline-offset: 1px; }
@@ -5312,8 +5351,12 @@ main > h1.nsx-pin.nsx-drop-over { outline-style: solid; box-shadow: 0 0 0 6px co
   border: 1px solid var(--primary); border-top: 0; border-start-start-radius: 0; border-start-end-radius: 8px; border-end-start-radius: 8px; border-end-end-radius: 8px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, .2); }
 /* Oberkante des Panels mit Lücke unter dem Reiter */
-.nsx-folds > details.nsx-fold.nsx-pop::before { content: ""; position: absolute; top: 0; inset-inline-start: calc(var(--nsx-tabw, 0px) - 1px); inset-inline-end: 0;
+.nsx-folds > details.nsx-fold.nsx-pop::before { content: ""; position: absolute; top: 0; inset-inline-start: calc(var(--nsx-tabx, 0px) + var(--nsx-tabw, 0px) - 1px); inset-inline-end: 0;
   border-top: 1px solid var(--primary); border-start-end-radius: 8px; }
+/* Panel ins Fenster gerückt: Oberkante auch links vom Reiter, Ecke gerundet */
+.nsx-folds > details.nsx-fold.nsx-pop.nsx-pop-shift { border-start-start-radius: 8px; }
+.nsx-folds > details.nsx-fold.nsx-pop.nsx-pop-shift::after { content: ""; position: absolute; top: 0; inset-inline-start: 0;
+  width: calc(var(--nsx-tabx, 0px) + 1px); border-top: 1px solid var(--primary); border-start-start-radius: 8px; }
 /* Im Panel keine zweite Titelzeile: nur der Knopf zurück in die Mitte, oben in der Ecke */
 .nsx-folds > details.nsx-fold.nsx-pop > summary { position: absolute; top: 6px; inset-inline-end: 8px; min-height: 0; margin: 0; padding: 0; border: 0;
   background: none; pointer-events: none; }
@@ -5357,6 +5400,14 @@ main > h1.nsx-pin.nsx-drop-over { outline-style: solid; box-shadow: 0 0 0 6px co
 .nsx-rel a[data-jump], .nsx-rel a[data-n] { text-decoration-color: var(--primary); }
 .nsx-rel pre, .nsx-rel code, .nsx-rel .nsx-iprops td { direction: ltr; unicode-bidi: isolate; text-align: left; }
 .nsx-folds.nsx-empty::before { content: attr(data-empty); display: block; padding: var(--space-4) 0; color: var(--faint); }
+/* Hinweis, wenn ein Fold außerhalb der Ablageflächen losgelassen wurde */
+.nsx-drophint { position: fixed; z-index: 30; max-width: 320px; padding: 8px 12px; border-radius: 8px; background: var(--text);
+  color: var(--bg); font-size: 13px; line-height: 1.4; box-shadow: 0 8px 24px rgba(0, 0, 0, .25); pointer-events: none; }
+.nsx-drophint[hidden] { display: none; }
+/* Während eines Zugs ist die ganze mittlere Spalte Ablagefläche (auch wenn sie leer ist) */
+.nsx.nsx-live.nsx-dnd > .nsx-body { min-height: calc(100vh - var(--nsx-top, 0px)); }
+.nsx.nsx-live.nsx-dnd > .nsx-body > .nsx-folds { min-height: 120px; outline: 2px dashed color-mix(in srgb, var(--primary) 35%, transparent);
+  outline-offset: 6px; border-radius: 8px; }
 
 /* Titelzeile der Detailansicht: Art-Badge wie im Seitenkopf (API-Farbe), Name als Link */
 .nsx-dettitle .kind { display: inline-block; background: var(--primary); color: #fff; border-radius: 5px; padding: 1px 8px;
@@ -5424,6 +5475,29 @@ a.nsx-oi-h .nsx-oi-n { flex: 0 1 auto; min-width: 0; overflow: hidden; text-over
 .nsx-hb-next { margin-inline-start: auto; color: var(--status-candidate); border-style: dashed; }
 .nsx-hb:hover, .nsx-hb:focus-visible { color: #fff; background: var(--primary); border-color: var(--primary); outline: none; }
 a.nsx-oi.sel .nsx-hb { color: #fff; border-color: rgba(255,255,255,.6); background: transparent; }
+/* Einklappbare Gruppen der Gliederung (Pfeil vor dem Titel, Anzahl bleibt sichtbar) */
+.nsx-og > .nsx-chev { flex: none; width: 13px; margin-inline: -3px -4px; color: var(--muted); font-size: 11.5px; line-height: 1;
+  text-align: center; cursor: pointer; border-radius: 3px; }
+.nsx-og > .nsx-chev::before { content: "▾"; }
+.nsx-og[aria-expanded="false"] > .nsx-chev::before { content: "▸"; }
+[dir="rtl"] .nsx-og[aria-expanded="false"] > .nsx-chev::before { content: "◂"; }
+.nsx-og > .nsx-chev:hover, .nsx-og > .nsx-chev:focus-visible { color: var(--primary); outline: 1px solid var(--primary); outline-offset: 1px; }
+.nsx-og[aria-expanded="false"] { opacity: .85; }
+/* Clusterseiten: Modulkarten als Zeile über der Überschrift (Kompakt) */
+.cards.nsx-clucards { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; margin: 0 0 var(--space-3); }
+.cards.nsx-clucards .card { padding: 8px 11px; border-radius: 8px; }
+.cards.nsx-clucards .card h3 { font-size: 13.5px; }
+.cards.nsx-clucards .card p { font-size: 12px; margin: 2px 0; color: var(--muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cards.nsx-clucards .card-meta { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.cards.nsx-clucards .card-meta .chip, .cards.nsx-clucards .card-meta .chip code { font-size: 10.5px; margin: 0; padding-block: 0; }
+/* Schmal: Karten bleiben eine Zeile, die in sich seitwärts scrollt, statt die Überschrift
+   unter vier gestapelte Karten zu schieben */
+@media (max-width: 640px) {
+  .cards.nsx-clucards { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(220px, 78%);
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding-bottom: 4px; }
+  .cards.nsx-clucards .card { scroll-snap-align: start; }
+}
 .nsx-og.nsx-hg { cursor: pointer; }
 .nsx-og.nsx-hg:hover { color: var(--primary); }
 .nsx-og.nsx-hg.cur { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }

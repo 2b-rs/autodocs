@@ -130,6 +130,16 @@
       (fnIndex[fname] = fnIndex[fname] || []).push({ id: go.getAttribute("href").slice(1), code: code });
     });
 
+    // ---- Clusterseiten: die Modulkarten stehen als Zeile über der Überschrift und scrollen
+    // mit der Seite heraus (Aufnahme 13:03); ihre Überschrift „Module im Cluster“ entfällt
+    var cluCards = isClu && document.querySelector("main > div.cards"), mainH1 = document.querySelector("main > h1");
+    if (cluCards && mainH1) {
+      var ch2 = cluCards.previousElementSibling;
+      if (ch2 && ch2.matches("h2.sect")) ch2.hidden = true;
+      cluCards.classList.add("nsx-clucards");
+      mainH1.parentNode.insertBefore(cluCards, mainH1);
+    }
+
     // ---- Titelleiste des Namespace bleibt oben stehen
     var title = document.querySelector("main > h1");
     function pinH() { return title ? title.offsetHeight : 0; }
@@ -164,6 +174,19 @@
           sm.insertBefore(gr, sm.firstChild);
         }
         folds.insertBefore(p, folds.firstChild);
+      }
+    }
+
+    // ---- Service-Interfaces: die Mitgliederliste der Seite (Überschrift + Liste, jeder
+    // Eintrag verweist auf einen Record) ersetzt im Kompaktmodus die Gliederung
+    if (root.classList.contains("nsx-svc")) {
+      for (var sq = root.previousElementSibling; sq; sq = sq.previousElementSibling) {
+        if (!sq.matches("ul.mlist")) continue;
+        var ids = Array.prototype.map.call(sq.querySelectorAll("li > a[href^='#']"), function (a) { return decodeURIComponent(a.getAttribute("href").slice(1)); });
+        if (!ids.length || !ids.every(function (id) { return recOwner[id]; })) continue;
+        sq.hidden = true;
+        var sh = sq.previousElementSibling;
+        if (sh && /^H[34]$/.test(sh.tagName)) sh.hidden = true;
       }
     }
 
@@ -244,26 +267,81 @@
       f._fromTitle = false;
       f._dropped = false;
       f.classList.add("nsx-dragging");
+      root.classList.add("nsx-dnd");
       if (canTitleDock(f)) title.classList.add("nsx-drop-zone");
       ev.dataTransfer.effectAllowed = "move";
       try { ev.dataTransfer.setData("text/plain", f.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
     });
-    folds.addEventListener("dragover", function (ev) {
+    // Ablagefläche ist die ganze mittlere Spalte, nicht nur die Folds: Ist die Mitte leer
+    // (alles angedockt, nichts ausgewählt), war sie nur so hoch wie der Hinweis, und ein
+    // Reiter, der darunter losgelassen wurde, dockte wieder an (Aufnahme 12:24)
+    var dropZone = folds.parentNode;
+    dropZone.addEventListener("dragover", function (ev) {
       if (!dragging) return;
       ev.preventDefault();
+      try { ev.dataTransfer.dropEffect = "move"; } catch (e) { /* alte Browser */ }
       if (dragging.classList.contains("nsx-tdocked")) {
         undockTitle(dragging, undefined, true);     // Vorschau; endgültig erst beim Ablegen
         dragging.classList.add("nsx-dragging");
       }
       var t = ev.target.closest && ev.target.closest("details[data-fold]");
-      if (!t || t === dragging || t.parentNode !== folds) return;
-      var r = t.getBoundingClientRect();
-      folds.insertBefore(dragging, ev.clientY < r.top + Math.min(r.height / 2, 60) ? t : t.nextSibling);
+      if (t && t !== dragging && t.parentNode === folds) {
+        var r = t.getBoundingClientRect();
+        folds.insertBefore(dragging, ev.clientY < r.top + Math.min(r.height / 2, 60) ? t : t.nextSibling);
+        return;
+      }
+      if (t) return;
+      // Freie Fläche: über dem ersten sichtbaren Fold an den Anfang, sonst ans Ende
+      var vis = foldList().filter(function (x) { return x !== dragging && docked(x); });
+      if (!vis.length) return;
+      if (ev.clientY < vis[0].getBoundingClientRect().top) folds.insertBefore(dragging, vis[0]);
+      else if (ev.clientY > vis[vis.length - 1].getBoundingClientRect().bottom) folds.insertBefore(dragging, vis[vis.length - 1].nextSibling);
     });
-    folds.addEventListener("drop", function (ev) { if (dragging) { ev.preventDefault(); dragging._dropped = true; } });
+    dropZone.addEventListener("drop", function (ev) { if (dragging) { ev.preventDefault(); dragging._dropped = true; } });
+    // Ablage nicht allein am drop-Ereignis festmachen: Manche Browser (Aufnahme 13:02, Safari)
+    // liefern es nicht zuverlässig, der Fold flog dann kommentarlos zurück. Maßgeblich ist die
+    // letzte Zeigerposition während des Zugs: Titelleiste (mit 16 px Toleranz) oder mittlere
+    // Spalte; außerhalb erscheint ein Hinweis statt eines stillen Zurückspringens.
+    var lastDrag = null;
+    document.addEventListener("dragover", function (ev) { if (dragging) lastDrag = { x: ev.clientX, y: ev.clientY }; });
+    function inRect(p, r, tol) { return p.x >= r.left - tol && p.x <= r.right + tol && p.y >= r.top - tol && p.y <= r.bottom + tol; }
+    function dropZoneAt(p) {
+      if (!p) return null;
+      if (title && inRect(p, title.getBoundingClientRect(), 16)) return "title";
+      var z = dropZone.getBoundingClientRect();
+      if (p.x >= z.left && p.x <= z.right && p.y >= z.top) return "center";
+      return null;
+    }
+    var dropHint = null, dropHintTimer = 0;
+    function showDropHint(p) {
+      if (!dropHint) {
+        dropHint = document.createElement("div");
+        dropHint.className = "nsx-drophint";
+        dropHint.setAttribute("role", "status");
+        document.body.appendChild(dropHint);
+      }
+      dropHint.textContent = labels.drophint || "";
+      dropHint.style.left = Math.max(8, Math.min((p ? p.x : innerWidth / 2) - 160, innerWidth - 330)) + "px";
+      dropHint.style.top = Math.max(8, Math.min((p ? p.y : 80) + 16, innerHeight - 80)) + "px";
+      dropHint.hidden = false;
+      clearTimeout(dropHintTimer);
+      dropHintTimer = setTimeout(function () { dropHint.hidden = true; }, 4000);
+    }
     document.addEventListener("dragend", function () {
       if (!dragging) return;
+      root.classList.remove("nsx-dnd");
       if (title) title.classList.remove("nsx-drop-zone", "nsx-drop-over");
+      var at = lastDrag, zone = dropZoneAt(at);
+      lastDrag = null;
+      if (!dragging._dropped) {
+        if (zone === "title" && !dragging._fromTitle && canTitleDock(dragging)) {
+          dragging._dropped = true;
+          dockTitle(dragging);
+        } else if (zone === "center") {
+          dragging._dropped = true;
+          if (dragging._fromTitle && dragging.classList.contains("nsx-tdocked")) undockTitle(dragging, undefined, true);
+        } else if (!zone && (dragging._fromTitle || canTitleDock(dragging))) showDropHint(at);
+      }
       // Aus der Titelleiste gezogen: in der Mitte abgelegt → endgültig gelöst,
       // sonst (abgebrochen, auf der Leiste losgelassen) bleibt der Reiter angedockt
       if (dragging._fromTitle) {
@@ -358,16 +436,21 @@
       if (!b) return;
       var t = b.getBoundingClientRect(), c = folds.getBoundingClientRect();
       var rtl = getComputedStyle(root).direction === "rtl";
-      var avail = rtl ? t.right - 12 : innerWidth - t.left - 12;
-      var w = Math.max(t.width, Math.min(Math.max(c.width, 480), avail));
+      // Breite wie die Mitte (mindestens 480 px); steht der Reiter weit rechts (links bei
+      // RTL), rückt das Panel zurück ins Fenster, statt schmal zu werden
+      var w = Math.max(t.width, Math.min(Math.max(c.width, 480), innerWidth - 24));
+      var left = rtl ? Math.max(12, Math.min(t.right - w, innerWidth - 12 - w)) : Math.max(12, Math.min(t.left, innerWidth - 12 - w));
+      var tabx = rtl ? left + w - t.right : t.left - left;
       popFold.style.top = t.bottom - 1 + "px";
-      popFold.style.left = (rtl ? t.right - w : t.left) + "px";
+      popFold.style.left = left + "px";
       popFold.style.width = w + "px";
       popFold.style.setProperty("--nsx-tabw", t.width + "px");
+      popFold.style.setProperty("--nsx-tabx", Math.max(0, tabx) + "px");
+      popFold.classList.toggle("nsx-pop-shift", tabx > 1);
     }
     function setPop(f) {
       if (popFold && popFold !== f) {
-        popFold.classList.remove("nsx-pop");
+        popFold.classList.remove("nsx-pop", "nsx-pop-shift");
         ["top", "left", "width"].forEach(function (k) { popFold.style[k] = ""; });
         var ob = tdock.querySelector('[data-fold="' + popFold.getAttribute("data-fold") + '"]');
         if (ob) ob.setAttribute("aria-expanded", "false");
@@ -475,6 +558,7 @@
         dragging = foldByKey(b.getAttribute("data-fold"));
         dragging._fromTitle = true;
         dragging._dropped = false;
+        root.classList.add("nsx-dnd");
         setPop(null);
         ev.dataTransfer.effectAllowed = "move";
         try { ev.dataTransfer.setData("text/plain", b.getAttribute("data-fold")); } catch (e) { /* alte Browser */ }
@@ -539,6 +623,50 @@
       return true;
     }
     setBy(load(BY_KEY) || "");
+
+    // ---- Gruppen der Gliederung ein- und ausklappen (Aufnahme 13:03): Pfeil vor dem Titel,
+    // Klick auf den Titel (außer Verweis bzw. Release-Titel der Historie), Tastatur am Pfeil.
+    // Vorgabe ausgeklappt; gemerkt wird je Seite nur für die Sitzung (sessionStorage).
+    var OL_KEY = "nsx-ol-collapsed:" + location.pathname, collapsed = {};
+    try { collapsed = JSON.parse(sessionStorage.getItem(OL_KEY) || "{}") || {}; } catch (e) { collapsed = {}; }
+    function ogKey(og) { return (og.parentNode.getAttribute("data-by") || "") + "|" + og.textContent.trim(); }
+    function ogItems(og) {
+      var out = [];
+      for (var x = og.nextElementSibling; x && !x.matches(".nsx-og"); x = x.nextElementSibling) out.push(x);
+      return out;
+    }
+    function setOg(og, open, keep) {
+      og.setAttribute("aria-expanded", String(open));
+      var ch = og.querySelector(":scope > .nsx-chev");
+      if (ch) ch.setAttribute("aria-expanded", String(open));
+      ogItems(og).forEach(function (x) { x.hidden = !open; });
+      if (!keep) return;
+      if (open) delete collapsed[ogKey(og)]; else collapsed[ogKey(og)] = 1;
+      try { sessionStorage.setItem(OL_KEY, JSON.stringify(collapsed)); } catch (e) { /* ohne Speicher */ }
+    }
+    if (outline) outline.querySelectorAll(".nsx-ol > .nsx-og").forEach(function (og) {
+      var ch = document.createElement("span");
+      ch.className = "nsx-chev";
+      ch.setAttribute("role", "button");
+      ch.setAttribute("tabindex", "0");
+      ch.setAttribute("aria-label", og.textContent.trim());
+      og.insertBefore(ch, og.firstChild);
+      setOg(og, !collapsed[ogKey(og)], false);
+    });
+    if (outline) {
+      outline.addEventListener("click", function (ev) {
+        var og = ev.target.closest(".nsx-og");
+        if (!og || ev.target.closest("a") || (og.classList.contains("nsx-hg") && !ev.target.closest(".nsx-chev"))) return;
+        ev.preventDefault();
+        setOg(og, og.getAttribute("aria-expanded") === "false", true);
+      });
+      outline.addEventListener("keydown", function (ev) {
+        if ((ev.key !== "Enter" && ev.key !== " ") || !ev.target.matches(".nsx-chev")) return;
+        ev.preventDefault();
+        var og = ev.target.closest(".nsx-og");
+        setOg(og, og.getAttribute("aria-expanded") === "false", true);
+      });
+    }
 
     // ---- Inspektorbreite
     var split = aside && aside.querySelector(".nsx-split");
@@ -1005,6 +1133,8 @@
     function flattenClassIndex(main) {
       var sec = main.querySelector("section.nsx");
       if (!sec) return;
+      // Service-Interfaces: Die Seite zeigt Mitgliederliste und Dokumentation schon selbst
+      if (sec.classList.contains("nsx-svc")) { sec.parentNode.removeChild(sec); unfoldDocs(main); return; }
       var doc = main.ownerDocument, frag = doc.createDocumentFragment();
       var rowsBy = dict();
       sec.querySelectorAll(".nsx-row").forEach(function (r) { rowsBy[r.getAttribute("data-n")] = r; });
@@ -1022,9 +1152,9 @@
         if (x.matches(".nsx-og")) group(x.textContent.trim());
         else if (ul && x.matches("a.nsx-oi")) item(rowsBy[x.getAttribute("data-n")]);
       });
-      // Klassenseiten mit wenigen Mitgliedern (schlichte Liste ohne Gliederung): Übersicht
-      // aus den Gruppen der Liste
-      else if (sec.classList.contains("nsx-cls")) sec.querySelectorAll(".nsx-list > .nsx-sec").forEach(function (gs) {
+      // Seiten mit wenigen Einträgen (schlichte Liste ohne Gliederung): Übersicht aus den
+      // Gruppen der Liste
+      else sec.querySelectorAll(".nsx-list > .nsx-sec").forEach(function (gs) {
         var gt = gs.querySelector(":scope > .nsx-gt");
         group(gt ? gt.textContent.trim() : "");
         gs.querySelectorAll(":scope > .nsx-row").forEach(item);
@@ -1054,6 +1184,11 @@
         Array.prototype.slice.call(uml.children, 1).forEach(function (c) { frag.appendChild(c); });
       }
       sec.parentNode.replaceChild(frag, sec);
+      unfoldDocs(main);
+    }
+    // Eingeklappte Dokumentationsabschnitte wieder in den Fluss der Seite stellen
+    function unfoldDocs(main) {
+      var doc = main.ownerDocument;
       main.querySelectorAll("details.nsx-doc").forEach(function (dd) {
         var f2 = doc.createDocumentFragment(), kids = Array.prototype.slice.call(dd.childNodes);
         kids.forEach(function (k) {
@@ -1128,6 +1263,7 @@
     function inDetail(id) { return detBody && detBody.querySelector('[id="' + CSS.escape(id) + '"]') || null; }
     function openTo(el) {
       for (var p = el.parentElement; p && p !== detBody; p = p.parentElement) if (p.tagName === "DETAILS") p.open = true;
+      if (el.tagName === "DETAILS") el.open = true;          // z.B. Review-Panel eines Records
       el.scrollIntoView({ block: "start", behavior: behavior });
     }
     // Titelzeile der Detailansicht: Art (in API-Farbe), voll qualifizierter Name als Link
@@ -1165,7 +1301,7 @@
       var out = "";
       if (rec) rec.querySelectorAll("table.props tr").forEach(function (tr) {
         var th = tr.querySelector("th"), td = tr.querySelector("td");
-        if (!out && th && td && /^(Scope|Geltungsbereich)$/i.test(th.textContent.trim())) out = td.textContent.trim().replace(/^\S+\s+/, "");
+        if (!out && th && td && /^(Scope|Geltungsbereich)$/i.test(th.textContent.trim())) out = td.textContent.trim().replace(/^(?:service\s+interface|\S+)\s+/, "");
       });
       return out;
     }
@@ -1235,12 +1371,21 @@
       if (dTab) dTab.remove();
       dTab = dPanel = null;
       detFold.classList.remove("nsx-dp-open");
+      markAi();
+    }
+    function aiOpen() { return !!(dTab && dTab.getAttribute("aria-expanded") === "true"); }
+    // Zustand der Sterne: gedrückt beim ausgewählten Eintrag mit offenem KI-Text
+    function markAi() {
+      root.querySelectorAll(".nsx-ai").forEach(function (s) {
+        s.setAttribute("aria-pressed", String(!!selected && s.getAttribute("data-ai") === selected && aiOpen()));
+      });
     }
     function setDetailAi(open) {
       if (!dTab || !dPanel) return;
       dPanel.hidden = !open;
       dTab.setAttribute("aria-expanded", String(open));
       detFold.classList.toggle("nsx-dp-open", open);
+      markAi();
       if (open) {
         var t = dTab.getBoundingClientRect(), pr = dPanel.getBoundingClientRect();
         var rtl = getComputedStyle(root).direction === "rtl";
@@ -1361,7 +1506,14 @@
         });
       } else {
         words(r, "data-recs").forEach(function (id) { borrow(id, wrap); });
-        if (!wrap.children.length) fallback("");
+        if (!wrap.children.length) {
+          fallback("");
+          // Abgeleitete Einträge ohne eigenen Record (Datentypen, Application Errors eines
+          // Service-Interface): die Mitglieder, die sie verwenden
+          var users = words(r, "data-in");
+          if (users.length) wrap.insertAdjacentHTML("beforeend", '<section class="nsx-canon-fns"><h3>' + esc(labels.in || "")
+            + ' <span class="nsx-cnt">' + users.length + "</span></h3><ul>" + relItems(users, name).join("") + "</ul></section>");
+        }
         finish();
         return { done: done };
       }
@@ -1372,6 +1524,11 @@
     var selected = null;
     function revealSelected() {
       if (!selected || !outline) return;
+      // Eingeklappte Gruppe des ausgewählten Eintrags öffnen (ohne es zu merken)
+      (oitems[selected] || []).forEach(function (o) {
+        if (!o.hidden) return;
+        for (var g = o.previousElementSibling; g; g = g.previousElementSibling) if (g.matches(".nsx-og")) { setOg(g, true, false); break; }
+      });
       (oitems[selected] || []).forEach(function (o) {
         if (!o.offsetParent) return;
         var top = o.offsetTop - outline.offsetTop;
@@ -1415,6 +1572,7 @@
         unhighlight();
         if (relBox) { relBox.hidden = true; relBox.removeAttribute("data-owner"); }
         if (hint) hint.hidden = false;
+        markAi();
       }
       var fv = firstVisibleFold();
       if (fv === detFold) {
@@ -1447,7 +1605,17 @@
     root.addEventListener("click", function (ev) {
       var t = ev.target;
       var ai = t.closest(".nsx-ai");
-      if (ai) { ev.preventDefault(); select(ai.getAttribute("data-ai"), { ai: true }); return; }
+      if (ai) {
+        // Stern: öffnet den KI-Text des Eintrags; beim ausgewählten Eintrag schaltet er ihn um
+        ev.preventDefault();
+        var an = ai.getAttribute("data-ai");
+        if (an === selected && dTab) {
+          var op = !aiOpen();
+          setDetailAi(op);
+          if (op) toDetail();
+        } else select(an, { ai: true });
+        return;
+      }
       var dt = t.closest(".nsx-dtab");
       if (dt) {
         ev.preventDefault();
@@ -1471,13 +1639,20 @@
         var n = a.getAttribute("data-n") || a.getAttribute("data-jump");
         if (!rows[n]) return;
         ev.preventDefault();
-        if (n === selected) toDetail();
+        // Klick auf den Namen des ausgewählten Eintrags schließt einen offenen KI-Text
+        // wieder (Aufnahme 12:01), sonst springt er zur Detailansicht
+        if (n === selected) { if (aiOpen()) setDetailAi(false); else toDetail(); }
         else select(n, { origin: a.classList.contains("nsx-chip") ? "map" : "side", from: a });
         return;
       }
-      var link = t.closest("a[href^='#']");
+      // Sprünge auf dieser Seite: reine Anker (#…) und Verweise mit Seitenpfad, etwa
+      // die internen Links der KI-Diagramme (SVG-<a>, lib_diaglinks)
+      var link = t.closest("a[href]");
       if (!link) return;
-      var id = decodeURIComponent(link.getAttribute("href").slice(1));
+      var url;
+      try { url = new URL(link.getAttribute("href"), location.href); } catch (e) { return; }
+      if (!url.hash || url.origin !== location.origin || url.pathname !== location.pathname) return;
+      var id = decodeURIComponent(url.hash.slice(1));
       if (id === "class-decl" && title) {
         // Verweis auf die Klasse selbst: sie steht in der Titelleiste; nicht nach oben springen
         ev.preventDefault();
@@ -1500,6 +1675,7 @@
       }
       if (recOwner[id]) {
         ev.preventDefault();
+        if (popFold && popFold.contains(link)) setPop(null);   // Sprung aus dem Panel schließt es
         if (selected === recOwner[id] && inDetail(id)) openTo(inDetail(id));
         else select(recOwner[id], { anchor: id });
       }
@@ -1508,10 +1684,44 @@
       if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches(".nsx-ai, g[data-jump]")) {
         ev.preventDefault();
         ev.stopPropagation();
-        ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        ev.target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
       }
     });
     root.querySelectorAll(".nsx-ai").forEach(function (s) { s.setAttribute("title", labels.ai || ""); s.setAttribute("aria-label", labels.ai || ""); });
+    root.querySelectorAll(".nsx-rv").forEach(function (s) { s.setAttribute("title", labels.rv || ""); s.setAttribute("role", "img"); s.setAttribute("aria-label", labels.rv || ""); });
+
+    // ---- Review-Bedarf: Die Hinweisleiste der Seite verweist auf die Review-Panels der Records
+    // (#review-<ID>). Kompakt liegen die Records in der Detailansicht: Ein Klick wählt den
+    // Eintrag und öffnet dort das Panel; „In der Gliederung zeigen“ schaltet auf die
+    // Gliederung „Review-Bedarf“.
+    function reviewTarget(href) {
+      var m = /^#review-(.+)$/.exec(href || "");
+      var id = m && decodeURIComponent(m[1]);
+      return id && recOwner[id] ? { name: recOwner[id], anchor: "review-" + id } : null;
+    }
+    document.querySelectorAll(".page-review-notice").forEach(function (notice) {
+      var links = notice.querySelector(".page-review-links");
+      if (links && outline && outline.querySelector('.nsx-by button[data-by="review"]') && !notice.querySelector(".nsx-rvshow")) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "nsx-rvshow";
+        b.textContent = labels.rvshow || "";
+        links.appendChild(b);
+      }
+      notice.addEventListener("click", function (ev) {
+        if (ev.target.closest(".nsx-rvshow")) {
+          ev.preventDefault();
+          if (setBy("review")) save(BY_KEY, "review");
+          outline.scrollIntoView({ block: "nearest", behavior: behavior });
+          return;
+        }
+        var a = ev.target.closest("a.page-review-link"), tg = a && reviewTarget(a.getAttribute("href"));
+        if (!tg) return;
+        ev.preventDefault();
+        if (selected === tg.name && inDetail(tg.anchor)) openTo(inDetail(tg.anchor));
+        else select(tg.name, { anchor: tg.anchor, from: a });
+      });
+    });
     if (map) {
       var mapFold = map.closest("details");
       if (mapFold) mapFold.addEventListener("toggle", restore);
@@ -1538,10 +1748,15 @@
       detFold.hidden = true;
     }
     updateEmpty();
-    // Vorgabe ohne gespeicherte Wahl: User Guide und Karte in der Titelleiste
-    // Klassenseiten: Mitgliederkarte, User Guide, Klassendiagramm
-    var td = load(tdockKey);
-    (td === null ? (isCls ? "map,guide,uml" : "guide,map,uml") : td).split(",").forEach(function (k) { if (k) dockTitle(foldByKey(k)); });
+    // Beim Öffnen sind User Guide (bzw. Cluster Guide), Karte und Klassendiagramm immer in
+    // der Titelleiste (Klassenseiten: Mitgliederkarte, User Guide, Klassendiagramm). Gemerkt
+    // wird nur die Reihenfolge der Reiter: Ein in einer früheren Sitzung oder auf einer
+    // anderen Seite gelöster Reiter fehlt sonst dauerhaft (Aufnahme 12:02). Zusätzlich
+    // angedockte Folds (Implementer's Guide) bleiben angedockt.
+    var tdDefault = isCls ? ["map", "guide", "uml"] : ["guide", "map", "uml"];
+    var td = (load(tdockKey) || "").split(",").filter(function (k) { return k && foldByKey(k); });
+    tdDefault.forEach(function (k) { if (td.indexOf(k) < 0) td.push(k); });
+    td.forEach(function (k) { dockTitle(foldByKey(k)); });
 
     // Klick auf eine leere Fläche löst die Auswahl; der Inspektor folgt dann wieder
     // dem Mauszeiger. Lesebereiche (Detailansicht, Guide-Text, Inspektor) und
@@ -1549,6 +1764,7 @@
     function release() {
       if (!selected) return;
       selected = null;
+      markAi();
       root.querySelectorAll(".nsx-oi.sel, .nsx-chip.pin").forEach(function (x) { x.classList.remove("sel", "pin"); x.removeAttribute("aria-current"); });
       unhighlight();
       last = null;
@@ -1559,7 +1775,7 @@
       var t = ev.target;
       if (ev.button !== 0 || !t.closest || !root.contains(t) && !(title && title.contains(t))) return;
       if (t.closest("a, button, summary, input, select, textarea, label, [role=button], [tabindex], [data-jump], .nsx-chip, .nsx-oi, " +
-        ".nsx-detbody, .nsx-rel, details[data-fold=guide] > :not(summary), .nsx-tdock")) return;
+        ".nsx-detbody, .nsx-rel, details[data-fold=guide] > :not(summary), .nsx-tdock, .nsx-og")) return;
       if (window.getSelection && String(getSelection())) return;
       release();
     });
@@ -1609,7 +1825,7 @@
     });
     root.addEventListener("click", function (ev) {
       var h = ev.target.closest && ev.target.closest(".nsx-hb, .nsx-hg");
-      if (!h) return;
+      if (!h || ev.target.closest(".nsx-chev")) return;
       ev.preventDefault();
       ev.stopPropagation();
       var rel = h.getAttribute("data-rel");
@@ -1625,9 +1841,12 @@
       try { h = decodeURIComponent(h); } catch (e) { /* unkodiert */ }
       h = h.split("&").filter(function (x) { return x.indexOf("release=") !== 0; })[0] || "";
       if (!h) return;
+      var rvt = reviewTarget("#" + h);
       if (h.indexOf("nsx-e-") === 0) {
         var row = document.getElementById(h);
         if (row && row.classList.contains("nsx-row")) select(row.getAttribute("data-n"), { origin: "nav" });
+      } else if (rvt) {
+        select(rvt.name, { anchor: rvt.anchor });
       } else if (recOwner[h]) {
         select(recOwner[h], { anchor: h });
       }

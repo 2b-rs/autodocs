@@ -821,11 +821,28 @@
     applyStandardsLinkRewrites(document, "");
   }
 
+  // Geöffnetes Release-Menü im Fenster halten: Ragt es rechts hinaus (schmale Bildschirme),
+  // wird es nach links verschoben, höchstens bis an den linken Rand.
+  function fitReleaseMenu(details) {
+    var box = details && details.querySelector(".releases");
+    if (!box) return;
+    box.style.left = "";
+    var rect = box.getBoundingClientRect();
+    if (!rect.width) return;
+    var vw = document.documentElement.clientWidth || window.innerWidth || 0;
+    var over = rect.right - (vw - 8);
+    if (over > 0) box.style.left = -Math.min(over, Math.max(0, rect.left - 8)) + "px";
+  }
+
   function bindCrumbsHover() {
     document.querySelectorAll("details.universe-dropdown, details.release-dropdown").forEach(function (details) {
       if (details.getAttribute("data-hover-bound")) return;
       details.setAttribute("data-hover-bound", "1");
       var leaveTimer = null;
+      var isRelease = details.classList.contains("release-dropdown");
+      if (isRelease) {
+        details.addEventListener("toggle", function () { if (details.open) fitReleaseMenu(details); });
+      }
       details.addEventListener("mouseenter", function () {
         if (leaveTimer) {
           clearTimeout(leaveTimer);
@@ -833,6 +850,7 @@
         }
         details.open = true;
         details.classList.add("is-hover-open");
+        if (isRelease) fitReleaseMenu(details);
       });
       details.addEventListener("mouseleave", function () {
         if (leaveTimer) clearTimeout(leaveTimer);
