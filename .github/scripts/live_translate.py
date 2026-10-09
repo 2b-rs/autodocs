@@ -43,6 +43,7 @@ import tempfile
 import threading
 import time
 import urllib.request
+from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -335,6 +336,7 @@ class Job:
         self.assets = {"bundle": bundle.sha256, "manifest": bundle.manifest_hash}
         self.terms = bundle.terms()
         self.frags = bundle.fragments()
+        self.terms.vocab = C.code_vocab(f.html for f in self.frags.values())
         self.tm = bundle.tm()
         self.tm_loaded = self.tm.load_chain(tlog.entries)
         self.tm_models: Dict[str, str] = {e["hash"][:12]: e.get("model", "") for e in tlog.entries if e.get("kind") == "tm"}
@@ -393,7 +395,7 @@ class Job:
                 if t is None:
                     res.failed[c.sid] = ["missing"]
                     continue
-                t2 = C.normalize_output(t, b.lang)
+                t2 = C.normalize_output(C.strip_comments(t), b.lang)
                 probs = C.check_segment(c.de, t2, b.lang, self.terms)
                 if probs:
                     res.failed[c.sid] = probs
@@ -426,7 +428,7 @@ class Job:
                 sch.abandon(b)
             return
         origin = ""
-        if r.accepted:
+        if r.accepted or r.failed:
             segs = []
             total = sum(len(c.de) for c in b.claims if c.sid in r.accepted) or 1
             for c in b.claims:
@@ -439,16 +441,21 @@ class Job:
                 "effort": C.model_effort(b.model, self.a.effort), "backend": "agy", "profile": r.profile or "unbekannt",
                 "attempt": b.attempt, "call": f"{self.run_id}/{b.no}", "recipe": C.RECIPE_ID,
                 "recipe_hash": C.RECIPE_HASH, "prompt_hash": C.text_sha256(b.prompt), "tokens": r.tokens,
-                "list_price_usd": round(r.usd, 6), "rejected": len(r.failed), "author": "worker",
-                "assets": self.assets, "run": self.run_id, "at": C.utc_now()})
+                "list_price_usd": round(r.usd, 6), "rejected": len(r.failed),
+                "rejected_codes": dict(sorted(Counter(x for ps in r.failed.values() for x in C.problem_codes(ps)).items())),
+                "rejected_sids": [[sid, C.problem_codes(ps)] for sid, ps in sorted(r.failed.items())][:60],
+                "prompt_rev": C.PROMPT_REVISION, "price_basis": C.PRICE_BASIS, "segments_sent": len(b.claims),
+                "author": "worker", "assets": self.assets, "run": self.run_id, "at": C.utc_now()})
             origin = "tm:" + e["hash"][:12]
             self.tm_models[e["hash"][:12]] = b.model
-            if r.tokens.get("output"):
-                chars = sum(len(c.de) for c in b.claims)
+            # Aufrufgröße je Sprache nach den sichtbaren Ausgabe-Tokens nachführen (agy zählt Denken in output mit)
+            chars = sum(len(c.de) for c in b.claims)
+            visible = r.tokens.get("output", 0) - r.tokens.get("thinking", 0)
+            if b.attempt == 1 and chars >= 2000 and visible > 0:
                 self.ratio_obs.setdefault(b.lang, []).append(
-                    max(0.05, (r.tokens["output"] - C.SEG_JSON_TOKENS * len(b.claims)) / max(1, chars)))
+                    max(0.05, (visible - C.SEG_JSON_TOKENS * len(b.claims)) / chars))
                 obs = self.ratio_obs[b.lang][-8:]
-                sch.ratios[b.lang] = min(0.8, max(0.1, statistics.median(obs)))
+                sch.ratios[b.lang] = min(1.2, max(0.08, statistics.median(obs)))
         t["segments"] += len(r.accepted)
         t["rejected"] += len(r.failed)
         sch.complete(b, r.accepted, r.failed, origin)
@@ -465,7 +472,7 @@ class Job:
             return
         f = u.frag
         out = C.rebuild(f.html, f.segs, tr, lang, self.terms.docref.get(lang))
-        probs = C.check_fragment(f.html, out, f.segs, tr, lang)
+        probs = C.check_fragment(f.html, out, f.segs, tr, lang, self.terms)
         if probs:
             self.add_finding(plan, [("fragment", probs)], "translation-structure")
             return
@@ -504,14 +511,15 @@ class Job:
     def add_finding(self, plan: Dict[str, Any], problems: List[Tuple[str, List[str]]], cls: str) -> None:
         f = C.translation_finding(plan, problems, cls, self.run_id)
         self.tlog.append({"kind": "finding", "finding": f, "unit": plan["unit"], "unit_key": plan["key"],
-                          "lang": plan["lang"], "path": plan["path"], "run": self.run_id, "at": C.utc_now()})
+                          "lang": plan["lang"], "path": plan["path"], "checks": C.CHECKS_VERSION,
+                          "run": self.run_id, "at": C.utc_now()})
         self.tot["findings"] += 1
 
 
 def summarize_estimate(est: Dict[str, Any]) -> str:
     w = est["wall_hours"]
     return (f"{est['calls']} Aufrufe, {est['list_price_usd']} $ Listenpreis, Tokens ein {est['tokens']['input']} aus "
-            f"{est['tokens']['output']} Denken {est['tokens']['thinking']}, Laufzeit "
+            f"{est['tokens']['output']} (davon Denken {est['tokens']['thinking']}), Laufzeit "
             + ", ".join(f"{k} parallel {v} h" for k, v in w.items()))
 
 
@@ -538,10 +546,10 @@ def cmd_run(a: argparse.Namespace) -> int:
     if a.dry_run:
         job = Job(a, bundle, tlog, None, budget, throttle, run_id, models)
         est = C.estimate(todo, job.frags, job.tm, job.terms, models, a.max_output_tokens)
-        flash = {t: "gemini-3.8-flash-medium" for t in C.TIERS}
-        est_flash = C.estimate(todo, job.frags, job.tm, job.terms, flash, a.max_output_tokens)
+        medium = {t: "gemini-3.8-flash-medium" for t in C.TIERS}
+        est_medium = C.estimate(todo, job.frags, job.tm, job.terms, medium, a.max_output_tokens)
         log("Trockenlauf, kein Modellaufruf. Schätzung (gewählte Modelle): " + summarize_estimate(est))
-        log("Schätzung (alles Flash): " + summarize_estimate(est_flash))
+        log("Vergleich (alles Flash medium, Denken gemessen): " + summarize_estimate(est_medium))
         for m, v in est["by_model"].items():
             log(f"  {m}: {round(v['calls'])} Aufrufe, Prompt höchstens {v['prompt_bytes_max']} Bytes, {round(v['usd'], 2)} $")
         return EXIT_OK
@@ -608,6 +616,7 @@ def cmd_run(a: argparse.Namespace) -> int:
                 job.finalize_unit(sch, u)
     for b in sch.retry:
         sch.abandon(b)
+    pooled_open = sch.abandon_pool()
     stop = budget.reason() or "done"
     decided = C.decided_keys(tlog.entries)
     remaining = sum(1 for u in todo if u["key"] not in decided)
@@ -626,7 +635,8 @@ def cmd_run(a: argparse.Namespace) -> int:
                  "list_price_usd": round(t["usd"], 6),
                  "models_usage": {m: {"calls": v["calls"], "usd": round(v["usd"], 6), "output": v["output"]}
                                   for m, v in t["models"].items()},
-                 "profiles": t["profiles"], "remaining": remaining}
+                 "profiles": t["profiles"], "remaining": remaining, "price_basis": C.PRICE_BASIS,
+                 "prompt_rev": C.PROMPT_REVISION, "checks": C.CHECKS_VERSION, "retries_left_open": pooled_open}
     if t["calls"] or sum(t["units"].values()) or t["findings"]:
         tlog.append(run_entry)
         tlog.write_pointer(run_id, bundle.sha256[:12])
@@ -644,7 +654,8 @@ def cmd_run(a: argparse.Namespace) -> int:
         + " ".join(f"{k}={v}" for k, v in t["units"].items())
         + f", davon {t['assembled_only']} nur aus dem Speicher, {t['segments']} neue Segmente, {t['rejected']} "
         f"abgelehnt, {t['findings']} Befunde, {t['calls']} Aufrufe (Wiederholungen {t['retries']}), Tokens ein "
-        f"{t['tokens']['input']} aus {t['tokens']['output']} Denken {t['tokens']['thinking']}, {t['usd']:.4f} $ "
+        f"{t['tokens']['input']} gecacht {t['tokens']['cached']} aus {t['tokens']['output']} (davon Denken "
+        f"{t['tokens']['thinking']}), {t['usd']:.4f} $ "
         f"Listenpreis, Profile {prof}, Parallelität {throttle.low}–{throttle.peak} (Senkungen {throttle.cuts}), "
         f"offen {remaining}")
     return {"exhausted": EXIT_EXHAUSTED, "needs-login": EXIT_LOGIN, "errors": EXIT_ERROR}.get(stop, EXIT_OK)
@@ -683,12 +694,36 @@ def build_status(tlog: C.TranslationLog, plan: List[Dict[str, Any]], bundle: C.B
                    "source_commit": (bundle.manifest.get("source_commit") or "")[:12]},
         "plan": {"total": total, "done": done, "remaining": total - done,
                  "progress": round(done / total, 4) if total else 1.0, "by_tier": by_tier, "by_lang": by_lang},
-        "cost": {"list_price_usd_total": round(sum(float(r.get("list_price_usd") or 0) for r in runs), 4),
-                 "runs": len(runs), "currency": "USD, API-Listenpreise"},
+        "cost": dict(corrected_costs(tlog.entries, runs), runs=len(runs), currency="USD, API-Listenpreise",
+                     price_basis=C.PRICE_BASIS),
         "last_runs": [{k: r.get(k) for k in ("run", "ended", "stop", "calls", "translated", "findings",
-                                              "list_price_usd", "profiles", "models_usage")} for r in runs[-10:]],
+                                              "list_price_usd", "price_basis", "tokens", "profiles", "models_usage")}
+                      for r in runs[-10:]],
         "findings": findings, "profiles": LD.profile_state(state),
     }
+
+
+def corrected_costs(entries: List[Dict[str, Any]], runs: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Gesamtkosten nach Preisbasis 2. Läufe nach Preisbasis 1 rechneten Denk-Tokens doppelt; ihr Betrag wird um die
+    Denk-Tokens ihrer tm-Glieder (Modell je Glied) und den Rest des Laufs (häufigstes Modell) bereinigt."""
+    logged = sum(float(r.get("list_price_usd") or 0) for r in runs)
+    total = 0.0
+    tm_by_run: Dict[str, List[Dict[str, Any]]] = {}
+    for e in entries:
+        if e.get("kind") == "tm":
+            tm_by_run.setdefault(e["run"], []).append(e)
+    for r in runs:
+        usd = float(r.get("list_price_usd") or 0)
+        if r.get("price_basis") == C.PRICE_BASIS:
+            total += usd
+            continue
+        tms = tm_by_run.get(r["run"], [])
+        over = sum(C.legacy_overcharge(e.get("model", ""), e.get("tokens") or {}) for e in tms)
+        rest = int((r.get("tokens") or {}).get("thinking", 0)) - sum(int((e.get("tokens") or {}).get("thinking", 0)) for e in tms)
+        common = Counter(e.get("model", "") for e in tms).most_common(1)
+        over += C.legacy_overcharge(common[0][0] if common else C.DEFAULT_MODELS["element"], {"thinking": max(0, rest)})
+        total += max(0.0, usd - over)
+    return {"list_price_usd_total": round(total, 4), "list_price_usd_logged": round(logged, 4)}
 
 
 def commit(repo: Path, message: str) -> bool:
@@ -774,7 +809,8 @@ def cmd_summary(a: argparse.Namespace) -> int:
     lines = ["### Live-Übersetzung", "",
              f"Fortschritt **{pl.get('done')}/{pl.get('total')}** Einheiten ({100 * float(pl.get('progress') or 0):.1f} %), "
              f"offen {pl.get('remaining')}; Kosten gesamt **{cost.get('list_price_usd_total')} $** "
-             f"(API-Listenpreise) in {cost.get('runs')} Läufen.", "",
+             f"(API-Listenpreise, Denk-Tokens einmal gezählt; geloggt {cost.get('list_price_usd_logged')} $) in "
+             f"{cost.get('runs')} Läufen.", "",
              "| Stufe | geplant | übersetzt | verworfen |", "|---|---:|---:|---:|"]
     for k, v in (pl.get("by_tier") or {}).items():
         lines.append(f"| {k} | {v.get('planned')} | {v.get('done')} | {v.get('rejected')} |")
@@ -819,7 +855,7 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--model-guide", default="", help=f"Modell der Modul-/Cluster-Leitfäden (Vorgabe {C.DEFAULT_MODELS['guide']})")
     r.add_argument("--model-text", default="", help=f"Modell der übrigen Texte (Vorgabe {C.DEFAULT_MODELS['element']})")
     r.add_argument("--model", action="append", default=[], help="STUFE=MODELL (guide, api, element)")
-    r.add_argument("--effort", default="medium", help="nur für Modell-IDs ohne Stufe im Namen")
+    r.add_argument("--effort", default="low", help="nur für Modell-IDs ohne Stufe im Namen")
     r.add_argument("--max-calls", type=int, default=400)
     r.add_argument("--max-minutes", type=float, default=25.0, help=f"höchstens {MAX_MINUTES_CAP:g}")
     r.add_argument("--max-usd", type=float, default=0.0)

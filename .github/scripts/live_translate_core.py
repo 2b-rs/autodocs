@@ -107,8 +107,9 @@ LANG_NAMES = {"en": "English", "es": "Spanish (español)", "pt": "Portuguese (po
 # Stufen der Reihenfolge: Leitfäden (Module, Cluster), API-Leitfäden (Namespaces, Klassen, Services), Elemente.
 TIERS = ("guide", "api", "element")
 TIER_RANK = {t: i for i, t in enumerate(TIERS)}
-DEFAULT_MODELS = {"guide": "gemini-3.1-pro-high", "api": "gemini-3.8-flash-medium",
-                  "element": "gemini-3.8-flash-medium"}
+# Vorgabe nach dem ersten vollen Lauf (Lauf 37940217154): Flash „medium“ dachte im Mittel 13.037 Tokens je Aufruf
+# (73 % der Ausgabe); „low“ denkt praktisch nicht (Verteilung und Schaubild-Arbeit: 0 Denk-Tokens).
+DEFAULT_MODELS = {"guide": "gemini-3.8-flash-low", "api": "gemini-3.8-flash-low", "element": "gemini-3.8-flash-low"}
 EFFORT_SUFFIXES = ("-low", "-medium", "-high", "-max")
 # USD je 1 Mio. Tokens (Eingabe, gecachte Eingabe, Ausgabe; Denk-Tokens wie Ausgabe).
 # gemini-3.8-flash: ai.google.dev/gemini-api/docs/pricing, geprüft 2026-10-09, gültig bis 2026-12-31.
@@ -138,10 +139,20 @@ def price_for(model: str) -> Tuple[float, float, float]:
     return PRICES["gemini-3.1-pro"] if "pro" in base else PRICES["gemini-3.8-flash"]
 
 
+# agy meldet ``output_tokens`` einschließlich der Denk-Tokens: in allen 400 gespeicherten Transkripten gilt
+# total_tokens = input_tokens + output_tokens, und in allen 2.074 Aufrufen des ersten vollen Laufs ist
+# thinking_tokens ≤ output_tokens. Denk-Tokens werden deshalb nicht noch einmal addiert (bis Preisbasis 1 geschah das).
+PRICE_BASIS = "output-includes-thinking@2"
+
+
 def list_price(model: str, tok: Dict[str, int]) -> float:
     pin, pcached, pout = price_for(model)
-    return (tok.get("input", 0) * pin + tok.get("cached", 0) * pcached
-            + (tok.get("output", 0) + tok.get("thinking", 0)) * pout) / 1e6
+    return (tok.get("input", 0) * pin + tok.get("cached", 0) * pcached + tok.get("output", 0) * pout) / 1e6
+
+
+def legacy_overcharge(model: str, tok: Dict[str, int]) -> float:
+    """Zu viel berechneter Betrag nach Preisbasis 1 (Denk-Tokens doppelt): für die Korrektur alter Laufglieder."""
+    return tok.get("thinking", 0) * price_for(model)[2] / 1e6
 
 
 def usage_tokens(usage: Dict[str, Any]) -> Dict[str, int]:
@@ -581,11 +592,15 @@ TERMS_SCHEMA = "i18n-protected-terms@v1"
 
 @dataclass
 class Terms:
-    """Geschützte Begriffe (sprachunabhängig, bleiben wörtlich) und Glossare je Sprache (Deutsch -> Ziel)."""
+    """Geschützte Begriffe (sprachunabhängig, bleiben wörtlich) und Glossare je Sprache (Deutsch -> Ziel).
+    ``vocab``: Bezeichner, die in ``<code>``-Elementen der Fragmente vorkommen (``code_vocab``); Binnenmajuskel-Wörter
+    sind nur dann hart geschützt (sonst deutsche Pseudo-Bezeichner wie ``SubFunktion``)."""
     protected: List[str] = field(default_factory=list)
     glossary: Dict[str, Dict[str, str]] = field(default_factory=dict)
     docref: Dict[str, Dict[str, str]] = field(default_factory=dict)
+    vocab: Optional[Set[str]] = None
     _rx: Optional[Dict[str, "re.Pattern[str]"]] = None
+    _rx_loose: Optional[Dict[str, "re.Pattern[str]"]] = None
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]) -> "Terms":
@@ -608,6 +623,12 @@ class Terms:
         rx = self._regexes()
         return sorted(t for t in self.protected if t in text and rx[t].search(text))
 
+    def protected_loose(self, text: str) -> List[str]:
+        """Wie ``protected_in``, aber auch in Bindestrich-Komposita (``Dem-Meldung``); nur für die Restprüfung."""
+        if self._rx_loose is None:
+            self._rx_loose = {t: re.compile(r"(?<!\w)" + re.escape(t) + r"(?!\w)") for t in self.protected}
+        return sorted(t for t in self.protected if t in text and self._rx_loose[t].search(text))
+
     def glossary_in(self, text: str, lang: str) -> Dict[str, str]:
         low = text.lower()
         return {k: v for k, v in self.glossary.get(lang, {}).items() if k.lower() in low}
@@ -617,19 +638,38 @@ class Terms:
 # Prüfung
 # ==============================================================================
 
+# Version der Prüfregeln (nicht Teil des Rezept-Hashs: gelockerte Regeln machen angenommene Übersetzungen nicht
+# ungültig). Befunde älterer Prüfregeln schließen ihre Einheit nicht mehr (``decided_keys``).
+CHECKS_VERSION = 2
+_COMMENT = re.compile(r"<!--.*?-->", re.S)
+_INLINE_TEXT = re.compile(r"<(strong|em|b|i)>([^<]+)</\1>")
+_CODE_EL = re.compile(r"<code\b[^>]*>(.*?)</code>", re.S)
+_IDENT_WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def strip_comments(text: str) -> str:
+    return _COMMENT.sub("", text)
+
+
+def code_vocab(htmls: Iterable[str]) -> Set[str]:
+    """Bezeichner aus allen ``<code>``-Elementen (verschachtelt eingeschlossen)."""
+    out: Set[str] = set()
+    for h in htmls:
+        for m in _CODE_EL.finditer(h):
+            out.update(_IDENT_WORD.findall(_html.unescape(re.sub(r"<[^>]+>", " ", m.group(1)))))
+    return out
+
 _IDS = re.compile(r"\[(?:SWS|RS)_[A-Za-z]+_\d+\]|\b(?:AUTOSAR|EXP|FO)_[A-Za-z0-9]+\b")     # wie i18n_translate.pruefe
 _TAG = re.compile(r"<(/?)([A-Za-z][A-Za-z0-9]*)((?:\s+[^\s=>/]+(?:=(?:\"[^\"]*\"|'[^']*'))?)*)\s*>")
 _ATOMIC = re.compile(r"<(code|a|span)\b[^>]*>.*?</\1>", re.S)
 _FORBIDDEN_OUT = re.compile(r"<\s*script|javascript:|\bon[a-z]+\s*=|[\x00-\x08\x0b\x0c\x0e-\x1f]", re.I)
 _BARE_AMP = re.compile(r"&(?![A-Za-z][A-Za-z0-9]*;|#\d+;|#[xX][0-9A-Fa-f]+;)")
-_TOKEN_PATTERNS = [
+_HARD_PATTERNS = [
     r"\[(?:SWS|RS|SRS|TPS|PRS|ECUC|CONSTR)_[A-Za-z0-9_]+\]",
     r"\b(?:SWS|RS|SRS|TPS|PRS|ECUC|CONSTR|AP)_[A-Za-z0-9_]*\d[A-Za-z0-9_]*\b",
     r"\b(?:AUTOSAR|EXP|FO)_[A-Za-z0-9_]+\b",
     r"\b[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z0-9_]+)+\b",
     r"\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*[A-Za-z0-9]\b",
-    r"\b[a-z]+[A-Z][A-Za-z0-9]*\b",
-    r"\b[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*\b",
     r"\b[\w.-]+\.(?:h|hpp|c|cpp|arxml|json|xml|yaml|dot)\b",
     r"\b0x[0-9A-Fa-f]+\b",
     r"\bNRC\s+0x[0-9A-Fa-f]{2}\b",
@@ -637,20 +677,28 @@ _TOKEN_PATTERNS = [
     r"\b(?:uint8|uint16|uint32|uint64|sint8|sint16|sint32|sint64|boolean|float32|float64)\b",
     r"\b[A-Z][A-Z0-9]*[A-Z0-9](?:/[A-Z0-9]+)?\b",
 ]
-_TOKENS = re.compile("|".join("(?:%s)" % p for p in _TOKEN_PATTERNS))
-# Großbuchstaben-Kürzel des deutschen Texts, die übersetzt werden dürfen
-_NOT_PROTECTED = frozenset(("KI", "DE", "ZB", "BZW", "GGF", "USW", "CA", "EU"))
+_TOKENS = re.compile("|".join("(?:%s)" % p for p in _HARD_PATTERNS))
+_CAMEL = re.compile(r"\b[a-z]+[A-Z][A-Za-z0-9]*\b|\b[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*\b")
+_ACRONYM = re.compile(r"^[A-Z][A-Z0-9]*[A-Z0-9](?:/[A-Z0-9]+)?$")
+# Großbuchstaben-Wörter des deutschen Texts, die übersetzt werden dürfen (deutsche Kürzel und Großschreibung)
+_NOT_PROTECTED = frozenset(("KI", "DE", "ZB", "BZW", "GGF", "USW", "CA", "EU", "UND", "ODER", "NICHT", "KEIN", "KEINE",
+                            "MUSS", "SOLL", "KANN", "WENN", "DANN", "SONST", "NUR", "ALLE"))
 # Deutsche Funktionswörter, die in keiner Zielsprache als Wort vorkommen (Ausnahmen je Sprache unten)
 GERMAN_WORDS = frozenset("""und oder nicht wird werden ist sind für mit eine einer eines einem einen dem auf bei über sich
 auch nach wenn dass zum zur vom beim sowie durch diese dieser dieses diesem diesen kann können muss müssen wurde wurden
 zwischen jedoch damit dabei ohne gegen aus ein im sie hier noch bereits jeweils sonst dann nur keine keinen gibt liefert
 siehe gemäß laut zurück sowohl etwa weitere weiteren weil deshalb dafür dazu wobei welche welcher welches unter zwei drei
 somit daher denn also werden der die das den des""".split())
+# Nur kleingeschriebene Funktionswörter zählen (Großschreibung ist meist ein Name: das Modul „Dem“).
 GERMAN_EXCEPT = {"en": {"also", "die", "will", "am", "an", "in", "so", "was", "bin", "hat", "war", "man", "dem"},
-                 "nl": {"werden", "die", "den", "der", "des", "in", "is", "dan", "also", "zwei"},
+                 "nl": {"werden", "die", "den", "der", "des", "in", "is", "dan", "also", "zwei", "hier", "noch",
+                        "überhaupt"},
                  "fr": {"des", "sur"}, "es": {"sin"}, "pt": {"das"}, "ru": set(), "ar": set(), "hi": set(),
                  "ko": set(), "zh": set()}
 _UMLAUT = re.compile(r"[äöüßÄÖÜ]")
+# Trema der Zielsprache ist kein Umlaut (nl coördinatie, es lingüístico, fr capharnaüm)
+_UMLAUT_LANG = {"nl": re.compile(r"ß"), "es": re.compile(r"[äößÄÖ]"), "pt": re.compile(r"[äößÄÖ]"),
+                "fr": re.compile(r"[äößÄÖ]")}
 _WORD = re.compile(r"[^\W\d_]+")
 SEG_RATIO = {"zh": (0.10, 1.10), "ko": (0.18, 1.40)}
 SEG_RATIO_DEFAULT = (0.33, 2.50)
@@ -665,14 +713,26 @@ def strip_markup(text: str) -> str:
     return re.sub(r"\s+", " ", _TAG.sub(" ", PH.sub(" ", text))).strip()
 
 
-def protected_tokens(de: str) -> List[str]:
-    plain = _html.unescape(strip_markup(de))
+def protected_tokens(de: str, vocab: Optional[Set[str]] = None, soft: bool = False) -> List[str]:
+    """Geschützte Tokens eines maskierten deutschen Texts. Hart: Kennungen, Bezeichner mit ``_``/``::``, Dateinamen,
+    Hex, Releases, Typnamen (wie ``ai_localize`` INV-02), Kürzel ab drei Zeichen; Kürzel aus zwei Zeichen (ID, IO,
+    OS …) und Binnenmajuskel-Wörter nur, wenn sie im Code-Vokabular stehen (ohne Vokabular: alle wie bisher).
+    ``soft=True`` liefert zusätzlich die übrigen bezeichnerartigen Tokens (für die Restprüfung)."""
+    plain = _html.unescape(strip_markup(strip_comments(de)))
     out = []
     for m in _TOKENS.finditer(plain):
         tok = m.group(0)
         if tok in _NOT_PROTECTED or len(tok) < 2:
+            if soft and len(tok) >= 2:
+                out.append(tok)
+            continue
+        if vocab is not None and len(tok) == 2 and _ACRONYM.match(tok) and tok not in vocab and not soft:
             continue
         out.append(tok)
+    for m in _CAMEL.finditer(plain):
+        tok = m.group(0)
+        if soft or vocab is None or tok in vocab:
+            out.append(tok)
     return sorted(set(out))
 
 
@@ -686,13 +746,16 @@ def _present(tok: str, text: str) -> bool:
 
 
 def german_markers(text: str, lang: str, keep: Sequence[str] = ()) -> Tuple[int, int]:
-    """(deutsche Merkmale, Wörter) im Klartext ohne Markup, Platzhalter und geschützte Tokens/Begriffe."""
-    plain = _html.unescape(strip_markup(text))
+    """(deutsche Merkmale, Wörter) im Klartext ohne Markup, Kommentare, Platzhalter und geschützte Tokens/Begriffe:
+    kleingeschriebene deutsche Funktionswörter und Wörter mit Umlaut (ohne Trema der Zielsprache)."""
+    plain = _html.unescape(strip_markup(strip_comments(text)))
     for k in sorted(set(keep), key=len, reverse=True):
         plain = plain.replace(k, " ")
     words = _WORD.findall(plain)
     exc = GERMAN_EXCEPT.get(lang, set())
-    hits = sum(1 for w in words if (w.lower() in GERMAN_WORDS and w.lower() not in exc) or _UMLAUT.search(w))
+    uml = _UMLAUT_LANG.get(lang, _UMLAUT)
+    hits = sum(1 for w in words if (w.islower() and w in GERMAN_WORDS and w not in exc)
+               or (uml.search(w) and w.lower() not in exc))
     return hits, len(words)
 
 
@@ -738,6 +801,7 @@ def check_segment(de: str, t: Any, lang: str, terms: Optional[Terms] = None) -> 
     """Prüfung einer Segmentübersetzung (maskiert). Rückgabe: Liste von Problemen ``code`` oder ``code:detail``."""
     if not isinstance(t, str) or not t.strip():
         return ["empty"]
+    de, t = strip_comments(de), strip_comments(t)       # unsichtbar, nie geprüft (die Antwort darf sie weglassen)
     p: List[str] = []
     if "```" in t:
         p.append("markdown")
@@ -755,17 +819,26 @@ def check_segment(de: str, t: Any, lang: str, terms: Optional[Terms] = None) -> 
     if sorted(_IDS.findall(de)) != sorted(_IDS.findall(t)):
         p.append("ids")
     plain_t = _html.unescape(strip_markup(t))
-    toks = protected_tokens(de)
+    vocab = terms.vocab if terms else None
+    toks = protected_tokens(de, vocab)
     missing = [tok for tok in toks if not _present(tok, plain_t) and not _present(tok, t)]
-    terms_de = terms.protected_in(_html.unescape(strip_markup(de))) if terms else []
+    plain_de = _html.unescape(strip_markup(de))
+    terms_de = terms.protected_in(plain_de) if terms else []
     missing += [x for x in terms_de if x not in plain_t]
     if missing:
         p.append("protected:" + ",".join(sorted(set(missing))[:5]))
-    hits, words = german_markers(t, lang, keep=list(toks) + list(terms_de))
+    loose = terms.protected_loose(plain_t) if terms else []
+    hits, words = german_markers(t, lang, keep=protected_tokens(de, vocab, soft=True) + list(terms_de) + loose)
     if hits >= 2 or (hits and words <= 12):
         p.append("german")
     if t.strip() == de.strip() and is_german(de):
         p.append("untranslated")
+    # deutsche Hervorhebung unverändert übernommen (<strong>Zuweisung und Konsistenz:</strong> in russischem Text)
+    for m in _INLINE_TEXT.finditer(de):
+        inner = m.group(2)
+        if len(inner) >= 4 and m.group(0) in t and german_markers(inner, lang, keep=toks + terms_de)[0]:
+            p.append("untranslated")
+            break
     keep = list(toks) + list(terms_de)
     n_de = prose_len(de, keep)
     if n_de >= 40:
@@ -821,7 +894,8 @@ def structure(src: str) -> Structure:
     return Structure(outside, inside)
 
 
-def check_fragment(src: str, out: str, segs: Sequence[Segment], translated: Dict[int, str], lang: str) -> List[str]:
+def check_fragment(src: str, out: str, segs: Sequence[Segment], translated: Dict[int, str], lang: str,
+                   terms: Optional[Terms] = None) -> List[str]:
     """Prüfung des wiederaufgebauten Fragments gegen die Quelle (Gerüst, Verweise, Diagramme, deutscher Rest,
     Längenverhältnis). Rückgabe: Probleme."""
     p: List[str] = []
@@ -844,7 +918,10 @@ def check_fragment(src: str, out: str, segs: Sequence[Segment], translated: Dict
         t = translated.get(i)
         if t is None:
             continue
-        h, w = german_markers(t, lang, keep=protected_tokens(sg.m))
+        keep = protected_tokens(sg.m, soft=True)
+        if terms:
+            keep += terms.protected_loose(_html.unescape(strip_markup(t)))
+        h, w = german_markers(t, lang, keep=keep)
         hits += h
         words += w
         de_len += prose_len(sg.m)
@@ -907,6 +984,10 @@ RECIPE = {"id": RECIPE_ID, "segmenter": "lib_i18n-leaf+runs@1", "instructions": 
           "no_tools": NO_TOOLS_RULE, "schema": TRANSLATION_SCHEMA, "page_fmt": PAGE_FMT, "fig_fmt": FIG_FMT,
           "checks": "segment@1+fragment@1", "max_terms": 60, "max_glossary": 80}
 RECIPE_HASH = obj_hash(RECIPE)[:16]
+# Überarbeitung des Prompts ohne neuen Rezeptstand (angenommene Übersetzungen bleiben gültig, Schlüssel bleiben):
+# 2 = Kommentare entfernt, Bezeichner und Kürzel des Aufrufs ausdrücklich gelistet. Steht in jedem tm-Glied.
+PROMPT_REVISION = 2
+PROMPT_MAX_IDENTS = 80
 FRAGMENT_KIND_LABEL = {"modules": "module guide", "clusters": "cluster guide", "classes": "class guide",
                        "namespaces": "namespace guide", "services": "service guide", "elements": "usage note"}
 
@@ -931,13 +1012,18 @@ def fragment_label(path: str) -> str:
 def build_prompt(lang: str, items: Sequence[PromptItem], frags: Sequence[str], terms: Terms,
                  notes: Optional[Dict[str, List[str]]] = None) -> str:
     """Deterministischer Prompt: gleiche Sprache, Segmente, Fragmente, Begriffe und Hinweise ergeben gleiche Bytes."""
+    items = [PromptItem(it.bid, it.frag, it.block, strip_comments(it.de).strip()) for it in items]
     text = "\n".join(it.de for it in items)
     plain = _html.unescape(strip_markup(text))
     prot = terms.protected_in(plain)[:RECIPE["max_terms"]]
+    idents = sorted({t for it in items for t in protected_tokens(it.de, terms.vocab)} - set(prot))[:PROMPT_MAX_IDENTS]
     gloss = sorted(terms.glossary_in(plain, lang).items())[:RECIPE["max_glossary"]]
     head = NO_TOOLS_RULE + "\n" + INSTRUCTIONS.format(lang_name=LANG_NAMES[lang], lang_short=LANG_SHORT[lang],
                                                       extra_style=EXTRA_STYLE.get(lang, ""))
     head += "\nProtected terms (keep exactly): " + (", ".join(prot) if prot else "(none in this batch)") + "\n"
+    if idents:
+        head += "Identifiers and acronyms in this batch (keep exactly, also in Cyrillic, Arabic, Devanagari, Hangul and " \
+                "Chinese text): " + ", ".join(idents) + "\n"
     head += "Glossary (German → %s): %s\n" % (LANG_SHORT[lang], "; ".join(f"{a} → {b}" for a, b in gloss) if gloss
                                                else "(none in this batch)")
     head += "Fragments: " + "; ".join(f"f{i}: {fragment_label(p)}" for i, p in enumerate(frags)) + "\n"
@@ -1196,12 +1282,12 @@ class TM:
 # Planung der Aufrufe (gemeinsam für Job und Schätzung)
 # ==============================================================================
 
-# Erwartete Ausgabe-Tokens je deutschem Zeichen (Zeichenverhältnis aus dem Register × Tokens je Zeichen der Schrift);
-# der Job passt die Werte nach den ersten Aufrufen je Sprache an die gemeldeten Tokens an.
-OUT_TOKENS_PER_CHAR = {"en": 0.24, "es": 0.27, "pt": 0.26, "fr": 0.27, "ru": 0.30, "ar": 0.28, "hi": 0.39,
-                       "ko": 0.31, "zh": 0.29, "nl": 0.27}
-IN_TOKENS_PER_CHAR = 0.27
-SEG_JSON_TOKENS = 10
+# Sichtbare Ausgabe-Tokens je deutschem Zeichen und je Segment, gemessen im ersten vollen Lauf (2.074 Aufrufe,
+# Ausgabe ohne Denk-Tokens = 0,251·Zeichen + 49,7·Segmente; je Sprache mit 50 Tokens je Segment angepasst).
+# Der Job führt die Werte je Sprache aus den gemeldeten sichtbaren Tokens nach.
+OUT_TOKENS_PER_CHAR = {"en": 0.162, "es": 0.241, "pt": 0.309, "fr": 0.248, "ru": 0.232, "ar": 0.303, "hi": 0.269,
+                       "ko": 0.277, "zh": 0.161, "nl": 0.292}
+SEG_JSON_TOKENS = 50
 PROMPT_BASE_BYTES = 6000
 
 
@@ -1274,6 +1360,8 @@ class Scheduler:
         self.failed: Dict[Tuple[str, str, str], List[str]] = {}
         self.waiting: Dict[Tuple[str, str, str], List[UnitState]] = {}
         self.retry: List[Batch] = []
+        # abgelehnte Segmente je (Sprache, Modell) sammeln und als volle Wiederholungsaufrufe senden
+        self.pool: Dict[Tuple[str, str], List[Tuple[Claim, List[str]]]] = {}
         self.cursor = 0
         self.no = 0
         self._ready: List[UnitState] = []
@@ -1311,9 +1399,46 @@ class Scheduler:
             self._ready.append(u)
         return todo
 
+    def _pool_batch(self, key: Tuple[str, str]) -> Batch:
+        lang, model = key
+        items = self.pool[key]
+        take: List[Tuple[Claim, List[str]]] = []
+        out_tok = 0.0
+        while items and (not take or (out_tok + self.est_out(lang, items[0][0].de) <= self.max_out
+                                      and len(take) < self.max_segs)):
+            c, notes = items.pop(0)
+            take.append((c, notes))
+            out_tok += self.est_out(lang, c.de)
+        if not items:
+            del self.pool[key]
+        self.no += 1
+        rb = Batch(self.no, lang, model, "retry", [c for c, _ in take], attempt=2, notes={c.sid: n for c, n in take})
+        for c, _ in take:
+            self.claims[(lang, c.sid, c.scope)] = rb.no
+        return rb.finish(self.terms)
+
+    def _pool_full(self) -> Optional[Tuple[str, str]]:
+        for key, items in self.pool.items():
+            if len(items) >= self.max_segs or sum(self.est_out(key[0], c.de) for c, _ in items) >= self.max_out:
+                return key
+        return None
+
+    def pooled(self) -> int:
+        return sum(len(v) for v in self.pool.values())
+
     def next_batch(self) -> Optional[Batch]:
         if self.retry:
             return self.retry.pop(0)
+        full = self._pool_full()
+        if full:
+            return self._pool_batch(full)
+        b = self._next_new()
+        if b is None and self.pool:                    # keine neue Arbeit: gesammelte Wiederholungen senden
+            key = max(self.pool, key=lambda k: (len(self.pool[k]), k))
+            return self._pool_batch(key)
+        return b
+
+    def _next_new(self) -> Optional[Batch]:
         batch: Optional[Batch] = None
         out_tok = 0.0
         size = PROMPT_BASE_BYTES
@@ -1356,24 +1481,17 @@ class Scheduler:
                  retry: bool = True) -> None:
         """Ergebnis eines Aufrufs: angenommene Segmente in den TM, abgelehnte einmal wiederholen, sonst als
         gescheitert vermerken. Wartende Einheiten, deren Segmente nun alle aufgelöst sind, werden bereit."""
-        again: List[Claim] = []
-        notes: Dict[str, List[str]] = {}
         for c in batch.claims:
             k = (batch.lang, c.sid, c.scope)
             self.claims.pop(k, None)
             if c.sid in accepted:
                 self.tm.add_live(batch.lang, c.sid, c.scope, accepted[c.sid], origin)
             elif retry and batch.attempt == 1:
-                again.append(c)
-                notes[c.sid] = problem_codes(failed.get(c.sid) or ["missing"])
+                self.pool.setdefault((batch.lang, batch.model), []).append(
+                    (c, problem_codes(failed.get(c.sid) or ["missing"])))
+                self.claims[k] = -1                    # bleibt beansprucht, bis der Sammelaufruf läuft
             else:
                 self.failed[k] = failed.get(c.sid) or ["missing"]
-        if again:
-            self.no += 1
-            rb = Batch(self.no, batch.lang, batch.model, batch.tier, again, attempt=2, notes=notes)
-            for c in again:
-                self.claims[(batch.lang, c.sid, c.scope)] = rb.no
-            self.retry.append(rb.finish(self.terms))
         for c in batch.claims:
             k = (batch.lang, c.sid, c.scope)
             if k in self.claims:
@@ -1387,6 +1505,15 @@ class Scheduler:
         """Aufruf nicht gelaufen (Budget, Kontingent): Segmente freigeben; Einheiten bleiben offen."""
         for c in batch.claims:
             self.claims.pop((batch.lang, c.sid, c.scope), None)
+
+    def abandon_pool(self) -> int:
+        n = 0
+        for (lang, _m), items in self.pool.items():
+            for c, _ in items:
+                self.claims.pop((lang, c.sid, c.scope), None)
+                n += 1
+        self.pool.clear()
+        return n
 
     def requeue(self, batch: Batch) -> bool:
         """Aufruf ohne Antwort (Zeitüberschreitung, Ausnahme) einmal neu einreihen; danach freigeben."""
@@ -1429,10 +1556,21 @@ class Scheduler:
 # Schätzung (Aufrufe, Tokens, Listenpreis, Laufzeit)
 # ==============================================================================
 
-AGY_BASE_TOKENS = 16000          # gemessene Grundlast je agy-Aufruf (CONCEPT-0061 §13.8)
-INSTR_TOKENS = 1400              # Anweisungen, Begriffe, Fragmentzeilen
-LATENCY = {"flash": {"base_s": 4.0, "tok_s": 300.0, "thinking": 1000},
-           "pro": {"base_s": 10.0, "tok_s": 110.0, "thinking": 3000}}
+# Gemessen im ersten vollen Lauf (Lauf 37940217154, gemini-3.8-flash-medium, 2.074 Aufrufe mit Antwort):
+# Eingabe je Aufruf (ungecacht + gecacht) = 17.203 + 1,298 · deutsche Zeichen, davon 28,2 % gecacht.
+IN_FIXED_TOKENS = 17203
+IN_TOKENS_PER_CHAR = 1.298
+CACHED_SHARE = 0.282
+# Denk-Tokens je Aufruf nach Stufe: medium gemessen (Mittel 13.037); low gemessen 0 (Verteilung, effort low);
+# high und Pro: Annahme.
+THINKING = {"low": 0, "medium": 13037, "high": 26000, "max": 40000}
+# Dauer je Aufruf bei 16 parallelen Aufrufen (Flash, gemessen aus den Zeitstempeln: 6,7 s + Ausgabe/470 Tokens/s,
+# Ausgabe einschließlich Denken); Pro: Annahme.
+LATENCY = {"flash": {"base_s": 6.7, "tok_s": 470.0}, "pro": {"base_s": 10.0, "tok_s": 110.0}}
+
+
+def thinking_for(model: str) -> int:
+    return THINKING.get(model_effort(model, "medium"), THINKING["medium"])
 
 
 def latency_class(model: str) -> str:
@@ -1441,44 +1579,51 @@ def latency_class(model: str) -> str:
 
 def estimate(units: Sequence[Dict[str, Any]], frags: Dict[str, Fragment], tm: TM, terms: Terms,
              models: Dict[str, str], max_out_tokens: int = 9000, concurrencies: Sequence[int] = (4, 6, 8, 16, 24),
-             retry_rate: float = 0.03) -> Dict[str, Any]:
-    """Aufrufe und Kosten durch Simulation der Aufrufbildung (alle Segmente gelten als angenommen)."""
+             retry_rate: float = 0.05) -> Dict[str, Any]:
+    """Aufrufe, Tokens (mit Denken), Listenpreis und Dauer durch Simulation der Aufrufbildung; Kennzahlen je Aufruf
+    aus dem ersten vollen Lauf (``IN_*``, ``OUT_TOKENS_PER_CHAR``, ``THINKING``, ``LATENCY``). ``retry_rate``: Anteil
+    zusätzlicher Aufrufe (gemessen: 5,7 % Aufrufe ohne angenommenes Segment; Ablehnungen werden gesammelt)."""
     sch = Scheduler(units, frags, tm.copy(), terms, models, max_out_tokens)
     by_model: Dict[str, Dict[str, float]] = {}
     while True:
         b = sch.next_batch()
         if b is None:
             break
-        out = sum(sch.est_out(b.lang, c.de) for c in b.claims)
-        inp = AGY_BASE_TOKENS + INSTR_TOKENS + IN_TOKENS_PER_CHAR * b.de_chars + SEG_JSON_TOKENS * len(b.claims)
+        vis = sum(sch.est_out(b.lang, c.de) for c in b.claims)
+        think = thinking_for(b.model)
+        inp = IN_FIXED_TOKENS + IN_TOKENS_PER_CHAR * b.de_chars
         lc = LATENCY[latency_class(b.model)]
-        m = by_model.setdefault(b.model, {"calls": 0, "input": 0.0, "output": 0.0, "thinking": 0.0, "call_s": 0.0,
-                                          "segments": 0, "de_chars": 0, "prompt_bytes_max": 0})
+        m = by_model.setdefault(b.model, {"calls": 0, "input": 0.0, "cached": 0.0, "output": 0.0, "thinking": 0.0,
+                                          "call_s": 0.0, "segments": 0, "de_chars": 0, "prompt_bytes_max": 0})
         m["calls"] += 1
-        m["input"] += inp
-        m["output"] += out
-        m["thinking"] += lc["thinking"]
-        m["call_s"] += lc["base_s"] + (out + lc["thinking"]) / lc["tok_s"]
+        m["input"] += inp * (1 - CACHED_SHARE)
+        m["cached"] += inp * CACHED_SHARE
+        m["output"] += vis + think                     # wie agy: Ausgabe einschließlich Denken
+        m["thinking"] += think
+        m["call_s"] += lc["base_s"] + (vis + think) / lc["tok_s"]
         m["segments"] += len(b.claims)
         m["de_chars"] += b.de_chars
         m["prompt_bytes_max"] = max(m["prompt_bytes_max"], len(b.prompt.encode("utf-8")))
         sch.complete(b, {c.sid: c.de for c in b.claims}, {}, "estimate")
-    tot = {"calls": 0, "usd": 0.0, "call_s": 0.0, "input": 0, "output": 0, "thinking": 0}
+    tot = {"calls": 0, "usd": 0.0, "call_s": 0.0, "input": 0, "cached": 0, "output": 0, "thinking": 0}
     for model, m in by_model.items():
         f = 1.0 + retry_rate
-        for k in ("calls", "input", "output", "thinking", "call_s"):
+        for k in ("calls", "input", "cached", "output", "thinking", "call_s"):
             m[k] *= f
-        m["usd"] = list_price(model, {"input": int(m["input"]), "cached": 0, "output": int(m["output"]),
+        m["usd"] = list_price(model, {"input": int(m["input"]), "cached": int(m["cached"]), "output": int(m["output"]),
                                       "thinking": int(m["thinking"])})
-        for k in ("calls", "usd", "call_s", "input", "output", "thinking"):
+        m["chars_per_call"] = round(m["de_chars"] / max(1, m["calls"] / f))
+        for k in ("calls", "usd", "call_s", "input", "cached", "output", "thinking"):
             tot[k] += m[k]
     wall = {str(c): round(tot["call_s"] / c / 3600, 2) for c in concurrencies}
     return {"by_model": {k: {kk: (round(vv, 2) if isinstance(vv, float) else vv) for kk, vv in v.items()}
                          for k, v in by_model.items()},
             "calls": round(tot["calls"]), "list_price_usd": round(tot["usd"], 2),
-            "tokens": {"input": round(tot["input"]), "output": round(tot["output"]), "thinking": round(tot["thinking"])},
+            "tokens": {"input": round(tot["input"]), "cached": round(tot["cached"]), "output": round(tot["output"]),
+                       "thinking": round(tot["thinking"])},
             "call_hours": round(tot["call_s"] / 3600, 2), "wall_hours": wall,
-            "units": len(units), "max_out_tokens": max_out_tokens, "retry_rate": retry_rate}
+            "units": len(units), "max_out_tokens": max_out_tokens, "retry_rate": retry_rate,
+            "price_basis": PRICE_BASIS}
 
 
 # ==============================================================================
@@ -1649,7 +1794,9 @@ def contains(state: ChainState, anchor: Optional[Dict[str, Any]]) -> bool:
 def decided_keys(entries: Iterable[Dict[str, Any]]) -> Set[str]:
     """Erledigt: Übersetzungsglied oder Befund mit dem Schlüssel der Einheit (verworfene Übersetzung bleibt
     geschlossen, bis sich Quelle, Rezept oder Begriffe ändern; ``--retry-findings`` öffnet sie)."""
-    return {e["unit_key"] for e in entries if e.get("kind") in ("translation", "finding") and e.get("unit_key")}
+    return {e["unit_key"] for e in entries if e.get("unit_key") and (
+        e.get("kind") == "translation"
+        or (e.get("kind") == "finding" and int(e.get("checks") or 1) >= CHECKS_VERSION))}
 
 
 def latest_translations(entries: Iterable[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:

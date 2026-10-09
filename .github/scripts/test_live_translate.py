@@ -152,12 +152,13 @@ class LiveTranslateTest(unittest.TestCase):
             self.assertFalse(c["skip"])
             self.assertFalse(c["effort"])
             self.assertEqual(c["settings"]["permissions"]["allow"], [f"read_file({c['cwd']}/*)"])
-        self.assertEqual({c["model"] for c in calls}, {"gemini-3.1-pro-high", "gemini-3.8-flash-medium"})
+        self.assertEqual({c["model"] for c in calls}, {"gemini-3.8-flash-low"})
         seen = [(c["lang"], d) for c in calls for d in c["de"]]
         self.assertEqual(len(seen), len(set(seen)))                  # Übersetzungsspeicher: jedes Segment einmal
         run = [e for e in st.entries if e["kind"] == "run"][-1]
         self.assertGreater(run["list_price_usd"], 0)
-        self.assertEqual(set(run["models_usage"]), {"gemini-3.1-pro-high", "gemini-3.8-flash-medium"})
+        self.assertEqual(set(run["models_usage"]), {"gemini-3.8-flash-low"})
+        self.assertEqual(run["price_basis"], C.PRICE_BASIS)
         summary = subprocess.run(
             [sys.executable, str(HERE / "live_translate.py"), "summary", "--live-repo", str(self.clone)],
             capture_output=True, text=True)
