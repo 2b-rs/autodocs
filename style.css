@@ -4546,6 +4546,31 @@ details[open] > summary .dropdown-caret {
   max-width: 125px;
 }
 
+/* Modell-IDs eigener Endpunkte sind lang (z. B. anthropic/claude-sonnet-4.5) */
+.subtab-select-model {
+  max-width: 230px;
+}
+
+/* Einladung des KI-Zugangs im Vorschau-Bereich, wenn kein Modell nutzbar ist */
+.raw-preview-gate {
+  padding: 28px 20px;
+  border: 1px dashed var(--border-default, #ccc);
+  border-radius: 8px;
+  background: var(--bg-canvas, #fafafa);
+}
+
+.raw-preview-gate .aia-gate {
+  justify-items: center;
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+[data-theme="dark"] .raw-preview-gate {
+  background: #1f2937;
+  border-color: #374151;
+}
+
 [data-theme="dark"] .subtab-select-model,
 [data-theme="dark"] .subtab-select-effort {
   background: #25313a;
@@ -5469,6 +5494,11 @@ html:not([data-density="compact"]) section.nsx-mod { display: none; }
 .aia-status.is-ok{color:var(--status-approved)}
 .aia-status.is-error{color:var(--status-rejected)}
 .aia-status.is-busy{color:var(--primary)}
+.aia-status.is-hint{color:var(--text);background:color-mix(in srgb,var(--primary) 10%,var(--surface))}
+/* Weiterer OpenAI-kompatibler Endpunkt als Alternative zu den Anbieterkarten */
+.aia-ep{display:grid;gap:6px;margin-top:4px;padding-top:10px;border-top:1px dashed var(--border)}
+.aia-ep .aia-fine{margin:0}
+.aia-ep.is-sel input{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
 .aia-sec{display:grid;gap:8px;padding-top:12px;border-top:1px solid var(--border)}
 .aia-billing{display:grid;gap:6px;padding:10px 12px;border:1px dashed var(--border);border-radius:8px}
 .aia-billing h4{margin:0;font-size:.85rem;font-weight:600}
@@ -5502,6 +5532,7 @@ html:not([data-density="compact"]) section.nsx-mod { display: none; }
 .aia-prov{cursor:pointer;gap:6px}
 .aia-prov-pick{all:unset;display:grid;gap:3px;cursor:pointer;border-radius:6px}
 .aia-prov-pick:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.aia-prov:has(.aia-prov-pick:active){transform:translateY(1px)}
 .aia-prov-key{justify-self:start;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none}
 .aia-prov-key:hover{text-decoration:underline}
 .aia-key>.aia-label{margin-top:2px}
@@ -5522,6 +5553,17 @@ html:not([data-density="compact"]) section.nsx-mod { display: none; }
 .aia-reqs li.aia-req{display:grid;gap:8px;align-items:stretch;padding:12px;border-radius:12px}
 .aia-req>div span{color:var(--muted);font-size:12px}
 .aia-req>p{margin:0;font-size:13px}
+/* Verwaltung: als wer man handelt, wer anfragt (eigene Konten markiert) */
+.aia-acting{display:grid;gap:4px;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--primary) 35%,var(--border));background:color-mix(in srgb,var(--primary) 7%,var(--surface))}
+.aia-acting p{margin:0;font-size:13px}
+.aia-person .aia-mail{color:var(--text)}
+.aia-req>div span.aia-person,.aia-req>div span.aia-person span{font-size:13px}
+.aia-who{color:var(--muted);font-size:12px}
+.aia-self{display:inline-block;padding:0 6px;border-radius:999px;background:color-mix(in srgb,var(--status-candidate) 18%,var(--surface));color:var(--text);font-size:11px;font-weight:650}
+.aia-reqs li.aia-req.is-self{border:1px dashed color-mix(in srgb,var(--status-candidate) 60%,var(--border))}
+/* Verwaltung: Backend und Modell je Freigabe nebeneinander, jeweils mit Beschriftung */
+.aia-field{display:grid;gap:4px;flex:1;min-width:0}
+.aia-field .aia-input{min-height:38px}
 .aia-req .aia-row .aia-input{flex:1}
 .aia-req .aia-row .aia-btn{flex:1}
 .aia-list li.is-expired{opacity:.6}
@@ -5697,3 +5739,15 @@ details.impl-fold > summary h2.sect { color: var(--impl-accent); }
 .rv-chip.is-impl { background: var(--impl-accent); color: var(--impl-accent-fg); }
 /* Kompaktansicht: angedockter Guide-Block mit nur einer Art braucht keinen Reiter (Titel nennt die Art) */
 .nsx-detpanel .guide-tablist:has(> [role="tab"]:only-child) { display: none; }
+
+/* Dossier: seit der Generierung zugeordnete Belege (lib_current_context.py, fold.js hydrateCurrentContext) */
+.dossier-stale-banner { margin: 8px 0 12px; padding: 10px 12px; border: 1px solid #f59e0b; border-left-width: 4px; border-radius: 6px; background: #fffbeb; color: #78350f; font-size: 0.9em; line-height: 1.45; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.dossier-stale-banner .curation-btn { margin: 0; }
+.chip-new { display: inline-block; padding: 1px 6px; border-radius: 999px; background: #fde68a; color: #78350f; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.is-current-new .current-excerpt { margin: 0 0 8px; padding: 8px 12px; background: #faf9f5; border-left: 3px solid #f59e0b; font-family: Georgia, serif; font-size: 0.95em; line-height: 1.45; }
+.is-current-new .current-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 0.78em; color: #666; }
+[data-theme="dark"] .dossier-stale-banner { background: #3a2a07; color: #fde68a; border-color: #b45309; }
+[data-theme="dark"] .chip-new { background: #92400e; color: #fef3c7; }
+[data-theme="dark"] .is-current-new .current-excerpt { background: #1f2430; }
+.dossier-meta-grid .dossier-stale-banner { grid-column: 1 / -1; margin: 0; }
+.dossier-meta-sub { color: #666; }

@@ -82,6 +82,7 @@
 }
 .rec-status-pill.active { background: #dcfce7; color: #15803d; }
 .rec-status-pill.dropped { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+.rec-status-pill.active-dropped { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
 
 /* Upstream Section */
 .spec-upstream-section {
@@ -1312,6 +1313,11 @@
     } else {
       statusPill.className = 'rec-status-pill active';
       statusPill.textContent = t.active;
+      // Im gewählten Release aktiv, später entfallen: beides nennen, sonst wirkt es dauerhaft aktiv.
+      if (lifecycle.is_dropped && lifecycle.first_dropped_release) {
+        statusPill.className = 'rec-status-pill active-dropped';
+        statusPill.textContent = t.active + ' (' + curRel + ') · ' + t.dropped.replace('{rel}', lifecycle.first_dropped_release);
+      }
       noticeEl.style.display = 'none';
     }
 
@@ -1373,7 +1379,8 @@
       propsWrap.style.display = 'none';
     }
 
-    let chipReleases = versions.map(v => v.release);
+    // Releases stets chronologisch (die Aufzeichnungsreihenfolge im Versions-Store ist zufällig)
+    let chipReleases = sortedVersions.map(v => v.release);
     if (targetRel && !chipReleases.includes(targetRel)) {
       if (compareAutosarReleases(targetRel, chipReleases[0]) < 0) {
         chipReleases.unshift(targetRel);
@@ -1406,7 +1413,7 @@
         '</td>' +
       '</tr>';
     }
-    tbodyRows += versions.map(v => {
+    tbodyRows += sortedVersions.map(v => {
       const isCur = (v.release === curRel);
       const vid = v.version_id || '';
       const hash8 = (vid.split('#')[1] || '').substring(0, 8) || '-';

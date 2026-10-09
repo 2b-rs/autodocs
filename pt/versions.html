@@ -7,1385 +7,311 @@
 (function(){try{var t=localStorage.getItem("autodocs-theme");var d=localStorage.getItem("autodocs-density");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);if(d==="compact"||d==="comfortable")document.documentElement.setAttribute("data-density",d);}catch(e){}})();
 </script>
 <script src="../ai-access.js" defer></script><script src="../fold.js" defer></script><script src="../review.js" defer></script><script src="../review_request.js" defer></script><script src="../static/discuss.js" defer></script><script src="../cytoscape.min.js" defer></script><script src="../component-graph.js" defer></script><script src="../component-inspector.js" defer></script><script src="../classic-filter.js" defer></script><script src="../ns-index.js" defer></script></head>
-<body><a class="skip-link" href="#main">Skip to content</a>
+<body class="ve-page"><a class="skip-link" href="#main">Skip to content</a>
 <header class="shell" role="banner"><div class="titleblock"><a class="home" href="index.html">autodocs</a></div>
 <nav class="shell-domains" aria-label="Application domains"><details class="shell-dropdown domain-dropdown"><summary class="shell-toggle domain-toggle" aria-haspopup="true"><span class="domain-current">Explore</span> <span class="dropdown-caret" aria-hidden="true">▾</span></summary><div class="shell-dropdown-menu"><a data-domain="explore" href="index.html">Explore</a><a data-domain="extract" href="extraction-reports.html">Extract</a><a data-domain="build" href="build-reports.html">Build</a><a data-domain="curate" href="curation-report.html">Curate</a><a data-domain="review" href="open-reviews.html">Review</a><a data-domain="trace" href="adaptive/index.html#component-graph-data">Trace</a><a data-domain="work" href="process.html">Work</a></div></details></nav>
 <div class="shell-controls"><form class="shell-search" role="search" action="index.html" method="get"><label class="visually-hidden" for="shell-search">Pesquisar</label><svg class="shell-search-ico" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="shell-search" type="search" name="q" placeholder="Pesquisar..." data-search-input autocomplete="off" enterkeyhint="search"></form>
 <div class="reviewbar" aria-label="Requirement reviews"><button type="button" class="reviewbar-package" data-review-open aria-expanded="false"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span>Feedback e curadoria</span><span class="review-count" data-review-count>0</span></button></div></div></header>
 <div class="crumbbar"><nav class="crumbs"><a href="index.html">Início</a> / <a href="process.html">Processo</a> / Explorador de versões &amp; proveniência</nav><div class="crumb-tools"><button type="button" class="crumb-toggle" data-theme-toggle data-icon-toggle aria-pressed="false" title="Dark mode" aria-label="Dark mode"><svg class="ico-moon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="ico-sun" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><button type="button" class="crumb-toggle" data-density-toggle data-icon-toggle aria-pressed="false" title="Compact mode" aria-label="Compact mode"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></button><div class="langs"><a href="../de/versions.html" title="Deutsch" hreflang="de"><img src="../flags/de.svg" alt="DE"></a><a href="../en/versions.html" title="English" hreflang="en"><img src="../flags/gb.svg" alt="EN"></a><a href="../es/versions.html" title="Español" hreflang="es"><img src="../flags/es.svg" alt="ES"></a><a class="cur" href="../pt/versions.html" title="Português" hreflang="pt"><img src="../flags/pt.svg" alt="PT"></a><a href="../fr/versions.html" title="Français" hreflang="fr"><img src="../flags/fr.svg" alt="FR"></a><a href="../ru/versions.html" title="Русский" hreflang="ru"><img src="../flags/ru.svg" alt="RU"></a><a href="../ar/versions.html" title="العربية" hreflang="ar"><img src="../flags/sa.svg" alt="AR"></a><a href="../hi/versions.html" title="हिन्दी" hreflang="hi"><img src="../flags/in.svg" alt="HI"></a><a href="../ko/versions.html" title="한국어" hreflang="ko"><img src="../flags/kr.svg" alt="KO"></a><a href="../zh/versions.html" title="中文" hreflang="zh"><img src="../flags/cn.svg" alt="ZH"></a><a href="../nl/versions.html" title="Nederlands" hreflang="nl"><img src="../flags/nl.svg" alt="NL"></a></div></div></div>
 <main id="main"><style>
-.ve-hero{padding:.9rem 1.4rem;border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);margin:.5rem 0 1rem}
-.ve-hero h1{margin:0 0 .25rem;font-size:1.35rem}
-.ve-hero p{margin:0;color:var(--color-ink-muted);font-size:.88rem;line-height:1.35}
-.ve-search-bar{display:flex;gap:.8rem;flex-wrap:wrap;margin:1.2rem 0 .8rem;align-items:center}
-.ve-input-wrap{position:relative;flex:1;min-width:280px}
-.ve-input{width:100%;box-sizing:border-box;padding:.7rem 1rem .7rem 2.4rem;border:1px solid var(--border-default);border-radius:10px;font-size:1rem;background:var(--bg-canvas);color:var(--color-ink);font-family:var(--font-mono)}
-.ve-input:focus{outline:2px solid var(--color-teal-600);background:var(--bg-surface)}
-.ve-search-icon{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--color-ink-muted);pointer-events:none}
-.ve-filter-chips{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin:.6rem 0 1.2rem}
-.ve-chip{padding:.35rem .75rem;border-radius:999px;border:1px solid var(--border-default);background:var(--bg-subtle);color:var(--color-ink-muted);font-size:.85rem;cursor:pointer;user-select:none;transition:all .15s}
-.ve-chip:hover{background:var(--border-default);color:var(--color-ink)}
-.ve-chip.is-active{background:var(--color-teal-600);color:#fff;border-color:var(--color-teal-600)}
-html,body{overflow-x:hidden!important;max-width:100vw}\n.ve-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:1.25rem;align-items:start;margin-bottom:3rem;max-width:100%;box-sizing:border-box}\n.ve-main-panel{min-width:0;max-width:100%;overflow-x:hidden}
-@media (max-width:960px){.ve-layout{grid-template-columns:1fr}}
-.ve-sidebar{border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);overflow:hidden;display:flex;flex-direction:column;position:sticky;top:1rem;max-height:calc(100vh - 2rem);align-self:start;width:100%;min-width:0;box-sizing:border-box}
-.ve-sidebar-head{padding:.85rem 1.1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center}
-.ve-sidebar-title{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--color-ink-muted)}
-.ve-count-badge{font-size:.78rem;padding:.15rem .5rem;border-radius:999px;background:var(--bg-canvas);border:1px solid var(--border-default);color:var(--color-ink-muted)}
-.ve-list{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1}
-.ve-list-item{padding:.75rem 1.1rem;border-bottom:1px solid var(--border-subtle);cursor:pointer;transition:background .12s;display:flex;flex-direction:column;gap:.25rem}
-.ve-list-item:hover{background:var(--bg-subtle)}
-.ve-list-item.is-selected{background:rgba(13,148,136,.12);border-left:4px solid var(--color-teal-600)}
-.ve-item-top{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
-.ve-item-id{font-family:var(--font-mono);font-size:.9rem;font-weight:600;color:var(--color-ink)}
-.ve-item-badge{font-size:.72rem;padding:.15rem .45rem;border-radius:4px;font-weight:600}
-.ve-badge-cp{background:#dbeafe;color:#1e40af}
-.ve-badge-ap{background:#fef3c7;color:#92400e}
-.ve-badge-dropped-mini{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;font-size:.72rem;padding:.1rem .4rem;border-radius:4px;font-weight:600;display:inline-flex;align-items:center;gap:.2rem}
-.ve-item-meta{font-size:.78rem;color:var(--color-ink-muted);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-
-.ve-main-panel{display:flex;flex-direction:column;gap:1.4rem}
-.ve-record-header{border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);padding:1.4rem 1.6rem}
-.ve-record-title-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem}
-.ve-record-title{margin:0;font-size:1.35rem;font-family:var(--font-mono);color:var(--color-ink)}
-.ve-record-meta-row{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;color:var(--color-ink-muted);font-size:.85rem}
-.ve-pill-ok{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;background:#dcfce7;color:#15803d;font-weight:600;font-size:.78rem}
-.ve-pill-dropped{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:999px;background:#fee2e2;border:1px solid #f87171;color:#b91c1c;font-weight:600;font-size:.78rem}
-html[data-theme="dark"] .ve-pill-dropped{background:#450a0a;border-color:#991b1b;color:#fca5a5}
-
-/* Revisions Timeline & Epoch Cards */
-.ve-timeline-wrap{border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);padding:1.2rem 1.5rem}
-.ve-timeline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.6rem}
-.ve-timeline-title{font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--color-ink-muted)}
-.ve-timeline-hint{font-size:.82rem;color:var(--color-teal-600);font-weight:500}
-.ve-timeline-epochs{display:flex;flex-wrap:wrap;gap:.5rem;padding-bottom:.3rem}
-.ve-epoch-card{flex:1 1 calc(25% - .5rem);min-width:125px;max-width:240px;border:1.5px solid var(--border-default);border-radius:8px;background:var(--bg-canvas);padding:.5rem .7rem;display:flex;flex-direction:column;gap:.3rem;cursor:pointer;transition:all .15s;position:relative;box-sizing:border-box}
-.ve-epoch-card:hover{border-color:var(--color-teal-600);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+body.ve-page main{max-width:1560px}
+html,body{overflow-x:hidden;max-width:100%}
+#ve-app,#ve-app *{box-sizing:border-box}
+#ve-app code{overflow-wrap:anywhere;word-break:break-word}
+.ve-vh-name>*{min-width:0;max-width:100%}
+.ve-hero{padding:.7rem 1.1rem;border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);margin:.25rem 0 .75rem}
+.ve-hero h1{margin:0 0 .2rem;font-size:1.3rem}
+.ve-hero p{margin:0;color:var(--color-ink-muted);font-size:.86rem;line-height:1.35}
+.ve-muted{color:var(--color-ink-muted)}
+.ve-tabs{display:flex;gap:.25rem;border-bottom:2px solid var(--border-default);margin:0 0 .6rem;overflow-x:auto;scrollbar-width:thin}
+.ve-tab{appearance:none;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--color-ink-muted);font:inherit;font-weight:600;font-size:.95rem;padding:.5rem .95rem;border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap;margin-bottom:-2px}
+.ve-tab:hover{color:var(--color-ink);background:var(--bg-subtle)}
+.ve-tab.is-active{color:var(--color-ink);background:var(--bg-surface);border-color:var(--border-default);border-bottom:2px solid var(--bg-surface)}
+.ve-tab-count{font-size:.75rem;font-weight:600;color:var(--color-ink-muted);background:var(--bg-subtle);border-radius:999px;padding:.05rem .45rem;margin-inline-start:.2rem}
+.ve-tab.is-active .ve-tab-count{background:var(--color-teal-600);color:#fff}
+.ve-toolbar{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:0 0 .5rem}
+.ve-search{position:relative;flex:1 1 320px;min-width:0}
+.ve-search-icon{position:absolute;inset-inline-start:.75rem;top:50%;transform:translateY(-50%);color:var(--color-ink-muted);pointer-events:none;font-size:1.05rem}
+.ve-input{width:100%;padding:.55rem .8rem .55rem 2.1rem;border:1px solid var(--border-default);border-radius:8px;font-size:.95rem;background:var(--bg-canvas);color:var(--color-ink);font-family:var(--font-mono)}
+[dir=rtl] .ve-input{padding:.55rem 2.1rem .55rem .8rem}
+.ve-input:focus{outline:2px solid var(--color-teal-600);outline-offset:0;background:var(--bg-surface)}
+.ve-btn{display:inline-flex;align-items:center;gap:.35rem;padding:.45rem .8rem;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-surface);color:var(--color-ink);font:inherit;font-size:.86rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.ve-btn:hover{background:var(--bg-subtle)}
+.ve-btn:disabled{opacity:.5;cursor:default}
+.ve-btn:focus-visible,.ve-tab:focus-visible,.ve-fchip:focus-visible,.ve-linkbtn:focus-visible,.ve-subtab:focus-visible{outline:2px solid var(--color-teal-600);outline-offset:1px}
+.ve-collapse[aria-pressed=true]{background:var(--color-teal-600);color:#fff;border-color:var(--color-teal-600)}
+.ve-badge:empty{display:none}
+.ve-badge{background:var(--color-teal-600);color:#fff;border-radius:999px;font-size:.72rem;padding:0 .4rem;line-height:1.4}
+.ve-filter-toggle{display:none}
+.ve-chiprow{display:flex;gap:.35rem;flex-wrap:wrap;margin:0 0 .5rem}
+.ve-chiprow[hidden]{display:none}
+.ve-chip-on,.ve-chip-clear{display:inline-flex;align-items:center;gap:.3rem;border-radius:999px;border:1px solid var(--color-teal-600);background:rgba(0,109,115,.08);color:var(--color-ink);font:inherit;font-size:.8rem;padding:.2rem .6rem;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ve-chip-clear{border-style:dashed;background:transparent}
+.ve-chip-k{color:var(--color-ink-muted)}
+.ve-notice{border:1px solid #f59e0b;background:rgba(245,158,11,.1);border-radius:8px;padding:.5rem .8rem;font-size:.85rem;margin:0 0 .5rem}
+.ve-md{display:grid;grid-template-columns:minmax(200px,240px) minmax(260px,340px) minmax(0,1fr);gap:.7rem;height:var(--ve-md-h,72vh);min-height:420px;position:relative}
+.ve-facets,.ve-listpane,.ve-viewer{min-height:0;min-width:0;border:1px solid var(--border-default);border-radius:10px;background:var(--bg-surface)}
+.ve-facets{overflow-y:auto;padding:.2rem .7rem .7rem;position:sticky;top:0}
+.ve-facets-head{display:none;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border-default);margin-bottom:.3rem;position:sticky;top:0;background:var(--bg-surface);z-index:1}
+.ve-fgroup{padding:.45rem 0;border-bottom:1px solid var(--border-subtle,var(--border-default))}
+.ve-fgroup:last-child{border-bottom:none}
+.ve-fhead{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--color-ink-muted);margin:.1rem 0 .35rem}
+.ve-fvals{display:flex;flex-wrap:wrap;gap:.3rem}
+.ve-fgroup-mod .ve-fvals,.ve-fgroup-rel .ve-fvals{flex-direction:column;flex-wrap:nowrap;gap:.4rem}
+.ve-fvals-scroll{display:flex;flex-wrap:wrap;gap:.3rem;max-height:220px;overflow-y:auto}
+.ve-fchip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--border-default);border-radius:999px;background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.8rem;padding:.18rem .55rem;cursor:pointer;max-width:100%}
+.ve-fchip-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ve-fchip:hover{border-color:var(--color-teal-600)}
+.ve-fchip.is-on{background:var(--color-teal-600);border-color:var(--color-teal-600);color:#fff}
+.ve-fchip:disabled{opacity:.45;cursor:default}
+.ve-fchip-n{font-size:.72rem;opacity:.8;font-variant-numeric:tabular-nums}
+.ve-more{appearance:none;border:none;background:none;color:var(--color-teal-600);font:inherit;font-size:.8rem;cursor:pointer;padding:.1rem 0;text-align:start;text-decoration:underline}
+.ve-modfilter{width:100%;padding:.3rem .5rem;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.82rem}
+.ve-fsel{display:flex;flex-direction:column;gap:.15rem;font-size:.78rem;color:var(--color-ink-muted)}
+.ve-fsel select{width:100%;padding:.3rem .4rem;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.84rem}
+.ve-listpane{display:flex;flex-direction:column;overflow:hidden}
+.ve-listhead{display:flex;justify-content:space-between;gap:.5rem;align-items:center;padding:.45rem .75rem;border-bottom:1px solid var(--border-default);background:var(--bg-subtle);font-size:.8rem;font-weight:600;color:var(--color-ink-muted)}
+.ve-kbd-hint{font-weight:400;font-size:.72rem;white-space:nowrap}
+.ve-vlist{flex:1;min-height:0;overflow-y:auto;position:relative}
+.ve-vlist:focus{outline:2px solid var(--color-teal-600);outline-offset:-2px}
+.ve-vspace{position:relative;width:100%}
+.ve-row{position:absolute;left:0;right:0;padding:.4rem .75rem;border-bottom:1px solid var(--border-subtle,var(--border-default));cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:.15rem;overflow:hidden}
+.ve-row:hover{background:var(--bg-subtle)}
+.ve-row.is-active{background:rgba(0,109,115,.08);box-shadow:inset 0 0 0 1px var(--color-teal-600)}
+.ve-row.is-open{background:rgba(0,109,115,.14);border-inline-start:4px solid var(--color-teal-600)}
+.ve-row-top{display:flex;justify-content:space-between;align-items:center;gap:.4rem;min-width:0}
+.ve-row-id{font-family:var(--font-mono);font-size:.86rem;font-weight:600;color:var(--color-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve-row-title{font-size:.85rem;font-weight:600;color:var(--color-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve-row-badges{display:flex;gap:.25rem;flex-shrink:0}
+.ve-row-meta{font-size:.74rem;color:var(--color-ink-muted);display:flex;gap:.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve-row-name{color:var(--color-ink);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis}
+.ve-row-idsmall{font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis}
+.ve-mini{font-size:.66rem;font-weight:700;padding:.05rem .35rem;border-radius:4px;white-space:nowrap;background:var(--bg-subtle);color:var(--color-ink-muted)}
+.ve-mini-chg{background:#fef3c7;color:#92400e}
+.ve-mini-drop{background:#fee2e2;color:#991b1b}
+.ve-mini-new{background:#dcfce7;color:#166534}
+.ve-plat-CP{background:#dbeafe;color:#1e40af}
+.ve-plat-AP{background:#fef3c7;color:#92400e}
+html[data-theme=dark] .ve-mini-chg,html[data-theme=dark] .ve-plat-AP{background:#422006;color:#fcd34d}
+html[data-theme=dark] .ve-mini-drop{background:#450a0a;color:#fca5a5}
+html[data-theme=dark] .ve-mini-new{background:#052e16;color:#86efac}
+html[data-theme=dark] .ve-plat-CP{background:#172554;color:#93c5fd}
+.ve-empty,.ve-placeholder{padding:2rem 1.2rem;text-align:center;color:var(--color-ink-muted);font-size:.92rem}
+.ve-placeholder-small{padding:1rem;text-align:start}
+.ve-error{padding:1.2rem;color:var(--status-rejected)}
+.ve-viewer{overflow-y:auto;position:relative}
+.ve-viewer-top{display:none;position:sticky;top:0;z-index:2;background:var(--bg-surface);padding:.45rem .7rem;border-bottom:1px solid var(--border-default)}
+.ve-viewer-body{padding:.9rem 1.1rem 1.4rem}
+.ve-vh{border-bottom:1px solid var(--border-default);padding-bottom:.7rem;margin-bottom:.6rem}
+.ve-vh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;flex-wrap:wrap}
+.ve-vh-id{margin:0;font-size:1.25rem;font-family:var(--font-mono);color:var(--color-ink);overflow-wrap:anywhere}
+.ve-vh-title{font-family:inherit;font-size:1.1rem}
+.ve-vh-name{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin:.3rem 0 .4rem;font-size:.9rem}
+.ve-kind{font-size:.72rem;font-weight:700;padding:.1rem .45rem;border-radius:4px;background:#e0e7ff;color:#3730a3}
+html[data-theme=dark] .ve-kind{background:#1e1b4b;color:#c7d2fe}
+.ve-vh-elname{font-family:var(--font-mono);font-weight:600;overflow-wrap:anywhere}
+.ve-cid{font-family:var(--font-mono);font-size:.74rem;overflow-wrap:anywhere}
+.ve-meta{display:flex;flex-wrap:wrap;gap:.3rem 1.1rem;margin:.2rem 0 .6rem;font-size:.82rem}
+.ve-meta div{display:flex;gap:.3rem;min-width:0}
+.ve-meta dt{color:var(--color-ink-muted)}
+.ve-meta dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.ve-links,.ve-cardlinks{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.ve-linkbtn{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .65rem;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.8rem;font-weight:600;text-decoration:none;cursor:pointer}
+.ve-linkbtn[hidden]{display:none}
+.ve-linkbtn:hover{border-color:var(--color-teal-600);color:var(--color-teal-600)}
+.ve-linkbtn-primary{background:var(--color-teal-600);border-color:var(--color-teal-600);color:#fff}
+.ve-linkbtn-primary:hover{color:#fff;filter:brightness(1.08)}
+.ve-nopage{font-size:.78rem}
+.ve-subtabs{display:flex;gap:.3rem;flex-wrap:wrap;margin:.2rem 0 .8rem;position:sticky;top:0;background:var(--bg-surface);z-index:1;padding:.35rem 0;border-bottom:1px solid var(--border-default)}
+.ve-subtab{appearance:none;border:1px solid var(--border-default);background:var(--bg-canvas);color:var(--color-ink);font:inherit;font-size:.86rem;font-weight:600;padding:.35rem .75rem;border-radius:999px;cursor:pointer}
+.ve-subtab.is-active{background:var(--color-teal-600);border-color:var(--color-teal-600);color:#fff}
+.ve-subcount{display:inline-block;min-width:1.4em;text-align:center;font-size:.74rem;border-radius:999px;background:rgba(0,0,0,.08);padding:0 .35rem}
+.ve-subtab.is-active .ve-subcount{background:rgba(255,255,255,.25)}
+.ve-subcount.is-zero{opacity:.6}
+.ve-subpanel{display:flex;flex-direction:column;gap:1rem}
+.ve-evhead{margin:0;font-size:.82rem}
+.ve-figgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.7rem}
+.ve-figcard,.ve-snipcard{border:1px solid var(--border-default);border-radius:10px;background:var(--bg-canvas);overflow:hidden;min-width:0}
+.ve-snipcard{padding:.65rem .8rem;display:flex;flex-direction:column;gap:.3rem}
+.ve-sniplist{display:flex;flex-direction:column;gap:.6rem}
+.ve-thumb{position:relative;height:130px;background:#fff;border-bottom:1px solid var(--border-default);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ve-thumb img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.ve-thumb-ph{display:none;font-size:.75rem;color:#64748b;padding:.5rem;text-align:center}
+.ve-thumb.is-missing{background:repeating-linear-gradient(45deg,var(--bg-subtle),var(--bg-subtle) 8px,var(--bg-canvas) 8px,var(--bg-canvas) 16px)}
+.ve-thumb.is-missing .ve-thumb-ph{display:block;color:var(--color-ink-muted)}
+.ve-cardbody{padding:.6rem .75rem;display:flex;flex-direction:column;gap:.3rem}
+.ve-cardtitle{font-weight:600;font-size:.88rem;line-height:1.3;overflow-wrap:anywhere}
+.ve-cardmeta{font-size:.76rem;color:var(--color-ink-muted);overflow-wrap:anywhere}
+.ve-cardmeta code{font-size:.74rem}
+.ve-why{font-size:.78rem;line-height:1.35;overflow-wrap:anywhere}
+.ve-why span{color:var(--color-ink-muted);font-weight:600}
+.ve-excerpt{margin:0;padding:.1rem .7rem;border-inline-start:3px solid var(--color-teal-600);font-size:.84rem;line-height:1.45;color:var(--color-ink);overflow-wrap:anywhere}
+.ve-role{font-weight:600}
+.ve-role-constitutive{color:#15803d}
+.ve-role-heuristic{color:#b45309}
+html[data-theme=dark] .ve-role-constitutive{color:#86efac}
+html[data-theme=dark] .ve-role-heuristic{color:#fcd34d}
+.ve-showmore{align-self:flex-start}
+.ve-figbig .ve-thumb{height:auto;min-height:120px;max-height:380px;border:1px solid var(--border-default);border-radius:10px;padding:.5rem;margin-bottom:.8rem}
+.ve-figbig .ve-thumb img{max-height:360px}
+.ve-sect{margin:0 0 1rem}
+.ve-sect h3{font-size:.92rem;margin:.2rem 0 .5rem}
+.ve-series{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+.ve-series-item{display:flex;gap:.6rem;align-items:center;border:1px solid var(--border-default);border-radius:8px;padding:.35rem .5rem;font-size:.82rem;min-width:0}
+.ve-series-item.is-current{border-color:var(--color-teal-600);box-shadow:inset 0 0 0 1px var(--color-teal-600)}
+.ve-series-thumb .ve-thumb{width:84px;height:54px;border:1px solid var(--border-default);border-radius:4px}
+.ve-series-txt{min-width:0;overflow-wrap:anywhere}
+.ve-series-cap{display:block;color:var(--color-ink-muted);font-size:.76rem}
+.ve-occ{margin:0;padding-inline-start:1.1rem;font-size:.82rem;line-height:1.6;overflow-wrap:anywhere}
+.ve-fulltext{white-space:pre-wrap;font-family:var(--font-mono);font-size:.8rem;line-height:1.5;background:var(--bg-canvas);border:1px solid var(--border-default);border-radius:8px;padding:.6rem .8rem;max-height:340px;overflow:auto;overflow-wrap:anywhere}
+.ve-targets{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem}
+.ve-targets li{border:1px solid var(--border-default);border-radius:8px;padding:.4rem .6rem;min-width:0}
+.ve-target{appearance:none;border:none;background:none;padding:0;font:inherit;font-size:.86rem;color:var(--color-teal-600);cursor:pointer;text-align:start;overflow-wrap:anywhere}
+.ve-target:hover{text-decoration:underline}
+.ve-pill-ok{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:999px;background:#dcfce7;color:#15803d;font-weight:600;font-size:.76rem}
+.ve-pill-dropped{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;border-radius:999px;background:#fee2e2;border:1px solid #f87171;color:#b91c1c;font-weight:600;font-size:.76rem}
+html[data-theme=dark] .ve-pill-ok{background:#052e16;color:#86efac}
+html[data-theme=dark] .ve-pill-dropped{background:#450a0a;border-color:#991b1b;color:#fca5a5}
+/* Revisions-Zeitachse */
+.ve-timeline-wrap{border:1px solid var(--border-default);border-radius:10px;background:var(--bg-surface);padding:.8rem 1rem}
+.ve-timeline-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem}
+.ve-timeline-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--color-ink-muted)}
+.ve-timeline-hint{font-size:.78rem;color:var(--color-teal-600)}
+.ve-timeline-epochs{display:flex;flex-wrap:wrap;gap:.5rem}
+.ve-epoch-card{flex:1 1 calc(25% - .5rem);min-width:125px;max-width:260px;border:1.5px solid var(--border-default);border-radius:8px;background:var(--bg-canvas);padding:.5rem .65rem;display:flex;flex-direction:column;gap:.35rem;cursor:pointer;transition:border-color .15s}
+.ve-epoch-card:hover,.ve-epoch-card:focus-visible{border-color:var(--color-teal-600);outline:none}
 .ve-epoch-card.is-left{border-color:#2563eb;background:rgba(37,99,235,.05);box-shadow:0 0 0 1px #2563eb}
 .ve-epoch-card.is-right{border-color:#16a34a;background:rgba(22,163,74,.05);box-shadow:0 0 0 1px #16a34a}
 .ve-epoch-card.is-left.is-right{border-color:#9333ea;background:rgba(147,51,234,.05);box-shadow:0 0 0 1px #9333ea}
 .ve-epoch-card.ve-epoch-dropped{border-style:dashed;border-color:#f87171;background:rgba(239,68,68,.04)}
-.ve-epoch-header{display:flex;justify-content:space-between;align-items:center;gap:.4rem}
-.ve-epoch-span{font-weight:700;font-size:.85rem;color:var(--color-ink)}
+.ve-epoch-card.ve-epoch-absent{border-style:dashed;cursor:default;background:var(--bg-subtle)}
+.ve-epoch-header{display:flex;justify-content:space-between;align-items:center;gap:.4rem;flex-wrap:wrap}
+.ve-epoch-span{font-weight:700;font-size:.84rem;color:var(--color-ink)}
 .ve-epoch-status{font-size:.68rem;padding:.1rem .35rem;border-radius:4px;font-weight:600;white-space:nowrap}
 .ve-status-initial{background:#e0f2fe;color:#0369a1}
 .ve-status-stable{background:#f1f5f9;color:#475569}
 .ve-status-changed{background:#fef3c7;color:#b45309;border:1px solid #fde68a}
 .ve-status-revert{background:#fce7f3;color:#be185d}
-.ve-status-dropped{background:rgba(239,68,68,.15);color:#b91c1c;font-weight:700;border:1px solid #fca5a5}
-html[data-theme="dark"] .ve-status-dropped{color:#fca5a5}
+.ve-status-dropped{background:rgba(239,68,68,.15);color:#b91c1c;border:1px solid #fca5a5}
+.ve-status-absent{background:rgba(100,116,139,.15);color:#475569;border:1px solid #cbd5e1}
+html[data-theme=dark] .ve-status-dropped{color:#fca5a5}
+html[data-theme=dark] .ve-status-absent{color:#cbd5e1}
 .ve-epoch-body{font-size:.74rem;color:var(--color-ink-muted);line-height:1.3}
-.ve-epoch-subreleases{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.4rem}
-.ve-epoch-rel-pill{font-size:.72rem;padding:.1rem .35rem;border-radius:4px;background:var(--bg-subtle);border:1px solid var(--border-default);font-family:var(--font-mono)}
+.ve-epoch-variants{margin-top:.2rem;font-style:italic}
+.ve-epoch-subreleases{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.35rem}
+.ve-epoch-rel-pill{font-size:.7rem;padding:.05rem .35rem;border-radius:4px;background:var(--bg-subtle);border:1px solid var(--border-default);font-family:var(--font-mono)}
 .ve-epoch-actions{display:flex;gap:.3rem;margin-top:auto;padding-top:.3rem;border-top:1px solid var(--border-default)}
-.ve-epoch-btn{flex:1;padding:.2rem .3rem;font-size:.7rem;border-radius:4px;border:1px solid var(--border-default);background:var(--bg-surface);color:var(--color-ink);cursor:pointer;font-weight:600;transition:all .15s}
-.ve-epoch-btn:hover{background:var(--bg-subtle)}
+.ve-epoch-btn{flex:1;padding:.2rem .3rem;font-size:.7rem;border-radius:4px;border:1px solid var(--border-default);background:var(--bg-surface);color:var(--color-ink);cursor:pointer;font-weight:600}
 .ve-btn-set-left:hover{border-color:#2563eb;color:#2563eb}
 .ve-btn-set-right:hover{border-color:#16a34a;color:#16a34a}
-
-/* Diff View & Mode Selector */
-.ve-diff-toolbar{display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap;padding:.6rem 0}
-.ve-compare-summary{display:flex;align-items:center;gap:.6rem;font-size:.92rem}
-.ve-tag-left{padding:.25rem .65rem;border-radius:6px;background:#dbeafe;color:#1e40af;font-weight:700;border:1px solid #bfdbfe}
-.ve-tag-right{padding:.25rem .65rem;border-radius:6px;background:#dcfce7;color:#15803d;font-weight:700;border:1px solid #bbf7d0}
+/* Vergleich */
+.ve-diff-toolbar{display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap}
+.ve-compare-summary{display:flex;align-items:center;gap:.5rem;font-size:.88rem;flex-wrap:wrap}
+.ve-tag-left{padding:.2rem .55rem;border-radius:6px;background:#dbeafe;color:#1e40af;font-weight:700;border:1px solid #bfdbfe}
+.ve-tag-right{padding:.2rem .55rem;border-radius:6px;background:#dcfce7;color:#15803d;font-weight:700;border:1px solid #bbf7d0}
 .ve-tag-arrow{color:var(--color-ink-muted);font-weight:700}
-.ve-btn-swap{padding:.25rem .55rem;border-radius:6px;border:1px solid var(--border-default);background:var(--bg-subtle);cursor:pointer;font-size:.8rem}
-.ve-view-toggle{display:inline-flex;border:1px solid var(--border-default);border-radius:8px;overflow:hidden;background:var(--bg-subtle)}
-.ve-view-btn{padding:.4rem .85rem;border:none;background:transparent;color:var(--color-ink-muted);font-size:.82rem;font-weight:600;cursor:pointer}
+.ve-btn-swap{padding:.2rem .5rem;border-radius:6px;border:1px solid var(--border-default);background:var(--bg-subtle);color:var(--color-ink);cursor:pointer;font-size:.78rem}
+.ve-view-toggle{display:inline-flex;border:1px solid var(--border-default);border-radius:8px;overflow:hidden;background:var(--bg-subtle);flex-wrap:wrap}
+.ve-view-btn{padding:.35rem .7rem;border:none;background:transparent;color:var(--color-ink-muted);font-size:.8rem;font-weight:600;cursor:pointer}
 .ve-view-btn.is-active{background:var(--color-teal-600);color:#fff}
-
-/* Side-by-Side Split Diff */
-.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:12px;overflow:hidden;height:520px;max-height:calc(100vh - 280px);background:var(--bg-canvas);position:relative;display:flex;flex-direction:column}
-.ve-split-columns{display:grid;grid-template-columns:1fr 70px 1fr;position:relative;min-width:0;width:100%;flex:1;min-height:0;overflow:hidden}
-.ve-split-pane{background:var(--bg-canvas);overflow:hidden;display:flex;flex-direction:column;min-height:0;position:relative}
-.ve-split-left{border-right:1px solid var(--border-subtle)}
-.ve-split-right{border-left:1px solid var(--border-subtle)}
-.ve-split-header{padding:.75rem 1rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;z-index:5}
+.ve-split-diff-wrapper{border:1px solid var(--border-default);border-radius:10px;overflow:hidden;height:460px;max-height:calc(100vh - 240px);min-height:260px;background:var(--bg-canvas);display:flex;flex-direction:column}
+.ve-split-columns{display:grid;grid-template-columns:minmax(0,1fr) 56px minmax(0,1fr);position:relative;width:100%;flex:1;min-height:0;overflow:hidden}
+.ve-split-pane{background:var(--bg-canvas);overflow:hidden;display:flex;flex-direction:column;min-height:0;min-width:0}
+.ve-split-header{padding:.55rem .8rem;background:var(--bg-subtle);border-bottom:1px solid var(--border-default);font-size:.8rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:.4rem;flex-shrink:0;flex-wrap:wrap}
 .ve-header-left{border-top:3px solid #2563eb}
-.ve-header-gutter{border-top:3px solid var(--color-teal-600);justify-content:center;align-items:center;text-align:center;color:var(--color-ink-muted);font-size:.75rem;letter-spacing:.05em;padding:.75rem .5rem}
+.ve-header-gutter{border-top:3px solid var(--color-teal-600);justify-content:center;color:var(--color-ink-muted);font-size:.7rem;padding:.55rem .2rem}
 .ve-header-right{border-top:3px solid #16a34a}
-.ve-split-body{padding:1rem;font-family:var(--font-mono);font-size:.88rem;line-height:1.65;white-space:pre-wrap;word-break:break-word;flex:1;overflow-y:auto;overflow-x:hidden;position:relative;box-sizing:border-box}
-.ve-split-body::-webkit-scrollbar{width:6px}
-.ve-split-body::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:3px}
-
-/* Block & Word-level diff styles */
-.ve-block{margin:.4rem 0;padding:.35rem .6rem;border-radius:6px;border-left:3px solid transparent;transition:all .15s}
-.ve-block-equal{background:transparent;color:var(--color-ink);border-left-color:transparent}
-.ve-block-deleted{background:rgba(220,38,38,.12);border-left-color:#dc2626;color:var(--color-ink)}
-.ve-block-added{background:rgba(22,163,74,.12);border-left-color:#16a34a;color:var(--color-ink)}
-.ve-block-replaced.ve-block-left{background:rgba(220,38,38,.07);border-left-color:#dc2626;color:var(--color-ink)}
-.ve-block-replaced.ve-block-right{background:rgba(22,163,74,.07);border-left-color:#16a34a;color:var(--color-ink)}
-.ve-block.is-hovered{box-shadow:0 0 0 2px var(--color-teal-600)}
-
-.ve-block.ve-block-anchor{display:block!important;height:0!important;min-height:0!important;max-height:0!important;padding:0!important;margin:0!important;border:none!important;overflow:hidden!important;pointer-events:none!important}
-.ve-block.ve-block-placeholder{height:4px!important;min-height:4px!important;margin:3px 0!important;padding:0!important;border:none!important;border-radius:2px;box-sizing:border-box}
-.ve-placeholder-delete{background:rgba(220,38,38,.45)}
-.ve-placeholder-insert{background:rgba(22,163,74,.45)}
-
-.ve-word-deleted, del.ve-word-deleted{background:rgba(220,38,38,.28);color:#991b1b;border-radius:3px;padding:0 3px;text-decoration:line-through;font-weight:600}
-html[data-theme="dark"] .ve-word-deleted, html[data-theme="dark"] del.ve-word-deleted{background:rgba(239,68,68,.38);color:#fca5a5}
-.ve-word-added, ins.ve-word-added{background:rgba(22,163,74,.28);color:#14532d;border-radius:3px;padding:0 3px;font-weight:600;text-decoration:none}
-html[data-theme="dark"] .ve-word-added, html[data-theme="dark"] ins.ve-word-added{background:rgba(34,197,94,.38);color:#86efac}
-
-.ve-block-tombstone{padding:2rem 1.5rem;border:2px dashed #f87171;background:rgba(239,68,68,.05);border-radius:10px;text-align:center;margin:1rem 0}
-.ve-tombstone-icon{font-size:2.4rem;margin-bottom:.5rem}
-
-/* SVG Gutter & Connector Ribbons */
-.ve-split-gutter{position:relative;width:70px;background:var(--bg-canvas);border-left:1px solid var(--border-subtle);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.ve-gutter-canvas-wrap{position:relative;flex:1;width:70px;min-height:0;overflow:hidden}
-.ve-gutter-svg{position:absolute;top:0;left:0;width:70px;height:100%;pointer-events:all;overflow:visible}
-.ve-connector{cursor:pointer;transition:opacity .15s}
+.ve-split-body{padding:.8rem;font-family:var(--font-mono);font-size:.84rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
+.ve-split-gutter{position:relative;background:var(--bg-canvas);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.ve-gutter-canvas-wrap{position:relative;flex:1;min-height:0;overflow:hidden}
+.ve-gutter-svg{position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible}
+.ve-connector{cursor:pointer}
 .ve-connector-replace{fill:rgba(217,119,6,.18);stroke:#d97706;stroke-width:1}
 .ve-connector-delete{fill:rgba(220,38,38,.18);stroke:#dc2626;stroke-width:1}
 .ve-connector-insert{fill:rgba(22,163,74,.18);stroke:#16a34a;stroke-width:1}
 .ve-connector.is-hovered{opacity:.9;stroke-width:2}
-
-/* Unified Diff */
-.ve-unified-container{border:1px solid var(--border-default);border-radius:12px;overflow:hidden;background:var(--bg-canvas);font-family:var(--font-mono);font-size:.88rem}
-.ve-diff-line{display:flex;gap:.75rem;padding:.25rem .75rem;border-bottom:1px solid var(--border-subtle);line-height:1.5}
-.ve-diff-added{background:rgba(22,163,74,.12);color:var(--color-ink)}
-.ve-diff-deleted{background:rgba(220,38,38,.12);color:var(--color-ink)}
-.ve-diff-unchanged{background:transparent;color:var(--color-ink-muted)}
-.ve-diff-marker{font-weight:700;user-select:none;width:1.2rem}
-.ve-diff-text{flex:1;white-space:pre-wrap;word-break:break-word}
-
-/* Audit box */
-.ve-audit-box{border:1px solid var(--border-default);border-radius:12px;background:var(--bg-surface);padding:1.4rem 1.6rem}
-.ve-audit-title{margin:0 0 1rem;font-size:1.05rem;display:flex;align-items:center;gap:.5rem}
-.ve-audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.ve-audit-card{padding:.85rem 1rem;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-canvas);display:flex;flex-direction:column;gap:.3rem}
-.ve-audit-card span{font-size:.75rem;color:var(--color-ink-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-.ve-audit-card strong{font-size:.9rem;color:var(--color-ink);word-break:break-all}
+.ve-block{margin:.35rem 0;padding:.3rem .55rem;border-radius:6px;border-left:3px solid transparent}
+.ve-block-equal{color:var(--color-ink)}
+.ve-block-deleted{background:rgba(220,38,38,.12);border-left-color:#dc2626}
+.ve-block-added{background:rgba(22,163,74,.12);border-left-color:#16a34a}
+.ve-block-replaced.ve-block-left{background:rgba(220,38,38,.07);border-left-color:#dc2626}
+.ve-block-replaced.ve-block-right{background:rgba(22,163,74,.07);border-left-color:#16a34a}
+.ve-block.is-hovered{box-shadow:0 0 0 2px var(--color-teal-600)}
+.ve-block.ve-block-anchor{display:block;height:0;min-height:0;padding:0;margin:0;border:none;overflow:hidden;pointer-events:none}
+del.ve-word-deleted{background:rgba(220,38,38,.28);color:#991b1b;border-radius:3px;padding:0 2px;text-decoration:line-through;font-weight:600}
+ins.ve-word-added{background:rgba(22,163,74,.28);color:#14532d;border-radius:3px;padding:0 2px;font-weight:600;text-decoration:none}
+html[data-theme=dark] del.ve-word-deleted{background:rgba(239,68,68,.38);color:#fca5a5}
+html[data-theme=dark] ins.ve-word-added{background:rgba(34,197,94,.38);color:#86efac}
+.ve-block-tombstone{padding:1.4rem 1rem;border:2px dashed #f87171;background:rgba(239,68,68,.05);border-radius:10px;text-align:center;margin:.8rem 0;font-family:inherit;white-space:normal}
+.ve-block-tombstone h4{margin:0 0 .4rem;color:#b91c1c}
+.ve-tombstone-icon{font-size:2rem}
+.ve-unified-container{border:1px solid var(--border-default);border-radius:10px;overflow:hidden;background:var(--bg-canvas);font-family:var(--font-mono);font-size:.84rem}
+.ve-diff-line{display:flex;gap:.6rem;padding:.2rem .7rem;border-bottom:1px solid var(--border-subtle,var(--border-default));line-height:1.5}
+.ve-diff-added{background:rgba(22,163,74,.12)}
+.ve-diff-deleted{background:rgba(220,38,38,.12)}
+.ve-diff-unchanged{color:var(--color-ink-muted)}
+.ve-diff-marker{font-weight:700;user-select:none;width:1rem;flex-shrink:0}
+.ve-diff-text{flex:1;white-space:pre-wrap;word-break:break-word;min-width:0}
+.ve-raw{border:1px solid var(--border-default);border-radius:8px;padding:.9rem;background:var(--bg-canvas);font-family:var(--font-mono);font-size:.84rem;line-height:1.55}
+.ve-raw-head{font-weight:700;margin-bottom:.6rem;color:var(--color-ink-muted);overflow-wrap:anywhere}
+.ve-raw pre{white-space:pre-wrap;font-family:inherit;margin:0;overflow-wrap:anywhere}
+.ve-audit-box{border:1px solid var(--border-default);border-radius:10px;background:var(--bg-surface);padding:.9rem 1rem}
+.ve-audit-title{margin:0 0 .7rem;font-size:.95rem}
+.ve-audit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem}
+.ve-audit-card{padding:.6rem .75rem;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-canvas);display:flex;flex-direction:column;gap:.25rem;min-width:0}
+.ve-audit-card span{font-size:.7rem;color:var(--color-ink-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.ve-audit-card strong{font-size:.84rem;color:var(--color-ink);overflow-wrap:anywhere}
+/* Katalog eingeklappt: Viewer in voller Breite */
+.catalog-collapsed .ve-md{grid-template-columns:minmax(0,1fr)}
+.catalog-collapsed .ve-facets,.catalog-collapsed .ve-listpane,.catalog-collapsed .ve-filter-toggle{display:none}
+.catalog-collapsed .ve-viewer{display:block}
+@media (max-width:1179px){
+  .ve-md{grid-template-columns:minmax(240px,320px) minmax(0,1fr)}
+  .ve-facets{display:none;position:absolute;z-index:5;top:0;bottom:0;inset-inline-start:0;width:min(340px,100%);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+  .facets-open .ve-facets{display:block}
+  .ve-facets-head{display:flex}
+  .ve-filter-toggle{display:inline-flex}
+}
+@media (max-width:899px){
+  .ve-md{grid-template-columns:minmax(0,1fr)}
+  .ve-viewer{display:none}
+  .is-detail .ve-viewer{display:block}
+  .is-detail .ve-listpane{display:none}
+  .ve-viewer-top{display:block}
+  .ve-facets{width:100%}
+  .ve-kbd-hint{display:none}
+  .ve-search{flex-basis:100%}
+  .ve-hero{padding:.6rem .8rem}
+  .ve-hero p{display:none}
+  .ve-viewer-body{padding:.7rem .75rem 1.2rem}
+  .ve-split-columns{grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr)}
+  .ve-split-body{padding:.5rem;font-size:.78rem}
+  .ve-epoch-card{flex-basis:calc(50% - .5rem);max-width:none}
+  .ve-figgrid{grid-template-columns:minmax(0,1fr)}
+}
+.ve-block-tombstone h4{text-transform:none;letter-spacing:0;font-size:1rem}
+@media (max-width:899px){
+  .ve-hero h1{font-size:1.1rem}
+  .ve-tabs{gap:0}
+  .ve-tab{flex:1 1 0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.4rem .25rem;font-size:.84rem;min-width:0}
+  .ve-tab-count{margin:0;font-size:.7rem}
+  .ve-collapse{display:none}
+  .catalog-collapsed:not(.is-detail) .ve-listpane{display:flex}
+  .catalog-collapsed:not(.is-detail) .ve-viewer{display:none}
+  .is-detail .ve-toolbar,.is-detail .ve-chiprow,.is-detail .ve-notice{display:none}
+  .is-detail .ve-md{height:auto;min-height:0}
+  .is-detail .ve-viewer{overflow:visible}
+}
+.ve-linkbtn-small{padding:.1rem .45rem;font-size:.72rem}
 </style>
 <div class="ve-hero">
   <h1>Explorador de versões &amp; proveniência</h1>
   <p>Histórico completo de revisões de todos os elementos de especificação AUTOSAR Classic e Adaptive. Compare estados de revisão históricos, inspecione alterações precisas palavra por palavra e rastreie a proveniência normativa e trilhas de auditoria.</p>
-  
-  <div class="ve-search-bar">
-    <div class="ve-input-wrap">
-      <span class="ve-search-icon">🔍</span>
-      <input type="search" id="ve-search-input" class="ve-input" placeholder="Requirement suchen (z.B. SWS_Com_00001, PRS_Dlt_00309, AIDSM)..." autocomplete="off">
-    </div>
-  </div>
-
-  <div class="ve-filter-chips">
-    <div class="ve-chip is-active" data-filter="all">Alle Anforderungen</div>
-    <div class="ve-chip" data-filter="multi">⚡ Nur mit Änderungen</div>
-    <div class="ve-chip" data-filter="CP">Classic Platform (CP)</div>
-    <div class="ve-chip" data-filter="AP">Adaptive Platform (AP)</div>
-    <div class="ve-chip" data-filter="dropped">🚫 Entfallen</div>
-  </div>
 </div>
-
-<div class="ve-layout">
-  <aside class="ve-sidebar">
-    <div class="ve-sidebar-head">
-      <span class="ve-sidebar-title">Spezifikations-Katalog</span>
-      <span class="ve-count-badge" id="ve-count-badge">Lade…</span>
-    </div>
-    <ul class="ve-list" id="ve-list">
-      <li style="padding:1.5rem;text-align:center;color:var(--color-ink-muted);">Carregando catálogo…</li>
-    </ul>
-  </aside>
-
-  <section class="ve-main-panel" id="ve-main-panel">
-    <div style="text-align:center;padding:4rem;color:var(--color-ink-muted);background:var(--bg-surface);border:1px solid var(--border-default);border-radius:12px;">
-      Wähle ein Spezifikationselement aus der linken Leiste aus.
-    </div>
-  </section>
-</div>
-
-<script>
-(function() {
-  let catalog = [];
-  let currentFilter = 'all';
-  let selectedRecord = null;
-  let selectedFromRel = null;
-  let selectedToRel = null;
-  let recentClicks = [];
-  let currentViewMode = 'side';
-  let lastDiffData = null;
-
-  const searchInput = document.getElementById('ve-search-input');
-  const listEl = document.getElementById('ve-list');
-  const countBadge = document.getElementById('ve-count-badge');
-  const filterChips = document.querySelectorAll('[data-filter]');
-  const mainPanel = document.getElementById('ve-main-panel');
-
-  function init() {
-    try { window.scrollTo(0, 0); } catch(e){}
-    filterChips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        filterChips.forEach(c => c.classList.remove('is-active'));
-        chip.classList.add('is-active');
-        currentFilter = chip.dataset.filter;
-        renderList();
-      });
-    });
-
-    searchInput.addEventListener('input', () => {
-      renderList();
-    });
-
-    window.addEventListener('resize', () => {
-      if (currentViewMode === 'side') {
-        redrawSvgConnectors();
-      }
-    });
-
-    loadCatalog();
-  }
-
-  function getRootPrefix() {
-    const styleLink = document.querySelector('link[href*="style.css"]');
-    if (styleLink) {
-      const href = styleLink.getAttribute('href');
-      return href.replace('style.css', '') || '../';
-    }
-    return '../';
-  }
-
-  function loadCatalog() {
-    const rootPrefix = getRootPrefix();
-    // 1. Try static catalog (GitHub Pages), fallback to dynamic API (/api/versions)
-    fetch(rootPrefix + 'versions/catalog.json')
-      .then(res => {
-        if (!res.ok) throw new Error('Static catalog not available');
-        return res.json();
-      })
-      .catch(() => {
-        return fetch('/api/versions?limit=5000').then(res => res.json());
-      })
-      .then(data => {
-        catalog = (data.items || data || []);
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const qParam = (urlParams.get('q') || urlParams.get('query') || '').trim();
-        const reqId = urlParams.get('id');
-
-        if (qParam) {
-          searchInput.value = qParam;
-        }
-
-        renderList();
-
-        if (reqId) {
-          selectRecord(reqId, true);
-        } else if (qParam) {
-          const filtered = getFilteredItems();
-          if (filtered.length > 0) {
-            selectRecord(filtered[0].id || filtered[0].canonical_id, true);
-          }
-        } else if (catalog.length > 0) {
-          // Prefer multi-version record as default
-          const multi = catalog.find(c => c.version_count > 1);
-          selectRecord(multi ? (multi.id || multi.canonical_id) : (catalog[0].id || catalog[0].canonical_id), false);
-        }
-      })
-      .catch(err => {
-        listEl.innerHTML = '<li style="padding:1rem;color:var(--status-rejected);">Fehler beim Laden des Katalogs: ' + escapeHtml(err.message) + '</li>';
-      });
-  }
-
-  function getFilteredItems() {
-    const q = searchInput.value.trim().toLowerCase();
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetId = (urlParams.get('id') || '').trim().toLowerCase();
-    return catalog.filter(item => {
-      if (currentFilter === 'multi' && item.version_count <= 1) return false;
-      if (currentFilter === 'CP' && item.platform !== 'CP') return false;
-      if (currentFilter === 'AP' && item.platform !== 'AP') return false;
-      if (currentFilter === 'dropped' && !item.is_dropped) return false;
-      if (!q) return true;
-      const matchesQ = item.id.toLowerCase().includes(q) || item.canonical_id.toLowerCase().includes(q);
-      const matchesTarget = Boolean(targetId && (item.id.toLowerCase() === targetId || item.canonical_id.toLowerCase().includes(targetId)));
-      return matchesQ || matchesTarget;
-    });
-  }
-
-  function renderList() {
-    const items = getFilteredItems();
-    countBadge.textContent = items.length + ' von ' + catalog.length;
-    if (items.length === 0) {
-      listEl.innerHTML = '<li style="padding:1.5rem;text-align:center;color:var(--color-ink-muted);">Keine Einträge gefunden</li>';
-      return;
-    }
-
-    listEl.innerHTML = items.slice(0, 150).map(item => {
-      const isSel = selectedRecord && (selectedRecord.canonical_id === item.canonical_id || selectedRecord.id === item.id);
-      const badgeClass = item.platform === 'CP' ? 've-badge-cp' : 've-badge-ap';
-      const droppedPill = item.is_dropped ? `<span class="ve-badge-dropped-mini" title="Entfallen ab ${item.first_dropped_release}">🚫 Entfallen</span>` : '';
-      return `
-        <li class="ve-list-item ${isSel ? 'is-selected' : ''}" data-cid="${item.canonical_id}" data-id="${item.id}">
-          <div class="ve-item-top">
-            <span class="ve-item-id">${item.id}</span>
-            <div style="display:flex;gap:.3rem;align-items:center;">
-              ${droppedPill}
-              <span class="ve-item-badge ${badgeClass}">${item.platform}</span>
-            </div>
-          </div>
-          <div class="ve-item-meta">
-            <span><strong>${item.version_count}</strong> ${item.version_count === 1 ? 'Version' : 'Versionen'}</span>
-            <span>·</span>
-            <span>${(item.releases || []).join(', ')}</span>
-          </div>
-        </li>
-      `;
-    }).join('');
-
-    listEl.querySelectorAll('.ve-list-item').forEach(li => {
-      li.addEventListener('click', () => {
-        selectRecord(li.dataset.id || li.dataset.cid);
-      });
-    });
-  }
-
-  function selectRecord(idOrCid, isInitialLoad = false) {
-    mainPanel.innerHTML = '<div style="text-align:center;padding:3rem;">Lade Details für <code>' + escapeHtml(idOrCid) + '</code>…</div>';
-
-    const item = catalog.find(c => c.id === idOrCid || c.canonical_id === idOrCid);
-    const reqId = item ? item.id : idOrCid.split('/').pop().replace(/\.jsonl?$/, '');
-    const canonicalId = item ? item.canonical_id : idOrCid;
-
-    listEl.querySelectorAll('.ve-list-item').forEach(li => {
-      const match = li.dataset.cid === canonicalId || li.dataset.id === reqId;
-      li.classList.toggle('is-selected', match);
-    });
-
-    setTimeout(() => {
-      const selLi = listEl.querySelector('.ve-list-item.is-selected');
-      if (selLi) {
-        selLi.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
-    }, 40);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('id', reqId);
-    const newUrl = window.location.pathname + '?' + urlParams.toString();
-    window.history.replaceState({}, '', newUrl);
-
-    const rootPrefix = getRootPrefix();
-    const staticUrl = rootPrefix + (item && item.file ? item.file : ('versions/data/' + encodeURIComponent(reqId) + '.json'));
-
-    fetch(staticUrl)
-      .then(res => {
-        if (!res.ok) throw new Error('Static file not found');
-        return res.json();
-      })
-      .catch(() => {
-        return fetch('/api/versions?id=' + encodeURIComponent(canonicalId)).then(res => res.json());
-      })
-      .then(data => {
-        if (!data.ok && !data.versions) throw new Error(data.error || 'Fehler beim Laden');
-        data.id = reqId;
-        selectedRecord = data;
-        const versions = data.versions || [];
-
-        // Group into epochs
-        const epochs = computeEpochs(versions);
-        data.epochs = epochs;
-
-        // Default comparison selection (honoring URL from/to params if present):
-        recentClicks = [];
-        const fromParam = urlParams.get('from');
-        const toParam = urlParams.get('to');
-        if (fromParam && toParam && (versions.some(v => v.release === fromParam) || fromParam === 'baseline') && (versions.some(v => v.release === toParam) || (lifecycle.is_dropped && toParam === lifecycle.first_dropped_release))) {
-          selectedFromRel = fromParam;
-          selectedToRel = toParam;
-          recentClicks = [selectedFromRel, selectedToRel];
-        } else if (epochs.length > 1) {
-          selectedFromRel = epochs[0].firstRelease;
-          selectedToRel = epochs[epochs.length - 1].firstRelease;
-          recentClicks = [selectedFromRel, selectedToRel];
-        } else if (versions.length > 1) {
-          selectedFromRel = versions[0].release;
-          selectedToRel = versions[versions.length - 1].release;
-          recentClicks = [selectedFromRel, selectedToRel];
-        } else if (versions.length === 1) {
-          selectedFromRel = versions[0].release;
-          selectedToRel = versions[0].release;
-          recentClicks = [selectedFromRel];
-        }
-
-        renderRecordDetail();
-      })
-      .catch(err => {
-        mainPanel.innerHTML = '<div style="color:var(--status-rejected);padding:2rem;">Fehler: ' + escapeHtml(err.message) + '</div>';
-      });
-  }
-
-  // Group consecutive identical versions into epochs
-  function computeEpochs(versions) {
-    const epochs = [];
-    let curr = null;
-    const seenHashes = new Set();
-
-    versions.forEach((v, idx) => {
-      const hash8 = (v.version_id.split('#')[1] || '').substring(0, 8);
-      if (!curr || curr.hash8 !== hash8) {
-        const isRevert = seenHashes.has(hash8);
-        seenHashes.add(hash8);
-        curr = {
-          epochIndex: epochs.length,
-          hash8: hash8,
-          firstRelease: v.release,
-          lastRelease: v.release,
-          releases: [v.release],
-          versions: [v],
-          isInitial: epochs.length === 0,
-          isChange: epochs.length > 0 && !isRevert,
-          isRevert: isRevert
-        };
-        epochs.push(curr);
-      } else {
-        curr.lastRelease = v.release;
-        curr.releases.push(v.release);
-        curr.versions.push(v);
-      }
-    });
-    return epochs;
-  }
-
-  function recordEpochClick(rel) {
-    if (!rel) return;
-    if (recentClicks.length > 0 && recentClicks[recentClicks.length - 1] === rel) {
-      return;
-    }
-    recentClicks.push(rel);
-    if (recentClicks.length > 2) {
-      recentClicks = recentClicks.slice(-2);
-    }
-    if (recentClicks.length === 2) {
-      const [rA, rB] = recentClicks;
-      // Sort chronologically: older on the left, newer on the right
-      if (rA.localeCompare(rB) <= 0) {
-        selectedFromRel = rA;
-        selectedToRel = rB;
-      } else {
-        selectedFromRel = rB;
-        selectedToRel = rA;
-      }
-    } else if (recentClicks.length === 1) {
-      if (rel.localeCompare(selectedFromRel) >= 0) {
-        selectedToRel = rel;
-      } else {
-        selectedFromRel = rel;
-      }
-    }
-    updateEpochVisuals();
-    loadDiffView();
-  }
-
-  function updateEpochVisuals() {
-    mainPanel.querySelectorAll('.ve-epoch-card').forEach(card => {
-      const rel = card.dataset.repRel;
-      const releases = (card.dataset.releases || rel || '').split(',');
-      const isLeft = releases.includes(selectedFromRel);
-      const isRight = releases.includes(selectedToRel);
-      card.classList.toggle('is-left', isLeft);
-      card.classList.toggle('is-right', isRight);
-    });
-    const tagLeft = mainPanel.querySelector('#ve-tag-left-label');
-    const tagRight = mainPanel.querySelector('#ve-tag-right-label');
-    if (tagLeft) tagLeft.textContent = selectedFromRel;
-    if (tagRight) tagRight.textContent = selectedToRel;
-  }
-
-  // --- Client-side Diffing Engine (Feature: Client-Diffing 1.) ---
-  function formatReqLines(text) {
-    if (!text) return [];
-    const delimiters = [
-      "Definition of callback function",
-      "Definition of",
-      "Upstream requirements:?",
-      "Service [Nn]ame:?",
-      "Syntax:?",
-      "Service ID\\s*(?:\\[[^\\]]+\\])?:?",
-      "Sync\\s*/\\s*Async:?",
-      "Reentrancy:?",
-      "Parameters\\s*\\((?:in|out|inout)\\):?",
-      "Parameters:?",
-      "\\(in\\)",
-      "\\(inout\\)",
-      "\\(out\\)",
-      "Return value:?",
-      "E_OK:?",
-      "E_ OK:?",
-      "E_NOT_OK:?",
-      "E_ NOT_ OK:?",
-      "Description:?",
-      "Available via:?",
-      "Specification of [^\\n:]+:",
-      "Specification of [^\\n]+",
-      "Document ID \\d+ : [^\\n]*",
-      "Document ID \\d+ :",
-      "AUTOSAR_[A-Z0-9_]+"
-    ];
-    const delimRe = new RegExp("(" + delimiters.join("|") + "|\\([a-z]+\\))", "i");
-    const rawParts = text.split(delimRe);
-    const lines = [];
-    let curr = "";
-
-    for (let p of rawParts) {
-      if (!p) continue;
-      const pStrip = p.trim();
-      const isDelim = delimiters.some(d => new RegExp("^" + d + "$", "i").test(pStrip)) || ["(in)", "(out)", "(inout)"].includes(pStrip);
-      if (isDelim) {
-        if (curr.trim()) lines.push(curr.trim());
-        curr = pStrip + " ";
-      } else {
-        curr += p;
-      }
-    }
-    if (curr.trim()) lines.push(curr.trim());
-
-    const finalLines = [];
-    for (let l of lines) {
-      const lStr = l.trim();
-      if (!lStr) continue;
-      if (lStr.length > 100) {
-        const sents = lStr.split(/(?<=[.!?])\s+(?=[A-Z])/);
-        for (let s of sents) {
-          if (s.trim()) finalLines.push(s.trim());
-        }
-      } else {
-        finalLines.push(lStr);
-      }
-    }
-    return finalLines;
-  }
-
-  function getDiffOpcodes(a, b) {
-    const m = a.length;
-    const n = b.length;
-    const dp = Array.from({ length: m + 1 }, () => new Int32Array(n + 1));
-    for (let i = 0; i < m; i++) {
-      for (let j = 0; j < n; j++) {
-        if (a[i] === b[j]) {
-          dp[i + 1][j + 1] = dp[i][j] + 1;
-        } else {
-          dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
-        }
-      }
-    }
-
-    let i = m;
-    let j = n;
-    const rawEdits = [];
-
-    while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
-        rawEdits.push({ type: 'equal', aIdx: i - 1, bIdx: j - 1 });
-        i--;
-        j--;
-      } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-        rawEdits.push({ type: 'insert', aIdx: i, bIdx: j - 1 });
-        j--;
-      } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
-        rawEdits.push({ type: 'delete', aIdx: i - 1, bIdx: j });
-        i--;
-      }
-    }
-    rawEdits.reverse();
-
-    const opcodes = [];
-    let idx = 0;
-    while (idx < rawEdits.length) {
-      const curType = rawEdits[idx].type;
-      const startA = rawEdits[idx].aIdx;
-      const startB = rawEdits[idx].bIdx;
-      let endA = startA;
-      let endB = startB;
-
-      let k = idx;
-      while (k < rawEdits.length && rawEdits[k].type === curType) {
-        if (curType === 'equal') {
-          endA = rawEdits[k].aIdx + 1;
-          endB = rawEdits[k].bIdx + 1;
-        } else if (curType === 'delete') {
-          endA = rawEdits[k].aIdx + 1;
-        } else if (curType === 'insert') {
-          endB = rawEdits[k].bIdx + 1;
-        }
-        k++;
-      }
-      opcodes.push([curType, startA, endA, startB, endB]);
-      idx = k;
-    }
-
-    const merged = [];
-    for (let m = 0; m < opcodes.length; m++) {
-      const curr = opcodes[m];
-      const next = opcodes[m + 1];
-      if (next && ((curr[0] === 'delete' && next[0] === 'insert') || (curr[0] === 'insert' && next[0] === 'delete'))) {
-        const i1 = Math.min(curr[1], next[1]);
-        const i2 = Math.max(curr[2], next[2]);
-        const j1 = Math.min(curr[3], next[3]);
-        const j2 = Math.max(curr[4], next[4]);
-        merged.push(['replace', i1, i2, j1, j2]);
-        m++;
-      } else {
-        merged.push(curr);
-      }
-    }
-    return merged;
-  }
-
-  function computeWordDiff(textA, textB) {
-    const tokenRegex = /[<>\-]|[\w\u00C0-\u024F]+|[^\s\w\u00C0-\u024F<>\-]+|\s+/g;
-    const tokensA = textA.match(tokenRegex) || [];
-    const tokensB = textB.match(tokenRegex) || [];
-    const opcodes = getDiffOpcodes(tokensA, tokensB);
-
-    let outA = '';
-    let outB = '';
-
-    for (let [tag, i1, i2, j1, j2] of opcodes) {
-      const subA = tokensA.slice(i1, i2).join('');
-      const subB = tokensB.slice(j1, j2).join('');
-
-      if (tag === 'equal') {
-        outA += escapeHtml(subA);
-        outB += escapeHtml(subB);
-      } else if (tag === 'replace') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
-      } else if (tag === 'delete') {
-        outA += subA.trim() ? `<del class="ve-word-deleted">${escapeHtml(subA)}</del>` : subA;
-      } else if (tag === 'insert') {
-        outB += subB.trim() ? `<ins class="ve-word-added">${escapeHtml(subB)}</ins>` : subB;
-      }
-    }
-    return [outA, outB];
-  }
-
-  function performClientDiff(data, fromRel, toRel) {
-    const versions = data.versions || [];
-    const lifecycle = data.lifecycle || {};
-
-    const isDroppedA = Boolean(lifecycle.is_dropped && (lifecycle.dropped_in || []).includes(fromRel));
-    const isDroppedB = Boolean(lifecycle.is_dropped && (lifecycle.dropped_in || []).includes(toRel));
-
-    const eligibleA = versions.filter(v => v.release <= fromRel);
-    const vA = isDroppedA ? null : (eligibleA.length > 0 ? eligibleA[eligibleA.length - 1] : null);
-
-    const eligibleB = versions.filter(v => v.release <= toRel);
-    const vB = isDroppedB ? null : (eligibleB.length > 0 ? eligibleB[eligibleB.length - 1] : null);
-
-    const rawA = isDroppedA ? "" : (vA ? vA.content || "" : "");
-    const rawB = isDroppedB ? "" : (vB ? vB.content || "" : "");
-
-    const linesA = formatReqLines(rawA);
-    const linesB = formatReqLines(rawB);
-
-    const diffLines = [];
-    const alignedBlocks = [];
-    let blockIdx = 0;
-
-    if (isDroppedB) {
-      linesA.forEach(line => {
-        alignedBlocks.push({
-          id: 'b-' + (++blockIdx),
-          tag: 'delete',
-          left_lines: [line],
-          right_lines: [],
-          left_html: escapeHtml(line),
-          right_html: ''
-        });
-        diffLines.push({ type: 'deleted', text: line });
-      });
-    } else {
-      const opcodes = getDiffOpcodes(linesA, linesB);
-      for (let [tag, i1, i2, j1, j2] of opcodes) {
-        const leftChunk = linesA.slice(i1, i2);
-        const rightChunk = linesB.slice(j1, j2);
-        let leftHtml = '';
-        let rightHtml = '';
-
-        if (tag === 'equal') {
-          leftHtml = escapeHtml(leftChunk.join('\n'));
-          rightHtml = escapeHtml(rightChunk.join('\n'));
-          for (let l of leftChunk) {
-            diffLines.push({ type: 'unchanged', text: l });
-          }
-        } else if (tag === 'replace') {
-          const [wA, wB] = computeWordDiff(leftChunk.join('\n'), rightChunk.join('\n'));
-          leftHtml = wA;
-          rightHtml = wB;
-          for (let l of leftChunk) diffLines.push({ type: 'deleted', text: l });
-          for (let l of rightChunk) diffLines.push({ type: 'added', text: l });
-        } else if (tag === 'delete') {
-          leftHtml = escapeHtml(leftChunk.join('\n'));
-          for (let l of leftChunk) diffLines.push({ type: 'deleted', text: l });
-        } else if (tag === 'insert') {
-          rightHtml = escapeHtml(rightChunk.join('\n'));
-          for (let l of rightChunk) diffLines.push({ type: 'added', text: l });
-        }
-
-        alignedBlocks.push({
-          id: 'b-' + (++blockIdx),
-          tag: tag,
-          left_lines: leftChunk,
-          right_lines: rightChunk,
-          left_html: leftHtml,
-          right_html: rightHtml
-        });
-      }
-    }
-
-    return {
-      ok: true,
-      from: {
-        release: fromRel,
-        is_dropped: isDroppedA,
-        version: vA
-      },
-      to: {
-        release: toRel,
-        is_dropped: isDroppedB,
-        version: vB
-      },
-      aligned_blocks: alignedBlocks,
-      diff_lines: diffLines
-    };
-  }
-
-  function renderRecordDetail() {
-    if (!selectedRecord) return;
-    const data = selectedRecord;
-    const versions = data.versions || [];
-    const epochs = data.epochs || [];
-    const latest = versions[versions.length - 1] || {};
-    const platform = (data.canonical_id || '').includes('AUTOSAR/CP') ? 'Classic Platform (CP)' : 'Adaptive Platform (AP)';
-    const lifecycle = data.lifecycle || {};
-
-    // Render Epoch Cards for the Timeline
-    const epochsHtml = epochs.map((ep, idx) => {
-      const isSingleRel = ep.releases.length === 1;
-      const spanLabel = isSingleRel ? ep.firstRelease : `${ep.firstRelease} → ${ep.lastRelease}`;
-
-      let statusLabel = 'Baseline';
-      let statusClass = 've-status-initial';
-      if (ep.isChange) {
-        statusLabel = `⚡ Geändert (${ep.firstRelease})`;
-        statusClass = 've-status-changed';
-      } else if (ep.isRevert) {
-        statusLabel = `↩ Revertiert (${ep.firstRelease})`;
-        statusClass = 've-status-revert';
-      } else if (!ep.isInitial) {
-        statusLabel = 'Unverändert';
-        statusClass = 've-status-stable';
-      }
-
-      const containsFrom = ep.releases.includes(selectedFromRel);
-      const containsTo = ep.releases.includes(selectedToRel);
-      let activeClasses = [];
-      if (containsFrom) activeClasses.push('is-left');
-      if (containsTo) activeClasses.push('is-right');
-
-      const relPills = ep.releases.map(r => `<span class="ve-epoch-rel-pill" title="Release ${r}">${r}</span>`).join(' ');
-      const subInfo = isSingleRel ? `1 Release · Hash #${ep.hash8}` : `<strong>${ep.releases.length} Releases identisch</strong> · #${ep.hash8}`;
-
-      return `
-        <div class="ve-epoch-card ${activeClasses.join(' ')}" data-epoch="${idx}" data-rep-rel="${ep.firstRelease}" data-releases="${ep.releases.join(',')}">
-          <div class="ve-epoch-header">
-            <span class="ve-epoch-span">${spanLabel}</span>
-            <span class="ve-epoch-status ${statusClass}">${statusLabel}</span>
-          </div>
-          <div class="ve-epoch-body">
-            <div>${subInfo}</div>
-            <div class="ve-epoch-subreleases">${relPills}</div>
-          </div>
-          <div class="ve-epoch-actions">
-            <button type="button" class="ve-epoch-btn ve-btn-set-left" data-set-left="${ep.firstRelease}">◀ Links</button>
-            <button type="button" class="ve-epoch-btn ve-btn-set-right" data-set-right="${ep.firstRelease}">Rechts ▶</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // If requirement dropped in later releases, append Dropped Epoch card
-    let droppedCardHtml = '';
-    if (lifecycle.is_dropped) {
-      const dropRel = lifecycle.latest_platform_release || lifecycle.first_dropped_release;
-      const isRight = (selectedToRel === dropRel);
-      droppedCardHtml = `
-        <div class="ve-epoch-card ve-epoch-dropped ${isRight ? 'is-right' : ''}" data-epoch="dropped" data-rep-rel="${dropRel}" data-releases="${dropRel}">
-          <div class="ve-epoch-header">
-            <span class="ve-epoch-span">ab ${lifecycle.first_dropped_release} (${lifecycle.latest_platform_release})</span>
-            <span class="ve-epoch-status ve-status-dropped">🚫 Entfallen</span>
-          </div>
-          <div class="ve-epoch-body">
-            <div><span class="ve-icon-dropped">🚫</span> <strong>Requirement entfallen</strong></div>
-            <div class="ve-epoch-subreleases" style="color:var(--color-ink-muted);font-size:.78rem;margin-top:.2rem;">
-              Nicht mehr in ${lifecycle.latest_platform_release} (letzter Stand: ${lifecycle.last_active_release})
-            </div>
-          </div>
-          <div class="ve-epoch-actions">
-            <button type="button" class="ve-epoch-btn ve-btn-set-right" data-set-right="${dropRel}">Rechts ▶ (Wegfall)</button>
-          </div>
-        </div>
-      `;
-    }
-
-    const activePill = lifecycle.is_dropped
-      ? `<span class="ve-pill-dropped"><span class="ve-icon-dropped">🚫</span> Entfallen ab ${lifecycle.first_dropped_release} (zuletzt in ${lifecycle.last_active_release})</span>`
-      : `<span class="ve-pill-ok">Aktiv: ${latest.release || 'R25-11'}</span>`;
-
-    mainPanel.innerHTML = `
-      <div class="ve-record-header">
-        <div class="ve-record-title-row">
-          <h2 class="ve-record-title">${data.canonical_id}</h2>
-          ${activePill}
-        </div>
-        <div class="ve-record-meta-row">
-          <span>Plattform: <strong>${platform}</strong></span>
-          <span>·</span>
-          <span>Erfasste Releases: <strong>${versions.length}</strong></span>
-          <span>·</span>
-          <span>Inhaltliche Änderungsstufen: <strong>${epochs.length}</strong></span>
-        </div>
-      </div>
-
-      <div class="ve-timeline-wrap">
-        <div class="ve-timeline-head">
-          <span class="ve-timeline-title">Revisions-Timeline &amp; Änderungspunkte</span>
-          <span class="ve-timeline-hint">💡 Die beiden zuletzt angeklickten Versionen werden verglichen (neuere rechts)</span>
-        </div>
-        <div class="ve-timeline-epochs" id="ve-timeline-epochs">
-          ${epochsHtml}
-          ${droppedCardHtml}
-        </div>
-      </div>
-
-      <div class="ve-diff-toolbar">
-        <div class="ve-compare-summary">
-          <span>Vergleich:</span>
-          <span class="ve-tag-left" id="ve-tag-left-label">${selectedFromRel}</span>
-          <span class="ve-tag-arrow">➔</span>
-          <span class="ve-tag-right" id="ve-tag-right-label">${selectedToRel}</span>
-          <button type="button" class="ve-btn-swap" id="ve-btn-swap" title="Basis und Ziel vertauschen">⇄ Tauschen</button>
-        </div>
-        <div class="ve-view-toggle">
-          <button type="button" class="ve-view-btn ${currentViewMode === 'side' ? 'is-active' : ''}" data-mode="side">Side-by-Side (wortgenau)</button>
-          <button type="button" class="ve-view-btn ${currentViewMode === 'unified' ? 'is-active' : ''}" data-mode="unified">Unified Diff</button>
-          <button type="button" class="ve-view-btn ${currentViewMode === 'raw' ? 'is-active' : ''}" data-mode="raw">Volltext</button>
-        </div>
-      </div>
-
-      <div id="ve-diff-output"></div>
-
-      <div class="ve-audit-box">
-        <h3 class="ve-audit-title">🛡️ Lückenlose Provenienz &amp; Audit-Trail</h3>
-        <div class="ve-audit-grid" id="ve-audit-grid">
-          <div class="ve-audit-card">
-            <span>Ausführende Instanz / Actor</span>
-            <strong id="ve-audit-actor">-</strong>
-          </div>
-          <div class="ve-audit-card">
-            <span>Kryptografischer Hash</span>
-            <strong id="ve-audit-hash">-</strong>
-          </div>
-          <div class="ve-audit-card">
-            <span>Aufzeichnungszeitpunkt (UTC)</span>
-            <strong id="ve-audit-recorded">-</strong>
-          </div>
-          <div class="ve-audit-card">
-            <span>Evidenz &amp; Primärquelle</span>
-            <strong id="ve-audit-evidence">-</strong>
-          </div>
-          <div class="ve-audit-card">
-            <span>Curation &amp; Review Status</span>
-            <strong id="ve-audit-decision">-</strong>
-          </div>
-          <div class="ve-audit-card">
-            <span>Downstream-Kaskade</span>
-            <strong id="ve-audit-cascade">-</strong>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Epoch card click: compare the two most recently clicked versions, newer on the right
-    mainPanel.querySelectorAll('.ve-epoch-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const rel = card.dataset.repRel;
-        recordEpochClick(rel);
-      });
-    });
-
-    // Explicit manual set buttons
-    mainPanel.querySelectorAll('[data-set-left]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedFromRel = btn.dataset.setLeft;
-        recentClicks = [selectedFromRel, selectedToRel];
-        updateEpochVisuals();
-        loadDiffView();
-      });
-    });
-
-    mainPanel.querySelectorAll('[data-set-right]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectedToRel = btn.dataset.setRight;
-        recentClicks = [selectedFromRel, selectedToRel];
-        updateEpochVisuals();
-        loadDiffView();
-      });
-    });
-
-    // Swap button
-    mainPanel.querySelector('#ve-btn-swap').addEventListener('click', () => {
-      const tmp = selectedFromRel;
-      selectedFromRel = selectedToRel;
-      selectedToRel = tmp;
-      recentClicks = [selectedFromRel, selectedToRel];
-      updateEpochVisuals();
-      loadDiffView();
-    });
-
-    // View Toggle
-    mainPanel.querySelectorAll('.ve-view-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        mainPanel.querySelectorAll('.ve-view-btn').forEach(b => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        currentViewMode = btn.dataset.mode;
-        renderDiffContent();
-      });
-    });
-
-    loadDiffView();
-  }
-
-  function loadDiffView() {
-    if (!selectedRecord || !selectedFromRel || !selectedToRel) return;
-    try {
-      lastDiffData = performClientDiff(selectedRecord, selectedFromRel, selectedToRel);
-      renderDiffContent();
-      updateAuditBox(lastDiffData);
-    } catch (err) {
-      const out = document.getElementById('ve-diff-output');
-      if (out) {
-        out.innerHTML = '<div style="color:var(--status-rejected);padding:1.5rem;">Fehler beim Erstellen des Diffs: ' + escapeHtml(err.message) + '</div>';
-      }
-    }
-  }
-
-  function renderDiffContent() {
-    const out = document.getElementById('ve-diff-output');
-    if (!out || !lastDiffData) return;
-
-    if (currentViewMode === 'side') {
-      renderSideBySideWithConnectors(lastDiffData, out);
-    } else if (currentViewMode === 'unified') {
-      renderUnifiedDiff(lastDiffData, out);
-    } else if (currentViewMode === 'raw') {
-      renderRawText(lastDiffData, out);
-    }
-  }
-
-  function renderSideBySideWithConnectors(data, container) {
-    const blocks = data.aligned_blocks || [];
-    if (blocks.length === 0) {
-      container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--color-ink-muted);">Keine Daten vorhanden.</div>';
-      return;
-    }
-
-    let leftBlocksHtml = '';
-    let rightBlocksHtml = '';
-
-    if (data.to && data.to.is_dropped) {
-      blocks.forEach(b => {
-        const text = b.left_html || escapeHtml(b.left_lines.join('\n'));
-        if (text.trim()) {
-          leftBlocksHtml += `<div class="ve-block ve-block-deleted" data-block-id="${b.id}" data-tag="delete">${text}</div>`;
-        }
-      });
-      rightBlocksHtml = `
-        <div class="ve-block-tombstone">
-          <div class="ve-tombstone-icon">🚫</div>
-          <h4 style="margin:0 0 .4rem;color:#b91c1c;">Requirement im Release ${data.to.release} entfallen</h4>
-          <p style="margin:0 0 .6rem;font-size:.88rem;color:var(--color-ink-muted);">
-            Dieses Spezifikationselement ist in Release <strong>${data.to.release}</strong> nicht mehr enthalten (abgelöst / entfallen).
-          </p>
-          <span class="ve-pill-dropped">Letzter Stand: ${data.from.release}</span>
-        </div>
-      `;
-    } else {
-      blocks.forEach(b => {
-        const tag = b.tag;
-
-        if (tag === 'delete') {
-          const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
-          leftBlocksHtml += `<div class="ve-block ve-block-deleted" data-block-id="${b.id}" data-tag="delete">${content}</div>`;
-          rightBlocksHtml += `<div class="ve-block ve-block-anchor" data-block-id="${b.id}" data-tag="delete"></div>`;
-        } else if (tag === 'replace') {
-          const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
-          leftBlocksHtml += `<div class="ve-block ve-block-replaced ve-block-left" data-block-id="${b.id}" data-tag="replace">${content}</div>`;
-          rightBlocksHtml += `<div class="ve-block ve-block-replaced ve-block-right" data-block-id="${b.id}" data-tag="replace">${b.right_html || escapeHtml(b.right_lines.join('\n'))}</div>`;
-        } else if (tag === 'equal') {
-          const content = b.left_html || escapeHtml(b.left_lines.join('\n'));
-          leftBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
-          rightBlocksHtml += `<div class="ve-block ve-block-equal" data-block-id="${b.id}" data-tag="equal">${content}</div>`;
-        } else if (tag === 'insert') {
-          leftBlocksHtml += `<div class="ve-block ve-block-anchor" data-block-id="${b.id}" data-tag="insert"></div>`;
-          rightBlocksHtml += `<div class="ve-block ve-block-added" data-block-id="${b.id}" data-tag="insert">${b.right_html || escapeHtml(b.right_lines.join('\n'))}</div>`;
-        }
-      });
-    }
-
-    const leftHash = (data.from && data.from.version && data.from.version.version_id) ? data.from.version.version_id.split('#')[1].substring(0,8) : '';
-    const rightHash = (data.to && data.to.version && data.to.version.version_id) ? data.to.version.version_id.split('#')[1].substring(0,8) : (data.to && data.to.is_dropped ? 'entfallen' : '');
-
-    container.innerHTML = `
-      <div class="ve-split-diff-wrapper" id="ve-split-diff-wrapper">
-        <div class="ve-split-columns">
-          <div class="ve-split-pane ve-split-left">
-            <div class="ve-split-header ve-header-left">
-              <span>Basis: <strong>${data.from.release}</strong></span>
-              <span style="font-family:var(--font-mono);font-size:.78rem;">#${leftHash}</span>
-            </div>
-            <div class="ve-split-body" id="ve-pane-left">${leftBlocksHtml}</div>
-          </div>
-
-          <div class="ve-split-gutter" id="ve-split-gutter">
-            <div class="ve-split-header ve-header-gutter"><span>Diff</span></div>
-            <div class="ve-gutter-canvas-wrap">
-              <svg class="ve-gutter-svg" id="ve-gutter-svg" width="70" height="100%"></svg>
-            </div>
-          </div>
-
-          <div class="ve-split-pane ve-split-right">
-            <div class="ve-split-header ve-header-right">
-              <span>Ziel: <strong>${data.to.release}</strong> ${data.to.is_dropped ? '<span class="ve-pill-dropped">🚫 Entfallen</span>' : ''}</span>
-              <span style="font-family:var(--font-mono);font-size:.78rem;">#${rightHash}</span>
-            </div>
-            <div class="ve-split-body" id="ve-pane-right">${rightBlocksHtml}</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Synchronous Hover
-    container.querySelectorAll('.ve-block').forEach(el => {
-      const id = el.dataset.blockId;
-      el.addEventListener('mouseenter', () => {
-        container.querySelectorAll(`[data-block-id="${id}"]`).forEach(b => b.classList.add('is-hovered'));
-        const path = container.querySelector(`path[data-connector-id="${id}"]`);
-        if (path) path.classList.add('is-hovered');
-      });
-      el.addEventListener('mouseleave', () => {
-        container.querySelectorAll(`[data-block-id="${id}"]`).forEach(b => b.classList.remove('is-hovered'));
-        const path = container.querySelector(`path[data-connector-id="${id}"]`);
-        if (path) path.classList.remove('is-hovered');
-      });
-    });
-
-    const wrapper = document.getElementById('ve-split-diff-wrapper');
-    const paneLeft = document.getElementById('ve-pane-left');
-    const paneRight = document.getElementById('ve-pane-right');
-    initPiecewiseSyncScroll(wrapper, paneLeft, paneRight, blocks, redrawSvgConnectors);
-  }
-
-  function initPiecewiseSyncScroll(wrapper, paneLeft, paneRight, blocks, redrawFn) {
-    if (!wrapper || !paneLeft || !paneRight || !blocks || blocks.length === 0) return;
-
-    let blockLayouts = [];
-    let cumV = [0];
-    let V_total = 0;
-    let globalS = 0;
-    let isProgrammatic = false;
-
-    function measureLayout() {
-      blockLayouts = [];
-      cumV = [0];
-      let runningV = 0;
-
-      for (let i = 0; i < blocks.length; i++) {
-        const b = blocks[i];
-        const elL = paneLeft.querySelector(`[data-block-id="${b.id}"]`);
-        const elR = paneRight.querySelector(`[data-block-id="${b.id}"]`);
-
-        const hL = (elL && b.tag !== 'insert') ? elL.offsetHeight : 0;
-        const topL = elL ? elL.offsetTop : (i > 0 ? blockLayouts[i - 1].botL : 0);
-        const botL = topL + hL;
-
-        const hR = (elR && b.tag !== 'delete') ? elR.offsetHeight : 0;
-        const topR = elR ? elR.offsetTop : (i > 0 ? blockLayouts[i - 1].botR : 0);
-        const botR = topR + hR;
-
-        const hV = Math.max(hL, hR);
-        runningV += hV;
-        cumV.push(runningV);
-
-        blockLayouts.push({
-          id: b.id,
-          tag: b.tag,
-          topL, hL, botL,
-          topR, hR, botR,
-          hV,
-          startV: cumV[i],
-          endV: runningV
-        });
-      }
-
-      V_total = runningV;
-    }
-
-    function getTargetsForS(S) {
-      if (blockLayouts.length === 0) return { targetL: 0, targetR: 0 };
-      if (S <= 0) return { targetL: 0, targetR: 0 };
-
-      let k = 0;
-      while (k < blockLayouts.length - 1 && S >= blockLayouts[k].endV) {
-        k++;
-      }
-
-      const blk = blockLayouts[k];
-      const offset = S - blk.startV;
-      const t = blk.hV > 0 ? Math.min(1, Math.max(0, offset / blk.hV)) : 0;
-
-      const targetL = blk.topL + t * blk.hL;
-      const targetR = blk.topR + t * blk.hR;
-
-      return { targetL, targetR };
-    }
-
-    function getSFromR(scrollTopR) {
-      if (blockLayouts.length === 0) return 0;
-      for (let i = 0; i < blockLayouts.length; i++) {
-        const blk = blockLayouts[i];
-        if (scrollTopR >= blk.topR && (scrollTopR < blk.botR || i === blockLayouts.length - 1)) {
-          const t = blk.hR > 0 ? (scrollTopR - blk.topR) / blk.hR : 0;
-          return blk.startV + t * blk.hV;
-        }
-      }
-      return 0;
-    }
-
-    function getSFromL(scrollTopL) {
-      if (blockLayouts.length === 0) return 0;
-      for (let i = 0; i < blockLayouts.length; i++) {
-        const blk = blockLayouts[i];
-        if (scrollTopL >= blk.topL && (scrollTopL < blk.botL || i === blockLayouts.length - 1)) {
-          const t = blk.hL > 0 ? (scrollTopL - blk.topL) / blk.hL : 0;
-          return blk.startV + t * blk.hV;
-        }
-      }
-      return 0;
-    }
-
-    function applyScroll(S) {
-      const maxScrollL = Math.max(0, paneLeft.scrollHeight - paneLeft.clientHeight);
-      const maxScrollR = Math.max(0, paneRight.scrollHeight - paneRight.clientHeight);
-      const viewH = Math.min(paneLeft.clientHeight || 500, paneRight.clientHeight || 500);
-      const maxS = Math.max(0, V_total - viewH);
-
-      globalS = Math.max(0, Math.min(maxS, S));
-      const targets = getTargetsForS(globalS);
-
-      isProgrammatic = true;
-      paneLeft.scrollTop = Math.min(maxScrollL, Math.max(0, targets.targetL));
-      paneRight.scrollTop = Math.min(maxScrollR, Math.max(0, targets.targetR));
-
-      if (redrawFn) redrawFn();
-      requestAnimationFrame(() => { isProgrammatic = false; });
-    }
-
-    paneLeft.addEventListener('scroll', () => {
-      if (isProgrammatic) return;
-      const S = getSFromL(paneLeft.scrollTop);
-      applyScroll(S);
-    }, { passive: true });
-
-    paneRight.addEventListener('scroll', () => {
-      if (isProgrammatic) return;
-      const S = getSFromR(paneRight.scrollTop);
-      applyScroll(S);
-    }, { passive: true });
-
-    wrapper._syncController = {
-      scrollToBlock: (blockId) => {
-        const idx = blockLayouts.findIndex(b => b.id === blockId);
-        if (idx >= 0) {
-          applyScroll(blockLayouts[idx].startV);
-        }
-      },
-      applyScroll: applyScroll,
-      measure: measureLayout
-    };
-
-    setTimeout(() => {
-      measureLayout();
-      applyScroll(0);
-    }, 20);
-
-    if (window.ResizeObserver) {
-      const ro = new ResizeObserver(() => {
-        measureLayout();
-        if (redrawFn) redrawFn();
-      });
-      ro.observe(paneLeft);
-      ro.observe(paneRight);
-    }
-  }
-
-  function redrawSvgConnectors() {
-    const wrapper = document.getElementById('ve-split-diff-wrapper');
-    const svg = document.getElementById('ve-gutter-svg');
-    const gutter = document.getElementById('ve-split-gutter');
-    if (!wrapper || !svg || !lastDiffData || !lastDiffData.aligned_blocks) return;
-
-    const canvasWrap = (gutter && gutter.querySelector('.ve-gutter-canvas-wrap')) || gutter;
-    if (canvasWrap) {
-      const gH = canvasWrap.offsetHeight || (gutter ? gutter.offsetHeight : 0);
-      if (gH > 0) {
-        svg.setAttribute('height', gH);
-        svg.style.height = gH + 'px';
-      }
-    }
-
-    const svgRect = svg.getBoundingClientRect();
-    const W = 70;
-    const blocks = lastDiffData.aligned_blocks;
-    let pathsHtml = '';
-
-    blocks.forEach(b => {
-      if (b.tag === 'equal') return;
-
-      const leftEl = wrapper.querySelector(`#ve-pane-left [data-block-id="${b.id}"]`);
-      const rightEl = wrapper.querySelector(`#ve-pane-right [data-block-id="${b.id}"]`);
-      if (!leftEl || !rightEl) return;
-
-      const lRect = leftEl.getBoundingClientRect();
-      const rRect = rightEl.getBoundingClientRect();
-
-      const y1Top = lRect.top - svgRect.top;
-      const y1Bot = (b.tag === 'insert') ? y1Top : (lRect.bottom - svgRect.top);
-      const y2Top = rRect.top - svgRect.top;
-      const y2Bot = (b.tag === 'delete') ? y2Top : (rRect.bottom - svgRect.top);
-
-      const cp1x = W * 0.45;
-      const cp2x = W * 0.55;
-
-      let d = '';
-      let cls = 've-connector ';
-
-      if (b.tag === 'replace') {
-        cls += 've-connector-replace';
-        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Bot} C ${cp2x} ${y2Bot}, ${cp1x} ${y1Bot}, 0 ${y1Bot} Z`;
-      } else if (b.tag === 'delete') {
-        cls += 've-connector-delete';
-        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Top} C ${cp2x} ${y2Top}, ${cp1x} ${y1Bot}, 0 ${y1Bot} Z`;
-      } else if (b.tag === 'insert') {
-        cls += 've-connector-insert';
-        d = `M 0 ${y1Top} C ${cp1x} ${y1Top}, ${cp2x} ${y2Top}, ${W} ${y2Top} L ${W} ${y2Bot} C ${cp2x} ${y2Bot}, ${cp1x} ${y1Top}, 0 ${y1Top} Z`;
-      }
-
-      pathsHtml += `<path d="${d}" class="${cls}" data-connector-id="${b.id}"><title>${b.tag.toUpperCase()}: ${b.id}</title></path>`;
-    });
-
-    svg.innerHTML = pathsHtml;
-
-    svg.querySelectorAll('.ve-connector').forEach(path => {
-      const id = path.dataset.connectorId;
-      path.addEventListener('mouseenter', () => {
-        wrapper.querySelectorAll(`[data-block-id="${id}"]`).forEach(b => b.classList.add('is-hovered'));
-        path.classList.add('is-hovered');
-      });
-      path.addEventListener('mouseleave', () => {
-        wrapper.querySelectorAll(`[data-block-id="${id}"]`).forEach(b => b.classList.remove('is-hovered'));
-        path.classList.remove('is-hovered');
-      });
-      path.addEventListener('click', () => {
-        if (wrapper._syncController && typeof wrapper._syncController.scrollToBlock === 'function') {
-          wrapper._syncController.scrollToBlock(id);
-        }
-      });
-    });
-  }
-
-  function renderUnifiedDiff(data, container) {
-    if (!data.diff_lines || data.diff_lines.length === 0) {
-      container.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--color-ink-muted);">Beide Versionen sind inhaltlich identisch (keine Unterschiede).</div>';
-      return;
-    }
-    container.innerHTML = `
-      <div class="ve-unified-container">
-        ${data.diff_lines.map(line => {
-          const m = line.type === 'added' ? '+' : (line.type === 'deleted' ? '−' : ' ');
-          return `
-            <div class="ve-diff-line ve-diff-${line.type}">
-              <span class="ve-diff-marker">${m}</span>
-              <span class="ve-diff-text">${escapeHtml(line.text)}</span>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  }
-
-  function renderRawText(data, container) {
-    const targetV = data.to && data.to.version ? data.to.version : null;
-    const isDropped = data.to && data.to.is_dropped;
-    container.innerHTML = `
-      <div style="border:1px solid var(--border-default);border-radius:8px;padding:1.2rem;background:var(--bg-canvas);font-family:var(--font-mono);font-size:.88rem;line-height:1.6;">
-        <div style="font-weight:700;margin-bottom:.8rem;color:var(--color-ink-muted);">
-          Volltext Version: ${targetV ? targetV.version_id : (isDropped ? '🚫 ENTFALLEN (' + data.to.release + ')' : 'keine')}
-        </div>
-        <pre style="white-space:pre-wrap;font-family:inherit;margin:0;">${escapeHtml(targetV ? targetV.content : (isDropped ? '(Requirement in dieser Version entfallen / nicht mehr vorhanden)' : '(leer)'))}</pre>
-      </div>
-    `;
-  }
-
-  function updateAuditBox(data) {
-    const toV = data.to && data.to.version ? data.to.version : null;
-    const isDropped = data.to && data.to.is_dropped;
-
-    const actorEl = document.getElementById('ve-audit-actor');
-    const hashEl = document.getElementById('ve-audit-hash');
-    const recEl = document.getElementById('ve-audit-recorded');
-    const evEl = document.getElementById('ve-audit-evidence');
-    const decEl = document.getElementById('ve-audit-decision');
-    const casEl = document.getElementById('ve-audit-cascade');
-
-    if (!actorEl || !hashEl) return;
-
-    if (isDropped) {
-      actorEl.innerHTML = `<span class="ve-pill-dropped">🚫 Lifecycle Deprecation / Removal</span>`;
-      hashEl.textContent = '(entfallen)';
-      recEl.textContent = 'ab ' + data.to.release;
-      evEl.textContent = `Nicht mehr enthalten im Release ${data.to.release}`;
-      decEl.innerHTML = `<span class="ve-pill-dropped">🚫 entfallen / removed</span>`;
-      casEl.innerHTML = `<span class="ve-pill-ok">0 kaskadierende Invalidierungen</span>`;
-      return;
-    }
-
-    if (!toV) return;
-    const meta = toV.meta || {};
-    const actor = meta.source_pdf ? `AUTOSAR Release (${meta.source_pdf})` : (meta.actor ? meta.actor : (meta.trigger_kind ? meta.trigger_kind : 'Normative Ingestion'));
-    const hash8 = (toV.version_id.split('#')[1] || '').substring(0, 8);
-
-    actorEl.innerHTML = `<span class="ve-pill-ok">${escapeHtml(actor)}</span>`;
-    hashEl.textContent = hash8 || 'N/A';
-    recEl.textContent = toV.recorded_at || 'N/A';
-    evEl.textContent = meta.source_pdf ? `Normatives PDF: ${meta.source_pdf}` : 'Normative Ingestion (delimiters)';
-    decEl.innerHTML = `<span class="ve-pill-ok">valid / governed</span>`;
-    casEl.innerHTML = `<span class="ve-pill-ok">0 kaskadierende Invalidierungen</span>`;
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  init();
-})();
-</script></main>
+<div id="ve-app" class="ve-app" data-explorer="versions"></div>
+<script src="../static/versions-explorer-i18n.js"></script>
+<script src="../static/versions-explorer.js"></script>
+</main>
 <footer>Extraído automaticamente dos PDF oficiais da especificação AUTOSAR R25-11
 (<a href="https://www.autosar.org/standards/adaptive-platform">autosar.org</a>).
 Não é uma publicação oficial da AUTOSAR; os textos descritivos permanecem no original (inglês).</footer></body></html>

@@ -36,7 +36,7 @@
     de: {
       signIn: "Anmelden", account: "Konto", close: "Schließen",
       heroTitle: "Diskutiere die Spezifikation mit KI",
-      heroLead: "Frag nach Zusammenhängen, prüfe Abhängigkeiten und schlag Verbesserungen vor – direkt neben dem Text.", reqView: "Anfragestatus ansehen", reqAgain: "Neu anfragen", reqUpdate: "Begründung speichern", reqUpdated: "Begründung gespeichert.", icoKeyOk: "Eigener Schlüssel funktioniert", icoKeyBad: "Eigener Schlüssel abgelehnt", icoGiftOpen: "Projektkontingent bewilligt", icoGiftPending: "Projektkontingent angefragt", icoGiftBad: "Projektkontingent abgelehnt oder abgelaufen", icoLocalOk: "Lokale KI verfügbar", icoLocalBad: "Keine lokale KI verfügbar", noAccessHint: "Kein KI-Zugang. Hier einrichten.", answeredBy: "Antwort von", icoKeyPart: "Eigene Schlüssel teilweise abgelehnt", localProbe: "Lokal prüfen", localFoundAway: "Lokaler Server unter %s gefunden.", localOpen: "Seite dort öffnen", localNotFound: "Unter %s antwortet kein lokaler Server.", secByot: "Eigene Schlüssel (BYOT)", storeLocal: "im Browser-Speicher dieser Website gespeichert", storeSession: "nur für diese Sitzung gespeichert", stNoKeys: "Noch kein eigener Schlüssel.", secLocal: "Lokale KI-CLIs (localhost)", localNoServer: "Kein lokaler Server erreichbar. Starte _src/serve.py.", localOnlyLocal: "Nur verfügbar, wenn die Seite lokal über _src/serve.py läuft.", back: "Zurück", tabStatus: "Status", tabAdd: "BYOT hinzufügen", stSources: "Deine KI-Zugänge für Diskussionen", stKeyFailed: "zuletzt abgelehnt", stWorks: "funktioniert", stSignedVia: "Angemeldet mit %s", stNoSources: "Noch kein Zugang. Füge einen eigenen Schlüssel hinzu oder frag Kontingent an.", stLocalTitle: "Lokale KI", stProjExpired: "Projektkontingent abgelaufen am %s", hdrOk: "KI-Zugang funktioniert", hdrPartial: "KI-Zugang teilweise verfügbar", hdrNone: "kein funktionierender KI-Zugang", appleSetup: "Die Anmeldung mit Apple ist noch nicht eingerichtet.", stProjActive: "aktiv bis %s", stProjNone: "nicht angefragt", dlgTitle: "Dein KI-Zugang", tabByot: "BYOT", tabQuota: "Kontingent anfragen", stDiscuss: "Diskussionen", stBackend: "Backend-Aktionen", stBackendHint: "Kommentare generieren, Prompts ausführen", stAccount: "Anmeldung", stGithub: "GitHub (Kuration, Feedback)", stNone: "nicht verbunden", stSignedOut: "nicht angemeldet", stViaAction: "über die GitHub Action des Betreibers", stGhOn: "Token hinterlegt", stGhLater: "wird beim Absenden im Review-Paket verbunden", stProjUntil: "Projektkontingent bis %s", stProjPending: "Projektkontingent angefragt", recheck: "Prüfen", hdrKi: "KI", stViaMail: "E-Mail-Link", stLocal: "lokale CLI", apple: "Mit Apple fortfahren", admBilling: "Abrechnung", admBillVia: "Projektkontingent läuft über", admAcc1: "Konto 1", admAcc2: "Konto 2", admAcc12: "Konto 1, bei Bedarf Konto 2", admOpenai: "OpenAI-Modelle anbieten", admName: "Name", admSave: "Speichern", admBillHint: "Gilt ab der nächsten Anfrage (nach höchstens 30 Sekunden).", projDenied: "Keine gültige Freigabe für das Projektkontingent.", admD90: "90 Tage", admD30: "30 Tage", admD7: "1 Woche", admD1: "1 Tag", admExpired: "abgelaufen %s", admUntil: "bis %s", admDuration: "Freischalten für", projLabel: "Projektkontingent (Nexos)", reqExpired: "Deine Freigabe ist am %s abgelaufen.", github: "Mit GitHub fortfahren", reqLink: "Kein eigener Schlüssel? Projektkontingent anfragen", reqTitle: "Projektkontingent anfragen", reqLead: "Du hast keinen eigenen Schlüssel? Bitte den Betreiber, dich für eine bestimmte Zeit für das Projektkontingent freizuschalten. Die Anfragen laufen dann über das Projekt; dein Browser sieht keinen Schlüssel.", reqReason: "Wofür brauchst du es?", reqReasonPh: "Zum Beispiel: Ich prüfe die COM-Anforderungen für unser Steuergerät.", reqSend: "Anfrage senden", reqPending: "Deine Anfrage vom %s wartet auf Freigabe.", reqWithdraw: "Anfrage zurückziehen", reqRejected: "Deine Anfrage wurde abgelehnt.", reqGranted: "Freigeschaltet bis %s.", reqSignIn: "Melde dich an, damit die Freigabe dir zugeordnet werden kann.", reqDone: "Anfrage gesendet.", grantedToast: "Projektkontingent freigeschaltet.", viaProject: "Projektkontingent", adm: "Verwaltung", admTitle: "Anfragen zum Projektkontingent", admNone: "Keine offenen Anfragen.", admModel: "Modell (optional)", admNote: "Notiz an die Person (optional)", admGrant: "Freischalten", admReject: "Ablehnen", admGrants: "Freigeschaltet", admRevoke: "Entziehen", admRevokeHint: "Wirkt sofort: Der Dienst prüft die Freigabe bei jeder Anfrage.", admDone: "Gespeichert.", provPick: "Von welchem Anbieter ist der Schlüssel?", orSignIn: "Oder anmelden", signInRequired: "Zusätzlich anmelden", optSignIn: "Optional: mit Konto anmelden", welcomeByok: "Danach verbindest du deinen eigenen API-Schlüssel eines KI-Anbieters.", headerConnect: "KI verbinden", geminiNote: "Im kostenlosen Kontingent darf Google deine Eingaben zur Verbesserung seiner Produkte verwenden. Für vertrauliche Inhalte einen Schlüssel mit Abrechnung nutzen.", byokLead: "Dafür bringst du einen eigenen API-Schlüssel eines KI-Anbieters mit. Den Verbrauch rechnet der Anbieter direkt mit dir ab.",
+      heroLead: "Frag nach Zusammenhängen, prüfe Abhängigkeiten und schlag Verbesserungen vor – direkt neben dem Text.", reqView: "Anfragestatus ansehen", reqAgain: "Neu anfragen", reqUpdate: "Begründung speichern", reqUpdated: "Begründung gespeichert.", icoKeyOk: "Eigener Schlüssel funktioniert", icoKeyBad: "Eigener Schlüssel abgelehnt", icoGiftOpen: "Projektkontingent bewilligt", icoGiftPending: "Projektkontingent angefragt", icoGiftBad: "Projektkontingent abgelehnt oder abgelaufen", icoLocalOk: "Lokale KI verfügbar", icoLocalBad: "Keine lokale KI verfügbar", noAccessHint: "Kein KI-Zugang. Hier einrichten.", answeredBy: "Geantwortet von", icoKeyPart: "Eigene Schlüssel teilweise abgelehnt", localProbe: "Lokal prüfen", localFoundAway: "Lokaler Server unter %s gefunden.", localOpen: "Seite dort öffnen", localNotFound: "Unter %s antwortet kein lokaler Server.", secByok: "Eigene Schlüssel (BYOK)", storeLocal: "im Browser-Speicher dieser Website gespeichert", storeSession: "nur für diese Sitzung gespeichert", stNoKeys: "Noch kein eigener Schlüssel.", secLocal: "Lokale KI-CLIs (localhost)", localNoServer: "Kein lokaler Server erreichbar. Starte _src/serve.py.", localOnlyLocal: "Nur verfügbar, wenn die Seite lokal über _src/serve.py läuft.", back: "Zurück", tabStatus: "Status", tabAdd: "BYOK hinzufügen", stSources: "Deine KI-Zugänge für Diskussionen", stKeyFailed: "zuletzt abgelehnt", stWorks: "funktioniert", stSignedVia: "Angemeldet mit %s", stNoSources: "Noch kein Zugang. Füge einen eigenen Schlüssel hinzu oder frag Kontingent an.", stLocalTitle: "Lokale KI", stProjExpired: "Projektkontingent abgelaufen am %s", hdrOk: "KI-Zugang funktioniert", hdrPartial: "KI-Zugang teilweise verfügbar", hdrNone: "kein funktionierender KI-Zugang", appleSetup: "Die Anmeldung mit Apple ist noch nicht eingerichtet.", stProjActive: "aktiv bis %s", stProjNone: "nicht angefragt", dlgTitle: "Dein KI-Zugang", tabByok: "BYOK", tabQuota: "Kontingent anfragen", stDiscuss: "Diskussionen", stBackend: "Backend-Aktionen", stBackendHint: "Kommentare generieren, Prompts ausführen", stAccount: "Anmeldung", stGithub: "GitHub (Kuration, Feedback)", stNone: "nicht verbunden", stSignedOut: "nicht angemeldet", stViaAction: "über die GitHub Action des Betreibers", stGhOn: "Token hinterlegt", stGhLater: "wird beim Absenden im Review-Paket verbunden", stProjUntil: "Projektkontingent bis %s", stProjPending: "Projektkontingent angefragt", recheck: "Prüfen", hdrKi: "KI", stViaMail: "E-Mail-Link", stLocal: "lokale CLI", apple: "Mit Apple fortfahren", admBilling: "Abrechnung", admBillVia: "Projektkontingent läuft über", admAcc1: "Konto 1", admAcc2: "Konto 2", admAcc12: "Konto 1, bei Bedarf Konto 2", admOpenai: "OpenAI-Modelle anbieten", admName: "Name", admSave: "Speichern", admBillHint: "Gilt ab der nächsten Anfrage (nach höchstens 30 Sekunden).", projDenied: "Keine gültige Freigabe für das Projektkontingent.", admD90: "90 Tage", admD30: "30 Tage", admD7: "1 Woche", admD1: "1 Tag", admExpired: "abgelaufen %s", admUntil: "bis %s", admDuration: "Freischalten für", projLabel: "Projektkontingent · Nexos", reqExpired: "Deine Freigabe ist am %s abgelaufen.", github: "Mit GitHub fortfahren", reqLink: "Kein eigener Schlüssel? Projektkontingent anfragen", reqTitle: "Projektkontingent anfragen", reqLead: "Du hast keinen eigenen Schlüssel? Bitte den Betreiber, dich für eine bestimmte Zeit für das Projektkontingent freizuschalten. Die Anfragen laufen dann über das Projekt; dein Browser sieht keinen Schlüssel.", reqReason: "Wofür brauchst du es?", reqReasonPh: "Zum Beispiel: Ich prüfe die COM-Anforderungen für unser Steuergerät.", reqSend: "Anfrage senden", reqPending: "Deine Anfrage vom %s wartet auf Freigabe.", reqWithdraw: "Anfrage zurückziehen", reqRejected: "Deine Anfrage wurde abgelehnt.", reqGranted: "Freigeschaltet bis %s.", reqSignIn: "Melde dich an, damit die Freigabe dir zugeordnet werden kann.", reqDone: "Anfrage gesendet.", grantedToast: "Projektkontingent freigeschaltet.", viaProject: "Projektkontingent", adm: "Verwaltung", admTitle: "Anfragen zum Projektkontingent", admNone: "Keine offenen Anfragen.", admModel: "Modell (optional)", admNote: "Notiz an die Person (optional)", admGrant: "Freischalten", admReject: "Ablehnen", admGrants: "Freigeschaltet", admRevoke: "Entziehen", admRevokeHint: "Wirkt sofort: Der Dienst prüft die Freigabe bei jeder Anfrage.", admDone: "Gespeichert.", provPick: "Von welchem Anbieter ist der Schlüssel?", orSignIn: "Oder anmelden", signInRequired: "Zusätzlich anmelden", optSignIn: "Optional: mit Konto anmelden", welcomeByok: "Danach verbindest du deinen eigenen API-Schlüssel eines KI-Anbieters.", headerConnect: "KI verbinden", geminiNote: "Im kostenlosen Kontingent darf Google deine Eingaben zur Verbesserung seiner Produkte verwenden. Für vertrauliche Inhalte einen Schlüssel mit Abrechnung nutzen.", byokLead: "Dafür bringst du einen eigenen API-Schlüssel eines KI-Anbieters mit. Den Verbrauch rechnet der Anbieter direkt mit dir ab.",
       b1t: "Dein Schlüssel", b1: "Er bleibt in diesem Browser und geht nur direkt an den Anbieter, nie an uns.",
       b2t: "Deine Kosten", b2: "Du zahlst nur, was du beim Anbieter verbrauchst. Gemini bietet ein begrenztes kostenloses Kontingent.",
       b3t: "Wirksam", b3: "Gute Vorschläge landen mit einem Klick bei den Kuratoren.",
@@ -87,7 +87,7 @@
     en: {
       signIn: "Sign in", account: "Account", close: "Close",
       heroTitle: "Discuss the specification with AI",
-      heroLead: "Ask about relationships, check dependencies and suggest improvements – right next to the text.", reqView: "View request status", reqAgain: "Request again", reqUpdate: "Save reason", reqUpdated: "Reason saved.", icoKeyOk: "Own key works", icoKeyBad: "Own key rejected", icoGiftOpen: "Project quota approved", icoGiftPending: "Project quota requested", icoGiftBad: "Project quota declined or expired", icoLocalOk: "Local AI available", icoLocalBad: "No local AI available", noAccessHint: "No AI access. Set it up here.", answeredBy: "Answer from", icoKeyPart: "Some own keys rejected", localProbe: "Check locally", localFoundAway: "Local server found at %s.", localOpen: "Open the page there", localNotFound: "No local server answers at %s.", secByot: "Own keys (BYOT)", storeLocal: "stored in this website's browser storage", storeSession: "stored for this session only", stNoKeys: "No key of your own yet.", secLocal: "Local AI CLIs (localhost)", localNoServer: "No local server reachable. Start _src/serve.py.", localOnlyLocal: "Only available when the page runs locally via _src/serve.py.", back: "Back", tabStatus: "Status", tabAdd: "Add BYOT", stSources: "Your AI access for discussions", stKeyFailed: "last rejected", stWorks: "works", stSignedVia: "Signed in with %s", stNoSources: "No access yet. Add your own key or request quota.", stLocalTitle: "Local AI", stProjExpired: "Project quota expired on %s", hdrOk: "AI access works", hdrPartial: "AI access partly available", hdrNone: "no working AI access", appleSetup: "Sign-in with Apple is not set up yet.", stProjActive: "active until %s", stProjNone: "not requested", dlgTitle: "Your AI access", tabByot: "BYOT", tabQuota: "Request quota", stDiscuss: "Discussions", stBackend: "Backend actions", stBackendHint: "generate commentary, run prompts", stAccount: "Sign-in", stGithub: "GitHub (curation, feedback)", stNone: "not connected", stSignedOut: "not signed in", stViaAction: "through the operator's GitHub Action", stGhOn: "token stored", stGhLater: "connected when you submit the review package", stProjUntil: "Project quota until %s", stProjPending: "Project quota requested", recheck: "Check", hdrKi: "AI", stViaMail: "email link", stLocal: "local CLI", apple: "Continue with Apple", admBilling: "Billing", admBillVia: "Project quota runs through", admAcc1: "Account 1", admAcc2: "Account 2", admAcc12: "Account 1, account 2 if needed", admOpenai: "Offer OpenAI models", admName: "Name", admSave: "Save", admBillHint: "Applies from the next request (within 30 seconds).", projDenied: "No valid access to the project quota.", admD90: "90 days", admD30: "30 days", admD7: "1 week", admD1: "1 day", admExpired: "expired %s", admUntil: "until %s", admDuration: "Enable for", projLabel: "Project quota (Nexos)", reqExpired: "Your access expired on %s.", github: "Continue with GitHub", reqLink: "No key of your own? Request project quota", reqTitle: "Request project quota", reqLead: "No key of your own? Ask the operator to enable you for the project quota for a limited time. Requests then run through the project; your browser never sees a key.", reqReason: "What do you need it for?", reqReasonPh: "For example: I am reviewing the COM requirements for our ECU.", reqSend: "Send request", reqPending: "Your request from %s is waiting for approval.", reqWithdraw: "Withdraw request", reqRejected: "Your request was declined.", reqGranted: "Enabled until %s.", reqSignIn: "Sign in so the approval can be assigned to you.", reqDone: "Request sent.", grantedToast: "Project quota enabled.", viaProject: "project quota", adm: "Admin", admTitle: "Project quota requests", admNone: "No open requests.", admModel: "Model (optional)", admNote: "Note to the person (optional)", admGrant: "Enable", admReject: "Decline", admGrants: "Enabled", admRevoke: "Revoke", admRevokeHint: "Takes effect immediately: the service checks access on every request.", admDone: "Saved.", provPick: "Which provider is the key from?", orSignIn: "Or sign in", signInRequired: "Also sign in", optSignIn: "Optional: sign in with an account", welcomeByok: "Next you connect your own API key from an AI provider.", headerConnect: "Connect AI", geminiNote: "In the free tier, Google may use your inputs to improve its products. For confidential content, use a key with billing enabled.", byokLead: "For this you bring your own API key from an AI provider. The provider bills your usage directly.",
+      heroLead: "Ask about relationships, check dependencies and suggest improvements – right next to the text.", reqView: "View request status", reqAgain: "Request again", reqUpdate: "Save reason", reqUpdated: "Reason saved.", icoKeyOk: "Own key works", icoKeyBad: "Own key rejected", icoGiftOpen: "Project quota approved", icoGiftPending: "Project quota requested", icoGiftBad: "Project quota declined or expired", icoLocalOk: "Local AI available", icoLocalBad: "No local AI available", noAccessHint: "No AI access. Set it up here.", answeredBy: "Answer from", icoKeyPart: "Some own keys rejected", localProbe: "Check locally", localFoundAway: "Local server found at %s.", localOpen: "Open the page there", localNotFound: "No local server answers at %s.", secByok: "Own keys (BYOK)", storeLocal: "stored in this website's browser storage", storeSession: "stored for this session only", stNoKeys: "No key of your own yet.", secLocal: "Local AI CLIs (localhost)", localNoServer: "No local server reachable. Start _src/serve.py.", localOnlyLocal: "Only available when the page runs locally via _src/serve.py.", back: "Back", tabStatus: "Status", tabAdd: "Add BYOK", stSources: "Your AI access for discussions", stKeyFailed: "last rejected", stWorks: "works", stSignedVia: "Signed in with %s", stNoSources: "No access yet. Add your own key or request quota.", stLocalTitle: "Local AI", stProjExpired: "Project quota expired on %s", hdrOk: "AI access works", hdrPartial: "AI access partly available", hdrNone: "no working AI access", appleSetup: "Sign-in with Apple is not set up yet.", stProjActive: "active until %s", stProjNone: "not requested", dlgTitle: "Your AI access", tabByok: "BYOK", tabQuota: "Request quota", stDiscuss: "Discussions", stBackend: "Backend actions", stBackendHint: "generate commentary, run prompts", stAccount: "Sign-in", stGithub: "GitHub (curation, feedback)", stNone: "not connected", stSignedOut: "not signed in", stViaAction: "through the operator's GitHub Action", stGhOn: "token stored", stGhLater: "connected when you submit the review package", stProjUntil: "Project quota until %s", stProjPending: "Project quota requested", recheck: "Check", hdrKi: "AI", stViaMail: "email link", stLocal: "local CLI", apple: "Continue with Apple", admBilling: "Billing", admBillVia: "Project quota runs through", admAcc1: "Account 1", admAcc2: "Account 2", admAcc12: "Account 1, account 2 if needed", admOpenai: "Offer OpenAI models", admName: "Name", admSave: "Save", admBillHint: "Applies from the next request (within 30 seconds).", projDenied: "No valid access to the project quota.", admD90: "90 days", admD30: "30 days", admD7: "1 week", admD1: "1 day", admExpired: "expired %s", admUntil: "until %s", admDuration: "Enable for", projLabel: "Project quota · Nexos", reqExpired: "Your access expired on %s.", github: "Continue with GitHub", reqLink: "No key of your own? Request project quota", reqTitle: "Request project quota", reqLead: "No key of your own? Ask the operator to enable you for the project quota for a limited time. Requests then run through the project; your browser never sees a key.", reqReason: "What do you need it for?", reqReasonPh: "For example: I am reviewing the COM requirements for our ECU.", reqSend: "Send request", reqPending: "Your request from %s is waiting for approval.", reqWithdraw: "Withdraw request", reqRejected: "Your request was declined.", reqGranted: "Enabled until %s.", reqSignIn: "Sign in so the approval can be assigned to you.", reqDone: "Request sent.", grantedToast: "Project quota enabled.", viaProject: "project quota", adm: "Admin", admTitle: "Project quota requests", admNone: "No open requests.", admModel: "Model (optional)", admNote: "Note to the person (optional)", admGrant: "Enable", admReject: "Decline", admGrants: "Enabled", admRevoke: "Revoke", admRevokeHint: "Takes effect immediately: the service checks access on every request.", admDone: "Saved.", provPick: "Which provider is the key from?", orSignIn: "Or sign in", signInRequired: "Also sign in", optSignIn: "Optional: sign in with an account", welcomeByok: "Next you connect your own API key from an AI provider.", headerConnect: "Connect AI", geminiNote: "In the free tier, Google may use your inputs to improve its products. For confidential content, use a key with billing enabled.", byokLead: "For this you bring your own API key from an AI provider. The provider bills your usage directly.",
       b1t: "Your key", b1: "It stays in this browser and only goes directly to the provider, never to us.",
       b2t: "Your costs", b2: "You only pay what you use with the provider. Gemini offers a limited free tier.",
       b3t: "Effective", b3: "Good suggestions reach the curators with one click.",
@@ -138,7 +138,7 @@
     es: {
       signIn: "Iniciar sesión", account: "Cuenta", close: "Cerrar",
       heroTitle: "Debate la especificación con IA",
-      heroLead: "Pregunta por relaciones, revisa dependencias y propone mejoras, justo al lado del texto.", reqView: "Ver estado de la solicitud", reqAgain: "Solicitar de nuevo", reqUpdate: "Guardar motivo", reqUpdated: "Motivo guardado.", icoKeyOk: "La clave propia funciona", icoKeyBad: "Clave propia rechazada", icoGiftOpen: "Cuota del proyecto aprobada", icoGiftPending: "Cuota del proyecto solicitada", icoGiftBad: "Cuota del proyecto rechazada o caducada", icoLocalOk: "IA local disponible", icoLocalBad: "No hay IA local disponible", noAccessHint: "Sin acceso a la IA. Configúralo aquí.", answeredBy: "Respuesta de", icoKeyPart: "Algunas claves propias rechazadas", localProbe: "Comprobar en local", localFoundAway: "Servidor local encontrado en %s.", localOpen: "Abrir la página allí", localNotFound: "Ningún servidor local responde en %s.", secByot: "Claves propias (BYOT)", storeLocal: "guardada en el almacenamiento del navegador de este sitio", storeSession: "guardada solo para esta sesión", stNoKeys: "Aún no hay clave propia.", secLocal: "CLI de IA locales (localhost)", localNoServer: "No hay servidor local accesible. Inicia _src/serve.py.", localOnlyLocal: "Solo disponible si la página se ejecuta localmente con _src/serve.py.", back: "Volver", tabStatus: "Estado", tabAdd: "Añadir BYOT", stSources: "Tus accesos de IA para debates", stKeyFailed: "rechazada la última vez", stWorks: "funciona", stSignedVia: "Sesión iniciada con %s", stNoSources: "Aún no hay acceso. Añade tu propia clave o solicita cuota.", stLocalTitle: "IA local", stProjExpired: "La cuota del proyecto caducó el %s", hdrOk: "El acceso a la IA funciona", hdrPartial: "Acceso a la IA disponible en parte", hdrNone: "ningún acceso a la IA funciona", appleSetup: "El inicio de sesión con Apple aún no está configurado.", stProjActive: "activa hasta el %s", stProjNone: "no solicitada", dlgTitle: "Tu acceso a la IA", tabByot: "BYOT", tabQuota: "Solicitar cuota", stDiscuss: "Debates", stBackend: "Acciones de backend", stBackendHint: "generar comentarios, ejecutar prompts", stAccount: "Inicio de sesión", stGithub: "GitHub (curación, comentarios)", stNone: "no conectado", stSignedOut: "sin iniciar sesión", stViaAction: "mediante la GitHub Action del responsable", stGhOn: "token guardado", stGhLater: "se conecta al enviar el paquete de revisión", stProjUntil: "Cuota del proyecto hasta el %s", stProjPending: "Cuota del proyecto solicitada", recheck: "Comprobar", hdrKi: "IA", stViaMail: "enlace por correo", stLocal: "CLI local", apple: "Continuar con Apple", projDenied: "No tienes acceso válido a la cuota del proyecto.", projLabel: "Cuota del proyecto (Nexos)", reqExpired: "Tu acceso caducó el %s.", github: "Continuar con GitHub", reqLink: "¿No tienes clave propia? Solicitar cuota del proyecto", reqTitle: "Solicitar cuota del proyecto", reqLead: "¿No tienes clave propia? Pide al responsable que te habilite la cuota del proyecto durante un tiempo. Las solicitudes pasan entonces por el proyecto; tu navegador nunca ve una clave.", reqReason: "¿Para qué la necesitas?", reqReasonPh: "Por ejemplo: reviso los requisitos de COM para nuestra ECU.", reqSend: "Enviar solicitud", reqPending: "Tu solicitud del %s está pendiente de aprobación.", reqWithdraw: "Retirar solicitud", reqRejected: "Tu solicitud fue rechazada.", reqGranted: "Habilitado hasta el %s.", reqSignIn: "Inicia sesión para que la aprobación se te pueda asignar.", reqDone: "Solicitud enviada.", grantedToast: "Cuota del proyecto habilitada.", viaProject: "cuota del proyecto", provPick: "¿De qué proveedor es la clave?", orSignIn: "O inicia sesión", signInRequired: "Inicia sesión también", optSignIn: "Opcional: iniciar sesión con una cuenta", welcomeByok: "Después conectas tu propia clave de API de un proveedor de IA.", headerConnect: "Conectar IA", geminiNote: "En el nivel gratuito, Google puede usar tus entradas para mejorar sus productos. Para contenido confidencial, usa una clave con facturación.", byokLead: "Para ello aportas tu propia clave de API de un proveedor de IA. El proveedor te factura el consumo directamente.",
+      heroLead: "Pregunta por relaciones, revisa dependencias y propone mejoras, justo al lado del texto.", reqView: "Ver estado de la solicitud", reqAgain: "Solicitar de nuevo", reqUpdate: "Guardar motivo", reqUpdated: "Motivo guardado.", icoKeyOk: "La clave propia funciona", icoKeyBad: "Clave propia rechazada", icoGiftOpen: "Cuota del proyecto aprobada", icoGiftPending: "Cuota del proyecto solicitada", icoGiftBad: "Cuota del proyecto rechazada o caducada", icoLocalOk: "IA local disponible", icoLocalBad: "No hay IA local disponible", noAccessHint: "Sin acceso a la IA. Configúralo aquí.", answeredBy: "Respuesta de", icoKeyPart: "Algunas claves propias rechazadas", localProbe: "Comprobar en local", localFoundAway: "Servidor local encontrado en %s.", localOpen: "Abrir la página allí", localNotFound: "Ningún servidor local responde en %s.", secByok: "Claves propias (BYOK)", storeLocal: "guardada en el almacenamiento del navegador de este sitio", storeSession: "guardada solo para esta sesión", stNoKeys: "Aún no hay clave propia.", secLocal: "CLI de IA locales (localhost)", localNoServer: "No hay servidor local accesible. Inicia _src/serve.py.", localOnlyLocal: "Solo disponible si la página se ejecuta localmente con _src/serve.py.", back: "Volver", tabStatus: "Estado", tabAdd: "Añadir BYOK", stSources: "Tus accesos de IA para debates", stKeyFailed: "rechazada la última vez", stWorks: "funciona", stSignedVia: "Sesión iniciada con %s", stNoSources: "Aún no hay acceso. Añade tu propia clave o solicita cuota.", stLocalTitle: "IA local", stProjExpired: "La cuota del proyecto caducó el %s", hdrOk: "El acceso a la IA funciona", hdrPartial: "Acceso a la IA disponible en parte", hdrNone: "ningún acceso a la IA funciona", appleSetup: "El inicio de sesión con Apple aún no está configurado.", stProjActive: "activa hasta el %s", stProjNone: "no solicitada", dlgTitle: "Tu acceso a la IA", tabByok: "BYOK", tabQuota: "Solicitar cuota", stDiscuss: "Debates", stBackend: "Acciones de backend", stBackendHint: "generar comentarios, ejecutar prompts", stAccount: "Inicio de sesión", stGithub: "GitHub (curación, comentarios)", stNone: "no conectado", stSignedOut: "sin iniciar sesión", stViaAction: "mediante la GitHub Action del responsable", stGhOn: "token guardado", stGhLater: "se conecta al enviar el paquete de revisión", stProjUntil: "Cuota del proyecto hasta el %s", stProjPending: "Cuota del proyecto solicitada", recheck: "Comprobar", hdrKi: "IA", stViaMail: "enlace por correo", stLocal: "CLI local", apple: "Continuar con Apple", projDenied: "No tienes acceso válido a la cuota del proyecto.", projLabel: "Cuota del proyecto · Nexos", reqExpired: "Tu acceso caducó el %s.", github: "Continuar con GitHub", reqLink: "¿No tienes clave propia? Solicitar cuota del proyecto", reqTitle: "Solicitar cuota del proyecto", reqLead: "¿No tienes clave propia? Pide al responsable que te habilite la cuota del proyecto durante un tiempo. Las solicitudes pasan entonces por el proyecto; tu navegador nunca ve una clave.", reqReason: "¿Para qué la necesitas?", reqReasonPh: "Por ejemplo: reviso los requisitos de COM para nuestra ECU.", reqSend: "Enviar solicitud", reqPending: "Tu solicitud del %s está pendiente de aprobación.", reqWithdraw: "Retirar solicitud", reqRejected: "Tu solicitud fue rechazada.", reqGranted: "Habilitado hasta el %s.", reqSignIn: "Inicia sesión para que la aprobación se te pueda asignar.", reqDone: "Solicitud enviada.", grantedToast: "Cuota del proyecto habilitada.", viaProject: "cuota del proyecto", provPick: "¿De qué proveedor es la clave?", orSignIn: "O inicia sesión", signInRequired: "Inicia sesión también", optSignIn: "Opcional: iniciar sesión con una cuenta", welcomeByok: "Después conectas tu propia clave de API de un proveedor de IA.", headerConnect: "Conectar IA", geminiNote: "En el nivel gratuito, Google puede usar tus entradas para mejorar sus productos. Para contenido confidencial, usa una clave con facturación.", byokLead: "Para ello aportas tu propia clave de API de un proveedor de IA. El proveedor te factura el consumo directamente.",
       b1t: "Tu clave", b1: "Se queda en este navegador y solo va directamente al proveedor, nunca a nosotros.",
       b2t: "Tus costes", b2: "Solo pagas lo que consumes con el proveedor. Gemini ofrece un nivel gratuito limitado.",
       b3t: "Útil", b3: "Las buenas propuestas llegan a los curadores con un clic.",
@@ -177,7 +177,7 @@
     pt: {
       signIn: "Entrar", account: "Conta", close: "Fechar",
       heroTitle: "Discuta a especificação com IA",
-      heroLead: "Pergunte sobre relações, verifique dependências e sugira melhorias, logo ao lado do texto.", reqView: "Ver status da solicitação", reqAgain: "Solicitar novamente", reqUpdate: "Salvar justificativa", reqUpdated: "Justificativa salva.", icoKeyOk: "A chave própria funciona", icoKeyBad: "Chave própria recusada", icoGiftOpen: "Cota do projeto aprovada", icoGiftPending: "Cota do projeto solicitada", icoGiftBad: "Cota do projeto recusada ou expirada", icoLocalOk: "IA local disponível", icoLocalBad: "Nenhuma IA local disponível", noAccessHint: "Sem acesso à IA. Configure aqui.", answeredBy: "Resposta de", icoKeyPart: "Algumas chaves próprias recusadas", localProbe: "Verificar localmente", localFoundAway: "Servidor local encontrado em %s.", localOpen: "Abrir a página lá", localNotFound: "Nenhum servidor local responde em %s.", secByot: "Chaves próprias (BYOT)", storeLocal: "salva no armazenamento do navegador deste site", storeSession: "salva apenas para esta sessão", stNoKeys: "Ainda sem chave própria.", secLocal: "CLIs de IA locais (localhost)", localNoServer: "Nenhum servidor local acessível. Inicie _src/serve.py.", localOnlyLocal: "Disponível só quando a página roda localmente via _src/serve.py.", back: "Voltar", tabStatus: "Status", tabAdd: "Adicionar BYOT", stSources: "Seus acessos de IA para discussões", stKeyFailed: "recusada da última vez", stWorks: "funciona", stSignedVia: "Conectado com %s", stNoSources: "Ainda sem acesso. Adicione sua própria chave ou solicite cota.", stLocalTitle: "IA local", stProjExpired: "A cota do projeto expirou em %s", hdrOk: "O acesso à IA funciona", hdrPartial: "Acesso à IA disponível em parte", hdrNone: "nenhum acesso à IA funcionando", appleSetup: "O login com a Apple ainda não está configurado.", stProjActive: "ativa até %s", stProjNone: "não solicitada", dlgTitle: "Seu acesso à IA", tabByot: "BYOT", tabQuota: "Solicitar cota", stDiscuss: "Discussões", stBackend: "Ações de backend", stBackendHint: "gerar comentários, executar prompts", stAccount: "Login", stGithub: "GitHub (curadoria, feedback)", stNone: "não conectado", stSignedOut: "não conectado", stViaAction: "pela GitHub Action do responsável", stGhOn: "token salvo", stGhLater: "conectado ao enviar o pacote de revisão", stProjUntil: "Cota do projeto até %s", stProjPending: "Cota do projeto solicitada", recheck: "Verificar", hdrKi: "IA", stViaMail: "link por e-mail", stLocal: "CLI local", apple: "Continuar com a Apple", projDenied: "Sem acesso válido à cota do projeto.", projLabel: "Cota do projeto (Nexos)", reqExpired: "Seu acesso expirou em %s.", github: "Continuar com o GitHub", reqLink: "Sem chave própria? Solicitar cota do projeto", reqTitle: "Solicitar cota do projeto", reqLead: "Sem chave própria? Peça ao responsável para liberar a cota do projeto para você por um período. As solicitações passam pelo projeto; seu navegador nunca vê uma chave.", reqReason: "Para que você precisa?", reqReasonPh: "Por exemplo: estou revisando os requisitos de COM para a nossa ECU.", reqSend: "Enviar solicitação", reqPending: "Sua solicitação de %s aguarda aprovação.", reqWithdraw: "Retirar solicitação", reqRejected: "Sua solicitação foi recusada.", reqGranted: "Liberado até %s.", reqSignIn: "Entre para que a liberação possa ser atribuída a você.", reqDone: "Solicitação enviada.", grantedToast: "Cota do projeto liberada.", viaProject: "cota do projeto", provPick: "De qual provedor é a chave?", orSignIn: "Ou entre", signInRequired: "Entre também", optSignIn: "Opcional: entrar com uma conta", welcomeByok: "Em seguida você conecta sua própria chave de API de um provedor de IA.", headerConnect: "Conectar IA", geminiNote: "No nível gratuito, o Google pode usar suas entradas para melhorar os produtos dele. Para conteúdo confidencial, use uma chave com faturamento.", byokLead: "Para isso você traz sua própria chave de API de um provedor de IA. O provedor cobra o uso diretamente de você.",
+      heroLead: "Pergunte sobre relações, verifique dependências e sugira melhorias, logo ao lado do texto.", reqView: "Ver status da solicitação", reqAgain: "Solicitar novamente", reqUpdate: "Salvar justificativa", reqUpdated: "Justificativa salva.", icoKeyOk: "A chave própria funciona", icoKeyBad: "Chave própria recusada", icoGiftOpen: "Cota do projeto aprovada", icoGiftPending: "Cota do projeto solicitada", icoGiftBad: "Cota do projeto recusada ou expirada", icoLocalOk: "IA local disponível", icoLocalBad: "Nenhuma IA local disponível", noAccessHint: "Sem acesso à IA. Configure aqui.", answeredBy: "Resposta de", icoKeyPart: "Algumas chaves próprias recusadas", localProbe: "Verificar localmente", localFoundAway: "Servidor local encontrado em %s.", localOpen: "Abrir a página lá", localNotFound: "Nenhum servidor local responde em %s.", secByok: "Chaves próprias (BYOK)", storeLocal: "salva no armazenamento do navegador deste site", storeSession: "salva apenas para esta sessão", stNoKeys: "Ainda sem chave própria.", secLocal: "CLIs de IA locais (localhost)", localNoServer: "Nenhum servidor local acessível. Inicie _src/serve.py.", localOnlyLocal: "Disponível só quando a página roda localmente via _src/serve.py.", back: "Voltar", tabStatus: "Status", tabAdd: "Adicionar BYOK", stSources: "Seus acessos de IA para discussões", stKeyFailed: "recusada da última vez", stWorks: "funciona", stSignedVia: "Conectado com %s", stNoSources: "Ainda sem acesso. Adicione sua própria chave ou solicite cota.", stLocalTitle: "IA local", stProjExpired: "A cota do projeto expirou em %s", hdrOk: "O acesso à IA funciona", hdrPartial: "Acesso à IA disponível em parte", hdrNone: "nenhum acesso à IA funcionando", appleSetup: "O login com a Apple ainda não está configurado.", stProjActive: "ativa até %s", stProjNone: "não solicitada", dlgTitle: "Seu acesso à IA", tabByok: "BYOK", tabQuota: "Solicitar cota", stDiscuss: "Discussões", stBackend: "Ações de backend", stBackendHint: "gerar comentários, executar prompts", stAccount: "Login", stGithub: "GitHub (curadoria, feedback)", stNone: "não conectado", stSignedOut: "não conectado", stViaAction: "pela GitHub Action do responsável", stGhOn: "token salvo", stGhLater: "conectado ao enviar o pacote de revisão", stProjUntil: "Cota do projeto até %s", stProjPending: "Cota do projeto solicitada", recheck: "Verificar", hdrKi: "IA", stViaMail: "link por e-mail", stLocal: "CLI local", apple: "Continuar com a Apple", projDenied: "Sem acesso válido à cota do projeto.", projLabel: "Cota do projeto · Nexos", reqExpired: "Seu acesso expirou em %s.", github: "Continuar com o GitHub", reqLink: "Sem chave própria? Solicitar cota do projeto", reqTitle: "Solicitar cota do projeto", reqLead: "Sem chave própria? Peça ao responsável para liberar a cota do projeto para você por um período. As solicitações passam pelo projeto; seu navegador nunca vê uma chave.", reqReason: "Para que você precisa?", reqReasonPh: "Por exemplo: estou revisando os requisitos de COM para a nossa ECU.", reqSend: "Enviar solicitação", reqPending: "Sua solicitação de %s aguarda aprovação.", reqWithdraw: "Retirar solicitação", reqRejected: "Sua solicitação foi recusada.", reqGranted: "Liberado até %s.", reqSignIn: "Entre para que a liberação possa ser atribuída a você.", reqDone: "Solicitação enviada.", grantedToast: "Cota do projeto liberada.", viaProject: "cota do projeto", provPick: "De qual provedor é a chave?", orSignIn: "Ou entre", signInRequired: "Entre também", optSignIn: "Opcional: entrar com uma conta", welcomeByok: "Em seguida você conecta sua própria chave de API de um provedor de IA.", headerConnect: "Conectar IA", geminiNote: "No nível gratuito, o Google pode usar suas entradas para melhorar os produtos dele. Para conteúdo confidencial, use uma chave com faturamento.", byokLead: "Para isso você traz sua própria chave de API de um provedor de IA. O provedor cobra o uso diretamente de você.",
       b1t: "Sua chave", b1: "Ela fica neste navegador e vai apenas diretamente ao provedor, nunca para nós.",
       b2t: "Seus custos", b2: "Você paga só o que usar no provedor. O Gemini oferece um nível gratuito limitado.",
       b3t: "Eficaz", b3: "Boas sugestões chegam aos curadores com um clique.",
@@ -216,7 +216,7 @@
     fr: {
       signIn: "Se connecter", account: "Compte", close: "Fermer",
       heroTitle: "Discutez de la spécification avec l'IA",
-      heroLead: "Interrogez les liens, vérifiez les dépendances et proposez des améliorations, juste à côté du texte.", reqView: "Voir l'état de la demande", reqAgain: "Demander à nouveau", reqUpdate: "Enregistrer la justification", reqUpdated: "Justification enregistrée.", icoKeyOk: "La clé personnelle fonctionne", icoKeyBad: "Clé personnelle refusée", icoGiftOpen: "Quota du projet accordé", icoGiftPending: "Quota du projet demandé", icoGiftBad: "Quota du projet refusé ou expiré", icoLocalOk: "IA locale disponible", icoLocalBad: "Aucune IA locale disponible", noAccessHint: "Pas d'accès à l'IA. Configurez-le ici.", answeredBy: "Réponse de", icoKeyPart: "Certaines clés personnelles refusées", localProbe: "Vérifier en local", localFoundAway: "Serveur local trouvé à %s.", localOpen: "Ouvrir la page là-bas", localNotFound: "Aucun serveur local ne répond à %s.", secByot: "Clés personnelles (BYOT)", storeLocal: "enregistrée dans le stockage du navigateur de ce site", storeSession: "enregistrée pour cette session uniquement", stNoKeys: "Pas encore de clé personnelle.", secLocal: "CLI d'IA locales (localhost)", localNoServer: "Aucun serveur local joignable. Lancez _src/serve.py.", localOnlyLocal: "Disponible uniquement si la page tourne en local via _src/serve.py.", back: "Retour", tabStatus: "Statut", tabAdd: "Ajouter BYOT", stSources: "Vos accès IA pour les discussions", stKeyFailed: "refusée la dernière fois", stWorks: "fonctionne", stSignedVia: "Connecté avec %s", stNoSources: "Pas encore d'accès. Ajoutez votre propre clé ou demandez un quota.", stLocalTitle: "IA locale", stProjExpired: "Quota du projet expiré le %s", hdrOk: "L'accès à l'IA fonctionne", hdrPartial: "Accès à l'IA partiellement disponible", hdrNone: "aucun accès à l'IA ne fonctionne", appleSetup: "La connexion avec Apple n'est pas encore configurée.", stProjActive: "actif jusqu'au %s", stProjNone: "non demandé", dlgTitle: "Votre accès à l'IA", tabByot: "BYOT", tabQuota: "Demander un quota", stDiscuss: "Discussions", stBackend: "Actions backend", stBackendHint: "générer des commentaires, exécuter des prompts", stAccount: "Connexion", stGithub: "GitHub (curation, retours)", stNone: "non connecté", stSignedOut: "non connecté", stViaAction: "via la GitHub Action du responsable", stGhOn: "jeton enregistré", stGhLater: "connecté lors de l'envoi du lot de revue", stProjUntil: "Quota du projet jusqu'au %s", stProjPending: "Quota du projet demandé", recheck: "Vérifier", hdrKi: "IA", stViaMail: "lien par e-mail", stLocal: "CLI locale", apple: "Continuer avec Apple", projDenied: "Aucun accès valide au quota du projet.", projLabel: "Quota du projet (Nexos)", reqExpired: "Votre accès a expiré le %s.", github: "Continuer avec GitHub", reqLink: "Pas de clé personnelle ? Demander un quota du projet", reqTitle: "Demander un quota du projet", reqLead: "Pas de clé personnelle ? Demandez au responsable de vous ouvrir le quota du projet pour une durée limitée. Les requêtes passent alors par le projet ; votre navigateur ne voit jamais de clé.", reqReason: "Pour quoi en avez-vous besoin ?", reqReasonPh: "Par exemple : je vérifie les exigences COM pour notre calculateur.", reqSend: "Envoyer la demande", reqPending: "Votre demande du %s attend une validation.", reqWithdraw: "Retirer la demande", reqRejected: "Votre demande a été refusée.", reqGranted: "Activé jusqu'au %s.", reqSignIn: "Connectez-vous pour que l'autorisation puisse vous être attribuée.", reqDone: "Demande envoyée.", grantedToast: "Quota du projet activé.", viaProject: "quota du projet", provPick: "De quel fournisseur vient la clé ?", orSignIn: "Ou connectez-vous", signInRequired: "Connectez-vous aussi", optSignIn: "Facultatif : se connecter avec un compte", welcomeByok: "Ensuite, vous connectez votre propre clé d'API d'un fournisseur d'IA.", headerConnect: "Connecter l'IA", geminiNote: "Dans le niveau gratuit, Google peut utiliser vos saisies pour améliorer ses produits. Pour un contenu confidentiel, utilisez une clé avec facturation.", byokLead: "Pour cela, vous apportez votre propre clé d'API d'un fournisseur d'IA. Le fournisseur vous facture directement l'utilisation.",
+      heroLead: "Interrogez les liens, vérifiez les dépendances et proposez des améliorations, juste à côté du texte.", reqView: "Voir l'état de la demande", reqAgain: "Demander à nouveau", reqUpdate: "Enregistrer la justification", reqUpdated: "Justification enregistrée.", icoKeyOk: "La clé personnelle fonctionne", icoKeyBad: "Clé personnelle refusée", icoGiftOpen: "Quota du projet accordé", icoGiftPending: "Quota du projet demandé", icoGiftBad: "Quota du projet refusé ou expiré", icoLocalOk: "IA locale disponible", icoLocalBad: "Aucune IA locale disponible", noAccessHint: "Pas d'accès à l'IA. Configurez-le ici.", answeredBy: "Réponse de", icoKeyPart: "Certaines clés personnelles refusées", localProbe: "Vérifier en local", localFoundAway: "Serveur local trouvé à %s.", localOpen: "Ouvrir la page là-bas", localNotFound: "Aucun serveur local ne répond à %s.", secByok: "Clés personnelles (BYOK)", storeLocal: "enregistrée dans le stockage du navigateur de ce site", storeSession: "enregistrée pour cette session uniquement", stNoKeys: "Pas encore de clé personnelle.", secLocal: "CLI d'IA locales (localhost)", localNoServer: "Aucun serveur local joignable. Lancez _src/serve.py.", localOnlyLocal: "Disponible uniquement si la page tourne en local via _src/serve.py.", back: "Retour", tabStatus: "Statut", tabAdd: "Ajouter BYOK", stSources: "Vos accès IA pour les discussions", stKeyFailed: "refusée la dernière fois", stWorks: "fonctionne", stSignedVia: "Connecté avec %s", stNoSources: "Pas encore d'accès. Ajoutez votre propre clé ou demandez un quota.", stLocalTitle: "IA locale", stProjExpired: "Quota du projet expiré le %s", hdrOk: "L'accès à l'IA fonctionne", hdrPartial: "Accès à l'IA partiellement disponible", hdrNone: "aucun accès à l'IA ne fonctionne", appleSetup: "La connexion avec Apple n'est pas encore configurée.", stProjActive: "actif jusqu'au %s", stProjNone: "non demandé", dlgTitle: "Votre accès à l'IA", tabByok: "BYOK", tabQuota: "Demander un quota", stDiscuss: "Discussions", stBackend: "Actions backend", stBackendHint: "générer des commentaires, exécuter des prompts", stAccount: "Connexion", stGithub: "GitHub (curation, retours)", stNone: "non connecté", stSignedOut: "non connecté", stViaAction: "via la GitHub Action du responsable", stGhOn: "jeton enregistré", stGhLater: "connecté lors de l'envoi du lot de revue", stProjUntil: "Quota du projet jusqu'au %s", stProjPending: "Quota du projet demandé", recheck: "Vérifier", hdrKi: "IA", stViaMail: "lien par e-mail", stLocal: "CLI locale", apple: "Continuer avec Apple", projDenied: "Aucun accès valide au quota du projet.", projLabel: "Quota du projet · Nexos", reqExpired: "Votre accès a expiré le %s.", github: "Continuer avec GitHub", reqLink: "Pas de clé personnelle ? Demander un quota du projet", reqTitle: "Demander un quota du projet", reqLead: "Pas de clé personnelle ? Demandez au responsable de vous ouvrir le quota du projet pour une durée limitée. Les requêtes passent alors par le projet ; votre navigateur ne voit jamais de clé.", reqReason: "Pour quoi en avez-vous besoin ?", reqReasonPh: "Par exemple : je vérifie les exigences COM pour notre calculateur.", reqSend: "Envoyer la demande", reqPending: "Votre demande du %s attend une validation.", reqWithdraw: "Retirer la demande", reqRejected: "Votre demande a été refusée.", reqGranted: "Activé jusqu'au %s.", reqSignIn: "Connectez-vous pour que l'autorisation puisse vous être attribuée.", reqDone: "Demande envoyée.", grantedToast: "Quota du projet activé.", viaProject: "quota du projet", provPick: "De quel fournisseur vient la clé ?", orSignIn: "Ou connectez-vous", signInRequired: "Connectez-vous aussi", optSignIn: "Facultatif : se connecter avec un compte", welcomeByok: "Ensuite, vous connectez votre propre clé d'API d'un fournisseur d'IA.", headerConnect: "Connecter l'IA", geminiNote: "Dans le niveau gratuit, Google peut utiliser vos saisies pour améliorer ses produits. Pour un contenu confidentiel, utilisez une clé avec facturation.", byokLead: "Pour cela, vous apportez votre propre clé d'API d'un fournisseur d'IA. Le fournisseur vous facture directement l'utilisation.",
       b1t: "Votre clé", b1: "Elle reste dans ce navigateur et va uniquement directement au fournisseur, jamais à nous.",
       b2t: "Vos coûts", b2: "Vous ne payez que ce que vous consommez chez le fournisseur. Gemini propose un niveau gratuit limité.",
       b3t: "Efficace", b3: "Les bonnes propositions parviennent aux curateurs en un clic.",
@@ -255,7 +255,7 @@
     ru: {
       signIn: "Войти", account: "Аккаунт", close: "Закрыть",
       heroTitle: "Обсуждайте спецификацию с ИИ",
-      heroLead: "Спрашивайте о связях, проверяйте зависимости и предлагайте улучшения прямо рядом с текстом.", reqView: "Статус запроса", reqAgain: "Запросить снова", reqUpdate: "Сохранить обоснование", reqUpdated: "Обоснование сохранено.", icoKeyOk: "Собственный ключ работает", icoKeyBad: "Собственный ключ отклонён", icoGiftOpen: "Квота проекта одобрена", icoGiftPending: "Квота проекта запрошена", icoGiftBad: "Квота проекта отклонена или истекла", icoLocalOk: "Локальный ИИ доступен", icoLocalBad: "Локальный ИИ недоступен", noAccessHint: "Нет доступа к ИИ. Настройте здесь.", answeredBy: "Ответ от", icoKeyPart: "Часть собственных ключей отклонена", localProbe: "Проверить локально", localFoundAway: "Локальный сервер найден: %s.", localOpen: "Открыть страницу там", localNotFound: "По адресу %s локальный сервер не отвечает.", secByot: "Собственные ключи (BYOT)", storeLocal: "хранится в хранилище браузера этого сайта", storeSession: "хранится только для этого сеанса", stNoKeys: "Собственного ключа пока нет.", secLocal: "Локальные CLI для ИИ (localhost)", localNoServer: "Локальный сервер недоступен. Запустите _src/serve.py.", localOnlyLocal: "Доступно, только если страница запущена локально через _src/serve.py.", back: "Назад", tabStatus: "Статус", tabAdd: "Добавить BYOT", stSources: "Ваши доступы к ИИ для обсуждений", stKeyFailed: "в последний раз отклонён", stWorks: "работает", stSignedVia: "Вход через %s", stNoSources: "Доступа пока нет. Добавьте свой ключ или запросите квоту.", stLocalTitle: "Локальный ИИ", stProjExpired: "Квота проекта истекла %s", hdrOk: "Доступ к ИИ работает", hdrPartial: "Доступ к ИИ частично доступен", hdrNone: "нет работающего доступа к ИИ", appleSetup: "Вход через Apple ещё не настроен.", stProjActive: "активна до %s", stProjNone: "не запрошена", dlgTitle: "Ваш доступ к ИИ", tabByot: "BYOT", tabQuota: "Запросить квоту", stDiscuss: "Обсуждения", stBackend: "Действия на сервере", stBackendHint: "генерация комментариев, запуск промптов", stAccount: "Вход", stGithub: "GitHub (курирование, отзывы)", stNone: "не подключено", stSignedOut: "вход не выполнен", stViaAction: "через GitHub Action владельца", stGhOn: "токен сохранён", stGhLater: "подключается при отправке пакета проверок", stProjUntil: "Квота проекта до %s", stProjPending: "Квота проекта запрошена", recheck: "Проверить", hdrKi: "ИИ", stViaMail: "ссылка по почте", stLocal: "локальный CLI", apple: "Продолжить с Apple", projDenied: "Нет действующего доступа к квоте проекта.", projLabel: "Квота проекта (Nexos)", reqExpired: "Ваш доступ истёк %s.", github: "Продолжить с GitHub", reqLink: "Нет своего ключа? Запросить квоту проекта", reqTitle: "Запросить квоту проекта", reqLead: "Нет своего ключа? Попросите владельца открыть вам квоту проекта на определённое время. Запросы будут идти через проект; ваш браузер не увидит ключа.", reqReason: "Для чего он вам нужен?", reqReasonPh: "Например: я проверяю требования COM для нашего ЭБУ.", reqSend: "Отправить запрос", reqPending: "Ваш запрос от %s ожидает одобрения.", reqWithdraw: "Отозвать запрос", reqRejected: "Ваш запрос отклонён.", reqGranted: "Доступ открыт до %s.", reqSignIn: "Войдите, чтобы одобрение можно было закрепить за вами.", reqDone: "Запрос отправлен.", grantedToast: "Квота проекта включена.", viaProject: "квота проекта", provPick: "От какого провайдера ключ?", orSignIn: "Или войдите", signInRequired: "Также войдите", optSignIn: "Необязательно: войти с аккаунтом", welcomeByok: "Затем вы подключите собственный API-ключ провайдера ИИ.", headerConnect: "Подключить ИИ", geminiNote: "На бесплатном уровне Google может использовать ваши запросы для улучшения своих продуктов. Для конфиденциального содержимого используйте ключ с оплатой.", byokLead: "Для этого нужен собственный API-ключ провайдера ИИ. Провайдер выставляет счёт за использование напрямую вам.",
+      heroLead: "Спрашивайте о связях, проверяйте зависимости и предлагайте улучшения прямо рядом с текстом.", reqView: "Статус запроса", reqAgain: "Запросить снова", reqUpdate: "Сохранить обоснование", reqUpdated: "Обоснование сохранено.", icoKeyOk: "Собственный ключ работает", icoKeyBad: "Собственный ключ отклонён", icoGiftOpen: "Квота проекта одобрена", icoGiftPending: "Квота проекта запрошена", icoGiftBad: "Квота проекта отклонена или истекла", icoLocalOk: "Локальный ИИ доступен", icoLocalBad: "Локальный ИИ недоступен", noAccessHint: "Нет доступа к ИИ. Настройте здесь.", answeredBy: "Ответ от", icoKeyPart: "Часть собственных ключей отклонена", localProbe: "Проверить локально", localFoundAway: "Локальный сервер найден: %s.", localOpen: "Открыть страницу там", localNotFound: "По адресу %s локальный сервер не отвечает.", secByok: "Собственные ключи (BYOK)", storeLocal: "хранится в хранилище браузера этого сайта", storeSession: "хранится только для этого сеанса", stNoKeys: "Собственного ключа пока нет.", secLocal: "Локальные CLI для ИИ (localhost)", localNoServer: "Локальный сервер недоступен. Запустите _src/serve.py.", localOnlyLocal: "Доступно, только если страница запущена локально через _src/serve.py.", back: "Назад", tabStatus: "Статус", tabAdd: "Добавить BYOK", stSources: "Ваши доступы к ИИ для обсуждений", stKeyFailed: "в последний раз отклонён", stWorks: "работает", stSignedVia: "Вход через %s", stNoSources: "Доступа пока нет. Добавьте свой ключ или запросите квоту.", stLocalTitle: "Локальный ИИ", stProjExpired: "Квота проекта истекла %s", hdrOk: "Доступ к ИИ работает", hdrPartial: "Доступ к ИИ частично доступен", hdrNone: "нет работающего доступа к ИИ", appleSetup: "Вход через Apple ещё не настроен.", stProjActive: "активна до %s", stProjNone: "не запрошена", dlgTitle: "Ваш доступ к ИИ", tabByok: "BYOK", tabQuota: "Запросить квоту", stDiscuss: "Обсуждения", stBackend: "Действия на сервере", stBackendHint: "генерация комментариев, запуск промптов", stAccount: "Вход", stGithub: "GitHub (курирование, отзывы)", stNone: "не подключено", stSignedOut: "вход не выполнен", stViaAction: "через GitHub Action владельца", stGhOn: "токен сохранён", stGhLater: "подключается при отправке пакета проверок", stProjUntil: "Квота проекта до %s", stProjPending: "Квота проекта запрошена", recheck: "Проверить", hdrKi: "ИИ", stViaMail: "ссылка по почте", stLocal: "локальный CLI", apple: "Продолжить с Apple", projDenied: "Нет действующего доступа к квоте проекта.", projLabel: "Квота проекта · Nexos", reqExpired: "Ваш доступ истёк %s.", github: "Продолжить с GitHub", reqLink: "Нет своего ключа? Запросить квоту проекта", reqTitle: "Запросить квоту проекта", reqLead: "Нет своего ключа? Попросите владельца открыть вам квоту проекта на определённое время. Запросы будут идти через проект; ваш браузер не увидит ключа.", reqReason: "Для чего он вам нужен?", reqReasonPh: "Например: я проверяю требования COM для нашего ЭБУ.", reqSend: "Отправить запрос", reqPending: "Ваш запрос от %s ожидает одобрения.", reqWithdraw: "Отозвать запрос", reqRejected: "Ваш запрос отклонён.", reqGranted: "Доступ открыт до %s.", reqSignIn: "Войдите, чтобы одобрение можно было закрепить за вами.", reqDone: "Запрос отправлен.", grantedToast: "Квота проекта включена.", viaProject: "квота проекта", provPick: "От какого провайдера ключ?", orSignIn: "Или войдите", signInRequired: "Также войдите", optSignIn: "Необязательно: войти с аккаунтом", welcomeByok: "Затем вы подключите собственный API-ключ провайдера ИИ.", headerConnect: "Подключить ИИ", geminiNote: "На бесплатном уровне Google может использовать ваши запросы для улучшения своих продуктов. Для конфиденциального содержимого используйте ключ с оплатой.", byokLead: "Для этого нужен собственный API-ключ провайдера ИИ. Провайдер выставляет счёт за использование напрямую вам.",
       b1t: "Ваш ключ", b1: "Он остаётся в этом браузере и отправляется только напрямую провайдеру, но никогда нам.",
       b2t: "Ваши расходы", b2: "Вы платите только за то, что используете у провайдера. У Gemini есть ограниченный бесплатный уровень.",
       b3t: "Результативно", b3: "Хорошие предложения попадают к кураторам одним щелчком.",
@@ -294,7 +294,7 @@
     ar: {
       signIn: "تسجيل الدخول", account: "الحساب", close: "إغلاق",
       heroTitle: "ناقش المواصفة مع الذكاء الاصطناعي",
-      heroLead: "اسأل عن العلاقات، وتحقّق من التبعيات، واقترح تحسينات مباشرة بجوار النص.", reqView: "عرض حالة الطلب", reqAgain: "الطلب مجددًا", reqUpdate: "حفظ التبرير", reqUpdated: "حُفظ التبرير.", icoKeyOk: "المفتاح الخاص يعمل", icoKeyBad: "رُفض المفتاح الخاص", icoGiftOpen: "تمت الموافقة على حصة المشروع", icoGiftPending: "طُلبت حصة المشروع", icoGiftBad: "رُفضت حصة المشروع أو انتهت", icoLocalOk: "ذكاء اصطناعي محلي متاح", icoLocalBad: "لا يتوفر ذكاء اصطناعي محلي", noAccessHint: "لا يوجد وصول إلى الذكاء الاصطناعي. أعدّه هنا.", answeredBy: "إجابة من", icoKeyPart: "رُفض بعض المفاتيح الخاصة", localProbe: "تحقق محليًا", localFoundAway: "عُثر على خادم محلي في %s.", localOpen: "افتح الصفحة هناك", localNotFound: "لا يستجيب أي خادم محلي على %s.", secByot: "مفاتيح خاصة (BYOT)", storeLocal: "محفوظ في تخزين المتصفح لهذا الموقع", storeSession: "محفوظ لهذه الجلسة فقط", stNoKeys: "لا يوجد مفتاح خاص بعد.", secLocal: "أدوات CLI محلية للذكاء الاصطناعي (localhost)", localNoServer: "لا يوجد خادم محلي متاح. شغّل _src/serve.py.", localOnlyLocal: "متاح فقط عند تشغيل الصفحة محليًا عبر _src/serve.py.", back: "رجوع", tabStatus: "الحالة", tabAdd: "إضافة BYOT", stSources: "وصولك إلى الذكاء الاصطناعي للمناقشات", stKeyFailed: "رُفض آخر مرة", stWorks: "يعمل", stSignedVia: "تم تسجيل الدخول عبر %s", stNoSources: "لا يوجد وصول بعد. أضف مفتاحك الخاص أو اطلب حصة.", stLocalTitle: "ذكاء اصطناعي محلي", stProjExpired: "انتهت حصة المشروع في %s", hdrOk: "الوصول إلى الذكاء الاصطناعي يعمل", hdrPartial: "الوصول إلى الذكاء الاصطناعي متاح جزئيًا", hdrNone: "لا يوجد وصول عامل إلى الذكاء الاصطناعي", appleSetup: "تسجيل الدخول عبر Apple غير مُعدّ بعد.", stProjActive: "نشطة حتى %s", stProjNone: "لم تُطلب", dlgTitle: "وصولك إلى الذكاء الاصطناعي", tabByot: "BYOT", tabQuota: "طلب حصة", stDiscuss: "المناقشات", stBackend: "إجراءات الخادم", stBackendHint: "توليد التعليقات وتشغيل الأوامر", stAccount: "تسجيل الدخول", stGithub: "GitHub (التنسيق والملاحظات)", stNone: "غير متصل", stSignedOut: "لم يتم تسجيل الدخول", stViaAction: "عبر GitHub Action الخاص بالمسؤول", stGhOn: "الرمز محفوظ", stGhLater: "يُربط عند إرسال حزمة المراجعة", stProjUntil: "حصة المشروع حتى %s", stProjPending: "طُلبت حصة المشروع", recheck: "تحقق", hdrKi: "ذكاء اصطناعي", stViaMail: "رابط بالبريد", stLocal: "CLI محلي", apple: "المتابعة باستخدام Apple", projDenied: "لا يوجد وصول صالح إلى حصة المشروع.", projLabel: "حصة المشروع (Nexos)", reqExpired: "انتهت صلاحية وصولك في %s.", github: "المتابعة باستخدام GitHub", reqLink: "ليس لديك مفتاح خاص؟ اطلب حصة من المشروع", reqTitle: "طلب حصة من المشروع", reqLead: "ليس لديك مفتاح خاص؟ اطلب من المسؤول تفعيل حصة المشروع لك لفترة محددة. تمر الطلبات عندها عبر المشروع، ولا يرى متصفحك أي مفتاح.", reqReason: "لماذا تحتاج إليها؟", reqReasonPh: "مثال: أراجع متطلبات COM لوحدة التحكم لدينا.", reqSend: "إرسال الطلب", reqPending: "طلبك بتاريخ %s بانتظار الموافقة.", reqWithdraw: "سحب الطلب", reqRejected: "رُفض طلبك.", reqGranted: "مفعّل حتى %s.", reqSignIn: "سجّل الدخول ليمكن ربط الموافقة بك.", reqDone: "أُرسل الطلب.", grantedToast: "فُعّلت حصة المشروع.", viaProject: "حصة المشروع", provPick: "من أي مزوّد هذا المفتاح؟", orSignIn: "أو سجّل الدخول", signInRequired: "سجّل الدخول أيضًا", optSignIn: "اختياري: تسجيل الدخول بحساب", welcomeByok: "بعد ذلك تربط مفتاح API الخاص بك من مزوّد ذكاء اصطناعي.", headerConnect: "ربط الذكاء الاصطناعي", geminiNote: "في المستوى المجاني يجوز لـ Google استخدام مدخلاتك لتحسين منتجاتها. للمحتوى السري استخدم مفتاحًا مع تفعيل الفوترة.", byokLead: "لذلك تحتاج إلى مفتاح API خاص بك من مزوّد ذكاء اصطناعي. يحاسبك المزوّد على الاستخدام مباشرة.",
+      heroLead: "اسأل عن العلاقات، وتحقّق من التبعيات، واقترح تحسينات مباشرة بجوار النص.", reqView: "عرض حالة الطلب", reqAgain: "الطلب مجددًا", reqUpdate: "حفظ التبرير", reqUpdated: "حُفظ التبرير.", icoKeyOk: "المفتاح الخاص يعمل", icoKeyBad: "رُفض المفتاح الخاص", icoGiftOpen: "تمت الموافقة على حصة المشروع", icoGiftPending: "طُلبت حصة المشروع", icoGiftBad: "رُفضت حصة المشروع أو انتهت", icoLocalOk: "ذكاء اصطناعي محلي متاح", icoLocalBad: "لا يتوفر ذكاء اصطناعي محلي", noAccessHint: "لا يوجد وصول إلى الذكاء الاصطناعي. أعدّه هنا.", answeredBy: "إجابة من", icoKeyPart: "رُفض بعض المفاتيح الخاصة", localProbe: "تحقق محليًا", localFoundAway: "عُثر على خادم محلي في %s.", localOpen: "افتح الصفحة هناك", localNotFound: "لا يستجيب أي خادم محلي على %s.", secByok: "مفاتيح خاصة (BYOK)", storeLocal: "محفوظ في تخزين المتصفح لهذا الموقع", storeSession: "محفوظ لهذه الجلسة فقط", stNoKeys: "لا يوجد مفتاح خاص بعد.", secLocal: "أدوات CLI محلية للذكاء الاصطناعي (localhost)", localNoServer: "لا يوجد خادم محلي متاح. شغّل _src/serve.py.", localOnlyLocal: "متاح فقط عند تشغيل الصفحة محليًا عبر _src/serve.py.", back: "رجوع", tabStatus: "الحالة", tabAdd: "إضافة BYOK", stSources: "وصولك إلى الذكاء الاصطناعي للمناقشات", stKeyFailed: "رُفض آخر مرة", stWorks: "يعمل", stSignedVia: "تم تسجيل الدخول عبر %s", stNoSources: "لا يوجد وصول بعد. أضف مفتاحك الخاص أو اطلب حصة.", stLocalTitle: "ذكاء اصطناعي محلي", stProjExpired: "انتهت حصة المشروع في %s", hdrOk: "الوصول إلى الذكاء الاصطناعي يعمل", hdrPartial: "الوصول إلى الذكاء الاصطناعي متاح جزئيًا", hdrNone: "لا يوجد وصول عامل إلى الذكاء الاصطناعي", appleSetup: "تسجيل الدخول عبر Apple غير مُعدّ بعد.", stProjActive: "نشطة حتى %s", stProjNone: "لم تُطلب", dlgTitle: "وصولك إلى الذكاء الاصطناعي", tabByok: "BYOK", tabQuota: "طلب حصة", stDiscuss: "المناقشات", stBackend: "إجراءات الخادم", stBackendHint: "توليد التعليقات وتشغيل الأوامر", stAccount: "تسجيل الدخول", stGithub: "GitHub (التنسيق والملاحظات)", stNone: "غير متصل", stSignedOut: "لم يتم تسجيل الدخول", stViaAction: "عبر GitHub Action الخاص بالمسؤول", stGhOn: "الرمز محفوظ", stGhLater: "يُربط عند إرسال حزمة المراجعة", stProjUntil: "حصة المشروع حتى %s", stProjPending: "طُلبت حصة المشروع", recheck: "تحقق", hdrKi: "ذكاء اصطناعي", stViaMail: "رابط بالبريد", stLocal: "CLI محلي", apple: "المتابعة باستخدام Apple", projDenied: "لا يوجد وصول صالح إلى حصة المشروع.", projLabel: "حصة المشروع · Nexos", reqExpired: "انتهت صلاحية وصولك في %s.", github: "المتابعة باستخدام GitHub", reqLink: "ليس لديك مفتاح خاص؟ اطلب حصة من المشروع", reqTitle: "طلب حصة من المشروع", reqLead: "ليس لديك مفتاح خاص؟ اطلب من المسؤول تفعيل حصة المشروع لك لفترة محددة. تمر الطلبات عندها عبر المشروع، ولا يرى متصفحك أي مفتاح.", reqReason: "لماذا تحتاج إليها؟", reqReasonPh: "مثال: أراجع متطلبات COM لوحدة التحكم لدينا.", reqSend: "إرسال الطلب", reqPending: "طلبك بتاريخ %s بانتظار الموافقة.", reqWithdraw: "سحب الطلب", reqRejected: "رُفض طلبك.", reqGranted: "مفعّل حتى %s.", reqSignIn: "سجّل الدخول ليمكن ربط الموافقة بك.", reqDone: "أُرسل الطلب.", grantedToast: "فُعّلت حصة المشروع.", viaProject: "حصة المشروع", provPick: "من أي مزوّد هذا المفتاح؟", orSignIn: "أو سجّل الدخول", signInRequired: "سجّل الدخول أيضًا", optSignIn: "اختياري: تسجيل الدخول بحساب", welcomeByok: "بعد ذلك تربط مفتاح API الخاص بك من مزوّد ذكاء اصطناعي.", headerConnect: "ربط الذكاء الاصطناعي", geminiNote: "في المستوى المجاني يجوز لـ Google استخدام مدخلاتك لتحسين منتجاتها. للمحتوى السري استخدم مفتاحًا مع تفعيل الفوترة.", byokLead: "لذلك تحتاج إلى مفتاح API خاص بك من مزوّد ذكاء اصطناعي. يحاسبك المزوّد على الاستخدام مباشرة.",
       b1t: "مفتاحك", b1: "يبقى في هذا المتصفح ولا يُرسل إلا مباشرة إلى المزوّد، وليس إلينا أبدًا.",
       b2t: "تكاليفك", b2: "تدفع فقط مقابل ما تستخدمه لدى المزوّد. يوفّر Gemini مستوى مجانيًا محدودًا.",
       b3t: "فعّال", b3: "تصل الاقتراحات الجيدة إلى المنسقين بنقرة واحدة.",
@@ -333,7 +333,7 @@
     hi: {
       signIn: "साइन इन करें", account: "खाता", close: "बंद करें",
       heroTitle: "एआई के साथ स्पेसिफ़िकेशन पर चर्चा करें",
-      heroLead: "संबंधों के बारे में पूछें, निर्भरताएँ जाँचें और सुधार सुझाएँ – सीधे टेक्स्ट के बगल में।", reqView: "अनुरोध स्थिति देखें", reqAgain: "फिर से अनुरोध करें", reqUpdate: "औचित्य सहेजें", reqUpdated: "औचित्य सहेजा गया।", icoKeyOk: "अपनी कुंजी काम करती है", icoKeyBad: "अपनी कुंजी अस्वीकृत", icoGiftOpen: "प्रोजेक्ट कोटा स्वीकृत", icoGiftPending: "प्रोजेक्ट कोटा माँगा गया", icoGiftBad: "प्रोजेक्ट कोटा अस्वीकृत या समाप्त", icoLocalOk: "स्थानीय एआई उपलब्ध", icoLocalBad: "कोई स्थानीय एआई उपलब्ध नहीं", noAccessHint: "कोई एआई पहुँच नहीं। यहाँ सेट करें।", answeredBy: "उत्तर स्रोत", icoKeyPart: "कुछ अपनी कुंजियाँ अस्वीकृत", localProbe: "स्थानीय रूप से जाँचें", localFoundAway: "%s पर स्थानीय सर्वर मिला।", localOpen: "पेज वहाँ खोलें", localNotFound: "%s पर कोई स्थानीय सर्वर जवाब नहीं देता।", secByot: "अपनी कुंजियाँ (BYOT)", storeLocal: "इस वेबसाइट के ब्राउज़र स्टोरेज में सहेजी गई", storeSession: "केवल इस सत्र के लिए सहेजी गई", stNoKeys: "अभी कोई अपनी कुंजी नहीं।", secLocal: "स्थानीय एआई CLI (localhost)", localNoServer: "कोई स्थानीय सर्वर उपलब्ध नहीं। _src/serve.py चलाएँ।", localOnlyLocal: "केवल तब उपलब्ध जब पेज _src/serve.py से स्थानीय रूप से चले।", back: "वापस", tabStatus: "स्थिति", tabAdd: "BYOT जोड़ें", stSources: "चर्चाओं के लिए आपकी एआई पहुँच", stKeyFailed: "पिछली बार अस्वीकृत", stWorks: "काम करता है", stSignedVia: "%s से साइन इन", stNoSources: "अभी कोई पहुँच नहीं। अपनी कुंजी जोड़ें या कोटा माँगें।", stLocalTitle: "स्थानीय एआई", stProjExpired: "प्रोजेक्ट कोटा %s को समाप्त हुआ", hdrOk: "एआई पहुँच काम कर रही है", hdrPartial: "एआई पहुँच आंशिक रूप से उपलब्ध", hdrNone: "कोई काम करती एआई पहुँच नहीं", appleSetup: "Apple से साइन-इन अभी सेट नहीं है।", stProjActive: "%s तक सक्रिय", stProjNone: "माँगा नहीं गया", dlgTitle: "आपकी एआई पहुँच", tabByot: "BYOT", tabQuota: "कोटा माँगें", stDiscuss: "चर्चाएँ", stBackend: "बैकएंड क्रियाएँ", stBackendHint: "टिप्पणियाँ बनाना, प्रॉम्प्ट चलाना", stAccount: "साइन-इन", stGithub: "GitHub (क्यूरेशन, फ़ीडबैक)", stNone: "जुड़ा नहीं", stSignedOut: "साइन इन नहीं", stViaAction: "संचालक के GitHub Action के ज़रिए", stGhOn: "टोकन सहेजा गया", stGhLater: "समीक्षा पैकेज भेजते समय जुड़ता है", stProjUntil: "%s तक प्रोजेक्ट कोटा", stProjPending: "प्रोजेक्ट कोटा माँगा गया", recheck: "जाँचें", hdrKi: "एआई", stViaMail: "ईमेल लिंक", stLocal: "स्थानीय CLI", apple: "Apple के साथ जारी रखें", projDenied: "प्रोजेक्ट कोटा की कोई मान्य पहुँच नहीं है।", projLabel: "प्रोजेक्ट कोटा (Nexos)", reqExpired: "आपकी पहुँच %s को समाप्त हो गई।", github: "GitHub के साथ जारी रखें", reqLink: "अपनी कुंजी नहीं है? प्रोजेक्ट कोटा माँगें", reqTitle: "प्रोजेक्ट कोटा माँगें", reqLead: "अपनी कुंजी नहीं है? संचालक से कहें कि वे आपको कुछ समय के लिए प्रोजेक्ट कोटा दें। अनुरोध तब प्रोजेक्ट के ज़रिए चलते हैं; आपके ब्राउज़र को कोई कुंजी नहीं दिखती।", reqReason: "आपको इसकी ज़रूरत किसलिए है?", reqReasonPh: "उदाहरण: मैं हमारे ECU के लिए COM आवश्यकताएँ जाँच रहा/रही हूँ।", reqSend: "अनुरोध भेजें", reqPending: "%s का आपका अनुरोध मंज़ूरी की प्रतीक्षा में है।", reqWithdraw: "अनुरोध वापस लें", reqRejected: "आपका अनुरोध अस्वीकार कर दिया गया।", reqGranted: "%s तक सक्रिय।", reqSignIn: "साइन इन करें ताकि मंज़ूरी आपसे जोड़ी जा सके।", reqDone: "अनुरोध भेजा गया।", grantedToast: "प्रोजेक्ट कोटा सक्रिय हुआ।", viaProject: "प्रोजेक्ट कोटा", provPick: "यह कुंजी किस प्रदाता की है?", orSignIn: "या साइन इन करें", signInRequired: "साथ में साइन इन भी करें", optSignIn: "वैकल्पिक: खाते से साइन इन करें", welcomeByok: "इसके बाद आप किसी एआई प्रदाता की अपनी API कुंजी जोड़ते हैं।", headerConnect: "एआई जोड़ें", geminiNote: "मुफ़्त स्तर में Google आपके इनपुट का उपयोग अपने उत्पाद सुधारने के लिए कर सकता है। गोपनीय सामग्री के लिए बिलिंग वाली कुंजी इस्तेमाल करें।", byokLead: "इसके लिए आप किसी एआई प्रदाता की अपनी API कुंजी लाते हैं। प्रदाता उपयोग का बिल सीधे आपको देता है।",
+      heroLead: "संबंधों के बारे में पूछें, निर्भरताएँ जाँचें और सुधार सुझाएँ – सीधे टेक्स्ट के बगल में।", reqView: "अनुरोध स्थिति देखें", reqAgain: "फिर से अनुरोध करें", reqUpdate: "औचित्य सहेजें", reqUpdated: "औचित्य सहेजा गया।", icoKeyOk: "अपनी कुंजी काम करती है", icoKeyBad: "अपनी कुंजी अस्वीकृत", icoGiftOpen: "प्रोजेक्ट कोटा स्वीकृत", icoGiftPending: "प्रोजेक्ट कोटा माँगा गया", icoGiftBad: "प्रोजेक्ट कोटा अस्वीकृत या समाप्त", icoLocalOk: "स्थानीय एआई उपलब्ध", icoLocalBad: "कोई स्थानीय एआई उपलब्ध नहीं", noAccessHint: "कोई एआई पहुँच नहीं। यहाँ सेट करें।", answeredBy: "उत्तर स्रोत", icoKeyPart: "कुछ अपनी कुंजियाँ अस्वीकृत", localProbe: "स्थानीय रूप से जाँचें", localFoundAway: "%s पर स्थानीय सर्वर मिला।", localOpen: "पेज वहाँ खोलें", localNotFound: "%s पर कोई स्थानीय सर्वर जवाब नहीं देता।", secByok: "अपनी कुंजियाँ (BYOK)", storeLocal: "इस वेबसाइट के ब्राउज़र स्टोरेज में सहेजी गई", storeSession: "केवल इस सत्र के लिए सहेजी गई", stNoKeys: "अभी कोई अपनी कुंजी नहीं।", secLocal: "स्थानीय एआई CLI (localhost)", localNoServer: "कोई स्थानीय सर्वर उपलब्ध नहीं। _src/serve.py चलाएँ।", localOnlyLocal: "केवल तब उपलब्ध जब पेज _src/serve.py से स्थानीय रूप से चले।", back: "वापस", tabStatus: "स्थिति", tabAdd: "BYOK जोड़ें", stSources: "चर्चाओं के लिए आपकी एआई पहुँच", stKeyFailed: "पिछली बार अस्वीकृत", stWorks: "काम करता है", stSignedVia: "%s से साइन इन", stNoSources: "अभी कोई पहुँच नहीं। अपनी कुंजी जोड़ें या कोटा माँगें।", stLocalTitle: "स्थानीय एआई", stProjExpired: "प्रोजेक्ट कोटा %s को समाप्त हुआ", hdrOk: "एआई पहुँच काम कर रही है", hdrPartial: "एआई पहुँच आंशिक रूप से उपलब्ध", hdrNone: "कोई काम करती एआई पहुँच नहीं", appleSetup: "Apple से साइन-इन अभी सेट नहीं है।", stProjActive: "%s तक सक्रिय", stProjNone: "माँगा नहीं गया", dlgTitle: "आपकी एआई पहुँच", tabByok: "BYOK", tabQuota: "कोटा माँगें", stDiscuss: "चर्चाएँ", stBackend: "बैकएंड क्रियाएँ", stBackendHint: "टिप्पणियाँ बनाना, प्रॉम्प्ट चलाना", stAccount: "साइन-इन", stGithub: "GitHub (क्यूरेशन, फ़ीडबैक)", stNone: "जुड़ा नहीं", stSignedOut: "साइन इन नहीं", stViaAction: "संचालक के GitHub Action के ज़रिए", stGhOn: "टोकन सहेजा गया", stGhLater: "समीक्षा पैकेज भेजते समय जुड़ता है", stProjUntil: "%s तक प्रोजेक्ट कोटा", stProjPending: "प्रोजेक्ट कोटा माँगा गया", recheck: "जाँचें", hdrKi: "एआई", stViaMail: "ईमेल लिंक", stLocal: "स्थानीय CLI", apple: "Apple के साथ जारी रखें", projDenied: "प्रोजेक्ट कोटा की कोई मान्य पहुँच नहीं है।", projLabel: "प्रोजेक्ट कोटा · Nexos", reqExpired: "आपकी पहुँच %s को समाप्त हो गई।", github: "GitHub के साथ जारी रखें", reqLink: "अपनी कुंजी नहीं है? प्रोजेक्ट कोटा माँगें", reqTitle: "प्रोजेक्ट कोटा माँगें", reqLead: "अपनी कुंजी नहीं है? संचालक से कहें कि वे आपको कुछ समय के लिए प्रोजेक्ट कोटा दें। अनुरोध तब प्रोजेक्ट के ज़रिए चलते हैं; आपके ब्राउज़र को कोई कुंजी नहीं दिखती।", reqReason: "आपको इसकी ज़रूरत किसलिए है?", reqReasonPh: "उदाहरण: मैं हमारे ECU के लिए COM आवश्यकताएँ जाँच रहा/रही हूँ।", reqSend: "अनुरोध भेजें", reqPending: "%s का आपका अनुरोध मंज़ूरी की प्रतीक्षा में है।", reqWithdraw: "अनुरोध वापस लें", reqRejected: "आपका अनुरोध अस्वीकार कर दिया गया।", reqGranted: "%s तक सक्रिय।", reqSignIn: "साइन इन करें ताकि मंज़ूरी आपसे जोड़ी जा सके।", reqDone: "अनुरोध भेजा गया।", grantedToast: "प्रोजेक्ट कोटा सक्रिय हुआ।", viaProject: "प्रोजेक्ट कोटा", provPick: "यह कुंजी किस प्रदाता की है?", orSignIn: "या साइन इन करें", signInRequired: "साथ में साइन इन भी करें", optSignIn: "वैकल्पिक: खाते से साइन इन करें", welcomeByok: "इसके बाद आप किसी एआई प्रदाता की अपनी API कुंजी जोड़ते हैं।", headerConnect: "एआई जोड़ें", geminiNote: "मुफ़्त स्तर में Google आपके इनपुट का उपयोग अपने उत्पाद सुधारने के लिए कर सकता है। गोपनीय सामग्री के लिए बिलिंग वाली कुंजी इस्तेमाल करें।", byokLead: "इसके लिए आप किसी एआई प्रदाता की अपनी API कुंजी लाते हैं। प्रदाता उपयोग का बिल सीधे आपको देता है।",
       b1t: "आपकी कुंजी", b1: "यह इसी ब्राउज़र में रहती है और केवल सीधे प्रदाता तक जाती है, हम तक कभी नहीं।",
       b2t: "आपकी लागत", b2: "आप केवल उतना भुगतान करते हैं जितना प्रदाता के पास उपयोग करते हैं। Gemini सीमित मुफ़्त स्तर देता है।",
       b3t: "असरदार", b3: "अच्छे सुझाव एक क्लिक में क्यूरेटरों तक पहुँचते हैं।",
@@ -372,7 +372,7 @@
     ko: {
       signIn: "로그인", account: "계정", close: "닫기",
       heroTitle: "AI와 함께 사양을 토론하세요",
-      heroLead: "관계를 묻고, 의존성을 확인하고, 개선안을 제안하세요. 텍스트 바로 옆에서 할 수 있습니다.", reqView: "요청 상태 보기", reqAgain: "다시 요청", reqUpdate: "사유 저장", reqUpdated: "사유를 저장했습니다.", icoKeyOk: "본인 키 작동", icoKeyBad: "본인 키 거부됨", icoGiftOpen: "프로젝트 할당량 승인됨", icoGiftPending: "프로젝트 할당량 요청됨", icoGiftBad: "프로젝트 할당량 거절 또는 만료", icoLocalOk: "로컬 AI 사용 가능", icoLocalBad: "사용 가능한 로컬 AI 없음", noAccessHint: "AI 접근이 없습니다. 여기서 설정하세요.", answeredBy: "응답 출처", icoKeyPart: "일부 본인 키 거부됨", localProbe: "로컬 확인", localFoundAway: "%s에서 로컬 서버를 찾았습니다.", localOpen: "그곳에서 페이지 열기", localNotFound: "%s에서 응답하는 로컬 서버가 없습니다.", secByot: "본인 키 (BYOT)", storeLocal: "이 웹사이트의 브라우저 저장소에 저장됨", storeSession: "이 세션에만 저장됨", stNoKeys: "아직 본인 키가 없습니다.", secLocal: "로컬 AI CLI (localhost)", localNoServer: "로컬 서버에 연결할 수 없습니다. _src/serve.py를 실행하세요.", localOnlyLocal: "페이지를 _src/serve.py로 로컬 실행할 때만 사용할 수 있습니다.", back: "뒤로", tabStatus: "상태", tabAdd: "BYOT 추가", stSources: "토론용 AI 접근", stKeyFailed: "최근 거부됨", stWorks: "작동함", stSignedVia: "%s(으)로 로그인됨", stNoSources: "아직 접근 권한이 없습니다. 본인 키를 추가하거나 할당량을 요청하세요.", stLocalTitle: "로컬 AI", stProjExpired: "프로젝트 할당량이 %s에 만료됨", hdrOk: "AI 접근이 작동합니다", hdrPartial: "AI 접근이 일부만 가능합니다", hdrNone: "작동하는 AI 접근이 없습니다", appleSetup: "Apple 로그인이 아직 설정되지 않았습니다.", stProjActive: "%s까지 활성", stProjNone: "요청 안 함", dlgTitle: "내 AI 접근", tabByot: "BYOT", tabQuota: "할당량 요청", stDiscuss: "토론", stBackend: "백엔드 작업", stBackendHint: "주석 생성, 프롬프트 실행", stAccount: "로그인", stGithub: "GitHub (큐레이션, 피드백)", stNone: "연결 안 됨", stSignedOut: "로그인 안 됨", stViaAction: "운영자의 GitHub Action을 통해", stGhOn: "토큰 저장됨", stGhLater: "검토 패키지를 제출할 때 연결됨", stProjUntil: "%s까지 프로젝트 할당량", stProjPending: "프로젝트 할당량 요청됨", recheck: "확인", hdrKi: "AI", stViaMail: "이메일 링크", stLocal: "로컬 CLI", apple: "Apple로 계속하기", projDenied: "프로젝트 할당량에 대한 유효한 권한이 없습니다.", projLabel: "프로젝트 할당량 (Nexos)", reqExpired: "접근 권한이 %s에 만료되었습니다.", github: "GitHub 계정으로 계속하기", reqLink: "본인 키가 없나요? 프로젝트 할당량 요청", reqTitle: "프로젝트 할당량 요청", reqLead: "본인 키가 없나요? 운영자에게 일정 기간 프로젝트 할당량을 열어 달라고 요청하세요. 요청은 프로젝트를 통해 처리되며 브라우저에는 키가 전달되지 않습니다.", reqReason: "어디에 필요하신가요?", reqReasonPh: "예: 저희 ECU의 COM 요구사항을 검토하고 있습니다.", reqSend: "요청 보내기", reqPending: "%s에 보낸 요청이 승인을 기다리고 있습니다.", reqWithdraw: "요청 취소", reqRejected: "요청이 거절되었습니다.", reqGranted: "%s까지 활성화됨.", reqSignIn: "승인을 본인에게 연결할 수 있도록 로그인하세요.", reqDone: "요청을 보냈습니다.", grantedToast: "프로젝트 할당량이 활성화되었습니다.", viaProject: "프로젝트 할당량", provPick: "어느 제공업체의 키인가요?", orSignIn: "또는 로그인", signInRequired: "로그인도 해 주세요", optSignIn: "선택 사항: 계정으로 로그인", welcomeByok: "그다음 AI 제공업체의 본인 API 키를 연결합니다.", headerConnect: "AI 연결", geminiNote: "무료 등급에서는 Google이 입력 내용을 제품 개선에 사용할 수 있습니다. 기밀 내용에는 결제가 설정된 키를 사용하세요.", byokLead: "이를 위해 AI 제공업체의 본인 API 키가 필요합니다. 사용 요금은 제공업체가 직접 청구합니다.",
+      heroLead: "관계를 묻고, 의존성을 확인하고, 개선안을 제안하세요. 텍스트 바로 옆에서 할 수 있습니다.", reqView: "요청 상태 보기", reqAgain: "다시 요청", reqUpdate: "사유 저장", reqUpdated: "사유를 저장했습니다.", icoKeyOk: "본인 키 작동", icoKeyBad: "본인 키 거부됨", icoGiftOpen: "프로젝트 할당량 승인됨", icoGiftPending: "프로젝트 할당량 요청됨", icoGiftBad: "프로젝트 할당량 거절 또는 만료", icoLocalOk: "로컬 AI 사용 가능", icoLocalBad: "사용 가능한 로컬 AI 없음", noAccessHint: "AI 접근이 없습니다. 여기서 설정하세요.", answeredBy: "응답 출처", icoKeyPart: "일부 본인 키 거부됨", localProbe: "로컬 확인", localFoundAway: "%s에서 로컬 서버를 찾았습니다.", localOpen: "그곳에서 페이지 열기", localNotFound: "%s에서 응답하는 로컬 서버가 없습니다.", secByok: "본인 키 (BYOK)", storeLocal: "이 웹사이트의 브라우저 저장소에 저장됨", storeSession: "이 세션에만 저장됨", stNoKeys: "아직 본인 키가 없습니다.", secLocal: "로컬 AI CLI (localhost)", localNoServer: "로컬 서버에 연결할 수 없습니다. _src/serve.py를 실행하세요.", localOnlyLocal: "페이지를 _src/serve.py로 로컬 실행할 때만 사용할 수 있습니다.", back: "뒤로", tabStatus: "상태", tabAdd: "BYOK 추가", stSources: "토론용 AI 접근", stKeyFailed: "최근 거부됨", stWorks: "작동함", stSignedVia: "%s(으)로 로그인됨", stNoSources: "아직 접근 권한이 없습니다. 본인 키를 추가하거나 할당량을 요청하세요.", stLocalTitle: "로컬 AI", stProjExpired: "프로젝트 할당량이 %s에 만료됨", hdrOk: "AI 접근이 작동합니다", hdrPartial: "AI 접근이 일부만 가능합니다", hdrNone: "작동하는 AI 접근이 없습니다", appleSetup: "Apple 로그인이 아직 설정되지 않았습니다.", stProjActive: "%s까지 활성", stProjNone: "요청 안 함", dlgTitle: "내 AI 접근", tabByok: "BYOK", tabQuota: "할당량 요청", stDiscuss: "토론", stBackend: "백엔드 작업", stBackendHint: "주석 생성, 프롬프트 실행", stAccount: "로그인", stGithub: "GitHub (큐레이션, 피드백)", stNone: "연결 안 됨", stSignedOut: "로그인 안 됨", stViaAction: "운영자의 GitHub Action을 통해", stGhOn: "토큰 저장됨", stGhLater: "검토 패키지를 제출할 때 연결됨", stProjUntil: "%s까지 프로젝트 할당량", stProjPending: "프로젝트 할당량 요청됨", recheck: "확인", hdrKi: "AI", stViaMail: "이메일 링크", stLocal: "로컬 CLI", apple: "Apple로 계속하기", projDenied: "프로젝트 할당량에 대한 유효한 권한이 없습니다.", projLabel: "프로젝트 할당량 · Nexos", reqExpired: "접근 권한이 %s에 만료되었습니다.", github: "GitHub 계정으로 계속하기", reqLink: "본인 키가 없나요? 프로젝트 할당량 요청", reqTitle: "프로젝트 할당량 요청", reqLead: "본인 키가 없나요? 운영자에게 일정 기간 프로젝트 할당량을 열어 달라고 요청하세요. 요청은 프로젝트를 통해 처리되며 브라우저에는 키가 전달되지 않습니다.", reqReason: "어디에 필요하신가요?", reqReasonPh: "예: 저희 ECU의 COM 요구사항을 검토하고 있습니다.", reqSend: "요청 보내기", reqPending: "%s에 보낸 요청이 승인을 기다리고 있습니다.", reqWithdraw: "요청 취소", reqRejected: "요청이 거절되었습니다.", reqGranted: "%s까지 활성화됨.", reqSignIn: "승인을 본인에게 연결할 수 있도록 로그인하세요.", reqDone: "요청을 보냈습니다.", grantedToast: "프로젝트 할당량이 활성화되었습니다.", viaProject: "프로젝트 할당량", provPick: "어느 제공업체의 키인가요?", orSignIn: "또는 로그인", signInRequired: "로그인도 해 주세요", optSignIn: "선택 사항: 계정으로 로그인", welcomeByok: "그다음 AI 제공업체의 본인 API 키를 연결합니다.", headerConnect: "AI 연결", geminiNote: "무료 등급에서는 Google이 입력 내용을 제품 개선에 사용할 수 있습니다. 기밀 내용에는 결제가 설정된 키를 사용하세요.", byokLead: "이를 위해 AI 제공업체의 본인 API 키가 필요합니다. 사용 요금은 제공업체가 직접 청구합니다.",
       b1t: "본인 키", b1: "키는 이 브라우저에만 남고 제공업체로만 직접 전송되며, 저희에게는 절대 전송되지 않습니다.",
       b2t: "본인 비용", b2: "제공업체에서 사용한 만큼만 지불합니다. Gemini는 제한된 무료 등급을 제공합니다.",
       b3t: "효과적", b3: "좋은 제안은 클릭 한 번으로 큐레이터에게 전달됩니다.",
@@ -411,7 +411,7 @@
     zh: {
       signIn: "登录", account: "账号", close: "关闭",
       heroTitle: "与 AI 一起讨论规范",
-      heroLead: "就在正文旁边询问关联、检查依赖并提出改进建议。", reqView: "查看申请状态", reqAgain: "重新申请", reqUpdate: "保存理由", reqUpdated: "理由已保存。", icoKeyOk: "自有密钥可用", icoKeyBad: "自有密钥被拒绝", icoGiftOpen: "项目额度已批准", icoGiftPending: "项目额度已申请", icoGiftBad: "项目额度被拒绝或已过期", icoLocalOk: "本地 AI 可用", icoLocalBad: "没有可用的本地 AI", noAccessHint: "没有 AI 访问。在此设置。", answeredBy: "回答来自", icoKeyPart: "部分自有密钥被拒绝", localProbe: "本地检查", localFoundAway: "在 %s 找到本地服务器。", localOpen: "在那里打开页面", localNotFound: "%s 上没有本地服务器响应。", secByot: "自有密钥 (BYOT)", storeLocal: "保存在本网站的浏览器存储中", storeSession: "仅为本次会话保存", stNoKeys: "还没有自己的密钥。", secLocal: "本地 AI 命令行工具 (localhost)", localNoServer: "无法连接本地服务器。请启动 _src/serve.py。", localOnlyLocal: "仅当页面通过 _src/serve.py 在本地运行时可用。", back: "返回", tabStatus: "状态", tabAdd: "添加 BYOT", stSources: "你用于讨论的 AI 访问", stKeyFailed: "上次被拒绝", stWorks: "正常", stSignedVia: "已通过 %s 登录", stNoSources: "暂无访问。请添加自己的密钥或申请额度。", stLocalTitle: "本地 AI", stProjExpired: "项目额度已于 %s 过期", hdrOk: "AI 访问正常", hdrPartial: "AI 访问部分可用", hdrNone: "没有可用的 AI 访问", appleSetup: "使用 Apple 登录尚未配置。", stProjActive: "有效期至 %s", stProjNone: "未申请", dlgTitle: "你的 AI 访问", tabByot: "BYOT", tabQuota: "申请额度", stDiscuss: "讨论", stBackend: "后端操作", stBackendHint: "生成评注、运行提示词", stAccount: "登录", stGithub: "GitHub（审校、反馈）", stNone: "未连接", stSignedOut: "未登录", stViaAction: "通过运营者的 GitHub Action", stGhOn: "已保存令牌", stGhLater: "提交评审包时连接", stProjUntil: "项目额度有效期至 %s", stProjPending: "已申请项目额度", recheck: "检查", hdrKi: "AI", stViaMail: "邮件链接", stLocal: "本地 CLI", apple: "通过 Apple 继续", projDenied: "没有有效的项目额度权限。", projLabel: "项目额度（Nexos）", reqExpired: "你的权限已于 %s 过期。", github: "使用 GitHub 账号继续", reqLink: "没有自己的密钥？申请项目额度", reqTitle: "申请项目额度", reqLead: "没有自己的密钥？请运营者在一段时间内为你开通项目额度。请求将通过项目处理，你的浏览器不会接触任何密钥。", reqReason: "你需要它做什么？", reqReasonPh: "例如：我正在审查我们 ECU 的 COM 需求。", reqSend: "发送申请", reqPending: "你于 %s 提交的申请正在等待批准。", reqWithdraw: "撤回申请", reqRejected: "你的申请已被拒绝。", reqGranted: "已开通，有效期至 %s。", reqSignIn: "请登录，以便将批准分配给你。", reqDone: "申请已发送。", grantedToast: "项目额度已开通。", viaProject: "项目额度", provPick: "这个密钥来自哪个服务商？", orSignIn: "或者登录", signInRequired: "还需要登录", optSignIn: "可选：使用账号登录", welcomeByok: "接下来连接你自己的 AI 服务商 API 密钥。", headerConnect: "连接 AI", geminiNote: "在免费层级中，Google 可能会使用你的输入来改进其产品。处理机密内容时，请使用已开通计费的密钥。", byokLead: "为此你需要自备一个 AI 服务商的 API 密钥。用量费用由服务商直接向你收取。",
+      heroLead: "就在正文旁边询问关联、检查依赖并提出改进建议。", reqView: "查看申请状态", reqAgain: "重新申请", reqUpdate: "保存理由", reqUpdated: "理由已保存。", icoKeyOk: "自有密钥可用", icoKeyBad: "自有密钥被拒绝", icoGiftOpen: "项目额度已批准", icoGiftPending: "项目额度已申请", icoGiftBad: "项目额度被拒绝或已过期", icoLocalOk: "本地 AI 可用", icoLocalBad: "没有可用的本地 AI", noAccessHint: "没有 AI 访问。在此设置。", answeredBy: "回答来自", icoKeyPart: "部分自有密钥被拒绝", localProbe: "本地检查", localFoundAway: "在 %s 找到本地服务器。", localOpen: "在那里打开页面", localNotFound: "%s 上没有本地服务器响应。", secByok: "自有密钥 (BYOK)", storeLocal: "保存在本网站的浏览器存储中", storeSession: "仅为本次会话保存", stNoKeys: "还没有自己的密钥。", secLocal: "本地 AI 命令行工具 (localhost)", localNoServer: "无法连接本地服务器。请启动 _src/serve.py。", localOnlyLocal: "仅当页面通过 _src/serve.py 在本地运行时可用。", back: "返回", tabStatus: "状态", tabAdd: "添加 BYOK", stSources: "你用于讨论的 AI 访问", stKeyFailed: "上次被拒绝", stWorks: "正常", stSignedVia: "已通过 %s 登录", stNoSources: "暂无访问。请添加自己的密钥或申请额度。", stLocalTitle: "本地 AI", stProjExpired: "项目额度已于 %s 过期", hdrOk: "AI 访问正常", hdrPartial: "AI 访问部分可用", hdrNone: "没有可用的 AI 访问", appleSetup: "使用 Apple 登录尚未配置。", stProjActive: "有效期至 %s", stProjNone: "未申请", dlgTitle: "你的 AI 访问", tabByok: "BYOK", tabQuota: "申请额度", stDiscuss: "讨论", stBackend: "后端操作", stBackendHint: "生成评注、运行提示词", stAccount: "登录", stGithub: "GitHub（审校、反馈）", stNone: "未连接", stSignedOut: "未登录", stViaAction: "通过运营者的 GitHub Action", stGhOn: "已保存令牌", stGhLater: "提交评审包时连接", stProjUntil: "项目额度有效期至 %s", stProjPending: "已申请项目额度", recheck: "检查", hdrKi: "AI", stViaMail: "邮件链接", stLocal: "本地 CLI", apple: "通过 Apple 继续", projDenied: "没有有效的项目额度权限。", projLabel: "项目额度 · Nexos", reqExpired: "你的权限已于 %s 过期。", github: "使用 GitHub 账号继续", reqLink: "没有自己的密钥？申请项目额度", reqTitle: "申请项目额度", reqLead: "没有自己的密钥？请运营者在一段时间内为你开通项目额度。请求将通过项目处理，你的浏览器不会接触任何密钥。", reqReason: "你需要它做什么？", reqReasonPh: "例如：我正在审查我们 ECU 的 COM 需求。", reqSend: "发送申请", reqPending: "你于 %s 提交的申请正在等待批准。", reqWithdraw: "撤回申请", reqRejected: "你的申请已被拒绝。", reqGranted: "已开通，有效期至 %s。", reqSignIn: "请登录，以便将批准分配给你。", reqDone: "申请已发送。", grantedToast: "项目额度已开通。", viaProject: "项目额度", provPick: "这个密钥来自哪个服务商？", orSignIn: "或者登录", signInRequired: "还需要登录", optSignIn: "可选：使用账号登录", welcomeByok: "接下来连接你自己的 AI 服务商 API 密钥。", headerConnect: "连接 AI", geminiNote: "在免费层级中，Google 可能会使用你的输入来改进其产品。处理机密内容时，请使用已开通计费的密钥。", byokLead: "为此你需要自备一个 AI 服务商的 API 密钥。用量费用由服务商直接向你收取。",
       b1t: "你的密钥", b1: "密钥只保存在此浏览器中，只直接发送给服务商，绝不会发给我们。",
       b2t: "你的费用", b2: "你只需为在服务商处的实际用量付费。Gemini 提供有限的免费层级。",
       b3t: "有效", b3: "好的建议一键即可送达审校人员。",
@@ -450,7 +450,7 @@
     nl: {
       signIn: "Inloggen", account: "Account", close: "Sluiten",
       heroTitle: "Bespreek de specificatie met AI",
-      heroLead: "Vraag naar samenhang, controleer afhankelijkheden en stel verbeteringen voor – direct naast de tekst.", reqView: "Aanvraagstatus bekijken", reqAgain: "Opnieuw aanvragen", reqUpdate: "Motivering opslaan", reqUpdated: "Motivering opgeslagen.", icoKeyOk: "Eigen sleutel werkt", icoKeyBad: "Eigen sleutel geweigerd", icoGiftOpen: "Projectquotum goedgekeurd", icoGiftPending: "Projectquotum aangevraagd", icoGiftBad: "Projectquotum afgewezen of verlopen", icoLocalOk: "Lokale AI beschikbaar", icoLocalBad: "Geen lokale AI beschikbaar", noAccessHint: "Geen AI-toegang. Hier instellen.", answeredBy: "Antwoord van", icoKeyPart: "Sommige eigen sleutels geweigerd", localProbe: "Lokaal controleren", localFoundAway: "Lokale server gevonden op %s.", localOpen: "Pagina daar openen", localNotFound: "Op %s antwoordt geen lokale server.", secByot: "Eigen sleutels (BYOT)", storeLocal: "opgeslagen in de browseropslag van deze website", storeSession: "alleen voor deze sessie opgeslagen", stNoKeys: "Nog geen eigen sleutel.", secLocal: "Lokale AI-CLI's (localhost)", localNoServer: "Geen lokale server bereikbaar. Start _src/serve.py.", localOnlyLocal: "Alleen beschikbaar als de pagina lokaal via _src/serve.py draait.", back: "Terug", tabStatus: "Status", tabAdd: "BYOT toevoegen", stSources: "Jouw AI-toegang voor discussies", stKeyFailed: "laatst geweigerd", stWorks: "werkt", stSignedVia: "Ingelogd met %s", stNoSources: "Nog geen toegang. Voeg je eigen sleutel toe of vraag quotum aan.", stLocalTitle: "Lokale AI", stProjExpired: "Projectquotum verlopen op %s", hdrOk: "AI-toegang werkt", hdrPartial: "AI-toegang deels beschikbaar", hdrNone: "geen werkende AI-toegang", appleSetup: "Inloggen met Apple is nog niet ingericht.", stProjActive: "actief tot %s", stProjNone: "niet aangevraagd", dlgTitle: "Jouw AI-toegang", tabByot: "BYOT", tabQuota: "Quotum aanvragen", stDiscuss: "Discussies", stBackend: "Backend-acties", stBackendHint: "commentaar genereren, prompts uitvoeren", stAccount: "Inloggen", stGithub: "GitHub (curatie, feedback)", stNone: "niet verbonden", stSignedOut: "niet ingelogd", stViaAction: "via de GitHub Action van de beheerder", stGhOn: "token opgeslagen", stGhLater: "wordt verbonden bij het versturen van het reviewpakket", stProjUntil: "Projectquotum tot %s", stProjPending: "Projectquotum aangevraagd", recheck: "Controleren", hdrKi: "AI", stViaMail: "e-maillink", stLocal: "lokale CLI", apple: "Doorgaan met Apple", projDenied: "Geen geldige toegang tot het projectquotum.", projLabel: "Projectquotum (Nexos)", reqExpired: "Je toegang is verlopen op %s.", github: "Doorgaan met GitHub", reqLink: "Geen eigen sleutel? Projectquotum aanvragen", reqTitle: "Projectquotum aanvragen", reqLead: "Geen eigen sleutel? Vraag de beheerder je voor een bepaalde tijd vrij te geven voor het projectquotum. Verzoeken lopen dan via het project; je browser ziet nooit een sleutel.", reqReason: "Waarvoor heb je het nodig?", reqReasonPh: "Bijvoorbeeld: ik controleer de COM-eisen voor onze ECU.", reqSend: "Aanvraag versturen", reqPending: "Je aanvraag van %s wacht op goedkeuring.", reqWithdraw: "Aanvraag intrekken", reqRejected: "Je aanvraag is afgewezen.", reqGranted: "Vrijgegeven tot %s.", reqSignIn: "Log in zodat de vrijgave aan jou gekoppeld kan worden.", reqDone: "Aanvraag verstuurd.", grantedToast: "Projectquotum vrijgegeven.", viaProject: "projectquotum", provPick: "Van welke aanbieder is de sleutel?", orSignIn: "Of log in", signInRequired: "Log ook in", optSignIn: "Optioneel: inloggen met een account", welcomeByok: "Daarna koppel je je eigen API-sleutel van een AI-aanbieder.", headerConnect: "AI koppelen", geminiNote: "In het gratis niveau mag Google je invoer gebruiken om zijn producten te verbeteren. Gebruik voor vertrouwelijke inhoud een sleutel met facturering.", byokLead: "Daarvoor neem je je eigen API-sleutel van een AI-aanbieder mee. De aanbieder rekent het gebruik rechtstreeks met je af.",
+      heroLead: "Vraag naar samenhang, controleer afhankelijkheden en stel verbeteringen voor – direct naast de tekst.", reqView: "Aanvraagstatus bekijken", reqAgain: "Opnieuw aanvragen", reqUpdate: "Motivering opslaan", reqUpdated: "Motivering opgeslagen.", icoKeyOk: "Eigen sleutel werkt", icoKeyBad: "Eigen sleutel geweigerd", icoGiftOpen: "Projectquotum goedgekeurd", icoGiftPending: "Projectquotum aangevraagd", icoGiftBad: "Projectquotum afgewezen of verlopen", icoLocalOk: "Lokale AI beschikbaar", icoLocalBad: "Geen lokale AI beschikbaar", noAccessHint: "Geen AI-toegang. Hier instellen.", answeredBy: "Antwoord van", icoKeyPart: "Sommige eigen sleutels geweigerd", localProbe: "Lokaal controleren", localFoundAway: "Lokale server gevonden op %s.", localOpen: "Pagina daar openen", localNotFound: "Op %s antwoordt geen lokale server.", secByok: "Eigen sleutels (BYOK)", storeLocal: "opgeslagen in de browseropslag van deze website", storeSession: "alleen voor deze sessie opgeslagen", stNoKeys: "Nog geen eigen sleutel.", secLocal: "Lokale AI-CLI's (localhost)", localNoServer: "Geen lokale server bereikbaar. Start _src/serve.py.", localOnlyLocal: "Alleen beschikbaar als de pagina lokaal via _src/serve.py draait.", back: "Terug", tabStatus: "Status", tabAdd: "BYOK toevoegen", stSources: "Jouw AI-toegang voor discussies", stKeyFailed: "laatst geweigerd", stWorks: "werkt", stSignedVia: "Ingelogd met %s", stNoSources: "Nog geen toegang. Voeg je eigen sleutel toe of vraag quotum aan.", stLocalTitle: "Lokale AI", stProjExpired: "Projectquotum verlopen op %s", hdrOk: "AI-toegang werkt", hdrPartial: "AI-toegang deels beschikbaar", hdrNone: "geen werkende AI-toegang", appleSetup: "Inloggen met Apple is nog niet ingericht.", stProjActive: "actief tot %s", stProjNone: "niet aangevraagd", dlgTitle: "Jouw AI-toegang", tabByok: "BYOK", tabQuota: "Quotum aanvragen", stDiscuss: "Discussies", stBackend: "Backend-acties", stBackendHint: "commentaar genereren, prompts uitvoeren", stAccount: "Inloggen", stGithub: "GitHub (curatie, feedback)", stNone: "niet verbonden", stSignedOut: "niet ingelogd", stViaAction: "via de GitHub Action van de beheerder", stGhOn: "token opgeslagen", stGhLater: "wordt verbonden bij het versturen van het reviewpakket", stProjUntil: "Projectquotum tot %s", stProjPending: "Projectquotum aangevraagd", recheck: "Controleren", hdrKi: "AI", stViaMail: "e-maillink", stLocal: "lokale CLI", apple: "Doorgaan met Apple", projDenied: "Geen geldige toegang tot het projectquotum.", projLabel: "Projectquotum · Nexos", reqExpired: "Je toegang is verlopen op %s.", github: "Doorgaan met GitHub", reqLink: "Geen eigen sleutel? Projectquotum aanvragen", reqTitle: "Projectquotum aanvragen", reqLead: "Geen eigen sleutel? Vraag de beheerder je voor een bepaalde tijd vrij te geven voor het projectquotum. Verzoeken lopen dan via het project; je browser ziet nooit een sleutel.", reqReason: "Waarvoor heb je het nodig?", reqReasonPh: "Bijvoorbeeld: ik controleer de COM-eisen voor onze ECU.", reqSend: "Aanvraag versturen", reqPending: "Je aanvraag van %s wacht op goedkeuring.", reqWithdraw: "Aanvraag intrekken", reqRejected: "Je aanvraag is afgewezen.", reqGranted: "Vrijgegeven tot %s.", reqSignIn: "Log in zodat de vrijgave aan jou gekoppeld kan worden.", reqDone: "Aanvraag verstuurd.", grantedToast: "Projectquotum vrijgegeven.", viaProject: "projectquotum", provPick: "Van welke aanbieder is de sleutel?", orSignIn: "Of log in", signInRequired: "Log ook in", optSignIn: "Optioneel: inloggen met een account", welcomeByok: "Daarna koppel je je eigen API-sleutel van een AI-aanbieder.", headerConnect: "AI koppelen", geminiNote: "In het gratis niveau mag Google je invoer gebruiken om zijn producten te verbeteren. Gebruik voor vertrouwelijke inhoud een sleutel met facturering.", byokLead: "Daarvoor neem je je eigen API-sleutel van een AI-aanbieder mee. De aanbieder rekent het gebruik rechtstreeks met je af.",
       b1t: "Jouw sleutel", b1: "Hij blijft in deze browser en gaat alleen rechtstreeks naar de aanbieder, nooit naar ons.",
       b2t: "Jouw kosten", b2: "Je betaalt alleen wat je bij de aanbieder gebruikt. Gemini heeft een beperkt gratis niveau.",
       b3t: "Effectief", b3: "Goede voorstellen bereiken de curatoren met één klik.",
@@ -505,6 +505,87 @@
     nl: { prioUp: "Prioriteit verhogen", prioDown: "Prioriteit verlagen", prioHint: "Volgorde = prioriteit. Sleep of gebruik de pijlen.", admBtn: "Beheer", viaLocalhost: "via %s" }
   };
   Object.keys(L2).forEach(function (k) { if (L[k]) Object.assign(L[k], L2[k]); });
+  // Eigene Endpunkte, Verbinden per Kartenklick, Vorschau im Kurationsfenster (fold.js über AiAccess.text).
+  var L3 = {
+    de: { keyFirst: "Bitte zuerst den API-Schlüssel eingeben. Enter verbindet dann mit %s.", epLabel: "Weiterer Endpunkt (OpenAI-kompatibel)", epHint: "Basis-URL eingeben und Enter drücken. Der Endpunkt muss Anfragen aus dem Browser (CORS) erlauben.", epBad: "Bitte eine https://-Adresse angeben (http:// nur für localhost oder 127.0.0.1).", epCors: "%s ist nicht erreichbar oder erlaubt keine Anfragen aus dem Browser (CORS). Der Endpunkt muss Anfragen von dieser Seite zulassen.", epNoJson: "%s hat keine JSON-Antwort geliefert. Stimmt die Basis-URL (meist mit /v1 am Ende)?", epTag: "eigener Endpunkt", pvLocalOnly: "Die lokale Vorschau läuft nur mit _src/serve.py. Wähle ein Modell mit eigenem Schlüssel.", pvNotJson: "Der Server hat keine JSON-Antwort geliefert.", pvEmpty: "Das Modell hat keinen Text geliefert.", pvNoModels: "Kein KI-Modell verfügbar" },
+    en: { keyFirst: "Enter your API key first. Enter then connects to %s.", epLabel: "Other endpoint (OpenAI-compatible)", epHint: "Enter the base URL and press Enter. The endpoint must allow requests from the browser (CORS).", epBad: "Please enter an https:// address (http:// only for localhost or 127.0.0.1).", epCors: "%s cannot be reached or does not allow requests from the browser (CORS). The endpoint must accept requests from this site.", epNoJson: "%s did not return JSON. Is the base URL right (usually ending in /v1)?", epTag: "own endpoint", pvLocalOnly: "The local preview only runs with _src/serve.py. Choose a model with your own key.", pvNotJson: "The server did not return a JSON response.", pvEmpty: "The model returned no text.", pvNoModels: "No AI model available" },
+    es: { keyFirst: "Introduce primero tu clave de API. Después, Intro conecta con %s.", epLabel: "Otro endpoint (compatible con OpenAI)", epHint: "Introduce la URL base y pulsa Intro. El endpoint debe permitir solicitudes desde el navegador (CORS).", epBad: "Indica una dirección https:// (http:// solo para localhost o 127.0.0.1).", epCors: "%s no está accesible o no permite solicitudes desde el navegador (CORS). El endpoint debe aceptar solicitudes de este sitio.", epNoJson: "%s no ha devuelto JSON. ¿Es correcta la URL base (normalmente termina en /v1)?", epTag: "endpoint propio", pvLocalOnly: "La vista previa local solo funciona con _src/serve.py. Elige un modelo con tu propia clave.", pvNotJson: "El servidor no ha devuelto una respuesta JSON.", pvEmpty: "El modelo no ha devuelto texto.", pvNoModels: "Ningún modelo de IA disponible" },
+    pt: { keyFirst: "Digite primeiro sua chave de API. Depois, Enter conecta com %s.", epLabel: "Outro endpoint (compatível com OpenAI)", epHint: "Digite a URL base e pressione Enter. O endpoint precisa permitir solicitações do navegador (CORS).", epBad: "Informe um endereço https:// (http:// só para localhost ou 127.0.0.1).", epCors: "%s não está acessível ou não permite solicitações do navegador (CORS). O endpoint precisa aceitar solicitações deste site.", epNoJson: "%s não retornou JSON. A URL base está correta (geralmente termina em /v1)?", epTag: "endpoint próprio", pvLocalOnly: "A prévia local só funciona com _src/serve.py. Escolha um modelo com sua própria chave.", pvNotJson: "O servidor não retornou uma resposta JSON.", pvEmpty: "O modelo não retornou texto.", pvNoModels: "Nenhum modelo de IA disponível" },
+    fr: { keyFirst: "Saisissez d'abord votre clé API. Entrée connecte ensuite à %s.", epLabel: "Autre point de terminaison (compatible OpenAI)", epHint: "Saisissez l'URL de base et appuyez sur Entrée. Le point de terminaison doit autoriser les requêtes du navigateur (CORS).", epBad: "Indiquez une adresse https:// (http:// uniquement pour localhost ou 127.0.0.1).", epCors: "%s est injoignable ou n'autorise pas les requêtes du navigateur (CORS). Le point de terminaison doit accepter les requêtes de ce site.", epNoJson: "%s n'a pas renvoyé de JSON. L'URL de base est-elle correcte (généralement terminée par /v1) ?", epTag: "point de terminaison personnel", pvLocalOnly: "L'aperçu local ne fonctionne qu'avec _src/serve.py. Choisissez un modèle avec votre propre clé.", pvNotJson: "Le serveur n'a pas renvoyé de réponse JSON.", pvEmpty: "Le modèle n'a renvoyé aucun texte.", pvNoModels: "Aucun modèle d'IA disponible" },
+    ru: { keyFirst: "Сначала введите API-ключ. Затем Enter подключит %s.", epLabel: "Другой эндпоинт (совместимый с OpenAI)", epHint: "Введите базовый URL и нажмите Enter. Эндпоинт должен разрешать запросы из браузера (CORS).", epBad: "Укажите адрес https:// (http:// только для localhost или 127.0.0.1).", epCors: "%s недоступен или не разрешает запросы из браузера (CORS). Эндпоинт должен принимать запросы с этого сайта.", epNoJson: "%s не вернул JSON. Верен ли базовый URL (обычно оканчивается на /v1)?", epTag: "собственный эндпоинт", pvLocalOnly: "Локальный предпросмотр работает только с _src/serve.py. Выберите модель с собственным ключом.", pvNotJson: "Сервер не вернул ответ в формате JSON.", pvEmpty: "Модель не вернула текст.", pvNoModels: "Нет доступной модели ИИ" },
+    ar: { keyFirst: "أدخل مفتاح API أولًا، ثم يتصل Enter بـ %s.", epLabel: "نقطة نهاية أخرى (متوافقة مع OpenAI)", epHint: "أدخل عنوان URL الأساسي واضغط Enter. يجب أن تسمح نقطة النهاية بالطلبات من المتصفح (CORS).", epBad: "أدخل عنوانًا يبدأ بـ https:// (يُسمح بـ http:// فقط لـ localhost أو 127.0.0.1).", epCors: "لا يمكن الوصول إلى %s أو أنه لا يسمح بالطلبات من المتصفح (CORS). يجب أن تقبل نقطة النهاية الطلبات من هذا الموقع.", epNoJson: "لم يُرجع %s استجابة JSON. هل عنوان URL الأساسي صحيح (ينتهي عادةً بـ /v1)؟", epTag: "نقطة نهاية خاصة", pvLocalOnly: "المعاينة المحلية تعمل فقط مع _src/serve.py. اختر نموذجًا بمفتاحك الخاص.", pvNotJson: "لم يُرجع الخادم استجابة JSON.", pvEmpty: "لم يُرجع النموذج أي نص.", pvNoModels: "لا يتوفر نموذج ذكاء اصطناعي" },
+    hi: { keyFirst: "पहले अपनी API कुंजी दर्ज करें। फिर Enter %s से जोड़ देगा।", epLabel: "अन्य एंडपॉइंट (OpenAI-संगत)", epHint: "बेस URL दर्ज करें और Enter दबाएँ। एंडपॉइंट को ब्राउज़र से आने वाले अनुरोध (CORS) स्वीकार करने चाहिए।", epBad: "कृपया https:// पता दें (http:// केवल localhost या 127.0.0.1 के लिए)।", epCors: "%s तक पहुँचा नहीं जा सकता या वह ब्राउज़र से अनुरोध (CORS) की अनुमति नहीं देता। एंडपॉइंट को इस साइट से अनुरोध स्वीकार करने चाहिए।", epNoJson: "%s ने JSON नहीं लौटाया। क्या बेस URL सही है (आमतौर पर /v1 पर खत्म होता है)?", epTag: "अपना एंडपॉइंट", pvLocalOnly: "स्थानीय पूर्वावलोकन केवल _src/serve.py के साथ चलता है। अपनी कुंजी वाला मॉडल चुनें।", pvNotJson: "सर्वर ने JSON उत्तर नहीं लौटाया।", pvEmpty: "मॉडल ने कोई टेक्स्ट नहीं लौटाया।", pvNoModels: "कोई AI मॉडल उपलब्ध नहीं" },
+    ko: { keyFirst: "먼저 API 키를 입력하세요. 그런 다음 Enter를 누르면 %s에 연결됩니다.", epLabel: "다른 엔드포인트(OpenAI 호환)", epHint: "기본 URL을 입력하고 Enter를 누르세요. 엔드포인트는 브라우저 요청(CORS)을 허용해야 합니다.", epBad: "https:// 주소를 입력하세요(http://는 localhost 또는 127.0.0.1만 허용).", epCors: "%s에 연결할 수 없거나 브라우저 요청(CORS)을 허용하지 않습니다. 엔드포인트가 이 사이트의 요청을 허용해야 합니다.", epNoJson: "%s이(가) JSON을 반환하지 않았습니다. 기본 URL이 맞나요(보통 /v1로 끝남)?", epTag: "자체 엔드포인트", pvLocalOnly: "로컬 미리보기는 _src/serve.py에서만 동작합니다. 본인 키가 있는 모델을 선택하세요.", pvNotJson: "서버가 JSON 응답을 반환하지 않았습니다.", pvEmpty: "모델이 텍스트를 반환하지 않았습니다.", pvNoModels: "사용 가능한 AI 모델 없음" },
+    zh: { keyFirst: "请先输入 API 密钥，然后按 Enter 连接 %s。", epLabel: "其他端点（兼容 OpenAI）", epHint: "输入基础 URL 并按 Enter。该端点必须允许来自浏览器的请求（CORS）。", epBad: "请填写 https:// 地址（http:// 仅限 localhost 或 127.0.0.1）。", epCors: "无法访问 %s，或它不允许来自浏览器的请求（CORS）。该端点必须接受来自本网站的请求。", epNoJson: "%s 未返回 JSON。基础 URL 是否正确（通常以 /v1 结尾）？", epTag: "自有端点", pvLocalOnly: "本地预览只能配合 _src/serve.py 使用。请选择使用自有密钥的模型。", pvNotJson: "服务器未返回 JSON 响应。", pvEmpty: "模型没有返回文本。", pvNoModels: "没有可用的 AI 模型" },
+    nl: { keyFirst: "Vul eerst je API-sleutel in. Enter koppelt daarna met %s.", epLabel: "Ander endpoint (OpenAI-compatibel)", epHint: "Vul de basis-URL in en druk op Enter. Het endpoint moet verzoeken vanuit de browser (CORS) toestaan.", epBad: "Geef een https://-adres op (http:// alleen voor localhost of 127.0.0.1).", epCors: "%s is niet bereikbaar of staat geen verzoeken vanuit de browser toe (CORS). Het endpoint moet verzoeken van deze site accepteren.", epNoJson: "%s gaf geen JSON terug. Klopt de basis-URL (meestal eindigend op /v1)?", epTag: "eigen endpoint", pvLocalOnly: "De lokale voorvertoning werkt alleen met _src/serve.py. Kies een model met je eigen sleutel.", pvNotJson: "De server gaf geen JSON-antwoord.", pvEmpty: "Het model gaf geen tekst terug.", pvNoModels: "Geen AI-model beschikbaar" }
+  };
+  Object.keys(L3).forEach(function (k) { if (L[k]) Object.assign(L[k], L3[k]); });
+  // Verwaltung: als wer man handelt und wer anfragt (mehrere Verwalter, mehrere eigene Konten).
+  var L4 = {
+    de: { admActing: "Du verwaltest als: %s", admActingHint: "Entscheidungen werden unter dieser Anmeldung gespeichert. Weitere Verwalter sehen dieselben Anfragen.", admSelf: "(du selbst)", admReqBy: "Angefragt von", admGrantedBy: "freigegeben von %s", admGrantedBySelf: "von dir freigegeben" },
+    en: { admActing: "You are managing as: %s", admActingHint: "Decisions are recorded under this sign-in. Other admins see the same requests.", admSelf: "(you)", admReqBy: "Requested by", admGrantedBy: "approved by %s", admGrantedBySelf: "approved by you" },
+    es: { admActing: "Administras como: %s", admActingHint: "Las decisiones se guardan con este inicio de sesión. Los demás administradores ven las mismas solicitudes.", admSelf: "(tú)", admReqBy: "Solicitado por", admGrantedBy: "aprobado por %s", admGrantedBySelf: "aprobado por ti" },
+    pt: { admActing: "Você administra como: %s", admActingHint: "As decisões são registradas com este login. Outros administradores veem as mesmas solicitações.", admSelf: "(você)", admReqBy: "Solicitado por", admGrantedBy: "aprovado por %s", admGrantedBySelf: "aprovado por você" },
+    fr: { admActing: "Vous administrez en tant que : %s", admActingHint: "Les décisions sont enregistrées sous cette connexion. Les autres administrateurs voient les mêmes demandes.", admSelf: "(vous)", admReqBy: "Demandé par", admGrantedBy: "approuvé par %s", admGrantedBySelf: "approuvé par vous" },
+    ru: { admActing: "Вы управляете как: %s", admActingHint: "Решения сохраняются под этим входом. Другие администраторы видят те же запросы.", admSelf: "(вы)", admReqBy: "Запросил(а)", admGrantedBy: "одобрено: %s", admGrantedBySelf: "одобрено вами" },
+    ar: { admActing: "أنت تدير بصفتك: %s", admActingHint: "تُحفظ القرارات باسم تسجيل الدخول هذا. يرى المسؤولون الآخرون الطلبات نفسها.", admSelf: "(أنت)", admReqBy: "مقدَّم من", admGrantedBy: "وافق عليه %s", admGrantedBySelf: "وافقتَ عليه أنت" },
+    hi: { admActing: "आप इस खाते से प्रबंधन कर रहे हैं: %s", admActingHint: "निर्णय इसी साइन-इन के साथ सहेजे जाते हैं। अन्य प्रबंधक वही अनुरोध देखते हैं।", admSelf: "(आप स्वयं)", admReqBy: "अनुरोधकर्ता", admGrantedBy: "%s द्वारा स्वीकृत", admGrantedBySelf: "आपके द्वारा स्वीकृत" },
+    ko: { admActing: "관리 계정: %s", admActingHint: "결정은 이 로그인으로 기록됩니다. 다른 관리자도 같은 요청을 봅니다.", admSelf: "(본인)", admReqBy: "요청자", admGrantedBy: "승인자: %s", admGrantedBySelf: "내가 승인함" },
+    zh: { admActing: "你当前的管理身份：%s", admActingHint: "决定将以此登录身份记录。其他管理员会看到相同的申请。", admSelf: "（你自己）", admReqBy: "申请人", admGrantedBy: "批准人：%s", admGrantedBySelf: "由你批准" },
+    nl: { admActing: "Je beheert als: %s", admActingHint: "Beslissingen worden onder deze aanmelding vastgelegd. Andere beheerders zien dezelfde aanvragen.", admSelf: "(jijzelf)", admReqBy: "Aangevraagd door", admGrantedBy: "goedgekeurd door %s", admGrantedBySelf: "door jou goedgekeurd" }
+  };
+  Object.keys(L4).forEach(function (k) { if (L[k]) Object.assign(L[k], L4[k]); });
+  // Projektkontingent über das Gemini-Abo des Verwalters (agy auf einem GitHub-Läufer); fehlende Sprachen nehmen Englisch.
+  var L5 = {
+    de: { aboLabel: "Projektkontingent · Gemini-Abo", aboSending: "Auftrag wird gesendet …",
+          aboWait: "Wartet auf Läufer … %s", aboWaitBusy: "Wartet auf Läufer – er beantwortet gerade einen anderen Auftrag … %s",
+          aboWaitStart: "Wartet auf Läufer – er wird gestartet (etwa 1–2 Minuten) … %s",
+          aboWaitFailed: "Wartet auf Läufer – der Start ist fehlgeschlagen (GitHub HTTP %d) … %s",
+          aboWaitNone: "Wartet auf Läufer – kein automatischer Start eingerichtet … %s", aboThinking: "Modell denkt … %s",
+          aboErrExhausted: "Das Gemini-Abo ist auf beiden Profilen (leo, neo) gerade ausgeschöpft. Wieder frei in etwa %s.",
+          aboErrLogin: "Das Gemini-Abo ist auf dem Läufer nicht angemeldet (leo, neo). Der Verwalter muss die Anmeldung erneuern.",
+          aboErrNoRunner: "Es hat sich kein Läufer gemeldet; der Auftrag wurde nach 6 Minuten beendet. Bitte später erneut versuchen.",
+          aboErrTimeout: "Keine Antwort vom Gemini-Abo innerhalb von 12 Minuten. Der Auftrag wurde abgebrochen.",
+          aboErrDenied: "Das Modell wollte ein gesperrtes Werkzeug benutzen und hat keine Antwort geliefert. Bitte die Frage anders stellen.",
+          aboErrModel: "Dieses Modell ist für das Gemini-Abo nicht freigegeben oder wird von agy nicht angeboten.",
+          aboOnlyOwn: "Das Gemini-Abo ist nur für die eigenen Konten des Verwalters vorgesehen.",
+          aboErrGrant: "Keine gültige Freigabe für das Gemini-Abo.", aboErrTooLarge: "Der Prompt ist für das Gemini-Abo zu lang (höchstens etwa 120 KB).",
+          aboErrOff: "Das Gemini-Abo ist am Dienst noch nicht eingerichtet.",
+          aboErrKey: "Dienst und Läufer haben verschiedene Schlüssel (ABO_RELAY_KEY). Der Verwalter muss sie angleichen.",
+          aboErrCancelled: "Der Auftrag wurde abgebrochen.", aboErrOther: "Gemini-Abo: Fehler %s.",
+          admBackend: "Backend", admBackendNexos: "Nexos (Projektschlüssel)", admBackendAbo: "Gemini-Abo (leo/neo)",
+          admBackendAboOff: "Gemini-Abo (leo/neo) – nur für eigene Konten", admModelSel: "Modell",
+          admModelAllNexos: "Alle Nexos-Modelle", admModelAllAbo: "Alle Gemini-Modelle des Abos", admModelAll: "alle Modelle",
+          admAboHint: "Das Gemini-Abo läuft über agy auf einem GitHub-Läufer (Profile leo, neo). Antworten dauern 1–3 Minuten länger.",
+          stAboActive: "aktiv bis %s · Gemini-Abo über agy (leo/neo)" },
+    en: { aboLabel: "Project quota · Gemini subscription", aboSending: "Sending the job …",
+          aboWait: "Waiting for the runner … %s", aboWaitBusy: "Waiting for the runner – it is answering another job … %s",
+          aboWaitStart: "Waiting for the runner – it is starting (about 1–2 minutes) … %s",
+          aboWaitFailed: "Waiting for the runner – starting it failed (GitHub HTTP %d) … %s",
+          aboWaitNone: "Waiting for the runner – no automatic start configured … %s", aboThinking: "Model is thinking … %s",
+          aboErrExhausted: "The Gemini subscription is exhausted on both profiles (leo, neo). Available again in about %s.",
+          aboErrLogin: "The Gemini subscription is not signed in on the runner (leo, neo). The operator has to renew the sign-in.",
+          aboErrNoRunner: "No runner reported in; the job was ended after 6 minutes. Please try again later.",
+          aboErrTimeout: "No answer from the Gemini subscription within 12 minutes. The job was cancelled.",
+          aboErrDenied: "The model tried to use a blocked tool and returned no answer. Please rephrase the question.",
+          aboErrModel: "This model is not granted for the Gemini subscription or not offered by agy.",
+          aboOnlyOwn: "The Gemini subscription is reserved for the operator's own accounts.",
+          aboErrGrant: "No valid grant for the Gemini subscription.", aboErrTooLarge: "The prompt is too long for the Gemini subscription (at most about 120 KB).",
+          aboErrOff: "The Gemini subscription is not set up on the service yet.",
+          aboErrKey: "Service and runner use different keys (ABO_RELAY_KEY). The operator has to align them.",
+          aboErrCancelled: "The job was cancelled.", aboErrOther: "Gemini subscription: error %s.",
+          admBackend: "Backend", admBackendNexos: "Nexos (project key)", admBackendAbo: "Gemini subscription (leo/neo)",
+          admBackendAboOff: "Gemini subscription (leo/neo) – own accounts only", admModelSel: "Model",
+          admModelAllNexos: "All Nexos models", admModelAllAbo: "All Gemini models of the subscription", admModelAll: "all models",
+          admAboHint: "The Gemini subscription runs through agy on a GitHub runner (profiles leo, neo). Answers take 1–3 minutes longer.",
+          stAboActive: "active until %s · Gemini subscription via agy (leo/neo)" },
+    es: { aboLabel: "Cuota del proyecto · suscripción Gemini" }, pt: { aboLabel: "Cota do projeto · assinatura Gemini" },
+    fr: { aboLabel: "Quota du projet · abonnement Gemini" }, ru: { aboLabel: "Квота проекта · подписка Gemini" },
+    ar: { aboLabel: "حصة المشروع · اشتراك Gemini" }, hi: { aboLabel: "प्रोजेक्ट कोटा · Gemini सदस्यता" },
+    ko: { aboLabel: "프로젝트 할당량 · Gemini 구독" }, zh: { aboLabel: "项目额度 · Gemini 订阅" },
+    nl: { aboLabel: "Projectquotum · Gemini-abonnement" }
+  };
+  Object.keys(L5).forEach(function (k) { if (L[k]) Object.assign(L[k], L5[k]); });
   function tr(key, arg) {
     var d = L[lang()] || L.en;
     var s = d[key] != null ? d[key] : (L.en[key] != null ? L.en[key] : key);
@@ -672,6 +753,18 @@
     err.status = res.status;
     return err;
   }
+  // JSON sicher lesen: Eine HTML-Seite (falsche Basis-URL, 404 einer statischen Seite) wird zu einem
+  // verständlichen Fehler statt zu Safaris „The string did not match the expected pattern.“
+  async function readJson(res) {
+    var text = await res.text();
+    try { return JSON.parse(text); }
+    catch (e) {
+      var err = new Error("HTTP " + res.status + " – " + tr("pvNotJson"));
+      err.notJson = true;
+      err.httpStatus = res.status;
+      throw err;
+    }
+  }
   function versionKey(id) {
     return (String(id).match(/\d+(?:\.\d+)?/g) || []).map(Number);
   }
@@ -693,12 +786,13 @@
       list: async function (key) {
         var res = await fetch(base + "/models", { headers: { Authorization: "Bearer " + key } });
         if (!res.ok) throw await failFrom(res);
-        var j = await res.json();
+        var j = await readJson(res);
         return (j.data || []).map(function (m) { return m.id; }).filter(filter || Boolean);
       },
-      chat: async function (key, model, prompt, onDelta) {
+      chat: async function (key, model, prompt, onDelta, opt) {
         var res = await fetch(base + "/chat/completions", {
           method: "POST",
+          signal: opt && opt.signal,
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" },
           body: JSON.stringify({ model: model, stream: true, messages: [{ role: "user", content: prompt }] })
         });
@@ -726,15 +820,16 @@
       list: async function (key) {
         var res = await fetch(GEMINI + "/models?pageSize=1000", { headers: { "x-goog-api-key": key } });
         if (!res.ok) throw await failFrom(res);
-        var j = await res.json();
+        var j = await readJson(res);
         return (j.models || []).filter(function (m) {
           return (m.supportedGenerationMethods || []).indexOf("generateContent") !== -1 &&
             /gemini/.test(m.name) && !/embedding|aqa|imagen|tts|image|live|native-audio/.test(m.name);
         }).map(function (m) { return m.name.replace(/^models\//, ""); });
       },
-      chat: async function (key, model, prompt, onDelta) {
+      chat: async function (key, model, prompt, onDelta, opt) {
         var res = await fetch(GEMINI + "/models/" + encodeURIComponent(model) + ":streamGenerateContent?alt=sse", {
           method: "POST",
+          signal: opt && opt.signal,
           headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
           body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
         });
@@ -756,14 +851,15 @@
       list: async function (key) {
         var res = await fetch("https://api.anthropic.com/v1/models?limit=100", { headers: ANTHROPIC_HEADERS(key) });
         if (!res.ok) throw await failFrom(res);
-        var j = await res.json();
+        var j = await readJson(res);
         return (j.data || []).map(function (m) { return m.id; });
       },
-      chat: async function (key, model, prompt, onDelta) {
+      chat: async function (key, model, prompt, onDelta, opt) {
         var res = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
+          signal: opt && opt.signal,
           headers: ANTHROPIC_HEADERS(key),
-          body: JSON.stringify({ model: model, max_tokens: 2048, stream: true,
+          body: JSON.stringify({ model: model, max_tokens: (opt && opt.maxTokens) || 2048, stream: true,
                                  messages: [{ role: "user", content: prompt }] })
         });
         if (!res.ok) throw await failFrom(res);
@@ -791,13 +887,87 @@
     }, openAiCompatible("https://api.nexos.ai/v1", function (id) { return !/embed/.test(id); }))
   };
   var ORDER = ["gemini", "anthropic", "openai", "nexos"];
-  // Projektkontingent: läuft über den Dienst (proxy/nexos-worker.mjs) mit dem Projektschlüssel.
-  // Der Browser schickt nur sein Firebase-ID-Token; der Dienst prüft die Freigabe (grants/{uid}.until).
+  // Weitere OpenAI-kompatible Endpunkte (z. B. OpenRouter, ein lokales Ollama): je Endpunkt ein Eintrag
+  // im Schlüsselbund mit Basis-URL, ID „custom:<host>“, Bezeichnung = Host. Der Schlüssel geht nur an
+  // diesen Endpunkt. Erlaubt sind https:// und http:// nur für localhost/127.0.0.1.
+  var CUSTOM = "custom:";
+  function isCustom(id) { return String(id || "").indexOf(CUSTOM) === 0; }
+  function normalizeEndpoint(raw) {
+    var s = String(raw || "").trim(), u;
+    if (!s) return null;
+    try { u = new URL(s); } catch (e) { return null; }
+    var local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(u.hostname);
+    if (!(u.protocol === "https:" || (u.protocol === "http:" && local))) return null;
+    if (u.username || u.password || u.search || u.hash) return null;
+    // Eingefügte Pfade wie …/v1/models oder …/v1/chat/completions auf die Basis kürzen.
+    var path = u.pathname.replace(/\/+$/, "").replace(/\/(models|chat\/completions)$/, "");
+    return { base: u.origin + path, host: u.host, label: u.host };
+  }
+  function customFilter(id) { return !/embed|whisper|tts|dall-e|moderation|rerank/i.test(id); }
+  function customProvider(rec, id) {
+    return Object.assign({
+      label: rec.label || String(id).slice(CUSTOM.length), custom: true, base: rec.base,
+      pick: function (ids) { return pickDefault(ids, /flash|mini|sonnet|chat/i, /embed|image|audio|tts|vision|preview/i); }
+    }, openAiCompatible(rec.base, customFilter));
+  }
+  // Anbieter zu einer ID: eingebaut oder eigener Endpunkt aus dem Schlüsselbund.
+  function provOf(id, v) {
+    if (!isCustom(id)) return PROVIDERS[id] || null;
+    var rec = (v || vault()).providers[id];
+    return rec && rec.base ? customProvider(rec, id) : null;
+  }
+  function providerLabel(id, v) { var p = provOf(id, v); return p ? p.label : String(id || ""); }
+  function keyGroupLabel(id, v) { return providerLabel(id, v) + " · " + tr("viaKey"); }
+  // Verbundene Schlüssel in fester Reihenfolge: erst die eingebauten Anbieter, dann eigene Endpunkte.
+  function keyIds(v) {
+    v = v || vault();
+    return ORDER.filter(function (id) { return v.providers[id]; }).concat(
+      Object.keys(v.providers).filter(function (id) { return isCustom(id) && v.providers[id] && v.providers[id].base; }).sort());
+  }
+  // Projektkontingent: läuft über den Dienst (proxy/nexos-worker.mjs). Der Browser schickt nur sein
+  // Firebase-ID-Token; der Dienst prüft die Freigabe (grants/{uid}: until, backend, model).
+  // Zwei Backends: "nexos" (Projektschlüssel, Route-ID "project") und "abo" (Gemini-Abo des Verwalters über
+  // agy auf einem GitHub-Läufer, Route-ID "abo", nur für die Konten in abo_uids; proxy/abo-relay.mjs).
   function projectBase() { return String((state.config && state.config.projekt_dienst) || "").replace(/\/$/, ""); }
   PROVIDERS.project = Object.assign({ label: "Nexos", pick: function (ids) { return PROVIDERS.nexos.pick(ids); } },
     { list: function (tok) { return openAiCompatible(projectBase() + "/v1").list(tok); },
-      chat: function (tok, model, prompt, onDelta) { return openAiCompatible(projectBase() + "/v1").chat(tok, model, prompt, onDelta); } });
+      chat: function (tok, model, prompt, onDelta, opt) { return openAiCompatible(projectBase() + "/v1").chat(tok, model, prompt, onDelta, opt); } });
+  // Gemini-Modelle, die agy anbietet (`agy models`, agy 1.3.2, 09.10.2026); die Effort-Stufe ist Teil der ID.
+  // Dieselbe Liste steht in proxy/abo-relay.mjs; ai-access.config.json kann sie mit abo_modelle ersetzen.
+  var ABO_MODELS = [
+    "gemini-3.8-flash-high", "gemini-3.8-flash-medium", "gemini-3.8-flash-low",
+    "gemini-3.7-flash-high", "gemini-3.7-flash-medium", "gemini-3.7-flash-low",
+    "gemini-3.6-flash-high", "gemini-3.6-flash-medium", "gemini-3.6-flash-low",
+    "gemini-3.1-pro-high", "gemini-3.1-pro-low"
+  ];
+  var ABO_DEFAULT = "gemini-3.8-flash-medium";
+  function aboModels() {
+    var c = state.config && state.config.abo_modelle;
+    return Array.isArray(c) && c.length ? c.map(String) : ABO_MODELS.slice();
+  }
+  // Nur diese Konten (Firebase-UIDs) können das Gemini-Abo bekommen; der Worker prüft es mit ABO_ALLOWED_UIDS erneut.
+  function aboAllowed(uid) {
+    var c = state.config && state.config.abo_uids;
+    return Array.isArray(c) && c.map(String).indexOf(String(uid || "")) !== -1;
+  }
+  PROVIDERS.abo = { label: "Gemini-Abo",
+    pick: function (ids) { return ids.indexOf(ABO_DEFAULT) !== -1 ? ABO_DEFAULT : ids[0] || ""; },
+    list: function () { return Promise.resolve(aboModels()); },
+    chat: function (tok, model, prompt, onDelta, opt) { return aboChat(model, prompt, onDelta, opt); } };
   function grantActive() { return !!(quota.grant && quota.grant.until && Date.parse(quota.grant.until) > Date.now()); }
+  // Backend einer Freigabe; ohne Feld (ältere Freigaben) Nexos.
+  function grantBackend(g) { g = g === undefined ? quota.grant : g; return g && g.backend === "abo" ? "abo" : "nexos"; }
+  function isQuota(id) { return id === "project" || id === "abo"; }
+  // Route-ID der eigenen Freigabe: "project" (Nexos) oder "abo".
+  function grantProvider() { return grantBackend() === "abo" ? "abo" : "project"; }
+  function quotaUsable(id) { return grantActive() && !!projectBase() && (id === undefined || grantProvider() === id); }
+  // Modelle der eigenen Freigabe: ein vom Verwalter gewähltes Modell oder alle Modelle des Backends.
+  function grantModels() {
+    if (!quota.grant) return [];
+    if (quota.grant.model) return [quota.grant.model];
+    return grantBackend() === "abo" ? aboModels() : (quota.models || []).slice();
+  }
+  function quotaLabel(id) { return tr(id === "abo" ? "aboLabel" : "projLabel"); }
   function projectOffered() { return signInOffered() && !!projectBase(); }
 
   // --------------------------------------------------------------- Ablage
@@ -1047,16 +1217,20 @@
       quota.grant = res[0]; quota.request = res[1]; quota.admin = !!res[2]; quota.loaded = true;
       var v = vault();
       if (grantActive() && projectBase()) {
-        if (!quota.models) {
+        // Nexos-Modelle kommen vom Dienst; die Modelle des Gemini-Abos stehen fest (aboModels).
+        if (!quota.models && grantBackend() === "nexos") {
           try { quota.models = await PROVIDERS.project.list(await state.fb.auth.currentUser.getIdToken()); }
           catch (e) { quota.models = []; }
         }
+        // Gespeicherte Wahl eines anderen Backends (Freigabe geändert) oder eines nicht freigegebenen Modells verwerfen.
+        if (v.choice && isQuota(v.choice.provider) &&
+            (v.choice.provider !== grantProvider() || (quota.grant.model && v.choice.model !== quota.grant.model))) setChoice(null);
         // Die Reihenfolge ergibt sich aus routeSync; hier nur einmal je Freigabe melden.
         if (sget("local", GRANT_SEEN) !== quota.grant.until) {
           sset("local", GRANT_SEEN, quota.grant.until);
           toast(tr("grantedToast"));
         }
-      } else if (v.choice && v.choice.provider === "project") {
+      } else if (v.choice && isQuota(v.choice.provider)) {
         setChoice(null);
       }
       if (quota.admin) await loadAdmin();
@@ -1070,9 +1244,18 @@
     var rows = await Promise.all([fsList("requests"), fsList("grants")]);
     quota.open = rows[0].filter(function (r) { return r.status === "offen"; });
     quota.people = {};
-    rows[0].forEach(function (r) { quota.people[r._id] = r.name || r.email || r._id; });
+    rows[0].forEach(function (r) { quota.people[r._id] = { uid: r._id, name: r.name || "", email: r.email || "", provider: r.provider || "" }; });
     quota.grants = rows[1];
     quota.settings = (await fsGet("settings/projekt", true)) || { nexos: "1", openai: "nein", name1: "", name2: "" };
+    // Modellauswahl beim Freischalten: vollständige Nexos-Liste (der Dienst erlaubt sie Verwaltern mit ?all=1).
+    if (!quota.adminModels && projectBase()) {
+      var nx = [];
+      try {
+        var res = await fetch(projectBase() + "/v1/models?all=1", { headers: { Authorization: "Bearer " + await state.fb.auth.currentUser.getIdToken() } });
+        if (res.ok) nx = ((await readJson(res)).data || []).map(function (m) { return m.id; }).filter(Boolean);
+      } catch (e) { nx = []; }
+      quota.adminModels = { nexos: nx };
+    }
   }
   async function saveSettings(form) {
     await fsSet("settings/projekt", { nexos: form.nexos.value, openai: form.openai.checked ? "ja" : "nein",
@@ -1087,6 +1270,7 @@
     if (quota.request && quota.request.status === "freigegeben") await fsDelete("requests/" + u.uid);
     await fsSet("requests/" + u.uid, { uid: u.uid, email: u.email || "", name: u.name || "", reason: reason,
       status: "offen", created: new Date().toISOString(), lang: lang(), page: root.location.pathname });
+    await noteRequestProvider(u);
     toast(tr("reqDone"));
     // Betreiber benachrichtigen (GitHub-Issue, Push); Fehler hier halten die Anfrage nicht auf.
     if (projectBase()) {
@@ -1101,8 +1285,16 @@
     var u = state.user, r = quota.request;
     await fsSet("requests/" + u.uid, { uid: u.uid, email: u.email || "", name: u.name || "", reason: reason,
       status: "offen", created: r.created, lang: lang(), page: root.location.pathname });
+    await noteRequestProvider(u);
     toast(tr("reqUpdated"));
     await syncQuota();
+  }
+  // Anmeldeweg (google.com, github.com, …) an der Anfrage vermerken, damit Verwalter Anfragende eindeutig
+  // zuordnen können. Eigener Schreibvorgang: Kennen die bereitgestellten Firestore-Regeln das Feld noch
+  // nicht, wird er abgelehnt, und die Anfrage selbst bleibt unberührt.
+  async function noteRequestProvider(u) {
+    if (!u || !u.provider) return;
+    try { await fsSet("requests/" + u.uid, { provider: u.provider }, ["provider"]); } catch (e) { /* ältere Regeln */ }
   }
   async function withdrawRequest() { await fsDelete("requests/" + state.user.uid); await syncQuota(); }
   async function decide(uid, grant, form) {
@@ -1110,8 +1302,11 @@
     if (grant) {
       var days = parseInt(form.days.value, 10) || 7;
       var until = new Date(Date.now() + days * 86400000).toISOString();
-      await fsSet("grants/" + uid, { until: until, model: form.model.value.trim(), note: form.note.value.trim(),
-                                     granted: now, granted_by: me });
+      var backend = form.backend && form.backend.value === "abo" ? "abo" : "nexos";
+      // Das Gemini-Abo nur für die eigenen Konten des Verwalters (abo_uids); der Worker prüft es erneut.
+      if (backend === "abo" && !aboAllowed(uid)) throw new Error(tr("aboOnlyOwn"));
+      await fsSet("grants/" + uid, { until: until, backend: backend, model: String(form.model.value || "").trim(),
+                                     note: form.note.value.trim(), granted: now, granted_by: me });
     }
     await fsSet("requests/" + uid, { status: grant ? "freigegeben" : "abgelehnt", note: form.note.value.trim(),
                                      decided: now, decided_by: me }, ["status", "note", "decided", "decided_by"]);
@@ -1206,7 +1401,7 @@
   // Alle Zugänge für Diskussionen mit ihrem Zustand: grün = alle funktionieren, gelb = nur manche, rot = keiner.
   function accessHealth() {
     var v = vault(), src = [];
-    ORDER.forEach(function (id) { if (v.providers[id]) src.push({ kind: "key", id: id, ok: !v.providers[id].failed }); });
+    keyIds(v).forEach(function (id) { src.push({ kind: "key", id: id, ok: !v.providers[id].failed }); });
     if (quota.grant) src.push({ kind: "project", ok: grantActive() && !!projectBase() });
     ((state.backend && state.backend.clis) || []).forEach(function (c) { src.push({ kind: "local", id: c.id, ok: c.healthy }); });
     var good = src.filter(function (x) { return x.ok; }).length;
@@ -1215,7 +1410,7 @@
   // Bis zu drei Symbole: eigener Schlüssel, Geschenkbox fürs Projektkontingent, Terminal für lokale CLIs.
   function accessIcons() {
     var v = vault(), out = [];
-    var ids = ORDER.filter(function (id) { return v.providers[id]; });
+    var ids = keyIds(v);
     if (ids.length) {
       var bad = ids.filter(function (id) { return v.providers[id].failed; }).length;
       out.push({ ico: ICO.key, cls: bad === ids.length ? "is-bad" : bad ? "is-warn" : "is-ok",
@@ -1233,11 +1428,18 @@
     return out;
   }
   // Reihenfolge der Zugänge = Priorität; pro Browser gemerkt, Standard: lokal, Kontingent, eigener Schlüssel.
-  var ORDER_KEY = "autodocs-ai-order", SOURCES = ["local", "project", "byot"];
+  var ORDER_KEY = "autodocs-ai-order", SOURCES = ["local", "project", "byok"];
+  // Frühere Fassungen hießen die Quelle „byot“; eine gespeicherte Reihenfolge wird übernommen und umgeschrieben.
+  var LEGACY_SOURCES = { byot: "byok" };
   function accessOrder() {
-    var o = [];
-    try { o = JSON.parse(sget("local", ORDER_KEY) || "[]"); } catch (e) { o = []; }
-    o = (Array.isArray(o) ? o : []).filter(function (x, i, a) { return SOURCES.indexOf(x) !== -1 && a.indexOf(x) === i; });
+    var o = [], raw = sget("local", ORDER_KEY);
+    try { o = JSON.parse(raw || "[]"); } catch (e) { o = []; }
+    o = Array.isArray(o) ? o : [];
+    if (o.some(function (x) { return LEGACY_SOURCES[x]; })) {
+      o = o.map(function (x) { return LEGACY_SOURCES[x] || x; });
+      sset("local", ORDER_KEY, JSON.stringify(o.filter(function (x, i, a) { return a.indexOf(x) === i; })));
+    }
+    o = o.filter(function (x, i, a) { return SOURCES.indexOf(x) !== -1 && a.indexOf(x) === i; });
     SOURCES.forEach(function (x) { if (o.indexOf(x) === -1) o.push(x); });
     return o;
   }
@@ -1261,19 +1463,23 @@
     var v = vault();
     var ch = v.choice;
     if (ch && ch.provider === "local" && backend) return { kind: "local", cli: ch.model };
-    if (ch && ch.provider === "project" && grantActive() && projectBase()) return { kind: "byok", provider: "project", model: ch.model };
-    if (ch && v.providers[ch.provider] && PROVIDERS[ch.provider]) {
+    if (ch && isQuota(ch.provider) && quotaUsable(ch.provider) && grantModels().indexOf(ch.model) !== -1) {
+      return { kind: "byok", provider: ch.provider, model: ch.model };
+    }
+    if (ch && v.providers[ch.provider] && provOf(ch.provider, v)) {
       return { kind: "byok", provider: ch.provider, model: ch.model || v.providers[ch.provider].model };
     }
     // Ohne ausdrückliche Wahl entscheidet die Reihenfolge auf der Statusseite (Standard: lokal, Kontingent, Schlüssel).
     var clis = backend && backend.clis;
-    var first = ORDER.filter(function (id) { return v.providers[id]; })[0];
+    var first = keyIds(v)[0];
     var pick = {
       local: function () { return backend && (!clis || clis.some(function (c) { return c.healthy; })) ? { kind: "local" } : null; },
       project: function () {
-        return grantActive() && projectBase() ? { kind: "byok", provider: "project", model: quota.grant.model || PROVIDERS.project.pick(quota.models || []) } : null;
+        if (!quotaUsable()) return null;
+        var gp = grantProvider();
+        return { kind: "byok", provider: gp, model: quota.grant.model || PROVIDERS[gp].pick(grantModels()) };
       },
-      byot: function () { return first ? { kind: "byok", provider: first, model: v.providers[first].model } : null; }
+      byok: function () { return first ? { kind: "byok", provider: first, model: v.providers[first].model } : null; }
     };
     var order = accessOrder();
     for (var i = 0; i < order.length; i++) { var r = pick[order[i]](); if (r) return r; }
@@ -1282,36 +1488,212 @@
   }
   function routeLabel(r) {
     if (!r) return "";
-    if (r.kind === "byok") return r.provider === "project" ? tr("projLabel") + " · " + (r.model || "?")
-      : PROVIDERS[r.provider].label + " · " + (r.model || "?") + " · " + tr("viaKey");
+    if (r.kind === "byok") return isQuota(r.provider) ? quotaLabel(r.provider) + " · " + (r.model || "?")
+      : providerLabel(r.provider) + " · " + (r.model || "?") + " · " + tr("viaKey");
     if (r.kind === "local") return (r.cli || (state.backend && state.backend.active) || "CLI") + " · " + tr("viaLocal");
     return tr(r.reason === "setup" ? "chipSetup" : r.reason === "key" ? "chipConnect" : "chipSignIn");
   }
   // Herkunft einer Antwort für die Anzeige in der Diskussion („Antwort von …“).
   function answerLabel(answer, r) {
+    // Gemini-Abo: Modell aus der Antwort und das Profil, das geantwortet hat (leo oder neo).
+    if (r && r.kind === "byok" && r.provider === "abo") {
+      var m = (answer && answer.model) || r.model;
+      return tr("answeredBy") + ": " + quotaLabel("abo") + " · " + (m || "?") + (answer && answer.profile ? " (" + answer.profile + ")" : "");
+    }
     if (r && r.kind === "byok") return tr("answeredBy") + ": " + routeLabel(r);
     if (answer && answer.provider) return tr("answeredBy") + ": " + tr("stLocalTitle") + " · " + answer.provider + (answer.model ? " · " + answer.model : "");
     return "";
   }
+  // Fehler mit Art statt Text: "local" = lokalen Dienst nehmen, "none" = kein Zugang (reason für gate()).
+  function routeError(code, r) {
+    var e = new Error(code === "local" ? "local-route" : "no-route");
+    e.name = "AiAccessRouteError";
+    e.code = code;
+    e.route = r || null;
+    e.reason = (r && r.reason) || (code === "none" ? "key" : "");
+    return e;
+  }
+  // Ein Aufruf beim Anbieter der Route (eigener Schlüssel, eigener Endpunkt oder Projektkontingent).
+  async function runChat(r, prompt, onDelta, opt) {
+    var v = vault(), p = provOf(r.provider, v), quotaRoute = isQuota(r.provider);
+    if (quotaRoute ? !(quotaUsable(r.provider) && state.fb) : !(p && v.providers[r.provider])) {
+      throw routeError("none", { kind: "none", reason: requiresSignIn() && !state.user ? "signin" : "key" });
+    }
+    var cred = quotaRoute ? await state.fb.auth.currentUser.getIdToken() : v.providers[r.provider].key;
+    // Lange Wartezeiten (Gemini-Abo): bei jeder Abfrage ein frisches ID-Token.
+    if (quotaRoute) opt = Object.assign({}, opt || {}, { token: function () { return state.fb.auth.currentUser.getIdToken(); } });
+    var reply;
+    try { reply = await p.chat(cred, r.model, prompt, onDelta, opt); }
+    catch (e) {
+      if (e && e.name === "AbortError") throw e;
+      if (r.provider === "project" && e.status === 403) throw new Error(tr("projDenied"));
+      if (!quotaRoute && [401, 402, 403].indexOf(e.status) !== -1) markKey(r.provider, true);
+      throw e;
+    }
+    if (!quotaRoute) markKey(r.provider, false);
+    return reply;
+  }
+  // Gemini-Abo: Auftrag an den Dienst (POST /abo/jobs), dann Status abfragen, bis der Läufer geantwortet hat.
+  // Kein Streaming; opt.onStatus bekommt „Wartet auf Läufer…“ bzw. „Modell denkt…“ mit der Wartezeit.
+  function aboWait(ms, signal) {
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(resolve, ms);
+      if (signal) signal.addEventListener("abort", function () { clearTimeout(t); reject(abortErr()); }, { once: true });
+    });
+  }
+  function abortErr() {
+    try { return new DOMException("The operation was aborted.", "AbortError"); }
+    catch (e) { var x = new Error("aborted"); x.name = "AbortError"; return x; }
+  }
+  function clock(ms) {
+    var s = Math.max(0, Math.round(ms / 1000));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+  function waitSpan(sec) {
+    var m = Math.max(1, Math.round((sec || 0) / 60));
+    return m >= 60 ? Math.floor(m / 60) + " h " + (m % 60 ? (m % 60) + " min" : "") : m + " min";
+  }
+  function aboStatusText(job, ms) {
+    if (job.status === "running") return tr("aboThinking", clock(ms));
+    var k = { busy: "aboWaitBusy", starting: "aboWaitStart", failed: "aboWaitFailed", none: "aboWaitNone" }[job.runner] || "aboWait";
+    return tr(k, clock(ms)).replace("%d", String(job.dispatch_status || ""));
+  }
+  // Fehlercodes von Dienst und Läufer in Klartext (exhausted = agy_switch 75, login = 77).
+  function aboError(code, detail, status) {
+    var map = { exhausted: "aboErrExhausted", login: "aboErrLogin", no_runner: "aboErrNoRunner", timeout: "aboErrTimeout",
+                denied: "aboErrDenied", empty: "pvEmpty", model_unavailable: "aboErrModel", abo_model: "aboErrModel",
+                abo_model_not_granted: "aboErrModel", abo_not_allowed: "aboOnlyOwn", abo_no_grant: "aboErrGrant",
+                abo_too_large: "aboErrTooLarge", abo_off: "aboErrOff", decrypt: "aboErrKey", cancelled: "aboErrCancelled",
+                too_large: "aboErrTooLarge" };
+    var key = map[code];
+    var e = new Error(key ? tr(key, code === "exhausted" ? waitSpan(detail && detail.wait_s) : undefined) : tr("aboErrOther", String(code || status || "?")));
+    e.code = code || "";
+    if (status) e.status = status;
+    return e;
+  }
+  async function aboFail(res) {
+    var j = null;
+    try { j = await res.json(); } catch (e) { j = null; }
+    var c = j && j.error && j.error.code;
+    if (c) return aboError(c, null, res.status);
+    var e = new Error("HTTP " + res.status + (j && j.error && j.error.message ? " – " + j.error.message : ""));
+    e.status = res.status;
+    return e;
+  }
+  async function aboChat(model, prompt, onDelta, opt) {
+    opt = opt || {};
+    var cfg = state.config || {};
+    var pollMs = Number(cfg.abo_poll_ms) || 2000, maxMs = Number(cfg.abo_max_ms) || 12 * 60000;
+    var token = opt.token || function () { return state.fb.auth.currentUser.getIdToken(); };
+    var status = opt.onStatus || function () {};
+    var signal = opt.signal;
+    var t0 = Date.now();
+    status(tr("aboSending"), null);
+    var res = await fetch(projectBase() + "/abo/jobs", { method: "POST", signal: signal,
+      headers: { Authorization: "Bearer " + await token(), "Content-Type": "application/json" },
+      body: JSON.stringify({ model: model, prompt: prompt }) });
+    if (!res.ok) throw await aboFail(res);
+    var job = await readJson(res), id = job.id;
+    var cancel = function () {
+      token().then(function (t) {
+        return fetch(projectBase() + "/abo/jobs/" + encodeURIComponent(id), { method: "DELETE", headers: { Authorization: "Bearer " + t } });
+      }).catch(function () { /* der Dienst räumt nach Ablauf selbst auf */ });
+    };
+    var misses = 0;
+    try {
+      for (;;) {
+        status(aboStatusText(job, Date.now() - t0), job);
+        if (Date.now() - t0 > maxMs) { cancel(); throw aboError("timeout"); }
+        await aboWait(pollMs, signal);
+        var r;
+        try {
+          r = await fetch(projectBase() + "/abo/jobs/" + encodeURIComponent(id), { signal: signal,
+            headers: { Authorization: "Bearer " + await token() } });
+        } catch (e) {
+          if (e && e.name === "AbortError") throw e;
+          if (++misses > 5) throw e;          // kurze Netzstörung: weiter abfragen
+          continue;
+        }
+        if (!r.ok) throw await aboFail(r);
+        misses = 0;
+        job = await readJson(r);
+        if (job.status === "done") {
+          var text = String(job.answer || "");
+          if (opt.meta) { opt.meta.profile = job.profile || ""; opt.meta.model = job.model || model; }
+          if (onDelta && text) onDelta(text, text);
+          return text;
+        }
+        if (job.status === "error" || job.status === "cancelled") throw aboError(job.status === "cancelled" ? "cancelled" : job.error, job.detail);
+      }
+    } catch (e) {
+      if (e && e.name === "AbortError") cancel();
+      throw e;
+    }
+  }
+  // Alle nutzbaren Modelle über alle Quellen, in der Reihenfolge der Statusseite – für Auswahllisten
+  // außerhalb des Dialogs (Vorschau im Kurationsfenster). Je Eintrag:
+  // { source: "local"|"project"|"byok", provider, model, label, group, current[, healthy|failed] }.
+  function models() {
+    if (requiresSignIn() && !state.user) return [];
+    var v = vault(), r = routeSync(), b = state.backend, by = { local: [], project: [], byok: [] };
+    ((b && b.clis) || []).forEach(function (c) {
+      by.local.push({ source: "local", provider: c.id, model: c.model, label: c.label || c.id, group: tr("local"), healthy: !!c.healthy });
+    });
+    if (quotaUsable()) {
+      var gp = grantProvider();
+      grantModels().forEach(function (m) {
+        by.project.push({ source: "project", provider: gp, model: m, label: m, group: quotaLabel(gp) });
+      });
+    }
+    keyIds(v).forEach(function (id) {
+      // „eigener Schlüssel“ im Gruppennamen, damit z. B. Nexos mit eigenem Schlüssel nicht wie das Projektkontingent aussieht.
+      var rec = v.providers[id], label = keyGroupLabel(id, v);
+      (rec.models && rec.models.length ? rec.models : [rec.model]).filter(Boolean).forEach(function (m) {
+        by.byok.push({ source: "byok", provider: id, model: m, label: m, group: label, failed: !!rec.failed });
+      });
+    });
+    var out = [];
+    accessOrder().forEach(function (k) { out = out.concat(by[k] || []); });
+    var firstLocal = by.local.filter(function (x) { return x.healthy; })[0] || by.local[0];
+    out.forEach(function (x) {
+      x.current = r.kind === "local" ? x.source === "local" && (r.cli ? x.provider === r.cli : x === firstLocal)
+        : r.kind === "byok" && x.source !== "local" && x.provider === r.provider && x.model === r.model;
+    });
+    return out;
+  }
+  // Einfacher Prompt ohne Diskussionsrahmen über die angegebene oder die aktuelle Route.
+  // opts: { route | source+provider+model, prompt, onDelta(delta, all), signal, maxTokens } → Promise<string>.
+  // Lokale Route: wirft AiAccessRouteError mit code "local" (der Aufrufer nimmt localUrl(...));
+  // kein Zugang: code "none" und reason für gate(reason).
+  async function complete(opts) {
+    opts = opts || {};
+    var r = opts.route;
+    if (!r && opts.provider) {
+      r = opts.source === "local" || opts.provider === "local" ? { kind: "local", cli: opts.provider === "local" ? opts.model : opts.provider }
+        : { kind: "byok", provider: opts.provider, model: opts.model };
+    }
+    if (!r) r = await route();
+    if (r.kind === "local") throw routeError("local", r);
+    if (r.kind !== "byok") throw routeError("none", r);
+    var meta = {};
+    var reply = await runChat(r, redact(String(opts.prompt || "")), opts.onDelta,
+                              { signal: opts.signal, maxTokens: opts.maxTokens || 8192, onStatus: opts.onStatus, meta: meta });
+    if (!pyStrip(reply || "")) throw new Error(tr("pvEmpty"));
+    if (opts.meta) Object.assign(opts.meta, meta);
+    return reply;
+  }
+  // opts.onStatus(text, job): Zwischenstand bei Routen ohne Streaming (Gemini-Abo: „Wartet auf Läufer…“, „Modell denkt…“).
   async function discuss(opts) {
     var r = opts.route || await route();
     if (r.kind !== "byok") throw new Error("no-byok-route");
-    var v = vault();
-    var cred = r.provider === "project" ? await state.fb.auth.currentUser.getIdToken() : v.providers[r.provider].key;
     var prompt = redact(buildDiscussPrompt(opts.message, opts.context));
-    var reply;
-    try { reply = await PROVIDERS[r.provider].chat(cred, r.model, prompt, opts.onDelta); }
-    catch (e) {
-      if (r.provider === "project" && e.status === 403) throw new Error(tr("projDenied"));
-      if (r.provider !== "project" && [401, 402, 403].indexOf(e.status) !== -1) markKey(r.provider, true);
-      throw e;
-    }
-    if (r.provider !== "project") markKey(r.provider, false);
+    var meta = {};
+    var reply = await runChat(r, prompt, opts.onDelta, { onStatus: opts.onStatus, signal: opts.signal, meta: meta });
     if (!pyStrip(reply)) throw new Error("Leere Antwort vom Modell.");
     var recId = (opts.context && opts.context.record_id) || "";
     var f = extractFinding(reply, opts.message, recId);
     return { ok: true, reply: pyStrip(reply), suggestion: f.suggestion, rationale: f.rationale, finding: f.finding,
-             provider: r.provider, model: r.model, mode: "byok" };
+             provider: r.provider, model: meta.model || r.model, profile: meta.profile || "", mode: "byok" };
   }
 
   // --------------------------------------------------- Übergabe als Issue
@@ -1403,7 +1785,8 @@
   function shortSource(r) {
     if (r.kind === "local") return r.cli || (state.backend && state.backend.active) || tr("stLocal");
     if (r.provider === "project") return tr("viaProject");
-    return { gemini: "Gemini", anthropic: "Claude", openai: "OpenAI", nexos: "Nexos" }[r.provider] || r.provider;
+    if (r.provider === "abo") return "Gemini-Abo";
+    return { gemini: "Gemini", anthropic: "Claude", openai: "OpenAI", nexos: "Nexos" }[r.provider] || providerLabel(r.provider);
   }
   function renderHeader() {
     if (!headerBtn) return;
@@ -1497,7 +1880,7 @@
     renderDialog();
     loadAdmin().then(emit).catch(fail);
   }
-  // Hauptdialog = Statusseite; BYOT hinzufügen, Kontingent anfragen und Verwaltung als modales Popup darüber.
+  // Hauptdialog = Statusseite; BYOK hinzufügen, Kontingent anfragen und Verwaltung als modales Popup darüber.
   function makeDialog(cls, label) {
     var d = document.createElement("dialog");
     d.className = cls;
@@ -1507,6 +1890,7 @@
     d.addEventListener("submit", onDialogSubmit);
     d.addEventListener("change", onDialogChange);
     d.addEventListener("input", onDialogInput);
+    d.addEventListener("keydown", onDialogKeydown);
     d.addEventListener("click", function (e) { if (e.target === d) d.close(); });
     return d;
   }
@@ -1525,7 +1909,7 @@
     ensureDialogs();
     state.error = "";
     state.view = view || defaultView();
-    // Statusseite zuerst öffnen, damit ein Popup (BYOT, Anfrage, Verwaltung) darüber liegt.
+    // Statusseite zuerst öffnen, damit ein Popup (BYOK, Anfrage, Verwaltung) darüber liegt.
     if (!dlg.open) { if (sub.open) sub.close(); try { dlg.showModal(); } catch (e) { dlg.setAttribute("open", ""); } }
     renderDialog();
     loadConfig().then(function () {
@@ -1581,9 +1965,11 @@
       esc(tr("mailPh")) + '" aria-label="E-Mail"><button type="submit" class="aia-btn">' + esc(tr("confirmGo")) + "</button></form>" + errLine();
   }
   var connectSel = "gemini", keyStatus = { text: "", kind: "" };
+  // Ein Klick auf eine Karte verbindet sofort mit dem eingegebenen Schlüssel; ohne Schlüssel merkt
+  // sie sich den Anbieter, und Enter im Schlüsselfeld verbindet dann.
   function providerCards() {
     var v = vault();
-    return '<p class="aia-label">' + esc(tr("provPick")) + '</p><div class="aia-provs" role="radiogroup" aria-label="' + esc(tr("provPick")) + '">' +
+    return '<p class="aia-label" id="aia-provpick">' + esc(tr("provPick")) + '</p><div class="aia-provs" role="group" aria-labelledby="aia-provpick">' +
       ORDER.map(function (id) {
         var p = PROVIDERS[id];
         // Hinweis nur über dem Info-Zeichen (Maus oder Tastaturfokus), nicht über der ganzen Karte.
@@ -1592,7 +1978,7 @@
         var tip = p.free ? '<span class="aia-tip" role="tooltip" id="aia-tip-' + id + '">' + esc(tr("geminiNote")) + "</span>" : "";
         var done = v.providers[id] ? ' <span class="aia-ok" aria-hidden="true">✓</span>' : "";
         return '<div class="aia-prov' + (connectSel === id ? " is-sel" : "") + '" data-aia-card="' + id + '">' +
-          '<button type="button" role="radio" class="aia-prov-pick" aria-checked="' + (connectSel === id) + '" data-aia-prov="' + id + '">' +
+          '<button type="button" class="aia-prov-pick" aria-pressed="' + (connectSel === id) + '" data-aia-prov="' + id + '">' +
           "<strong>" + esc(p.label) + done + "</strong></button>" + tag +
           '<a class="aia-prov-key" href="' + esc(p.keyUrl) + '" target="_blank" rel="noopener">' + esc(tr("keyCreate")) + " ↗</a>" + tip + "</div>";
       }).join("") + "</div>";
@@ -1684,22 +2070,26 @@
   }
   function statusPanel() {
     var v = vault(), h = accessHealth();
-    var keys = ORDER.filter(function (id) { return v.providers[id]; }).map(function (id) {
+    var keys = keyIds(v).map(function (id) {
       var rec = v.providers[id];
-      return '<li><span><span class="aia-dot ' + (rec.failed ? "is-bad" : "is-ok") + '"></span><strong>' + esc(PROVIDERS[id].label) + "</strong> ••••" +
-        esc((rec.key || "").slice(-4)) + " · " + esc(tr(rec.failed ? "stKeyFailed" : "stWorks")) + "<br><small>" + esc(tr(rec.session ? "storeSession" : "storeLocal")) + "</small>" +
-        '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-remove="' + id + '">' + esc(tr("remove")) + "</button></li>";
+      return '<li><span><span class="aia-dot ' + (rec.failed ? "is-bad" : "is-ok") + '"></span><strong>' + esc(providerLabel(id, v)) + "</strong> ••••" +
+        esc((rec.key || "").slice(-4)) + " · " + esc(tr(rec.failed ? "stKeyFailed" : "stWorks")) +
+        (isCustom(id) ? "<br><small>" + esc(tr("epTag")) + ": " + esc(rec.base) + "</small>" : "") +
+        "<br><small>" + esc(tr(rec.session ? "storeSession" : "storeLocal")) + "</small>" +
+        '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-remove="' + esc(id) + '">' + esc(tr("remove")) + "</button></li>";
     }).join("");
-    var byot = secHead("byot", tr("secByot")) +
+    var byok = secHead("byok", tr("secByok")) +
       (keys ? '<ul class="aia-list">' + keys + "</ul>" : '<p class="aia-fine aia-left">' + esc(tr("stNoKeys")) + "</p>") +
       '<p><button type="button" class="aia-btn' + (keys ? "" : " aia-btn-primary") + '" data-aia="connect">+ ' + esc(tr("tabAdd")) + "</button></p></section>";
     var project = "";
     if (projectOffered()) {
-      var pr = grantActive() ? ["is-ok", tr("stProjActive", fmtDate(quota.grant.until))]
+      var pr = grantActive() ? ["is-ok", tr(grantBackend() === "abo" ? "stAboActive" : "stProjActive", fmtDate(quota.grant.until))]
         : quota.grant ? ["is-bad", tr("stProjExpired", fmtDate(quota.grant.until))]
         : quota.request && quota.request.status === "offen" ? ["is-warn", tr("stProjPending")]
         : ["is-off", tr("stProjNone")];
-      project = secHead("project", tr("projLabel")) + '<p class="aia-left"><span class="aia-dot ' + pr[0] + '"></span>' + esc(pr[1]) + "</p>" +
+      // Ohne Freigabe der allgemeine Titel; mit Freigabe das Backend („Projektkontingent · Gemini-Abo“ bzw. „· Nexos“).
+      project = secHead("project", quota.grant ? quotaLabel(grantProvider()) : tr("viaProject").replace(/^./, function (c) { return c.toUpperCase(); })) +
+        '<p class="aia-left"><span class="aia-dot ' + pr[0] + '"></span>' + esc(pr[1]) + "</p>" +
         (grantActive() ? "" : '<p><button type="button" class="aia-btn" data-aia="request">' + esc(tr(
           quota.request && quota.request.status === "offen" ? "reqView" : (quota.grant || (quota.request && quota.request.status === "abgelehnt")) ? "reqAgain" : "tabQuota")) +
           "</button></p>") + "</section>";
@@ -1713,7 +2103,7 @@
         '<p><button type="button" class="aia-btn aia-btn-quiet" data-aia="recheck">↻ ' + esc(tr("recheck")) + "</button></p>"
         : isLocalHost() ? '<p class="aia-fine aia-left">' + esc(tr("localNoServer")) + "</p>" : awayHtml()) + "</section>";
     var usable = h.sources.some(function (x) { return x.ok; });
-    var parts = { byot: byot, project: project, local: local };
+    var parts = { byok: byok, project: project, local: local };
     var shown = accessOrder().filter(function (k) { return parts[k]; });
     return '<p class="aia-fine aia-left aia-prio-hint">' + esc(tr("prioHint")) + "</p>" +
       shown.map(function (k, i) {
@@ -1734,28 +2124,34 @@
     return state.user ? '<p class="aia-signed">' + esc(via ? tr("stSignedVia", via) : tr("stAccount")) + ": <strong>" +
       esc(state.user.email || state.user.name) + '</strong> <button type="button" class="aia-link" data-aia="signout">' + esc(tr("signOut")) + "</button></p>" : "";
   }
-  function byotForm() {
-    var p = PROVIDERS[connectSel];
+  function byokForm() {
+    var p = PROVIDERS[connectSel] || PROVIDERS.gemini;
     var hasAny = Object.keys(vault().providers).length > 0;
-    // Reihenfolge: worum es geht, Schlüssel, Merken, Anbieter, Verbinden ganz unten.
-    // Der Knopf steht außerhalb des Formulars (form-Attribut), damit ein Anmeldeformular dazwischen passt.
+    // Reihenfolge: worum es geht, Schlüssel, Merken, Anbieter. Verbunden wird per Klick auf die
+    // Anbieterkarte oder mit Enter im Schlüsselfeld; ein eigener Bestätigungsknopf entfällt.
     return (hasAny ? "" : '<p class="aia-lead">' + esc(tr("byokLead")) + "</p>" + '<ul class="aia-benefits">' + ["b1", "b2"].map(function (k) {
         return "<li><strong>" + esc(tr(k + "t")) + "</strong> " + esc(tr(k)) + "</li>";
       }).join("") + "</ul>") +
       '<form class="aia-key" id="aia-keyform" data-aia-form="key">' +
       '<label class="aia-label" for="aia-key">' + esc(tr("keyLabel")) + "</label>" +
-      '<div class="aia-row"><input id="aia-key" type="password" name="key" required autocomplete="off" spellcheck="false" autofocus placeholder="' + esc(p.keyPh) + '">' +
+      '<div class="aia-row"><input id="aia-key" type="password" name="key" required autocomplete="off" spellcheck="false" autofocus enterkeyhint="go" placeholder="' + esc(p.keyPh) + '">' +
       '<button type="button" class="aia-btn aia-btn-quiet" data-aia="reveal">' + esc(tr("show")) + "</button></div>" +
       '<div class="aia-tipwrap"><label class="aia-check" aria-describedby="aia-tip-store"><input type="checkbox" name="remember" checked> ' +
       esc(tr("remember")) + ' <span class="aia-info" aria-hidden="true">ⓘ</span></label>' +
       '<span class="aia-tip" role="tooltip" id="aia-tip-store">' + esc(tr("storeNote")) + "</span></div>" +
-      providerCards() +
+      providerCards() + endpointRow() +
       (keyStatus.text ? '<p class="aia-status is-' + keyStatus.kind + '" role="status">' + esc(keyStatus.text) + "</p>" : "") +
       "</form>" +
       (!state.user && requiresSignIn() ? signInBlock() : "") +
       errLine() +
-      localSection() +
-      '<button type="submit" form="aia-keyform" class="aia-btn aia-btn-primary">' + esc(tr("connect")) + "</button>";
+      localSection();
+  }
+  // Alternative zu den vier Karten: ein weiterer OpenAI-kompatibler Endpunkt; Enter verbindet.
+  function endpointRow() {
+    return '<div class="aia-ep' + (connectSel === "custom" ? " is-sel" : "") + '"><label class="aia-label" for="aia-endpoint">' + esc(tr("epLabel")) + "</label>" +
+      '<div class="aia-row"><input id="aia-endpoint" type="url" name="endpoint" inputmode="url" autocomplete="off" spellcheck="false" enterkeyhint="go"' +
+      ' placeholder="https://openrouter.ai/api/v1" aria-describedby="aia-ep-hint"></div>' +
+      '<p class="aia-fine aia-left" id="aia-ep-hint">' + esc(tr("epHint")) + "</p></div>";
   }
   function modelSelect() {
     var v = vault();
@@ -1778,16 +2174,16 @@
         return '<option value="' + esc("local|" + c.id) + '"' + (isSel("local", c.id) ? " selected" : "") + ">" + esc(c.label + " · " + c.model) + "</option>";
       }).join("") + "</optgroup>");
     }
-    if (grantActive() && projectBase()) {
-      var pm = (quota.models && quota.models.length ? quota.models : [quota.grant.model || ""]).filter(Boolean);
-      groups.push('<optgroup label="' + esc(tr("projLabel")) + '">' + pm.map(function (m) {
-        return '<option value="' + esc("project|" + m) + '"' + (isSel("project", m) ? " selected" : "") + ">" + esc(m) + "</option>";
+    if (quotaUsable()) {
+      var gp = grantProvider();
+      groups.push('<optgroup label="' + esc(quotaLabel(gp)) + '" data-aia-group="' + gp + '">' + grantModels().map(function (m) {
+        return '<option value="' + esc(gp + "|" + m) + '"' + (isSel(gp, m) ? " selected" : "") + ">" + esc(m) + "</option>";
       }).join("") + "</optgroup>");
     }
-    ORDER.filter(function (id) { return v.providers[id]; }).forEach(function (id) {
+    keyIds(v).forEach(function (id) {
       var rec = v.providers[id];
       var models = (rec.models && rec.models.length ? rec.models : [rec.model]).filter(Boolean);
-      groups.push('<optgroup label="' + esc(PROVIDERS[id].label) + '">' + models.map(function (m) {
+      groups.push('<optgroup label="' + esc(keyGroupLabel(id, v)) + '" data-aia-group="key">' + models.map(function (m) {
         return '<option value="' + esc(id + "|" + m) + '"' + (isSel(id, m) ? " selected" : "") + ">" + esc(m) + "</option>";
       }).join("") + "</optgroup>");
     });
@@ -1819,27 +2215,71 @@
       esc(tr("reqReasonPh")) + '"></textarea><button type="submit" class="aia-btn aia-btn-primary">' + esc(tr("reqSend")) + "</button></form>";
     return '<p class="aia-lead">' + esc(tr("reqLead")) + "</p>" + body + errLine();
   }
+  function shortUid(uid) { uid = String(uid || ""); return uid.length > 10 ? uid.slice(0, 8) + "…" : uid; }
+  // Eine Person eindeutig: Name, E-Mail, Anmeldeweg (falls bekannt) und UID-Kurzform; das eigene Konto mit „(du selbst)“.
+  function personHtml(p) {
+    var me = state.user && p.uid === state.user.uid;
+    var via = providerName(p.provider || (me ? state.user.provider : ""));
+    var meta = (via ? via + " · " : "") + "UID " + shortUid(p.uid);
+    return '<span class="aia-person">' + (p.name ? "<strong>" + esc(p.name) + "</strong> " : "") +
+      (p.email ? '<span class="aia-mail">' + esc(p.email) + "</span> " : "") +
+      '<span class="aia-who" title="UID ' + esc(p.uid) + '">(' + esc(meta) + ")</span>" +
+      (me ? ' <span class="aia-self">' + esc(tr("admSelf")) + "</span>" : "") + "</span>";
+  }
+  // Kopf der Verwaltung: als welches Konto man gerade handelt (es kann mehrere Verwalter geben).
+  function actingHtml() {
+    var u = state.user;
+    if (!u) return "";
+    var who = '<strong>' + esc(u.email || u.name || u.uid) + "</strong> (" + esc((providerName(u.provider) ? providerName(u.provider) + " · " : "") +
+      "UID " + shortUid(u.uid)) + ")";
+    return '<div class="aia-acting" data-aia-acting><p>' + esc(tr("admActing", "\u0000")).replace("\u0000", who) + "</p>" +
+      '<p class="aia-fine aia-left">' + esc(tr("admActingHint")) + "</p></div>";
+  }
+  // Modellauswahl je Backend; leer = alle Modelle dieses Backends.
+  function adminModelOptions(backend, current) {
+    var ids = backend === "abo" ? aboModels() : ((quota.adminModels && quota.adminModels.nexos) || []);
+    if (current && ids.indexOf(current) === -1) ids = [current].concat(ids);
+    return '<option value="">' + esc(tr(backend === "abo" ? "admModelAllAbo" : "admModelAllNexos")) + "</option>" +
+      ids.map(function (m) { return '<option value="' + esc(m) + '"' + (m === current ? " selected" : "") + ">" + esc(m) + "</option>"; }).join("");
+  }
+  // Backend der Freigabe: Nexos für alle; das Gemini-Abo nur für die Konten in abo_uids (sonst ausgegraut).
+  function backendFields(uid) {
+    var own = aboAllowed(uid);
+    return '<div class="aia-row"><label class="aia-field"><span class="aia-label">' + esc(tr("admBackend")) + "</span>" +
+      '<select class="aia-input" name="backend" data-aia-backend>' +
+      '<option value="nexos" selected>' + esc(tr("admBackendNexos")) + "</option>" +
+      '<option value="abo"' + (own ? "" : " disabled") + ">" + esc(tr(own ? "admBackendAbo" : "admBackendAboOff")) + "</option></select></label>" +
+      '<label class="aia-field"><span class="aia-label">' + esc(tr("admModelSel")) + "</span>" +
+      '<select class="aia-input" name="model" data-aia-models>' + adminModelOptions("nexos", "") + "</select></label></div>" +
+      (own ? '<p class="aia-fine aia-left" data-aia-abo-hint hidden>' + esc(tr("admAboHint")) + "</p>" : "");
+  }
   function viewAdmin() {
     var open = quota.open.map(function (r) {
-      return '<li class="aia-req"><div><strong>' + esc(r.name || r.email || r._id) + "</strong> <span>" + esc(r.email) + " · " + esc(fmtDate(r.created)) +
+      var mine = state.user && r._id === state.user.uid;
+      return '<li class="aia-req' + (mine ? " is-self" : "") + '" data-aia-req="' + esc(r._id) + '"><div><span class="aia-label">' + esc(tr("admReqBy")) + "</span> " +
+        personHtml({ uid: r._id, name: r.name, email: r.email, provider: r.provider }) + " <span>· " + esc(fmtDate(r.created)) +
         "</span></div><p>" + esc(r.reason) + "</p>" +
         '<form class="aia-key" data-aia-form="decide" data-uid="' + esc(r._id) + '">' +
         '<label class="aia-label">' + esc(tr("admDuration")) + '</label><select class="aia-input" name="days">' +
         [["1", "admD1"], ["7", "admD7"], ["30", "admD30"], ["90", "admD90"]].map(function (d) {
           return '<option value="' + d[0] + '"' + (d[0] === "7" ? " selected" : "") + ">" + esc(tr(d[1])) + "</option>";
         }).join("") + "</select>" +
-        '<div class="aia-row"><input class="aia-input" name="model" placeholder="' + esc(tr("admModel")) + '"><input class="aia-input" name="note" placeholder="' + esc(tr("admNote")) + '"></div>' +
+        backendFields(r._id) +
+        '<div class="aia-row"><input class="aia-input" name="note" placeholder="' + esc(tr("admNote")) + '"></div>' +
         '<div class="aia-row"><button type="submit" class="aia-btn aia-btn-primary" data-decide="grant">' + esc(tr("admGrant")) +
         '</button><button type="submit" class="aia-btn" data-decide="reject">' + esc(tr("admReject")) + "</button></div></form></li>";
     }).join("");
     var grants = quota.grants.map(function (g) {
-      var who = (quota.people && quota.people[g._id]) || g._id;
+      var who = (quota.people && quota.people[g._id]) || { uid: g._id };
       var live = g.until && Date.parse(g.until) > Date.now();
-      return '<li class="' + (live ? "" : "is-expired") + '"><span><strong>' + esc(who) + "</strong> " +
-        esc(tr(live ? "admUntil" : "admExpired", fmtDate(g.until))) + (g.model ? " · " + esc(g.model) : "") +
+      var by = !g.granted_by ? "" : state.user && g.granted_by === state.user.uid ? tr("admGrantedBySelf") : tr("admGrantedBy", "UID " + shortUid(g.granted_by));
+      return '<li class="' + (live ? "" : "is-expired") + '" data-aia-grant="' + esc(g._id) + '"><span>' + personHtml(who) + "<br><small>" +
+        esc(tr(live ? "admUntil" : "admExpired", fmtDate(g.until))) + " · " + esc(grantBackend(g) === "abo" ? tr("admBackendAbo") : "Nexos") +
+        " · " + esc(g.model || tr("admModelAll")) +
+        (by ? " · " + esc(by) : "") + "</small>" +
         '</span><button type="button" class="aia-btn aia-btn-quiet" data-aia-revoke="' + esc(g._id) + '">' + esc(tr("admRevoke")) + "</button></li>";
     }).join("");
-    return '<h3 class="aia-h3">' + esc(tr("admTitle")) + "</h3>" +
+    return actingHtml() + '<h3 class="aia-h3">' + esc(tr("admTitle")) + "</h3>" +
       (open ? '<ul class="aia-list aia-reqs">' + open + "</ul>" : '<p class="aia-lead">' + esc(tr("admNone")) + "</p>") +
       (grants ? '<section class="aia-sec"><h3>' + esc(tr("admGrants")) + '</h3><ul class="aia-list">' + grants + "</ul>" +
         '<p class="aia-fine">' + esc(tr("admRevokeHint")) + "</p></section>" : "") + billingForm() + errLine();
@@ -1869,20 +2309,39 @@
       if (sub && sub.open) sub.close();
     } else {
       var title = { connect: tr("tabAdd"), request: tr("tabQuota"), admin: tr("admBtn"), signin: tr("signIn") }[v];
-      var body = v === "sent" ? viewSent() : v === "confirm" ? viewConfirm() : v === "connect" ? byotForm() :
+      var body = v === "sent" ? viewSent() : v === "confirm" ? viewConfirm() : v === "connect" ? byokForm() :
         v === "request" ? viewRequest() : v === "signin" ? signInBlock(true) : viewAdmin();
       paint(sub, (title ? (dlg.open ? '<button type="button" class="aia-back" data-aia="account">← ' + esc(tr("back")) + "</button>" : "") + closeBtn() +
-        '<h2 id="aia-subtitle" class="aia-dtitle">' + esc(title) + "</h2>" + body + errLine() : body), "is-sub");
+        '<h2 id="aia-subtitle" class="aia-dtitle">' + esc(title) + "</h2>" + body + (body.indexOf('class="aia-error"') === -1 ? errLine() : "") : body), "is-sub");
       if (!sub.open) { try { sub.showModal(); } catch (e) { sub.setAttribute("open", ""); } }
     }
     var host = sub && sub.open ? sub : dlg;
     if (toastEl && toastEl.classList.contains("is-on") && toastEl.parentNode !== host) host.appendChild(toastEl);
   }
-  async function connectKey(form) {
+  // Ohne Schlüssel: Anbieter merken, ins Schlüsselfeld springen und kurz erklären, wie es weitergeht.
+  function askForKey(form, label) {
+    keyStatus = { text: tr("keyFirst", label), kind: "hint" };
+    renderDialog();
+    var inp = (sub && sub.querySelector("#aia-key")) || (form && form.key);
+    if (inp) try { inp.focus(); } catch (e) { /* ignore */ }
+  }
+  function keyForm(from) {
+    return (from && from.querySelector && from.querySelector("#aia-keyform")) || (sub && sub.querySelector("#aia-keyform"));
+  }
+  function connected(form, text) {
+    // Schlüssel nicht im (nur geschlossenen) Popup stehen lassen: der nächste Kartenklick würde ihn sonst erneut verwenden.
+    if (form) Array.prototype.forEach.call(form.querySelectorAll('input[name="key"],input[name="endpoint"]'), function (x) { x.value = ""; });
+    keyStatus = { text: "", kind: "" };
+    state.view = "account";
+    renderDialog();
+    toast(text);
+  }
+  async function connectKey(form, id) {
+    id = id || connectSel;
+    if (!form || keyStatus.kind === "busy") return;
     var key = form.key.value.trim();
     var remember = form.remember.checked;
-    var id = connectSel;
-    if (!key) return;
+    if (!key) { askForKey(form, PROVIDERS[id].label); return; }
     keyStatus = { text: tr("checking"), kind: "busy" };
     renderDialog();
     var models = [], listed = true;
@@ -1904,12 +2363,48 @@
     var model = listed ? PROVIDERS[id].pick(models) : "";
     saveProvider(id, { key: key, models: models, model: model, checkedAt: new Date().toISOString() }, remember);
     setChoice({ provider: id, model: model });
-    keyStatus = { text: listed ? tr("keyOk", String(models.length)) : tr("keyNoList"), kind: "ok" };
-    state.view = "account";
+    connected(form, listed ? tr("keyOk", String(models.length)) : tr("keyNoList"));
+  }
+  async function connectEndpoint(form) {
+    if (!form || keyStatus.kind === "busy") return;
+    connectSel = "custom";
+    var ep = normalizeEndpoint(form.endpoint.value);
+    if (!ep) {
+      keyStatus = { text: tr("epBad"), kind: "error" };
+      renderDialog();
+      var inp = sub && sub.querySelector("#aia-endpoint");
+      if (inp) try { inp.focus(); } catch (e) { /* ignore */ }
+      return;
+    }
+    var key = form.key.value.trim();
+    if (!key) { askForKey(form, ep.label); return; }
+    var remember = form.remember.checked;
+    var id = CUSTOM + ep.host;
+    keyStatus = { text: tr("checking"), kind: "busy" };
     renderDialog();
+    var models;
+    try {
+      models = await openAiCompatible(ep.base, customFilter).list(key);
+    } catch (e) {
+      var st = e && e.status;
+      var text = st === 401 || st === 403 || st === 400 ? tr("keyBad") + " (" + e.message + ")"
+        : e && e.notJson ? tr("epNoJson", ep.label)
+        : st === 404 ? "HTTP 404 – " + tr("epNoJson", ep.label)
+        // Ohne HTTP-Status: Netzfehler oder vom Browser blockiert (CORS) – der Browser verrät nicht, was davon.
+        : !st ? tr("epCors", ep.label)
+        : tr("keyNet") + " (" + ((e && e.message) || e) + ")";
+      keyStatus = { text: text, kind: "error" };
+      renderDialog();
+      return;
+    }
+    var model = customProvider({ base: ep.base, label: ep.label }, id).pick(models);
+    saveProvider(id, { key: key, models: models, model: model, base: ep.base, label: ep.label,
+                       checkedAt: new Date().toISOString() }, remember);
+    setChoice({ provider: id, model: model });
+    connected(form, models.length ? tr("keyOk", String(models.length)) : tr("keyNoList"));
   }
   function onDialogClick(e) {
-    if (e.target.closest("a")) return;
+    if (e.target.closest("a, .aia-info, .aia-tip")) return;
     var rv = e.target.closest("[data-aia-revoke]");
     if (rv) { revoke(rv.getAttribute("data-aia-revoke")).catch(fail); return; }
     var t = e.target.closest("[data-aia],[data-aia-prov],[data-aia-remove],[data-aia-local],[data-aia-card]");
@@ -1938,11 +2433,14 @@
     else if (a === "connect") { keyStatus = { text: "", kind: "" }; state.view = "connect"; renderDialog(); }
     else if (a === "account") { state.view = "account"; renderDialog(); }
     else if (a === "reveal") {
-      var inp = dlg.querySelector("#aia-key");
+      var inp = e.currentTarget.querySelector("#aia-key");
       inp.type = inp.type === "password" ? "text" : "password";
       t.textContent = inp.type === "password" ? tr("show") : tr("hide");
     } else if (t.hasAttribute("data-aia-prov")) {
-      connectSel = t.getAttribute("data-aia-prov"); keyStatus = { text: "", kind: "" }; renderDialog();
+      if (keyStatus.kind === "busy") return; // eine Prüfung läuft schon
+      connectSel = t.getAttribute("data-aia-prov");
+      keyStatus = { text: "", kind: "" };
+      connectKey(keyForm(e.currentTarget), connectSel);
     } else if (t.hasAttribute("data-aia-remove")) removeProvider(t.getAttribute("data-aia-remove"));
     else if (t.hasAttribute("data-aia-local")) setChoice({ provider: "local", model: t.getAttribute("data-aia-local") });
   }
@@ -1954,7 +2452,7 @@
     if (k === "mail") sendLink(f.email.value);
     else if (k === "paste") completeLink(f.link.value.trim());
     else if (k === "confirm") completeLink(state.pendingLink || root.location.href, f.email.value.trim());
-    else if (k === "key") connectKey(f);
+    else if (k === "key") { if (connectSel === "custom") connectEndpoint(f); else connectKey(f, connectSel); }
     else if (k === "request") sendRequest(f.reason.value.trim()).catch(fail);
     else if (k === "reqedit") updateRequest(f.reason.value.trim()).catch(fail);
     else if (k === "settings") saveSettings(f).catch(fail);
@@ -1966,16 +2464,57 @@
   // Anbieter am Präfix des eingefügten Schlüssels erkennen.
   function providerOfKey(key) {
     if (/^AIza/.test(key)) return "gemini";
+    if (/^sk-or-/.test(key)) return "";
     if (/^sk-ant-/.test(key)) return "anthropic";
     if (/^sk-/.test(key)) return "openai";
     return "";
   }
   function onDialogInput(e) {
+    // Eine Fehlermeldung zum vorigen Versuch verschwindet, sobald Schlüssel oder Adresse geändert werden.
+    if ((e.target.id === "aia-endpoint" || e.target.id === "aia-key") && keyStatus.kind === "error") {
+      keyStatus = { text: "", kind: "" };
+      var st = e.currentTarget.querySelector(".aia-status.is-error");
+      if (st) st.remove();
+    }
+    if (e.target.id === "aia-endpoint") {
+      // Ohne neues Zeichnen (Cursor bleibt stehen): Endpunkt als Ziel markieren, Karten abwählen.
+      var on = !!e.target.value.trim();
+      if (on) connectSel = "custom";
+      else if (connectSel === "custom") connectSel = providerOfKey(((keyForm(e.currentTarget) || {}).key || {}).value || "") || "gemini";
+      var d = e.currentTarget;
+      var ep = d.querySelector(".aia-ep");
+      if (ep) ep.classList.toggle("is-sel", connectSel === "custom");
+      d.querySelectorAll("[data-aia-card]").forEach(function (c) {
+        var sel = c.getAttribute("data-aia-card") === connectSel;
+        c.classList.toggle("is-sel", sel);
+        var b = c.querySelector("[data-aia-prov]");
+        if (b) b.setAttribute("aria-pressed", String(sel));
+      });
+      return;
+    }
     if (e.target.id !== "aia-key") return;
+    if (connectSel === "custom") return;
     var id = providerOfKey(e.target.value.trim());
     if (id && id !== connectSel) { connectSel = id; keyStatus = { text: "", kind: "" }; renderDialog(); }
   }
+  function onDialogKeydown(e) {
+    if (e.key !== "Enter" || e.isComposing || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+    var form = keyForm(e.currentTarget);
+    if (e.target.id === "aia-endpoint") { e.preventDefault(); connectEndpoint(form); return; }
+    if (e.target.id !== "aia-key") return;
+    e.preventDefault();
+    if (connectSel === "custom" && form && form.endpoint && form.endpoint.value.trim()) connectEndpoint(form);
+    else connectKey(form, connectSel === "custom" ? providerOfKey(e.target.value.trim()) || "gemini" : connectSel);
+  }
   function onDialogChange(e) {
+    if (e.target.matches("[data-aia-backend]")) {
+      var form = e.target.closest("form");
+      var sel = form && form.querySelector("[data-aia-models]");
+      if (sel) sel.innerHTML = adminModelOptions(e.target.value, "");
+      var hint = form && form.querySelector("[data-aia-abo-hint]");
+      if (hint) hint.hidden = e.target.value !== "abo";
+      return;
+    }
     if (e.target.matches("[data-aia-model]")) {
       var parts = e.target.value.split("|");
       setChoice({ provider: parts[0], model: parts.slice(1).join("|") });
@@ -2067,9 +2606,12 @@
 
   return {
     init: init, route: route, localUrl: localUrl, answerLabel: answerLabel, routeLabel: routeLabel, discuss: discuss, open: openDialog, chip: chip, gate: gate,
+    models: models, complete: complete, text: tr,
     proposalIssue: proposalIssue, openIssue: openIssue, toast: toast, snapshot: snapshot,
     // für Tests
     _buildDiscussPrompt: buildDiscussPrompt, _extractFinding: extractFinding, _redact: redact,
-    _providers: PROVIDERS, _pickDefault: pickDefault, _state: state
+    _providers: PROVIDERS, _pickDefault: pickDefault, _state: state, _accessOrder: accessOrder, _routeSync: routeSync,
+    _normalizeEndpoint: normalizeEndpoint, _provOf: provOf, _keyIds: keyIds, _viewAdmin: viewAdmin, _quota: function () { return quota; },
+    _statusPanel: statusPanel, _modelSelect: modelSelect, _decide: decide, _aboModels: aboModels, _setChoice: setChoice
   };
 });

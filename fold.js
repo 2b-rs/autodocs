@@ -1401,6 +1401,69 @@
       updateSelectionUI();
     }
 
+    // Seit der Generierung zugeordnete Belege (lib_current_context.py) liegen als JSON im Dossier
+    // und werden beim ersten Öffnen als Karten angehängt – so bleibt die Seite klein.
+    function hydrateCurrentContext(modal) {
+      if (!modal || modal.getAttribute("data-current-hydrated") === "1") return;
+      var data = modal.querySelector("script.dossier-current-context");
+      var box = modal.querySelector(".snippets-container");
+      if (!data || !box) return;
+      modal.setAttribute("data-current-hydrated", "1");
+      var items = [];
+      try { items = JSON.parse(data.textContent || "[]"); } catch (err) { items = []; }
+      if (!items.length) return;
+      var root = data.getAttribute("data-root") || "";
+      Array.prototype.forEach.call(box.querySelectorAll(":scope > p"), function (p) { p.remove(); });
+      var esc = escapeHtmlDiff;
+      var html = items.map(function (it) {
+        var id = esc(it.id), doc = esc(it.doc || ""), page = esc(String(it.page || ""));
+        var kind = it.is_figure ? "Schaubild" : "Snippet";
+        var href = root + "spec/" + (it.is_figure ? "figures/" : "snippets/") + encodeURIComponent(it.id) + ".html";
+        var conf = typeof it.confidence === "number" ? " · Konfidenz " + it.confidence.toFixed(2) : "";
+        var targets = (it.targets || []).map(function (t) { return "<code>" + esc(t) + "</code>"; }).join(" ");
+        return '<div class="snippet-card inbound-snippet-card is-collapsed is-current-new" id="' + id + '" data-snippet-id="' + id +
+          '" data-sws="' + id + '" data-doc="' + doc + '" data-page="' + page + '" data-name="' + id + '" data-kind="inbound" data-is-inbound="true" data-current-new="true">' +
+          '<div class="snippet-card-header" data-card-toggle="' + id + '" tabindex="0" role="button" aria-expanded="false">' +
+          '<div class="snippet-card-summary"><span class="card-chevron" aria-hidden="true">▸</span>' +
+          '<input type="checkbox" class="card-select-checkbox" data-select-card="' + id + '" aria-label="Element ' + id + ' auswählen">' +
+          '<strong class="snippet-title">' + esc(it.excerpt ? it.excerpt.slice(0, 70) : it.id) + '</strong>' +
+          '<span class="chip-kind kind-inbound">' + kind + '</span><span class="chip-new" title="Seit der letzten Generierung zugeordnet">neu</span>' +
+          '<span class="chip-doc">' + doc + (page ? " (S. " + page + ")" : "") + '</span></div>' +
+          '<div class="snippet-card-header-actions"><div class="curation-status-box"><span class="curation-status-pill status-neutral" data-badge-for="' + id + '">Unbewertet</span></div>' +
+          '<div class="curation-btn-group" data-snippet-id="' + id + '">' +
+          '<button type="button" class="curation-btn btn-confirm" data-action="confirm" data-snippet="' + id + '" title="Zuordnung bestätigen"><span class="vote-icon">👍</span> <span class="vote-label">Bestätigen</span></button>' +
+          '<button type="button" class="curation-btn btn-dismiss" data-action="dismiss" data-snippet="' + id + '" title="Zuordnung beanstanden"><span class="vote-icon">👎</span> <span class="vote-label">Beanstanden</span></button>' +
+          '<button type="button" class="curation-btn btn-discuss" data-action="discuss" data-snippet="' + id + '" title="Mit KI diskutieren"><span class="vote-icon">💬</span> <span class="vote-label">Mit KI diskutieren</span></button>' +
+          '</div></div></div>' +
+          '<div class="snippet-card-body"><blockquote class="current-excerpt"><div class="desc"><p>' + esc(it.excerpt || "") + '</p></div></blockquote>' +
+          '<div class="current-meta"><span>' + esc(it.relation || "") + conf + (targets ? " · für " + targets : "") + '</span>' +
+          '<a href="' + esc(href) + '" target="_blank" rel="noopener">🔍 ' + kind + ' öffnen</a></div></div></div>';
+      }).join("");
+      box.insertAdjacentHTML("beforeend", html);
+      setTimeout(updateSnippetBadges, 0);
+    }
+    document.addEventListener("click", function (e) {
+      var trig = e.target.closest("[data-dossier-target]");
+      if (trig) hydrateCurrentContext(document.getElementById(trig.getAttribute("data-dossier-target")));
+      var show = e.target.closest("[data-dossier-show-new]");
+      var regen = e.target.closest("[data-dossier-regen-new]");
+      if (!show && !regen) return;
+      e.preventDefault();
+      var modal = (show || regen).closest("dialog");
+      hydrateCurrentContext(modal);
+      var editorTab = modal && modal.querySelector('.dossier-mode-tab[data-view-mode="editor"]');
+      if (editorTab) editorTab.click();
+      if (regen) {
+        var btn = modal.querySelector("#btn-regenerate-from-context");
+        if (btn) btn.click();
+        return;
+      }
+      var pill = modal.querySelector('.dossier-filter-pill[data-filter-kind="inbound"]');
+      if (pill) pill.click();
+      var first = modal.querySelector(".snippet-card.is-current-new");
+      if (first) first.scrollIntoView({ block: "center" });
+    }, true);
+
     function applyDossierFilters() {
       var searchInput = dEl("dossier-search-input");
       var query = searchInput ? searchInput.value.trim().toLowerCase() : "";
@@ -2290,7 +2353,7 @@
         exitCompareMode();
       }
 
-      if (tabId && tabId.startsWith("preview-")) {
+      if (tabId && tabId.startsWith("preview-") && !rawWorkbenchState.showOnly) {
         var prevItem = rawWorkbenchState.previews[tabId];
         if (prevItem && prevItem.state === "idle") {
           startPreviewGeneration(prevItem.seq);
@@ -2433,6 +2496,166 @@
       selectRawSubTab(returnTab);
     }
 
+    // --- Modellwahl der Vorschau-Reiter ---
+    // Die Liste kommt aus AiAccess.models(): lokale CLIs von _src/serve.py (nur agy und cursor kann
+    // /api/ai/execute_prompt ausführen), Projektkontingent und alle Modelle eigener Schlüssel und
+    // Endpunkte, gruppiert nach Quelle. Ohne ai-access.js bleibt der statische Rückfall mit den lokalen
+    // CLIs (gleiches Format wie lib_curation_modal.preview_controls_html).
+    var PREVIEW_LOCAL_DEFAULTS = [
+      { source: "local", provider: "agy", model: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
+      { source: "local", provider: "cursor", model: "composer-2.5", label: "Cursor Composer 2.5" }
+    ];
+    var PREVIEW_EFFORT_RE = /-(low|medium|high|xhigh|max)$/;
+    function previewText(key, fallback, arg) {
+      var a = window.AiAccess, t = a && typeof a.text === "function" ? a.text(key, arg) : "";
+      return t && t !== key ? t : String(fallback).replace("%s", arg == null ? "" : arg);
+    }
+    // Effort hat nur bei lokalen Gemini-Modellen über agy eine Bedeutung (wird Teil der Modell-ID).
+    function previewEffortApplies(source, provider, model) {
+      return source === "local" && (provider === "agy" || /^gemini-/.test(model || ""));
+    }
+    function previewOptionValue(m) { return m.source + "|" + m.provider + "|" + m.model; }
+    function previewOptionLabel(m) {
+      var label = String(m.label || m.model);
+      return previewEffortApplies(m.source, m.provider, m.model) ? label.replace(/\s*\((low|medium|high|xhigh|max)\)\s*$/i, "") : label;
+    }
+    function previewUsableModels() {
+      var a = window.AiAccess;
+      if (!a || typeof a.models !== "function") return null;
+      return a.models().filter(function (m) {
+        return m.source !== "local" || m.provider === "agy" || m.provider === "cursor";
+      });
+    }
+    function previewOptionHtml(m, selected) {
+      return '<option value="' + escapeHtmlDiff(previewOptionValue(m)) + '" data-source="' + escapeHtmlDiff(m.source) +
+        '" data-provider="' + escapeHtmlDiff(m.provider) + '" data-model="' + escapeHtmlDiff(m.model) + '"' +
+        (selected ? " selected" : "") + ">" + escapeHtmlDiff(previewOptionLabel(m)) + "</option>";
+    }
+    function previewOptionsHtml(list, wanted) {
+      if (!list) return PREVIEW_LOCAL_DEFAULTS.map(function (m, i) { return previewOptionHtml(m, i === 0); }).join("");
+      if (!list.length) {
+        return '<option value="" data-source="none" selected>' + escapeHtmlDiff(previewText("pvNoModels", "Kein KI-Modell verfügbar")) + "</option>";
+      }
+      var pick = wanted && list.some(function (m) { return previewOptionValue(m) === wanted; }) ? wanted : "";
+      if (!pick) pick = previewOptionValue(list.filter(function (m) { return m.current; })[0] || list[0]);
+      var groups = [], byGroup = {};
+      list.forEach(function (m) {
+        var g = m.group || m.source;
+        if (!byGroup[g]) { byGroup[g] = []; groups.push(g); }
+        byGroup[g].push(m);
+      });
+      return groups.map(function (g) {
+        return '<optgroup label="' + escapeHtmlDiff(g) + '" data-source="' + escapeHtmlDiff(byGroup[g][0].source) + '">' +
+          byGroup[g].map(function (m) { return previewOptionHtml(m, previewOptionValue(m) === pick); }).join("") + "</optgroup>";
+      }).join("");
+    }
+    // Gewählte Option lesen; versteht auch ältere statische Optionen (value = Modell-ID, data-provider = agy|cursor).
+    function previewChoice(sel, effortSel) {
+      var opt = sel && sel.selectedOptions ? sel.selectedOptions[0] : null;
+      if (!opt) return null;
+      var source = opt.getAttribute("data-source");
+      var provider = opt.getAttribute("data-provider") || "";
+      var model = opt.getAttribute("data-model");
+      if (!source) {
+        source = "local";
+        model = opt.value;
+        provider = provider || (opt.value === "composer-2.5" ? "cursor" : "agy");
+      }
+      if (source === "none") return { source: "none" };
+      var group = opt.parentNode && opt.parentNode.tagName === "OPTGROUP" ? opt.parentNode.label : "";
+      var c = { source: source, provider: provider, model: model || "", label: (opt.textContent || "").trim(), group: group };
+      if (previewEffortApplies(source, provider, c.model)) {
+        c.effort = (effortSel && effortSel.value) || (PREVIEW_EFFORT_RE.exec(c.model) || [])[1] || "medium";
+        c.execModel = c.model.replace(PREVIEW_EFFORT_RE, "") + "-" + c.effort;
+        c.displayName = c.label + " (" + c.effort + ")";
+      } else {
+        c.effort = "";
+        c.execModel = c.model;
+        c.displayName = source === "local" ? c.label : c.model;
+      }
+      return c;
+    }
+    function syncPreviewEffort(sel) {
+      var box = sel && sel.closest(".subtab-controls");
+      var eff = box && box.querySelector(".subtab-select-effort");
+      if (!eff || sel.disabled) return;
+      var c = previewChoice(sel, null);
+      var on = !!c && previewEffortApplies(c.source, c.provider, c.model);
+      eff.hidden = !on;
+      eff.style.display = on ? "" : "none";
+      eff.disabled = !on;
+      eff.style.opacity = "";
+      if (on && eff.getAttribute("data-user-choice") !== "1") {
+        var m = PREVIEW_EFFORT_RE.exec(c.model);
+        if (m && eff.querySelector('option[value="' + m[1] + '"]')) eff.value = m[1];
+      }
+    }
+    function fillPreviewModelSelect(sel) {
+      if (!sel || sel.disabled) return; // laufender oder beendeter Lauf: Auswahl bleibt, wie sie war
+      var list = previewUsableModels();
+      if (list) {
+        var wanted = sel.getAttribute("data-user-choice") === "1" ? sel.value : (rawWorkbenchState.lastPreviewChoice || "");
+        sel.innerHTML = previewOptionsHtml(list, wanted);
+      }
+      syncPreviewEffort(sel);
+    }
+    function refreshPreviewModelSelects() {
+      document.querySelectorAll(".subtab-select-model").forEach(fillPreviewModelSelect);
+    }
+    // Kein Modell und keine Route: Einladung des KI-Zugangs im Vorschau-Bereich statt einer Fehlermeldung.
+    function showPreviewGate(seq, reason) {
+      var pId = "preview-" + seq;
+      var paneEl = dEl("raw-pane-" + pId);
+      // Nur anzeigen: ein leerlaufender Reiter würde beim Auswählen sonst erneut starten (und wieder hier landen).
+      rawWorkbenchState.showOnly = true;
+      try { selectRawSubTab(pId); } finally { rawWorkbenchState.showOnly = false; }
+      var access = window.AiAccess;
+      if (!paneEl || !access || typeof access.gate !== "function") return;
+      paneEl.innerHTML = "";
+      var box = document.createElement("div");
+      box.className = "raw-preview-gate";
+      box.appendChild(access.gate(reason || "key"));
+      paneEl.appendChild(box);
+    }
+    // Antwort eines Modells mit eigenem Schlüssel wie der lokale Dienst (_parse_agent_html) auslesen:
+    // FRAGMENT-Block, JSON mit html bzw. ergebnisse[0].html, <div class="ai…">; sonst die Antwort ohne Codezaun.
+    function extractPreviewFragment(raw) {
+      var s = String(raw || "");
+      var m = s.match(/<<<FRAGMENT\s*\n([\s\S]*?)\nFRAGMENT>>>/);
+      if (m && m[1].trim()) return m[1].trim();
+      var j = null, f = s.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (f) { try { j = JSON.parse(f[1]); } catch (e) { j = null; } }
+      if (!j) {
+        var a = s.indexOf("{"), b = s.lastIndexOf("}");
+        if (a !== -1 && b > a) { try { j = JSON.parse(s.slice(a, b + 1)); } catch (e) { j = null; } }
+      }
+      if (j && typeof j === "object") {
+        var h = (j.ergebnisse && j.ergebnisse[0] && j.ergebnisse[0].html) || j.html;
+        if (h) return String(h).trim();
+      }
+      var d = s.match(/(<div\s+class=['"]ai\b[\s\S]*?<\/div>(?:\s*<\/div>)*)/);
+      if (d) return d[1].trim();
+      return s.replace(/^\s*```[a-z]*\s*\n?/i, "").replace(/\n?```\s*$/, "").trim();
+    }
+    // HTTP-Fehler des lokalen Dienstes ohne res.json() auf Nicht-JSON (Safari: „The string did not match
+    // the expected pattern.“), stattdessen „Server HTTP <status>“ mit kurzem Hinweis.
+    async function previewHttpError(res) {
+      var text = "", j = null;
+      try { text = await res.text(); } catch (e) { text = ""; }
+      try { j = JSON.parse(text); } catch (e) { j = null; }
+      var detail = j && (j.error || j.message);
+      var hint = detail ? String(typeof detail === "string" ? detail : JSON.stringify(detail))
+        : (res.status === 404 || res.status === 405 || res.status === 501)
+          ? previewText("pvLocalOnly", "Die lokale Vorschau läuft nur mit _src/serve.py. Wähle ein Modell mit eigenem Schlüssel.")
+          : previewText("pvNotJson", "Der Server hat keine JSON-Antwort geliefert.");
+      return new Error("Server HTTP " + res.status + " – " + hint);
+    }
+    async function previewReadJson(res) {
+      var text = await res.text();
+      try { return JSON.parse(text); }
+      catch (e) { throw new Error("Server HTTP " + res.status + " – " + previewText("pvNotJson", "Der Server hat keine JSON-Antwort geliefert.")); }
+    }
+
     function spawnNewPreviewTab(seq) {
       var pId = "preview-" + seq;
       rawWorkbenchState.previews[pId] = {
@@ -2468,10 +2691,7 @@
             <span class="subtab-title">Vorschau</span>
           </span>
           <div class="subtab-controls" id="subtab-controls-${pId}">
-            <select class="subtab-select-model" title="Modell auswählen">
-              <option value="gemini-3.8-flash" data-provider="agy" selected>Gemini 3.8 Flash</option>
-              <option value="composer-2.5" data-provider="cursor">Cursor Composer 2.5</option>
-            </select>
+            <select class="subtab-select-model" title="Modell auswählen">${previewOptionsHtml(previewUsableModels(), rawWorkbenchState.lastPreviewChoice || "")}</select>
             <select class="subtab-select-effort" title="Reasoning / Effort auswählen">
               <option value="medium" selected>med</option>
               <option value="low">low</option>
@@ -2485,6 +2705,7 @@
           <button type="button" class="btn-subtab-close" data-preview-id="${seq}" title="Diesen Lauf schließen" style="display:none;" aria-label="Schließen">✕</button>
         `;
         tabsContainer.appendChild(tabDiv);
+        syncPreviewEffort(tabDiv.querySelector(".subtab-select-model"));
       }
 
       var panesContainer = dEl("raw-preview-panes-container");
@@ -2497,7 +2718,7 @@
           <div class="preview-idle-banner" style="padding:40px 20px; text-align:center; color:var(--color-ink-muted, #666); background:var(--bg-canvas, #fafafa); border:1px dashed var(--border-default, #ccc); border-radius:8px;">
             <div style="font-size:2rem; margin-bottom:8px;">⚡</div>
             <div style="font-weight:600; font-size:1rem; margin-bottom:6px;">Noch keine Vorschau generiert</div>
-            <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter Modell und Effort aus und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
+            <div style="font-size:0.85rem; max-width:440px; margin:0 auto 16px;">Wähle oben im Reiter das Modell (bei lokalen Gemini-Modellen auch den Effort) und klicke auf <strong>⚡ Start</strong>, um die Generierung anzustoßen.</div>
             <button type="button" class="btn-subtab-start-pane" data-preview-id="${seq}" style="padding:6px 16px; font-size:0.9rem; font-weight:700; background:var(--color-teal-600, #01696f); color:#fff; border:none; border-radius:6px; cursor:pointer;">⚡ Generierung jetzt starten</button>
           </div>
         `;
@@ -2513,6 +2734,36 @@
       return st + ' ' + escapeHtmlDiff(name) + ' ' + tm;
     }
 
+    function previewErrorMessage(err, choice, isLocal) {
+      var msg = String((err && err.message) || err || "");
+      // fetch ohne HTTP-Antwort: Netzfehler oder vom Browser blockiert (CORS) – der Browser verrät nicht, was davon.
+      if (err && err.name === "TypeError" && /failed to fetch|load failed|networkerror|network error/i.test(msg)) {
+        return isLocal ? msg + " – " + previewText("pvLocalOnly", "Die lokale Vorschau läuft nur mit _src/serve.py. Wähle ein Modell mit eigenem Schlüssel.")
+          : previewText("epCors", "%s ist nicht erreichbar oder erlaubt keine Anfragen aus dem Browser (CORS).", choice.group || choice.provider);
+      }
+      return msg;
+    }
+    function resetPreviewTab(seq) {
+      var pId = "preview-" + seq, prev = rawWorkbenchState.previews[pId], tabEl = dEl("subtab-" + pId);
+      if (prev) { prev.state = "idle"; prev.abortController = null; }
+      if (!tabEl) return;
+      tabEl.setAttribute("data-state", "idle");
+      var sel = tabEl.querySelector(".subtab-select-model");
+      if (sel) { sel.disabled = false; sel.style.display = ""; }
+      var eff = tabEl.querySelector(".subtab-select-effort");
+      if (eff) { eff.disabled = false; eff.style.display = ""; }
+      var start = tabEl.querySelector(".btn-subtab-start");
+      if (start) start.style.display = "";
+      var cancel = tabEl.querySelector(".btn-subtab-cancel");
+      if (cancel) cancel.style.display = "none";
+      var title = tabEl.querySelector(".subtab-title");
+      if (title) title.textContent = "Vorschau";
+      if (sel) fillPreviewModelSelect(sel);
+    }
+
+    var PREVIEW_FALLBACK_CHOICE = { source: "local", provider: "agy", model: "gemini-3.8-flash", label: "Gemini 3.8 Flash",
+                                    effort: "medium", execModel: "gemini-3.8-flash-medium", displayName: "Gemini 3.8 Flash (medium)" };
+
     function startPreviewGeneration(seq, autoCompareWithCurrent) {
       var pId = "preview-" + seq;
       var prev = rawWorkbenchState.previews[pId];
@@ -2523,10 +2774,7 @@
 
       var modelSelect = tabEl.querySelector(".subtab-select-model");
       var effortSelect = tabEl.querySelector(".subtab-select-effort");
-      var rawModel = modelSelect ? modelSelect.value : "gemini-3.8-flash";
-      var rawEffort = effortSelect ? effortSelect.value : "medium";
-      var opt = (modelSelect && modelSelect.selectedOptions) ? modelSelect.selectedOptions[0] : null;
-      var provider = opt ? opt.getAttribute("data-provider") : (rawModel === "composer-2.5" ? "cursor" : "agy");
+      var choice = previewChoice(modelSelect, effortSelect) || PREVIEW_FALLBACK_CHOICE;
 
       var ta = dEl("raw-prompt-textarea");
       var promptText = ta ? ta.value.trim() : "";
@@ -2534,23 +2782,52 @@
         alert("Prompt-Text darf nicht leer sein.");
         return;
       }
-      var modName = (ta && ta.getAttribute("data-module")) || "LinIf";
-      var fragRel = (ta && ta.getAttribute("data-fragment")) || "content/ai/classic/modules/linif/main_01.html";
+      var job = {
+        promptText: promptText,
+        modName: (ta && ta.getAttribute("data-module")) || "LinIf",
+        fragRel: (ta && ta.getAttribute("data-fragment")) || "content/ai/classic/modules/linif/main_01.html",
+        autoCompare: autoCompareWithCurrent
+      };
 
-      var execModel = "";
-      var displayName = "";
-      if (provider === "cursor") {
-        execModel = "composer-2.5";
-        displayName = "Cursor Composer 2.5";
-      } else {
-        execModel = (rawModel.startsWith("gemini-") ? (rawModel + "-" + rawEffort) : rawModel);
-        displayName = "Gemini 3.8 Flash (" + rawEffort + ")";
+      var access = window.AiAccess;
+      if (choice.source !== "none" || !access) {
+        runPreviewGeneration(seq, choice.source === "none" ? PREVIEW_FALLBACK_CHOICE : choice, job);
+        return;
       }
+      // Keine Modellliste: die Route entscheidet. Lokal → lokaler Dienst, eigener Schlüssel → dessen
+      // Modell, sonst die Einladung des KI-Zugangs im Vorschau-Bereich.
+      access.route().then(function (r) {
+        if (r.kind === "none") { showPreviewGate(seq, r.reason); return; }
+        refreshPreviewModelSelects();
+        var again = previewChoice(modelSelect, effortSelect);
+        if (again && again.source !== "none") runPreviewGeneration(seq, again, job);
+        else if (r.kind === "byok") {
+          runPreviewGeneration(seq, { source: r.provider === "project" ? "project" : "byok", provider: r.provider, model: r.model || "",
+                                      label: r.model || r.provider, group: "", effort: "", execModel: r.model || "",
+                                      displayName: r.model || r.provider }, job);
+        } else runPreviewGeneration(seq, PREVIEW_FALLBACK_CHOICE, job);
+      }, function () { showPreviewGate(seq, "key"); });
+    }
+
+    function runPreviewGeneration(seq, choice, job) {
+      var pId = "preview-" + seq;
+      var prev = rawWorkbenchState.previews[pId];
+      if (!prev || prev.state === "running") return;
+      var tabEl = dEl("subtab-" + pId);
+      if (!tabEl) return;
+      var modelSelect = tabEl.querySelector(".subtab-select-model");
+      var effortSelect = tabEl.querySelector(".subtab-select-effort");
+      var isLocal = choice.source === "local";
+      var access = window.AiAccess;
+      var displayName = choice.displayName || choice.model;
+      var autoCompareWithCurrent = job.autoCompare;
+      if (modelSelect && modelSelect.value) rawWorkbenchState.lastPreviewChoice = modelSelect.value;
 
       prev.state = "running";
-      prev.model = execModel;
-      prev.effort = rawEffort;
-      prev.provider = provider;
+      prev.model = choice.execModel;
+      prev.effort = choice.effort || "";
+      prev.provider = choice.provider;
+      prev.source = choice.source;
       prev.modelNameDisplay = displayName;
       prev.startTime = performance.now();
       prev.abortController = new AbortController();
@@ -2586,7 +2863,7 @@
         paneEl.innerHTML = `
           <div class="raw-preview-loading" style="padding:28px 20px; text-align:center; background:var(--bg-canvas, #fafafa); border:1px solid var(--border-default, #ddd); border-radius:8px;">
             <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-              <span id="pane-hz-${pId}" style="background:#059669; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">Live 4.0 Hz</span>
+              <span id="pane-hz-${pId}" style="background:#059669; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.75rem; font-weight:700;">${isLocal ? "Live 4.0 Hz" : escapeHtmlDiff(choice.group || choice.provider)}</span>
               <span id="pane-phase-${pId}" style="font-family:monospace; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:0.78rem;">[Phase: Initialisierung…]</span>
             </div>
             <div class="diff-spinner" style="display:inline-block; width:30px; height:30px; border:3px solid rgba(1,105,111,0.2); border-top-color:#01696f; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
@@ -2599,12 +2876,18 @@
           </div>
         `;
       }
+      // Elemente im eigenen Bereich suchen (mehrere Kurationsfenster tragen dieselben IDs).
+      function inPane(id) {
+        var hit = null;
+        if (paneEl) { try { hit = paneEl.querySelector("#" + CSS.escape(id)); } catch (e) { hit = null; } }
+        return hit || dEl(id);
+      }
 
       if (prev.timerInterval) clearInterval(prev.timerInterval);
       prev.timerInterval = setInterval(function () {
         var elapsedSec = ((performance.now() - prev.startTime) / 1000).toFixed(1) + "s";
         var tTab = dEl("subtab-timer-" + pId);
-        var tPane = dEl("pane-timer-" + pId);
+        var tPane = inPane("pane-timer-" + pId);
         if (tTab) tTab.textContent = elapsedSec;
         if (tPane) tPane.textContent = elapsedSec;
       }, 100);
@@ -2619,95 +2902,122 @@
         spawnNewPreviewTab(nextSeq);
       }
 
-      fetch("/api/ai/execute_prompt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "text/event-stream"
-        },
-        signal: prev.abortController.signal,
-        body: JSON.stringify({
-          prompt: promptText,
-          module: modName,
-          fragment: fragRel,
-          model: execModel,
-          provider: provider,
-          stream: true
-        })
-      })
-        .then(async function (res) {
-          if (!res.ok) {
-            return res.json().then(function (j) {
-              throw new Error(j.error || ("Server HTTP " + res.status));
-            }).catch(function (err) {
-              throw new Error(err.message || ("Server HTTP " + res.status));
-            });
+      var run;
+      if (!isLocal) {
+        // Eigener Schlüssel, eigener Endpunkt oder Projektkontingent: direkt aus dem Browser, gestreamt.
+        var phaseB = inPane("pane-phase-" + pId), tokensB = inPane("pane-tokens-" + pId), streamB = inPane("pane-stream-" + pId);
+        if (phaseB) phaseB.textContent = "[Phase: Warte auf das Modell…]";
+        var runMeta = {};
+        run = access.complete({
+          source: choice.source, provider: choice.provider, model: choice.model, prompt: job.promptText,
+          signal: prev.abortController.signal, meta: runMeta,
+          // Gemini-Abo: „Wartet auf Läufer …“ / „Modell denkt …“ im Phasenfeld.
+          onStatus: function (status) { if (phaseB) phaseB.textContent = "[" + status + "]"; },
+          onDelta: function (delta, all) {
+            if (phaseB) phaseB.textContent = "[Phase: Generiere Fragment…]";
+            if (tokensB) tokensB.textContent = "~" + Math.max(1, Math.round(all.length / 4));
+            if (streamB) {
+              streamB.style.display = "block";
+              streamB.textContent = all;
+              streamB.scrollTop = streamB.scrollHeight;
+            }
           }
+        }).then(function (text) {
+          var frag = extractPreviewFragment(text);
+          return {
+            ok: !!frag, generated_html: frag, raw_output: String(text || "").slice(0, 3000),
+            error: frag ? null : previewText("pvEmpty", "Das Modell hat keinen Text geliefert."),
+            provider: choice.provider, model: runMeta.model || choice.model, profile: runMeta.profile || "",
+            duration_ms: Math.round(performance.now() - prev.startTime)
+          };
+        });
+      } else {
+        run = fetch(localApi("/api/ai/execute_prompt"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream"
+          },
+          signal: prev.abortController.signal,
+          body: JSON.stringify({
+            prompt: job.promptText,
+            module: job.modName,
+            fragment: job.fragRel,
+            model: choice.execModel,
+            provider: choice.provider,
+            stream: true
+          })
+        })
+          .then(async function (res) {
+            if (!res.ok) throw await previewHttpError(res);
 
-          var cType = res.headers.get("Content-Type") || "";
-          if (cType.includes("text/event-stream") && res.body && res.body.getReader) {
-            var reader = res.body.getReader();
-            var decoder = new TextDecoder("utf-8");
-            var buffer = "";
-            var finalData = null;
-            var hzBadge = dEl("pane-hz-" + pId);
-            var phaseBadge = dEl("pane-phase-" + pId);
-            var tokensBadge = dEl("pane-tokens-" + pId);
-            var streamBox = dEl("pane-stream-" + pId);
-            var streamAcc = "";
+            var cType = res.headers.get("Content-Type") || "";
+            if (cType.includes("text/event-stream") && res.body && res.body.getReader) {
+              var reader = res.body.getReader();
+              var decoder = new TextDecoder("utf-8");
+              var buffer = "";
+              var finalData = null;
+              var hzBadge = inPane("pane-hz-" + pId);
+              var phaseBadge = inPane("pane-phase-" + pId);
+              var tokensBadge = inPane("pane-tokens-" + pId);
+              var streamBox = inPane("pane-stream-" + pId);
+              var streamAcc = "";
 
-            while (true) {
-              var r = await reader.read();
-              if (r.done) break;
-              buffer += decoder.decode(r.value, { stream: true });
-              var lines = buffer.split("\n");
-              buffer = lines.pop();
+              while (true) {
+                var r = await reader.read();
+                if (r.done) break;
+                buffer += decoder.decode(r.value, { stream: true });
+                var lines = buffer.split("\n");
+                buffer = lines.pop();
 
-              for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].trim();
-                if (line.startsWith("data: ")) {
-                  var jsonStr = line.slice(6).trim();
-                  if (!jsonStr) continue;
-                  var ev = null;
-                  try { ev = JSON.parse(jsonStr); } catch (parseErr) { ev = null; }
-                  if (!ev) continue;
-                  if (ev.hz && hzBadge) {
-                    hzBadge.textContent = "Live " + parseFloat(ev.hz).toFixed(1) + " Hz";
-                  }
-                  if (ev.phase && phaseBadge) {
-                    var pLabels = {
-                      "thinking": "[Phase: Denkvorgang / Reasoning…]",
-                      "reasoning": "[Phase: Analysiere Spezifikation…]",
-                      "generating": "[Phase: Generiere Fragment…]"
-                    };
-                    phaseBadge.textContent = pLabels[ev.phase] || ("[Phase: " + ev.phase + "…]");
-                  }
-                  if (ev.tokens !== undefined && tokensBadge) {
-                    tokensBadge.textContent = ev.tokens;
-                  }
-                  if (ev.delta) {
-                    streamAcc += ev.delta;
-                    if (streamBox) {
-                      streamBox.style.display = "block";
-                      streamBox.textContent = streamAcc;
-                      streamBox.scrollTop = streamBox.scrollHeight;
+                for (var i = 0; i < lines.length; i++) {
+                  var line = lines[i].trim();
+                  if (line.startsWith("data: ")) {
+                    var jsonStr = line.slice(6).trim();
+                    if (!jsonStr) continue;
+                    var ev = null;
+                    try { ev = JSON.parse(jsonStr); } catch (parseErr) { ev = null; }
+                    if (!ev) continue;
+                    if (ev.hz && hzBadge) {
+                      hzBadge.textContent = "Live " + parseFloat(ev.hz).toFixed(1) + " Hz";
                     }
-                  }
-                  if (ev.event === "complete") {
-                    finalData = ev;
-                  } else if (ev.event === "error") {
-                    throw new Error(ev.error || "Der KI-Agent hat einen Fehler gemeldet (ohne Detailtext).");
+                    if (ev.phase && phaseBadge) {
+                      var pLabels = {
+                        "thinking": "[Phase: Denkvorgang / Reasoning…]",
+                        "reasoning": "[Phase: Analysiere Spezifikation…]",
+                        "generating": "[Phase: Generiere Fragment…]"
+                      };
+                      phaseBadge.textContent = pLabels[ev.phase] || ("[Phase: " + ev.phase + "…]");
+                    }
+                    if (ev.tokens !== undefined && tokensBadge) {
+                      tokensBadge.textContent = ev.tokens;
+                    }
+                    if (ev.delta) {
+                      streamAcc += ev.delta;
+                      if (streamBox) {
+                        streamBox.style.display = "block";
+                        streamBox.textContent = streamAcc;
+                        streamBox.scrollTop = streamBox.scrollHeight;
+                      }
+                    }
+                    if (ev.event === "complete") {
+                      finalData = ev;
+                    } else if (ev.event === "error") {
+                      throw new Error(ev.error || "Der KI-Agent hat einen Fehler gemeldet (ohne Detailtext).");
+                    }
                   }
                 }
               }
+              if (!finalData) throw new Error("Verbindung zum Server abgebrochen, bevor das Modell ein Ergebnis geliefert hat.");
+              return finalData;
             }
-            if (!finalData) throw new Error("Verbindung zum Server abgebrochen, bevor das Modell ein Ergebnis geliefert hat.");
-            return finalData;
-          } else {
-            return res.json();
-          }
-        })
+            return previewReadJson(res);
+          });
+      }
+
+      run
         .then(function (data) {
+
           if (prev.timerInterval) { clearInterval(prev.timerInterval); prev.timerInterval = null; }
           var durMs = data.duration_ms || Math.round(performance.now() - prev.startTime);
           prev.durationMs = durMs;
@@ -2754,7 +3064,10 @@
           if (paneEl) {
             paneEl.innerHTML = `
               <div class="raw-pane-banner" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                <span>⚡ Vorschau: <strong>${escapeHtmlDiff(displayName)}</strong> · Dauer: <strong>${(durMs / 1000).toFixed(1)}s</strong> · Länge: <strong>${prev.html.length} Zeichen</strong></span>
+                <span>⚡ Vorschau: <strong>${escapeHtmlDiff(displayName)}</strong> · Dauer: <strong>${(durMs / 1000).toFixed(1)}s</strong> · Länge: <strong>${prev.html.length} Zeichen</strong>${
+                  /* Gemini-Abo: welches Profil (leo/neo) geantwortet hat */
+                  data.profile && access && access.answerLabel ? " · " + escapeHtmlDiff(access.answerLabel({ model: data.model, profile: data.profile },
+                    { kind: "byok", provider: choice.provider, model: data.model })) : ""}</span>
                 <div style="display:flex; gap:8px;">
                   <button type="button" class="btn-compare-tab" data-compare-id="${pId}" title="Diesen Stand vergleichen">⚖️ Vergleichen</button>
                 </div>
@@ -2771,6 +3084,12 @@
         })
         .catch(function (err) {
           if (prev.timerInterval) { clearInterval(prev.timerInterval); prev.timerInterval = null; }
+          if (err && err.name === "AiAccessRouteError" && err.code === "none") {
+            // Zugang inzwischen weg (z. B. Schlüssel entfernt): Reiter zurücksetzen, Einladung zeigen.
+            resetPreviewTab(seq);
+            showPreviewGate(seq, err.reason);
+            return;
+          }
           if (err.name === "AbortError") {
             prev.state = "cancelled";
             tabEl.setAttribute("data-state", "cancelled");
@@ -2790,7 +3109,7 @@
             }
           } else {
             prev.state = "error";
-            prev.error = err.message;
+            prev.error = previewErrorMessage(err, choice, isLocal);
             tabEl.setAttribute("data-state", "error");
             if (btnCancel) btnCancel.style.display = "none";
             var btnClose = tabEl.querySelector(".btn-subtab-close");
@@ -2800,7 +3119,7 @@
               paneEl.innerHTML = `
                 <div style="padding:18px; color:#b91c1c; background:#fee2e2; border-radius:8px; border:1px solid #fca5a5; margin-bottom:12px;">
                   <div style="font-weight:700; font-size:0.95rem; margin-bottom:6px;">Verbindungsfehler:</div>
-                  <div>${escapeHtmlDiff(err.message)}</div>
+                  <div>${escapeHtmlDiff(prev.error)}</div>
                   <div style="margin-top:12px;">
                     <button type="button" class="btn-subtab-start-pane" data-preview-id="${seq}" style="padding:5px 12px; background:#b91c1c; color:#fff; border:none; border-radius:4px; font-size:0.85rem; font-weight:600; cursor:pointer;">Erneut versuchen</button>
                   </div>
@@ -2909,6 +3228,8 @@
         // Kontext-Kurationseinstellungen sammeln
         var confirmed = [];
         var dismissed = [];
+        var added = [];
+        hydrateCurrentContext(modal);
         var localVotes = (typeof loadVotes === "function") ? loadVotes() : {};
 
         modal.querySelectorAll(".snippet-card").forEach(function (card) {
@@ -2925,6 +3246,8 @@
             confirmed.push(label);
           } else if (status === "dismiss" || status === "justified_dismiss") {
             dismissed.push(label);
+          } else if (card.hasAttribute("data-current-new")) {
+            added.push(label);
           }
         });
 
@@ -2939,7 +3262,11 @@
           if (dismissed.length > 0) {
             addendum += "- Beanstandete / zu entfernende Referenzen:\n  * " + dismissed.join("\n  * ") + "\n";
           }
-          if (confirmed.length === 0 && dismissed.length === 0) {
+          if (added.length > 0) {
+            addendum += "- Seit der letzten Generierung neu zugeordnete Belege (Snippets und Schaubilder):\n  * " +
+              added.slice(0, 80).join("\n  * ") + (added.length > 80 ? "\n  * … (" + (added.length - 80) + " weitere)" : "") + "\n";
+          }
+          if (confirmed.length === 0 && dismissed.length === 0 && added.length === 0) {
             addendum += "- Alle aktuellen Inbound- und Spezifikations-Referenzen wurden im Dossier geprüft und bestätigt.\n";
           }
           if (!val.includes("### Kurations-Feedback & angepasster Kontext")) {
@@ -3605,14 +3932,13 @@
     document.addEventListener("change", function (e) {
       var selectModel = e.target.closest(".subtab-select-model");
       if (selectModel) {
-        var container = selectModel.closest(".subtab-controls");
-        var effortSelect = container ? container.querySelector(".subtab-select-effort") : null;
-        if (effortSelect) {
-          var isCursor = (selectModel.value === "composer-2.5");
-          effortSelect.disabled = isCursor;
-          effortSelect.style.opacity = isCursor ? "0.4" : "1";
-        }
+        // Ausdrückliche Wahl bleibt bei späterem Neufüllen erhalten und gilt für neue Reiter.
+        selectModel.setAttribute("data-user-choice", "1");
+        rawWorkbenchState.lastPreviewChoice = selectModel.value;
+        syncPreviewEffort(selectModel);
       }
+      var selectEffort = e.target.closest(".subtab-select-effort");
+      if (selectEffort) selectEffort.setAttribute("data-user-choice", "1");
     });
 
     // Form submission
@@ -3859,7 +4185,9 @@
             onDelta: function (delta, all) {
               assistantBubble.textContent = all;
               thread.scrollTop = thread.scrollHeight;
-            }
+            },
+            // Gemini-Abo ohne Streaming: Zwischenstand statt „KI überlegt…“.
+            onStatus: function (status) { assistantBubble.textContent = status; }
           });
           assistantBubble.textContent = reply.reply;
           appendAnswerMeta(assistantBubble, access.answerLabel(reply, aiRoute));
@@ -4068,6 +4396,14 @@
         updateSnippetBadges();
       });
     });
+
+    // Modelllisten der Vorschau-Reiter aus dem KI-Zugang füllen und bei jeder Änderung nachziehen
+    // (Schlüssel verbunden oder entfernt, lokaler Dienst gefunden, Modell gewählt).
+    refreshPreviewModelSelects();
+    window.addEventListener("aiaccess-change", refreshPreviewModelSelects);
+    if (window.AiAccess && typeof window.AiAccess.route === "function") {
+      window.AiAccess.route().then(refreshPreviewModelSelects, function () {});
+    }
 
     bindDossierModeTabEnhancements();
     syncReviewBar();

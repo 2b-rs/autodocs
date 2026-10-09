@@ -729,12 +729,14 @@
               accumulated = all;
               streamTextEl.textContent = all;
               assistantBubble.classList.remove("pending");
-            }
+            },
+            // Gemini-Abo ohne Streaming: „Wartet auf Läufer …“ / „Modell denkt …“ mit Wartezeit.
+            onStatus: function (status) { streamTextEl.textContent = status; }
           });
           streamTextEl.textContent = answer.reply;
           assistantBubble.classList.remove("pending");
           hzBadge.style.display = "none";
-          mode.textContent = "Eigener Schlüssel";
+          mode.textContent = aiRoute.provider === "abo" ? "Gemini-Abo" : aiRoute.provider === "project" ? "Projektkontingent" : "Eigener Schlüssel";
           addAnswerMeta(assistantBubble, access.answerLabel(answer, aiRoute));
         } catch (error) {
           mode.textContent = "Fehler";
