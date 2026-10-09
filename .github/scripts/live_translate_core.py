@@ -589,7 +589,7 @@ class Terms:
 
     @classmethod
     def from_json(cls, data: Dict[str, Any]) -> "Terms":
-        prot = list(data.get("protected") or [])
+        prot = list(data.get("protected") or []) + list(data.get("terms") or [])
         for terms in (data.get("categories") or {}).values():
             prot.extend(terms)
         return cls(sorted(set(prot), key=lambda t: (-len(t), t)),
