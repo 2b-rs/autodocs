@@ -1,0 +1,228 @@
+name: "Live-Verteilung (Snippets und Schaubilder an Elemente und Fragmente)"
+
+# CONCEPT-0060 §6.7 und CONCEPT-0061: arbeitet die Arbeitsliste des Datenbündels (Release-Asset data-<datum>,
+# vars.LIVE_BUNDLE_URL, gepinnt mit vars.LIVE_BUNDLE_SHA256) mit dem Gemini-Abo ab und schreibt jede Entscheidung
+# als Kettenglied in das Daten-Repo (vars.LIVE_REPO, Vorgabe 2b-rs/autodocs-live). Läufe müssen nicht fertig
+# werden: jede Einheit ist über den Hash ihrer Eingaben verschlüsselt, der nächste Lauf macht weiter.
+#
+# Stündlich, sobald vars.LIVE_DISTRIBUTION_ENABLED == 'true'; manuell mit eigenem Budget. agy läuft gesperrt
+# (setup-agy mit lockdown_dir, je Arbeitsplatz eine settings.json: nur Lesen im leeren Aufrufverzeichnis, jeder
+# Befehl verboten, nie --dangerously-skip-permissions). Der Deploy-Key (Secret AUTODOCS_LIVE_DEPLOY_KEY der Umgebung
+# agy) existiert nur in den Schritten Klonen und Übertragen, nie neben agy.
+# Das Log nennt nur Zahlen, Kosten zu API-Listenpreisen und die Profilnamen leo/neo; nie Prompts oder Antworten.
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      max_calls:
+        description: "Höchstzahl Modellaufrufe in diesem Lauf"
+        default: "300"
+        type: string
+      max_minutes:
+        description: "Zeitbudget in Minuten (danach geordnetes Ende)"
+        default: "40"
+        type: string
+      concurrency:
+        description: "Parallele agy-Aufrufe"
+        default: "4"
+        type: string
+      max_usd:
+        description: "Obergrenze in $ zu API-Listenpreisen (0 = keine)"
+        default: "0"
+        type: string
+      kinds:
+        description: "Nur diese Arten: snippet,figure,element (leer = alle, in dieser Reihenfolge)"
+        default: ""
+        type: string
+      dry_run:
+        description: "Trockenlauf: Plan und Batches zählen, kein Modellaufruf, nichts schreiben"
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+# Nie zwei Läufe gleichzeitig (ein Schreiber je Kette); ein weiterer Start wartet, statt den laufenden abzubrechen.
+concurrency:
+  group: live-distribution
+  cancel-in-progress: false
+
+jobs:
+  distribute:
+    if: github.event_name == 'workflow_dispatch' || vars.LIVE_DISTRIBUTION_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: agy
+    timeout-minutes: 55
+    env:
+      LIVE_REPO: ${{ vars.LIVE_REPO || '2b-rs/autodocs-live' }}
+      LIVE_BUNDLE_URL: ${{ vars.LIVE_BUNDLE_URL }}
+      LIVE_BUNDLE_SHA256: ${{ vars.LIVE_BUNDLE_SHA256 }}
+    steps:
+      # Das Repository enthält die ganze Website (mehrere GB); der Job braucht nur .github/.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+          filter: blob:none
+          persist-credentials: false
+
+      - name: Konfiguration prüfen
+        id: cfg
+        shell: bash
+        env:
+          HAS_KEY: ${{ secrets.AUTODOCS_LIVE_DEPLOY_KEY != '' }}
+        run: |
+          set -euo pipefail
+          if [ -z "$LIVE_BUNDLE_URL" ] || [ -z "$LIVE_BUNDLE_SHA256" ]; then
+            echo "::notice::vars.LIVE_BUNDLE_URL oder vars.LIVE_BUNDLE_SHA256 fehlt – kein Datenbündel, nichts zu tun"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! printf '%s' "$LIVE_BUNDLE_SHA256" | grep -Eq '^[0-9a-f]{64}$'; then
+            echo "::error::vars.LIVE_BUNDLE_SHA256 ist kein SHA-256 (64 Hex-Zeichen)"; exit 1
+          fi
+          if [ "$HAS_KEY" != "true" ]; then
+            echo "::error::Secret AUTODOCS_LIVE_DEPLOY_KEY fehlt in der Umgebung agy"; exit 1
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+
+      - name: Datenbündel aus dem Cache
+        if: steps.cfg.outputs.skip == 'false'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/live-bundle
+          key: live-bundle-${{ vars.LIVE_BUNDLE_SHA256 }}
+
+      - name: autodocs-live klonen
+        if: steps.cfg.outputs.skip == 'false'
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.AUTODOCS_LIVE_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key="$RUNNER_TEMP/live-key"
+          trap 'rm -f "$key" "$key.hosts"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$key"
+          # GitHub-Hostschlüssel (SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU), fest statt ssh-keyscan
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$key.hosts"
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o UserKnownHostsFile=$key.hosts -o StrictHostKeyChecking=yes"
+          git clone -q --depth 1 "git@github.com:${LIVE_REPO}.git" "$RUNNER_TEMP/autodocs-live" 2>&1 | grep -v 'empty repository' || true
+          test -d "$RUNNER_TEMP/autodocs-live/.git"
+          echo "autodocs-live: $(git -C "$RUNNER_TEMP/autodocs-live" rev-parse --short HEAD 2>/dev/null || echo leer)"
+
+      - name: Offene Einheiten zählen
+        id: pending
+        if: steps.cfg.outputs.skip == 'false'
+        shell: bash
+        env:
+          IN_KINDS: ${{ inputs.kinds }}
+        run: |
+          set +e -uo pipefail
+          python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" pending \
+            --bundle-url "$LIVE_BUNDLE_URL" --bundle-sha256 "$LIVE_BUNDLE_SHA256" \
+            --bundle-cache "$RUNNER_TEMP/live-bundle" --work "$RUNNER_TEMP/live-work" \
+            --live-repo "$RUNNER_TEMP/autodocs-live" --kinds "$IN_KINDS"
+          rc=$?
+          [ $rc -eq 0 ] || echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Sperrzustand der Profile laden
+        if: steps.pending.outputs.pending != '0' && steps.pending.outputs.rc == '0'
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+          restore-keys: agy-state-
+
+      - name: agy einrichten (gesperrt, ohne Werkzeuge)
+        if: steps.pending.outputs.pending != '0' && steps.pending.outputs.rc == '0'
+        uses: ./.github/actions/setup-agy
+        with:
+          token_1: ${{ secrets.AGY_OAUTH_TOKEN_1 }}
+          name_1: leo
+          token_2: ${{ secrets.AGY_OAUTH_TOKEN_2 }}
+          name_2: neo
+          lockdown_dir: ${{ runner.temp }}/agy-call
+
+      - name: Verteilen
+        id: run
+        if: steps.pending.outputs.pending != '0' && steps.pending.outputs.rc == '0'
+        shell: bash
+        # Eingaben nur über die Umgebung, nie in den Skripttext eingesetzt
+        env:
+          IN_MAX_CALLS: ${{ inputs.max_calls || vars.LIVE_MAX_CALLS || '300' }}
+          IN_MAX_MINUTES: ${{ inputs.max_minutes || vars.LIVE_MAX_MINUTES || '40' }}
+          IN_CONCURRENCY: ${{ inputs.concurrency || vars.LIVE_CONCURRENCY || '4' }}
+          IN_MAX_USD: ${{ inputs.max_usd || vars.LIVE_MAX_USD || '0' }}
+          IN_KINDS: ${{ inputs.kinds }}
+          IN_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+          RUN_ID: gh-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set +e -uo pipefail          # Exitcodes des Jobs auswerten statt abbrechen
+          [ -n "${AUTODOCS_AGY_PROFILES:-}" ] || { echo "::error::Keine agy-Profile (AGY_OAUTH_TOKEN_1/_2)"; echo "rc=77" >> "$GITHUB_OUTPUT"; exit 0; }
+          python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" run \
+            --bundle-url "$LIVE_BUNDLE_URL" --bundle-sha256 "$LIVE_BUNDLE_SHA256" \
+            --bundle-cache "$RUNNER_TEMP/live-bundle" --work "$RUNNER_TEMP/live-work" \
+            --live-repo "$RUNNER_TEMP/autodocs-live" --state "$RUNNER_TEMP/agy-state.json" \
+            --run-id "$RUN_ID" --max-calls "$IN_MAX_CALLS" --max-minutes "$IN_MAX_MINUTES" \
+            --concurrency "$IN_CONCURRENCY" --max-usd "$IN_MAX_USD" --kinds "$IN_KINDS" \
+            $([ "$IN_DRY_RUN" = "true" ] && echo --dry-run)
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Abschließen und übertragen
+        if: always() && steps.cfg.outputs.skip == 'false'
+        shell: bash
+        env:
+          DEPLOY_KEY: ${{ secrets.AUTODOCS_LIVE_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          repo="$RUNNER_TEMP/autodocs-live"
+          [ -d "$repo/.git" ] || { echo "kein Arbeitsbaum von autodocs-live"; exit 0; }
+          python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" finalize --live-repo "$repo" --commit
+          if git -C "$repo" rev-parse -q --verify origin/main >/dev/null; then
+            ahead=$(git -C "$repo" rev-list --count origin/main..HEAD)
+          else
+            ahead=$(git -C "$repo" rev-list --count HEAD 2>/dev/null || echo 0)
+          fi
+          if [ "$ahead" = "0" ]; then echo "nichts zu übertragen"; exit 0; fi
+          umask 077
+          key="$RUNNER_TEMP/live-key"
+          trap 'rm -f "$key" "$key.hosts"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$key"
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$key.hosts"
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o UserKnownHostsFile=$key.hosts -o StrictHostKeyChecking=yes"
+          git -C "$repo" push -q origin HEAD:refs/heads/main
+          echo "übertragen: $ahead Commit(s), Kopf $(git -C "$repo" rev-parse --short HEAD)"
+          python3 "$GITHUB_WORKSPACE/.github/scripts/live_distribute.py" status --live-repo "$repo"
+
+      - name: Sperrzustand der Profile sichern
+        if: always() && steps.run.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+
+      - name: agy-Profile und Schlüssel entfernen
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP"/agy-profile-* "$RUNNER_TEMP/agy-call" "$RUNNER_TEMP/live-work/agy-workers" "$RUNNER_TEMP"/live-key* "$HOME/.gemini" || true
+
+      - name: Ergebnis
+        if: always() && steps.cfg.outputs.skip == 'false'
+        shell: bash
+        env:
+          RC: ${{ steps.run.outputs.rc || steps.pending.outputs.rc }}
+          PENDING: ${{ steps.pending.outputs.pending }}
+        run: |
+          if [ "$PENDING" = "0" ] && [ "${RC:-0}" = "0" ]; then echo "Ergebnis: nichts zu tun"; exit 0; fi
+          case "${RC:-1}" in
+            0) echo "Ergebnis: Lauf beendet (fertig, Budget erreicht oder nichts zu tun)" ;;
+            75) echo "::warning::Alle Profile im Kontingent erschöpft – nächster Lauf nach der Rückstellung" ;;
+            77) echo "::error::Kein Profil angemeldet – Anmeldung nötig (tools/agy-token-upload <profil>)"; exit 1 ;;
+            65) echo "::error::Kette oder Datenbündel ungültig – nichts übernommen, Prüfung nötig"; exit 1 ;;
+            78) echo "::error::Konfiguration: Job-Code passt nicht zum Datenbündel (live_bundle.py vendor) oder Eingaben fehlen"; exit 1 ;;
+            *) echo "::error::Lauf mit Fehler beendet (rc=${RC:-?})"; exit 1 ;;
+          esac
