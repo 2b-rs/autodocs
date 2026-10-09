@@ -4,6 +4,10 @@ description: >
   unter $RUNNER_TEMP an. Die Tokens kommen aus den Secrets der Umgebung "agy" (nur Branch main),
   stehen nie im Log und werden mit dem Schritt "agy-Profile entfernen" im aufrufenden Workflow
   wieder gelöscht. Ergebnis: AUTODOCS_AGY_PROFILES (kommagetrennte HOME-Pfade, leer = kein Profil).
+  Mit lockdown_dir läuft agy ohne Werkzeuge: Jedes Profil bekommt eine settings.json, die nur das Lesen in
+  diesem (leeren) Verzeichnis erlaubt und jeden Befehl verbietet; der Aufrufer darf dann nie
+  --dangerously-skip-permissions übergeben (agy verweigert im Headless-Modus alles andere).
+  Ergebnis zusätzlich: AUTODOCS_AGY_LOCKDOWN_DIR (echter Pfad des Verzeichnisses).
 inputs:
   token_1:
     description: "Inhalt von ~/.gemini-<profil>/.gemini/antigravity-cli/antigravity-oauth-token (Profil 1)"
@@ -21,6 +25,10 @@ inputs:
     description: "Name von Profil 2"
     required: false
     default: "2"
+  lockdown_dir:
+    description: "Leeres Arbeitsverzeichnis für agy; gesetzt = Werkzeugsperre per settings.json (leer = keine Sperre, Rauchtest)"
+    required: false
+    default: ""
 outputs:
   profiles:
     description: "Anzahl eingerichteter Profile"
@@ -47,20 +55,32 @@ runs:
         T2: ${{ inputs.token_2 }}
         N1: ${{ inputs.name_1 }}
         N2: ${{ inputs.name_2 }}
+        LOCK: ${{ inputs.lockdown_dir }}
       run: |
         set -euo pipefail
         umask 077
         profiles=""
         n=0
+        lock_real=""
+        if [ -n "$LOCK" ]; then
+          mkdir -p "$LOCK"
+          lock_real="$(cd "$LOCK" && pwd -P)"
+          echo "AUTODOCS_AGY_LOCKDOWN_DIR=$lock_real" >> "$GITHUB_ENV"
+        fi
         for i in 1 2; do
           var="T$i"; tok="${!var}"; nv="N$i"; name="${!nv}"
           [ -z "$tok" ] && continue
           home="$RUNNER_TEMP/agy-profile-$name"
           mkdir -p "$home/.gemini/antigravity-cli"
           printf '%s' "$tok" > "$home/.gemini/antigravity-cli/antigravity-oauth-token"
+          if [ -n "$lock_real" ]; then
+            # Nur Lesen im leeren Aufrufverzeichnis, jeder Befehl verboten (agy-Rechte, siehe Beschreibung oben).
+            LOCK_REAL="$lock_real" python3 -c 'import json, os, sys; sys.stdout.write(json.dumps({"permissions": {"allow": ["read_file(%s/*)" % os.environ["LOCK_REAL"]], "deny": ["command(*)", "command(regex:.*)"]}}))' \
+              > "$home/.gemini/antigravity-cli/settings.json"
+          fi
           profiles="${profiles:+$profiles,}$home"
           n=$((n+1))
         done
         echo "AUTODOCS_AGY_PROFILES=$profiles" >> "$GITHUB_ENV"
         echo "count=$n" >> "$GITHUB_OUTPUT"
-        echo "agy-Profile eingerichtet: $n"
+        echo "agy-Profile eingerichtet: $n${lock_real:+ (Werkzeugsperre aktiv)}"

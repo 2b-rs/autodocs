@@ -1,0 +1,67 @@
+name: "Gemini-Abo-Läufer (Projektkontingent des Verwalters)"
+
+# Beantwortet Aufträge des Projektkontingents „Gemini-Abo“ (nur für die Konten des Verwalters) mit der
+# offiziellen Antigravity-CLI agy. Gestartet vom Worker per workflow_dispatch, wenn sich seit 60 s kein Läufer
+# gemeldet hat; der Start trägt keine Eingaben. Prompts und Antworten kommen verschlüsselt vom Worker
+# (ABO_RELAY_KEY) und stehen nie im Log, in Artefakten, im Cache oder im Ereignis dieses Laufs.
+# Das Log nennt nur Anzahl, Modell, Profilname (leo/neo), Dauer und Fehlerart.
+# Ende nach 15 Minuten ohne Auftrag oder nach 5 Stunden.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Nur ein Läufer gleichzeitig; ein weiterer Start wartet, statt den laufenden abzubrechen.
+concurrency:
+  group: agy-relay
+  cancel-in-progress: false
+
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    environment: agy
+    timeout-minutes: 330
+    steps:
+      # Das Repository enthält die ganze Website (mehrere GB); der Läufer braucht nur .github/.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+          filter: blob:none
+          persist-credentials: false
+      - name: agy einrichten (gesperrt, ohne Werkzeuge)
+        uses: ./.github/actions/setup-agy
+        with:
+          token_1: ${{ secrets.AGY_OAUTH_TOKEN_1 }}
+          name_1: leo
+          token_2: ${{ secrets.AGY_OAUTH_TOKEN_2 }}
+          name_2: neo
+          lockdown_dir: ${{ runner.temp }}/agy-call
+      - name: Sperrzustand der Profile laden
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+          restore-keys: agy-state-
+      - name: Aufträge beantworten
+        shell: bash
+        env:
+          ABO_RELAY_URL: ${{ vars.ABO_RELAY_URL || 'https://autodocs-nexos.autodocs-2b-rs.workers.dev' }}
+          ABO_RELAY_KEY: ${{ secrets.ABO_RELAY_KEY }}
+          AGY_STATE: ${{ runner.temp }}/agy-state.json
+        run: |
+          set -euo pipefail
+          [ -n "$ABO_RELAY_KEY" ] || { echo "::error::Secret ABO_RELAY_KEY fehlt in der Umgebung agy"; exit 1; }
+          [ -n "${AUTODOCS_AGY_PROFILES:-}" ] || { echo "::error::Keine agy-Profile (AGY_OAUTH_TOKEN_1/_2)"; exit 1; }
+          agy --version || true
+          node "$GITHUB_WORKSPACE/.github/scripts/abo_relay.mjs"
+      - name: Sperrzustand der Profile sichern
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/agy-state.json
+          key: agy-state-${{ github.run_id }}
+      - name: agy-Profile entfernen
+        if: always()
+        shell: bash
+        run: rm -rf "$RUNNER_TEMP"/agy-profile-* "$RUNNER_TEMP/agy-call" "$HOME/.gemini" || true
